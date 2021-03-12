@@ -59,36 +59,68 @@ custom backend, `EmailLogBackEnd`.  It does the following:
 * Print a friendly message on console advertising `/emails` to make
   this nice and discoverable.
 
-You can also forward all the emails sent in the development environment
-to an email id of your choice by clicking on **Forward emails to a mail
-account** in `/emails` page. This feature can be used for testing how
-emails gets rendered by different email clients. Before enabling this
-you have to first configure the following SMTP settings.
+### Testing in a real email client
 
-* The hostname `EMAIL_HOST` in `zproject/dev_settings.py`.
-* The port `EMAIL_PORT` in `zproject/dev_settings.py`.
-* The username `EMAIL_HOST_USER` in `zproject/dev_settings.py`.
-* The password `email_password` in `zproject/dev-secrets.conf`.
+You can also forward all the emails sent in the development
+environment to an email account of your choice by clicking on
+**Forward emails to an email account** on the `/emails` page. This
+feature can be used for testing how the emails gets rendered by
+actual email clients.  This is important because web email clients
+have limited CSS functionality, autolinkify things, and otherwise
+mutate the HTML email one can see previewed on `/emails`.
 
-See [this](../production/email.html#free-outgoing-email-services)
-section for instructions on obtaining SMTP details.
+To do this sort of testing, you need to setup an outgoing SMTP
+provider. Our production advice for
+[Gmail](../production/email.html#using-gmail-for-outgoing-email) and
+[transactional email
+providers](../production/email.html#free-outgoing-email-services) are
+relevant; you can ignore the Gmail warning as Gmail's rate limits are
+appropriate for this sort of low-volume testing.
 
-**Note: The base_image_uri of the images in forwarded emails would be replaced
-with `https://chat.zulip.org/static/images/emails` inorder for the email clients
-to render the images. See `zproject/email_backends.py` for more details.**
+Once you have the login credentials of the SMTP provider, since there
+is not `/etc/zulip/settings.py` in development, configure it using the
+following keys in `zproject/dev-secrets.conf`
 
-While running the backend test suite, we use
-`django.core.mail.backends.locmem.EmailBackend` as the email
-backend. The `locmem` backend stores messages in a special attribute
-of the django.core.mail module, "outbox". The outbox attribute is
-created when the first message is sent. It’s a list with an
-EmailMessage instance for each message that would be sent.
+* `email_host` - SMTP hostname.
+* `email_port` - SMTP port.
+* `email_host_user` - Username of the SMTP user
+* `email_password` - Password of the SMTP user.
+* `email_use_tls` - Set to `true` for most providers. Else, don't set any value.
 
-Other notes:
+Here is an example of how `zproject/dev-secrets.conf` might look if
+you are using Gmail.
+
+```
+email_host = smtp.gmail.com
+email_port = 587
+email_host_user = username@gmail.com
+email_use_tls = true
+
+# This is different from your Gmail password if you have 2FA enabled for your Google account.
+# See the configuring Gmail to send email section above for more details
+email_password = gmail_password
+```
+
+### Notes
+
 * After changing any HTML email or `email_base.html`, you need to run
-  `scripts/setup/inline_email_css.py` for the changes to be reflected in the dev
-  environment. The script generates files like
+  `scripts/setup/inline_email_css.py` for the changes to be reflected
+  in the development environment. The script generates files like
   `templates/zerver/emails/compiled/<template_prefix>.html`.
+
+* Images won't be displayed in a real email client unless you change
+  the `base_image_uri` used for emails to a public URL such as
+  `https://chat.zulip.org/static/images/emails` (image links to
+  `localhost:9991` aren't allowed by modern email providers). See
+  `zproject/email_backends.py` for more details.
+
+* While running the backend test suite, we use
+  `django.core.mail.backends.locmem.EmailBackend` as the email
+  backend. The `locmem` backend stores messages in a special attribute
+  of the django.core.mail module, "outbox". The outbox attribute is
+  created when the first message is sent. It’s a list with an
+  EmailMessage instance for each message that would be sent.
+
 ## Email templates
 
 Zulip's email templates live under `templates/zerver/emails`.  Email

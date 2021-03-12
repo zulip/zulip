@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zilencer', '0013_remove_customer_billing_user'),
+        ("zilencer", "0013_remove_customer_billing_user"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='remotepushdevicetoken',
-            unique_together={('server', 'user_id', 'kind', 'token')},
+            name="remotepushdevicetoken",
+            unique_together={("server", "user_id", "kind", "token")},
         ),
     ]

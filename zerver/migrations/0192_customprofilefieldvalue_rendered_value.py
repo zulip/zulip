@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0191_realm_seat_limit'),
+        ("zerver", "0191_realm_seat_limit"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='customprofilefieldvalue',
-            name='rendered_value',
+            model_name="customprofilefieldvalue",
+            name="rendered_value",
             field=models.TextField(default=None, null=True),
         ),
     ]

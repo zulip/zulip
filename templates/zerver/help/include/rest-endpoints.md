@@ -35,6 +35,7 @@
 * [Get all users](/api/get-users)
 * [Get own user](/api/get-own-user)
 * [Get a user](/api/get-user)
+* [Get a user by email](/api/get-user-by-email)
 * [Update a user](/api/update-user)
 * [Create a user](/api/create-user)
 * [Deactivate a user](/api/deactivate-user)
@@ -69,4 +70,6 @@
 * [Delete an event queue](/api/delete-queue)
 
 #### Specialty endpoints
-* [Fetch a development API key](/api/dev-fetch-api-key)
+
+* [Fetch an API key (production)](/api/fetch-api-key)
+* [Fetch an API key (development only)](/api/dev-fetch-api-key)

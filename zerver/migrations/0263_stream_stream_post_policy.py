@@ -2,16 +2,18 @@
 from django.db import migrations, models
 
 STREAM_POST_POLICY_EVERYONE = 1
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0262_mutedtopic_date_muted'),
+        ("zerver", "0262_mutedtopic_date_muted"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='stream',
-            name='stream_post_policy',
+            model_name="stream",
+            name="stream_post_policy",
             field=models.PositiveSmallIntegerField(default=STREAM_POST_POLICY_EVERYONE),
         ),
     ]

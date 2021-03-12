@@ -1,11 +1,18 @@
-"use strict";
+import timezones from "../generated/timezones.json";
+import render_settings_tab from "../templates/settings_tab.hbs";
 
-const moment = require("moment-timezone");
+import * as admin from "./admin";
+import * as overlays from "./overlays";
+import * as people from "./people";
+import * as settings_account from "./settings_account";
+import * as settings_bots from "./settings_bots";
+import * as settings_config from "./settings_config";
+import * as settings_notifications from "./settings_notifications";
+import * as settings_panel_menu from "./settings_panel_menu";
+import * as settings_sections from "./settings_sections";
+import * as settings_toggle from "./settings_toggle";
 
-const render_settings_tab = require("../templates/settings_tab.hbs");
-
-const people = require("./people");
-const settings_config = require("./settings_config");
+export let settings_label;
 
 $("body").ready(() => {
     $("#settings_overlay_container").on("click", (e) => {
@@ -27,7 +34,7 @@ $("body").ready(() => {
 });
 
 function setup_settings_label() {
-    exports.settings_label = {
+    settings_label = {
         // settings_notification
         enable_online_push_notifications: i18n.t(
             "Send mobile notifications even if I'm online (useful for testing)",
@@ -61,7 +68,7 @@ function setup_settings_label() {
     };
 }
 
-exports.build_page = function () {
+export function build_page() {
     setup_settings_label();
 
     const rendered_settings_tab = render_settings_tab({
@@ -71,11 +78,12 @@ exports.build_page = function () {
             page_params.enable_sounds || page_params.enable_stream_audible_notifications,
         zuliprc: "zuliprc",
         botserverrc: "botserverrc",
-        timezones: moment.tz.names(),
+        timezones: timezones.timezones,
         can_create_new_bots: settings_bots.can_create_new_bots(),
-        settings_label: exports.settings_label,
+        settings_label,
         demote_inactive_streams_values: settings_config.demote_inactive_streams_values,
         color_scheme_values: settings_config.color_scheme_values,
+        default_view_values: settings_config.default_view_values,
         twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
         general_settings: settings_config.all_notifications().general_settings,
         notification_settings: settings_config.all_notifications().settings,
@@ -88,20 +96,22 @@ exports.build_page = function () {
     });
 
     $(".settings-box").html(rendered_settings_tab);
-};
+}
 
-exports.launch = function (section) {
-    exports.build_page();
+export function launch(section) {
+    build_page();
     admin.build_page();
     settings_sections.reset_sections();
 
     overlays.open_settings();
     settings_panel_menu.normal_settings.activate_section_or_default(section);
     settings_toggle.highlight_toggle("settings");
-};
+}
 
-exports.set_settings_header = function (key) {
-    const header_text = $(`#settings_page .sidebar-list [data-section='${key}'] .text`).text();
+export function set_settings_header(key) {
+    const header_text = $(
+        `#settings_page .sidebar-list [data-section='${CSS.escape(key)}'] .text`,
+    ).text();
     if (header_text) {
         $(".settings-header h1 .section").text(" / " + header_text);
     } else {
@@ -112,6 +122,4 @@ exports.set_settings_header = function (key) {
                 " sidebar list. Please add it.",
         );
     }
-};
-
-window.settings = exports;
+}

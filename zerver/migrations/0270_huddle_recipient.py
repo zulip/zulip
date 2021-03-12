@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0269_gitlab_auth'),
+        ("zerver", "0269_gitlab_auth"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='huddle',
-            name='recipient',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='zerver.Recipient'),
+            model_name="huddle",
+            name="recipient",
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.SET_NULL, to="zerver.Recipient"
+            ),
         ),
     ]

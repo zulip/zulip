@@ -1,18 +1,17 @@
 "use strict";
 
-const XDate = require("xdate");
+const {strict: assert} = require("assert");
+
+const {mock_module, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
+const reload_state = mock_module("reload_state", {
+    is_in_progress: () => false,
+});
+const server_events = mock_module("server_events");
 
 const people = zrequire("people");
-zrequire("presence");
-
-const return_false = function () {
-    return false;
-};
-
-set_global("server_events", {});
-set_global("reload_state", {
-    is_in_progress: return_false,
-});
+const presence = zrequire("presence");
 
 const OFFLINE_THRESHOLD_SECS = 140;
 
@@ -79,7 +78,7 @@ run_test("my user", () => {
     assert.equal(presence.get_status(me.user_id), "active");
 });
 
-run_test("unknown user", () => {
+run_test("unknown user", (override) => {
     const unknown_user_id = 999;
     const now = 888888;
     const presences = {};
@@ -95,9 +94,8 @@ run_test("unknown user", () => {
     presence.set_info(presences, now);
     server_events.suspect_offline = false;
 
-    reload_state.is_in_progress = () => true;
+    override(reload_state, "is_in_progress", () => true);
     presence.set_info(presences, now);
-    reload_state.is_in_progress = () => false;
 });
 
 run_test("status_from_raw", () => {
@@ -178,7 +176,7 @@ run_test("set_presence_info", () => {
         last_active: recent,
     });
     assert.equal(presence.get_status(alice.user_id), "active");
-    assert.deepEqual(presence.last_active_date(alice.user_id), new XDate(recent * 1000));
+    assert.deepEqual(presence.last_active_date(alice.user_id), new Date(recent * 1000));
 
     assert.deepEqual(presence.presence_info.get(fred.user_id), {status: "idle", last_active: now});
     assert.equal(presence.get_status(fred.user_id), "idle");
@@ -266,9 +264,7 @@ run_test("big realms", () => {
     // which case we will not provide default values for
     // users that aren't in our presences payload.
     const get_active_human_count = people.get_active_human_count;
-    people.get_active_human_count = function () {
-        return 1000;
-    };
+    people.get_active_human_count = () => 1000;
     presence.set_info(presences, now);
     assert(presence.presence_info.has(sally.user_id));
     assert(!presence.presence_info.has(zoe.user_id));
@@ -283,7 +279,7 @@ run_test("last_active_date", () => {
 
     assert.equal(presence.last_active_date(unknown_id), undefined);
     assert.equal(presence.last_active_date(fred.user_id), undefined);
-    assert.deepEqual(presence.last_active_date(alice.user_id), new XDate(500 * 1000));
+    assert.deepEqual(presence.last_active_date(alice.user_id), new Date(500 * 1000));
 });
 
 run_test("update_info_from_event", () => {

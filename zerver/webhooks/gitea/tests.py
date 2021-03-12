@@ -4,9 +4,9 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class GiteaHookTests(WebhookTestCase):
-    STREAM_NAME = 'commits'
+    STREAM_NAME = "commits"
     URL_TEMPLATE = "/api/v1/external/giteae?&api_key={api_key}&stream={stream}"
-    FIXTURE_DIR_NAME = 'gitea'
+    FIXTURE_DIR_NAME = "gitea"
 
     def test_multiple_commits(self) -> None:
         expected_topic = "test / d"
@@ -95,11 +95,14 @@ class GiteaHookTests(WebhookTestCase):
 
         self.check_webhook("issue_comment__edited", expected_topic, expected_message)
 
-    @patch('zerver.webhooks.gogs.view.check_send_webhook_message')
-    def test_push_filtered_by_branches_ignore(self, check_send_webhook_message_mock: MagicMock) -> None:
-        self.url = self.build_webhook_url(branches='changes,development')
-        payload = self.get_body('push__5_commits')
-        result = self.client_post(self.url, payload, HTTP_X_GITEA_EVENT='push',
-                                  content_type="application/json")
+    @patch("zerver.webhooks.gogs.view.check_send_webhook_message")
+    def test_push_filtered_by_branches_ignore(
+        self, check_send_webhook_message_mock: MagicMock
+    ) -> None:
+        self.url = self.build_webhook_url(branches="changes,development")
+        payload = self.get_body("push__5_commits")
+        result = self.client_post(
+            self.url, payload, HTTP_X_GITEA_EVENT="push", content_type="application/json"
+        )
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)

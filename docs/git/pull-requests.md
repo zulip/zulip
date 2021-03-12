@@ -26,6 +26,18 @@ work from being merged before you're confident in it.
 
 ## Create a pull request
 
+### Step 0: Make sure you're on a feature branch (not `master`)
+
+It is important to [work on a feature
+branch](using.html#work-on-a-feature-branch) when creating a pull
+request.  Your new pull request will be inextricably linked with your
+branch while it is open, so you will need to reserve your branch only
+for changes related to your issue, and avoid introducing extraneous
+changes for other issues or from upstream.
+
+If you are working on a branch named `master`, you need to create and
+switch to a feature branch before proceeding.
+
 ### Step 1: Update your branch with git rebase
 
 The best way to update your branch is with `git fetch` and `git rebase`. Do not
@@ -115,7 +127,7 @@ your pull request title with [WIP] if it is a [work-in-progress][wip-prs].
 If your pull request has an effect on the visuals of a component, you might want
 to include a screenshot of this change or a GIF of the interaction in your first
 comment. This will allow reviewers to comment on your changes without having to
-checkout your branch; you can find a list of tools you can use for this over
+check out your branch; you can find a list of tools you can use for this over
 [here][screenshots-gifs].
 
 When ready, click the green **Create pull request** to submit the pull request.

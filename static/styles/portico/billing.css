@@ -1,5 +1,5 @@
 .billing-upgrade-page {
-    font-family: "Source Sans Pro", Helvetica, Arial, sans-serif;
+    font-family: "Source Sans 3", Helvetica, Arial, sans-serif;
     background-color: hsl(0, 0%, 98%);
     height: 100vh;
 
@@ -131,7 +131,7 @@
         span {
             background: 0;
             box-shadow: none;
-            font-family: "Source Sans Pro", Helvetica, Arial;
+            font-family: "Source Sans 3", Helvetica, Arial;
             font-size: 1.4em;
             line-height: 20px;
         }
@@ -143,7 +143,7 @@
     }
 
     .stripe-button-el:active,
-    .stripe-button-el:not(:disabled):active {
+    .stripe-button-el:enabled:active {
         background-color: hsl(169, 70%, 32%);
         span {
             background: 0;
@@ -273,11 +273,11 @@
     }
 }
 
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
+input[name="licenses"]::-webkit-outer-spin-button,
+input[name="licenses"]::-webkit-inner-spin-button {
     appearance: none;
     margin: 0;
 }
-input[type="number"] {
+input[name="licenses"] {
     appearance: textfield;
 }

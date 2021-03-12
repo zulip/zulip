@@ -13,7 +13,7 @@ key to third-party services.
 Copy the `USERNAME` and `API KEY` - you'll need it later.
 
 Head over to the
-[Discourse Chat Integration Setup Instructions](https://meta.discourse.org/t/68501)
+[discourse-chat-integration setup instructions](https://meta.discourse.org/t/68501)
 and complete them.
 
 {!congrats.md!}

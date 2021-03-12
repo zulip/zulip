@@ -8,19 +8,36 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0296_remove_userprofile_short_name'),
+        ("zerver", "0296_remove_userprofile_short_name"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Draft',
+            name="Draft",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('topic', models.CharField(db_index=True, max_length=60)),
-                ('content', models.TextField()),
-                ('last_edit_time', models.DateTimeField(db_index=True)),
-                ('recipient', models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='zerver.Recipient')),
-                ('user_profile', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("topic", models.CharField(db_index=True, max_length=60)),
+                ("content", models.TextField()),
+                ("last_edit_time", models.DateTimeField(db_index=True)),
+                (
+                    "recipient",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to="zerver.Recipient",
+                    ),
+                ),
+                (
+                    "user_profile",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL
+                    ),
+                ),
             ],
         ),
     ]

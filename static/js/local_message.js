@@ -1,25 +1,18 @@
-"use strict";
-
-const XDate = require("xdate");
+import * as message_events from "./message_events";
+import * as message_list from "./message_list";
 
 function truncate_precision(float) {
-    return parseFloat(float.toFixed(3));
+    return Number.parseFloat(float.toFixed(3));
 }
 
-exports.now = function () {
-    const timestamp = new XDate().getTime() / 1000;
-
-    return timestamp;
-};
-
-exports.insert_message = function (message) {
+export function insert_message(message) {
     // It is a little bit funny to go through the message_events
     // codepath, but it's sort of the idea behind local echo that
     // we are simulating server events before they actually arrive.
     message_events.insert_new_messages([message], true);
-};
+}
 
-exports.get_next_id_float = (function () {
+export const get_next_id_float = (function () {
     const already_used = new Set();
 
     return function () {
@@ -55,5 +48,3 @@ exports.get_next_id_float = (function () {
         return local_id_float;
     };
 })();
-
-window.local_message = exports;

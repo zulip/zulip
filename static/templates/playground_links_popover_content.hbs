@@ -1,0 +1,13 @@
+{{! Contents of "view code in playground" popover for code blocks}}
+<ul class="nav nav-list">
+    {{#each playground_info}}
+    <li>
+        <a href="{{this/playground_url}}" target="_blank" rel="noopener noreferrer" class="popover_playground_link">
+            {{#tr this}}
+            View in __name__
+            {{/tr}}
+        </a>
+    </li>
+    {{/each}}
+</ul>
+

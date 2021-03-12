@@ -5,13 +5,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0089_auto_20170710_1353'),
+        ("zerver", "0089_auto_20170710_1353"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='userprofile',
-            name='high_contrast_mode',
+            model_name="userprofile",
+            name="high_contrast_mode",
             field=models.BooleanField(default=False),
         ),
     ]

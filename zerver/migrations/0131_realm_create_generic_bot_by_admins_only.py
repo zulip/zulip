@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0130_text_choice_in_emojiset'),
+        ("zerver", "0130_text_choice_in_emojiset"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='realm',
-            name='create_generic_bot_by_admins_only',
+            model_name="realm",
+            name="create_generic_bot_by_admins_only",
             field=models.BooleanField(default=False),
         ),
     ]

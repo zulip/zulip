@@ -1,11 +1,16 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const _ = require("lodash");
 
-const emoji = zrequire("emoji", "shared/js/emoji");
-zrequire("emoji_picker");
+const {zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
 
-const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
+const emoji = zrequire("../shared/js/emoji");
+const emoji_picker = zrequire("emoji_picker");
+
+const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
 
 run_test("initialize", () => {
     emoji.initialize({
@@ -38,11 +43,11 @@ run_test("initialize", () => {
     const popular_emoji_count = 6;
     const zulip_emoji_count = 1;
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-car", 170);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-hashtag", 180);
+    assert_emoji_category(complete_emoji_catalog.pop(), "fa-hashtag", 182);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-smile-o", 129);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-star-o", popular_emoji_count);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-thumbs-o-up", 102);
-    assert_emoji_category(complete_emoji_catalog.pop(), "fa-lightbulb-o", 191);
+    assert_emoji_category(complete_emoji_catalog.pop(), "fa-lightbulb-o", 189);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-cutlery", 92);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-flag", 5);
     assert_emoji_category(complete_emoji_catalog.pop(), "fa-cog", 1);

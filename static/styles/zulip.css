@@ -33,8 +33,7 @@ html {
 }
 
 body {
-    font-family: "Source Sans Pro", "Helvetica Neue", Helvetica, Arial,
-        sans-serif;
+    font-family: "Source Sans 3", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 /* Common background color */
@@ -48,8 +47,7 @@ input,
 button,
 select,
 textarea {
-    font-family: "Source Sans Pro", "Helvetica Neue", Helvetica, Arial,
-        sans-serif;
+    font-family: "Source Sans 3", "Helvetica Neue", Helvetica, Arial, sans-serif;
     line-height: normal;
 }
 
@@ -381,7 +379,7 @@ p.n-margin {
 
 textarea,
 input {
-    font-family: "Source Sans Pro", Helvetica, Arial, sans-serif;
+    font-family: "Source Sans 3", Helvetica, Arial, sans-serif;
 }
 
 /* Override Bootstrap's fixed sizes for various elements */
@@ -430,31 +428,49 @@ li,
     line-height: 100%;
 }
 
-.copy_message,
-.copy_message:focus {
-    background-color: hsl(0, 0%, 100%);
-    height: 20px;
-    width: 15px;
-    padding: 5px 10px;
-    border: none;
-    position: relative;
-    top: 28px;
-    left: -5px;
-    margin-top: -24px;
+/* Classes which style copy buttons */
+.copy_button_base {
+    outline-color: hsl(0, 0%, 73%);
+    height: 18px;
+    width: 10px;
+    padding: 6px 6px;
     display: block;
+    /* The below two avoids the padded element from displaying
+    it's own border and background color */
+    border: none;
+    background-clip: content-box;
     /* The z-index here ensures that the copy-message
     icon is clickable and is needed because of reduced
     opacity of readonly textarea */
     z-index: 2;
+
+    &:hover svg path {
+        fill: hsl(200, 100%, 40%);
+    }
+}
+
+.copy_message {
+    position: relative;
+    top: 27px;
+    left: -10px;
+    margin-top: -24px;
+}
+
+#copy_generated_invite_link {
+    position: relative;
+    margin-right: -32px;
+    margin-top: -1px;
+    padding: 8px 3px 0 13px;
+
+    /* This property nullifies the box-shadow rendered by .btn class */
+    &:active {
+        box-shadow: none;
+    }
 }
 
 #clipboard_image {
     margin-top: -5px;
     margin-left: -8px;
-}
-
-.copy_message:hover svg path {
-    fill: hsl(0, 0%, 0%);
 }
 
 .btn-large {
@@ -519,6 +535,23 @@ strong {
     .tooltip-inner {
         background-color: hsla(0, 0%, 7%, 0.8);
         padding: 3px 5px;
+    }
+
+    /*
+    Since hover and click are activated together on touchscreen
+    devices, the hover state persists until the next click, creating
+    awkward UI where the tooltip sticks around forever :(.
+
+    To resolve this, we just hide the tooltip for touch-events on
+    touch-enabled devices resolving the above problem.  This means
+    that tooltips will never appear on touchscreen devices, but that's
+    probably a reasoanble tradeoff here.
+
+    Source: https://drafts.csswg.org/mediaqueries-4/#mf-interaction
+    */
+
+    @media (hover: none) {
+        visibility: hidden !important;
     }
 }
 
@@ -587,6 +620,19 @@ strong {
                 background-repeat: repeat-x;
                 filter: progid:dximagetransform.microsoft.gradient(startcolorstr='hsla(328, 100%, 50%, 0.8)', endcolorstr='hsla(332, 100%, 50%, 0.7)', gradienttype=0);
             }
+            /* styles defined for user_circle here only deal with positioning of user_presence_circle
+            in typeahead list in order to ensure they are renderred correctly in in all screen sizes.
+            Most of the style rules related to color, gradient etc. which are generally common throughout
+            the app are defined in user_circles.css and are not overridden here. */
+            .user_circle {
+                width: 8px;
+                height: 8px;
+                margin: 0 5px 0 -6px;
+                position: relative;
+                top: 6px;
+                right: 7px;
+                display: inline-block;
+            }
         }
     }
 
@@ -602,6 +648,10 @@ strong {
         background-repeat: repeat-x;
         outline: 0;
         filter: progid:dximagetransform.microsoft.gradient(startcolorstr='hsla(328, 100%, 50%, 0.8)', endcolorstr='hsla(332, 100%, 50%, 0.7)', gradienttype=0);
+
+        .user_circle_empty {
+            border-color: hsl(0, 0%, 25%);
+        }
     }
 
     .active > a:hover {
@@ -1371,9 +1421,10 @@ div.focused_table {
 }
 
 .message-edit-feature-group {
-    display: inline-block;
+    display: inline-flex;
     margin-left: 10px;
     margin-bottom: -5px;
+    align-items: baseline;
 }
 
 .topic_edit {
@@ -1440,6 +1491,7 @@ div.focused_table {
     margin: 0 5px 5px 0 !important;
     align-self: center;
     width: 100%;
+    white-space: nowrap;
 
     label.checkbox {
         margin-right: 0 !important;
@@ -1568,8 +1620,9 @@ div.focused_table {
         line-height: 16px;
         margin: 0 -4px 0 0;
         padding: 12px 6px;
-
-        @media (max-width: 500px) {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        @media (width < $sm_min) {
             padding: 7px 3.5px; /* based on having ~41.66% decrease */
         }
         i {
@@ -1591,7 +1644,6 @@ div.focused_table {
 
     .stream {
         text-overflow: clip;
-        overflow: hidden;
         color: inherit;
         text-decoration: none;
         /* The first ~3px of padding here overlaps with the left padding from sub_count for some reason. */
@@ -1612,6 +1664,7 @@ div.focused_table {
         margin-left: 1px;
         padding-right: 10px;
         margin-right: 1px;
+        overflow: visible;
         .fa.fa-user-o {
             margin-left: 0;
         }
@@ -1624,14 +1677,14 @@ div.focused_table {
             height: 50%;
             color: hsl(0, 0%, 88%);
             font-size: 20px;
-            @media (max-width: 500px) {
+            @media (width < $sm_min) {
                 top: 10%;
             }
         }
 
         &::before {
             left: -3px;
-            @media (max-width: 500px) {
+            @media (width < $sm_min) {
                 /* this ensures the before "|" doesn't overlap
                    with the stream name text on small narrows */
                 left: 0;
@@ -1651,13 +1704,12 @@ div.focused_table {
            is chosen such that the narrow description shrinks to close
            before the stream name must begin to shrink */
         flex-shrink: 100;
-        overflow: hidden;
         white-space: nowrap;
         margin: 0;
         padding: 12px 0;
         padding-left: 10px;
 
-        @media (max-width: 500px) {
+        @media (width < $sm_min) {
             padding: 7px 0;
             padding-left: 10px;
         }
@@ -1668,24 +1720,16 @@ div.focused_table {
     }
 
     .search_closed {
+        overflow: visible;
         flex: 0; /* makes sure search icon is always visible */
 
         cursor: pointer;
         font-size: 20px;
 
         padding: 10px 15px 0 0;
-        @media (max-width: 500px) {
+        @media (width < $sm_min) {
             padding: 5px 15px 0 0;
         }
-    }
-
-    > :not(.search_closed):not(.sub_count):not(.narrow_description) {
-        flex-shrink: 1;
-        overflow: hidden;
-    }
-
-    > :not(.stream) {
-        text-overflow: ellipsis;
     }
 
     /* The very last element in the navbar is the search icon, the second
@@ -1755,7 +1799,7 @@ div.focused_table {
         padding-right: 20px;
         border: none;
         border-radius: 0;
-        font-family: "Source Sans Pro";
+        font-family: "Source Sans 3";
         font-weight: 300;
         line-height: $header_height;
     }
@@ -1765,7 +1809,7 @@ div.focused_table {
     }
 
     .search_button,
-    .search_button[disabled]:hover {
+    .search_button:disabled:hover {
         position: absolute;
         right: 35px;
         top: 6px;
@@ -1786,7 +1830,7 @@ div.focused_table {
         color: hsl(0, 0%, 0%);
     }
 
-    .search_button[disabled] {
+    .search_button:disabled {
         visibility: hidden;
     }
 
@@ -1821,13 +1865,13 @@ div.focused_table {
         padding: 0;
     }
 
-    @media (min-width: 500px) {
+    @media (width >= $sm_min) {
         .pill {
             padding: 2px 0 2px 0 !important;
             font-size: 14px;
         }
     }
-    @media (max-width: 500px) {
+    @media (width < $sm_min) {
         #search_arrows .pill {
             line-height: 20px;
 
@@ -1999,7 +2043,7 @@ div.focused_table {
     height: 21px;
     width: 21px;
     position: relative;
-    margin-top: -7px;
+    margin-top: -4px;
     vertical-align: middle;
     top: 2px;
     right: 8px;
@@ -2008,6 +2052,11 @@ div.focused_table {
     /* For FontAwesome icons used in place of images for some users. */
     font-size: 19px;
     text-align: center;
+
+    &.fa-group {
+        margin-left: 9px;
+        top: 3px;
+    }
 }
 
 nav {
@@ -2457,6 +2506,9 @@ div.topic_edit_spinner .loading_indicator_spinner {
         width: 100%;
         min-width: 206px;
         box-sizing: border-box;
+        /* Setting resize as none hides the bottom right diagonal box
+           (which even has a background color of its own!). */
+        resize: none !important;
     }
 
     .control-group.no-margin {
@@ -2591,7 +2643,7 @@ select.inline_select_topic_edit {
 }
 
 /* This max-width must be synced with message_viewport.is_narrow */
-@media (max-width: 1165px) {
+@media (width < $xl_min) {
     .app-main,
     .header-main {
         min-width: 750px;
@@ -2671,7 +2723,7 @@ select.inline_select_topic_edit {
     }
 }
 
-@media (max-width: 775px) {
+@media (width < $md_min) {
     body {
         padding: 0;
     }
@@ -2769,7 +2821,7 @@ select.inline_select_topic_edit {
     }
 }
 
-@media (max-width: 500px) {
+@media (width < $sm_min) {
     .column-right.expanded .right-sidebar,
     .column-left.expanded .left-sidebar {
         margin-top: 31px;
@@ -2827,7 +2879,7 @@ select.inline_select_topic_edit {
         }
 
         .search_button,
-        .search_button[disabled]:hover {
+        .search_button:disabled:hover {
             top: 0;
         }
     }
@@ -2874,7 +2926,7 @@ select.inline_select_topic_edit {
     }
 }
 
-@media (max-width: 350px) {
+@media (width < $mm_min) {
     html {
         overflow-x: hidden;
     }
@@ -2887,7 +2939,7 @@ select.inline_select_topic_edit {
     }
 }
 
-@media only screen and (min-width: 300px) and (max-width: 700px) {
+@media (width < $md_min) {
     #feedback_container {
         width: calc(90% - 30px);
         left: 5%;

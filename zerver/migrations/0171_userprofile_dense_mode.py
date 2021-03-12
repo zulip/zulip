@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0170_submessage'),
+        ("zerver", "0170_submessage"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='userprofile',
-            name='dense_mode',
+            model_name="userprofile",
+            name="dense_mode",
             field=models.BooleanField(default=True),
         ),
     ]

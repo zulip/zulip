@@ -215,6 +215,13 @@ More full-stack test suites like `test-js-with-puppeteer` or `test-api`
 use a similar strategy (set a random `KEY_PREFIX` at the start of the
 test run).
 
+### Manual testing and memcached
+
+Zulip's development environment will automatically flush (delete all
+keys in) `memcached` when provisioning and when starting `run-dev.py`.
+You can run the server with that behavior disabled using
+`tools/run-dev.py --no-clear-memcached`.
+
 ### Performance
 
 One thing be careful about with memcached queries is to avoid doing
@@ -244,7 +251,7 @@ Zulip makes extensive use of caching of data in the browser and mobile
 apps; details like which users exist, with metadata like names and
 avatars, similar details for streams, recent message history, etc.
 
-These days are fetched in the `/register` endpoint (or `page_params`
+This data is fetched in the `/register` endpoint (or `page_params`
 for the webapp), and kept correct over time.  The key to keeping these
 state up to date is Zulip's
 [real-time events system](../subsystems/events-system.md), which

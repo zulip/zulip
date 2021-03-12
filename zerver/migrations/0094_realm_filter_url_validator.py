@@ -8,13 +8,15 @@ from zerver.models import filter_format_validator
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0093_subscription_event_log_backfill'),
+        ("zerver", "0093_subscription_event_log_backfill"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='realmfilter',
-            name='url_format_string',
-            field=models.TextField(validators=[django.core.validators.URLValidator(), filter_format_validator]),
+            model_name="realmfilter",
+            name="url_format_string",
+            field=models.TextField(
+                validators=[django.core.validators.URLValidator(), filter_format_validator]
+            ),
         ),
     ]

@@ -3,9 +3,9 @@ from zerver.webhooks.appfollow.view import convert_markdown
 
 
 class AppFollowHookTests(WebhookTestCase):
-    STREAM_NAME = 'appfollow'
+    STREAM_NAME = "appfollow"
     URL_TEMPLATE = "/api/v1/external/appfollow?stream={stream}&api_key={api_key}"
-    FIXTURE_DIR_NAME = 'appfollow'
+    FIXTURE_DIR_NAME = "appfollow"
 
     def test_sample(self) -> None:
         expected_topic = "Webhook integration was successful."
@@ -55,6 +55,7 @@ Acme enables me to manage the flow of information quite well. I only wish I coul
             content_type="application/x-www-form-urlencoded",
         )
         self.URL_TEMPLATE = original_url_template
+
 
 class ConvertMarkdownTest(ZulipTestCase):
     def test_convert_bold(self) -> None:

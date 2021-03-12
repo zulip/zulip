@@ -1,7 +1,6 @@
 # Minimal configuration to run a Zulip application server.
 # Default nginx configuration is included in extension app_frontend.pp.
 class zulip::app_frontend_base {
-  include zulip::common
   include zulip::nginx
   include zulip::sasl_modules
   include zulip::supervisor
@@ -9,10 +8,10 @@ class zulip::app_frontend_base {
 
   if $::osfamily == 'debian' {
     # Upgrade and other tooling wants to be able to get a database
-    # shell.  This is not necessary on CentOS because the postgresql
+    # shell.  This is not necessary on CentOS because the PostgreSQL
     # package already includes the client.  This may get us a more
     # recent client than the database server is configured to be,
-    # ($zulip::base::postgres_version), but they're compatible.
+    # ($zulip::postgresql_common::version), but they're compatible.
     zulip::safepackage { 'postgresql-client': ensure => 'installed' }
   }
   # For Slack import
@@ -51,6 +50,14 @@ class zulip::app_frontend_base {
       content => template('zulip/accept-loadbalancer.conf.template.erb'),
       notify  => Service['nginx'],
     }
+    file { '/etc/nginx/zulip-include/app.d/keepalive-loadbalancer.conf':
+      require => File['/etc/nginx/zulip-include/app.d'],
+      owner   => 'root',
+      group   => 'root',
+      mode    => '0644',
+      source  => 'puppet:///modules/zulip/nginx/zulip-include-app.d/keepalive-loadbalancer.conf',
+      notify  => Service['nginx'],
+    }
   }
 
   file { '/etc/nginx/zulip-include/upstreams':
@@ -65,14 +72,36 @@ class zulip::app_frontend_base {
   # This determines whether we run queue processors multithreaded or
   # multiprocess.  Multiprocess scales much better, but requires more
   # RAM; we just auto-detect based on available system RAM.
-  $queues_multiprocess = $zulip::base::total_memory_mb > 3500
-  $queues = $zulip::base::normal_queues
+  $queues_multiprocess = $zulip::common::total_memory_mb > 3500
+  $queues = [
+    'deferred_work',
+    'digest_emails',
+    'email_mirror',
+    'embed_links',
+    'embedded_bots',
+    'error_reports',
+    'invites',
+    'email_senders',
+    'missedmessage_emails',
+    'missedmessage_mobile_notifications',
+    'outgoing_webhooks',
+    'user_activity',
+    'user_activity_interval',
+    'user_presence',
+  ]
   if $queues_multiprocess {
     $uwsgi_default_processes = 6
   } else {
     $uwsgi_default_processes = 4
   }
   $tornado_ports = $zulip::tornado_sharding::tornado_ports
+  $proxy_host = zulipconf('http_proxy', 'host', '')
+  $proxy_port = zulipconf('http_proxy', 'port', '')
+  if $proxy_host != '' and $proxy_port != '' {
+    $proxy = "http://${proxy_host}:${proxy_port}"
+  } else {
+    $proxy = ''
+  }
   file { "${zulip::common::supervisor_conf_dir}/zulip.conf":
     ensure  => file,
     require => [Package[supervisor], Exec['stage_updated_sharding']],
@@ -145,9 +174,21 @@ class zulip::app_frontend_base {
     group  => 'zulip',
     mode   => '0755',
   }
-  file { '/etc/cron.d/email-mirror':
-    ensure => absent,
+
+  file { '/var/log/zulip/queue_error':
+    ensure => 'directory',
+    owner  => 'zulip',
+    group  => 'zulip',
+    mode   => '0640',
   }
+
+  file { '/var/log/zulip/queue_stats':
+    ensure => 'directory',
+    owner  => 'zulip',
+    group  => 'zulip',
+    mode   => '0640',
+  }
+
   file { "${zulip::common::nagios_plugins_dir}/zulip_app_frontend":
     require => Package[$zulip::common::nagios_plugins],
     recurse => true,

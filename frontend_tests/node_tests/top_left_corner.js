@@ -1,26 +1,31 @@
 "use strict";
 
-set_global("$", global.make_zjquery());
+const {strict: assert} = require("assert");
 
-zrequire("Filter", "js/filter");
-zrequire("unread_ui");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
+
+mock_module("resize", {
+    resize_stream_filters_container: () => {},
+});
+const {Filter} = zrequire("../js/filter");
 const people = zrequire("people");
 
-zrequire("top_left_corner");
+const pm_list = zrequire("pm_list");
+const top_left_corner = zrequire("top_left_corner");
 
-run_test("narrowing", () => {
+run_test("narrowing", (override) => {
     // activating narrow
 
     let pm_expanded;
     let pm_closed;
 
-    set_global("pm_list", {
-        close() {
-            pm_closed = true;
-        },
-        expand() {
-            pm_expanded = true;
-        },
+    override(pm_list, "close", () => {
+        pm_closed = true;
+    });
+    override(pm_list, "expand", () => {
+        pm_expanded = true;
     });
 
     assert(!pm_expanded);
@@ -78,7 +83,18 @@ run_test("narrowing", () => {
     assert(!$(".top_left_mentions").hasClass("active-filter"));
     assert(!$(".top_left_private_messages").hasClass("active-filter"));
     assert(!$(".top_left_starred_messages").hasClass("active-filter"));
+    assert(!$(".top_left_recent_topics").hasClass("active-filter"));
     assert(pm_closed);
+
+    set_global("setTimeout", (f) => {
+        f();
+    });
+    top_left_corner.narrow_to_recent_topics();
+    assert(!$(".top_left_all_messages").hasClass("active-filter"));
+    assert(!$(".top_left_mentions").hasClass("active-filter"));
+    assert(!$(".top_left_private_messages").hasClass("active-filter"));
+    assert(!$(".top_left_starred_messages").hasClass("active-filter"));
+    assert($(".top_left_recent_topics").hasClass("active-filter"));
 });
 
 run_test("update_count_in_dom", () => {

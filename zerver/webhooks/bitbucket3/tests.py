@@ -3,22 +3,27 @@ from zerver.lib.test_classes import WebhookTestCase
 TOPIC = "sandbox"
 TOPIC_BRANCH_EVENTS = "sandbox / {branch}"
 
+
 class Bitbucket3HookTests(WebhookTestCase):
     STREAM_NAME = "bitbucket3"
     URL_TEMPLATE = "/api/v1/external/bitbucket3?stream={stream}&api_key={api_key}"
     FIXTURE_DIR_NAME = "bitbucket3"
 
-    # Diagnostics Events:
+    # Diagnostics events:
     def test_ping(self) -> None:
-        expected_message = "Congratulations! The Bitbucket Server webhook was configured successfully!"
+        expected_message = (
+            "Congratulations! The Bitbucket Server webhook was configured successfully!"
+        )
         self.check_webhook("diagnostics_ping", "Bitbucket Server Ping", expected_message)
 
     def test_ping_with_user_defined_topic(self) -> None:
         self.url = self.build_webhook_url(topic="my topic")
-        expected_message = "Congratulations! The Bitbucket Server webhook was configured successfully!"
+        expected_message = (
+            "Congratulations! The Bitbucket Server webhook was configured successfully!"
+        )
         self.check_webhook("diagnostics_ping", "my topic", expected_message)
 
-    # Core Repo Events:
+    # Core repo events:
     def test_commit_comment_added(self) -> None:
         expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) commented on [508d1b6](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/commits/508d1b67f1f8f3a25f543a030a7a178894aa9907):\n~~~ quote\nJust an arbitrary comment on a commit.\n~~~"""
         self.check_webhook("commit_comment_added", TOPIC, expected_message)
@@ -40,23 +45,31 @@ class Bitbucket3HookTests(WebhookTestCase):
         expected_topic = "sandbox v2"
         self.check_webhook("repo_modified", expected_topic, expected_message)
 
-    # Repo Push Events:
+    # Repo push events:
     def test_push_add_branch(self) -> None:
-        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) created branch2 branch."""
+        expected_message = (
+            """[hypro999](http://139.59.64.214:7990/users/hypro999) created branch2 branch."""
+        )
         expected_topic = TOPIC_BRANCH_EVENTS.format(branch="branch2")
         self.check_webhook("repo_push_add_branch", expected_topic, expected_message)
 
     def test_push_add_tag(self) -> None:
-        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) pushed tag newtag."""
+        expected_message = (
+            """[hypro999](http://139.59.64.214:7990/users/hypro999) pushed tag newtag."""
+        )
         self.check_webhook("repo_push_add_tag", TOPIC, expected_message)
 
     def test_push_delete_branch(self) -> None:
-        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) deleted branch branch2."""
+        expected_message = (
+            """[hypro999](http://139.59.64.214:7990/users/hypro999) deleted branch branch2."""
+        )
         expected_topic = TOPIC_BRANCH_EVENTS.format(branch="branch2")
         self.check_webhook("repo_push_delete_branch", expected_topic, expected_message)
 
     def test_push_delete_tag(self) -> None:
-        expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) removed tag test-tag."""
+        expected_message = (
+            """[hypro999](http://139.59.64.214:7990/users/hypro999) removed tag test-tag."""
+        )
         self.check_webhook("repo_push_delete_tag", TOPIC, expected_message)
 
     def test_push_update_single_branch(self) -> None:
@@ -95,17 +108,17 @@ class Bitbucket3HookTests(WebhookTestCase):
         )
 
     def test_push_update_multiple_branches_with_branch_filter(self) -> None:
-        self.url = self.build_webhook_url(branches='master')
+        self.url = self.build_webhook_url(branches="master")
         expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) pushed to branch master. Head is now fc43d13cff1abb28631196944ba4fc4ad06a2cf2."""
         expected_topic = TOPIC_BRANCH_EVENTS.format(branch="master")
         self.check_webhook("repo_push_update_multiple_branches", expected_topic, expected_message)
 
-        self.url = self.build_webhook_url(branches='branch1')
+        self.url = self.build_webhook_url(branches="branch1")
         expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) pushed to branch branch1. Head is now 3980c2be32a7e23c795741d5dc1a2eecb9b85d6d."""
         expected_topic = TOPIC_BRANCH_EVENTS.format(branch="branch1")
         self.check_webhook("repo_push_update_multiple_branches", expected_topic, expected_message)
 
-    # Core PR Events:
+    # Core PR events:
     def test_pr_opened_without_reviewers(self) -> None:
         expected_topic = "sandbox / PR #1 Branch1"
         expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) opened [PR #1](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/1) from `branch1` to `master`:\n\n~~~ quote\n* Add file2.txt\r\n* Add file3.txt\n~~~"""
@@ -130,7 +143,7 @@ class Bitbucket3HookTests(WebhookTestCase):
     def test_pr_opened_with_two_reviewers_and_user_defined_topic(self) -> None:
         expected_topic = "sandbox / PR #5 Add Notes Feature"
         expected_topic = "custom_topic"
-        self.url = self.build_webhook_url(topic='custom_topic')
+        self.url = self.build_webhook_url(topic="custom_topic")
         expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) opened [PR #5 Add Notes Feature](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/5) from `master` to `master` (assigned to [shimura](http://139.59.64.214:7990/users/shimura) and [sougo](http://139.59.64.214:7990/users/sougo) for review)."""
         self.check_webhook(
             "pull_request_opened_with_two_reviewers", expected_topic, expected_message
@@ -151,7 +164,7 @@ class Bitbucket3HookTests(WebhookTestCase):
     def test_pr_modified_with_include_title(self) -> None:
         expected_topic = "custom_topic"
         expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) modified [PR #1 Branch1](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/1) from `branch1` to `master` (assigned to [shimura](http://139.59.64.214:7990/users/shimura) for review):\n\n~~~ quote\n* Add file2.txt\n* Add file3.txt\nBoth of these files would be important additions to the project!\n~~~"""
-        self.url = self.build_webhook_url(topic='custom_topic')
+        self.url = self.build_webhook_url(topic="custom_topic")
         self.check_webhook("pull_request_modified", expected_topic, expected_message)
 
     def test_pr_deleted(self) -> None:
@@ -162,7 +175,7 @@ class Bitbucket3HookTests(WebhookTestCase):
     def test_pr_deleted_with_include_title(self) -> None:
         expected_topic = "custom_topic"
         expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) deleted [PR #2 Add notes feature.](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/2)"""
-        self.url = self.build_webhook_url(topic='custom_topic')
+        self.url = self.build_webhook_url(topic="custom_topic")
         self.check_webhook("pull_request_deleted", expected_topic, expected_message)
 
     def test_pr_declined(self) -> None:
@@ -175,7 +188,7 @@ class Bitbucket3HookTests(WebhookTestCase):
         expected_message = """[zura](http://139.59.64.214:7990/users/zura) merged [PR #6](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/6)."""
         self.check_webhook("pull_request_merged", expected_topic, expected_message)
 
-    # PR Reviewer Events:
+    # PR reviewer events:
     def test_pr_approved(self) -> None:
         expected_topic = "sandbox / PR #6 sample_file: Add sample_file.txt."
         expected_message = """[zura](http://139.59.64.214:7990/users/zura) approved [PR #6](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/6)."""
@@ -194,7 +207,7 @@ class Bitbucket3HookTests(WebhookTestCase):
     def test_pr_marked_as_needs_review_and_include_title(self) -> None:
         expected_topic = "custom_topic"
         expected_message = """[zura](http://139.59.64.214:7990/users/zura) marked [PR #6 sample_file: Add sample_file.txt.](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/6) as \"needs work\"."""
-        self.url = self.build_webhook_url(topic='custom_topic')
+        self.url = self.build_webhook_url(topic="custom_topic")
         self.check_webhook("pull_request_needs_work", expected_topic, expected_message)
 
     def test_pull_request_reviewer_added(self) -> None:
@@ -205,7 +218,7 @@ class Bitbucket3HookTests(WebhookTestCase):
     def test_pull_request_reviewer_added_and_include_title(self) -> None:
         expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) reassigned [PR #1 Branch1](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/1) to [shimura](http://139.59.64.214:7990/users/shimura)."""
         expected_topic = "custom_topic"
-        self.url = self.build_webhook_url(topic='custom_topic')
+        self.url = self.build_webhook_url(topic="custom_topic")
         self.check_webhook("pull_request_add_reviewer", expected_topic, expected_message)
 
     def test_pull_request_reviewers_added(self) -> None:
@@ -222,10 +235,10 @@ class Bitbucket3HookTests(WebhookTestCase):
         expected_message = """[hypro999](http://139.59.64.214:7990/users/hypro999) removed all reviewers from [PR #1 Branch1](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/1)."""
         expected_topic = "sandbox / PR #1 Branch1"
         expected_topic = "custom_topic"
-        self.url = self.build_webhook_url(topic='custom_topic')
+        self.url = self.build_webhook_url(topic="custom_topic")
         self.check_webhook("pull_request_remove_reviewer", expected_topic, expected_message)
 
-    # PR Comment Events:
+    # PR comment events:
     def test_pull_request_comment_added(self) -> None:
         expected_message = """[zura](http://139.59.64.214:7990/users/zura) commented on [PR #6](http://139.59.64.214:7990/projects/SBOX/repos/sandbox/pull-requests/6):\n\n~~~ quote\nThis seems like a pretty good idea.\n~~~"""
         expected_topic = "sandbox / PR #6 sample_file: Add sample_file.txt."

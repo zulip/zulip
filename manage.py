@@ -21,8 +21,8 @@ if __name__ == "__main__":
 
     config_file = configparser.RawConfigParser()
     config_file.read("/etc/zulip/zulip.conf")
-    PRODUCTION = config_file.has_option('machine', 'deploy_type')
-    HAS_SECRETS = os.access('/etc/zulip/zulip-secrets.conf', os.R_OK)
+    PRODUCTION = config_file.has_option("machine", "deploy_type")
+    HAS_SECRETS = os.access("/etc/zulip/zulip-secrets.conf", os.R_OK)
 
     if PRODUCTION and not HAS_SECRETS:
         # The best way to detect running manage.py as another user in
@@ -31,7 +31,9 @@ if __name__ == "__main__":
         # which case it's a production server, not a dev environment)
         # and lack of access for /etc/zulip/zulip-secrets.conf (which
         # should be only readable by root and zulip)
-        print("Error accessing Zulip secrets; manage.py in production must be run as the zulip user.")
+        print(
+            "Error accessing Zulip secrets; manage.py in production must be run as the zulip user."
+        )
         sys.exit(1)
 
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
@@ -41,7 +43,7 @@ if __name__ == "__main__":
 
     from scripts.lib.zulip_tools import log_management_command
 
-    log_management_command(" ".join(sys.argv), settings.MANAGEMENT_LOG_PATH)
+    log_management_command(sys.argv, settings.MANAGEMENT_LOG_PATH)
 
     os.environ.setdefault("PYTHONSTARTUP", os.path.join(BASE_DIR, "scripts/lib/pythonrc.py"))
     if "--no-traceback" not in sys.argv and len(sys.argv) > 1:

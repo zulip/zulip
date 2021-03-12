@@ -7,28 +7,36 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('analytics', '0011_clear_analytics_tables'),
+        ("analytics", "0011_clear_analytics_tables"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='installationcount',
-            name='anomaly',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='analytics.Anomaly'),
+            model_name="installationcount",
+            name="anomaly",
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.SET_NULL, to="analytics.Anomaly"
+            ),
         ),
         migrations.AlterField(
-            model_name='realmcount',
-            name='anomaly',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='analytics.Anomaly'),
+            model_name="realmcount",
+            name="anomaly",
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.SET_NULL, to="analytics.Anomaly"
+            ),
         ),
         migrations.AlterField(
-            model_name='streamcount',
-            name='anomaly',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='analytics.Anomaly'),
+            model_name="streamcount",
+            name="anomaly",
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.SET_NULL, to="analytics.Anomaly"
+            ),
         ),
         migrations.AlterField(
-            model_name='usercount',
-            name='anomaly',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, to='analytics.Anomaly'),
+            model_name="usercount",
+            name="anomaly",
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.SET_NULL, to="analytics.Anomaly"
+            ),
         ),
     ]

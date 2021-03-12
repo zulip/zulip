@@ -2,16 +2,18 @@
 from django.db import migrations, models
 
 CORPORATE = 1
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0085_fix_bots_with_none_bot_type'),
+        ("zerver", "0085_fix_bots_with_none_bot_type"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='realm',
-            name='org_type',
+            model_name="realm",
+            name="org_type",
             field=models.PositiveSmallIntegerField(default=CORPORATE),
         ),
     ]

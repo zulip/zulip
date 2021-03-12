@@ -1,8 +1,33 @@
 "use strict";
 
-zrequire("stream_data");
+const {strict: assert} = require("assert");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
+set_global("$", (selector) => {
+    switch (selector) {
+        case "#stream_message_recipient_stream":
+            return {
+                val() {
+                    return "social";
+                },
+            };
+        case "#stream_message_recipient_topic":
+            return {
+                val() {
+                    return "lunch";
+                },
+            };
+        default:
+            throw new Error(`Unknown selector ${selector}`);
+    }
+});
+
+const stream_data = zrequire("stream_data");
+const peer_data = zrequire("peer_data");
 const people = zrequire("people");
-zrequire("compose_fade");
+const compose_fade = zrequire("compose_fade");
 
 const me = {
     email: "me@example.com",
@@ -36,26 +61,7 @@ run_test("set_focused_recipient", () => {
         can_access_subscribers: true,
     };
     stream_data.add_sub(sub);
-    stream_data.set_subscribers(sub, [me.user_id, alice.user_id]);
-
-    global.$ = function (selector) {
-        switch (selector) {
-            case "#stream_message_recipient_stream":
-                return {
-                    val() {
-                        return "social";
-                    },
-                };
-            case "#stream_message_recipient_topic":
-                return {
-                    val() {
-                        return "lunch";
-                    },
-                };
-            default:
-                throw new Error(`Unknown selector ${selector}`);
-        }
-    };
+    peer_data.set_subscribers(sub.stream_id, [me.user_id, alice.user_id]);
 
     compose_fade.set_focused_recipient("stream");
 

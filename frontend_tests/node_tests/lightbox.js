@@ -1,26 +1,28 @@
 "use strict";
 
-zrequire("rows");
-zrequire("lightbox");
+const {strict: assert} = require("assert");
 
-set_global("message_store", {});
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
+
 set_global("Image", class Image {});
-set_global("overlays", {
+mock_module("overlays", {
     close_overlay: () => {},
+
     close_active: () => {},
     open_overlay: () => {},
 });
-set_global("popovers", {
+mock_module("popovers", {
     hide_all: () => {},
 });
 
-rows.is_draft_row = () => false;
+const message_store = mock_module("message_store");
+const rows = zrequire("rows");
 
-set_global("$", global.make_zjquery());
+const lightbox = zrequire("lightbox");
 
-run_test("pan_and_zoom", () => {
-    $.clear_all_elements();
-
+run_test("pan_and_zoom", (override) => {
     const img = $.create("img-stub");
     const link = $.create("link-stub");
     const msg = $.create("msg-stub");
@@ -29,7 +31,12 @@ run_test("pan_and_zoom", () => {
 
     img.set_parent(link);
     link.closest = () => msg;
-    msg.attr("zid", "1234");
+
+    override(rows, "id", (row) => {
+        assert.equal(row, msg);
+        return 1234;
+    });
+
     img.attr("src", "example");
 
     let fetched_zid;
@@ -39,23 +46,23 @@ run_test("pan_and_zoom", () => {
         return "message-stub";
     };
 
-    // Used by render_lightbox_list_images
-    $.stub_selector(".focused_table .message_inline_image img", []);
+    override(lightbox, "render_lightbox_list_images", () => {});
 
     lightbox.open(img);
 
     assert.equal(fetched_zid, 1234);
 });
 
-run_test("youtube", () => {
-    $.clear_all_elements();
-
+run_test("youtube", (override) => {
     const href = "https://youtube.com/some-random-clip";
     const img = $.create("img-stub");
     const link = $.create("link-stub");
     const msg = $.create("msg-stub");
 
-    msg.attr("zid", "4321");
+    override(rows, "id", (row) => {
+        assert.equal(row, msg);
+        return 4321;
+    });
 
     $(img).attr("src", href);
 
@@ -72,8 +79,7 @@ run_test("youtube", () => {
     link.closest = () => msg;
     link.attr("href", href);
 
-    // Used by render_lightbox_list_images
-    $.stub_selector(".focused_table .message_inline_image img", []);
+    override(lightbox, "render_lightbox_list_images", () => {});
 
     lightbox.open(img);
     assert.equal($(".image-actions .open").attr("href"), href);

@@ -5,13 +5,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0061_userprofile_timezone'),
+        ("zerver", "0061_userprofile_timezone"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='userprofile',
-            name='timezone',
-            field=models.CharField(default='', max_length=40),
+            model_name="userprofile",
+            name="timezone",
+            field=models.CharField(default="", max_length=40),
         ),
     ]

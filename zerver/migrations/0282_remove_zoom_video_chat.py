@@ -6,20 +6,20 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0281_zoom_oauth'),
+        ("zerver", "0281_zoom_oauth"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='realm',
-            name='zoom_api_key',
+            model_name="realm",
+            name="zoom_api_key",
         ),
         migrations.RemoveField(
-            model_name='realm',
-            name='zoom_api_secret',
+            model_name="realm",
+            name="zoom_api_secret",
         ),
         migrations.RemoveField(
-            model_name='realm',
-            name='zoom_user_id',
+            model_name="realm",
+            name="zoom_user_id",
         ),
     ]

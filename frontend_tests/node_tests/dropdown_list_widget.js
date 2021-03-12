@@ -1,22 +1,23 @@
 "use strict";
 
-zrequire("dropdown_list_widget");
-zrequire("scroll_util");
-set_global("$", global.make_zjquery());
+const {strict: assert} = require("assert");
+
+const {mock_module, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
-const _list_render = {
+mock_module("list_widget", {
     create: () => ({init: noop}),
-};
-set_global("list_render", _list_render);
+});
+const {DropdownListWidget: dropdown_list_widget} = zrequire("dropdown_list_widget");
 
 const setup_zjquery_data = (name) => {
-    $.clear_all_elements();
     const input_group = $(".input_group");
     const reset_button = $(".dropdown_list_reset_button");
-    input_group.set_find_results(".dropdown_list_reset_button:not([disabled])", reset_button);
-    $(`#${name}_widget #${name}_name`).closest = () => input_group;
-    const $widget = $(`#${name}_widget #${name}_name`);
+    input_group.set_find_results(".dropdown_list_reset_button:enabled", reset_button);
+    $(`#${CSS.escape(name)}_widget #${CSS.escape(name)}_name`).closest = () => input_group;
+    const $widget = $(`#${CSS.escape(name)}_widget #${CSS.escape(name)}_name`);
     return {reset_button, $widget};
 };
 

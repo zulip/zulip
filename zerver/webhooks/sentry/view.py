@@ -1,5 +1,7 @@
 import logging
+from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
+from urllib.parse import urljoin
 
 from django.http import HttpRequest, HttpResponse
 
@@ -35,12 +37,15 @@ EXCEPTION_EVENT_TEMPLATE = """
 ```
 """
 
-EXCEPTION_EVENT_TEMPLATE_WITH_TRACEBACK = EXCEPTION_EVENT_TEMPLATE + """
+EXCEPTION_EVENT_TEMPLATE_WITH_TRACEBACK = (
+    EXCEPTION_EVENT_TEMPLATE
+    + """
 Traceback:
 ```{syntax_highlight_as}
 {pre_context}---> {context_line}{post_context}\
 ```
 """
+)
 # Because of the \n added at the end of each context element,
 # this will actually look better in the traceback.
 
@@ -79,7 +84,7 @@ def convert_lines_to_traceback_string(lines: Optional[List[str]]) -> str:
     traceback = ""
     if lines is not None:
         for line in lines:
-            if (line == ""):
+            if line == "":
                 traceback += "\n"
             else:
                 traceback += f"     {line}\n"
@@ -88,12 +93,11 @@ def convert_lines_to_traceback_string(lines: Optional[List[str]]) -> str:
 
 def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
     """ Handle either an exception type event or a message type event payload."""
-    subject = event["title"]
-
     # We shouldn't support the officially deprecated Raven series of SDKs.
     if int(event["version"]) < 7:
         raise UnsupportedWebhookEventType("Raven SDK")
 
+    subject = event["title"]
     platform_name = event["platform"]
     syntax_highlight_as = syntax_highlight_as_map.get(platform_name, "")
     if syntax_highlight_as == "":  # nocoverage
@@ -160,7 +164,9 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
     return (subject, body)
 
 
-def handle_issue_payload(action: str, issue: Dict[str, Any], actor: Dict[str, Any]) -> Tuple[str, str]:
+def handle_issue_payload(
+    action: str, issue: Dict[str, Any], actor: Dict[str, Any]
+) -> Tuple[str, str]:
     """ Handle either an issue type event. """
     subject = issue["title"]
     datetime = issue["lastSeen"].split(".")[0].replace("T", " ")
@@ -211,20 +217,47 @@ def handle_issue_payload(action: str, issue: Dict[str, Any], actor: Dict[str, An
 
 
 def handle_deprecated_payload(payload: Dict[str, Any]) -> Tuple[str, str]:
-    subject = "{}".format(payload.get('project_name'))
+    subject = "{}".format(payload.get("project_name"))
     body = DEPRECATED_EXCEPTION_MESSAGE_TEMPLATE.format(
-        level=payload['level'].upper(),
-        url=payload.get('url'),
-        message=payload.get('message'),
+        level=payload["level"].upper(),
+        url=payload.get("url"),
+        message=payload.get("message"),
     )
     return (subject, body)
 
 
-@webhook_view('Sentry')
+def transform_webhook_payload(payload: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Attempt to use webhook payload for the notification.
+
+    When the integration is configured as a webhook, instead of being added as
+    an Internal Integration, the payload is slightly different, but has all the
+    required information for sending a notification. We transform this payload to
+    look like the payload from a "properly configured" integration.
+    """
+    event = payload.get("event", {})
+    # deprecated payloads don't have event_id
+    event_id = event.get("event_id")
+    if not event_id:
+        return None
+
+    event_path = f"events/{event_id}/"
+    event["web_url"] = urljoin(payload["url"], event_path)
+    timestamp = event.get("timestamp", event["received"])
+    event["datetime"] = datetime.fromtimestamp(timestamp).isoformat()
+    return payload
+
+
+@webhook_view("Sentry")
 @has_request_variables
-def api_sentry_webhook(request: HttpRequest, user_profile: UserProfile,
-                       payload: Dict[str, Any] = REQ(argument_type="body")) -> HttpResponse:
+def api_sentry_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Any] = REQ(argument_type="body"),
+) -> HttpResponse:
     data = payload.get("data", None)
+
+    if data is None:
+        data = transform_webhook_payload(payload)
 
     # We currently support two types of payloads: events and issues.
     if data:

@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0265_remove_stream_is_announcement_only'),
+        ("zerver", "0265_remove_stream_is_announcement_only"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='userpresence',
-            name='realm',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='zerver.Realm'),
+            model_name="userpresence",
+            name="realm",
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.CASCADE, to="zerver.Realm"
+            ),
         ),
     ]

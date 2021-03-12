@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('confirmation', '0005_confirmation_realm'),
+        ("confirmation", "0005_confirmation_realm"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='realmcreationkey',
-            name='presume_email_valid',
+            model_name="realmcreationkey",
+            name="presume_email_valid",
             field=models.BooleanField(default=False),
         ),
     ]

@@ -1,8 +1,9 @@
-"use strict";
+import * as typing_status from "../shared/js/typing_status";
 
-const typing_status = require("../shared/js/typing_status");
-
-const people = require("./people");
+import * as channel from "./channel";
+import * as compose_pm_pill from "./compose_pm_pill";
+import * as compose_state from "./compose_state";
+import * as people from "./people";
 
 // This module handles the outbound side of typing indicators.
 // We detect changes in the compose box and notify the server
@@ -43,7 +44,7 @@ function is_valid_conversation() {
 }
 
 function get_current_time() {
-    return new Date().getTime();
+    return Date.now();
 }
 
 function notify_server_start(user_ids_array) {
@@ -54,8 +55,9 @@ function notify_server_stop(user_ids_array) {
     send_typing_notification_ajax(user_ids_array, "stop");
 }
 
-exports.get_recipient = get_user_ids_array;
-exports.initialize = function () {
+export const get_recipient = get_user_ids_array;
+
+export function initialize() {
     const worker = {
         get_current_time,
         notify_server_start,
@@ -65,7 +67,7 @@ exports.initialize = function () {
     $(document).on("input", "#compose-textarea", () => {
         // If our previous state was no typing notification, send a
         // start-typing notice immediately.
-        const new_recipient = is_valid_conversation() ? exports.get_recipient() : null;
+        const new_recipient = is_valid_conversation() ? get_recipient() : null;
         typing_status.update(worker, new_recipient);
     });
 
@@ -74,6 +76,4 @@ exports.initialize = function () {
     $(document).on("compose_canceled.zulip compose_finished.zulip", () => {
         typing_status.update(worker, null);
     });
-};
-
-window.typing = exports;
+}

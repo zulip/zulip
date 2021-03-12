@@ -44,6 +44,16 @@
         "```quote\nAny sufficiently advanced technology is indistinguishable from magic.\n -- Arthur C. Clarke\n```"
       ],
 
+      "images": [
+            "[whale](/static/images/features/whale.png)\n",
+            "[twitter](/static/images/features/twitter.png)\n",
+            "[topics](/static/images/story-tutorial/zulip-topic.png)\n",
+            "[On_it!](/static/images/story-tutorial/zulip-compose.png)\n",
+            "[streams](/static/images/story-tutorial/zulip-streams.png)\n",
+            "[stream_selected](/static/images/story-tutorial/zulip-streams-selected-original.png)\n",
+            "[unreads](/static/images/story-tutorial/zulip-streams-unreads.png)\n"
+      ],
+
       "maths": [
         "$$e^{i \\pi } + 1 = 0$$",
         "$$\\frac{1}{\\Gamma(k)\\theta^k x^{k-1} e^{-\\frac{x}{\\theta}}$$"
@@ -67,7 +77,7 @@
     "math": 1,
     "link" : 8,
     "list": 5,
-    "picture" : 0
+    "images" : 5
   },
   "corpus":
   {

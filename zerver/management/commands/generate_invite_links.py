@@ -13,11 +13,17 @@ class Command(ZulipBaseCommand):
     help = "Generate activation links for users and print them to stdout."
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument('--force',
-                            action="store_true",
-                            help='Override that the domain is restricted to external users.')
-        parser.add_argument('emails', metavar='<email>', nargs='*',
-                            help='email of users to generate an activation link for')
+        parser.add_argument(
+            "--force",
+            action="store_true",
+            help="Override that the domain is restricted to external users.",
+        )
+        parser.add_argument(
+            "emails",
+            metavar="<email>",
+            nargs="*",
+            help="email of users to generate an activation link for",
+        )
         self.add_realm_args(parser, True)
 
     def handle(self, *args: Any, **options: Any) -> None:
@@ -25,11 +31,11 @@ class Command(ZulipBaseCommand):
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
 
-        if not options['emails']:
+        if not options["emails"]:
             self.print_help("./manage.py", "generate_invite_links")
             raise CommandError
 
-        for email in options['emails']:
+        for email in options["emails"]:
             try:
                 self.get_user(email, realm)
                 print(email + ": There is already a user registered with that address.")
@@ -41,16 +47,17 @@ class Command(ZulipBaseCommand):
         if duplicates:
             return
 
-        for email in options['emails']:
+        for email in options["emails"]:
             try:
                 email_allowed_for_realm(email, realm)
             except DomainNotAllowedForRealmError:
                 if not options["force"]:
-                    raise CommandError("You've asked to add an external user '{}' to a "
-                                       "closed realm '{}'.\nAre you sure? To do this, "
-                                       "pass --force.".format(email, realm.string_id))
+                    raise CommandError(
+                        "You've asked to add an external user '{}' to a "
+                        "closed realm '{}'.\nAre you sure? To do this, "
+                        "pass --force.".format(email, realm.string_id)
+                    )
 
             prereg_user = PreregistrationUser(email=email, realm=realm)
             prereg_user.save()
-            print(email + ": " + create_confirmation_link(prereg_user,
-                                                          Confirmation.INVITATION))
+            print(email + ": " + create_confirmation_link(prereg_user, Confirmation.INVITATION))

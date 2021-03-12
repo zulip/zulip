@@ -273,7 +273,7 @@ important parts of the project. We hope you apply!
 ### Google Summer of Code
 
 The largest outreach program Zulip participates in is GSoC (14
-students in 2017; 11 in 2018; 17 in 2019).  While we don't control how
+students in 2017; 11 in 2018; 17 in 2019; 18 in 2020).  While we don't control how
 many slots Google allocates to Zulip, we hope to mentor a similar
 number of students in future summers.
 
@@ -297,7 +297,7 @@ same as with GSoC, and it has no separate application process; your
 GSoC application is your ZSoC application.  If we'd like to select you
 for ZSoC, we'll contact you when the GSoC results are announced.
 
-[gsoc-guide]: https://zulip.readthedocs.io/en/latest/overview/gsoc-ideas.html
+[gsoc-guide]: https://zulip.readthedocs.io/en/latest/contributing/gsoc-ideas.html
 [gsoc-faq]: https://developers.google.com/open-source/gsoc/faq
 
 ## Zulip outreach

@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0135_scheduledmessage_delivery_type'),
+        ("zerver", "0135_scheduledmessage_delivery_type"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='userprofile',
-            name='quota',
+            model_name="userprofile",
+            name="quota",
         ),
     ]

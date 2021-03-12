@@ -1,10 +1,15 @@
 "use strict";
 
-zrequire("submessage");
+const {strict: assert} = require("assert");
 
-set_global("channel", {});
-set_global("widgetize", {});
-set_global("message_store", {});
+const {mock_module, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
+const channel = mock_module("channel");
+const message_store = mock_module("message_store");
+const widgetize = mock_module("widgetize");
+
+const submessage = zrequire("submessage");
 
 run_test("get_message_events", () => {
     let msg = {};
@@ -41,7 +46,7 @@ run_test("make_server_callback", () => {
     const callback = submessage.make_server_callback(message_id);
     let was_posted;
 
-    channel.post = function (opts) {
+    channel.post = (opts) => {
         was_posted = true;
         assert.deepEqual(opts, {
             url: "/json/submessage",

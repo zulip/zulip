@@ -6,8 +6,9 @@ class DialogflowHookTests(WebhookTestCase):
     FIXTURE_DIR_NAME = "dialogflow"
 
     def test_dialogflow_default(self) -> None:
+        email = self.example_user("aaron").email
         self.url = self.build_webhook_url(
-            email="AARON@zulip.com",
+            email=email,
             username="aaron",
             user_ip="127.0.0.1",
         )
@@ -15,8 +16,9 @@ class DialogflowHookTests(WebhookTestCase):
         self.send_and_test_private_message("default", expected_message)
 
     def test_dialogflow_alternate_result(self) -> None:
+        email = self.example_user("aaron").email
         self.url = self.build_webhook_url(
-            email="AARON@zulip.com",
+            email=email,
             username="aaron",
             user_ip="127.0.0.1",
         )
@@ -24,8 +26,9 @@ class DialogflowHookTests(WebhookTestCase):
         self.send_and_test_private_message("alternate_result", expected_message)
 
     def test_dialogflow_error_status(self) -> None:
+        email = self.example_user("aaron").email
         self.url = self.build_webhook_url(
-            email="AARON@zulip.com",
+            email=email,
             username="aaron",
             user_ip="127.0.0.1",
         )
@@ -33,10 +36,11 @@ class DialogflowHookTests(WebhookTestCase):
         self.send_and_test_private_message("error_status", expected_message)
 
     def test_dialogflow_exception(self) -> None:
+        email = self.example_user("aaron").email
         self.url = self.build_webhook_url(
-            email="AARON@zulip.com",
+            email=email,
             username="aaron",
             user_ip="127.0.0.1",
         )
-        expected_message = "DialogFlow couldn't process your query."
+        expected_message = "Dialogflow couldn't process your query."
         self.send_and_test_private_message("exception", expected_message)

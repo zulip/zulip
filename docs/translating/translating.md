@@ -21,7 +21,7 @@ Zulip:
 1. Sign up for [Transifex](https://www.transifex.com) and ask to join
 the [Zulip project on
 Transifex](https://www.transifex.com/zulip/zulip/), requesting access
-to any languages you'd like to contribute to (or add new ones).
+to any languages that you'd like to contribute to (or add new ones).
 
 1. Join [#translation][translation-stream] in the [Zulip development
 community server](../contributing/chat-zulip-org.md), and say hello.
@@ -50,6 +50,15 @@ Some useful tips for your translating journey:
 - Don't translate variables or code (usually preceded by a `%`, or inside
   HTML tags `<...>` or enclosed like `__variable__` or
   `{{ variable }}`); just keep them verbatim.
+
+- When context is unclear, you may find [GitHub
+  search](https://github.com/search?q=org%3Azulip+%22alert+word+already+exists%22&type=code)
+  helpful for finding the code using a given string (ignore `.po` and
+  `.json` matches, and note the search box is semi-invisible in the
+  upper-left corner of the page), or looking at the "Occurences"
+  section in the Transifex UI, browsing to the file on
+  [GitHub](https://github.com/zulip/zulip/), and then searching for
+  the string with `Ctrl+F` in your browser.
 
 - When in doubt, ask for context in
   [#translation](https://chat.zulip.org/#narrow/stream/58-translation) in
@@ -99,12 +108,10 @@ There are a few ways to see your translations in the Zulip UI:
   out the language the user requests in a browser using the following
   prioritization (mostly copied from the Django docs):
 
-  1. It looks for the language code as a url prefix (e.g. `/de/login/`).
-  2. It looks for the `LANGUAGE_SESSION_KEY` key in the current user's
-     session (the Zulip language UI option ends up setting this).
-  3. It looks for the cookie named 'django_language'. You can set a
+  1. It looks for the language code as a URL prefix (e.g. `/de/login/`).
+  1. It looks for the cookie named 'django_language'. You can set a
      different name through the `LANGUAGE_COOKIE_NAME` setting.
-  4. It looks for the `Accept-Language` HTTP header in the HTTP request
+  1. It looks for the `Accept-Language` HTTP header in the HTTP request
      (this is how browsers tell Zulip about the OS/browser language).
 
 * Using an HTTP client library like `requests`, `cURL` or `urllib`,
@@ -137,11 +144,11 @@ translators can understand and preserve those decisions:
 
 Some translated languages don't have these, but we highly encourage
 translators for new languages (or those updating a language) write a
-style guide as they work (see [our docs on this
-documentation](../documentation/overview.md) for how to submit
-your changes), since it's easy to take notes as you translate, and
-doing so greatly increases the ability of future translators to update
-the translations in a consistent way.
+style guide as they work , since it's easy to take notes as you
+translate, and doing so greatly increases the ability of future
+translators to update the translations in a consistent way.  See [our
+docs on this documentation](../documentation/overview.md) for how to
+submit your changes.
 
 ### Capitalization
 

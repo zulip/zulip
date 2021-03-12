@@ -18,15 +18,22 @@ def create_historical_message(user_profile: UserProfile, message: Message) -> No
     # those, we give the user a `historical` UserMessage objects
     # for the message.  This is the same trick we use for starring
     # messages.
-    UserMessage.objects.create(user_profile=user_profile,
-                               message=message,
-                               flags=UserMessage.flags.historical | UserMessage.flags.read)
+    UserMessage.objects.create(
+        user_profile=user_profile,
+        message=message,
+        flags=UserMessage.flags.historical | UserMessage.flags.read,
+    )
+
 
 @has_request_variables
-def add_reaction(request: HttpRequest, user_profile: UserProfile, message_id: int,
-                 emoji_name: str=REQ(),
-                 emoji_code: Optional[str]=REQ(default=None),
-                 reaction_type: Optional[str]=REQ(default=None)) -> HttpResponse:
+def add_reaction(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    message_id: int,
+    emoji_name: str = REQ(),
+    emoji_code: Optional[str] = REQ(default=None),
+    reaction_type: Optional[str] = REQ(default=None),
+) -> HttpResponse:
     message, user_message = access_message(user_profile, message_id)
 
     if emoji_code is None:
@@ -34,22 +41,22 @@ def add_reaction(request: HttpRequest, user_profile: UserProfile, message_id: in
         # cases discussed in the long block comment below.  For simple
         # API clients, we allow specifying just the name, and just
         # look up the code using the current name->code mapping.
-        emoji_code = emoji_name_to_emoji_code(message.sender.realm,
-                                              emoji_name)[0]
+        emoji_code = emoji_name_to_emoji_code(message.sender.realm, emoji_name)[0]
 
     if reaction_type is None:
-        reaction_type = emoji_name_to_emoji_code(message.sender.realm,
-                                                 emoji_name)[1]
+        reaction_type = emoji_name_to_emoji_code(message.sender.realm, emoji_name)[1]
 
-    if Reaction.objects.filter(user_profile=user_profile,
-                               message=message,
-                               emoji_code=emoji_code,
-                               reaction_type=reaction_type).exists():
+    if Reaction.objects.filter(
+        user_profile=user_profile,
+        message=message,
+        emoji_code=emoji_code,
+        reaction_type=reaction_type,
+    ).exists():
         raise JsonableError(_("Reaction already exists."))
 
-    query = Reaction.objects.filter(message=message,
-                                    emoji_code=emoji_code,
-                                    reaction_type=reaction_type)
+    query = Reaction.objects.filter(
+        message=message, emoji_code=emoji_code, reaction_type=reaction_type
+    )
     if query.exists():
         # If another user has already reacted to this message with
         # same emoji code, we treat the new reaction as a vote for the
@@ -73,8 +80,7 @@ def add_reaction(request: HttpRequest, user_profile: UserProfile, message_id: in
         # Otherwise, use the name provided in this request, but verify
         # it is valid in the user's realm (e.g. not a deactivated
         # realm emoji).
-        check_emoji_request(user_profile.realm, emoji_name,
-                            emoji_code, reaction_type)
+        check_emoji_request(user_profile.realm, emoji_name, emoji_code, reaction_type)
 
     if user_message is None:
         create_historical_message(user_profile, message)
@@ -83,17 +89,26 @@ def add_reaction(request: HttpRequest, user_profile: UserProfile, message_id: in
 
     return json_success()
 
+
 @has_request_variables
-def remove_reaction(request: HttpRequest, user_profile: UserProfile, message_id: int,
-                    emoji_name: Optional[str]=REQ(default=None),
-                    emoji_code: Optional[str]=REQ(default=None),
-                    reaction_type: str=REQ(default="unicode_emoji")) -> HttpResponse:
+def remove_reaction(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    message_id: int,
+    emoji_name: Optional[str] = REQ(default=None),
+    emoji_code: Optional[str] = REQ(default=None),
+    reaction_type: str = REQ(default="unicode_emoji"),
+) -> HttpResponse:
     message, user_message = access_message(user_profile, message_id)
 
     if emoji_code is None:
         if emoji_name is None:
-            raise JsonableError(_('At least one of the following arguments '
-                                  'must be present: emoji_name, emoji_code'))
+            raise JsonableError(
+                _(
+                    "At least one of the following arguments "
+                    "must be present: emoji_name, emoji_code"
+                )
+            )
         # A correct full Zulip client implementation should always
         # pass an emoji_code, because of the corner cases discussed in
         # the long block comments elsewhere in this file.  However, to
@@ -103,10 +118,12 @@ def remove_reaction(request: HttpRequest, user_profile: UserProfile, message_id:
         # corresponding code using the current data.
         emoji_code = emoji_name_to_emoji_code(message.sender.realm, emoji_name)[0]
 
-    if not Reaction.objects.filter(user_profile=user_profile,
-                                   message=message,
-                                   emoji_code=emoji_code,
-                                   reaction_type=reaction_type).exists():
+    if not Reaction.objects.filter(
+        user_profile=user_profile,
+        message=message,
+        emoji_code=emoji_code,
+        reaction_type=reaction_type,
+    ).exists():
         raise JsonableError(_("Reaction doesn't exist."))
 
     # Unlike adding reactions, while deleting a reaction, we don't

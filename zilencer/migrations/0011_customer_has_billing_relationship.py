@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zilencer', '0010_billingprocessor'),
+        ("zilencer", "0010_billingprocessor"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='customer',
-            name='has_billing_relationship',
+            model_name="customer",
+            name="has_billing_relationship",
             field=models.BooleanField(default=False),
         ),
     ]

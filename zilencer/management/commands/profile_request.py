@@ -13,17 +13,21 @@ from zerver.views.message_fetch import get_messages_backend
 
 request_logger = LogRequests()
 
+
 class MockSession:
     def __init__(self) -> None:
         self.modified = False
 
+
 class MockRequest(HttpRequest):
     def __init__(self, user: UserProfile) -> None:
         self.user = user
-        self.path = '/'
+        self.path = "/"
         self.method = "POST"
         self.META = {"REMOTE_ADDR": "127.0.0.1"}
-        anchor = UserMessage.objects.filter(user_profile=self.user).order_by("-message")[200].message_id
+        anchor = (
+            UserMessage.objects.filter(user_profile=self.user).order_by("-message")[200].message_id
+        )
         self.REQUEST = {
             "anchor": anchor,
             "num_before": 1200,
@@ -35,18 +39,19 @@ class MockRequest(HttpRequest):
     def get_full_path(self) -> str:
         return self.path
 
+
 def profile_request(request: HttpRequest) -> HttpResponse:
     request_logger.process_request(request)
     prof = cProfile.Profile()
     prof.enable()
-    ret = get_messages_backend(request, request.user,
-                               apply_markdown=True)
+    ret = get_messages_backend(request, request.user, apply_markdown=True)
     prof.disable()
-    with tempfile.NamedTemporaryFile(prefix='profile.data.', delete=False) as stats_file:
+    with tempfile.NamedTemporaryFile(prefix="profile.data.", delete=False) as stats_file:
         prof.dump_stats(stats_file.name)
         request_logger.process_response(request, ret)
         logging.info("Profiling data written to %s", stats_file.name)
     return ret
+
 
 class Command(ZulipBaseCommand):
     def add_arguments(self, parser: CommandParser) -> None:

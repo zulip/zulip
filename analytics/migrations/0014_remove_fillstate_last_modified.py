@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('analytics', '0013_remove_anomaly'),
+        ("analytics", "0013_remove_anomaly"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='fillstate',
-            name='last_modified',
+            model_name="fillstate",
+            name="last_modified",
         ),
     ]

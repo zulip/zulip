@@ -1,11 +1,61 @@
-"use strict";
+import * as emoji from "../shared/js/emoji";
 
-const emoji = require("../shared/js/emoji");
+import * as activity from "./activity";
+import * as alert_words from "./alert_words";
+import * as alert_words_ui from "./alert_words_ui";
+import * as attachments_ui from "./attachments_ui";
+import * as bot_data from "./bot_data";
+import * as compose from "./compose";
+import * as compose_fade from "./compose_fade";
+import * as composebox_typeahead from "./composebox_typeahead";
+import * as emoji_picker from "./emoji_picker";
+import * as hotspots from "./hotspots";
+import * as markdown from "./markdown";
+import * as message_edit from "./message_edit";
+import * as message_events from "./message_events";
+import * as message_flags from "./message_flags";
+import * as message_list from "./message_list";
+import * as muting_ui from "./muting_ui";
+import * as narrow_state from "./narrow_state";
+import * as night_mode from "./night_mode";
+import * as notifications from "./notifications";
+import * as overlays from "./overlays";
+import * as panels from "./panels";
+import * as peer_data from "./peer_data";
+import * as people from "./people";
+import * as reactions from "./reactions";
+import * as realm_icon from "./realm_icon";
+import * as realm_logo from "./realm_logo";
+import * as reload from "./reload";
+import * as scroll_bar from "./scroll_bar";
+import * as settings_account from "./settings_account";
+import * as settings_bots from "./settings_bots";
+import * as settings_config from "./settings_config";
+import * as settings_display from "./settings_display";
+import * as settings_emoji from "./settings_emoji";
+import * as settings_exports from "./settings_exports";
+import * as settings_invites from "./settings_invites";
+import * as settings_linkifiers from "./settings_linkifiers";
+import * as settings_notifications from "./settings_notifications";
+import * as settings_org from "./settings_org";
+import * as settings_profile_fields from "./settings_profile_fields";
+import * as settings_streams from "./settings_streams";
+import * as settings_user_groups from "./settings_user_groups";
+import * as settings_users from "./settings_users";
+import * as starred_messages from "./starred_messages";
+import * as stream_data from "./stream_data";
+import * as stream_events from "./stream_events";
+import * as stream_list from "./stream_list";
+import * as stream_topic_history from "./stream_topic_history";
+import * as submessage from "./submessage";
+import * as subs from "./subs";
+import * as typing_events from "./typing_events";
+import * as unread_ops from "./unread_ops";
+import * as user_events from "./user_events";
+import * as user_groups from "./user_groups";
+import * as user_status from "./user_status";
 
-const people = require("./people");
-const settings_config = require("./settings_config");
-
-exports.dispatch_normal_event = function dispatch_normal_event(event) {
+export function dispatch_normal_event(event) {
     const noop = function () {};
     switch (event.type) {
         case "alert_words":
@@ -36,7 +86,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             unread_ops.process_read_messages_event(msg_ids);
             // This methods updates message_list too and since stream_topic_history relies on it
             // this method should be called first.
-            ui.remove_messages(msg_ids);
+            message_events.remove_messages(msg_ids);
 
             if (event.message_type === "stream") {
                 stream_topic_history.remove_messages({
@@ -75,7 +125,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             break;
 
         case "muted_topics":
-            muting_ui.handle_updates(event.muted_topics);
+            muting_ui.handle_topic_updates(event.muted_topics);
             break;
 
         case "presence":
@@ -143,6 +193,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 emails_restricted_to_domains: noop,
                 video_chat_provider: compose.update_video_chat_button_display,
                 waiting_period_threshold: noop,
+                wildcard_mention_policy: noop,
             };
             if (
                 event.op === "update" &&
@@ -201,7 +252,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             if (page_params.is_admin) {
                 // Update the UI notice about the user's profile being
                 // incomplete, as we might have filled in the missing field(s).
-                panels.check_profile_incomplete();
+                panels.show_profile_incomplete(panels.check_profile_incomplete());
             }
             break;
         }
@@ -343,41 +394,29 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                     }
                 }
             } else if (event.op === "peer_add") {
-                function add_peer(stream_id, user_id) {
+                const stream_ids = stream_data.validate_stream_ids(event.stream_ids);
+                const user_ids = people.validate_user_ids(event.user_ids);
+
+                peer_data.bulk_add_subscribers({stream_ids, user_ids});
+
+                for (const stream_id of stream_ids) {
                     const sub = stream_data.get_sub_by_id(stream_id);
-
-                    if (!sub) {
-                        blueslip.warn("Cannot find stream for peer_add: " + stream_id);
-                        return;
-                    }
-
-                    if (!stream_data.add_subscriber(stream_id, user_id)) {
-                        blueslip.warn("Cannot process peer_add event");
-                        return;
-                    }
-
                     subs.update_subscribers_ui(sub);
-                    compose_fade.update_faded_users();
                 }
-                add_peer(event.stream_id, event.user_id);
+
+                compose_fade.update_faded_users();
             } else if (event.op === "peer_remove") {
-                function remove_peer(stream_id, user_id) {
+                const stream_ids = stream_data.validate_stream_ids(event.stream_ids);
+                const user_ids = people.validate_user_ids(event.user_ids);
+
+                peer_data.bulk_remove_subscribers({stream_ids, user_ids});
+
+                for (const stream_id of stream_ids) {
                     const sub = stream_data.get_sub_by_id(stream_id);
-
-                    if (!sub) {
-                        blueslip.warn("Cannot find stream for peer_remove: " + stream_id);
-                        return;
-                    }
-
-                    if (!stream_data.remove_subscriber(sub.stream_id, user_id)) {
-                        blueslip.warn("Cannot process peer_remove event.");
-                        return;
-                    }
-
                     subs.update_subscribers_ui(sub);
-                    compose_fade.update_faded_users();
                 }
-                remove_peer(event.stream_id, event.user_id);
+
+                compose_fade.update_faded_users();
             } else if (event.op === "remove") {
                 for (const rec of event.subscriptions) {
                     const sub = stream_data.get_sub_by_id(rec.stream_id);
@@ -406,6 +445,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             const user_display_settings = [
                 "color_scheme",
                 "default_language",
+                "default_view",
                 "demote_inactive_streams",
                 "dense_mode",
                 "emojiset",
@@ -555,6 +595,4 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             settings_exports.populate_exports_table(event.exports);
             break;
     }
-};
-
-window.server_events_dispatch = exports;
+}

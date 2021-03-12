@@ -29,9 +29,18 @@ polling option is convenient for testing/developing this feature
 because it doesn't require a public IP address or setting up MX
 records in DNS.
 
+```eval_rst
+   .. note::
+       Incoming emails are rate-limited, with the following limits:
+
+       * 50 emails per minute.
+       * 120 emails per 5 minutes.
+       * 600 emails per hour.
+   ```
+
 ## Local delivery setup
 
-Zulip's puppet configuration provides everything needed to run this
+Zulip's Puppet configuration provides everything needed to run this
 integration; you just need to enable and configure it as follows.
 
 The main decision you need to make is what email domain you want to
@@ -58,7 +67,7 @@ using an [HTTP reverse proxy][reverse-proxy]).
 1. Add `, zulip::postfix_localmail` to `puppet_classes` in
    `/etc/zulip/zulip.conf`.  A typical value after this change is:
    ```
-   puppet_classes = zulip::voyager, zulip::postfix_localmail
+   puppet_classes = zulip::profile::standalone, zulip::postfix_localmail
    ```
 
 1.  If `hostname.example.com` is different from

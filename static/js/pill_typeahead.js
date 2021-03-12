@@ -1,9 +1,10 @@
-"use strict";
+import * as people from "./people";
+import * as settings_data from "./settings_data";
+import * as stream_pill from "./stream_pill";
+import * as typeahead_helper from "./typeahead_helper";
+import * as user_pill from "./user_pill";
 
-const people = require("./people");
-const settings_data = require("./settings_data");
-
-exports.set_up = function (input, pills, opts) {
+export function set_up(input, pills, opts) {
     let source = opts.source;
     if (!opts.source) {
         source = () => user_pill.typeahead_source(pills);
@@ -33,8 +34,8 @@ exports.set_up = function (input, pills, opts) {
             query = query.replace(/\u00A0/g, String.fromCharCode(32));
 
             if (include_streams(query)) {
-                query = query.trim().substring(1);
-                return item.name.toLowerCase().indexOf(query) !== -1;
+                query = query.trim().slice(1);
+                return item.name.toLowerCase().includes(query);
             }
 
             if (!settings_data.show_email()) {
@@ -47,7 +48,7 @@ exports.set_up = function (input, pills, opts) {
         },
         sorter(matches) {
             if (include_streams(this.query)) {
-                return typeahead_helper.sort_streams(matches, this.query.trim().substring(1));
+                return typeahead_helper.sort_streams(matches, this.query.trim().slice(1));
             }
 
             return typeahead_helper.sort_recipientbox_typeahead(this.query, matches, "");
@@ -66,6 +67,4 @@ exports.set_up = function (input, pills, opts) {
         },
         stopAdvance: true,
     });
-};
-
-window.pill_typeahead = exports;
+}

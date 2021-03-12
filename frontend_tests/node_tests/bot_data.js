@@ -1,12 +1,15 @@
 "use strict";
 
-const _settings_bots = {
+const {strict: assert} = require("assert");
+
+const {mock_module, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
+mock_module("settings_bots", {
     render_bots: () => {},
-};
+});
+const bot_data = zrequire("bot_data");
 
-set_global("settings_bots", _settings_bots);
-
-zrequire("bot_data");
 const people = zrequire("people");
 
 const me = {

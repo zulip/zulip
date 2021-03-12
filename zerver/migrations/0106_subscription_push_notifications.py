@@ -5,13 +5,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0105_userprofile_enable_stream_push_notifications'),
+        ("zerver", "0105_userprofile_enable_stream_push_notifications"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='subscription',
-            name='push_notifications',
+            model_name="subscription",
+            name="push_notifications",
             field=models.BooleanField(default=False),
         ),
     ]

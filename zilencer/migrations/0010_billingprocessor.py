@@ -7,19 +7,34 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0182_set_initial_value_is_private_flag'),
-        ('zilencer', '0009_plan'),
+        ("zerver", "0182_set_initial_value_is_private_flag"),
+        ("zilencer", "0009_plan"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='BillingProcessor',
+            name="BillingProcessor",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('state', models.CharField(max_length=20)),
-                ('last_modified', models.DateTimeField(auto_now=True)),
-                ('log_row', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='zerver.RealmAuditLog')),
-                ('realm', models.OneToOneField(null=True, on_delete=django.db.models.deletion.CASCADE, to='zerver.Realm')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("state", models.CharField(max_length=20)),
+                ("last_modified", models.DateTimeField(auto_now=True)),
+                (
+                    "log_row",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="zerver.RealmAuditLog"
+                    ),
+                ),
+                (
+                    "realm",
+                    models.OneToOneField(
+                        null=True, on_delete=django.db.models.deletion.CASCADE, to="zerver.Realm"
+                    ),
+                ),
             ],
         ),
     ]

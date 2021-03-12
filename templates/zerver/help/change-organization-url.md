@@ -22,7 +22,7 @@ If you're self-hosting, you can change the root domain of your server
 by changing the `EXTERNAL_HOST` [setting][zulip-settings].  If you're
 [hosting multiple organizations][zulip-multiple-organizations] and
 want to change the subdomain for one of them, you can use
-`do_realm_change_subdomain(realm, "new_subdomain")` in a [management
+`do_change_realm_subdomain(realm, "new_subdomain")` in a [management
 shell][management-shell].
 
 [zulip-settings]: https://zulip.readthedocs.io/en/stable/production/settings.html

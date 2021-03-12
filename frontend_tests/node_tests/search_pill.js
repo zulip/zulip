@@ -1,8 +1,12 @@
 "use strict";
 
-zrequire("search_pill");
-zrequire("input_pill");
-zrequire("Filter", "js/filter");
+const {strict: assert} = require("assert");
+
+const {zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
+const search_pill = zrequire("search_pill");
+const input_pill = zrequire("input_pill");
 
 const is_starred_item = {
     display_value: "is:starred",
@@ -66,13 +70,13 @@ run_test("get_items", () => {
     );
 });
 
-run_test("create_pills", () => {
+run_test("create_pills", (override) => {
     let input_pill_create_called = false;
 
-    input_pill.create = function () {
+    override(input_pill, "create", () => {
         input_pill_create_called = true;
         return {dummy: "dummy"};
-    };
+    });
 
     const pills = search_pill.create_pills({});
     assert(input_pill_create_called);

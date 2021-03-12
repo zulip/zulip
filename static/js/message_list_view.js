@@ -1,25 +1,37 @@
-"use strict";
+import {isSameDay} from "date-fns";
+import _ from "lodash";
 
-const _ = require("lodash");
-const XDate = require("xdate");
+import render_bookend from "../templates/bookend.hbs";
+import render_message_group from "../templates/message_group.hbs";
+import render_recipient_row from "../templates/recipient_row.hbs";
+import render_single_message from "../templates/single_message.hbs";
 
-const render_bookend = require("../templates/bookend.hbs");
-const render_message_group = require("../templates/message_group.hbs");
-const render_recipient_row = require("../templates/recipient_row.hbs");
-const render_single_message = require("../templates/single_message.hbs");
-
-const people = require("./people");
-const rendered_markdown = require("./rendered_markdown");
-const util = require("./util");
+import * as activity from "./activity";
+import * as compose from "./compose";
+import * as compose_fade from "./compose_fade";
+import * as condense from "./condense";
+import * as hash_util from "./hash_util";
+import * as message_edit from "./message_edit";
+import * as message_store from "./message_store";
+import * as message_viewport from "./message_viewport";
+import * as narrow_state from "./narrow_state";
+import * as people from "./people";
+import * as popovers from "./popovers";
+import * as reactions from "./reactions";
+import * as recent_topics from "./recent_topics";
+import * as rendered_markdown from "./rendered_markdown";
+import * as rows from "./rows";
+import * as stream_color from "./stream_color";
+import * as stream_data from "./stream_data";
+import * as submessage from "./submessage";
+import * as timerender from "./timerender";
+import * as util from "./util";
 
 function same_day(earlier_msg, later_msg) {
     if (earlier_msg === undefined || later_msg === undefined) {
         return false;
     }
-    const earlier_time = new XDate(earlier_msg.msg.timestamp * 1000);
-    const later_time = new XDate(later_msg.msg.timestamp * 1000);
-
-    return earlier_time.toDateString() === later_time.toDateString();
+    return isSameDay(earlier_msg.msg.timestamp * 1000, later_msg.msg.timestamp * 1000);
 }
 
 function same_sender(a, b) {
@@ -37,20 +49,20 @@ function same_recipient(a, b) {
 }
 
 function render_group_display_date(group, message_container) {
-    const time = new XDate(message_container.msg.timestamp * 1000);
-    const today = new XDate();
+    const time = new Date(message_container.msg.timestamp * 1000);
+    const today = new Date();
     const date_element = timerender.render_date(time, undefined, today)[0];
 
     group.date = date_element.outerHTML;
 }
 
 function update_group_date_divider(group, message_container, prev) {
-    const time = new XDate(message_container.msg.timestamp * 1000);
-    const today = new XDate();
+    const time = new Date(message_container.msg.timestamp * 1000);
+    const today = new Date();
 
     if (prev !== undefined) {
-        const prev_time = new XDate(prev.msg.timestamp * 1000);
-        if (time.toDateString() !== prev_time.toDateString()) {
+        const prev_time = new Date(prev.msg.timestamp * 1000);
+        if (!isSameDay(time, prev_time)) {
             // NB: group_date_divider_html is HTML, inserted into the document without escaping.
             group.group_date_divider_html = timerender.render_date(
                 time,
@@ -87,9 +99,9 @@ function update_message_date_divider(opts) {
         return;
     }
 
-    const prev_time = new XDate(prev_msg_container.msg.timestamp * 1000);
-    const curr_time = new XDate(curr_msg_container.msg.timestamp * 1000);
-    const today = new XDate();
+    const prev_time = new Date(prev_msg_container.msg.timestamp * 1000);
+    const curr_time = new Date(curr_msg_container.msg.timestamp * 1000);
+    const today = new Date();
 
     curr_msg_container.want_date_divider = true;
     curr_msg_container.date_divider_html = timerender.render_date(
@@ -100,7 +112,7 @@ function update_message_date_divider(opts) {
 }
 
 function set_timestr(message_container) {
-    const time = new XDate(message_container.msg.timestamp * 1000);
+    const time = new Date(message_container.msg.timestamp * 1000);
     message_container.timestr = timerender.stringify_time(time);
 }
 
@@ -151,7 +163,7 @@ function populate_group_from_message_container(group, message_container) {
     render_group_display_date(group, message_container);
 }
 
-class MessageListView {
+export class MessageListView {
     constructor(list, table_name, collapse_messages) {
         this.list = list;
         this.collapse_messages = collapse_messages;
@@ -182,8 +194,8 @@ class MessageListView {
             last_edit_timestamp = message_container.msg.last_edit_timestamp;
         }
         if (last_edit_timestamp !== undefined) {
-            const last_edit_time = new XDate(last_edit_timestamp * 1000);
-            const today = new XDate();
+            const last_edit_time = new Date(last_edit_timestamp * 1000);
+            const today = new Date();
             return (
                 timerender.render_date(last_edit_time, undefined, today)[0].textContent +
                 " at " +
@@ -607,16 +619,17 @@ class MessageListView {
         };
 
         const restore_scroll_position = () => {
-            if (list === current_msg_list && orig_scrolltop_offset !== undefined) {
+            if (
+                !recent_topics.is_visible() &&
+                list === current_msg_list &&
+                orig_scrolltop_offset !== undefined
+            ) {
                 list.view.set_message_offset(orig_scrolltop_offset);
                 list.reselect_selected_id();
             }
         };
 
-        // This function processes messages into chunks with separators between them,
-        // and templates them to be inserted as table rows into the DOM.
-
-        if (message_containers.length === 0 || this.table_name === undefined) {
+        if (message_containers.length === 0) {
             return undefined;
         }
 
@@ -659,7 +672,7 @@ class MessageListView {
             save_scroll_position();
 
             for (const message_group of message_actions.rerender_groups) {
-                const old_message_group = $("#" + message_group.message_group_id);
+                const old_message_group = $(`#${CSS.escape(message_group.message_group_id)}`);
                 // Remove the top date_row, we'll re-add it after rendering
                 old_message_group.prev(".date_row").remove();
 
@@ -1288,6 +1301,3 @@ class MessageListView {
         }
     }
 }
-
-module.exports = MessageListView;
-window.MessageListView = MessageListView;

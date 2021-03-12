@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0137_realm_upload_quota_gb'),
+        ("zerver", "0137_realm_upload_quota_gb"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='userprofile',
-            name='realm_name_in_notifications',
+            model_name="userprofile",
+            name="realm_name_in_notifications",
             field=models.BooleanField(default=False),
         ),
     ]

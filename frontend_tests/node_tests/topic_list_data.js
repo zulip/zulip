@@ -1,17 +1,25 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const _ = require("lodash");
 
-set_global("narrow_state", {});
-set_global("unread", {});
-set_global("muting", {});
-set_global("message_list", {});
+const {mock_module, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
 
-zrequire("hash_util");
-zrequire("stream_data");
-zrequire("unread");
-zrequire("stream_topic_history");
+const muting = mock_module("muting", {
+    is_topic_muted() {
+        return false;
+    },
+});
+const narrow_state = mock_module("narrow_state", {
+    topic() {},
+});
+
+const stream_data = zrequire("stream_data");
+const stream_topic_history = zrequire("stream_topic_history");
 const topic_list_data = zrequire("topic_list_data");
+const unread = zrequire("unread");
 
 const general = {
     stream_id: 556,
@@ -20,20 +28,12 @@ const general = {
 
 stream_data.add_sub(general);
 
-function clear() {
-    narrow_state.topic = () => undefined;
-    stream_topic_history.reset();
-    muting.is_topic_muted = () => false;
-}
-
 function get_list_info(zoomed) {
     const stream_id = general.stream_id;
     return topic_list_data.get_list_info(stream_id, zoomed);
 }
 
-run_test("get_list_info w/real stream_topic_history", () => {
-    clear();
-
+run_test("get_list_info w/real stream_topic_history", (override) => {
     let list_info;
     const empty_list_info = get_list_info();
 
@@ -52,7 +52,7 @@ run_test("get_list_info w/real stream_topic_history", () => {
         });
     }
 
-    narrow_state.topic = () => "topic 6";
+    override(narrow_state, "topic", () => "topic 6");
 
     list_info = get_list_info();
     assert.equal(list_info.items.length, 5);
@@ -76,20 +76,18 @@ run_test("get_list_info w/real stream_topic_history", () => {
     assert.equal(list_info.num_possible_topics, 7);
 });
 
-run_test("get_list_info unreads", () => {
-    clear();
-
+run_test("get_list_info unreads", (override) => {
     let list_info;
 
-    // Going forward, we just stub get_recent_topic_names
-    // for simpler test setup.
-    stream_topic_history.get_recent_topic_names = () => _.range(15).map((i) => "topic " + i);
+    override(stream_topic_history, "get_recent_topic_names", () =>
+        _.range(15).map((i) => "topic " + i),
+    );
 
     const unread_cnt = new Map();
-    unread.num_unread_for_topic = (stream_id, topic_name) => {
+    override(unread, "num_unread_for_topic", (stream_id, topic_name) => {
         assert.equal(stream_id, general.stream_id);
         return unread_cnt.get(topic_name) || 0;
-    };
+    });
 
     /*
         We have 15 topics, but we only show up
@@ -130,10 +128,10 @@ run_test("get_list_info unreads", () => {
     unread_cnt.set("topic 5", 5);
     unread_cnt.set("topic 13", 13);
 
-    muting.is_topic_muted = (stream_id, topic_name) => {
+    override(muting, "is_topic_muted", (stream_id, topic_name) => {
         assert.equal(stream_id, general.stream_id);
         return topic_name === "topic 4";
-    };
+    });
 
     list_info = get_list_info();
     assert.equal(list_info.items.length, 8);

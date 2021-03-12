@@ -15,7 +15,7 @@
       "uuid":"{ede265ff-3649-4068-a7da-81ac581b6f47}",
       "name":"Repository name",
       "owner":{
-         "username":"kolaszek",
+         "nickname":"Tomasz Kolaszek",
          "links":{
             "self":{
                "href":"https://api.bitbucket.org/2.0/users/kolaszek"
@@ -37,7 +37,7 @@
       "is_private":true
    },
    "actor":{
-      "username":"kolaszek",
+      "nickname":"Tomasz Kolaszek",
       "links":{
          "self":{
             "href":"https://api.bitbucket.org/2.0/users/kolaszek"
@@ -70,7 +70,7 @@
                   "author":{
                      "raw":"Tomasz Kolek <tomasz-kolek@o2.pl>",
                      "user":{
-                        "username":"kolaszek",
+                        "nickname":"Tomasz Kolaszek",
                         "links":{
                            "self":{
                               "href":"https://api.bitbucket.org/2.0/users/kolaszek"
@@ -153,7 +153,7 @@
                   "author":{
                      "raw":"Tomasz Kolek <tomasz-kolek@o2.pl>",
                      "user":{
-                        "username":"kolaszek",
+                        "nickname":"Tomasz Kolaszek",
                         "links":{
                            "self":{
                               "href":"https://api.bitbucket.org/2.0/users/kolaszek"
@@ -201,7 +201,7 @@
                   "author":{
                      "raw":"Tomasz Kolek <tomasz-kolek@o2.pl>",
                      "user":{
-                        "username":"kolaszek",
+                        "nickname":"Tomasz Kolaszek",
                         "links":{
                            "self":{
                               "href":"https://api.bitbucket.org/2.0/users/kolaszek"
@@ -249,7 +249,7 @@
                   "author":{
                      "raw":"Tomasz Kolek <tomasz-kolek@o2.pl>",
                      "user":{
-                        "username":"kolaszek",
+                        "nickname":"Tomasz Kolaszek",
                         "links":{
                            "self":{
                               "href":"https://api.bitbucket.org/2.0/users/kolaszek"
@@ -297,7 +297,7 @@
                   "author":{
                      "raw":"Tomasz Kolek <tomasz-kolek@o2.pl>",
                      "user":{
-                        "username":"kolaszek",
+                        "nickname":"Tomasz Kolaszek",
                         "links":{
                            "self":{
                               "href":"https://api.bitbucket.org/2.0/users/kolaszek"
@@ -336,7 +336,7 @@
                   "author":{
                      "raw":"Tomasz Kolek <tomasz-kolek@o2.pl>",
                      "user":{
-                        "username":"kolaszek",
+                        "nickname":"Tomasz Kolaszek",
                         "links":{
                            "self":{
                               "href":"https://api.bitbucket.org/2.0/users/kolaszek"

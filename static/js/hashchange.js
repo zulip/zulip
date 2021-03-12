@@ -1,4 +1,20 @@
-"use strict";
+import * as admin from "./admin";
+import * as drafts from "./drafts";
+import * as floating_recipient_bar from "./floating_recipient_bar";
+import * as hash_util from "./hash_util";
+import * as info_overlay from "./info_overlay";
+import * as invite from "./invite";
+import * as message_viewport from "./message_viewport";
+import * as narrow from "./narrow";
+import * as navigate from "./navigate";
+import * as overlays from "./overlays";
+import * as recent_topics from "./recent_topics";
+import * as search from "./search";
+import * as settings from "./settings";
+import * as settings_panel_menu from "./settings_panel_menu";
+import * as subs from "./subs";
+import * as top_left_corner from "./top_left_corner";
+import * as ui_util from "./ui_util";
 
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
 // or locally: docs/subsystems/hashchange-system.md
@@ -34,25 +50,40 @@ function set_hash(hash) {
     }
 }
 
-exports.changehash = function (newhash) {
+function maybe_hide_recent_topics() {
+    if (recent_topics.is_visible()) {
+        recent_topics.hide();
+        return true;
+    }
+    return false;
+}
+
+export function in_recent_topics_hash() {
+    return ["#recent_topics"].includes(window.location.hash);
+}
+
+export function changehash(newhash) {
     if (changing_hash) {
         return;
     }
+    maybe_hide_recent_topics();
     message_viewport.stop_auto_scrolling();
     set_hash(newhash);
-};
+}
 
-exports.save_narrow = function (operators) {
+export function save_narrow(operators) {
     if (changing_hash) {
         return;
     }
     const new_hash = hash_util.operators_to_hash(operators);
-    exports.changehash(new_hash);
-};
+    changehash(new_hash);
+}
 
 function activate_home_tab() {
+    const coming_from_recent_topics = maybe_hide_recent_topics();
     ui_util.change_tab_to("#message_feed_container");
-    narrow.deactivate();
+    narrow.deactivate(coming_from_recent_topics);
+    top_left_corner.handle_narrow_deactivated();
     floating_recipient_bar.update();
     search.update_button_visibility();
     // We need to maybe scroll to the selected message
@@ -74,7 +105,6 @@ function is_overlay_hash(hash) {
         "settings",
         "organization",
         "invite",
-        "recent_topics",
         "keyboard-shortcuts",
         "message-formatting",
         "search-operators",
@@ -82,6 +112,10 @@ function is_overlay_hash(hash) {
     const main_hash = hash_util.get_hash_category(hash);
 
     return overlay_list.includes(main_hash);
+}
+
+export function show_default_view() {
+    window.location.hash = page_params.default_view;
 }
 
 // Returns true if this function performed a narrow
@@ -94,13 +128,13 @@ function do_hashchange_normal(from_reload) {
     const hash = window.location.hash.split("/");
     switch (hash[0]) {
         case "#narrow": {
+            maybe_hide_recent_topics();
             ui_util.change_tab_to("#message_feed_container");
             const operators = hash_util.parse_narrow(hash);
             if (operators === undefined) {
                 // If the narrow URL didn't parse, clear
                 // window.location.hash and send them to the home tab
-                set_hash("");
-                activate_home_tab();
+                show_default_view();
                 return false;
             }
             const narrow_opts = {
@@ -121,6 +155,12 @@ function do_hashchange_normal(from_reload) {
         }
         case "":
         case "#":
+            show_default_view();
+            break;
+        case "#recent_topics":
+            recent_topics.show();
+            break;
+        case "#all_messages":
             activate_home_tab();
             break;
         case "#keyboard-shortcuts":
@@ -131,7 +171,6 @@ function do_hashchange_normal(from_reload) {
         case "#streams":
         case "#organization":
         case "#settings":
-        case "#recent_topics":
             blueslip.error("overlay logic skipped for: " + hash);
             break;
     }
@@ -139,6 +178,14 @@ function do_hashchange_normal(from_reload) {
 }
 
 function do_hashchange_overlay(old_hash) {
+    if (old_hash === undefined) {
+        // User directly requested to open an overlay.
+        // We need to show recent topics in the background.
+        // Even though recent topics may not be the default view
+        // here, we show it because we need to show a view in
+        // background and recent topics seems preferrable for that.
+        recent_topics.show();
+    }
     const base = hash_util.get_hash_category(window.location.hash);
     const old_base = hash_util.get_hash_category(old_hash);
     const section = hash_util.get_hash_section(window.location.hash);
@@ -150,37 +197,35 @@ function do_hashchange_overlay(old_hash) {
     //
     // In most situations we skip by this logic and load
     // the new overlay.
-    if (coming_from_overlay) {
-        if (base === old_base) {
-            if (base === "streams") {
-                subs.change_state(section);
-                return;
-            }
-
-            if (base === "settings") {
-                if (!section) {
-                    // We may be on a really old browser or somebody
-                    // hand-typed a hash.
-                    blueslip.warn("missing section for settings");
-                }
-                settings_panel_menu.normal_settings.activate_section_or_default(section);
-                return;
-            }
-
-            if (base === "organization") {
-                if (!section) {
-                    // We may be on a really old browser or somebody
-                    // hand-typed a hash.
-                    blueslip.warn("missing section for organization");
-                }
-                settings_panel_menu.org_settings.activate_section_or_default(section);
-                return;
-            }
-
-            // TODO: handle other cases like internal settings
-            //       changes.
+    if (coming_from_overlay && base === old_base) {
+        if (base === "streams") {
+            subs.change_state(section);
             return;
         }
+
+        if (base === "settings") {
+            if (!section) {
+                // We may be on a really old browser or somebody
+                // hand-typed a hash.
+                blueslip.warn("missing section for settings");
+            }
+            settings_panel_menu.normal_settings.activate_section_or_default(section);
+            return;
+        }
+
+        if (base === "organization") {
+            if (!section) {
+                // We may be on a really old browser or somebody
+                // hand-typed a hash.
+                blueslip.warn("missing section for organization");
+            }
+            settings_panel_menu.org_settings.activate_section_or_default(section);
+            return;
+        }
+
+        // TODO: handle other cases like internal settings
+        //       changes.
+        return;
     }
 
     // It's not super likely that an overlay is already open,
@@ -222,10 +267,6 @@ function do_hashchange_overlay(old_hash) {
         return;
     }
 
-    if (base === "recent_topics") {
-        recent_topics.launch();
-        return;
-    }
     if (base === "keyboard-shortcuts") {
         info_overlay.show("keyboard-shortcuts");
         return;
@@ -264,7 +305,7 @@ function hashchanged(from_reload, e) {
     return ret;
 }
 
-exports.update_browser_history = function (new_hash) {
+export function update_browser_history(new_hash) {
     const old_hash = window.location.hash;
 
     if (!new_hash.startsWith("#")) {
@@ -284,9 +325,9 @@ exports.update_browser_history = function (new_hash) {
     state.old_hash = old_hash;
     state.is_internal_change = true;
     window.location.hash = new_hash;
-};
+}
 
-exports.replace_hash = function (hash) {
+export function replace_hash(hash) {
     if (!window.history.replaceState) {
         // We may have strange behavior with the back button.
         blueslip.warn("browser does not support replaceState");
@@ -295,30 +336,28 @@ exports.replace_hash = function (hash) {
 
     const url = get_full_url(hash);
     window.history.replaceState(null, null, url);
-};
+}
 
-exports.go_to_location = function (hash) {
+export function go_to_location(hash) {
     // Call this function when you WANT the hashchanged
     // function to run.
     window.location.hash = hash;
-};
+}
 
-exports.initialize = function () {
+export function initialize() {
     $(window).on("hashchange", (e) => {
         hashchanged(false, e.originalEvent);
     });
     hashchanged(true);
-};
+}
 
-exports.exit_overlay = function (callback) {
+export function exit_overlay(callback) {
     if (is_overlay_hash(window.location.hash)) {
         ui_util.blur_active_element();
         const new_hash = state.hash_before_overlay || "#";
-        exports.update_browser_history(new_hash);
+        update_browser_history(new_hash);
         if (typeof callback === "function") {
             callback();
         }
     }
-};
-
-window.hashchange = exports;
+}

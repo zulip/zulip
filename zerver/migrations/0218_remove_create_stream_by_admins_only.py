@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0217_migrate_create_stream_policy'),
+        ("zerver", "0217_migrate_create_stream_policy"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='realm',
-            name='create_stream_by_admins_only',
+            model_name="realm",
+            name="create_stream_by_admins_only",
         ),
     ]

@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('corporate', '0007_remove_deprecated_fields'),
+        ("corporate", "0007_remove_deprecated_fields"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='customerplan',
-            name='next_invoice_date',
+            model_name="customerplan",
+            name="next_invoice_date",
             field=models.DateTimeField(db_index=True, null=True),
         ),
     ]

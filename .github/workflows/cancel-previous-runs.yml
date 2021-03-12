@@ -1,4 +1,4 @@
-name: Cancel Previous Runs
+name: Cancel previous runs
 on: [push, pull_request]
 
 defaults:
@@ -7,7 +7,7 @@ defaults:
 
 jobs:
   cancel:
-    name: Cancel Previous Runs
+    name: Cancel previous runs
     runs-on: ubuntu-latest
     timeout-minutes: 3
 

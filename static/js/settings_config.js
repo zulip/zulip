@@ -1,5 +1,4 @@
-"use strict";
-
+import * as settings_notifications from "./settings_notifications";
 /*
     This file contains translations between the integer values used in
     the Zulip API to describe values in dropdowns, radio buttons, and
@@ -14,7 +13,7 @@
     API documentation) without a ton of copying.
 */
 
-exports.demote_inactive_streams_values = {
+export const demote_inactive_streams_values = {
     automatic: {
         code: 1,
         description: i18n.t("Automatic"),
@@ -29,7 +28,18 @@ exports.demote_inactive_streams_values = {
     },
 };
 
-exports.color_scheme_values = {
+export const default_view_values = {
+    recent_topics: {
+        code: "recent_topics",
+        description: i18n.t("Recent topics"),
+    },
+    all_messages: {
+        code: "all_messages",
+        description: i18n.t("All messages"),
+    },
+};
+
+export const color_scheme_values = {
     automatic: {
         code: 1,
         description: i18n.t("Automatic"),
@@ -44,7 +54,7 @@ exports.color_scheme_values = {
     },
 };
 
-exports.twenty_four_hour_time_values = {
+export const twenty_four_hour_time_values = {
     twenty_four_hour_clock: {
         value: true,
         description: i18n.t("24-hour clock (17:00)"),
@@ -55,7 +65,7 @@ exports.twenty_four_hour_time_values = {
     },
 };
 
-exports.get_all_display_settings = () => ({
+export const get_all_display_settings = () => ({
     settings: {
         user_display_settings: [
             "dense_mode",
@@ -71,7 +81,7 @@ exports.get_all_display_settings = () => ({
     },
 });
 
-exports.email_address_visibility_values = {
+export const email_address_visibility_values = {
     everyone: {
         code: 1,
         description: i18n.t("Admins, members, and guests"),
@@ -91,7 +101,7 @@ exports.email_address_visibility_values = {
     },
 };
 
-exports.create_stream_policy_values = {
+export const create_stream_policy_values = {
     by_admins_only: {
         order: 1,
         code: 2,
@@ -109,9 +119,9 @@ exports.create_stream_policy_values = {
     },
 };
 
-exports.invite_to_stream_policy_values = exports.create_stream_policy_values;
+export const invite_to_stream_policy_values = create_stream_policy_values;
 
-exports.user_group_edit_policy_values = {
+export const user_group_edit_policy_values = {
     by_admins_only: {
         order: 1,
         code: 2,
@@ -124,7 +134,7 @@ exports.user_group_edit_policy_values = {
     },
 };
 
-exports.private_message_policy_values = {
+export const private_message_policy_values = {
     by_anyone: {
         order: 1,
         code: 1,
@@ -134,6 +144,43 @@ exports.private_message_policy_values = {
         order: 2,
         code: 2,
         description: i18n.t("Private messages disabled"),
+    },
+};
+
+export const wildcard_mention_policy_values = {
+    by_everyone: {
+        order: 1,
+        code: 1,
+        description: i18n.t("Admins, members and guests"),
+    },
+    by_members: {
+        order: 2,
+        code: 2,
+        description: i18n.t("Admins and members"),
+    },
+    by_full_members: {
+        order: 3,
+        code: 3,
+        description: i18n.t("Admins and full members"),
+    },
+    // Until we add stream administrators, we mislabel this choice
+    // (which we intend to be the long-term default) as "Admins only"
+    // and don't offer the long-term "Admins only" option.
+    by_stream_admins_only: {
+        order: 4,
+        code: 4,
+        //  description: i18n.t("Organization and stream admins"),
+        description: i18n.t("Admins only"),
+    },
+    // by_admins_only: {
+    //     order: 5,
+    //     code: 5,
+    //     description: i18n.t("Admins only"),
+    // },
+    nobody: {
+        order: 6,
+        code: 6,
+        description: i18n.t("Nobody"),
     },
 };
 
@@ -193,12 +240,11 @@ const time_limit_dropdown_values = new Map([
         },
     ],
 ]);
-exports.msg_edit_limit_dropdown_values = time_limit_dropdown_values;
-exports.msg_delete_limit_dropdown_values = time_limit_dropdown_values;
+export const msg_edit_limit_dropdown_values = time_limit_dropdown_values;
+export const msg_delete_limit_dropdown_values = time_limit_dropdown_values;
+export const retain_message_forever = -1;
 
-exports.retain_message_forever = -1;
-
-exports.user_role_values = {
+export const user_role_values = {
     guest: {
         code: 600,
         description: i18n.t("Guest"),
@@ -217,12 +263,12 @@ exports.user_role_values = {
     },
 };
 
-const user_role_array = Object.values(exports.user_role_values);
-exports.user_role_map = new Map(user_role_array.map((role) => [role.code, role.description]));
+const user_role_array = Object.values(user_role_values);
+export const user_role_map = new Map(user_role_array.map((role) => [role.code, role.description]));
 
 // NOTIFICATIONS
 
-exports.general_notifications_table_labels = {
+export const general_notifications_table_labels = {
     realm: [
         /* An array of notification settings of any category like
          * `stream_notification_settings` which makes a single row of
@@ -245,7 +291,7 @@ exports.general_notifications_table_labels = {
     },
 };
 
-exports.stream_specific_notification_settings = [
+export const stream_specific_notification_settings = [
     "desktop_notifications",
     "audible_notifications",
     "push_notifications",
@@ -253,7 +299,7 @@ exports.stream_specific_notification_settings = [
     "wildcard_mentions_notify",
 ];
 
-exports.stream_notification_settings = [
+export const stream_notification_settings = [
     "enable_stream_desktop_notifications",
     "enable_stream_audible_notifications",
     "enable_stream_push_notifications",
@@ -289,17 +335,17 @@ const other_notification_settings = desktop_notification_settings.concat(
     ["notification_sound"],
 );
 
-exports.all_notification_settings = other_notification_settings.concat(
+export const all_notification_settings = other_notification_settings.concat(
     pm_mention_notification_settings,
-    exports.stream_notification_settings,
+    stream_notification_settings,
 );
 
-exports.all_notifications = () => ({
+export const all_notifications = () => ({
     general_settings: [
         {
             label: i18n.t("Streams"),
             notification_settings: settings_notifications.get_notifications_table_row_data(
-                exports.stream_notification_settings,
+                stream_notification_settings,
             ),
         },
         {
@@ -320,3 +366,52 @@ exports.all_notifications = () => ({
         enable_online_push_notifications: !page_params.realm_push_notifications_enabled,
     },
 });
+
+const map_language_to_playground_info = {
+    // TODO: This is being hardcoded just for the prototype, post which we should
+    // add support for realm admins to configure their own choices. The keys here
+    // are the pygment lexer subclass names for the different language alias it
+    // supports.
+    Rust: [
+        {
+            name: "Rust playground",
+            url_prefix: "https://play.rust-lang.org/?edition=2018&code=",
+        },
+    ],
+    Julia: [
+        {
+            name: "Julia playground",
+            url_prefix: "https://repl.it/languages/julia/?code=",
+        },
+    ],
+    Python: [
+        {
+            name: "Python 3 playground",
+            url_prefix: "https://repl.it/languages/python3/?code=",
+        },
+    ],
+    "Python 2.7": [
+        {
+            name: "Python 2.7 playground",
+            url_prefix: "https://repl.it/languages/python/?code=",
+        },
+    ],
+    JavaScript: [
+        {
+            name: "JavaScript playground",
+            url_prefix: "https://repl.it/languages/javascript/?code=",
+        },
+    ],
+    Lean: [
+        {
+            name: "Lean playground",
+            url_prefix: "https://leanprover.github.io/live/latest/#code=",
+        },
+        {
+            name: "Lean community playground",
+            url_prefix: "https://leanprover-community.github.io/lean-web-editor/#code=",
+        },
+    ],
+};
+
+export const get_playground_info_for_languages = (lang) => map_language_to_playground_info[lang];

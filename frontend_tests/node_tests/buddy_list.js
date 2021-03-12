@@ -1,22 +1,25 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const _ = require("lodash");
 
-set_global("$", global.make_zjquery());
-const people = zrequire("people");
-zrequire("buddy_data");
-zrequire("buddy_list");
-zrequire("ui");
+const {mock_module, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
 
-set_global("padded_widget", {
+mock_module("padded_widget", {
     update_padding: () => {},
 });
 
-function init_simulated_scrolling() {
-    set_global("message_viewport", {
-        height: () => 550,
-    });
+mock_module("message_viewport", {
+    height: () => 550,
+});
 
+const people = zrequire("people");
+const {buddy_list} = zrequire("buddy_list");
+
+function init_simulated_scrolling() {
     const elem = {
         dataset: {},
         scrollTop: 0,
@@ -25,7 +28,7 @@ function init_simulated_scrolling() {
 
     $("#buddy_list_wrapper")[0] = elem;
 
-    $("#buddy_list_wrapper_padding").height = () => 0;
+    $("#buddy_list_wrapper_padding").set_height(0);
 
     return elem;
 }
@@ -37,37 +40,43 @@ const alice = {
 };
 people.add_active_user(alice);
 
-run_test("get_items", () => {
-    const alice_li = $.create("alice stub");
+function populate_list_with_just_alice() {
+    // We don't make alice_li an actual jQuery stub,
+    // because our test only cares that it comes
+    // back from get_items.
+    const alice_li = "alice stub";
     const sel = "li.user_sidebar_entry";
-
-    buddy_list.container.set_find_results(sel, {
-        map: (f) => [f(0, alice_li)],
+    const container = $.create("get_items container", {
+        children: [{to_$: () => alice_li}],
     });
-    const items = buddy_list.get_items();
+    buddy_list.container.set_find_results(sel, container);
 
+    return alice_li;
+}
+
+run_test("get_items", () => {
+    const alice_li = populate_list_with_just_alice();
+    const items = buddy_list.get_items();
     assert.deepEqual(items, [alice_li]);
 });
 
-run_test("basics", () => {
+run_test("basics", (override) => {
     init_simulated_scrolling();
 
-    buddy_list.get_data_from_keys = (opts) => {
+    override(buddy_list, "get_data_from_keys", (opts) => {
         const keys = opts.keys;
         assert.deepEqual(keys, [alice.user_id]);
         return "data-stub";
-    };
+    });
 
-    buddy_list.items_to_html = (opts) => {
+    override(buddy_list, "items_to_html", (opts) => {
         const items = opts.items;
-
         assert.equal(items, "data-stub");
-
         return "html-stub";
-    };
+    });
 
     let appended;
-    buddy_list.container.append = (html) => {
+    $("#user_presences").append = (html) => {
         assert.equal(html, "html-stub");
         appended = true;
     };
@@ -77,15 +86,14 @@ run_test("basics", () => {
     });
     assert(appended);
 
-    const alice_li = $.create("alice-li-stub");
-    alice_li.length = 1;
+    const alice_li = {length: 1};
 
-    buddy_list.get_li_from_key = (opts) => {
+    override(buddy_list, "get_li_from_key", (opts) => {
         const key = opts.key;
 
         assert.equal(key, alice.user_id);
         return alice_li;
-    };
+    });
 
     const li = buddy_list.find_li({
         key: alice.user_id,
@@ -93,17 +101,17 @@ run_test("basics", () => {
     assert.equal(li, alice_li);
 });
 
-run_test("big_list", () => {
+run_test("big_list", (override) => {
     const elem = init_simulated_scrolling();
 
     // Don't actually render, but do simulate filling up
     // the screen.
     let chunks_inserted = 0;
 
-    buddy_list.render_more = () => {
+    override(buddy_list, "render_more", () => {
         elem.scrollHeight += 100;
         chunks_inserted += 1;
-    };
+    });
 
     // We will have more than enough users, but still
     // only do 6 chunks of data.
@@ -127,13 +135,13 @@ run_test("big_list", () => {
     assert.equal(chunks_inserted, 6);
 });
 
-run_test("force_render", () => {
+run_test("force_render", (override) => {
     buddy_list.render_count = 50;
 
     let num_rendered = 0;
-    buddy_list.render_more = (opts) => {
+    override(buddy_list, "render_more", (opts) => {
         num_rendered += opts.chunk_size;
-    };
+    });
 
     buddy_list.force_render({
         pos: 60,
@@ -148,28 +156,26 @@ run_test("force_render", () => {
     });
 });
 
-run_test("find_li w/force_render", () => {
+run_test("find_li w/force_render", (override) => {
     // If we call find_li w/force_render set, and the
     // key is not already rendered in DOM, then the
     // widget will call show_key to force-render it.
     const key = "999";
-    const stub_li = $.create("nada");
+    const stub_li = {length: 0};
 
-    stub_li.length = 0;
-
-    buddy_list.get_li_from_key = (opts) => {
+    override(buddy_list, "get_li_from_key", (opts) => {
         assert.equal(opts.key, key);
         return stub_li;
-    };
+    });
 
     buddy_list.keys = ["foo", "bar", key, "baz"];
 
     let shown;
 
-    buddy_list.force_render = (opts) => {
+    override(buddy_list, "force_render", (opts) => {
         assert.equal(opts.pos, 2);
         shown = true;
-    };
+    });
 
     const empty_li = buddy_list.find_li({
         key,
@@ -184,28 +190,31 @@ run_test("find_li w/force_render", () => {
 
     assert.equal(li, stub_li);
     assert(shown);
+});
 
-    buddy_list.get_li_from_key = () => ({length: 0});
+run_test("find_li w/bad key", (override) => {
+    override(buddy_list, "get_li_from_key", () => ({length: 0}));
 
     const undefined_li = buddy_list.find_li({
         key: "not-there",
         force_render: true,
     });
 
-    // very hacky:
-    assert.equal(undefined_li.length, 0);
+    assert.deepEqual(undefined_li, []);
 });
 
-run_test("scrolling", () => {
+run_test("scrolling", (override) => {
+    init_simulated_scrolling();
+
     buddy_list.populate({
         keys: [],
     });
 
     let tried_to_fill;
 
-    buddy_list.fill_screen_with_content = () => {
+    override(buddy_list, "fill_screen_with_content", () => {
         tried_to_fill = true;
-    };
+    });
 
     assert(!tried_to_fill);
 
@@ -214,6 +223,3 @@ run_test("scrolling", () => {
 
     assert(tried_to_fill);
 });
-
-// You have to be careful here about where you place tests,
-// since there is lots of stubbing in this module.

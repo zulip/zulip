@@ -1,4 +1,5 @@
 import importlib
+from datetime import datetime
 from typing import Any, Callable, Dict, Optional, Union
 from urllib.parse import unquote
 
@@ -13,6 +14,7 @@ from zerver.lib.actions import (
 from zerver.lib.exceptions import ErrorCode, JsonableError, StreamDoesNotExistError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.send_email import FromAddress
+from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import UserProfile
 
 MISSING_EVENT_HEADER_MESSAGE = """
@@ -25,7 +27,7 @@ Contact {support_email} if you need help debugging!
 """
 
 INVALID_JSON_MESSAGE = """
-Hi there! It looks like you tried to setup the Zulip {webhook_name} integration,
+Hi there! It looks like you tried to set up the Zulip {webhook_name} integration,
 but didn't correctly configure the webhook to send data in the JSON format
 that this integration expects!
 """
@@ -33,16 +35,20 @@ that this integration expects!
 # Django prefixes all custom HTTP headers with `HTTP_`
 DJANGO_HTTP_PREFIX = "HTTP_"
 
-def notify_bot_owner_about_invalid_json(user_profile: UserProfile,
-                                        webhook_client_name: str) -> None:
+
+def notify_bot_owner_about_invalid_json(
+    user_profile: UserProfile, webhook_client_name: str
+) -> None:
     send_rate_limited_pm_notification_to_bot_owner(
-        user_profile, user_profile.realm,
+        user_profile,
+        user_profile.realm,
         INVALID_JSON_MESSAGE.format(webhook_name=webhook_client_name).strip(),
     )
 
+
 class MissingHTTPEventHeader(JsonableError):
     code = ErrorCode.MISSING_HTTP_EVENT_HEADER
-    data_fields = ['header']
+    data_fields = ["header"]
 
     def __init__(self, header: str) -> None:
         self.header = header
@@ -51,18 +57,21 @@ class MissingHTTPEventHeader(JsonableError):
     def msg_format() -> str:
         return _("Missing the HTTP event header '{header}'")
 
+
 @has_request_variables
 def check_send_webhook_message(
-        request: HttpRequest, user_profile: UserProfile,
-        topic: str, body: str, stream: Optional[str]=REQ(default=None),
-        user_specified_topic: Optional[str]=REQ("topic", default=None),
-        unquote_url_parameters: bool=False,
+    request: HttpRequest,
+    user_profile: UserProfile,
+    topic: str,
+    body: str,
+    stream: Optional[str] = REQ(default=None),
+    user_specified_topic: Optional[str] = REQ("topic", default=None),
+    unquote_url_parameters: bool = False,
 ) -> None:
 
     if stream is None:
         assert user_profile.bot_owner is not None
-        check_send_private_message(user_profile, request.client,
-                                   user_profile.bot_owner, body)
+        check_send_private_message(user_profile, request.client, user_profile.bot_owner, body)
     else:
         # Some third-party websites (such as Atlassian's JIRA), tend to
         # double escape their URLs in a manner that escaped space characters
@@ -77,8 +86,7 @@ def check_send_webhook_message(
                 topic = unquote(topic)
 
         try:
-            check_send_stream_message(user_profile, request.client,
-                                      stream, topic, body)
+            check_send_stream_message(user_profile, request.client, stream, topic, body)
         except StreamDoesNotExistError:
             # A PM will be sent to the bot_owner by check_message, notifying
             # that the webhook bot just tried to send a message to a non-existent
@@ -86,8 +94,9 @@ def check_send_webhook_message(
             # webhook-errors.log
             pass
 
+
 def standardize_headers(input_headers: Union[None, Dict[str, Any]]) -> Dict[str, str]:
-    """ This method can be used to standardize a dictionary of headers with
+    """This method can be used to standardize a dictionary of headers with
     the standard format that Django expects. For reference, refer to:
     https://docs.djangoproject.com/en/2.2/ref/request-response/#django.http.HttpRequest.headers
 
@@ -108,9 +117,10 @@ def standardize_headers(input_headers: Union[None, Dict[str, Any]]) -> Dict[str,
 
     return canonical_headers
 
-def validate_extract_webhook_http_header(request: HttpRequest, header: str,
-                                         integration_name: str,
-                                         fatal: bool=True) -> Optional[str]:
+
+def validate_extract_webhook_http_header(
+    request: HttpRequest, header: str, integration_name: str, fatal: bool = True
+) -> Optional[str]:
     extracted_header = request.META.get(DJANGO_HTTP_PREFIX + header)
     if extracted_header is None and fatal:
         message_body = MISSING_EVENT_HEADER_MESSAGE.format(
@@ -121,15 +131,15 @@ def validate_extract_webhook_http_header(request: HttpRequest, header: str,
             support_email=FromAddress.SUPPORT,
         )
         send_rate_limited_pm_notification_to_bot_owner(
-            request.user, request.user.realm, message_body)
+            request.user, request.user.realm, message_body
+        )
 
         raise MissingHTTPEventHeader(header)
 
     return extracted_header
 
 
-def get_fixture_http_headers(integration_name: str,
-                             fixture_name: str) -> Dict["str", "str"]:
+def get_fixture_http_headers(integration_name: str, fixture_name: str) -> Dict["str", "str"]:
     """For integrations that require custom HTTP headers for some (or all)
     of their test fixtures, this method will call a specially named
     function from the target integration module to determine what set
@@ -151,10 +161,25 @@ def get_http_headers_from_filename(http_header_key: str) -> Callable[[str], Dict
     be easily (statically) determined, then name the fixtures in the format
     of "header_value__other_details" or even "header_value" and the use this
     method in the headers.py file for the integration."""
+
     def fixture_to_headers(filename: str) -> Dict[str, str]:
-        if '__' in filename:
+        if "__" in filename:
             event_type = filename.split("__")[0]
         else:
             event_type = filename
         return {http_header_key: event_type}
+
     return fixture_to_headers
+
+
+def unix_milliseconds_to_timestamp(milliseconds: Any, webhook: str) -> datetime:
+    """If an integration requires time input in unix milliseconds, this helper
+    checks to ensure correct type and will catch any errors related to type or
+    value and raise a JsonableError.
+    Returns a datetime representing the time."""
+    try:
+        # timestamps are in milliseconds so divide by 1000
+        seconds = milliseconds / 1000
+        return timestamp_to_datetime(seconds)
+    except (ValueError, TypeError):
+        raise JsonableError(_("The {} webhook expects time in milliseconds.").format(webhook))

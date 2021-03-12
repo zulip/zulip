@@ -1,4 +1,4 @@
-name: Zulip Production Suite
+name: Zulip production suite
 
 on:
   push:
@@ -30,7 +30,7 @@ defaults:
 
 jobs:
   production_build:
-    name: Bionic Production Build
+    name: Bionic production build
     runs-on: ubuntu-latest
 
     # This docker image was created by a generated Dockerfile at:
@@ -97,6 +97,13 @@ jobs:
         with:
           name: production-tarball
           path: /tmp/production-build
+          retention-days: 14
+
+      - name: Report status
+        if: failure()
+        env:
+          ZULIP_BOT_KEY: ${{ secrets.ZULIP_BOT_KEY }}
+        run: tools/ci/send-failure-message
 
   production_install:
     strategy:
@@ -104,12 +111,12 @@ jobs:
       matrix:
         include:
           - docker_image: mepriyank/actions:bionic
-            name: Bionic Production Install
+            name: Bionic production install
             is_bionic: true
             os: bionic
 
           - docker_image: mepriyank/actions:focal
-            name: Focal Production Install
+            name: Focal production install
             is_focal: true
             os: focal
 
@@ -141,6 +148,7 @@ jobs:
           chmod +x /tmp/production-upgrade-pg
           chmod +x /tmp/production-install
           chmod +x /tmp/production-verify
+          chmod +x /tmp/send-failure-message
 
       - name: Create cache directories
         run: |
@@ -180,3 +188,9 @@ jobs:
       - name: Verify install after upgrading postgresql
         if: ${{ matrix.is_bionic }}
         run: sudo mispipe "/tmp/production-verify 2>&1" ts
+
+      - name: Report status
+        if: failure()
+        env:
+          ZULIP_BOT_KEY: ${{ secrets.ZULIP_BOT_KEY }}
+        run: /tmp/send-failure-message

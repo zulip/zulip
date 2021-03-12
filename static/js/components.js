@@ -1,5 +1,4 @@
-"use strict";
-
+import * as keydown_util from "./keydown_util";
 /* USAGE:
     Toggle x = components.toggle({
         selected: Integer selected_index,
@@ -12,7 +11,7 @@
     }).get();
 */
 
-exports.toggle = function (opts) {
+export function toggle(opts) {
     const component = (function render_component(opts) {
         const _component = $("<div class='tab-switcher'></div>");
         if (opts.html_class) {
@@ -20,18 +19,23 @@ exports.toggle = function (opts) {
             // classes need to be added for correct alignment or other purposes
             _component.addClass(opts.html_class);
         }
-        opts.values.forEach((value, i) => {
+        for (const [i, value] of opts.values.entries()) {
             // create a tab with a tab-id so they don't have to be referenced
             // by text value which can be inconsistent.
-            const tab = $(
-                "<div class='ind-tab' data-tab-key='" +
-                    value.key +
-                    "' data-tab-id='" +
-                    i +
-                    "' tabindex='0'>" +
-                    value.label +
-                    "</div>",
-            );
+            const tab = $("<div>", {
+                class: "ind-tab",
+                "data-tab-key": value.key,
+                "data-tab-id": i,
+                tabindex: 0,
+            });
+
+            /* istanbul ignore if */
+            if (value.label_html !== undefined) {
+                const html = value.label_html;
+                tab.html(html);
+            } else {
+                tab.text(value.label);
+            }
 
             // add proper classes for styling in CSS.
             if (i === 0) {
@@ -43,7 +47,7 @@ exports.toggle = function (opts) {
                 tab.addClass("middle");
             }
             _component.append(tab);
-        });
+        }
         return _component;
     })(opts);
 
@@ -161,6 +165,4 @@ exports.toggle = function (opts) {
     };
 
     return prototype;
-};
-
-window.components = exports;
+}

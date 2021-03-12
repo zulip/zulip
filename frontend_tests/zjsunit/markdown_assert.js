@@ -22,6 +22,8 @@
  * HTML.  This makes it easier to spot relevant differences.
  */
 
+const {strict: assert} = require("assert");
+
 const {JSDOM} = require("jsdom");
 const _ = require("lodash");
 
@@ -74,9 +76,9 @@ class MarkdownComparer {
         }
 
         // If put in above forEach loop, causes issues (possible nodes.attribute invalidation?)
-        attributeList.forEach((attr) => {
+        for (const attr of attributeList) {
             node.removeAttribute(attr.name);
-        });
+        }
 
         attributeList.sort((a, b) => {
             const name_a = a.name;
@@ -90,9 +92,9 @@ class MarkdownComparer {
         });
 
         // Put them back in, in order
-        attributeList.forEach((attribute) => {
+        for (const attribute of attributeList) {
             node.setAttribute(attribute.name, attribute.value);
-        });
+        }
 
         if (node.hasChildNodes()) {
             for (const childNode of node.children) {

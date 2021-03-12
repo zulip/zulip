@@ -1,8 +1,11 @@
 "use strict";
 
+/* global $, CSS, navigate */
+
 const path = require("path");
 
 const commander = require("commander");
+require("css.escape");
 const mkdirp = require("mkdirp");
 const puppeteer = require("puppeteer");
 
@@ -52,16 +55,16 @@ async function run() {
 
         // Navigate to message and capture screenshot
         await page.goto(`http://${host}/#narrow/near/${options.messageId}`);
-        const messageSelector = `#zfilt${options.messageId}`;
+        const messageSelector = `#zfilt${CSS.escape(options.messageId)}`;
         await page.waitForSelector(messageSelector);
         // remove unread marker and don't select message
-        const marker = `#zfilt${options.messageId} .unread_marker`;
-        await page.evaluate((sel) => $(sel).remove(), marker); // eslint-disable-line no-undef
-        await page.evaluate(() => navigate.up()); // eslint-disable-line no-undef
+        const marker = `#zfilt${CSS.escape(options.messageId)} .unread_marker`;
+        await page.evaluate((sel) => $(sel).remove(), marker);
+        await page.evaluate(() => navigate.up());
         const messageBox = await page.$(messageSelector);
         const messageGroup = (await messageBox.$x(".."))[0];
         // Compute screenshot area, with some padding around the message group
-        const clip = Object.assign({}, await messageGroup.boundingBox());
+        const clip = {...(await messageGroup.boundingBox())};
         clip.y -= 5;
         clip.x -= 5;
         clip.width += 10;
@@ -70,8 +73,8 @@ async function run() {
         const imageDir = path.dirname(imagePath);
         mkdirp.sync(imageDir);
         await page.screenshot({path: imagePath, clip});
-    } catch (e) {
-        console.log(e);
+    } catch (error) {
+        console.log(error);
         process.exit(1);
     } finally {
         await browser.close();

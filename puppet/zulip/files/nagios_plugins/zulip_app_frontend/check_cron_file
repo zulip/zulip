@@ -7,7 +7,7 @@ import time
 from typing import Tuple
 
 
-def nagios_from_file(results_file: str, max_time_diff: int=60 * 2) -> 'Tuple[int, str]':
+def nagios_from_file(results_file: str, max_time_diff: int = 60 * 2) -> "Tuple[int, str]":
     """Returns a nagios-appropriate string and return code obtained by
     parsing the desired file on disk. The file on disk should be of format
 
@@ -18,10 +18,10 @@ def nagios_from_file(results_file: str, max_time_diff: int=60 * 2) -> 'Tuple[int
 
     with open(results_file) as f:
         data = f.read().strip()
-    pieces = data.split('|')
+    pieces = data.split("|")
 
     if not len(pieces) == 4:
-        state = 'UNKNOWN'
+        state = "UNKNOWN"
         ret = 3
         data = "Results file malformed"
     else:
@@ -30,7 +30,7 @@ def nagios_from_file(results_file: str, max_time_diff: int=60 * 2) -> 'Tuple[int
         time_diff = int(time.time() - timestamp)
         if time_diff > max_time_diff:
             ret = 3
-            state = 'UNKNOWN'
+            state = "UNKNOWN"
             data = "Results file is stale"
         else:
             ret = int(pieces[1])
@@ -39,11 +39,12 @@ def nagios_from_file(results_file: str, max_time_diff: int=60 * 2) -> 'Tuple[int
 
     return (ret, f"{state}: {data}")
 
+
 if __name__ == "__main__":
     RESULTS_FILE = sys.argv[1]
     extra_args = {}
     if len(sys.argv) > 2:
-        extra_args['max_time_diff'] = int(sys.argv[2])
+        extra_args["max_time_diff"] = int(sys.argv[2])
     ret, result = nagios_from_file(RESULTS_FILE, **extra_args)
 
     print(result)

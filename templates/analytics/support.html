@@ -1,27 +1,32 @@
 {% extends "zerver/base.html" %}
 {% set entrypoint = "support" %}
 
-{# User Activity. #}
+{# User activity. #}
 
 {% block title %}
 <title>Info</title>
 {% endblock %}
-
 
 {% block content %}
 <div class="container">
     <br>
     <form class="new-style">
         <center>
-            <input type="text" name="q" class="input-xxlarge search-query" placeholder="emails, string_ids, organization urls separated by commas" value="{{ request.GET.get('q', '') }}" autofocus>
+            <input type="text" name="q" class="input-xxlarge search-query" placeholder="full names, emails, string_ids, organization URLs separated by commas" value="{{ request.GET.get('q', '') }}" autofocus>
             <button type="submit" class="button small support-search-button">Search</button>
         </center>
     </form>
 
-    {% if message %}
+    {% if error_message %}
+    <div class="alert alert-danger">
+        <center>
+            {{ error_message }}
+        </center>
+    </div>
+    {% elif success_message %}
     <div class="alert alert-success">
         <center>
-            {{ message }}
+            {{ success_message }}
         </center>
     </div>
     {% endif %}

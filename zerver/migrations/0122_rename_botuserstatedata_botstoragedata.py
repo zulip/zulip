@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0121_realm_signup_notifications_stream'),
+        ("zerver", "0121_realm_signup_notifications_stream"),
     ]
 
     operations = [
         migrations.RenameModel(
-            old_name='BotUserStateData',
-            new_name='BotStorageData',
+            old_name="BotUserStateData",
+            new_name="BotStorageData",
         ),
     ]

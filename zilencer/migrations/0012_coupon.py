@@ -6,16 +6,21 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zilencer', '0011_customer_has_billing_relationship'),
+        ("zilencer", "0011_customer_has_billing_relationship"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Coupon',
+            name="Coupon",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('percent_off', models.SmallIntegerField(unique=True)),
-                ('stripe_coupon_id', models.CharField(max_length=255, unique=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("percent_off", models.SmallIntegerField(unique=True)),
+                ("stripe_coupon_id", models.CharField(max_length=255, unique=True)),
             ],
         ),
     ]

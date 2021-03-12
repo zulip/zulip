@@ -24,24 +24,29 @@ Great! You have new feedback. Score of {score}/10 from {email}:
 ```
 """.strip()
 
+
 def body_template(score: int) -> str:
     if score >= 7:
         return PROMOTER
     else:
         return FEEDBACK
 
+
 @webhook_view("Delighted")
 @has_request_variables
-def api_delighted_webhook(request: HttpRequest, user_profile: UserProfile,
-                          payload: Dict[str, Dict[str, Any]]=REQ(argument_type='body')) -> HttpResponse:
-    person = payload['event_data']['person']
-    selected_payload = {'email': person['email']}
-    selected_payload['score'] = payload['event_data']['score']
-    selected_payload['comment'] = payload['event_data']['comment']
+def api_delighted_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Dict[str, Any]] = REQ(argument_type="body"),
+) -> HttpResponse:
+    person = payload["event_data"]["person"]
+    selected_payload = {"email": person["email"]}
+    selected_payload["score"] = payload["event_data"]["score"]
+    selected_payload["comment"] = payload["event_data"]["comment"]
 
-    BODY_TEMPLATE = body_template(selected_payload['score'])
+    BODY_TEMPLATE = body_template(selected_payload["score"])
     body = BODY_TEMPLATE.format(**selected_payload)
-    topic = 'Survey Response'
+    topic = "Survey Response"
 
     check_send_webhook_message(request, user_profile, topic, body)
     return json_success()

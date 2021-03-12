@@ -1,15 +1,43 @@
-"use strict";
-
-const _ = require("lodash");
-const WinChan = require("winchan");
+import _ from "lodash";
+import WinChan from "winchan";
 
 // You won't find every click handler here, but it's a good place to start!
 
-const render_buddy_list_tooltip = require("../templates/buddy_list_tooltip.hbs");
-const render_buddy_list_tooltip_content = require("../templates/buddy_list_tooltip_content.hbs");
+import render_buddy_list_tooltip from "../templates/buddy_list_tooltip.hbs";
+import render_buddy_list_tooltip_content from "../templates/buddy_list_tooltip_content.hbs";
 
-const settings_panel_menu = require("./settings_panel_menu");
-const util = require("./util");
+import * as activity from "./activity";
+import * as buddy_data from "./buddy_data";
+import * as channel from "./channel";
+import * as compose from "./compose";
+import * as compose_actions from "./compose_actions";
+import * as compose_state from "./compose_state";
+import * as emoji_picker from "./emoji_picker";
+import * as hash_util from "./hash_util";
+import * as hashchange from "./hashchange";
+import * as hotspots from "./hotspots";
+import * as message_edit from "./message_edit";
+import * as message_edit_history from "./message_edit_history";
+import * as message_flags from "./message_flags";
+import * as message_store from "./message_store";
+import * as muting_ui from "./muting_ui";
+import * as narrow from "./narrow";
+import * as notifications from "./notifications";
+import * as overlays from "./overlays";
+import * as popovers from "./popovers";
+import * as reactions from "./reactions";
+import * as recent_topics from "./recent_topics";
+import * as rows from "./rows";
+import * as server_events from "./server_events";
+import * as settings_panel_menu from "./settings_panel_menu";
+import * as settings_toggle from "./settings_toggle";
+import * as stream_edit from "./stream_edit";
+import * as stream_list from "./stream_list";
+import * as stream_popover from "./stream_popover";
+import * as ui_util from "./ui_util";
+import * as unread_ops from "./unread_ops";
+import * as user_status_ui from "./user_status_ui";
+import * as util from "./util";
 
 function convert_enter_to_click(e) {
     const key = e.which;
@@ -19,7 +47,7 @@ function convert_enter_to_click(e) {
     }
 }
 
-exports.initialize = function () {
+export function initialize() {
     // MESSAGE CLICKING
 
     function initialize_long_tap() {
@@ -46,10 +74,8 @@ exports.initialize = function () {
                 // Later we check whether after MS_DELAY the user is still
                 // long touching the same message as it can be possible that
                 // user touched another message within MS_DELAY period.
-                if (meta.touchdown === true && !meta.invalid) {
-                    if (id === meta.current_target) {
-                        $(this).trigger("longtap");
-                    }
+                if (meta.touchdown === true && !meta.invalid && id === meta.current_target) {
+                    $(this).trigger("longtap");
                 }
             }, MS_DELAY);
         });
@@ -252,7 +278,7 @@ exports.initialize = function () {
         e.preventDefault();
         // Note that we may have an href here, but we trust the stream id more,
         // so we re-encode the hash.
-        const stream_id = parseInt($(this).attr("data-stream-id"), 10);
+        const stream_id = Number.parseInt($(this).attr("data-stream-id"), 10);
         if (stream_id) {
             hashchange.go_to_location(hash_util.by_stream_uri(stream_id));
             return;
@@ -342,14 +368,14 @@ exports.initialize = function () {
     });
     $("#message_edit_form .send-status-close").on("click", function () {
         const row_id = rows.id($(this).closest(".message_row"));
-        const send_status = $("#message-edit-send-status-" + row_id);
+        const send_status = $(`#message-edit-send-status-${CSS.escape(row_id)}`);
         $(send_status).stop(true).fadeOut(200);
     });
     $("body").on("click", "#message_edit_form [id^='attach_files_']", function (e) {
         e.preventDefault();
 
         const row_id = rows.id($(this).closest(".message_row"));
-        $("#message_edit_file_input_" + row_id).trigger("click");
+        $(`#message_edit_file_input_${CSS.escape(row_id)}`).trigger("click");
     });
 
     $("body").on("click", "#message_edit_form [id^='markdown_preview_']", function (e) {
@@ -357,7 +383,7 @@ exports.initialize = function () {
 
         const row_id = rows.id($(this).closest(".message_row"));
         function $_(selector) {
-            return $(selector + "_" + row_id);
+            return $(`${selector}_${CSS.escape(row_id)}`);
         }
 
         const content = $_("#message_edit_content").val();
@@ -378,7 +404,7 @@ exports.initialize = function () {
 
         const row_id = rows.id($(this).closest(".message_row"));
         function $_(selector) {
-            return $(selector + "_" + row_id);
+            return $(`${selector}_${CSS.escape(row_id)}`);
         }
 
         $_("#message_edit_content").show();
@@ -392,18 +418,18 @@ exports.initialize = function () {
 
     $("body").on("click", ".on_hover_topic_mute", (e) => {
         e.stopPropagation();
-        const stream_id = parseInt($(e.currentTarget).attr("data-stream-id"), 10);
+        const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id"), 10);
         const topic = $(e.currentTarget).attr("data-topic-name");
-        muting_ui.mute(stream_id, topic);
+        muting_ui.mute_topic(stream_id, topic);
     });
 
     $("body").on("keydown", ".on_hover_topic_mute", convert_enter_to_click);
 
     $("body").on("click", ".on_hover_topic_unmute", (e) => {
         e.stopPropagation();
-        const stream_id = parseInt($(e.currentTarget).attr("data-stream-id"), 10);
+        const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id"), 10);
         const topic = $(e.currentTarget).attr("data-topic-name");
-        muting_ui.unmute(stream_id, topic);
+        muting_ui.unmute_topic(stream_id, topic);
     });
 
     $("body").on("keydown", ".on_hover_topic_unmute", convert_enter_to_click);
@@ -417,7 +443,7 @@ exports.initialize = function () {
 
     $("body").on("click", ".on_hover_topic_read", (e) => {
         e.stopPropagation();
-        const stream_id = parseInt($(e.currentTarget).attr("data-stream-id"), 10);
+        const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id"), 10);
         const topic = $(e.currentTarget).attr("data-topic-name");
         unread_ops.mark_topic_as_read(stream_id, topic);
     });
@@ -428,6 +454,11 @@ exports.initialize = function () {
         e.stopPropagation();
         recent_topics.set_filter(e.currentTarget.dataset.filter);
         recent_topics.update_filters_view();
+    });
+
+    $("body").on("click", "td.recent_topic_name", (e) => {
+        e.stopPropagation();
+        window.location.href = $(e.currentTarget).find("a").attr("href");
     });
 
     // Search for all table rows (this combines stream & topic names)
@@ -573,18 +604,6 @@ exports.initialize = function () {
     $("body").on("mouseleave", "#pm_user_status", (e) => {
         e.stopPropagation();
         $(e.currentTarget).tooltip("destroy");
-    });
-
-    // HOME
-
-    $(".brand").on("click", (e) => {
-        if (overlays.is_active()) {
-            overlays.close_active();
-        } else {
-            narrow.restore_home_state();
-        }
-        navigate.maybe_scroll_to_selected();
-        e.preventDefault();
     });
 
     // MISC
@@ -815,7 +834,7 @@ exports.initialize = function () {
             // wrong.
             for (let x = 0; x < this.childNodes.length; x += 1) {
                 if (this.childNodes[x].nodeType !== 3) {
-                    this.innerText = this.innerText.replace(/\n/, "");
+                    this.textContent = this.textContent.replace(/\n/, "");
                     break;
                 }
             }
@@ -823,15 +842,15 @@ exports.initialize = function () {
 
         $("body").on("click", "[data-make-editable]", function () {
             const selector = $(this).attr("data-make-editable");
-            const edit_area = $(this).parent().find(selector);
+            const edit_area = $(this).parent().find(`${selector}`);
             $(selector).removeClass("stream-name-edit-box");
             if (edit_area.attr("contenteditable") === "true") {
-                $("[data-finish-editing='" + selector + "']").hide();
+                $(`[data-finish-editing='${CSS.escape(selector)}']`).hide();
                 edit_area.attr("contenteditable", false);
                 edit_area.text(edit_area.attr("data-prev-text"));
                 $(this).html("");
             } else {
-                $("[data-finish-editing='" + selector + "']").show();
+                $(`[data-finish-editing='${CSS.escape(selector)}']`).show();
 
                 $(selector).addClass("stream-name-edit-box");
                 edit_area
@@ -854,8 +873,8 @@ exports.initialize = function () {
             if (map[selector].on_save) {
                 map[selector].on_save(e);
                 $(this).hide();
-                $(this).parent().find(selector).attr("contenteditable", false);
-                $("[data-make-editable='" + selector + "']").html("");
+                $(this).parent().find(`${selector}`).attr("contenteditable", false);
+                $(`[data-make-editable='${CSS.escape(selector)}']`).html("");
             }
         });
     })();
@@ -877,7 +896,7 @@ exports.initialize = function () {
 
         overlays.open_overlay({
             name: overlay_name,
-            overlay: $("#" + overlay_name),
+            overlay: $(`#${CSS.escape(overlay_name)}`),
             on_close: function () {
                 // close popover
                 $(this).css({display: "block"});
@@ -907,7 +926,7 @@ exports.initialize = function () {
         hotspots.post_hotspot_as_read(hotspot_name);
 
         overlays.close_overlay(overlay_name);
-        $("#hotspot_" + hotspot_name + "_icon").remove();
+        $(`#hotspot_${CSS.escape(hotspot_name)}_icon`).remove();
     });
 
     $("body").on("click", ".hotspot-button", (e) => {
@@ -916,6 +935,7 @@ exports.initialize = function () {
 
         hotspots.post_hotspot_as_read("intro_reply");
         hotspots.close_hotspot_icon($("#hotspot_intro_reply_icon"));
+        $("#hotspot_intro_reply_icon").remove();
     });
 
     // stop propagation
@@ -984,6 +1004,4 @@ exports.initialize = function () {
     $(".settings-header.mobile .fa-chevron-left").on("click", () => {
         settings_panel_menu.mobile_deactivate_section();
     });
-};
-
-window.click_handlers = exports;
+}

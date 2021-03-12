@@ -24,6 +24,7 @@ from zerver.models import ScheduledEmail
 logger = logging.getLogger(__name__)
 log_to_file(logger, settings.EMAIL_DELIVERER_LOG_PATH)
 
+
 class Command(BaseCommand):
     help = """Deliver emails queued by various parts of Zulip
 (either for immediate sending or sending at a specified time).
@@ -40,7 +41,8 @@ Usage: ./manage.py deliver_email
 
         while True:
             email_jobs_to_deliver = ScheduledEmail.objects.filter(
-                scheduled_timestamp__lte=timezone_now())
+                scheduled_timestamp__lte=timezone_now()
+            )
             if email_jobs_to_deliver:
                 for job in email_jobs_to_deliver:
                     try:

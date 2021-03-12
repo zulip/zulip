@@ -5,13 +5,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0075_attachment_path_id_unique'),
+        ("zerver", "0075_attachment_path_id_unique"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='userprofile',
-            name='emojiset',
-            field=models.CharField(choices=[('apple', 'Apple'), ('emojione', 'Emoji One'), ('google', 'Google'), ('twitter', 'Twitter')], default='google', max_length=20),
+            model_name="userprofile",
+            name="emojiset",
+            field=models.CharField(
+                choices=[
+                    ("apple", "Apple"),
+                    ("emojione", "Emoji One"),
+                    ("google", "Google"),
+                    ("twitter", "Twitter"),
+                ],
+                default="google",
+                max_length=20,
+            ),
         ),
     ]

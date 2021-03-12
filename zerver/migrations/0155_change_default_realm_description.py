@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0154_fix_invalid_bot_owner'),
+        ("zerver", "0154_fix_invalid_bot_owner"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='realm',
-            name='description',
-            field=models.TextField(default=''),
+            model_name="realm",
+            name="description",
+            field=models.TextField(default=""),
         ),
     ]

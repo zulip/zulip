@@ -1,13 +1,14 @@
-"use strict";
+import * as loading from "./loading";
+import * as ui_report from "./ui_report";
 
-exports.display_checkmark = function ($elem) {
+export function display_checkmark($elem) {
     const check_mark = document.createElement("img");
     check_mark.src = "/static/images/checkbox-green.svg";
     $elem.prepend(check_mark);
     $(check_mark).css("width", "13px");
-};
+}
 
-exports.strings = {
+export const strings = {
     success: i18n.t("Saved"),
     failure: i18n.t("Save failed"),
     saving: i18n.t("Saving"),
@@ -16,10 +17,10 @@ exports.strings = {
 // Generic function for informing users about changes to the settings
 // UI.  Intended to replace the old system that was built around
 // direct calls to `ui_report`.
-exports.do_settings_change = function (request_method, url, data, status_element, opts) {
+export function do_settings_change(request_method, url, data, status_element, opts) {
     const spinner = $(status_element).expectOne();
     spinner.fadeTo(0, 1);
-    loading.make_indicator(spinner, {text: exports.strings.saving});
+    loading.make_indicator(spinner, {text: strings.saving});
     let success_msg;
     let success_continuation;
     let error_continuation;
@@ -35,7 +36,7 @@ exports.do_settings_change = function (request_method, url, data, status_element
         }
     }
     if (success_msg === undefined) {
-        success_msg = exports.strings.success;
+        success_msg = strings.success;
     }
 
     request_method({
@@ -44,7 +45,7 @@ exports.do_settings_change = function (request_method, url, data, status_element
         success(reponse_data) {
             setTimeout(() => {
                 ui_report.success(success_msg, spinner, remove_after);
-                exports.display_checkmark(spinner);
+                display_checkmark(spinner);
             }, appear_after);
             if (success_continuation !== undefined) {
                 if (opts !== undefined && opts.success_continuation_arg) {
@@ -57,16 +58,16 @@ exports.do_settings_change = function (request_method, url, data, status_element
         error(xhr) {
             if (opts !== undefined && opts.error_msg_element) {
                 loading.destroy_indicator(spinner);
-                ui_report.error(exports.strings.failure, xhr, opts.error_msg_element);
+                ui_report.error(strings.failure, xhr, opts.error_msg_element);
             } else {
-                ui_report.error(exports.strings.failure, xhr, spinner);
+                ui_report.error(strings.failure, xhr, spinner);
             }
             if (error_continuation !== undefined) {
                 error_continuation(xhr);
             }
         },
     });
-};
+}
 
 // This function is used to disable sub-setting when main setting is checked or unchecked
 // or two settings are inter-dependent on their values values.
@@ -75,18 +76,16 @@ exports.do_settings_change = function (request_method, url, data, status_element
 //   string id of setting.
 // * disable_on_uncheck is boolean, true if sub setting should be disabled
 //   when main setting unchecked.
-exports.disable_sub_setting_onchange = function (is_checked, sub_setting_id, disable_on_uncheck) {
+export function disable_sub_setting_onchange(is_checked, sub_setting_id, disable_on_uncheck) {
     if ((is_checked && disable_on_uncheck) || (!is_checked && !disable_on_uncheck)) {
-        $("#" + sub_setting_id).prop("disabled", false);
-        $("#" + sub_setting_id + "_label")
+        $(`#${CSS.escape(sub_setting_id)}`).prop("disabled", false);
+        $(`#${CSS.escape(sub_setting_id)}_label`)
             .parent()
             .removeClass("control-label-disabled");
     } else if ((is_checked && !disable_on_uncheck) || (!is_checked && disable_on_uncheck)) {
-        $("#" + sub_setting_id).prop("disabled", true);
-        $("#" + sub_setting_id + "_label")
+        $(`#${CSS.escape(sub_setting_id)}`).prop("disabled", true);
+        $(`#${CSS.escape(sub_setting_id)}_label`)
             .parent()
             .addClass("control-label-disabled");
     }
-};
-
-window.settings_ui = exports;
+}

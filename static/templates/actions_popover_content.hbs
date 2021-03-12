@@ -4,6 +4,7 @@
     <li>
         <a href="#" class="popover_edit_message" data-message-id="{{message_id}}">
             <i class="{{#if use_edit_icon}}fa fa-pencil{{else}}fa fa-file-code-o{{/if}}" aria-hidden="true"></i> {{editability_menu_item}}
+            <span class="hotkey-hint">(e)</span>
         </a>
     </li>
     {{/if}}
@@ -12,6 +13,7 @@
     <li>
         <a href="#" class="respond_button" data-message-id="{{message_id}}">
             <i class="fa fa-reply" aria-hidden="true"></i> {{t "Quote and reply or forward" }}
+            <span class="hotkey-hint">(>)</span>
         </a>
     </li>
     {{/if}}

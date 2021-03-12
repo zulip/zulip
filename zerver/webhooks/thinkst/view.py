@@ -16,7 +16,7 @@ def is_canarytoken(message: Dict[str, Any]) -> bool:
     canaries, which can be differentiated by the value of the `AlertType`
     field.
     """
-    return message['AlertType'] == 'CanarytokenIncident'
+    return message["AlertType"] == "CanarytokenIncident"
 
 
 def canary_name(message: Dict[str, Any]) -> str:
@@ -24,9 +24,9 @@ def canary_name(message: Dict[str, Any]) -> str:
     Returns the name of the canary or canarytoken.
     """
     if is_canarytoken(message):
-        return message['Reminder']
+        return message["Reminder"]
     else:
-        return message['CanaryName']
+        return message["CanaryName"]
 
 
 def canary_kind(message: Dict[str, Any]) -> str:
@@ -34,23 +34,22 @@ def canary_kind(message: Dict[str, Any]) -> str:
     Returns a description of the kind of request - canary or canarytoken.
     """
     if is_canarytoken(message):
-        return 'canarytoken'
+        return "canarytoken"
     else:
-        return 'canary'
+        return "canary"
 
 
-def source_ip_and_reverse_dns(
-        message: Dict[str, Any]) -> Tuple[Optional[str], Optional[str]]:
+def source_ip_and_reverse_dns(message: Dict[str, Any]) -> Tuple[Optional[str], Optional[str]]:
     """
     Extract the source IP and reverse DNS information from a canary request.
     """
     reverse_dns, source_ip = (None, None)
 
-    if 'SourceIP' in message:
-        source_ip = message['SourceIP']
+    if "SourceIP" in message:
+        source_ip = message["SourceIP"]
     # `ReverseDNS` can sometimes exist and still be empty.
-    if 'ReverseDNS' in message and message['ReverseDNS']:
-        reverse_dns = message['ReverseDNS']
+    if "ReverseDNS" in message and message["ReverseDNS"]:
+        reverse_dns = message["ReverseDNS"]
 
     return (source_ip, reverse_dns)
 
@@ -62,29 +61,28 @@ def body(message: Dict[str, Any]) -> str:
 
     title = canary_kind(message).title()
     name = canary_name(message)
-    body = (f"**:alert: {title} *{name}* has been triggered!**\n\n"
-            f"{message['Intro']}\n\n")
+    body = f"**:alert: {title} *{name}* has been triggered!**\n\n{message['Intro']}\n\n"
 
-    if 'IncidentHash' in message:
+    if "IncidentHash" in message:
         body += f"**Incident Id:** `{message['IncidentHash']}`\n"
 
-    if 'Token' in message:
+    if "Token" in message:
         body += f"**Token:** `{message['Token']}`\n"
 
-    if 'Description' in message:
+    if "Description" in message:
         body += f"**Kind:** {message['Description']}\n"
 
-    if 'Timestamp' in message:
+    if "Timestamp" in message:
         body += f"**Timestamp:** {message['Timestamp']}\n"
 
-    if 'CanaryIP' in message:
+    if "CanaryIP" in message:
         body += f"**Canary IP:** `{message['CanaryIP']}`\n"
 
-    if 'CanaryLocation' in message:
+    if "CanaryLocation" in message:
         body += f"**Canary Location:** {message['CanaryLocation']}\n"
 
-    if 'Triggered' in message:
-        unit = 'times' if message['Triggered'] > 1 else 'time'
+    if "Triggered" in message:
+        unit = "times" if message["Triggered"] > 1 else "time"
         body += f"**Triggered:** {message['Triggered']} {unit}\n"
 
     source_ip, reverse_dns = source_ip_and_reverse_dns(message)
@@ -93,9 +91,9 @@ def body(message: Dict[str, Any]) -> str:
     if reverse_dns:
         body += f"**Reverse DNS:** `{reverse_dns}`\n"
 
-    if 'AdditionalDetails' in message:
-        for detail in message['AdditionalDetails']:
-            if isinstance(detail[1], str) and '*' in detail[1]:
+    if "AdditionalDetails" in message:
+        for detail in message["AdditionalDetails"]:
+            if isinstance(detail[1], str) and "*" in detail[1]:
                 # Thinkst sends passwords as a series of stars which can mess with
                 # formatting, so wrap these in backticks.
                 body += f"**{detail[0]}:** `{detail[1]}`\n"
@@ -105,12 +103,13 @@ def body(message: Dict[str, Any]) -> str:
     return body
 
 
-@webhook_view('Thinkst')
+@webhook_view("Thinkst")
 @has_request_variables
 def api_thinkst_webhook(
-        request: HttpRequest, user_profile: UserProfile,
-        message: Dict[str, Any] = REQ(argument_type='body'),
-        user_specified_topic: Optional[str] = REQ('topic', default=None)
+    request: HttpRequest,
+    user_profile: UserProfile,
+    message: Dict[str, Any] = REQ(argument_type="body"),
+    user_specified_topic: Optional[str] = REQ("topic", default=None),
 ) -> HttpResponse:
     """
     Construct a response to a webhook event from a Thinkst canary or canarytoken.

@@ -1,6 +1,7 @@
 import _ from "lodash";
 
 import * as blueslip from "../blueslip";
+import * as common from "../common";
 
 import * as google_analytics from "./google-analytics";
 import {path_parts} from "./landing-page";
@@ -11,27 +12,23 @@ const INTEGRATIONS = new Map();
 const CATEGORIES = new Map();
 
 function load_data() {
-    $(".integration-lozenge")
-        .toArray()
-        .forEach((integration) => {
-            const name = $(integration).data("name");
-            const display_name = $(integration).find(".integration-name").text().trim();
+    for (const integration of $(".integration-lozenge")) {
+        const name = $(integration).data("name");
+        const display_name = $(integration).find(".integration-name").text().trim();
 
-            if (display_name && name) {
-                INTEGRATIONS.set(name, display_name);
-            }
-        });
+        if (display_name && name) {
+            INTEGRATIONS.set(name, display_name);
+        }
+    }
 
-    $(".integration-category")
-        .toArray()
-        .forEach((category) => {
-            const name = $(category).data("category");
-            const display_name = $(category).text().trim();
+    for (const category of $(".integration-category")) {
+        const name = $(category).data("category");
+        const display_name = $(category).text().trim();
 
-            if (display_name && name) {
-                CATEGORIES.set(name, display_name);
-            }
-        });
+        if (display_name && name) {
+            CATEGORIES.set(name, display_name);
+        }
+    }
 }
 
 const INITIAL_STATE = {
@@ -40,40 +37,38 @@ const INITIAL_STATE = {
     query: "",
 };
 
-let state = Object.assign({}, INITIAL_STATE);
+let state = {...INITIAL_STATE};
 
 function adjust_font_sizing() {
-    $(".integration-lozenge")
-        .toArray()
-        .forEach((integration) => {
-            const $integration_name = $(integration).find(".integration-name");
-            const $integration_category = $(integration).find(".integration-category");
+    for (const integration of $(".integration-lozenge")) {
+        const $integration_name = $(integration).find(".integration-name");
+        const $integration_category = $(integration).find(".integration-category");
 
-            // if the text has wrapped to two lines, decrease font-size
+        // if the text has wrapped to two lines, decrease font-size
+        if ($integration_name.height() > 30) {
+            $integration_name.css("font-size", "1em");
             if ($integration_name.height() > 30) {
-                $integration_name.css("font-size", "1em");
-                if ($integration_name.height() > 30) {
-                    $integration_name.css("font-size", ".95em");
-                }
+                $integration_name.css("font-size", ".95em");
             }
+        }
 
+        if ($integration_category.height() > 30) {
+            $integration_category.css("font-size", ".8em");
             if ($integration_category.height() > 30) {
-                $integration_category.css("font-size", ".8em");
-                if ($integration_category.height() > 30) {
-                    $integration_category.css("font-size", ".75em");
-                }
+                $integration_category.css("font-size", ".75em");
             }
-        });
+        }
+    }
 }
 
 function update_path() {
     let next_path;
     if (state.integration) {
-        next_path = $('.integration-lozenge[data-name="' + state.integration + '"]')
+        next_path = $(`.integration-lozenge[data-name="${CSS.escape(state.integration)}"]`)
             .closest("a")
             .attr("href");
     } else if (state.category) {
-        next_path = $('.integration-category[data-category="' + state.category + '"]')
+        next_path = $(`.integration-category[data-category="${CSS.escape(state.category)}"]`)
             .closest("a")
             .attr("href");
     } else {
@@ -88,7 +83,7 @@ function update_categories() {
     $(".integration-lozenges").css("opacity", 0);
 
     $(".integration-category").removeClass("selected");
-    $('[data-category="' + state.category + '"]').addClass("selected");
+    $(`[data-category="${CSS.escape(state.category)}"]`).addClass("selected");
 
     const $dropdown_label = $(".integration-categories-dropdown .dropdown-category-label");
     if (state.category === INITIAL_STATE.category) {
@@ -105,8 +100,7 @@ function update_categories() {
 const update_integrations = _.debounce(() => {
     const max_scrollY = window.scrollY;
 
-    const integrations = $(".integration-lozenges").children().toArray();
-    integrations.forEach((integration) => {
+    for (const integration of $(".integration-lozenges").children()) {
         const $integration = $(integration).find(".integration-lozenge");
         const $integration_category = $integration.find(".integration-category");
 
@@ -133,16 +127,18 @@ const update_integrations = _.debounce(() => {
         }
 
         document.body.scrollTop = Math.min(window.scrollY, max_scrollY);
-    });
+    }
 
     adjust_font_sizing();
 }, 50);
 
 function hide_catalog_show_integration() {
-    const $lozenge_icon = $(".integration-lozenge.integration-" + state.integration).clone(false);
+    const $lozenge_icon = $(
+        `.integration-lozenge.integration-${CSS.escape(state.integration)}`,
+    ).clone(false);
     $lozenge_icon.removeClass("legacy");
 
-    const categories = $(".integration-" + state.integration)
+    const categories = $(`.integration-${CSS.escape(state.integration)}`)
         .data("categories")
         .slice(1, -1)
         .split(",")
@@ -151,7 +147,7 @@ function hide_catalog_show_integration() {
     function show_integration(doc) {
         $("#integration-instructions-group .name").text(INTEGRATIONS.get(state.integration));
         $("#integration-instructions-group .categories .integration-category").remove();
-        categories.forEach((category) => {
+        for (const category of categories) {
             let link;
             for (const [name, display_name] of CATEGORIES) {
                 if (display_name === category) {
@@ -163,16 +159,16 @@ function hide_catalog_show_integration() {
                 .append('<h3 class="integration-category"></h3>');
             category_el.find(".integration-category").attr("data-category", link).text(category);
             $("#integration-instructions-group .categories").append(category_el);
-        });
+        }
         $("#integration-instructions-group").css({
             opacity: 0,
             display: "flex",
         });
         $(".integration-instructions").css("display", "none");
-        $("#" + state.integration + ".integration-instructions .help-content").html(doc);
+        $(`#${CSS.escape(state.integration)}.integration-instructions .help-content`).html(doc);
         $("#integration-instruction-block .integration-lozenge").remove();
         $("#integration-instruction-block").append($lozenge_icon).css("display", "flex");
-        $(".integration-instructions#" + state.integration).css("display", "block");
+        $(`.integration-instructions#${CSS.escape(state.integration)}`).css("display", "block");
 
         $("html, body").animate({scrollTop: 0}, {duration: 200});
         $("#integration-instructions-group").animate({opacity: 1}, {duration: 300});
@@ -224,7 +220,7 @@ function hide_integration_show_catalog() {
 }
 
 function get_state_from_path() {
-    const result = Object.assign({}, INITIAL_STATE);
+    const result = {...INITIAL_STATE};
     result.query = state.query;
 
     const parts = path_parts();
@@ -238,7 +234,7 @@ function get_state_from_path() {
 }
 
 function render(next_state) {
-    const previous_state = Object.assign({}, state);
+    const previous_state = {...state};
     state = next_state;
 
     if (previous_state.integration !== next_state.integration && next_state.integration !== null) {
@@ -264,48 +260,27 @@ function render(next_state) {
 function dispatch(action, payload) {
     switch (action) {
         case "CHANGE_CATEGORY":
-            render(
-                Object.assign({}, state, {
-                    category: payload.category,
-                }),
-            );
+            render({...state, category: payload.category});
             update_path();
             break;
 
         case "SHOW_INTEGRATION":
-            render(
-                Object.assign({}, state, {
-                    integration: payload.integration,
-                }),
-            );
+            render({...state, integration: payload.integration});
             update_path();
             break;
 
         case "HIDE_INTEGRATION":
-            render(
-                Object.assign({}, state, {
-                    integration: null,
-                }),
-            );
+            render({...state, integration: null});
             update_path();
             break;
 
         case "SHOW_CATEGORY":
-            render(
-                Object.assign({}, state, {
-                    integration: null,
-                    category: payload.category,
-                }),
-            );
+            render({...state, integration: null, category: payload.category});
             update_path();
             break;
 
         case "UPDATE_QUERY":
-            render(
-                Object.assign({}, state, {
-                    query: payload.query,
-                }),
-            );
+            render({...state, query: payload.query});
             break;
 
         case "LOAD_PATH":
@@ -326,10 +301,9 @@ function toggle_categories_dropdown() {
 
 function integration_events() {
     $('#integration-search input[type="text"]').on("keypress", (e) => {
-        const integrations = $(".integration-lozenges").children().toArray();
         if (e.which === 13 && e.target.value !== "") {
-            for (let i = 0; i < integrations.length; i += 1) {
-                const integration = $(integrations[i]).find(".integration-lozenge");
+            for (const integration_element of $(".integration-lozenges").children()) {
+                const integration = $(integration_element).find(".integration-lozenge");
 
                 if ($(integration).css("display") !== "none") {
                     $(integration).closest("a")[0].click();

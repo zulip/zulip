@@ -5,29 +5,33 @@ from typing import Callable, List, TypeVar
 from psycopg2.extensions import cursor
 from psycopg2.sql import SQL
 
-CursorObj = TypeVar('CursorObj', bound=cursor)
+CursorObj = TypeVar("CursorObj", bound=cursor)
 
 from django.db import connection
 
 from zerver.models import UserProfile
 
-'''
+"""
 NOTE!  Be careful modifying this library, as it is used
 in a migration, and it needs to be valid for the state
 of the database that is in place when the 0104_fix_unreads
 migration runs.
-'''
+"""
 
-logger = logging.getLogger('zulip.fix_unreads')
+logger = logging.getLogger("zulip.fix_unreads")
 logger.setLevel(logging.WARNING)
 
-def build_topic_mute_checker(cursor: CursorObj, user_profile: UserProfile) -> Callable[[int, str], bool]:
-    '''
+
+def build_topic_mute_checker(
+    cursor: CursorObj, user_profile: UserProfile
+) -> Callable[[int, str], bool]:
+    """
     This function is similar to the function of the same name
     in zerver/lib/topic_mutes.py, but it works without the ORM,
     so that we can use it in migrations.
-    '''
-    query = SQL('''
+    """
+    query = SQL(
+        """
         SELECT
             recipient_id,
             topic_name
@@ -35,26 +39,27 @@ def build_topic_mute_checker(cursor: CursorObj, user_profile: UserProfile) -> Ca
             zerver_mutedtopic
         WHERE
             user_profile_id = %s
-    ''')
+    """
+    )
     cursor.execute(query, [user_profile.id])
     rows = cursor.fetchall()
 
-    tups = {
-        (recipient_id, topic_name.lower())
-        for (recipient_id, topic_name) in rows
-    }
+    tups = {(recipient_id, topic_name.lower()) for (recipient_id, topic_name) in rows}
 
     def is_muted(recipient_id: int, topic: str) -> bool:
         return (recipient_id, topic.lower()) in tups
 
     return is_muted
 
+
 def update_unread_flags(cursor: CursorObj, user_message_ids: List[int]) -> None:
-    query = SQL('''
+    query = SQL(
+        """
         UPDATE zerver_usermessage
         SET flags = flags | 1
         WHERE id IN %(user_message_ids)s
-    ''')
+    """
+    )
 
     cursor.execute(query, {"user_message_ids": tuple(user_message_ids)})
 
@@ -64,7 +69,7 @@ def get_timing(message: str, f: Callable[[], None]) -> None:
     logger.info(message)
     f()
     elapsed = time.time() - start
-    logger.info('elapsed time: %.03f\n', elapsed)
+    logger.info("elapsed time: %.03f\n", elapsed)
 
 
 def fix_unsubscribed(cursor: CursorObj, user_profile: UserProfile) -> None:
@@ -72,7 +77,8 @@ def fix_unsubscribed(cursor: CursorObj, user_profile: UserProfile) -> None:
     recipient_ids = []
 
     def find_recipients() -> None:
-        query = SQL('''
+        query = SQL(
+            """
             SELECT
                 zerver_subscription.recipient_id
             FROM
@@ -85,7 +91,8 @@ def fix_unsubscribed(cursor: CursorObj, user_profile: UserProfile) -> None:
                 zerver_recipient.type = 2 AND
                 (NOT zerver_subscription.active)
             )
-        ''')
+        """
+        )
         cursor.execute(query, {"user_profile_id": user_profile.id})
         rows = cursor.fetchall()
         for row in rows:
@@ -93,7 +100,7 @@ def fix_unsubscribed(cursor: CursorObj, user_profile: UserProfile) -> None:
         logger.info(str(recipient_ids))
 
     get_timing(
-        'get recipients',
+        "get recipients",
         find_recipients,
     )
 
@@ -103,7 +110,8 @@ def fix_unsubscribed(cursor: CursorObj, user_profile: UserProfile) -> None:
     user_message_ids = []
 
     def find() -> None:
-        query = SQL('''
+        query = SQL(
+            """
             SELECT
                 zerver_usermessage.id
             FROM
@@ -116,19 +124,23 @@ def fix_unsubscribed(cursor: CursorObj, user_profile: UserProfile) -> None:
                 (zerver_usermessage.flags & 1) = 0 AND
                 zerver_message.recipient_id in %(recipient_ids)s
             )
-        ''')
+        """
+        )
 
-        cursor.execute(query, {
-            "user_profile_id": user_profile.id,
-            "recipient_ids": tuple(recipient_ids),
-        })
+        cursor.execute(
+            query,
+            {
+                "user_profile_id": user_profile.id,
+                "recipient_ids": tuple(recipient_ids),
+            },
+        )
         rows = cursor.fetchall()
         for row in rows:
             user_message_ids.append(row[0])
-        logger.info('rows found: %d', len(user_message_ids))
+        logger.info("rows found: %d", len(user_message_ids))
 
     get_timing(
-        'finding unread messages for non-active streams',
+        "finding unread messages for non-active streams",
         find,
     )
 
@@ -139,11 +151,12 @@ def fix_unsubscribed(cursor: CursorObj, user_profile: UserProfile) -> None:
         update_unread_flags(cursor, user_message_ids)
 
     get_timing(
-        'fixing unread messages for non-active streams',
+        "fixing unread messages for non-active streams",
         fix,
     )
 
+
 def fix(user_profile: UserProfile) -> None:
-    logger.info('\n---\nFixing %s:', user_profile.id)
+    logger.info("\n---\nFixing %s:", user_profile.id)
     with connection.cursor() as cursor:
         fix_unsubscribed(cursor, user_profile)

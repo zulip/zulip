@@ -1,15 +1,20 @@
 "use strict";
 
-const rm = zrequire("rendered_markdown");
-const people = zrequire("people");
-zrequire("user_groups");
-zrequire("stream_data");
-zrequire("timerender");
-set_global("$", global.make_zjquery());
+const {strict: assert} = require("assert");
 
-set_global("rtl", {
+const {mock_module, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
+
+mock_module("rtl", {
     get_direction: () => "ltr",
 });
+const page_params = set_global("page_params", {emojiset: "apple"});
+
+const rm = zrequire("rendered_markdown");
+const people = zrequire("people");
+const user_groups = zrequire("user_groups");
+const stream_data = zrequire("stream_data");
 
 const iago = {
     email: "iago@zulip.com",
@@ -53,17 +58,14 @@ stream_data.add_sub(stream);
 
 const $array = (array) => {
     const each = (func) => {
-        array.forEach((e) => {
+        for (const e of array) {
             func.call(e);
-        });
+        }
     };
     return {each};
 };
 
-set_global("page_params", {emojiset: "apple"});
-
 const get_content_element = () => {
-    $.clear_all_elements();
     const $content = $.create(".rendered_markdown");
     $content.set_find_results(".user-mention", $array([]));
     $content.set_find_results(".user-group-mention", $array([]));
@@ -166,7 +168,7 @@ run_test("timestamp", () => {
     const $timestamp_invalid = $.create("timestamp(invalid)");
     $timestamp_invalid.attr("datetime", "invalid");
     $content.set_find_results("time", $array([$timestamp, $timestamp_invalid]));
-    blueslip.expect("error", "Moment could not parse datetime supplied by backend: invalid");
+    blueslip.expect("error", "Could not parse datetime supplied by backend: invalid");
 
     // Initial asserts
     assert.equal($timestamp.text(), "never-been-set");
@@ -190,18 +192,15 @@ run_test("timestamp-twenty-four-hour-time", () => {
     $content.set_find_results("time", $array([$timestamp]));
 
     // We will temporarily change the 24h setting for this test.
-    const old_page_params = global.page_params;
+    with_field(page_params, "twenty_four_hour_time", true, () => {
+        rm.update_elements($content);
+        assert.equal($timestamp.text(), "Wed, Jul 15 2020, 20:40");
+    });
 
-    set_global("page_params", {...old_page_params, twenty_four_hour_time: true});
-    rm.update_elements($content);
-    assert.equal($timestamp.text(), "Wed, Jul 15 2020, 20:40");
-
-    set_global("page_params", {...old_page_params, twenty_four_hour_time: false});
-    rm.update_elements($content);
-    assert.equal($timestamp.text(), "Wed, Jul 15 2020, 8:40 PM");
-
-    // Set page_params back to its original value.
-    set_global("page_params", old_page_params);
+    with_field(page_params, "twenty_four_hour_time", false, () => {
+        rm.update_elements($content);
+        assert.equal($timestamp.text(), "Wed, Jul 15 2020, 8:40 PM");
+    });
 });
 
 run_test("timestamp-error", () => {

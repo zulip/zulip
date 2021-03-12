@@ -11,9 +11,9 @@
     to the console along with the name "foo". */
 
 export function print_elapsed_time(name, fun) {
-    const t0 = new Date().getTime();
+    const t0 = Date.now();
     const out = fun();
-    const t1 = new Date().getTime();
+    const t1 = Date.now();
     console.log(name + ": " + (t1 - t0) + " ms");
     return out;
 }
@@ -23,7 +23,7 @@ export function check_duplicate_ids() {
     const collisions = [];
     let total_collisions = 0;
 
-    Array.prototype.slice.call(document.querySelectorAll("*")).forEach((o) => {
+    for (const o of Array.prototype.slice.call(document.querySelectorAll("*"))) {
         if (o.id && ids.has(o.id)) {
             const el = collisions.find((c) => c.id === o.id);
 
@@ -53,7 +53,7 @@ export function check_duplicate_ids() {
         } else if (o.id) {
             ids.add(o.id);
         }
-    });
+    }
 
     return {
         collisions,

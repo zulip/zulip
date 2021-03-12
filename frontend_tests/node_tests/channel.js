@@ -1,30 +1,39 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const _ = require("lodash");
 
-set_global("$", {});
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
 
-set_global("reload", {});
-zrequire("reload_state");
-zrequire("channel");
+set_global("setTimeout", (f, delay) => {
+    assert.equal(delay, 0);
+    f();
+});
+
+const reload_state = zrequire("reload_state");
+const channel = zrequire("channel");
 
 const default_stub_xhr = "default-stub-xhr";
+
+const $ = set_global("$", {});
 
 function test_with_mock_ajax(test_params) {
     const {xhr = default_stub_xhr, run_code, check_ajax_options} = test_params;
 
     let ajax_called;
     let ajax_options;
-    $.ajax = function (options) {
+    $.ajax = (options) => {
         $.ajax = undefined;
         ajax_called = true;
         ajax_options = options;
 
-        options.simulate_success = function (data, text_status) {
+        options.simulate_success = (data, text_status) => {
             options.success(data, text_status, xhr);
         };
 
-        options.simulate_error = function () {
+        options.simulate_error = () => {
             options.error(xhr);
         };
 
@@ -36,7 +45,7 @@ function test_with_mock_ajax(test_params) {
     check_ajax_options(ajax_options);
 }
 
-run_test("basics", () => {
+run_test("post", () => {
     test_with_mock_ajax({
         run_code() {
             channel.post({});
@@ -51,7 +60,9 @@ run_test("basics", () => {
             options.simulate_error();
         },
     });
+});
 
+run_test("patch", () => {
     test_with_mock_ajax({
         run_code() {
             channel.patch({});
@@ -67,7 +78,9 @@ run_test("basics", () => {
             options.simulate_error();
         },
     });
+});
 
+run_test("put", () => {
     test_with_mock_ajax({
         run_code() {
             channel.put({});
@@ -82,7 +95,9 @@ run_test("basics", () => {
             options.simulate_error();
         },
     });
+});
 
+run_test("delete", () => {
     test_with_mock_ajax({
         run_code() {
             channel.del({});
@@ -97,7 +112,9 @@ run_test("basics", () => {
             options.simulate_error();
         },
     });
+});
 
+run_test("get", () => {
     test_with_mock_ajax({
         run_code() {
             channel.get({});
@@ -202,19 +219,13 @@ run_test("reload_on_403_error", () => {
         },
 
         check_ajax_options(options) {
-            let reload_initiated;
-            reload.initiate = function (options) {
-                reload_initiated = true;
-                assert.deepEqual(options, {
-                    immediate: true,
-                    save_pointer: true,
-                    save_narrow: true,
-                    save_compose: true,
-                });
-            };
+            let handler_called = false;
+            reload_state.set_csrf_failed_handler(() => {
+                handler_called = true;
+            });
 
             options.simulate_error();
-            assert(reload_initiated);
+            assert(handler_called);
         },
     });
 });
@@ -247,11 +258,6 @@ run_test("retry", () => {
         },
 
         check_ajax_options(options) {
-            global.patch_builtin("setTimeout", (f, delay) => {
-                assert.equal(delay, 0);
-                f();
-            });
-
             blueslip.expect("log", "Retrying idempotent[object Object]");
             test_with_mock_ajax({
                 run_code() {
@@ -267,7 +273,8 @@ run_test("retry", () => {
 });
 
 run_test("too_many_pending", () => {
-    $.ajax = function () {
+    channel.clear_for_tests();
+    $.ajax = () => {
         const xhr = "stub";
         return xhr;
     };
@@ -277,9 +284,10 @@ run_test("too_many_pending", () => {
         "The length of pending_requests is over 50. " +
             "Most likely they are not being correctly removed.",
     );
-    _.times(50, () => {
+    _.times(51, () => {
         channel.post({});
     });
+    channel.clear_for_tests();
 });
 
 run_test("xhr_error_message", () => {

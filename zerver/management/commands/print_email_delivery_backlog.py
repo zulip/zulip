@@ -20,5 +20,8 @@ Usage: ./manage.py print_email_delivery_backlog
 """
 
     def handle(self, *args: Any, **options: Any) -> None:
-        print(ScheduledEmail.objects.filter(
-            scheduled_timestamp__lte=timezone_now()-timedelta(minutes=1)).count())
+        print(
+            ScheduledEmail.objects.filter(
+                scheduled_timestamp__lte=timezone_now() - timedelta(minutes=1)
+            ).count()
+        )

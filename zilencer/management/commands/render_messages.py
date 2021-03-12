@@ -9,8 +9,8 @@ from zerver.lib.message import render_markdown
 from zerver.models import Message
 
 
-def queryset_iterator(queryset: QuerySet, chunksize: int=5000) -> Iterator[Any]:
-    queryset = queryset.order_by('id')
+def queryset_iterator(queryset: QuerySet, chunksize: int = 5000) -> Iterator[Any]:
+    queryset = queryset.order_by("id")
     while queryset.exists():
         for row in queryset[:chunksize]:
             msg_id = row.id
@@ -25,21 +25,21 @@ class Command(BaseCommand):
     """
 
     def add_arguments(self, parser: CommandParser) -> None:
-        parser.add_argument('destination', help='Destination file path')
-        parser.add_argument('--amount', default=100000, help='Number of messages to render')
-        parser.add_argument('--latest_id', default=0, help="Last message id to render")
+        parser.add_argument("destination", help="Destination file path")
+        parser.add_argument("--amount", default=100000, help="Number of messages to render")
+        parser.add_argument("--latest_id", default=0, help="Last message id to render")
 
     def handle(self, *args: Any, **options: Any) -> None:
-        dest_dir = os.path.realpath(os.path.dirname(options['destination']))
-        amount = int(options['amount'])
-        latest = int(options['latest_id']) or Message.objects.latest('id').id
-        self.stdout.write(f'Latest message id: {latest}')
+        dest_dir = os.path.realpath(os.path.dirname(options["destination"]))
+        amount = int(options["amount"])
+        latest = int(options["latest_id"]) or Message.objects.latest("id").id
+        self.stdout.write(f"Latest message id: {latest}")
         if not os.path.exists(dest_dir):
             os.makedirs(dest_dir)
 
-        with open(options['destination'], 'wb') as result:
-            result.write(b'[')
-            messages = Message.objects.filter(id__gt=latest - amount, id__lte=latest).order_by('id')
+        with open(options["destination"], "wb") as result:
+            result.write(b"[")
+            messages = Message.objects.filter(id__gt=latest - amount, id__lte=latest).order_by("id")
             for message in queryset_iterator(messages):
                 content = message.content
                 # In order to ensure that the output of this tool is
@@ -49,15 +49,19 @@ class Command(BaseCommand):
                 # necessary.
                 if message.edit_history:
                     history = orjson.loads(message.edit_history)
-                    history = sorted(history, key=lambda i: i['timestamp'])
+                    history = sorted(history, key=lambda i: i["timestamp"])
                     for entry in history:
-                        if 'prev_content' in entry:
-                            content = entry['prev_content']
+                        if "prev_content" in entry:
+                            content = entry["prev_content"]
                             break
-                result.write(orjson.dumps({
-                    'id': message.id,
-                    'content': render_markdown(message, content),
-                }))
+                result.write(
+                    orjson.dumps(
+                        {
+                            "id": message.id,
+                            "content": render_markdown(message, content),
+                        }
+                    )
+                )
                 if message.id != latest:
-                    result.write(b',')
-            result.write(b']')
+                    result.write(b",")
+            result.write(b"]")

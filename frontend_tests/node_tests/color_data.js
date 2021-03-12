@@ -1,9 +1,14 @@
 "use strict";
 
-zrequire("color_data");
+const {strict: assert} = require("assert");
+
+const {zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
+const color_data = zrequire("color_data");
 
 run_test("pick_color", () => {
-    color_data.colors = ["blue", "orange", "red", "yellow"];
+    color_data.__Rewire__("colors", ["blue", "orange", "red", "yellow"]);
 
     color_data.reset();
 

@@ -6,7 +6,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class SemaphoreHookTests(WebhookTestCase):
-    STREAM_NAME = 'semaphore'
+    STREAM_NAME = "semaphore"
     URL_TEMPLATE = "/api/v1/external/semaphore?stream={stream}&api_key={api_key}"
     FIXTURE_DIR_NAME = "semaphore"
 
@@ -44,7 +44,7 @@ class SemaphoreHookTests(WebhookTestCase):
             content_type="application/x-www-form-urlencoded",
         )
 
-    # Tests For Semaphore 2.0
+    # Tests for Semaphore 2.0
 
     def test_semaphore2_push(self) -> None:
         expected_topic = "notifications/rw/webhook_impl"  # repo/branch
@@ -66,7 +66,7 @@ class SemaphoreHookTests(WebhookTestCase):
 * **Branch**: rw/webhook_impl
 * **Author**: radwo
 """.strip()
-        with patch('zerver.webhooks.semaphore.view.is_github_repo', return_value=False):
+        with patch("zerver.webhooks.semaphore.view.is_github_repo", return_value=False):
             self.check_webhook(
                 "push", expected_topic, expected_message, content_type="application/json"
             )
@@ -91,7 +91,7 @@ class SemaphoreHookTests(WebhookTestCase):
 * **Branch**: test-notifications
 * **Author**: radwo
 """.strip()
-        with patch('zerver.webhooks.semaphore.view.is_github_repo', return_value=False):
+        with patch("zerver.webhooks.semaphore.view.is_github_repo", return_value=False):
             self.check_webhook(
                 "pull_request", expected_topic, expected_message, content_type="application/json"
             )
@@ -112,7 +112,7 @@ class SemaphoreHookTests(WebhookTestCase):
 * **Tag**: v1.0.1
 * **Author**: radwo
 """.strip()
-        with patch('zerver.webhooks.semaphore.view.is_github_repo', return_value=False):
+        with patch("zerver.webhooks.semaphore.view.is_github_repo", return_value=False):
             self.check_webhook(
                 "tag", expected_topic, expected_message, content_type="application/json"
             )
@@ -122,13 +122,17 @@ class SemaphoreHookTests(WebhookTestCase):
         expected_message = """
 [Notifications](https://semaphore.semaphoreci.com/workflows/a8704319-2422-4828-9b11-6b2afa3554e6) pipeline **stopped** for unknown event
 """.strip()
-        with patch('zerver.webhooks.semaphore.tests.SemaphoreHookTests.get_body', self.get_unknown_event):
+        with patch(
+            "zerver.webhooks.semaphore.tests.SemaphoreHookTests.get_body", self.get_unknown_event
+        ):
             self.check_webhook(
                 "tag", expected_topic, expected_message, content_type="application/json"
             )
 
     def get_unknown_event(self, fixture_name: str) -> str:
         """Return modified payload with revision.reference_type changed"""
-        fixture_data = orjson.loads(self.webhook_fixture_data("semaphore", fixture_name, file_type="json"))
-        fixture_data['revision']['reference_type'] = 'unknown'
+        fixture_data = orjson.loads(
+            self.webhook_fixture_data("semaphore", fixture_name, file_type="json")
+        )
+        fixture_data["revision"]["reference_type"] = "unknown"
         return fixture_data

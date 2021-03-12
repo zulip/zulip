@@ -6,14 +6,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0124_stream_enable_notifications'),
-        ('confirmation', '0004_remove_confirmationmanager'),
+        ("zerver", "0124_stream_enable_notifications"),
+        ("confirmation", "0004_remove_confirmationmanager"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='confirmation',
-            name='realm',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='zerver.Realm'),
+            model_name="confirmation",
+            name="realm",
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.CASCADE, to="zerver.Realm"
+            ),
         ),
     ]

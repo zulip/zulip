@@ -1,6 +1,4 @@
-"use strict";
-
-const moment = require("moment-timezone");
+import * as common from "../common";
 
 $(() => {
     // NB: this file is included on multiple pages.  In each context,
@@ -82,7 +80,7 @@ $(() => {
             $(".team_subdomain_error_server").css("display", "none");
         }
 
-        $("#timezone").val(moment.tz.guess());
+        $("#timezone").val(new Intl.DateTimeFormat().resolvedOptions().timeZone);
     }
 
     // Code in this block will be executed when the /accounts/send_confirm
@@ -95,23 +93,22 @@ $(() => {
 
     // Code in this block will be executed when the user visits /register
     // i.e. accounts_home.html is rendered.
-    if ($("[data-page-id='accounts-home']").length > 0) {
-        if (window.location.hash.substring(0, 1) === "#") {
-            document.email_form.action += window.location.hash;
-        }
+    if (
+        $("[data-page-id='accounts-home']").length > 0 &&
+        window.location.hash.slice(0, 1) === "#"
+    ) {
+        document.email_form.action += window.location.hash;
     }
 
     // Code in this block will be executed when the user is at login page
     // i.e. login.html is rendered.
-    if ($("[data-page-id='login-page']").length > 0) {
-        if (window.location.hash.substring(0, 1) === "#") {
-            /* We append the location.hash to the formaction so that URL can be
-            preserved after user is logged in. See this:
-            https://stackoverflow.com/questions/5283395/url-hash-is-persisting-between-redirects */
-            const email_formaction = $("#login_form").attr("action");
-            $("#login_form").attr("action", email_formaction + "/" + window.location.hash);
-            $(".social_login_form input[name='next']").attr("value", "/" + window.location.hash);
-        }
+    if ($("[data-page-id='login-page']").length > 0 && window.location.hash.slice(0, 1) === "#") {
+        /* We append the location.hash to the formaction so that URL can be
+        preserved after user is logged in. See this:
+        https://stackoverflow.com/questions/5283395/url-hash-is-persisting-between-redirects */
+        const email_formaction = $("#login_form").attr("action");
+        $("#login_form").attr("action", email_formaction + "/" + window.location.hash);
+        $(".social_login_form input[name='next']").attr("value", "/" + window.location.hash);
     }
 
     $("#send_confirm").validate({
@@ -126,15 +123,16 @@ $(() => {
         },
     });
 
-    $(".register-page #email, .login-page-container #id_username").on("focusout keydown", function (
-        e,
-    ) {
-        // check if it is the "focusout" or if it is a keydown, then check if
-        // the keycode was the one for "enter" (13).
-        if (e.type === "focusout" || e.which === 13) {
-            $(this).val($(this).val().trim());
-        }
-    });
+    $(".register-page #email, .login-page-container #id_username").on(
+        "focusout keydown",
+        function (e) {
+            // check if it is the "focusout" or if it is a keydown, then check if
+            // the keycode was the one for "enter" (13).
+            if (e.type === "focusout" || e.which === 13) {
+                $(this).val($(this).val().trim());
+            }
+        },
+    );
 
     const show_subdomain_section = function (bool) {
         const action = bool ? "hide" : "show";

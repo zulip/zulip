@@ -6,6 +6,7 @@ try:
     from zerver.models import *  # noqa: F401, F403
 except Exception:
     import traceback
+
     print("\nException importing Zulip core modules on startup!")
     traceback.print_exc()
 else:

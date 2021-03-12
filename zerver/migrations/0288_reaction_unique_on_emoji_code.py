@@ -6,16 +6,22 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0287_clear_duplicate_reactions'),
+        ("zerver", "0287_clear_duplicate_reactions"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='archivedreaction',
-            unique_together={('user_profile', 'message', 'emoji_name'), ('user_profile', 'message', 'reaction_type', 'emoji_code')},
+            name="archivedreaction",
+            unique_together={
+                ("user_profile", "message", "emoji_name"),
+                ("user_profile", "message", "reaction_type", "emoji_code"),
+            },
         ),
         migrations.AlterUniqueTogether(
-            name='reaction',
-            unique_together={('user_profile', 'message', 'emoji_name'), ('user_profile', 'message', 'reaction_type', 'emoji_code')},
+            name="reaction",
+            unique_together={
+                ("user_profile", "message", "emoji_name"),
+                ("user_profile", "message", "reaction_type", "emoji_code"),
+            },
         ),
     ]

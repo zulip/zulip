@@ -35,7 +35,7 @@ def get_bot_handler(service_name: str) -> Any:
             configured_service = embedded_bot_service.name
     if not configured_service:
         return None
-    bot_module_name = f'zulip_bots.bots.{configured_service}.{configured_service}'
+    bot_module_name = f"zulip_bots.bots.{configured_service}.{configured_service}"
     bot_module: Any = importlib.import_module(bot_module_name)
     return bot_module.handler_class()
 
@@ -60,11 +60,14 @@ class StateHandler:
     def contains(self, key: str) -> bool:
         return is_key_in_bot_storage(self.user_profile, key)
 
+
 class EmbeddedBotQuitException(Exception):
     pass
 
+
 class EmbeddedBotEmptyRecipientsList(Exception):
     pass
+
 
 class EmbeddedBotHandler:
     def __init__(self, user_profile: UserProfile) -> None:
@@ -80,47 +83,54 @@ class EmbeddedBotHandler:
         if not self._rate_limit.is_legal():
             self._rate_limit.show_error_and_exit()
 
-        if message['type'] == 'stream':
+        if message["type"] == "stream":
             internal_send_stream_message_by_name(
-                self.user_profile.realm, self.user_profile,
-                message['to'], message['topic'], message['content'],
+                self.user_profile.realm,
+                self.user_profile,
+                message["to"],
+                message["topic"],
+                message["content"],
             )
             return
 
-        assert message['type'] == 'private'
+        assert message["type"] == "private"
         # Ensure that it's a comma-separated list, even though the
         # usual 'to' field could be either a List[str] or a str.
-        recipients = ','.join(message['to']).split(',')
+        recipients = ",".join(message["to"]).split(",")
 
-        if len(message['to']) == 0:
-            raise EmbeddedBotEmptyRecipientsList(_('Message must have recipients!'))
-        elif len(message['to']) == 1:
+        if len(message["to"]) == 0:
+            raise EmbeddedBotEmptyRecipientsList(_("Message must have recipients!"))
+        elif len(message["to"]) == 1:
             recipient_user = get_active_user(recipients[0], self.user_profile.realm)
-            internal_send_private_message(self.user_profile.realm, self.user_profile,
-                                          recipient_user, message['content'])
+            internal_send_private_message(self.user_profile, recipient_user, message["content"])
         else:
-            internal_send_huddle_message(self.user_profile.realm, self.user_profile,
-                                         recipients, message['content'])
+            internal_send_huddle_message(
+                self.user_profile.realm, self.user_profile, recipients, message["content"]
+            )
 
     def send_reply(self, message: Dict[str, Any], response: str) -> None:
-        if message['type'] == 'private':
-            self.send_message(dict(
-                type='private',
-                to=[x['email'] for x in message['display_recipient']],
-                content=response,
-                sender_email=message['sender_email'],
-            ))
+        if message["type"] == "private":
+            self.send_message(
+                dict(
+                    type="private",
+                    to=[x["email"] for x in message["display_recipient"]],
+                    content=response,
+                    sender_email=message["sender_email"],
+                )
+            )
         else:
-            self.send_message(dict(
-                type='stream',
-                to=message['display_recipient'],
-                topic=get_topic_from_message_info(message),
-                content=response,
-                sender_email=message['sender_email'],
-            ))
+            self.send_message(
+                dict(
+                    type="stream",
+                    to=message["display_recipient"],
+                    topic=get_topic_from_message_info(message),
+                    content=response,
+                    sender_email=message["sender_email"],
+                )
+            )
 
     # The bot_name argument exists only to comply with ExternalBotHandler.get_config_info().
-    def get_config_info(self, bot_name: str, optional: bool=False) -> Dict[str, str]:
+    def get_config_info(self, bot_name: str, optional: bool = False) -> Dict[str, str]:
         try:
             return get_bot_config(self.user_profile)
         except ConfigError:
@@ -128,5 +138,5 @@ class EmbeddedBotHandler:
                 return {}
             raise
 
-    def quit(self, message: str= "") -> None:
+    def quit(self, message: str = "") -> None:
         raise EmbeddedBotQuitException(message)

@@ -10,42 +10,42 @@ from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 subject_types: Dict[str, List[List[str]]] = {
-    'app': [  # Object type name
-        ['name'],  # Title
-        ['html_url'],  # Automatically put into title
-        ['language'],  # Other properties.
-        ['framework'],
+    "app": [  # Object type name
+        ["name"],  # Title
+        ["html_url"],  # Automatically put into title
+        ["language"],  # Other properties.
+        ["framework"],
     ],
-    'base': [
-        ['title'],
-        ['html_url'],
-        ['#summary'],
-        ['subject'],
+    "base": [
+        ["title"],
+        ["html_url"],
+        ["#summary"],
+        ["subject"],
     ],
-    'comment': [
-        [''],
-        ['subject'],
+    "comment": [
+        [""],
+        ["subject"],
     ],
-    'errorgroup': [
-        ['E#{}', 'number'],
-        ['html_url'],
-        ['last_occurrence:error'],
+    "errorgroup": [
+        ["E#{}", "number"],
+        ["html_url"],
+        ["last_occurrence:error"],
     ],
-    'error': [
-        [''],
+    "error": [
+        [""],
         ['">**Most recent Occurrence**'],
-        ['in {}', 'extra/pathname'],
-        ['!message'],
+        ["in {}", "extra/pathname"],
+        ["!message"],
     ],
 }
 
 
 def get_value(_obj: Dict[str, Any], key: str) -> str:
-    for _key in key.lstrip('!').split('/'):
+    for _key in key.lstrip("!").split("/"):
         if _key in _obj.keys():
             _obj = _obj[_key]
         else:
-            return ''
+            return ""
     return str(_obj)
 
 
@@ -58,58 +58,60 @@ def format_object(
         return message
     keys: List[List[str]] = subject_types[subject_type][1:]
     title = subject_types[subject_type][0]
-    if title[0] != '':
-        title_str = ''
+    if title[0] != "":
+        title_str = ""
         if len(title) > 1:
             title_str = title[0].format(get_value(obj, title[1]))
         else:
             title_str = obj[title[0]]
-        if obj['html_url'] is not None:
-            url: str = obj['html_url']
-            if 'opbeat.com' not in url:
-                url = 'https://opbeat.com/' + url.lstrip('/')
-            message += f'\n**[{title_str}]({url})**'
+        if obj["html_url"] is not None:
+            url: str = obj["html_url"]
+            if "opbeat.com" not in url:
+                url = "https://opbeat.com/" + url.lstrip("/")
+            message += f"\n**[{title_str}]({url})**"
         else:
-            message += f'\n**{title_str}**'
+            message += f"\n**{title_str}**"
     for key_list in keys:
         if len(key_list) > 1:
             value = key_list[0].format(get_value(obj, key_list[1]))
-            message += f'\n>{value}'
+            message += f"\n>{value}"
         else:
             key = key_list[0]
-            key_raw = key.lstrip('!').lstrip('#').lstrip('"')
-            if key_raw != 'html_url' and key_raw != 'subject' and ':' not in key_raw:
+            key_raw = key.lstrip("!").lstrip("#").lstrip('"')
+            if key_raw != "html_url" and key_raw != "subject" and ":" not in key_raw:
                 value = get_value(obj, key_raw)
-                if key.startswith('!'):
-                    message += f'\n>{value}'
-                elif key.startswith('#'):
-                    message += f'\n{value}'
+                if key.startswith("!"):
+                    message += f"\n>{value}"
+                elif key.startswith("#"):
+                    message += f"\n{value}"
                 elif key.startswith('"'):
-                    message += f'\n{key_raw}'
+                    message += f"\n{key_raw}"
                 else:
-                    message += f'\n>{key}: {value}'
-            if key == 'subject':
-                message = format_object(
-                    obj['subject'], obj['subject_type'], message + '\n')
-            if ':' in key:
-                value, value_type = key.split(':')
-                message = format_object(obj[value], value_type, message + '\n')
+                    message += f"\n>{key}: {value}"
+            if key == "subject":
+                message = format_object(obj["subject"], obj["subject_type"], message + "\n")
+            if ":" in key:
+                value, value_type = key.split(":")
+                message = format_object(obj[value], value_type, message + "\n")
     return message
 
 
 @webhook_view("Opbeat")
 @has_request_variables
-def api_opbeat_webhook(request: HttpRequest, user_profile: UserProfile,
-                       payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
+def api_opbeat_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Any] = REQ(argument_type="body"),
+) -> HttpResponse:
     """
     This uses the subject name from opbeat to make the subject,
     and the summary from Opbeat as the message body, with
     details about the object mentioned.
     """
 
-    message_subject = payload['title']
+    message_subject = payload["title"]
 
-    message = format_object(payload, 'base', '')
+    message = format_object(payload, "base", "")
 
     check_send_webhook_message(request, user_profile, message_subject, message)
     return json_success()

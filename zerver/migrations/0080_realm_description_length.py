@@ -5,13 +5,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0079_remove_old_scheduled_jobs'),
+        ("zerver", "0079_remove_old_scheduled_jobs"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='realm',
-            name='description',
+            model_name="realm",
+            name="description",
             field=models.TextField(null=True),
         ),
     ]

@@ -22,7 +22,7 @@
 
 # Original author: Luke Faraone
 
-'''Configure a host for EC2-VPC dynamically assigned network interfaces
+"""Configure a host for EC2-VPC dynamically assigned network interfaces
 
 Amazon VPC gives us a good deal of flexibility compared to classic EC2.
 However there are limitations; you can assign multiple IPs to a host
@@ -39,7 +39,7 @@ reconfiguration scripts.
 Note that it currently does not handle the deconfiguration of
 interfaces.
 
-'''
+"""
 import logging
 import logging.handlers
 import subprocess
@@ -52,20 +52,22 @@ import netifaces
 
 def address_of(device_id: int) -> Optional[str]:
     try:
-        return netifaces.ifaddresses(f"ens{device_id}")[netifaces.AF_INET][0]['addr']
+        return netifaces.ifaddresses(f"ens{device_id}")[netifaces.AF_INET][0]["addr"]
     except KeyError:
         return None
+
 
 def guess_gateway(device_id: int) -> Optional[str]:
     # This will not work if the default gateway isn't n.n.n.1.
     address = address_of(device_id)
     if address is None:
         return None
-    gateway = address.split('.')
-    gateway[3] = '1'
-    return '.'.join(gateway)
+    gateway = address.split(".")
+    gateway[3] = "1"
+    return ".".join(gateway)
 
-log = logging.getLogger('configure-cloud-interfaces')
+
+log = logging.getLogger("configure-cloud-interfaces")
 log.setLevel(logging.DEBUG)
 
 log.addHandler(logging.handlers.SysLogHandler(facility=logging.handlers.SysLogHandler.LOG_DAEMON))
@@ -78,7 +80,7 @@ if metadata is None:
     sys.exit(1)
 
 macs = metadata["network"]["interfaces"]["macs"]
-ids = [int(macdata['device-number']) for macdata in macs.values()]
+ids = [int(macdata["device-number"]) for macdata in macs.values()]
 ifaces = [iface for iface in netifaces.interfaces() if ":" not in iface and iface != "lo"]
 
 # Number of IDs should equal number of interfaces
@@ -91,35 +93,59 @@ for device in macs.values():
     #   If you have multiple IPs, local-ipv4s is a list.
     #   If you only have one, local-ipv4s is a string.
     # Who knew?
-    if isinstance(device['local-ipv4s'], str):
+    if isinstance(device["local-ipv4s"], str):
         # Only do dhcp, don't try to assign addresses
-        to_configure = [device['local-ipv4s']]
+        to_configure = [device["local-ipv4s"]]
     else:
-        to_configure = list(device['local-ipv4s'])
-    device_number = int(device['device-number'])
+        to_configure = list(device["local-ipv4s"])
+    device_number = int(device["device-number"])
     address = address_of(device_number)
 
     if address is None:
         # If the device was not autoconfigured, do so now.
         log.info(f"Device ens{device_number} not configured, starting dhcpd")
-        subprocess.check_call(['/sbin/dhcpcd', f'ens{device_number}'])
+        subprocess.check_call(["/sbin/dhcpcd", f"ens{device_number}"])
 
         dev_num = str(device_number)
         address = address_of(device_number)
         gateway = guess_gateway(device_number)
-        assert(address is not None)
-        assert(gateway is not None)
+        assert address is not None
+        assert gateway is not None
 
         # Horrible hack to route return packets on the correct interface
         # See https://unix.stackexchange.com/a/4421/933
+        subprocess.check_call(["/sbin/ip", "rule", "add", "fwmark", dev_num, "table", dev_num])
         subprocess.check_call(
-            ['/sbin/ip', 'rule', 'add', 'fwmark', dev_num, 'table', dev_num])
+            [
+                "/sbin/ip",
+                "route",
+                "add",
+                "0.0.0.0/0",
+                "table",
+                dev_num,
+                "dev",
+                f"ens{device_number}",
+                "via",
+                gateway,
+            ]
+        )
         subprocess.check_call(
-            ['/sbin/ip', 'route', 'add', '0.0.0.0/0', 'table', dev_num, 'dev',
-             f'ens{device_number}', 'via', gateway])
-        subprocess.check_call(
-            ['/sbin/iptables', '-t', 'mangle', '-A', 'OUTPUT', '-m', 'conntrack', '--ctorigdst',
-             address, '-j', 'MARK', '--set-mark', dev_num])
+            [
+                "/sbin/iptables",
+                "-t",
+                "mangle",
+                "-A",
+                "OUTPUT",
+                "-m",
+                "conntrack",
+                "--ctorigdst",
+                address,
+                "-j",
+                "MARK",
+                "--set-mark",
+                dev_num,
+            ]
+        )
 
     to_configure.remove(address)
 
@@ -127,14 +153,27 @@ for device in macs.values():
         # Configure the IP via a virtual interface
         device = f"ens{device_number}:{count}"
         log.info(f"Configuring {device} with IP {ip}")
-        subprocess.check_call(['/sbin/ifconfig', device, ip])
+        subprocess.check_call(["/sbin/ifconfig", device, ip])
         subprocess.check_call(
-            ['/sbin/iptables', '-t', 'mangle', '-A', 'OUTPUT', '-m', 'conntrack', '--ctorigdst',
-             ip, '-j', 'MARK', '--set-mark', str(device_number)])
+            [
+                "/sbin/iptables",
+                "-t",
+                "mangle",
+                "-A",
+                "OUTPUT",
+                "-m",
+                "conntrack",
+                "--ctorigdst",
+                ip,
+                "-j",
+                "MARK",
+                "--set-mark",
+                str(device_number),
+            ]
+        )
 
     for throwaway in range(2):
         # Don't freak out if this doesn't work.
-        subprocess.call(
-            ['/sbin/ip', 'route', 'del', '10.0.0.0/8'])
+        subprocess.call(["/sbin/ip", "route", "del", "10.0.0.0/8"])
 
 log.info("Finished.")

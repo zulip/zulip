@@ -1,35 +1,59 @@
 "use strict";
 
-const noop = function () {};
-const return_false = function () {
-    return false;
-};
-const return_true = function () {
-    return true;
-};
+const {strict: assert} = require("assert");
 
-set_global("document", {
-    location: {}, // we need this to load compose.js
-});
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
+
+const noop = () => {};
 
 set_global("page_params", {});
 
-set_global("$", global.make_zjquery());
+set_global("document", {
+    location: {}, // we need this to load compose.js
+    to_$: () => $("document-stub"),
+});
 
-set_global("compose_pm_pill", {});
-
-set_global("hash_util", {});
+const channel = mock_module("channel");
+const compose_fade = mock_module("compose_fade", {
+    clear_compose: noop,
+});
+const compose_pm_pill = mock_module("compose_pm_pill");
+const hash_util = mock_module("hash_util");
+const narrow_state = mock_module("narrow_state", {
+    set_compose_defaults: noop,
+});
+mock_module("notifications", {
+    clear_compose_notifications: noop,
+});
+mock_module("reload_state", {
+    is_in_progress: () => false,
+});
+mock_module("drafts", {
+    update_draft: noop,
+});
+mock_module("common", {
+    status_classes: "status_classes",
+});
+mock_module("unread_ops", {
+    notify_server_message_read: noop,
+});
+set_global("current_msg_list", {
+    can_mark_messages_read() {
+        return true;
+    },
+});
 
 const people = zrequire("people");
-zrequire("compose_ui");
-zrequire("compose");
-zrequire("compose_state");
-zrequire("compose_actions");
-zrequire("stream_data");
 
-set_global("document", "document-stub");
+const compose_ui = zrequire("compose_ui");
+const compose = zrequire("compose");
+const compose_state = zrequire("compose_state");
+const compose_actions = zrequire("compose_actions");
+const stream_data = zrequire("stream_data");
 
-compose_actions.update_placeholder_text = noop;
+compose_actions.__Rewire__("update_placeholder_text", noop);
 
 const start = compose_actions.start;
 const cancel = compose_actions.cancel;
@@ -38,66 +62,30 @@ const respond_to_message = compose_actions.respond_to_message;
 const reply_with_mention = compose_actions.reply_with_mention;
 const quote_and_reply = compose_actions.quote_and_reply;
 
-const compose_state = global.compose_state;
+compose_state.__Rewire__(
+    "private_message_recipient",
+    (function () {
+        let recipient;
 
-compose_state.private_message_recipient = (function () {
-    let recipient;
+        return function (arg) {
+            if (arg === undefined) {
+                return recipient;
+            }
 
-    return function (arg) {
-        if (arg === undefined) {
-            return recipient;
-        }
-
-        recipient = arg;
-        return undefined;
-    };
-})();
-
-set_global("reload_state", {
-    is_in_progress: return_false,
-});
-
-set_global("notifications", {
-    clear_compose_notifications: noop,
-});
-
-set_global("compose_fade", {
-    clear_compose: noop,
-});
-
-set_global("drafts", {
-    update_draft: noop,
-});
-
-set_global("narrow_state", {
-    set_compose_defaults: noop,
-});
-
-set_global("unread_ops", {
-    notify_server_message_read: noop,
-});
-
-set_global("common", {
-    status_classes: "status_classes",
-});
+            recipient = arg;
+            return undefined;
+        };
+    })(),
+);
 
 function stub_selected_message(msg) {
-    set_global("current_msg_list", {
-        selected_message() {
-            return msg;
-        },
-        can_mark_messages_read() {
-            return true;
-        },
-    });
+    current_msg_list.selected_message = () => msg;
 }
 
 function stub_channel_get(success_value) {
-    set_global("channel", {
-        get(opts) {
-            opts.success(success_value);
-        },
-    });
+    channel.get = (opts) => {
+        opts.success(success_value);
+    };
 }
 
 function assert_visible(sel) {
@@ -114,20 +102,21 @@ run_test("initial_state", () => {
     assert.equal(compose_state.has_message_content(), false);
 });
 
-run_test("start", () => {
-    compose_actions.autosize_message_content = noop;
-    compose_actions.expand_compose_box = noop;
-    compose_actions.set_focus = noop;
-    compose_actions.complete_starting_tasks = noop;
-    compose_actions.blur_compose_inputs = noop;
-    compose_actions.clear_textarea = noop;
+run_test("start", (override) => {
+    compose_actions.__Rewire__("autosize_message_content", noop);
+    compose_actions.__Rewire__("expand_compose_box", noop);
+    compose_actions.__Rewire__("set_focus", noop);
+    compose_actions.__Rewire__("complete_starting_tasks", noop);
+    compose_actions.__Rewire__("blur_compose_inputs", noop);
+    compose_actions.__Rewire__("clear_textarea", noop);
+
+    let compose_defaults;
+    override(narrow_state, "set_compose_defaults", () => compose_defaults);
 
     // Start stream message
-    global.narrow_state.set_compose_defaults = function () {
-        const opts = {};
-        opts.stream = "stream1";
-        opts.topic = "topic1";
-        return opts;
+    compose_defaults = {
+        stream: "stream1",
+        topic: "topic1",
     };
 
     let opts = {};
@@ -150,10 +139,8 @@ run_test("start", () => {
     };
     stream_data.add_sub(denmark);
 
-    global.narrow_state.set_compose_defaults = function () {
-        const opts = {};
-        opts.trigger = "new topic button";
-        return opts;
+    compose_defaults = {
+        trigger: "new topic button",
     };
 
     opts = {};
@@ -161,10 +148,8 @@ run_test("start", () => {
     assert.equal($("#stream_message_recipient_stream").val(), "Denmark");
     assert.equal($("#stream_message_recipient_topic").val(), "");
 
-    global.narrow_state.set_compose_defaults = function () {
-        const opts = {};
-        opts.trigger = "compose_hotkey";
-        return opts;
+    compose_defaults = {
+        trigger: "compose_hotkey",
     };
 
     opts = {};
@@ -188,10 +173,8 @@ run_test("start", () => {
     stream_data.clear_subscriptions();
 
     // Start PM
-    global.narrow_state.set_compose_defaults = function () {
-        const opts = {};
-        opts.private_message_recipient = "foo@example.com";
-        return opts;
+    compose_defaults = {
+        private_message_recipient: "foo@example.com",
     };
 
     opts = {
@@ -210,14 +193,16 @@ run_test("start", () => {
 
     // Cancel compose.
     let pill_cleared;
-    compose_pm_pill.clear = function () {
+    compose_pm_pill.clear = () => {
         pill_cleared = true;
     };
 
     let abort_xhr_called = false;
-    compose.abort_xhr = () => {
+    override(compose, "abort_xhr", () => {
         abort_xhr_called = true;
-    };
+    });
+
+    $("#compose-textarea").set_height(50);
 
     assert_hidden("#compose_controls");
     cancel();
@@ -265,7 +250,7 @@ run_test("respond_to_message", () => {
     assert.equal($("#stream_message_recipient_stream").val(), "devel");
 });
 
-run_test("reply_with_mention", () => {
+run_test("reply_with_mention", (override) => {
     const msg = {
         type: "stream",
         stream: "devel",
@@ -277,16 +262,15 @@ run_test("reply_with_mention", () => {
     stub_selected_message(msg);
 
     let syntax_to_insert;
-    compose_ui.insert_syntax_and_focus = function (syntax) {
+    override(compose_ui, "insert_syntax_and_focus", (syntax) => {
         syntax_to_insert = syntax;
-    };
+    });
 
     const opts = {};
 
     reply_with_mention(opts);
     assert.equal($("#stream_message_recipient_stream").val(), "devel");
     assert.equal(syntax_to_insert, "@**Bob Roberts**");
-    assert(compose_state.has_message_content());
 
     // Test for extended mention syntax
     const bob_1 = {
@@ -305,11 +289,21 @@ run_test("reply_with_mention", () => {
     reply_with_mention(opts);
     assert.equal($("#stream_message_recipient_stream").val(), "devel");
     assert.equal(syntax_to_insert, "@**Bob Roberts|40**");
-    assert(compose_state.has_message_content());
 });
 
-run_test("quote_and_reply", () => {
-    const msg = {
+run_test("quote_and_reply", (override) => {
+    let selected_message;
+    override(current_msg_list, "selected_message", () => selected_message);
+
+    let expected_replacement;
+    let replaced;
+    override(compose_ui, "replace_syntax", (syntax, replacement) => {
+        assert.equal(syntax, "[Quoting…]");
+        assert.equal(replacement, expected_replacement);
+        replaced = true;
+    });
+
+    selected_message = {
         type: "stream",
         stream: "devel",
         topic: "python",
@@ -318,26 +312,15 @@ run_test("quote_and_reply", () => {
         sender_id: 40,
     };
     hash_util.by_conversation_and_time_uri = () => "link_to_message";
-    stub_selected_message(msg);
     stub_channel_get({
         raw_content: "Testing.",
     });
 
-    current_msg_list.selected_id = function () {
-        return 100;
-    };
+    current_msg_list.selected_id = () => 100;
 
-    compose_ui.insert_syntax_and_focus = function (syntax) {
+    override(compose_ui, "insert_syntax_and_focus", (syntax) => {
         assert.equal(syntax, "[Quoting…]\n");
-    };
-
-    compose_ui.replace_syntax = function (syntax, replacement) {
-        assert.equal(syntax, "[Quoting…]");
-        assert.equal(
-            replacement,
-            "@_**Bob Roberts|40** [said](link_to_message):\n```quote\nTesting.\n```",
-        );
-    };
+    });
 
     const opts = {
         reply_type: "personal",
@@ -347,45 +330,45 @@ run_test("quote_and_reply", () => {
         assert.equal(pos, 0);
     };
 
-    quote_and_reply(opts);
+    replaced = false;
+    expected_replacement = "@_**Bob Roberts|40** [said](link_to_message):\n```quote\nTesting.\n```";
 
-    current_msg_list.selected_message = function () {
-        return {
-            type: "stream",
-            stream: "devel",
-            topic: "test",
-            reply_to: "bob",
-            sender_full_name: "Bob Roberts",
-            sender_id: 40,
-            raw_content: "Testing.",
-        };
+    quote_and_reply(opts);
+    assert(replaced);
+
+    selected_message = {
+        type: "stream",
+        stream: "devel",
+        topic: "test",
+        reply_to: "bob",
+        sender_full_name: "Bob Roberts",
+        sender_id: 40,
+        raw_content: "Testing.",
     };
 
-    channel.get = function () {
+    channel.get = () => {
         assert.fail("channel.get should not be used if raw_content is present");
     };
 
+    replaced = false;
     quote_and_reply(opts);
+    assert(replaced);
 
-    current_msg_list.selected_message = function () {
-        return {
-            type: "stream",
-            stream: "devel",
-            topic: "test",
-            reply_to: "bob",
-            sender_full_name: "Bob Roberts",
-            sender_id: 40,
-            raw_content: "```\nmultiline code block\nshoudln't mess with quotes\n```",
-        };
+    selected_message = {
+        type: "stream",
+        stream: "devel",
+        topic: "test",
+        reply_to: "bob",
+        sender_full_name: "Bob Roberts",
+        sender_id: 40,
+        raw_content: "```\nmultiline code block\nshoudln't mess with quotes\n```",
     };
-    compose_ui.replace_syntax = function (syntax, replacement) {
-        assert.equal(syntax, "[Quoting…]");
-        assert.equal(
-            replacement,
-            "@_**Bob Roberts|40** [said](link_to_message):\n````quote\n```\nmultiline code block\nshoudln't mess with quotes\n```\n````",
-        );
-    };
+
+    replaced = false;
+    expected_replacement =
+        "@_**Bob Roberts|40** [said](link_to_message):\n````quote\n```\nmultiline code block\nshoudln't mess with quotes\n```\n````";
     quote_and_reply(opts);
+    assert(replaced);
 });
 
 run_test("get_focus_area", () => {
@@ -405,18 +388,18 @@ run_test("get_focus_area", () => {
     );
 });
 
-run_test("focus_in_empty_compose", () => {
-    $("#compose-textarea").is = function (attr) {
+run_test("focus_in_empty_compose", (override) => {
+    $("#compose-textarea").is = (attr) => {
         assert.equal(attr, ":focus");
         return $("#compose-textarea").is_focused;
     };
 
-    compose_state.composing = return_true;
+    override(compose_state, "composing", () => true);
     $("#compose-textarea").val("");
     $("#compose-textarea").trigger("focus");
     assert(compose_state.focus_in_empty_compose());
 
-    compose_state.composing = return_false;
+    override(compose_state, "composing", () => false);
     assert(!compose_state.focus_in_empty_compose());
 
     $("#compose-textarea").val("foo");
@@ -426,53 +409,52 @@ run_test("focus_in_empty_compose", () => {
     assert(!compose_state.focus_in_empty_compose());
 });
 
-run_test("on_narrow", () => {
+run_test("on_narrow", (override) => {
+    let narrowed_by_topic_reply;
+    override(narrow_state, "narrowed_by_topic_reply", () => narrowed_by_topic_reply);
+
+    let narrowed_by_pm_reply;
+    override(narrow_state, "narrowed_by_pm_reply", () => narrowed_by_pm_reply);
+
+    let has_message_content;
+    override(compose_state, "has_message_content", () => has_message_content);
+
     let cancel_called = false;
-    compose_actions.cancel = function () {
+    override(compose_actions, "cancel", () => {
         cancel_called = true;
-    };
+    });
     compose_actions.on_narrow({
         force_close: true,
     });
     assert(cancel_called);
 
     let on_topic_narrow_called = false;
-    compose_actions.on_topic_narrow = function () {
+    override(compose_actions, "on_topic_narrow", () => {
         on_topic_narrow_called = true;
-    };
-    narrow_state.narrowed_by_topic_reply = function () {
-        return true;
-    };
+    });
+    narrowed_by_topic_reply = true;
     compose_actions.on_narrow({
         force_close: false,
     });
     assert(on_topic_narrow_called);
 
     let update_message_list_called = false;
-    narrow_state.narrowed_by_topic_reply = function () {
-        return false;
-    };
-    compose_fade.update_message_list = function () {
+    narrowed_by_topic_reply = false;
+    compose_fade.update_message_list = () => {
         update_message_list_called = true;
     };
-    compose_state.has_message_content = function () {
-        return true;
-    };
+    has_message_content = true;
     compose_actions.on_narrow({
         force_close: false,
     });
     assert(update_message_list_called);
 
-    compose_state.has_message_content = function () {
-        return false;
-    };
+    has_message_content = false;
     let start_called = false;
-    compose_actions.start = function () {
+    override(compose_actions, "start", () => {
         start_called = true;
-    };
-    narrow_state.narrowed_by_pm_reply = function () {
-        return true;
-    };
+    });
+    narrowed_by_pm_reply = true;
     compose_actions.on_narrow({
         force_close: false,
         trigger: "not-search",
@@ -488,9 +470,7 @@ run_test("on_narrow", () => {
     });
     assert(!start_called);
 
-    narrow_state.narrowed_by_pm_reply = function () {
-        return false;
-    };
+    narrowed_by_pm_reply = false;
     cancel_called = false;
     compose_actions.on_narrow({
         force_close: false,

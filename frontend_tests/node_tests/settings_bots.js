@@ -1,8 +1,12 @@
 "use strict";
 
-const rewiremock = require("rewiremock/node");
+const {strict: assert} = require("assert");
 
-set_global("page_params", {
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
+
+const page_params = set_global("page_params", {
     realm_uri: "https://chat.example.com",
     realm_embedded_bots: [
         {name: "converter", config: {}},
@@ -23,20 +27,14 @@ const bot_data_params = {
     ],
 };
 
-set_global("avatar", {});
-
-set_global("$", global.make_zjquery());
-
-zrequire("bot_data");
-zrequire("people");
-
+const avatar = mock_module("avatar");
 function ClipboardJS(sel) {
     assert.equal(sel, "#copy_zuliprc");
 }
 
-rewiremock.proxy(() => zrequire("settings_bots"), {
-    clipboard: ClipboardJS,
-});
+const bot_data = zrequire("bot_data");
+const settings_bots = zrequire("settings_bots");
+settings_bots.__Rewire__("ClipboardJS", ClipboardJS);
 
 bot_data.initialize(bot_data_params);
 
@@ -115,12 +113,8 @@ function test_create_bot_type_input_box_toggle(f) {
     assert(!config_inputbox.visible());
 }
 
-function set_up() {
-    set_global("$", global.make_zjquery());
-
-    // bunch of stubs
-
-    $.validator = {addMethod: () => {}};
+run_test("test tab clicks", (override) => {
+    override($.validator, "addMethod", () => {});
 
     $("#create_bot_form").validate = () => {};
 
@@ -130,20 +124,12 @@ function set_up() {
         };
         return mock_children;
     };
-    avatar.build_bot_create_widget = () => {};
-    avatar.build_bot_edit_widget = () => {};
+
+    override(avatar, "build_bot_create_widget", () => {});
 
     settings_bots.set_up();
 
     test_create_bot_type_input_box_toggle(() => $("#create_bot_type").trigger("change"));
-}
-
-run_test("set_up", () => {
-    set_up();
-});
-
-run_test("test tab clicks", () => {
-    set_up();
 
     function click_on_tab(tab_elem) {
         tab_elem.trigger("click");
@@ -168,38 +154,32 @@ run_test("test tab clicks", () => {
         inactive: $("#inactive_bots_list"),
     };
 
-    (function () {
-        click_on_tab(tabs.add);
-        assert(tabs.add.hasClass("active"));
-        assert(!tabs.active.hasClass("active"));
-        assert(!tabs.inactive.hasClass("active"));
+    click_on_tab(tabs.add);
+    assert(tabs.add.hasClass("active"));
+    assert(!tabs.active.hasClass("active"));
+    assert(!tabs.inactive.hasClass("active"));
 
-        assert(forms.add.visible());
-        assert(!forms.active.visible());
-        assert(!forms.inactive.visible());
-    })();
+    assert(forms.add.visible());
+    assert(!forms.active.visible());
+    assert(!forms.inactive.visible());
 
-    (function () {
-        click_on_tab(tabs.active);
-        assert(!tabs.add.hasClass("active"));
-        assert(tabs.active.hasClass("active"));
-        assert(!tabs.inactive.hasClass("active"));
+    click_on_tab(tabs.active);
+    assert(!tabs.add.hasClass("active"));
+    assert(tabs.active.hasClass("active"));
+    assert(!tabs.inactive.hasClass("active"));
 
-        assert(!forms.add.visible());
-        assert(forms.active.visible());
-        assert(!forms.inactive.visible());
-    })();
+    assert(!forms.add.visible());
+    assert(forms.active.visible());
+    assert(!forms.inactive.visible());
 
-    (function () {
-        click_on_tab(tabs.inactive);
-        assert(!tabs.add.hasClass("active"));
-        assert(!tabs.active.hasClass("active"));
-        assert(tabs.inactive.hasClass("active"));
+    click_on_tab(tabs.inactive);
+    assert(!tabs.add.hasClass("active"));
+    assert(!tabs.active.hasClass("active"));
+    assert(tabs.inactive.hasClass("active"));
 
-        assert(!forms.add.visible());
-        assert(!forms.active.visible());
-        assert(forms.inactive.visible());
-    })();
+    assert(!forms.add.visible());
+    assert(!forms.active.visible());
+    assert(forms.inactive.visible());
 });
 
 run_test("can_create_new_bots", () => {

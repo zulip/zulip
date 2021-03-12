@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0244_message_copy_pub_date_to_date_sent'),
+        ("zerver", "0244_message_copy_pub_date_to_date_sent"),
     ]
 
     operations = [
@@ -23,9 +23,9 @@ class Migration(migrations.Migration):
                 # as done. The building of the index actually happened in the previous migration, not here,
                 # but nevertheless this seems like the correct place to put this fake AlterField.
                 migrations.AlterField(
-                    model_name='message',
-                    name='date_sent',
-                    field=models.DateTimeField(db_index=True, verbose_name='date sent'),
+                    model_name="message",
+                    name="date_sent",
+                    field=models.DateTimeField(db_index=True, verbose_name="date sent"),
                 ),
             ],
         ),

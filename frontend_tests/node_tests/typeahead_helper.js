@@ -1,7 +1,12 @@
 "use strict";
 
-set_global("page_params", {realm_is_zephyr_mirror_realm: false});
-set_global("md5", (s) => "md5-" + s);
+const {strict: assert} = require("assert");
+
+const {stub_templates} = require("../zjsunit/handlebars");
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
+const page_params = set_global("page_params", {realm_is_zephyr_mirror_realm: false});
 
 const settings_config = zrequire("settings_config");
 const pm_conversations = zrequire("pm_conversations");
@@ -9,18 +14,21 @@ const pm_conversations = zrequire("pm_conversations");
 page_params.realm_email_address_visibility =
     settings_config.email_address_visibility_values.admins_only.code;
 
-zrequire("recent_senders");
+const recent_senders = zrequire("recent_senders");
+const peer_data = zrequire("peer_data");
 const people = zrequire("people");
-zrequire("stream_data");
+const stream_data = zrequire("stream_data");
 zrequire("narrow");
+zrequire("user_status");
+zrequire("presence");
+zrequire("buddy_data");
 zrequire("hash_util");
 
-const emoji = zrequire("emoji", "shared/js/emoji");
-const pygments_data = zrequire("pygments_data", "generated/pygments_data.json");
-const actual_pygments_data = Object.assign({}, pygments_data);
+const emoji = zrequire("../shared/js/emoji");
+const pygments_data = zrequire("../generated/pygments_data.json");
+const actual_pygments_data = {...pygments_data};
 const ct = zrequire("composebox_typeahead");
 const th = zrequire("typeahead_helper");
-const {LazySet} = zrequire("lazy_set");
 
 let next_id = 0;
 
@@ -36,23 +44,46 @@ stream_data.create_streams([
     {name: "Linux", subscribed: true, color: "red", stream_id: 2},
 ]);
 
-run_test("sort_streams", () => {
-    const popular = new LazySet([1, 2, 3, 4, 5, 6]);
-
-    const unpopular = new LazySet([1]);
-
+run_test("sort_streams", (override) => {
     let test_streams = [
-        {name: "Dev", pin_to_top: false, subscribers: unpopular, subscribed: true},
-        {name: "Docs", pin_to_top: false, subscribers: popular, subscribed: true},
-        {name: "Derp", pin_to_top: false, subscribers: unpopular, subscribed: true},
-        {name: "Denmark", pin_to_top: true, subscribers: popular, subscribed: true},
-        {name: "dead", pin_to_top: false, subscribers: unpopular, subscribed: true},
+        {
+            stream_id: 101,
+            name: "Dev",
+            pin_to_top: false,
+            stream_weekly_traffic: 0,
+            subscribed: true,
+        },
+        {
+            stream_id: 102,
+            name: "Docs",
+            pin_to_top: false,
+            stream_weekly_traffic: 100,
+            subscribed: true,
+        },
+        {
+            stream_id: 103,
+            name: "Derp",
+            pin_to_top: false,
+            stream_weekly_traffic: 0,
+            subscribed: true,
+        },
+        {
+            stream_id: 104,
+            name: "Denmark",
+            pin_to_top: true,
+            stream_weekly_traffic: 100,
+            subscribed: true,
+        },
+        {
+            stream_id: 105,
+            name: "dead",
+            pin_to_top: false,
+            stream_weekly_traffic: 0,
+            subscribed: true,
+        },
     ];
-    test_streams.forEach(stream_data.update_calculated_fields);
 
-    global.stream_data.is_active = function (sub) {
-        return sub.name !== "dead";
-    };
+    override(stream_data, "is_active", (sub) => sub.name !== "dead");
 
     test_streams = th.sort_streams(test_streams, "d");
     assert.deepEqual(test_streams[0].name, "Denmark"); // Pinned streams first
@@ -63,13 +94,38 @@ run_test("sort_streams", () => {
 
     // Test sort streams with description
     test_streams = [
-        {name: "Dev", description: "development help", subscribers: unpopular, subscribed: true},
-        {name: "Docs", description: "writing docs", subscribers: popular, subscribed: true},
-        {name: "Derp", description: "derping around", subscribers: unpopular, subscribed: true},
-        {name: "Denmark", description: "visiting Denmark", subscribers: popular, subscribed: true},
-        {name: "dead", description: "dead stream", subscribers: unpopular, subscribed: true},
+        {
+            stream_id: 201,
+            name: "Dev",
+            description: "development help",
+            subscribed: true,
+        },
+        {
+            stream_id: 202,
+            name: "Docs",
+            description: "writing docs",
+            subscribed: true,
+        },
+        {
+            stream_id: 203,
+            name: "Derp",
+            description: "derping around",
+            subscribed: true,
+        },
+        {
+            stream_id: 204,
+            name: "Denmark",
+            description: "visiting Denmark",
+            subscribed: true,
+        },
+        {
+            stream_id: 205,
+            name: "dead",
+            description: "dead stream",
+            subscribed: true,
+        },
     ];
-    test_streams.forEach(stream_data.update_calculated_fields);
+
     test_streams = th.sort_streams(test_streams, "wr");
     assert.deepEqual(test_streams[0].name, "Docs"); // Description match
     assert.deepEqual(test_streams[1].name, "Denmark"); // Popular stream
@@ -79,14 +135,43 @@ run_test("sort_streams", () => {
 
     // Test sort both subscribed and unsubscribed streams.
     test_streams = [
-        {name: "Dev", description: "Some devs", subscribed: true, subscribers: popular},
-        {name: "East", description: "Developing east", subscribed: true, subscribers: popular},
-        {name: "New", description: "No match", subscribed: true, subscribers: popular},
-        {name: "Derp", description: "Always Derping", subscribed: false, subscribers: popular},
-        {name: "Ether", description: "Destroying ether", subscribed: false, subscribers: popular},
-        {name: "Mew", description: "Cat mews", subscribed: false, subscribers: popular},
+        {
+            stream_id: 301,
+            name: "Dev",
+            description: "Some devs",
+            subscribed: true,
+        },
+        {
+            stream_id: 302,
+            name: "East",
+            description: "Developing east",
+            subscribed: true,
+        },
+        {
+            stream_id: 303,
+            name: "New",
+            description: "No match",
+            subscribed: true,
+        },
+        {
+            stream_id: 304,
+            name: "Derp",
+            description: "Always Derping",
+            subscribed: false,
+        },
+        {
+            stream_id: 305,
+            name: "Ether",
+            description: "Destroying ether",
+            subscribed: false,
+        },
+        {
+            stream_id: 306,
+            name: "Mew",
+            description: "Cat mews",
+            subscribed: false,
+        },
     ];
-    test_streams.forEach(stream_data.update_calculated_fields);
 
     test_streams = th.sort_streams(test_streams, "d");
     assert.deepEqual(test_streams[0].name, "Dev"); // Subscribed and stream name starts with query
@@ -143,7 +228,7 @@ run_test("sort_languages", () => {
 
 const a_bot = {
     email: "a_bot@zulip.com",
-    full_name: "A zulip test bot",
+    full_name: "A Zulip test bot",
     is_admin: false,
     is_bot: true,
     user_id: 1,
@@ -151,7 +236,7 @@ const a_bot = {
 
 const a_user = {
     email: "a_user@zulip.org",
-    full_name: "A zulip user",
+    full_name: "A Zulip user",
     is_admin: false,
     is_bot: false,
     user_id: 2,
@@ -239,9 +324,9 @@ run_test("sort_recipients", () => {
     const subscriber_email_1 = "b_user_2@zulip.net";
     const subscriber_email_2 = "b_user_3@zulip.net";
     const subscriber_email_3 = "b_bot@example.com";
-    stream_data.add_subscriber(1, people.get_user_id(subscriber_email_1));
-    stream_data.add_subscriber(1, people.get_user_id(subscriber_email_2));
-    stream_data.add_subscriber(1, people.get_user_id(subscriber_email_3));
+    peer_data.add_subscriber(1, people.get_user_id(subscriber_email_1));
+    peer_data.add_subscriber(1, people.get_user_id(subscriber_email_2));
+    peer_data.add_subscriber(1, people.get_user_id(subscriber_email_3));
 
     const dev_sub = stream_data.get_sub("Dev");
     const linux_sub = stream_data.get_sub("Linux");
@@ -255,19 +340,19 @@ run_test("sort_recipients", () => {
     pm_conversations.set_partner(7);
 
     // For splitting based on recency
-    global.recent_senders.process_message_for_senders({
+    recent_senders.process_message_for_senders({
         sender_id: 7,
         stream_id: 1,
         topic: "Dev Topic",
         id: (next_id += 1),
     });
-    global.recent_senders.process_message_for_senders({
+    recent_senders.process_message_for_senders({
         sender_id: 5,
         stream_id: 1,
         topic: "Dev Topic",
         id: (next_id += 1),
     });
-    global.recent_senders.process_message_for_senders({
+    recent_senders.process_message_for_senders({
         sender_id: 6,
         stream_id: 1,
         topic: "Dev Topic",
@@ -285,13 +370,13 @@ run_test("sort_recipients", () => {
         "a_bot@zulip.com",
     ]);
 
-    global.recent_senders.process_message_for_senders({
+    recent_senders.process_message_for_senders({
         sender_id: 5,
         stream_id: 2,
         topic: "Linux Topic",
         id: (next_id += 1),
     });
-    global.recent_senders.process_message_for_senders({
+    recent_senders.process_message_for_senders({
         sender_id: 7,
         stream_id: 2,
         topic: "Linux Topic",
@@ -458,7 +543,7 @@ run_test("render_person when emails hidden", () => {
     // Test render_person with regular person, under hidden email visibility case
     page_params.is_admin = false;
     let rendered = false;
-    global.stub_templates((template_name, args) => {
+    stub_templates((template_name, args) => {
         assert.equal(template_name, "typeahead_list_item");
         assert.equal(args.primary, b_user_1.full_name);
         assert.equal(args.secondary, undefined);
@@ -473,7 +558,7 @@ run_test("render_person", () => {
     page_params.is_admin = true;
     // Test render_person with regular person
     let rendered = false;
-    global.stub_templates((template_name, args) => {
+    stub_templates((template_name, args) => {
         assert.equal(template_name, "typeahead_list_item");
         assert.equal(args.primary, a_user.full_name);
         assert.equal(args.secondary, a_user.email);
@@ -493,7 +578,7 @@ run_test("render_person", () => {
         special_item_text: "special_text",
     };
     rendered = false;
-    global.stub_templates((template_name, args) => {
+    stub_templates((template_name, args) => {
         assert.equal(template_name, "typeahead_list_item");
         assert.equal(args.primary, special_person.special_item_text);
         rendered = true;
@@ -505,7 +590,7 @@ run_test("render_person", () => {
 
 run_test("clear_rendered_person", () => {
     let rendered = false;
-    global.stub_templates((template_name, args) => {
+    stub_templates((template_name, args) => {
         assert.equal(template_name, "typeahead_list_item");
         assert.equal(args.primary, b_bot.full_name);
         assert.equal(args.secondary, b_bot.email);
@@ -536,7 +621,7 @@ run_test("render_stream", () => {
         stream_id: 42,
         name: "Short Description",
     };
-    global.stub_templates((template_name, args) => {
+    stub_templates((template_name, args) => {
         assert.equal(template_name, "typeahead_list_item");
         assert.equal(args.primary, stream.name);
         assert.equal(args.secondary, stream.description);
@@ -553,10 +638,10 @@ run_test("render_stream", () => {
         stream_id: 43,
         name: "Long Description",
     };
-    global.stub_templates((template_name, args) => {
+    stub_templates((template_name, args) => {
         assert.equal(template_name, "typeahead_list_item");
         assert.equal(args.primary, stream.name);
-        const short_desc = stream.description.substring(0, 35);
+        const short_desc = stream.description.slice(0, 35);
         assert.equal(args.secondary, short_desc + "...");
         rendered = true;
         return "typeahead-item-stub";
@@ -572,7 +657,7 @@ run_test("clear_rendered_stream", () => {
         stream_id: 44,
         name: "Stream To Be Cleared",
     };
-    global.stub_templates((template_name, args) => {
+    stub_templates((template_name, args) => {
         assert.equal(template_name, "typeahead_list_item");
         assert.equal(args.primary, stream.name);
         assert.equal(args.secondary, stream.description);
@@ -605,7 +690,7 @@ run_test("render_emoji", () => {
         }),
     );
 
-    global.stub_templates((template_name, args) => {
+    stub_templates((template_name, args) => {
         assert.equal(template_name, "typeahead_list_item");
         assert.deepEqual(args, {
             primary: "thumbs up",
@@ -627,7 +712,7 @@ run_test("render_emoji", () => {
         emoji_url: "TBD",
     };
 
-    global.stub_templates((template_name, args) => {
+    stub_templates((template_name, args) => {
         assert.equal(template_name, "typeahead_list_item");
         assert.deepEqual(args, {
             primary: "realm emoji",

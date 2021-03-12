@@ -1,11 +1,17 @@
 "use strict";
 
-zrequire("unread");
-zrequire("stream_data");
-zrequire("stream_topic_history");
+const {strict: assert} = require("assert");
 
-set_global("channel", {});
-set_global("message_list", {});
+const {mock_module, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
+const channel = mock_module("channel");
+const message_list = mock_module("message_list");
+const message_util = mock_module("message_util");
+
+const unread = zrequire("unread");
+const stream_data = zrequire("stream_data");
+const stream_topic_history = zrequire("stream_topic_history");
 
 run_test("basics", () => {
     const stream_id = 55;
@@ -51,10 +57,8 @@ run_test("basics", () => {
     assert.deepEqual(history, ["Topic1", "topic2"]);
     assert.deepEqual(max_message_id, 104);
 
-    set_global("message_util", {
-        get_messages_in_topic: () => [{id: 101}, {id: 102}],
-        get_max_message_id_in_stream: () => 103,
-    });
+    message_util.get_messages_in_topic = () => [{id: 101}, {id: 102}];
+    message_util.get_max_message_id_in_stream = () => 103;
     // Removing the last msg in topic1 changes the order
     stream_topic_history.remove_messages({
         stream_id,
@@ -68,10 +72,7 @@ run_test("basics", () => {
     max_message_id = stream_topic_history.get_max_message_id(stream_id);
     assert.deepEqual(max_message_id, 103);
 
-    set_global("message_util", {
-        get_messages_in_topic: () => [{id: 102}],
-        get_max_message_id_in_stream: () => 103,
-    });
+    message_util.get_messages_in_topic = () => [{id: 102}];
     // Removing first topic1 message has no effect.
     stream_topic_history.remove_messages({
         stream_id,
@@ -298,7 +299,7 @@ run_test("server_history_end_to_end", () => {
     let get_success_callback;
     let on_success_called;
 
-    channel.get = function (opts) {
+    channel.get = (opts) => {
         assert.equal(opts.url, "/json/users/me/99/topics");
         assert.deepEqual(opts.data, {});
         get_success_callback = opts.success;
@@ -318,7 +319,7 @@ run_test("server_history_end_to_end", () => {
     // Try getting server history for a second time.
 
     channel.get = () => {
-        throw Error("We should not get more data.");
+        throw new Error("We should not get more data.");
     };
 
     on_success_called = false;

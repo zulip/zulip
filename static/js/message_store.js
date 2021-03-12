@@ -1,8 +1,10 @@
-"use strict";
-
-const people = require("./people");
-const pm_conversations = require("./pm_conversations");
-const util = require("./util");
+import * as alert_words from "./alert_words";
+import * as message_list from "./message_list";
+import * as people from "./people";
+import * as pm_conversations from "./pm_conversations";
+import * as recent_senders from "./recent_senders";
+import * as stream_topic_history from "./stream_topic_history";
+import * as util from "./util";
 
 const stored_messages = new Map();
 
@@ -21,11 +23,16 @@ const stored_messages = new Map();
 */
 const message_user_ids = new Set();
 
-exports.user_ids = function () {
-    return Array.from(message_user_ids);
-};
+export function clear_for_testing() {
+    stored_messages.clear();
+    message_user_ids.clear();
+}
 
-exports.get = function get(message_id) {
+export function user_ids() {
+    return Array.from(message_user_ids);
+}
+
+export function get(message_id) {
     if (message_id === undefined || message_id === null) {
         blueslip.error("message_store.get got bad value: " + message_id);
         return undefined;
@@ -36,49 +43,45 @@ exports.get = function get(message_id) {
 
         // Try to soldier on, assuming the caller treats message
         // ids as strings.
-        message_id = parseFloat(message_id);
+        message_id = Number.parseFloat(message_id);
     }
 
     return stored_messages.get(message_id);
-};
+}
 
-exports.each = function (f) {
-    stored_messages.forEach(f);
-};
-
-exports.get_pm_emails = function (message) {
-    function email(user_id) {
-        const person = people.get_by_user_id(user_id);
-        if (!person) {
-            blueslip.error("Unknown user id " + user_id);
-            return "?";
-        }
-        return person.email;
-    }
-
+export function get_pm_emails(message) {
     const user_ids = people.pm_with_user_ids(message);
-    const emails = user_ids.map(email).sort();
+    const emails = user_ids
+        .map((user_id) => {
+            const person = people.get_by_user_id(user_id);
+            if (!person) {
+                blueslip.error("Unknown user id " + user_id);
+                return "?";
+            }
+            return person.email;
+        })
+        .sort();
 
     return emails.join(", ");
-};
+}
 
-exports.get_pm_full_names = function (message) {
-    function name(user_id) {
-        const person = people.get_by_user_id(user_id);
-        if (!person) {
-            blueslip.error("Unknown user id " + user_id);
-            return "?";
-        }
-        return person.full_name;
-    }
-
+export function get_pm_full_names(message) {
     const user_ids = people.pm_with_user_ids(message);
-    const names = user_ids.map(name).sort();
+    const names = user_ids
+        .map((user_id) => {
+            const person = people.get_by_user_id(user_id);
+            if (!person) {
+                blueslip.error("Unknown user id " + user_id);
+                return "?";
+            }
+            return person.full_name;
+        })
+        .sort();
 
     return names.join(", ");
-};
+}
 
-exports.process_message_for_recent_private_messages = function (message) {
+export function process_message_for_recent_private_messages(message) {
     const user_ids = people.pm_with_user_ids(message);
     if (!user_ids) {
         return;
@@ -89,9 +92,9 @@ exports.process_message_for_recent_private_messages = function (message) {
     }
 
     pm_conversations.recent.insert(user_ids, message.id);
-};
+}
 
-exports.set_message_booleans = function (message) {
+export function set_message_booleans(message) {
     const flags = message.flags || [];
 
     function convert_flag(flag_name) {
@@ -110,9 +113,9 @@ exports.set_message_booleans = function (message) {
     // just a distraction, so we delete it.  (All the downstream code
     // uses booleans.)
     delete message.flags;
-};
+}
 
-exports.init_booleans = function (message) {
+export function init_booleans(message) {
     // This initializes booleans for the local-echo path where
     // we don't have flags from the server yet.  (We want to
     // explicitly set flags to false to be consistent with other
@@ -124,9 +127,9 @@ exports.init_booleans = function (message) {
     message.mentioned_me_directly = false;
     message.collapsed = false;
     message.alerted = false;
-};
+}
 
-exports.update_booleans = function (message, flags) {
+export function update_booleans(message, flags) {
     // When we get server flags for local echo or message edits,
     // we are vulnerable to race conditions, so only update flags
     // that are driven by message content.
@@ -137,9 +140,9 @@ exports.update_booleans = function (message, flags) {
     message.mentioned = convert_flag("mentioned") || convert_flag("wildcard_mentioned");
     message.mentioned_me_directly = convert_flag("mentioned");
     message.alerted = convert_flag("has_alert_word");
-};
+}
 
-exports.add_message_metadata = function (message) {
+export function add_message_metadata(message) {
     const cached_msg = stored_messages.get(message.id);
     if (cached_msg !== undefined) {
         // Copy the match topic and content over if they exist on
@@ -183,12 +186,12 @@ exports.add_message_metadata = function (message) {
 
         case "private":
             message.is_private = true;
-            message.reply_to = util.normalize_recipients(exports.get_pm_emails(message));
-            message.display_reply_to = exports.get_pm_full_names(message);
+            message.reply_to = util.normalize_recipients(get_pm_emails(message));
+            message.display_reply_to = get_pm_full_names(message);
             message.pm_with_url = people.pm_with_url(message);
             message.to_user_ids = people.pm_reply_user_string(message);
 
-            exports.process_message_for_recent_private_messages(message);
+            process_message_for_recent_private_messages(message);
 
             if (people.is_my_user_id(message.sender_id)) {
                 for (const recip of message.display_recipient) {
@@ -204,30 +207,30 @@ exports.add_message_metadata = function (message) {
     }
     stored_messages.set(message.id, message);
     return message;
-};
+}
 
-exports.update_property = function (property, value, info) {
+export function update_property(property, value, info) {
     switch (property) {
         case "sender_full_name":
         case "small_avatar_url":
-            exports.each((msg) => {
+            for (const msg of stored_messages.values()) {
                 if (msg.sender_id && msg.sender_id === info.user_id) {
                     msg[property] = value;
                 }
-            });
+            }
             break;
         case "stream_name":
-            exports.each((msg) => {
+            for (const msg of stored_messages.values()) {
                 if (msg.stream_id && msg.stream_id === info.stream_id) {
                     msg.display_recipient = value;
                     msg.stream = value;
                 }
-            });
+            }
             break;
     }
-};
+}
 
-exports.reify_message_id = function (opts) {
+export function reify_message_id(opts) {
     const old_id = opts.old_id;
     const new_id = opts.new_id;
     if (stored_messages.has(old_id)) {
@@ -244,6 +247,4 @@ exports.reify_message_id = function (opts) {
             }
         }
     }
-};
-
-window.message_store = exports;
+}

@@ -1,23 +1,28 @@
-"use strict";
+import autosize from "autosize";
 
-const autosize = require("autosize");
+import {MessageListData} from "./message_list_data";
+import {MessageListView} from "./message_list_view";
+import * as narrow from "./narrow";
+import * as narrow_state from "./narrow_state";
+import * as stream_data from "./stream_data";
 
-exports.narrowed = undefined;
-exports.set_narrowed = function (value) {
-    exports.narrowed = value;
-};
+export let narrowed;
 
-class MessageList {
+export function set_narrowed(value) {
+    narrowed = value;
+}
+
+export class MessageList {
     constructor(opts) {
         if (opts.data) {
-            this.muting_enabled = opts.data.muting_enabled;
+            this.excludes_muted_topics = opts.data.excludes_muted_topics;
             this.data = opts.data;
         } else {
             const filter = opts.filter;
 
-            this.muting_enabled = opts.muting_enabled;
+            this.excludes_muted_topics = opts.excludes_muted_topics;
             this.data = new MessageListData({
-                muting_enabled: this.muting_enabled,
+                excludes_muted_topics: this.excludes_muted_topics,
                 filter,
             });
         }
@@ -61,14 +66,14 @@ class MessageList {
             render_info = this.append_to_view(bottom_messages, opts);
         }
 
-        if (this === exports.narrowed && !this.empty()) {
+        if (this === narrowed && !this.empty()) {
             // If adding some new messages to the message tables caused
             // our current narrow to no longer be empty, hide the empty
             // feed placeholder text.
             narrow.hide_empty_narrow_message();
         }
 
-        if (this === exports.narrowed && !this.empty() && this.selected_id() === -1) {
+        if (this === narrowed && !this.empty() && this.selected_id() === -1) {
             // And also select the newly arrived message.
             this.select_id(this.selected_id(), {then_scroll: true, use_closest: true});
         }
@@ -150,9 +155,9 @@ class MessageList {
         };
 
         const convert_id = (str_id) => {
-            const id = parseFloat(str_id);
-            if (isNaN(id)) {
-                throw new Error("Bad message id " + str_id);
+            const id = Number.parseFloat(str_id);
+            if (Number.isNaN(id)) {
+                throw new TypeError("Bad message id " + str_id);
             }
             return id;
         };
@@ -197,7 +202,7 @@ class MessageList {
             this.view.maybe_rerender();
         }
 
-        $(document).trigger($.Event("message_selected.zulip", opts));
+        $(document).trigger(new $.Event("message_selected.zulip", opts));
     }
 
     reselect_selected_id() {
@@ -295,8 +300,8 @@ class MessageList {
         return render_info;
     }
 
-    remove_and_rerender(messages) {
-        this.data.remove(messages);
+    remove_and_rerender(message_ids) {
+        this.data.remove(message_ids);
         this.rerender();
     }
 
@@ -356,7 +361,7 @@ class MessageList {
         this.view.clear_rendering_state(false);
         this.view.update_render_window(this.selected_idx(), false);
 
-        if (this === exports.narrowed) {
+        if (this === narrowed) {
             if (this.empty()) {
                 narrow.show_empty_narrow_message();
             } else {
@@ -375,7 +380,7 @@ class MessageList {
     }
 
     update_muting_and_rerender() {
-        if (!this.muting_enabled) {
+        if (!this.excludes_muted_topics) {
             return;
         }
         this.data.update_items_for_muting();
@@ -399,29 +404,17 @@ class MessageList {
     }
 
     change_message_id(old_id, new_id) {
-        const opts = {
-            is_current_list: () => current_msg_list === this,
-            rerender_view: () => this.rerender_view(),
-        };
-        this.data.change_message_id(old_id, new_id, opts);
+        const require_rerender = this.data.change_message_id(old_id, new_id);
+        if (require_rerender) {
+            this.rerender_view();
+        }
     }
 
     get_last_message_sent_by_me() {
         return this.data.get_last_message_sent_by_me();
     }
 }
-exports.MessageList = MessageList;
 
-exports.all = new MessageList({
-    muting_enabled: false,
+export const all = new MessageList({
+    excludes_muted_topics: false,
 });
-
-// We stop autoscrolling when the user is clearly in the middle of
-// doing something.  Be careful, though, if you try to capture
-// mousemove, then you will have to contend with the autoscroll
-// itself generating mousemove events.
-$(document).on("message_selected.zulip wheel", () => {
-    message_viewport.stop_auto_scrolling();
-});
-
-window.message_list = exports;

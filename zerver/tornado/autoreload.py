@@ -72,13 +72,14 @@ except ImportError:
 # os.execv is broken on Windows and can't properly parse command line
 # arguments and executable name if they contain whitespaces. subprocess
 # fixes that behavior.
-_has_execv = sys.platform != 'win32'
+_has_execv = sys.platform != "win32"
 
 _watched_files = set()
 _reload_hooks = []
 _reload_attempted = False
 _io_loops = weakref.WeakKeyDictionary()
 needs_to_reload = False
+
 
 def start(io_loop=None, check_time=500):
     """Begins watching source files for changes.
@@ -180,8 +181,7 @@ def _check_file(modify_times, module, path):
     else:
         return
 
-    if path == __file__ or path == os.path.join(os.path.dirname(__file__),
-                                                "event_queue.py"):
+    if path == __file__ or path == os.path.join(os.path.dirname(__file__), "event_queue.py"):
         # Assume that the autoreload library itself imports correctly,
         # because reloading this file will destroy its state,
         # including _reload_hooks
@@ -194,6 +194,7 @@ def _check_file(modify_times, module, path):
         traceback.print_exc()
         return False
     return True
+
 
 def _reload():
     global _reload_attempted
@@ -211,11 +212,9 @@ def _reload():
     # string, we were (probably) invoked with -m and the effective path
     # is about to change on re-exec.  Add the current directory to $PYTHONPATH
     # to ensure that the new process sees the same path we did.
-    path_prefix = '.' + os.pathsep
-    if (sys.path[0] == '' and
-            not os.environ.get("PYTHONPATH", "").startswith(path_prefix)):
-        os.environ["PYTHONPATH"] = (path_prefix +
-                                    os.environ.get("PYTHONPATH", ""))
+    path_prefix = "." + os.pathsep
+    if sys.path[0] == "" and not os.environ.get("PYTHONPATH", "").startswith(path_prefix):
+        os.environ["PYTHONPATH"] = path_prefix + os.environ.get("PYTHONPATH", "")
     if not _has_execv:
         subprocess.Popen([sys.executable] + sys.argv)
         sys.exit(0)
@@ -234,8 +233,7 @@ def _reload():
             # Unfortunately the errno returned in this case does not
             # appear to be consistent, so we can't easily check for
             # this error specifically.
-            os.spawnv(os.P_NOWAIT, sys.executable,
-                      [sys.executable] + sys.argv)
+            os.spawnv(os.P_NOWAIT, sys.executable, [sys.executable] + sys.argv)
             # At this point the IOLoop has been closed and finally
             # blocks will experience errors if we allow the stack to
             # unwind, so just exit uncleanly.

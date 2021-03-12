@@ -7,34 +7,65 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0072_realmauditlog_add_index_event_time'),
+        ("zerver", "0072_realmauditlog_add_index_event_time"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='CustomProfileField',
+            name="CustomProfileField",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('field_type', models.PositiveSmallIntegerField(choices=[(1, 'Integer'), (2, 'Float'), (3, 'Short text'), (4, 'Long text')], default=3)),
-                ('realm', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='zerver.Realm')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
+                (
+                    "field_type",
+                    models.PositiveSmallIntegerField(
+                        choices=[(1, "Integer"), (2, "Float"), (3, "Short text"), (4, "Long text")],
+                        default=3,
+                    ),
+                ),
+                (
+                    "realm",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="zerver.Realm"
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='CustomProfileFieldValue',
+            name="CustomProfileFieldValue",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('value', models.TextField()),
-                ('field', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='zerver.CustomProfileField')),
-                ('user_profile', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("value", models.TextField()),
+                (
+                    "field",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="zerver.CustomProfileField"
+                    ),
+                ),
+                (
+                    "user_profile",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL
+                    ),
+                ),
             ],
         ),
         migrations.AlterUniqueTogether(
-            name='customprofilefieldvalue',
-            unique_together={('user_profile', 'field')},
+            name="customprofilefieldvalue",
+            unique_together={("user_profile", "field")},
         ),
         migrations.AlterUniqueTogether(
-            name='customprofilefield',
-            unique_together={('realm', 'name')},
+            name="customprofilefield",
+            unique_together={("realm", "name")},
         ),
     ]

@@ -5,9 +5,9 @@ from zerver.lib.webhooks.git import COMMITS_LIMIT
 
 
 class GitlabHookTests(WebhookTestCase):
-    STREAM_NAME = 'gitlab'
+    STREAM_NAME = "gitlab"
     URL_TEMPLATE = "/api/v1/external/gitlab?&api_key={api_key}&stream={stream}"
-    FIXTURE_DIR_NAME = 'gitlab'
+    FIXTURE_DIR_NAME = "gitlab"
 
     def test_push_event_specified_topic(self) -> None:
         self.url = self.build_webhook_url("topic=Specific%20topic")
@@ -28,7 +28,7 @@ class GitlabHookTests(WebhookTestCase):
         )
 
     def test_push_event_message_filtered_by_branches(self) -> None:
-        self.url = self.build_webhook_url(branches='master,tomek')
+        self.url = self.build_webhook_url(branches="master,tomek")
         expected_topic = "my-awesome-project / tomek"
         expected_message = "Tomasz Kolek [pushed](https://gitlab.com/tomaszkolek0/my-awesome-project/compare/5fcdd5551fc3085df79bece2c32b1400802ac407...eb6ae1e591e0819dc5bf187c6bfe18ec065a80e9) 2 commits to branch tomek.\n\n* b ([66abd2d](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/66abd2da28809ffa128ed0447965cf11d7f863a7))\n* c ([eb6ae1e](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/eb6ae1e591e0819dc5bf187c6bfe18ec065a80e9))"
         self.check_webhook("push_hook", expected_topic, expected_message)
@@ -48,16 +48,16 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_push_commits_more_than_limit_event_message(self) -> None:
         expected_topic = "my-awesome-project / tomek"
-        commits_info = '* b ([66abd2d](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/66abd2da28809ffa128ed0447965cf11d7f863a7))\n'
+        commits_info = "* b ([66abd2d](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/66abd2da28809ffa128ed0447965cf11d7f863a7))\n"
         expected_message = f"Tomasz Kolek [pushed](https://gitlab.com/tomaszkolek0/my-awesome-project/compare/5fcdd5551fc3085df79bece2c32b1400802ac407...eb6ae1e591e0819dc5bf187c6bfe18ec065a80e9) 50 commits to branch tomek.\n\n{commits_info * COMMITS_LIMIT}[and {50 - COMMITS_LIMIT} more commit(s)]"
         self.check_webhook(
             "push_hook__push_commits_more_than_limit", expected_topic, expected_message
         )
 
     def test_push_commits_more_than_limit_message_filtered_by_branches(self) -> None:
-        self.url = self.build_webhook_url(branches='master,tomek')
+        self.url = self.build_webhook_url(branches="master,tomek")
         expected_topic = "my-awesome-project / tomek"
-        commits_info = '* b ([66abd2d](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/66abd2da28809ffa128ed0447965cf11d7f863a7))\n'
+        commits_info = "* b ([66abd2d](https://gitlab.com/tomaszkolek0/my-awesome-project/commit/66abd2da28809ffa128ed0447965cf11d7f863a7))\n"
         expected_message = f"Tomasz Kolek [pushed](https://gitlab.com/tomaszkolek0/my-awesome-project/compare/5fcdd5551fc3085df79bece2c32b1400802ac407...eb6ae1e591e0819dc5bf187c6bfe18ec065a80e9) 50 commits to branch tomek.\n\n{commits_info * COMMITS_LIMIT}[and {50 - COMMITS_LIMIT} more commit(s)]"
         self.check_webhook(
             "push_hook__push_commits_more_than_limit", expected_topic, expected_message
@@ -105,7 +105,7 @@ class GitlabHookTests(WebhookTestCase):
         )
 
     def test_create_issue_with_custom_topic_in_url(self) -> None:
-        self.url = self.build_webhook_url(topic='notifications')
+        self.url = self.build_webhook_url(topic="notifications")
         expected_topic = "notifications"
         expected_message = "[[my-awesome-project](https://gitlab.com/tomaszkolek0/my-awesome-project)] Tomasz Kolek created [Issue #1 Issue title](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1):\n\n~~~ quote\nIssue description\n~~~"
 
@@ -189,7 +189,7 @@ class GitlabHookTests(WebhookTestCase):
         )
 
     def test_update_issue_with_custom_topic_in_url(self) -> None:
-        self.url = self.build_webhook_url(topic='notifications')
+        self.url = self.build_webhook_url(topic="notifications")
         expected_topic = "notifications"
         expected_message = "[[my-awesome-project](https://gitlab.com/tomaszkolek0/my-awesome-project)] Tomasz Kolek updated [Issue #1 Issue title_new](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)."
 
@@ -243,7 +243,7 @@ class GitlabHookTests(WebhookTestCase):
         self.check_webhook("note_hook__merge_request_note", expected_topic, expected_message)
 
     def test_note_merge_request_with_custom_topic_in_url(self) -> None:
-        self.url = self.build_webhook_url(topic='notifications')
+        self.url = self.build_webhook_url(topic="notifications")
         expected_topic = "notifications"
         expected_message = "[[my-awesome-project](https://gitlab.com/tomaszkolek0/my-awesome-project)] Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/1#note_14171860) on [MR #1 Tomek](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/1):\n\n~~~ quote\nNice merge request!\n~~~"
 
@@ -262,7 +262,7 @@ class GitlabHookTests(WebhookTestCase):
         self.check_webhook("note_hook__confidential_issue_note", expected_subject, expected_message)
 
     def test_note_issue_with_custom_topic_in_url(self) -> None:
-        self.url = self.build_webhook_url(topic='notifications')
+        self.url = self.build_webhook_url(topic="notifications")
         expected_topic = "notifications"
         expected_message = "[[my-awesome-project](https://gitlab.com/tomaszkolek0/my-awesome-project)] Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/2#note_14172057) on [Issue #2 abc](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/2):\n\n~~~ quote\nNice issue\n~~~"
 
@@ -275,7 +275,7 @@ class GitlabHookTests(WebhookTestCase):
         self.check_webhook("note_hook__snippet_note", expected_topic, expected_message)
 
     def test_note_snippet_with_custom_topic_in_url(self) -> None:
-        self.url = self.build_webhook_url(topic='notifications')
+        self.url = self.build_webhook_url(topic="notifications")
         expected_topic = "notifications"
         expected_message = "[[my-awesome-project](https://gitlab.com/tomaszkolek0/my-awesome-project)] Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/snippets/2#note_14172058) on [Snippet #2 test](https://gitlab.com/tomaszkolek0/my-awesome-project/snippets/2):\n\n~~~ quote\nNice snippet\n~~~"
 
@@ -292,7 +292,7 @@ class GitlabHookTests(WebhookTestCase):
         )
 
     def test_merge_request_created_with_custom_topic_in_url(self) -> None:
-        self.url = self.build_webhook_url(topic='notifications')
+        self.url = self.build_webhook_url(topic="notifications")
         expected_topic = "notifications"
         expected_message = "[[my-awesome-project](https://gitlab.com/tomaszkolek0/my-awesome-project)] Tomasz Kolek created [MR #2 NEW MR](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/2) from `tomek` to `master`:\n\n~~~ quote\ndescription of merge request\n~~~"
 
@@ -306,7 +306,7 @@ class GitlabHookTests(WebhookTestCase):
         expected_topic = "my-awesome-project / MR #3 New Merge Request"
         expected_message = "Tomasz Kolek created [MR #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3) (assigned to Tomasz Kolek) from `tomek` to `master`:\n\n~~~ quote\ndescription of merge request\n~~~"
         self.check_webhook(
-            'merge_request_hook__merge_request_created_with_assignee',
+            "merge_request_hook__merge_request_created_with_assignee",
             expected_topic,
             expected_message,
         )
@@ -321,9 +321,10 @@ A trivial change that should probably be ignored.
 ~~~
         """.strip()
         self.check_webhook(
-            'merge_request_hook__merge_request_created_with_multiple_assignees',
+            "merge_request_hook__merge_request_created_with_multiple_assignees",
             expected_topic,
-            expected_message)
+            expected_message,
+        )
 
     def test_merge_request_closed_event_message(self) -> None:
         expected_topic = "my-awesome-project / MR #2 NEW MR"
@@ -342,7 +343,7 @@ A trivial change that should probably be ignored.
         )
 
     def test_merge_request_closed_with_custom_topic_in_url(self) -> None:
-        self.url = self.build_webhook_url(topic='notifications')
+        self.url = self.build_webhook_url(topic="notifications")
         expected_topic = "notifications"
         expected_message = "[[my-awesome-project](https://gitlab.com/tomaszkolek0/my-awesome-project)] Tomasz Kolek closed [MR #2 NEW MR](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/2)."
 
@@ -370,9 +371,8 @@ A trivial change that should probably be ignored.
         expected_topic = "my-awesome-project / MR #3 New Merge Request"
         expected_message = "Tomasz Kolek updated [MR #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3) (assigned to Tomasz Kolek) from `tomek` to `master`:\n\n~~~ quote\nupdated desc\n~~~"
         self.check_webhook(
-            'merge_request_hook__merge_request_updated',
-            expected_topic,
-            expected_message)
+            "merge_request_hook__merge_request_updated", expected_topic, expected_message
+        )
 
     def test_merge_request_added_commit_event_message(self) -> None:
         expected_topic = "my-awesome-project / MR #3 New Merge Request"
@@ -391,13 +391,13 @@ A trivial change that should probably be ignored.
 
     def test_wiki_page_opened_event_message(self) -> None:
         expected_topic = "my-awesome-project"
-        expected_message = "Tomasz Kolek created [Wiki Page \"how to\"](https://gitlab.com/tomaszkolek0/my-awesome-project/wikis/how-to)."
+        expected_message = 'Tomasz Kolek created [Wiki Page "how to"](https://gitlab.com/tomaszkolek0/my-awesome-project/wikis/how-to).'
 
         self.check_webhook("wiki_page_hook__wiki_page_opened", expected_topic, expected_message)
 
     def test_wiki_page_edited_event_message(self) -> None:
         expected_topic = "my-awesome-project"
-        expected_message = "Tomasz Kolek updated [Wiki Page \"how to\"](https://gitlab.com/tomaszkolek0/my-awesome-project/wikis/how-to)."
+        expected_message = 'Tomasz Kolek updated [Wiki Page "how to"](https://gitlab.com/tomaszkolek0/my-awesome-project/wikis/how-to).'
 
         self.check_webhook("wiki_page_hook__wiki_page_edited", expected_topic, expected_message)
 
@@ -406,7 +406,10 @@ A trivial change that should probably be ignored.
         expected_message = "Build job_name from test stage was created."
 
         self.check_webhook(
-            "build_created", expected_topic, expected_message, HTTP_X_GITLAB_EVENT="Job Hook",
+            "build_created",
+            expected_topic,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Job Hook",
         )
 
     def test_build_started_event_message(self) -> None:
@@ -414,7 +417,10 @@ A trivial change that should probably be ignored.
         expected_message = "Build job_name from test stage started."
 
         self.check_webhook(
-            "build_started", expected_topic, expected_message, HTTP_X_GITLAB_EVENT="Job Hook",
+            "build_started",
+            expected_topic,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Job Hook",
         )
 
     def test_build_succeeded_event_message(self) -> None:
@@ -422,7 +428,10 @@ A trivial change that should probably be ignored.
         expected_message = "Build job_name from test stage changed status to success."
 
         self.check_webhook(
-            "build_succeeded", expected_topic, expected_message, HTTP_X_GITLAB_EVENT="Job Hook",
+            "build_succeeded",
+            expected_topic,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Job Hook",
         )
 
     def test_build_created_event_message_legacy_event_name(self) -> None:
@@ -430,7 +439,10 @@ A trivial change that should probably be ignored.
         expected_message = "Build job_name from test stage was created."
 
         self.check_webhook(
-            "build_created", expected_topic, expected_message, HTTP_X_GITLAB_EVENT="Build Hook",
+            "build_created",
+            expected_topic,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Build Hook",
         )
 
     def test_build_started_event_message_legacy_event_name(self) -> None:
@@ -438,7 +450,10 @@ A trivial change that should probably be ignored.
         expected_message = "Build job_name from test stage started."
 
         self.check_webhook(
-            "build_started", expected_topic, expected_message, HTTP_X_GITLAB_EVENT="Build Hook",
+            "build_started",
+            expected_topic,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Build Hook",
         )
 
     def test_build_succeeded_event_message_legacy_event_name(self) -> None:
@@ -446,7 +461,10 @@ A trivial change that should probably be ignored.
         expected_message = "Build job_name from test stage changed status to success."
 
         self.check_webhook(
-            "build_succeeded", expected_topic, expected_message, HTTP_X_GITLAB_EVENT="Build Hook",
+            "build_succeeded",
+            expected_topic,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Build Hook",
         )
 
     def test_pipeline_succeeded_with_artifacts_event_message(self) -> None:
@@ -454,7 +472,9 @@ A trivial change that should probably be ignored.
         expected_message = "[Pipeline (22668)](https://gitlab.example.com/group1/onlysomeproject/pipelines/22668) changed status to success with build(s):\n* [cleanup:cleanup docker image](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58592) - success\n* [pages](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58591) - success\n  * built artifact: *artifacts.zip* [[Browse](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58591/artifacts/browse)|[Download](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58591/artifacts/download)]\n* [black+pytest:future environment](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58590) - success\n* [docs:anaconda environment](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58589) - success\n  * built artifact: *sphinx-docs.zip* [[Browse](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58589/artifacts/browse)|[Download](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58589/artifacts/download)]\n* [pytest:current environment](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58588) - success\n* [black:current environment](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58587) - success\n* [setup:docker image](https://gitlab.example.com/group1/onlysomeproject/-/jobs/58586) - success."
 
         self.check_webhook(
-            "pipeline_hook__pipline_succeeded_with_artifacts", expected_topic, expected_message,
+            "pipeline_hook__pipline_succeeded_with_artifacts",
+            expected_topic,
+            expected_message,
         )
 
     def test_pipeline_succeeded_event_message(self) -> None:
@@ -462,7 +482,9 @@ A trivial change that should probably be ignored.
         expected_message = "[Pipeline (4414206)](https://gitlab.com/TomaszKolek/my-awesome-project/pipelines/4414206) changed status to success with build(s):\n* [job_name2](https://gitlab.com/TomaszKolek/my-awesome-project/-/jobs/4541113) - success\n* [job_name](https://gitlab.com/TomaszKolek/my-awesome-project/-/jobs/4541112) - success."
 
         self.check_webhook(
-            "pipeline_hook__pipeline_succeeded", expected_topic, expected_message,
+            "pipeline_hook__pipeline_succeeded",
+            expected_topic,
+            expected_message,
         )
 
     def test_pipeline_started_event_message(self) -> None:
@@ -470,7 +492,9 @@ A trivial change that should probably be ignored.
         expected_message = "[Pipeline (4414206)](https://gitlab.com/TomaszKolek/my-awesome-project/pipelines/4414206) started with build(s):\n* [job_name](https://gitlab.com/TomaszKolek/my-awesome-project/-/jobs/4541112) - running\n* [job_name2](https://gitlab.com/TomaszKolek/my-awesome-project/-/jobs/4541113) - pending."
 
         self.check_webhook(
-            "pipeline_hook__pipeline_started", expected_topic, expected_message,
+            "pipeline_hook__pipeline_started",
+            expected_topic,
+            expected_message,
         )
 
     def test_pipeline_pending_event_message(self) -> None:
@@ -478,32 +502,42 @@ A trivial change that should probably be ignored.
         expected_message = "[Pipeline (4414206)](https://gitlab.com/TomaszKolek/my-awesome-project/pipelines/4414206) was created with build(s):\n* [job_name2](https://gitlab.com/TomaszKolek/my-awesome-project/-/jobs/4541113) - pending\n* [job_name](https://gitlab.com/TomaszKolek/my-awesome-project/-/jobs/4541112) - created."
 
         self.check_webhook(
-            "pipeline_hook__pipeline_pending", expected_topic, expected_message,
+            "pipeline_hook__pipeline_pending",
+            expected_topic,
+            expected_message,
         )
 
     def test_issue_type_test_payload(self) -> None:
-        expected_topic = 'public-repo'
+        expected_topic = "public-repo"
         expected_message = "Webhook for **public-repo** has been configured successfully! :tada:"
 
         self.check_webhook(
-            "test_hook__issue_test_payload", expected_topic, expected_message,
+            "test_hook__issue_test_payload",
+            expected_topic,
+            expected_message,
         )
 
-    @patch('zerver.lib.webhooks.common.check_send_webhook_message')
+    @patch("zerver.lib.webhooks.common.check_send_webhook_message")
     def test_push_event_message_filtered_by_branches_ignore(
-            self, check_send_webhook_message_mock: MagicMock) -> None:
-        self.url = self.build_webhook_url(branches='master,development')
-        payload = self.get_body('push_hook')
-        result = self.client_post(self.url, payload, HTTP_X_GITLAB_EVENT='Push Hook', content_type="application/json")
+        self, check_send_webhook_message_mock: MagicMock
+    ) -> None:
+        self.url = self.build_webhook_url(branches="master,development")
+        payload = self.get_body("push_hook")
+        result = self.client_post(
+            self.url, payload, HTTP_X_GITLAB_EVENT="Push Hook", content_type="application/json"
+        )
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
 
-    @patch('zerver.lib.webhooks.common.check_send_webhook_message')
+    @patch("zerver.lib.webhooks.common.check_send_webhook_message")
     def test_push_commits_more_than_limit_message_filtered_by_branches_ignore(
-            self, check_send_webhook_message_mock: MagicMock) -> None:
-        self.url = self.build_webhook_url(branches='master,development')
-        payload = self.get_body('push_hook__push_commits_more_than_limit')
-        result = self.client_post(self.url, payload, HTTP_X_GITLAB_EVENT='Push Hook', content_type="application/json")
+        self, check_send_webhook_message_mock: MagicMock
+    ) -> None:
+        self.url = self.build_webhook_url(branches="master,development")
+        payload = self.get_body("push_hook__push_commits_more_than_limit")
+        result = self.client_post(
+            self.url, payload, HTTP_X_GITLAB_EVENT="Push Hook", content_type="application/json"
+        )
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
 
@@ -532,7 +566,7 @@ A trivial change that should probably be ignored.
         )
 
     def test_system_merge_request_created_with_custom_topic_in_url(self) -> None:
-        self.url = self.build_webhook_url(topic='notifications')
+        self.url = self.build_webhook_url(topic="notifications")
         expected_topic = "notifications"
         expected_message = "[[my-awesome-project](https://gitlab.com/tomaszkolek0/my-awesome-project)] Tomasz Kolek created [MR #2 NEW MR](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/2) from `tomek` to `master`:\n\n~~~ quote\ndescription of merge request\n~~~"
 
@@ -544,9 +578,8 @@ A trivial change that should probably be ignored.
         expected_topic = "my-awesome-project / MR #3 New Merge Request"
         expected_message = "Tomasz Kolek created [MR #3](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/3) (assigned to Tomasz Kolek) from `tomek` to `master`:\n\n~~~ quote\ndescription of merge request\n~~~"
         self.check_webhook(
-            'system_hook__merge_request_created_with_assignee',
-            expected_topic,
-            expected_message)
+            "system_hook__merge_request_created_with_assignee", expected_topic, expected_message
+        )
 
     def test_system_merge_request_closed_event_message(self) -> None:
         expected_topic = "my-awesome-project / MR #2 NEW MR"
@@ -561,7 +594,7 @@ A trivial change that should probably be ignored.
         self.check_webhook("system_hook__merge_request_merged", expected_topic, expected_message)
 
     def test_system_merge_request_closed_with_custom_topic_in_url(self) -> None:
-        self.url = self.build_webhook_url(topic='notifications')
+        self.url = self.build_webhook_url(topic="notifications")
         expected_topic = "notifications"
         expected_message = "[[my-awesome-project](https://gitlab.com/tomaszkolek0/my-awesome-project)] Tomasz Kolek closed [MR #2 NEW MR](https://gitlab.com/tomaszkolek0/my-awesome-project/merge_requests/2)."
 

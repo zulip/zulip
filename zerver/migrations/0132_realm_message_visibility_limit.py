@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0131_realm_create_generic_bot_by_admins_only'),
+        ("zerver", "0131_realm_create_generic_bot_by_admins_only"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='realm',
-            name='message_visibility_limit',
+            model_name="realm",
+            name="message_visibility_limit",
             field=models.IntegerField(null=True),
         ),
     ]

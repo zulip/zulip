@@ -5,13 +5,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zilencer', '0002_remote_zulip_server'),
+        ("zilencer", "0002_remote_zulip_server"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='remotezulipserver',
-            name='last_updated',
-            field=models.DateTimeField(auto_now=True, verbose_name='last updated'),
+            model_name="remotezulipserver",
+            name="last_updated",
+            field=models.DateTimeField(auto_now=True, verbose_name="last updated"),
         ),
     ]

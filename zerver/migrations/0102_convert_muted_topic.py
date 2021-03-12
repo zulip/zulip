@@ -7,7 +7,8 @@ from psycopg2.sql import SQL
 
 
 def convert_muted_topics(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
-    stream_query = SQL('''
+    stream_query = SQL(
+        """
         SELECT
             zerver_stream.name,
             zerver_stream.realm_id,
@@ -19,7 +20,8 @@ def convert_muted_topics(apps: StateApps, schema_editor: DatabaseSchemaEditor) -
             zerver_recipient.type_id = zerver_stream.id AND
             zerver_recipient.type = 2
         )
-    ''')
+    """
+    )
 
     stream_dict = {}
 
@@ -36,15 +38,15 @@ def convert_muted_topics(apps: StateApps, schema_editor: DatabaseSchemaEditor) -
     new_objs = []
 
     user_query = UserProfile.objects.values(
-        'id',
-        'realm_id',
-        'muted_topics',
+        "id",
+        "realm_id",
+        "muted_topics",
     )
 
     for row in user_query:
-        user_profile_id = row['id']
-        realm_id = row['realm_id']
-        muted_topics = row['muted_topics']
+        user_profile_id = row["id"]
+        realm_id = row["realm_id"]
+        muted_topics = row["muted_topics"]
 
         tups = orjson.loads(muted_topics)
         for (stream_name, topic_name) in tups:
@@ -61,14 +63,15 @@ def convert_muted_topics(apps: StateApps, schema_editor: DatabaseSchemaEditor) -
                 new_objs.append(muted_topic)
 
     with connection.cursor() as cursor:
-        cursor.execute('DELETE from zerver_mutedtopic')
+        cursor.execute("DELETE from zerver_mutedtopic")
 
     MutedTopic.objects.bulk_create(new_objs)
+
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0101_muted_topic'),
+        ("zerver", "0101_muted_topic"),
     ]
 
     operations = [

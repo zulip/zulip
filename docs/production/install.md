@@ -74,11 +74,10 @@ If the script gives an error, consult [Troubleshooting](#troubleshooting) below.
 ## Step 3: Create a Zulip organization, and log in
 
 On success, the install script prints a link.  If you're [restoring a
-backup][zulip-backups] or importing your data from [HipChat][hipchat-import],
-[Slack][slack-import], or another Zulip server, you should stop here
+backup][zulip-backups] or importing your data from [Slack][slack-import],
+or another Zulip server, you should stop here
 and return to the import instructions.
 
-[hipchat-import]: https://zulip.com/help/import-from-hipchat
 [slack-import]: https://zulip.com/help/import-from-slack
 [zulip-backups]: ../production/export-and-import.html#backups
 
@@ -131,7 +130,7 @@ directory there, and makes `/home/zulip/deployments/current` as a
 symbolic link to it.
 * Installs Zulip's various dependencies.
 * Configures the various third-party services Zulip uses, including
-Postgres, RabbitMQ, Memcached and Redis.
+PostgreSQL, RabbitMQ, Memcached and Redis.
 * Initializes Zulip's database.
 
 If you'd like to deploy Zulip with these services on different

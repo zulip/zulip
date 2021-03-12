@@ -22,12 +22,11 @@ def add_api_uri_context(context: Dict[str, Any], request: HttpRequest) -> None:
     context.update(zulip_default_context(request))
 
     subdomain = get_subdomain(request)
-    if (subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
-            or not settings.ROOT_DOMAIN_LANDING_PAGE):
+    if subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN or not settings.ROOT_DOMAIN_LANDING_PAGE:
         display_subdomain = subdomain
         html_settings_links = True
     else:
-        display_subdomain = 'yourZulipDomain'
+        display_subdomain = "yourZulipDomain"
         html_settings_links = False
 
     display_host = Realm.host_for_subdomain(display_subdomain)
@@ -35,20 +34,21 @@ def add_api_uri_context(context: Dict[str, Any], request: HttpRequest) -> None:
     api_url = settings.EXTERNAL_URI_SCHEME + api_url_scheme_relative
     zulip_url = settings.EXTERNAL_URI_SCHEME + display_host
 
-    context['external_uri_scheme'] = settings.EXTERNAL_URI_SCHEME
-    context['api_url'] = api_url
-    context['api_url_scheme_relative'] = api_url_scheme_relative
-    context['zulip_url'] = zulip_url
+    context["external_uri_scheme"] = settings.EXTERNAL_URI_SCHEME
+    context["api_url"] = api_url
+    context["api_url_scheme_relative"] = api_url_scheme_relative
+    context["zulip_url"] = zulip_url
 
     context["html_settings_links"] = html_settings_links
     if html_settings_links:
         settings_html = '<a href="/#settings">Zulip settings page</a>'
         subscriptions_html = '<a target="_blank" href="/#streams">streams page</a>'
     else:
-        settings_html = 'Zulip settings page'
-        subscriptions_html = 'streams page'
-    context['settings_html'] = settings_html
-    context['subscriptions_html'] = subscriptions_html
+        settings_html = "Zulip settings page"
+        subscriptions_html = "streams page"
+    context["settings_html"] = settings_html
+    context["subscriptions_html"] = subscriptions_html
+
 
 class ApiURLView(TemplateView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, str]:
@@ -69,7 +69,7 @@ class MarkdownDirectoryView(ApiURLView):
         elif "/" in article:
             article = "missing"
             http_status = 404
-        elif len(article) > 100 or not re.match('^[0-9a-zA-Z_-]+$', article):
+        elif len(article) > 100 or not re.match("^[0-9a-zA-Z_-]+$", article):
             article = "missing"
             http_status = 404
 
@@ -87,7 +87,7 @@ class MarkdownDirectoryView(ApiURLView):
 
         # For disabling the "Back to home" on the homepage
         context["not_index_page"] = not context["article"].endswith("/index.md")
-        if self.path_template == '/zerver/help/%s.md':
+        if self.path_template == "/zerver/help/%s.md":
             context["page_is_help_center"] = True
             context["doc_root"] = "/help/"
             (sidebar_index, http_status_ignored) = self.get_path("include/sidebar_index")
@@ -96,11 +96,11 @@ class MarkdownDirectoryView(ApiURLView):
             context["page_is_api_center"] = True
             context["doc_root"] = "/api/"
             (sidebar_index, http_status_ignored) = self.get_path("sidebar_index")
-            title_base = "Zulip API Documentation"
+            title_base = "Zulip API documentation"
 
         # The following is a somewhat hacky approach to extract titles from articles.
         # Hack: `context["article"] has a leading `/`, so we use + to add directories.
-        article_path = os.path.join(settings.DEPLOY_ROOT, 'templates') + context["article"]
+        article_path = os.path.join(settings.DEPLOY_ROOT, "templates") + context["article"]
         if os.path.exists(article_path):
             with open(article_path) as article_file:
                 first_line = article_file.readlines()[0]
@@ -111,7 +111,8 @@ class MarkdownDirectoryView(ApiURLView):
             else:
                 context["OPEN_GRAPH_TITLE"] = title_base
             self.request.placeholder_open_graph_description = (
-                f"REPLACMENT_OPEN_GRAPH_DESCRIPTION_{int(2**24 * random.random())}")
+                f"REPLACMENT_OPEN_GRAPH_DESCRIPTION_{int(2**24 * random.random())}"
+            )
             context["OPEN_GRAPH_DESCRIPTION"] = self.request.placeholder_open_graph_description
 
         context["sidebar_index"] = sidebar_index
@@ -123,12 +124,13 @@ class MarkdownDirectoryView(ApiURLView):
         add_google_analytics_context(context)
         return context
 
-    def get(self, request: HttpRequest, article: str="") -> HttpResponse:
+    def get(self, request: HttpRequest, article: str = "") -> HttpResponse:
         (path, http_status) = self.get_path(article)
         result = super().get(self, article=article)
         if http_status != 200:
             result.status_code = http_status
         return result
+
 
 def add_integrations_context(context: Dict[str, Any]) -> None:
     alphabetical_sorted_categories = OrderedDict(sorted(CATEGORIES.items()))
@@ -137,32 +139,36 @@ def add_integrations_context(context: Dict[str, Any]) -> None:
     # Subtract 1 so saying "Over X integrations" is correct. Then,
     # round down to the nearest multiple of 10.
     integrations_count_display = ((enabled_integrations_count - 1) // 10) * 10
-    context['categories_dict'] = alphabetical_sorted_categories
-    context['integrations_dict'] = alphabetical_sorted_integration
-    context['integrations_count_display'] = integrations_count_display
+    context["categories_dict"] = alphabetical_sorted_categories
+    context["integrations_dict"] = alphabetical_sorted_integration
+    context["integrations_count_display"] = integrations_count_display
+
 
 def add_integrations_open_graph_context(context: Dict[str, Any], request: HttpRequest) -> None:
-    path_name = request.path.rstrip('/').split('/')[-1]
-    description = ('Zulip comes with over a hundred native integrations out of the box, '
-                   'and integrates with Zapier, IFTTT, and Hubot to provide hundreds more. '
-                   'Connect the apps you use everyday to Zulip.')
+    path_name = request.path.rstrip("/").split("/")[-1]
+    description = (
+        "Zulip comes with over a hundred native integrations out of the box, "
+        "and integrates with Zapier, IFTTT, and Hubot to provide hundreds more. "
+        "Connect the apps you use everyday to Zulip."
+    )
 
     if path_name in INTEGRATIONS:
         integration = INTEGRATIONS[path_name]
-        context['OPEN_GRAPH_TITLE'] = f'Connect {integration.display_name} to Zulip'
-        context['OPEN_GRAPH_DESCRIPTION'] = description
+        context["OPEN_GRAPH_TITLE"] = f"Connect {integration.display_name} to Zulip"
+        context["OPEN_GRAPH_DESCRIPTION"] = description
 
     elif path_name in CATEGORIES:
         category = CATEGORIES[path_name]
-        context['OPEN_GRAPH_TITLE'] = f'Connect your {category} tools to Zulip'
-        context['OPEN_GRAPH_DESCRIPTION'] = description
+        context["OPEN_GRAPH_TITLE"] = f"Connect your {category} tools to Zulip"
+        context["OPEN_GRAPH_DESCRIPTION"] = description
 
-    elif path_name == 'integrations':
-        context['OPEN_GRAPH_TITLE'] = 'Connect the tools you use to Zulip'
-        context['OPEN_GRAPH_DESCRIPTION'] = description
+    elif path_name == "integrations":
+        context["OPEN_GRAPH_TITLE"] = "Connect the tools you use to Zulip"
+        context["OPEN_GRAPH_DESCRIPTION"] = description
+
 
 class IntegrationView(ApiURLView):
-    template_name = 'zerver/integrations/index.html'
+    template_name = "zerver/integrations/index.html"
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         context: Dict[str, Any] = super().get_context_data(**kwargs)
@@ -173,7 +179,7 @@ class IntegrationView(ApiURLView):
 
 
 @has_request_variables
-def integration_doc(request: HttpRequest, integration_name: str=REQ()) -> HttpResponse:
+def integration_doc(request: HttpRequest, integration_name: str = REQ()) -> HttpResponse:
     if not request.is_ajax():
         return HttpResponseNotFound()
     try:
@@ -184,13 +190,13 @@ def integration_doc(request: HttpRequest, integration_name: str=REQ()) -> HttpRe
     context: Dict[str, Any] = {}
     add_api_uri_context(context, request)
 
-    context['integration_name'] = integration.name
-    context['integration_display_name'] = integration.display_name
-    context['recommended_stream_name'] = integration.stream_name
+    context["integration_name"] = integration.name
+    context["integration_display_name"] = integration.display_name
+    context["recommended_stream_name"] = integration.stream_name
     if isinstance(integration, WebhookIntegration):
-        context['integration_url'] = integration.url[3:]
+        context["integration_url"] = integration.url[3:]
     if isinstance(integration, HubotIntegration):
-        context['hubot_docs_url'] = integration.hubot_docs_url
+        context["hubot_docs_url"] = integration.hubot_docs_url
 
     doc_html_str = render_markdown_path(integration.doc, context)
 

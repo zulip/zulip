@@ -1,10 +1,12 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const autosize = require("autosize");
 
-zrequire("compose_ui");
-const people = zrequire("people");
-zrequire("user_status");
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
 
 set_global("document", {
     execCommand() {
@@ -12,7 +14,9 @@ set_global("document", {
     },
 });
 
-set_global("$", global.make_zjquery());
+const compose_ui = zrequire("compose_ui");
+const people = zrequire("people");
+const user_status = zrequire("user_status");
 
 const alice = {
     email: "alice@zulip.com",
@@ -74,25 +78,19 @@ function make_textbox(s) {
     return widget;
 }
 
-run_test("autosize_textarea", () => {
+run_test("autosize_textarea", (override) => {
     const textarea_autosized = {};
 
-    function fake_autosize_update(textarea) {
+    override(autosize, "update", (textarea) => {
         textarea_autosized.textarea = textarea;
         textarea_autosized.autosized = true;
-    }
-
-    with_field(autosize, "update", fake_autosize_update, () => {
-        // Call autosize_textarea for the compose box
-        compose_ui.autosize_textarea($("#compose-textarea"));
-        assert.equal(textarea_autosized.textarea, $("#compose-textarea"));
-        assert(textarea_autosized.autosized);
-
-        // Call autosize_textarea with an argument
-        compose_ui.autosize_textarea($("#message_edit_content_65"));
-        assert.equal(textarea_autosized.textarea, $("#message_edit_content_65"));
-        assert(textarea_autosized.autosized);
     });
+
+    // Call autosize_textarea with an argument
+    const container = "container-stub";
+    compose_ui.autosize_textarea(container);
+    assert.equal(textarea_autosized.textarea, container);
+    assert(textarea_autosized.autosized);
 });
 
 run_test("insert_syntax_and_focus", () => {

@@ -51,15 +51,16 @@ This section details the ways in which it is different:
 * There is significant custom code inside the `process_message_event`
 function in `zerver/tornado/event_queue.py`.  This custom code has a
 number of purposes:
-   * Triggering email and mobile push notifications for any users who
+   * Triggering [email and mobile push
+     notifications](../subsystems/notifications.md) for any users who
      do not have active clients and have settings of the form "push
      notifications when offline".  In order to avoid doing any real
      computational work inside the Tornado codebase, this logic aims
      to just do the check for whether a notification should be
      generated, and then put an event into an appropriate
-     [queue](../subsystems/queuing.md) to actually send the
-     message.  See `maybe_enqueue_notifications` and related code for
-     this part of the logic.
+     [queue](../subsystems/queuing.md) to actually send the message.
+     See `maybe_enqueue_notifications` and related code for this part
+     of the logic.
    * Splicing user-dependent data (E.g. `flags` such as when the user
    was `mentioned`) into the events.
    * Handling the [local echo details](#local-echo).
@@ -69,12 +70,12 @@ number of purposes:
      `apply_markdown` and `client_gravatar` features in our
      [events API docs](https://zulip.com/api/register-queue)).
 * Following our standard naming convention, input validation is done
-  inside the `check_message` function, which is responsible for
+  inside the `check_message` function in `zerver/lib/actions.py`, which is responsible for
   validating the user can send to the recipient,
   [rendering the Markdown](../subsystems/markdown.md), etc. --
   basically everything that can fail due to bad user input.
 * The core `do_send_messages` function (which handles actually sending
-  the message) is one of the most optimized and thus complex parts of
+  the message) in `zerver/lib/actions.py` is one of the most optimized and thus complex parts of
   the system.  But in short, its job is to atomically do a few key
   things:
    * Store a `Message` row in the database.
@@ -136,7 +137,7 @@ messages.
   duplicated by a real confirmed-by-the-backend message ID.  We choose
   just above the `max_message_id`, because we want any new messages
   that other users send to the current view to be placed after it in
-  the feed (this decision is someone arbitrary; in any case we'll
+  the feed (this decision is somewhat arbitrary; in any case we'll
   resort it to its proper place once it is confirmed by the server.
   We do it this way to minimize messages jumping around/reordering
   visually).
@@ -193,7 +194,7 @@ one place:
   receive the message (including the sender).  As a side effect, it
   adds queue items to the email and push notification queues (which,
   in turn, may trigger those notifications).
-  * Other receive the event and display the new message.
+  * Other clients receive the event and display the new message.
   * For the client that sent the message, it instead replaces its
     locally echoed message with the final message it received back
     from the server (it indicates this to the sender by adding a
@@ -337,7 +338,7 @@ those rows later because we already have the data for when the user
 might have been subscribed or unsubscribed from streams by other
 users, and, importantly, we also know that the user didn’t interact
 with the UI since the message was sent (and thus we can safely assume
-that the messages has not been marked a read by the user).  This is
+that the messages have not been marked as read by the user).  This is
 done in the `add_missing_messages` function, which is the core of the
 soft-deactivation implementation.
 
@@ -373,11 +374,12 @@ it’ll arrive in the couple hundred milliseconds one would expect if
 the extra 4500 inactive subscribers didn’t exist.
 
 There are a few details that require special care with this system:
-* Email and mobile push notifications.  We need to make sure these are
-  still correctly delivered to soft-deactivated users; making this
-  work required careful work for those code paths that assumed a
-  `UserMessage` row would always exist for a message that triggers a
-  notification to a given user.
+* [Email and mobile push
+  notifications](../subsystems/notifications.md).  We need to make
+  sure these are still correctly delivered to soft-deactivated users;
+  making this work required careful work for those code paths that
+  assumed a `UserMessage` row would always exist for a message that
+  triggers a notification to a given user.
 * Digest emails, which use the `UserMessage` table extensively to
   determine what has happened in streams the user can see.  We can use
   the user's subscriptions to construct what messages they should have

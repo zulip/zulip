@@ -3,13 +3,15 @@ from typing import Optional, Set, Tuple
 
 # Match multi-word string between @** ** or match any one-word
 # sequences after @
-find_mentions = r'(?<![^\s\'\"\(,:<])@(?P<silent>_?)(?P<match>\*\*[^\*]+\*\*|all|everyone|stream)'
-user_group_mentions = r'(?<![^\s\'\"\(,:<])@(\*[^\*]+\*)'
+find_mentions = r"(?<![^\s\'\"\(,:<])@(?P<silent>_?)(?P<match>\*\*[^\*]+\*\*|all|everyone|stream)"
+user_group_mentions = r"(?<![^\s\'\"\(,:<])@(\*[^\*]+\*)"
 
-wildcards = ['all', 'everyone', 'stream']
+wildcards = ["all", "everyone", "stream"]
+
 
 def user_mention_matches_wildcard(mention: str) -> bool:
     return mention in wildcards
+
 
 def extract_mention_text(m: Tuple[str, str]) -> Tuple[Optional[str], bool]:
     # re.findall provides tuples of match elements; we want the second
@@ -21,6 +23,7 @@ def extract_mention_text(m: Tuple[str, str]) -> Tuple[Optional[str], bool]:
             return None, True
         return text, False
     return None, False
+
 
 def possible_mentions(content: str) -> Tuple[Set[str], bool]:
     matches = re.findall(find_mentions, content)
@@ -35,8 +38,10 @@ def possible_mentions(content: str) -> Tuple[Set[str], bool]:
             message_has_wildcards = True
     return texts, message_has_wildcards
 
+
 def extract_user_group(matched_text: str) -> str:
     return matched_text[1:-1]
+
 
 def possible_user_group_mentions(content: str) -> Set[str]:
     matches = re.findall(user_group_mentions, content)

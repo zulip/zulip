@@ -7,13 +7,16 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0249_userprofile_role_finish'),
+        ("zerver", "0249_userprofile_role_finish"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='realm',
-            name='authentication_methods',
-            field=bitfield.models.BitField(['Google', 'Email', 'GitHub', 'LDAP', 'Dev', 'RemoteUser', 'AzureAD', 'SAML'], default=2147483647),
+            model_name="realm",
+            name="authentication_methods",
+            field=bitfield.models.BitField(
+                ["Google", "Email", "GitHub", "LDAP", "Dev", "RemoteUser", "AzureAD", "SAML"],
+                default=2147483647,
+            ),
         ),
     ]

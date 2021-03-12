@@ -1,24 +1,28 @@
-"use strict";
+import render_announce_stream_docs from "../templates/announce_stream_docs.hbs";
+import render_new_stream_users from "../templates/new_stream_users.hbs";
+import render_subscription_invites_warning_modal from "../templates/subscription_invites_warning_modal.hbs";
 
-const render_announce_stream_docs = require("../templates/announce_stream_docs.hbs");
-const render_new_stream_users = require("../templates/new_stream_users.hbs");
-const render_subscription_invites_warning_modal = require("../templates/subscription_invites_warning_modal.hbs");
-
-const people = require("./people");
+import * as channel from "./channel";
+import * as loading from "./loading";
+import * as peer_data from "./peer_data";
+import * as people from "./people";
+import * as stream_data from "./stream_data";
+import * as subs from "./subs";
+import * as ui_report from "./ui_report";
 
 let created_stream;
 
-exports.reset_created_stream = function () {
+export function reset_created_stream() {
     created_stream = undefined;
-};
+}
 
-exports.set_name = function (stream) {
+export function set_name(stream) {
     created_stream = stream;
-};
+}
 
-exports.get_name = function () {
+export function get_name() {
     return created_stream;
-};
+}
 
 class StreamSubscriptionError {
     report_no_subs_to_stream() {
@@ -131,7 +135,7 @@ function update_announce_stream_state() {
 function get_principals() {
     return Array.from($("#stream_creation_form input:checkbox[name=user]:checked"), (elem) => {
         const label = $(elem).closest(".add-user-label");
-        return parseInt(label.attr("data-user-id"), 10);
+        return Number.parseInt(label.attr("data-user-id"), 10);
     });
 }
 
@@ -145,10 +149,9 @@ function create_stream() {
     // newline characters (by pressing the Enter key) it would still be possible to copy
     // and paste over a description with newline characters in it. Prevent that.
     if (description.includes("\n")) {
-        ui_report.message(
+        ui_report.client_error(
             i18n.t("The stream description cannot contain newline characters."),
             $(".stream_create_info"),
-            "alert-error",
         );
         return undefined;
     }
@@ -171,7 +174,7 @@ function create_stream() {
     data.invite_only = JSON.stringify(invite_only);
     data.history_public_to_subscribers = JSON.stringify(history_public_to_subscribers);
 
-    const stream_post_policy = parseInt(
+    const stream_post_policy = Number.parseInt(
         $("#stream_creation_form input[name=stream-post-policy]:checked").val(),
         10,
     );
@@ -182,7 +185,7 @@ function create_stream() {
         "#stream_creation_form select[name=stream_message_retention_setting]",
     ).val();
     if (message_retention_selection === "retain_for_period") {
-        message_retention_selection = parseInt(
+        message_retention_selection = Number.parseInt(
             $("#stream_creation_form input[name=stream-message-retention-days]").val(),
             10,
         );
@@ -234,7 +237,7 @@ function create_stream() {
     });
 }
 
-exports.new_stream_clicked = function (stream_name) {
+export function new_stream_clicked(stream_name) {
     // this changes the tab switcher (settings/preview) which isn't necessary
     // to a add new stream title.
     subs.show_subs_pane.create_stream();
@@ -243,19 +246,9 @@ exports.new_stream_clicked = function (stream_name) {
     if (stream_name !== "") {
         $("#create_stream_name").val(stream_name);
     }
-    exports.show_new_stream_modal();
-
-    // at less than 700px we have a @media query that when you tap the
-    // .create_stream_button, the stream prompt slides in. However, when you
-    // focus  the button on that page, the entire app view jumps over to
-    // the other tab, and the animation breaks.
-    // it is unclear whether this is a browser bug or "feature", however what
-    // is clear is that this shouldn't be touched unless you're also changing
-    // the mobile @media query at 700px.
-    if (window.innerWidth > 700) {
-        $("#create_stream_name").trigger("focus");
-    }
-};
+    show_new_stream_modal();
+    $("#create_stream_name").trigger("focus");
+}
 
 function clear_error_display() {
     stream_name_error.clear_errors();
@@ -263,22 +256,24 @@ function clear_error_display() {
     stream_subscription_error.clear_errors();
 }
 
-exports.show_new_stream_modal = function () {
+export function show_new_stream_modal() {
     $("#stream-creation").removeClass("hide");
     $(".right .settings").hide();
 
-    const all_users = people.get_people_for_stream_create();
-    // Add current user on top of list
-    all_users.unshift(people.get_by_user_id(page_params.user_id));
-    const html = render_new_stream_users({
-        users: all_users,
-        streams: stream_data.get_streams_for_settings_page(),
-        is_admin: page_params.is_admin,
+    const html = blueslip.measure_time("render new stream users", () => {
+        const all_users = people.get_people_for_stream_create();
+        // Add current user on top of list
+        all_users.unshift(people.get_by_user_id(page_params.user_id));
+        return render_new_stream_users({
+            users: all_users,
+            streams: stream_data.get_streams_for_settings_page(),
+            is_admin: page_params.is_admin,
+        });
     });
 
     const container = $("#people_to_add");
     container.html(html);
-    exports.create_handlers_for_users(container);
+    create_handlers_for_users(container);
 
     // Make the options default to the same each time:
     // public, "announce stream" on.
@@ -297,13 +292,13 @@ exports.show_new_stream_modal = function () {
 
     $("#stream-checkboxes label.checkbox").on("change", function (e) {
         const elem = $(this);
-        const stream_id = parseInt(elem.attr("data-stream-id"), 10);
+        const stream_id = Number.parseInt(elem.attr("data-stream-id"), 10);
         const checked = elem.find("input").prop("checked");
-        const subscriber_ids = stream_data.get_sub_by_id(stream_id).subscribers;
+        const subscriber_ids = new Set(peer_data.get_subscribers(stream_id));
 
         $("#user-checkboxes label.checkbox").each(function () {
             const user_elem = $(this);
-            const user_id = parseInt(user_elem.attr("data-user-id"), 10);
+            const user_id = Number.parseInt(user_elem.attr("data-user-id"), 10);
 
             if (subscriber_ids.has(user_id)) {
                 user_elem.find("input").prop("checked", checked);
@@ -312,9 +307,9 @@ exports.show_new_stream_modal = function () {
 
         e.preventDefault();
     });
-};
+}
 
-exports.create_handlers_for_users = function (container) {
+export function create_handlers_for_users(container) {
     // container should be $('#people_to_add')...see caller to verify
     container.on("change", "#user-checkboxes input", update_announce_stream_state);
 
@@ -350,7 +345,7 @@ exports.create_handlers_for_users = function (container) {
         e.preventDefault();
     });
 
-    // Search People or Streams
+    // Search people or streams
     container.on("input", ".add-user-list-filter", (e) => {
         const user_list = $(".add-user-list-filter");
         if (user_list === 0) {
@@ -379,7 +374,7 @@ exports.create_handlers_for_users = function (container) {
             // implementation is merely sluggish.
             user_labels.each(function () {
                 const elem = $(this);
-                const user_id = parseInt(elem.attr("data-user-id"), 10);
+                const user_id = Number.parseInt(elem.attr("data-user-id"), 10);
                 const user_checked = filtered_users.has(user_id);
                 const display = user_checked ? "block" : "none";
                 elem.css({display});
@@ -388,9 +383,9 @@ exports.create_handlers_for_users = function (container) {
 
         e.preventDefault();
     });
-};
+}
 
-exports.set_up_handlers = function () {
+export function set_up_handlers() {
     const container = $("#stream-creation").expectOne();
 
     container.on("change", "#make-invite-only input", update_announce_stream_state);
@@ -474,6 +469,4 @@ exports.set_up_handlers = function () {
             e.preventDefault();
         }
     });
-};
-
-window.stream_create = exports;
+}

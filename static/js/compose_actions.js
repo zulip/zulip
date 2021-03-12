@@ -1,17 +1,31 @@
-"use strict";
+import autosize from "autosize";
 
-const autosize = require("autosize");
+import * as fenced_code from "../shared/js/fenced_code";
 
-const fenced_code = require("../shared/js/fenced_code");
+import * as channel from "./channel";
+import * as common from "./common";
+import * as compose from "./compose";
+import * as compose_fade from "./compose_fade";
+import * as compose_pm_pill from "./compose_pm_pill";
+import * as compose_state from "./compose_state";
+import * as compose_ui from "./compose_ui";
+import * as drafts from "./drafts";
+import * as hash_util from "./hash_util";
+import * as message_viewport from "./message_viewport";
+import * as narrow_state from "./narrow_state";
+import * as notifications from "./notifications";
+import * as people from "./people";
+import * as reload_state from "./reload_state";
+import * as stream_data from "./stream_data";
+import * as ui_util from "./ui_util";
+import * as unread_ops from "./unread_ops";
 
-const people = require("./people");
-
-exports.blur_compose_inputs = function () {
+export function blur_compose_inputs() {
     $(".message_comp").find("input, textarea, button, #private_message_recipient").trigger("blur");
-};
+}
 
 function hide_box() {
-    exports.blur_compose_inputs();
+    blur_compose_inputs();
     $("#stream-message").hide();
     $("#private-message").hide();
     $(".new_message_textarea").css("min-height", "");
@@ -40,10 +54,11 @@ function get_focus_area(msg_type, opts) {
     }
     return "#private_message_recipient";
 }
-// Export for testing
-exports._get_focus_area = get_focus_area;
 
-exports.set_focus = function (msg_type, opts) {
+// Export for testing
+export const _get_focus_area = get_focus_area;
+
+export function set_focus(msg_type, opts) {
     const focus_area = get_focus_area(msg_type, opts);
     if (focus_area === undefined) {
         return;
@@ -53,7 +68,7 @@ exports.set_focus = function (msg_type, opts) {
         const elt = $(focus_area);
         elt.trigger("focus").trigger("select");
     }
-};
+}
 
 // Show the compose box.
 function show_box(msg_type, opts) {
@@ -73,12 +88,12 @@ function show_box(msg_type, opts) {
     // When changing this, edit the 42px in _maybe_autoscroll
     $(".new_message_textarea").css("min-height", "3em");
 
-    exports.set_focus(msg_type, opts);
+    set_focus(msg_type, opts);
 }
 
-exports.clear_textarea = function () {
+export function clear_textarea() {
     $("#compose").find("input[type=text], textarea").val("");
-};
+}
 
 function clear_box() {
     compose.clear_invites();
@@ -90,40 +105,40 @@ function clear_box() {
     compose.reset_user_acknowledged_all_everyone_flag();
     compose.reset_user_acknowledged_announce_flag();
 
-    exports.clear_textarea();
+    clear_textarea();
     $("#compose-textarea").removeData("draft-id");
     compose_ui.autosize_textarea($("#compose-textarea"));
     $("#compose-send-status").hide(0);
 }
 
-exports.autosize_message_content = function () {
+export function autosize_message_content() {
     autosize($("#compose-textarea"), {
         callback() {
-            exports.maybe_scroll_up_selected_message();
+            maybe_scroll_up_selected_message();
         },
     });
-};
+}
 
-exports.expand_compose_box = function () {
+export function expand_compose_box() {
     $("#compose_close").show();
     $("#compose_controls").hide();
     $(".message_comp").show();
-};
+}
 
-exports.complete_starting_tasks = function (msg_type, opts) {
+export function complete_starting_tasks(msg_type, opts) {
     // This is sort of a kitchen sink function, and it's called only
     // by compose.start() for now.  Having this as a separate function
     // makes testing a bit easier.
 
-    exports.maybe_scroll_up_selected_message();
+    maybe_scroll_up_selected_message();
     ui_util.change_tab_to("#message_feed_container");
     compose_fade.start_compose(msg_type);
     ui_util.decorate_stream_bar(opts.stream, $("#stream-message .message_header_stream"), true);
-    $(document).trigger($.Event("compose_started.zulip", opts));
-    exports.update_placeholder_text();
-};
+    $(document).trigger(new $.Event("compose_started.zulip", opts));
+    update_placeholder_text();
+}
 
-exports.maybe_scroll_up_selected_message = function () {
+export function maybe_scroll_up_selected_message() {
     // If the compose box is obscuring the currently selected message,
     // scroll up until the message is no longer occluded.
     if (current_msg_list.selected_id() === -1) {
@@ -145,7 +160,7 @@ exports.maybe_scroll_up_selected_message = function () {
     if (cover > 0) {
         message_viewport.user_initiated_animate_scroll(cover + 20);
     }
-};
+}
 
 function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
     return {
@@ -173,7 +188,7 @@ function same_recipient_as_before(msg_type, opts) {
     );
 }
 
-exports.update_placeholder_text = function () {
+export function update_placeholder_text() {
     // Change compose placeholder text only if compose box is open.
     if (!$("#compose-textarea").is(":visible")) {
         return;
@@ -187,16 +202,16 @@ exports.update_placeholder_text = function () {
     };
 
     $("#compose-textarea").attr("placeholder", compose_ui.compute_placeholder_text(opts));
-};
+}
 
-exports.start = function (msg_type, opts) {
-    exports.autosize_message_content();
+export function start(msg_type, opts) {
+    autosize_message_content();
 
     if (reload_state.is_in_progress()) {
         return;
     }
     notifications.clear_compose_notifications();
-    exports.expand_compose_box();
+    expand_compose_box();
 
     opts = fill_in_opts_from_current_narrowed_view(msg_type, opts);
     // If we are invoked by a compose hotkey (c or x) or new topic
@@ -245,10 +260,10 @@ exports.start = function (msg_type, opts) {
     // Show either stream/topic fields or "You and" field.
     show_box(msg_type, opts);
 
-    exports.complete_starting_tasks(msg_type, opts);
-};
+    complete_starting_tasks(msg_type, opts);
+}
 
-exports.cancel = function () {
+export function cancel() {
     $("#compose-textarea").height(40 + "px");
 
     if (page_params.narrow !== undefined) {
@@ -267,13 +282,13 @@ exports.cancel = function () {
     clear_box();
     notifications.clear_compose_notifications();
     compose.abort_xhr();
-    compose.abort_zoom(undefined);
+    compose.abort_video_callbacks(undefined);
     compose_state.set_message_type(false);
     compose_pm_pill.clear();
-    $(document).trigger($.Event("compose_canceled.zulip"));
-};
+    $(document).trigger("compose_canceled.zulip");
+}
 
-exports.respond_to_message = function (opts) {
+export function respond_to_message(opts) {
     let msg_type;
     // Before initiating a reply to a message, if there's an
     // in-progress composition, snapshot it.
@@ -309,7 +324,7 @@ exports.respond_to_message = function (opts) {
         }
 
         const new_opts = fill_in_opts_from_current_narrowed_view(msg_type, opts);
-        exports.start(new_opts.message_type, new_opts);
+        start(new_opts.message_type, new_opts);
         return;
     }
 
@@ -344,22 +359,22 @@ exports.respond_to_message = function (opts) {
         }
     }
 
-    exports.start(msg_type, {
+    start(msg_type, {
         stream,
         topic,
         private_message_recipient: pm_recipient,
         trigger: opts.trigger,
     });
-};
+}
 
-exports.reply_with_mention = function (opts) {
-    exports.respond_to_message(opts);
+export function reply_with_mention(opts) {
+    respond_to_message(opts);
     const message = current_msg_list.selected_message();
     const mention = people.get_mention_syntax(message.sender_full_name, message.sender_id);
     compose_ui.insert_syntax_and_focus(mention);
-};
+}
 
-exports.on_topic_narrow = function () {
+export function on_topic_narrow() {
     if (!compose_state.composing()) {
         // If our compose box is closed, then just
         // leave it closed, assuming that the user is
@@ -377,7 +392,7 @@ exports.on_topic_narrow = function () {
         }
 
         // Otherwise, avoid a mix.
-        exports.cancel();
+        cancel();
         return;
     }
 
@@ -402,9 +417,9 @@ exports.on_topic_narrow = function () {
     compose_fade.set_focused_recipient("stream");
     compose_fade.update_message_list();
     $("#compose-textarea").trigger("focus").trigger("select");
-};
+}
 
-exports.quote_and_reply = function (opts) {
+export function quote_and_reply(opts) {
     const textarea = $("#compose-textarea");
     const message_id = current_msg_list.selected_id();
     const message = current_msg_list.selected_message();
@@ -428,7 +443,7 @@ exports.quote_and_reply = function (opts) {
         // smarter about newlines.
         textarea.caret(0);
     } else {
-        exports.respond_to_message(opts);
+        respond_to_message(opts);
     }
 
     compose_ui.insert_syntax_and_focus("[Quoting…]\n", textarea);
@@ -460,16 +475,16 @@ exports.quote_and_reply = function (opts) {
             replace_content(message);
         },
     });
-};
+}
 
-exports.on_narrow = function (opts) {
+export function on_narrow(opts) {
     // We use force_close when jumping between PM narrows with the "p" key,
     // so that we don't have an open compose box that makes it difficult
     // to cycle quickly through unread messages.
     if (opts.force_close) {
         // This closes the compose box if it was already open, and it is
         // basically a noop otherwise.
-        exports.cancel();
+        cancel();
         return;
     }
 
@@ -479,7 +494,7 @@ exports.on_narrow = function (opts) {
     }
 
     if (narrow_state.narrowed_by_topic_reply()) {
-        exports.on_topic_narrow();
+        on_topic_narrow();
         return;
     }
 
@@ -495,14 +510,12 @@ exports.on_narrow = function (opts) {
         if (opts.trigger === "search" && !opts.private_message_recipient) {
             return;
         }
-        exports.start("private");
+        start("private");
         return;
     }
 
     // If we got this far, then we assume the user is now in "reading"
     // mode, so we close the compose box to make it easier to use navigation
     // hotkeys and to provide more screen real estate for messages.
-    exports.cancel();
-};
-
-window.compose_actions = exports;
+    cancel();
+}

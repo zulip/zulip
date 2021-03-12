@@ -1,4 +1,5 @@
-"use strict";
+import * as hashchange from "./hashchange";
+import * as popovers from "./popovers";
 
 let active_overlay;
 let close_handler;
@@ -10,37 +11,33 @@ function reset_state() {
     open_overlay_name = undefined;
 }
 
-exports.is_active = function () {
-    return !!open_overlay_name;
-};
+export function is_active() {
+    return Boolean(open_overlay_name);
+}
 
-exports.is_modal_open = function () {
+export function is_modal_open() {
     return $(".modal").hasClass("in");
-};
+}
 
-exports.info_overlay_open = function () {
+export function info_overlay_open() {
     return open_overlay_name === "informationalOverlays";
-};
+}
 
-exports.settings_open = function () {
+export function settings_open() {
     return open_overlay_name === "settings";
-};
+}
 
-exports.streams_open = function () {
+export function streams_open() {
     return open_overlay_name === "subscriptions";
-};
+}
 
-exports.lightbox_open = function () {
+export function lightbox_open() {
     return open_overlay_name === "lightbox";
-};
+}
 
-exports.drafts_open = function () {
+export function drafts_open() {
     return open_overlay_name === "drafts";
-};
-
-exports.recent_topics_open = function () {
-    return open_overlay_name === "recent_topics";
-};
+}
 
 // To address bugs where mouse might apply to the streams/settings
 // overlays underneath an open modal within those settings UI, we add
@@ -49,26 +46,26 @@ exports.recent_topics_open = function () {
 //
 // This is kinda hacky; it only works for modals within overlays, and
 // we need to make sure it gets re-enabled when the modal closes.
-exports.disable_background_mouse_events = function () {
+export function disable_background_mouse_events() {
     $(".overlay.show").attr("style", "pointer-events: none");
-};
+}
 
 // This removes only the inline-style of the element that
 // was added in disable_background_mouse_events and
 // enables the background mouse events.
-exports.enable_background_mouse_events = function () {
+export function enable_background_mouse_events() {
     $(".overlay.show").attr("style", null);
-};
+}
 
-exports.active_modal = function () {
-    if (!exports.is_modal_open()) {
+export function active_modal() {
+    if (!is_modal_open()) {
         blueslip.error("Programming error — Called active_modal when there is no modal open");
         return undefined;
     }
-    return "#" + $(".modal.in").attr("id");
-};
+    return `#${CSS.escape($(".modal.in").attr("id"))}`;
+}
 
-exports.open_overlay = function (opts) {
+export function open_overlay(opts) {
     popovers.hide_all();
 
     if (!opts.name || !opts.overlay || !opts.on_close) {
@@ -109,9 +106,9 @@ exports.open_overlay = function (opts) {
         opts.on_close();
         reset_state();
     };
-};
+}
 
-exports.open_modal = function (selector) {
+export function open_modal(selector) {
     if (selector === undefined) {
         blueslip.error("Undefined selector was passed into open_modal");
         return;
@@ -122,10 +119,8 @@ exports.open_modal = function (selector) {
         return;
     }
 
-    if (exports.is_modal_open()) {
-        blueslip.error(
-            "open_modal() was called while " + exports.active_modal() + " modal was open.",
-        );
+    if (is_modal_open()) {
+        blueslip.error("open_modal() was called while " + active_modal() + " modal was open.");
         return;
     }
 
@@ -134,13 +129,13 @@ exports.open_modal = function (selector) {
     const elem = $(selector).expectOne();
     elem.modal("show").attr("aria-hidden", false);
     // Disable background mouse events when modal is active
-    exports.disable_background_mouse_events();
+    disable_background_mouse_events();
     // Remove previous alert messages from modal, if exists.
     elem.find(".alert").hide();
     elem.find(".alert-notification").html("");
-};
+}
 
-exports.close_overlay = function (name) {
+export function close_overlay(name) {
     popovers.hide_all();
 
     if (name !== open_overlay_name) {
@@ -163,36 +158,36 @@ exports.close_overlay = function (name) {
     $(".header").attr("aria-hidden", "false");
 
     if (!close_handler) {
-        blueslip.error("Overlay close handler for " + name + " not properly setup.");
+        blueslip.error("Overlay close handler for " + name + " not properly set up.");
         return;
     }
 
     close_handler();
-};
+}
 
-exports.close_active = function () {
+export function close_active() {
     if (!open_overlay_name) {
         blueslip.warn("close_active() called without checking is_active()");
         return;
     }
 
-    exports.close_overlay(open_overlay_name);
-};
+    close_overlay(open_overlay_name);
+}
 
-exports.close_modal = function (selector) {
+export function close_modal(selector) {
     if (selector === undefined) {
         blueslip.error("Undefined selector was passed into close_modal");
         return;
     }
 
-    if (!exports.is_modal_open()) {
+    if (!is_modal_open()) {
         blueslip.warn("close_active_modal() called without checking is_modal_open()");
         return;
     }
 
-    if (exports.active_modal() !== selector) {
+    if (active_modal() !== selector) {
         blueslip.error(
-            "Trying to close " + selector + " modal when " + exports.active_modal() + " is open.",
+            "Trying to close " + selector + " modal when " + active_modal() + " is open.",
         );
         return;
     }
@@ -202,34 +197,36 @@ exports.close_modal = function (selector) {
     const elem = $(selector).expectOne();
     elem.modal("hide").attr("aria-hidden", true);
     // Enable mouse events for the background as the modal closes.
-    exports.enable_background_mouse_events();
-};
+    enable_background_mouse_events();
+}
 
-exports.close_active_modal = function () {
-    if (!exports.is_modal_open()) {
+export function close_active_modal() {
+    if (!is_modal_open()) {
         blueslip.warn("close_active_modal() called without checking is_modal_open()");
         return;
     }
 
     $(".modal.in").modal("hide").attr("aria-hidden", true);
-};
+}
 
-exports.close_for_hash_change = function () {
+export function close_for_hash_change() {
     $(".overlay.show").removeClass("show");
-    reset_state();
-};
+    if (active_overlay) {
+        close_handler();
+    }
+}
 
-exports.open_settings = function () {
-    exports.open_overlay({
+export function open_settings() {
+    open_overlay({
         name: "settings",
         overlay: $("#settings_overlay_container"),
         on_close() {
             hashchange.exit_overlay();
         },
     });
-};
+}
 
-exports.initialize = function () {
+export function initialize() {
     $("body").on("click", ".overlay, .overlay .exit", (e) => {
         let $target = $(e.target);
 
@@ -244,11 +241,9 @@ exports.initialize = function () {
 
         const target_name = $target.attr("data-overlay");
 
-        exports.close_overlay(target_name);
+        close_overlay(target_name);
 
         e.preventDefault();
         e.stopPropagation();
     });
-};
-
-window.overlays = exports;
+}

@@ -5,9 +5,9 @@ from zerver.lib.webhooks.git import COMMITS_LIMIT
 
 
 class GogsHookTests(WebhookTestCase):
-    STREAM_NAME = 'commits'
+    STREAM_NAME = "commits"
     URL_TEMPLATE = "/api/v1/external/gogs?&api_key={api_key}&stream={stream}"
-    FIXTURE_DIR_NAME = 'gogs'
+    FIXTURE_DIR_NAME = "gogs"
 
     def test_push(self) -> None:
         expected_topic = "try-git / master"
@@ -17,20 +17,20 @@ class GogsHookTests(WebhookTestCase):
         self.check_webhook("push", expected_topic, expected_message)
 
     def test_push_multiple_committers(self) -> None:
-        commit_info = '* Webhook Test ([d8fce16](http://localhost:3000/john/try-git/commit/d8fce16c72a2ff56a5afc8a08645a6ce45491794))\n'
+        commit_info = "* Webhook Test ([d8fce16](http://localhost:3000/john/try-git/commit/d8fce16c72a2ff56a5afc8a08645a6ce45491794))\n"
         expected_topic = "try-git / master"
         expected_message = f"""john [pushed](http://localhost:3000/john/try-git/compare/479e6b772b7fba19412457483f50b201286d0103...d8fce16c72a2ff56a5afc8a08645a6ce45491794) 2 commits to branch master. Commits by Benjamin (1) and John (1).\n\n{commit_info}* Webhook Test ([d8fce16](http://localhost:3000/john/try-git/commit/d8fce16c72a2ff56a5afc8a08645a6ce45491794))"""
         self.check_webhook("push__commits_multiple_committers", expected_topic, expected_message)
 
     def test_push_multiple_committers_filtered_by_branches(self) -> None:
-        self.url = self.build_webhook_url(branches='master,development')
-        commit_info = '* Webhook Test ([d8fce16](http://localhost:3000/john/try-git/commit/d8fce16c72a2ff56a5afc8a08645a6ce45491794))\n'
+        self.url = self.build_webhook_url(branches="master,development")
+        commit_info = "* Webhook Test ([d8fce16](http://localhost:3000/john/try-git/commit/d8fce16c72a2ff56a5afc8a08645a6ce45491794))\n"
         expected_topic = "try-git / master"
         expected_message = f"""john [pushed](http://localhost:3000/john/try-git/compare/479e6b772b7fba19412457483f50b201286d0103...d8fce16c72a2ff56a5afc8a08645a6ce45491794) 2 commits to branch master. Commits by Benjamin (1) and John (1).\n\n{commit_info}* Webhook Test ([d8fce16](http://localhost:3000/john/try-git/commit/d8fce16c72a2ff56a5afc8a08645a6ce45491794))"""
         self.check_webhook("push__commits_multiple_committers", expected_topic, expected_message)
 
     def test_push_filtered_by_branches(self) -> None:
-        self.url = self.build_webhook_url(branches='master,development')
+        self.url = self.build_webhook_url(branches="master,development")
         expected_topic = "try-git / master"
         expected_message = """john [pushed](http://localhost:3000/john/try-git/compare/479e6b772b7fba19412457483f50b201286d0103...d8fce16c72a2ff56a5afc8a08645a6ce45491794) 1 commit to branch master. Commits by John (1).
 
@@ -44,7 +44,7 @@ class GogsHookTests(WebhookTestCase):
         self.check_webhook("push__commits_more_than_limits", expected_topic, expected_message)
 
     def test_push_commits_more_than_limits_filtered_by_branches(self) -> None:
-        self.url = self.build_webhook_url(branches='master,development')
+        self.url = self.build_webhook_url(branches="master,development")
         expected_topic = "try-git / master"
         commits_info = "* Webhook Test ([d8fce16](http://localhost:3000/john/try-git/commit/d8fce16c72a2ff56a5afc8a08645a6ce45491794))\n"
         expected_message = f"john [pushed](http://localhost:3000/john/try-git/compare/479e6b772b7fba19412457483f50b201286d0103...d8fce16c72a2ff56a5afc8a08645a6ce45491794) 30 commits to branch master. Commits by John (30).\n\n{commits_info * COMMITS_LIMIT}[and {30 - COMMITS_LIMIT} more commit(s)]"
@@ -52,7 +52,9 @@ class GogsHookTests(WebhookTestCase):
 
     def test_new_branch(self) -> None:
         expected_topic = "try-git / my_feature"
-        expected_message = "john created [my_feature](http://localhost:3000/john/try-git/src/my_feature) branch."
+        expected_message = (
+            "john created [my_feature](http://localhost:3000/john/try-git/src/my_feature) branch."
+        )
         self.check_webhook("create__branch", expected_topic, expected_message)
 
     def test_pull_request_opened(self) -> None:
@@ -61,7 +63,7 @@ class GogsHookTests(WebhookTestCase):
         self.check_webhook("pull_request__opened", expected_topic, expected_message)
 
     def test_pull_request_opened_with_custom_topic_in_url(self) -> None:
-        self.url = self.build_webhook_url(topic='notifications')
+        self.url = self.build_webhook_url(topic="notifications")
         expected_topic = "notifications"
         expected_message = """john opened [PR #1 Title Text for Pull Request](http://localhost:3000/john/try-git/pulls/1) from `feature` to `master`."""
         self.check_webhook("pull_request__opened", expected_topic, expected_message)
@@ -136,31 +138,38 @@ class GogsHookTests(WebhookTestCase):
         expected_message = """cestrell published release [Title](https://try.gogs.io/cestrell/zulip_test) for tag v1.4."""
         self.check_webhook("release__published", expected_topic, expected_message)
 
-    @patch('zerver.webhooks.gogs.view.check_send_webhook_message')
-    def test_push_filtered_by_branches_ignore(self, check_send_webhook_message_mock: MagicMock) -> None:
-        self.url = self.build_webhook_url(branches='changes,development')
-        payload = self.get_body('push')
-        result = self.client_post(self.url, payload, HTTP_X_GOGS_EVENT='push',
-                                  content_type="application/json")
+    @patch("zerver.webhooks.gogs.view.check_send_webhook_message")
+    def test_push_filtered_by_branches_ignore(
+        self, check_send_webhook_message_mock: MagicMock
+    ) -> None:
+        self.url = self.build_webhook_url(branches="changes,development")
+        payload = self.get_body("push")
+        result = self.client_post(
+            self.url, payload, HTTP_X_GOGS_EVENT="push", content_type="application/json"
+        )
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
 
-    @patch('zerver.webhooks.gogs.view.check_send_webhook_message')
+    @patch("zerver.webhooks.gogs.view.check_send_webhook_message")
     def test_push_commits_more_than_limits_filtered_by_branches_ignore(
-            self, check_send_webhook_message_mock: MagicMock) -> None:
-        self.url = self.build_webhook_url(branches='changes,development')
-        payload = self.get_body('push__commits_more_than_limits')
-        result = self.client_post(self.url, payload, HTTP_X_GOGS_EVENT='push',
-                                  content_type="application/json")
+        self, check_send_webhook_message_mock: MagicMock
+    ) -> None:
+        self.url = self.build_webhook_url(branches="changes,development")
+        payload = self.get_body("push__commits_more_than_limits")
+        result = self.client_post(
+            self.url, payload, HTTP_X_GOGS_EVENT="push", content_type="application/json"
+        )
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
 
-    @patch('zerver.webhooks.gogs.view.check_send_webhook_message')
+    @patch("zerver.webhooks.gogs.view.check_send_webhook_message")
     def test_push_multiple_committers_filtered_by_branches_ignore(
-            self, check_send_webhook_message_mock: MagicMock) -> None:
-        self.url = self.build_webhook_url(branches='changes,development')
-        payload = self.get_body('push__commits_multiple_committers')
-        result = self.client_post(self.url, payload, HTTP_X_GOGS_EVENT='push',
-                                  content_type="application/json")
+        self, check_send_webhook_message_mock: MagicMock
+    ) -> None:
+        self.url = self.build_webhook_url(branches="changes,development")
+        payload = self.get_body("push__commits_multiple_committers")
+        result = self.client_post(
+            self.url, payload, HTTP_X_GOGS_EVENT="push", content_type="application/json"
+        )
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)

@@ -83,8 +83,14 @@ esac
 
 # Check for a supported OS release.
 if [ -f /etc/os-release ]; then
-    os_info="$(. /etc/os-release; printf '%s\n' "$ID" "$ID_LIKE")"
-    { read -r os_id; read -r os_id_like|| true; } <<< "$os_info"
+    os_info="$(
+        . /etc/os-release
+        printf '%s\n' "$ID" "$ID_LIKE"
+    )"
+    {
+        read -r os_id
+        read -r os_id_like || true
+    } <<<"$os_info"
 fi
 
 set -x
@@ -104,10 +110,10 @@ esac
 # Passing --force-interactive suppresses a warning, but also brings up
 # an annoying prompt we stifle with --no-eff-email.
 certbot certonly "${method_args[@]}" \
-                "${HOSTNAMES[@]}" -m "$EMAIL" \
-                $agree_tos \
-                "${deploy_hook[@]}" \
-                --force-interactive --no-eff-email
+    "${HOSTNAMES[@]}" -m "$EMAIL" \
+    $agree_tos \
+    "${deploy_hook[@]}" \
+    --force-interactive --no-eff-email
 
 symlink_with_backup() {
     if [ -e "$2" ]; then

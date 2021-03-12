@@ -1,20 +1,19 @@
-"use strict";
-
-const util = require("./util");
+import * as stream_data from "./stream_data";
+import * as util from "./util";
 
 let previous_pinned;
 let previous_normal;
 let previous_dormant;
 let all_streams = [];
 
-exports.get_streams = function () {
+export function get_streams() {
     // Right now this is only used for testing, but we should
     // use it for things like hotkeys that cycle through streams.
     const sorted_streams = all_streams.map((stream_id) =>
         stream_data.maybe_get_stream_name(stream_id),
     );
     return sorted_streams;
-};
+}
 
 function compare_function(a, b) {
     const stream_a = stream_data.get_sub_by_id(a);
@@ -46,7 +45,7 @@ function filter_streams_by_search(streams, search_term) {
     return filtered_streams;
 }
 
-exports.sort_groups = function (streams, search_term) {
+export function sort_groups(streams, search_term) {
     if (streams.length === 0) {
         return undefined;
     }
@@ -97,7 +96,7 @@ exports.sort_groups = function (streams, search_term) {
         normal_streams,
         dormant_streams,
     };
-};
+}
 
 function maybe_get_stream_id(i) {
     if (i < 0 || i >= all_streams.length) {
@@ -107,11 +106,11 @@ function maybe_get_stream_id(i) {
     return all_streams[i];
 }
 
-exports.first_stream_id = function () {
+export function first_stream_id() {
     return maybe_get_stream_id(0);
-};
+}
 
-exports.prev_stream_id = function (stream_id) {
+export function prev_stream_id(stream_id) {
     const i = all_streams.indexOf(stream_id);
 
     if (i < 0) {
@@ -119,9 +118,9 @@ exports.prev_stream_id = function (stream_id) {
     }
 
     return maybe_get_stream_id(i - 1);
-};
+}
 
-exports.next_stream_id = function (stream_id) {
+export function next_stream_id(stream_id) {
     const i = all_streams.indexOf(stream_id);
 
     if (i < 0) {
@@ -129,6 +128,4 @@ exports.next_stream_id = function (stream_id) {
     }
 
     return maybe_get_stream_id(i + 1);
-};
-
-window.stream_sort = exports;
+}

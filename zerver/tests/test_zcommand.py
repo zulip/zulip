@@ -3,9 +3,8 @@ from zerver.models import UserProfile
 
 
 class ZcommandTest(ZulipTestCase):
-
     def test_invalid_zcommand(self) -> None:
-        self.login('hamlet')
+        self.login("hamlet")
 
         payload = dict(command="/boil-ocean")
         result = self.client_post("/json/zcommand", payload)
@@ -16,41 +15,41 @@ class ZcommandTest(ZulipTestCase):
         self.assert_json_error(result, "There should be a leading slash in the zcommand.")
 
     def test_ping_zcommand(self) -> None:
-        self.login('hamlet')
+        self.login("hamlet")
 
         payload = dict(command="/ping")
         result = self.client_post("/json/zcommand", payload)
         self.assert_json_success(result)
 
     def test_night_zcommand(self) -> None:
-        self.login('hamlet')
-        user = self.example_user('hamlet')
+        self.login("hamlet")
+        user = self.example_user("hamlet")
         user.color_scheme = UserProfile.COLOR_SCHEME_LIGHT
         user.save()
 
         payload = dict(command="/night")
         result = self.client_post("/json/zcommand", payload)
         self.assert_json_success(result)
-        self.assertIn('Changed to night', result.json()['msg'])
+        self.assertIn("Changed to night", result.json()["msg"])
 
         result = self.client_post("/json/zcommand", payload)
         self.assert_json_success(result)
-        self.assertIn('still in night mode', result.json()['msg'])
+        self.assertIn("still in night mode", result.json()["msg"])
 
     def test_day_zcommand(self) -> None:
-        self.login('hamlet')
-        user = self.example_user('hamlet')
+        self.login("hamlet")
+        user = self.example_user("hamlet")
         user.color_scheme = UserProfile.COLOR_SCHEME_NIGHT
         user.save()
 
         payload = dict(command="/day")
         result = self.client_post("/json/zcommand", payload)
         self.assert_json_success(result)
-        self.assertIn('Changed to day', result.json()['msg'])
+        self.assertIn("Changed to day", result.json()["msg"])
 
         result = self.client_post("/json/zcommand", payload)
         self.assert_json_success(result)
-        self.assertIn('still in day mode', result.json()['msg'])
+        self.assertIn("still in day mode", result.json()["msg"])
 
     def test_fluid_zcommand(self) -> None:
         self.login("hamlet")
@@ -61,11 +60,11 @@ class ZcommandTest(ZulipTestCase):
         payload = dict(command="/fluid-width")
         result = self.client_post("/json/zcommand", payload)
         self.assert_json_success(result)
-        self.assert_in_response('Changed to fluid-width mode!', result)
+        self.assert_in_response("Changed to fluid-width mode!", result)
 
         result = self.client_post("/json/zcommand", payload)
         self.assert_json_success(result)
-        self.assert_in_response('You are still in fluid width mode', result)
+        self.assert_in_response("You are still in fluid width mode", result)
 
     def test_fixed_zcommand(self) -> None:
         self.login("hamlet")
@@ -76,8 +75,8 @@ class ZcommandTest(ZulipTestCase):
         payload = dict(command="/fixed-width")
         result = self.client_post("/json/zcommand", payload)
         self.assert_json_success(result)
-        self.assert_in_response('Changed to fixed-width mode!', result)
+        self.assert_in_response("Changed to fixed-width mode!", result)
 
         result = self.client_post("/json/zcommand", payload)
         self.assert_json_success(result)
-        self.assert_in_response('You are still in fixed width mode', result)
+        self.assert_in_response("You are still in fixed width mode", result)

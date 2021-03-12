@@ -4,9 +4,9 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class GreenhouseHookTests(WebhookTestCase):
-    STREAM_NAME = 'greenhouse'
+    STREAM_NAME = "greenhouse"
     URL_TEMPLATE = "/api/v1/external/greenhouse?stream={stream}&api_key={api_key}"
-    FIXTURE_DIR_NAME = 'greenhouse'
+    FIXTURE_DIR_NAME = "greenhouse"
     CONTENT_TYPE = "application/x-www-form-urlencoded"
 
     def test_message_candidate_hired(self) -> None:
@@ -64,11 +64,10 @@ New Prospect Application Trisha Troy (ID: 968190), applying for:
             "prospect_created", expected_topic, expected_message, content_type=self.CONTENT_TYPE
         )
 
-    @patch('zerver.webhooks.greenhouse.view.check_send_webhook_message')
-    def test_ping_message_ignore(
-            self, check_send_webhook_message_mock: MagicMock) -> None:
+    @patch("zerver.webhooks.greenhouse.view.check_send_webhook_message")
+    def test_ping_message_ignore(self, check_send_webhook_message_mock: MagicMock) -> None:
         self.url = self.build_webhook_url()
-        payload = self.get_body('ping_event')
+        payload = self.get_body("ping_event")
         result = self.client_post(self.url, payload, content_type=self.CONTENT_TYPE)
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)

@@ -1,9 +1,6 @@
 import katex from "katex";
 import _ from "lodash";
 
-// eslint-disable-next-line
-const pygments_data = require("../../generated/pygments_data.json");
-
 // Parsing routine that can be dropped in to message parsing
 // and formats code blocks
 //
@@ -33,40 +30,44 @@ let stash_func = function (text) {
     return text;
 };
 
+// We fill up the actual values when initializing.
+let pygments_data = {};
+
+export function initialize(generated_pygments_data) {
+    pygments_data = generated_pygments_data.langs;
+}
+
 export function wrap_code(code, lang) {
     let header = '<div class="codehilite"><pre><span></span><code>';
     // Mimics the backend logic of adding a data-attribute (data-code-language)
     // to know what Pygments language was used to highlight this code block.
-    if (lang !== undefined && lang !== "") {
-        const pygments_language_info = pygments_data.langs[lang];
-        let code_language = _.escape(lang);
-        if (pygments_language_info !== undefined) {
-            code_language = pygments_language_info.pretty_name;
-        }
-        header = `<div class="codehilite" data-code-language="${code_language}"><pre><span></span><code>`;
+    //
+    // NOTE: Clients like zulip-mobile wouldn't receive the pygments data since that comes from outside
+    // the `/shared` folder. To handle such a case we check if pygments data is empty and fallback to
+    // using the default header if it is.
+    if (lang !== undefined && lang !== "" && Object.keys(pygments_data).length > 0) {
+        const code_language = _.get(pygments_data, [lang, "pretty_name"], lang);
+        header = `<div class="codehilite" data-code-language="${_.escape(
+            code_language,
+        )}"><pre><span></span><code>`;
     }
     // Trim trailing \n until there's just one left
     // This mirrors how pygments handles code input
-    return header + _.escape(code.replace(/^\n+|\n+$/g, "")) + "\n</code></pre></div>\n";
+    return header + _.escape(code.replace(/^\n+|\n+$/g, "")) + "\n</code></pre></div>";
 }
 
 function wrap_quote(text) {
-    const paragraphs = text.split("\n\n");
+    const paragraphs = text.split("\n");
     const quoted_paragraphs = [];
 
     // Prefix each quoted paragraph with > at the
     // beginning of each line
     for (const paragraph of paragraphs) {
         const lines = paragraph.split("\n");
-        quoted_paragraphs.push(
-            lines
-                .filter((line) => line !== "")
-                .map((line) => "> " + line)
-                .join("\n"),
-        );
+        quoted_paragraphs.push(lines.map((line) => "> " + line).join("\n"));
     }
 
-    return quoted_paragraphs.join("\n\n");
+    return quoted_paragraphs.join("\n");
 }
 
 function wrap_tex(tex) {
@@ -74,22 +75,23 @@ function wrap_tex(tex) {
         return katex.renderToString(tex, {
             displayMode: true,
         });
-    } catch (ex) {
+    } catch {
         return '<span class="tex-error">' + _.escape(tex) + "</span>";
     }
 }
 
 function wrap_spoiler(header, text, stash_func) {
-    const output = [];
     const header_div_open_html = '<div class="spoiler-block"><div class="spoiler-header">';
     const end_header_start_content_html = '</div><div class="spoiler-content" aria-hidden="true">';
     const footer_html = "</div></div>";
 
-    output.push(stash_func(header_div_open_html));
-    output.push(header);
-    output.push(stash_func(end_header_start_content_html));
-    output.push(text);
-    output.push(stash_func(footer_html));
+    const output = [
+        stash_func(header_div_open_html),
+        header,
+        stash_func(end_header_start_content_html),
+        text,
+        stash_func(footer_html),
+    ];
     return output.join("\n\n");
 }
 
@@ -120,9 +122,7 @@ export function process_fenced_code(content) {
 
                     done() {
                         const text = wrap_quote(lines.join("\n"));
-                        output_lines.push("");
-                        output_lines.push(text);
-                        output_lines.push("");
+                        output_lines.push("", text, "");
                         handler_stack.pop();
                     },
                 };
@@ -141,9 +141,7 @@ export function process_fenced_code(content) {
                     done() {
                         const text = wrap_tex(lines.join("\n"));
                         const placeholder = stash_func(text, true);
-                        output_lines.push("");
-                        output_lines.push(placeholder);
-                        output_lines.push("");
+                        output_lines.push("", placeholder, "");
                         handler_stack.pop();
                     },
                 };
@@ -161,9 +159,7 @@ export function process_fenced_code(content) {
 
                     done() {
                         const text = wrap_spoiler(header, lines.join("\n"), stash_func);
-                        output_lines.push("");
-                        output_lines.push(text);
-                        output_lines.push("");
+                        output_lines.push("", text, "");
                         handler_stack.pop();
                     },
                 };
@@ -174,7 +170,7 @@ export function process_fenced_code(content) {
                     if (line === fence) {
                         this.done();
                     } else {
-                        lines.push(line.trimRight());
+                        lines.push(line.trimEnd());
                     }
                 },
 
@@ -182,9 +178,7 @@ export function process_fenced_code(content) {
                     const text = wrap_code(lines.join("\n"), lang);
                     // insert safe HTML that is passed through the parsing
                     const placeholder = stash_func(text, true);
-                    output_lines.push("");
-                    output_lines.push(placeholder);
-                    output_lines.push("");
+                    output_lines.push("", placeholder, "");
                     handler_stack.pop();
                 },
             };

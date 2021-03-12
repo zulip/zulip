@@ -1,10 +1,16 @@
-"use strict";
+import render_admin_tab from "../templates/admin_tab.hbs";
+import render_settings_organization_settings_tip from "../templates/settings/organization_settings_tip.hbs";
 
-const render_admin_tab = require("../templates/admin_tab.hbs");
-const render_settings_organization_settings_tip = require("../templates/settings/organization_settings_tip.hbs");
-
-const settings_config = require("./settings_config");
-const settings_data = require("./settings_data");
+import * as overlays from "./overlays";
+import * as settings from "./settings";
+import * as settings_bots from "./settings_bots";
+import * as settings_config from "./settings_config";
+import * as settings_data from "./settings_data";
+import * as settings_emoji from "./settings_emoji";
+import * as settings_org from "./settings_org";
+import * as settings_panel_menu from "./settings_panel_menu";
+import * as settings_sections from "./settings_sections";
+import * as settings_toggle from "./settings_toggle";
 
 const admin_settings_label = {
     // Organization settings
@@ -42,7 +48,7 @@ function insert_tip_box() {
         .prepend(tip_box);
 }
 
-exports.build_page = function () {
+export function build_page() {
     const options = {
         custom_profile_field_types: page_params.custom_profile_field_types,
         realm_name: page_params.realm_name,
@@ -59,6 +65,7 @@ exports.build_page = function () {
         realm_user_group_edit_policy: page_params.realm_user_group_edit_policy,
         USER_GROUP_EDIT_POLICY_MEMBERS: 1,
         realm_private_message_policy: page_params.realm_private_message_policy,
+        realm_wildcard_mention_policy: page_params.realm_wildcard_mention_policy,
         realm_name_changes_disabled: page_params.realm_name_changes_disabled,
         realm_email_changes_disabled: page_params.realm_email_changes_disabled,
         realm_avatar_changes_disabled: page_params.realm_avatar_changes_disabled,
@@ -101,14 +108,13 @@ exports.build_page = function () {
         upgrade_text_for_wide_organization_logo:
             page_params.upgrade_text_for_wide_organization_logo,
         realm_default_external_accounts: page_params.realm_default_external_accounts,
+        admin_settings_label,
+        msg_edit_limit_dropdown_values: settings_config.msg_edit_limit_dropdown_values,
+        msg_delete_limit_dropdown_values: settings_config.msg_delete_limit_dropdown_values,
+        bot_creation_policy_values: settings_bots.bot_creation_policy_values,
+        email_address_visibility_values: settings_config.email_address_visibility_values,
+        ...settings_org.get_organization_settings_options(),
     };
-
-    options.admin_settings_label = admin_settings_label;
-    options.msg_edit_limit_dropdown_values = settings_config.msg_edit_limit_dropdown_values;
-    options.msg_delete_limit_dropdown_values = settings_config.msg_delete_limit_dropdown_values;
-    options.bot_creation_policy_values = settings_bots.bot_creation_policy_values;
-    options.email_address_visibility_values = settings_config.email_address_visibility_values;
-    Object.assign(options, settings_org.get_organization_settings_options());
 
     if (options.realm_logo_source !== "D" && options.realm_night_logo_source === "D") {
         // If no night mode logo is specified but a day mode one is,
@@ -135,16 +141,14 @@ exports.build_page = function () {
     $("#id_realm_default_twenty_four_hour_time").val(
         JSON.stringify(page_params.realm_default_twenty_four_hour_time),
     );
-};
+}
 
-exports.launch = function (section) {
+export function launch(section) {
     settings.build_page();
-    exports.build_page();
+    build_page();
     settings_sections.reset_sections();
 
     overlays.open_settings();
     settings_panel_menu.org_settings.activate_section_or_default(section);
     settings_toggle.highlight_toggle("organization");
-};
-
-window.admin = exports;
+}

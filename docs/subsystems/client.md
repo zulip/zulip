@@ -12,9 +12,8 @@ of Zulip; it's primarily intended to assist debugging.
 ## Analytics
 
 A `Client` is used to sort messages into client categories such as
-`ZulipElectron` on the `/stats`
-[page](https://chat.zulip.org/stats). For more information see,
-[Analytics](analytics.md).
+`ZulipElectron` on the `/stats` page. For more information see,
+[Analytics](../subsystems/analytics.md).
 
 ## Integrations
 

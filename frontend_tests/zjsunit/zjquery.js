@@ -1,9 +1,14 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const noop = function () {};
 
 class Event {
     constructor(type, props) {
+        if (!(this instanceof Event)) {
+            return new Event(type, props);
+        }
         this.type = type;
         Object.assign(this, props);
     }
@@ -11,7 +16,31 @@ class Event {
     stopPropagation() {}
 }
 
-exports.make_event_store = (selector) => {
+function verify_selector_for_zulip(selector) {
+    const is_valid =
+        "<#.".includes(selector[0]) ||
+        selector === "window-stub" ||
+        selector === "document-stub" ||
+        selector === "body" ||
+        selector === "html" ||
+        selector.location ||
+        selector.includes("#") ||
+        selector.includes(".") ||
+        (selector.includes("[") && selector.indexOf("]") >= selector.indexOf("["));
+
+    if (!is_valid) {
+        // Check if selector has only english alphabets and space.
+        // Then, the user is probably trying to use a tag as a selector
+        // like $('div a').
+        if (/^[ A-Za-z]+$/.test(selector)) {
+            throw new Error("Selector too broad! Use id, class or attributes of target instead.");
+        } else {
+            throw new Error("Invalid selector: " + selector + " Use $.create() maybe?");
+        }
+    }
+}
+
+function make_event_store(selector) {
     /*
 
        This function returns an event_store object that
@@ -34,7 +63,7 @@ exports.make_event_store = (selector) => {
             if (child_selector === undefined) {
                 handler = on_functions.get(name);
                 if (!handler) {
-                    throw Error("no " + name + " handler for " + selector);
+                    throw new Error("no " + name + " handler for " + selector);
                 }
                 return handler;
             }
@@ -45,7 +74,7 @@ exports.make_event_store = (selector) => {
             }
 
             if (!handler) {
-                throw Error("no " + name + " handler for " + selector + " " + child_selector);
+                throw new Error("no " + name + " handler for " + selector + " " + child_selector);
             }
 
             return handler;
@@ -61,7 +90,7 @@ exports.make_event_store = (selector) => {
             // .off in code that we test: $(...).off('click', child_sel);
             //
             // So we don't support this for now.
-            throw Error("zjquery does not support this call sequence");
+            throw new Error("zjquery does not support this call sequence");
         },
 
         on(event_name, ...args) {
@@ -73,7 +102,7 @@ exports.make_event_store = (selector) => {
                 if (on_functions.has(event_name)) {
                     console.info("\nEither the app or the test can be at fault here..");
                     console.info("(sometimes you just want to call $.clear_all_elements();)\n");
-                    throw Error("dup " + event_name + " handler for " + selector);
+                    throw new Error("dup " + event_name + " handler for " + selector);
                 }
 
                 on_functions.set(event_name, handler);
@@ -81,7 +110,7 @@ exports.make_event_store = (selector) => {
             }
 
             if (args.length !== 2) {
-                throw Error("wrong number of arguments passed in");
+                throw new Error("wrong number of arguments passed in");
             }
 
             const [sel, handler] = args;
@@ -95,7 +124,7 @@ exports.make_event_store = (selector) => {
             const child_on = child_on_functions.get(sel);
 
             if (child_on.has(event_name)) {
-                throw Error("dup " + event_name + " handler for " + selector + " " + sel);
+                throw new Error("dup " + event_name + " handler for " + selector + " " + sel);
             }
 
             child_on.set(event_name, handler);
@@ -110,7 +139,10 @@ exports.make_event_store = (selector) => {
 
         trigger($element, ev, data) {
             if (typeof ev === "string") {
-                ev = new Event(ev, data);
+                ev = new Event(ev);
+            }
+            if (!ev.target) {
+                ev.target = $element;
             }
             const func = on_functions.get(ev.type);
 
@@ -136,21 +168,23 @@ exports.make_event_store = (selector) => {
     };
 
     return self;
-};
+}
 
-exports.make_new_elem = function (selector, opts) {
+function make_new_elem(selector, opts) {
     let html = "never-been-set";
     let text = "never-been-set";
     let value;
     let css;
     let shown = false;
+    let height;
+
     const find_results = new Map();
     let my_parent;
     const parents_result = new Map();
     const properties = new Map();
     const attrs = new Map();
     const classes = new Map();
-    const event_store = exports.make_event_store(selector);
+    const event_store = make_event_store(selector);
 
     const self = {
         addClass(class_name) {
@@ -166,6 +200,13 @@ exports.make_new_elem = function (selector, opts) {
                 return attrs.get(name);
             }
             attrs.set(name, val);
+            return self;
+        },
+        css(...args) {
+            if (args.length === 0) {
+                return css || {};
+            }
+            [css] = args;
             return self;
         },
         data(name, val) {
@@ -210,15 +251,7 @@ exports.make_new_elem = function (selector, opts) {
                 // if ($.find().length) { //success }
                 return [];
             }
-            if (opts.silent) {
-                return self;
-            }
-            throw Error("Cannot find " + child_selector + " in " + selector);
-        },
-        get(idx) {
-            // We have some legacy code that does $('foo').get(0).
-            assert.equal(idx, 0);
-            return selector;
+            throw new Error("Cannot find " + child_selector + " in " + selector);
         },
         get_on_handler(name, child_selector) {
             return event_store.get_on_handler(name, child_selector);
@@ -226,7 +259,12 @@ exports.make_new_elem = function (selector, opts) {
         hasClass(class_name) {
             return classes.has(class_name);
         },
-        height: noop,
+        height() {
+            if (height === undefined) {
+                throw new Error(`Please call $("${selector}").set_height`);
+            }
+            return height;
+        },
         hide() {
             shown = false;
             return self;
@@ -255,6 +293,12 @@ exports.make_new_elem = function (selector, opts) {
         off(...args) {
             event_store.off(...args);
             return self;
+        },
+        offset() {
+            return {
+                top: 0,
+                left: 0,
+            };
         },
         on(...args) {
             event_store.on(...args);
@@ -292,13 +336,20 @@ exports.make_new_elem = function (selector, opts) {
         },
         removeClass(class_names) {
             class_names = class_names.split(" ");
-            class_names.forEach((class_name) => {
+            for (const class_name of class_names) {
                 classes.delete(class_name);
-            });
+            }
             return self;
         },
         remove() {
-            return self;
+            throw new Error(`
+                We don't support remove in zjuery.
+
+                You can do $(...).remove = ... if necessary.
+
+                But you are probably writing too deep a test
+                for node testing.
+            `);
         },
         removeData: noop,
         replaceWith() {
@@ -307,21 +358,27 @@ exports.make_new_elem = function (selector, opts) {
         scrollTop() {
             return self;
         },
+        serializeArray() {
+            return self;
+        },
         set_find_results(find_selector, jquery_object) {
             find_results.set(find_selector, jquery_object);
         },
-        show() {
-            shown = true;
-            return self;
-        },
-        serializeArray() {
-            return self;
+        set_height(fake_height) {
+            height = fake_height;
         },
         set_parent(parent_elem) {
             my_parent = parent_elem;
         },
         set_parents_result(selector, result) {
             parents_result.set(selector, result);
+        },
+        show() {
+            shown = true;
+            return self;
+        },
+        slice() {
+            return self;
         },
         stop() {
             return self;
@@ -335,6 +392,14 @@ exports.make_new_elem = function (selector, opts) {
             }
             return text;
         },
+        toggle(show) {
+            assert([true, false].includes(show));
+            shown = show;
+            return self;
+        },
+        tooltip() {
+            return self;
+        },
         trigger(ev) {
             event_store.trigger(self, ev);
             return self;
@@ -346,52 +411,44 @@ exports.make_new_elem = function (selector, opts) {
             [value] = args;
             return self;
         },
-        css(...args) {
-            if (args.length === 0) {
-                return css || {};
-            }
-            [css] = args;
-            return self;
-        },
         visible() {
             return shown;
         },
-        slice() {
-            return self;
-        },
-        offset() {
-            return {
-                top: 0,
-                left: 0,
-            };
-        },
     };
+
+    if (opts.children) {
+        self.map = (f) => opts.children.map((i, elem) => f(elem, i));
+        self.each = (f) => {
+            for (const child of opts.children) {
+                f.call(child);
+            }
+        };
+        self[Symbol.iterator] = function* () {
+            for (const child of opts.children) {
+                yield child;
+            }
+        };
+        self.length = opts.children.length;
+    }
 
     if (selector[0] === "<") {
         self.html(selector);
     }
 
-    self[0] = "you-must-set-the-child-yourself";
-
     self.selector = selector;
 
-    self.length = 1;
-
     return self;
-};
+}
 
-exports.make_zjquery = function (opts) {
-    opts = opts || {};
-
+function make_zjquery() {
     const elems = new Map();
 
     // Our fn structure helps us simulate extending jQuery.
+    // Use this with extreme caution.
     const fn = {};
 
-    function new_elem(selector) {
-        const elem = exports.make_new_elem(selector, {
-            silent: opts.silent,
-        });
+    function new_elem(selector, create_opts) {
+        const elem = make_new_elem(selector, {...create_opts});
         Object.assign(elem, fn);
 
         // Create a proxy handler to detect missing stubs.
@@ -408,7 +465,7 @@ exports.make_zjquery = function (opts) {
                     const error =
                         "\nInstead of doing equality checks on a full object, " +
                         'do `assert_equal(foo.selector, ".some_class")\n';
-                    throw Error(error);
+                    throw new Error(error);
                 }
 
                 const val = target[key];
@@ -417,7 +474,7 @@ exports.make_zjquery = function (opts) {
                     // For undefined values, we'll throw errors to devs saying
                     // they need to create stubs.  We ignore certain keys that
                     // are used for simply printing out the object.
-                    throw Error('You must create a stub for $("' + selector + '").' + key);
+                    throw new Error('You must create a stub for $("' + selector + '").' + key);
                 }
 
                 return val;
@@ -457,28 +514,17 @@ exports.make_zjquery = function (opts) {
         }
 
         if (arg2 !== undefined) {
-            throw Error("We only use one-argument variations of $(...) in Zulip code.");
+            throw new Error("We only use one-argument variations of $(...) in Zulip code.");
         }
 
         const selector = arg;
 
         if (typeof selector !== "string") {
             console.info(arg);
-            throw Error("zjquery does not know how to wrap this object yet");
+            throw new Error("zjquery does not know how to wrap this object yet");
         }
 
-        const valid_selector =
-            "<#.".includes(selector[0]) ||
-            selector === "window-stub" ||
-            selector === "document-stub" ||
-            selector === "body" ||
-            selector === "html" ||
-            selector.location ||
-            selector.includes("#") ||
-            selector.includes(".") ||
-            (selector.includes("[") && selector.indexOf("]") >= selector.indexOf("["));
-
-        assert(valid_selector, "Invalid selector: " + selector + " Use $.create() maybe?");
+        verify_selector_for_zulip(selector);
 
         if (!elems.has(selector)) {
             const elem = new_elem(selector);
@@ -487,15 +533,12 @@ exports.make_zjquery = function (opts) {
         return elems.get(selector);
     };
 
-    zjquery.create = function (name) {
+    zjquery.create = function (name, opts) {
         assert(!elems.has(name), "You already created an object with this name!!");
-        const elem = new_elem(name);
+        const elem = new_elem(name, opts);
         elems.set(name, elem);
-        return elem;
-    };
 
-    zjquery.stub_selector = function (selector, stub) {
-        elems.set(selector, stub);
+        return elem;
     };
 
     zjquery.trim = function (s) {
@@ -513,23 +556,87 @@ exports.make_zjquery = function (opts) {
         return res;
     };
 
-    zjquery.Event = (type, props) => new Event(type, props);
+    zjquery.Event = Event;
 
-    fn.after = function (s) {
-        return s;
-    };
-    fn.before = function (s) {
-        return s;
+    fn.popover = () => {
+        throw new Error(`
+            Do not try to test $.fn.popover code unless
+            you really know what you are doing.
+        `);
     };
 
-    zjquery.fn = fn;
+    zjquery.fn = new Proxy(fn, {
+        set(obj, prop, value) {
+            if (prop === "popover") {
+                // We allow our popovers test to modify
+                // $.fn so we can bypass a gruesome hack
+                // in our popovers.js module.
+                obj[prop] = value;
+                return true;
+            }
+
+            throw new Error(`
+                Please don't use node tests to test code
+                that extends $.fn unless you really know
+                what you are doing.
+
+                It's likely that you are better off testing
+                end-to-end behavior with puppeteer tests.
+
+                If you are trying to get coverage on a module
+                that extends $.fn, and you just want to skip
+                over that aspect of the module for the purpose
+                of testing, see if you can wrap the code
+                that extends $.fn and use override() to
+                replace the wrapper with () => {}.
+            `);
+        },
+    });
 
     zjquery.clear_all_elements = function () {
         elems.clear();
     };
-    zjquery.escapeSelector = function (s) {
-        return s;
+
+    zjquery.validator = {
+        addMethod() {
+            throw new Error("You must create your own $.validator.addMethod stub.");
+        },
     };
 
     return zjquery;
-};
+}
+
+const $ = new Proxy(make_zjquery(), {
+    set(obj, prop, value) {
+        if (obj[prop] && obj[prop]._patched_with_override) {
+            obj[prop] = value;
+            return true;
+        }
+
+        if (value._patched_with_override) {
+            obj[prop] = value;
+            return true;
+        }
+
+        throw new Error(`
+            Please don't modify $.${prop} if you are using zjquery.
+
+            You can do this instead:
+
+                override($, "${prop}", () => {...});
+
+            Or you can do this if you don't actually
+            need zjquery and just want to simulate one function.
+
+                set_global("$", {
+                    ${prop}(...) {...},
+                });
+
+            It's also possible that you are testing code with
+            node tests when it would be a better strategy to
+            use puppeteer tests.
+        `);
+    },
+});
+
+module.exports = $;

@@ -45,16 +45,18 @@ def make_realm(realm_id: int, team: Dict[str, Any]) -> ZerverFieldsT:
     domain_name = settings.EXTERNAL_HOST
     realm_subdomain = team["name"]
 
-    zerver_realm = build_zerver_realm(realm_id, realm_subdomain, NOW, 'Mattermost')
+    zerver_realm = build_zerver_realm(realm_id, realm_subdomain, NOW, "Mattermost")
     realm = build_realm(zerver_realm, realm_id, domain_name)
 
     # We may override these later.
-    realm['zerver_defaultstream'] = []
+    realm["zerver_defaultstream"] = []
 
     return realm
 
-def process_user(user_dict: Dict[str, Any], realm_id: int, team_name: str,
-                 user_id_mapper: IdMapper) -> ZerverFieldsT:
+
+def process_user(
+    user_dict: Dict[str, Any], realm_id: int, team_name: str, user_id_mapper: IdMapper
+) -> ZerverFieldsT:
     def is_team_admin(user_dict: Dict[str, Any]) -> bool:
         if user_dict["teams"] is None:
             return False
@@ -67,20 +69,20 @@ def process_user(user_dict: Dict[str, Any], realm_id: int, team_name: str,
         full_name = "{} {}".format(user_dict["first_name"], user_dict["last_name"])
         if full_name.strip():
             return full_name
-        return user_dict['username']
+        return user_dict["username"]
 
-    avatar_source = 'G'
+    avatar_source = "G"
     full_name = get_full_name(user_dict)
-    id = user_id_mapper.get(user_dict['username'])
-    delivery_email = user_dict['email']
-    email = user_dict['email']
-    short_name = user_dict['username']
+    id = user_id_mapper.get(user_dict["username"])
+    delivery_email = user_dict["email"]
+    email = user_dict["email"]
+    short_name = user_dict["username"]
     date_joined = int(timezone_now().timestamp())
-    timezone = 'UTC'
+    timezone = "UTC"
 
     role = UserProfile.ROLE_MEMBER
     if is_team_admin(user_dict):
-        role = UserProfile.ROLE_REALM_ADMINISTRATOR
+        role = UserProfile.ROLE_REALM_OWNER
 
     if user_dict["is_mirror_dummy"]:
         is_active = False
@@ -104,11 +106,14 @@ def process_user(user_dict: Dict[str, Any], realm_id: int, team_name: str,
         timezone=timezone,
     )
 
-def convert_user_data(user_handler: UserHandler,
-                      user_id_mapper: IdMapper,
-                      user_data_map: Dict[str, Dict[str, Any]],
-                      realm_id: int,
-                      team_name: str) -> None:
+
+def convert_user_data(
+    user_handler: UserHandler,
+    user_id_mapper: IdMapper,
+    user_data_map: Dict[str, Dict[str, Any]],
+    realm_id: int,
+    team_name: str,
+) -> None:
 
     user_data_list = []
     for username in user_data_map:
@@ -120,18 +125,17 @@ def convert_user_data(user_handler: UserHandler,
         user = process_user(raw_item, realm_id, team_name, user_id_mapper)
         user_handler.add_user(user)
 
-def convert_channel_data(channel_data: List[ZerverFieldsT],
-                         user_data_map: Dict[str, Dict[str, Any]],
-                         subscriber_handler: SubscriberHandler,
-                         stream_id_mapper: IdMapper,
-                         user_id_mapper: IdMapper,
-                         realm_id: int,
-                         team_name: str) -> List[ZerverFieldsT]:
-    channel_data_list = [
-        d
-        for d in channel_data
-        if d['team'] == team_name
-    ]
+
+def convert_channel_data(
+    channel_data: List[ZerverFieldsT],
+    user_data_map: Dict[str, Dict[str, Any]],
+    subscriber_handler: SubscriberHandler,
+    stream_id_mapper: IdMapper,
+    user_id_mapper: IdMapper,
+    realm_id: int,
+    team_name: str,
+) -> List[ZerverFieldsT]:
+    channel_data_list = [d for d in channel_data if d["team"] == team_name]
 
     channel_members_map: Dict[str, List[str]] = {}
     channel_admins_map: Dict[str, List[str]] = {}
@@ -163,26 +167,26 @@ def convert_channel_data(channel_data: List[ZerverFieldsT],
         # Channel can have two types in Mattermost
         # "O" for a public channel.
         # "P" for a private channel.
-        if channel_type == 'O':
+        if channel_type == "O":
             return False
-        elif channel_type == 'P':
+        elif channel_type == "P":
             return True
         else:  # nocoverage
-            raise Exception('unexpected value')
+            raise Exception("unexpected value")
 
     streams = []
     initialize_stream_membership_dicts()
 
     for channel_dict in channel_data_list:
         now = int(timezone_now().timestamp())
-        stream_id = stream_id_mapper.get(channel_dict['name'])
+        stream_id = stream_id_mapper.get(channel_dict["name"])
         stream_name = channel_dict["name"]
-        invite_only = get_invite_only_value_from_channel_type(channel_dict['type'])
+        invite_only = get_invite_only_value_from_channel_type(channel_dict["type"])
 
         stream = build_stream(
             date_created=now,
             realm_id=realm_id,
-            name=channel_dict['display_name'],
+            name=channel_dict["display_name"],
             # Purpose describes how the channel should be used. It is similar to
             # stream description and is shown in channel list to help others decide
             # whether to join.
@@ -190,7 +194,7 @@ def convert_channel_data(channel_data: List[ZerverFieldsT],
             # Can be used for advertising the purpose of stream, making announcements as
             # well as including frequently used links. So probably not a bad idea to use
             # this as description if the channel purpose is empty.
-            description=channel_dict["purpose"] or channel_dict['header'],
+            description=channel_dict["purpose"] or channel_dict["header"],
             stream_id=stream_id,
             # Mattermost export don't include data of archived(~ deactivated) channels.
             deactivated=False,
@@ -211,20 +215,25 @@ def convert_channel_data(channel_data: List[ZerverFieldsT],
         streams.append(stream)
     return streams
 
+
 def generate_huddle_name(huddle_members: List[str]) -> str:
     # Simple hash function to generate a unique hash key for the
     # members of a huddle.  Needs to be consistent only within the
     # lifetime of export tool run, as it doesn't appear in the output.
     import hashlib
-    return hashlib.md5(''.join(sorted(huddle_members)).encode('utf-8')).hexdigest()
 
-def convert_huddle_data(huddle_data: List[ZerverFieldsT],
-                        user_data_map: Dict[str, Dict[str, Any]],
-                        subscriber_handler: SubscriberHandler,
-                        huddle_id_mapper: IdMapper,
-                        user_id_mapper: IdMapper,
-                        realm_id: int,
-                        team_name: str) -> List[ZerverFieldsT]:
+    return hashlib.md5("".join(sorted(huddle_members)).encode("utf-8")).hexdigest()
+
+
+def convert_huddle_data(
+    huddle_data: List[ZerverFieldsT],
+    user_data_map: Dict[str, Dict[str, Any]],
+    subscriber_handler: SubscriberHandler,
+    huddle_id_mapper: IdMapper,
+    user_id_mapper: IdMapper,
+    realm_id: int,
+    team_name: str,
+) -> List[ZerverFieldsT]:
 
     zerver_huddle = []
     for huddle in huddle_data:
@@ -242,19 +251,25 @@ def convert_huddle_data(huddle_data: List[ZerverFieldsT],
             zerver_huddle.append(huddle_dict)
     return zerver_huddle
 
-def build_reactions(realm_id: int, total_reactions: List[ZerverFieldsT], reactions: List[ZerverFieldsT],
-                    message_id: int,
-                    user_id_mapper: IdMapper, zerver_realmemoji: List[ZerverFieldsT]) -> None:
+
+def build_reactions(
+    realm_id: int,
+    total_reactions: List[ZerverFieldsT],
+    reactions: List[ZerverFieldsT],
+    message_id: int,
+    user_id_mapper: IdMapper,
+    zerver_realmemoji: List[ZerverFieldsT],
+) -> None:
     realmemoji = {}
     for realm_emoji in zerver_realmemoji:
-        realmemoji[realm_emoji['name']] = realm_emoji['id']
+        realmemoji[realm_emoji["name"]] = realm_emoji["id"]
 
-    # For the unicode emoji codes, we use equivalent of
+    # For the Unicode emoji codes, we use equivalent of
     # function 'emoji_name_to_emoji_code' in 'zerver/lib/emoji' here
     for mattermost_reaction in reactions:
-        emoji_name = mattermost_reaction['emoji_name']
+        emoji_name = mattermost_reaction["emoji_name"]
         username = mattermost_reaction["user"]
-        # Check in unicode emoji
+        # Check in Unicode emoji
         if emoji_name in name_to_codepoint:
             emoji_code = name_to_codepoint[emoji_name]
             reaction_type = Reaction.UNICODE_EMOJI
@@ -268,17 +283,19 @@ def build_reactions(realm_id: int, total_reactions: List[ZerverFieldsT], reactio
         if not user_id_mapper.has(username):
             continue
 
-        reaction_id = NEXT_ID('reaction')
+        reaction_id = NEXT_ID("reaction")
         reaction = Reaction(
             id=reaction_id,
             emoji_code=emoji_code,
             emoji_name=emoji_name,
-            reaction_type=reaction_type)
+            reaction_type=reaction_type,
+        )
 
-        reaction_dict = model_to_dict(reaction, exclude=['message', 'user_profile'])
-        reaction_dict['message'] = message_id
-        reaction_dict['user_profile'] = user_id_mapper.get(username)
+        reaction_dict = model_to_dict(reaction, exclude=["message", "user_profile"])
+        reaction_dict["message"] = message_id
+        reaction_dict["user_profile"] = user_id_mapper.get(username)
         total_reactions.append(reaction_dict)
+
 
 def get_mentioned_user_ids(raw_message: Dict[str, Any], user_id_mapper: IdMapper) -> Set[int]:
     user_ids = set()
@@ -293,61 +310,67 @@ def get_mentioned_user_ids(raw_message: Dict[str, Any], user_id_mapper: IdMapper
             user_ids.add(user_id_mapper.get(possible_username))
     return user_ids
 
-def process_raw_message_batch(realm_id: int,
-                              raw_messages: List[Dict[str, Any]],
-                              subscriber_map: Dict[int, Set[int]],
-                              user_id_mapper: IdMapper,
-                              user_handler: UserHandler,
-                              get_recipient_id_from_receiver_name: Callable[[str, int], int],
-                              is_pm_data: bool,
-                              output_dir: str,
-                              zerver_realmemoji: List[Dict[str, Any]],
-                              total_reactions: List[Dict[str, Any]],
-                              ) -> None:
 
+def process_raw_message_batch(
+    realm_id: int,
+    raw_messages: List[Dict[str, Any]],
+    subscriber_map: Dict[int, Set[int]],
+    user_id_mapper: IdMapper,
+    user_handler: UserHandler,
+    get_recipient_id_from_receiver_name: Callable[[str, int], int],
+    is_pm_data: bool,
+    output_dir: str,
+    zerver_realmemoji: List[Dict[str, Any]],
+    total_reactions: List[Dict[str, Any]],
+) -> None:
     def fix_mentions(content: str, mention_user_ids: Set[int]) -> str:
         for user_id in mention_user_ids:
             user = user_handler.get_user(user_id=user_id)
-            mattermost_mention = '@{short_name}'.format(**user)
-            zulip_mention = '@**{full_name}**'.format(**user)
+            mattermost_mention = "@{short_name}".format(**user)
+            zulip_mention = "@**{full_name}**".format(**user)
             content = content.replace(mattermost_mention, zulip_mention)
 
-        content = content.replace('@channel', '@**all**')
-        content = content.replace('@all', '@**all**')
+        content = content.replace("@channel", "@**all**")
+        content = content.replace("@all", "@**all**")
         # We don't have an equivalent for Mattermost's @here mention which mentions all users
         # online in the channel.
-        content = content.replace('@here', '@**all**')
+        content = content.replace("@here", "@**all**")
         return content
 
     mention_map: Dict[int, Set[int]] = {}
     zerver_message = []
 
     import html2text
+
     h = html2text.HTML2Text()
 
     pm_members = {}
 
     for raw_message in raw_messages:
-        message_id = NEXT_ID('message')
+        message_id = NEXT_ID("message")
         mention_user_ids = get_mentioned_user_ids(raw_message, user_id_mapper)
         mention_map[message_id] = mention_user_ids
 
         content = fix_mentions(
-            content=raw_message['content'],
+            content=raw_message["content"],
             mention_user_ids=mention_user_ids,
         )
         content = h.handle(content)
 
         if len(content) > 10000:  # nocoverage
-            logging.info('skipping too-long message of length %s', len(content))
+            logging.info("skipping too-long message of length %s", len(content))
             continue
 
-        date_sent = raw_message['date_sent']
-        sender_user_id = raw_message['sender_id']
+        date_sent = raw_message["date_sent"]
+        sender_user_id = raw_message["sender_id"]
         if "channel_name" in raw_message:
-            recipient_id = get_recipient_id_from_receiver_name(raw_message["channel_name"], Recipient.STREAM)
+            recipient_id = get_recipient_id_from_receiver_name(
+                raw_message["channel_name"], Recipient.STREAM
+            )
         elif "huddle_name" in raw_message:
-            recipient_id = get_recipient_id_from_receiver_name(raw_message["huddle_name"], Recipient.HUDDLE)
+            recipient_id = get_recipient_id_from_receiver_name(
+                raw_message["huddle_name"], Recipient.HUDDLE
+            )
         elif "pm_members" in raw_message:
             members = raw_message["pm_members"]
             member_ids = {user_id_mapper.get(member) for member in members}
@@ -361,7 +384,7 @@ def process_raw_message_batch(realm_id: int,
 
         rendered_content = None
 
-        topic_name = 'imported from mattermost'
+        topic_name = "imported from mattermost"
 
         message = build_message(
             content=content,
@@ -374,8 +397,14 @@ def process_raw_message_batch(realm_id: int,
             has_attachment=False,
         )
         zerver_message.append(message)
-        build_reactions(realm_id, total_reactions, raw_message["reactions"], message_id,
-                        user_id_mapper, zerver_realmemoji)
+        build_reactions(
+            realm_id,
+            total_reactions,
+            raw_message["reactions"],
+            message_id,
+            user_id_mapper,
+            zerver_realmemoji,
+        )
 
     zerver_usermessage = make_user_messages(
         zerver_message=zerver_message,
@@ -389,24 +418,27 @@ def process_raw_message_batch(realm_id: int,
         zerver_usermessage=zerver_usermessage,
     )
 
-    dump_file_id = NEXT_ID('dump_file_id' + str(realm_id))
+    dump_file_id = NEXT_ID("dump_file_id" + str(realm_id))
     message_file = f"/messages-{dump_file_id:06}.json"
     create_converted_data_files(message_json, output_dir, message_file)
 
-def process_posts(num_teams: int,
-                  team_name: str,
-                  realm_id: int,
-                  post_data: List[Dict[str, Any]],
-                  get_recipient_id_from_receiver_name: Callable[[str, int], int],
-                  subscriber_map: Dict[int, Set[int]],
-                  output_dir: str,
-                  is_pm_data: bool,
-                  masking_content: bool,
-                  user_id_mapper: IdMapper,
-                  user_handler: UserHandler,
-                  username_to_user: Dict[str, Dict[str, Any]],
-                  zerver_realmemoji: List[Dict[str, Any]],
-                  total_reactions: List[Dict[str, Any]]) -> None:
+
+def process_posts(
+    num_teams: int,
+    team_name: str,
+    realm_id: int,
+    post_data: List[Dict[str, Any]],
+    get_recipient_id_from_receiver_name: Callable[[str, int], int],
+    subscriber_map: Dict[int, Set[int]],
+    output_dir: str,
+    is_pm_data: bool,
+    masking_content: bool,
+    user_id_mapper: IdMapper,
+    user_handler: UserHandler,
+    username_to_user: Dict[str, Dict[str, Any]],
+    zerver_realmemoji: List[Dict[str, Any]],
+    total_reactions: List[Dict[str, Any]],
+) -> None:
 
     post_data_list = []
     for post in post_data:
@@ -424,11 +456,11 @@ def process_posts(num_teams: int,
     def message_to_dict(post_dict: Dict[str, Any]) -> Dict[str, Any]:
         sender_username = post_dict["user"]
         sender_id = user_id_mapper.get(sender_username)
-        content = post_dict['message']
+        content = post_dict["message"]
 
         if masking_content:
-            content = re.sub('[a-z]', 'x', content)
-            content = re.sub('[A-Z]', 'X', content)
+            content = re.sub("[a-z]", "x", content)
+            content = re.sub("[A-Z]", "X", content)
 
         if "reactions" in post_dict:
             reactions = post_dict["reactions"] or []
@@ -438,7 +470,7 @@ def process_posts(num_teams: int,
         message_dict = dict(
             sender_id=sender_id,
             content=content,
-            date_sent=int(post_dict['create_at'] / 1000),
+            date_sent=int(post_dict["create_at"] / 1000),
             reactions=reactions,
         )
         if "channel" in post_dict:
@@ -464,7 +496,7 @@ def process_posts(num_teams: int,
         # For now, we just append the replies immediately after the original message.
         if message_replies is not None:
             for reply in message_replies:
-                if 'channel' in post_dict:
+                if "channel" in post_dict:
                     reply["channel"] = post_dict["channel"]
                 else:  # nocoverage
                     reply["channel_members"] = post_dict["channel_members"]
@@ -492,32 +524,35 @@ def process_posts(num_teams: int,
         process_batch=process_batch,
     )
 
-def write_message_data(num_teams: int,
-                       team_name: str,
-                       realm_id: int,
-                       post_data: Dict[str, List[Dict[str, Any]]],
-                       zerver_recipient: List[ZerverFieldsT],
-                       subscriber_map: Dict[int, Set[int]],
-                       output_dir: str,
-                       masking_content: bool,
-                       stream_id_mapper: IdMapper,
-                       huddle_id_mapper: IdMapper,
-                       user_id_mapper: IdMapper,
-                       user_handler: UserHandler,
-                       username_to_user: Dict[str, Dict[str, Any]],
-                       zerver_realmemoji: List[Dict[str, Any]],
-                       total_reactions: List[Dict[str, Any]]) -> None:
+
+def write_message_data(
+    num_teams: int,
+    team_name: str,
+    realm_id: int,
+    post_data: Dict[str, List[Dict[str, Any]]],
+    zerver_recipient: List[ZerverFieldsT],
+    subscriber_map: Dict[int, Set[int]],
+    output_dir: str,
+    masking_content: bool,
+    stream_id_mapper: IdMapper,
+    huddle_id_mapper: IdMapper,
+    user_id_mapper: IdMapper,
+    user_handler: UserHandler,
+    username_to_user: Dict[str, Dict[str, Any]],
+    zerver_realmemoji: List[Dict[str, Any]],
+    total_reactions: List[Dict[str, Any]],
+) -> None:
     stream_id_to_recipient_id = {}
     huddle_id_to_recipient_id = {}
     user_id_to_recipient_id = {}
 
     for d in zerver_recipient:
-        if d['type'] == Recipient.STREAM:
-            stream_id_to_recipient_id[d['type_id']] = d['id']
-        elif d['type'] == Recipient.HUDDLE:
-            huddle_id_to_recipient_id[d['type_id']] = d['id']
-        if d['type'] == Recipient.PERSONAL:
-            user_id_to_recipient_id[d['type_id']] = d['id']
+        if d["type"] == Recipient.STREAM:
+            stream_id_to_recipient_id[d["type_id"]] = d["id"]
+        elif d["type"] == Recipient.HUDDLE:
+            huddle_id_to_recipient_id[d["type_id"]] = d["id"]
+        if d["type"] == Recipient.PERSONAL:
+            user_id_to_recipient_id[d["type_id"]] = d["id"]
 
     def get_recipient_id_from_receiver_name(receiver_name: str, recipient_type: int) -> int:
         if recipient_type == Recipient.STREAM:
@@ -537,7 +572,9 @@ def write_message_data(num_teams: int,
         post_types = ["channel_post", "direct_post"]
     else:
         post_types = ["channel_post"]
-        logging.warning("Skipping importing huddles and PMs since there are multiple teams in the export")
+        logging.warning(
+            "Skipping importing huddles and PMs since there are multiple teams in the export"
+        )
 
     for post_type in post_types:
         process_posts(
@@ -557,11 +594,11 @@ def write_message_data(num_teams: int,
             total_reactions=total_reactions,
         )
 
-def write_emoticon_data(realm_id: int,
-                        custom_emoji_data: List[Dict[str, Any]],
-                        data_dir: str,
-                        output_dir: str) -> List[ZerverFieldsT]:
-    '''
+
+def write_emoticon_data(
+    realm_id: int, custom_emoji_data: List[Dict[str, Any]], data_dir: str, output_dir: str
+) -> List[ZerverFieldsT]:
+    """
     This function does most of the work for processing emoticons, the bulk
     of which is copying files.  We also write a json file with metadata.
     Finally, we return a list of RealmEmoji dicts to our caller.
@@ -584,23 +621,23 @@ def write_emoticon_data(realm_id: int,
 
     We move all the relevant files to Zulip's more nested
     directory structure.
-    '''
+    """
 
-    logging.info('Starting to process emoticons')
+    logging.info("Starting to process emoticons")
 
     flat_data = [
         dict(
-            path=d['image'],
-            name=d['name'],
+            path=d["image"],
+            name=d["name"],
         )
         for d in custom_emoji_data
     ]
 
-    emoji_folder = os.path.join(output_dir, 'emoji')
+    emoji_folder = os.path.join(output_dir, "emoji")
     os.makedirs(emoji_folder, exist_ok=True)
 
     def process(data: ZerverFieldsT) -> ZerverFieldsT:
-        source_sub_path = data['path']
+        source_sub_path = data["path"]
         source_path = os.path.join(data_dir, source_sub_path)
 
         target_fn = data["name"]
@@ -622,30 +659,34 @@ def write_emoticon_data(realm_id: int,
             s3_path=target_path,
             file_name=target_fn,
             realm_id=realm_id,
-            name=data['name'],
+            name=data["name"],
         )
 
     emoji_records = list(map(process, flat_data))
-    create_converted_data_files(emoji_records, output_dir, '/emoji/records.json')
+    create_converted_data_files(emoji_records, output_dir, "/emoji/records.json")
 
     realmemoji = [
         build_realm_emoji(
             realm_id=realm_id,
-            name=rec['name'],
-            id=NEXT_ID('realmemoji'),
-            file_name=rec['file_name'],
+            name=rec["name"],
+            id=NEXT_ID("realmemoji"),
+            file_name=rec["file_name"],
         )
         for rec in emoji_records
     ]
-    logging.info('Done processing emoticons')
+    logging.info("Done processing emoticons")
 
     return realmemoji
 
-def create_username_to_user_mapping(user_data_list: List[Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
+
+def create_username_to_user_mapping(
+    user_data_list: List[Dict[str, Any]]
+) -> Dict[str, Dict[str, Any]]:
     username_to_user = {}
     for user in user_data_list:
         username_to_user[user["username"]] = user
     return username_to_user
+
 
 def check_user_in_team(user: Dict[str, Any], team_name: str) -> bool:
     if user["teams"] is None:
@@ -656,8 +697,13 @@ def check_user_in_team(user: Dict[str, Any], team_name: str) -> bool:
             return True
     return False
 
-def label_mirror_dummy_users(num_teams: int, team_name: str, mattermost_data: Dict[str, Any],
-                             username_to_user: Dict[str, Dict[str, Any]]) -> None:
+
+def label_mirror_dummy_users(
+    num_teams: int,
+    team_name: str,
+    mattermost_data: Dict[str, Any],
+    username_to_user: Dict[str, Dict[str, Any]],
+) -> None:
     # This function might looks like a great place to label admin users. But
     # that won't be fully correct since we are iterating only though posts and
     # it covers only users that have sent at least one message.
@@ -670,15 +716,17 @@ def label_mirror_dummy_users(num_teams: int, team_name: str, mattermost_data: Di
 
     if num_teams == 1:
         for post in mattermost_data["post"]["direct_post"]:
-            assert("team" not in post)
+            assert "team" not in post
             user = username_to_user[post["user"]]
             if not check_user_in_team(user, team_name):
                 user["is_mirror_dummy"] = True
+
 
 def reset_mirror_dummy_users(username_to_user: Dict[str, Dict[str, Any]]) -> None:
     for username in username_to_user:
         user = username_to_user[username]
         user["is_mirror_dummy"] = False
+
 
 def mattermost_data_file_to_dict(mattermost_data_file: str) -> Dict[str, Any]:
     mattermost_data: Dict[str, Any] = {}
@@ -701,6 +749,7 @@ def mattermost_data_file_to_dict(mattermost_data_file: str) -> Dict[str, Any]:
             else:
                 mattermost_data[data_type].append(row[data_type])
     return mattermost_data
+
 
 def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: bool) -> None:
     username_to_user: Dict[str, Dict[str, Any]] = {}
@@ -729,7 +778,9 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
         realm_output_dir = os.path.join(output_dir, team_name)
 
         reset_mirror_dummy_users(username_to_user)
-        label_mirror_dummy_users(len(mattermost_data["team"]), team_name, mattermost_data, username_to_user)
+        label_mirror_dummy_users(
+            len(mattermost_data["team"]), team_name, mattermost_data, username_to_user
+        )
 
         convert_user_data(
             user_handler=user_handler,
@@ -748,7 +799,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
             realm_id=realm_id,
             team_name=team_name,
         )
-        realm['zerver_stream'] = zerver_stream
+        realm["zerver_stream"] = zerver_stream
 
         zerver_huddle: List[ZerverFieldsT] = []
         if len(mattermost_data["team"]) == 1:
@@ -761,7 +812,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
                 realm_id=realm_id,
                 team_name=team_name,
             )
-            realm['zerver_huddle'] = zerver_huddle
+            realm["zerver_huddle"] = zerver_huddle
 
         all_users = user_handler.get_all_users()
 
@@ -770,7 +821,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
             zerver_stream=zerver_stream,
             zerver_huddle=zerver_huddle,
         )
-        realm['zerver_recipient'] = zerver_recipient
+        realm["zerver_recipient"] = zerver_recipient
 
         stream_subscriptions = build_stream_subscriptions(
             get_users=subscriber_handler.get_users,
@@ -791,7 +842,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
         # Mattermost currently supports only exporting messages from channels.
         # Personal messages and huddles are not exported.
         zerver_subscription = personal_subscriptions + stream_subscriptions + huddle_subscriptions
-        realm['zerver_subscription'] = zerver_subscription
+        realm["zerver_subscription"] = zerver_subscription
 
         zerver_realmemoji = write_emoticon_data(
             realm_id=realm_id,
@@ -799,7 +850,7 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
             data_dir=mattermost_data_dir,
             output_dir=realm_output_dir,
         )
-        realm['zerver_realmemoji'] = zerver_realmemoji
+        realm["zerver_realmemoji"] = zerver_realmemoji
 
         subscriber_map = make_subscriber_map(
             zerver_subscription=zerver_subscription,
@@ -823,20 +874,20 @@ def do_convert_data(mattermost_data_dir: str, output_dir: str, masking_content: 
             zerver_realmemoji=zerver_realmemoji,
             total_reactions=total_reactions,
         )
-        realm['zerver_reaction'] = total_reactions
-        realm['zerver_userprofile'] = user_handler.get_all_users()
-        realm['sort_by_date'] = True
+        realm["zerver_reaction"] = total_reactions
+        realm["zerver_userprofile"] = user_handler.get_all_users()
+        realm["sort_by_date"] = True
 
-        create_converted_data_files(realm, realm_output_dir, '/realm.json')
+        create_converted_data_files(realm, realm_output_dir, "/realm.json")
         # Mattermost currently doesn't support exporting avatars
-        create_converted_data_files([], realm_output_dir, '/avatars/records.json')
+        create_converted_data_files([], realm_output_dir, "/avatars/records.json")
         # Mattermost currently doesn't support exporting uploads
-        create_converted_data_files([], realm_output_dir, '/uploads/records.json')
+        create_converted_data_files([], realm_output_dir, "/uploads/records.json")
 
         # Mattermost currently doesn't support exporting attachments
         attachment: Dict[str, List[Any]] = {"zerver_attachment": []}
-        create_converted_data_files(attachment, realm_output_dir, '/attachment.json')
+        create_converted_data_files(attachment, realm_output_dir, "/attachment.json")
 
-        logging.info('Start making tarball')
-        subprocess.check_call(["tar", "-czf", realm_output_dir + '.tar.gz', realm_output_dir, '-P'])
-        logging.info('Done making tarball')
+        logging.info("Start making tarball")
+        subprocess.check_call(["tar", "-czf", realm_output_dir + ".tar.gz", realm_output_dir, "-P"])
+        logging.info("Done making tarball")

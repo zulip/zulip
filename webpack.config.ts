@@ -1,6 +1,6 @@
 /// <reference types="webpack-dev-server" />
 
-import {basename, resolve} from "path";
+import path from "path";
 
 import CleanCss from "clean-css";
 import HtmlWebpackPlugin from "html-webpack-plugin";
@@ -16,19 +16,32 @@ import assets from "./tools/webpack.assets.json";
 const cacheLoader: webpack.RuleSetUseItem = {
     loader: "cache-loader",
     options: {
-        cacheDirectory: resolve(__dirname, "var/webpack-cache"),
+        cacheDirectory: path.resolve(__dirname, "var/webpack-cache"),
     },
 };
 
-export default (env?: string): webpack.Configuration[] => {
-    const production: boolean = env === "production";
+export default (_env: unknown, argv: {mode?: string}): webpack.Configuration[] => {
+    const production: boolean = argv.mode === "production";
+
     const config: webpack.Configuration = {
         name: "frontend",
         mode: production ? "production" : "development",
         context: __dirname,
-        entry: assets,
+        entry: production
+            ? assets
+            : Object.fromEntries(
+                  Object.entries(assets).map(([name, paths]) => [
+                      name,
+                      [...paths, "./static/js/debug"],
+                  ]),
+              ),
         module: {
             rules: [
+                {
+                    test: require.resolve("./static/js/zulip_test"),
+                    loader: "expose-loader",
+                    options: {exposes: "zulip_test"},
+                },
                 {
                     test: require.resolve("./tools/debug-require"),
                     loader: "expose-loader",
@@ -65,8 +78,8 @@ export default (env?: string): webpack.Configuration[] => {
                 {
                     test: /\.(js|ts)$/,
                     include: [
-                        resolve(__dirname, "static/shared/js"),
-                        resolve(__dirname, "static/js"),
+                        path.resolve(__dirname, "static/shared/js"),
+                        path.resolve(__dirname, "static/js"),
                     ],
                     use: [cacheLoader, "babel-loader"],
                 },
@@ -82,14 +95,9 @@ export default (env?: string): webpack.Configuration[] => {
                 // regular css files
                 {
                     test: /\.css$/,
-                    exclude: resolve(__dirname, "static/styles"),
+                    exclude: path.resolve(__dirname, "static/styles"),
                     use: [
-                        {
-                            loader: MiniCssExtractPlugin.loader,
-                            options: {
-                                hmr: !production,
-                            },
-                        },
+                        MiniCssExtractPlugin.loader,
                         cacheLoader,
                         {
                             loader: "css-loader",
@@ -102,14 +110,9 @@ export default (env?: string): webpack.Configuration[] => {
                 // PostCSS loader
                 {
                     test: /\.css$/,
-                    include: resolve(__dirname, "static/styles"),
+                    include: path.resolve(__dirname, "static/styles"),
                     use: [
-                        {
-                            loader: MiniCssExtractPlugin.loader,
-                            options: {
-                                hmr: !production,
-                            },
-                        },
+                        MiniCssExtractPlugin.loader,
                         cacheLoader,
                         {
                             loader: "css-loader",
@@ -170,18 +173,16 @@ export default (env?: string): webpack.Configuration[] => {
             ],
         },
         output: {
-            path: resolve(__dirname, "static/webpack-bundles"),
+            path: path.resolve(__dirname, "static/webpack-bundles"),
             filename: production ? "[name].[contenthash].js" : "[name].js",
             chunkFilename: production ? "[contenthash].js" : "[id].js",
         },
         resolve: {
             extensions: [".ts", ".js"],
         },
-        // We prefer cheap-module-source-map over any eval-** options
-        // because the eval-options currently don't support being
-        // source mapped in error stack traces
-        // We prefer it over eval since eval has trouble setting
-        // breakpoints in chrome.
+        // We prefer cheap-module-source-map over any eval-* options
+        // because stacktrace-gps doesn't currently support extracting
+        // the source snippets with the eval-* options.
         devtool: production ? "source-map" : "cheap-module-source-map",
         optimization: {
             minimizer: [
@@ -191,7 +192,7 @@ export default (env?: string): webpack.Configuration[] => {
                 new OptimizeCssAssetsPlugin({
                     cssProcessor: {
                         async process(css, options: any) {
-                            const filename = basename(options.to);
+                            const filename = path.basename(options.to);
                             const result = await new CleanCss(options).minify({
                                 [filename]: {
                                     styles: css,
@@ -228,6 +229,16 @@ export default (env?: string): webpack.Configuration[] => {
             },
         },
         plugins: [
+            new webpack.ProgressPlugin({
+                handler(percentage) {
+                    if (percentage === 1) {
+                        console.log(
+                            "\u001B[34mi ｢wdm｣\u001B[0m:",
+                            "Webpack compilation successful.",
+                        );
+                    }
+                },
+            }),
             new DebugRequirePlugin(),
             new BundleTracker({
                 filename: production
@@ -253,24 +264,26 @@ export default (env?: string): webpack.Configuration[] => {
                 chunks: ["error-styles"],
             }),
         ],
-    };
-
-    if (!production) {
-        // Out JS debugging tools
-        for (const paths of Object.values(assets)) {
-            paths.push("./static/js/debug");
-        }
-        config.devServer = {
+        devServer: {
             clientLogLevel: "error",
             headers: {
                 "Access-Control-Allow-Origin": "*",
             },
             publicPath: "/webpack/",
             stats: "errors-only",
-        };
-    }
+            noInfo: true,
+        },
+        watchOptions: {
+            ignored: [
+                // Prevent Emacs file locks from crashing webpack-dev-server
+                // https://github.com/webpack/webpack-dev-server/issues/2821
+                "**/.#*",
+            ],
+        },
+    };
 
     const serverConfig: webpack.Configuration = {
+        name: "server",
         mode: production ? "production" : "development",
         target: "node",
         context: __dirname,
@@ -278,7 +291,7 @@ export default (env?: string): webpack.Configuration[] => {
             "katex-cli": "shebang-loader!katex/cli",
         },
         output: {
-            path: resolve(__dirname, "static/webpack-bundles"),
+            path: path.resolve(__dirname, "static/webpack-bundles"),
             filename: "[name].js",
         },
     };

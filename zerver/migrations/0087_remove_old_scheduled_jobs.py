@@ -10,13 +10,14 @@ def delete_old_scheduled_jobs(apps: StateApps, schema_editor: DatabaseSchemaEdit
     worth the development effort to save a few invitation reminders
     and day2 followup emails.
     """
-    ScheduledJob = apps.get_model('zerver', 'ScheduledJob')
+    ScheduledJob = apps.get_model("zerver", "ScheduledJob")
     ScheduledJob.objects.all().delete()
+
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0086_realm_alter_default_org_type'),
+        ("zerver", "0086_realm_alter_default_org_type"),
     ]
 
     operations = [

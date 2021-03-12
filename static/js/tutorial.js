@@ -1,4 +1,5 @@
-"use strict";
+import * as channel from "./channel";
+import * as narrow from "./narrow";
 
 function set_tutorial_status(status, callback) {
     return channel.post({
@@ -8,11 +9,9 @@ function set_tutorial_status(status, callback) {
     });
 }
 
-exports.initialize = function () {
+export function initialize() {
     if (page_params.needs_tutorial) {
         set_tutorial_status("started");
         narrow.by("is", "private", {trigger: "sidebar"});
     }
-};
-
-window.tutorial = exports;
+}

@@ -42,10 +42,10 @@ Zulip.
 
 ## Write your own integration
 
-We've put a lot of effort into making this as easy as possible, but all of
-the options below do require some comfort writing code. If you need an
-integration and don't have an engineer on staff,
-[react out to us](/help/contact-support) and we'll see what we can do.
+We've put a lot of effort into making this as easy as possible, but
+all of the options below do require some comfort writing code. If you
+need an integration and don't have an engineer on staff, [contact
+us](/help/contact-support) and we'll see what we can do.
 
 ### Sending content into Zulip
 
@@ -69,5 +69,5 @@ integration and don't have an engineer on staff,
   built on top of this API, so it can do anything a human user can do. Most
   but not all of the endpoints are documented on this site; if you need
   something that isn't there check out Zulip's
-  [REST endpoints](https://github.com/zulip/zulip/tree/master/zproject/urls.py)
+  [REST endpoints](https://github.com/zulip/zulip/blob/master/zproject/urls.py)
   or [contact us](/help/contact-support) and we'll help you out.

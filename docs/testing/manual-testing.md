@@ -51,7 +51,7 @@ Try using all the navigation hotkeys:
 
 Try narrowing from the message view:
 - Hotkeys
-    - use Esc to go to All messages
+    - use a to go to All messages
     - use s to narrow to a stream (select message first
       and verify in sidebar)
     - use S to narrow to the topic (and verify in sidebar)
@@ -63,7 +63,7 @@ Try narrowing from the message view:
     - narrow to a group PM
 - Click on the Zulip logo
     - narrow to a topic
-    - click on the Zulip logo (and verify you're in the All messages view)
+    - click on the Zulip logo (and verify you're in the Recent topics view)
 
 ### Messagebox ###
 
@@ -181,10 +181,10 @@ For each of the above types of messages, you will want to cycle
 through the following views for Cordelia (and have Hamlet send new
 messages after each narrow):
 
-- Go to All Messages view.
-- Go to Private Messages view.
-- Go to Private Messages w/Hamlet.
-- Go to Private Messages w/Hamlet and Othello.
+- Go to All messages view.
+- Go to Private messages view.
+- Go to Private messages w/Hamlet.
+- Go to Private messages w/Hamlet and Othello.
 - Go to Verona view.
 - Go to Verona/bar view.
 - Go to Verona/foo view.
@@ -212,9 +212,9 @@ populated and where the focus is placed.
 
 - Buttons
     - Narrow to a stream and click on "New topic"
-    - Narrow "Private Messages" and click on "New topic"
+    - Narrow "Private messages" and click on "New topic"
     - Narrow to a stream and click on "New private message"
-    - Narrow "Private Messages" and click on "New private message"
+    - Narrow "Private messages" and click on "New private message"
 
 - Topics
     - Compose/send a message to a stream with no topic.
@@ -468,7 +468,7 @@ Do these tasks as Cordelia.
     - Show user list on left sidebar in narrow windows (verify by making window thinner)
     - 24-hour time (and then test going back to AM/PM)
 - Notifications
-    - Stream Message
+    - Stream message
         - turn off notifications at user level
             - create a new stream
             - have Hamlet send a message
@@ -477,7 +477,7 @@ Do these tasks as Cordelia.
             - have Hamlet send a message
             - then turn off notifications for that stream
             - have Hamlet send another message
-    - Private Messages and @-mentions
+    - Private messages and @-mentions
         - Test Desktop/Audible options
         - You can ignore other stuff for now
 - Bots/API key

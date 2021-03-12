@@ -15,6 +15,7 @@ def gravatar_hash(email: str) -> str:
     # not error out on it.
     return make_safe_digest(email.lower(), hashlib.md5)
 
+
 def user_avatar_hash(uid: str) -> str:
 
     # WARNING: If this method is changed, you may need to do a migration
@@ -26,15 +27,18 @@ def user_avatar_hash(uid: str) -> str:
     user_key = uid + settings.AVATAR_SALT
     return make_safe_digest(user_key, hashlib.sha1)
 
+
 def user_avatar_path(user_profile: UserProfile) -> str:
 
     # WARNING: If this method is changed, you may need to do a migration
     # similar to zerver/migrations/0060_move_avatars_to_be_uid_based.py .
     return user_avatar_path_from_ids(user_profile.id, user_profile.realm_id)
 
+
 def user_avatar_path_from_ids(user_profile_id: int, realm_id: int) -> str:
     user_id_hash = user_avatar_hash(str(user_profile_id))
-    return f'{str(realm_id)}/{user_id_hash}'
+    return f"{str(realm_id)}/{user_id_hash}"
+
 
 def user_avatar_content_hash(ldap_avatar: bytes) -> str:
     return hashlib.sha256(ldap_avatar).hexdigest()

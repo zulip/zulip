@@ -7,14 +7,18 @@ class Migration(migrations.Migration):
     atomic = False
 
     dependencies = [
-        ('zerver', '0278_remove_userprofile_alert_words'),
+        ("zerver", "0278_remove_userprofile_alert_words"),
     ]
 
     operations = [
-        migrations.RunSQL("""
+        migrations.RunSQL(
+            """
         CREATE INDEX CONCURRENTLY IF NOT EXISTS zerver_message_recipient_upper_subject ON zerver_message (recipient_id, upper(subject::text), id DESC NULLS LAST);
-        """),
-        migrations.RunSQL("""
+        """
+        ),
+        migrations.RunSQL(
+            """
         CREATE INDEX CONCURRENTLY IF NOT EXISTS zerver_message_recipient_subject ON zerver_message (recipient_id, subject, id DESC NULLS LAST);
-        """),
+        """
+        ),
     ]

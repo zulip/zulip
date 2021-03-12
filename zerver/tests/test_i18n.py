@@ -41,14 +41,30 @@ class EmailTranslationTestCase(ZulipTestCase):
         # in confirm_new_email.txt.
         # Also remove the "nocoverage" from check_translation above.
         # check_translation("Viele Grüße", "patch", "/json/settings", {"email": "hamlets-new@zulip.com"})
-        check_translation("Incrível!", "post", "/accounts/home/", {"email": "new-email@zulip.com"}, HTTP_ACCEPT_LANGUAGE="pt")
-        check_translation("Danke, dass du", "post", '/accounts/find/', {'emails': hamlet.delivery_email})
-        check_translation("Hallo", "post", "/json/invites",  {"invitee_emails": "new-email@zulip.com",
-                                                              "stream_ids": orjson.dumps([stream.id]).decode()})
+        check_translation(
+            "Incrível!",
+            "post",
+            "/accounts/home/",
+            {"email": "new-email@zulip.com"},
+            HTTP_ACCEPT_LANGUAGE="pt",
+        )
+        check_translation(
+            "Danke, dass du", "post", "/accounts/find/", {"emails": hamlet.delivery_email}
+        )
+        check_translation(
+            "Hallo",
+            "post",
+            "/json/invites",
+            {
+                "invitee_emails": "new-email@zulip.com",
+                "stream_ids": orjson.dumps([stream.id]).decode(),
+            },
+        )
 
         with self.settings(DEVELOPMENT_LOG_EMAILS=True):
             enqueue_welcome_emails(hamlet)
         check_translation("Viele Grüße", "")
+
 
 class TranslationTestCase(ZulipTestCase):
     """
@@ -63,46 +79,51 @@ class TranslationTestCase(ZulipTestCase):
     # e.g. self.client_post(url) if method is "post"
     def fetch(self, method: str, url: str, expected_status: int, **kwargs: Any) -> HttpResponse:
         response = getattr(self.client, method)(url, **kwargs)
-        self.assertEqual(response.status_code, expected_status,
-                         msg=f"Expected {expected_status}, received {response.status_code} for {method} to {url}")
+        self.assertEqual(
+            response.status_code,
+            expected_status,
+            msg=f"Expected {expected_status}, received {response.status_code} for {method} to {url}",
+        )
         return response
 
     def test_accept_language_header(self) -> None:
-        languages = [('en', 'Sign up'),
-                     ('de', 'Registrieren'),
-                     ('sr', 'Упишите се'),
-                     ('zh-hans', '注册'),
-                     ]
+        languages = [
+            ("en", "Sign up"),
+            ("de", "Registrieren"),
+            ("sr", "Упишите се"),
+            ("zh-hans", "注册"),
+        ]
 
         for lang, word in languages:
-            response = self.fetch('get', '/integrations/', 200,
-                                  HTTP_ACCEPT_LANGUAGE=lang)
+            response = self.fetch("get", "/integrations/", 200, HTTP_ACCEPT_LANGUAGE=lang)
             self.assert_in_response(word, response)
 
     def test_cookie(self) -> None:
-        languages = [('en', 'Sign up'),
-                     ('de', 'Registrieren'),
-                     ('sr', 'Упишите се'),
-                     ('zh-hans', '注册'),
-                     ]
+        languages = [
+            ("en", "Sign up"),
+            ("de", "Registrieren"),
+            ("sr", "Упишите се"),
+            ("zh-hans", "注册"),
+        ]
 
         for lang, word in languages:
-            # Applying str function to LANGUAGE_COOKIE_NAME to convert unicode
+            # Applying str function to LANGUAGE_COOKIE_NAME to convert Unicode
             # into an ascii otherwise SimpleCookie will raise an exception
             self.client.cookies = SimpleCookie({str(settings.LANGUAGE_COOKIE_NAME): lang})
 
-            response = self.fetch('get', '/integrations/', 200)
+            response = self.fetch("get", "/integrations/", 200)
             self.assert_in_response(word, response)
 
     def test_i18n_urls(self) -> None:
-        languages = [('en', 'Sign up'),
-                     ('de', 'Registrieren'),
-                     ('sr', 'Упишите се'),
-                     ('zh-hans', '注册'),
-                     ]
+        languages = [
+            ("en", "Sign up"),
+            ("de", "Registrieren"),
+            ("sr", "Упишите се"),
+            ("zh-hans", "注册"),
+        ]
 
         for lang, word in languages:
-            response = self.fetch('get', f'/{lang}/integrations/', 200)
+            response = self.fetch("get", f"/{lang}/integrations/", 200)
             self.assert_in_response(word, response)
 
 
@@ -111,31 +132,26 @@ class JsonTranslationTestCase(ZulipTestCase):
         translation.activate(settings.LANGUAGE_CODE)
         super().tearDown()
 
-    @mock.patch('zerver.lib.request._')
+    @mock.patch("zerver.lib.request._")
     def test_json_error(self, mock_gettext: Any) -> None:
         dummy_value = "this arg is bad: '{var_name}' (translated to German)"
         mock_gettext.return_value = dummy_value
 
-        self.login('hamlet')
-        result = self.client_post("/json/invites",
-                                  HTTP_ACCEPT_LANGUAGE='de')
+        self.login("hamlet")
+        result = self.client_post("/json/invites", HTTP_ACCEPT_LANGUAGE="de")
 
         expected_error = "this arg is bad: 'invitee_emails' (translated to German)"
-        self.assert_json_error_contains(result,
-                                        expected_error,
-                                        status_code=400)
+        self.assert_json_error_contains(result, expected_error, status_code=400)
 
-    @mock.patch('zerver.views.auth._')
+    @mock.patch("zerver.views.auth._")
     def test_jsonable_error(self, mock_gettext: Any) -> None:
         dummy_value = "Some other language"
         mock_gettext.return_value = dummy_value
 
-        self.login('hamlet')
+        self.login("hamlet")
         result = self.client_get("/de/accounts/login/jwt/")
 
-        self.assert_json_error_contains(result,
-                                        dummy_value,
-                                        status_code=400)
+        self.assert_json_error_contains(result, dummy_value, status_code=400)
 
 
 class FrontendRegexTestCase(ZulipTestCase):
@@ -143,29 +159,17 @@ class FrontendRegexTestCase(ZulipTestCase):
         command = makemessages.Command()
 
         data = [
-            ('{{#tr context}}english text with __variable__{{/tr}}{{/tr}}',
-             'english text with __variable__'),
-
-            ('{{t "english text" }}, "extra"}}',
-             'english text'),
-
-            ("{{t 'english text' }}, 'extra'}}",
-             'english text'),
-
-            ("{{> template var=(t 'english text') }}, 'extra'}}",
-             'english text'),
-
-            ('i18n.t("english text"), "extra",)',
-             'english text'),
-
-            ('i18n.t("english text", context), "extra",)',
-             'english text'),
-
-            ("i18n.t('english text'), 'extra',)",
-             'english text'),
-
-            ("i18n.t('english text', context), 'extra',)",
-             'english text'),
+            (
+                "{{#tr context}}english text with __variable__{{/tr}}{{/tr}}",
+                "english text with __variable__",
+            ),
+            ('{{t "english text" }}, "extra"}}', "english text"),
+            ("{{t 'english text' }}, 'extra'}}", "english text"),
+            ("{{> template var=(t 'english text') }}, 'extra'}}", "english text"),
+            ('i18n.t("english text"), "extra",)', "english text"),
+            ('i18n.t("english text", context), "extra",)', "english text"),
+            ("i18n.t('english text'), 'extra',)", "english text"),
+            ("i18n.t('english text', context), 'extra',)", "english text"),
         ]
 
         for input_text, expected in data:

@@ -1,9 +1,13 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const {JSDOM} = require("jsdom");
 const _ = require("lodash");
 
-set_global("$", global.make_zjquery());
+const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
 set_global("DOMParser", new JSDOM().window.DOMParser);
 set_global("document", {});
 const util = zrequire("util");
@@ -107,12 +111,12 @@ run_test("robust_uri_decode", () => {
     assert.equal(util.robust_uri_decode("xxx%3"), "xxx");
 
     set_global("decodeURIComponent", () => {
-        throw "foo";
+        throw new Error("foo");
     });
     try {
         util.robust_uri_decode("%E0%A4%A");
-    } catch (e) {
-        assert.equal(e, "foo");
+    } catch (error) {
+        assert.equal(error.message, "foo");
     }
 });
 
@@ -134,10 +138,10 @@ run_test("get_edit_event_prev_topic", () => {
 });
 
 run_test("is_mobile", () => {
-    global.window.navigator = {userAgent: "Android"};
+    window.navigator = {userAgent: "Android"};
     assert(util.is_mobile());
 
-    global.window.navigator = {userAgent: "Not mobile"};
+    window.navigator = {userAgent: "Not mobile"};
     assert(!util.is_mobile());
 });
 

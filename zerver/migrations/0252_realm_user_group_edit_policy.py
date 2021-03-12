@@ -2,16 +2,18 @@
 from django.db import migrations, models
 
 USER_GROUP_EDIT_POLICY_MEMBERS = 1
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0251_prereg_user_add_full_name'),
+        ("zerver", "0251_prereg_user_add_full_name"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='realm',
-            name='user_group_edit_policy',
+            model_name="realm",
+            name="user_group_edit_policy",
             field=models.PositiveSmallIntegerField(default=USER_GROUP_EDIT_POLICY_MEMBERS),
         ),
     ]

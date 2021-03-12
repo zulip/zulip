@@ -1,7 +1,13 @@
 "use strict";
 
-set_global("zxcvbn", zrequire("zxcvbn", "zxcvbn"));
-zrequire("common");
+const {strict: assert} = require("assert");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
+set_global("zxcvbn", require("zxcvbn"));
+
+const common = zrequire("common");
 
 run_test("basics", () => {
     let accepted;
@@ -11,17 +17,17 @@ run_test("basics", () => {
     const bar = (function () {
         const self = {};
 
-        self.width = function (width) {
+        self.width = (width) => {
             self.w = width;
             return self;
         };
 
-        self.removeClass = function (arg) {
+        self.removeClass = (arg) => {
             assert.equal(arg, "bar-success bar-danger");
             return self;
         };
 
-        self.addClass = function (arg) {
+        self.addClass = (arg) => {
             self.added_class = arg;
             return self;
         };
@@ -32,7 +38,7 @@ run_test("basics", () => {
     function password_field(min_length, min_guesses) {
         const self = {};
 
-        self.data = function (field) {
+        self.data = (field) => {
             if (field === "minLength") {
                 return min_length;
             } else if (field === "minGuesses") {
@@ -67,7 +73,7 @@ run_test("basics", () => {
     warning = common.password_warning(password, password_field(6));
     assert.equal(warning, 'Repeats like "aaa" are easy to guess');
 
-    delete global.zxcvbn;
+    set_global("zxcvbn", undefined);
     password = "aaaaaaaa";
     accepted = common.password_quality(password, bar, password_field(6, 1e100));
     assert(accepted === undefined);

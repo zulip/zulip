@@ -1,15 +1,20 @@
 "use strict";
 
-zrequire("unread");
-zrequire("unread_ops");
-zrequire("message_flags");
+const {strict: assert} = require("assert");
 
-set_global("ui", {});
-set_global("channel", {});
-set_global("starred_messages", {
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
+const channel = mock_module("channel");
+const ui = mock_module("ui");
+
+mock_module("starred_messages", {
     add: () => {},
+
     remove: () => {},
 });
+
+const message_flags = zrequire("message_flags");
 
 run_test("starred", () => {
     const message = {
@@ -72,7 +77,7 @@ run_test("read", () => {
     };
 
     // For testing purpose limit the batch size value to 5 instead of 1000
-    message_flags._unread_batch_size = 5;
+    message_flags.__Rewire__("_unread_batch_size", 5);
     let msgs_to_flag_read = [
         {locally_echoed: false, id: 1},
         {locally_echoed: false, id: 2},

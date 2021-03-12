@@ -6,13 +6,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0164_stream_history_public_to_subscribers'),
+        ("zerver", "0164_stream_history_public_to_subscribers"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='customprofilefield',
-            name='field_type',
-            field=models.PositiveSmallIntegerField(choices=[(1, 'Short text'), (2, 'Long text'), (4, 'Date'), (3, 'Choice')], default=1),
+            model_name="customprofilefield",
+            name="field_type",
+            field=models.PositiveSmallIntegerField(
+                choices=[(1, "Short text"), (2, "Long text"), (4, "Date"), (3, "Choice")], default=1
+            ),
         ),
     ]

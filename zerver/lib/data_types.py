@@ -28,6 +28,7 @@ class DictType:
     accounted for in required_keys and optional_keys, and recursive
     validation of types of fields.
     """
+
     def __init__(
         self,
         required_keys: Sequence[Tuple[str, Any]],
@@ -63,7 +64,7 @@ class DictType:
                 raise AssertionError(f"Unknown key {k} in {var_name}")
 
     def schema(self, var_name: str) -> str:
-        # Our current schema is lossy, since our openapi configs
+        # Our current schema is lossy, since our OpenAPI configs
         # aren't rigorous about "required" fields yet.
         keys = sorted(list(self.required_keys) + list(self.optional_keys))
 
@@ -74,6 +75,7 @@ class DictType:
 @dataclass
 class EnumType:
     """An enum with the set of valid values declared."""
+
     valid_vals: Sequence[Any]
 
     def check_data(self, var_name: str, val: Dict[str, Any]) -> None:
@@ -86,10 +88,11 @@ class EnumType:
 
 class Equals:
     """Type requiring a specific value."""
+
     def __init__(self, expected_value: Any) -> None:
         self.expected_value = expected_value
 
-        # super hack for openapi workaround
+        # super hack for OpenAPI workaround
         if self.expected_value is None:
             self.equalsNone = True
 
@@ -99,13 +102,14 @@ class Equals:
 
     def schema(self, var_name: str) -> str:
         # Treat Equals as the degenerate case of EnumType, which
-        # matches how we do things with openapi.
+        # matches how we do things with OpenAPI.
         return f"{var_name} in {repr([self.expected_value])}"
 
 
 class NumberType:
     """A Union[float, int]; needed to align with the `number` type in
     OpenAPI, because isinstance(4, float) == False"""
+
     def check_data(self, var_name: str, val: Optional[Any]) -> None:
         if isinstance(val, int) or isinstance(val, float):
             return
@@ -117,6 +121,7 @@ class NumberType:
 
 class ListType:
     """List with every object having the declared sub_type."""
+
     def __init__(self, sub_type: Any, length: Optional[int] = None) -> None:
         self.sub_type = sub_type
         self.length = length
@@ -137,6 +142,7 @@ class ListType:
 @dataclass
 class StringDictType:
     """Type that validates an object is a Dict[str, str]"""
+
     value_type: Any
 
     def check_data(self, var_name: str, val: Dict[Any, Any]) -> None:
@@ -164,7 +170,7 @@ class OptionalType:
         check_data(self.sub_type, var_name, val)
 
     def schema(self, var_name: str) -> str:
-        # our openapi spec doesn't support optional types very well yet,
+        # our OpenAPI spec doesn't support optional types very well yet,
         # so we just return the schema for our subtype
         return schema(var_name, self.sub_type)
 
@@ -173,6 +179,7 @@ class OptionalType:
 class TupleType:
     """Deprecated; we'd like to avoid using tuples in our API.  Validates
     the tuple has the sequence of sub_types."""
+
     sub_types: Sequence[Any]
 
     def check_data(self, var_name: str, val: Any) -> None:
@@ -188,9 +195,7 @@ class TupleType:
 
     def schema(self, var_name: str) -> str:
         sub_schemas = "\n".join(
-            sorted(
-                schema(str(i), sub_type) for i, sub_type in enumerate(self.sub_types)
-            )
+            sorted(schema(str(i), sub_type) for i, sub_type in enumerate(self.sub_types))
         )
         return f"{var_name} (tuple):\n{indent(sub_schemas)}"
 
@@ -212,7 +217,7 @@ class UnionType:
         raise AssertionError(f"{var_name} does not pass the union type check")
 
     def schema(self, var_name: str) -> str:
-        # We hack around our openapi specs not accounting for None.
+        # We hack around our OpenAPI specs not accounting for None.
         sub_schemas = "\n".join(
             sorted(
                 schema("type", sub_type)
@@ -231,7 +236,7 @@ class UrlType:
             raise AssertionError(f"{var_name} is not a URL")
 
     def schema(self, var_name: str) -> str:
-        # just report str to match openapi
+        # just report str to match OpenAPI
         return f"{var_name}: str"
 
 
@@ -257,11 +262,14 @@ def event_dict_type(
     assert "type" in rkeys
     assert "id" not in keys
     return DictType(
-        required_keys=list(required_keys) + [("id", int)], optional_keys=optional_keys,
+        required_keys=list(required_keys) + [("id", int)],
+        optional_keys=optional_keys,
     )
 
 
-def make_checker(data_type: DictType,) -> Callable[[str, Dict[str, object]], None]:
+def make_checker(
+    data_type: DictType,
+) -> Callable[[str, Dict[str, object]], None]:
     def f(var_name: str, event: Dict[str, Any]) -> None:
         check_data(data_type, var_name, event)
 
@@ -278,7 +286,7 @@ def schema(
 
     schema is a glorified repr of a data type, but it also includes a
     var_name you pass in, plus we dumb things down a bit to match our
-    current openapi spec.
+    current OpenAPI spec.
     """
     if hasattr(data_type, "schema"):
         return data_type.schema(var_name)

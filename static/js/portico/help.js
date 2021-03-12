@@ -1,5 +1,7 @@
 import SimpleBar from "simplebar/dist/simplebar";
 
+import * as common from "../common";
+
 import * as google_analytics from "./google-analytics";
 import {activate_correct_tab} from "./tabbed-instructions";
 
@@ -34,12 +36,12 @@ function highlight_current_article() {
     }
 
     const hash = window.location.hash;
-    let article = $('.help .sidebar a[href="' + path + hash + '"]');
+    let article = $(`.help .sidebar a[href="${CSS.escape(path + hash)}"]`);
     if (!article.length) {
         // If there isn't an entry in the left sidebar that matches
-        // the full url+hash pair, instead highlight an entry in the
-        // left sidebar that just matches the url part.
-        article = $('.help .sidebar a[href="' + path + '"]');
+        // the full URL+hash pair, instead highlight an entry in the
+        // left sidebar that just matches the URL part.
+        article = $(`.help .sidebar a[href="${CSS.escape(path)}"]`);
     }
     // Highlight current article link and the heading of the same
     article.closest("ul").css("display", "block");

@@ -1,8 +1,9 @@
-"use strict";
+import * as people from "./people";
+import * as pm_list from "./pm_list";
+import * as resize from "./resize";
+import * as unread_ui from "./unread_ui";
 
-const people = require("./people");
-
-exports.update_count_in_dom = function (unread_count_elem, count) {
+export function update_count_in_dom(unread_count_elem, count) {
     const count_span = unread_count_elem.find(".count");
     const value_span = count_span.find(".value");
 
@@ -14,35 +15,36 @@ exports.update_count_in_dom = function (unread_count_elem, count) {
 
     count_span.show();
     value_span.text(count);
-};
+}
 
-exports.update_starred_count = function (count) {
+export function update_starred_count(count) {
     const starred_li = $(".top_left_starred_messages");
-    exports.update_count_in_dom(starred_li, count);
-};
+    update_count_in_dom(starred_li, count);
+}
 
-exports.update_dom_with_unread_counts = function (counts) {
+export function update_dom_with_unread_counts(counts) {
     // Note that "Private messages" counts are handled in pm_list.js.
 
     // mentioned/home have simple integer counts
     const mentioned_li = $(".top_left_mentions");
     const home_li = $(".top_left_all_messages");
 
-    exports.update_count_in_dom(mentioned_li, counts.mentioned_message_count);
-    exports.update_count_in_dom(home_li, counts.home_unread_messages);
+    update_count_in_dom(mentioned_li, counts.mentioned_message_count);
+    update_count_in_dom(home_li, counts.home_unread_messages);
 
     unread_ui.animate_mention_changes(mentioned_li, counts.mentioned_message_count);
-};
+}
+
+function remove(elem) {
+    elem.removeClass("active-filter active-sub-filter");
+}
 
 function deselect_top_left_corner_items() {
-    function remove(elem) {
-        elem.removeClass("active-filter active-sub-filter");
-    }
-
     remove($(".top_left_all_messages"));
     remove($(".top_left_private_messages"));
     remove($(".top_left_starred_messages"));
     remove($(".top_left_mentions"));
+    remove($(".top_left_recent_topics"));
 }
 
 function should_expand_pm_list(filter) {
@@ -66,7 +68,7 @@ function should_expand_pm_list(filter) {
     return has_valid_emails;
 }
 
-exports.handle_narrow_activated = function (filter) {
+export function handle_narrow_activated(filter) {
     deselect_top_left_corner_items();
 
     let ops;
@@ -99,14 +101,24 @@ exports.handle_narrow_activated = function (filter) {
     } else {
         pm_list.close();
     }
-};
+}
 
-exports.handle_narrow_deactivated = function () {
+export function handle_narrow_deactivated() {
     deselect_top_left_corner_items();
     pm_list.close();
 
     const filter_li = $(".top_left_all_messages");
     filter_li.addClass("active-filter");
-};
+}
 
-window.top_left_corner = exports;
+export function narrow_to_recent_topics() {
+    remove($(".top_left_all_messages"));
+    remove($(".top_left_private_messages"));
+    remove($(".top_left_starred_messages"));
+    remove($(".top_left_mentions"));
+    $(".top_left_recent_topics").addClass("active-filter");
+    pm_list.close();
+    setTimeout(() => {
+        resize.resize_stream_filters_container();
+    }, 0);
+}

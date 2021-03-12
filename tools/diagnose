@@ -13,42 +13,50 @@ from scripts.lib.zulip_tools import get_dev_uuid_var_path
 
 UUID_VAR_PATH = get_dev_uuid_var_path()
 
+
 def run(check_func: Callable[[], bool]) -> None:
-    '''
+    """
     This decorator simply runs functions.  It makes it more
     convenient to add new checks without a big main() function.
-    '''
+    """
     rc = check_func()
     if not rc:
         sys.exit(1)
 
+
 def run_command(args: List[str]) -> None:
-    print(' '.join(map(shlex.quote, args)))
+    print(" ".join(map(shlex.quote, args)))
     subprocess.check_call(args)
+
 
 @run
 def check_python_version() -> bool:
-    subprocess.check_call(['/usr/bin/env', 'python', '-V'])
+    subprocess.check_call(["/usr/bin/env", "python", "-V"])
     return True
+
 
 @run
 def pwd() -> bool:
     print(os.getcwd())
     return True
 
+
 @run
 def host_info() -> bool:
     print(platform.platform())
     return True
 
+
 @run
 def check_django() -> bool:
     try:
         import django
-        print('Django version:', django.get_version())
+
+        print("Django version:", django.get_version())
         return True
     except ImportError:
-        print('''
+        print(
+            """
             ERROR!
             We cannot import Django, which is usually a
             symptom of not having your Python venv
@@ -59,55 +67,64 @@ def check_django() -> bool:
             source /srv/zulip-py3-venv/bin/activate
 
             Or maybe you forget to run inside your VM?
-            ''')
+            """
+        )
         return False
+
 
 @run
 def provision_version() -> bool:
-    fn = os.path.join(UUID_VAR_PATH, 'provision_version')
+    fn = os.path.join(UUID_VAR_PATH, "provision_version")
     with open(fn) as f:
         version = f.read().strip()
-    print('latest version provisioned:', version)
+    print("latest version provisioned:", version)
     from version import PROVISION_VERSION
-    print('desired version:', PROVISION_VERSION)
+
+    print("desired version:", PROVISION_VERSION)
     if version != PROVISION_VERSION:
-        print('You need to provision!')
+        print("You need to provision!")
         return False
     return True
 
+
 @run
 def node_stuff() -> bool:
-    print('node version:')
-    subprocess.check_call(['node', '--version'])
+    print("node version:")
+    subprocess.check_call(["node", "--version"])
     return True
+
 
 @run
 def test_models() -> bool:
     settings_module = "zproject.settings"
-    os.environ['DJANGO_SETTINGS_MODULE'] = settings_module
+    os.environ["DJANGO_SETTINGS_MODULE"] = settings_module
     import django
+
     django.setup()
     from zerver.models import Realm, UserProfile
-    print('Num realms: ', Realm.objects.count())
-    print('Num users: ', UserProfile.objects.count())
+
+    print("Num realms: ", Realm.objects.count())
+    print("Num users: ", UserProfile.objects.count())
     return True
+
 
 @run
 def check_venv() -> bool:
-    path = os.path.join(ROOT_DIR, 'scripts', 'lib', 'hash_reqs.py')
-    cache_dir = '/srv/zulip-venv-cache/'
-    for fn in ['dev.txt']:
+    path = os.path.join(ROOT_DIR, "scripts", "lib", "hash_reqs.py")
+    cache_dir = "/srv/zulip-venv-cache/"
+    for fn in ["dev.txt"]:
         requirements_file = os.path.join(ROOT_DIR, "requirements", fn)
         output = subprocess.check_output([path, requirements_file], universal_newlines=True)
         sha1sum = output.split()[0]
-        print(fn, 'venv sha: ', sha1sum)
+        print(fn, "venv sha: ", sha1sum)
         if not os.path.exists(os.path.join(cache_dir, sha1sum)):
-            print('Your venv may be improperly installed!')
+            print("Your venv may be improperly installed!")
             return False
     return True
+
 
 @run
 def check_migrations() -> bool:
     print()
-    rc = subprocess.check_call('./tools/test-migrations')
-    return (rc == 0)
+    rc = subprocess.check_call("./tools/test-migrations")
+    return rc == 0

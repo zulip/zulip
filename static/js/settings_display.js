@@ -1,7 +1,10 @@
-"use strict";
-
-const emojisets = require("./emojisets");
-const settings_config = require("./settings_config");
+import * as channel from "./channel";
+import * as emojisets from "./emojisets";
+import * as loading from "./loading";
+import * as overlays from "./overlays";
+import * as settings_config from "./settings_config";
+import * as settings_ui from "./settings_ui";
+import * as ui_report from "./ui_report";
 
 const meta = {
     loaded: false,
@@ -29,7 +32,7 @@ function change_display_setting(data, status_element, success_msg, sticky) {
     );
 }
 
-exports.set_up = function () {
+export function set_up() {
     meta.loaded = true;
     $("#display-settings-status").hide();
 
@@ -39,9 +42,11 @@ exports.set_up = function () {
 
     $("#color_scheme").val(page_params.color_scheme);
 
+    $("#default_view").val(page_params.default_view);
+
     $("#twenty_four_hour_time").val(JSON.stringify(page_params.twenty_four_hour_time));
 
-    $(".emojiset_choice[value=" + page_params.emojiset + "]").prop("checked", true);
+    $(`.emojiset_choice[value="${CSS.escape(page_params.emojiset)}"]`).prop("checked", true);
 
     $("#default_language_modal [data-dismiss]").on("click", () => {
         overlays.close_modal("#default_language_modal");
@@ -49,7 +54,7 @@ exports.set_up = function () {
 
     const all_display_settings = settings_config.get_all_display_settings();
     for (const setting of all_display_settings.settings.user_display_settings) {
-        $("#" + setting).on("change", function () {
+        $(`#${CSS.escape(setting)}`).on("change", function () {
             const data = {};
             data[setting] = JSON.stringify($(this).prop("checked"));
 
@@ -106,6 +111,11 @@ exports.set_up = function () {
         change_display_setting(data, "#display-settings-status");
     });
 
+    $("#default_view").on("change", function () {
+        const data = {default_view: JSON.stringify(this.value)};
+        change_display_setting(data, "#display-settings-status");
+    });
+
     $("body").on("click", ".reload_link", () => {
         window.location.reload();
     });
@@ -146,9 +156,9 @@ exports.set_up = function () {
         const data = {translate_emoticons: JSON.stringify(this.checked)};
         change_display_setting(data, "#emoji-settings-status");
     });
-};
+}
 
-exports.report_emojiset_change = async function () {
+export async function report_emojiset_change() {
     // TODO: Clean up how this works so we can use
     // change_display_setting.  The challenge is that we don't want to
     // report success before the server_events request returns that
@@ -168,17 +178,16 @@ exports.report_emojiset_change = async function () {
         const spinner = $("#emoji-settings-status").expectOne();
         settings_ui.display_checkmark(spinner);
     }
-};
+}
 
-exports.update_page = function () {
+export function update_page() {
     $("#left_side_userlist").prop("checked", page_params.left_side_userlist);
     $("#default_language_name").text(page_params.default_language_name);
     $("#translate_emoticons").prop("checked", page_params.translate_emoticons);
     $("#twenty_four_hour_time").val(JSON.stringify(page_params.twenty_four_hour_time));
     $("#color_scheme").val(JSON.stringify(page_params.color_scheme));
+    $("#default_view").val(page_params.default_view);
 
     // TODO: Set emojiset selector here.
     // Longer term, we'll want to automate this function
-};
-
-window.settings_display = exports;
+}

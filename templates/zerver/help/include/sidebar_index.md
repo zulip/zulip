@@ -14,6 +14,7 @@
 * [Review your settings](/help/review-your-settings)
 * [Change your profile picture](/help/change-your-profile-picture)
 * [Change your language](/help/change-your-language)
+* [Change default view](/help/change-default-view)
 * [Use 24-hour time](/help/change-the-time-format)
 * [Joining an organization](/help/join-a-zulip-organization)
 * [Switching between organizations](/help/switching-between-organizations)
@@ -106,7 +107,6 @@
 ## Organization basics
 * [Review your organization's settings](/help/review-your-organization-settings)
 * [Create your organization profile](/help/create-your-organization-profile)
-* [Import from HipChat/Stride](/help/import-from-hipchat)
 * [Import from Mattermost](/help/import-from-mattermost)
 * [Import from Slack](/help/import-from-slack)
 * [Import from Gitter](/help/import-from-gitter)
@@ -133,6 +133,7 @@
 * [Weekly digest emails](/help/digest-emails)
 * [Disable welcome emails](/help/disable-welcome-emails)
 * [Configure notification bot](/help/configure-notification-bot)
+* [Restrict wildcard mentions](/help/restrict-wildcard-mentions)
 * [Require topics in stream messages](/help/require-topics)
 * [Add custom emoji](/help/add-custom-emoji)
 * [Configure authentication methods](/help/configure-authentication-methods)

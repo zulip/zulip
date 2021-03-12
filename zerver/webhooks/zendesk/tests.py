@@ -4,15 +4,15 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class ZenDeskHookTests(WebhookTestCase):
-    STREAM_NAME = 'zendesk'
+    STREAM_NAME = "zendesk"
     URL_TEMPLATE = "/api/v1/external/zendesk?stream={stream}"
 
     def get_payload(self, fixture_name: str) -> Dict[str, str]:
         return {
-            'ticket_title': self.TICKET_TITLE,
-            'ticket_id': str(self.TICKET_ID),
-            'message': self.MESSAGE,
-            'stream': self.STREAM_NAME,
+            "ticket_title": self.TICKET_TITLE,
+            "ticket_id": str(self.TICKET_ID),
+            "message": self.MESSAGE,
+            "stream": self.STREAM_NAME,
         }
 
     def do_test(self, expected_topic: str, expected_message: str) -> None:
@@ -29,7 +29,7 @@ class ZenDeskHookTests(WebhookTestCase):
         self.TICKET_TITLE = "Test ticket"
         self.MESSAGE = "some message"
         self.do_test(
-            expected_topic='#4: Test ticket',
+            expected_topic="#4: Test ticket",
             expected_message="some message",
         )
 

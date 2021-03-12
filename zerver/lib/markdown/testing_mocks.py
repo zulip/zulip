@@ -219,6 +219,7 @@ EMOJI_TWEET = """{
     ]
 }"""
 
+
 def twitter(tweet_id: str) -> Optional[Dict[str, Any]]:
     if tweet_id in ["112652479837110273", "287977969287315456", "287977969287315457"]:
         return orjson.loads(NORMAL_TWEET)

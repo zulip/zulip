@@ -82,7 +82,7 @@ async function get_context(location: StackFrame): Promise<NumberedLine[] | undef
 }
 
 export async function display_stacktrace(error: string, stack: string): Promise<void> {
-    const ex = new Error();
+    const ex = new Error("dummy");
     ex.stack = stack;
 
     const stackframes: CleanStackFrame[] = await Promise.all(

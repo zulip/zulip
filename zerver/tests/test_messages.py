@@ -18,12 +18,12 @@ class MissedMessageTest(ZulipTestCase):
     def test_presence_idle_user_ids(self) -> None:
         UserPresence.objects.all().delete()
 
-        sender = self.example_user('cordelia')
+        sender = self.example_user("cordelia")
         realm = sender.realm
-        hamlet = self.example_user('hamlet')
-        othello = self.example_user('othello')
+        hamlet = self.example_user("hamlet")
+        othello = self.example_user("othello")
         recipient_ids = {hamlet.id, othello.id}
-        message_type = 'stream'
+        message_type = "stream"
         user_flags: Dict[int, List[str]] = {}
 
         def assert_missing(user_ids: List[int]) -> None:
@@ -45,31 +45,32 @@ class MissedMessageTest(ZulipTestCase):
                 timestamp=when,
             )
 
-        message_type = 'private'
+        message_type = "private"
         assert_missing([hamlet.id, othello.id])
 
-        message_type = 'stream'
-        user_flags[hamlet.id] = ['mentioned']
+        message_type = "stream"
+        user_flags[hamlet.id] = ["mentioned"]
         assert_missing([hamlet.id])
 
-        set_presence(hamlet, 'iPhone', ago=5000)
+        set_presence(hamlet, "iPhone", ago=5000)
         assert_missing([hamlet.id])
 
-        set_presence(hamlet, 'webapp', ago=15)
+        set_presence(hamlet, "webapp", ago=15)
         assert_missing([])
 
-        message_type = 'private'
+        message_type = "private"
         assert_missing([othello.id])
+
 
 class TestBulkGetHuddleUserIds(ZulipTestCase):
     def test_bulk_get_huddle_user_ids(self) -> None:
-        hamlet = self.example_user('hamlet')
-        cordelia = self.example_user('cordelia')
-        othello = self.example_user('othello')
-        iago = self.example_user('iago')
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        iago = self.example_user("iago")
         message_ids = [
-            self.send_huddle_message(hamlet, [cordelia, othello], 'test'),
-            self.send_huddle_message(cordelia, [hamlet, othello, iago], 'test'),
+            self.send_huddle_message(hamlet, [cordelia, othello], "test"),
+            self.send_huddle_message(cordelia, [hamlet, othello, iago], "test"),
         ]
 
         messages = Message.objects.filter(id__in=message_ids).order_by("id")
@@ -78,7 +79,9 @@ class TestBulkGetHuddleUserIds(ZulipTestCase):
         second_huddle_recipient = messages[1].recipient
         second_huddle_user_ids = list(get_huddle_user_ids(second_huddle_recipient))
 
-        huddle_user_ids = bulk_get_huddle_user_ids([first_huddle_recipient, second_huddle_recipient])
+        huddle_user_ids = bulk_get_huddle_user_ids(
+            [first_huddle_recipient, second_huddle_recipient]
+        )
         self.assertEqual(huddle_user_ids[first_huddle_recipient.id], first_huddle_user_ids)
         self.assertEqual(huddle_user_ids[second_huddle_recipient.id], second_huddle_user_ids)
 

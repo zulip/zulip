@@ -1,21 +1,24 @@
 "use strict";
 
-set_global("$", global.make_zjquery());
-zrequire("hash_util");
-zrequire("hashchange");
-zrequire("narrow_state");
-const people = zrequire("people");
-zrequire("stream_data");
-zrequire("Filter", "js/filter");
+const {strict: assert} = require("assert");
+
+const {mock_module, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
+
 set_global("page_params", {
     stop_words: ["what", "about"],
 });
-set_global("resize", {
-    resize_page_components: () => {},
-    resize_stream_filters_container: () => {},
-});
 
-zrequire("narrow");
+const stream_topic_history = mock_module("stream_topic_history");
+const hash_util = zrequire("hash_util");
+
+const compose_state = zrequire("compose_state");
+const narrow_state = zrequire("narrow_state");
+const people = zrequire("people");
+const stream_data = zrequire("stream_data");
+const {Filter} = zrequire("../js/filter");
+const narrow = zrequire("narrow");
 
 function set_filter(operators) {
     operators = operators.map((op) => ({
@@ -58,13 +61,13 @@ run_test("uris", () => {
     uri = hash_util.by_sender_uri(ray.email);
     assert.equal(uri, "#narrow/sender/22-ray");
 
-    let emails = global.hash_util.decode_operand("pm-with", "22,23-group");
+    let emails = hash_util.decode_operand("pm-with", "22,23-group");
     assert.equal(emails, "alice@example.com,ray@example.com");
 
-    emails = global.hash_util.decode_operand("pm-with", "5,22,23-group");
+    emails = hash_util.decode_operand("pm-with", "5,22,23-group");
     assert.equal(emails, "alice@example.com,ray@example.com");
 
-    emails = global.hash_util.decode_operand("pm-with", "5-group");
+    emails = hash_util.decode_operand("pm-with", "5-group");
     assert.equal(emails, "me@example.com");
 });
 
@@ -242,38 +245,45 @@ run_test("show_invalid_narrow_message", () => {
     );
 });
 
-run_test("narrow_to_compose_target", () => {
-    set_global("compose_state", {});
-    set_global("stream_topic_history", {});
+run_test("narrow_to_compose_target errors", () => {
+    function test() {
+        with_field(
+            narrow,
+            "activate",
+            () => {
+                throw new Error("should not activate!");
+            },
+            () => {
+                narrow.to_compose_target();
+            },
+        );
+    }
+
+    // No-op when not composing.
+    compose_state.set_message_type(false);
+    test();
+
+    // No-op when empty stream.
+    compose_state.set_message_type("stream");
+    compose_state.stream_name("");
+    test();
+});
+
+run_test("narrow_to_compose_target streams", (override) => {
     const args = {called: false};
-    const activate_backup = narrow.activate;
-    narrow.activate = function (operators, opts) {
+    override(narrow, "activate", (operators, opts) => {
         args.operators = operators;
         args.opts = opts;
         args.called = true;
-    };
+    });
 
-    // No-op when not composing.
-    global.compose_state.composing = () => false;
-    narrow.to_compose_target();
-    assert.equal(args.called, false);
-    global.compose_state.composing = () => true;
-
-    // No-op when empty stream.
-    global.compose_state.get_message_type = () => "stream";
-    global.compose_state.stream_name = () => "";
-    args.called = false;
-    narrow.to_compose_target();
-    assert.equal(args.called, false);
-
-    // --- Tests for stream messages ---
-    global.compose_state.get_message_type = () => "stream";
+    compose_state.set_message_type("stream");
     stream_data.add_sub({name: "ROME", stream_id: 99});
-    global.compose_state.stream_name = () => "ROME";
-    global.stream_topic_history.get_recent_topic_names = () => ["one", "two", "three"];
+    compose_state.stream_name("ROME");
+    override(stream_topic_history, "get_recent_topic_names", () => ["one", "two", "three"]);
 
     // Test with existing topic
-    global.compose_state.topic = () => "one";
+    compose_state.topic("one");
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
@@ -284,41 +294,52 @@ run_test("narrow_to_compose_target", () => {
     ]);
 
     // Test with new topic
-    global.compose_state.topic = () => "four";
+    compose_state.topic("four");
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.operators, [{operator: "stream", operand: "ROME"}]);
 
     // Test with blank topic
-    global.compose_state.topic = () => "";
+    compose_state.topic("");
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.operators, [{operator: "stream", operand: "ROME"}]);
 
     // Test with no topic
-    global.compose_state.topic = () => {};
+    compose_state.topic(undefined);
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.operators, [{operator: "stream", operand: "ROME"}]);
+});
 
-    // --- Tests for PMs ---
-    global.compose_state.get_message_type = () => "private";
+run_test("narrow_to_compose_target PMs", (override) => {
+    const args = {called: false};
+    override(narrow, "activate", (operators, opts) => {
+        args.operators = operators;
+        args.opts = opts;
+        args.called = true;
+    });
+
+    let emails;
+    override(compose_state, "private_message_recipient", () => emails);
+
+    compose_state.set_message_type("private");
     people.add_active_user(ray);
     people.add_active_user(alice);
     people.add_active_user(me);
 
     // Test with valid person
-    global.compose_state.private_message_recipient = () => "alice@example.com";
+    emails = "alice@example.com";
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.operators, [{operator: "pm-with", operand: "alice@example.com"}]);
 
     // Test with valid persons
-    global.compose_state.private_message_recipient = () => "alice@example.com,ray@example.com";
+    emails = "alice@example.com,ray@example.com";
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
@@ -327,26 +348,23 @@ run_test("narrow_to_compose_target", () => {
     ]);
 
     // Test with some invalid persons
-    global.compose_state.private_message_recipient = () =>
-        "alice@example.com,random,ray@example.com";
+    emails = "alice@example.com,random,ray@example.com";
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.operators, [{operator: "is", operand: "private"}]);
 
     // Test with all invalid persons
-    global.compose_state.private_message_recipient = () => "alice,random,ray";
+    emails = "alice,random,ray";
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.operators, [{operator: "is", operand: "private"}]);
 
     // Test with no persons
-    global.compose_state.private_message_recipient = () => "";
+    emails = "";
     args.called = false;
     narrow.to_compose_target();
     assert.equal(args.called, true);
     assert.deepEqual(args.operators, [{operator: "is", operand: "private"}]);
-
-    narrow.activate = activate_backup;
 });

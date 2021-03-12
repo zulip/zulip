@@ -1,10 +1,12 @@
 import md5 from "blueimp-md5";
+import {format, utcToZonedTime} from "date-fns-tz";
 import _ from "lodash";
-import moment from "moment-timezone";
 
 import * as typeahead from "../shared/js/typeahead";
 
 import {FoldDict} from "./fold_dict";
+import * as message_store from "./message_store";
+import * as reload_state from "./reload_state";
 import * as settings_data from "./settings_data";
 import * as util from "./util";
 
@@ -45,7 +47,7 @@ export function init() {
 init();
 
 function split_to_ints(lst) {
-    return lst.split(",").map((s) => parseInt(s, 10));
+    return lst.split(",").map((s) => Number.parseInt(s, 10));
 }
 
 export function get_by_user_id(user_id, ignore_missing) {
@@ -54,6 +56,25 @@ export function get_by_user_id(user_id, ignore_missing) {
         return undefined;
     }
     return people_by_user_id_dict.get(user_id);
+}
+
+export function validate_user_ids(user_ids) {
+    const good_ids = [];
+    const bad_ids = [];
+
+    for (const user_id of user_ids) {
+        if (people_by_user_id_dict.has(user_id)) {
+            good_ids.push(user_id);
+        } else {
+            bad_ids.push(user_id);
+        }
+    }
+
+    if (bad_ids.length > 0) {
+        blueslip.warn(`We have untracked user_ids: ${bad_ids}`);
+    }
+
+    return good_ids;
 }
 
 export function get_by_email(email) {
@@ -153,11 +174,9 @@ export function huddle_string(message) {
 
     let user_ids = message.display_recipient.map((recip) => recip.id);
 
-    function is_huddle_recip(user_id) {
-        return user_id && people_by_user_id_dict.has(user_id) && !is_my_user_id(user_id);
-    }
-
-    user_ids = user_ids.filter(is_huddle_recip);
+    user_ids = user_ids.filter(
+        (user_id) => user_id && people_by_user_id_dict.has(user_id) && !is_my_user_id(user_id),
+    );
 
     if (user_ids.length <= 1) {
         return undefined;
@@ -235,7 +254,8 @@ export function get_user_time_preferences(user_id) {
 export function get_user_time(user_id) {
     const user_pref = get_user_time_preferences(user_id);
     if (user_pref) {
-        return moment().tz(user_pref.timezone).format(user_pref.format);
+        const current_date = utcToZonedTime(new Date(), user_pref.timezone);
+        return format(current_date, user_pref.format, {timeZone: user_pref.timezone});
     }
     return undefined;
 }
@@ -302,7 +322,7 @@ export function get_recipients(user_ids_string) {
         return my_full_name();
     }
 
-    const names = other_ids.map(get_full_name).sort();
+    const names = other_ids.map((user_id) => get_full_name(user_id)).sort();
     return names.join(", ");
 }
 
@@ -648,7 +668,7 @@ export function small_avatar_url(message) {
     let person;
     if (message.sender_id) {
         // We should always have message.sender_id, except for in the
-        // tutorial, where it's ok to fall back to the url in the fake
+        // tutorial, where it's ok to fall back to the URL in the fake
         // messages.
         person = get_by_user_id(message.sender_id);
     }
@@ -873,7 +893,7 @@ export function get_people_for_search_bar(query) {
 
     const message_people = get_message_people();
 
-    const small_results = message_people.filter(pred);
+    const small_results = message_people.filter((item) => pred(item));
 
     if (small_results.length >= 5) {
         return small_results;
@@ -903,7 +923,7 @@ export function build_person_matcher(query) {
     query = query.trim();
 
     const termlets = query.toLowerCase().split(/\s+/);
-    const termlet_matchers = termlets.map(build_termlet_matcher);
+    const termlet_matchers = termlets.map((termlet) => build_termlet_matcher(termlet));
 
     return function (user) {
         const email = user.email.toLowerCase();
@@ -1012,9 +1032,9 @@ export function get_people_for_stream_create() {
     /*
         If you are thinking of reusing this function,
         a better option in most cases is to just
-        call `exports.get_realm_users()` and then
-        filter out the "me" user yourself as part of
-        any other filtering that you are doing.
+        call `get_realm_users()` and then filter out
+        the "me" user yourself as part of any other
+        filtering that you are doing.
 
         In particular, this function does a sort
         that is kinda expensive and may not apply
@@ -1298,7 +1318,7 @@ export function is_my_user_id(user_id) {
 
     if (typeof user_id !== "number") {
         blueslip.error("user_id is a string in my_user_id: " + user_id);
-        user_id = parseInt(user_id, 10);
+        user_id = Number.parseInt(user_id, 10);
     }
 
     return user_id === my_user_id;

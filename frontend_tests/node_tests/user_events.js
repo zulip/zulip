@@ -1,56 +1,54 @@
 "use strict";
 
-set_global("$", global.make_zjquery());
+const {strict: assert} = require("assert");
 
-const people = zrequire("people");
-const settings_config = zrequire("settings_config");
-zrequire("user_events");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
 
-set_global("activity", {
-    redraw() {},
-});
-
-set_global("settings_linkifiers", {
-    maybe_disable_widgets() {},
-});
-set_global("settings_org", {
-    maybe_disable_widgets() {},
-});
-set_global("settings_profile_fields", {
-    maybe_disable_widgets() {},
-});
-set_global("settings_streams", {
-    maybe_disable_widgets() {},
-});
-set_global("settings_users", {
-    update_user_data() {},
-});
-
-set_global("gear_menu", {
-    update_org_settings_menu_item() {},
-});
-set_global("page_params", {
-    is_admin: true,
-});
-
-set_global("pm_list", {
-    update_private_messages() {},
-});
-
-set_global("narrow_state", {
-    update_email() {},
-});
-
-set_global("compose", {
-    update_email() {},
-});
-
-set_global("settings_account", {
+const message_live_update = mock_module("message_live_update");
+const settings_account = mock_module("settings_account", {
     update_email() {},
     update_full_name() {},
 });
 
-set_global("message_live_update", {});
+mock_module("activity", {
+    redraw() {},
+});
+mock_module("compose", {
+    update_email() {},
+});
+mock_module("gear_menu", {
+    update_org_settings_menu_item() {},
+});
+mock_module("narrow_state", {
+    update_email() {},
+});
+mock_module("pm_list", {
+    update_private_messages() {},
+});
+mock_module("settings_linkifiers", {
+    maybe_disable_widgets() {},
+});
+mock_module("settings_org", {
+    maybe_disable_widgets() {},
+});
+mock_module("settings_profile_fields", {
+    maybe_disable_widgets() {},
+});
+mock_module("settings_streams", {
+    maybe_disable_widgets() {},
+});
+mock_module("settings_users", {
+    update_user_data() {},
+});
+
+const page_params = set_global("page_params", {
+    is_admin: true,
+});
+
+const people = zrequire("people");
+const settings_config = zrequire("settings_config");
+const user_events = zrequire("user_events");
 
 const me = {
     email: "me@example.com",
@@ -107,7 +105,7 @@ run_test("updates", () => {
 
     let user_id;
     let full_name;
-    global.message_live_update.update_user_full_name = function (user_id_arg, full_name_arg) {
+    message_live_update.update_user_full_name = (user_id_arg, full_name_arg) => {
         user_id = user_id_arg;
         full_name = full_name_arg;
     };
@@ -123,7 +121,7 @@ run_test("updates", () => {
         user_id: me.user_id,
         role: settings_config.user_role_values.member.code,
     });
-    assert(!global.page_params.is_admin);
+    assert(!page_params.is_admin);
 
     user_events.update_person({user_id: me.user_id, full_name: "Me V2"});
     assert.equal(people.my_full_name(), "Me V2");
@@ -141,7 +139,7 @@ run_test("updates", () => {
     assert.equal(person.full_name, "Me V2");
 
     let avatar_url;
-    global.message_live_update.update_avatar = function (user_id_arg, avatar_url_arg) {
+    message_live_update.update_avatar = (user_id_arg, avatar_url_arg) => {
         user_id = user_id_arg;
         avatar_url = avatar_url_arg;
     };

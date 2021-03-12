@@ -1,6 +1,9 @@
 "use strict";
 
-zrequire("templates");
+const {strict: assert} = require("assert");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
 
 // We download our translations in `page_params` (which
 // are for the user's chosen language), so we simulate
@@ -18,6 +21,7 @@ set_global("page_params", {
 // to set `i18n` to `i18next` on the global namespace
 // for `templates.js`.
 zrequire("i18n");
+zrequire("templates");
 
 run_test("t_tag", () => {
     const args = {

@@ -1,19 +1,21 @@
-"use strict";
+import {localstorage} from "./localstorage";
+import * as notifications from "./notifications";
+import * as unread_ops from "./unread_ops";
+import * as unread_ui from "./unread_ui";
+import * as util from "./util";
 
-const util = require("./util");
-
-const resize_app = function () {
+export function resize_app() {
     const panels_height = $("#panels").height();
     $("body > .app").height("calc(100% - " + panels_height + "px)");
 
     // the floating recipient bar is usually positioned right below
     // the `.header` element (including padding).
     const frb_top =
-        panels_height + $(".header").height() + parseInt($(".header").css("paddingBottom"), 10);
+        panels_height +
+        $(".header").height() +
+        Number.parseInt($(".header").css("paddingBottom"), 10);
     $("#floating_recipient_bar").css("top", frb_top + "px");
-};
-
-exports.resize_app = resize_app;
+}
 
 const show_step = function ($process, step) {
     $process
@@ -24,16 +26,14 @@ const show_step = function ($process, step) {
 };
 
 const get_step = function ($process) {
-    return $process.find("[data-step]").filter(":visible").data("step");
+    return $process.find("[data-step]:visible").data("step");
 };
 
 function should_show_notifications(ls) {
     // if the user said to never show banner on this computer again, it will
     // be stored as `true` so we want to negate that.
-    if (localstorage.supported()) {
-        if (ls.get("dontAskForNotifications") === true) {
-            return false;
-        }
+    if (localstorage.supported() && ls.get("dontAskForNotifications") === true) {
+        return false;
     }
 
     return (
@@ -48,9 +48,9 @@ function should_show_notifications(ls) {
     );
 }
 
-exports.check_profile_incomplete = function () {
+export function check_profile_incomplete() {
     if (!page_params.is_admin) {
-        return;
+        return false;
     }
 
     // Eventually, we might also check page_params.realm_icon_source,
@@ -58,30 +58,35 @@ exports.check_profile_incomplete = function () {
     // since their organization might not have a logo yet.
     if (
         page_params.realm_description === "" ||
-        page_params.realm_description.startsWith("Organization imported from")
+        /^Organization imported from [A-Za-z]+[!.]$/.test(page_params.realm_description)
     ) {
+        return true;
+    }
+    return false;
+}
+
+export function show_profile_incomplete(is_profile_incomplete) {
+    if (is_profile_incomplete) {
         $("[data-process='profile-incomplete']").show();
     } else {
         $("[data-process='profile-incomplete']").hide();
     }
-};
+}
 
-exports.initialize = function () {
+export function initialize() {
     const ls = localstorage();
     if (page_params.insecure_desktop_app) {
-        exports.open($("[data-process='insecure-desktop-app']"));
+        open($("[data-process='insecure-desktop-app']"));
     } else if (page_params.warn_no_email === true && page_params.is_admin) {
         // if email has not been set up and the user is the admin,
         // display a warning to tell them to set up an email server.
-        exports.open($("[data-process='email-server']"));
+        open($("[data-process='email-server']"));
     } else if (should_show_notifications(ls)) {
-        exports.open($("[data-process='notifications']"));
+        open($("[data-process='notifications']"));
     } else if (unread_ui.should_display_bankruptcy_banner()) {
-        exports.open($("[data-process='bankruptcy']"));
-    } else {
-        // TODO: This should be restructured with separate check and
-        // show calls.
-        exports.check_profile_incomplete();
+        open($("[data-process='bankruptcy']"));
+    } else if (check_profile_incomplete()) {
+        open($("[data-process='profile-incomplete']"));
     }
 
     // Configure click handlers.
@@ -124,12 +129,10 @@ exports.initialize = function () {
             $(this).click();
         }
     });
-};
+}
 
-exports.open = function ($process) {
+export function open($process) {
     $("[data-process]").hide();
     $process.show();
     resize_app();
-};
-
-window.panels = exports;
+}

@@ -19,40 +19,38 @@ states = {
     3: "UNKNOWN",
 }
 
-if 'USER' in os.environ and not os.environ['USER'] in ['root', 'rabbitmq']:
+if "USER" in os.environ and not os.environ["USER"] in ["root", "rabbitmq"]:
     print("This script must be run as the root or rabbitmq user")
 
 
 usage = """Usage: check-rabbitmq-consumers --queue=[queue-name] --min-threshold=[min-threshold]"""
 
 parser = argparse.ArgumentParser(usage=usage)
-parser.add_argument('--min-threshold',
-                    dest='min_count',
-                    type=int,
-                    default=1)
+parser.add_argument("--min-threshold", dest="min_count", type=int, default=1)
 
 options = parser.parse_args()
 
 config_file = get_config_file()
 TORNADO_PROCESSES = len(get_tornado_ports(config_file))
 
-output = subprocess.check_output(['/usr/sbin/rabbitmqctl', 'list_consumers'],
-                                 universal_newlines=True)
+output = subprocess.check_output(
+    ["/usr/sbin/rabbitmqctl", "list_consumers"], universal_newlines=True
+)
 
 consumers: Dict[str, int] = defaultdict(int)
 
 queues = {
     *normal_queues,
     # These queues may not be present if settings.TORNADO_PROCESSES > 1
-    'notify_tornado',
+    "notify_tornado",
 }
 
 for queue_name in queues:
     queue_name = queue_name.strip()
     consumers[queue_name] = 0
 
-for line in output.split('\n'):
-    parts = line.split('\t')
+for line in output.split("\n"):
+    parts = line.split("\t")
     if len(parts) >= 2:
         queue_name = parts[0]
         if queue_name.startswith("notify_tornado_"):
@@ -74,5 +72,7 @@ for queue_name in consumers.keys():
     else:
         status = 0
     with open(state_file_tmp, "w") as f:
-        f.write(f"{now}|{status}|{states[status]}|queue {queue_name} has {consumers[queue_name]} consumers, needs {target_count}\n")
+        f.write(
+            f"{now}|{status}|{states[status]}|queue {queue_name} has {consumers[queue_name]} consumers, needs {target_count}\n"
+        )
     os.rename(state_file_tmp, state_file_path)

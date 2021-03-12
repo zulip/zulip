@@ -1,16 +1,16 @@
 "use strict";
 
-zrequire("Filter", "js/filter");
-zrequire("FetchStatus", "js/fetch_status");
-zrequire("MessageListData", "js/message_list_data");
-zrequire("narrow_state");
-zrequire("narrow");
-zrequire("stream_data");
+const {strict: assert} = require("assert");
 
-set_global("message_list", {});
-set_global("muting", {
-    is_topic_muted: () => false,
-});
+const {mock_module, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
+const message_list = mock_module("message_list");
+
+const {Filter} = zrequire("../js/filter");
+const {MessageListData} = zrequire("../js/message_list_data");
+const narrow_state = zrequire("narrow_state");
+const narrow = zrequire("narrow");
 
 function test_with(fixture) {
     const filter = new Filter(fixture.filter_terms);
@@ -27,10 +27,10 @@ function test_with(fixture) {
         }
     }
 
-    const muting_enabled = narrow_state.muting_enabled();
+    const excludes_muted_topics = narrow_state.excludes_muted_topics();
     const msg_data = new MessageListData({
         filter: narrow_state.filter(),
-        muting_enabled,
+        excludes_muted_topics,
     });
     const id_info = {
         target_id: fixture.target_id,
@@ -59,7 +59,7 @@ function test_with(fixture) {
         },
     };
 
-    narrow_state.get_first_unread_info = () => fixture.unread_info;
+    narrow_state.__Rewire__("get_first_unread_info", () => fixture.unread_info);
 
     narrow.maybe_add_local_messages({
         id_info,

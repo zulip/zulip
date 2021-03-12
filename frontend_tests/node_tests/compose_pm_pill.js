@@ -1,18 +1,24 @@
 "use strict";
 
-set_global("$", global.make_zjquery());
+const {strict: assert} = require("assert");
 
+const {mock_module, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
+
+const compose_actions = mock_module("compose_actions");
 const people = zrequire("people");
 
-zrequire("compose_pm_pill");
-zrequire("input_pill");
-zrequire("user_pill");
+const compose_pm_pill = zrequire("compose_pm_pill");
+const input_pill = zrequire("input_pill");
 
 let pills = {
     pill: {},
 };
 
-run_test("pills", () => {
+run_test("pills", (override) => {
+    override(compose_actions, "update_placeholder_text", () => {});
+
     const othello = {
         user_id: 1,
         email: "othello@example.com",
@@ -31,33 +37,29 @@ run_test("pills", () => {
         full_name: "Hamlet",
     };
 
-    people.get_realm_users = function () {
-        return [iago, othello, hamlet];
-    };
+    people.get_realm_users = () => [iago, othello, hamlet];
 
     const recipient_stub = $("#private_message_recipient");
-    const pill_container_stub = $('.pill-container[data-before="You and"]');
+    const pill_container_stub = "pill-container";
     recipient_stub.set_parent(pill_container_stub);
     let create_item_handler;
 
     const all_pills = new Map();
 
-    pills.appendValidatedData = function (item) {
+    pills.appendValidatedData = (item) => {
         const id = item.user_id;
         assert(!all_pills.has(id));
         all_pills.set(id, item);
     };
-    pills.items = function () {
-        return Array.from(all_pills.values());
-    };
+    pills.items = () => Array.from(all_pills.values());
 
     let text_cleared;
-    pills.clear_text = function () {
+    pills.clear_text = () => {
         text_cleared = true;
     };
 
     let pills_cleared;
-    pills.clear = function () {
+    pills.clear = () => {
         pills_cleared = true;
         pills = {
             pill: {},
@@ -73,7 +75,7 @@ run_test("pills", () => {
     };
 
     let get_by_email_called = false;
-    people.get_by_email = function (user_email) {
+    people.get_by_email = (user_email) => {
         get_by_email_called = true;
         if (user_email === iago.email) {
             return iago;
@@ -85,7 +87,7 @@ run_test("pills", () => {
     };
 
     let get_by_user_id_called = false;
-    people.get_by_user_id = function (id) {
+    people.get_by_user_id = (id) => {
         get_by_user_id_called = true;
         if (id === othello.user_id) {
             return othello;
@@ -120,11 +122,18 @@ run_test("pills", () => {
         return pills;
     }
 
-    input_pill.create = input_pill_stub;
+    input_pill.__Rewire__("create", input_pill_stub);
 
     // We stub the return value of input_pill.create(), manually add widget functions to it.
-    pills.onPillCreate = () => {};
-    pills.onPillRemove = () => {};
+    pills.onPillCreate = (callback) => {
+        // Exercise our callback for line coverage. It is
+        // just compose_actions.update_placeholder_text(),
+        // which we override.
+        callback();
+    };
+    pills.onPillRemove = (callback) => {
+        callback();
+    };
 
     compose_pm_pill.initialize();
     assert(compose_pm_pill.widget);
@@ -157,27 +166,27 @@ run_test("pills", () => {
 });
 
 run_test("has_unconverted_data", () => {
-    compose_pm_pill.widget = {
+    compose_pm_pill.__Rewire__("widget", {
         is_pending: () => true,
-    };
+    });
 
     // If the pill itself has pending data, we have unconverted
     // data.
     assert.equal(compose_pm_pill.has_unconverted_data(), true);
 
-    compose_pm_pill.widget = {
+    compose_pm_pill.__Rewire__("widget", {
         is_pending: () => false,
         items: () => [{user_id: 99}],
-    };
+    });
 
     // Our pill is complete and all items contain user_id, so
     // we do NOT have unconverted data.
     assert.equal(compose_pm_pill.has_unconverted_data(), false);
 
-    compose_pm_pill.widget = {
+    compose_pm_pill.__Rewire__("widget", {
         is_pending: () => false,
         items: () => [{user_id: 99}, {email: "random@mit.edu"}],
-    };
+    });
 
     // One of our items only knows email (as in a bridge-with-zephyr
     // scenario where we might not have registered the user yet), so

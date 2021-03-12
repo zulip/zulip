@@ -1,6 +1,24 @@
 #!/usr/bin/env bash
 set -x
 set -e
+set -u
+set -o pipefail
+
+verify=false
+args="$(getopt -o '' --long verify -- "$@")"
+eval "set -- $args"
+while true; do
+    case "$1" in
+        --verify)
+            verify=true
+            shift
+            ;;
+        --)
+            shift
+            break
+            ;;
+    esac
+done
 
 # Ensure the directory for LAST_DEPENDENCIES_HASH exists
 mkdir -p /var/lib/zulip
@@ -19,6 +37,8 @@ LAST_DEPENDENCIES_HASH="$(cat "$DEPENDENCIES_HASH_FILE")"
 # (apt keys, code, etc.)  changed.
 if [ "$DEPENDENCIES_HASH" = "$LAST_DEPENDENCIES_HASH" ]; then
     exit 0
+elif [ "$verify" == true ]; then
+    exit 1
 fi
 
 # Ensure that the sources file exists
@@ -27,16 +47,17 @@ touch "$SOURCES_FILE"
 # Hash it to check if the sources file is changed by the script later.
 zulip_source_hash=$(sha1sum "$SOURCES_FILE")
 
-pre_setup_deps=(lsb-release apt-transport-https ca-certificates gnupg)
+pre_setup_deps=(lsb-release apt-transport-https ca-certificates gnupg wget)
 if ! apt-get -dy install "${pre_setup_deps[@]}"; then
     apt-get update
 fi
 apt-get -y install "${pre_setup_deps[@]}"
 
-SCRIPTS_PATH="$(dirname "$(dirname "$0")")"
+SCRIPTS_PATH="$(cd "$(dirname "$(dirname "$0")")" && pwd)"
 
 release=$(lsb_release -sc)
-if [[ "$release" =~ ^(bionic|cosmic|disco|eoan|focal)$ ]] ; then
+if [[ "$release" =~ ^(bionic|cosmic|disco|eoan|focal|groovy)$ ]]; then
+    distribution=ubuntu
     apt-key add "$SCRIPTS_PATH"/setup/pgdg.asc
     apt-key add "$SCRIPTS_PATH"/setup/pgroonga-ppa.asc
     cat >$SOURCES_FILE <<EOF
@@ -46,19 +67,52 @@ deb-src http://apt.postgresql.org/pub/repos/apt/ $release-pgdg main
 deb http://ppa.launchpad.net/groonga/ppa/ubuntu $release main
 deb-src http://ppa.launchpad.net/groonga/ppa/ubuntu $release main
 EOF
-elif [[ "$release" =~ ^(buster)$ ]] ; then
+elif [[ "$release" =~ ^(buster)$ ]]; then
+    distribution=debian
     apt-key add "$SCRIPTS_PATH"/setup/pgdg.asc
-    apt-key add "$SCRIPTS_PATH"/setup/pgroonga-debian.asc
     cat >$SOURCES_FILE <<EOF
 deb http://apt.postgresql.org/pub/repos/apt/ $release-pgdg main
 deb-src http://apt.postgresql.org/pub/repos/apt/ $release-pgdg main
-
-deb https://packages.groonga.org/debian/ $release main
-deb-src https://packages.groonga.org/debian/ $release main
 EOF
 else
     echo "Unsupported release $release."
     exit 1
+fi
+
+if [[ ! -e /usr/share/doc/groonga-apt-source/copyright ]]; then
+    remove_pgroonga_apt_tmp_dir() {
+        rm -rf "$pgroonga_apt_tmp_dir"
+    }
+    pgroonga_apt_tmp_dir=$(mktemp --directory)
+    trap remove_pgroonga_apt_tmp_dir EXIT
+    pushd "$pgroonga_apt_tmp_dir"
+    tmp_gpg_home=.gnupg
+    pgroonga_apt_sign_key="$SCRIPTS_PATH"/setup/pgroonga-packages.groonga.org.asc
+    gpg --homedir="$tmp_gpg_home" --import "$pgroonga_apt_sign_key"
+    # Find fingerprint of the first key.
+    pgroonga_apt_sign_key_fingerprint=$(
+        gpg --homedir="$tmp_gpg_home" --with-colons --list-keys \
+            | grep '^fpr:' \
+            | cut --delimiter=: --fields=10 \
+            | head --lines=1
+    )
+    groonga_apt_source_deb="groonga-apt-source-latest-$release.deb"
+    groonga_apt_source_deb_sign="$groonga_apt_source_deb.asc.$pgroonga_apt_sign_key_fingerprint"
+    wget "https://packages.groonga.org/$distribution/$groonga_apt_source_deb"
+    wget "https://packages.groonga.org/$distribution/$groonga_apt_source_deb_sign"
+    gpg \
+        --homedir="$tmp_gpg_home" \
+        --verify \
+        "$groonga_apt_source_deb_sign" \
+        "$groonga_apt_source_deb"
+    # To suppress the following warning by "apt-get install":
+    #   N: Download is performed unsandboxed as root as file
+    #   '.../groonga-apt-source-latest-$release.deb' couldn't be
+    #   accessed by user '_apt'. - pkgAcquire::Run (13: Permission denied)
+    chown _apt .
+    apt-get -y install "./$groonga_apt_source_deb"
+    popd
+    touch "$STAMP_FILE"
 fi
 
 if [ "$zulip_source_hash" = "$(sha1sum "$SOURCES_FILE")" ] && ! [ -e "$STAMP_FILE" ]; then
@@ -71,4 +125,4 @@ else
     apt-get update && rm -f "$STAMP_FILE"
 fi
 
-echo "$DEPENDENCIES_HASH" > "$DEPENDENCIES_HASH_FILE"
+echo "$DEPENDENCIES_HASH" >"$DEPENDENCIES_HASH_FILE"

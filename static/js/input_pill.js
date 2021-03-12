@@ -1,13 +1,13 @@
-"use strict";
+import render_input_pill from "../templates/input_pill.hbs";
 
-const render_input_pill = require("../templates/input_pill.hbs");
+import * as ui_util from "./ui_util";
 
 // See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html
-exports.random_id = function () {
+export function random_id() {
     return Math.random().toString(16);
-};
+}
 
-exports.create = function (opts) {
+export function create(opts) {
     // a dictionary of the key codes that are associated with each key
     // to make if/else more human readable.
     const KEY = {
@@ -49,12 +49,12 @@ exports.create = function (opts) {
     const funcs = {
         // return the value of the contenteditable input form.
         value(input_elem) {
-            return input_elem.innerText;
+            return input_elem.textContent;
         },
 
         // clear the value of the input form.
         clear(input_elem) {
-            input_elem.innerText = "";
+            input_elem.textContent = "";
         },
 
         clear_text() {
@@ -84,7 +84,7 @@ exports.create = function (opts) {
         // This is generally called by typeahead logic, where we have all
         // the data we need (as opposed to, say, just a user-typed email).
         appendValidatedData(item) {
-            const id = exports.random_id();
+            const id = random_id();
 
             if (!item.display_value) {
                 blueslip.error("no display_value returned");
@@ -198,15 +198,12 @@ exports.create = function (opts) {
 
             // this is an array to push all the errored values to, so it's drafts
             // of pills for the user to fix.
-            const drafts = [];
-
-            pills.forEach((pill) => {
-                // if this returns `false`, it erroed and we should push it to
-                // the draft pills.
-                if (funcs.appendPill(pill) === false) {
-                    drafts.push(pill);
-                }
-            });
+            const drafts = pills.filter(
+                (pill) =>
+                    // if this returns `false`, it erroed and we should push it to
+                    // the draft pills.
+                    funcs.appendPill(pill) === false,
+            );
 
             store.$input.text(drafts.join(", "));
             // when using the `text` insertion feature with jQuery the caret is
@@ -222,6 +219,10 @@ exports.create = function (opts) {
 
         getByID(id) {
             return store.pills.find((pill) => pill.id === id);
+        },
+
+        _get_pills_for_testing() {
+            return store.pills;
         },
 
         items() {
@@ -282,10 +283,8 @@ exports.create = function (opts) {
             // should switch to focus the last pill in the list.
             // the rest of the events then will be taken care of in the function
             // below that handles events on the ".pill" class.
-            if (char === KEY.LEFT_ARROW) {
-                if (window.getSelection().anchorOffset === 0) {
-                    store.$parent.find(".pill").last().trigger("focus");
-                }
+            if (char === KEY.LEFT_ARROW && window.getSelection().anchorOffset === 0) {
+                store.$parent.find(".pill").last().trigger("focus");
             }
 
             // Typing of the comma is prevented if the last field doesn't validate,
@@ -398,9 +397,8 @@ exports.create = function (opts) {
         clear: funcs.removeAllPills.bind(funcs),
         clear_text: funcs.clear_text,
         is_pending: funcs.is_pending,
+        _get_pills_for_testing: funcs._get_pills_for_testing,
     };
 
     return prototype;
-};
-
-window.input_pill = exports;
+}

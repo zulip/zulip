@@ -147,7 +147,7 @@ document it and update any existing documentation that might be
 relevant to the new feature. For more information on the kinds of
 documentation Zulip has, see [Documentation](../documentation/overview.md).
 
-## Example Feature
+## Example feature
 
 This example describes the process of adding a new setting to Zulip: a
 flag that allows an admin to require topics on stream messages (the default
@@ -359,7 +359,10 @@ race conditions.
         state['realm_allow_message_editing'] = user_profile.realm.allow_message_editing
         # ...
 
-    def apply_event(state, events, user_profile, include_subscribers):
+    def apply_event
+        user_profile: UserProfile,
+        # ...
+    ) -> None:
       for event in events:
         # ...
         elif event['type'] == 'realm':
@@ -540,7 +543,7 @@ is to find the right subsection of that page to put the setting
 in. For example in this case of `mandatory_topics` it will lie in
 "Other settings" (`other_settings`) subsection.
 
-*If you're not sure in which section your feature belongs, it's is
+*If you're not sure in which section your feature belongs, it's
 better to discuss it in the [community](https://chat.zulip.org/)
 before implementing it.*
 
@@ -647,9 +650,9 @@ behavior of the setting you just created.
 After you add a new view, you should document your feature. This
 feature adds new functionality that requires messages to have topics
 if the setting is enabled. A recommended way to document this feature
-would be to update and/or augment
-[Zulip's user documentation](https://chat.zulip.org/help/)
-to reflect your changes and additions.
+would be to update and/or augment [Zulip's user
+documentation](https://zulip.com/help/) to reflect your changes and
+additions.
 
 At the very least, this will involve adding (or modifying) a Markdown file
 documenting the feature to `templates/zerver/help/` in the main Zulip

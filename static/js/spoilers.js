@@ -1,5 +1,3 @@
-"use strict";
-
 function collapse_spoiler(spoiler) {
     const spoiler_height = spoiler.height();
 
@@ -35,7 +33,7 @@ function expand_spoiler(spoiler) {
     });
 }
 
-exports.hide_spoilers_in_notification = (content) => {
+export const hide_spoilers_in_notification = (content) => {
     content.find(".spoiler-block").each((i, elem) => {
         $(elem).find(".spoiler-content").remove();
         let text = $(elem).find(".spoiler-header").text().trim();
@@ -48,7 +46,7 @@ exports.hide_spoilers_in_notification = (content) => {
     return content;
 };
 
-exports.initialize = function () {
+export function initialize() {
     $("body").on("click", ".spoiler-header", function (e) {
         const button = $(this).children(".spoiler-button");
         const arrow = button.children(".spoiler-arrow");
@@ -90,6 +88,4 @@ exports.initialize = function () {
             expand_spoiler(spoiler_content);
         }
     });
-};
-
-window.spoilers = exports;
+}

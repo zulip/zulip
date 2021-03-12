@@ -1,6 +1,16 @@
-"use strict";
+import * as activity from "./activity";
+import * as compose from "./compose";
+import * as compose_actions from "./compose_actions";
+import * as compose_state from "./compose_state";
+import * as hashchange from "./hashchange";
+import {localstorage} from "./localstorage";
+import * as message_list from "./message_list";
+import * as narrow_state from "./narrow_state";
+import * as reload_state from "./reload_state";
+import * as server_events from "./server_events";
+import * as ui_report from "./ui_report";
+import * as util from "./util";
 
-const util = require("./util");
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
 function preserve_state(send_after_reload, save_pointer, save_narrow, save_compose) {
     if (!localstorage.supported()) {
@@ -91,9 +101,9 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
 
 // Check if we're doing a compose-preserving reload.  This must be
 // done before the first call to get_events
-exports.initialize = function () {
+export function initialize() {
     const location = window.location.toString();
-    const hash_fragment = location.substring(location.indexOf("#") + 1);
+    const hash_fragment = location.slice(location.indexOf("#") + 1);
 
     // hash_fragment should be e.g. `reload:12345123412312`
     if (hash_fragment.search("reload:") !== 0) {
@@ -126,7 +136,7 @@ exports.initialize = function () {
     }
 
     if (vars.msg !== undefined) {
-        const send_now = parseInt(vars.send_after_reload, 10);
+        const send_now = Number.parseInt(vars.send_after_reload, 10);
 
         try {
             // TODO: preserve focus
@@ -141,35 +151,35 @@ exports.initialize = function () {
             if (send_now) {
                 compose.finish();
             }
-        } catch (err) {
+        } catch (error) {
             // We log an error if we can't open the compose box, but otherwise
             // we continue, since this is not critical.
-            blueslip.warn(err.toString());
+            blueslip.warn(error.toString());
         }
     }
 
-    const pointer = parseInt(vars.pointer, 10);
+    const pointer = Number.parseInt(vars.pointer, 10);
 
     if (pointer) {
         page_params.initial_pointer = pointer;
     }
-    const offset = parseInt(vars.offset, 10);
+    const offset = Number.parseInt(vars.offset, 10);
     if (offset) {
         page_params.initial_offset = offset;
     }
 
-    const narrow_pointer = parseInt(vars.narrow_pointer, 10);
+    const narrow_pointer = Number.parseInt(vars.narrow_pointer, 10);
     if (narrow_pointer) {
         page_params.initial_narrow_pointer = narrow_pointer;
     }
-    const narrow_offset = parseInt(vars.narrow_offset, 10);
+    const narrow_offset = Number.parseInt(vars.narrow_offset, 10);
     if (narrow_offset) {
         page_params.initial_narrow_offset = narrow_offset;
     }
 
     activity.set_new_user_input(false);
     hashchange.changehash(vars.oldhash);
-};
+}
 
 function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compose, message) {
     if (reload_state.is_in_progress()) {
@@ -181,8 +191,8 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
     if (save_pointer || save_narrow || save_compose) {
         try {
             preserve_state(send_after_reload, save_pointer, save_narrow, save_compose);
-        } catch (ex) {
-            blueslip.error("Failed to preserve state", undefined, ex.stack);
+        } catch (error) {
+            blueslip.error("Failed to preserve state", undefined, error.stack);
         }
     }
 
@@ -212,14 +222,14 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
 
     try {
         server_events.cleanup_event_queue();
-    } catch (ex) {
-        blueslip.error("Failed to cleanup before reloading", undefined, ex.stack);
+    } catch (error) {
+        blueslip.error("Failed to cleanup before reloading", undefined, error.stack);
     }
 
     window.location.reload(true);
 }
 
-exports.initiate = function (options) {
+export function initiate(options) {
     options = {
         immediate: false,
         save_pointer: true,
@@ -320,7 +330,7 @@ exports.initiate = function (options) {
         idle_control = $(document).idle({idle: basic_idle_timeout, onIdle: reload_from_idle});
         $(document).on("compose_started.zulip", compose_started_handler);
     }
-};
+}
 
 window.addEventListener("beforeunload", () => {
     // When navigating away from the page do not try to reload.
@@ -332,4 +342,11 @@ window.addEventListener("beforeunload", () => {
     reload_state.set_state_to_in_progress();
 });
 
-window.reload = exports;
+reload_state.set_csrf_failed_handler(() => {
+    initiate({
+        immediate: true,
+        save_pointer: true,
+        save_narrow: true,
+        save_compose: true,
+    });
+});

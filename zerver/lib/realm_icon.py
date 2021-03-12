@@ -8,11 +8,12 @@ from zerver.models import Realm
 def realm_icon_url(realm: Realm) -> str:
     return get_realm_icon_url(realm)
 
+
 def get_realm_icon_url(realm: Realm) -> str:
-    if realm.icon_source == 'U':
+    if realm.icon_source == "U":
         return upload_backend.get_realm_icon_url(realm.id, realm.icon_version)
     elif settings.ENABLE_GRAVATAR:
         hash_key = gravatar_hash(realm.string_id)
         return f"https://secure.gravatar.com/avatar/{hash_key}?d=identicon"
     else:
-        return settings.DEFAULT_AVATAR_URI+'?version=0'
+        return settings.DEFAULT_AVATAR_URI + "?version=0"

@@ -9,19 +9,18 @@ from typing import Any, Callable, Iterator, List, Optional, Sequence, Set, Tuple
 
 from django.conf import settings
 
-T = TypeVar('T')
+T = TypeVar("T")
 
-def statsd_key(val: Any, clean_periods: bool=False) -> str:
-    if not isinstance(val, str):
-        val = str(val)
 
-    if ':' in val:
-        val = val.split(':')[0]
-    val = val.replace('-', "_")
+def statsd_key(val: str, clean_periods: bool = False) -> str:
+    if ":" in val:
+        val = val.split(":")[0]
+    val = val.replace("-", "_")
     if clean_periods:
-        val = val.replace('.', '_')
+        val = val.replace(".", "_")
 
     return val
+
 
 class StatsDWrapper:
     """Transparently either submit metrics to statsd
@@ -30,22 +29,24 @@ class StatsDWrapper:
     # Backported support for gauge deltas
     # as our statsd server supports them but supporting
     # pystatsd is not released yet
-    def _our_gauge(self, stat: str, value: float, rate: float=1, delta: bool=False) -> None:
+    def _our_gauge(self, stat: str, value: float, rate: float = 1, delta: bool = False) -> None:
         """Set a gauge value."""
         from django_statsd.clients import statsd
+
         if delta:
-            value_str = f'{value:+g}|g'
+            value_str = f"{value:+g}|g"
         else:
-            value_str = f'{value:g}|g'
+            value_str = f"{value:g}|g"
         statsd._send(stat, value_str, rate)
 
     def __getattr__(self, name: str) -> Any:
         # Hand off to statsd if we have it enabled
         # otherwise do nothing
-        if name in ['timer', 'timing', 'incr', 'decr', 'gauge']:
-            if settings.STATSD_HOST != '':
+        if name in ["timer", "timing", "incr", "decr", "gauge"]:
+            if settings.STATSD_HOST != "":
                 from django_statsd.clients import statsd
-                if name == 'gauge':
+
+                if name == "gauge":
                     return self._our_gauge
                 else:
                     return getattr(statsd, name)
@@ -54,21 +55,24 @@ class StatsDWrapper:
 
         raise AttributeError
 
+
 statsd = StatsDWrapper()
 
 # Runs the callback with slices of all_list of a given batch_size
-def run_in_batches(all_list: Sequence[T],
-                   batch_size: int,
-                   callback: Callable[[Sequence[T]], None],
-                   sleep_time: int=0,
-                   logger: Optional[Callable[[str], None]]=None) -> None:
+def run_in_batches(
+    all_list: Sequence[T],
+    batch_size: int,
+    callback: Callable[[Sequence[T]], None],
+    sleep_time: int = 0,
+    logger: Optional[Callable[[str], None]] = None,
+) -> None:
     if len(all_list) == 0:
         return
 
     limit = (len(all_list) // batch_size) + 1
     for i in range(limit):
-        start = i*batch_size
-        end = (i+1) * batch_size
+        start = i * batch_size
+        end = (i + 1) * batch_size
         if end >= len(all_list):
             end = len(all_list)
         batch = all_list[start:end]
@@ -81,14 +85,14 @@ def run_in_batches(all_list: Sequence[T],
         if i != limit - 1:
             sleep(sleep_time)
 
-def make_safe_digest(string: str,
-                     hash_func: Callable[[bytes], Any]=hashlib.sha1) -> str:
+
+def make_safe_digest(string: str, hash_func: Callable[[bytes], Any] = hashlib.sha1) -> str:
     """
     return a hex digest of `string`.
     """
     # hashlib.sha1, md5, etc. expect bytes, so non-ASCII strings must
     # be encoded.
-    return hash_func(string.encode('utf-8')).hexdigest()
+    return hash_func(string.encode("utf-8")).hexdigest()
 
 
 def log_statsd_event(name: str) -> None:
@@ -105,6 +109,7 @@ def log_statsd_event(name: str) -> None:
     event_name = f"events.{name}"
     statsd.incr(event_name)
 
+
 def generate_api_key() -> str:
     api_key = ""
     while len(api_key) < 32:
@@ -112,14 +117,18 @@ def generate_api_key() -> str:
         api_key += secrets.token_urlsafe(3 * 9).replace("_", "").replace("-", "")
     return api_key[:32]
 
+
 def has_api_key_format(key: str) -> bool:
     return bool(re.fullmatch(r"([A-Za-z0-9]){32}", key))
 
-def query_chunker(queries: List[Any],
-                  id_collector: Optional[Set[int]]=None,
-                  chunk_size: int=1000,
-                  db_chunk_size: Optional[int]=None) -> Iterator[Any]:
-    '''
+
+def query_chunker(
+    queries: List[Any],
+    id_collector: Optional[Set[int]] = None,
+    chunk_size: int = 1000,
+    db_chunk_size: Optional[int] = None,
+) -> Iterator[Any]:
+    """
     This merges one or more Django ascending-id queries into
     a generator that returns chunks of chunk_size row objects
     during each yield, preserving id order across all results..
@@ -133,7 +142,7 @@ def query_chunker(queries: List[Any],
     internally to enforce unique ids, but which the caller
     can pass in to us if they want the side effect of collecting
     all ids.
-    '''
+    """
     if db_chunk_size is None:
         db_chunk_size = chunk_size // len(queries)
 
@@ -141,12 +150,12 @@ def query_chunker(queries: List[Any],
     assert chunk_size >= 2
 
     if id_collector is not None:
-        assert(len(id_collector) == 0)
+        assert len(id_collector) == 0
     else:
         id_collector = set()
 
     def chunkify(q: Any, i: int) -> Iterator[Tuple[int, int, Any]]:
-        q = q.order_by('id')
+        q = q.order_by("id")
         min_id = -1
         while True:
             rows = list(q.filter(id__gt=min_id)[0:db_chunk_size])
@@ -172,17 +181,19 @@ def query_chunker(queries: List[Any],
 
         yield [row for row_id, i, row in tup_chunk]
 
-def process_list_in_batches(lst: List[Any],
-                            chunk_size: int,
-                            process_batch: Callable[[List[Any]], None]) -> None:
+
+def process_list_in_batches(
+    lst: List[Any], chunk_size: int, process_batch: Callable[[List[Any]], None]
+) -> None:
     offset = 0
 
     while True:
-        items = lst[offset:offset+chunk_size]
+        items = lst[offset : offset + chunk_size]
         if not items:
             break
         process_batch(items)
         offset += chunk_size
+
 
 def split_by(array: List[Any], group_size: int, filler: Any) -> List[List[Any]]:
     """

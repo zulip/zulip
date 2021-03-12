@@ -30,15 +30,15 @@ class Command(ZulipBaseCommand):
     * Sessions (everyone will need to log in again post-export)
     * Users' passwords and API keys (users will need to use SSO or reset password)
     * Mobile tokens for APNS/GCM (users will need to reconnect their mobile devices)
-    * ScheduledEmail (Not relevant on a new server)
-    * RemoteZulipServer (Unlikely to be migrated)
+    * ScheduledEmail (not relevant on a new server)
+    * RemoteZulipServer (unlikely to be migrated)
     * third_party_api_results cache (this means rerending all old
       messages could be expensive)
 
     Things that will break as a result of the export:
     * Passwords will not be transferred.  They will all need to go
       through the password reset flow to obtain a new password (unless
-      they intend to only use e.g. Google Auth).
+      they intend to only use e.g. Google auth).
     * Users will need to log out and re-log in to the Zulip desktop and
       mobile apps.  The apps now all have an option on the login page
       where you can specify which Zulip server to use; your users
@@ -77,27 +77,39 @@ class Command(ZulipBaseCommand):
     of recipients of messages in the realm, hardware, etc."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument('--output',
-                            dest='output_dir',
-                            help='Directory to write exported data to.')
-        parser.add_argument('--threads',
-                            default=settings.DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM,
-                            help='Threads to use in exporting UserMessage objects in parallel')
-        parser.add_argument('--public-only',
-                            action="store_true",
-                            help='Export only public stream messages and associated attachments')
-        parser.add_argument('--deactivate-realm',
-                            action="store_true",
-                            help='Deactivate the realm immediately before exporting')
-        parser.add_argument('--consent-message-id',
-                            type=int,
-                            help='ID of the message advertising users to react with thumbs up')
-        parser.add_argument('--upload',
-                            action="store_true",
-                            help="Whether to upload resulting tarball to s3 or LOCAL_UPLOADS_DIR")
-        parser.add_argument('--delete-after-upload',
-                            action="store_true",
-                            help='Automatically delete the local tarball after a successful export')
+        parser.add_argument(
+            "--output", dest="output_dir", help="Directory to write exported data to."
+        )
+        parser.add_argument(
+            "--threads",
+            default=settings.DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM,
+            help="Threads to use in exporting UserMessage objects in parallel",
+        )
+        parser.add_argument(
+            "--public-only",
+            action="store_true",
+            help="Export only public stream messages and associated attachments",
+        )
+        parser.add_argument(
+            "--deactivate-realm",
+            action="store_true",
+            help="Deactivate the realm immediately before exporting",
+        )
+        parser.add_argument(
+            "--consent-message-id",
+            type=int,
+            help="ID of the message advertising users to react with thumbs up",
+        )
+        parser.add_argument(
+            "--upload",
+            action="store_true",
+            help="Whether to upload resulting tarball to s3 or LOCAL_UPLOADS_DIR",
+        )
+        parser.add_argument(
+            "--delete-after-upload",
+            action="store_true",
+            help="Automatically delete the local tarball after a successful export",
+        )
         self.add_realm_args(parser, True)
 
     def handle(self, *args: Any, **options: Any) -> None:
@@ -110,12 +122,12 @@ class Command(ZulipBaseCommand):
 
         print(f"\033[94mExporting realm\033[0m: {realm.string_id}")
 
-        num_threads = int(options['threads'])
+        num_threads = int(options["threads"])
         if num_threads < 1:
-            raise CommandError('You must have at least one thread.')
+            raise CommandError("You must have at least one thread.")
 
         if public_only and consent_message_id is not None:
-            raise CommandError('Please pass either --public-only or --consent-message-id')
+            raise CommandError("Please pass either --public-only or --consent-message-id")
 
         if options["deactivate_realm"] and realm.deactivated:
             raise CommandError(f"The realm {realm.string_id} is already deactivated.  Aborting...")
@@ -134,21 +146,39 @@ class Command(ZulipBaseCommand):
             # the message through message.sender.realm.  So instead we
             # check the realm of the people who reacted to the message
             # (who must all be in the message's realm).
-            reactions = Reaction.objects.filter(message=message,
-                                                # outbox = 1f4e4
-                                                emoji_code="1f4e4",
-                                                reaction_type="unicode_emoji")
+            reactions = Reaction.objects.filter(
+                message=message,
+                # outbox = 1f4e4
+                emoji_code="1f4e4",
+                reaction_type="unicode_emoji",
+            )
             for reaction in reactions:
                 if reaction.user_profile.realm != realm:
-                    raise CommandError("Users from a different realm reacted to message. Aborting...")
+                    raise CommandError(
+                        "Users from a different realm reacted to message. Aborting..."
+                    )
 
             print(f"\n\033[94mMessage content:\033[0m\n{message.content}\n")
 
-            user_count = UserProfile.objects.filter(realm_id=realm.id).count()
-            print(f"\033[94mNumber of users that reacted outbox:\033[0m {len(reactions)} / {user_count} total users\n")
+            user_count = (
+                UserProfile.objects.filter(
+                    realm_id=realm.id,
+                    is_active=True,
+                    is_bot=False,
+                )
+                .exclude(
+                    # We exclude guests, because they're not a priority for
+                    # looking at whether most users are being exported.
+                    role=UserProfile.ROLE_GUEST,
+                )
+                .count()
+            )
+            print(
+                f"\033[94mNumber of users that reacted outbox:\033[0m {len(reactions)} / {user_count} total non-guest users\n"
+            )
 
             proceed = input("Continue? [y/N] ")
-            if proceed.lower() not in ('y', 'yes'):
+            if proceed.lower() not in ("y", "yes"):
                 raise CommandError("Aborting!")
 
         if output_dir is None:
@@ -165,22 +195,29 @@ class Command(ZulipBaseCommand):
 
         tarball_path = output_dir.rstrip("/") + ".tar.gz"
         try:
-            os.close(os.open(tarball_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o666))
+            with open(tarball_path, "x"):
+                pass
         except FileExistsError:
-            raise CommandError(f"Refusing to overwrite existing tarball: {tarball_path}. Aborting...")
+            raise CommandError(
+                f"Refusing to overwrite existing tarball: {tarball_path}. Aborting..."
+            )
 
         if options["deactivate_realm"]:
             print(f"\033[94mDeactivating realm\033[0m: {realm.string_id}")
             do_deactivate_realm(realm)
 
         def percent_callback(bytes_transferred: Any) -> None:
-            sys.stdout.write('.')
+            sys.stdout.write(".")
             sys.stdout.flush()
 
         # Allows us to trigger exports separately from command line argument parsing
-        export_realm_wrapper(realm=realm, output_dir=output_dir,
-                             threads=num_threads, upload=options['upload'],
-                             public_only=public_only,
-                             delete_after_upload=options["delete_after_upload"],
-                             percent_callback=percent_callback,
-                             consent_message_id=consent_message_id)
+        export_realm_wrapper(
+            realm=realm,
+            output_dir=output_dir,
+            threads=num_threads,
+            upload=options["upload"],
+            public_only=public_only,
+            delete_after_upload=options["delete_after_upload"],
+            percent_callback=percent_callback,
+            consent_message_id=consent_message_id,
+        )

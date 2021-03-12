@@ -1,5 +1,3 @@
-"use strict";
-
 document.querySelector("#form").addEventListener("submit", () => {
     document.querySelector("#bad-token").hidden = false;
 });
@@ -16,7 +14,7 @@ async function decrypt_manual() {
                 document.querySelector("#submit").disabled = tokenElement.value === "";
                 try {
                     const data = new Uint8Array(
-                        tokenElement.value.match(/../g).map((b) => parseInt(b, 16)),
+                        tokenElement.value.match(/../g).map((b) => Number.parseInt(b, 16)),
                     );
                     const iv = data.slice(0, 12);
                     const ciphertext = data.slice(12);
@@ -58,3 +56,4 @@ async function decrypt_manual() {
     document.querySelector("#done").hidden = false;
     window.location.href = "/accounts/login/subdomain/" + encodeURIComponent(token);
 })();
+export {};

@@ -1,30 +1,37 @@
 "use strict";
 
-zrequire("stream_data");
-zrequire("stream_pill");
+const {strict: assert} = require("assert");
+
+const {zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
+const peer_data = zrequire("peer_data");
+const stream_data = zrequire("stream_data");
+const stream_pill = zrequire("stream_pill");
 
 const denmark = {
     stream_id: 1,
     name: "Denmark",
     subscribed: true,
-    subscriber_count: 10,
 };
 const sweden = {
     stream_id: 2,
     name: "Sweden",
     subscribed: false,
-    subscriber_count: 30,
 };
+
+peer_data.set_subscribers(denmark.stream_id, [1, 2, 3]);
+peer_data.set_subscribers(sweden.stream_id, [1, 2, 3, 4, 5]);
 
 const denmark_pill = {
     stream_name: denmark.name,
     stream_id: denmark.stream_id,
-    display_value: "#" + denmark.name + ": " + denmark.subscriber_count + " users",
+    display_value: "#Denmark: 3 users",
 };
 const sweden_pill = {
     stream_name: sweden.name,
     stream_id: sweden.stream_id,
-    display_value: "#" + sweden.name + ": " + sweden.subscriber_count + " users",
+    display_value: "#Sweden: 5 users",
 };
 
 const subs = [denmark, sweden];

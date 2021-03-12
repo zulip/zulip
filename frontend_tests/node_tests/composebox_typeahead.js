@@ -1,39 +1,67 @@
 "use strict";
 
-const emoji = zrequire("emoji", "shared/js/emoji");
-const typeahead = zrequire("typeahead", "shared/js/typeahead");
-zrequire("compose_state");
-zrequire("pm_conversations");
-zrequire("templates");
-zrequire("typeahead_helper");
-const people = zrequire("people");
-zrequire("user_groups");
-zrequire("stream_data");
-zrequire("user_pill");
-zrequire("compose_pm_pill");
-zrequire("composebox_typeahead");
-zrequire("recent_senders");
-zrequire("settings_org");
-const settings_config = zrequire("settings_config");
-set_global("md5", (s) => "md5-" + s);
+const {strict: assert} = require("assert");
 
-// To be eliminated in next commit:
-stream_data.update_calculated_fields = () => {};
-stream_data.set_filter_out_inactives = () => false;
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
 
-set_global("stream_topic_history", {});
+const noop = () => {};
 
-set_global("message_store", {
+const channel = mock_module("channel");
+const compose = mock_module("compose", {
+    finish: noop,
+});
+const message_store = mock_module("message_store", {
     user_ids: () => [],
 });
+const stream_topic_history = mock_module("stream_topic_history");
+
+const page_params = set_global("page_params", {});
+
+let autosize_called;
+
+mock_module("compose_ui", {
+    autosize_textarea() {
+        autosize_called = true;
+    },
+});
+let set_timeout_called;
+set_global("setTimeout", (f, time) => {
+    f();
+    assert.equal(time, 0);
+    set_timeout_called = true;
+});
+set_global("document", "document-stub");
+
+const emoji = zrequire("../shared/js/emoji");
+const typeahead = zrequire("../shared/js/typeahead");
+const compose_state = zrequire("compose_state");
+zrequire("user_status");
+zrequire("presence");
+zrequire("buddy_data");
+zrequire("pm_conversations");
+zrequire("templates");
+const typeahead_helper = zrequire("typeahead_helper");
+const people = zrequire("people");
+const user_groups = zrequire("user_groups");
+const stream_data = zrequire("stream_data");
+const user_pill = zrequire("user_pill");
+const compose_pm_pill = zrequire("compose_pm_pill");
+const composebox_typeahead = zrequire("composebox_typeahead");
+const settings_config = zrequire("settings_config");
+const pygments_data = zrequire("../generated/pygments_data.json");
+
+// To be eliminated in next commit:
+stream_data.__Rewire__("update_calculated_fields", () => {});
+stream_data.__Rewire__("set_filter_out_inactives", () => false);
 
 const ct = composebox_typeahead;
-const noop = function () {};
 
 // Use a slightly larger value than what's user-facing
 // to facilitate testing different combinations of
 // broadcast-mentions/persons/groups.
-ct.max_num_items = 15;
+ct.__Rewire__("max_num_items", 15);
 
 const mention_all = ct.broadcast_mentions()[0];
 assert.equal(mention_all.email, "all");
@@ -167,19 +195,9 @@ stream_data.add_sub(sweden_stream);
 stream_data.add_sub(denmark_stream);
 stream_data.add_sub(netherland_stream);
 
-set_global("$", global.make_zjquery());
-
-set_global("page_params", {});
-set_global("channel", {});
-set_global("compose", {
-    finish: noop,
-});
-
 emoji.active_realm_emojis = new Map();
 emoji.emojis_by_name = emojis_by_name;
 emoji.emojis = emoji_list;
-
-const pygments_data = zrequire("pygments_data", "generated/pygments_data.json");
 
 const alice = {
     email: "alice@zulip.com",
@@ -279,13 +297,14 @@ const call_center = {
     members: [],
 };
 
-global.user_groups.add(hamletcharacters);
-global.user_groups.add(backend);
-global.user_groups.add(call_center);
+user_groups.add(hamletcharacters);
+user_groups.add(backend);
+user_groups.add(call_center);
 
-const make_emoji = function (emoji_dict) {
-    return {emoji_name: emoji_dict.name, emoji_code: emoji_dict.emoji_code};
-};
+const make_emoji = (emoji_dict) => ({
+    emoji_name: emoji_dict.name,
+    emoji_code: emoji_dict.emoji_code,
+});
 
 run_test("topics_seen_for", () => {
     stream_topic_history.get_recent_topic_names = (stream_id) => {
@@ -322,19 +341,8 @@ run_test("content_typeahead_selected", () => {
         caret_called2 = true;
         return this;
     };
-    let autosize_called = false;
-    set_global("compose_ui", {
-        autosize_textarea() {
-            autosize_called = true;
-        },
-    });
-    let set_timeout_called = false;
-    global.patch_builtin("setTimeout", (f, time) => {
-        f();
-        assert.equal(time, 0);
-        set_timeout_called = true;
-    });
-    set_global("document", "document-stub");
+    autosize_called = false;
+    set_timeout_called = false;
 
     // emoji
     fake_this.completing = "emoji";
@@ -405,7 +413,7 @@ run_test("content_typeahead_selected", () => {
     // silent mention
     fake_this.completing = "silent_mention";
     compose.warn_if_mentioning_unsubscribed_user = () => {
-        throw Error("unexpected call for silent mentions");
+        throw new Error("unexpected call for silent mentions");
     };
 
     fake_this.query = "@_kin";
@@ -434,7 +442,7 @@ run_test("content_typeahead_selected", () => {
 
     // user group mention
     compose.warn_if_mentioning_unsubscribed_user = () => {
-        throw Error("unexpected call for user groups");
+        throw new Error("unexpected call for user groups");
     };
 
     fake_this.query = "@back";
@@ -481,6 +489,21 @@ run_test("content_typeahead_selected", () => {
     expected_value = "#**Sweden** ";
     assert.equal(actual_value, expected_value);
 
+    // topic_list
+    fake_this.completing = "topic_list";
+
+    fake_this.query = "Hello #**Sweden>test";
+    fake_this.token = "test";
+    actual_value = ct.content_typeahead_selected.call(fake_this, "testing");
+    expected_value = "Hello #**Sweden>testing** ";
+    assert.equal(actual_value, expected_value);
+
+    fake_this.query = "Hello #**Sweden>";
+    fake_this.token = "";
+    actual_value = ct.content_typeahead_selected.call(fake_this, "testing");
+    expected_value = "Hello #**Sweden>testing** ";
+    assert.equal(actual_value, expected_value);
+
     // syntax
     fake_this.completing = "syntax";
 
@@ -505,9 +528,7 @@ run_test("content_typeahead_selected", () => {
     // Test special case to not close code blocks if there is text afterward
     fake_this.query = "```p\nsome existing code";
     fake_this.token = "p";
-    fake_this.$element.caret = function () {
-        return 4; // Put cursor right after ```p
-    };
+    fake_this.$element.caret = () => 4; // Put cursor right after ```p
     actual_value = ct.content_typeahead_selected.call(fake_this, "python");
     expected_value = "```python\nsome existing code";
     assert.equal(actual_value, expected_value);
@@ -530,11 +551,11 @@ function sorted_names_from(subs) {
     return subs.map((sub) => sub.name).sort();
 }
 
-run_test("initialize", () => {
+run_test("initialize", (override) => {
     let expected_value;
 
     let stream_typeahead_called = false;
-    $("#stream_message_recipient_stream").typeahead = function (options) {
+    $("#stream_message_recipient_stream").typeahead = (options) => {
         // options.source()
         //
         let actual_value = options.source();
@@ -568,7 +589,7 @@ run_test("initialize", () => {
     };
 
     let subject_typeahead_called = false;
-    $("#stream_message_recipient_topic").typeahead = function (options) {
+    $("#stream_message_recipient_topic").typeahead = (options) => {
         const topics = ["<&>", "even more ice", "furniture", "ice", "kronor", "more ice"];
         stream_topic_history.get_recent_topic_names = (stream_id) => {
             assert.equal(stream_id, sweden_stream.stream_id);
@@ -636,11 +657,9 @@ run_test("initialize", () => {
     };
 
     let pm_recipient_typeahead_called = false;
-    $("#private_message_recipient").typeahead = function (options) {
+    $("#private_message_recipient").typeahead = (options) => {
         let inserted_users = [];
-        user_pill.get_user_ids = function () {
-            return inserted_users;
-        };
+        override(user_pill, "get_user_ids", () => inserted_users);
 
         // This should match the users added at the beginning of this test file.
         let actual_value = options.source("");
@@ -667,17 +686,17 @@ run_test("initialize", () => {
         // corresponding parts in bold.
         options.query = "oth";
         actual_value = options.highlighter(othello);
-        expected_value = `        <img class="typeahead-image" src="/avatar/${othello.user_id}&amp;s&#x3D;50" />\n<strong>Othello, the Moor of Venice</strong>`;
+        expected_value = `        <span class="user_circle_empty user_circle"></span>\n        <img class="typeahead-image" src="/avatar/${othello.user_id}&amp;s&#x3D;50" />\n<strong>Othello, the Moor of Venice</strong>`;
         assert.equal(actual_value, expected_value);
 
         options.query = "Lear";
         actual_value = options.highlighter(cordelia);
-        expected_value = `        <img class="typeahead-image" src="/avatar/${cordelia.user_id}&amp;s&#x3D;50" />\n<strong>Cordelia Lear</strong>`;
+        expected_value = `        <span class="user_circle_empty user_circle"></span>\n        <img class="typeahead-image" src="/avatar/${cordelia.user_id}&amp;s&#x3D;50" />\n<strong>Cordelia Lear</strong>`;
         assert.equal(actual_value, expected_value);
 
         options.query = "othello@zulip.com, co";
         actual_value = options.highlighter(cordelia);
-        expected_value = `        <img class="typeahead-image" src="/avatar/${cordelia.user_id}&amp;s&#x3D;50" />\n<strong>Cordelia Lear</strong>`;
+        expected_value = `        <span class="user_circle_empty user_circle"></span>\n        <img class="typeahead-image" src="/avatar/${cordelia.user_id}&amp;s&#x3D;50" />\n<strong>Cordelia Lear</strong>`;
         assert.equal(actual_value, expected_value);
 
         function matcher(query, person) {
@@ -769,9 +788,9 @@ run_test("initialize", () => {
         };
 
         let appended_name;
-        compose_pm_pill.set_from_typeahead = function (item) {
+        override(compose_pm_pill, "set_from_typeahead", (item) => {
             appended_name = item.full_name;
-        };
+        });
 
         // options.updater()
         options.query = "othello";
@@ -791,15 +810,15 @@ run_test("initialize", () => {
 
         let appended_names = [];
 
-        compose_pm_pill.set_from_typeahead = function (item) {
+        override(compose_pm_pill, "set_from_typeahead", (item) => {
             appended_names.push(item.full_name);
-        };
+        });
 
         let cleared = false;
         function fake_clear() {
             cleared = true;
         }
-        compose_pm_pill.widget = {clear_text: fake_clear};
+        compose_pm_pill.__Rewire__("widget", {clear_text: fake_clear});
 
         options.query = "hamletchar";
         options.updater(hamletcharacters, event);
@@ -817,7 +836,7 @@ run_test("initialize", () => {
     };
 
     let compose_textarea_typeahead_called = false;
-    $("#compose-textarea").typeahead = function (options) {
+    $("#compose-textarea").typeahead = (options) => {
         // options.source()
         //
         // For now we only test that get_sorted_filtered_items has been
@@ -827,7 +846,7 @@ run_test("initialize", () => {
             $element: {},
         };
         let caret_called = false;
-        fake_this.$element.caret = function () {
+        fake_this.$element.caret = () => {
             caret_called = true;
             return 7;
         };
@@ -843,7 +862,7 @@ run_test("initialize", () => {
         // content_highlighter.
         fake_this = {completing: "mention", token: "othello"};
         actual_value = options.highlighter.call(fake_this, othello);
-        expected_value = `        <img class="typeahead-image" src="/avatar/${othello.user_id}&amp;s&#x3D;50" />\n<strong>Othello, the Moor of Venice</strong>`;
+        expected_value = `        <span class="user_circle_empty user_circle"></span>\n        <img class="typeahead-image" src="/avatar/${othello.user_id}&amp;s&#x3D;50" />\n<strong>Othello, the Moor of Venice</strong>`;
         assert.equal(actual_value, expected_value);
 
         fake_this = {completing: "mention", token: "hamletcharacters"};
@@ -935,17 +954,13 @@ run_test("initialize", () => {
             subscribed: false,
         };
         // Subscribed stream is active
-        stream_data.is_active = function () {
-            return false;
-        };
+        override(stream_data, "is_active", () => false);
         fake_this = {completing: "stream", token: "s"};
         actual_value = sort_items(fake_this, [sweden_stream, serbia_stream]);
         expected_value = [sweden_stream, serbia_stream];
         assert.deepEqual(actual_value, expected_value);
         // Subscribed stream is inactive
-        stream_data.is_active = function () {
-            return true;
-        };
+        override(stream_data, "is_active", () => true);
         actual_value = sort_items(fake_this, [sweden_stream, serbia_stream]);
         expected_value = [sweden_stream, serbia_stream];
         assert.deepEqual(actual_value, expected_value);
@@ -979,14 +994,10 @@ run_test("initialize", () => {
         preventDefault: noop,
     };
 
-    $("#stream_message_recipient_topic").data = function () {
-        return {typeahead: {shown: true}};
-    };
+    $("#stream_message_recipient_topic").data = () => ({typeahead: {shown: true}});
     $("form#send_message_form").trigger(event);
 
-    const stub_typeahead_hidden = function () {
-        return {typeahead: {shown: false}};
-    };
+    const stub_typeahead_hidden = () => ({typeahead: {shown: false}});
     $("#stream_message_recipient_topic").data = stub_typeahead_hidden;
     $("#stream_message_recipient_stream").data = stub_typeahead_hidden;
     $("#private_message_recipient").data = stub_typeahead_hidden;
@@ -1006,14 +1017,12 @@ run_test("initialize", () => {
     // Set up jquery functions used in compose_textarea Enter
     // handler.
     let range_length = 0;
-    $("#compose-textarea").range = function () {
-        return {
-            length: range_length,
-            range: noop,
-            start: 0,
-            end: 0 + range_length,
-        };
-    };
+    $("#compose-textarea").range = () => ({
+        length: range_length,
+        range: noop,
+        start: 0,
+        end: 0 + range_length,
+    });
     $("#compose-textarea").caret = noop;
 
     event.keyCode = 13;
@@ -1023,7 +1032,7 @@ run_test("initialize", () => {
     page_params.enter_sends = false;
     event.metaKey = true;
     let compose_finish_called = false;
-    compose.finish = function () {
+    compose.finish = () => {
         compose_finish_called = true;
     };
 
@@ -1060,9 +1069,7 @@ run_test("initialize", () => {
         preventDefault: noop,
     };
     // We trigger keydown in order to make nextFocus !== false
-    $("#stream_message_recipient_topic").data = function () {
-        return {typeahead: {shown: true}};
-    };
+    $("#stream_message_recipient_topic").data = () => ({typeahead: {shown: true}});
     $("form#send_message_form").trigger(event);
     $("#stream_message_recipient_topic").off("mouseup");
     event.type = "keyup";
@@ -1079,23 +1086,19 @@ run_test("initialize", () => {
     $("#compose-send-button").fadeOut = noop;
     $("#compose-send-button").fadeIn = noop;
     let channel_post_called = false;
-    global.channel.post = function (params) {
+    channel.post = (params) => {
         assert.equal(params.url, "/json/users/me/enter-sends");
         assert.equal(params.idempotent, true);
         assert.deepEqual(params.data, {enter_sends: page_params.enter_sends});
 
         channel_post_called = true;
     };
-    $("#enter_sends").is = function () {
-        return false;
-    };
+    $("#enter_sends").is = () => false;
     $("#enter_sends").trigger("click");
 
     // Now we re-run both .initialize() and the click handler, this time
     // with enter_sends: page_params.enter_sends being true
-    $("#enter_sends").is = function () {
-        return true;
-    };
+    $("#enter_sends").is = () => true;
     $("#enter_sends").trigger("click");
 
     $("#stream_message_recipient_stream").off("focus");
@@ -1116,7 +1119,7 @@ run_test("initialize", () => {
     assert(compose_textarea_typeahead_called);
 });
 
-run_test("begins_typeahead", () => {
+run_test("begins_typeahead", (override) => {
     const begin_typehead_this = {
         options: {
             completions: {
@@ -1134,9 +1137,7 @@ run_test("begins_typeahead", () => {
 
     function get_values(input, rest) {
         // Stub out split_at_cursor that uses $(':focus')
-        ct.split_at_cursor = function () {
-            return [input, rest];
-        };
+        override(ct, "split_at_cursor", () => [input, rest]);
         const values = ct.get_candidates.call(begin_typehead_this, input);
         return values;
     }
@@ -1261,6 +1262,10 @@ run_test("begins_typeahead", () => {
     assert_typeahead_equals("abc/po", false);
     assert_typeahead_equals("hello /poll", false);
     assert_typeahead_equals("\n/pol", false);
+    assert_typeahead_equals("/todo", composebox_typeahead.slash_commands);
+    assert_typeahead_equals("my /todo", false);
+    assert_typeahead_equals("\n/to", false);
+    assert_typeahead_equals(" /tod", false);
 
     assert_typeahead_equals("x/", false);
     assert_typeahead_equals("```", false);
@@ -1318,13 +1323,13 @@ run_test("begins_typeahead", () => {
     assert_typeahead_equals("```test", "ing", false);
     assert_typeahead_equals("~~~test", "ing", false);
     const terminal_symbols = ",.;?!()[]> \"'\n\t";
-    terminal_symbols.split().forEach((symbol) => {
+    for (const symbol of terminal_symbols.split()) {
         assert_stream_list("#test", symbol);
         assert_typeahead_equals("@test", symbol, all_mentions);
         assert_typeahead_equals(":test", symbol, emoji_list);
         assert_typeahead_equals("```test", symbol, lang_list);
         assert_typeahead_equals("~~~test", symbol, lang_list);
-    });
+    }
 });
 
 run_test("tokenizing", () => {
@@ -1349,29 +1354,29 @@ run_test("tokenizing", () => {
     assert.equal(ct.tokenize_compose_str("foo #streams@foo"), "#streams@foo");
 });
 
-run_test("content_highlighter", () => {
+run_test("content_highlighter", (override) => {
     let fake_this = {completing: "emoji"};
     const emoji = {emoji_name: "person shrugging", emoji_url: "¯\\_(ツ)_/¯"};
     let th_render_typeahead_item_called = false;
-    typeahead_helper.render_emoji = function (item) {
+    override(typeahead_helper, "render_emoji", (item) => {
         assert.deepEqual(item, emoji);
         th_render_typeahead_item_called = true;
-    };
+    });
     ct.content_highlighter.call(fake_this, emoji);
 
     fake_this = {completing: "mention"};
     let th_render_person_called = false;
-    typeahead_helper.render_person = function (person) {
+    override(typeahead_helper, "render_person", (person) => {
         assert.deepEqual(person, othello);
         th_render_person_called = true;
-    };
+    });
     ct.content_highlighter.call(fake_this, othello);
 
     let th_render_user_group_called = false;
-    typeahead_helper.render_user_group = function (user_group) {
+    override(typeahead_helper, "render_user_group", (user_group) => {
         assert.deepEqual(user_group, backend);
         th_render_user_group_called = true;
-    };
+    });
     ct.content_highlighter.call(fake_this, backend);
 
     // We don't have any fancy rendering for slash commands yet.
@@ -1380,28 +1385,28 @@ run_test("content_highlighter", () => {
     const me_slash = {
         text: "/me is excited (Display action text)",
     };
-    typeahead_helper.render_typeahead_item = function (item) {
+    override(typeahead_helper, "render_typeahead_item", (item) => {
         assert.deepEqual(item, {
             primary: "/me is excited (Display action text)",
         });
         th_render_slash_command_called = true;
-    };
+    });
     ct.content_highlighter.call(fake_this, me_slash);
 
     fake_this = {completing: "stream"};
     let th_render_stream_called = false;
-    typeahead_helper.render_stream = function (stream) {
+    override(typeahead_helper, "render_stream", (stream) => {
         assert.deepEqual(stream, denmark_stream);
         th_render_stream_called = true;
-    };
+    });
     ct.content_highlighter.call(fake_this, denmark_stream);
 
     fake_this = {completing: "syntax"};
     th_render_typeahead_item_called = false;
-    typeahead_helper.render_typeahead_item = function (item) {
+    override(typeahead_helper, "render_typeahead_item", (item) => {
         assert.deepEqual(item, {primary: "py"});
         th_render_typeahead_item_called = true;
-    };
+    });
     ct.content_highlighter.call(fake_this, "py");
 
     fake_this = {completing: "something-else"};
@@ -1511,8 +1516,7 @@ run_test("typeahead_results", () => {
 run_test("message people", () => {
     let results;
 
-    compose_state.stream_name = () => undefined;
-    ct.max_num_items = 2;
+    ct.__Rewire__("max_num_items", 2);
 
     /*
         We will simulate that we talk to Hal and Harry,

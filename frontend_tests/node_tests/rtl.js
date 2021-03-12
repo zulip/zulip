@@ -1,5 +1,11 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
+const {zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
+
 const rtl = zrequire("rtl");
 
 run_test("get_direction", () => {
@@ -17,8 +23,8 @@ run_test("get_direction", () => {
     assert.equal(rtl.get_direction("۱۲۳"), "ltr");
     assert.equal(rtl.get_direction("1234"), "ltr");
 
-    const supp_plane_ltr_char = "\ud800\udfa0";
-    const supp_plane_rtl_char = "\ud802\udc40";
+    const supp_plane_ltr_char = "\uD800\uDFA0";
+    const supp_plane_rtl_char = "\uD802\uDC40";
 
     assert.equal(rtl.get_direction(supp_plane_ltr_char), "ltr");
     assert.equal(rtl.get_direction(supp_plane_rtl_char), "rtl");
@@ -35,8 +41,8 @@ run_test("get_direction", () => {
     assert.equal(rtl.get_direction("b" + supp_plane_ltr_char + "." + supp_plane_rtl_char), "ltr");
     assert.equal(rtl.get_direction("b" + supp_plane_rtl_char + "." + supp_plane_ltr_char), "ltr");
 
-    const unmatched_surrogate_1 = "\ud800";
-    const unmatched_surrogate_2 = "\udf00";
+    const unmatched_surrogate_1 = "\uD800";
+    const unmatched_surrogate_2 = "\uDF00";
 
     assert.equal(rtl.get_direction(unmatched_surrogate_1 + " "), "ltr");
     assert.equal(rtl.get_direction(unmatched_surrogate_2 + " "), "ltr");
@@ -120,4 +126,23 @@ run_test("get_direction", () => {
         rtl.get_direction(",," + i_chars.charAt(1) + "ضج" + pdi + "12" + pdi + "ff"),
         "ltr",
     );
+});
+
+run_test("set_rtl_class_for_textarea rtl", () => {
+    const textarea = $.create("some-textarea");
+    assert(!textarea.hasClass("rtl"));
+    const text = "```quote\nمرحبا";
+    textarea.val(text);
+    rtl.set_rtl_class_for_textarea(textarea);
+    assert(textarea.hasClass("rtl"));
+});
+
+run_test("set_rtl_class_for_textarea ltr", () => {
+    const textarea = $.create("some-textarea");
+    textarea.addClass("rtl");
+    assert(textarea.hasClass("rtl"));
+    const text = "```quote\nEnglish text";
+    textarea.val(text);
+    rtl.set_rtl_class_for_textarea(textarea);
+    assert(!textarea.hasClass("rtl"));
 });

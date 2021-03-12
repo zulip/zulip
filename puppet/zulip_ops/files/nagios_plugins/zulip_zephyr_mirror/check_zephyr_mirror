@@ -22,11 +22,15 @@ states: Dict[str, int] = {
     "UNKNOWN": 3,
 }
 
+
 def report(state: str, data: str, last_check: float) -> None:
-    print("{}: Last test run completed at {}\n{}".format(
-        state, time.strftime("%Y-%m-%d %H:%M %Z", time.gmtime(last_check)),
-        data))
+    print(
+        "{}: Last test run completed at {}\n{}".format(
+            state, time.strftime("%Y-%m-%d %H:%M %Z", time.gmtime(last_check)), data
+        )
+    )
     exit(states[state])
+
 
 with open(RESULTS_FILE) as f:
     data = f.read().strip()

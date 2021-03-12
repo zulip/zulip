@@ -15,10 +15,11 @@ from zerver.lib.response import json_success
 from zerver.models import Realm, get_realm, get_realm_stream, get_user_by_delivery_email
 from zproject.email_backends import get_forward_address, set_forward_address
 
-ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../')
+ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../")
+
 
 def email_page(request: HttpRequest) -> HttpResponse:
-    if request.method == 'POST':
+    if request.method == "POST":
         set_forward_address(request.POST["forward_address"])
         return json_success()
     try:
@@ -26,9 +27,10 @@ def email_page(request: HttpRequest) -> HttpResponse:
             content = f.read()
     except FileNotFoundError:
         content = ""
-    return render(request, 'zerver/email_log.html',
-                  {'log': content,
-                   'forward_address': get_forward_address()})
+    return render(
+        request, "zerver/email_log.html", {"log": content, "forward_address": get_forward_address()}
+    )
+
 
 def clear_emails(request: HttpRequest) -> HttpResponse:
     try:
@@ -36,6 +38,7 @@ def clear_emails(request: HttpRequest) -> HttpResponse:
     except FileNotFoundError:  # nocoverage
         pass
     return redirect(email_page)
+
 
 @require_safe
 def generate_all_emails(request: HttpRequest) -> HttpResponse:
@@ -51,6 +54,7 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
     # importing it saves ~50ms of unnecessary manage.py startup time.
 
     from django.test import Client
+
     client = Client()
 
     # write fake data for all variables
@@ -58,35 +62,38 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
     unregistered_email_1 = "new-person@zulip.com"
     unregistered_email_2 = "new-person-2@zulip.com"
     realm = get_realm("zulip")
-    other_realm = Realm.objects.exclude(string_id='zulip').first()
+    other_realm = Realm.objects.exclude(string_id="zulip").first()
     user = get_user_by_delivery_email(registered_email, realm)
-    host_kwargs = {'HTTP_HOST': realm.host}
+    host_kwargs = {"HTTP_HOST": realm.host}
 
     # Password reset emails
     # active account in realm
-    result = client.post('/accounts/password/reset/', {'email': registered_email}, **host_kwargs)
+    result = client.post("/accounts/password/reset/", {"email": registered_email}, **host_kwargs)
     assert result.status_code == 302
     # deactivated user
     user.is_active = False
-    user.save(update_fields=['is_active'])
-    result = client.post('/accounts/password/reset/', {'email': registered_email}, **host_kwargs)
+    user.save(update_fields=["is_active"])
+    result = client.post("/accounts/password/reset/", {"email": registered_email}, **host_kwargs)
     assert result.status_code == 302
     user.is_active = True
-    user.save(update_fields=['is_active'])
+    user.save(update_fields=["is_active"])
     # account on different realm
-    result = client.post('/accounts/password/reset/', {'email': registered_email},
-                         HTTP_HOST=other_realm.host)
+    result = client.post(
+        "/accounts/password/reset/", {"email": registered_email}, HTTP_HOST=other_realm.host
+    )
     assert result.status_code == 302
     # no account anywhere
-    result = client.post('/accounts/password/reset/', {'email': unregistered_email_1}, **host_kwargs)
+    result = client.post(
+        "/accounts/password/reset/", {"email": unregistered_email_1}, **host_kwargs
+    )
     assert result.status_code == 302
 
     # Confirm account email
-    result = client.post('/accounts/home/', {'email': unregistered_email_1}, **host_kwargs)
+    result = client.post("/accounts/home/", {"email": unregistered_email_1}, **host_kwargs)
     assert result.status_code == 302
 
     # Find account email
-    result = client.post('/accounts/find/', {'emails': registered_email}, **host_kwargs)
+    result = client.post("/accounts/find/", {"emails": registered_email}, **host_kwargs)
     assert result.status_code == 302
 
     # New login email
@@ -95,20 +102,21 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
 
     # New user invite and reminder emails
     stream = get_realm_stream("Denmark", user.realm.id)
-    result = client.post("/json/invites",
-                         {"invitee_emails": unregistered_email_2,
-                          "stream_ids": orjson.dumps([stream.id]).decode()},
-                         **host_kwargs)
+    result = client.post(
+        "/json/invites",
+        {"invitee_emails": unregistered_email_2, "stream_ids": orjson.dumps([stream.id]).decode()},
+        **host_kwargs,
+    )
     assert result.status_code == 200
 
     # Verification for new email
-    result = client.patch('/json/settings',
-                          urllib.parse.urlencode({'email': 'hamlets-new@zulip.com'}),
-                          **host_kwargs)
+    result = client.patch(
+        "/json/settings", urllib.parse.urlencode({"email": "hamlets-new@zulip.com"}), **host_kwargs
+    )
     assert result.status_code == 200
 
     # Email change successful
-    key = Confirmation.objects.filter(type=Confirmation.EMAIL_CHANGE).latest('id').confirmation_key
+    key = Confirmation.objects.filter(type=Confirmation.EMAIL_CHANGE).latest("id").confirmation_key
     url = confirmation_url(key, realm, Confirmation.EMAIL_CHANGE)
     user_profile = get_user_by_delivery_email(registered_email, realm)
     result = client.get(url)

@@ -14,42 +14,41 @@ def list_emoji(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
 
     # We don't call check_emoji_admin here because the list of realm
     # emoji is public.
-    return json_success({'emoji': user_profile.realm.get_emoji()})
+    return json_success({"emoji": user_profile.realm.get_emoji()})
 
 
 @require_member_or_admin
 @has_request_variables
-def upload_emoji(request: HttpRequest, user_profile: UserProfile,
-                 emoji_name: str=REQ(path_only=True)) -> HttpResponse:
-    emoji_name = emoji_name.strip().replace(' ', '_')
+def upload_emoji(
+    request: HttpRequest, user_profile: UserProfile, emoji_name: str = REQ(path_only=True)
+) -> HttpResponse:
+    emoji_name = emoji_name.strip().replace(" ", "_")
     check_valid_emoji_name(emoji_name)
     check_emoji_admin(user_profile)
-    if RealmEmoji.objects.filter(realm=user_profile.realm,
-                                 name=emoji_name,
-                                 deactivated=False).exists():
+    if RealmEmoji.objects.filter(
+        realm=user_profile.realm, name=emoji_name, deactivated=False
+    ).exists():
         return json_error(_("A custom emoji with this name already exists."))
     if len(request.FILES) != 1:
         return json_error(_("You must upload exactly one file."))
     emoji_file = list(request.FILES.values())[0]
     if (settings.MAX_EMOJI_FILE_SIZE * 1024 * 1024) < emoji_file.size:
-        return json_error(_("Uploaded file is larger than the allowed limit of {} MiB").format(
-            settings.MAX_EMOJI_FILE_SIZE,
-        ))
+        return json_error(
+            _("Uploaded file is larger than the allowed limit of {} MiB").format(
+                settings.MAX_EMOJI_FILE_SIZE,
+            )
+        )
 
-    realm_emoji = check_add_realm_emoji(user_profile.realm,
-                                        emoji_name,
-                                        user_profile,
-                                        emoji_file)
+    realm_emoji = check_add_realm_emoji(user_profile.realm, emoji_name, user_profile, emoji_file)
     if realm_emoji is None:
         return json_error(_("Image file upload failed."))
     return json_success()
 
 
-def delete_emoji(request: HttpRequest, user_profile: UserProfile,
-                 emoji_name: str) -> HttpResponse:
-    if not RealmEmoji.objects.filter(realm=user_profile.realm,
-                                     name=emoji_name,
-                                     deactivated=False).exists():
+def delete_emoji(request: HttpRequest, user_profile: UserProfile, emoji_name: str) -> HttpResponse:
+    if not RealmEmoji.objects.filter(
+        realm=user_profile.realm, name=emoji_name, deactivated=False
+    ).exists():
         raise JsonableError(_("Emoji '{}' does not exist").format(emoji_name))
     check_emoji_admin(user_profile, emoji_name)
     do_remove_realm_emoji(user_profile.realm, emoji_name)

@@ -11,15 +11,16 @@ from zerver.signals import get_device_browser
 
 
 def pop_numerals(ver: str) -> Tuple[List[int], str]:
-    match = re.search(r'^( \d+ (?: \. \d+ )* ) (.*)', ver, re.X)
+    match = re.search(r"^( \d+ (?: \. \d+ )* ) (.*)", ver, re.X)
     if match is None:
         return [], ver
     numerals, rest = match.groups()
-    numbers = [int(n) for n in numerals.split('.')]
+    numbers = [int(n) for n in numerals.split(".")]
     return numbers, rest
 
+
 def version_lt(ver1: str, ver2: str) -> Optional[bool]:
-    '''
+    """
     Compare two Zulip-style version strings.
 
     Versions are dot-separated sequences of decimal integers,
@@ -32,7 +33,7 @@ def version_lt(ver1: str, ver2: str) -> Optional[bool]:
       True if ver1 < ver2
       False if ver1 >= ver2
       None if can't tell.
-    '''
+    """
     num1, rest1 = pop_numerals(ver1)
     num2, rest2 = pop_numerals(ver2)
     if not num1 or not num2:
@@ -61,10 +62,10 @@ def version_lt(ver1: str, ver2: str) -> Optional[bool]:
 
 
 def find_mobile_os(user_agent: str) -> Optional[str]:
-    if re.search(r'\b Android \b', user_agent, re.I | re.X):
-        return 'android'
-    if re.search(r'\b(?: iOS | iPhone\ OS )\b', user_agent, re.I | re.X):
-        return 'ios'
+    if re.search(r"\b Android \b", user_agent, re.I | re.X):
+        return "android"
+    if re.search(r"\b(?: iOS | iPhone\ OS )\b", user_agent, re.I | re.X):
+        return "ios"
     return None
 
 
@@ -72,51 +73,53 @@ def find_mobile_os(user_agent: str) -> Optional[str]:
 # bug in our Android code that causes spammy, obviously-broken
 # notifications once the "remove_push_notification" feature is
 # enabled on the user's Zulip server.
-android_min_app_version = '16.2.96'
+android_min_app_version = "16.2.96"
+
 
 def check_global_compatibility(request: HttpRequest) -> HttpResponse:
-    if request.META.get('HTTP_USER_AGENT') is None:
-        return json_error(_('User-Agent header missing from request'))
+    if request.META.get("HTTP_USER_AGENT") is None:
+        return json_error(_("User-Agent header missing from request"))
 
     # This string should not be tagged for translation, since old
     # clients are checking for an extra string.
     legacy_compatibility_error_message = "Client is too old"
     user_agent = parse_user_agent(request.META["HTTP_USER_AGENT"])
-    if user_agent['name'] == "ZulipInvalid":
+    if user_agent["name"] == "ZulipInvalid":
         return json_error(legacy_compatibility_error_message)
-    if user_agent['name'] == "ZulipMobile":
+    if user_agent["name"] == "ZulipMobile":
         user_os = find_mobile_os(request.META["HTTP_USER_AGENT"])
-        if (user_os == 'android'
-                and version_lt(user_agent['version'], android_min_app_version)):
+        if user_os == "android" and version_lt(user_agent["version"], android_min_app_version):
             return json_error(legacy_compatibility_error_message)
     return json_success()
+
 
 def is_outdated_desktop_app(user_agent_str: str) -> Tuple[bool, bool, bool]:
     # Returns (insecure, banned, auto_update_broken)
     user_agent = parse_user_agent(user_agent_str)
-    if user_agent['name'] == 'ZulipDesktop':
+    if user_agent["name"] == "ZulipDesktop":
         # The deprecated QT/webkit based desktop app, last updated in ~2016.
         return (True, True, True)
 
-    if user_agent['name'] != 'ZulipElectron':
+    if user_agent["name"] != "ZulipElectron":
         return (False, False, False)
 
-    if version_lt(user_agent['version'], '4.0.0'):
+    if version_lt(user_agent["version"], "4.0.0"):
         # Version 2.3.82 and older (aka <4.0.0) of the modern
         # Electron-based Zulip desktop app with known security issues.
         # won't auto-update; we may want a special notice to
         # distinguish those from modern releases.
         return (True, True, True)
 
-    if version_lt(user_agent['version'], DESKTOP_MINIMUM_VERSION):
+    if version_lt(user_agent["version"], DESKTOP_MINIMUM_VERSION):
         # Below DESKTOP_MINIMUM_VERSION, we reject access as well.
         return (True, True, False)
 
-    if version_lt(user_agent['version'], DESKTOP_WARNING_VERSION):
+    if version_lt(user_agent["version"], DESKTOP_WARNING_VERSION):
         # Other insecure versions should just warn.
         return (True, False, False)
 
     return (False, False, False)
+
 
 def is_unsupported_browser(user_agent: str) -> Tuple[bool, Optional[str]]:
     browser_name = get_device_browser(user_agent)

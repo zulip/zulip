@@ -32,7 +32,7 @@
             }
          },
          "uuid":"{678ab31f-9f88-4d7a-b343-1bdf9f024917}",
-         "username":"kolaszek"
+         "nickname":"Tomasz Kolaszek"
       },
       "website":""
    },
@@ -111,6 +111,6 @@
          }
       },
       "website":null,
-      "username":"kolaszek"
+      "nickname":"Tomasz Kolaszek"
    }
 }

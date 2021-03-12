@@ -138,13 +138,13 @@ Django context (i.e. with database access).
 
 -------------------------------------------------------------------------
 
-### Production puppet configuration
+### Production Puppet configuration
 
 This is used to deploy essentially all configuration in production.
 
 * `puppet/zulip/` For configuration for production deployments.
 
-* `puppet/zulip/manifests/voyager.pp` Main manifest for Zulip standalone deployments.
+* `puppet/zulip/manifests/profile/standalone.pp` Main manifest for Zulip standalone deployments.
 
 -----------------------------------------------------------------------
 

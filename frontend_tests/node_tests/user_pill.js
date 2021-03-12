@@ -1,11 +1,14 @@
 "use strict";
 
-const people = zrequire("people");
-set_global("md5", (s) => "md5-" + s);
-zrequire("user_pill");
-zrequire("pill_typeahead");
+const {strict: assert} = require("assert");
 
-set_global("page_params", {});
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
+const page_params = set_global("page_params", {});
+
+const people = zrequire("people");
+const user_pill = zrequire("user_pill");
 
 const alice = {
     email: "alice@example.com",

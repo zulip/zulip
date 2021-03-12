@@ -1,11 +1,15 @@
-"use strict";
+import ClipboardJS from "clipboard";
+import {parseISO, isValid} from "date-fns";
 
-const ClipboardJS = require("clipboard");
-const moment = require("moment");
+import copy_code_button from "../templates/copy_code_button.hbs";
+import view_code_in_playground from "../templates/view_code_in_playground.hbs";
 
-const copy_code_button = require("../templates/copy_code_button.hbs");
-
-const people = require("./people");
+import * as people from "./people";
+import * as rtl from "./rtl";
+import * as settings_config from "./settings_config";
+import * as stream_data from "./stream_data";
+import * as timerender from "./timerender";
+import * as user_groups from "./user_groups";
 
 /*
     rendered_markdown
@@ -29,7 +33,7 @@ function get_user_id_for_mention_button(elem) {
     }
 
     if (user_id_string) {
-        return parseInt(user_id_string, 10);
+        return Number.parseInt(user_id_string, 10);
     }
 
     if (email) {
@@ -46,22 +50,22 @@ function get_user_group_id_for_mention_button(elem) {
     const user_group_id = $(elem).attr("data-user-group-id");
 
     if (user_group_id) {
-        return parseInt(user_group_id, 10);
+        return Number.parseInt(user_group_id, 10);
     }
 
     return undefined;
 }
 
 // Helper function to update a mentioned user's name.
-exports.set_name_in_mention_element = function (element, name) {
+export function set_name_in_mention_element(element, name) {
     if ($(element).hasClass("silent")) {
         $(element).text(name);
     } else {
         $(element).text("@" + name);
     }
-};
+}
 
-exports.update_elements = (content) => {
+export const update_elements = (content) => {
     // Set the rtl class if the text has an rtl direction
     if (rtl.get_direction(content.text()) === "rtl") {
         content.addClass("rtl");
@@ -84,7 +88,7 @@ exports.update_elements = (content) => {
             if (person !== undefined) {
                 // Note that person might be undefined in some
                 // unpleasant corner cases involving data import.
-                exports.set_name_in_mention_element(this, person.full_name);
+                set_name_in_mention_element(this, person.full_name);
             }
         }
     });
@@ -114,7 +118,7 @@ exports.update_elements = (content) => {
     });
 
     content.find("a.stream").each(function () {
-        const stream_id = parseInt($(this).attr("data-stream-id"), 10);
+        const stream_id = Number.parseInt($(this).attr("data-stream-id"), 10);
         if (stream_id && !$(this).find(".highlight").length) {
             // Display the current name for stream if it is not
             // being displayed in search highlight.
@@ -129,7 +133,7 @@ exports.update_elements = (content) => {
     });
 
     content.find("a.stream-topic").each(function () {
-        const stream_id = parseInt($(this).attr("data-stream-id"), 10);
+        const stream_id = Number.parseInt($(this).attr("data-stream-id"), 10);
         if (stream_id && !$(this).find(".highlight").length) {
             // Display the current name for stream if it is not
             // being displayed in search highlight.
@@ -153,20 +157,15 @@ exports.update_elements = (content) => {
             return;
         }
 
-        // Moment throws a large deprecation warning when it has to
-        // fallback to the Date() constructor.  This isn't really a
-        // problem for us except in local echo, as the backend always
-        // uses a format that ensures that is unnecessary.
-        moment.suppressDeprecationWarnings = true;
-        const timestamp = moment(time_str);
-        if (timestamp.isValid()) {
+        const timestamp = parseISO(time_str);
+        if (isValid(timestamp)) {
             const text = $(this).text();
             const rendered_time = timerender.render_markdown_timestamp(timestamp, text);
             $(this).text(rendered_time.text);
             $(this).attr("title", rendered_time.title);
         } else {
             // This shouldn't happen. If it does, we're very interested in debugging it.
-            blueslip.error(`Moment could not parse datetime supplied by backend: ${time_str}`);
+            blueslip.error(`Could not parse datetime supplied by backend: ${time_str}`);
         }
     });
 
@@ -189,10 +188,34 @@ exports.update_elements = (content) => {
         $(this).prepend(toggle_button_html);
     });
 
-    // Display the copy-to-clipboard button inside the div.codehilite element.
+    // Display the view-code-in-playground and the copy-to-clipboard button inside the div.codehilite element.
     content.find("div.codehilite").each(function () {
+        const $codehilite = $(this);
+        const $pre = $codehilite.find("pre");
+        const fenced_code_lang = $codehilite.data("code-language");
+        if (fenced_code_lang !== undefined) {
+            const playground_info = settings_config.get_playground_info_for_languages(
+                fenced_code_lang,
+            );
+            if (playground_info !== undefined) {
+                // If a playground is configured for this language,
+                // offer to view the code in that playground.  When
+                // there are multiple playgrounds, we display a
+                // popover listing the options.
+                let title = i18n.t("View in playground");
+                const view_in_playground_button = $(view_code_in_playground());
+                $pre.prepend(view_in_playground_button);
+                if (playground_info.length === 1) {
+                    title = i18n.t(`View in ${playground_info[0].name}`);
+                } else {
+                    view_in_playground_button.attr("aria-haspopup", "true");
+                }
+                view_in_playground_button.attr("title", title);
+                view_in_playground_button.attr("aria-label", title);
+            }
+        }
         const copy_button = $(copy_code_button());
-        $(this).find("pre").prepend(copy_button);
+        $pre.prepend(copy_button);
         new ClipboardJS(copy_button[0], {
             text(copy_element) {
                 return $(copy_element).siblings("code").text();

@@ -1,18 +1,22 @@
 "use strict";
 
-global.stub_out_jquery();
+const {strict: assert} = require("assert");
 
+const jquery = require("jquery");
+const {JSDOM} = require("jsdom");
+
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
+const {window} = new JSDOM("<!DOCTYPE html><p>Hello world</p>");
+
+const {DOMParser, document} = window;
+const $ = set_global("$", jquery(window));
+
+const compose_ui = mock_module("compose_ui");
 set_global("page_params", {
     development_environment: true,
 });
-set_global("compose_ui", {});
-
-const {JSDOM} = require("jsdom");
-
-const {window} = new JSDOM("<!DOCTYPE html><p>Hello world</p>");
-const {DOMParser, document} = window;
-set_global("$", require("jquery")(window));
-
 set_global("DOMParser", DOMParser);
 set_global("document", document);
 
@@ -34,7 +38,7 @@ const createPasteEvent = function () {
     const clipboardData = new DataTransfer();
     const pasteEvent = new window.Event("paste");
     pasteEvent.clipboardData = clipboardData;
-    return $.Event(pasteEvent);
+    return new $.Event(pasteEvent);
 };
 
 run_test("paste_handler", () => {
@@ -50,7 +54,7 @@ run_test("paste_handler", () => {
     assert.equal(copy_and_paste.paste_handler_converter(input), "The `JSDOM` constructor");
 
     input =
-        '<meta http-equiv="content-type" content="text/html; charset=utf-8"><a href="https://zulip.readthedocs.io/en/latest/subsystems/logging.html" target="_blank" title="https://zulip.readthedocs.io/en/latest/subsystems/logging.html" style="color: hsl(200, 100%, 40%); text-decoration: none; cursor: pointer; font-family: &quot;Source Sans Pro&quot;, &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: hsl(0, 0%, 100%);">https://zulip.readthedocs.io/en/latest/subsystems/logging.html</a>';
+        '<meta http-equiv="content-type" content="text/html; charset=utf-8"><a href="https://zulip.readthedocs.io/en/latest/subsystems/logging.html" target="_blank" title="https://zulip.readthedocs.io/en/latest/subsystems/logging.html" style="color: hsl(200, 100%, 40%); text-decoration: none; cursor: pointer; font-family: &quot;Source Sans 3&quot;, &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: hsl(0, 0%, 100%);">https://zulip.readthedocs.io/en/latest/subsystems/logging.html</a>';
     assert.equal(
         copy_and_paste.paste_handler_converter(input),
         "https://zulip.readthedocs.io/en/latest/subsystems/logging.html",

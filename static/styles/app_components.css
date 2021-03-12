@@ -177,7 +177,7 @@
             }
         }
 
-        &[disabled="disabled"] {
+        &:disabled {
             cursor: not-allowed;
             filter: saturate(0);
             background-color: hsl(0, 0%, 93%);
@@ -267,10 +267,6 @@
 
     .stream_sorter_toggle {
         margin-left: auto;
-
-        @media (min-width: 750px) and (max-width: 1033px) {
-            margin-left: unset;
-        }
     }
 }
 
@@ -315,6 +311,7 @@
 .input-append {
     font-size: 90%;
     letter-spacing: -0.3em;
+    display: block;
 }
 
 .input-append input[type="text"],
@@ -329,14 +326,14 @@
         color: hsl(0, 0%, 0%);
     }
 
-    &[disabled] {
+    &:disabled {
         visibility: hidden;
     }
 
     &,
     &:focus,
     &:active,
-    &[disabled]:hover {
+    &:disabled:hover {
         position: relative;
         right: 20px;
         background: none;
@@ -389,7 +386,7 @@
     }
 }
 
-@media (max-width: 767px) {
+@media (width < $md_min) {
     /* Override Bootstrap's responsive grid to display input at full width */
     .input-append .stream-list-filter {
         /* Input width = 100% - 10px margin x2 - 6px padding x2 - 1px border x2. */
@@ -411,7 +408,7 @@
 .stream_header_colorblock {
     @extend .stream-selection-header-colorblock;
     margin-bottom: 5px;
-    z-index: 1000;
+    z-index: 1;
 }
 
 .edit-controls .fa-angle-right,
@@ -472,7 +469,7 @@
         display: inline;
         margin-right: 8px;
 
-        font-family: FontAwesome, Yantramanav, "Source Sans Pro";
+        font-family: FontAwesome, Yantramanav, "Source Sans 3";
         font-weight: 600;
     }
 }

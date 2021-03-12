@@ -11,7 +11,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
     zulip_realm = get_realm("zulip")
 
     def test_check_send_webhook_fixture_message_for_error(self) -> None:
-        bot = get_user('webhook-bot@zulip.com', self.zulip_realm)
+        bot = get_user("webhook-bot@zulip.com", self.zulip_realm)
         url = f"/api/v1/external/airbrake?api_key={bot.api_key}"
         target_url = "/devtools/integrations/check_send_webhook_fixture_message"
         body = "{}"  # This empty body should generate a KeyError on the webhook code side.
@@ -33,10 +33,12 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         # so just testing KeyError is printed along with Traceback in logs
         self.assertTrue("KeyError" in logs.output[0])
         self.assertTrue("Traceback (most recent call last)" in logs.output[0])
-        self.assertEqual(logs.output[1], "ERROR:django.request:Internal Server Error: /api/v1/external/airbrake")
+        self.assertEqual(
+            logs.output[1], "ERROR:django.request:Internal Server Error: /api/v1/external/airbrake"
+        )
 
     def test_check_send_webhook_fixture_message_for_success_without_headers(self) -> None:
-        bot = get_user('webhook-bot@zulip.com', self.zulip_realm)
+        bot = get_user("webhook-bot@zulip.com", self.zulip_realm)
         url = f"/api/v1/external/airbrake?api_key={bot.api_key}&stream=Denmark&topic=Airbrake Notifications"
         target_url = "/devtools/integrations/check_send_webhook_fixture_message"
         with open("zerver/webhooks/airbrake/fixtures/error_message.json") as f:
@@ -50,20 +52,26 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         }
 
         response = self.client_post(target_url, data)
-        expected_response = {'responses': [{'status_code': 200, 'message': {"result": "success", "msg": ""}}], 'result': 'success', 'msg': ''}
+        expected_response = {
+            "responses": [{"status_code": 200, "message": {"result": "success", "msg": ""}}],
+            "result": "success",
+            "msg": "",
+        }
         response_content = orjson.loads(response.content)
-        response_content["responses"][0]["message"] = orjson.loads(response_content["responses"][0]["message"])
+        response_content["responses"][0]["message"] = orjson.loads(
+            response_content["responses"][0]["message"]
+        )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response_content, expected_response)
 
-        latest_msg = Message.objects.latest('id')
-        expected_message = "[ZeroDivisionError](https://zulip.airbrake.io/projects/125209/groups/1705190192091077626): \"Error message from logger\" occurred."
+        latest_msg = Message.objects.latest("id")
+        expected_message = '[ZeroDivisionError](https://zulip.airbrake.io/projects/125209/groups/1705190192091077626): "Error message from logger" occurred.'
         self.assertEqual(latest_msg.content, expected_message)
         self.assertEqual(Stream.objects.get(id=latest_msg.recipient.type_id).name, "Denmark")
         self.assertEqual(latest_msg.topic_name(), "Airbrake Notifications")
 
     def test_check_send_webhook_fixture_message_for_success_with_headers(self) -> None:
-        bot = get_user('webhook-bot@zulip.com', self.zulip_realm)
+        bot = get_user("webhook-bot@zulip.com", self.zulip_realm)
         url = f"/api/v1/external/github?api_key={bot.api_key}&stream=Denmark&topic=GitHub Notifications"
         target_url = "/devtools/integrations/check_send_webhook_fixture_message"
         with open("zerver/webhooks/github/fixtures/ping__organization.json") as f:
@@ -79,15 +87,17 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         response = self.client_post(target_url, data)
         self.assertEqual(response.status_code, 200)
 
-        latest_msg = Message.objects.latest('id')
+        latest_msg = Message.objects.latest("id")
         expected_message = "GitHub webhook has been successfully configured by eeshangarg."
         self.assertEqual(latest_msg.content, expected_message)
         self.assertEqual(Stream.objects.get(id=latest_msg.recipient.type_id).name, "Denmark")
         self.assertEqual(latest_msg.topic_name(), "GitHub Notifications")
 
-    def test_check_send_webhook_fixture_message_for_success_with_headers_and_non_json_fixtures(self) -> None:
-        bot = get_user('webhook-bot@zulip.com', self.zulip_realm)
-        url = f"/api/v1/external/wordpress?api_key={bot.api_key}&stream=Denmark&topic=Wordpress Notifications"
+    def test_check_send_webhook_fixture_message_for_success_with_headers_and_non_json_fixtures(
+        self,
+    ) -> None:
+        bot = get_user("webhook-bot@zulip.com", self.zulip_realm)
+        url = f"/api/v1/external/wordpress?api_key={bot.api_key}&stream=Denmark&topic=WordPress Notifications"
         target_url = "/devtools/integrations/check_send_webhook_fixture_message"
         with open("zerver/webhooks/wordpress/fixtures/publish_post_no_data_provided.txt") as f:
             body = f.read()
@@ -95,32 +105,42 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         data = {
             "url": url,
             "body": body,
-            "custom_headers": orjson.dumps({"Content-Type": "application/x-www-form-urlencoded"}).decode(),
+            "custom_headers": orjson.dumps(
+                {"Content-Type": "application/x-www-form-urlencoded"}
+            ).decode(),
             "is_json": "false",
         }
 
         response = self.client_post(target_url, data)
         self.assertEqual(response.status_code, 200)
 
-        latest_msg = Message.objects.latest('id')
+        latest_msg = Message.objects.latest("id")
         expected_message = "New post published:\n* [New WordPress Post](WordPress Post URL)"
         self.assertEqual(latest_msg.content, expected_message)
         self.assertEqual(Stream.objects.get(id=latest_msg.recipient.type_id).name, "Denmark")
-        self.assertEqual(latest_msg.topic_name(), "Wordpress Notifications")
+        self.assertEqual(latest_msg.topic_name(), "WordPress Notifications")
 
     def test_get_fixtures_for_nonexistant_integration(self) -> None:
         target_url = "/devtools/integrations/somerandomnonexistantintegration/fixtures"
         response = self.client_get(target_url)
-        expected_response = {'msg': '"somerandomnonexistantintegration" is not a valid webhook integration.', 'result': 'error'}
+        expected_response = {
+            "msg": '"somerandomnonexistantintegration" is not a valid webhook integration.',
+            "result": "error",
+        }
         self.assertEqual(response.status_code, 404)
         self.assertEqual(orjson.loads(response.content), expected_response)
 
     @patch("zerver.views.development.integrations.os.path.exists")
-    def test_get_fixtures_for_integration_without_fixtures(self, os_path_exists_mock: MagicMock) -> None:
+    def test_get_fixtures_for_integration_without_fixtures(
+        self, os_path_exists_mock: MagicMock
+    ) -> None:
         os_path_exists_mock.return_value = False
         target_url = "/devtools/integrations/airbrake/fixtures"
         response = self.client_get(target_url)
-        expected_response = {'msg': 'The integration "airbrake" does not have fixtures.', 'result': 'error'}
+        expected_response = {
+            "msg": 'The integration "airbrake" does not have fixtures.',
+            "result": "error",
+        }
         self.assertEqual(response.status_code, 404)
         self.assertEqual(orjson.loads(response.content), expected_response)
 
@@ -137,7 +157,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_send_all_webhook_fixture_messages_for_success(self) -> None:
-        bot = get_user('webhook-bot@zulip.com', self.zulip_realm)
+        bot = get_user("webhook-bot@zulip.com", self.zulip_realm)
         url = f"/api/v1/external/appfollow?api_key={bot.api_key}&stream=Denmark&topic=Appfollow Bulk Notifications"
         target_url = "/devtools/integrations/send_all_webhook_fixture_messages"
 
@@ -170,8 +190,11 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             self.assertTrue(r in expected_responses)
             expected_responses.remove(r)
 
-        new_messages = Message.objects.order_by('-id')[0:2]
-        expected_messages = ["Webhook integration was successful.\nTest User / Acme (Google Play)", "Acme - Group chat\nApp Store, Acme Technologies, Inc.\n★★★★★ United States\n**Great for Information Management**\nAcme enables me to manage the flow of information quite well. I only wish I could create and edit my Acme Post files in the iOS app.\n*by* **Mr RESOLUTIONARY** *for v3.9*\n[Permalink](http://appfollow.io/permalink) · [Add tag](http://watch.appfollow.io/add_tag)"]
+        new_messages = Message.objects.order_by("-id")[0:2]
+        expected_messages = [
+            "Webhook integration was successful.\nTest User / Acme (Google Play)",
+            "Acme - Group chat\nApp Store, Acme Technologies, Inc.\n★★★★★ United States\n**Great for Information Management**\nAcme enables me to manage the flow of information quite well. I only wish I could create and edit my Acme Post files in the iOS app.\n*by* **Mr RESOLUTIONARY** *for v3.9*\n[Permalink](http://appfollow.io/permalink) · [Add tag](http://watch.appfollow.io/add_tag)",
+        ]
         for msg in new_messages:
             # new_messages -> expected_messages or expected_messages -> new_messages shouldn't make
             # a difference since equality is commutative.
@@ -181,8 +204,8 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             self.assertEqual(msg.topic_name(), "Appfollow Bulk Notifications")
 
     def test_send_all_webhook_fixture_messages_for_success_with_non_json_fixtures(self) -> None:
-        bot = get_user('webhook-bot@zulip.com', self.zulip_realm)
-        url = f"/api/v1/external/wordpress?api_key={bot.api_key}&stream=Denmark&topic=Wordpress Bulk Notifications"
+        bot = get_user("webhook-bot@zulip.com", self.zulip_realm)
+        url = f"/api/v1/external/wordpress?api_key={bot.api_key}&stream=Denmark&topic=WordPress Bulk Notifications"
         target_url = "/devtools/integrations/send_all_webhook_fixture_messages"
 
         data = {
@@ -194,42 +217,66 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         response = self.client_post(target_url, data)
         expected_responses = [
             {
-                "message": {'msg': 'Unknown WordPress webhook action: WordPress Action', 'result': 'error'},
+                "message": {
+                    "msg": "Unknown WordPress webhook action: WordPress Action",
+                    "result": "error",
+                },
                 "fixture_name": "user_register.txt",
                 "status_code": 400,
             },
             {
-                "message": {'msg': 'Unknown WordPress webhook action: WordPress Action', 'result': 'error'},
+                "message": {
+                    "msg": "Unknown WordPress webhook action: WordPress Action",
+                    "result": "error",
+                },
                 "fixture_name": "publish_post_no_data_provided.txt",
                 "status_code": 400,
             },
             {
-                "message": {'msg': 'Unknown WordPress webhook action: WordPress Action', 'result': 'error'},
+                "message": {
+                    "msg": "Unknown WordPress webhook action: WordPress Action",
+                    "result": "error",
+                },
                 "fixture_name": "unknown_action_no_data.txt",
                 "status_code": 400,
             },
             {
-                "message": {'msg': 'Unknown WordPress webhook action: WordPress Action', 'result': 'error'},
+                "message": {
+                    "msg": "Unknown WordPress webhook action: WordPress Action",
+                    "result": "error",
+                },
                 "fixture_name": "publish_page.txt",
                 "status_code": 400,
             },
             {
-                "message": {'msg': 'Unknown WordPress webhook action: WordPress Action', 'result': 'error'},
+                "message": {
+                    "msg": "Unknown WordPress webhook action: WordPress Action",
+                    "result": "error",
+                },
                 "fixture_name": "unknown_action_no_hook_provided.txt",
                 "status_code": 400,
             },
             {
-                "message": {'msg': 'Unknown WordPress webhook action: WordPress Action', 'result': 'error'},
+                "message": {
+                    "msg": "Unknown WordPress webhook action: WordPress Action",
+                    "result": "error",
+                },
                 "fixture_name": "publish_post_type_not_provided.txt",
                 "status_code": 400,
             },
             {
-                "message": {'msg': 'Unknown WordPress webhook action: WordPress Action', 'result': 'error'},
+                "message": {
+                    "msg": "Unknown WordPress webhook action: WordPress Action",
+                    "result": "error",
+                },
                 "fixture_name": "wp_login.txt",
                 "status_code": 400,
             },
             {
-                "message": {'msg': 'Unknown WordPress webhook action: WordPress Action', 'result': 'error'},
+                "message": {
+                    "msg": "Unknown WordPress webhook action: WordPress Action",
+                    "result": "error",
+                },
                 "fixture_name": "publish_post.txt",
                 "status_code": 400,
             },
@@ -249,16 +296,23 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             expected_responses.remove(r)
 
     @patch("zerver.views.development.integrations.os.path.exists")
-    def test_send_all_webhook_fixture_messages_for_missing_fixtures(self, os_path_exists_mock: MagicMock) -> None:
+    def test_send_all_webhook_fixture_messages_for_missing_fixtures(
+        self, os_path_exists_mock: MagicMock
+    ) -> None:
         os_path_exists_mock.return_value = False
-        bot = get_user('webhook-bot@zulip.com', self.zulip_realm)
+        bot = get_user("webhook-bot@zulip.com", self.zulip_realm)
         url = f"/api/v1/external/appfollow?api_key={bot.api_key}&stream=Denmark&topic=Appfollow Bulk Notifications"
         data = {
             "url": url,
             "custom_headers": "{}",
             "integration_name": "appfollow",
         }
-        response = self.client_post("/devtools/integrations/send_all_webhook_fixture_messages", data)
-        expected_response = {'msg': 'The integration "appfollow" does not have fixtures.', 'result': 'error'}
+        response = self.client_post(
+            "/devtools/integrations/send_all_webhook_fixture_messages", data
+        )
+        expected_response = {
+            "msg": 'The integration "appfollow" does not have fixtures.',
+            "result": "error",
+        }
         self.assertEqual(response.status_code, 404)
         self.assertEqual(orjson.loads(response.content), expected_response)

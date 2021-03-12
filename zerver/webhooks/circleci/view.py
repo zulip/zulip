@@ -14,20 +14,26 @@ outcome_to_formatted_status_map = {
     "canceled": "was canceled",
 }
 
-@webhook_view('CircleCI')
+
+@webhook_view("CircleCI")
 @has_request_variables
-def api_circleci_webhook(request: HttpRequest, user_profile: UserProfile,
-                         payload: Dict[str, Any]=REQ(argument_type="body")) -> HttpResponse:
-    payload = payload['payload']
+def api_circleci_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Any] = REQ(argument_type="body"),
+) -> HttpResponse:
+    payload = payload["payload"]
     subject = get_subject(payload)
     body = get_body(payload)
 
     check_send_webhook_message(request, user_profile, subject, body)
     return json_success()
 
+
 def get_subject(payload: Dict[str, Any]) -> str:
     repository_name = payload["reponame"]
     return f"{repository_name}"
+
 
 def get_commit_range_info(payload: Dict[str, Any]) -> str:
     commits = payload["all_commit_details"]
@@ -49,12 +55,13 @@ def get_commit_range_info(payload: Dict[str, Any]) -> str:
         commit_range_url = f"{vcs_url}/compare/{first_commit_id}...{last_commit_id}"
         return f"- **Commits ({num_commits}):** [{shortened_first_commit_id} ... {shortened_last_commit_id}]({commit_range_url})"
     else:
-        # BitBucket doesn't have a good commit range url feature like GitHub does.
+        # Bitbucket doesn't have a good commit range URL feature like GitHub does.
         # So let's just show the two separately.
         # https://community.atlassian.com/t5/Bitbucket-questions/BitBucket-4-14-diff-between-any-two-commits/qaq-p/632974
         first_commit_url = commits[0]["commit_url"]
         last_commit_url = commits[-1]["commit_url"]
         return f"- **Commits ({num_commits}):** [{shortened_first_commit_id}]({first_commit_url}) ... [{shortened_last_commit_id}]({last_commit_url})"
+
 
 def get_authors_and_committer_info(payload: Dict[str, Any]) -> str:
     body = ""
@@ -99,6 +106,7 @@ def get_authors_and_committer_info(payload: Dict[str, Any]) -> str:
 
     return body
 
+
 def super_minimal_body(payload: Dict[str, Any]) -> str:
     branch_name = payload["branch"]
     status = payload["status"]
@@ -106,6 +114,7 @@ def super_minimal_body(payload: Dict[str, Any]) -> str:
     build_url = payload["build_url"]
     username = payload["username"]
     return f"[Build]({build_url}) triggered by {username} on branch `{branch_name}` {formatted_status}."
+
 
 def get_body(payload: Dict[str, Any]) -> str:
     build_num = payload.get("build_num", None)

@@ -25,8 +25,9 @@ class RedisUtilsTest(ZulipTestCase):
             "a": 1,
             "b": "some value",
         }
-        key = put_dict_in_redis(self.redis_client, self.key_format, data,
-                                expiration_seconds=self.expiration_seconds)
+        key = put_dict_in_redis(
+            self.redis_client, self.key_format, data, expiration_seconds=self.expiration_seconds
+        )
         retrieved_data = get_dict_from_redis(self.redis_client, self.key_format, key)
         self.assertEqual(data, retrieved_data)
 
@@ -36,10 +37,14 @@ class RedisUtilsTest(ZulipTestCase):
             "b": "some value",
         }
 
-        max_valid_token_length = MAX_KEY_LENGTH - (len(self.key_format) - len('{token}'))
-        key = put_dict_in_redis(self.redis_client, self.key_format, data,
-                                expiration_seconds=self.expiration_seconds,
-                                token_length=max_valid_token_length)
+        max_valid_token_length = MAX_KEY_LENGTH - (len(self.key_format) - len("{token}"))
+        key = put_dict_in_redis(
+            self.redis_client,
+            self.key_format,
+            data,
+            expiration_seconds=self.expiration_seconds,
+            token_length=max_valid_token_length,
+        )
         retrieved_data = get_dict_from_redis(self.redis_client, self.key_format, key)
         self.assertEqual(data, retrieved_data)
 
@@ -47,15 +52,21 @@ class RedisUtilsTest(ZulipTestCase):
         # generating the random token.
         with mock.patch("secrets.token_hex") as mock_generate:
             with self.assertRaises(ZulipRedisKeyTooLongError):
-                put_dict_in_redis(self.redis_client, self.key_format, data,
-                                  expiration_seconds=self.expiration_seconds,
-                                  token_length=max_valid_token_length + 1)
+                put_dict_in_redis(
+                    self.redis_client,
+                    self.key_format,
+                    data,
+                    expiration_seconds=self.expiration_seconds,
+                    token_length=max_valid_token_length + 1,
+                )
             mock_generate.assert_not_called()
 
     def test_get_data_key_length_check(self) -> None:
         with self.assertRaises(ZulipRedisKeyTooLongError):
-            get_dict_from_redis(self.redis_client, key_format='{token}', key='A' * (MAX_KEY_LENGTH + 1))
+            get_dict_from_redis(
+                self.redis_client, key_format="{token}", key="A" * (MAX_KEY_LENGTH + 1)
+            )
 
     def test_get_data_key_format_validation(self) -> None:
         with self.assertRaises(ZulipRedisKeyOfWrongFormatError):
-            get_dict_from_redis(self.redis_client, self.key_format, 'nonmatching_format_1111')
+            get_dict_from_redis(self.redis_client, self.key_format, "nonmatching_format_1111")

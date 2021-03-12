@@ -2,10 +2,10 @@
 
 {!admin-only.md!}
 
-There are several settings that control who can edit and delete messages and
-topics. By default, users have 10 minutes after posting a message to edit
-it, they can edit any topic at any time, and they cannot delete their
-messages.
+There are several settings that control who can [edit and delete
+messages](/help/edit-or-delete-a-message) and topics. By default,
+users have 10 minutes after posting a message to edit it, they can
+edit any topic at any time, and they cannot delete their messages.
 
 Different organizations have different message editing needs, so this area
 is highly configurable. Two things are true under any configuration:
@@ -19,7 +19,7 @@ is highly configurable. Two things are true under any configuration:
 | Edit others' message content       |          |         |
 | Edit your message topics           | [1]      | [1]     |
 | Add a topic to a topicless message | [1]      | [1]     |
-| Edit others' message topics        | [1]      | [1, 2]  |
+| Edit others' message topics        | [1]      | [2]     |
 | Delete your messages               | &#10004; | [3]     |
 | Delete others' messages            | &#10004; |         |
 

@@ -712,6 +712,7 @@ form#add_new_subscription {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            margin-right: 12px;
         }
 
         .top-bar .subscriber-count,
@@ -856,6 +857,7 @@ form#add_new_subscription {
             max-width: 260px;
 
             .stream-name-editable {
+                line-height: 1em;
                 display: block;
                 max-width: 20ch;
                 overflow: hidden;
@@ -1086,7 +1088,7 @@ ul.grey-box {
     }
 }
 
-@media (max-width: 1130px) {
+@media (width < $lg_min) {
     .subscriptions-container {
         max-width: 95%;
     }
@@ -1102,20 +1104,13 @@ ul.grey-box {
     }
 }
 
-@media (max-width: 1033px) {
+@media (width < $lg_min) {
     .subscriptions-container .left .search-container {
         flex-wrap: wrap;
-        justify-content: space-evenly;
     }
 
     .search-container {
         text-align: center;
-    }
-
-    .subscriber_list_settings input {
-        float: left;
-        margin: 0 5px 0 0;
-        width: calc(50% - 45px);
     }
 }
 
@@ -1124,7 +1119,7 @@ ul.grey-box {
 
    Longer-term we should extract this logic two-column-overlay class
    to read more naturally. */
-@media (max-width: 750px) {
+@media (width < $md_min) {
     .subscriptions-container {
         position: relative;
         overflow: hidden;
@@ -1185,21 +1180,14 @@ ul.grey-box {
     }
 }
 
-@media (max-width: 367px) {
+@media (width < $sm_min) {
     #subscription_overlay .subscription_settings .button-group {
+        display: block;
+        float: unset;
         margin-top: 10px;
-        float: none;
-        display: inline-block;
-        vertical-align: top;
     }
 }
 
 #stream-creation #invites-warning-modal .modal-footer {
     position: static;
-}
-
-@media (max-width: 350px) {
-    .stream_row .description {
-        display: none;
-    }
 }

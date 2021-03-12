@@ -1,5 +1,10 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
+const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
+
 /*
 
 This test module actually tests our test code, particularly zjquery, and
@@ -23,12 +28,6 @@ The code we are testing lives here:
     https://github.com/zulip/zulip/blob/master/frontend_tests/zjsunit/zjquery.js
 
 */
-
-// The first thing we do to use zjquery is patch our global namespace
-// with zjquery as follows.  This call gives us our own instance of a
-// zjquery stub variable.  Like with real jQuery, the '$' function will
-// be the gateway to a bigger API.
-set_global("$", global.make_zjquery());
 
 run_test("basics", () => {
     // Let's create a sample piece of code to test:
@@ -197,27 +196,4 @@ run_test("create", () => {
 
     obj2.addClass(".striped");
     assert(obj2.hasClass(".striped"));
-});
-
-run_test("extensions", () => {
-    // You can extend $.fn so that all subsequent objects
-    // we create get a new function.
-
-    $.fn.area = function () {
-        return this.width() * this.height();
-    };
-
-    // Before we use area, though, let's illustrate that
-    // the predominant Zulip testing style is to stub objects
-    // using direct syntax:
-
-    const rect = $.create("rectangle");
-    rect.width = () => 5;
-    rect.height = () => 7;
-
-    assert.equal(rect.width(), 5);
-    assert.equal(rect.height(), 7);
-
-    // But we also have area available from general extension.
-    assert.equal(rect.area(), 35);
 });

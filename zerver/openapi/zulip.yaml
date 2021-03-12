@@ -44,29 +44,54 @@ paths:
       operationId: fetch_api_key
       tags: ["authentication"]
       description: |
-        Given a username and password, fetch the user's API key.
+        This API endpoint is used by clients such as the Zulip mobile and
+        terminal apps to implement password-based authentication.  Given the
+        user's Zulip login credentials, it returns a Zulip API key that the client
+        can use to make requests requests as the user.
 
-        Used to authenticate the mobile and terminal apps when the server
-        has EmailAuthBackend or LDAPAuthBackend enabled.
+        This endpoint is only useful for Zulip servers/organizations with
+        EmailAuthBackend or LDAPAuthBackend enabled.
+
+        The Zulip mobile apps also support SSO/social authentication (GitHub
+        auth, Google auth, SAML, etc.) that does not use this endpoint.  Instead,
+        the mobile apps reuse the web login flow passing the `mobile_flow_otp` in
+        a webview, and the credentials are returned to the app (encrypted) via a redirect
+        to a `zulip://` URL.
+
+        !!! warn ""
+            **Note:** If you signed up using passwordless authentication and
+            never had a password, you can [reset your password](/help/change-your-password).
+
+            See the [API keys](/api/api-keys) documentation for
+            more details on how to download API key manually.
+
+        In a [Zulip development environment](https://zulip.readthedocs.io/en/latest/development/overview.html),
+        see also [the unauthenticated variant](/api/dev-fetch-api-key).
       parameters:
         - name: username
           in: query
           description: |
             The username to be used for authentication (typically, the email
-            address, but it could be an LDAP username).
+            address, but depending on configuration, it could be an LDAP username).
+
+            See the `require_email_format_usernames` parameter documented in
+            [GET /server_settings](/api/get-server-settings) for details.
           schema:
             type: string
+          example: iago@zulip.com
           required: true
         - name: password
           in: query
           schema:
             type: string
+          example: abcd1234
           description: |
             The user's Zulip password (or LDAP password, if LDAP authentication is in use).
           required: true
+      security: []
       responses:
         "200":
-          description: The credentials needed to use the Zulip API.
+          description: Valid credentials the client can use to access the Zulip API.
           content:
             application/json:
               schema:
@@ -146,8 +171,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       events:
                         type: array
                         description: |
@@ -163,11 +191,12 @@ paths:
                                 [alert words](/help/add-an-alert-word) have changed.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - alert_words
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - alert_words
                                 alert_words:
                                   type: array
                                   description: |
@@ -187,11 +216,12 @@ paths:
                                 have changed.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - update_display_settings
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - update_display_settings
                                 setting_name:
                                   type: string
                                   description: |
@@ -215,6 +245,7 @@ paths:
                                   "type": "update_display_settings",
                                   "setting_name": "high_contrast_mode",
                                   "setting": false,
+                                  "id": 0,
                                 }
                             - type: object
                               description: |
@@ -222,11 +253,12 @@ paths:
                                 settings](/api/update-notification-settings) have changed.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - update_global_notifications
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - update_global_notifications
                                 notification_name:
                                   type: string
                                   description: |
@@ -244,18 +276,20 @@ paths:
                                   "type": "update_global_notifications",
                                   "notification_name": "enable_sounds",
                                   "setting": true,
+                                  "id": 0,
                                 }
                             - type: object
                               description: |
                                 Event sent generally to all users in an organization for changes
                                 in the set of users or those users metadata.
                               properties:
-                                type:
-                                  type: string
-                                  enum:
-                                    - realm_user
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_user
                                 op:
                                   type: string
                                   enum:
@@ -289,7 +323,7 @@ paths:
                                         avatar_url:
                                           type: string
                                           description: |
-                                            The url of the new avatar URL for the user.
+                                            The URL of the new avatar for the user.
                                         avatar_source:
                                           type: string
                                           description: |
@@ -428,11 +462,12 @@ paths:
                                 have changed (either the set of subscriptions or their properties).
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - subscription
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - subscription
                                 op:
                                   type: string
                                   enum:
@@ -485,11 +520,12 @@ paths:
                                 from one or more streams.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - subscription
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - subscription
                                 op:
                                   type: string
                                   enum:
@@ -530,11 +566,12 @@ paths:
                                 for global properties of a stream.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - subscription
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - subscription
                                 op:
                                   type: string
                                   enum:
@@ -543,10 +580,6 @@ paths:
                                   type: integer
                                   description: |
                                     The ID of the stream whose subscription details have changed.
-                                name:
-                                  type: string
-                                  description: |
-                                    The name of the stream whose subscription details have changed.
                                 property:
                                   type: string
                                   description: |
@@ -564,14 +597,6 @@ paths:
                                     - type: integer
                                     - type: boolean
                                     - type: string
-                                email:
-                                  type: string
-                                  deprecated: true
-                                  description: |
-                                    The display email for the current user.
-
-                                    **Deprecated** and to be removed as it
-                                    serves no purpose to include this field here.
                               additionalProperties: false
                               example:
                                 {
@@ -579,35 +604,38 @@ paths:
                                   "type": "subscription",
                                   "property": "pin_to_top",
                                   "value": true,
-                                  "email": "user10@zulip.testserver",
                                   "stream_id": 11,
-                                  "name": "test_stream",
                                   "id": 0,
                                 }
                             - type: object
                               description: |
-                                Event sent to other users when a user has been subscribed to a
-                                stream. Sent to all users if the stream is public or to only
+                                Event sent to other users when users have been subscribed to
+                                streams. Sent to all users if the stream is public or to only
                                 the existing subscribers if the stream is private.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - subscription
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - subscription
                                 op:
                                   type: string
                                   enum:
                                     - peer_add
-                                stream_id:
-                                  type: integer
+                                stream_ids:
+                                  type: array
                                   description: |
-                                    The ID of the stream to which the user has subscribed.
-                                user_id:
-                                  type: integer
+                                    The IDs of the streams to which the user has subscribed.
+                                  items:
+                                    type: integer
+                                user_ids:
+                                  type: array
                                   description: |
-                                    The ID of the user who subscribed.
+                                    The IDs of the users who subscribed.
+                                  items:
+                                    type: integer
                               additionalProperties: false
                               example:
                                 {
@@ -619,29 +647,34 @@ paths:
                                 }
                             - type: object
                               description: |
-                                Event sent to other users when a user has been unsubscribed
-                                from a stream. Sent to all users if the stream is public or to only
+                                Event sent to other users when users have been unsubscribed
+                                from streams. Sent to all users if the stream is public or to only
                                 the existing subscribers if the stream is private.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - subscription
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - subscription
                                 op:
                                   type: string
                                   enum:
                                     - peer_remove
-                                stream_id:
-                                  type: integer
+                                stream_ids:
+                                  type: array
                                   description: |
-                                    The ID of the stream from which the user has been
+                                    The IDs of the streams from which the users have been
                                     unsubscribed from.
-                                user_id:
-                                  type: integer
+                                  items:
+                                    type: integer
+                                user_ids:
+                                  type: array
                                   description: |
-                                    The ID of the user who has been unsubscribed.
+                                    The IDs of the users who have been unsubscribed.
+                                  items:
+                                    type: integer
                               additionalProperties: false
                               example:
                                 {
@@ -656,11 +689,12 @@ paths:
                                 Event type for messages.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - message
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - message
                                 message:
                                   $ref: "#/components/schemas/Messages"
                                 flags:
@@ -669,50 +703,6 @@ paths:
                                     The user's [message flags][message-flags] for the message.
                                   items:
                                     type: string
-                                email_notified:
-                                  type: boolean
-                                  deprecated: true
-                                  description: |
-                                    Whether the user receiving the event has already been
-                                    notified via email.
-
-                                    **Deprecated**: This field is present only due to a bug and
-                                    will be removed from the API.
-                                push_notified:
-                                  type: boolean
-                                  deprecated: true
-                                  description: |
-                                    Whether the user receiving the event has already been
-                                    notified via mobile notification.
-
-                                    **Deprecated**: This field is present only due to a bug and
-                                    will be removed from the API.
-                                stream_push_notify:
-                                  type: boolean
-                                  deprecated: true
-                                  description: |
-                                    Whether the user receiving the event has to be notified
-                                    via mobile notification for stream message.
-
-                                    **Deprecated**: This field is present only due to a bug and
-                                    will be removed from the API.
-                                stream_email_notify:
-                                  type: boolean
-                                  deprecated: true
-                                  description: |
-                                    Whether the user receiving the event has to be notified
-                                    via email for stream message.
-
-                                    **Deprecated**: This field is present only due to a bug and
-                                    will be removed from the API.
-                                wildcard_mention_notify:
-                                  type: boolean
-                                  deprecated: true
-                                  description: |
-                                    Whether the user has to be notified due to wildcard mention.
-
-                                    **Deprecated**: This field is present only due to a bug and
-                                    will be removed from the API.
                               additionalProperties: false
                               example:
                                 {
@@ -750,11 +740,12 @@ paths:
                                 to know whether initiating Zoom OAuth is required before creating a Zoom call.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - has_zoom_token
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - has_zoom_token
                                 value:
                                   type: boolean
                                   description: |
@@ -775,11 +766,12 @@ paths:
                                 invitations.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - invites_changed
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - invites_changed
                               additionalProperties: false
                               example: {"type": "invites_changed", "id": 0}
                             - type: object
@@ -789,11 +781,12 @@ paths:
                                 to display basic details on other users given only their ID.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - realm_user
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_user
                                 op:
                                   type: string
                                   enum:
@@ -829,11 +822,12 @@ paths:
                                 a user is deactivated.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - realm_user
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_user
                                 op:
                                   type: string
                                   enum:
@@ -873,11 +867,12 @@ paths:
                                 a message (one wouldn't want them to still appear offline at that point!).
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - presence
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - presence
                                 user_id:
                                   type: integer
                                   description: |
@@ -931,11 +926,12 @@ paths:
                                 not be able to see content on the stream; just that it exists.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - stream
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - stream
                                 op:
                                   type: string
                                   enum:
@@ -973,112 +969,15 @@ paths:
                                 }
                             - type: object
                               description: |
-                                Event sent to all users who can see a stream exists when a stream
-                                that previously had no subscribers
-                                gains its first subscriber (typically when a deactivated stream
-                                is reactivated).  It works very similarly to `create` events.
-
-                                We expect to change how stream deactivation/reactivation is
-                                represented in the future.
-                              properties:
-                                id:
-                                  type: integer
-                                type:
-                                  type: string
-                                  enum:
-                                    - stream
-                                op:
-                                  type: string
-                                  enum:
-                                    - occupy
-                                streams:
-                                  type: array
-                                  description: |
-                                    Array of stream objects, each contatining
-                                    details about the newly occupied streams.
-                                  items:
-                                    $ref: "#/components/schemas/BasicStream"
-                              additionalProperties: false
-                              example:
-                                {
-                                  "type": "stream",
-                                  "op": "occupy",
-                                  "streams":
-                                    [
-                                      {
-                                        "name": "test_stream",
-                                        "stream_id": 11,
-                                        "description": "",
-                                        "rendered_description": "",
-                                        "invite_only": false,
-                                        "is_web_public": false,
-                                        "stream_post_policy": 1,
-                                        "history_public_to_subscribers": true,
-                                        "first_message_id": null,
-                                        "message_retention_days": null,
-                                        "is_announcement_only": false,
-                                      },
-                                    ],
-                                  "id": 0,
-                                }
-                            - type: object
-                              description: |
-                                Event sent to all users who can see a stream exists when a stream no
-                                longer has any users (which deactivates the stream).
-
-                                We expect to change how stream deactivation/reactivation is
-                                represented in the future.
-                              properties:
-                                id:
-                                  type: integer
-                                type:
-                                  type: string
-                                  enum:
-                                    - stream
-                                op:
-                                  type: string
-                                  enum:
-                                    - vacate
-                                streams:
-                                  type: array
-                                  description: |
-                                    Array of stream objects, each containing
-                                    details about a now-empty stream.
-                                  items:
-                                    $ref: "#/components/schemas/BasicStream"
-                              additionalProperties: false
-                              example:
-                                {
-                                  "type": "stream",
-                                  "op": "vacate",
-                                  "streams":
-                                    [
-                                      {
-                                        "name": "test_stream",
-                                        "stream_id": 11,
-                                        "description": "",
-                                        "rendered_description": "",
-                                        "invite_only": false,
-                                        "is_web_public": false,
-                                        "stream_post_policy": 1,
-                                        "history_public_to_subscribers": true,
-                                        "first_message_id": null,
-                                        "message_retention_days": null,
-                                        "is_announcement_only": false,
-                                      },
-                                    ],
-                                  "id": 2,
-                                }
-                            - type: object
-                              description: |
                                 Event sent to all users who can see a stream when it is deactivated.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - stream
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - stream
                                 op:
                                   type: string
                                   enum:
@@ -1119,11 +1018,12 @@ paths:
                                 when a property of that stream changes.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - stream
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - stream
                                 op:
                                   type: string
                                   enum:
@@ -1188,20 +1088,25 @@ paths:
                                   "name": "test_stream",
                                   "id": 0,
                                 }
-                            - type: object
-                              additionalProperties: false
-                              description: |
+                            - description: |
                                 Event sent when a reaction is added to a message.
                                 Sent to all users who were recipients of the message.
                               allOf:
-                                - $ref: "#/components/schemas/EmojiReaction"
-                                - properties:
+                                - $ref: "#/components/schemas/EmojiReactionBase"
+                                - additionalProperties: false
+                                  properties:
+                                    emoji_code: {}
+                                    emoji_name: {}
+                                    reaction_type: {}
+                                    user_id: {}
+                                    user: {}
                                     id:
-                                      type: integer
+                                      $ref: "#/components/schemas/EventIdSchema"
                                     type:
-                                      type: string
-                                      enum:
-                                        - reaction
+                                      allOf:
+                                        - $ref: "#/components/schemas/EventTypeSchema"
+                                        - enum:
+                                            - reaction
                                     op:
                                       type: string
                                       enum:
@@ -1211,7 +1116,7 @@ paths:
                                       description: |
                                         The ID of the message to which a reaction was
                                         added.
-                                - example:
+                                  example:
                                     {
                                       "type": "reaction",
                                       "op": "add",
@@ -1228,20 +1133,25 @@ paths:
                                       "reaction_type": "unicode_emoji",
                                       "id": 0,
                                     }
-                            - type: object
-                              additionalProperties: false
-                              description: |
+                            - description: |
                                 Event sent when a reaction is removed from a message.
                                 Sent to all users who were recipients of the message.
                               allOf:
-                                - $ref: "#/components/schemas/EmojiReaction"
-                                - properties:
+                                - $ref: "#/components/schemas/EmojiReactionBase"
+                                - additionalProperties: false
+                                  properties:
+                                    emoji_code: {}
+                                    emoji_name: {}
+                                    reaction_type: {}
+                                    user_id: {}
+                                    user: {}
                                     id:
-                                      type: integer
+                                      $ref: "#/components/schemas/EventIdSchema"
                                     type:
-                                      type: string
-                                      enum:
-                                        - reaction
+                                      allOf:
+                                        - $ref: "#/components/schemas/EventTypeSchema"
+                                        - enum:
+                                            - reaction
                                     op:
                                       type: string
                                       enum:
@@ -1251,7 +1161,7 @@ paths:
                                       description: |
                                         The ID of the message from which the reaction was
                                         removed.
-                                - example:
+                                  example:
                                     {
                                       "type": "reaction",
                                       "op": "remove",
@@ -1276,11 +1186,12 @@ paths:
                                 the current user has uploaded.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - attachment
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - attachment
                                 op:
                                   type: string
                                   enum:
@@ -1316,11 +1227,12 @@ paths:
                                 messages that reference the uploaded file.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - attachment
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - attachment
                                 op:
                                   type: string
                                   enum:
@@ -1356,11 +1268,12 @@ paths:
                                 the current user has uploaded.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - attachment
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - attachment
                                 op:
                                   type: string
                                   enum:
@@ -1396,11 +1309,12 @@ paths:
                                 `/poll` widget in Zulip.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - submessage
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - submessage
                                 msg_type:
                                   type: string
                                   description: |
@@ -1438,11 +1352,12 @@ paths:
                                 status of a user changes.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - user_status
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - user_status
                                 away:
                                   type: boolean
                                   description: |
@@ -1470,11 +1385,12 @@ paths:
                                 profile field types are configured for that Zulip organization.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - custom_profile_fields
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - custom_profile_fields
                                 op:
                                   type: string
                                   enum:
@@ -1570,11 +1486,12 @@ paths:
                                 stabilized.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - default_stream_groups
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - default_stream_groups
                                 default_stream_groups:
                                   type: array
                                   description: |
@@ -1645,11 +1562,12 @@ paths:
                                 organization administrator.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - default_streams
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - default_streams
                                 default_streams:
                                   type: array
                                   description: |
@@ -1685,11 +1603,12 @@ paths:
                                 Sent to all users who received the message.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - delete_message
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - delete_message
                                 message_ids:
                                   type: array
                                   description: |
@@ -1754,11 +1673,12 @@ paths:
                                 configured muted topics have changed.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - muted_topics
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - muted_topics
                                 muted_topics:
                                   type: array
                                   description: |
@@ -1791,11 +1711,12 @@ paths:
                                 webapp may want to handle these events.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - hotspots
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - hotspots
                                 hotspots:
                                   type: array
                                   description: |
@@ -1825,11 +1746,12 @@ paths:
                                 message.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - update_message
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - update_message
                                 user_id:
                                   type: integer
                                   description: |
@@ -1967,11 +1889,12 @@ paths:
                                 See the [typing endpoint docs](/api/set-typing-status) for more details.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - typing
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - typing
                                 op:
                                   type: string
                                   enum:
@@ -2043,11 +1966,12 @@ paths:
                                 See the [typing endpoint docs](/api/set-typing-status) for more details.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - typing
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - typing
                                 op:
                                   type: string
                                   enum:
@@ -2117,11 +2041,12 @@ paths:
                                 to a message.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - update_message_flags
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - update_message_flags
                                 op:
                                   type: string
                                   enum:
@@ -2170,11 +2095,12 @@ paths:
                                 removed from a message.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - update_message_flags
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - update_message_flags
                                 op:
                                   type: string
                                   enum:
@@ -2221,11 +2147,12 @@ paths:
                                 Event sent to users in an organization when a [user group](/help/user-groups) is created.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - user_group
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - user_group
                                 op:
                                   type: string
                                   enum:
@@ -2252,11 +2179,12 @@ paths:
                                 when a property of a user group is changed.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - user_group
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - user_group
                                 op:
                                   type: string
                                   enum:
@@ -2297,11 +2225,12 @@ paths:
                                 Event sent to all users when users have been added to a user group.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - user_group
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - user_group
                                 op:
                                   type: string
                                   enum:
@@ -2332,11 +2261,12 @@ paths:
                                 a user group.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - user_group
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - user_group
                                 op:
                                   type: string
                                   enum:
@@ -2366,11 +2296,12 @@ paths:
                                 Event sent to all users when a user group has been deleted.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - user_group
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - user_group
                                 op:
                                   type: string
                                   enum:
@@ -2390,18 +2321,19 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent to all users in a Zulip organization when the
-                                set of configured [Linkifiers](/help/add-a-custom-linkification-filter)
+                                set of configured [linkifiers](/help/add-a-custom-linkification-filter)
                                 for the organization has changed.
 
                                 Processing this event is important to doing Markdown local echo
                                 correctly.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - realm_filters
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_filters
                                 realm_filters:
                                   type: array
                                   items:
@@ -2414,7 +2346,7 @@ paths:
                                     An array of tuples, where each tuple describes a linkifier.
                                     The first element of the tuple is a
                                     string regex pattern which represents the pattern that should
-                                    be linkified on matching. The second element is the url with which the
+                                    be linkified on matching. The second element is the URL with which the
                                     pattern matching string should be linkified with and the third element
                                     is the ID of the realm filter.
                               example:
@@ -2435,14 +2367,18 @@ paths:
                               description: |
                                 Event sent to all users in a Zulip organization when
                                 a [custom emoji](/help/add-custom-emoji) has been updated,
-                                typically when it has been deactivated.
+                                typically when a new emoji has been added or an old one
+                                has been deactivated. The event contains all custom emoji
+                                configured for the organization, not just the updated
+                                custom emoji.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - realm_emoji
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_emoji
                                 op:
                                   type: string
                                   enum:
@@ -2486,11 +2422,12 @@ paths:
                                 has changed.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - realm_domains
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_domains
                                 op:
                                   type: string
                                   enum:
@@ -2516,11 +2453,12 @@ paths:
                                 has changed.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - realm_domains
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_domains
                                 op:
                                   type: string
                                   enum:
@@ -2558,11 +2496,12 @@ paths:
                                 has changed.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - realm_domains
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_domains
                                 op:
                                   type: string
                                   enum:
@@ -2585,11 +2524,12 @@ paths:
                                 when the status of the export changes.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - realm_export
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_export
                                 exports:
                                   type: array
                                   description: |
@@ -2629,11 +2569,12 @@ paths:
                                 receive this event.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - realm_bot
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_bot
                                 op:
                                   type: string
                                   enum:
@@ -2676,11 +2617,12 @@ paths:
                               additionalProperties: false
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - realm_bot
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_bot
                                 op:
                                   type: string
                                   enum:
@@ -2717,11 +2659,12 @@ paths:
                                 Event sent to all users when a bot has been deactivated.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - realm_bot
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_bot
                                 op:
                                   type: string
                                   enum:
@@ -2755,11 +2698,12 @@ paths:
                                 and one of them will be removed soon.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - realm_bot
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_bot
                                 op:
                                   type: string
                                   enum:
@@ -2788,11 +2732,12 @@ paths:
                                 configuration of the organization (realm) has changed.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - realm
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm
                                 op:
                                   type: string
                                   enum:
@@ -2839,11 +2784,12 @@ paths:
                                 in a single event.
                               properties:
                                 id:
-                                  type: integer
+                                  $ref: "#/components/schemas/EventIdSchema"
                                 type:
-                                  type: string
-                                  enum:
-                                    - realm
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm
                                 op:
                                   type: string
                                   enum:
@@ -2874,14 +2820,7 @@ paths:
                         type: string
                         description: |
                           The ID of the registered queue.
-                      handler_id:
-                        type: integer
-                        description: |
-                          An internal field that should not be present in these API responses.
-
-                          **Deprecated**: This will be removed in a future release.
-                        deprecated: true
-                  - example:
+                    example:
                       {
                         "queue_id": "1375801870:2942",
                         "events":
@@ -2993,13 +2932,16 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       stream_id:
                         type: integer
                         description: |
                           The ID of the given stream.
-                  - example: {"msg": "", "result": "success", "stream_id": 15}
+                    example: {"msg": "", "result": "success", "stream_id": 15}
         "400":
           description: Bad request.
           content:
@@ -3095,8 +3037,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       attachments:
                         type: array
                         description: |
@@ -3109,7 +3054,7 @@ paths:
                         description: |
                           The total size of all files uploaded by in the organization,
                           in bytes.
-                  - example:
+                    example:
                       {
                         "result": "success",
                         "msg": "",
@@ -3149,7 +3094,7 @@ paths:
         supported by Zulip's powerful full-text search backend.
 
         When a narrow is not specified, it can be used to fetch a user's
-        message history (We recommend paginating to 1000 messages at a time).
+        message history. (We recommend paginating to 1000 messages at a time.)
 
         In either case, you specify an `anchor` message (or ask the server to
         calculate the first unread message for you and use that as the
@@ -3256,8 +3201,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       anchor:
                         type: integer
                         description: |
@@ -3296,7 +3244,7 @@ paths:
                           fields:
                         items:
                           $ref: "#/components/schemas/GetMessages"
-                  - example:
+                    example:
                       {
                         "anchor": 21,
                         "found_newest": true,
@@ -3440,8 +3388,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       id:
                         type: integer
                         description: |
@@ -3453,7 +3404,7 @@ paths:
                           be sent.  Note that scheduled messages ("Send later") is a beta API and
                           may change before it's a finished feature.
                         example: "2020-06-24 11:19:54.337533+00:00"
-                  - example: {"msg": "", "id": 42, "result": "success"}
+                    example: {"msg": "", "id": 42, "result": "success"}
         "400":
           description: Bad request.
           content:
@@ -3491,8 +3442,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       message_history:
                         type: array
                         items:
@@ -3541,7 +3495,7 @@ paths:
                           A chronologically sorted array of `snapshot`
                           objects, each one with the values of the
                           message after the edit.
-                  - example:
+                    example:
                       {
                         "message_history":
                           [
@@ -3625,15 +3579,18 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       messages:
                         type: array
                         items:
                           type: integer
                         description: |
                           An array with the IDs of the modified messages.
-                  - example:
+                    example:
                       {"msg": "", "messages": [4, 18, 15], "result": "success"}
   /messages/render:
     post:
@@ -3652,13 +3609,16 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       rendered:
                         type: string
                         description: |
                           The rendered HTML.
-                  - example:
+                    example:
                       {
                         "msg": "",
                         "rendered": "<p><strong>foo</strong></p>",
@@ -3801,8 +3761,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       messages:
                         type: object
                         description: |
@@ -3825,9 +3788,9 @@ paths:
                                 narrow is a search narrow, `<span class="highlight">` elements
                                 will be included wrapping the matches for the search keywords.
                           description: |
-                            The ID of the message that matches the narrow.  No record will be returned
+                            `message_id`: The ID of the message that matches the narrow.  No record will be returned
                             for queried messages that do not match the narrow.
-                  - example:
+                    example:
                       {
                         "result": "success",
                         "msg": "",
@@ -3862,13 +3825,16 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       raw_content:
                         type: string
                         description: |
                           The raw content of the message.
-                  - example:
+                    example:
                       {
                         "raw_content": "**Don't** forget your towel!",
                         "result": "success",
@@ -3959,7 +3925,7 @@ paths:
                           - The time limit for editing this message has past
                           - Nothing to change
                           - Topic can't be empty
-                  - example:
+                    example:
                       {
                         "code": "BAD_REQUEST",
                         "msg": "You don't have permission to edit this message",
@@ -4034,13 +4000,16 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       uri:
                         type: string
                         description: |
                           The URI of the uploaded file.
-                  - example:
+                    example:
                       {
                         "msg": "",
                         "result": "success",
@@ -4076,14 +4045,17 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       url:
                         type: string
                         description: |
                           A temporary URL that can be used to access the uploaded file
                           without Zulip's normal API authentication.
-                  - example:
+                    example:
                       {
                         "msg": "",
                         "result": "success",
@@ -4099,6 +4071,8 @@ paths:
         includes values of [custom profile field](/help/add-custom-profile-fields).
 
         `GET {{ api_url }}/v1/users`
+
+        You can also [fetch details on a single user](/api/get-user).
       parameters:
         - $ref: "#/components/parameters/ClientGravatar"
         - $ref: "#/components/parameters/IncludeCustomProfileFields"
@@ -4109,8 +4083,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       members:
                         type: array
                         description: |
@@ -4118,7 +4095,7 @@ paths:
                           organization.
                         items:
                           $ref: "#/components/schemas/User"
-                  - example:
+                    example:
                       {
                         "msg": "",
                         "result": "success",
@@ -4151,7 +4128,7 @@ paths:
                                       "value": "I am:\n* The prince of Denmark\n* Nephew to the usurping Claudius",
                                       "rendered_value": "<p>I am:</p>\n<ul>\n<li>The prince of Denmark</li>\n<li>Nephew to the usurping Claudius</li>\n</ul>",
                                     },
-                                  "5": {"value": "1900-1-1"},
+                                  "5": {"value": "1900-01-01"},
                                   "7": {"value": "[11]"},
                                   "6": {"value": "https://blog.zulig.org"},
                                   "1":
@@ -4197,7 +4174,7 @@ paths:
       operationId: create_user
       tags: ["users"]
       description: |
-        {!api-admin-only.md!}
+        {!can-create-users-only.md!}
 
         Create a new user account via the API.
 
@@ -4234,15 +4211,18 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       user_id:
                         type: integer
                         description: |
                           The ID assigned to the newly created user.
 
                           **Changes**: New in Zulip 4.0 (feature level 30).
-                  - example: {"msg": "", "result": "success", "user_id": 25}
+                    example: {"msg": "", "result": "success", "user_id": 25}
         "400":
           description: Bad request.
           content:
@@ -4280,7 +4260,7 @@ paths:
                   - $ref: "#/components/schemas/JsonSuccess"
                   - example: {"msg": "", "result": "success"}
 
-  /users/{email}/presence:
+  /users/{user_id_or_email}/presence:
     get:
       operationId: get_user_presence
       tags: ["users"]
@@ -4293,16 +4273,19 @@ paths:
         presence endpoint, which returns data for all active users in the
         organization, instead.
 
-        `GET {{ api_url }}/v1/users/{email}/presence`
+        `GET {{ api_url }}/v1/users/{user_id_or_email}/presence`
 
         See
         [Zulip's developer documentation](https://zulip.readthedocs.io/en/latest/subsystems/presence.html)
         for details on the data model for presence in Zulip.
       parameters:
-        - name: email
+        - name: user_id_or_email
           in: path
           description: |
-            The email address of the user whose presence you want to fetch.
+            The user_id or Zulip display email address of the user whose presence you want to fetch.
+
+            **Changes**: New in Zulip 4.0 (feature level 43). Previous versions only supported
+            identifying the user by Zulip display email.
           schema:
             type: string
           example: iago@zulip.com
@@ -4314,8 +4297,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       presence:
                         type: object
                         description: |
@@ -4347,7 +4333,7 @@ paths:
                             the contents of the object that has been updated most
                             recently. For most applications, you'll just want to look at the
                             `aggregated` key.
-                  - example:
+                    example:
                       {
                         "presence":
                           {
@@ -4376,8 +4362,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       avatar_url:
                         type: string
                         description: |
@@ -4388,7 +4377,7 @@ paths:
                       avatar_version:
                         type: integer
                         description: |
-                          Version for the the user's avatar.  Used for cache-busting requests
+                          Version for the user's avatar.  Used for cache-busting requests
                           for the user's avatar.  Clients generally shouldn't need to use this;
                           most avatar URLs sent by Zulip will already end with `?v={avatar_version}`.
 
@@ -4478,7 +4467,7 @@ paths:
                           under the configured policy.
                       profile_data:
                         $ref: "#/components/schemas/profile_data"
-                  - example:
+                    example:
                       {
                         "avatar_url": "https://secure.gravatar.com/avatar/af4f06322c177ef4e1e9b2c424986b54?d=identicon&version=1",
                         "avatar_version": 1,
@@ -4497,7 +4486,7 @@ paths:
                         "user_id": 5,
                         "profile_data":
                           {
-                            "5": {"value": "2000-1-1"},
+                            "5": {"value": "2000-01-01"},
                             "4": {"value": "emacs"},
                             "7": {"value": "[10]"},
                             "1":
@@ -4565,8 +4554,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       topics:
                         type: array
                         description: |
@@ -4583,7 +4575,7 @@ paths:
                               description: |
                                 The name of the topic.
                               type: string
-                  - example:
+                    example:
                       {
                         "msg": "",
                         "result": "success",
@@ -4627,11 +4619,14 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/JsonSuccessBase"
                   # TODO: Is this the best way to declare required elements in 200 responses?
                   - required:
                       - subscriptions
-                  - properties:
+                    additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       subscriptions:
                         type: array
                         description: |
@@ -4639,7 +4634,7 @@ paths:
                           information about one of the subscribed streams.
                         items:
                           $ref: "#/components/schemas/Subscriptions"
-                  - example:
+                    example:
                       {
                         "msg": "",
                         "result": "success",
@@ -4692,7 +4687,7 @@ paths:
         - name: subscriptions
           in: query
           description: |
-            A list of dictionaries containing the the key `name` and value
+            A list of dictionaries containing the key `name` and value
             specifying the name of the stream to subscribe. If the stream does not
             exist a new stream is created. The description of the stream created can
             be specified by setting the dictionary key `description` with an
@@ -4703,7 +4698,7 @@ paths:
                 type: array
                 items:
                   type: object
-              example: [{"name": "Verona", "description": "Italian City"}]
+              example: [{"name": "Verona", "description": "Italian city"}]
           required: true
         - $ref: "#/components/parameters/Principals"
         - name: authorization_errors_fatal
@@ -4850,12 +4845,15 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/JsonSuccessBase"
                   - required:
                       - subscribed
                       - already_subscribed
                       - removed
-                  - properties:
+                    additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       subscribed:
                         type: object
                         description: |
@@ -4899,7 +4897,7 @@ paths:
                         description: |
                           A list of the names of streams which were unsubscribed
                           from as a result of the query.
-                  - example:
+                    example:
                       {
                         "msg": "",
                         "subscribed": {},
@@ -4937,8 +4935,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       not_removed:
                         type: array
                         items:
@@ -4953,7 +4954,7 @@ paths:
                         description: |
                           A list of the names of streams which were unsubscribed from as a result
                           of the query.
-                  - example:
+                    example:
                       {
                         "msg": "",
                         "not_removed": [],
@@ -5055,13 +5056,16 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       is_subscribed:
                         type: boolean
                         description: |
                           Whether the user is subscribed to the stream.
-                  - example:
+                    example:
                       {"msg": "", "result": "success", "is_subscribed": false}
   /realm/emoji/{emoji_name}:
     post:
@@ -5097,8 +5101,7 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
+                $ref: "#/components/schemas/JsonSuccess"
 
   /realm/emoji:
     get:
@@ -5115,8 +5118,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       emoji:
                         type: object
                         description: |
@@ -5124,7 +5130,7 @@ paths:
                           emoji ID as the key.
                         additionalProperties:
                           $ref: "#/components/schemas/RealmEmoji"
-                  - example:
+                    example:
                       {
                         "result": "success",
                         "msg": "",
@@ -5156,8 +5162,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       custom_fields:
                         type: array
                         description: |
@@ -5165,7 +5174,7 @@ paths:
                           Zulip organization.
                         items:
                           $ref: "#/components/schemas/CustomProfileField"
-                  - example:
+                    example:
                       {
                         "result": "success",
                         "msg": "",
@@ -5345,13 +5354,16 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       id:
                         type: integer
                         description: |
                           The ID for the custom profile field.
-                  - example: {"result": "success", "msg": "", "id": 9}
+                    example: {"result": "success", "msg": "", "id": 9}
   /users/me/subscriptions/properties:
     post:
       operationId: update_subscription_settings
@@ -5370,6 +5382,24 @@ paths:
             each subscription. Each object represents a subscription, and must have
             a `stream_id` key that identifies the stream, as well as the `property`
             being modified and its new `value`.
+
+            The possible values for each `property` and `value` pairs are:
+
+            * `color` (string): the hex value of the user's display color for the stream.
+            * `is_muted` (boolean): whether the stream is
+              [muted](/help/mute-a-stream).  Prior to Zulip 2.1, this feature was
+              represented by the more confusingly named `in_home_view` (with the
+              opposite value, `in_home_view=!is_muted`); for
+              backwards-compatibility, modern Zulip still accepts that value.
+            * `pin_to_top` (boolean): whether to pin the stream at the top of the stream list.
+            * `desktop_notifications` (boolean): whether to show desktop notifications
+                for all messages sent to the stream.
+            * `audible_notifications` (boolean): whether to play a sound
+              notification for all messages sent to the stream.
+            * `push_notifications` (boolean): whether to trigger a mobile push
+                notification for all messages sent to the stream.
+            * `email_notifications` (boolean): whether to trigger an email
+                notification for all messages sent to the stream.
           content:
             application/json:
               schema:
@@ -5389,8 +5419,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       subscription_data:
                         type: array
                         items:
@@ -5401,38 +5434,30 @@ paths:
                               type: string
                               description: |
                                 The property to be changed. It is one of:
-                                    *`color`: The hex value of the user's personal display color for the stream.
 
-                                    *`is_muted`: Whether the stream is [muted](/help/mute-a-stream).
+                                * `color`: The hex value of the user's personal display color for the stream.<br>
+                                * `is_muted`: Whether the stream is [muted](/help/mute-a-stream).<br>
+                                **Changes**: Prior to Zulip 2.1, this feature was
+                                represented by the more confusingly named `in_home_view` (with the
+                                opposite value, `in_home_view=!is_muted`); for
+                                backwards-compatibility, modern Zulip still accepts that value.<br>
+                                * `pin_to_top`: Whether to pin the stream at the top of the stream list.
+                                * `desktop_notifications`: Whether to show desktop notifications for all
+                                messages sent to the stream.<br>
+                                * `audible_notifications`: Whether to play a sound notification for all
+                                messages sent to the stream.<br>
+                                * `push_notifications`: Whether to trigger a mobile push notification for
+                                all messages sent to the stream.<br>
+                                * `email_notifications`: Whether to trigger an email notification for all
+                                messages sent to the stream.<br>
+                                * `in_home_view`: Whether to mute the stream (legacy property)<br>
+                                * `wildcard_mentions_notify`: whether wildcard mentions trigger notifications
+                                as though they were personal mentions in this stream.<br>
+                                A null value means the value of this setting
+                                should be inherited from the user-level default
+                                setting, wildcard_mentions_notify, for
+                                this stream.
 
-                                    **Changes**: Prior to Zulip 2.1, this feature was
-                                    represented by the more confusingly named `in_home_view` (with the
-                                    opposite value, `in_home_view=!is_muted`); for
-                                    backwards-compatibility, modern Zulip still accepts that value.
-
-                                    *`pin_to_top`: Whether to pin the stream at the top of the stream list.
-
-                                    *`desktop_notifications`: Whether to show desktop notifications for all
-                                    messages sent to the stream.
-
-                                    *`audible_notifications`: Whether to play a sound notification for all
-                                    messages sent to the stream.
-
-                                    *`push_notifications`: Whether to trigger a mobile push notification for
-                                    all messages sent to the stream.
-
-                                    *`email_notifications`: Whether to trigger an email notification for all
-                                    messages sent to the stream.
-
-                                    *`in_home_view`: Whether to mute the stream (Legacy property)
-
-                                    *`wildcard_mentions_notify`: whether wildcard mentions trigger notifications
-                                    as though they were personal mentions in this stream.
-
-                                    A null value means the value of this setting
-                                    should be inherited from the user-level default
-                                    setting, wildcard_mentions_notify, for
-                                    this stream.
                               enum:
                                 - color
                                 - push_notifications
@@ -5456,7 +5481,7 @@ paths:
                               type: integer
                         description: |
                           The same `subscription_data` array sent by the client for the request.
-                  - example:
+                    example:
                       {
                         "subscription_data":
                           [
@@ -5474,20 +5499,35 @@ paths:
                         "result": "success",
                         "msg": "",
                       }
-  /users/{user_id}:
+  /users/{email}:
     get:
-      operationId: get_user
+      operationId: get_user_by_email
       tags: ["users"]
       description: |
-        Fetch details for a single user in the organization.
+        Fetch details for a single user in the organization given a Zulip display
+        email address.
 
-        `GET {{ api_url }}/v1/users/{user_id}`
+        `GET {{ api_url }}/v1/users/{email}`
 
-        You can also fetch details on [all users in the organization](/api/get-users).
+        Note that this endpoint uses Zulip display emails addresses
+        for organizations that have configured limited [email address
+        visibility](/help/restrict-visibility-of-email-addresses).
 
-        *This endpoint is new in Zulip Server 3.0 (feature level 1).*
+        You can also fetch details on [all users in the organization](/api/get-users) or
+        [by user ID](/api/get-user).  Fetching by user ID is generally recommended
+        when possible, as users can
+        [change their email address](/help/change-your-email-address).
+
+        *This endpoint is new in Zulip Server 4.0 (feature level 39).*
       parameters:
-        - $ref: "#/components/parameters/UserId"
+        - name: email
+          in: path
+          description: |
+            The email address of the user whose details you want to fetch.
+          schema:
+            type: string
+          example: iago@zulip.com
+          required: true
         - $ref: "#/components/parameters/ClientGravatar"
         - $ref: "#/components/parameters/IncludeCustomProfileFields"
       responses:
@@ -5497,11 +5537,14 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       user:
                         $ref: "#/components/schemas/User"
-                  - example:
+                    example:
                       {
                         "msg": "",
                         "result": "success",
@@ -5518,7 +5561,81 @@ paths:
                                     "value": "I am:\n* The prince of Denmark\n* Nephew to the usurping Claudius",
                                     "rendered_value": "<p>I am:</p>\n<ul>\n<li>The prince of Denmark</li>\n<li>Nephew to the usurping Claudius</li>\n</ul>",
                                   },
-                                "5": {"value": "1900-1-1"},
+                                "5": {"value": "1900-01-01"},
+                                "7": {"value": "[11]"},
+                                "6": {"value": "https://blog.zulig.org"},
+                                "1":
+                                  {
+                                    "value": "+0-11-23-456-7890",
+                                    "rendered_value": "<p>+0-11-23-456-7890</p>",
+                                  },
+                                "8": {"value": "zulipbot"},
+                                "3":
+                                  {
+                                    "rendered_value": "<p>Dark chocolate</p>",
+                                    "value": "Dark chocolate",
+                                  },
+                              },
+                            "user_id": 10,
+                            "is_bot": false,
+                            "bot_type": null,
+                            "timezone": "",
+                            "is_admin": false,
+                            "is_owner": false,
+                            "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
+                            "is_active": true,
+                            "email": "hamlet@zulip.com",
+                          },
+                      }
+  /users/{user_id}:
+    get:
+      operationId: get_user
+      tags: ["users"]
+      description: |
+        Fetch details for a single user in the organization.
+
+        `GET {{ api_url }}/v1/users/{user_id}`
+
+        You can also fetch details on [all users in the organization](/api/get-users)
+        or [by email](/api/get-user-by-email).
+
+        *This endpoint is new in Zulip Server 3.0 (feature level 1).*
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+        - $ref: "#/components/parameters/ClientGravatar"
+        - $ref: "#/components/parameters/IncludeCustomProfileFields"
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      user:
+                        $ref: "#/components/schemas/User"
+                    example:
+                      {
+                        "msg": "",
+                        "result": "success",
+                        "user":
+                          {
+                            "date_joined": "2019-10-20T07:50:53.729659+00:00",
+                            "full_name": "King Hamlet",
+                            "is_guest": false,
+                            "profile_data":
+                              {
+                                "4": {"value": "vim"},
+                                "2":
+                                  {
+                                    "value": "I am:\n* The prince of Denmark\n* Nephew to the usurping Claudius",
+                                    "rendered_value": "<p>I am:</p>\n<ul>\n<li>The prince of Denmark</li>\n<li>Nephew to the usurping Claudius</li>\n</ul>",
+                                  },
+                                "5": {"value": "1900-01-01"},
                                 "7": {"value": "[11]"},
                                 "6": {"value": "https://blog.zulig.org"},
                                 "1":
@@ -5674,8 +5791,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       filters:
                         type: array
                         items:
@@ -5692,7 +5812,7 @@ paths:
                           ID, in that order. See the [Create
                           linkifiers](/api/add-linkifier) article for
                           details on what each field means.
-                  - example:
+                    example:
                       {
                         "msg": "",
                         "filters":
@@ -5742,13 +5862,16 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       id:
                         type: integer
                         description: |
                           The numeric ID assigned to this filter.
-                  - example: {"id": 42, "result": "success", "msg": ""}
+                    example: {"id": 42, "result": "success", "msg": ""}
   /realm/filters/{filter_id}:
     delete:
       operationId: remove_linkifier
@@ -5876,9 +5999,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/JsonSuccessBase"
                   - additionalProperties: false
-                  - properties:
+                    properties:
+                      result: {}
+                      msg: {}
                       queue_id:
                         type: string
                         description: |
@@ -5967,9 +6092,11 @@ paths:
                           Present if `message` is present in `fetch_event_types`.
 
                           The highest message ID among all messages the user has received as of the
-                          moment of this request.  Recommended for client-side logic only; clients wishing
-                          to fetch the latest messages should simply pass `anchor="latest"` to
-                          `GET /messages`.
+                          moment of this request.
+
+                          **Deprecated**: This field may be removed in future versions as it no
+                          longer has a clear purpose.  Clients wishing to fetch the latest messages
+                          should pass `anchor="latest"` to `GET /messages`.
                       muted_topics:
                         type: array
                         description: |
@@ -6037,11 +6164,11 @@ paths:
                           Present if `realm_filters` is present in `fetch_event_types`.
 
                           An array of tuples (fixed-length arrays) where each tuple describes
-                          a single realm filter ([Linkifier](/help/add-a-custom-linkification-filter).
+                          a single realm filter ([linkifier](/help/add-a-custom-linkification-filter).
                           The first element of the tuple is a string regex pattern which represents
                           the pattern that should be linkified on matching.
 
-                          The second element is the url with which the
+                          The second element is the URL with which the
                           pattern matching string should be linkified with and the third element
                           is the id of the realm filter.
                       realm_user_groups:
@@ -6167,8 +6294,21 @@ paths:
                         type: array
                         items:
                           allOf:
-                            - $ref: "#/components/schemas/BasicStream"
-                            - properties:
+                            - $ref: "#/components/schemas/BasicStreamBase"
+                            - additionalProperties: false
+                              properties:
+                                stream_id: {}
+                                name: {}
+                                description: {}
+                                date_created: {}
+                                invite_only: {}
+                                rendered_description: {}
+                                is_web_public: {}
+                                stream_post_policy: {}
+                                message_retention_days: {}
+                                history_public_to_subscribers: {}
+                                first_message_id: {}
+                                is_announcement_only: {}
                                 stream_weekly_traffic:
                                   type: integer
                                   nullable: true
@@ -6185,6 +6325,12 @@ paths:
                                   description: |
                                     A list of user IDs of users who are subscribed
                                     to the stream. Included only if `include_subscribers` is `true`.
+
+                                    If a user is not allowed to know the subscribers for
+                                    a stream, we will send an empty array.  API authors
+                                    should use other data to determine whether users like
+                                    guest users are forbidden to know the subscribers.
+
                         description: |
                           Present if `subscription` is present in `fetch_event_types`.
 
@@ -6221,7 +6367,7 @@ paths:
                                 sender_id:
                                   type: integer
                                   description: |
-                                    The user id of the the other participant in a PM conversation.
+                                    The user id of the other participant in a PM conversation.
                                 message_ids:
                                   type: array
                                   description: |
@@ -6373,6 +6519,7 @@ paths:
                           description: |
                             `{user_id}`: Object containing the status details of a user
                             with the key of the object being the id of the user.
+                          type: object
                           properties:
                             away:
                               type: boolean
@@ -6581,6 +6728,15 @@ paths:
                           Present if `update_display_settings` is present in `fetch_event_types`.
 
                           Whether the user has chosen for the layout width to be fluid.
+                      default_view:
+                        type: string
+                        description: |
+                          Present if `update_display_settings` is present in `fetch_event_types`.
+
+                          The [default view](/help/change-default-view) in Zulip, represented
+                          as the URL suffix after `#` to be rendered when Zulip loads.
+
+                          Currently supported values are `all_messages` and `recent_topics`.
                       high_contrast_mode:
                         type: boolean
                         description: |
@@ -6686,6 +6842,24 @@ paths:
 
                           The policy for which users can add other users to streams in this
                           organization.
+                      realm_wildcard_mention_policy:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The policy for who can use wildcard mentions in large streams.
+
+                          * 1 => Any user can use wildcard mentions in large streams.
+                          * 2 => Only members can use wildcard mentions in large streams.
+                          * 3 => Only full members can use wildcard mentions in large streams.
+                          * 4 => Only stream and organization administrators can use wildcard mentions in large streams.
+                          * 5 => Only organization administrators can use wildcard mentions in large streams.
+                          * 6 => Nobody can use wildcard mentions in large streams.
+
+                          All users will receive a warning/reminder when using
+                          mentions in large streams, even when permitted to do so.
+
+                          **Changes**: New in Zulip 4.0 (feature level 33).
                       realm_default_language:
                         type: string
                         description: |
@@ -6841,7 +7015,7 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           Members whose accounts have been created at least this many days ago
-                          will be treated as [Full Members](/help/restrict-permissions-of-new-members)
+                          will be treated as [full members](/help/restrict-permissions-of-new-members)
                           for the purpose of settings that restrict access to new members.
                       realm_digest_weekday:
                         type: integer
@@ -6937,7 +7111,7 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The url of the organization's [profile icon](/help/create-your-organization-profile).
+                          The URL of the organization's [profile icon](/help/create-your-organization-profile).
                       realm_icon_source:
                         type: string
                         description: |
@@ -6961,7 +7135,7 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The url of the organization's wide logo configured in the
+                          The URL of the organization's wide logo configured in the
                           [organization profile](/help/create-your-organization-profile).
                       realm_logo_source:
                         type: string
@@ -6980,7 +7154,7 @@ paths:
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          The url of the organization's night theme wide-format logo configured in the
+                          The URL of the organization's night theme wide-format logo configured in the
                           [organization profile](/help/create-your-organization-profile).
                       realm_night_logo_source:
                         type: string
@@ -7030,6 +7204,7 @@ paths:
                             `{provider_name}`: Dictionary containing the details of the
                             video chat provider with the name of the chat provider as
                             the key.
+                          type: object
                           properties:
                             name:
                               type: string
@@ -7142,6 +7317,7 @@ paths:
                             `{site_name}`: Dictionary containing the details of the
                             default external account provider with the name of the
                             website as the key.
+                          type: object
                           properties:
                             name:
                               type: string
@@ -7161,7 +7337,7 @@ paths:
                             url_pattern:
                               type: string
                               description: |
-                                The regex pattern of  the url of a profile page
+                                The regex pattern of the URL of a profile page
                                 on the external site.
                       jitsi_server_url:
                         type: string
@@ -7314,7 +7490,7 @@ paths:
                         description: |
                           Present if `realm_user` is present in `fetch_event_types`.
 
-                          The url of the avatar URL for the current user at 100x100
+                          The URL of the avatar for the current user at 100x100
                           resolution.  See also `avatar_url_medium`.
                       can_create_streams:
                         type: boolean
@@ -7395,13 +7571,30 @@ paths:
                           contexts.
                         items:
                           allOf:
-                            - $ref: "#/components/schemas/User"
-                            - properties:
+                            - $ref: "#/components/schemas/UserBase"
+                            - additionalProperties: false
+                              properties:
+                                email: {}
+                                is_bot: {}
+                                avatar_url: {}
+                                avatar_version: {}
+                                full_name: {}
+                                is_admin: {}
+                                is_owner: {}
+                                bot_type: {}
+                                user_id: {}
+                                bot_owner_id: {}
+                                is_active: {}
+                                is_guest: {}
+                                timezone: {}
+                                date_joined: {}
+                                delivery_email: {}
+                                profile_data: {}
                                 is_cross_realm_bot:
                                   type: boolean
                                   description: |
                                     Whether the user is a cross realm bot.
-                  - example:
+                    example:
                       {
                         "last_event_id": -1,
                         "msg": "",
@@ -7444,8 +7637,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       authentication_methods:
                         type: object
                         additionalProperties: false
@@ -7463,7 +7659,7 @@ paths:
                             type: boolean
                           dev:
                             description: |
-                              Whether the user can authenticate using development api key.
+                              Whether the user can authenticate using development API key.
                             type: boolean
                           email:
                             description: |
@@ -7471,35 +7667,35 @@ paths:
                             type: boolean
                           ldap:
                             description: |
-                              Whether the user can authenticate using ldap.
+                              Whether the user can authenticate using LDAP.
                             type: boolean
                           remoteuser:
                             description: |
-                              Whether the user can authenticate using remoteuser.
+                              Whether the user can authenticate using REMOTE_USER.
                             type: boolean
                           github:
                             description: |
-                              Whether the user can authenticate using their github account.
+                              Whether the user can authenticate using their GitHub account.
                             type: boolean
                           azuread:
                             description: |
-                              Whether the user can authenticate using their azuread account.
+                              Whether the user can authenticate using their Azure Active Directory account.
                             type: boolean
                           gitlab:
                             description: |
-                              Whether the user can authenticate using their gitlab account.
+                              Whether the user can authenticate using their GitLab account.
                             type: boolean
                           apple:
                             description: |
-                              Whether the user can authenticate using their apple account.
+                              Whether the user can authenticate using their Apple account.
                             type: boolean
                           google:
                             description: |
-                              Whether the user can authenticate using their google account.
+                              Whether the user can authenticate using their Google account.
                             type: boolean
                           saml:
                             description: |
-                              Whether the user can authenticate using saml.
+                              Whether the user can authenticate using SAML.
                             type: boolean
                       external_authentication_methods:
                         type: array
@@ -7604,7 +7800,7 @@ paths:
                         description: |
                           HTML description of the organization, as configured by the [organization
                           profile](/help/create-your-organization-profile).
-                  - example:
+                    example:
                       {
                         "authentication_methods":
                           {
@@ -7815,8 +8011,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       enable_desktop_notifications:
                         type: boolean
                         description: |
@@ -7866,7 +8065,7 @@ paths:
                         description: |
                           The setting for `message_content_in_email_notifications`, if it was
                           changed in this request.
-                  - example:
+                    example:
                       {
                         "enable_offline_push_notifications": true,
                         "enable_online_push_notifications": true,
@@ -7939,23 +8138,39 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       streams:
                         description: |
                           A list of `stream` objects with details on the requested streams.
                         type: array
                         items:
                           allOf:
-                            - $ref: "#/components/schemas/BasicStream"
-                            - properties:
+                            - $ref: "#/components/schemas/BasicStreamBase"
+                            - additionalProperties: false
+                              properties:
+                                stream_id: {}
+                                name: {}
+                                description: {}
+                                date_created: {}
+                                invite_only: {}
+                                rendered_description: {}
+                                is_web_public: {}
+                                stream_post_policy: {}
+                                message_retention_days: {}
+                                history_public_to_subscribers: {}
+                                first_message_id: {}
+                                is_announcement_only: {}
                                 is_default:
                                   type: boolean
                                   description: |
                                     Whether the given stream is a
                                     [default stream](/help/set-default-streams-for-new-users).  Only
                                     returned if the `include_default` parameter is `true`.
-                  - example:
+                    example:
                       {
                         "msg": "",
                         "result": "success",
@@ -8038,9 +8253,6 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonError"
-                  - properties:
-                      msg:
-                        type: string
                   - example:
                       {
                         "code": "BAD_REQUEST",
@@ -8179,7 +8391,7 @@ paths:
             The user_ids of the recipients of the message being typed. Typing
             notifications are only supported for private messages. Send a
             JSON-encoded list of user_ids. (Use a list even if there is only one
-            recipient.).
+            recipient.)
 
             **Changes**: Before Zulip 2.0, this parameter accepted only a JSON-encoded
             list of email addresses.  Support for the email address-based format was
@@ -8388,8 +8600,11 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       user_groups:
                         type: array
                         items:
@@ -8407,7 +8622,7 @@ paths:
                             members:
                               type: array
                               description: |
-                                The integer User IDs of the user group members.
+                                The integer user IDs of the user group members.
                               items:
                                 type: integer
                             name:
@@ -8417,7 +8632,7 @@ paths:
                         description: |
                           A list of `user_group` objects, which contain a `description`, a `name`,
                           their `id` and the list of members of the user group.
-                  - example:
+                    example:
                       {
                         "msg": "",
                         "result": "success",
@@ -8467,18 +8682,15 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - allOf:
-                      - $ref: "#/components/schemas/InvalidApiKeyError"
-                  - allOf:
-                      - $ref: "#/components/schemas/MissingArgumentError"
-                  - allOf:
-                      - $ref: "#/components/schemas/UserNotAuthorizedError"
+                  - $ref: "#/components/schemas/InvalidApiKeyError"
+                  - $ref: "#/components/schemas/MissingArgumentError"
+                  - $ref: "#/components/schemas/UserNotAuthorizedError"
   /zulip-outgoing-webhook:
     post:
       operationId: zulip_outgoing_webhooks
       tags: ["webhooks"]
       description: |
-        Outgoing Webhooks allows to build or set up Zulip integrations which are
+        Outgoing webhooks allows to build or set up Zulip integrations which are
         notified when certain types of messages are sent in Zulip.
       responses:
         "200":
@@ -8510,19 +8722,39 @@ paths:
                       webhook request (each bot user uses a fixed token). You can get the token used by a given outgoing webhook bot
                       in the `zuliprc` file downloaded when creating the bot.
                   message:
+                    description: |
+                      A dict containing details on the message that triggered the
+                      outgoing webhook, in the format used by [`GET /messages`](/api/get-messages).
                     allOf:
-                      - description: |
-                          A dict containing details on the message that triggered the
-                          outgoing webhook, in the format used by [`GET /messages`](/api/get-messages).
-                      - $ref: "#/components/schemas/Messages"
-                      - properties:
+                      - $ref: "#/components/schemas/MessagesBase"
+                      - additionalProperties: false
+                        properties:
+                          avatar_url: {}
+                          client: {}
+                          content: {}
+                          content_type: {}
+                          display_recipient: {}
+                          id: {}
+                          is_me_message: {}
+                          reactions: {}
+                          recipient_id: {}
+                          sender_email: {}
+                          sender_full_name: {}
+                          sender_id: {}
+                          sender_realm_str: {}
+                          stream_id: {}
+                          subject: {}
+                          topic_links: {}
+                          submessages: {}
+                          timestamp: {}
+                          type: {}
                           rendered_content:
                             type: string
                             description: |
                               The content/body of the message rendered in HTML.
                 example:
                   {
-                    "data": "@**Outgoing Webhook Test** Zulip is the world\u2019s most productive group chat!",
+                    "data": "@**Outgoing webhook test** Zulip is the world\u2019s most productive group chat!",
                     "trigger": "mention",
                     "token": "xvOzfurIutdRRVLzpXrIIHXJvNfaJLJ0",
                     "message":
@@ -8536,10 +8768,10 @@ paths:
                         "topic_links": [],
                         "sender_full_name": "Iago",
                         "avatar_url": "https://secure.gravatar.com/avatar/1f4f1575bf002ae562fea8fc4b861b09?d=identicon&version=1",
-                        "rendered_content": "<p><span class=\"user-mention\" data-user-id=\"25\">@Outgoing Webhook Test</span> Zulip is the world\u2019s most productive group chat!</p>",
+                        "rendered_content": "<p><span class=\"user-mention\" data-user-id=\"25\">@Outgoing webhook test</span> Zulip is the world\u2019s most productive group chat!</p>",
                         "sender_id": 5,
                         "stream_id": 5,
-                        "content": "@**Outgoing Webhook Test** Zulip is the world\u2019s most productive group chat!",
+                        "content": "@**Outgoing webhook test** Zulip is the world\u2019s most productive group chat!",
                         "display_recipient": "Verona",
                         "type": "stream",
                         "id": 112,
@@ -8555,7 +8787,7 @@ paths:
       tags: ["streams"]
       operationId: create_big_blue_button_video_call
       description: |
-        Create a video call url for a Big Blue Button video call.
+        Create a video call URL for a Big Blue Button video call.
         Requires Big Blue Button to be configured on the Zulip server.
       responses:
         "200":
@@ -8564,14 +8796,17 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/JsonSuccess"
-                  - properties:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
                       url:
                         description: |
-                          The url for the Big Blue Button video call.
+                          The URL for the Big Blue Button video call.
                         type: string
                         example: "/calls/bbb/join?meeting_id=%22zulip-something%22&password=%22something%22&checksum=%22somechecksum%22"
-                  - example:
+                    example:
                       {
                         "msg": "",
                         "result": "success",
@@ -8592,6 +8827,15 @@ components:
         `/fetch_api_key` or `/dev_fetch_api_key` endpoints.
 
   schemas:
+    EventIdSchema:
+      type: integer
+      description: |
+        The ID of the event.  Events appear in increasing order but may not be consecutive.
+    EventTypeSchema:
+      type: string
+      description: |
+        The event's type, relevant both for client-side dispatch and server-side
+        filtering by event type in [POST /register](/api/register-queue).
     Attachments:
       type: object
       description: |
@@ -8652,10 +8896,26 @@ components:
                   The unique message ID.  Messages should always be
                   displayed sorted by ID.
     BasicStream:
+      allOf:
+        - $ref: "#/components/schemas/BasicStreamBase"
+        - additionalProperties: false
+          properties:
+            stream_id: {}
+            name: {}
+            description: {}
+            date_created: {}
+            invite_only: {}
+            rendered_description: {}
+            is_web_public: {}
+            stream_post_policy: {}
+            message_retention_days: {}
+            history_public_to_subscribers: {}
+            first_message_id: {}
+            is_announcement_only: {}
+    BasicStreamBase:
       type: object
       description: |
         Object containing basic details about the stream.
-      additionalProperties: false
       properties:
         stream_id:
           type: integer
@@ -8750,8 +9010,21 @@ components:
             **Changes**: Deprecated in Zulip 3.0 (feature level 1), use
             `stream_post_policy` instead.
     BasicBot:
+      allOf:
+        - $ref: "#/components/schemas/BasicBotBase"
+        - additionalProperties: false
+          properties:
+            user_id: {}
+            full_name: {}
+            api_key: {}
+            default_sending_stream: {}
+            default_events_register_stream: {}
+            default_all_public_streams: {}
+            avatar_url: {}
+            owner_id: {}
+            services: {}
+    BasicBotBase:
       type: object
-      additionalProperties: false
       properties:
         user_id:
           type: integer
@@ -8814,7 +9087,7 @@ components:
                   base_url:
                     type: string
                     description: |
-                      The url the outgoing webhook is configured to post to.
+                      The URL the outgoing webhook is configured to post to.
                   token:
                     type: string
                     description: |
@@ -8840,10 +9113,20 @@ components:
                     $ref: "#/components/schemas/Config"
     Bot:
       allOf:
-        - $ref: "#/components/schemas/BasicBot"
+        - $ref: "#/components/schemas/BasicBotBase"
         - description: |
             Object containing details of a bot.
-        - properties:
+          additionalProperties: false
+          properties:
+            user_id: {}
+            full_name: {}
+            api_key: {}
+            default_sending_stream: {}
+            default_events_register_stream: {}
+            default_all_public_streams: {}
+            avatar_url: {}
+            owner_id: {}
+            services: {}
             email:
               type: string
               description: |
@@ -9028,7 +9311,7 @@ components:
           type: string
           nullable: true
           description: |
-            The url of the export. Null if there's no url.
+            The URL of the export. `null` if there's no URL.
         pending:
           type: boolean
           description: |
@@ -9299,8 +9582,17 @@ components:
           items:
             $ref: "#/components/schemas/BasicStream"
     EmojiReaction:
+      allOf:
+        - $ref: "#/components/schemas/EmojiReactionBase"
+        - additionalProperties: false
+          properties:
+            emoji_code: {}
+            emoji_name: {}
+            reaction_type: {}
+            user_id: {}
+            user: {}
+    EmojiReactionBase:
       type: object
-      additionalProperties: false
       properties:
         emoji_code:
           type: string
@@ -9309,7 +9601,7 @@ components:
             within the namespace of the `reaction_type`.
 
             For example, for `unicode_emoji`, this will be an encoding of the
-            unicode codepoint.
+            Unicode codepoint.
         emoji_name:
           type: string
           description: |
@@ -9319,7 +9611,7 @@ components:
           description: |
             One of the following values:
 
-            * `unicode_emoji`: Unicode emoji (`emoji_code` will be its unicode
+            * `unicode_emoji`: Unicode emoji (`emoji_code` will be its Unicode
               codepoint).
             * `realm_emoji`: [Custom emoji](/help/add-custom-emoji).
               (`emoji_code` will be its ID).
@@ -9362,10 +9654,33 @@ components:
               description: |
                 Whether the user is a mirror dummy.
     Messages:
+      allOf:
+        - $ref: "#/components/schemas/MessagesBase"
+        - additionalProperties: false
+          properties:
+            avatar_url: {}
+            client: {}
+            content: {}
+            content_type: {}
+            display_recipient: {}
+            id: {}
+            is_me_message: {}
+            reactions: {}
+            recipient_id: {}
+            sender_email: {}
+            sender_full_name: {}
+            sender_id: {}
+            sender_realm_str: {}
+            stream_id: {}
+            subject: {}
+            topic_links: {}
+            submessages: {}
+            timestamp: {}
+            type: {}
+    MessagesBase:
       type: object
       description: |
         Object containing details of the message.
-      additionalProperties: false
       properties:
         avatar_url:
           type: string
@@ -9465,8 +9780,11 @@ components:
         subject:
           type: string
           description: |
-            The `topic` of the message (only present for stream
-            messages).  The field name is a legacy holdover from when topics were
+            The `topic` of the message.  Currently always `""` for private messages,
+            though this could change if Zulip adds support for topics in private
+            message conversations.
+
+            The field name is a legacy holdover from when topics were
             called "subjects" and will eventually change.
         topic_links:
           type: array
@@ -9500,8 +9818,28 @@ components:
             The type of the message: `stream` or `private`.
     GetMessages:
       allOf:
-        - $ref: "#/components/schemas/Messages"
-        - properties:
+        - $ref: "#/components/schemas/MessagesBase"
+        - additionalProperties: false
+          properties:
+            avatar_url: {}
+            client: {}
+            content: {}
+            content_type: {}
+            display_recipient: {}
+            id: {}
+            is_me_message: {}
+            reactions: {}
+            recipient_id: {}
+            sender_email: {}
+            sender_full_name: {}
+            sender_id: {}
+            sender_realm_str: {}
+            stream_id: {}
+            subject: {}
+            topic_links: {}
+            submessages: {}
+            timestamp: {}
+            type: {}
             flags:
               type: array
               description: |
@@ -9558,8 +9896,28 @@ components:
             Whether the client is capable of showing mobile/push notifications
             to the user.
     User:
+      allOf:
+        - $ref: "#/components/schemas/UserBase"
+        - additionalProperties: false
+          properties:
+            email: {}
+            is_bot: {}
+            avatar_url: {}
+            avatar_version: {}
+            full_name: {}
+            is_admin: {}
+            is_owner: {}
+            bot_type: {}
+            user_id: {}
+            bot_owner_id: {}
+            is_active: {}
+            is_guest: {}
+            timezone: {}
+            date_joined: {}
+            delivery_email: {}
+            profile_data: {}
+    UserBase:
       type: object
-      additionalProperties: false
       description: |
         A dictionary containing basic data on a given Zulip user.
       properties:
@@ -9578,13 +9936,17 @@ components:
           type: string
           nullable: true
           description: |
-            URL for the the user's avatar.  Will be `null` if the `client_gravatar`
+            URL for the user's avatar.  Will be `null` if the `client_gravatar`
             query parameter was set to `True` and the user's avatar is hosted by
             the Gravatar provider (i.e. the user has never uploaded an avatar).
+
+            **Changes**: In Zulip 3.0 (feature level 18), if the client has the
+            `user_avatar_url_field_optional` capability, this will be missing at
+            the server's sole discretion.
         avatar_version:
           type: integer
           description: |
-            Version for the the user's avatar.  Used for cache-busting requests
+            Version for the user's avatar.  Used for cache-busting requests
             for the user's avatar.  Clients generally shouldn't need to use this;
             most avatar URLs sent by Zulip will already end with `?v={avatar_version}`.
         full_name:
@@ -9666,7 +10028,7 @@ components:
         type: object
         additionalProperties: false
         description: |
-          '{id}': Object with data about what value user filled in the custom
+          `{id}`: Object with data about what value user filled in the custom
                       profile field with id `id`.
         properties:
           value:
@@ -9682,32 +10044,45 @@ components:
               This user-generated HTML content should be rendered
               using the same CSS and client-side security protections
               as are used for message content.
-    JsonResponse:
+    JsonResponseBase:
       type: object
-      additionalProperties: false
       properties:
         result:
           type: string
     JsonSuccess:
       allOf:
-        - $ref: "#/components/schemas/JsonResponse"
+        - $ref: "#/components/schemas/JsonSuccessBase"
+        - additionalProperties: false
+          properties:
+            result: {}
+            msg: {}
+    JsonSuccessBase:
+      allOf:
+        - $ref: "#/components/schemas/JsonResponseBase"
         - required:
             - result
             - msg
-        - properties:
+          properties:
             result:
               enum:
                 - success
             msg:
               type: string
-        - example: {"msg": "", "result": "success"}
+          example: {"msg": "", "result": "success"}
     JsonError:
       allOf:
-        - $ref: "#/components/schemas/JsonResponse"
+        - $ref: "#/components/schemas/JsonErrorBase"
+        - additionalProperties: false
+          properties:
+            result: {}
+            msg: {}
+    JsonErrorBase:
+      allOf:
+        - $ref: "#/components/schemas/JsonResponseBase"
         - required:
             - result
             - msg
-        - properties:
+          properties:
             result:
               enum:
                 - error
@@ -9715,11 +10090,14 @@ components:
               type: string
     ApiKeyResponse:
       allOf:
-        - $ref: "#/components/schemas/JsonSuccess"
+        - $ref: "#/components/schemas/JsonSuccessBase"
         - required:
             - api_key
             - email
-        - properties:
+          additionalProperties: false
+          properties:
+            result: {}
+            msg: {}
             api_key:
               type: string
               description: |
@@ -9728,7 +10106,7 @@ components:
               type: string
               description: |
                 The email address of the user who owns the API key
-        - example:
+          example:
             {
               "api_key": "gjA04ZYcqXKalvYMA8OeXSfzUOLrtbZv",
               "email": "iago@zulip.com",
@@ -9737,21 +10115,35 @@ components:
             }
     CodedError:
       allOf:
-        - $ref: "#/components/schemas/JsonError"
+        - $ref: "#/components/schemas/CodedErrorBase"
+        - additionalProperties: false
+          properties:
+            result: {}
+            msg: {}
+            code: {}
+    CodedErrorBase:
+      allOf:
+        - $ref: "#/components/schemas/JsonErrorBase"
         - properties:
+            result: {}
+            msg: {}
             code:
               type: string
               description: |
                 A string that identifies the error.
     BadEventQueueIdError:
       allOf:
-        - $ref: "#/components/schemas/CodedError"
-        - properties:
+        - $ref: "#/components/schemas/CodedErrorBase"
+        - additionalProperties: false
+          properties:
+            result: {}
+            msg: {}
+            code: {}
             queue_id:
               type: string
               description: |
                 The string that identifies the invalid event queue.
-        - example:
+          example:
             {
               "code": "BAD_EVENT_QUEUE_ID",
               "msg": "Bad event queue id: 1518820930:1",
@@ -9760,13 +10152,16 @@ components:
             }
     InvalidMessageError:
       allOf:
-        - $ref: "#/components/schemas/JsonSuccess"
-        - properties:
+        - $ref: "#/components/schemas/JsonSuccessBase"
+        - additionalProperties: false
+          properties:
+            result: {}
+            msg: {}
             raw_content:
               type: string
               description: |
                 The raw content of the message.
-        - example:
+          example:
             {
               "msg": "Invalid message(s)",
               "code": "BAD_REQUEST",
@@ -9774,13 +10169,17 @@ components:
             }
     NonExistingStreamError:
       allOf:
-        - $ref: "#/components/schemas/CodedError"
-        - properties:
+        - $ref: "#/components/schemas/CodedErrorBase"
+        - additionalProperties: false
+          properties:
+            result: {}
+            msg: {}
+            code: {}
             stream:
               type: string
               description: |
                 The name of the stream that could not be found.
-        - example:
+          example:
             {
               "code": "STREAM_DOES_NOT_EXIST",
               "msg": "Stream 'nonexistent_stream' does not exist",
@@ -9789,8 +10188,11 @@ components:
             }
     AddSubscriptionsResponse:
       allOf:
-        - $ref: "#/components/schemas/JsonSuccess"
-        - properties:
+        - $ref: "#/components/schemas/JsonSuccessBase"
+        - additionalProperties: false
+          properties:
+            result: {}
+            msg: {}
             subscribed:
               type: object
               description: |
@@ -9812,7 +10214,7 @@ components:
                 subscribed to.
               additionalProperties:
                 description: |
-                  {email_address}`: List of the names of the streams that the user is
+                  `{email_address}`: List of the names of the streams that the user is
                   already subscribed to.
                 type: array
                 items:
@@ -9830,13 +10232,17 @@ components:
         - example: {"msg": "Invalid API key", "result": "error"}
     MissingArgumentError:
       allOf:
-        - $ref: "#/components/schemas/CodedError"
-        - properties:
+        - $ref: "#/components/schemas/CodedErrorBase"
+        - additionalProperties: false
+          properties:
+            result: {}
+            msg: {}
+            code: {}
             var_name:
               type: string
               description: |
                 It contains the information about the missing parameter.
-        - example:
+          example:
             {
               "code": "REQUEST_VARIABLE_MISSING",
               "msg": "Missing 'content' argument",
@@ -10076,7 +10482,7 @@ components:
         from the streams specified in the `subscriptions` parameter. If
         not provided, then the requesting user/bot is subscribed.
 
-        **Changes**: The integer format is new in Zulip 3.0 (Feature level 9).
+        **Changes**: The integer format is new in Zulip 3.0 (feature level 9).
       content:
         application/json:
           schema:
@@ -10094,7 +10500,7 @@ components:
         it should pass this parameter using the value the server provided
         for the existing reaction for specificity.  Supported values:
 
-        * `unicode_emoji`: Unicode emoji (`emoji_code` will be its unicode codepoint).
+        * `unicode_emoji`: Unicode emoji (`emoji_code` will be its Unicode codepoint).
         * `realm_emoji`: Custom emoji. (`emoji_code` will be its ID).
         * `zulip_extra_emoji`: Special emoji included with Zulip.  Exists to
            namespace the `zulip` emoji.

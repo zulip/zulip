@@ -5,12 +5,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0067_archived_models'),
+        ("zerver", "0067_archived_models"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='realm',
-            name='domain',
+            model_name="realm",
+            name="domain",
         ),
     ]

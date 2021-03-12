@@ -142,7 +142,7 @@
             margin: 0 0 2px;
         }
 
-        @media (max-width: 500px) {
+        @media (width <= 500px) {
             margin-left: 0;
         }
     }
@@ -173,7 +173,7 @@
             vertical-align: middle;
         }
 
-        @media (max-width: 500px) {
+        @media (width <= 500px) {
             padding: 10px;
         }
     }
@@ -241,14 +241,14 @@
     .tip::before {
         display: inline;
         content: "\f0eb   Tip:  ";
-        font-family: FontAwesome, Yantramanav, "Source Sans Pro";
+        font-family: FontAwesome, Yantramanav, "Source Sans 3";
         font-weight: 600;
     }
 
     .keyboard_tip::before {
         display: inline;
         content: "\f11c   Keyboard Shortcut:  ";
-        font-family: FontAwesome, Yantramanav, "Source Sans Pro";
+        font-family: FontAwesome, Yantramanav, "Source Sans 3";
         font-weight: 600;
     }
 
@@ -308,9 +308,10 @@
     }
 
     pre {
-        line-height: 15px;
         code {
+            font-size: 14px;
             white-space: pre-wrap;
+            padding: 0;
         }
     }
 

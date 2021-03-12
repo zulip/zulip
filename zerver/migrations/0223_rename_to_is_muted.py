@@ -8,29 +8,35 @@ from django.db.models import Case, Value, When
 
 def set_initial_value_for_is_muted(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     Subscription = apps.get_model("zerver", "Subscription")
-    Subscription.objects.update(is_muted=Case(
-        When(in_home_view=True, then=Value(False)),
-        When(in_home_view=False, then=Value(True)),
-    ))
+    Subscription.objects.update(
+        is_muted=Case(
+            When(in_home_view=True, then=Value(False)),
+            When(in_home_view=False, then=Value(True)),
+        )
+    )
+
 
 def reverse_code(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     Subscription = apps.get_model("zerver", "Subscription")
-    Subscription.objects.update(in_home_view=Case(
-        When(is_muted=True, then=Value(False)),
-        When(is_muted=False, then=Value(True)),
-    ))
+    Subscription.objects.update(
+        in_home_view=Case(
+            When(is_muted=True, then=Value(False)),
+            When(is_muted=False, then=Value(True)),
+        )
+    )
+
 
 class Migration(migrations.Migration):
     atomic = False
 
     dependencies = [
-        ('zerver', '0222_userprofile_fluid_layout_width'),
+        ("zerver", "0222_userprofile_fluid_layout_width"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='subscription',
-            name='is_muted',
+            model_name="subscription",
+            name="is_muted",
             field=models.NullBooleanField(default=False),
         ),
         migrations.RunPython(
@@ -39,7 +45,7 @@ class Migration(migrations.Migration):
             elidable=True,
         ),
         migrations.RemoveField(
-            model_name='subscription',
-            name='in_home_view',
+            model_name="subscription",
+            name="in_home_view",
         ),
     ]

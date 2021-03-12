@@ -1,11 +1,10 @@
-"use strict";
+import * as helpers from "./helpers";
 
-exports.initialize = function () {
+export function initialize() {
     helpers.set_tab("billing");
 
     const stripe_key = $("#payment-method").data("key");
     const card_change_handler = StripeCheckout.configure({
-        // eslint-disable-line no-undef
         key: stripe_key,
         image: "/static/images/logo/zulip-icon-128x128.png",
         locale: "auto",
@@ -34,10 +33,8 @@ exports.initialize = function () {
         ]);
         e.preventDefault();
     });
-};
-
-window.billing = exports;
+}
 
 $(() => {
-    exports.initialize();
+    initialize();
 });

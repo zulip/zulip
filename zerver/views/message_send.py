@@ -1,5 +1,6 @@
 from typing import Iterable, Optional, Sequence, Union, cast
 
+import pytz
 from dateutil.parser import parse as dateparser
 from django.core import validators
 from django.core.exceptions import ValidationError
@@ -20,7 +21,6 @@ from zerver.lib.actions import (
 from zerver.lib.message import render_markdown
 from zerver.lib.response import json_error, json_success
 from zerver.lib.timestamp import convert_to_UTC
-from zerver.lib.timezone import get_timezone
 from zerver.lib.topic import REQ_topic
 from zerver.lib.zcommand import process_zcommands
 from zerver.lib.zephyr import compute_mit_user_fullname
@@ -39,14 +39,16 @@ from zerver.models import (
 class InvalidMirrorInput(Exception):
     pass
 
-def create_mirrored_message_users(request: HttpRequest, user_profile: UserProfile,
-                                  recipients: Iterable[str]) -> UserProfile:
+
+def create_mirrored_message_users(
+    request: HttpRequest, user_profile: UserProfile, recipients: Iterable[str]
+) -> UserProfile:
     if "sender" not in request.POST:
         raise InvalidMirrorInput("No sender")
 
     sender_email = request.POST["sender"].strip().lower()
     referenced_users = {sender_email}
-    if request.POST['type'] == 'private':
+    if request.POST["type"] == "private":
         for email in recipients:
             referenced_users.add(email.lower())
 
@@ -74,6 +76,7 @@ def create_mirrored_message_users(request: HttpRequest, user_profile: UserProfil
     sender = get_user_including_cross_realm(sender_email, user_profile.realm)
     return sender
 
+
 def same_realm_zephyr_user(user_profile: UserProfile, email: str) -> bool:
     #
     # Are the sender and recipient both addresses in the same Zephyr
@@ -90,8 +93,11 @@ def same_realm_zephyr_user(user_profile: UserProfile, email: str) -> bool:
 
     # Assumes allow_subdomains=False for all RealmDomain's corresponding to
     # these realms.
-    return user_profile.realm.is_zephyr_mirror_realm and \
-        RealmDomain.objects.filter(realm=user_profile.realm, domain=domain).exists()
+    return (
+        user_profile.realm.is_zephyr_mirror_realm
+        and RealmDomain.objects.filter(realm=user_profile.realm, domain=domain).exists()
+    )
+
 
 def same_realm_irc_user(user_profile: UserProfile, email: str) -> bool:
     # Check whether the target email address is an IRC user in the
@@ -108,6 +114,7 @@ def same_realm_irc_user(user_profile: UserProfile, email: str) -> bool:
     # these realms.
     return RealmDomain.objects.filter(realm=user_profile.realm, domain=domain).exists()
 
+
 def same_realm_jabber_user(user_profile: UserProfile, email: str) -> bool:
     try:
         validators.validate_email(email)
@@ -122,16 +129,22 @@ def same_realm_jabber_user(user_profile: UserProfile, email: str) -> bool:
     # these realms.
     return RealmDomain.objects.filter(realm=user_profile.realm, domain=domain).exists()
 
-def handle_deferred_message(sender: UserProfile, client: Client,
-                            message_type_name: str,
-                            message_to: Union[Sequence[str], Sequence[int]],
-                            topic_name: Optional[str],
-                            message_content: str, delivery_type: str,
-                            defer_until: str, tz_guess: Optional[str],
-                            forwarder_user_profile: UserProfile,
-                            realm: Optional[Realm]) -> HttpResponse:
+
+def handle_deferred_message(
+    sender: UserProfile,
+    client: Client,
+    message_type_name: str,
+    message_to: Union[Sequence[str], Sequence[int]],
+    topic_name: Optional[str],
+    message_content: str,
+    delivery_type: str,
+    defer_until: str,
+    tz_guess: Optional[str],
+    forwarder_user_profile: UserProfile,
+    realm: Optional[Realm],
+) -> HttpResponse:
     deliver_at = None
-    local_tz = 'UTC'
+    local_tz = "UTC"
     if tz_guess:
         local_tz = tz_guess
     elif sender.timezone:
@@ -143,48 +156,52 @@ def handle_deferred_message(sender: UserProfile, client: Client,
 
     deliver_at_usertz = deliver_at
     if deliver_at_usertz.tzinfo is None:
-        user_tz = get_timezone(local_tz)
+        user_tz = pytz.timezone(local_tz)
         deliver_at_usertz = user_tz.normalize(user_tz.localize(deliver_at))
     deliver_at = convert_to_UTC(deliver_at_usertz)
 
     if deliver_at <= timezone_now():
         return json_error(_("Time must be in the future."))
 
-    check_schedule_message(sender, client, message_type_name, message_to,
-                           topic_name, message_content, delivery_type,
-                           deliver_at, realm=realm,
-                           forwarder_user_profile=forwarder_user_profile)
+    check_schedule_message(
+        sender,
+        client,
+        message_type_name,
+        message_to,
+        topic_name,
+        message_content,
+        delivery_type,
+        deliver_at,
+        realm=realm,
+        forwarder_user_profile=forwarder_user_profile,
+    )
     return json_success({"deliver_at": str(deliver_at_usertz)})
 
+
 @has_request_variables
-def send_message_backend(request: HttpRequest, user_profile: UserProfile,
-                         message_type_name: str=REQ('type'),
-                         req_to: Optional[str]=REQ('to', default=None),
-                         forged_str: Optional[str]=REQ("forged",
-                                                       default=None,
-                                                       documentation_pending=True),
-                         topic_name: Optional[str]=REQ_topic(),
-                         message_content: str=REQ('content'),
-                         widget_content: Optional[str]=REQ(default=None,
-                                                           documentation_pending=True),
-                         realm_str: Optional[str]=REQ('realm_str', default=None,
-                                                      documentation_pending=True),
-                         local_id: Optional[str]=REQ(default=None),
-                         queue_id: Optional[str]=REQ(default=None),
-                         delivery_type: str=REQ('delivery_type', default='send_now',
-                                                documentation_pending=True),
-                         defer_until: Optional[str]=REQ('deliver_at', default=None,
-                                                        documentation_pending=True),
-                         tz_guess: Optional[str]=REQ('tz_guess', default=None,
-                                                     documentation_pending=True),
-                         ) -> HttpResponse:
+def send_message_backend(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    message_type_name: str = REQ("type"),
+    req_to: Optional[str] = REQ("to", default=None),
+    forged_str: Optional[str] = REQ("forged", default=None, documentation_pending=True),
+    topic_name: Optional[str] = REQ_topic(),
+    message_content: str = REQ("content"),
+    widget_content: Optional[str] = REQ(default=None, documentation_pending=True),
+    realm_str: Optional[str] = REQ("realm_str", default=None, documentation_pending=True),
+    local_id: Optional[str] = REQ(default=None),
+    queue_id: Optional[str] = REQ(default=None),
+    delivery_type: str = REQ("delivery_type", default="send_now", documentation_pending=True),
+    defer_until: Optional[str] = REQ("deliver_at", default=None, documentation_pending=True),
+    tz_guess: Optional[str] = REQ("tz_guess", default=None, documentation_pending=True),
+) -> HttpResponse:
 
     # If req_to is None, then we default to an
     # empty list of recipients.
     message_to: Union[Sequence[int], Sequence[str]] = []
 
     if req_to is not None:
-        if message_type_name == 'stream':
+        if message_type_name == "stream":
             stream_indicator = extract_stream_indicator(req_to)
 
             # For legacy reasons check_send_message expects
@@ -205,13 +222,13 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
     forged = forged_str is not None and forged_str in ["yes", "true"]
 
     client = request.client
-    is_super_user = request.user.is_api_super_user
-    if forged and not is_super_user:
+    can_forge_sender = request.user.can_forge_sender
+    if forged and not can_forge_sender:
         return json_error(_("User not authorized for this query"))
 
     realm = None
     if realm_str and realm_str != user_profile.realm.string_id:
-        if not is_super_user:
+        if not can_forge_sender:
             # The email gateway bot needs to be able to send messages in
             # any realm.
             return json_error(_("User not authorized for this query"))
@@ -236,7 +253,7 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
         # same-realm constraint.
         if "sender" not in request.POST:
             return json_error(_("Missing sender"))
-        if message_type_name != "private" and not is_super_user:
+        if message_type_name != "private" and not can_forge_sender:
             return json_error(_("User not authorized for this query"))
 
         # For now, mirroring only works with recipient emails, not for
@@ -262,32 +279,53 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
             return json_error(_("Invalid mirrored message"))
         sender = user_profile
 
-    if (delivery_type == 'send_later' or delivery_type == 'remind') and defer_until is None:
+    if (delivery_type == "send_later" or delivery_type == "remind") and defer_until is None:
         return json_error(_("Missing deliver_at in a request for delayed message delivery"))
 
-    if (delivery_type == 'send_later' or delivery_type == 'remind') and defer_until is not None:
-        return handle_deferred_message(sender, client, message_type_name,
-                                       message_to, topic_name, message_content,
-                                       delivery_type, defer_until, tz_guess,
-                                       forwarder_user_profile=user_profile,
-                                       realm=realm)
+    if (delivery_type == "send_later" or delivery_type == "remind") and defer_until is not None:
+        return handle_deferred_message(
+            sender,
+            client,
+            message_type_name,
+            message_to,
+            topic_name,
+            message_content,
+            delivery_type,
+            defer_until,
+            tz_guess,
+            forwarder_user_profile=user_profile,
+            realm=realm,
+        )
 
-    ret = check_send_message(sender, client, message_type_name, message_to,
-                             topic_name, message_content, forged=forged,
-                             forged_timestamp = request.POST.get('time'),
-                             forwarder_user_profile=user_profile, realm=realm,
-                             local_id=local_id, sender_queue_id=queue_id,
-                             widget_content=widget_content)
+    ret = check_send_message(
+        sender,
+        client,
+        message_type_name,
+        message_to,
+        topic_name,
+        message_content,
+        forged=forged,
+        forged_timestamp=request.POST.get("time"),
+        forwarder_user_profile=user_profile,
+        realm=realm,
+        local_id=local_id,
+        sender_queue_id=queue_id,
+        widget_content=widget_content,
+    )
     return json_success({"id": ret})
 
-@has_request_variables
-def zcommand_backend(request: HttpRequest, user_profile: UserProfile,
-                     command: str=REQ('command')) -> HttpResponse:
-    return json_success(process_zcommands(command, user_profile))
 
 @has_request_variables
-def render_message_backend(request: HttpRequest, user_profile: UserProfile,
-                           content: str=REQ()) -> HttpResponse:
+def zcommand_backend(
+    request: HttpRequest, user_profile: UserProfile, command: str = REQ("command")
+) -> HttpResponse:
+    return json_success(process_zcommands(command, user_profile))
+
+
+@has_request_variables
+def render_message_backend(
+    request: HttpRequest, user_profile: UserProfile, content: str = REQ()
+) -> HttpResponse:
     message = Message()
     message.sender = user_profile
     message.content = content

@@ -1,19 +1,43 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {make_stub} = require("../zjsunit/stub");
+const {run_test} = require("../zjsunit/test");
+
 const events = require("./lib/events");
 
 const event_fixtures = events.fixtures;
 const test_user = events.test_user;
 
-set_global("compose_fade", {});
-set_global("stream_events", {});
-set_global("subs", {});
+const compose_fade = mock_module("compose_fade");
+const narrow_state = mock_module("narrow_state");
+const overlays = mock_module("overlays");
+const page_params = set_global("page_params", {});
+const settings_org = mock_module("settings_org");
+const settings_streams = mock_module("settings_streams");
+const stream_events = mock_module("stream_events");
+const stream_list = mock_module("stream_list");
+const subs = mock_module("subs");
+set_global("current_msg_list", {});
 
+const peer_data = zrequire("peer_data");
 const people = zrequire("people");
-zrequire("stream_data");
-zrequire("server_events_dispatch");
+const stream_data = zrequire("stream_data");
+const server_events_dispatch = zrequire("server_events_dispatch");
+
+const noop = () => {};
 
 people.add_active_user(test_user);
+
+const me = {
+    email: "me@zulip.com",
+    full_name: "Me Myself",
+    user_id: 101,
+};
+people.add_active_user(me);
+people.initialize_current_user(me.user_id);
 
 const dispatch = server_events_dispatch.dispatch_normal_event;
 
@@ -36,13 +60,13 @@ test("add", (override) => {
         name: sub.name,
     });
 
-    global.with_stub((subscription_stub) => {
-        override("stream_events.mark_subscribed", subscription_stub.f);
-        dispatch(event);
-        const args = subscription_stub.get_args("sub", "subscribers");
-        assert.deepEqual(args.sub.stream_id, stream_id);
-        assert.deepEqual(args.subscribers, event.subscriptions[0].subscribers);
-    });
+    const subscription_stub = make_stub();
+    override(stream_events, "mark_subscribed", subscription_stub.f);
+    dispatch(event);
+    assert.equal(subscription_stub.num_calls, 1);
+    const args = subscription_stub.get_args("sub", "subscribers");
+    assert.deepEqual(args.sub.stream_id, stream_id);
+    assert.deepEqual(args.subscribers, event.subscriptions[0].subscribers);
 });
 
 test("peer add/remove", (override) => {
@@ -50,23 +74,27 @@ test("peer add/remove", (override) => {
 
     stream_data.add_sub({
         name: "devel",
-        stream_id: event.stream_id,
+        stream_id: event.stream_ids[0],
     });
 
-    const subs_stub = global.make_stub();
-    override("subs.update_subscribers_ui", subs_stub.f);
+    const subs_stub = make_stub();
+    override(subs, "update_subscribers_ui", subs_stub.f);
 
-    const compose_fade_stub = global.make_stub();
-    override("compose_fade.update_faded_users", compose_fade_stub.f);
+    const compose_fade_stub = make_stub();
+    override(compose_fade, "update_faded_users", compose_fade_stub.f);
 
     dispatch(event);
     assert.equal(compose_fade_stub.num_calls, 1);
     assert.equal(subs_stub.num_calls, 1);
 
+    assert(peer_data.is_user_subscribed(event.stream_ids[0], event.user_ids[0]));
+
     event = event_fixtures.subscription__peer_remove;
     dispatch(event);
     assert.equal(compose_fade_stub.num_calls, 2);
     assert.equal(subs_stub.num_calls, 2);
+
+    assert(!peer_data.is_user_subscribed(event.stream_ids[0], event.user_ids[0]));
 });
 
 test("remove", (override) => {
@@ -81,85 +109,158 @@ test("remove", (override) => {
 
     stream_data.add_sub(sub);
 
-    global.with_stub((stub) => {
-        override("stream_events.mark_unsubscribed", stub.f);
-        dispatch(event);
-        const args = stub.get_args("sub");
-        assert.deepEqual(args.sub, sub);
-    });
+    const stub = make_stub();
+    override(stream_events, "mark_unsubscribed", stub.f);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
+    const args = stub.get_args("sub");
+    assert.deepEqual(args.sub, sub);
 });
 
 test("update", (override) => {
     const event = event_fixtures.subscription__update;
-    global.with_stub((stub) => {
-        override("stream_events.update_property", stub.f);
-        dispatch(event);
-        const args = stub.get_args("stream_id", "property", "value");
-        assert.deepEqual(args.stream_id, event.stream_id);
-        assert.deepEqual(args.property, event.property);
-        assert.deepEqual(args.value, event.value);
-    });
+
+    const stub = make_stub();
+    override(stream_events, "update_property", stub.f);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
+    const args = stub.get_args("stream_id", "property", "value");
+    assert.deepEqual(args.stream_id, event.stream_id);
+    assert.deepEqual(args.property, event.property);
+    assert.deepEqual(args.value, event.value);
 });
 
 test("add error handling", (override) => {
     // test blueslip errors/warns
     const event = event_fixtures.subscription__add;
-    global.with_stub((stub) => {
-        override("blueslip.error", stub.f);
-        dispatch(event);
-        assert.deepEqual(stub.get_args("param").param, "Subscribing to unknown stream with ID 101");
-    });
+
+    const stub = make_stub();
+    override(blueslip, "error", stub.f);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
+    assert.deepEqual(stub.get_args("param").param, "Subscribing to unknown stream with ID 101");
 });
 
-test("peer event error handling (bad stream_ids)", () => {
+test("peer event error handling (bad stream_ids/user_ids)", (override) => {
+    override(compose_fade, "update_faded_users", () => {});
+
     const add_event = {
         type: "subscription",
         op: "peer_add",
-        stream_id: 99999,
+        stream_ids: [8888, 9999],
+        user_ids: [3333, 4444],
     };
 
-    blueslip.expect("warn", "Cannot find stream for peer_add: 99999");
+    blueslip.expect("warn", "We have untracked stream_ids: 8888,9999");
+    blueslip.expect("warn", "We have untracked user_ids: 3333,4444");
     dispatch(add_event);
     blueslip.reset();
 
     const remove_event = {
         type: "subscription",
         op: "peer_remove",
-        stream_id: 99999,
+        stream_ids: [8888, 9999],
+        user_ids: [3333, 4444],
     };
 
-    blueslip.expect("warn", "Cannot find stream for peer_remove: 99999");
+    blueslip.expect("warn", "We have untracked stream_ids: 8888,9999");
+    blueslip.expect("warn", "We have untracked user_ids: 3333,4444");
     dispatch(remove_event);
 });
 
-test("peer event error handling (add_subscriber)", (override) => {
-    stream_data.add_sub({
-        name: "devel",
-        stream_id: 1,
+test("stream update", (override) => {
+    const event = event_fixtures.stream__update;
+
+    const stub = make_stub();
+    override(stream_events, "update_property", stub.f);
+    override(settings_streams, "update_default_streams_table", noop);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
+    const args = stub.get_args("stream_id", "property", "value");
+    assert.equal(args.stream_id, event.stream_id);
+    assert.equal(args.property, event.property);
+    assert.equal(args.value, event.value);
+});
+
+test("stream create", (override) => {
+    const event = event_fixtures.stream__create;
+
+    const stub = make_stub();
+    override(stream_data, "create_streams", stub.f);
+    override(stream_data, "get_sub_by_id", noop);
+    override(stream_data, "update_calculated_fields", noop);
+    override(subs, "add_sub_to_table", noop);
+    override(overlays, "streams_open", () => true);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
+    const args = stub.get_args("streams");
+    assert.deepEqual(
+        args.streams.map((stream) => stream.stream_id),
+        [101, 102],
+    );
+});
+
+test("stream delete (normal)", (override) => {
+    const event = event_fixtures.stream__delete;
+
+    for (const stream of event.streams) {
+        stream_data.add_sub(stream);
+    }
+
+    stream_data.subscribe_myself(event.streams[0]);
+
+    override(stream_data, "delete_sub", noop);
+    override(settings_streams, "update_default_streams_table", noop);
+
+    narrow_state.is_for_stream_id = () => true;
+
+    let bookend_updates = 0;
+    override(current_msg_list, "update_trailing_bookend", () => {
+        bookend_updates += 1;
     });
 
-    override("stream_data.add_subscriber", () => false);
+    const removed_stream_ids = [];
 
-    const add_event = {
-        type: "subscription",
-        op: "peer_add",
-        stream_id: 1,
-        user_id: 99999, // id is irrelevant
-    };
+    override(subs, "remove_stream", (stream_id) => {
+        removed_stream_ids.push(stream_id);
+    });
 
-    blueslip.expect("warn", "Cannot process peer_add event");
-    dispatch(add_event);
-    blueslip.reset();
+    let removed_sidebar_rows = 0;
+    override(stream_list, "remove_sidebar_row", () => {
+        removed_sidebar_rows += 1;
+    });
 
-    override("stream_data.remove_subscriber", () => false);
+    dispatch(event);
 
-    const remove_event = {
-        type: "subscription",
-        op: "peer_remove",
-        stream_id: 1,
-        user_id: 99999, // id is irrelevant
-    };
+    assert.deepEqual(removed_stream_ids, [event.streams[0].stream_id, event.streams[1].stream_id]);
 
-    blueslip.expect("warn", "Cannot process peer_remove event.");
-    dispatch(remove_event);
+    // We should possibly be able to make a single call to
+    // update_trailing_bookend, but we currently do it for each stream.
+    assert.equal(bookend_updates, 2);
+
+    assert.equal(removed_sidebar_rows, 1);
+});
+
+test("stream delete (special streams)", (override) => {
+    const event = event_fixtures.stream__delete;
+
+    for (const stream of event.streams) {
+        stream_data.add_sub(stream);
+    }
+
+    // sanity check data
+    assert.equal(event.streams.length, 2);
+    page_params.realm_notifications_stream_id = event.streams[0].stream_id;
+    page_params.realm_signup_notifications_stream_id = event.streams[1].stream_id;
+
+    override(subs, "remove_stream", noop);
+    override(settings_org, "sync_realm_settings", noop);
+    override(settings_streams, "update_default_streams_table", noop);
+    override(current_msg_list, "update_trailing_bookend", noop);
+    override(stream_list, "remove_sidebar_row", noop);
+
+    dispatch(event);
+
+    assert.equal(page_params.realm_notifications_stream_id, -1);
+    assert.equal(page_params.realm_signup_notifications_stream_id, -1);
 });

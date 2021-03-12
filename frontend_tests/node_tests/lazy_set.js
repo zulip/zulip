@@ -1,5 +1,10 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
+const {zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
 const {LazySet} = zrequire("lazy_set");
 
 /*
@@ -11,9 +16,10 @@ const {LazySet} = zrequire("lazy_set");
 run_test("map", () => {
     const ls = new LazySet([1, 2]);
 
-    const triple = (n) => n * 3;
-
-    assert.deepEqual(ls.map(triple), [3, 6]);
+    assert.deepEqual(
+        ls.map((n) => n * 3),
+        [3, 6],
+    );
 });
 
 run_test("conversions", () => {

@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0194_userprofile_notification_sound'),
+        ("zerver", "0194_userprofile_notification_sound"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='realm',
-            name='first_visible_message_id',
+            model_name="realm",
+            name="first_visible_message_id",
             field=models.IntegerField(default=0),
         ),
     ]

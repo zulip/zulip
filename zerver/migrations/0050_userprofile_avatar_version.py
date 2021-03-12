@@ -5,13 +5,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0049_userprofile_pm_content_in_desktop_notifications'),
+        ("zerver", "0049_userprofile_pm_content_in_desktop_notifications"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='userprofile',
-            name='avatar_version',
+            model_name="userprofile",
+            name="avatar_version",
             field=models.PositiveSmallIntegerField(default=1),
         ),
     ]

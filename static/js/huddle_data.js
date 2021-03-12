@@ -1,12 +1,10 @@
-"use strict";
+import _ from "lodash";
 
-const _ = require("lodash");
-
-const people = require("./people");
+import * as people from "./people";
 
 const huddle_timestamps = new Map();
 
-exports.process_loaded_messages = function (messages) {
+export function process_loaded_messages(messages) {
     for (const message of messages) {
         const huddle_string = people.huddle_string(message);
 
@@ -18,12 +16,10 @@ exports.process_loaded_messages = function (messages) {
             }
         }
     }
-};
+}
 
-exports.get_huddles = function () {
+export function get_huddles() {
     let huddles = Array.from(huddle_timestamps.keys());
     huddles = _.sortBy(huddles, (huddle) => huddle_timestamps.get(huddle));
     return huddles.reverse();
-};
-
-window.huddle_data = exports;
+}

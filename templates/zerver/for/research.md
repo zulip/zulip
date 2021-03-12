@@ -4,7 +4,7 @@ describes academic research better than any of our other use cases.
 
 Zulip has long been popular with individual research groups, but
 during the pandemic has started being used for large distributed
-communities focused around research topics like Category Theory or the
+communities focused around research topics like category theory or the
 Lean Theorem Prover.  We enthusiastically provide free hosting for
 both use cases.
 
@@ -82,7 +82,7 @@ discussion of Zulip for large open communities.
 Below, we’ve collected a list of [Zulip features](/features) that are
 particularly useful to academic research organizations (both formal
 organizations and online communities focused around research topics
-like Category Theory).
+like category theory).
 
 ### Free hosting at zulip.com.
 

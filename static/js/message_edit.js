@@ -1,10 +1,24 @@
-"use strict";
+import ClipboardJS from "clipboard";
 
-const ClipboardJS = require("clipboard");
-const XDate = require("xdate");
+import render_message_edit_form from "../templates/message_edit_form.hbs";
+import render_topic_edit_form from "../templates/topic_edit_form.hbs";
 
-const render_message_edit_form = require("../templates/message_edit_form.hbs");
-const render_topic_edit_form = require("../templates/topic_edit_form.hbs");
+import * as channel from "./channel";
+import * as compose from "./compose";
+import * as compose_actions from "./compose_actions";
+import * as composebox_typeahead from "./composebox_typeahead";
+import * as condense from "./condense";
+import * as echo from "./echo";
+import * as loading from "./loading";
+import * as markdown from "./markdown";
+import * as message_store from "./message_store";
+import * as message_viewport from "./message_viewport";
+import * as resize from "./resize";
+import * as rows from "./rows";
+import * as stream_data from "./stream_data";
+import * as ui_report from "./ui_report";
+import * as ui_util from "./ui_util";
+import * as upload from "./upload";
 
 const currently_editing_messages = new Map();
 let currently_deleting_messages = [];
@@ -14,10 +28,11 @@ const currently_echoing_messages = new Map();
 // These variables are designed to preserve the user's most recent
 // choices when editing a group of messages, to make it convenient to
 // move several topics in a row with the same settings.
-exports.notify_old_thread_default = true;
-exports.notify_new_thread_default = true;
+export let notify_old_thread_default = true;
 
-const editability_types = {
+export let notify_new_thread_default = true;
+
+export const editability_types = {
     NO: 1,
     NO_LONGER: 2,
     // Note: TOPIC_ONLY does not include stream messages with no topic sent
@@ -29,12 +44,8 @@ const editability_types = {
     TOPIC_ONLY: 3,
     FULL: 4,
 };
-exports.editability_types = editability_types;
 
-function is_topic_editable(message, edit_limit_seconds_buffer) {
-    const now = new XDate();
-    edit_limit_seconds_buffer = edit_limit_seconds_buffer || 0;
-
+export function is_topic_editable(message, edit_limit_seconds_buffer = 0) {
     if (!page_params.realm_allow_message_editing) {
         // If message editing is disabled, so is topic editing.
         return false;
@@ -56,13 +67,12 @@ function is_topic_editable(message, edit_limit_seconds_buffer) {
     return (
         page_params.realm_community_topic_editing_limit_seconds +
             edit_limit_seconds_buffer +
-            now.diffSeconds(message.timestamp * 1000) >
+            (message.timestamp - Date.now() / 1000) >
         0
     );
 }
 
-function get_editability(message, edit_limit_seconds_buffer) {
-    edit_limit_seconds_buffer = edit_limit_seconds_buffer || 0;
+export function get_editability(message, edit_limit_seconds_buffer = 0) {
     if (!message) {
         return editability_types.NO;
     }
@@ -96,11 +106,10 @@ function get_editability(message, edit_limit_seconds_buffer) {
         return editability_types.NO;
     }
 
-    const now = new XDate();
     if (
         page_params.realm_message_content_edit_limit_seconds +
             edit_limit_seconds_buffer +
-            now.diffSeconds(message.timestamp * 1000) >
+            (message.timestamp - Date.now() / 1000) >
             0 &&
         message.sent_by_me
     ) {
@@ -113,10 +122,8 @@ function get_editability(message, edit_limit_seconds_buffer) {
     }
     return editability_types.NO_LONGER;
 }
-exports.get_editability = get_editability;
-exports.is_topic_editable = is_topic_editable;
 
-exports.get_deletability = function (message) {
+export function get_deletability(message) {
     if (page_params.is_admin) {
         return true;
     }
@@ -136,78 +143,77 @@ exports.get_deletability = function (message) {
         return true;
     }
 
-    if (page_params.realm_allow_message_deleting) {
-        const now = new XDate();
-        if (
-            page_params.realm_message_content_delete_limit_seconds +
-                now.diffSeconds(message.timestamp * 1000) >
+    if (
+        page_params.realm_allow_message_deleting &&
+        page_params.realm_message_content_delete_limit_seconds +
+            (message.timestamp - Date.now() / 1000) >
             0
-        ) {
-            return true;
-        }
+    ) {
+        return true;
     }
     return false;
-};
+}
 
-exports.update_message_topic_editing_pencil = function () {
+export function update_message_topic_editing_pencil() {
     if (page_params.realm_allow_message_editing) {
         $(".on_hover_topic_edit, .always_visible_topic_edit").show();
     } else {
         $(".on_hover_topic_edit, .always_visible_topic_edit").hide();
     }
-};
+}
 
-exports.hide_message_edit_spinner = function (row) {
+export function hide_message_edit_spinner(row) {
     const spinner = row.find(".message_edit_spinner");
     loading.destroy_indicator(spinner);
     $("#message_edit_form .message_edit_save").show();
     $("#message_edit_form .message_edit_cancel").show();
-};
+}
 
-exports.show_message_edit_spinner = function (row) {
+export function show_message_edit_spinner(row) {
     const spinner = row.find(".message_edit_spinner");
     loading.make_indicator(spinner);
     $("#message_edit_form .message_edit_save").hide();
     $("#message_edit_form .message_edit_cancel").hide();
-};
+}
 
-exports.show_topic_edit_spinner = function (row) {
+export function show_topic_edit_spinner(row) {
     const spinner = row.find(".topic_edit_spinner");
     loading.make_indicator(spinner);
     spinner.css({height: ""});
     $(".topic_edit_save").hide();
     $(".topic_edit_cancel").hide();
-};
+    $(".topic_edit_spinner").show();
+}
 
-exports.hide_topic_move_spinner = function () {
+export function hide_topic_move_spinner() {
     const spinner = $("#move_topic_modal .topic_move_spinner");
     loading.destroy_indicator(spinner);
     $("#move_topic_modal .modal-footer").show();
-};
+}
 
-exports.show_topic_move_spinner = function () {
+export function show_topic_move_spinner() {
     const spinner = $("#move_topic_modal .topic_move_spinner");
     loading.make_indicator(spinner);
     $("#move_topic_modal .modal-footer").hide();
-};
+}
 
-exports.end_if_focused_on_inline_topic_edit = function () {
+export function end_if_focused_on_inline_topic_edit() {
     const focused_elem = $(".topic_edit_form").find(":focus");
     if (focused_elem.length === 1) {
         focused_elem.trigger("blur");
         const recipient_row = focused_elem.closest(".recipient_row");
-        exports.end_inline_topic_edit(recipient_row);
+        end_inline_topic_edit(recipient_row);
     }
-};
+}
 
-exports.end_if_focused_on_message_row_edit = function () {
+export function end_if_focused_on_message_row_edit() {
     const focused_elem = $(".message_edit").find(":focus");
     if (focused_elem.length === 1) {
         focused_elem.trigger("blur");
         const row = focused_elem.closest(".message_row");
-        exports.end_message_row_edit(row);
+        end_message_row_edit(row);
     }
-};
+}
 
 function handle_message_row_edit_keydown(e) {
     const code = e.keyCode || e.which;
@@ -216,7 +222,7 @@ function handle_message_row_edit_keydown(e) {
             if ($(e.target).hasClass("message_edit_content")) {
                 // Pressing Enter to save edits is coupled with Enter to send
                 if (composebox_typeahead.should_enter_send(e)) {
-                    const row = $(".message_edit_content").filter(":focus").closest(".message_row");
+                    const row = $(".message_edit_content:focus").closest(".message_row");
                     const message_edit_save_button = row.find(".message_edit_save");
                     if (message_edit_save_button.prop("disabled")) {
                         // In cases when the save button is disabled
@@ -226,7 +232,7 @@ function handle_message_row_edit_keydown(e) {
                         e.preventDefault();
                         return;
                     }
-                    exports.save_message_row_edit(row);
+                    save_message_row_edit(row);
                     e.stopPropagation();
                     e.preventDefault();
                 } else {
@@ -238,13 +244,13 @@ function handle_message_row_edit_keydown(e) {
                 $(e.target).hasClass("message_edit_topic_propagate")
             ) {
                 const row = $(e.target).closest(".message_row");
-                exports.save_message_row_edit(row);
+                save_message_row_edit(row);
                 e.stopPropagation();
                 e.preventDefault();
             }
             return;
         case 27: // Handle escape keys in the message_edit form.
-            exports.end_if_focused_on_message_row_edit();
+            end_if_focused_on_message_row_edit();
             e.stopPropagation();
             e.preventDefault();
             return;
@@ -259,12 +265,12 @@ function handle_inline_topic_edit_keydown(e) {
     switch (code) {
         case 13: // Handle Enter key in the recipient bar/inline topic edit form
             row = $(e.target).closest(".recipient_row");
-            exports.save_inline_topic_edit(row);
+            save_inline_topic_edit(row);
             e.stopPropagation();
             e.preventDefault();
             return;
         case 27: // handle Esc
-            exports.end_if_focused_on_inline_topic_edit();
+            end_if_focused_on_inline_topic_edit();
             e.stopPropagation();
             e.preventDefault();
             return;
@@ -287,6 +293,7 @@ function timer_text(seconds_left) {
 function edit_message(row, raw_content) {
     row.find(".message_reactions").hide();
     condense.hide_message_expander(row);
+    condense.hide_message_condenser(row);
     const content_top = row.find(".message_top_line")[0].getBoundingClientRect().top;
 
     const message = current_msg_list.get(rows.id(row));
@@ -302,8 +309,7 @@ function edit_message(row, raw_content) {
     const seconds_left_buffer = 5;
     const editability = get_editability(message, seconds_left_buffer);
     const is_editable =
-        editability === exports.editability_types.TOPIC_ONLY ||
-        editability === exports.editability_types.FULL;
+        editability === editability_types.TOPIC_ONLY || editability === editability_types.FULL;
     const max_file_upload_size = page_params.max_file_upload_size_mib;
     let file_upload_enabled = false;
 
@@ -324,7 +330,7 @@ function edit_message(row, raw_content) {
             is_stream: message.type === "stream",
             message_id: message.id,
             is_editable,
-            is_content_editable: editability === exports.editability_types.FULL,
+            is_content_editable: editability === editability_types.FULL,
             has_been_editable: editability !== editability_types.NO,
             topic: message.topic,
             content: raw_content,
@@ -335,8 +341,8 @@ function edit_message(row, raw_content) {
             available_streams,
             stream_id: message.stream_id,
             stream_name: message.stream,
-            notify_new_thread: exports.notify_new_thread_default,
-            notify_old_thread: exports.notify_old_thread_default,
+            notify_new_thread: notify_new_thread_default,
+            notify_old_thread: notify_old_thread_default,
         }),
     );
 
@@ -346,9 +352,9 @@ function edit_message(row, raw_content) {
 
     form.on("keydown", handle_message_row_edit_keydown);
 
-    upload.feature_check($("#attach_files_" + rows.id(row)));
+    upload.feature_check($(`#attach_files_${CSS.escape(rows.id(row))}`));
 
-    const message_edit_stream = row.find("#select_stream_id_" + message.id);
+    const message_edit_stream = row.find(`#select_stream_id_${CSS.escape(message.id)}`);
     const stream_header_colorblock = row.find(".stream_header_colorblock");
     const message_edit_content = row.find("textarea.message_edit_content");
     const message_edit_topic = row.find("input.message_edit_topic");
@@ -359,7 +365,7 @@ function edit_message(row, raw_content) {
 
     ui_util.decorate_stream_bar(message.stream, stream_header_colorblock, false);
     message_edit_stream.on("change", function () {
-        const stream_name = stream_data.maybe_get_stream_name(parseInt(this.value, 10));
+        const stream_name = stream_data.maybe_get_stream_name(Number.parseInt(this.value, 10));
         ui_util.decorate_stream_bar(stream_name, stream_header_colorblock, false);
     });
 
@@ -382,7 +388,7 @@ function edit_message(row, raw_content) {
         new ClipboardJS(copy_message[0]);
     } else if (editability === editability_types.FULL) {
         copy_message.remove();
-        const edit_id = "#message_edit_content_" + rows.id(row);
+        const edit_id = `#message_edit_content_${CSS.escape(rows.id(row))}`;
         const listeners = resize.watch_manual_resize(edit_id);
         if (listeners) {
             currently_editing_messages.get(rows.id(row)).listeners = listeners;
@@ -421,10 +427,9 @@ function edit_message(row, raw_content) {
         // If you change this number also change edit_limit_buffer in
         // zerver.views.message_edit.update_message_backend
         const min_seconds_to_edit = 10;
-        const now = new XDate();
         let seconds_left =
             page_params.realm_message_content_edit_limit_seconds +
-            now.diffSeconds(message.timestamp * 1000);
+            (message.timestamp - Date.now() / 1000);
         seconds_left = Math.floor(Math.max(seconds_left, min_seconds_to_edit));
 
         // I believe this needs to be defined outside the countdown_timer, since
@@ -483,7 +488,7 @@ function edit_message(row, raw_content) {
     const original_topic = message.topic;
     function set_propagate_selector_display() {
         const new_topic = message_edit_topic.val();
-        const new_stream_id = parseInt(message_edit_stream.val(), 10);
+        const new_stream_id = Number.parseInt(message_edit_stream.val(), 10);
         const is_topic_edited = new_topic !== original_topic && new_topic !== "";
         const is_stream_edited = new_stream_id !== original_stream_id;
         message_edit_topic_propagate.toggle(is_topic_edited || is_stream_edited);
@@ -522,7 +527,7 @@ function start_edit_with_content(row, content, edit_box_open_callback) {
     });
 }
 
-exports.start = function (row, edit_box_open_callback) {
+export function start(row, edit_box_open_callback) {
     const message = current_msg_list.get(rows.id(row));
     if (message === undefined) {
         blueslip.error("Couldn't find message ID for edit " + rows.id(row));
@@ -545,12 +550,13 @@ exports.start = function (row, edit_box_open_callback) {
             }
         },
     });
-};
+}
 
-exports.start_topic_edit = function (recipient_row) {
+export function start_topic_edit(recipient_row) {
     const form = $(render_topic_edit_form());
     current_msg_list.show_edit_topic_on_recipient_row(recipient_row, form);
     form.on("keydown", handle_inline_topic_edit_keydown);
+    $(".topic_edit_spinner").hide();
     const msg_id = rows.id_for_recipient_row(recipient_row);
     const message = current_msg_list.get(msg_id);
     let topic = message.topic;
@@ -558,17 +564,17 @@ exports.start_topic_edit = function (recipient_row) {
         topic = "";
     }
     form.find(".inline_topic_edit").val(topic).trigger("select").trigger("focus");
-};
+}
 
-exports.is_editing = function (id) {
+export function is_editing(id) {
     return currently_editing_messages.has(id);
-};
+}
 
-exports.end_inline_topic_edit = function (row) {
+export function end_inline_topic_edit(row) {
     current_msg_list.hide_edit_topic_on_recipient_row(row);
-};
+}
 
-exports.end_message_row_edit = function (row) {
+export function end_message_row_edit(row) {
     const message = current_msg_list.get(rows.id(row));
     if (message !== undefined && currently_editing_messages.has(message.id)) {
         const scroll_by = currently_editing_messages.get(message.id).scrolled_by;
@@ -576,7 +582,7 @@ exports.end_message_row_edit = function (row) {
 
         // Clean up resize event listeners
         const listeners = currently_editing_messages.get(message.id).listeners;
-        const edit_box = document.querySelector("#message_edit_content_" + message.id);
+        const edit_box = document.querySelector(`#message_edit_content_${CSS.escape(message.id)}`);
         if (listeners !== undefined) {
             // Event listeners to cleanup are only set in some edit types
             edit_box.removeEventListener("mousedown", listeners[0]);
@@ -586,17 +592,21 @@ exports.end_message_row_edit = function (row) {
         currently_editing_messages.delete(message.id);
         current_msg_list.hide_edit_message(row);
 
-        compose.abort_zoom(message.id);
+        compose.abort_video_callbacks(message.id);
     }
-    condense.show_message_expander(row);
+    if (row.find(".condensed").length !== 0) {
+        condense.show_message_expander(row);
+    } else {
+        condense.show_message_condenser(row);
+    }
     row.find(".message_reactions").show();
 
     // We have to blur out text fields, or else hotkeys.js
     // thinks we are still editing.
     row.find(".message_edit").trigger("blur");
-};
+}
 
-exports.save_inline_topic_edit = function (row) {
+export function save_inline_topic_edit(row) {
     const msg_list = current_msg_list;
     let message_id = rows.id_for_recipient_row(row);
     const message = current_msg_list.get(message_id);
@@ -608,18 +618,18 @@ exports.save_inline_topic_edit = function (row) {
     if (!topic_changed) {
         // this means the inline_topic_edit was opened and submitted without
         // changing anything, therefore, we should just close the inline topic edit.
-        exports.end_inline_topic_edit(row);
+        end_inline_topic_edit(row);
         return;
     }
 
-    exports.show_topic_edit_spinner(row);
+    show_topic_edit_spinner(row);
 
     if (message.locally_echoed) {
         if (topic_changed) {
             echo.edit_locally(message, {new_topic});
             row = current_msg_list.get_row(message_id);
         }
-        exports.end_inline_topic_edit(row);
+        end_inline_topic_edit(row);
         return;
     }
 
@@ -646,9 +656,9 @@ exports.save_inline_topic_edit = function (row) {
             }
         },
     });
-};
+}
 
-exports.save_message_row_edit = function (row) {
+export function save_message_row_edit(row) {
     const msg_list = current_msg_list;
     let message_id = rows.id(row);
     const message = current_msg_list.get(message_id);
@@ -664,13 +674,13 @@ exports.save_message_row_edit = function (row) {
     let new_stream_id;
     const old_stream_id = message.stream_id;
 
-    exports.show_message_edit_spinner(row);
+    show_message_edit_spinner(row);
 
     if (message.type === "stream") {
         new_topic = row.find(".message_edit_topic").val();
         topic_changed = new_topic !== old_topic && new_topic.trim() !== "";
 
-        new_stream_id = parseInt($("#select_stream_id_" + message_id).val(), 10);
+        new_stream_id = Number.parseInt($(`#select_stream_id_${CSS.escape(message_id)}`).val(), 10);
         stream_changed = new_stream_id !== old_stream_id;
     }
     // Editing a not-yet-acked message (because the original send attempt failed)
@@ -685,7 +695,7 @@ exports.save_message_row_edit = function (row) {
             });
             row = current_msg_list.get_row(message_id);
         }
-        exports.end_message_row_edit(row);
+        end_message_row_edit(row);
         return;
     }
 
@@ -703,8 +713,8 @@ exports.save_message_row_edit = function (row) {
         request.propagate_mode = selected_topic_propagation;
         request.send_notification_to_old_thread = send_notification_to_old_thread;
         request.send_notification_to_new_thread = send_notification_to_new_thread;
-        exports.notify_old_thread_default = send_notification_to_old_thread;
-        exports.notify_new_thread_default = send_notification_to_new_thread;
+        notify_old_thread_default = send_notification_to_old_thread;
+        notify_new_thread_default = send_notification_to_new_thread;
         changed = true;
     }
 
@@ -721,7 +731,7 @@ exports.save_message_row_edit = function (row) {
 
     if (!changed) {
         // If they didn't change anything, just cancel it.
-        exports.end_message_row_edit(row);
+        end_message_row_edit(row);
         return;
     }
 
@@ -758,12 +768,12 @@ exports.save_message_row_edit = function (row) {
         // Settings these attributes causes a "SAVING" notice to
         // briefly appear where "EDITED" would normally appear until
         // the message is acknowledged by the server.
-        message.local_edit_timestamp = Math.round(new Date().getTime() / 1000);
+        message.local_edit_timestamp = Math.round(Date.now() / 1000);
 
         echo.edit_locally(message, currently_echoing_messages.get(message_id));
 
         row = current_msg_list.get_row(message_id);
-        exports.end_message_row_edit(row);
+        end_message_row_edit(row);
     }
 
     channel.patch({
@@ -774,7 +784,7 @@ exports.save_message_row_edit = function (row) {
                 delete message.local_edit_timestamp;
                 currently_echoing_messages.delete(message_id);
             }
-            exports.hide_message_edit_spinner(row);
+            hide_message_edit_spinner(row);
         },
         error(xhr) {
             if (msg_list === current_msg_list) {
@@ -797,28 +807,28 @@ exports.save_message_row_edit = function (row) {
                     });
 
                     row = current_msg_list.get_row(message_id);
-                    if (!exports.is_editing(message_id)) {
+                    if (!is_editing(message_id)) {
                         // Return to the message editing open UI state.
                         start_edit_maintaining_scroll(row, echo_data.orig_raw_content);
                     }
                 }
 
-                exports.hide_message_edit_spinner(row);
+                hide_message_edit_spinner(row);
                 const message = channel.xhr_error_message(i18n.t("Error saving edit"), xhr);
                 row.find(".edit_error").text(message).show();
             }
         },
     });
     // The message will automatically get replaced via message_list.update_message.
-};
+}
 
-exports.maybe_show_edit = function (row, id) {
+export function maybe_show_edit(row, id) {
     if (currently_editing_messages.has(id)) {
         current_msg_list.show_edit_message(row, currently_editing_messages.get(id));
     }
-};
+}
 
-exports.edit_last_sent_message = function () {
+export function edit_last_sent_message() {
     const msg = current_msg_list.get_last_message_sent_by_me();
 
     if (!msg) {
@@ -830,7 +840,7 @@ exports.edit_last_sent_message = function () {
         return;
     }
 
-    const msg_editability_type = exports.get_editability(msg, 5);
+    const msg_editability_type = get_editability(msg, 5);
     if (msg_editability_type !== editability_types.FULL) {
         return;
     }
@@ -847,10 +857,10 @@ exports.edit_last_sent_message = function () {
 
     // Finally do the real work!
     compose_actions.cancel();
-    exports.start(msg_row, () => {
+    start(msg_row, () => {
         $("#message_edit_content").trigger("focus");
     });
-};
+}
 
 function hide_delete_btn_show_spinner(deleting) {
     if (deleting) {
@@ -865,7 +875,7 @@ function hide_delete_btn_show_spinner(deleting) {
     }
 }
 
-exports.delete_message = function (msg_id) {
+export function delete_message(msg_id) {
     $("#delete-message-error").html("");
     $("#delete_message_modal").modal("show");
     if (currently_deleting_messages.includes(msg_id)) {
@@ -902,9 +912,9 @@ exports.delete_message = function (msg_id) {
                 },
             });
         });
-};
+}
 
-exports.delete_topic = function (stream_id, topic_name) {
+export function delete_topic(stream_id, topic_name) {
     channel.post({
         url: "/json/streams/" + stream_id + "/delete_topic",
         data: {
@@ -914,18 +924,18 @@ exports.delete_topic = function (stream_id, topic_name) {
             $("#delete_topic_modal").modal("hide");
         },
     });
-};
+}
 
-exports.handle_narrow_deactivated = function () {
+export function handle_narrow_deactivated() {
     for (const [idx, elem] of currently_editing_messages) {
         if (current_msg_list.get(idx) !== undefined) {
             const row = current_msg_list.get_row(idx);
             current_msg_list.show_edit_message(row, elem);
         }
     }
-};
+}
 
-exports.move_topic_containing_message_to_stream = function (
+export function move_topic_containing_message_to_stream(
     message_id,
     new_stream_id,
     new_topic_name,
@@ -936,11 +946,11 @@ exports.move_topic_containing_message_to_stream = function (
         currently_topic_editing_messages = currently_topic_editing_messages.filter(
             (id) => id !== message_id,
         );
-        exports.hide_topic_move_spinner();
+        hide_topic_move_spinner();
         $("#move_topic_modal").modal("hide");
     }
     if (currently_topic_editing_messages.includes(message_id)) {
-        exports.hide_topic_move_spinner();
+        hide_topic_move_spinner();
         $("#topic_stream_edit_form_error .error-msg").text(
             i18n.t("A Topic Move already in progress."),
         );
@@ -956,8 +966,8 @@ exports.move_topic_containing_message_to_stream = function (
         send_notification_to_old_thread,
         send_notification_to_new_thread,
     };
-    exports.notify_old_thread_default = send_notification_to_old_thread;
-    exports.notify_new_thread_default = send_notification_to_new_thread;
+    notify_old_thread_default = send_notification_to_old_thread;
+    notify_new_thread_default = send_notification_to_new_thread;
     channel.patch({
         url: "/json/messages/" + message_id,
         data: request,
@@ -971,6 +981,4 @@ exports.move_topic_containing_message_to_stream = function (
             ui_report.error(i18n.t("Error moving the topic"), xhr, $("#home-error"), 4000);
         },
     });
-};
-
-window.message_edit = exports;
+}

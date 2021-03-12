@@ -1,9 +1,13 @@
-"use strict";
+import * as hash_util from "./hash_util";
+import * as muting from "./muting";
+import * as narrow_state from "./narrow_state";
+import * as stream_topic_history from "./stream_topic_history";
+import * as unread from "./unread";
 
 const max_topics = 5;
 const max_topics_with_unread = 8;
 
-exports.get_list_info = function (stream_id, zoomed) {
+export function get_list_info(stream_id, zoomed) {
     let topics_selected = 0;
     let more_topics_unreads = 0;
 
@@ -96,4 +100,4 @@ exports.get_list_info = function (stream_id, zoomed) {
         num_possible_topics: topic_names.length,
         more_topics_unreads,
     };
-};
+}

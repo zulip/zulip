@@ -1,6 +1,8 @@
-"use strict";
+import * as popovers from "./popovers";
+import * as resize from "./resize";
+import * as stream_popover from "./stream_popover";
 
-class UserSearch {
+export class UserSearch {
     // This is mostly view code to manage the user search widget
     // above the buddy list.  We rely on other code to manage the
     // details of populating the list when we change.
@@ -119,6 +121,3 @@ class UserSearch {
         e.stopPropagation();
     }
 }
-
-module.exports = UserSearch;
-window.UserSearch = UserSearch;

@@ -1,22 +1,23 @@
 import os
 import re
-from typing import Any, Dict, List
+from typing import Any, List
 
 import markdown
 from markdown_include.include import IncludePreprocessor, MarkdownInclude
 
 from zerver.lib.exceptions import InvalidMarkdownIncludeStatement
 
-INC_SYNTAX = re.compile(r'\{!\s*(.+?)\s*!\}')
+INC_SYNTAX = re.compile(r"\{!\s*(.+?)\s*!\}")
 
 
 class MarkdownIncludeCustom(MarkdownInclude):
-    def extendMarkdown(self, md: markdown.Markdown, md_globals: Dict[str, Any]) -> None:
-        md.preprocessors.add(
-            'include_wrapper',
+    def extendMarkdown(self, md: markdown.Markdown) -> None:
+        md.preprocessors.register(
             IncludeCustomPreprocessor(md, self.getConfigs()),
-            '_begin',
+            "include_wrapper",
+            500,
         )
+
 
 class IncludeCustomPreprocessor(IncludePreprocessor):
     """
@@ -45,23 +46,24 @@ class IncludeCustomPreprocessor(IncludePreprocessor):
                         with open(filename, encoding=self.encoding) as r:
                             text = r.readlines()
                     except Exception as e:
-                        print(f'Warning: could not find file {filename}. Error: {e}')
-                        lines[loc] = INC_SYNTAX.sub('', line)
+                        print(f"Warning: could not find file {filename}. Error: {e}")
+                        lines[loc] = INC_SYNTAX.sub("", line)
                         raise InvalidMarkdownIncludeStatement(m.group(0).strip())
 
                     line_split = INC_SYNTAX.split(line)
                     if len(text) == 0:
-                        text.append('')
+                        text.append("")
                     for i in range(len(text)):
-                        text[i] = text[i].rstrip('\r\n')
+                        text[i] = text[i].rstrip("\r\n")
                     text[0] = line_split[0] + text[0]
                     text[-1] = text[-1] + line_split[2]
-                    lines = lines[:loc] + text + lines[loc+1:]
+                    lines = lines[:loc] + text + lines[loc + 1 :]
                     break
             else:
                 done = True
 
         return lines
+
 
 def makeExtension(*args: Any, **kwargs: str) -> MarkdownIncludeCustom:
     return MarkdownIncludeCustom(kwargs)

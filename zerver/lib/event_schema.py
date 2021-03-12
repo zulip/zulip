@@ -8,8 +8,26 @@
 # frontend).
 #
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
+#
+# The general paradigm here is that if you have an event with type foo_bar
+# then you declare foo_bar_event to be an instance of event_dict_type.  And
+# then you make a checker function by saying:
+#
+#   check_foo_bar = make_checker(foo_bar_event)
+#
+# And then the caller can use the checker as follows:
+#
+#   check_foo_bar(var_name, event)
+#
+# For more complicated events, you may write custom checkers that check
+# aspects of the data that go beyond simply validating that the data
+# matches an event_dict_type based schema.  This typically happens with
+# events where you either have a Union type or optional_keys.
+#
+# See check_delete_message and check_presence for examples of this
+# paradigm.
 
-from typing import Dict, List, Sequence, Tuple, Union
+from typing import Dict, List, Sequence, Set, Tuple, Union
 
 from zerver.lib.data_types import (
     DictType,
@@ -59,6 +77,10 @@ subscription_fields: Sequence[Tuple[str, object]] = [
     ("push_notifications", OptionalType(bool)),
     ("role", EnumType(Subscription.ROLE_TYPES)),
     ("stream_weekly_traffic", OptionalType(int)),
+    # We may try to remove subscribers from some events in
+    # the future for clients that don't want subscriber
+    # info.
+    ("subscribers", ListType(int)),
     ("wildcard_mentions_notify", OptionalType(bool)),
 ]
 
@@ -281,7 +303,10 @@ hotspots_event = event_dict_type(
     required_keys=[
         # force vertical
         ("type", Equals("hotspots")),
-        ("hotspots", ListType(_hotspot),),
+        (
+            "hotspots",
+            ListType(_hotspot),
+        ),
     ]
 )
 check_hotspots = make_checker(hotspots_event)
@@ -493,7 +518,10 @@ realm_bot_add_event = event_dict_type(
 _check_realm_bot_add = make_checker(realm_bot_add_event)
 
 
-def check_realm_bot_add(var_name: str, event: Dict[str, object],) -> None:
+def check_realm_bot_add(
+    var_name: str,
+    event: Dict[str, object],
+) -> None:
     _check_realm_bot_add(var_name, event)
 
     assert isinstance(event["bot"], dict)
@@ -505,13 +533,9 @@ def check_realm_bot_add(var_name: str, event: Dict[str, object],) -> None:
     if bot_type == UserProfile.DEFAULT_BOT:
         check_data(Equals([]), services_field, services)
     elif bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
-        check_data(
-            ListType(bot_services_outgoing_type, length=1), services_field, services
-        )
+        check_data(ListType(bot_services_outgoing_type, length=1), services_field, services)
     elif bot_type == UserProfile.EMBEDDED_BOT:
-        check_data(
-            ListType(bot_services_embedded_type, length=1), services_field, services
-        )
+        check_data(ListType(bot_services_embedded_type, length=1), services_field, services)
     else:
         raise AssertionError(f"Unknown bot_type: {bot_type}")
 
@@ -678,7 +702,10 @@ realm_export_event = event_dict_type(
     required_keys=[
         # force vertical
         ("type", Equals("realm_export")),
-        ("exports", ListType(export_type),),
+        (
+            "exports",
+            ListType(export_type),
+        ),
     ]
 )
 _check_realm_export = make_checker(realm_export_event)
@@ -756,7 +783,11 @@ realm_update_event = event_dict_type(
 _check_realm_update = make_checker(realm_update_event)
 
 
-def check_realm_update(var_name: str, event: Dict[str, object], prop: str,) -> None:
+def check_realm_update(
+    var_name: str,
+    event: Dict[str, object],
+    prop: str,
+) -> None:
     """
     Realm updates have these two fields:
 
@@ -1081,7 +1112,10 @@ stream_update_event = event_dict_type(
 _check_stream_update = make_checker(stream_update_event)
 
 
-def check_stream_update(var_name: str, event: Dict[str, object],) -> None:
+def check_stream_update(
+    var_name: str,
+    event: Dict[str, object],
+) -> None:
     _check_stream_update(var_name, event)
     prop = event["property"]
     value = event["value"]
@@ -1132,11 +1166,8 @@ submessage_event = event_dict_type(
 check_submessage = make_checker(submessage_event)
 
 single_subscription_type = DictType(
+    # force vertical
     required_keys=subscription_fields,
-    optional_keys=[
-        # force vertical
-        ("subscribers", ListType(int)),
-    ],
 )
 
 subscription_add_event = event_dict_type(
@@ -1146,28 +1177,14 @@ subscription_add_event = event_dict_type(
         ("subscriptions", ListType(single_subscription_type)),
     ],
 )
-_check_subscription_add = make_checker(subscription_add_event)
-
-
-def check_subscription_add(
-    var_name: str, event: Dict[str, object], include_subscribers: bool,
-) -> None:
-    _check_subscription_add(var_name, event)
-
-    assert isinstance(event["subscriptions"], list)
-    for sub in event["subscriptions"]:
-        if include_subscribers:
-            assert "subscribers" in sub.keys()
-        else:
-            assert "subscribers" not in sub.keys()
-
+check_subscription_add = make_checker(subscription_add_event)
 
 subscription_peer_add_event = event_dict_type(
     required_keys=[
         ("type", Equals("subscription")),
         ("op", Equals("peer_add")),
-        ("user_id", int),
-        ("stream_id", int),
+        ("user_ids", ListType(int)),
+        ("stream_ids", ListType(int)),
     ]
 )
 check_subscription_peer_add = make_checker(subscription_peer_add_event)
@@ -1176,8 +1193,8 @@ subscription_peer_remove_event = event_dict_type(
     required_keys=[
         ("type", Equals("subscription")),
         ("op", Equals("peer_remove")),
-        ("user_id", int),
-        ("stream_id", int),
+        ("user_ids", ListType(int)),
+        ("stream_ids", ListType(int)),
     ]
 )
 check_subscription_peer_remove = make_checker(subscription_peer_remove_event)
@@ -1208,8 +1225,6 @@ subscription_update_event = event_dict_type(
         ("property", str),
         ("stream_id", int),
         ("value", value_type),
-        ("name", str),
-        ("email", str),
     ]
 )
 _check_subscription_update = make_checker(subscription_update_event)
@@ -1266,7 +1281,10 @@ update_display_settings_event = event_dict_type(
 _check_update_display_settings = make_checker(update_display_settings_event)
 
 
-def check_update_display_settings(var_name: str, event: Dict[str, object],) -> None:
+def check_update_display_settings(
+    var_name: str,
+    event: Dict[str, object],
+) -> None:
     """
     Display setting events have a "setting" field that
     is more specifically typed according to the
@@ -1298,7 +1316,9 @@ _check_update_global_notifications = make_checker(update_global_notifications_ev
 
 
 def check_update_global_notifications(
-    var_name: str, event: Dict[str, object], desired_val: Union[bool, int, str],
+    var_name: str,
+    event: Dict[str, object],
+    desired_val: Union[bool, int, str],
 ) -> None:
     """
     See UserProfile.notification_setting_types for
@@ -1352,9 +1372,7 @@ update_message_topic_fields = [
     (TOPIC_NAME, str),
 ]
 
-update_message_optional_fields = (
-    update_message_content_fields + update_message_topic_fields
-)
+update_message_optional_fields = update_message_content_fields + update_message_topic_fields
 
 # The schema here does not include the "embedded"
 # variant of update_message; it is for message
@@ -1497,9 +1515,7 @@ user_group_update_event = event_dict_type(
 _check_user_group_update = make_checker(user_group_update_event)
 
 
-def check_user_group_update(
-    var_name: str, event: Dict[str, object], field: str
-) -> None:
+def check_user_group_update(var_name: str, event: Dict[str, object], field: str) -> None:
     _check_user_group_update(var_name, event)
 
     assert isinstance(event["data"], dict)
@@ -1509,10 +1525,20 @@ def check_user_group_update(
 
 user_status_event = event_dict_type(
     required_keys=[
+        # force vertical
         ("type", Equals("user_status")),
         ("user_id", int),
+    ],
+    optional_keys=[
+        # force vertical
         ("away", bool),
         ("status_text", str),
-    ]
+    ],
 )
-check_user_status = make_checker(user_status_event)
+_check_user_status = make_checker(user_status_event)
+
+
+def check_user_status(var_name: str, event: Dict[str, object], fields: Set[str]) -> None:
+    _check_user_status(var_name, event)
+
+    assert set(event.keys()) == {"id", "type", "user_id"} | fields

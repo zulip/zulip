@@ -1,35 +1,33 @@
 "use strict";
 
-set_global("$", global.make_zjquery());
-set_global("markdown", {});
-set_global("local_message", {
-    now: () => "timestamp",
-});
-set_global("page_params", {});
+const {strict: assert} = require("assert");
 
-zrequire("echo");
-const people = zrequire("people");
+const MockDate = require("mockdate");
+
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
+const local_message = mock_module("local_message");
+const markdown = mock_module("markdown");
+const page_params = set_global("page_params", {});
 
 let disparities = [];
 let messages_to_rerender = [];
 
-set_global("ui", {
+mock_module("ui", {
     show_failed_message_success: () => {},
 });
 
-set_global("sent_messages", {
+mock_module("sent_messages", {
     mark_disparity: (local_id) => {
         disparities.push(local_id);
     },
 });
 
-set_global("message_store", {
+mock_module("message_store", {
     get: () => ({failed_request: true}),
-    update_booleans: () => {},
-});
 
-set_global("alert_words", {
-    process_message: () => {},
+    update_booleans: () => {},
 });
 
 set_global("home_msg_list", {
@@ -40,9 +38,11 @@ set_global("home_msg_list", {
     },
 });
 
-set_global("message_list", {});
-
+mock_module("message_list");
 set_global("current_msg_list", "");
+
+const echo = zrequire("echo");
+const people = zrequire("people");
 
 run_test("process_from_server for un-echoed messages", () => {
     const waiting_for_ack = new Map();
@@ -170,8 +170,49 @@ run_test("build_display_recipient", () => {
     assert.equal(iago.id, 123);
 });
 
-run_test("insert_local_message", () => {
-    const local_id_float = 1;
+run_test("insert_local_message streams", (override) => {
+    const fake_now = 555;
+    MockDate.set(new Date(fake_now * 1000));
+
+    const local_id_float = 101;
+
+    let apply_markdown_called = false;
+    let add_topic_links_called = false;
+    let insert_message_called = false;
+
+    override(markdown, "apply_markdown", () => {
+        apply_markdown_called = true;
+    });
+
+    override(markdown, "add_topic_links", () => {
+        add_topic_links_called = true;
+    });
+
+    override(local_message, "insert_message", (message) => {
+        assert.equal(message.display_recipient, "general");
+        assert.equal(message.timestamp, fake_now);
+        assert.equal(message.sender_email, "iago@zulip.com");
+        assert.equal(message.sender_full_name, "Iago");
+        assert.equal(message.sender_id, 123);
+        insert_message_called = true;
+    });
+
+    const message_request = {
+        type: "stream",
+        stream: "general",
+        sender_email: "iago@zulip.com",
+        sender_full_name: "Iago",
+        sender_id: 123,
+    };
+    echo.insert_local_message(message_request, local_id_float);
+
+    assert(apply_markdown_called);
+    assert(add_topic_links_called);
+    assert(insert_message_called);
+});
+
+run_test("insert_local_message PM", (override) => {
+    const local_id_float = 102;
 
     page_params.user_id = 123;
 
@@ -187,50 +228,24 @@ run_test("insert_local_message", () => {
     params.cross_realm_bots = [];
     people.initialize(page_params.user_id, params);
 
-    let apply_markdown_called = false;
     let add_topic_links_called = false;
+    let apply_markdown_called = false;
     let insert_message_called = false;
 
-    markdown.apply_markdown = () => {
-        apply_markdown_called = true;
-    };
-
-    markdown.add_topic_links = () => {
-        add_topic_links_called = true;
-    };
-
-    local_message.insert_message = (message) => {
-        assert.equal(message.display_recipient, "general");
-        assert.equal(message.timestamp, "timestamp");
-        assert.equal(message.sender_email, "iago@zulip.com");
-        assert.equal(message.sender_full_name, "Iago");
-        assert.equal(message.sender_id, 123);
-        insert_message_called = true;
-    };
-
-    let message_request = {
-        type: "stream",
-        stream: "general",
-        sender_email: "iago@zulip.com",
-        sender_full_name: "Iago",
-        sender_id: 123,
-    };
-    echo.insert_local_message(message_request, local_id_float);
-
-    assert(apply_markdown_called);
-    assert(add_topic_links_called);
-    assert(insert_message_called);
-
-    add_topic_links_called = false;
-    apply_markdown_called = false;
-    insert_message_called = false;
-
-    local_message.insert_message = (message) => {
+    override(local_message, "insert_message", (message) => {
         assert.equal(message.display_recipient.length, 3);
         insert_message_called = true;
-    };
+    });
 
-    message_request = {
+    override(markdown, "apply_markdown", () => {
+        apply_markdown_called = true;
+    });
+
+    override(markdown, "add_topic_links", () => {
+        add_topic_links_called = true;
+    });
+
+    const message_request = {
         private_message_recipient: "cordelia@zulip.com,hamlet@zulip.com",
         type: "private",
         sender_email: "iago@zulip.com",
@@ -242,3 +257,5 @@ run_test("insert_local_message", () => {
     assert(apply_markdown_called);
     assert(insert_message_called);
 });
+
+MockDate.reset();

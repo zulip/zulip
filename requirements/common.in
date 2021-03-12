@@ -3,7 +3,7 @@
 # and requirements/prod.txt.
 # See requirements/README.md for more detail.
 # Django itself
-Django==2.2.*
+Django[argon2]==3.1.*
 
 # needed for Literal, TypedDict
 typing-extensions
@@ -23,14 +23,16 @@ jsx-lexer
 # Needed for manage.py
 ipython
 
-# Needed for Image Processing
+# Needed for compatibility with ipython < 7.20, which we cannot
+# install on Python <3.7; see
+# https://github.com/ipython/ipython/issues/12740
+jedi<0.18.0
+
+# Needed for image processing
 Pillow
 
 # Needed for building complex DB queries
 SQLAlchemy
-
-# Needed for password hashing
-argon2-cffi
 
 # Needed for S3 file uploads
 boto3
@@ -55,12 +57,8 @@ python-gcm
 
 # Needed for the email mirror
 html2text
-httplib2
 # Forked to avoid pulling in scipy: https://github.com/mailgun/talon/issues/130
 https://github.com/zulip/talon/archive/7d8bdc4dbcfcc5a73298747293b99fe53da55315.zip#egg=talon==1.2.10.zulip1
-
-# Needed for hipchat import
-hypchat
 
 # Needed for inlining the CSS in emails
 premailer
@@ -71,7 +69,7 @@ PyJWT
 # Needed for including other Markdown files for user docs
 markdown-include
 
-# Needed to access rabbitmq
+# Needed to access RabbitMQ
 pika
 
 # Needed to access our database
@@ -89,7 +87,7 @@ python-dateutil
 # Needed for timezone work
 pytz
 
-# Needed for redis
+# Needed for Redis
 redis
 
 # Needed to parse source maps for error reporting
@@ -138,7 +136,7 @@ py3dns
 
 # Install Python Social Auth
 social-auth-app-django
-https://github.com/python-social-auth/social-core/archive/3.4.0.zip/#egg=social-auth-core[azuread,saml]==3.4.0
+social-auth-core[azuread,saml]<4.0.3  # 4.0.3 needs PyJWT 2: https://github.com/Pr0Ger/PyAPNs2/pull/122, https://github.com/twilio/twilio-python/issues/556
 
 # For encrypting a login token to the desktop app
 cryptography
@@ -147,9 +145,7 @@ cryptography
 lxml
 
 # Needed for 2-factor authentication
-django-two-factor-auth[phonenumberslite]
-
-twilio
+django-two-factor-auth[call,phonenumberslite,sms]
 
 # Needed for processing payments (in corporate)
 stripe
@@ -161,7 +157,7 @@ django-sendfile2
 disposable-email-domains
 
 # Needed for parsing YAML with JSON references from the REST API spec files
-yamole
+jsonref
 
 # Needed for signing thumbnail requests so that they can be authenticated on the
 # other end.
@@ -189,3 +185,6 @@ sentry-sdk
 
 # For detecting URLs to link
 tlds
+
+# Unicode Collation Algorithm for sorting multilingual strings
+pyuca

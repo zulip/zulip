@@ -31,19 +31,23 @@ approach shown above.
 """
 
     def add_arguments(self, parser: CommandParser) -> None:
-        parser.add_argument('-f', '--fixture',
-                            help='The path to the fixture you\'d like to send '
-                                 'into Zulip')
+        parser.add_argument(
+            "-f", "--fixture", help="The path to the fixture you'd like to send " "into Zulip"
+        )
 
-        parser.add_argument('-u', '--url',
-                            help='The url on your Zulip server that you want '
-                                 'to post the fixture to')
+        parser.add_argument(
+            "-u", "--url", help="The URL on your Zulip server that you want to post the fixture to"
+        )
 
-        parser.add_argument('-H', '--custom-headers',
-                            help='The headers you want to provide along with '
-                                 'your mock request to Zulip.')
+        parser.add_argument(
+            "-H",
+            "--custom-headers",
+            help="The headers you want to provide along with your mock request to Zulip.",
+        )
 
-        self.add_realm_args(parser, help="Specify which realm/subdomain to connect to; default is zulip")
+        self.add_realm_args(
+            parser, help="Specify which realm/subdomain to connect to; default is zulip"
+        )
 
     def parse_headers(self, custom_headers: Union[None, str]) -> Union[None, Dict[str, str]]:
         if not custom_headers:
@@ -51,21 +55,23 @@ approach shown above.
         try:
             custom_headers_dict = orjson.loads(custom_headers)
         except orjson.JSONDecodeError as ve:
-            raise CommandError('Encountered an error while attempting to parse custom headers: {}\n'
-                               'Note: all strings must be enclosed within "" instead of \'\''.format(ve))
+            raise CommandError(
+                "Encountered an error while attempting to parse custom headers: {}\n"
+                "Note: all strings must be enclosed within \"\" instead of ''".format(ve)
+            )
         return standardize_headers(custom_headers_dict)
 
     def handle(self, **options: Optional[str]) -> None:
-        if options['fixture'] is None or options['url'] is None:
-            self.print_help('./manage.py', 'send_webhook_fixture_message')
+        if options["fixture"] is None or options["url"] is None:
+            self.print_help("./manage.py", "send_webhook_fixture_message")
             raise CommandError
 
-        full_fixture_path = os.path.join(settings.DEPLOY_ROOT, options['fixture'])
+        full_fixture_path = os.path.join(settings.DEPLOY_ROOT, options["fixture"])
 
         if not self._does_fixture_path_exist(full_fixture_path):
-            raise CommandError('Fixture {} does not exist'.format(options['fixture']))
+            raise CommandError("Fixture {} does not exist".format(options["fixture"]))
 
-        headers = self.parse_headers(options['custom_headers'])
+        headers = self.parse_headers(options["custom_headers"])
         json = self._get_fixture_as_json(full_fixture_path)
         realm = self.get_realm(options)
         if realm is None:
@@ -73,13 +79,19 @@ approach shown above.
 
         client = Client()
         if headers:
-            result = client.post(options['url'], json, content_type="application/json",
-                                 HTTP_HOST=realm.host, **headers)
+            result = client.post(
+                options["url"],
+                json,
+                content_type="application/json",
+                HTTP_HOST=realm.host,
+                **headers,
+            )
         else:
-            result = client.post(options['url'], json, content_type="application/json",
-                                 HTTP_HOST=realm.host)
+            result = client.post(
+                options["url"], json, content_type="application/json", HTTP_HOST=realm.host
+            )
         if result.status_code != 200:
-            raise CommandError(f'Error status {result.status_code}: {result.content}')
+            raise CommandError(f"Error status {result.status_code}: {result.content}")
 
     def _does_fixture_path_exist(self, fixture_path: str) -> bool:
         return os.path.exists(fixture_path)

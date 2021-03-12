@@ -3,13 +3,13 @@ import os
 import random
 import shutil
 from functools import partial
-from multiprocessing.sharedctypes import Synchronized
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, Union, cast
 from unittest import TestLoader, TestSuite, runner
 from unittest.result import TestResult
 
+import mock
 from django.conf import settings
-from django.db import ProgrammingError, connections
+from django.db import connections
 from django.test import TestCase
 from django.test import runner as django_runner
 from django.test.runner import DiscoverRunner
@@ -31,16 +31,20 @@ from zerver.lib.test_helpers import append_instrumentation_data, write_instrumen
 # below hack, which fails 1/10000000 of the time.
 random_id_range_start = str(random.randint(1, 10000000))
 
-def get_database_id(worker_id: Optional[int]=None) -> str:
+
+def get_database_id(worker_id: Optional[int] = None) -> str:
     if worker_id:
         return f"{random_id_range_start}_{worker_id}"
     return random_id_range_start
 
+
 # The root directory for this run of the test suite.
 TEST_RUN_DIR = get_or_create_dev_uuid_var_path(
-    os.path.join('test-backend', f'run_{get_database_id()}'))
+    os.path.join("test-backend", f"run_{get_database_id()}")
+)
 
 _worker_id = 0  # Used to identify the worker process.
+
 
 class TextTestResult(runner.TextTestResult):
     """
@@ -84,6 +88,7 @@ class TextTestResult(runner.TextTestResult):
         )
         self.stream.flush()
 
+
 class RemoteTestResult(django_runner.RemoteTestResult):
     """
     The class follows the unpythonic style of function names of the
@@ -91,21 +96,24 @@ class RemoteTestResult(django_runner.RemoteTestResult):
     """
 
     def addInfo(self, test: TestCase, msg: str) -> None:
-        self.events.append(('addInfo', self.test_index, msg))
+        self.events.append(("addInfo", self.test_index, msg))
 
     def addInstrumentation(self, test: TestCase, data: Dict[str, Any]) -> None:
         # Some elements of data['info'] cannot be serialized.
-        if 'info' in data:
-            del data['info']
+        if "info" in data:
+            del data["info"]
 
-        self.events.append(('addInstrumentation', self.test_index, data))
+        self.events.append(("addInstrumentation", self.test_index, data))
+
 
 def process_instrumented_calls(func: Callable[[Dict[str, Any]], None]) -> None:
     for call in test_helpers.INSTRUMENTED_CALLS:
         func(call)
 
+
 SerializedSubsuite = Tuple[Type[TestSuite], List[str]]
-SubsuiteArgs = Tuple[Type['RemoteTestRunner'], int, SerializedSubsuite, bool]
+SubsuiteArgs = Tuple[Type["RemoteTestRunner"], int, SerializedSubsuite, bool]
+
 
 def run_subsuite(args: SubsuiteArgs) -> Tuple[int, Any]:
     # Reset the accumulated INSTRUMENTED_CALLS before running this subsuite.
@@ -123,6 +131,7 @@ def run_subsuite(args: SubsuiteArgs) -> Tuple[int, Any]:
     process_instrumented_calls(partial(result.addInstrumentation, None))
     return subsuite_index, result.events
 
+
 # Monkey-patch django.test.runner to allow using multiprocessing
 # inside tests without a “daemonic processes are not allowed to have
 # children” error.
@@ -130,12 +139,32 @@ class NoDaemonContext(multiprocessing.context.ForkContext):
     class Process(multiprocessing.context.ForkProcess):
         daemon = cast(bool, property(lambda self: False, lambda self, value: None))
 
+
 django_runner.multiprocessing = NoDaemonContext()
 
-def destroy_test_databases(worker_id: Optional[int]=None) -> None:
+
+def destroy_test_databases(worker_id: Optional[int] = None) -> None:
     for alias in connections:
         connection = connections[alias]
-        try:
+
+        def monkey_patched_destroy_test_db(test_database_name: str, verbosity: Any) -> None:
+            """
+            We need to monkey-patch connection.creation._destroy_test_db to
+            use the IF EXISTS parameter - we don't have a guarantee that the
+            database we're cleaning up actually exists and since Django 3.1 the original implementation
+            throws an ugly `RuntimeError: generator didn't stop after throw()` exception and triggers
+            a confusing warnings.warn inside the postgresql backend implementation in _nodb_cursor()
+            if the database doesn't exist.
+            https://code.djangoproject.com/ticket/32376
+            """
+            with connection.creation._nodb_cursor() as cursor:
+                quoted_name = connection.creation.connection.ops.quote_name(test_database_name)
+                query = f"DROP DATABASE IF EXISTS {quoted_name}"
+                cursor.execute(query)
+
+        with mock.patch.object(
+            connection.creation, "_destroy_test_db", monkey_patched_destroy_test_db
+        ):
             # In the parallel mode, the test databases are created
             # through the N=self.parallel child processes, and in the
             # parent process (which calls `destroy_test_databases`),
@@ -157,9 +186,7 @@ def destroy_test_databases(worker_id: Optional[int]=None) -> None:
                 connection.creation.destroy_test_db(suffix=database_id)
             else:
                 connection.creation.destroy_test_db()
-        except ProgrammingError:
-            # DB doesn't exist. No need to do anything.
-            pass
+
 
 def create_test_databases(worker_id: int) -> None:
     database_id = get_database_id(worker_id)
@@ -178,7 +205,8 @@ def create_test_databases(worker_id: int) -> None:
         connection.settings_dict.update(settings_dict)
         connection.close()
 
-def init_worker(counter: Synchronized) -> None:
+
+def init_worker(counter: "multiprocessing.sharedctypes._Value") -> None:
     """
     This function runs only under parallel mode. It initializes the
     individual processes which are also called workers.
@@ -195,6 +223,7 @@ def init_worker(counter: Synchronized) -> None:
 
     # Clear the cache
     from zerver.lib.cache import get_cache_backend
+
     cache = get_cache_backend(None)
     cache.clear()
 
@@ -205,10 +234,12 @@ def init_worker(counter: Synchronized) -> None:
     create_test_databases(_worker_id)
     initialize_worker_path(_worker_id)
 
-    # We manually update the upload directory path in the url regex.
+    # We manually update the upload directory path in the URL regex.
     from zproject.dev_urls import avatars_url
+
     new_root = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars")
-    avatars_url.default_args['document_root'] = new_root
+    avatars_url.default_args["document_root"] = new_root
+
 
 class ParallelTestSuite(django_runner.ParallelTestSuite):
     run_subsuite = run_subsuite
@@ -223,6 +254,7 @@ class ParallelTestSuite(django_runner.ParallelTestSuite):
         assert not isinstance(self.subsuites, SubSuiteList)
         self.subsuites: Union[SubSuiteList, List[TestSuite]] = SubSuiteList(self.subsuites)
 
+
 def check_import_error(test_name: str) -> None:
     try:
         # Directly using __import__ is not recommended, but here it gives
@@ -235,18 +267,22 @@ def check_import_error(test_name: str) -> None:
 def initialize_worker_path(worker_id: int) -> None:
     # Allow each test worker process to write to a unique directory
     # within `TEST_RUN_DIR`.
-    worker_path = os.path.join(TEST_RUN_DIR, f'worker_{_worker_id}')
+    worker_path = os.path.join(TEST_RUN_DIR, f"worker_{_worker_id}")
     os.makedirs(worker_path, exist_ok=True)
     settings.TEST_WORKER_DIR = worker_path
 
     # Every process should upload to a separate directory so that
     # race conditions can be avoided.
     settings.LOCAL_UPLOADS_DIR = get_or_create_dev_uuid_var_path(
-        os.path.join("test-backend",
-                     os.path.basename(TEST_RUN_DIR),
-                     os.path.basename(worker_path),
-                     "test_uploads"))
+        os.path.join(
+            "test-backend",
+            os.path.basename(TEST_RUN_DIR),
+            os.path.basename(worker_path),
+            "test_uploads",
+        )
+    )
     settings.SENDFILE_ROOT = os.path.join(settings.LOCAL_UPLOADS_DIR, "files")
+
 
 class Runner(DiscoverRunner):
     parallel_test_suite = ParallelTestSuite
@@ -266,10 +302,10 @@ class Runner(DiscoverRunner):
         return TextTestResult
 
     def on_template_rendered(self, sender: Any, context: Dict[str, Any], **kwargs: Any) -> None:
-        if hasattr(sender, 'template'):
+        if hasattr(sender, "template"):
             template_name = sender.template.name
             if template_name not in self.templates_rendered:
-                if context.get('shallow_tested') and template_name not in self.templates_rendered:
+                if context.get("shallow_tested") and template_name not in self.templates_rendered:
                     self.shallow_tested_templates.add(template_name)
                 else:
                     self.templates_rendered.add(template_name)
@@ -279,15 +315,13 @@ class Runner(DiscoverRunner):
         return self.shallow_tested_templates
 
     def setup_test_environment(self, *args: Any, **kwargs: Any) -> Any:
-        settings.DATABASES['default']['NAME'] = settings.BACKEND_DATABASE_TEMPLATE
+        settings.DATABASES["default"]["NAME"] = settings.BACKEND_DATABASE_TEMPLATE
         # We create/destroy the test databases in run_tests to avoid
         # duplicate work when running in parallel mode.
 
         # Write the template database ids to a file that we can
         # reference for cleaning them up if they leak.
-        filepath = os.path.join(get_dev_uuid_var_path(),
-                                TEMPLATE_DATABASE_DIR,
-                                get_database_id())
+        filepath = os.path.join(get_dev_uuid_var_path(), TEMPLATE_DATABASE_DIR, get_database_id())
         os.makedirs(os.path.dirname(filepath), exist_ok=True)
         with open(filepath, "w") as f:
             if self.parallel > 1:
@@ -319,9 +353,7 @@ class Runner(DiscoverRunner):
             destroy_test_databases()
 
         # Clean up our record of which databases this process created.
-        filepath = os.path.join(get_dev_uuid_var_path(),
-                                TEMPLATE_DATABASE_DIR,
-                                get_database_id())
+        filepath = os.path.join(get_dev_uuid_var_path(), TEMPLATE_DATABASE_DIR, get_database_id())
         os.remove(filepath)
 
         # Clean up our test runs root directory.
@@ -331,14 +363,16 @@ class Runner(DiscoverRunner):
             print("Unable to clean up the test run's directory.")
         return super().teardown_test_environment(*args, **kwargs)
 
-    def test_imports(self, test_labels: List[str], suite: Union[TestSuite, ParallelTestSuite]) -> None:
-        prefix_old = 'unittest.loader.ModuleImportFailure.'  # Python <= 3.4
-        prefix_new = 'unittest.loader._FailedTest.'  # Python > 3.4
+    def test_imports(
+        self, test_labels: List[str], suite: Union[TestSuite, ParallelTestSuite]
+    ) -> None:
+        prefix_old = "unittest.loader.ModuleImportFailure."  # Python <= 3.4
+        prefix_new = "unittest.loader._FailedTest."  # Python > 3.4
         error_prefixes = [prefix_old, prefix_new]
         for test_name in get_test_names(suite):
             for prefix in error_prefixes:
                 if test_name.startswith(prefix):
-                    test_name = test_name[len(prefix):]
+                    test_name = test_name[len(prefix) :]
                     for label in test_labels:
                         # This code block is for Python 3.5 when test label is
                         # directly provided, for example:
@@ -355,11 +389,14 @@ class Runner(DiscoverRunner):
                             break
                     check_import_error(test_name)
 
-    def run_tests(self, test_labels: List[str],
-                  extra_tests: Optional[List[TestCase]]=None,
-                  full_suite: bool=False,
-                  include_webhooks: bool=False,
-                  **kwargs: Any) -> Tuple[bool, List[str]]:
+    def run_tests(
+        self,
+        test_labels: List[str],
+        extra_tests: Optional[List[TestCase]] = None,
+        full_suite: bool = False,
+        include_webhooks: bool = False,
+        **kwargs: Any,
+    ) -> Tuple[bool, List[str]]:
         self.setup_test_environment()
         try:
             suite = self.build_suite(test_labels, extra_tests)
@@ -402,6 +439,7 @@ class Runner(DiscoverRunner):
             write_instrumentation_reports(full_suite=full_suite, include_webhooks=include_webhooks)
         return failed, result.failed_tests
 
+
 def get_test_names(suite: Union[TestSuite, ParallelTestSuite]) -> List[str]:
     if isinstance(suite, ParallelTestSuite):
         # suite is ParallelTestSuite. It will have a subsuites parameter of
@@ -414,6 +452,7 @@ def get_test_names(suite: Union[TestSuite, ParallelTestSuite]) -> List[str]:
     else:
         return [t.id() for t in get_tests_from_suite(suite)]
 
+
 def get_tests_from_suite(suite: TestSuite) -> TestCase:
     for test in suite:
         if isinstance(test, TestSuite):
@@ -421,8 +460,10 @@ def get_tests_from_suite(suite: TestSuite) -> TestCase:
         else:
             yield test
 
+
 def serialize_suite(suite: TestSuite) -> Tuple[Type[TestSuite], List[str]]:
     return type(suite), get_test_names(suite)
+
 
 def deserialize_suite(args: Tuple[Type[TestSuite], List[str]]) -> TestSuite:
     suite_class, test_names = args
@@ -432,8 +473,10 @@ def deserialize_suite(args: Tuple[Type[TestSuite], List[str]]) -> TestSuite:
         suite.addTest(test)
     return suite
 
+
 class RemoteTestRunner(django_runner.RemoteTestRunner):
     resultclass = RemoteTestResult
+
 
 class SubSuiteList(List[Tuple[Type[TestSuite], List[str]]]):
     """

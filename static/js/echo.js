@@ -1,7 +1,23 @@
-"use strict";
+import * as alert_words from "./alert_words";
+import * as compose from "./compose";
+import * as local_message from "./local_message";
+import * as markdown from "./markdown";
+import * as message_list from "./message_list";
+import * as message_store from "./message_store";
+import * as narrow_state from "./narrow_state";
+import * as notifications from "./notifications";
+import * as people from "./people";
+import * as pm_list from "./pm_list";
+import * as popovers from "./popovers";
+import * as recent_topics from "./recent_topics";
+import * as rows from "./rows";
+import * as sent_messages from "./sent_messages";
+import * as stream_list from "./stream_list";
+import * as stream_topic_history from "./stream_topic_history";
+import * as transmit from "./transmit";
+import * as ui from "./ui";
+import * as util from "./util";
 
-const people = require("./people");
-const util = require("./util");
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
 
 const waiting_for_id = new Map();
@@ -36,7 +52,7 @@ function resend_message(message, row) {
     }
 
     function on_error(response) {
-        exports.message_send_error(message.id, response);
+        message_send_error(message.id, response);
         setTimeout(() => {
             retry_spinner.toggleClass("rotating", false);
         }, 300);
@@ -47,7 +63,7 @@ function resend_message(message, row) {
     transmit.send_message(message, on_success, on_error);
 }
 
-exports.build_display_recipient = function (message) {
+export function build_display_recipient(message) {
     if (message.type === "stream") {
         return message.stream;
     }
@@ -108,9 +124,9 @@ exports.build_display_recipient = function (message) {
         });
     }
     return display_recipient;
-};
+}
 
-exports.insert_local_message = function (message_request, local_id_float) {
+export function insert_local_message(message_request, local_id_float) {
     // Shallow clone of message request object that is turned into something suitable
     // for zulip.js:add_message
     // Keep this in sync with changes to compose.create_message_object
@@ -129,7 +145,7 @@ exports.insert_local_message = function (message_request, local_id_float) {
     message.sender_email = people.my_current_email();
     message.sender_full_name = people.my_full_name();
     message.avatar_url = page_params.avatar_url;
-    message.timestamp = local_message.now();
+    message.timestamp = Date.now() / 1000;
     message.local_id = local_id_float.toString();
     message.locally_echoed = true;
     message.id = local_id_float;
@@ -138,16 +154,16 @@ exports.insert_local_message = function (message_request, local_id_float) {
     waiting_for_id.set(message.local_id, message);
     waiting_for_ack.set(message.local_id, message);
 
-    message.display_recipient = exports.build_display_recipient(message);
+    message.display_recipient = build_display_recipient(message);
     local_message.insert_message(message);
     return message;
-};
+}
 
-exports.is_slash_command = function (content) {
+export function is_slash_command(content) {
     return !content.startsWith("/me") && content.startsWith("/");
-};
+}
 
-exports.try_deliver_locally = function (message_request) {
+export function try_deliver_locally(message_request) {
     if (markdown.contains_backend_only_syntax(message_request.content)) {
         return undefined;
     }
@@ -156,7 +172,7 @@ exports.try_deliver_locally = function (message_request) {
         return undefined;
     }
 
-    if (exports.is_slash_command(message_request.content)) {
+    if (is_slash_command(message_request.content)) {
         return undefined;
     }
 
@@ -180,11 +196,11 @@ exports.try_deliver_locally = function (message_request) {
         return undefined;
     }
 
-    const message = exports.insert_local_message(message_request, local_id_float);
+    const message = insert_local_message(message_request, local_id_float);
     return message;
-};
+}
 
-exports.edit_locally = function (message, request) {
+export function edit_locally(message, request) {
     // Responsible for doing the rendering work of locally editing the
     // content ofa message.  This is used in several code paths:
     // * Editing a message where a message was locally echoed but
@@ -260,9 +276,9 @@ exports.edit_locally = function (message, request) {
     }
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
-};
+}
 
-exports.reify_message_id = function (local_id, server_id) {
+export function reify_message_id(local_id, server_id) {
     const message = waiting_for_id.get(local_id);
     waiting_for_id.delete(local_id);
 
@@ -276,14 +292,14 @@ exports.reify_message_id = function (local_id, server_id) {
     message.id = server_id;
     message.locally_echoed = false;
 
-    const opts = {old_id: parseFloat(local_id), new_id: server_id};
+    const opts = {old_id: Number.parseFloat(local_id), new_id: server_id};
 
     message_store.reify_message_id(opts);
     notifications.reify_message_id(opts);
     recent_topics.reify_message_id_if_available(opts);
-};
+}
 
-exports.process_from_server = function (messages) {
+export function process_from_server(messages) {
     const msgs_to_rerender = [];
     const non_echo_messages = [];
 
@@ -300,7 +316,7 @@ exports.process_from_server = function (messages) {
             continue;
         }
 
-        exports.reify_message_id(local_id, message.id);
+        reify_message_id(local_id, message.id);
 
         if (message_store.get(message.id).failed_request) {
             failed_message_success(message.id);
@@ -346,29 +362,29 @@ exports.process_from_server = function (messages) {
     }
 
     return non_echo_messages;
-};
+}
 
-exports._patch_waiting_for_ack = function (data) {
+export function _patch_waiting_for_ack(data) {
     // Only for testing
     waiting_for_ack = data;
-};
+}
 
-exports.message_send_error = function (message_id, error_response) {
+export function message_send_error(message_id, error_response) {
     // Error sending message, show inline
     message_store.get(message_id).failed_request = true;
     ui.show_message_failed(message_id, error_response);
-};
+}
 
 function abort_message(message) {
     // Remove in all lists in which it exists
     for (const msg_list of [message_list.all, home_msg_list, current_msg_list]) {
-        msg_list.remove_and_rerender([message]);
+        msg_list.remove_and_rerender([message.id]);
     }
 }
 
-exports.initialize = function () {
-    function on_failed_action(action, callback) {
-        $("#main_div").on("click", "." + action + "-failed-message", function (e) {
+export function initialize() {
+    function on_failed_action(selector, callback) {
+        $("#main_div").on("click", selector, function (e) {
             e.stopPropagation();
             popovers.hide_all();
             const row = $(this).closest(".message_row");
@@ -387,8 +403,6 @@ exports.initialize = function () {
         });
     }
 
-    on_failed_action("remove", abort_message);
-    on_failed_action("refresh", resend_message);
-};
-
-window.echo = exports;
+    on_failed_action(".remove-failed-message", abort_message);
+    on_failed_action(".refresh-failed-message", resend_message);
+}

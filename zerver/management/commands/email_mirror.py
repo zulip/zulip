@@ -1,7 +1,7 @@
 """Cron job implementation of Zulip's incoming email gateway's helper
 for forwarding emails into Zulip.
 
-https://zulip.readthedocs.io/en/latest/production/settings.html#email-gateway
+https://zulip.readthedocs.io/en/latest/production/email-gateway.html
 
 The email gateway supports two major modes of operation: An email
 server (using postfix) where the email address configured in
@@ -47,16 +47,16 @@ def get_imap_messages() -> Generator[EmailMessage, None, None]:
     try:
         mbox.select(settings.EMAIL_GATEWAY_IMAP_FOLDER)
         try:
-            status, num_ids_data = mbox.search(None, 'ALL')
+            status, num_ids_data = mbox.search(None, "ALL")
             for message_id in num_ids_data[0].split():
-                status, msg_data = mbox.fetch(message_id, '(RFC822)')
+                status, msg_data = mbox.fetch(message_id, "(RFC822)")
                 assert isinstance(msg_data[0], tuple)
                 msg_as_bytes = msg_data[0][1]
                 message = email.message_from_bytes(msg_as_bytes, policy=email.policy.default)
                 # https://github.com/python/typeshed/issues/2417
                 assert isinstance(message, EmailMessage)
                 yield message
-                mbox.store(message_id, '+FLAGS', '\\Deleted')
+                mbox.store(message_id, "+FLAGS", "\\Deleted")
             mbox.expunge()
         finally:
             mbox.close()
@@ -69,10 +69,17 @@ class Command(BaseCommand):
 
     def handle(self, *args: Any, **options: str) -> None:
         # We're probably running from cron, try to batch-process mail
-        if (not settings.EMAIL_GATEWAY_BOT or not settings.EMAIL_GATEWAY_LOGIN or
-            not settings.EMAIL_GATEWAY_PASSWORD or not settings.EMAIL_GATEWAY_IMAP_SERVER or
-                not settings.EMAIL_GATEWAY_IMAP_PORT or not settings.EMAIL_GATEWAY_IMAP_FOLDER):
-            raise CommandError("Please configure the Email Mirror Gateway in /etc/zulip/, "
-                               "or specify $ORIGINAL_RECIPIENT if piping a single mail.")
+        if (
+            not settings.EMAIL_GATEWAY_BOT
+            or not settings.EMAIL_GATEWAY_LOGIN
+            or not settings.EMAIL_GATEWAY_PASSWORD
+            or not settings.EMAIL_GATEWAY_IMAP_SERVER
+            or not settings.EMAIL_GATEWAY_IMAP_PORT
+            or not settings.EMAIL_GATEWAY_IMAP_FOLDER
+        ):
+            raise CommandError(
+                "Please configure the email mirror gateway in /etc/zulip/, "
+                "or specify $ORIGINAL_RECIPIENT if piping a single mail."
+            )
         for message in get_imap_messages():
             process_message(message)

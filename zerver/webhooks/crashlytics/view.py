@@ -9,32 +9,35 @@ from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
-CRASHLYTICS_TOPIC_TEMPLATE = '{display_id}: {title}'
-CRASHLYTICS_MESSAGE_TEMPLATE = '[Issue]({url}) impacts at least {impacted_devices_count} device(s).'
+CRASHLYTICS_TOPIC_TEMPLATE = "{display_id}: {title}"
+CRASHLYTICS_MESSAGE_TEMPLATE = "[Issue]({url}) impacts at least {impacted_devices_count} device(s)."
 
 CRASHLYTICS_SETUP_TOPIC_TEMPLATE = "Setup"
 CRASHLYTICS_SETUP_MESSAGE_TEMPLATE = "Webhook has been successfully configured."
 
-VERIFICATION_EVENT = 'verification'
+VERIFICATION_EVENT = "verification"
 
 
-@webhook_view('Crashlytics')
+@webhook_view("Crashlytics")
 @has_request_variables
-def api_crashlytics_webhook(request: HttpRequest, user_profile: UserProfile,
-                            payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
-    event = payload['event']
+def api_crashlytics_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Any] = REQ(argument_type="body"),
+) -> HttpResponse:
+    event = payload["event"]
     if event == VERIFICATION_EVENT:
         subject = CRASHLYTICS_SETUP_TOPIC_TEMPLATE
         body = CRASHLYTICS_SETUP_MESSAGE_TEMPLATE
     else:
-        issue_body = payload['payload']
+        issue_body = payload["payload"]
         subject = CRASHLYTICS_TOPIC_TEMPLATE.format(
-            display_id=issue_body['display_id'],
-            title=issue_body['title'],
+            display_id=issue_body["display_id"],
+            title=issue_body["title"],
         )
         body = CRASHLYTICS_MESSAGE_TEMPLATE.format(
-            impacted_devices_count=issue_body['impacted_devices_count'],
-            url=issue_body['url'],
+            impacted_devices_count=issue_body["impacted_devices_count"],
+            url=issue_body["url"],
         )
 
     check_send_webhook_message(request, user_profile, subject, body)

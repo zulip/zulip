@@ -2,9 +2,9 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class SlackIncomingHookTests(WebhookTestCase):
-    STREAM_NAME = 'slack_incoming'
+    STREAM_NAME = "slack_incoming"
     URL_TEMPLATE = "/api/v1/external/slack_incoming?&api_key={api_key}&stream={stream}"
-    FIXTURE_DIR_NAME = 'slack_incoming'
+    FIXTURE_DIR_NAME = "slack_incoming"
 
     def test_message(self) -> None:
         expected_topic = "(no topic)"
@@ -13,7 +13,9 @@ Hello, world.
 """.strip()
 
         self.check_webhook(
-            "text", expected_topic, expected_message,
+            "text",
+            expected_topic,
+            expected_message,
         )
 
     def test_message_as_www_urlencoded(self) -> None:
@@ -39,7 +41,9 @@ Danny Torrence left the following review for your property:
 """.strip()
 
         self.check_webhook(
-            "actions", expected_topic, expected_message,
+            "actions",
+            expected_topic,
+            expected_message,
         )
 
     def test_message_with_blocks(self) -> None:
@@ -52,7 +56,9 @@ Danny Torrence left the following review for your property:
 """.strip()
 
         self.check_webhook(
-            "blocks", expected_topic, expected_message,
+            "blocks",
+            expected_topic,
+            expected_message,
         )
 
     def test_message_with_attachment(self) -> None:
@@ -80,7 +86,9 @@ Danny Torrence left the following review for your property:
 """.strip()
 
         self.check_webhook(
-            "attachment", expected_topic, expected_message,
+            "attachment",
+            expected_topic,
+            expected_message,
         )
 
     def get_body(self, fixture_name: str) -> str:

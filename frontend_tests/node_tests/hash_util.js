@@ -1,19 +1,13 @@
 "use strict";
 
-zrequire("hash_util");
-zrequire("stream_data");
-const people = zrequire("people");
-zrequire("Filter", "js/filter");
-zrequire("narrow_state");
+const {strict: assert} = require("assert");
 
-set_global(
-    "$",
-    global.make_zjquery({
-        silent: true,
-    }),
-);
-set_global("ui_report", {
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
+const ui_report = mock_module("ui_report", {
     displayed_error: false,
+
     error: () => {
         ui_report.displayed_error = true;
     },
@@ -23,6 +17,12 @@ set_global("location", {
     host: "example.com",
     pathname: "/",
 });
+
+const hash_util = zrequire("hash_util");
+const stream_data = zrequire("stream_data");
+const people = zrequire("people");
+const {Filter} = zrequire("../js/filter");
+const narrow_state = zrequire("narrow_state");
 
 const hamlet = {
     user_id: 15,

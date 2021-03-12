@@ -106,7 +106,7 @@ places:
   your changes won't be supported in the frontend processor.
 * If desired, the typeahead logic in `static/js/composebox_typeahead.js`.
 * The test suite, probably via adding entries to `zerver/tests/fixtures/markdown_test_cases.json`.
-* The in-app Markdown documentation (`templates/zerver/app/markdown_help.html`).
+* The in-app Markdown documentation (`markdown_help_rows` in `static/js/info_overlay.js`).
 * The list of changes to Markdown at the end of this document.
 
 Important considerations for any changes are:
@@ -137,8 +137,8 @@ Important considerations for any changes are:
 Zulip's Markdown processor's rendering supports a number of features
 that depend on realm-specific or user-specific data.  For example, the
 realm could have
-[Linkifiers](https://zulip.com/help/add-a-custom-linkification-filter)
-or [Custom emoji](https://zulip.com/help/add-custom-emoji)
+[linkifiers](https://zulip.com/help/add-a-custom-linkification-filter)
+or [custom emoji](https://zulip.com/help/add-custom-emoji)
 configured, and Zulip supports mentions for streams, users, and user
 groups (which depend on data like users' names, IDs, etc.).
 
@@ -248,7 +248,7 @@ accurate.
   `http://google.com`, and not `https://zulip.com/google.com` which
   is the default behavior.
 
-* Set `title=`(the url) on every link tag.
+* Set `title=`(the URL) on every link tag.
 
 * Disable link-by-reference syntax,
   `[foo][bar]` ... `[bar]: https://google.com`.

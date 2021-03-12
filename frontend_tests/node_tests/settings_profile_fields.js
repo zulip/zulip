@@ -1,12 +1,17 @@
 "use strict";
 
-const rewiremock = require("rewiremock/node");
+const {strict: assert} = require("assert");
 
-set_global("page_params", {});
-set_global("$", global.make_zjquery());
-set_global("loading", {});
+const {stub_templates} = require("../zjsunit/handlebars");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
+
+const loading = mock_module("loading");
+const page_params = set_global("page_params", {});
 
 const SHORT_TEXT_ID = 1;
+
 const CHOICE_ID = 3;
 const EXTERNAL_ACCOUNT_ID = 7;
 
@@ -32,9 +37,7 @@ page_params.custom_profile_field_types = {
     },
 };
 
-rewiremock.proxy(() => zrequire("settings_profile_fields"), {
-    sortablejs: {default: {create: () => {}}},
-});
+const settings_profile_fields = zrequire("settings_profile_fields");
 
 function test_populate(opts) {
     const fields_data = opts.fields_data;
@@ -46,6 +49,11 @@ function test_populate(opts) {
     table.set_find_results("tr.profile-field-row", rows);
     table.set_find_results("tr.profile-field-form", form);
 
+    table[0] = "stub";
+
+    rows.remove = () => {};
+    form.remove = () => {};
+
     let num_appends = 0;
     table.append = () => {
         num_appends += 1;
@@ -54,7 +62,7 @@ function test_populate(opts) {
     loading.destroy_indicator = () => {};
 
     const template_data = [];
-    global.stub_templates((fn, data) => {
+    stub_templates((fn, data) => {
         assert.equal(fn, "admin_profile_field_list");
         template_data.push(data);
         return "whatever";
@@ -66,7 +74,8 @@ function test_populate(opts) {
     assert.equal(num_appends, fields_data.length);
 }
 
-run_test("populate_profile_fields", () => {
+run_test("populate_profile_fields", (override) => {
+    override(settings_profile_fields, "create_sortable", () => {});
     const fields_data = [
         {
             type: SHORT_TEXT_ID,

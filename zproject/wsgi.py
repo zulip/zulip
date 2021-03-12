@@ -40,8 +40,12 @@ except Exception:
     # debugging process for a Zulip 500 error to always be "check
     # /var/log/zulip/errors.log", we log to that file directly here.
     import logging
-    logging.basicConfig(filename='/var/log/zulip/errors.log', level=logging.INFO,
-                        format='%(asctime)s %(levelname)s %(name)s %(message)s')
+
+    logging.basicConfig(
+        filename="/var/log/zulip/errors.log",
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(name)s %(message)s",
+    )
     logger = logging.getLogger(__name__)
     logger.exception("get_wsgi_application() failed:")
     raise

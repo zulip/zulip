@@ -55,9 +55,10 @@ to future versions. <!-- TODO fact check -->
 
 1. Enter the following commands into a terminal:
 
-        sudo apt-key adv --keyserver pool.sks-keyservers.net --recv 69AD12704E71A4803DCA3A682424BE5AE9BD10D9
-        echo "deb https://dl.bintray.com/zulip/debian/ stable main" | \
-        sudo tee -a /etc/apt/sources.list.d/zulip.list
+        sudo wget -O /etc/apt/trusted.gpg.d/zulip-desktop.asc \
+            https://download.zulip.com/desktop/apt/zulip-desktop.asc
+        echo "deb https://download.zulip.com/desktop/apt stable main" | \
+            sudo tee /etc/apt/sources.list.d/zulip-desktop.list
         sudo apt update
         sudo apt install zulip
 
@@ -112,10 +113,10 @@ system above.
 If installing from scratch, follow the instructions above, except in the
 command starting `echo "deb https://...` replace `stable` with `beta`.
 
-If you've already installed the stable version, edit `zulip.list` and
+If you've already installed the stable version, edit `zulip-desktop.list` and
 reinstall:
 ```
-sudo sed -i s/stable/beta/ /etc/apt/sources.list.d/zulip.list
+sudo sed -i s/stable/beta/ /etc/apt/sources.list.d/zulip-desktop.list
 sudo apt update
 sudo apt install zulip
 ```

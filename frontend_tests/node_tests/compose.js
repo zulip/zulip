@@ -1,112 +1,101 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const {JSDOM} = require("jsdom");
-const rewiremock = require("rewiremock/node");
+const MockDate = require("mockdate");
 
-const events = require("./lib/events");
+const {stub_templates} = require("../zjsunit/handlebars");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
 
-set_global("bridge", false);
+const noop = () => {};
 
-const noop = function () {};
-
-set_global("$", global.make_zjquery());
 set_global("DOMParser", new JSDOM().window.DOMParser);
-set_global("compose_actions", {
+
+let compose_actions_start_checked;
+let compose_actions_expected_opts;
+
+mock_module("compose_actions", {
     update_placeholder_text: noop,
+
+    start(msg_type, opts) {
+        assert.equal(msg_type, "stream");
+        assert.deepEqual(opts, compose_actions_expected_opts);
+        compose_actions_start_checked = true;
+    },
 });
 
-const {LazySet} = zrequire("lazy_set");
-
+const server_events = mock_module("server_events");
 const _navigator = {
     platform: "",
 };
 
 const _document = {
-    getElementById() {
-        return $("#compose-textarea");
-    },
     execCommand() {
         return false;
     },
     location: {},
-};
-
-const _drafts = {
-    delete_draft_after_send: noop,
-};
-
-const _sent_messages = {
-    start_tracking_message: noop,
-};
-const _notifications = {
-    notify_above_composebox: noop,
-    clear_compose_notifications: noop,
-};
-const _reminder = {
-    is_deferred_delivery: noop,
+    to_$: () => $("document-stub"),
 };
 
 set_global("document", _document);
-set_global("drafts", _drafts);
+const channel = mock_module("channel");
+const loading = mock_module("loading");
+const local_message = mock_module("local_message");
+const markdown = mock_module("markdown");
+const page_params = set_global("page_params", {});
+const reminder = mock_module("reminder", {
+    is_deferred_delivery: noop,
+});
+const resize = mock_module("resize");
+const sent_messages = mock_module("sent_messages", {
+    start_tracking_message: noop,
+});
+const stream_edit = mock_module("stream_edit");
+const subs = mock_module("subs");
+const transmit = mock_module("transmit");
+const ui_util = mock_module("ui_util");
+mock_module("drafts", {
+    delete_draft_after_send: noop,
+});
+mock_module("notifications", {
+    notify_above_composebox: noop,
+    clear_compose_notifications: noop,
+});
+mock_module("rendered_markdown", {
+    update_elements: () => {},
+});
 set_global("navigator", _navigator);
-set_global("notifications", _notifications);
-set_global("reminder", _reminder);
-set_global("sent_messages", _sent_messages);
-
-set_global("local_message", {});
-set_global("transmit", {});
-set_global("channel", {});
-set_global("stream_edit", {});
-set_global("markdown", {});
-set_global("loading", {});
-set_global("page_params", {});
-set_global("resize", {});
-set_global("subs", {});
-set_global("ui_util", {});
 
 // Setting these up so that we can test that links to uploads within messages are
+
 // automatically converted to server relative links.
-global.document.location.protocol = "https:";
-global.document.location.host = "foo.com";
+document.location.protocol = "https:";
+document.location.host = "foo.com";
 
-zrequire("zcommand");
-zrequire("compose_ui");
+const fake_now = 555;
+MockDate.set(new Date(fake_now * 1000));
+
+const compose_fade = zrequire("compose_fade");
+const peer_data = zrequire("peer_data");
 const util = zrequire("util");
-zrequire("rtl");
-zrequire("common");
-zrequire("stream_data");
-zrequire("compose_state");
+const rtl = zrequire("rtl");
+const stream_data = zrequire("stream_data");
+const compose_state = zrequire("compose_state");
 const people = zrequire("people");
-zrequire("input_pill");
-zrequire("user_pill");
-zrequire("compose_pm_pill");
-zrequire("echo");
-rewiremock.proxy(() => zrequire("compose"), {
-    "../../static/js/rendered_markdown": {
-        update_elements: () => {},
-    },
-});
-zrequire("upload");
-zrequire("server_events_dispatch");
+const compose_pm_pill = zrequire("compose_pm_pill");
+const echo = zrequire("echo");
+const compose = zrequire("compose");
+const upload = zrequire("upload");
+const settings_config = zrequire("settings_config");
 
-people.small_avatar_url_for_person = function () {
-    return "http://example.com/example.png";
-};
-
-function stub_out_video_calls() {
-    const elem = $("#below-compose-content .video_link");
-    elem.toggle = (show) => {
-        if (show) {
-            elem.show();
-        } else {
-            elem.hide();
-        }
-    };
-}
+people.small_avatar_url_for_person = () => "http://example.com/example.png";
 
 function reset_jquery() {
     // Avoid leaks.
-    set_global("$", global.make_zjquery());
+    $.clear_all_elements();
 }
 
 const new_user = {
@@ -142,7 +131,12 @@ people.initialize_current_user(me.user_id);
 people.add_active_user(alice);
 people.add_active_user(bob);
 
-run_test("validate_stream_message_address_info", () => {
+function test_ui(label, f) {
+    // The sloppy_$ flag lets us re-use setup from prior tests.
+    run_test(label, f, {sloppy_$: true});
+}
+
+test_ui("validate_stream_message_address_info", () => {
     const sub = {
         stream_id: 101,
         name: "social",
@@ -153,7 +147,7 @@ run_test("validate_stream_message_address_info", () => {
 
     sub.subscribed = false;
     stream_data.add_sub(sub);
-    global.stub_templates((template_name) => {
+    stub_templates((template_name) => {
         assert.equal(template_name, "compose_not_subscribed");
         return "compose_not_subscribed_stub";
     });
@@ -161,7 +155,7 @@ run_test("validate_stream_message_address_info", () => {
     assert.equal($("#compose-error-msg").html(), "compose_not_subscribed_stub");
 
     page_params.narrow_stream = false;
-    channel.post = function (payload) {
+    channel.post = (payload) => {
         assert.equal(payload.data.stream, "social");
         payload.data.subscribed = true;
         payload.success(payload.data);
@@ -171,7 +165,7 @@ run_test("validate_stream_message_address_info", () => {
     sub.name = "Frontend";
     sub.stream_id = 102;
     stream_data.add_sub(sub);
-    channel.post = function (payload) {
+    channel.post = (payload) => {
         assert.equal(payload.data.stream, "Frontend");
         payload.data.subscribed = false;
         payload.success(payload.data);
@@ -179,7 +173,7 @@ run_test("validate_stream_message_address_info", () => {
     assert(!compose.validate_stream_message_address_info("Frontend"));
     assert.equal($("#compose-error-msg").html(), "compose_not_subscribed_stub");
 
-    channel.post = function (payload) {
+    channel.post = (payload) => {
         assert.equal(payload.data.stream, "Frontend");
         payload.error({status: 404});
     };
@@ -189,7 +183,7 @@ run_test("validate_stream_message_address_info", () => {
         "translated: <p>The stream <b>Frontend</b> does not exist.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>",
     );
 
-    channel.post = function (payload) {
+    channel.post = (payload) => {
         assert.equal(payload.data.stream, "social");
         payload.error({status: 500});
     };
@@ -197,9 +191,9 @@ run_test("validate_stream_message_address_info", () => {
     assert.equal($("#compose-error-msg").html(), i18n.t("Error checking subscription"));
 });
 
-run_test("validate", () => {
+test_ui("validate", () => {
     function initialize_pm_pill() {
-        set_global("$", global.make_zjquery());
+        reset_jquery();
 
         $("#compose-send-button").prop("disabled", false);
         $("#compose-send-button").trigger("focus");
@@ -217,7 +211,7 @@ run_test("validate", () => {
 
         $("#zephyr-mirror-error").is = noop;
 
-        global.stub_templates((fn) => {
+        stub_templates((fn) => {
             assert.equal(fn, "input_pill");
             return "<div>pill-html</div>";
         });
@@ -241,7 +235,7 @@ run_test("validate", () => {
 
     add_content_to_compose_box();
     let zephyr_checked = false;
-    $("#zephyr-mirror-error").is = function () {
+    $("#zephyr-mirror-error").is = () => {
         if (!zephyr_checked) {
             zephyr_checked = true;
             return true;
@@ -307,7 +301,7 @@ run_test("validate", () => {
     assert.equal($("#compose-error-msg").html(), i18n.t("Please specify a topic"));
 });
 
-run_test("get_invalid_recipient_emails", () => {
+test_ui("get_invalid_recipient_emails", (override) => {
     const welcome_bot = {
         email: "welcome-bot@example.com",
         user_id: 124,
@@ -323,11 +317,53 @@ run_test("get_invalid_recipient_emails", () => {
 
     people.initialize(page_params.user_id, params);
 
-    compose_state.private_message_recipient("welcome-bot@example.com");
+    override(compose_state, "private_message_recipient", () => "welcome-bot@example.com");
     assert.deepEqual(compose.get_invalid_recipient_emails(), []);
 });
 
-run_test("validate_stream_message", () => {
+test_ui("test_wildcard_mention_allowed", () => {
+    page_params.realm_wildcard_mention_policy =
+        settings_config.wildcard_mention_policy_values.by_everyone.code;
+    page_params.is_guest = true;
+    page_params.is_admin = false;
+    assert(compose.wildcard_mention_allowed());
+
+    page_params.realm_wildcard_mention_policy =
+        settings_config.wildcard_mention_policy_values.nobody.code;
+    page_params.is_admin = true;
+    assert(!compose.wildcard_mention_allowed());
+
+    page_params.realm_wildcard_mention_policy =
+        settings_config.wildcard_mention_policy_values.by_members.code;
+    page_params.is_guest = true;
+    page_params.is_admin = false;
+    assert(!compose.wildcard_mention_allowed());
+
+    page_params.is_guest = false;
+    assert(compose.wildcard_mention_allowed());
+
+    page_params.realm_wildcard_mention_policy =
+        settings_config.wildcard_mention_policy_values.by_stream_admins_only.code;
+    page_params.is_admin = false;
+    assert(!compose.wildcard_mention_allowed());
+
+    // TODO: Add a by_admins_only case when we implement stream-level administrators.
+
+    page_params.is_admin = true;
+    assert(compose.wildcard_mention_allowed());
+
+    page_params.realm_wildcard_mention_policy =
+        settings_config.wildcard_mention_policy_values.by_full_members.code;
+    const person = people.get_by_user_id(page_params.user_id);
+    person.date_joined = new Date(Date.now());
+    page_params.realm_waiting_period_threshold = 10;
+
+    assert(compose.wildcard_mention_allowed());
+    page_params.is_admin = false;
+    assert(!compose.wildcard_mention_allowed());
+});
+
+test_ui("validate_stream_message", (override) => {
     // This test is in kind of continuation to test_validate but since it is
     // primarily used to get coverage over functions called from validate()
     // we are separating it up in different test. Though their relative position
@@ -344,28 +380,37 @@ run_test("validate_stream_message", () => {
     assert(!$("#compose-all-everyone").visible());
     assert(!$("#compose-send-status").visible());
 
-    stream_data.get_subscriber_count = function (stream_id) {
+    peer_data.get_subscriber_count = (stream_id) => {
         assert.equal(stream_id, 101);
         return 16;
     };
-    global.stub_templates((template_name, data) => {
+    stub_templates((template_name, data) => {
         assert.equal(template_name, "compose_all_everyone");
         assert.equal(data.count, 16);
         return "compose_all_everyone_stub";
     });
     let compose_content;
-    $("#compose-all-everyone").append = function (data) {
+    $("#compose-all-everyone").append = (data) => {
         compose_content = data;
     };
+
+    override(compose, "wildcard_mention_allowed", () => true);
     compose_state.message_content("Hey @**all**");
     assert(!compose.validate());
     assert.equal($("#compose-send-button").prop("disabled"), false);
     assert(!$("#compose-send-status").visible());
     assert.equal(compose_content, "compose_all_everyone_stub");
     assert($("#compose-all-everyone").visible());
+
+    override(compose, "wildcard_mention_allowed", () => false);
+    assert(!compose.validate());
+    assert.equal(
+        $("#compose-error-msg").html(),
+        i18n.t("You do not have permission to use wildcard mentions in this stream."),
+    );
 });
 
-run_test("test_validate_stream_message_post_policy", () => {
+test_ui("test_validate_stream_message_post_policy_admin_only", () => {
     // This test is in continuation with test_validate but it has been separated out
     // for better readability. Their relative position of execution should not be changed.
     // Although the position with respect to test_validate_stream_message does not matter
@@ -387,22 +432,58 @@ run_test("test_validate_stream_message_post_policy", () => {
         i18n.t("Only organization admins are allowed to post to this stream."),
     );
 
-    // reset compose_state.stream_name to 'social' again so that any tests occurung after this
-    // do not reproduce this error.
+    // Reset error message.
     compose_state.stream_name("social");
+
+    page_params.is_admin = false;
+    page_params.is_guest = true;
+
+    compose_state.topic("subject102");
+    compose_state.stream_name("stream102");
+    assert(!compose.validate());
+    assert.equal(
+        $("#compose-error-msg").html(),
+        i18n.t("Only organization admins are allowed to post to this stream."),
+    );
 });
 
-run_test("markdown_rtl", () => {
+test_ui("test_validate_stream_message_post_policy_full_members_only", () => {
+    page_params.is_admin = false;
+    page_params.is_guest = true;
+    const sub = {
+        stream_id: 103,
+        name: "stream103",
+        subscribed: true,
+        stream_post_policy: stream_data.stream_post_policy_values.non_new_members.code,
+    };
+
+    compose_state.topic("subject103");
+    compose_state.stream_name("stream103");
+    stream_data.add_sub(sub);
+    assert(!compose.validate());
+    assert.equal(
+        $("#compose-error-msg").html(),
+        i18n.t("Guests are not allowed to post to this stream."),
+    );
+
+    // reset compose_state.stream_name to 'social' again so that any tests occurring after this
+    // do not reproduce this error.
+    compose_state.stream_name("social");
+    // Reset page_params
+    page_params.is_guest = false;
+});
+
+test_ui("markdown_rtl", (override) => {
     const textarea = $("#compose-textarea");
 
     const event = {
         keyCode: 65, // A
     };
 
-    rtl.get_direction = (text) => {
+    override(rtl, "get_direction", (text) => {
         assert.equal(text, " foo");
         return "rtl";
-    };
+    });
 
     assert.equal(textarea.hasClass("rtl"), false);
 
@@ -412,11 +493,7 @@ run_test("markdown_rtl", () => {
     assert.equal(textarea.hasClass("rtl"), true);
 });
 
-// This is important for subsequent tests--put
-// us back to the "normal" ltr case.
-rtl.get_direction = () => "ltr";
-
-run_test("markdown_ltr", () => {
+test_ui("markdown_ltr", () => {
     const textarea = $("#compose-textarea");
 
     const event = {
@@ -430,7 +507,7 @@ run_test("markdown_ltr", () => {
     assert.equal(textarea.hasClass("rtl"), false);
 });
 
-run_test("markdown_shortcuts", () => {
+test_ui("markdown_shortcuts", () => {
     let queryCommandEnabled = true;
     const event = {
         keyCode: 66,
@@ -446,30 +523,27 @@ run_test("markdown_shortcuts", () => {
     let compose_value = $("#compose_textarea").val();
     let selected_word = "";
 
-    global.document.queryCommandEnabled = function () {
-        return queryCommandEnabled;
-    };
-    global.document.execCommand = function (cmd, bool, markdown) {
+    document.queryCommandEnabled = () => queryCommandEnabled;
+    document.execCommand = (cmd, bool, markdown) => {
         const compose_textarea = $("#compose-textarea");
         const value = compose_textarea.val();
         $("#compose-textarea").val(
-            value.substring(0, compose_textarea.range().start) +
+            value.slice(0, compose_textarea.range().start) +
                 markdown +
-                value.substring(compose_textarea.range().end, value.length),
+                value.slice(compose_textarea.range().end),
         );
     };
 
-    $("#compose-textarea").range = function () {
-        return {
-            start: range_start,
-            end: range_start + range_length,
-            length: range_length,
-            range: noop,
-            text: $("#compose-textarea")
-                .val()
-                .substring(range_start, range_length + range_start),
-        };
-    };
+    $("#compose-textarea")[0] = {};
+    $("#compose-textarea").range = () => ({
+        start: range_start,
+        end: range_start + range_length,
+        length: range_length,
+        range: noop,
+        text: $("#compose-textarea")
+            .val()
+            .slice(range_start, range_length + range_start),
+    });
     $("#compose-textarea").caret = noop;
 
     function test_i_typed(isCtrl, isCmd) {
@@ -593,7 +667,7 @@ run_test("markdown_shortcuts", () => {
     _navigator.userAgent = "";
 });
 
-run_test("send_message_success", () => {
+test_ui("send_message_success", () => {
     $("#compose-textarea").val("foobarfoobar");
     $("#compose-textarea").trigger("blur");
     $("#compose-send-status").show();
@@ -601,7 +675,7 @@ run_test("send_message_success", () => {
     $("#sending-indicator").show();
 
     let reify_message_id_checked;
-    echo.reify_message_id = function (local_id, message_id) {
+    echo.reify_message_id = (local_id, message_id) => {
         assert.equal(local_id, "1001");
         assert.equal(message_id, 12);
         reify_message_id_checked = true;
@@ -618,7 +692,7 @@ run_test("send_message_success", () => {
     assert(reify_message_id_checked);
 });
 
-run_test("send_message", () => {
+test_ui("send_message", (override) => {
     // This is the common setup stuff for all of the four tests.
     let stub_state;
     function initialize_state_stub_dict() {
@@ -629,14 +703,13 @@ run_test("send_message", () => {
         return stub_state;
     }
 
-    global.patch_builtin("setTimeout", (func) => {
+    set_global("setTimeout", (func) => {
         func();
     });
-    global.server_events = {
-        assert_get_events_running() {
-            stub_state.get_events_running_called += 1;
-        },
-    };
+
+    override(server_events, "assert_get_events_running", () => {
+        stub_state.get_events_running_called += 1;
+    });
 
     // Tests start here.
     (function test_message_send_success_codepath() {
@@ -644,25 +717,21 @@ run_test("send_message", () => {
         compose_state.topic("");
         compose_state.set_message_type("private");
         page_params.user_id = 101;
-        compose_state.private_message_recipient = function () {
-            return "alice@example.com";
-        };
+        override(compose_state, "private_message_recipient", () => "alice@example.com");
 
         const server_message_id = 127;
-        const fake_now = 555;
         local_message.insert_message = (message) => {
             assert.equal(message.timestamp, fake_now);
         };
-        local_message.now = () => fake_now;
 
         markdown.apply_markdown = () => {};
         markdown.add_topic_links = () => {};
 
-        echo.try_deliver_locally = function (message_request) {
+        echo.try_deliver_locally = (message_request) => {
             const local_id_float = 123.04;
             return echo.insert_local_message(message_request, local_id_float);
         };
-        transmit.send_message = function (payload, success) {
+        transmit.send_message = (payload, success) => {
             const single_msg = {
                 type: "private",
                 content: "[foobar](/user_uploads/123456)",
@@ -683,7 +752,7 @@ run_test("send_message", () => {
             success(payload);
             stub_state.send_msg_called += 1;
         };
-        echo.reify_message_id = function (local_id, message_id) {
+        echo.reify_message_id = (local_id, message_id) => {
             assert.equal(typeof local_id, "string");
             assert.equal(typeof message_id, "number");
             assert.equal(message_id, server_message_id);
@@ -692,7 +761,7 @@ run_test("send_message", () => {
 
         // Setting message content with a host server link and we will assert
         // later that this has been converted to a relative link.
-        $("#compose-textarea").val("[foobar]" + "(https://foo.com/user_uploads/123456)");
+        $("#compose-textarea").val("[foobar](https://foo.com/user_uploads/123456)");
         $("#compose-textarea").trigger("blur");
         $("#compose-send-status").show();
         $("#compose-send-button").prop("disabled", true);
@@ -714,14 +783,14 @@ run_test("send_message", () => {
     })();
 
     // This is the additional setup which is common to both the tests below.
-    transmit.send_message = function (payload, success, error) {
+    transmit.send_message = (payload, success, error) => {
         stub_state.send_msg_called += 1;
         error("Error sending message: Server says 408");
     };
 
     let echo_error_msg_checked;
 
-    echo.message_send_error = function (local_id, error_response) {
+    echo.message_send_error = (local_id, error_response) => {
         assert.equal(local_id, 123.04);
         assert.equal(error_response, "Error sending message: Server says 408");
         echo_error_msg_checked = true;
@@ -751,13 +820,9 @@ run_test("send_message", () => {
         $("#sending-indicator").show();
         $("#compose-textarea").off("select");
         echo_error_msg_checked = false;
-        echo.try_deliver_locally = function () {
-            return;
-        };
+        echo.try_deliver_locally = () => {};
 
-        sent_messages.get_new_local_id = function () {
-            return "loc-55";
-        };
+        sent_messages.get_new_local_id = () => "loc-55";
 
         compose.send_message();
 
@@ -778,9 +843,7 @@ run_test("send_message", () => {
     })();
 });
 
-set_global("document", "document-stub");
-
-run_test("enter_with_preview_open", () => {
+test_ui("enter_with_preview_open", (override) => {
     // Test sending a message with content.
     compose_state.set_message_type("stream");
     $("#compose-textarea").val("message me");
@@ -790,9 +853,9 @@ run_test("enter_with_preview_open", () => {
     $("#markdown_preview").hide();
     page_params.enter_sends = true;
     let send_message_called = false;
-    compose.send_message = function () {
+    override(compose, "send_message", () => {
         send_message_called = true;
-    };
+    });
     compose.enter_with_preview_open();
     assert($("#compose-textarea").visible());
     assert(!$("#undo_markdown_preview").visible());
@@ -817,7 +880,7 @@ run_test("enter_with_preview_open", () => {
     assert.equal($("#compose-error-msg").html(), i18n.t("You have nothing to send!"));
 });
 
-run_test("finish", () => {
+test_ui("finish", (override) => {
     (function test_when_compose_validation_fails() {
         $("#compose_invite_users").show();
         $("#compose-send-button").prop("disabled", false);
@@ -841,18 +904,16 @@ run_test("finish", () => {
         $("#markdown_preview").hide();
         $("#compose-textarea").val("foobarfoobar");
         compose_state.set_message_type("private");
-        compose_state.private_message_recipient = function () {
-            return "bob@example.com";
-        };
+        override(compose_state, "private_message_recipient", () => "bob@example.com");
 
         let compose_finished_event_checked = false;
         $(document).on("compose_finished.zulip", () => {
             compose_finished_event_checked = true;
         });
         let send_message_called = false;
-        compose.send_message = function () {
+        override(compose, "send_message", () => {
             send_message_called = true;
-        };
+        });
         assert(compose.finish());
         assert($("#compose-textarea").visible());
         assert(!$("#undo_markdown_preview").visible());
@@ -863,17 +924,22 @@ run_test("finish", () => {
     })();
 });
 
-run_test("warn_if_private_stream_is_linked", () => {
-    stream_data.add_sub({
+test_ui("warn_if_private_stream_is_linked", () => {
+    const test_sub = {
         name: compose_state.stream_name(),
-        subscribers: new LazySet([1, 2]),
         stream_id: 99,
-    });
+    };
+
+    stream_data.add_sub(test_sub);
+    peer_data.set_subscribers(test_sub.stream_id, [1, 2]);
 
     let denmark = {
+        stream_id: 100,
         name: "Denmark",
-        subscribers: new LazySet([1, 2, 3]),
     };
+    stream_data.add_sub(denmark);
+
+    peer_data.set_subscribers(denmark.stream_id, [1, 2, 3]);
 
     function test_noop_case(invite_only) {
         compose_state.set_message_type("stream");
@@ -893,7 +959,7 @@ run_test("warn_if_private_stream_is_linked", () => {
     const checks = [
         (function () {
             let called;
-            global.stub_templates((template_name, context) => {
+            stub_templates((template_name, context) => {
                 called = true;
                 assert.equal(template_name, "compose_private_stream_alert");
                 assert.equal(context.stream_name, "Denmark");
@@ -906,7 +972,7 @@ run_test("warn_if_private_stream_is_linked", () => {
 
         (function () {
             let called;
-            $("#compose_private_stream_alert").append = function (html) {
+            $("#compose_private_stream_alert").append = (html) => {
                 called = true;
                 assert.equal(html, "fake-compose_private_stream_alert-template");
             };
@@ -919,8 +985,9 @@ run_test("warn_if_private_stream_is_linked", () => {
     denmark = {
         invite_only: true,
         name: "Denmark",
-        subscribers: new LazySet([1]),
+        stream_id: 22,
     };
+    stream_data.add_sub(denmark);
 
     compose.warn_if_private_stream_is_linked(denmark);
     assert.equal($("#compose_private_stream_alert").visible(), true);
@@ -930,17 +997,18 @@ run_test("warn_if_private_stream_is_linked", () => {
     }
 });
 
-run_test("initialize", () => {
+test_ui("initialize", (override) => {
     // In this test we mostly do the setup stuff in addition to testing the
     // normal workflow of the function. All the tests for the on functions are
     // done in subsequent tests directly below this test.
 
+    override(compose, "compute_show_video_chat_button", () => false);
+
     let resize_watch_manual_resize_checked = false;
-    resize.watch_manual_resize = function (elem) {
+    resize.watch_manual_resize = (elem) => {
         assert.equal("#compose-textarea", elem);
         resize_watch_manual_resize_checked = true;
     };
-    set_global("bridge", true);
     let xmlhttprequest_checked = false;
     set_global("XMLHttpRequest", function () {
         this.upload = true;
@@ -948,14 +1016,14 @@ run_test("initialize", () => {
     });
     $("#compose #attach_files").addClass("notdisplayed");
 
-    global.document = "document-stub";
-    global.csrf_token = "fake-csrf-token";
+    set_global("document", "document-stub");
+    set_global("csrf_token", "fake-csrf-token");
 
     page_params.max_file_upload_size_mib = 512;
 
     let setup_upload_called = false;
     let uppy_cancel_all_called = false;
-    upload.setup_upload = function (config) {
+    override(upload, "setup_upload", (config) => {
         assert.equal(config.mode, "compose");
         setup_upload_called = true;
         return {
@@ -963,31 +1031,8 @@ run_test("initialize", () => {
                 uppy_cancel_all_called = true;
             },
         };
-    };
+    });
 
-    page_params.realm_available_video_chat_providers = {
-        disabled: {
-            id: 0,
-            name: "disabled",
-        },
-        jitsi_meet: {
-            id: 1,
-            name: "Jitsi Meet",
-        },
-        zoom: {
-            id: 3,
-            name: "Zoom",
-        },
-        big_blue_button: {
-            id: 4,
-            name: "Big Blue Button",
-        },
-    };
-
-    page_params.realm_video_chat_provider =
-        page_params.realm_available_video_chat_providers.disabled.id;
-
-    stub_out_video_calls();
     compose.initialize();
 
     assert(resize_watch_manual_resize_checked);
@@ -995,25 +1040,15 @@ run_test("initialize", () => {
     assert(!$("#compose #attach_files").hasClass("notdisplayed"));
     assert(setup_upload_called);
 
-    let compose_actions_start_checked;
-
     function set_up_compose_start_mock(expected_opts) {
         compose_actions_start_checked = false;
-
-        global.compose_actions = {
-            start(msg_type, opts) {
-                assert.equal(msg_type, "stream");
-                assert.deepEqual(opts, expected_opts);
-                compose_actions_start_checked = true;
-            },
-        };
+        compose_actions_expected_opts = expected_opts;
     }
 
     (function test_page_params_narrow_path() {
         page_params.narrow = true;
 
         reset_jquery();
-        stub_out_video_calls();
         set_up_compose_start_mock({});
 
         compose.initialize();
@@ -1025,7 +1060,6 @@ run_test("initialize", () => {
         page_params.narrow_topic = "testing";
 
         reset_jquery();
-        stub_out_video_calls();
         set_up_compose_start_mock({topic: "testing"});
 
         compose.initialize();
@@ -1037,7 +1071,6 @@ run_test("initialize", () => {
         $("#compose-send-button").prop("disabled", true);
 
         reset_jquery();
-        stub_out_video_calls();
         compose.initialize();
 
         compose.abort_xhr();
@@ -1047,7 +1080,7 @@ run_test("initialize", () => {
     })();
 });
 
-run_test("update_fade", () => {
+test_ui("update_fade", (override) => {
     const selector =
         "#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient";
     const keyup_handler_func = $(selector).get_on_handler("keyup");
@@ -1055,15 +1088,14 @@ run_test("update_fade", () => {
     let set_focused_recipient_checked = false;
     let update_all_called = false;
 
-    global.compose_fade = {
-        set_focused_recipient(msg_type) {
-            assert.equal(msg_type, "private");
-            set_focused_recipient_checked = true;
-        },
-        update_all() {
-            update_all_called = true;
-        },
-    };
+    override(compose_fade, "set_focused_recipient", (msg_type) => {
+        assert.equal(msg_type, "private");
+        set_focused_recipient_checked = true;
+    });
+
+    override(compose_fade, "update_all", () => {
+        update_all_called = true;
+    });
 
     compose_state.set_message_type(false);
     keyup_handler_func();
@@ -1076,7 +1108,7 @@ run_test("update_fade", () => {
     assert(update_all_called);
 });
 
-run_test("trigger_submit_compose_form", () => {
+test_ui("trigger_submit_compose_form", (override) => {
     let prevent_default_checked = false;
     let compose_finish_checked = false;
     const e = {
@@ -1084,9 +1116,9 @@ run_test("trigger_submit_compose_form", () => {
             prevent_default_checked = true;
         },
     };
-    compose.finish = function () {
+    override(compose, "finish", () => {
         compose_finish_checked = true;
-    };
+    });
 
     const submit_handler = $("#compose form").get_on_handler("submit");
 
@@ -1096,7 +1128,7 @@ run_test("trigger_submit_compose_form", () => {
     assert(compose_finish_checked);
 });
 
-run_test("needs_subscribe_warning", () => {
+test_ui("needs_subscribe_warning", () => {
     const invalid_user_id = 999;
 
     const test_bot = {
@@ -1114,7 +1146,7 @@ run_test("needs_subscribe_warning", () => {
     };
 
     stream_data.add_sub(sub);
-    stream_data.set_subscribers(sub, [bob.user_id, me.user_id]);
+    peer_data.set_subscribers(sub.stream_id, [bob.user_id, me.user_id]);
 
     blueslip.expect("error", "Unknown user_id in get_by_user_id: 999");
     // Test with an invalid user id.
@@ -1126,12 +1158,12 @@ run_test("needs_subscribe_warning", () => {
     // Test when user is subscribed to the stream.
     assert.equal(compose.needs_subscribe_warning(bob.user_id, sub.stream_id), false);
 
-    stream_data.remove_subscriber(sub.stream_id, bob.user_id);
+    peer_data.remove_subscriber(sub.stream_id, bob.user_id);
     // Test when the user is not subscribed.
     assert.equal(compose.needs_subscribe_warning(bob.user_id, sub.stream_id), true);
 });
 
-run_test("warn_if_mentioning_unsubscribed_user", () => {
+test_ui("warn_if_mentioning_unsubscribed_user", (override) => {
     let mentioned = {
         email: "foo@bar.com",
     };
@@ -1175,12 +1207,12 @@ run_test("warn_if_mentioning_unsubscribed_user", () => {
     const checks = [
         (function () {
             let called;
-            compose.needs_subscribe_warning = function (user_id, stream_id) {
+            override(compose, "needs_subscribe_warning", (user_id, stream_id) => {
                 called = true;
                 assert.equal(user_id, 34);
                 assert.equal(stream_id, 111);
                 return true;
-            };
+            });
             return function () {
                 assert(called);
             };
@@ -1188,7 +1220,7 @@ run_test("warn_if_mentioning_unsubscribed_user", () => {
 
         (function () {
             let called;
-            global.stub_templates((template_name, context) => {
+            stub_templates((template_name, context) => {
                 called = true;
                 assert.equal(template_name, "compose_invite_users");
                 assert.equal(context.user_id, 34);
@@ -1203,7 +1235,7 @@ run_test("warn_if_mentioning_unsubscribed_user", () => {
 
         (function () {
             let called;
-            $("#compose_invite_users").append = function (html) {
+            $("#compose_invite_users").append = (html) => {
                 called = true;
                 assert.equal(html, "fake-compose-invite-user-template");
             };
@@ -1231,7 +1263,7 @@ run_test("warn_if_mentioning_unsubscribed_user", () => {
     const warning_row = $("<warning row>");
 
     let looked_for_existing;
-    warning_row.data = function (field) {
+    warning_row.data = (field) => {
         if (field === "user-id") {
             looked_for_existing = true;
             return "34";
@@ -1249,18 +1281,18 @@ run_test("warn_if_mentioning_unsubscribed_user", () => {
 
     // Now try to mention the same person again. The template should
     // not render.
-    global.stub_templates(noop);
+    stub_templates(noop);
     compose.warn_if_mentioning_unsubscribed_user(mentioned);
     assert.equal($("#compose_invite_users").visible(), true);
     assert(looked_for_existing);
 });
 
-run_test("on_events", () => {
+test_ui("on_events", (override) => {
     function setup_parents_and_mock_remove(container_sel, target_sel, parent) {
         const container = $.create("fake " + container_sel);
         let container_removed = false;
 
-        container.remove = function () {
+        container.remove = () => {
             container_removed = true;
         };
 
@@ -1299,9 +1331,9 @@ run_test("on_events", () => {
         $("#compose-send-status").show();
 
         let compose_finish_checked = false;
-        compose.finish = function () {
+        override(compose, "finish", () => {
             compose_finish_checked = true;
-        };
+        });
 
         handler(helper.event);
 
@@ -1325,7 +1357,7 @@ run_test("on_events", () => {
         };
         people.add_active_user(mentioned);
         let invite_user_to_stream_called = false;
-        stream_edit.invite_user_to_stream = function (user_ids, sub, success) {
+        stream_edit.invite_user_to_stream = (user_ids, sub, success) => {
             invite_user_to_stream_called = true;
             assert.deepEqual(user_ids, [mentioned.user_id]);
             assert.equal(sub, subscription);
@@ -1338,7 +1370,7 @@ run_test("on_events", () => {
             ".compose_invite_user",
         );
 
-        helper.container.data = function (field) {
+        helper.container.data = (field) => {
             if (field === "user-id") {
                 return "34";
             }
@@ -1353,7 +1385,7 @@ run_test("on_events", () => {
         stream_data.add_sub(subscription);
         $("#stream_message_recipient_stream").val("test");
         let all_invite_children_called = false;
-        $("#compose_invite_users").children = function () {
+        $("#compose_invite_users").children = () => {
             all_invite_children_called = true;
             return [];
         };
@@ -1377,7 +1409,7 @@ run_test("on_events", () => {
         );
 
         let all_invite_children_called = false;
-        $("#compose_invite_users").children = function () {
+        $("#compose_invite_users").children = () => {
             all_invite_children_called = true;
             return [];
         };
@@ -1398,7 +1430,7 @@ run_test("on_events", () => {
             subscribed: false,
         };
         let compose_not_subscribed_called = false;
-        subs.sub_or_unsub = function () {
+        subs.sub_or_unsub = () => {
             compose_not_subscribed_called = true;
         };
 
@@ -1442,7 +1474,7 @@ run_test("on_events", () => {
 
     (function test_attach_files_compose_clicked() {
         const handler = $("#compose").get_on_handler("click", "#attach_files");
-        $("#file_input").clone = function (param) {
+        $("#file_input").clone = (param) => {
             assert(param);
         };
         let compose_file_input_clicked = false;
@@ -1456,81 +1488,6 @@ run_test("on_events", () => {
 
         handler(event);
         assert(compose_file_input_clicked);
-    })();
-
-    (function test_video_link_compose_clicked() {
-        page_params.jitsi_server_url = "https://meet.jit.si";
-
-        let syntax_to_insert;
-        let called = false;
-
-        const textarea = $.create("target-stub");
-
-        const ev = {
-            preventDefault: noop,
-            target: {
-                to_$: () => textarea,
-            },
-        };
-
-        compose_ui.insert_syntax_and_focus = function (syntax) {
-            syntax_to_insert = syntax;
-            called = true;
-        };
-
-        const handler = $("body").get_on_handler("click", ".video_link");
-        $("#compose-textarea").val("");
-
-        handler(ev);
-        assert(!called);
-
-        page_params.realm_video_chat_provider =
-            page_params.realm_available_video_chat_providers.jitsi_meet.id;
-        handler(ev);
-
-        // video link ids consist of 15 random digits
-        let video_link_regex = /\[translated: Click to join video call\]\(https:\/\/meet.jit.si\/\d{15}\)/;
-        assert.match(syntax_to_insert, video_link_regex);
-
-        page_params.jitsi_server_url = null;
-        called = false;
-        handler(ev);
-        assert(!called);
-
-        page_params.realm_video_chat_provider =
-            page_params.realm_available_video_chat_providers.zoom.id;
-
-        window.open = function (url) {
-            assert(url.endsWith("/calls/zoom/register"));
-
-            // The event here has value=true.  We keep it in events.js to
-            // allow our tooling to verify its schema.
-            server_events_dispatch.dispatch_normal_event(events.fixtures.has_zoom_token);
-        };
-
-        channel.post = function (payload) {
-            assert.equal(payload.url, "/json/calls/zoom/create");
-            payload.success({url: "example.zoom.com"});
-        };
-
-        handler(ev);
-        video_link_regex = /\[translated: Click to join video call\]\(example\.zoom\.com\)/;
-        assert.match(syntax_to_insert, video_link_regex);
-
-        page_params.realm_video_chat_provider =
-            page_params.realm_available_video_chat_providers.big_blue_button.id;
-
-        channel.get = function (options) {
-            assert(options.url === "/json/calls/bigbluebutton/create");
-            options.success({
-                url:
-                    "/calls/bigbluebutton/join?meeting_id=%22zulip-1%22&password=%22AAAAAAAAAA%22&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22",
-            });
-        };
-
-        handler(ev);
-        video_link_regex = /\[translated: Click to join video call\]\(\/calls\/bigbluebutton\/join\?meeting_id=%22zulip-1%22&password=%22AAAAAAAAAA%22&checksum=%2232702220bff2a22a44aee72e96cfdb4c4091752e%22\)/;
-        assert.match(syntax_to_insert, video_link_regex);
     })();
 
     (function test_markdown_preview_compose_clicked() {
@@ -1550,14 +1507,14 @@ run_test("on_events", () => {
         }
 
         function setup_mock_markdown_contains_backend_only_syntax(msg_content, return_val) {
-            markdown.contains_backend_only_syntax = function (msg) {
+            markdown.contains_backend_only_syntax = (msg) => {
                 assert.equal(msg, msg_content);
                 return return_val;
             };
         }
 
         function setup_mock_markdown_is_status_message(msg_content, return_val) {
-            markdown.is_status_message = function (content) {
+            markdown.is_status_message = (content) => {
                 assert.equal(content, msg_content);
                 return return_val;
             };
@@ -1577,7 +1534,7 @@ run_test("on_events", () => {
         }
 
         function mock_channel_post(msg) {
-            channel.post = function (payload) {
+            channel.post = (payload) => {
                 assert.equal(payload.url, "/json/messages/render");
                 assert(payload.idempotent);
                 assert(payload.data);
@@ -1585,7 +1542,7 @@ run_test("on_events", () => {
 
                 function test(func, param) {
                     let destroy_indicator_called = false;
-                    loading.destroy_indicator = function (spinner) {
+                    loading.destroy_indicator = (spinner) => {
                         assert.equal(spinner, $("#markdown_preview_spinner"));
                         destroy_indicator_called = true;
                     };
@@ -1621,7 +1578,7 @@ run_test("on_events", () => {
         setup_visibilities();
         setup_mock_markdown_contains_backend_only_syntax("```foobarfoobar```", true);
         setup_mock_markdown_is_status_message("```foobarfoobar```", false);
-        loading.make_indicator = function (spinner) {
+        loading.make_indicator = (spinner) => {
             assert.equal(spinner.selector, "#markdown_preview_spinner");
             make_indicator_called = true;
         };
@@ -1638,7 +1595,7 @@ run_test("on_events", () => {
         setup_mock_markdown_contains_backend_only_syntax("foobarfoobar", false);
         setup_mock_markdown_is_status_message("foobarfoobar", false);
         mock_channel_post("foobarfoobar");
-        markdown.apply_markdown = function (msg) {
+        markdown.apply_markdown = (msg) => {
             assert.equal(msg.raw_content, "foobarfoobar");
             apply_markdown_called = true;
             return msg;
@@ -1672,7 +1629,7 @@ run_test("on_events", () => {
     })();
 });
 
-run_test("create_message_object", () => {
+test_ui("create_message_object", (override) => {
     const sub = {
         stream_id: 101,
         name: "social",
@@ -1680,23 +1637,11 @@ run_test("create_message_object", () => {
     };
     stream_data.add_sub(sub);
 
-    const page = {
-        "#stream_message_recipient_stream": "social",
-        "#stream_message_recipient_topic": "lunch",
-        "#compose-textarea": "burrito",
-    };
+    $("#stream_message_recipient_stream").val("social");
+    $("#stream_message_recipient_topic").val("lunch");
+    $("#compose-textarea").val("burrito");
 
-    global.$ = function (selector) {
-        return {
-            val() {
-                return page[selector];
-            },
-        };
-    };
-
-    global.compose_state.get_message_type = function () {
-        return "stream";
-    };
+    override(compose_state, "get_message_type", () => "stream");
 
     let message = compose.create_message_object();
     assert.equal(message.to, sub.stream_id);
@@ -1705,18 +1650,17 @@ run_test("create_message_object", () => {
 
     blueslip.expect("error", "Trying to send message with bad stream name: BOGUS STREAM");
 
-    page["#stream_message_recipient_stream"] = "BOGUS STREAM";
+    $("#stream_message_recipient_stream").val("BOGUS STREAM");
     message = compose.create_message_object();
     assert.equal(message.to, "BOGUS STREAM");
     assert.equal(message.topic, "lunch");
     assert.equal(message.content, "burrito");
 
-    global.compose_state.get_message_type = function () {
-        return "private";
-    };
-    compose_state.private_message_recipient = function () {
-        return "alice@example.com, bob@example.com";
-    };
+    override(compose_state, "get_message_type", () => "private");
+    compose_state.__Rewire__(
+        "private_message_recipient",
+        () => "alice@example.com, bob@example.com",
+    );
 
     message = compose.create_message_object();
     assert.deepEqual(message.to, [alice.user_id, bob.user_id]);
@@ -1730,8 +1674,8 @@ run_test("create_message_object", () => {
     people.email_list_to_user_ids_string = email_list_to_user_ids_string;
 });
 
-run_test("nonexistent_stream_reply_error", () => {
-    set_global("$", global.make_zjquery());
+test_ui("nonexistent_stream_reply_error", () => {
+    reset_jquery();
 
     const actions = [];
     $("#nonexistent_stream_reply_error").show = () => {
@@ -1746,7 +1690,7 @@ run_test("nonexistent_stream_reply_error", () => {
     assert.deepEqual(actions, ["show", "hide"]);
 });
 
-run_test("narrow_button_titles", () => {
+test_ui("narrow_button_titles", () => {
     util.is_mobile = () => false;
 
     compose.update_closed_compose_buttons_for_private();
@@ -1758,25 +1702,4 @@ run_test("narrow_button_titles", () => {
     assert.equal($("#left_bar_compose_private_button_big").text(), i18n.t("New private message"));
 });
 
-run_test("test_video_chat_button_toggle", () => {
-    reset_jquery();
-    stub_out_video_calls();
-
-    page_params.realm_video_chat_provider =
-        page_params.realm_available_video_chat_providers.disabled.id;
-    compose.initialize();
-    assert.equal($("#below-compose-content .video_link").visible(), false);
-
-    reset_jquery();
-    stub_out_video_calls();
-    page_params.realm_video_chat_provider =
-        page_params.realm_available_video_chat_providers.jitsi_meet.id;
-    compose.initialize();
-    assert.equal($("#below-compose-content .video_link").visible(), false);
-
-    reset_jquery();
-    stub_out_video_calls();
-    page_params.jitsi_server_url = "https://meet.jit.si";
-    compose.initialize();
-    assert.equal($("#below-compose-content .video_link").visible(), true);
-});
+MockDate.reset();

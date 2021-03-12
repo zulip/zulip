@@ -1,4 +1,4 @@
-"use strict";
+import * as overlays from "./overlays";
 
 const funcs = {
     setZoom(meta, zoom) {
@@ -179,8 +179,8 @@ const funcs = {
             return;
         }
 
-        if (typeof meta.onresize === "function") {
-            meta.onresize(canvas);
+        if (typeof meta.resize_handler === "function") {
+            meta.resize_handler(canvas);
         }
 
         const parent = {
@@ -206,7 +206,7 @@ const funcs = {
     },
 };
 
-class LightboxCanvas {
+export class LightboxCanvas {
     meta = {
         direction: -1,
         zoom: 1,
@@ -267,9 +267,6 @@ class LightboxCanvas {
     }
 
     resize(callback) {
-        this.meta.onresize = callback;
+        this.meta.resize_handler = callback;
     }
 }
-
-module.exports = LightboxCanvas;
-window.LightboxCanvas = LightboxCanvas;

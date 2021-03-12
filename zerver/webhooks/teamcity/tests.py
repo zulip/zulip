@@ -7,10 +7,10 @@ from zerver.webhooks.teamcity.view import MISCONFIGURED_PAYLOAD_TYPE_ERROR_MESSA
 
 
 class TeamcityHookTests(WebhookTestCase):
-    STREAM_NAME = 'teamcity'
+    STREAM_NAME = "teamcity"
     URL_TEMPLATE = "/api/v1/external/teamcity?stream={stream}&api_key={api_key}"
     TOPIC = "Project :: Compile"
-    FIXTURE_DIR_NAME = 'teamcity'
+    FIXTURE_DIR_NAME = "teamcity"
 
     def test_teamcity_success(self) -> None:
         expected_message = "Project :: Compile build 5535 - CL 123456 was successful! :thumbs_up: See [changes](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952&tab=buildChangesDiv) and [build log](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952)."
@@ -35,7 +35,9 @@ class TeamcityHookTests(WebhookTestCase):
 
     def test_teamcity_personal(self) -> None:
         expected_message = "Your personal build for Project :: Compile build 5535 - CL 123456 is broken with status Exit code 1 (new)! :thumbs_down: See [changes](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952&tab=buildChangesDiv) and [build log](http://teamcity/viewLog.html?buildTypeId=Project_Compile&buildId=19952)."
-        payload = orjson.dumps(orjson.loads(self.webhook_fixture_data(self.FIXTURE_DIR_NAME, 'personal')))
+        payload = orjson.dumps(
+            orjson.loads(self.webhook_fixture_data(self.FIXTURE_DIR_NAME, "personal"))
+        )
         self.client_post(self.url, payload, content_type="application/json")
         msg = self.get_last_message()
 
@@ -44,10 +46,12 @@ class TeamcityHookTests(WebhookTestCase):
 
     def test_non_generic_payload_ignore_pm_notification(self) -> None:
         expected_message = MISCONFIGURED_PAYLOAD_TYPE_ERROR_MESSAGE.format(
-            bot_name=get_user_by_delivery_email('webhook-bot@zulip.com', get_realm('zulip')).full_name,
+            bot_name=get_user_by_delivery_email(
+                "webhook-bot@zulip.com", get_realm("zulip")
+            ).full_name,
             support_email=FromAddress.SUPPORT,
         ).strip()
-        payload = self.get_body('slack_non_generic_payload')
+        payload = self.get_body("slack_non_generic_payload")
         self.client_post(self.url, payload, content_type="application/json")
         msg = self.get_last_message()
 

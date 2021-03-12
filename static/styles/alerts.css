@@ -155,10 +155,8 @@ $alert-error-red: hsl(0, 80%, 40%);
 
         position: relative;
 
-        /* gives room for the error icon. */
-        padding-left: 50px;
-        padding-top: 10px;
-        padding-bottom: 10px;
+        /* gives room for the error icon and the exit button. */
+        padding: 10px 50px;
 
         text-shadow: none;
 
@@ -167,15 +165,22 @@ $alert-error-red: hsl(0, 80%, 40%);
         box-shadow: 0 0 2px $alert-red;
 
         &::before {
-            position: absolute;
-            top: 10px;
-            left: 12px;
+            float: left;
+            margin-left: -38px;
 
             font-family: FontAwesome;
             font-size: 1.3em;
+            line-height: 1;
+            overflow: hidden;
             content: "\f071";
 
             color: hsl(16, 60%, 55%);
+        }
+
+        &::after {
+            clear: both;
+            content: "";
+            display: table;
         }
 
         &.alert-error {
@@ -189,17 +194,18 @@ $alert-error-red: hsl(0, 80%, 40%);
         }
 
         .exit {
-            position: absolute;
-            top: 10px;
-            right: 0;
+            float: right;
+            margin: -10px -50px -10px 0;
+            padding: 10px;
 
             font-size: 2.5em;
             font-weight: 300;
+            line-height: 1ex;
+            overflow: hidden;
 
             cursor: pointer;
 
             &::after {
-                padding: 10px;
                 content: "\d7";
             }
         }
@@ -234,7 +240,7 @@ $alert-error-red: hsl(0, 80%, 40%);
 }
 
 /* @media queries */
-@media (max-width: 900px) {
+@media (width < $lg_min) {
     .alert-box {
         width: 80%;
         left: 10%;

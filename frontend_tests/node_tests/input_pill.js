@@ -1,16 +1,17 @@
 "use strict";
 
-set_global("$", global.make_zjquery());
-zrequire("input_pill");
+const {strict: assert} = require("assert");
 
-zrequire("templates");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
 
 set_global("document", {});
 
-const noop = function () {};
+const noop = () => {};
 const example_img_link = "http://example.com/example.png";
 
-set_global("ui_util", {
+mock_module("ui_util", {
     place_caret_at_end: noop,
 });
 
@@ -18,15 +19,18 @@ set_global("getSelection", () => ({
     anchorOffset: 0,
 }));
 
+zrequire("templates");
+const input_pill = zrequire("input_pill");
+
 let id_seq = 0;
 run_test("set_up_ids", () => {
     // just get coverage on a simple one-liner:
     input_pill.random_id();
 
-    input_pill.random_id = function () {
+    input_pill.__Rewire__("random_id", () => {
         id_seq += 1;
         return "some_id" + id_seq;
-    };
+    });
 });
 
 function pill_html(value, data_id, img_src) {
@@ -75,7 +79,7 @@ run_test("basics", () => {
     let inserted_before;
     const expected_html = pill_html("JavaScript", "some_id1", example_img_link);
 
-    pill_input.before = function (elem) {
+    pill_input.before = (elem) => {
         inserted_before = true;
         assert.equal(elem.html(), expected_html);
     };
@@ -87,7 +91,6 @@ run_test("basics", () => {
 });
 
 function set_up() {
-    set_global("$", global.make_zjquery());
     const items = {
         blue: {
             display_value: "BLUE",
@@ -111,9 +114,7 @@ function set_up() {
     pill_input[0] = {};
     pill_input.before = () => {};
 
-    const create_item_from_text = function (text) {
-        return items[text];
-    };
+    const create_item_from_text = (text) => items[text];
 
     const container = $.create("container");
     container.set_find_results(".input", pill_input);
@@ -310,7 +311,7 @@ run_test("comma", () => {
     const COMMA = 188;
     const key_handler = container.get_on_handler("keydown", ".input");
 
-    pill_input.text = () => " yel";
+    pill_input.text(" yel");
 
     key_handler({
         keyCode: COMMA,
@@ -319,7 +320,7 @@ run_test("comma", () => {
 
     assert.deepEqual(widget.items(), [items.blue, items.red]);
 
-    pill_input.text = () => " yellow";
+    pill_input.text(" yellow");
 
     key_handler({
         keyCode: COMMA,
@@ -348,7 +349,7 @@ run_test("Enter key with text", () => {
         preventDefault: noop,
         stopPropagation: noop,
         target: {
-            innerText: " yellow ",
+            textContent: " yellow ",
         },
     });
 
@@ -364,7 +365,7 @@ run_test("insert_remove", () => {
     const container = info.container;
 
     const inserted_html = [];
-    pill_input.before = function (elem) {
+    pill_input.before = (elem) => {
         inserted_html.push(elem.html());
     };
 
@@ -401,18 +402,31 @@ run_test("insert_remove", () => {
     assert.equal(pill_input.text(), "");
     assert.equal(widget.is_pending(), false);
 
+    let color_removed;
+    function set_colored_removed_func(color) {
+        return () => {
+            color_removed = color;
+        };
+    }
+
+    const pills = widget._get_pills_for_testing();
+    for (const pill of pills) {
+        pill.$element.remove = set_colored_removed_func(pill.item.display_value);
+    }
+
     const BACKSPACE = 8;
     let key_handler = container.get_on_handler("keydown", ".input");
 
     key_handler({
         keyCode: BACKSPACE,
         target: {
-            innerText: "",
+            textContent: "",
         },
         preventDefault: noop,
     });
 
     assert(removed);
+    assert.equal(color_removed, "YELLOW");
 
     assert.deepEqual(widget.items(), [items.blue, items.red]);
 
@@ -442,6 +456,7 @@ run_test("insert_remove", () => {
         preventDefault: noop,
     });
 
+    assert.equal(color_removed, "BLUE");
     assert(next_pill_focused);
 });
 
@@ -455,6 +470,11 @@ run_test("exit button on pill", () => {
     const widget = input_pill.create(config);
 
     widget.appendValue("blue,red");
+
+    const pills = widget._get_pills_for_testing();
+    for (const pill of pills) {
+        pill.$element.remove = () => {};
+    }
 
     let next_pill_focused = false;
 
@@ -540,4 +560,43 @@ run_test("misc things", () => {
     };
 
     container_click_handler.call(this_, {target: this_});
+});
+
+run_test("appendValue/clear", () => {
+    const pill_input = $.create("pill_input");
+    const container = $.create("container");
+    container.set_find_results(".input", pill_input);
+
+    const config = {
+        container,
+        create_item_from_text: (s) => ({display_value: s}),
+        get_text_from_item: (s) => s.display_value,
+    };
+
+    pill_input.before = () => {};
+    pill_input[0] = {};
+
+    const widget = input_pill.create(config);
+
+    // First test some early-exit code.
+    widget.appendValue("");
+    assert.deepEqual(widget._get_pills_for_testing(), []);
+
+    // Now set up real data.
+    widget.appendValue("red,yellow,blue");
+
+    const pills = widget._get_pills_for_testing();
+
+    const removed_colors = [];
+    for (const pill of pills) {
+        pill.$element.remove = () => {
+            removed_colors.push(pill.item.display_value);
+        };
+    }
+
+    widget.clear();
+
+    // Note that we remove colors in the reverse order that we inserted.
+    assert.deepEqual(removed_colors, ["blue", "yellow", "red"]);
+    assert.equal(pill_input[0].textContent, "");
 });

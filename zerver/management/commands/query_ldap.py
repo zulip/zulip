@@ -8,11 +8,10 @@ from zproject.backends import query_ldap
 
 class Command(BaseCommand):
     def add_arguments(self, parser: ArgumentParser) -> None:
-        parser.add_argument('email', metavar='<email>',
-                            help="email of user to query")
+        parser.add_argument("email", metavar="<email>", help="email of user to query")
 
     def handle(self, *args: Any, **options: str) -> None:
-        email = options['email']
+        email = options["email"]
         values = query_ldap(email)
         for value in values:
             print(value)

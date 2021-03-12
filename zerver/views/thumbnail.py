@@ -13,24 +13,29 @@ from zerver.models import UserProfile, validate_attachment_request
 def validate_thumbnail_request(user_profile: UserProfile, path: str) -> Optional[bool]:
     # path here does not have a leading / as it is parsed from request hitting the
     # thumbnail endpoint (defined in urls.py) that way.
-    if path.startswith('user_uploads/'):
-        path_id = path[len('user_uploads/'):]
+    if path.startswith("user_uploads/"):
+        path_id = path[len("user_uploads/") :]
         return validate_attachment_request(user_profile, path_id)
 
     # This is an external link and we don't enforce restricted view policy here.
     return True
 
+
 @has_request_variables
-def backend_serve_thumbnail(request: HttpRequest, user_profile: UserProfile,
-                            url: str=REQ(), size_requested: str=REQ("size")) -> HttpResponse:
+def backend_serve_thumbnail(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    url: str = REQ(),
+    size_requested: str = REQ("size"),
+) -> HttpResponse:
     if not validate_thumbnail_request(user_profile, url):
         return HttpResponseForbidden(_("<p>You are not authorized to view this file.</p>"))
 
     size = None
-    if size_requested == 'thumbnail':
-        size = '0x300'
-    elif size_requested == 'full':
-        size = '0x0'
+    if size_requested == "thumbnail":
+        size = "0x300"
+    elif size_requested == "full":
+        size = "0x0"
 
     if size is None:
         return HttpResponseForbidden(_("<p>Invalid size.</p>"))

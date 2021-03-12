@@ -1,8 +1,6 @@
-"use strict";
+import render_loader from "../templates/loader.hbs";
 
-const render_loader = require("../templates/loader.hbs");
-
-exports.make_indicator = function (outer_container, opts) {
+export function make_indicator(outer_container, opts) {
     opts = opts || {};
     let container = outer_container;
 
@@ -19,10 +17,10 @@ exports.make_indicator = function (outer_container, opts) {
         // Create some additional containers to facilitate absolutely
         // positioned spinners.
         const container_id = container.attr("id");
-        let inner_container = $('<div id="' + container_id + '_box_container"></div>');
+        let inner_container = $("<div>", {id: `${container_id}_box_container`});
         container.append(inner_container);
         container = inner_container;
-        inner_container = $('<div id="' + container_id + '_box"></div>');
+        inner_container = $("<div>", {id: `${container_id}_box`});
         container.append(inner_container);
         container = inner_container;
     }
@@ -47,9 +45,9 @@ exports.make_indicator = function (outer_container, opts) {
     container.css({width: 38 + text_width, height: 0});
 
     outer_container.data("destroying", false);
-};
+}
 
-exports.destroy_indicator = function (container) {
+export function destroy_indicator(container) {
     if (container.data("destroying")) {
         return;
     }
@@ -62,6 +60,4 @@ exports.destroy_indicator = function (container) {
     container.removeData("spinner_obj");
     container.empty();
     container.css({width: 0, height: 0});
-};
-
-window.loading = exports;
+}

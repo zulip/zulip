@@ -150,20 +150,6 @@ aliases:
       command: |
         sudo --preserve-env=CIRCLECI mispipe "/tmp/production-upgrade-pg 2>&1" ts
 
-  - &check_xenial_provision_error
-    run:
-      name: check tools/provision error message on xenial
-      command: |
-        { { ! tools/provision 2>&1 >&3; } | tee provision.err; } 3>&1 >&2
-        grep -Fqx 'Error: ubuntu 16.04 is no longer a supported platform for Zulip.' provision.err
-
-  - &check_xenial_upgrade_error
-    run:
-      name: check scripts/lib/upgrade-zulip-stage-2 error message on xenial
-      command: |
-        { { ! sudo scripts/lib/upgrade-zulip-stage-2 2>&1 >&3; } | tee upgrade.err; } 3>&1 >&2
-        grep -Fq 'upgrade-zulip-stage-2: Unsupported platform: ubuntu 16.04' upgrade.err
-
   - &notify_failure_status
     run:
       name: On fail
@@ -241,19 +227,6 @@ jobs:
       - run:
           name: Check development database build
           command: mispipe "tools/ci/setup-backend" ts
-      - *notify_failure_status
-
-  "xenial-legacy":
-    docker:
-      - image: arpit551/circleci:xenial-python-test
-
-    working_directory: ~/zulip
-
-    steps:
-      - checkout
-
-      - *check_xenial_provision_error
-      - *check_xenial_upgrade_error
       - *notify_failure_status
 
   "bionic-production-build":
@@ -348,9 +321,6 @@ jobs:
 
 workflows:
   version: 2
-  "Ubuntu 16.04 Xenial (Python 3.5, legacy)":
-    jobs:
-      - "xenial-legacy"
   "Ubuntu 18.04 Bionic (Python 3.6, backend+frontend)":
     jobs:
       - "bionic-backend-frontend"

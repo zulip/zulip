@@ -3,16 +3,16 @@
 """Postfix implementation of the incoming email gateway's helper for
 forwarding emails into Zulip.
 
-https://zulip.readthedocs.io/en/latest/production/settings.html#email-gateway
+https://zulip.readthedocs.io/en/latest/production/email-gateway.html
 
 The email gateway supports two major modes of operation: An email
-server (using postfix) where the email address configured in
+server (using Postfix) where the email address configured in
 EMAIL_GATEWAY_PATTERN delivers emails directly to Zulip (this) or a
 cron job that connects to an IMAP inbox (which receives the emails)
 periodically.
 
-Zulip's puppet configuration takes care of configuring postfix to
-execute this script when emails are received by postfix, piping the
+Zulip's Puppet configuration takes care of configuring Postfix to
+execute this script when emails are received by Postfix, piping the
 email content via standard input (and the destination email address in
 the ORIGINAL_RECIPIENT environment variable).
 
@@ -54,24 +54,36 @@ from urllib.request import Request, urlopen
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument('-r', '--recipient', default='',
-                    help="Original recipient.")
+parser.add_argument("-r", "--recipient", default="", help="Original recipient.")
 
-parser.add_argument('-s', '--shared-secret', default='',
-                    help="Secret access key.")
+parser.add_argument("-s", "--shared-secret", default="", help="Secret access key.")
 
-parser.add_argument('-d', '--dst-host', dest="host", default='https://127.0.0.1',
-                    help="Destination server address for uploading email from email mirror. "
-                         "Address must contain a HTTP protocol.")
+parser.add_argument(
+    "-d",
+    "--dst-host",
+    dest="host",
+    default="https://127.0.0.1",
+    help="Destination server address for uploading email from email mirror. "
+    "Address must contain a HTTP protocol.",
+)
 
-parser.add_argument('-u', '--dst-url', dest="url", default='/email_mirror_message',
-                    help="Destination relative url for uploading email from email mirror.")
+parser.add_argument(
+    "-u",
+    "--dst-url",
+    dest="url",
+    default="/email_mirror_message",
+    help="Destination relative URL for uploading email from email mirror.",
+)
 
-parser.add_argument('-n', '--not-verify-ssl', dest="verify_ssl", action='store_false',
-                    help="Disable ssl certificate verifying for self-signed certificates")
+parser.add_argument(
+    "-n",
+    "--not-verify-ssl",
+    dest="verify_ssl",
+    action="store_false",
+    help="Disable ssl certificate verifying for self-signed certificates",
+)
 
-parser.add_argument('-t', '--test', action='store_true',
-                    help="Test mode.")
+parser.add_argument("-t", "--test", action="store_true", help="Test mode.")
 
 options = parser.parse_args()
 
@@ -81,8 +93,8 @@ MAX_ALLOWED_PAYLOAD = 25 * 1024 * 1024
 def process_response_error(e: HTTPError) -> None:
     if e.code == 400:
         response_content = e.read()
-        response_data = json.loads(response_content.decode('utf8'))
-        print(response_data['msg'])
+        response_data = json.loads(response_content)
+        print(response_data["msg"])
         exit(posix.EX_NOUSER)
     else:
         print("4.4.2 Connection dropped: Internal server error.")
@@ -90,7 +102,12 @@ def process_response_error(e: HTTPError) -> None:
 
 
 def send_email_mirror(
-    rcpt_to: str, shared_secret: str, host: str, url: str, test: bool, verify_ssl: bool,
+    rcpt_to: str,
+    shared_secret: str,
+    host: str,
+    url: str,
+    test: bool,
+    verify_ssl: bool,
 ) -> None:
     if not rcpt_to:
         print("5.1.1 Bad destination mailbox address: No missed message email address.")
@@ -104,15 +121,19 @@ def send_email_mirror(
     secrets_file = RawConfigParser()
     secrets_file.read("/etc/zulip/zulip-secrets.conf")
     if not shared_secret:
-        shared_secret = secrets_file.get('secrets', 'shared_secret')
+        shared_secret = secrets_file.get("secrets", "shared_secret")
 
     if test:
         exit(0)
 
-    if host == 'https://127.0.0.1':
+    if host == "https://127.0.0.1":
         # Don't try to verify SSL when posting to 127.0.0.1; it won't
         # work, and connections to 127.0.0.1 are secure without SSL.
         verify_ssl = False
+
+    # Because this script is run from postfix, it does not have any
+    # http proxy environment variables set which might interfere with
+    # access to localhost.
 
     context = None
     if not verify_ssl:
@@ -124,7 +145,7 @@ def send_email_mirror(
         "msg_base64": base64.b64encode(msg_bytes).decode(),
         "secret": shared_secret,
     }
-    req = Request(url=urljoin(host, url), data=urlencode(data).encode('utf8'))
+    req = Request(url=urljoin(host, url), data=urlencode(data).encode("utf8"))
     try:
         urlopen(req, context=context)
     except HTTPError as err:
@@ -132,5 +153,6 @@ def send_email_mirror(
 
 
 recipient = str(os.environ.get("ORIGINAL_RECIPIENT", options.recipient))
-send_email_mirror(recipient, options.shared_secret, options.host, options.url, options.test,
-                  options.verify_ssl)
+send_email_mirror(
+    recipient, options.shared_secret, options.host, options.url, options.test, options.verify_ssl
+)

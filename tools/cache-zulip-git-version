@@ -2,4 +2,4 @@
 set -e
 
 cd "$(dirname "$0")/.."
-git describe --tags --match='[0-9]*' > zulip-git-version || true
+git describe --tags --match='[0-9]*' >zulip-git-version || true

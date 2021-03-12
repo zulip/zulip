@@ -92,12 +92,13 @@ particularly useful to open source communities.
 
 ### Free hosting at zulip.com.
 
-The hosting is supported by (and is identical to) zulip.com’s
-commercial offerings. This offer extends to any community involved in
-supporting free and open source software: development projects,
-foundations, meetups, hackathons, conference committees, and more. If
-you’re not sure whether your organization qualifies, send us an email
-at support@zulip.com.
+Zulip sponsors free hosting for hundreds of open source projects,
+supported by (and is identical to) zulip.com’s commercial
+offerings. This offer extends to any community involved in supporting
+free and open source software: development projects, foundations,
+meetups, hackathons, conference committees, and more. If you’re not
+sure whether your organization qualifies, send us an email at
+support@zulip.com.
 
 ### Moderation suite.
 
@@ -155,11 +156,10 @@ Get events from GitHub, Travis CI, JIRA, and
 [hundreds of other tools](/integrations) right in Zulip. Topics give each
 issue its own place for discussion.
 
-### Mirror IRC or Matrix.
+### Mirror IRC, Matrix, or Slack.
 
-Two-way integrations with [IRC](/integrations/doc/irc) and
-[Matrix](/integrations/doc/matrix), and one-way integration with
-[Slack](/integrations/doc/slack) (get Slack messages in Zulip).
+Two-way integrations with IRC, Matrix, and/or Slack using
+[Matterbridge](https://github.com/42wim/matterbridge).
 
 ### Scales to 10,000s of members.
 

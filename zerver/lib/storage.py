@@ -12,12 +12,18 @@ if settings.DEBUG:
 
     def static_path(path: str) -> str:
         return find(path) or "/nonexistent"
+
+
 else:
+
     def static_path(path: str) -> str:
         return os.path.join(settings.STATIC_ROOT, path)
 
+
 class IgnoreBundlesManifestStaticFilesStorage(ManifestStaticFilesStorage):
-    def hashed_name(self, name: str, content: Optional[str]=None, filename: Optional[str]=None) -> str:
+    def hashed_name(
+        self, name: str, content: Optional[str] = None, filename: Optional[str] = None
+    ) -> str:
         ext = os.path.splitext(name)[1]
         if name.startswith("webpack-bundles"):
             # Hack to avoid renaming already-hashnamed webpack bundles
@@ -29,7 +35,7 @@ class IgnoreBundlesManifestStaticFilesStorage(ManifestStaticFilesStorage):
             # use a no-op hash function for these already-hashed
             # assets.
             return name
-        if ext in ['.png', '.gif', '.jpg', '.svg']:
+        if ext in [".png", ".gif", ".jpg", ".svg"]:
             # Similarly, don't hash-rename image files; we only serve
             # the original file paths (not the hashed file paths), and
             # so the only effect of hash-renaming these is to increase
@@ -39,10 +45,11 @@ class IgnoreBundlesManifestStaticFilesStorage(ManifestStaticFilesStorage):
             # used the hashed paths for these; in that case, though,
             # we should instead be removing the non-hashed paths.
             return name
-        if ext in ['json', 'po', 'mo', 'mp3', 'ogg', 'html']:
+        if ext in ["json", "po", "mo", "mp3", "ogg", "html"]:
             # And same story for translation files, sound files, etc.
             return name
         return super().hashed_name(name, content, filename)
+
 
 class ZulipStorage(IgnoreBundlesManifestStaticFilesStorage):
     # This is a hack to use staticfiles.json from within the

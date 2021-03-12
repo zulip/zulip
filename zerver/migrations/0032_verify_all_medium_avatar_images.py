@@ -1,5 +1,4 @@
 import hashlib
-from typing import Text
 from unittest.mock import patch
 
 from django.conf import settings
@@ -18,14 +17,15 @@ from zerver.models import UserProfile
 # from zerver.lib.upload (which would pretty annoying, but would be a
 # pain) and just using the current version, which doesn't work
 # since we rearranged the avatars in Zulip 1.6.
-def patched_user_avatar_path(user_profile: UserProfile) -> Text:
+def patched_user_avatar_path(user_profile: UserProfile) -> str:
     email = user_profile.email
     user_key = email.lower() + settings.AVATAR_SALT
     return make_safe_digest(user_key, hashlib.sha1)
 
-@patch('zerver.lib.upload.user_avatar_path', patched_user_avatar_path)
+
+@patch("zerver.lib.upload.user_avatar_path", patched_user_avatar_path)
 def verify_medium_avatar_image(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
-    user_profile_model = apps.get_model('zerver', 'UserProfile')
+    user_profile_model = apps.get_model("zerver", "UserProfile")
     for user_profile in user_profile_model.objects.filter(avatar_source="U"):
         upload_backend.ensure_medium_avatar_image(user_profile)
 
@@ -33,7 +33,7 @@ def verify_medium_avatar_image(apps: StateApps, schema_editor: DatabaseSchemaEdi
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0031_remove_system_avatar_source'),
+        ("zerver", "0031_remove_system_avatar_source"),
     ]
 
     operations = [

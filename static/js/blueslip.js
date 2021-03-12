@@ -9,6 +9,7 @@
 // execution.
 
 const blueslip_stacktrace = require("./blueslip_stacktrace");
+const ui_report = require("./ui_report");
 
 if (Error.stackTraceLimit !== undefined) {
     Error.stackTraceLimit = 100000;
@@ -142,22 +143,20 @@ function report_error(msg, stack, opts) {
                 // invoked).  In any case, it will pretty clear that
                 // something is wrong with the page and the user will
                 // probably try to reload anyway.
-                ui_report.message(
+                ui_report.client_error(
                     "Oops.  It seems something has gone wrong. " +
                         "The error has been reported to the fine " +
                         "folks at Zulip, but, in the mean time, " +
                         "please try reloading the page.",
                     $("#home-error"),
-                    "alert-error",
                 );
             }
         },
         error() {
             if (opts.show_ui_msg && ui_report !== undefined) {
-                ui_report.message(
-                    "Oops.  It seems something has gone wrong. " + "Please try reloading the page.",
+                ui_report.client_error(
+                    "Oops.  It seems something has gone wrong. Please try reloading the page.",
                     $("#home-error"),
-                    "alert-error",
                 );
             }
         },
@@ -237,7 +236,7 @@ exports.warn = function blueslip_warn(msg, more_info) {
 
 exports.error = function blueslip_error(msg, more_info, stack) {
     if (stack === undefined) {
-        stack = Error().stack;
+        stack = new Error("dummy").stack;
     }
     const args = build_arg_list(msg, more_info);
     logger.error(...args);
@@ -253,14 +252,13 @@ exports.error = function blueslip_error(msg, more_info, stack) {
 
 exports.timings = new Map();
 
-exports.start_timing = function (label) {
+exports.measure_time = function (label, f) {
     const t1 = performance.now();
-
-    return function () {
-        const t2 = performance.now();
-        const elapsed = t2 - t1;
-        exports.timings.set(label, elapsed);
-    };
+    const ret = f();
+    const t2 = performance.now();
+    const elapsed = t2 - t1;
+    exports.timings.set(label, elapsed);
+    return ret;
 };
 
 // Produces an easy-to-read preview on an HTML element.  Currently

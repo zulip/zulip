@@ -2,19 +2,19 @@
 
 Contents:
 
-* [Installing directly on Ubuntu, Debian, Centos, or Fedora](#installing-directly-on-ubuntu-debian-centos-or-fedora)
+* [Installing directly on Ubuntu, Debian, CentOS, or Fedora](#installing-directly-on-ubuntu-debian-centos-or-fedora)
 * [Installing directly on Windows 10](#installing-directly-on-windows-10-experimental)
 * [Installing manually on other Linux/UNIX](#installing-manually-on-unix)
 * [Installing directly on cloud9](#installing-on-cloud9)
 
-## Installing directly on Ubuntu, Debian, Centos, or Fedora
+## Installing directly on Ubuntu, Debian, CentOS, or Fedora
 
 If you'd like to install a Zulip development environment on a computer
 that's running one of:
 
 * Ubuntu 20.04 Focal, 18.04 Bionic
 * Debian 10 Buster
-* Centos 7 (beta)
+* CentOS 7 (beta)
 * Fedora 29 (beta)
 * RHEL 7 (beta)
 
@@ -62,6 +62,9 @@ We will be using Microsoft's new feature [WSL
 2](https://docs.microsoft.com/en-us/windows/wsl/wsl2-about) for
 installation.
 
+WSL2 can be uninstalled by following the instructions [here from Microsoft]
+(https://docs.microsoft.com/en-us/windows/wsl/faq#how-do-i-uninstall-a-wsl-distribution).
+
 1. Install WSL 2 by following the instructions provided by Microsoft
 [here](https://docs.microsoft.com/en-us/windows/wsl/wsl2-install).
 
@@ -86,6 +89,13 @@ Store.
    ```
    NODE_IP_ADDRESS=127.0.0.1
    NODE_PORT=5672
+   ```
+
+1. Make sure you are inside the WSL disk and not in a Windows mounted disk.
+   You will run into permission issues if you run `provision` from `zulip`
+   in a Windows mounted disk.
+   ```
+   cd ~  # or cd /home/USERNAME
    ```
 
 1. [Clone your fork of the Zulip repository][zulip-rtd-git-cloning]
@@ -150,7 +160,7 @@ eventually eliminate this documentation section altogether).
 You can use
 [our provisioning tool](#installing-directly-on-ubuntu-debian-centos-or-fedora)
 to set up the Zulip development environment on current versions of
-these platforms reliably and easily, so we no long maintain manual
+these platforms reliably and easily, so we no longer maintain manual
 installation instructions for these platforms.
 
 If `tools/provision` doesn't yet support a newer release of Debian or
@@ -242,9 +252,9 @@ else
     sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /usr/share/postgresql/*/tsearch_data/
 fi
 ./scripts/setup/configure-rabbitmq
-./tools/setup/postgres-init-dev-db
+./tools/setup/postgresql-init-dev-db
 ./tools/rebuild-dev-database
-./tools/setup/postgres-init-test-db
+./tools/setup/postgresql-init-test-db
 ./tools/rebuild-test-database
 ./manage.py compilemessages
 ```
@@ -279,14 +289,14 @@ proxy in the environment as follows:
  yarn config set https-proxy http://proxy_host:port
  ```
 
-## Installing on cloud9
+## Installing on Cloud9
 
 AWS Cloud9 is a cloud-based integrated development environment (IDE)
 that lets you write, run, and debug your code with just a browser. It
 includes a code editor, debugger, and terminal.
 
 This section documents how to set up the Zulip development environment
-in a cloud9 workspace.  If you don't have an existing cloud9 account,
+in a Cloud9 workspace.  If you don't have an existing Cloud9 account,
 you can sign up [here](https://aws.amazon.com/cloud9/).
 
 * Create a Workspace, and select the blank template.
@@ -295,10 +305,10 @@ you can sign up [here](https://aws.amazon.com/cloud9/).
   Free Tier).
 * Clone the zulip repo: `git clone --config pull.rebase
   https://github.com/<your-username>/zulip.git`
-* Restart rabbitmq-server since its broken on cloud9: `sudo service
+* Restart rabbitmq-server since its broken on Cloud9: `sudo service
   rabbitmq-server restart`.
 * And run provision `cd zulip && ./tools/provision`, once this is done.
-* Activate the zulip virtual environment by `source
+* Activate the Zulip virtual environment by `source
   /srv/zulip-py3-venv/bin/activate` or by opening a new terminal.
 
 #### Install zulip-cloud9
@@ -321,7 +331,7 @@ you need to start a new terminal.
 
 Your development server would be running at
 `https://<workspace-name>-<username>.c9users.io` on port 8080.  You
-dont need to add `:8080` to your url, since the cloud9 proxy should
+dont need to add `:8080` to your URL, since the Cloud9 proxy should
 automatically forward the connection. You might want to visit
 [zulip-cloud9 repo](https://github.com/cPhost/zulip-cloud9) and it's
 [wiki](https://github.com/cPhost/zulip-cloud9/wiki) for more info on

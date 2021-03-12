@@ -115,8 +115,9 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     /* these are converting grey things to "new grey" */
-    *[disabled="disabled"],
-    *[readonly="readonly"],
+    :disabled,
+    input:read-only,
+    textarea:read-only,
     .sidebar-title,
     .recipient_row_date {
         color: inherit;
@@ -329,7 +330,7 @@ on a dark background, and don't change the dark labels dark either. */
     .clear_search_button,
     .clear_search_button:focus,
     .clear_search_button:active,
-    .clear_search_button[disabled]:hover,
+    .clear_search_button:disabled:hover,
     #user-groups .save-instructions,
     #message_view_header .search_icon,
     #searchbox_legacy .search_icon,
@@ -434,6 +435,10 @@ on a dark background, and don't change the dark labels dark either. */
         }
     }
 
+    .recent_topics_container {
+        background-color: hsl(212, 28%, 18%) !important;
+    }
+
     #recent_topics_table tr {
         background-color: hsl(212, 28%, 18%);
 
@@ -442,15 +447,19 @@ on a dark background, and don't change the dark labels dark either. */
         }
     }
 
+    #recent_topics_table .unread_topic {
+        background-color: hsla(212, 30%, 22%, 0.6);
+    }
+
     .btn-recent-selected,
-    .recent_topics_table thead th {
+    #recent_topics_table thead th {
         background-color: hsl(0, 0%, 0%) !important;
         &:hover {
             background-color: hsl(211, 29%, 14%) !important;
         }
     }
 
-    .recent_topics_table td a {
+    #recent_topics_table td a {
         color: hsl(206, 89%, 74%);
         text-decoration: none;
         &:hover {
@@ -458,9 +467,14 @@ on a dark background, and don't change the dark labels dark either. */
         }
     }
 
+    #recent_topics_table {
+        border-color: hsla(0, 0%, 0%, 0.6);
+    }
+
     thead,
     .drafts-container .drafts-header,
     .recent_topics_container .recent_topics_header,
+    .nav > li > a:focus,
     .nav > li > a:hover,
     .subscriptions-container .subscriptions-header,
     .grey-box,

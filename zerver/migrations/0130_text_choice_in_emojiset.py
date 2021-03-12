@@ -10,8 +10,8 @@ def change_emojiset(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> Non
         user.emojiset = "text"
         user.save(update_fields=["emojiset"])
 
-def reverse_change_emojiset(apps: StateApps,
-                            schema_editor: DatabaseSchemaEditor) -> None:
+
+def reverse_change_emojiset(apps: StateApps, schema_editor: DatabaseSchemaEditor) -> None:
     UserProfile = apps.get_model("zerver", "UserProfile")
     for user in UserProfile.objects.filter(emojiset="text"):
         # Resetting `emojiset` to "google" (the default) doesn't make an
@@ -21,21 +21,32 @@ def reverse_change_emojiset(apps: StateApps,
         user.emojiset = "google"
         user.save(update_fields=["emoji_alt_code", "emojiset"])
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0129_remove_userprofile_autoscroll_forever'),
+        ("zerver", "0129_remove_userprofile_autoscroll_forever"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='userprofile',
-            name='emojiset',
-            field=models.CharField(choices=[('google', 'Google'), ('apple', 'Apple'), ('twitter', 'Twitter'), ('emojione', 'EmojiOne'), ('text', 'Plain text')], default='google', max_length=20),
+            model_name="userprofile",
+            name="emojiset",
+            field=models.CharField(
+                choices=[
+                    ("google", "Google"),
+                    ("apple", "Apple"),
+                    ("twitter", "Twitter"),
+                    ("emojione", "EmojiOne"),
+                    ("text", "Plain text"),
+                ],
+                default="google",
+                max_length=20,
+            ),
         ),
         migrations.RunPython(change_emojiset, reverse_change_emojiset, elidable=True),
         migrations.RemoveField(
-            model_name='userprofile',
-            name='emoji_alt_code',
+            model_name="userprofile",
+            name="emoji_alt_code",
         ),
     ]

@@ -1,18 +1,18 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
 // Dependencies
-set_global(
-    "$",
-    global.make_zjquery({
-        silent: true,
-    }),
-);
+
 set_global("document", {
     hasFocus() {
         return true;
     },
 });
-set_global("page_params", {
+const page_params = set_global("page_params", {
     is_admin: false,
     realm_users: [],
     enable_desktop_notifications: true,
@@ -24,15 +24,13 @@ const _navigator = {
 };
 set_global("navigator", _navigator);
 
-zrequire("alert_words");
-zrequire("muting");
-zrequire("stream_data");
-zrequire("people");
-zrequire("ui");
-zrequire("spoilers");
+const muting = zrequire("muting");
+const stream_data = zrequire("stream_data");
+const ui = zrequire("ui");
+const spoilers = zrequire("spoilers");
 spoilers.hide_spoilers_in_notification = () => {};
 
-zrequire("notifications");
+const notifications = zrequire("notifications");
 
 // Not muted streams
 const general = {
@@ -254,7 +252,9 @@ run_test("message_is_notifiable", () => {
     assert.equal(notifications.message_is_notifiable(message), true);
 });
 
-run_test("basic_notifications", () => {
+run_test("basic_notifications", (override) => {
+    override(ui, "replace_emoji_with_text", () => {});
+
     let n; // Object for storing all notification data for assertions.
     let last_closed_message_id = null;
     let last_shown_message_id = null;

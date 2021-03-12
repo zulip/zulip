@@ -7,17 +7,27 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zilencer', '0005_remotepushdevicetoken_fix_uniqueness'),
-        ('zerver', '0001_initial'),
+        ("zilencer", "0005_remotepushdevicetoken_fix_uniqueness"),
+        ("zerver", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Customer',
+            name="Customer",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('stripe_customer_id', models.CharField(max_length=255, unique=True)),
-                ('realm', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='zerver.Realm')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+                    ),
+                ),
+                ("stripe_customer_id", models.CharField(max_length=255, unique=True)),
+                (
+                    "realm",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE, to="zerver.Realm"
+                    ),
+                ),
             ],
         ),
     ]

@@ -1,7 +1,18 @@
-"use strict";
-
-const huddle_data = require("./huddle_data");
-const people = require("./people");
+import * as channel from "./channel";
+import {Filter} from "./filter";
+import * as huddle_data from "./huddle_data";
+import * as message_list from "./message_list";
+import * as message_scroll from "./message_scroll";
+import * as message_store from "./message_store";
+import * as message_util from "./message_util";
+import * as narrow from "./narrow";
+import * as people from "./people";
+import * as pm_list from "./pm_list";
+import * as recent_topics from "./recent_topics";
+import * as server_events from "./server_events";
+import * as stream_data from "./stream_data";
+import * as stream_list from "./stream_list";
+import * as ui_report from "./ui_report";
 
 const consts = {
     backfill_idle_time: 10 * 1000,
@@ -11,6 +22,7 @@ const consts = {
     narrow_after: 50,
     num_before_home_anchor: 200,
     num_after_home_anchor: 200,
+    recent_topics_initial_fetch_size: 400,
     backward_batch_size: 100,
     forward_batch_size: 100,
     catch_up_batch_size: 1000,
@@ -33,8 +45,10 @@ function process_result(data, opts) {
         narrow.show_empty_narrow_message();
     }
 
-    messages.forEach(message_store.set_message_booleans);
-    messages = messages.map(message_store.add_message_metadata);
+    messages = messages.map((message) => {
+        message_store.set_message_booleans(message);
+        return message_store.add_message_metadata(message);
+    });
 
     // In case any of the newly fetched messages are new, add them to
     // our unread data structures.  It's important that this run even
@@ -117,7 +131,7 @@ function get_messages_success(data, opts) {
         // The server occasionally returns no data during a
         // restart.  Ignore those responses and try again
         setTimeout(() => {
-            exports.load_messages(opts);
+            load_messages(opts);
         }, 0);
         return;
     }
@@ -130,8 +144,8 @@ function get_messages_success(data, opts) {
 // or convert the emails string to user IDs directly into the Filter code
 // because doing so breaks the app in various modules that expect emails string.
 function handle_operators_supporting_id_based_api(data) {
-    const operators_supporting_ids = ["pm-with"];
-    const operators_supporting_id = ["sender", "group-pm-with", "stream"];
+    const operators_supporting_ids = new Set(["pm-with"]);
+    const operators_supporting_id = new Set(["sender", "group-pm-with", "stream"]);
 
     if (data.narrow === undefined) {
         return data;
@@ -139,11 +153,11 @@ function handle_operators_supporting_id_based_api(data) {
 
     data.narrow = JSON.parse(data.narrow);
     data.narrow = data.narrow.map((filter) => {
-        if (operators_supporting_ids.includes(filter.operator)) {
+        if (operators_supporting_ids.has(filter.operator)) {
             filter.operand = people.emails_strings_to_user_ids_array(filter.operand);
         }
 
-        if (operators_supporting_id.includes(filter.operator)) {
+        if (operators_supporting_id.has(filter.operator)) {
             if (filter.operator === "stream") {
                 const stream_id = stream_data.get_stream_id(filter.operand);
                 if (stream_id !== undefined) {
@@ -167,7 +181,7 @@ function handle_operators_supporting_id_based_api(data) {
     return data;
 }
 
-exports.load_messages = function (opts) {
+export function load_messages(opts) {
     if (typeof opts.anchor === "number") {
         // Messages that have been locally echoed messages have
         // floating point temporary IDs, which is intended to be a.
@@ -177,15 +191,27 @@ exports.load_messages = function (opts) {
     }
     let data = {anchor: opts.anchor, num_before: opts.num_before, num_after: opts.num_after};
 
-    if (opts.msg_list.narrowed && narrow_state.active()) {
-        let operators = narrow_state.public_operators();
+    // This block is a hack; structurally, we want to set
+    //   data.narrow = opts.msg_list.data.filter.public_operators()
+    //
+    // But support for the message_list.all sharing of data with
+    // home_msg_list and the (hacky) page_params.narrow feature
+    // requires a somewhat ugly bundle of conditionals.
+    if (opts.msg_list === home_msg_list) {
+        if (page_params.narrow_stream !== undefined) {
+            data.narrow = JSON.stringify(page_params.narrow);
+        }
+        // Otherwise, we don't pass narrow for home_msg_list; this is
+        // required because it shares its data with all_msg_list, and
+        // so we need the server to send us message history from muted
+        // streams and topics even though home_msg_list's in:home
+        // operators will filter those.
+    } else {
+        let operators = opts.msg_list.data.filter.public_operators();
         if (page_params.narrow !== undefined) {
             operators = operators.concat(page_params.narrow);
         }
         data.narrow = JSON.stringify(operators);
-    }
-    if (opts.msg_list === home_msg_list && page_params.narrow_stream !== undefined) {
-        data.narrow = JSON.stringify(page_params.narrow);
     }
 
     let update_loading_indicator = opts.msg_list === current_msg_list;
@@ -235,6 +261,7 @@ exports.load_messages = function (opts) {
                 // retry or display a connection error.
                 //
                 // FIXME: Warn the user when this has happened?
+                message_scroll.hide_indicators();
                 const data = {
                     messages: [],
                 };
@@ -245,25 +272,25 @@ exports.load_messages = function (opts) {
             // We might want to be more clever here
             $("#connection-error").addClass("show");
             setTimeout(() => {
-                exports.load_messages(opts);
+                load_messages(opts);
             }, consts.error_retry_time);
         },
     });
-};
+}
 
-exports.load_messages_for_narrow = function (opts) {
+export function load_messages_for_narrow(opts) {
     const msg_list = message_list.narrowed;
 
-    exports.load_messages({
+    load_messages({
         anchor: opts.anchor,
         num_before: consts.narrow_before,
         num_after: consts.narrow_after,
         msg_list,
         cont: opts.cont,
     });
-};
+}
 
-exports.get_backfill_anchor = function (msg_list) {
+export function get_backfill_anchor(msg_list) {
     if (msg_list === home_msg_list) {
         msg_list = message_list.all;
     }
@@ -276,9 +303,9 @@ exports.get_backfill_anchor = function (msg_list) {
     // msg_list is empty, which is an impossible
     // case, raise a fatal error.
     throw new Error("There are no message available to backfill.");
-};
+}
 
-exports.get_frontfill_anchor = function (msg_list) {
+export function get_frontfill_anchor(msg_list) {
     if (msg_list === home_msg_list) {
         msg_list = message_list.all;
     }
@@ -295,9 +322,9 @@ exports.get_frontfill_anchor = function (msg_list) {
     // fetch more data, and if user is, then the available data is wrong
     // and we raise a fatal error.
     throw new Error("There are no message available to frontfill.");
-};
+}
 
-exports.maybe_load_older_messages = function (opts) {
+export function maybe_load_older_messages(opts) {
     // This function gets called when you scroll to the top
     // of your window, and you want to get messages older
     // than what the browsers originally fetched.
@@ -308,17 +335,17 @@ exports.maybe_load_older_messages = function (opts) {
         return;
     }
 
-    exports.do_backfill({
+    do_backfill({
         msg_list,
         num_before: consts.backward_batch_size,
     });
-};
+}
 
-exports.do_backfill = function (opts) {
+export function do_backfill(opts) {
     const msg_list = opts.msg_list;
-    const anchor = exports.get_backfill_anchor(msg_list);
+    const anchor = get_backfill_anchor(msg_list);
 
-    exports.load_messages({
+    load_messages({
         anchor,
         num_before: opts.num_before,
         num_after: 0,
@@ -329,9 +356,9 @@ exports.do_backfill = function (opts) {
             }
         },
     });
-};
+}
 
-exports.maybe_load_newer_messages = function (opts) {
+export function maybe_load_newer_messages(opts) {
     // This function gets called when you scroll to the bottom
     // of your window, and you want to get messages newer
     // than what the browsers originally fetched.
@@ -343,37 +370,37 @@ exports.maybe_load_newer_messages = function (opts) {
         return;
     }
 
-    const anchor = exports.get_frontfill_anchor(msg_list);
+    const anchor = get_frontfill_anchor(msg_list);
 
     function load_more(data, args) {
         if (args.fetch_again && args.msg_list === current_msg_list) {
-            exports.maybe_load_newer_messages({msg_list: current_msg_list});
+            maybe_load_newer_messages({msg_list: current_msg_list});
         }
     }
 
-    exports.load_messages({
+    load_messages({
         anchor,
         num_before: 0,
         num_after: consts.forward_batch_size,
         msg_list,
         cont: load_more,
     });
-};
+}
 
-exports.start_backfilling_messages = function () {
+export function start_backfilling_messages() {
     // backfill more messages after the user is idle
     $(document).idle({
         idle: consts.backfill_idle_time,
         onIdle() {
-            exports.do_backfill({
+            do_backfill({
                 num_before: consts.backfill_batch_size,
                 msg_list: home_msg_list,
             });
         },
     });
-};
+}
 
-exports.initialize = function () {
+export function initialize() {
     // get the initial message list
     function load_more(data) {
         // If we haven't selected a message in the home view yet, and
@@ -391,7 +418,7 @@ exports.initialize = function () {
 
         if (data.found_newest) {
             server_events.home_view_loaded();
-            exports.start_backfilling_messages();
+            start_backfilling_messages();
             return;
         }
 
@@ -400,7 +427,7 @@ exports.initialize = function () {
         const messages = data.messages;
         const latest_id = messages[messages.length - 1].id;
 
-        exports.load_messages({
+        load_messages({
             anchor: latest_id,
             num_before: 0,
             num_after: consts.catch_up_batch_size,
@@ -419,13 +446,43 @@ exports.initialize = function () {
         // the user's unmuted history as our anchor.
         anchor = "first_unread";
     }
-    exports.load_messages({
+    load_messages({
         anchor,
         num_before: consts.num_before_home_anchor,
         num_after: consts.num_after_home_anchor,
         msg_list: home_msg_list,
         cont: load_more,
     });
-};
 
-window.message_fetch = exports;
+    // In addition to the algorithm above, which is designed to ensure
+    // that we fetch all message history eventually starting with the
+    // first unread message, we also need to ensure that the Recent
+    // Topics page contains the very most recent threads on page load.
+    //
+    // Long term, we'll want to replace this with something that's
+    // more performant (i.e. avoids this unnecessary extra fetch the
+    // results of which are basically discarded) and better represents
+    // more than a few hundred messages' history, but this strategy
+    // allows "Recent Topics" to always show current data (with gaps)
+    // on page load; the data will be complete once the algorithm
+    // above catched up to present.
+    //
+    // (Users will see a weird artifact where Recent Topics has a gap
+    // between E.g. 6 days ago and 37 days ago while the catchup
+    // process runs, so this strategy still results in problematic
+    // visual artifacts shortly after page load; just more forgiveable
+    // ones).
+    //
+    // This MessageList is defined similarly to home_message_list,
+    // without a `table_name` attached.
+    const recent_topics_message_list = new message_list.MessageList({
+        filter: new Filter([{operator: "in", operand: "home"}]),
+        excludes_muted_topics: true,
+    });
+    load_messages({
+        anchor: "newest",
+        num_before: consts.recent_topics_initial_fetch_size,
+        num_after: 0,
+        msg_list: recent_topics_message_list,
+    });
+}

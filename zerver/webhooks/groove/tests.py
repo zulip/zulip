@@ -2,9 +2,9 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class GrooveHookTests(WebhookTestCase):
-    STREAM_NAME = 'groove'
-    URL_TEMPLATE = '/api/v1/external/groove?stream={stream}&api_key={api_key}'
-    FIXTURE_DIR_NAME = 'groove'
+    STREAM_NAME = "groove"
+    URL_TEMPLATE = "/api/v1/external/groove?stream={stream}&api_key={api_key}"
+    FIXTURE_DIR_NAME = "groove"
 
     # This test simulates the condition when a new ticket comes.
     def test_groove_ticket_started(self) -> None:
@@ -65,9 +65,12 @@ The content of the body goes here.
     # is assigned to no one.
     def test_groove_ticket_assigned_no_one(self) -> None:
         self.subscribe(self.test_user, self.STREAM_NAME)
-        result = self.client_post(self.url, self.get_body('ticket_assigned__no_one'),
-                                  content_type="application/x-www-form-urlencoded",
-                                  HTTP_X_GROOVE_EVENT='ticket_assigned')
+        result = self.client_post(
+            self.url,
+            self.get_body("ticket_assigned__no_one"),
+            content_type="application/x-www-form-urlencoded",
+            HTTP_X_GROOVE_EVENT="ticket_assigned",
+        )
         self.assert_json_success(result)
 
     # This simulates the notification when an agent replied to a ticket.

@@ -8,8 +8,9 @@ class Migration(migrations.Migration):
     deactivated before this change, we need a migration to fix those old streams,
     to have all messages marked as read.
     """
+
     dependencies = [
-        ('zerver', '0300_add_attachment_is_web_public'),
+        ("zerver", "0300_add_attachment_is_web_public"),
     ]
 
     operations = [

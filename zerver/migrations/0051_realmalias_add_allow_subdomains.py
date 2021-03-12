@@ -5,17 +5,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0050_userprofile_avatar_version'),
+        ("zerver", "0050_userprofile_avatar_version"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='realmalias',
-            name='allow_subdomains',
+            model_name="realmalias",
+            name="allow_subdomains",
             field=models.BooleanField(default=False),
         ),
         migrations.AlterUniqueTogether(
-            name='realmalias',
-            unique_together={('realm', 'domain')},
+            name="realmalias",
+            unique_together={("realm", "domain")},
         ),
     ]

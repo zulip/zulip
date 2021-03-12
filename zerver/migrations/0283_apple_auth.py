@@ -7,13 +7,27 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0282_remove_zoom_video_chat'),
+        ("zerver", "0282_remove_zoom_video_chat"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='realm',
-            name='authentication_methods',
-            field=bitfield.models.BitField(['Google', 'Email', 'GitHub', 'LDAP', 'Dev', 'RemoteUser', 'AzureAD', 'SAML', 'GitLab', 'Apple'], default=2147483647),
+            model_name="realm",
+            name="authentication_methods",
+            field=bitfield.models.BitField(
+                [
+                    "Google",
+                    "Email",
+                    "GitHub",
+                    "LDAP",
+                    "Dev",
+                    "RemoteUser",
+                    "AzureAD",
+                    "SAML",
+                    "GitLab",
+                    "Apple",
+                ],
+                default=2147483647,
+            ),
         ),
     ]

@@ -1,6 +1,6 @@
 body {
     background-color: hsl(0, 0%, 98%);
-    font-family: "Source Sans Pro", Helvetica, Arial, sans-serif;
+    font-family: "Source Sans 3", Helvetica, Arial, sans-serif;
     line-height: 150%;
     height: 100%;
     font-weight: 300;
@@ -320,7 +320,7 @@ html {
     font-size: 0.9rem;
 
     &.text-error {
-        color: hsl(1, 54%, 61%);
+        color: hsl(1.1, 44.7%, 50.4%);
     }
 }
 
@@ -1299,7 +1299,7 @@ input.new-organization-button {
     min-height: calc(100vh - 290px);
     height: 100%;
     background-color: hsl(163, 42%, 85%);
-    font-family: "Source Sans Pro", Helvetica, Arial, sans-serif;
+    font-family: "Source Sans 3", Helvetica, Arial, sans-serif;
 }
 
 .error_page .container {
@@ -1352,7 +1352,7 @@ input.new-organization-button {
     margin-bottom: 25px !important;
 }
 
-@media (max-width: 800px) {
+@media (width <= 800px) {
     .app.help {
         .markdown {
             width: 100vw;
@@ -1426,7 +1426,7 @@ input.new-organization-button {
     }
 }
 
-@media (max-width: 815px) {
+@media (width <= 815px) {
     .footer {
         width: 450px;
         margin-left: auto;
@@ -1438,7 +1438,7 @@ input.new-organization-button {
     }
 }
 
-@media (max-width: 767px) {
+@media (width <= 767px) {
     body {
         padding: 0 !important;
     }
@@ -1489,7 +1489,7 @@ input.new-organization-button {
     }
 }
 
-@media (max-width: 558px) {
+@media (width <= 558px) {
     .team {
         .bdfl {
             .profile-name,
@@ -1500,7 +1500,7 @@ input.new-organization-button {
     }
 }
 
-@media (max-width: 500px) {
+@media (width <= 500px) {
     .app.help {
         .sidebar {
             top: 39px;
@@ -1555,7 +1555,7 @@ input.new-organization-button {
     }
 }
 
-@media (max-width: 475px) {
+@media (width <= 475px) {
     .footer {
         width: auto;
 
@@ -1566,7 +1566,7 @@ input.new-organization-button {
     }
 }
 
-@media (max-width: 400px) {
+@media (width <= 400px) {
     .footer {
         section {
             width: calc(100% - 40px);
@@ -1693,6 +1693,12 @@ label.label-title {
         }
     }
 
+    .api-field-type {
+        text-transform: lowercase;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
     .api-argument-example-label {
         font-style: italic;
     }
@@ -1717,6 +1723,10 @@ label.label-title {
         font-size: 12px;
         color: hsl(0, 50%, 60%);
     }
+}
+
+.api-field-type {
+    color: hsl(176, 46.4%, 41%);
 }
 
 .desktop-redirect-box {

@@ -1,19 +1,20 @@
-"use strict";
+import * as hashchange from "./hashchange";
+import * as search_pill from "./search_pill";
 
-exports.initialize = function () {
+export let widget;
+
+export function initialize() {
     if (!page_params.search_pills_enabled) {
         return;
     }
     const container = $("#search_arrows");
-    exports.widget = search_pill.create_pills(container);
+    widget = search_pill.create_pills(container);
 
-    exports.widget.onPillRemove(() => {
-        if (exports.widget.items().length === 0) {
+    widget.onPillRemove(() => {
+        if (widget.items().length === 0) {
             hashchange.go_to_location("");
         }
     });
 
-    exports.widget.createPillonPaste(() => false);
-};
-
-window.search_pill_widget = exports;
+    widget.createPillonPaste(() => false);
+}

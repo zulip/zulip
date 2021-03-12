@@ -1,6 +1,6 @@
-"use strict";
+import _ from "lodash";
 
-const _ = require("lodash");
+export let unused_colors;
 // These colors are used now for streams.
 const stream_colors = [
     "#76ce90",
@@ -31,39 +31,39 @@ const stream_colors = [
 
 // Shuffle our colors on page load to prevent
 // bias toward "early" colors.
-exports.colors = _.shuffle(stream_colors);
+export const colors = _.shuffle(stream_colors);
 
-exports.reset = function () {
-    exports.unused_colors = exports.colors.slice();
-};
+export function reset() {
+    unused_colors = colors.slice();
+}
 
-exports.reset();
+reset();
 
-exports.claim_color = function (color) {
-    const i = exports.unused_colors.indexOf(color);
+export function claim_color(color) {
+    const i = unused_colors.indexOf(color);
 
     if (i < 0) {
         return;
     }
 
-    exports.unused_colors.splice(i, 1);
+    unused_colors.splice(i, 1);
 
-    if (exports.unused_colors.length === 0) {
-        exports.reset();
+    if (unused_colors.length === 0) {
+        reset();
     }
-};
+}
 
-exports.claim_colors = function (subs) {
+export function claim_colors(subs) {
     const colors = new Set(subs.map((sub) => sub.color));
-    colors.forEach(exports.claim_color);
-};
+    for (const color of colors) {
+        claim_color(color);
+    }
+}
 
-exports.pick_color = function () {
-    const color = exports.unused_colors[0];
+export function pick_color() {
+    const color = unused_colors[0];
 
-    exports.claim_color(color);
+    claim_color(color);
 
     return color;
-};
-
-window.color_data = exports;
+}

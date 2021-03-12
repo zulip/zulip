@@ -11,7 +11,7 @@ The feature articles serve a few different purposes:
 * Feature discovery, for someone browsing the `/help` page, and looking at
   the set of titles.
 * Public documentation of our featureset, for someone googling "can zulip do .."
-* Canned responses to support questions; if someone emails a zulip admin
+* Canned responses to support questions; if someone emails a Zulip admin
   asking "how do I change my name", they can reply with a link to the doc.
 * Feature explanations for new Zulip users and admins, especially for
   organization settings.
@@ -23,7 +23,7 @@ in-product, so it's important to keep the docs up to date.
 ## Editing and testing
 
 The user documentation is available under `/help/` on any Zulip server;
-(e.g. <https://chat.zulip.org/help/> or `http://localhost:9991/help/` in
+(e.g. <https://zulip.com/help/> or `http://localhost:9991/help/` in
 the Zulip development environment). The user documentation is not hosted on
 ReadTheDocs, since Zulip supports running a server completely disconnected
 from the Internet, and we'd like the documentation to be available in that
@@ -239,9 +239,9 @@ languages in API docs, etc.  To create a tab switcher, write:
 
     {start_tabs}
     {tab|desktop-web}
-    # First Tab's content
+    # First tab's content
     {tab|ios}
-    # Second Tab's content
+    # Second tab's content
     {tab|android}
     # Third tab's content
     {end_tabs}
@@ -250,7 +250,7 @@ The tab identifiers (e.g. `desktop-web` above) and their mappings to
 the tabs' labels are declared in
 [zerver/lib/markdown/tabbed_sections.py][tabbed-sections-code].
 
-[tabbed-sections-code]: https://github.com/zulip/zulip/blob/master/zerver/lib/markdown/tabbed_sections.py#L37
+[tabbed-sections-code]: https://github.com/zulip/zulip/blob/master/zerver/lib/markdown/tabbed_sections.py
 
 This widget can also be used just to create a nice box around a set of
 instructions

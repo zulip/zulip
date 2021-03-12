@@ -5,9 +5,15 @@ Realms are the Zulip codebases's internal name for what we refer to in
 user documentation as an organization (the name "realm" comes from
 [Kerberos](https://web.mit.edu/kerberos/)).
 
+Wherever possible, we avoid using the term `realm` in any user-facing
+string or documentation; "Organization" is the equivalent term used in
+those contexts (and we have linters that attempt to enforce this rule
+in translateable strings).  We may in the future modify Zulip's
+internals to use `organization` instead.
+
 The
 [production docs on multiple realms](../production/multiple-organizations.md)
-are likely also relevant reading.
+are also relevant reading.
 
 ## Creating realms
 

@@ -11,42 +11,44 @@ from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
-MESSAGE_TEMPLATE = (
-    'Author: {}\n'
-    'Build status: {} {}\n'
-    'Details: [build log]({})\n'
-    'Comment: {}'
-)
+MESSAGE_TEMPLATE = """\
+Author: {}
+Build status: {} {}
+Details: [build log]({})
+Comment: {}"""
 
-@webhook_view('Gocd')
+
+@webhook_view("Gocd")
 @has_request_variables
-def api_gocd_webhook(request: HttpRequest, user_profile: UserProfile,
-                     payload: Dict[str, Any]=REQ(argument_type='body'),
-                     ) -> HttpResponse:
+def api_gocd_webhook(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Any] = REQ(argument_type="body"),
+) -> HttpResponse:
 
-    modifications = payload['build_cause']['material_revisions'][0]['modifications'][0]
-    result = payload['stages'][0]['result']
-    material = payload['build_cause']['material_revisions'][0]['material']
+    modifications = payload["build_cause"]["material_revisions"][0]["modifications"][0]
+    result = payload["stages"][0]["result"]
+    material = payload["build_cause"]["material_revisions"][0]["material"]
 
     if result == "Passed":
-        emoji = ':thumbs_up:'
+        emoji = ":thumbs_up:"
     elif result == "Failed":
-        emoji = ':thumbs_down:'
+        emoji = ":thumbs_down:"
 
-    build_details_file = os.path.join(os.path.dirname(__file__), 'fixtures/build_details.json')
+    build_details_file = os.path.join(os.path.dirname(__file__), "fixtures/build_details.json")
 
     with open(build_details_file) as f:
         contents = json.load(f)
         build_link = contents["build_details"]["_links"]["pipeline"]["href"]
 
     body = MESSAGE_TEMPLATE.format(
-        modifications['user_name'],
+        modifications["user_name"],
         result,
         emoji,
         build_link,
-        modifications['comment'],
+        modifications["comment"],
     )
-    branch = material['description'].split(",")
+    branch = material["description"].split(",")
     topic = branch[0].split(" ")[1]
 
     check_send_webhook_message(request, user_profile, topic, body)

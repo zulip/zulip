@@ -1,13 +1,15 @@
-"use strict";
+import _ from "lodash";
 
-const _ = require("lodash");
+import {FetchStatus} from "./fetch_status";
+import {Filter} from "./filter";
+import * as muting from "./muting";
+import * as unread from "./unread";
+import * as util from "./util";
 
-const util = require("./util");
-
-class MessageListData {
+export class MessageListData {
     constructor(opts) {
-        this.muting_enabled = opts.muting_enabled;
-        if (this.muting_enabled) {
+        this.excludes_muted_topics = opts.excludes_muted_topics;
+        if (this.excludes_muted_topics) {
             this._all_items = [];
         }
         this._items = [];
@@ -110,7 +112,7 @@ class MessageListData {
     }
 
     clear() {
-        if (this.muting_enabled) {
+        if (this.excludes_muted_topics) {
             this._all_items = [];
         }
 
@@ -119,8 +121,8 @@ class MessageListData {
     }
 
     get(id) {
-        id = parseFloat(id);
-        if (isNaN(id)) {
+        id = Number.parseFloat(id);
+        if (Number.isNaN(id)) {
             return undefined;
         }
         return this._hash.get(id);
@@ -167,18 +169,28 @@ class MessageListData {
 
     filter_incoming(messages) {
         const predicate = this._get_predicate();
-        return messages.filter(predicate);
+        return messages.filter((message) => predicate(message));
+    }
+
+    messages_filtered_for_topic_mutes(messages) {
+        if (!this.excludes_muted_topics) {
+            return [...messages];
+        }
+
+        return messages.filter((message) => {
+            if (message.type !== "stream") {
+                return true;
+            }
+            return !muting.is_topic_muted(message.stream_id, message.topic) || message.mentioned;
+        });
     }
 
     unmuted_messages(messages) {
-        return messages.filter(
-            (message) =>
-                !muting.is_topic_muted(message.stream_id, message.topic) || message.mentioned,
-        );
+        return this.messages_filtered_for_topic_mutes(messages);
     }
 
     update_items_for_muting() {
-        if (!this.muting_enabled) {
+        if (!this.excludes_muted_topics) {
             return;
         }
         this._items = this.unmuted_messages(this._all_items);
@@ -252,71 +264,57 @@ class MessageListData {
         // This should be used internally when we have
         // "interior" messages to add and can't optimize
         // things by only doing prepend or only doing append.
-        let viewable_messages;
-        if (this.muting_enabled) {
+
+        const viewable_messages = this.unmuted_messages(messages);
+
+        if (this.excludes_muted_topics) {
             this._all_items = messages.concat(this._all_items);
             this._all_items.sort((a, b) => a.id - b.id);
-
-            viewable_messages = this.unmuted_messages(messages);
-            this._items = viewable_messages.concat(this._items);
-        } else {
-            viewable_messages = messages;
-            this._items = messages.concat(this._items);
         }
 
+        this._items = viewable_messages.concat(this._items);
         this._items.sort((a, b) => a.id - b.id);
+
         this._add_to_hash(messages);
         return viewable_messages;
     }
 
     append(messages) {
         // Caller should have already filtered
-        let viewable_messages;
-        if (this.muting_enabled) {
+        const viewable_messages = this.unmuted_messages(messages);
+
+        if (this.excludes_muted_topics) {
             this._all_items = this._all_items.concat(messages);
-            viewable_messages = this.unmuted_messages(messages);
-        } else {
-            viewable_messages = messages;
         }
         this._items = this._items.concat(viewable_messages);
+
         this._add_to_hash(messages);
         return viewable_messages;
     }
 
     prepend(messages) {
         // Caller should have already filtered
-        let viewable_messages;
-        if (this.muting_enabled) {
+        const viewable_messages = this.unmuted_messages(messages);
+
+        if (this.excludes_muted_topics) {
             this._all_items = messages.concat(this._all_items);
-            viewable_messages = this.unmuted_messages(messages);
-        } else {
-            viewable_messages = messages;
         }
         this._items = viewable_messages.concat(this._items);
+
         this._add_to_hash(messages);
         return viewable_messages;
     }
 
-    remove(messages) {
-        for (const message of messages) {
-            const stored_message = this._hash.get(message.id);
-            if (stored_message !== undefined) {
-                this._hash.delete(stored_message);
-            }
-            this._local_only.delete(message.id);
+    remove(message_ids) {
+        const msg_ids_to_remove = new Set(message_ids);
+        for (const id of msg_ids_to_remove) {
+            this._hash.delete(id);
+            this._local_only.delete(id);
         }
 
-        const msg_ids_to_remove = new Set();
-
-        for (const message of messages) {
-            msg_ids_to_remove.add(message.id);
-        }
-
-        this._items = this._items.filter((message) => !msg_ids_to_remove.has(message.id));
-        if (this.muting_enabled) {
-            this._all_items = this._all_items.filter(
-                (message) => !msg_ids_to_remove.has(message.id),
-            );
+        this._items = this._items.filter((msg) => !msg_ids_to_remove.has(msg.id));
+        if (this.excludes_muted_topics) {
+            this._all_items = this._all_items.filter((msg) => !msg_ids_to_remove.has(msg.id));
         }
     }
 
@@ -342,7 +340,7 @@ class MessageListData {
                 const effective = this._next_nonlocal_message(this._items, a_idx, (idx) => idx - 1);
                 if (effective) {
                     // Turn the 10.02 in [11, 10.02, 12] into 11.02
-                    const decimal = parseFloat((msg.id % 1).toFixed(0.02));
+                    const decimal = Number.parseFloat((msg.id % 1).toFixed(0.02));
                     const effective_id = effective.id + decimal;
                     return effective_id < ref_id;
                 }
@@ -439,20 +437,20 @@ class MessageListData {
     }
 
     _add_to_hash(messages) {
-        messages.forEach((elem) => {
-            const id = parseFloat(elem.id);
-            if (isNaN(id)) {
-                throw new Error("Bad message id");
+        for (const elem of messages) {
+            const id = Number.parseFloat(elem.id);
+            if (Number.isNaN(id)) {
+                throw new TypeError("Bad message id");
             }
             if (this._is_localonly_id(id)) {
                 this._local_only.add(id);
             }
             if (this._hash.has(id)) {
                 blueslip.error("Duplicate message added to MessageListData");
-                return;
+                continue;
             }
             this._hash.set(id, elem);
-        });
+        }
     }
 
     _is_localonly_id(id) {
@@ -467,14 +465,14 @@ class MessageListData {
         return item_list[cur_idx];
     }
 
-    change_message_id(old_id, new_id, opts) {
+    change_message_id(old_id, new_id) {
         // Update our local cache that uses the old id to the new id
         if (this._hash.has(old_id)) {
             const msg = this._hash.get(old_id);
             this._hash.delete(old_id);
             this._hash.set(new_id, msg);
         } else {
-            return;
+            return false;
         }
 
         if (this._local_only.has(old_id)) {
@@ -488,23 +486,14 @@ class MessageListData {
             this._selected_id = new_id;
         }
 
-        this.reorder_messages(new_id, opts);
+        return this.reorder_messages(new_id);
     }
 
-    reorder_messages(new_id, opts) {
+    reorder_messages(new_id) {
         const message_sort_func = (a, b) => a.id - b.id;
         // If this message is now out of order, re-order and re-render
         const current_message = this._hash.get(new_id);
         const index = this._items.indexOf(current_message);
-
-        if (index === -1) {
-            if (!this.muting_enabled && opts.is_current_list()) {
-                blueslip.error(
-                    "Trying to re-order message but can't find message with new_id in _items!",
-                );
-            }
-            return;
-        }
 
         const next = this._next_nonlocal_message(this._items, index, (idx) => idx + 1);
         const prev = this._next_nonlocal_message(this._items, index, (idx) => idx - 1);
@@ -515,17 +504,13 @@ class MessageListData {
         ) {
             blueslip.debug("Changed message ID from server caused out-of-order list, reordering");
             this._items.sort(message_sort_func);
-            if (this.muting_enabled) {
+            if (this.excludes_muted_topics) {
                 this._all_items.sort(message_sort_func);
             }
-
-            // The data updates above need to happen synchronously,
-            // but the rerendering can be deferred.  It's unclear
-            // whether this deferral is necessary; it was present in
-            // the original 2013 local echo implementation but we
-            // don't have records for why we added it then.
-            setTimeout(opts.rerender_view, 0);
+            return true;
         }
+
+        return false;
     }
 
     get_last_message_sent_by_me() {
@@ -537,7 +522,3 @@ class MessageListData {
         return msg;
     }
 }
-
-module.exports = MessageListData;
-
-window.MessageListData = MessageListData;

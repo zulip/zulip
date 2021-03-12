@@ -7,13 +7,26 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0268_add_userpresence_realm_timestamp_index'),
+        ("zerver", "0268_add_userpresence_realm_timestamp_index"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='realm',
-            name='authentication_methods',
-            field=bitfield.models.BitField(['Google', 'Email', 'GitHub', 'LDAP', 'Dev', 'RemoteUser', 'AzureAD', 'SAML', 'GitLab'], default=2147483647),
+            model_name="realm",
+            name="authentication_methods",
+            field=bitfield.models.BitField(
+                [
+                    "Google",
+                    "Email",
+                    "GitHub",
+                    "LDAP",
+                    "Dev",
+                    "RemoteUser",
+                    "AzureAD",
+                    "SAML",
+                    "GitLab",
+                ],
+                default=2147483647,
+            ),
         ),
     ]

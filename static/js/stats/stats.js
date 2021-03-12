@@ -1,16 +1,16 @@
-"use strict";
+import PlotlyBar from "plotly.js/lib/bar";
+import Plotly from "plotly.js/lib/core";
+import PlotlyPie from "plotly.js/lib/pie";
 
-const Plotly = require("plotly.js/lib/core");
-
-Plotly.register([require("plotly.js/lib/bar"), require("plotly.js/lib/pie")]);
+Plotly.register([PlotlyBar, PlotlyPie]);
 
 const font_14pt = {
-    family: "Source Sans Pro",
+    family: "Source Sans 3",
     size: 14,
     color: "#000000",
 };
 
-let last_full_update = Infinity;
+let last_full_update = Number.POSITIVE_INFINITY;
 
 // TODO: should take a dict of arrays and do it for all keys
 function partial_sums(array) {
@@ -178,24 +178,24 @@ function populate_messages_sent_over_time(data) {
     );
 
     function add_hover_handler() {
-        document.getElementById("id_messages_sent_over_time").on("plotly_hover", (data) => {
+        document.querySelector("#id_messages_sent_over_time").on("plotly_hover", (data) => {
             $("#hoverinfo").show();
-            document.getElementById("hover_date").innerText =
+            document.querySelector("#hover_date").textContent =
                 data.points[0].data.text[data.points[0].pointNumber];
             const values = [null, null, null];
-            data.points.forEach((trace) => {
+            for (const trace of data.points) {
                 values[trace.curveNumber] = trace.y;
-            });
-            const hover_text_ids = ["hover_me", "hover_human", "hover_bot"];
-            const hover_value_ids = ["hover_me_value", "hover_human_value", "hover_bot_value"];
-            for (let i = 0; i < values.length; i += 1) {
-                if (values[i] !== null) {
-                    document.getElementById(hover_text_ids[i]).style.display = "inline";
-                    document.getElementById(hover_value_ids[i]).style.display = "inline";
-                    document.getElementById(hover_value_ids[i]).innerText = values[i];
+            }
+            const hover_text_ids = ["#hover_me", "#hover_human", "#hover_bot"];
+            const hover_value_ids = ["#hover_me_value", "#hover_human_value", "#hover_bot_value"];
+            for (const [i, value] of values.entries()) {
+                if (value !== null) {
+                    document.querySelector(hover_text_ids[i]).style.display = "inline";
+                    document.querySelector(hover_value_ids[i]).style.display = "inline";
+                    document.querySelector(hover_value_ids[i]).textContent = value;
                 } else {
-                    document.getElementById(hover_text_ids[i]).style.display = "none";
-                    document.getElementById(hover_value_ids[i]).style.display = "none";
+                    document.querySelector(hover_text_ids[i]).style.display = "none";
+                    document.querySelector(hover_value_ids[i]).style.display = "none";
                 }
             }
         });
@@ -302,7 +302,7 @@ function populate_messages_sent_over_time(data) {
             traces.bot.visible = "legendonly";
             traces.me.visible = "legendonly";
         } else {
-            const plotDiv = document.getElementById("id_messages_sent_over_time");
+            const plotDiv = document.querySelector("#id_messages_sent_over_time");
             traces.me.visible = plotDiv.data[0].visible;
             traces.human.visible = plotDiv.data[1].visible;
             traces.bot.visible = plotDiv.data[2].visible;
@@ -391,21 +391,24 @@ function compute_summary_chart_data(time_series_data, num_steps, labels_) {
     }
     const labels = labels_.slice();
     const values = [];
-    labels.forEach((label) => {
+    for (const label of labels) {
         if (data.has(label)) {
             values.push(data.get(label));
             data.delete(label);
         } else {
             values.push(0);
         }
-    });
+    }
     if (data.size !== 0) {
         labels[labels.length - 1] = "Other";
         for (const sum of data.values()) {
             values[labels.length - 1] += sum;
         }
     }
-    const total = values.reduce((a, b) => a + b, 0);
+    let total = 0;
+    for (const value of values) {
+        total += value;
+    }
     return {
         values,
         labels,
@@ -440,9 +443,9 @@ function populate_messages_sent_by_client(data) {
     }
     label_values.sort((a, b) => b.value - a.value);
     const labels = [];
-    label_values.forEach((item) => {
+    for (const item of label_values) {
         labels.push(item.label);
-    });
+    }
 
     function make_plot_data(time_series_data, num_steps) {
         const plot_data = compute_summary_chart_data(time_series_data, num_steps, labels);
@@ -469,7 +472,7 @@ function populate_messages_sent_by_client(data) {
                 textinfo: "text",
                 hoverinfo: "none",
                 marker: {color: "#537c5e"},
-                font: {family: "Source Sans Pro", size: 18, color: "#000000"},
+                font: {family: "Source Sans 3", size: 18, color: "#000000"},
             },
             trace_annotations: {
                 x: annotations.values,
@@ -636,7 +639,7 @@ function populate_messages_sent_by_message_type(data) {
         time_button = "cumulative";
         $("#messages_by_type_cumulative_button").addClass("selected");
     }
-    const totaldiv = document.getElementById("pie_messages_sent_by_type_total");
+    const totaldiv = document.querySelector("#pie_messages_sent_by_type_total");
 
     if (data.end_times.length < 365) {
         $("#pie_messages_sent_by_type button[data-time='year']").remove();
@@ -724,25 +727,25 @@ function populate_number_of_users(data) {
     }
 
     function add_hover_handler() {
-        document.getElementById("id_number_of_users").on("plotly_hover", (data) => {
+        document.querySelector("#id_number_of_users").on("plotly_hover", (data) => {
             $("#users_hover_info").show();
-            document.getElementById("users_hover_date").innerText =
+            document.querySelector("#users_hover_date").textContent =
                 data.points[0].data.text[data.points[0].pointNumber];
             const values = [null, null, null];
-            data.points.forEach((trace) => {
+            for (const trace of data.points) {
                 values[trace.curveNumber] = trace.y;
-            });
+            }
             const hover_value_ids = [
-                "users_hover_1day_value",
-                "users_hover_15day_value",
-                "users_hover_all_time_value",
+                "#users_hover_1day_value",
+                "#users_hover_15day_value",
+                "#users_hover_all_time_value",
             ];
-            for (let i = 0; i < values.length; i += 1) {
-                if (values[i] !== null) {
-                    document.getElementById(hover_value_ids[i]).style.display = "inline";
-                    document.getElementById(hover_value_ids[i]).innerText = values[i];
+            for (const [i, value] of values.entries()) {
+                if (value !== null) {
+                    document.querySelector(hover_value_ids[i]).style.display = "inline";
+                    document.querySelector(hover_value_ids[i]).textContent = value;
                 } else {
-                    document.getElementById(hover_value_ids[i]).style.display = "none";
+                    document.querySelector(hover_value_ids[i]).style.display = "none";
                 }
             }
         });
@@ -857,24 +860,24 @@ function populate_messages_read_over_time(data) {
     );
 
     function add_hover_handler() {
-        document.getElementById("id_messages_read_over_time").on("plotly_hover", (data) => {
+        document.querySelector("#id_messages_read_over_time").on("plotly_hover", (data) => {
             $("#read_hover_info").show();
-            document.getElementById("read_hover_date").innerText =
+            document.querySelector("#read_hover_date").textContent =
                 data.points[0].data.text[data.points[0].pointNumber];
             const values = [null, null];
-            data.points.forEach((trace) => {
+            for (const trace of data.points) {
                 values[trace.curveNumber] = trace.y;
-            });
-            const read_hover_text_ids = ["read_hover_me", "read_hover_everyone"];
-            const read_hover_value_ids = ["read_hover_me_value", "read_hover_everyone_value"];
-            for (let i = 0; i < values.length; i += 1) {
-                if (values[i] !== null) {
-                    document.getElementById(read_hover_text_ids[i]).style.display = "inline";
-                    document.getElementById(read_hover_value_ids[i]).style.display = "inline";
-                    document.getElementById(read_hover_value_ids[i]).innerText = values[i];
+            }
+            const read_hover_text_ids = ["#read_hover_me", "#read_hover_everyone"];
+            const read_hover_value_ids = ["#read_hover_me_value", "#read_hover_everyone_value"];
+            for (const [i, value] of values.entries()) {
+                if (value !== null) {
+                    document.querySelector(read_hover_text_ids[i]).style.display = "inline";
+                    document.querySelector(read_hover_value_ids[i]).style.display = "inline";
+                    document.querySelector(read_hover_value_ids[i]).textContent = value;
                 } else {
-                    document.getElementById(read_hover_text_ids[i]).style.display = "none";
-                    document.getElementById(read_hover_value_ids[i]).style.display = "none";
+                    document.querySelector(read_hover_text_ids[i]).style.display = "none";
+                    document.querySelector(read_hover_value_ids[i]).style.display = "none";
                 }
             }
         });
@@ -971,7 +974,7 @@ function populate_messages_read_over_time(data) {
             traces.everyone.visible = true;
             traces.me.visible = "legendonly";
         } else {
-            const plotDiv = document.getElementById("id_messages_read_over_time");
+            const plotDiv = document.querySelector("#id_messages_read_over_time");
             traces.me.visible = plotDiv.data[0].visible;
             traces.everyone.visible = plotDiv.data[1].visible;
         }

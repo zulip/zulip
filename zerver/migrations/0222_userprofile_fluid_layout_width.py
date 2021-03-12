@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0221_subscription_notifications_data_migration'),
+        ("zerver", "0221_subscription_notifications_data_migration"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='userprofile',
-            name='fluid_layout_width',
+            model_name="userprofile",
+            name="fluid_layout_width",
             field=models.BooleanField(default=False),
         ),
     ]

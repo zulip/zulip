@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0257_fix_has_link_attribute'),
+        ("zerver", "0257_fix_has_link_attribute"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='userprofile',
-            name='enable_online_push_notifications',
+            model_name="userprofile",
+            name="enable_online_push_notifications",
             field=models.BooleanField(default=True),
         ),
     ]

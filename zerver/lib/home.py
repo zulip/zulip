@@ -10,6 +10,7 @@ from two_factor.utils import default_device
 
 from zerver.lib.events import do_events_register
 from zerver.lib.i18n import (
+    get_and_set_request_language,
     get_language_list,
     get_language_list_for_templates,
     get_language_name,
@@ -47,7 +48,7 @@ def get_furthest_read_time(user_profile: Optional[UserProfile]) -> Optional[floa
 
 def get_bot_types(user_profile: Optional[UserProfile]) -> List[Dict[str, object]]:
     bot_types: List[Dict[str, object]] = []
-    if user_profile is None:  # nocoverage
+    if user_profile is None:
         return bot_types
 
     for type_id, name in UserProfile.BOT_TYPES.items():
@@ -90,7 +91,7 @@ def get_user_permission_info(user_profile: Optional[UserProfile]) -> UserPermiss
             is_realm_admin=user_profile.is_realm_admin,
             show_webathena=user_profile.realm.webathena_enabled,
         )
-    else:  # nocoverage
+    else:
         return UserPermissionInfo(
             color_scheme=UserProfile.COLOR_SCHEME_AUTOMATIC,
             is_guest=False,
@@ -102,7 +103,8 @@ def get_user_permission_info(user_profile: Optional[UserProfile]) -> UserPermiss
 
 def build_page_params_for_home_page_load(
     request: HttpRequest,
-    user_profile: UserProfile,
+    user_profile: Optional[UserProfile],
+    realm: Realm,
     insecure_desktop_app: bool,
     has_mobile_devices: bool,
     narrow: List[List[str]],
@@ -123,33 +125,46 @@ def build_page_params_for_home_page_load(
         "user_avatar_url_field_optional": True,
     }
 
-    register_ret = do_events_register(
-        user_profile,
-        request.client,
-        apply_markdown=True,
-        client_gravatar=True,
-        slim_presence=True,
-        client_capabilities=client_capabilities,
-        narrow=narrow,
-    )
+    if user_profile is not None:
+        register_ret = do_events_register(
+            user_profile,
+            request.client,
+            apply_markdown=True,
+            client_gravatar=True,
+            slim_presence=True,
+            client_capabilities=client_capabilities,
+            narrow=narrow,
+            include_streams=False,
+        )
+    else:
+        # Since events for web_public_visitor is not implemented, we only fetch the data
+        # at the time of request and don't register for any events.
+        # TODO: Implement events for web_public_visitor.
+        from zerver.lib.events import fetch_initial_state_data, post_process_state
+
+        register_ret = fetch_initial_state_data(
+            user_profile,
+            realm=realm,
+            event_types=None,
+            queue_id=None,
+            client_gravatar=False,
+            user_avatar_url_field_optional=client_capabilities["user_avatar_url_field_optional"],
+            slim_presence=False,
+            include_subscribers=False,
+            include_streams=False,
+        )
+
+        post_process_state(user_profile, register_ret, False)
 
     furthest_read_time = get_furthest_read_time(user_profile)
 
-    # We pick a language for the user as follows:
-    # * First priority is the language in the URL, for debugging.
-    # * If not in the URL, we use the language from the user's settings.
-    request_language = translation.get_language_from_path(request.path_info)
-    if request_language is None:
-        request_language = register_ret['default_language']
-    translation.activate(request_language)
-
-    # We also save the language to the user's session, so that
-    # something reasonable will happen in logged-in portico pages.
-    request.session[translation.LANGUAGE_SESSION_KEY] = translation.get_language()
-
-    two_fa_enabled = (
-        settings.TWO_FACTOR_AUTHENTICATION_ENABLED and user_profile is not None
+    request_language = get_and_set_request_language(
+        request,
+        register_ret["default_language"],
+        translation.get_language_from_path(request.path_info),
     )
+
+    two_fa_enabled = settings.TWO_FACTOR_AUTHENTICATION_ENABLED and user_profile is not None
 
     # Pass parameters to the client-side JavaScript code.
     # These end up in a global JavaScript Object named 'page_params'.
@@ -167,9 +182,7 @@ def build_page_params_for_home_page_load(
         # Misc. extra data.
         initial_servertime=time.time(),  # Used for calculating relative presence age
         default_language_name=get_language_name(register_ret["default_language"]),
-        language_list_dbl_col=get_language_list_for_templates(
-            register_ret["default_language"]
-        ),
+        language_list_dbl_col=get_language_list_for_templates(register_ret["default_language"]),
         language_list=get_language_list(),
         needs_tutorial=needs_tutorial,
         first_in_realm=first_in_realm,
@@ -181,12 +194,13 @@ def build_page_params_for_home_page_load(
         # Adding two_fa_enabled as condition saves us 3 queries when
         # 2FA is not enabled.
         two_fa_enabled_user=two_fa_enabled and bool(default_device(user_profile)),
+        is_web_public_visitor=user_profile is None,
+        # There is no event queue for web_public_visitors since
+        # events support for web_public_visitors is not implemented yet.
+        no_event_queue=user_profile is None,
     )
 
-    undesired_register_ret_fields = [
-        "streams",
-    ]
-    for field_name in set(register_ret.keys()) - set(undesired_register_ret_fields):
+    for field_name in register_ret.keys():
         page_params[field_name] = register_ret[field_name]
 
     if narrow_stream is not None:
@@ -194,19 +208,14 @@ def build_page_params_for_home_page_load(
         recipient = narrow_stream.recipient
         try:
             max_message_id = (
-                Message.objects.filter(recipient=recipient)
-                .order_by("id")
-                .reverse()[0]
-                .id
+                Message.objects.filter(recipient=recipient).order_by("id").reverse()[0].id
             )
         except IndexError:
             max_message_id = -1
         page_params["narrow_stream"] = narrow_stream.name
         if narrow_topic is not None:
             page_params["narrow_topic"] = narrow_topic
-        page_params["narrow"] = [
-            dict(operator=term[0], operand=term[1]) for term in narrow
-        ]
+        page_params["narrow"] = [dict(operator=term[0], operand=term[1]) for term in narrow]
         page_params["max_message_id"] = max_message_id
         page_params["enable_desktop_notifications"] = False
 

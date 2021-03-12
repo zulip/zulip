@@ -1,11 +1,15 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const _ = require("lodash");
 
-zrequire("keydown_util");
-zrequire("components");
+const {set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
 
-const noop = function () {};
+const components = zrequire("components");
+
+const noop = () => {};
 
 const LEFT_KEY = {which: 37, preventDefault: noop, stopPropagation: noop};
 const RIGHT_KEY = {which: 39, preventDefault: noop, stopPropagation: noop};
@@ -25,28 +29,39 @@ run_test("basics", () => {
         self.stub = true;
         self.class = [];
 
-        self.addClass = function (c) {
+        self.addClass = (c) => {
             self.class += " " + c;
             const tokens = self.class.trim().split(/ +/);
             self.class = _.uniq(tokens).join(" ");
         };
 
-        self.removeClass = function (c) {
+        self.removeClass = (c) => {
             const tokens = self.class.trim().split(/ +/);
             self.class = _.without(tokens, c).join(" ");
         };
 
-        self.hasClass = function (c) {
+        self.hasClass = (c) => {
             const tokens = self.class.trim().split(/ +/);
             return tokens.includes(c);
         };
 
-        self.data = function (name) {
+        self.data = (name) => {
             assert.equal(name, "tab-id");
             return i;
         };
 
-        self.trigger = function (type) {
+        self.text = (text) => {
+            assert.equal(
+                text,
+                [
+                    "translated: Keyboard shortcuts",
+                    "translated: Message formatting",
+                    "translated: Search operators",
+                ][i],
+            );
+        };
+
+        self.trigger = (type) => {
             if (type === "focus") {
                 focused_tab = i;
             }
@@ -62,7 +77,7 @@ run_test("basics", () => {
 
         self.stub = true;
 
-        self.on = function (name, f) {
+        self.on = (name, f) => {
             if (name === "click") {
                 click_f = f;
             } else if (name === "keydown") {
@@ -70,15 +85,13 @@ run_test("basics", () => {
             }
         };
 
-        self.removeClass = function (c) {
+        self.removeClass = (c) => {
             for (const tab of tabs) {
                 tab.removeClass(c);
             }
         };
 
-        self.eq = function (idx) {
-            return tabs[idx];
-        };
+        self.eq = (idx) => tabs[idx];
 
         return self;
     })();
@@ -92,28 +105,28 @@ run_test("basics", () => {
 
         self.classList = new Set();
 
-        self.append = function (child) {
+        self.append = (child) => {
             self.children.push(child);
         };
 
-        self.addClass = function (c) {
+        self.addClass = (c) => {
             self.classList.add(c);
             self.addedClass = c;
         };
 
-        self.find = function (sel) {
+        self.find = (sel) => {
             switch (sel) {
                 case ".ind-tab":
                     return ind_tab;
                 default:
-                    throw Error("unknown selector: " + sel);
+                    throw new Error("unknown selector: " + sel);
             }
         };
 
         return self;
     })();
 
-    set_global("$", (sel) => {
+    set_global("$", (sel, attributes) => {
         if (sel.stub) {
             // The component often redundantly re-wraps objects.
             return sel;
@@ -124,14 +137,35 @@ run_test("basics", () => {
                 return switcher;
             case "<div class='tab-switcher stream_sorter_toggle'></div>":
                 return switcher;
-            case "<div class='ind-tab' data-tab-key='keyboard-shortcuts' data-tab-id='0' tabindex='0'>translated: Keyboard shortcuts</div>":
-                return make_tab(0);
-            case "<div class='ind-tab' data-tab-key='message-formatting' data-tab-id='1' tabindex='0'>translated: Message formatting</div>":
-                return make_tab(1);
-            case "<div class='ind-tab' data-tab-key='search-operators' data-tab-id='2' tabindex='0'>translated: Search operators</div>":
-                return make_tab(2);
+            case "<div>": {
+                const tab_id = attributes["data-tab-id"];
+                assert.deepEqual(
+                    attributes,
+                    [
+                        {
+                            class: "ind-tab",
+                            "data-tab-key": "keyboard-shortcuts",
+                            "data-tab-id": 0,
+                            tabindex: 0,
+                        },
+                        {
+                            class: "ind-tab",
+                            "data-tab-key": "message-formatting",
+                            "data-tab-id": 1,
+                            tabindex: 0,
+                        },
+                        {
+                            class: "ind-tab",
+                            "data-tab-key": "search-operators",
+                            "data-tab-id": 2,
+                            tabindex: 0,
+                        },
+                    ][tab_id],
+                );
+                return make_tab(tab_id);
+            }
             default:
-                throw Error("unknown selector: " + sel);
+                throw new Error("unknown selector: " + sel);
         }
     });
 

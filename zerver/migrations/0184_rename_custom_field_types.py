@@ -6,13 +6,23 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0183_change_custom_field_name_max_length'),
+        ("zerver", "0183_change_custom_field_name_max_length"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='customprofilefield',
-            name='field_type',
-            field=models.PositiveSmallIntegerField(choices=[(1, 'Short text'), (2, 'Long text'), (4, 'Date picker'), (5, 'Link'), (3, 'List of options'), (6, 'Person picker')], default=1),
+            model_name="customprofilefield",
+            name="field_type",
+            field=models.PositiveSmallIntegerField(
+                choices=[
+                    (1, "Short text"),
+                    (2, "Long text"),
+                    (4, "Date picker"),
+                    (5, "Link"),
+                    (3, "List of options"),
+                    (6, "Person picker"),
+                ],
+                default=1,
+            ),
         ),
     ]

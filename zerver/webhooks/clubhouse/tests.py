@@ -5,14 +5,16 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class ClubhouseWebhookTest(WebhookTestCase):
-    STREAM_NAME = 'clubhouse'
+    STREAM_NAME = "clubhouse"
     URL_TEMPLATE = "/api/v1/external/clubhouse?stream={stream}&api_key={api_key}"
-    FIXTURE_DIR_NAME = 'clubhouse'
+    FIXTURE_DIR_NAME = "clubhouse"
 
     def test_story_create(self) -> None:
         expected_message = "New story [Add cool feature!](https://app.clubhouse.io/zulip/story/11) of type **feature** was created."
         self.check_webhook(
-            "story_create", "Add cool feature!", expected_message,
+            "story_create",
+            "Add cool feature!",
+            expected_message,
         )
 
     def test_story_delete(self) -> None:
@@ -22,7 +24,9 @@ class ClubhouseWebhookTest(WebhookTestCase):
     def test_epic_story_create(self) -> None:
         expected_message = "New story [An epic story!](https://app.clubhouse.io/zulip/story/23) was created and added to the epic **New Cool Epic!**."
         self.check_webhook(
-            "epic_create_story", "An epic story!", expected_message,
+            "epic_create_story",
+            "An epic story!",
+            expected_message,
         )
 
     def test_epic_delete(self) -> None:
@@ -30,7 +34,9 @@ class ClubhouseWebhookTest(WebhookTestCase):
         self.check_webhook("epic_delete", "Clubhouse Fork", expected_message)
 
     def test_story_archive(self) -> None:
-        expected_message = "The story [Story 2](https://app.clubhouse.io/zulip/story/9) was archived."
+        expected_message = (
+            "The story [Story 2](https://app.clubhouse.io/zulip/story/9) was archived."
+        )
         self.check_webhook("story_archive", "Story 2", expected_message)
 
     def test_epic_archive(self) -> None:
@@ -38,7 +44,9 @@ class ClubhouseWebhookTest(WebhookTestCase):
         self.check_webhook("epic_archive", "Zulip is epic!", expected_message)
 
     def test_story_unarchive(self) -> None:
-        expected_message = "The story [Story 2](https://app.clubhouse.io/zulip/story/9) was unarchived."
+        expected_message = (
+            "The story [Story 2](https://app.clubhouse.io/zulip/story/9) was unarchived."
+        )
         self.check_webhook("story_unarchive", "Story 2", expected_message)
 
     def test_epic_create(self) -> None:
@@ -78,7 +86,9 @@ class ClubhouseWebhookTest(WebhookTestCase):
         self.check_webhook("story_update_description", "Add cool feature!", expected_message)
 
     def test_epic_update_change_state(self) -> None:
-        expected_message = "State of the epic **New Cool Epic!** was changed from **to do** to **in progress**."
+        expected_message = (
+            "State of the epic **New Cool Epic!** was changed from **to do** to **in progress**."
+        )
         self.check_webhook("epic_update_change_state", "New Cool Epic!", expected_message)
 
     def test_story_update_change_state(self) -> None:
@@ -111,17 +121,18 @@ class ClubhouseWebhookTest(WebhookTestCase):
         expected_message = "Task **A new task for this story** ([Add cool feature!](https://app.clubhouse.io/zulip/story/11)) was completed. :tada:"
         self.check_webhook("story_task_complete", "Add cool feature!", expected_message)
 
-    @patch('zerver.lib.webhooks.common.check_send_webhook_message')
-    def test_story_task_incomplete_ignore(
-            self, check_send_webhook_message_mock: MagicMock) -> None:
-        payload = self.get_body('story_task_not_complete')
+    @patch("zerver.lib.webhooks.common.check_send_webhook_message")
+    def test_story_task_incomplete_ignore(self, check_send_webhook_message_mock: MagicMock) -> None:
+        payload = self.get_body("story_task_not_complete")
         result = self.client_post(self.url, payload, content_type="application/json")
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
 
     def test_story_epic_changed(self) -> None:
-        expected_message = ("The story [Add cool feature!](https://app.clubhouse.io/zulip/story/11) was moved from **Release 1.9**"
-                            " to **Clubhouse Fork**.")
+        expected_message = (
+            "The story [Add cool feature!](https://app.clubhouse.io/zulip/story/11) was moved from **Release 1.9**"
+            " to **Clubhouse Fork**."
+        )
         self.check_webhook("story_update_change_epic", "Add cool feature!", expected_message)
 
     def test_story_epic_added(self) -> None:
@@ -148,10 +159,11 @@ class ClubhouseWebhookTest(WebhookTestCase):
         expected_message = "A file attachment `zuliprc` was added to the story [Add cool feature!](https://app.clubhouse.io/zulip/story/11)."
         self.check_webhook("story_update_add_attachment", "Add cool feature!", expected_message)
 
-    @patch('zerver.lib.webhooks.common.check_send_webhook_message')
+    @patch("zerver.lib.webhooks.common.check_send_webhook_message")
     def test_story_file_attachment_removed_ignore(
-            self, check_send_webhook_message_mock: MagicMock) -> None:
-        payload = self.get_body('story_update_remove_attachment')
+        self, check_send_webhook_message_mock: MagicMock
+    ) -> None:
+        payload = self.get_body("story_update_remove_attachment")
         result = self.client_post(self.url, payload, content_type="application/json")
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
@@ -166,10 +178,9 @@ class ClubhouseWebhookTest(WebhookTestCase):
             "story_update_add_label_name_in_action", "An emotional story!", expected_message
         )
 
-    @patch('zerver.lib.webhooks.common.check_send_webhook_message')
-    def test_story_label_removed_ignore(
-            self, check_send_webhook_message_mock: MagicMock) -> None:
-        payload = self.get_body('story_update_remove_label')
+    @patch("zerver.lib.webhooks.common.check_send_webhook_message")
+    def test_story_label_removed_ignore(self, check_send_webhook_message_mock: MagicMock) -> None:
+        payload = self.get_body("story_update_remove_label")
         result = self.client_post(self.url, payload, content_type="application/json")
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
@@ -196,16 +207,18 @@ class ClubhouseWebhookTest(WebhookTestCase):
             "story_update_add_github_branch", "Testing pull requests with Story", expected_message
         )
 
-    @patch('zerver.lib.webhooks.common.check_send_webhook_message')
-    def test_empty_post_request_body_ignore(self, check_send_webhook_message_mock: MagicMock) -> None:
+    @patch("zerver.lib.webhooks.common.check_send_webhook_message")
+    def test_empty_post_request_body_ignore(
+        self, check_send_webhook_message_mock: MagicMock
+    ) -> None:
         payload = json.dumps(None)
         result = self.client_post(self.url, payload, content_type="application/json")
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
 
-    @patch('zerver.lib.webhooks.common.check_send_webhook_message')
+    @patch("zerver.lib.webhooks.common.check_send_webhook_message")
     def test_story_comment_updated_ignore(self, check_send_webhook_message_mock: MagicMock) -> None:
-        payload = self.get_body('story_comment_updated')
+        payload = self.get_body("story_comment_updated")
         result = self.client_post(self.url, payload, content_type="application/json")
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)

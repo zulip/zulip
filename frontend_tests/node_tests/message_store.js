@@ -1,31 +1,32 @@
 "use strict";
 
-const util = zrequire("util");
-zrequire("pm_conversations");
-const people = zrequire("people");
-zrequire("message_store");
+const {strict: assert} = require("assert");
 
-const noop = function () {};
+const {mock_module, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {make_stub} = require("../zjsunit/stub");
+const {run_test} = require("../zjsunit/test");
 
-set_global("$", global.make_zjquery());
-set_global("document", "document-stub");
+const noop = () => {};
 
-set_global("alert_words", {
-    process_message: noop,
-});
-
-set_global("stream_topic_history", {
+mock_module("stream_topic_history", {
     add_message: noop,
 });
 
-set_global("recent_senders", {
+mock_module("recent_senders", {
     process_message_for_senders: noop,
 });
 
+set_global("document", "document-stub");
+set_global("home_msg_list", {});
 set_global("page_params", {
     realm_allow_message_editing: true,
     is_admin: true,
 });
+
+const util = zrequire("util");
+const people = zrequire("people");
+const pm_conversations = zrequire("pm_conversations");
+const message_store = zrequire("message_store");
 
 const denmark = {
     subscribed: false,
@@ -86,7 +87,14 @@ function convert_recipients(people) {
     }));
 }
 
-run_test("add_message_metadata", () => {
+function test(label, f) {
+    run_test(label, (override) => {
+        message_store.clear_for_testing();
+        f(override);
+    });
+}
+
+test("add_message_metadata", () => {
     let message = {
         sender_email: "me@example.com",
         sender_id: me.user_id,
@@ -154,7 +162,7 @@ run_test("add_message_metadata", () => {
     ]);
 });
 
-run_test("message_booleans_parity", () => {
+test("message_booleans_parity", () => {
     // We have two code paths that update/set message booleans.
     // This test asserts that both have identical behavior for the
     // flags common between them.
@@ -163,14 +171,14 @@ run_test("message_booleans_parity", () => {
         const update_message = {topic: "update_booleans"};
         message_store.set_message_booleans(set_message);
         message_store.update_booleans(update_message, flags);
-        Object.keys(expected_message).forEach((key) => {
+        for (const key of Object.keys(expected_message)) {
             assert.equal(
                 set_message[key],
                 expected_message[key],
                 `'${key}' != ${expected_message[key]}`,
             );
             assert.equal(update_message[key], expected_message[key]);
-        });
+        }
         assert.equal(set_message.topic, "set_message_booleans");
         assert.equal(update_message.topic, "update_booleans");
     };
@@ -194,7 +202,7 @@ run_test("message_booleans_parity", () => {
     });
 });
 
-run_test("errors", () => {
+test("errors", () => {
     // Test a user that doesn't exist
     let message = {
         type: "private",
@@ -217,18 +225,18 @@ run_test("errors", () => {
         display_recipient: [{}],
     };
 
-    // This should early return and not run pm_conversation.set_partner
-    let num_partner = 0;
-    set_global("pm_conversation", {
-        set_partner() {
-            num_partner += 1;
+    // This should early return and not run pm_conversations.set_partner
+    with_field(
+        pm_conversations,
+        "set_partner",
+        () => assert(false),
+        () => {
+            message_store.process_message_for_recent_private_messages(message);
         },
-    });
-    message_store.process_message_for_recent_private_messages(message);
-    assert.equal(num_partner, 0);
+    );
 });
 
-run_test("update_booleans", () => {
+test("update_booleans", () => {
     const message = {};
 
     // First, test fields that we do actually want to update.
@@ -265,7 +273,7 @@ run_test("update_booleans", () => {
     assert.equal(message.unread, true);
 });
 
-run_test("update_property", () => {
+test("update_property", () => {
     const message1 = {
         type: "stream",
         sender_full_name: alice.full_name,
@@ -314,13 +322,7 @@ run_test("update_property", () => {
     assert.equal(message2.display_recipient, denmark.name);
 });
 
-run_test("each", () => {
-    message_store.each((message) => {
-        assert(message.alerted !== undefined);
-    });
-});
-
-run_test("message_id_change", () => {
+test("message_id_change", () => {
     const message = {
         sender_email: "me@example.com",
         sender_id: me.user_id,
@@ -331,40 +333,34 @@ run_test("message_id_change", () => {
     };
     message_store.add_message_metadata(message);
 
-    set_global("pointer", {
-        furthest_read: 401,
-        set_furthest_read(value) {
-            this.furthest_read = value;
-        },
-    });
-
-    set_global("message_list", {});
-    set_global("home_msg_list", {});
-
     const opts = {
         old_id: 401,
         new_id: 402,
     };
 
-    global.with_stub((stub) => {
+    {
+        const stub = make_stub();
         home_msg_list.change_message_id = stub.f;
         message_store.reify_message_id(opts);
+        assert.equal(stub.num_calls, 1);
         const msg_id = stub.get_args("old", "new");
         assert.equal(msg_id.old, 401);
         assert.equal(msg_id.new, 402);
-    });
+    }
 
     home_msg_list.view = {};
-    global.with_stub((stub) => {
+    {
+        const stub = make_stub();
         home_msg_list.view.change_message_id = stub.f;
         message_store.reify_message_id(opts);
+        assert.equal(stub.num_calls, 1);
         const msg_id = stub.get_args("old", "new");
         assert.equal(msg_id.old, 401);
         assert.equal(msg_id.new, 402);
-    });
+    }
 });
 
-run_test("errors", () => {
+test("errors", () => {
     blueslip.expect("error", "message_store.get got bad value: undefined");
     message_store.get(undefined);
 });

@@ -2,7 +2,7 @@
 
 //  These events are not guaranteed to be perfectly
 //  representative of what the server sends.  We
-//  have a tool called check-node-fixtures that tries
+//  have a tool called check-schemas that tries
 //  to validate this data against server side schemas,
 //  but there are certain edge cases that the tool now
 //  skips.  And even when the data matches the schema,
@@ -453,7 +453,7 @@ exports.fixtures = {
             is_bot: false,
             is_guest: false,
             profile_data: {},
-            timezone: "US/Eastern",
+            timezone: "America/New_York",
             date_joined: "2020-01-01",
         },
     },
@@ -537,15 +537,15 @@ exports.fixtures = {
     subscription__peer_add: {
         type: "subscription",
         op: "peer_add",
-        user_id: test_user.user_id,
-        stream_id: 42,
+        user_ids: [test_user.user_id],
+        stream_ids: [streams.devel.stream_id],
     },
 
     subscription__peer_remove: {
         type: "subscription",
         op: "peer_remove",
-        user_id: test_user.user_id,
-        stream_id: 42,
+        user_ids: [test_user.user_id],
+        stream_ids: [streams.devel.stream_id],
     },
 
     subscription__remove: {
@@ -562,8 +562,6 @@ exports.fixtures = {
     subscription__update: {
         type: "subscription",
         op: "update",
-        email: test_user.email,
-        name: streams.devel.name,
         stream_id: streams.devel.stream_id,
         property: "pin_to_top",
         value: true,
@@ -609,6 +607,20 @@ exports.fixtures = {
         setting_name: "default_language",
         setting: "fr",
         language_name: "French",
+        user: test_user.email,
+    },
+
+    update_display_settings__default_view_all_messages: {
+        type: "update_display_settings",
+        setting_name: "default_view",
+        setting: 1,
+        user: test_user.email,
+    },
+
+    update_display_settings__default_view_recent_topics: {
+        type: "update_display_settings",
+        setting_name: "default_view",
+        setting: "recent_topics",
         user: test_user.email,
     },
 

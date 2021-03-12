@@ -1,30 +1,22 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const _ = require("lodash");
 
-set_global("$", global.make_zjquery());
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
 set_global("document", "document-stub");
 
-zrequire("Filter", "js/filter");
-zrequire("FetchStatus", "js/fetch_status");
-zrequire("MessageListData", "js/message_list_data");
-zrequire("MessageListView", "js/message_list_view");
-zrequire("message_list");
+const noop = () => {};
 
-const noop = function () {};
-
-set_global("page_params", {
+const page_params = set_global("page_params", {
     twenty_four_hour_time: false,
 });
-set_global("home_msg_list", null);
-set_global("people", {
-    small_avatar_url() {
-        return "";
-    },
-});
-set_global("unread", {message_unread() {}});
+set_global("home_msg_list", "stub");
 // timerender calls setInterval when imported
-set_global("timerender", {
+mock_module("timerender", {
     render_date(time1, time2) {
         if (time2 === undefined) {
             return [{outerHTML: String(time1.getTime())}];
@@ -39,7 +31,7 @@ set_global("timerender", {
     },
 });
 
-set_global("rows", {
+mock_module("rows", {
     get_table() {
         return {
             children() {
@@ -50,6 +42,10 @@ set_global("rows", {
         };
     },
 });
+
+const {Filter} = zrequire("../js/filter");
+const {MessageListView} = zrequire("../js/message_list_view");
+const message_list = zrequire("message_list");
 
 let next_timestamp = 1500000000;
 
@@ -191,8 +187,8 @@ run_test("merge_message_groups", () => {
     }
 
     function assert_message_groups_list_equal(list1, list2) {
-        const ids1 = list1.map(extract_group);
-        const ids2 = list2.map(extract_group);
+        const ids1 = list1.map((group) => extract_group(group));
+        const ids2 = list2.map((group) => extract_group(group));
         assert(ids1.length);
         assert.deepEqual(ids1, ids2);
     }
@@ -451,9 +447,7 @@ run_test("render_windows", () => {
 
         // Stub out functionality that is not core to the rendering window
         // logic.
-        list.data.unmuted_messages = function (messages) {
-            return messages;
-        };
+        list.data.unmuted_messages = (messages) => messages;
 
         // We don't need to actually render the DOM.  The windowing logic
         // sits above that layer.
@@ -477,9 +471,7 @@ run_test("render_windows", () => {
         messages = _.range(opts.count).map((i) => ({
             id: i,
         }));
-        list.selected_idx = function () {
-            return 0;
-        };
+        list.selected_idx = () => 0;
         list.clear();
 
         list.add_messages(messages, {});
@@ -491,9 +483,7 @@ run_test("render_windows", () => {
         // a re-render.  The code avoids hasty re-renders for
         // performance reasons.
         for (const idx of _.range(start, end)) {
-            list.selected_idx = function () {
-                return idx;
-            };
+            list.selected_idx = () => idx;
             const rendered = view.maybe_rerender();
             assert.equal(rendered, false);
         }
@@ -503,9 +493,7 @@ run_test("render_windows", () => {
         const start = range[0];
         const end = range[1];
 
-        list.selected_idx = function () {
-            return idx;
-        };
+        list.selected_idx = () => idx;
         const rendered = view.maybe_rerender();
         assert.equal(rendered, true);
         assert.equal(view._render_win_start, start);

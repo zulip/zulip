@@ -2,10 +2,10 @@
     <div class="narrows_panel">
         <ul id="global_filters" class="filters">
             {# Special-case this link so we don't actually go to page top. #}
-            <li class="top_left_all_messages top_left_row active-filter" title="{{ _('All messages') }} (Esc)">
-                <a href="#" class="home-link">
+            <li class="top_left_all_messages top_left_row" title="{{ _('All messages') }} (a)">
+                <a href="#all_messages" class="home-link">
                     <span class="filter-icon">
-                        <i class="fa fa-home" aria-hidden="true"></i>
+                        <i class="fa fa-align-left" aria-hidden="true"></i>
                     </span>
                     {#- squash whitespace -#}
                     <span>{{ _('All messages') }}</span>
@@ -15,14 +15,14 @@
                 </a>
                 <span class="arrow all-messages-sidebar-menu-icon"><i class="zulip-icon ellipsis-v-solid" aria-hidden="true"></i></span>
             </li>
-            <li class="top_left_private_messages">
+            <li class="top_left_private_messages"  title="{{ _('Private messages') }} (P)">
                 <div class="private_messages_header top_left_row">
                     <a href="#narrow/is/private">
                         <span class="filter-icon">
                             <i class="fa fa-envelope" aria-hidden="true"></i>
                         </span>
                         {#- squash whitespace -#}
-                        <span title="{{ _('Private messages') }} (P)">{{ _('Private messages') }}</span>
+                        <span>{{ _('Private messages') }}</span>
                         <span class="count">
                             <span class="value"></span>
                         </span>
@@ -56,7 +56,7 @@
                 </a>
                 <span class="arrow starred-messages-sidebar-menu-icon"><i class="zulip-icon ellipsis-v-solid" aria-hidden="true"></i></span>
             </li>
-            <li class="top_left_recent_topics top_left_row">
+            <li class="top_left_recent_topics top_left_row" title="{{ _('Recent topics') }} (t)">
                 <a href="#recent_topics">
                     <span class="filter-icon">
                         <i class="fa fa-clock-o" aria-hidden="true"></i>
@@ -68,10 +68,10 @@
         </ul>
         <div id="streams_list" class="zoom-out">
             <div id="streams_header" class="zoom-in-hide"><h4 class="sidebar-title" data-toggle="tooltip" title="{{ _('Filter streams') }}">{{ _('STREAMS') }}</h4>
-                <i id="streams_inline_cog" class='fa fa-cog' aria-hidden="true" data-toggle="tooltip" title="{{ _('Subscribe, add, or configure streams') }}"></i>
+                <i id="streams_inline_cog" class='fa fa-cog' aria-hidden="true" data-toggle="tooltip" data-placement="bottom" title="{{ _('Subscribe, add, or configure streams') }}"></i>
                 <i id="streams_filter_icon" class='fa fa-search' aria-hidden="true" data-toggle="tooltip" title="{{ _('Filter streams') }} (q)"></i>
                 <div class="input-append notdisplayed stream_search_section">
-                    <input class="stream-list-filter" type="text" autocomplete="off" placeholder="{{ _('Search streams') }}" />
+                    <input class="stream-list-filter home-page-input" type="text" autocomplete="off" placeholder="{{ _('Search streams') }}" />
                     <button type="button" class="btn clear_search_button" id="clear_search_stream_button">
                         <i class="fa fa-remove" aria-hidden="true"></i>
                     </button>

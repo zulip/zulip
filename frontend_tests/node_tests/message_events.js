@@ -1,27 +1,26 @@
 "use strict";
 
-zrequire("message_events");
-zrequire("message_store");
-zrequire("muting");
-const people = zrequire("people");
-zrequire("recent_senders");
-zrequire("stream_data");
-zrequire("stream_topic_history");
-zrequire("unread");
+const {strict: assert} = require("assert");
 
-set_global("$", global.make_zjquery());
-set_global("alert_words", {});
-set_global("condense", {});
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+
+const condense = mock_module("condense");
+const message_edit = mock_module("message_edit");
+const message_list = mock_module("message_list");
+const notifications = mock_module("notifications");
+const page_params = set_global("page_params", {});
+const pm_list = mock_module("pm_list");
+const stream_list = mock_module("stream_list");
+const unread_ui = mock_module("unread_ui");
 set_global("current_msg_list", {});
-set_global("message_edit", {});
-set_global("message_list", {});
-set_global("notifications", {});
-set_global("page_params", {});
-set_global("pm_list", {});
-set_global("stream_list", {});
-set_global("unread_ui", {});
 
-alert_words.process_message = () => {};
+const people = zrequire("people");
+const message_events = zrequire("message_events");
+const message_store = zrequire("message_store");
+const stream_data = zrequire("stream_data");
+const stream_topic_history = zrequire("stream_topic_history");
+const unread = zrequire("unread");
 
 const alice = {
     email: "alice@example.com",
@@ -41,13 +40,9 @@ stream_data.add_sub(denmark);
 function test_helper(side_effects) {
     const events = [];
 
-    for (const side_effect of side_effects) {
-        const parts = side_effect.split(".");
-        const module = parts[0];
-        const field = parts[1];
-
-        global[module][field] = () => {
-            events.push(side_effect);
+    for (const [module, field] of side_effects) {
+        module[field] = () => {
+            events.push([module, field]);
         };
     }
 
@@ -106,12 +101,12 @@ run_test("update_messages", () => {
     };
 
     const side_effects = [
-        "condense.un_cache_message_content_height",
-        "message_edit.end_message_row_edit",
-        "notifications.received_messages",
-        "unread_ui.update_unread_counts",
-        "stream_list.update_streams_sidebar",
-        "pm_list.update_private_messages",
+        [condense, "un_cache_message_content_height"],
+        [message_edit, "end_message_row_edit"],
+        [notifications, "received_messages"],
+        [unread_ui, "update_unread_counts"],
+        [stream_list, "update_streams_sidebar"],
+        [pm_list, "update_private_messages"],
     ];
 
     const helper = test_helper(side_effects);

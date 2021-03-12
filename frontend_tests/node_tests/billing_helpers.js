@@ -1,18 +1,22 @@
 "use strict";
 
+const {strict: assert} = require("assert");
 const fs = require("fs");
 
-const JQuery = require("jquery");
+const jQueryFactory = require("jquery");
 const {JSDOM} = require("jsdom");
+
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
 
 const template = fs.readFileSync("templates/corporate/upgrade.html", "utf-8");
 const dom = new JSDOM(template, {pretendToBeVisual: true});
-const jquery = JQuery(dom.window);
+const jquery = jQueryFactory(dom.window);
 
-set_global("$", global.make_zjquery());
-set_global("page_params", {});
-set_global("loading", {});
-set_global("history", {});
+const page_params = set_global("page_params", {});
+const history = set_global("history", {});
+const loading = mock_module("loading");
 set_global("document", {
     title: "Zulip",
 });
@@ -22,9 +26,9 @@ set_global("location", {
     hash: "#billing",
 });
 
-zrequire("helpers", "js/billing/helpers");
+const helpers = zrequire("billing/helpers");
 
-run_test("create_ajax_request", () => {
+run_test("create_ajax_request", (override) => {
     const form_loading_indicator = "#autopay_loading_indicator";
     const form_input_section = "#autopay-input-section";
     const form_success = "#autopay-success";
@@ -50,26 +54,26 @@ run_test("create_ajax_request", () => {
         make_indicator: 0,
     };
 
-    loading.make_indicator = function (loading_indicator, config) {
+    loading.make_indicator = (loading_indicator, config) => {
         assert.equal(loading_indicator.selector, form_loading_indicator);
         assert.equal(config.text, "Processing ...");
         assert.equal(config.abs_positioned, true);
         state.make_indicator += 1;
     };
 
-    $(form_input_section).hide = function () {
+    $(form_input_section).hide = () => {
         state.form_input_section_hide += 1;
     };
 
-    $(form_input_section).show = function () {
+    $(form_input_section).show = () => {
         state.form_input_section_show += 1;
     };
 
-    $(form_error).hide = function () {
+    $(form_error).hide = () => {
         state.form_error_hide += 1;
     };
 
-    $(form_error).show = function () {
+    $(form_error).show = () => {
         state.form_error_show += 1;
         return {
             text: (msg) => {
@@ -78,15 +82,15 @@ run_test("create_ajax_request", () => {
         };
     };
 
-    $(form_success).show = function () {
+    $(form_success).show = () => {
         state.form_success_show += 1;
     };
 
-    $(form_loading).show = function () {
+    $(form_loading).show = () => {
         state.form_loading_show += 1;
     };
 
-    $(form_loading).hide = function () {
+    $(form_loading).hide = () => {
         state.form_loading_hide += 1;
     };
 
@@ -108,7 +112,7 @@ run_test("create_ajax_request", () => {
 
     $("#autopay-form").serializeArray = () => jquery("#autopay-form").serializeArray();
 
-    $.post = ({url, data, success, error}) => {
+    override($, "post", ({url, data, success, error}) => {
         assert.equal(state.form_input_section_hide, 1);
         assert.equal(state.form_error_hide, 1);
         assert.equal(state.form_loading_show, 1);
@@ -166,7 +170,7 @@ run_test("create_ajax_request", () => {
         assert.equal(state.zulip_limited_section_hide, 1);
         assert.equal(state.free_trial_alert_message_hide, 1);
         assert.equal(state.free_trial_alert_message_show, 1);
-    };
+    });
 
     helpers.create_ajax_request("/json/billing/upgrade", "autopay", {id: "stripe_token_id"}, [
         "licenses",
@@ -249,12 +253,12 @@ run_test("set_tab", () => {
         scrollTop: 0,
     };
 
-    $('#upgrade-tabs.nav a[href="#billing"]').tab = (action) => {
+    $('#upgrade-tabs.nav a[href="\\#billing"]').tab = (action) => {
         state.show_tab_billing += 1;
         assert.equal(action, "show");
     };
 
-    $('#upgrade-tabs.nav a[href="#payment-method"]').tab = (action) => {
+    $('#upgrade-tabs.nav a[href="\\#payment-method"]').tab = (action) => {
         state.show_tab_payment_method += 1;
         assert.equal(action, "show");
     };
@@ -262,6 +266,12 @@ run_test("set_tab", () => {
     $("html").scrollTop = (val) => {
         state.scrollTop += 1;
         assert.equal(val, 0);
+    };
+
+    let hash_change_handler;
+    window.addEventListener = (event, handler) => {
+        assert.equal(event, "hashchange");
+        hash_change_handler = handler;
     };
 
     helpers.set_tab("upgrade");
@@ -272,7 +282,6 @@ run_test("set_tab", () => {
     click_handler.call({hash: "#payment-method"});
     assert.equal(location.hash, "#payment-method");
 
-    const hash_change_handler = window.onhashchange;
     hash_change_handler();
     assert.equal(state.show_tab_payment_method, 1);
     assert.equal(state.scrollTop, 2);

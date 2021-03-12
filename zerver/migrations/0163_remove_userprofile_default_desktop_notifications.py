@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0162_change_default_community_topic_editing'),
+        ("zerver", "0162_change_default_community_topic_editing"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='userprofile',
-            name='default_desktop_notifications',
+            model_name="userprofile",
+            name="default_desktop_notifications",
         ),
     ]

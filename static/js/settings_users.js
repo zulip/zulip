@@ -1,12 +1,25 @@
-"use strict";
+import render_admin_bot_form from "../templates/admin_bot_form.hbs";
+import render_admin_human_form from "../templates/admin_human_form.hbs";
+import render_admin_user_list from "../templates/admin_user_list.hbs";
 
-const render_admin_bot_form = require("../templates/admin_bot_form.hbs");
-const render_admin_human_form = require("../templates/admin_human_form.hbs");
-const render_admin_user_list = require("../templates/admin_user_list.hbs");
-
-const people = require("./people");
-const settings_config = require("./settings_config");
-const settings_data = require("./settings_data");
+import * as bot_data from "./bot_data";
+import * as channel from "./channel";
+import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget";
+import * as ListWidget from "./list_widget";
+import * as loading from "./loading";
+import * as overlays from "./overlays";
+import * as people from "./people";
+import * as presence from "./presence";
+import * as settings_account from "./settings_account";
+import * as settings_bots from "./settings_bots";
+import * as settings_config from "./settings_config";
+import * as settings_data from "./settings_data";
+import * as settings_panel_menu from "./settings_panel_menu";
+import * as settings_ui from "./settings_ui";
+import * as timerender from "./timerender";
+import * as ui from "./ui";
+import * as ui_report from "./ui_report";
+import * as user_pill from "./user_pill";
 
 const section = {
     active: {},
@@ -66,7 +79,7 @@ function sort_last_active(a, b) {
 }
 
 function get_user_info_row(user_id) {
-    return $("tr.user_row[data-user-id='" + user_id + "']");
+    return $(`tr.user_row[data-user-id='${CSS.escape(user_id)}']`);
 }
 
 function set_user_role_dropdown(person) {
@@ -254,11 +267,11 @@ section.bots.create_table = () => {
     $bots_table.hide();
     const bot_user_ids = bot_data.all_user_ids();
 
-    bot_list_widget = list_render.create($bots_table, bot_user_ids, {
+    bot_list_widget = ListWidget.create($bots_table, bot_user_ids, {
         name: "admin_bot_list",
         get_item: bot_info,
         modifier: render_admin_user_list,
-        html_selector: (item) => `tr[data-user-id='${item}']`,
+        html_selector: (item) => `tr[data-user-id='${CSS.escape(item)}']`,
         filter: {
             element: $bots_table.closest(".settings-section").find(".search"),
             predicate(item, value) {
@@ -287,7 +300,7 @@ section.bots.create_table = () => {
 
 section.active.create_table = (active_users) => {
     const $users_table = $("#admin_users_table");
-    list_render.create($users_table, active_users, {
+    ListWidget.create($users_table, active_users, {
         name: "users_table_list",
         get_item: people.get_by_user_id,
         modifier(item) {
@@ -315,7 +328,7 @@ section.active.create_table = (active_users) => {
 
 section.deactivated.create_table = (deactivated_users) => {
     const $deactivated_users_table = $("#admin_deactivated_users_table");
-    list_render.create($deactivated_users_table, deactivated_users, {
+    ListWidget.create($deactivated_users_table, deactivated_users, {
         name: "deactivated_users_table_list",
         get_item: people.get_by_user_id,
         modifier(item) {
@@ -340,15 +353,15 @@ section.deactivated.create_table = (deactivated_users) => {
     $("#admin_deactivated_users_table").show();
 };
 
-exports.update_bot_data = function (bot_user_id) {
+export function update_bot_data(bot_user_id) {
     if (!bot_list_widget) {
         return;
     }
 
     bot_list_widget.render_item(bot_user_id);
-};
+}
 
-exports.update_user_data = function (user_id, new_data) {
+export function update_user_data(user_id, new_data) {
     const user_row = get_user_info_row(user_id);
 
     if (user_row.length === 0) {
@@ -373,7 +386,7 @@ exports.update_user_data = function (user_id, new_data) {
     if (new_data.role !== undefined) {
         user_row.find(".user_role").text(people.get_user_type(user_id));
     }
-};
+}
 
 function start_data_load() {
     loading.make_indicator($("#admin_page_users_loading_indicator"), {text: "Loading..."});
@@ -403,7 +416,7 @@ function open_human_form(person) {
     set_user_role_dropdown(person);
     if (!page_params.is_owner) {
         $("#user-role-select")
-            .find("option[value=" + settings_config.user_role_values.owner.code + "]")
+            .find(`option[value="${CSS.escape(settings_config.user_role_values.owner.code)}"]`)
             .hide();
     }
 
@@ -438,7 +451,10 @@ function get_human_profile_data(fields_user_pills) {
         // Remove duplicate datepicker input element generated flatpicker library
         if (!$(this).hasClass("form-control")) {
             new_profile_data.push({
-                id: parseInt($(this).closest(".custom_user_field").attr("data-field-id"), 10),
+                id: Number.parseInt(
+                    $(this).closest(".custom_user_field").attr("data-field-id"),
+                    10,
+                ),
                 value: $(this).val(),
             });
         }
@@ -544,7 +560,7 @@ function handle_bot_deactivation(tbody, status_field) {
 
         const button_elem = $(e.target);
         const row = button_elem.closest(".user_row");
-        const bot_id = parseInt(row.attr("data-user-id"), 10);
+        const bot_id = Number.parseInt(row.attr("data-user-id"), 10);
         const url = "/json/bots/" + encodeURIComponent(bot_id);
 
         const opts = {
@@ -566,7 +582,7 @@ function handle_reactivation(tbody, status_field) {
         // Go up the tree until we find the user row, then grab the email element
         const button_elem = $(e.target);
         const row = button_elem.closest(".user_row");
-        const user_id = parseInt(row.attr("data-user-id"), 10);
+        const user_id = Number.parseInt(row.attr("data-user-id"), 10);
         const url = "/json/users/" + encodeURIComponent(user_id) + "/reactivate";
         const data = {};
 
@@ -587,7 +603,7 @@ function handle_human_form(tbody, status_field) {
     tbody.on("click", ".open-user-form", (e) => {
         e.stopPropagation();
         e.preventDefault();
-        const user_id = parseInt($(e.currentTarget).attr("data-user-id"), 10);
+        const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
         const person = people.get_by_user_id(user_id);
 
         if (!person) {
@@ -602,7 +618,7 @@ function handle_human_form(tbody, status_field) {
             e.preventDefault();
             e.stopPropagation();
 
-            const role = parseInt(modal.find("#user-role-select").val().trim(), 10);
+            const role = Number.parseInt(modal.find("#user-role-select").val().trim(), 10);
             const full_name = modal.find("input[name='full_name']");
             const profile_data = get_human_profile_data(fields_user_pills);
 
@@ -623,7 +639,7 @@ function handle_bot_form(tbody, status_field) {
     tbody.on("click", ".open-user-form", (e) => {
         e.stopPropagation();
         e.preventDefault();
-        const user_id = parseInt($(e.currentTarget).attr("data-user-id"), 10);
+        const user_id = Number.parseInt($(e.currentTarget).attr("data-user-id"), 10);
         const bot = people.get_by_user_id(user_id);
 
         if (!bot) {
@@ -681,15 +697,13 @@ section.bots.handle_events = () => {
     handle_bot_form(tbody, status_field);
 };
 
-exports.set_up_humans = function () {
+export function set_up_humans() {
     start_data_load();
     section.active.handle_events();
     section.deactivated.handle_events();
-};
+}
 
-exports.set_up_bots = function () {
+export function set_up_bots() {
     section.bots.handle_events();
     section.bots.create_table();
-};
-
-window.settings_users = exports;
+}

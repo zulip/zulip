@@ -1,27 +1,26 @@
-"use strict";
+import {format, isSameDay} from "date-fns";
+import _ from "lodash";
 
-const _ = require("lodash");
-const XDate = require("xdate");
+import render_archive_message_group from "../templates/archive_message_group.hbs";
 
-const render_archive_message_group = require("../templates/archive_message_group.hbs");
+import * as color_data from "./color_data";
+import * as floating_recipient_bar from "./floating_recipient_bar";
+import * as timerender from "./timerender";
 
 function should_separate_into_groups(current_msg_time, next_msg_time) {
-    const current_time = new XDate(current_msg_time * 1000);
-    const next_time = new XDate(next_msg_time * 1000);
-    return current_time.toDateString() !== next_time.toDateString();
+    return isSameDay(current_msg_time * 1000, next_msg_time * 1000);
 }
 
 function all_message_timestamps_to_human_readable() {
     $(".message_time").each(function () {
-        const time = new XDate(parseInt($(this).text(), 10) * 1000);
-        $(this).text(time.toString("h:mm TT"));
+        $(this).text(format(Number.parseInt($(this).text(), 10) * 1000, "h:mm a"));
     });
 }
 
-exports.initialize = function () {
+export function initialize() {
     const all_message_groups = [];
     let current_message_group = {};
-    const today = new XDate();
+    const today = new Date();
     const recipient_and_topic = $("#display_recipient").html();
     const stream_name = recipient_and_topic.split("-")[0];
     const topic = recipient_and_topic.split("-")[1];
@@ -33,8 +32,8 @@ exports.initialize = function () {
     current_message_group.background_color = recipient_color;
 
     function separate_into_groups(current_message_row, cur_msg_time, next_msg_time) {
-        const time = new XDate(next_msg_time * 1000);
-        const prev_time = new XDate(cur_msg_time * 1000);
+        const time = new Date(next_msg_time * 1000);
+        const prev_time = new Date(cur_msg_time * 1000);
         current_message_group.message_containers.push(current_message_row[0].outerHTML);
         const date_element = timerender.render_date(prev_time, undefined, today)[0];
         current_message_group.date = date_element.outerHTML;
@@ -54,8 +53,11 @@ exports.initialize = function () {
 
     $(".message_row").each(function () {
         const current_message_row = $(this);
-        const cur_msg_time = parseInt(current_message_row.find(".message_time").first().html(), 10);
-        const next_msg_time = parseInt(
+        const cur_msg_time = Number.parseInt(
+            current_message_row.find(".message_time").first().html(),
+            10,
+        );
+        const next_msg_time = Number.parseInt(
             current_message_row.next().find(".message_time").first().html(),
             10,
         );
@@ -70,7 +72,7 @@ exports.initialize = function () {
             return;
         }
         current_message_group.message_containers.push(current_message_row[0].outerHTML);
-        const time = new XDate(cur_msg_time * 1000);
+        const time = new Date(cur_msg_time * 1000);
         const date_element = timerender.render_date(time, undefined, today)[0];
         current_message_group.date = date_element.outerHTML;
     });
@@ -102,14 +104,15 @@ exports.initialize = function () {
 
     $(".app").scrollTop($(".app").height());
     all_message_timestamps_to_human_readable();
-};
+}
 
-exports.current_msg_list = {
+export const current_msg_list = {
     selected_row() {
         return $(".message_row").last();
     },
 };
-exports.rows = {
+
+export const rows = {
     get_message_recipient_row(message_row) {
         return $(message_row).parent(".recipient_row");
     },
@@ -117,7 +120,7 @@ exports.rows = {
         return $("div.message_row", message_group).first();
     },
     id(message_row) {
-        return parseFloat(message_row.attr("zid"));
+        return Number.parseFloat(message_row.attr("zid"));
     },
 };
 
@@ -140,5 +143,5 @@ $(() => {
             scroll_finish();
         }, 50),
     );
-    exports.initialize();
+    initialize();
 });

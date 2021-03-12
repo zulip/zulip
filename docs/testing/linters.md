@@ -17,10 +17,12 @@ prevent common coding errors.
 We borrow some open source tools for much of our linting, and the links
 below will direct you to the official documentation for these projects.
 
-- [eslint](https://eslint.org)
+- [Black](https://github.com/psf/black)
+- [ESLint](https://eslint.org)
+- [isort](https://pycqa.github.io/isort/)
 - [mypy](http://mypy-lang.org/)
 - [Prettier](https://prettier.io/)
-- [puppet](https://puppet.com/) (puppet provides its own mechanism for
+- [Puppet](https://puppet.com/) (puppet provides its own mechanism for
   validating manifests)
 - [pyflakes](https://pypi.python.org/pypi/pyflakes)
 - [stylelint](https://github.com/stylelint/stylelint)
@@ -100,11 +102,12 @@ Most of our lint checks get performed by `./tools/lint`.  These include the
 following checks:
 
 - Check Python code with pyflakes.
-- Check JavaScript and TypeScript code with eslint.
+- Check Python formatting with Black and isort.
+- Check JavaScript and TypeScript code with ESLint.
 - Check CSS, JavaScript, TypeScript, and YAML formatting with Prettier.
 - Check Python code for custom Zulip rules.
 - Check non-Python code for custom Zulip rules.
-- Check puppet manifests with the puppet validator.
+- Check Puppet manifests with the Puppet validator.
 - Check HTML templates for matching tags and indentations.
 - Check CSS for parsability and formatting.
 - Check JavaScript code for addClass calls.
@@ -130,13 +133,13 @@ script performs several lint checks in parallel by forking out subprocesses.
 
 Note that our project does custom regex-based checks on the code, and we
 also customize how we call pyflakes and pycodestyle (pep8).  The code for these
-types of checks mostly lives [here](https://github.com/zulip/zulip/blob/master/tools/linter_lib).
+types of checks mostly lives [here](https://github.com/zulip/zulip/tree/master/tools/linter_lib).
 
 ### Special options
 
 You can use the `-h` option for `lint` to see its usage.  One particular
 flag to take note of is the `--modified` flag, which enables you to only run
-lint checks against files that are modified in your git repo.  Most of the
+lint checks against files that are modified in your Git repo.  Most of the
 "sub-linters" respect this flag, but some will continue to process all the files.
 Generally, a good workflow is to run with `--modified` when you are iterating on
 the code, and then run without that option right before committing new code.
@@ -166,12 +169,15 @@ sense (e.g. a link in a comment to an extremely long URL).
 
 #### Python code
 
+Our Python code is formatted using Black (using the options in the
+`[tool.black]` section of `pyproject.toml`) and isort (using the
+options in `.isort.cfg`).  The `lint` script enforces this by running
+Black and isort in check mode, or in write mode with `--fix`.
+
 The bulk of our Python linting gets outsourced to the "pyflakes" tool.  We
 call "pyflakes" in a fairly vanilla fashion, and then we post-process its
-output to exclude certain types of errors that Zulip is comfortable
-ignoring.  (One notable class of error that Zulip currently tolerates is
-unused imports--because of the way mypy type annotations work in Python 2,
-it would be inconvenient to enforce this too strictly.)
+output to exclude certain specific errors that Zulip is comfortable
+ignoring.
 
 Zulip also has custom regex-based rules that it applies to Python code.
 Look for `python_rules` in the source code for `lint`.  Note that we
@@ -190,8 +196,8 @@ We check our JavaScript code in a few different ways:
 #### Puppet manifests
 
 We use Puppet as our tool to manage configuration files, using
-puppet "manifests."  To lint puppet manifests, we use the "parser validate"
-option of puppet.
+Puppet "manifests."  To lint Puppet manifests, we use the "parser validate"
+option of Puppet.
 
 #### HTML templates
 

@@ -2,9 +2,9 @@ from zerver.lib.test_classes import WebhookTestCase
 
 
 class RaygunHookTests(WebhookTestCase):
-    STREAM_NAME = 'raygun'
+    STREAM_NAME = "raygun"
     URL_TEMPLATE = "/api/v1/external/raygun?&api_key={api_key}&stream={stream}"
-    FIXTURE_DIR_NAME = 'raygun'
+    FIXTURE_DIR_NAME = "raygun"
 
     def test_status_changed_message(self) -> None:
         expected_topic = "test"

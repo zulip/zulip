@@ -1,4 +1,4 @@
-"use strict";
+import * as message_scroll from "./message_scroll";
 
 function max_id_for_messages(messages) {
     let max_id = 0;
@@ -8,7 +8,7 @@ function max_id_for_messages(messages) {
     return max_id;
 }
 
-class FetchStatus {
+export class FetchStatus {
     // The FetchStatus object tracks tracks the state of a
     // message_list_data object, whether rendered in the DOM or not,
     // and is the source of truth for whether the message_list_data
@@ -134,5 +134,3 @@ class FetchStatus {
         );
     }
 }
-module.exports = FetchStatus;
-window.FetchStatus = FetchStatus;

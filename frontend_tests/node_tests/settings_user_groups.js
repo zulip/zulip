@@ -1,35 +1,39 @@
 "use strict";
 
+const {strict: assert} = require("assert");
+
 const _ = require("lodash");
 
-zrequire("user_pill");
-zrequire("pill_typeahead");
-zrequire("settings_user_groups");
+const {stub_templates} = require("../zjsunit/handlebars");
+const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
 
-set_global("$", global.make_zjquery());
-set_global("confirm_dialog", {});
-
-const noop = function () {};
+const noop = () => {};
 
 const pills = {
     pill: {},
 };
-const settings_config = zrequire("settings_config");
 
 let create_item_handler;
 
-set_global("channel", {});
-set_global("typeahead_helper", {});
-set_global("user_groups", {
+const channel = mock_module("channel");
+const confirm_dialog = mock_module("confirm_dialog");
+const input_pill = mock_module("input_pill");
+const typeahead_helper = mock_module("typeahead_helper");
+const user_groups = mock_module("user_groups", {
     get_user_group_from_id: noop,
     remove: noop,
     add: noop,
 });
-set_global("ui_report", {});
+const ui_report = mock_module("ui_report");
+
+const page_params = set_global("page_params", {});
 
 const people = zrequire("people");
-
-set_global("page_params", {});
+const settings_config = zrequire("settings_config");
+const settings_user_groups = zrequire("settings_user_groups");
+const user_pill = zrequire("user_pill");
 
 function reset_test_setup(pill_container_stub) {
     function input_pill_stub(opts) {
@@ -38,12 +42,15 @@ function reset_test_setup(pill_container_stub) {
         assert(create_item_handler);
         return pills;
     }
-    set_global("input_pill", {
-        create: input_pill_stub,
-    });
+    input_pill.create = input_pill_stub;
 }
 
-run_test("can_edit", () => {
+function test_ui(label, f) {
+    // The sloppy_$ flag lets us re-use setup from prior tests.
+    run_test(label, f, {sloppy_$: true});
+}
+
+test_ui("can_edit", () => {
     page_params.is_guest = false;
     page_params.is_admin = true;
     assert(settings_user_groups.can_edit(1));
@@ -83,14 +90,14 @@ run_test("can_edit", () => {
     assert(settings_user_groups.can_edit(1));
 });
 
-const user_group_selector = "#user-groups #1";
-const cancel_selector = "#user-groups #1 .save-status.btn-danger";
-const saved_selector = "#user-groups #1 .save-status.sea-green";
-const name_selector = "#user-groups #1 .name";
-const description_selector = "#user-groups #1 .description";
-const instructions_selector = "#user-groups #1 .save-instructions";
+const user_group_selector = `#user-groups #${CSS.escape(1)}`;
+const cancel_selector = `#user-groups #${CSS.escape(1)} .save-status.btn-danger`;
+const saved_selector = `#user-groups #${CSS.escape(1)} .save-status.sea-green`;
+const name_selector = `#user-groups #${CSS.escape(1)} .name`;
+const description_selector = `#user-groups #${CSS.escape(1)} .description`;
+const instructions_selector = `#user-groups #${CSS.escape(1)} .save-instructions`;
 
-run_test("populate_user_groups", () => {
+test_ui("populate_user_groups", (override) => {
     const realm_user_group = {
         id: 1,
         name: "Mobile",
@@ -113,21 +120,15 @@ run_test("populate_user_groups", () => {
         full_name: "Bob",
     };
 
-    people.get_realm_users = function () {
-        return [iago, alice, bob];
-    };
+    people.get_realm_users = () => [iago, alice, bob];
 
-    user_groups.get_realm_user_groups = function () {
-        return [realm_user_group];
-    };
+    user_groups.get_realm_user_groups = () => [realm_user_group];
 
-    people.get_visible_email = function () {
-        return bob.email;
-    };
+    people.get_visible_email = () => bob.email;
 
     let templates_render_called = false;
     const fake_rendered_temp = $.create("fake_admin_user_group_list_template_rendered");
-    global.stub_templates((template, args) => {
+    stub_templates((template, args) => {
         assert.equal(template, "admin_user_group_list");
         assert.equal(args.user_group.id, 1);
         assert.equal(args.user_group.name, "Mobile");
@@ -137,13 +138,13 @@ run_test("populate_user_groups", () => {
     });
 
     let user_groups_list_append_called = false;
-    $("#user-groups").append = function (rendered_temp) {
+    $("#user-groups").append = (rendered_temp) => {
         assert.equal(rendered_temp, fake_rendered_temp);
         user_groups_list_append_called = true;
     };
 
     let get_by_user_id_called = false;
-    people.get_by_user_id = function (user_id) {
+    people.get_by_user_id = (user_id) => {
         if (user_id === iago.user_id) {
             return iago;
         }
@@ -156,34 +157,28 @@ run_test("populate_user_groups", () => {
         return undefined;
     };
 
-    settings_user_groups.can_edit = function () {
-        return true;
-    };
+    override(settings_user_groups, "can_edit", () => true);
 
     const all_pills = new Map();
 
-    const pill_container_stub = $('.pill-container[data-group-pills="1"]');
-    pills.appendValidatedData = function (item) {
+    const pill_container_stub = $(`.pill-container[data-group-pills="${CSS.escape(1)}"]`);
+    pills.appendValidatedData = (item) => {
         const id = item.user_id;
         assert(!all_pills.has(id));
         all_pills.set(id, item);
     };
-    pills.items = function () {
-        return Array.from(all_pills.values());
-    };
+    pills.items = () => Array.from(all_pills.values());
 
     let text_cleared;
-    pills.clear_text = function () {
+    pills.clear_text = () => {
         text_cleared = true;
     };
 
     const input_field_stub = $.create("fake-input-field");
-    pill_container_stub.children = function () {
-        return input_field_stub;
-    };
+    pill_container_stub.children = () => input_field_stub;
 
     let input_typeahead_called = false;
-    input_field_stub.typeahead = function (config) {
+    input_field_stub.typeahead = (config) => {
         assert.equal(config.items, 5);
         assert(config.fixed);
         assert(config.dropup);
@@ -196,9 +191,7 @@ run_test("populate_user_groups", () => {
 
         (function test_highlighter() {
             const fake_person = $.create("fake-person");
-            typeahead_helper.render_person = function () {
-                return fake_person;
-            };
+            typeahead_helper.render_person = () => fake_person;
             assert.equal(config.highlighter(), fake_person);
         })();
 
@@ -238,7 +231,7 @@ run_test("populate_user_groups", () => {
 
         (function test_sorter() {
             let sort_recipientbox_typeahead_called = false;
-            typeahead_helper.sort_recipientbox_typeahead = function () {
+            typeahead_helper.sort_recipientbox_typeahead = () => {
                 sort_recipientbox_typeahead_called = true;
             };
             config.sorter.call(fake_context);
@@ -247,17 +240,15 @@ run_test("populate_user_groups", () => {
 
         (function test_updater() {
             input_field_stub.text("@ali");
-            user_groups.get_user_group_from_id = function () {
-                return realm_user_group;
-            };
+            user_groups.get_user_group_from_id = () => realm_user_group;
 
             let saved_fade_out_called = false;
             let cancel_fade_to_called = false;
             let instructions_fade_to_called = false;
-            $(saved_selector).fadeOut = function () {
+            $(saved_selector).fadeOut = () => {
                 saved_fade_out_called = true;
             };
-            $(cancel_selector).css = function (data) {
+            $(cancel_selector).css = (data) => {
                 if (typeof data === "string") {
                     assert.equal(data, "display");
                 }
@@ -266,10 +257,10 @@ run_test("populate_user_groups", () => {
                 assert.equal(data.opacity, "0");
                 return $(cancel_selector);
             };
-            $(cancel_selector).fadeTo = function () {
+            $(cancel_selector).fadeTo = () => {
                 cancel_fade_to_called = true;
             };
-            $(instructions_selector).css = function (data) {
+            $(instructions_selector).css = (data) => {
                 if (typeof data === "string") {
                     assert.equal(data, "display");
                 }
@@ -278,7 +269,7 @@ run_test("populate_user_groups", () => {
                 assert.equal(data.opacity, "0");
                 return $(instructions_selector);
             };
-            $(instructions_selector).fadeTo = function () {
+            $(instructions_selector).fadeTo = () => {
                 instructions_fade_to_called = true;
             };
 
@@ -294,7 +285,7 @@ run_test("populate_user_groups", () => {
     };
 
     let get_by_email_called = false;
-    people.get_by_email = function (user_email) {
+    people.get_by_email = (user_email) => {
         get_by_email_called = true;
         if (user_email === iago.email) {
             return iago;
@@ -304,7 +295,7 @@ run_test("populate_user_groups", () => {
         }
         throw new Error("Expected user email to be of Alice or Iago here.");
     };
-    pills.onPillCreate = function (handler) {
+    pills.onPillCreate = (handler) => {
         assert.equal(typeof handler, "function");
         handler();
     };
@@ -326,8 +317,8 @@ run_test("populate_user_groups", () => {
         })();
     }
 
-    pills.onPillRemove = function (handler) {
-        global.patch_builtin("setTimeout", (func) => {
+    pills.onPillRemove = (handler) => {
+        set_global("setTimeout", (func) => {
             func();
         });
         realm_user_group.members = new Set([2, 31]);
@@ -353,7 +344,7 @@ run_test("populate_user_groups", () => {
         "function",
     );
 });
-run_test("with_external_user", () => {
+test_ui("with_external_user", (override) => {
     const realm_user_group = {
         id: 1,
         name: "Mobile",
@@ -361,40 +352,32 @@ run_test("with_external_user", () => {
         members: new Set([2, 4]),
     };
 
-    user_groups.get_realm_user_groups = function () {
-        return [realm_user_group];
-    };
+    user_groups.get_realm_user_groups = () => [realm_user_group];
 
     // We return noop because these are already tested, so we skip them
-    people.get_realm_users = function () {
-        return noop;
-    };
+    people.get_realm_users = () => noop;
 
-    global.stub_templates(() => noop);
+    stub_templates(() => noop);
 
-    people.get_by_user_id = function () {
-        return noop;
-    };
+    people.get_by_user_id = () => noop;
 
-    user_pill.append_person = function () {
-        return noop;
-    };
+    override(user_pill, "append_person", () => noop);
 
     let can_edit_called = 0;
-    settings_user_groups.can_edit = function () {
+    override(settings_user_groups, "can_edit", () => {
         can_edit_called += 1;
         return false;
-    };
+    });
 
     // Reset zjquery to test stuff with user who cannot edit
-    set_global("$", global.make_zjquery());
+    $.clear_all_elements();
 
     let user_group_find_called = 0;
-    const user_group_stub = $('div.user-group[id="1"]');
+    const user_group_stub = $(`div.user-group[id="${CSS.escape(1)}"]`);
     const name_field_stub = $.create("fake-name-field");
     const description_field_stub = $.create("fake-description-field");
     const input_stub = $.create("fake-input");
-    user_group_stub.find = function (elem) {
+    user_group_stub.find = (elem) => {
         if (elem === ".name") {
             user_group_find_called += 1;
             return name_field_stub;
@@ -406,10 +389,10 @@ run_test("with_external_user", () => {
         throw new Error(`Unknown element ${elem}`);
     };
 
-    const pill_container_stub = $('.pill-container[data-group-pills="1"]');
+    const pill_container_stub = $(`.pill-container[data-group-pills="${CSS.escape(1)}"]`);
     const pill_stub = $.create("fake-pill");
     let pill_container_find_called = 0;
-    pill_container_stub.find = function (elem) {
+    pill_container_stub.find = (elem) => {
         if (elem === ".input") {
             pill_container_find_called += 1;
             return input_stub;
@@ -421,14 +404,14 @@ run_test("with_external_user", () => {
         throw new Error(`Unknown element ${elem}`);
     };
 
-    input_stub.css = function (property, val) {
+    input_stub.css = (property, val) => {
         assert.equal(property, "display");
         assert.equal(val, "none");
     };
 
     // Test the 'off' handlers on the pill-container
     const turned_off = {};
-    pill_container_stub.off = function (event_name, sel) {
+    pill_container_stub.off = (event_name, sel) => {
         if (sel === undefined) {
             sel = "whole";
         }
@@ -438,20 +421,16 @@ run_test("with_external_user", () => {
     const exit_button = $.create("fake-pill-exit");
     pill_stub.set_find_results(".exit", exit_button);
     let exit_button_called = false;
-    exit_button.css = function (property, value) {
+    exit_button.css = (property, value) => {
         exit_button_called = true;
         assert.equal(property, "opacity");
         assert.equal(value, "0.5");
     };
 
     // We return noop because these are already tested, so we skip them
-    pill_container_stub.children = function () {
-        return noop;
-    };
+    pill_container_stub.children = () => noop;
 
-    $("#user-groups").append = function () {
-        return noop;
-    };
+    $("#user-groups").append = () => noop;
 
     reset_test_setup(pill_container_stub);
 
@@ -502,27 +481,25 @@ run_test("with_external_user", () => {
     assert.equal(turned_off["click/whole"], true);
 });
 
-run_test("reload", () => {
+test_ui("reload", (override) => {
     $("#user-groups").html("Some text");
     let populate_user_groups_called = false;
-    settings_user_groups.populate_user_groups = function () {
+    override(settings_user_groups, "populate_user_groups", () => {
         populate_user_groups_called = true;
-    };
+    });
     settings_user_groups.reload();
     assert(populate_user_groups_called);
     assert.equal($("#user-groups").html(), "");
 });
 
-run_test("reset", () => {
+test_ui("reset", () => {
     settings_user_groups.reset();
     const result = settings_user_groups.reload();
     assert.equal(result, undefined);
 });
 
-run_test("on_events", () => {
-    settings_user_groups.can_edit = function () {
-        return true;
-    };
+test_ui("on_events", (override) => {
+    override(settings_user_groups, "can_edit", () => true);
 
     (function test_admin_user_group_form_submit_triggered() {
         const handler = $(".organization form.admin-user-group-form").get_on_handler("submit");
@@ -541,10 +518,8 @@ run_test("on_events", () => {
                 value: "fake-value",
             },
         ];
-        fake_this.serializeArray = function () {
-            return fake_object_array;
-        };
-        channel.post = function (opts) {
+        fake_this.serializeArray = () => fake_object_array;
+        channel.post = (opts) => {
             const data = {
                 members: "[null]",
             };
@@ -555,7 +530,7 @@ run_test("on_events", () => {
             (function test_post_success() {
                 $("#admin-user-group-status").show();
                 $("form.admin-user-group-form input[type='text']").val("fake-content");
-                ui_report.success = function (text, ele) {
+                ui_report.success = (text, ele) => {
                     assert.equal(text, "translated: User group added!");
                     assert.equal(ele, $("#admin-user-group-status"));
                 };
@@ -568,7 +543,7 @@ run_test("on_events", () => {
 
             (function test_post_error() {
                 $("#admin-user-group-status").show();
-                ui_report.error = function (error_msg, error_obj, ele) {
+                ui_report.error = (error_msg, error_obj, ele) => {
                     const xhr = {
                         responseText: '{"msg":"fake-msg"}',
                     };
@@ -594,7 +569,7 @@ run_test("on_events", () => {
         fake_this.set_parents_result(".user-group", $(".user-group"));
         $(".user-group").attr("id", "1");
 
-        channel.del = function (opts) {
+        channel.del = (opts) => {
             const data = {
                 id: 1,
             };
@@ -602,9 +577,9 @@ run_test("on_events", () => {
             assert.equal(opts.url, "/json/user_groups/1");
             assert.deepEqual(opts.data, data);
 
-            settings_user_groups.reload = function () {
+            override(settings_user_groups, "reload", () => {
                 settings_user_groups_reload_called = true;
-            };
+            });
             opts.success();
             assert(settings_user_groups_reload_called);
 
@@ -636,7 +611,7 @@ run_test("on_events", () => {
     (function test_do_not_blur() {
         const blur_event_classes = [".name", ".description", ".input"];
         let api_endpoint_called = false;
-        channel.post = function () {
+        channel.post = () => {
             api_endpoint_called = true;
         };
         channel.patch = noop;
@@ -655,7 +630,7 @@ run_test("on_events", () => {
 
             for (const blur_exception of blur_exceptions) {
                 api_endpoint_called = false;
-                fake_this.closest = function (class_name) {
+                fake_this.closest = (class_name) => {
                     if (class_name === blur_exception || class_name === user_group_selector) {
                         return [1];
                     }
@@ -666,7 +641,7 @@ run_test("on_events", () => {
             }
 
             api_endpoint_called = false;
-            fake_this.closest = function (class_name) {
+            fake_this.closest = (class_name) => {
                 if (class_name === ".typeahead") {
                     return [1];
                 }
@@ -677,11 +652,11 @@ run_test("on_events", () => {
 
             // Cancel button triggers blur event.
             let settings_user_groups_reload_called = false;
-            settings_user_groups.reload = function () {
+            override(settings_user_groups, "reload", () => {
                 settings_user_groups_reload_called = true;
-            };
+            });
             api_endpoint_called = false;
-            fake_this.closest = function (class_name) {
+            fake_this.closest = (class_name) => {
                 if (
                     class_name === ".save-status.btn-danger" ||
                     class_name === user_group_selector
@@ -709,17 +684,15 @@ run_test("on_events", () => {
             description: "translated: All mobile members",
             members: new Set([2, 31]),
         };
-        user_groups.get_user_group_from_id = function () {
-            return group_data;
-        };
+        user_groups.get_user_group_from_id = () => group_data;
 
         let cancel_fade_out_called = false;
         let instructions_fade_out_called = false;
         $(cancel_selector).show();
-        $(cancel_selector).fadeOut = function () {
+        $(cancel_selector).fadeOut = () => {
             cancel_fade_out_called = true;
         };
-        $(instructions_selector).fadeOut = function () {
+        $(instructions_selector).fadeOut = () => {
             instructions_fade_out_called = true;
         };
 
@@ -754,20 +727,18 @@ run_test("on_events", () => {
         sib_des.text(i18n.t("All mobile members"));
 
         const group_data = {members: new Set([2, 31])};
-        user_groups.get_user_group_from_id = function () {
-            return group_data;
-        };
+        user_groups.get_user_group_from_id = () => group_data;
         let api_endpoint_called = false;
         let cancel_fade_out_called = false;
         let saved_fade_to_called = false;
         let instructions_fade_out_called = false;
-        $(instructions_selector).fadeOut = function () {
+        $(instructions_selector).fadeOut = () => {
             instructions_fade_out_called = true;
         };
-        $(cancel_selector).fadeOut = function () {
+        $(cancel_selector).fadeOut = () => {
             cancel_fade_out_called = true;
         };
-        $(saved_selector).css = function (data) {
+        $(saved_selector).css = (data) => {
             if (typeof data === "string") {
                 assert.equal(data, "display");
             }
@@ -776,18 +747,18 @@ run_test("on_events", () => {
             assert.equal(data.opacity, "0");
             return $(saved_selector);
         };
-        $(saved_selector).fadeTo = function () {
+        $(saved_selector).fadeTo = () => {
             saved_fade_to_called = true;
             return $(saved_selector);
         };
 
-        channel.patch = function (opts) {
+        channel.patch = (opts) => {
             assert.equal(opts.url, "/json/user_groups/1");
             assert.equal(opts.data.name, "translated: mobile");
             assert.equal(opts.data.description, "translated: All mobile members");
             api_endpoint_called = true;
             (function test_post_success() {
-                global.patch_builtin("setTimeout", (func) => {
+                set_global("setTimeout", (func) => {
                     func();
                 });
                 opts.success();
@@ -798,7 +769,7 @@ run_test("on_events", () => {
             (function test_post_error() {
                 const user_group_error = $(user_group_selector + " .user-group-status");
                 user_group_error.show();
-                ui_report.error = function (error_msg, error_obj, ele) {
+                ui_report.error = (error_msg, error_obj, ele) => {
                     const xhr = {
                         responseText: '{"msg":"fake-msg"}',
                     };
@@ -816,9 +787,7 @@ run_test("on_events", () => {
         };
 
         const fake_this = $.create("fake-#user-groups_blur_name");
-        fake_this.closest = function () {
-            return [];
-        };
+        fake_this.closest = () => [];
         fake_this.set_parents_result(user_group_selector, $(user_group_selector));
         const event = {
             relatedTarget: fake_this,
@@ -850,7 +819,7 @@ run_test("on_events", () => {
             members: new Set([2, 4]),
         };
 
-        user_groups.get_user_group_from_id = function (id) {
+        user_groups.get_user_group_from_id = (id) => {
             assert.equal(id, 1);
             return realm_user_group;
         };
@@ -858,22 +827,20 @@ run_test("on_events", () => {
         let cancel_fade_out_called = false;
         let saved_fade_to_called = false;
         let instructions_fade_out_called = false;
-        $(instructions_selector).fadeOut = function () {
+        $(instructions_selector).fadeOut = () => {
             instructions_fade_out_called = true;
         };
-        $(cancel_selector).fadeOut = function () {
+        $(cancel_selector).fadeOut = () => {
             cancel_fade_out_called = true;
         };
-        $(saved_selector).css = function () {
-            return $(saved_selector);
-        };
-        $(saved_selector).fadeTo = function () {
+        $(saved_selector).css = () => $(saved_selector);
+        $(saved_selector).fadeTo = () => {
             saved_fade_to_called = true;
             return $(saved_selector);
         };
 
         let api_endpoint_called = false;
-        channel.post = function (opts) {
+        channel.post = (opts) => {
             assert.equal(opts.url, "/json/user_groups/1/members");
             assert.equal(opts.data.add, "[31]");
             assert.equal(opts.data.delete, "[4]");
@@ -889,9 +856,7 @@ run_test("on_events", () => {
 
         const fake_this = $.create("fake-#user-groups_blur_input");
         fake_this.set_parents_result(user_group_selector, $(user_group_selector));
-        fake_this.closest = function () {
-            return [];
-        };
+        fake_this.closest = () => [];
         const event = {
             relatedTarget: fake_this,
         };
