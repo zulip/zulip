@@ -9,19 +9,18 @@
             <img class="checkmark" src="/static/images/checkbox-green.svg" />
             {{t 'Saved' }}
         </button>
-        <button class="button save-status btn-danger small">
-            {{t 'Discard changes' }}
-        </button>
         <button class="button rounded small delete btn-danger">
-            {{t 'Delete' }}
-        </button>
+            <i class="fa fa-trash-o" aria-hidden="true"></i>
+        </button> 
     </h4>
-    <p class="subscribers">{{t 'Subscribers' }}</p>
+    <p class="subscribers">{{t 'Subscribers hello brother' }}</p>
     <div class="pill-container" data-group-pills="{{id}}">
         <div class="input" contenteditable="true" data-placeholder="{{t 'Add member...' }}"></div>
     </div>
     <p class="save-instructions">
         {{t 'Click outside the input box to save. We\'ll automatically notify anyone that was added or removed.'}}
+        
+
     </p>
 </div>
 {{/with}}
