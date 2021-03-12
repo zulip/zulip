@@ -545,6 +545,11 @@ export function hide() {
     navigate.plan_scroll_to_selected();
 }
 
+function is_focus_at_last_table_row() {
+    const topic_rows = $("#recent_topics_table table tbody tr");
+    return row_focus === topic_rows.length - 1;
+}
+
 export function change_focused_element(e, input_key) {
     // Called from hotkeys.js; like all logic in that module,
     // returning true will cause the caller to do
@@ -669,10 +674,31 @@ export function change_focused_element(e, input_key) {
                 }
                 break;
             case "vim_down":
+                // We stop user at last table row
+                // so that user doesn't end up in
+                // input box where it is impossible to
+                // get out of using vim_up / vim_down
+                // keys. This also blocks the user from
+                // having `jjjj` typed in the input box
+                // when continuously pressing `j`.
+                if (is_focus_at_last_table_row()) {
+                    return true;
+                }
+                row_focus += 1;
+                break;
             case "down_arrow":
                 row_focus += 1;
                 break;
             case "vim_up":
+                // See comment on vim_down.
+                // Similarly, blocks the user from
+                // having `kkkk` typed in the input box
+                // when continuously pressing `k`.
+                if (row_focus === 0) {
+                    return true;
+                }
+                row_focus -= 1;
+                break;
             case "up_arrow":
                 row_focus -= 1;
         }
