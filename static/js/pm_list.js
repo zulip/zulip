@@ -13,6 +13,11 @@ import * as vdom from "./vdom";
 let prior_dom;
 let private_messages_open = false;
 
+export function clear_for_testing() {
+    prior_dom = undefined;
+    private_messages_open = false;
+}
+
 // This module manages the "Private messages" section in the upper
 // left corner of the app.  This was split out from stream_list.js.
 
