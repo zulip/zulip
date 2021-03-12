@@ -294,13 +294,16 @@ def extract_html_body(message: EmailMessage, include_quotes: bool = False) -> Op
 
 def filter_footer(text: str) -> str:
     # Try to filter out obvious footers.
-    possible_footers = [line for line in text.split("\n") if "--" in line.strip()]
-    if len(possible_footers) != 1:
-        # Be conservative and don't try to scrub content if there
-        # isn't a trivial footer structure.
-        return text
-
-    return text.partition("--")[0].strip()
+    possible_footers = [line for line in text.split("\n") if line.strip() == "--"]
+    if len(possible_footers) < 1:
+        return text 
+    elif len(possible_footers) == 1:
+        return text.partition("--")[0].strip()
+    else:
+         # Be conservative and don't try to scrub content if there
+         # isn't a trivial footer structure.
+         
+         return text.replace(text.split("--")[1].strip(), "")
 
 
 def extract_and_upload_attachments(message: EmailMessage, realm: Realm) -> str:

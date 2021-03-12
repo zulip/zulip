@@ -218,7 +218,7 @@ class TestFilterFooter(ZulipTestCase):
         Part2"""
         result = filter_footer(text)
         # Multiple possible footers, don't strip
-        self.assertNotEqual(result, text)
+        self.assertEqual(result, text)
 
 
 class TestStreamEmailMessagesSuccess(ZulipTestCase):
