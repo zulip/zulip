@@ -50,6 +50,7 @@
 * [Link to a message or conversation](/help/link-to-a-message-or-conversation)
 * [Advanced search](/help/search-for-messages)
 * [View a message's edit history](/help/view-a-messages-edit-history)
+* [Unread messages](/help/unread-messages)
 
 ## People
 * [Status and availability](/help/status-and-availability)

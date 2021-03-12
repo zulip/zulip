@@ -47,9 +47,17 @@
     </div>
     <div data-process="bankruptcy" class="alert alert-info brankruptcy">
         <div data-step="1">
-            {% trans count=page_params.unread_msgs.count %}
-            Welcome back!  You have <span class="bankruptcy_unread_count">{{ count }}</span> unread messages.  Do you want to mark them all as read?
-            {% endtrans %}
+            {% with old_unreads_missing=page_params.unread_msgs.old_unreads_missing, count=page_params.unread_msgs.count %}
+                {% if old_unreads_missing %}
+                    {% trans %}
+                    Welcome back!  You have <a href="/help/unread-messages">more than <span class="bankruptcy_unread_count">{{ count }}</span></a> unread messages. Do you want to mark them all as read?
+                    {% endtrans %}
+                {% else %}
+                    {% trans %}
+                    Welcome back!  You have <span class="bankruptcy_unread_count">{{ count }}</span> unread messages. Do you want to mark them all as read?
+                    {% endtrans %}
+                {% endif %}
+            {% endwith %}
             <span class="buttons">
                 <a class="alert-link accept-bankruptcy" role="button" tabindex=0>{{ _("Yes, please!") }}</a>
                 &bull;
