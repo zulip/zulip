@@ -121,8 +121,10 @@ def find_js_test_files(test_dir: str, files: Iterable[str]) -> List[str]:
     return test_files
 
 
-def prepare_puppeteer_run() -> None:
+def prepare_puppeteer_run(is_firefox: bool = False) -> None:
     os.chdir(ZULIP_PATH)
+    # This will determine if the browser will be firefox or chrome.
+    os.environ["PUPPETEER_PRODUCT"] = "firefox" if is_firefox else "chrome"
     subprocess.check_call(["node", "node_modules/puppeteer/install.js"])
     os.makedirs("var/puppeteer", exist_ok=True)
     for f in glob.glob("var/puppeteer/puppeteer-failure*.png"):

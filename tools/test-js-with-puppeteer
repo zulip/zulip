@@ -51,6 +51,7 @@ parser = argparse.ArgumentParser(usage)
 
 parser.add_argument("--interactive", action="store_true", help="Run tests interactively")
 add_provision_check_override_param(parser)
+parser.add_argument("--firefox", action="store_true", help="Run tests with firefox.")
 parser.add_argument(
     "tests", nargs=argparse.REMAINDER, help="Specific tests to run; by default, runs all tests"
 )
@@ -127,7 +128,7 @@ or report and ask for help in chat.zulip.org""",
 
 external_host = "zulipdev.com:9981"
 assert_provisioning_status_ok(options.skip_provision_check)
-prepare_puppeteer_run()
+prepare_puppeteer_run(is_firefox=options.firefox)
 run_tests(options.tests, external_host)
 print(f"{OKGREEN}All tests passed!{ENDC}")
 sys.exit(0)
