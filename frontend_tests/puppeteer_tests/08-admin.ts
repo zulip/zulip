@@ -36,12 +36,11 @@ async function test_change_new_stream_notifications_setting(page: Page): Promise
         "verona",
     );
 
-    const verona_in_dropdown =
-        "#realm_notifications_stream_id_widget .dropdown-list-body > li:nth-of-type(1)";
-
-    await common.wait_for_text(page, verona_in_dropdown, "Verona");
-    await page.waitForSelector(verona_in_dropdown, {visible: true});
-    await page.evaluate((selector: string) => $(selector).trigger("click"), verona_in_dropdown);
+    const verona_in_dropdown = await page.waitForXPath(
+        '//*[@id="realm_notifications_stream_id_widget"]//*[@class="dropdown-list-body"]/li[1]',
+        {visible: true},
+    );
+    await verona_in_dropdown!.click();
 
     await submit_notifications_stream_settings(page);
 

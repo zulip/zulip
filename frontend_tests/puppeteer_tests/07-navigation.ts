@@ -97,7 +97,9 @@ async function navigation_tests(page: Page): Promise<void> {
     await test_reload_hash(page);
 
     // Verify that we're narrowed to the target stream
-    await common.wait_for_text(page, "#message_view_header .stream", "Verona");
+    await page.waitForXPath(
+        '//*[@id="message_view_header"]//*[@class="stream" and normalize-space()="Verona"]',
+    );
 
     await common.log_out(page);
 }
