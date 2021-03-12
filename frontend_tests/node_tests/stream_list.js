@@ -100,6 +100,17 @@ function test_ui(label, f) {
     });
 }
 
+test_ui("clear_search", (override) => {
+    stream_list.set_event_handlers();
+    override(stream_list, "update_streams_for_search", () => {});
+
+    $(".stream-list-filter").val("somevalue");
+    $("#clear_search_stream_button").trigger("click");
+    assert.equal($(".stream-list-filter").val(), "");
+    $("#clear_search_stream_button").trigger("click");
+    assert($(".stream_search_section").hasClass("notdisplayed"));
+});
+
 test_ui("create_sidebar_row", (override) => {
     // Make a couple calls to create_sidebar_row() and make sure they
     // generate the right markup as well as play nice with get_stream_li().
