@@ -211,10 +211,15 @@ class TestGetMissedMessageToken(ZulipTestCase):
 class TestFilterFooter(ZulipTestCase):
     def test_filter_footer(self) -> None:
         text = """Test message
+        --Not a delimiter--
+        More message
         --
         Footer"""
+        expected_output = """Test message
+        --Not a delimiter--
+        More message"""
         result = filter_footer(text)
-        self.assertEqual(result, "Test message")
+        self.assertEqual(result, expected_output)
 
     def test_filter_footer_many_parts(self) -> None:
         text = """Test message
