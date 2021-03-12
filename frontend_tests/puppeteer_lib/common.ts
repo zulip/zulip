@@ -2,7 +2,7 @@ import {strict as assert} from "assert";
 import "css.escape";
 import path from "path";
 
-import {Browser, Page, launch} from "puppeteer";
+import {Browser, ElementHandle, Page, launch} from "puppeteer";
 
 import {test_credentials} from "../../var/puppeteer/test_credentials";
 
@@ -185,8 +185,16 @@ class CommonUtils {
         }
     }
 
+    async get_element_text(element: ElementHandle<Element>): Promise<string> {
+        return (await element.getProperty("textContent"))!.jsonValue();
+    }
+
     async get_text_from_selector(page: Page, selector: string): Promise<string> {
-        return await page.evaluate((selector: string) => $(selector).text().trim(), selector);
+        const elements = await page.$$(selector);
+        const texts = await Promise.all(
+            elements.map(async (element) => this.get_element_text(element)),
+        );
+        return texts.join("").trim();
     }
 
     async wait_for_text(page: Page, selector: string, text: string): Promise<void> {

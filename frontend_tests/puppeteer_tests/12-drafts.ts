@@ -93,7 +93,10 @@ async function test_previously_created_drafts_rendered(page: Page): Promise<void
         "tests",
     );
     assert.strictEqual(
-        await common.get_text_from_selector(page, ".rendered_markdown.restore-draft:first"),
+        await common.get_text_from_selector(
+            page,
+            ".draft-row:nth-last-child(2) .rendered_markdown.restore-draft",
+        ),
         "Test private message.",
     );
     assert.strictEqual(
@@ -104,7 +107,10 @@ async function test_previously_created_drafts_rendered(page: Page): Promise<void
         "You and Cordelia Lear, King Hamlet",
     );
     assert.strictEqual(
-        await common.get_text_from_selector(page, ".rendered_markdown.restore-draft:last"),
+        await common.get_text_from_selector(
+            page,
+            ".draft-row:last-child .rendered_markdown.restore-draft",
+        ),
         "Test stream message.",
     );
 }
@@ -156,7 +162,10 @@ async function test_edited_draft_message(page: Page): Promise<void> {
         "tests",
     );
     assert.strictEqual(
-        await common.get_text_from_selector(page, ".rendered_markdown.restore-draft:first"),
+        await common.get_text_from_selector(
+            page,
+            ".draft-row:nth-last-child(2) .rendered_markdown.restore-draft",
+        ),
         "Updated Stream Message",
     );
 }
@@ -224,7 +233,10 @@ async function test_save_draft_by_reloading(page: Page): Promise<void> {
         "You and Cordelia Lear",
     );
     assert.strictEqual(
-        await common.get_text_from_selector(page, ".rendered_markdown.restore-draft:first"),
+        await common.get_text_from_selector(
+            page,
+            ".draft-row:nth-last-child(2) .rendered_markdown.restore-draft",
+        ),
         "Test private message draft.",
     );
 }

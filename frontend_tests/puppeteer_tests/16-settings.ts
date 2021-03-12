@@ -172,13 +172,9 @@ async function test_edit_bot_form(page: Page): Promise<void> {
     // The form gets closed on saving. So, assert it's closed by waiting for it to be hidden.
     await page.waitForSelector("#edit_bot_modal", {hidden: true});
 
-    const bot1_name_selector = `.details:has(${bot1_edit_btn}) .name`;
-    await page.waitForFunction(
-        (bot1_name_selector: string) => $(bot1_name_selector).text() !== "Bot 1",
-        {},
-        bot1_name_selector,
+    await page.waitForXPath(
+        `//*[@class="btn open_edit_bot_form" and @data-email="${bot1_email}"]/ancestor::*[@class="details"]/*[@class="name" and text()="Bot one"]`,
     );
-    assert.strictEqual(await common.get_text_from_selector(page, bot1_name_selector), "Bot one");
 }
 
 async function test_your_bots_section(page: Page): Promise<void> {
