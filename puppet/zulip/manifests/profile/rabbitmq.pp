@@ -28,8 +28,8 @@ class zulip::profile::rabbitmq {
   file { '/etc/rabbitmq/rabbitmq.config':
     ensure  => file,
     require => Package[rabbitmq-server],
-    owner   => 'rabbitmq',
-    group   => 'rabbitmq',
+    owner   => 'root',
+    group   => 'root',
     mode    => '0644',
     source  => 'puppet:///modules/zulip/rabbitmq/rabbitmq.config',
   }
@@ -38,8 +38,8 @@ class zulip::profile::rabbitmq {
   if $rabbitmq_nodename != '' {
     file { '/etc/rabbitmq':
       ensure => 'directory',
-      owner  => 'rabbitmq',
-      group  => 'rabbitmq',
+      owner  => 'root',
+      group  => 'root',
       mode   => '0755',
     }
 
@@ -47,8 +47,8 @@ class zulip::profile::rabbitmq {
       ensure  => file,
       require => File['/etc/rabbitmq'],
       before  => [Package[rabbitmq-server], Service[rabbitmq-server]],
-      owner   => 'rabbitmq',
-      group   => 'rabbitmq',
+      owner   => 'root',
+      group   => 'root',
       mode    => '0644',
       content => template('zulip/rabbitmq-env.conf.template.erb'),
     }
