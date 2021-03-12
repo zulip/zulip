@@ -181,7 +181,7 @@ run_test("timestamp", () => {
     assert.equal($timestamp.text(), "Thu, Jan 1 1970, 12:00 AM");
     assert.equal(
         $timestamp.attr("title"),
-        "This time is in your timezone. Original text was 'never-been-set'.",
+        "This time is in your timezone. Original text was 'never-been-set'. Click to generate the calendar file!",
     );
     assert.equal($timestamp_invalid.text(), "never-been-set");
 });

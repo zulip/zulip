@@ -172,7 +172,10 @@ export function render_date(time, time_above, today) {
 export function render_markdown_timestamp(time, text) {
     const hourformat = page_params.twenty_four_hour_time ? "HH:mm" : "h:mm a";
     const timestring = format(time, "E, MMM d yyyy, " + hourformat);
-    const titlestring = "This time is in your timezone. Original text was '" + text + "'.";
+    const titlestring =
+        "This time is in your timezone. Original text was '" +
+        text +
+        "'. Click to generate the calendar file!";
     return {
         text: timestring,
         title: titlestring,

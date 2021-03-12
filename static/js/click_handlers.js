@@ -1,3 +1,4 @@
+import ical from "ical-generator";
 import $ from "jquery";
 import _ from "lodash";
 import WinChan from "winchan";
@@ -434,6 +435,34 @@ export function initialize() {
     });
 
     $("body").on("keydown", ".on_hover_topic_unmute", convert_enter_to_click);
+
+    // SHOW CALENDAR
+
+    $("#main_div").on("click", "time", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const message_row = $(this).closest(".message_row");
+        const event_time = message_row.prevObject.attr("datetime");
+
+        const ical_url = ical({
+            domain: page_params.realm_uri,
+            timezone: page_params.timezone,
+            events: [
+                {
+                    start: event_time,
+                },
+            ],
+        }).toURL();
+
+        // If the browser doesn't support Blob API.
+        if (!ical_url) {
+            blueslip.log("Failed to create calendar file.");
+            return;
+        }
+
+        window.location.href = ical_url;
+    });
 
     // RECENT TOPICS
 
