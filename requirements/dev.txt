@@ -142,7 +142,7 @@ cchardet==2.1.7 \
     --hash=sha256:f16517f3697569822c6d09671217fdeab61dfebc7acb5068634d6b0728b86c0b \
     --hash=sha256:f86e0566cb61dc4397297696a4a1b30f6391b50bc52b4f073507a48466b6255a \
     --hash=sha256:fdac1e4366d0579fff056d1280b8dc6348be964fda8ebb627c0269e097ab37fa
-    # via talon
+    # via talon-core
 certifi==2020.12.5 \
     --hash=sha256:1a4995114262bffbc2413b159f2a1a480c969de6e6eb13ee966d470af86af59c \
     --hash=sha256:719a74fb9e33b9bd44cc7f3a8d94bc35e4049deebe19ba7d8e108280cfd59830
@@ -197,7 +197,7 @@ chardet==4.0.0 \
     # via
     #   python-debian
     #   requests
-    #   talon
+    #   talon-core
 click==7.1.2 \
     --hash=sha256:d2b5255c7c6349bc1bd1e59e08cd12acbbd63ce649f2588755783aa94dfb6b1a \
     --hash=sha256:dacca89f4bfadd5de3d7489b7c8a566eee0d3676333fbb50030263894c38c0dc
@@ -305,7 +305,7 @@ cssselect==1.1.0 \
     #   parsel
     #   premailer
     #   scrapy
-    #   talon
+    #   talon-core
 cssutils==1.0.2 \
     --hash=sha256:a2fcf06467553038e98fea9cfe36af2bf14063eb147a70958cfcaa8f5786acaf \
     --hash=sha256:c74dbe19c92f5052774eadb15136263548dd013250f1ed1027988e7fef125c8d
@@ -427,6 +427,10 @@ html2text==2020.1.16 \
     # via
     #   -r requirements/common.in
     #   zulip-bots
+html5lib==1.1 \
+    --hash=sha256:0d78f8fde1c230e99fe37986a60526d7049ed4bf8a9fadbad5f00e22e58e041d \
+    --hash=sha256:b2e5b40261e20f354d198eae92afc10d750afb487ed5e50f9c4eaf07c184146f
+    # via talon-core
 hyper==0.7.0 \
     --hash=sha256:069514f54231fb7b5df2fb910a114663a83306d5296f588fffcb0a9be19407fc \
     --hash=sha256:12c82eacd122a659673484c1ea0d34576430afbe5aa6b8f63fe37fcb06a2458c
@@ -694,7 +698,7 @@ lxml==4.6.2 \
     #   pyoembed
     #   python3-saml
     #   scrapy
-    #   talon
+    #   talon-core
     #   xmlsec
     #   zulip-bots
 markdown-include==0.6.0 \
@@ -1243,7 +1247,7 @@ regex==2020.11.13 \
     --hash=sha256:f8f295db00ef5f8bae530fc39af0b40486ca6068733fb860b42115052206466f
     # via
     #   black
-    #   talon
+    #   talon-core
 requests-oauthlib==1.3.0 \
     --hash=sha256:7f71572defaecd16372f9006f33c2ec8c077c3cfa6f5911a9a90202beb513f3d \
     --hash=sha256:b4261601a71fd721a8bd6d7aa1cc1d6a8a93b4a9f5e96626f8e4d91e8beeaa6a
@@ -1346,6 +1350,7 @@ six==1.15.0 \
     #   argon2-cffi
     #   automat
     #   django-bitfield
+    #   html5lib
     #   isodate
     #   jsonschema
     #   junit-xml
@@ -1364,7 +1369,7 @@ six==1.15.0 \
     #   responses
     #   social-auth-app-django
     #   social-auth-core
-    #   talon
+    #   talon-core
     #   traitlets
     #   twilio
     #   w3lib
@@ -1494,8 +1499,8 @@ tabulate==0.8.9 \
     --hash=sha256:d7c013fe7abbc5e491394e10fa845f8f32fe54f8dc60c6622c6cf482d25d47e4 \
     --hash=sha256:eb1d13f25760052e8931f2ef80aaf6045a6cceb47514db8beab24cded16f13a7
     # via pyre-check
-https://github.com/zulip/talon/archive/7d8bdc4dbcfcc5a73298747293b99fe53da55315.zip#egg=talon==1.2.10.zulip1 \
-    --hash=sha256:21d87c437379287d09df7a2d2af7bd818d4fa00be619dff446dacbdb4338d921
+https://github.com/zulip/talon/archive/1711705c952806d4a704c7dbf58f21db8e11756a.zip#egg=talon-core==1.4.8.zulip1&subdirectory=talon-core \
+    --hash=sha256:e562269ba5f5d71f35f3dd7ee4c0c62a6c95dfb41984766eff645425c4dec71e
     # via -r requirements/common.in
 tblib==1.7.0 \
     --hash=sha256:059bd77306ea7b419d4f76016aef6d7027cc8a0785579b5aad198803435f882c \
@@ -1632,6 +1637,7 @@ webencodings==0.5.1 \
     --hash=sha256:b36a1c245f2d304965eb4e0a82848379241dc04b865afcc4aab16748587e1923
     # via
     #   cssselect2
+    #   html5lib
     #   tinycss2
 werkzeug==1.0.1 \
     --hash=sha256:2de2a5db0baeae7b2d2664949077c2ac63fbd16d98da0ff71837f7d1dea3fd43 \
