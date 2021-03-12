@@ -57,8 +57,8 @@ python-gcm
 
 # Needed for the email mirror
 html2text
-# Forked to avoid pulling in scipy: https://github.com/mailgun/talon/issues/130
-https://github.com/zulip/talon/archive/7d8bdc4dbcfcc5a73298747293b99fe53da55315.zip#egg=talon==1.2.10.zulip1
+# Forked to avoid pulling in scipy: https://github.com/mailgun/talon/pull/200
+https://github.com/zulip/talon/archive/1711705c952806d4a704c7dbf58f21db8e11756a.zip#egg=talon-core==1.4.8.zulip1&subdirectory=talon-core
 
 # Needed for inlining the CSS in emails
 premailer
