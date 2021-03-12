@@ -52,7 +52,7 @@ async function navigate_to_subscriptions(page: Page): Promise<void> {
 
     await page.click("#subscription_overlay .exit");
     // Wait until the overlay is completely closed.
-    await page.waitForSelector("#settings_overlay_container", {hidden: true});
+    await page.waitForSelector("#subscription_overlay", {hidden: true});
 }
 
 async function test_reload_hash(page: Page): Promise<void> {
