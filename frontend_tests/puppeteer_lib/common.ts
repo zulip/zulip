@@ -197,15 +197,6 @@ class CommonUtils {
         return texts.join("").trim();
     }
 
-    async wait_for_text(page: Page, selector: string, text: string): Promise<void> {
-        await page.waitForFunction(
-            (selector: string, text: string) => $(selector).text().includes(text),
-            {},
-            selector,
-            text,
-        );
-    }
-
     async get_stream_id(page: Page, stream_name: string): Promise<number> {
         return await page.evaluate(
             (stream_name: string) => zulip_test.get_stream_id(stream_name),
