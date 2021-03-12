@@ -350,6 +350,11 @@ export function process_enter_key(e) {
         return true;
     }
 
+    if (popovers.message_info_popped()) {
+        popovers.user_info_popover_for_message_handle_keyboard("enter");
+        return true;
+    }
+
     if (stream_popover.stream_popped()) {
         stream_popover.stream_sidebar_menu_handle_keyboard("enter");
         return true;
