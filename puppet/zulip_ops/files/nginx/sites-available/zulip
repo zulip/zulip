@@ -10,8 +10,8 @@ server {
     # Snakeoil verts are good for 10 years after initial creation, but
     # the ALBs don't even check expiration. ¯\_(ツ)_/¯
     ssl on;
-    ssl_certificate /etc/ssl/certs/ssl-cert-snakeoil.pem
-    ssl_certificate_key /etc/ssl/private/ssl-cert-snakeoil.key
+    ssl_certificate /etc/ssl/certs/ssl-cert-snakeoil.pem;
+    ssl_certificate_key /etc/ssl/private/ssl-cert-snakeoil.key;
 
     server_name zulipchat.com *.zulipchat.com;
 
