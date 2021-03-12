@@ -296,7 +296,7 @@ def filter_footer(text: str) -> str:
     # Try to filter out obvious footers.
     possible_footers = [line for line in text.split("\n") if line.strip() == "--"]
     if len(possible_footers) < 1:
-        return text 
+        return text
     elif len(possible_footers) == 1:
         return text.partition("--")[0].strip()
     else:
