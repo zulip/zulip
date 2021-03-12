@@ -14,6 +14,12 @@ import * as server_events from "./server_events";
 const raw_info = new Map();
 export const presence_info = new Map();
 
+// We use this internally and export it for testing convenience.
+export function clear_internal_data() {
+    raw_info.clear();
+    presence_info.clear();
+}
+
 /* Mark users as offline after 140 seconds since their last checkin,
  * Keep in sync with zerver/tornado/event_queue.py:receiver_is_idle
  */
@@ -148,8 +154,7 @@ export function set_info(presences, server_timestamp) {
         }
     */
 
-    raw_info.clear();
-    presence_info.clear();
+    clear_internal_data();
     for (const [user_id_str, info] of Object.entries(presences)) {
         const user_id = Number.parseInt(user_id_str, 10);
 
