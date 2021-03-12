@@ -30,11 +30,7 @@ exports.start = () => {
     Module._load = load;
 };
 
-exports.mock_esm = (request, obj = {}) => {
-    if (typeof obj !== "object") {
-        throw new TypeError("An ES module must be mocked with an object");
-    }
-
+exports.mock_cjs = (request, obj) => {
     const filename = Module._resolveFilename(
         request,
         require.cache[callsites()[1].getFileName()],
@@ -49,9 +45,15 @@ exports.mock_esm = (request, obj = {}) => {
         throw new Error(`It is too late to mock ${filename}; call this earlier.`);
     }
 
-    obj.__esModule = true;
     module_mocks.set(filename, obj);
     return obj;
+};
+
+exports.mock_esm = (request, obj = {}) => {
+    if (typeof obj !== "object") {
+        throw new TypeError("An ES module must be mocked with an object");
+    }
+    return exports.mock_cjs(request, {...obj, __esModule: true});
 };
 
 exports.unmock_module = (request) => {
