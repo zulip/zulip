@@ -22,20 +22,16 @@ class CommonUtils {
             // a flake where the typeahead doesn't show up.
             await page.type("#private_message_recipient", recipient, {delay: 100});
 
-            // We use jQuery here because we need to use it's :visible
-            // pseudo selector to actually wait for typeahead item that
-            // is visible; there can be typeahead item with this selector
-            // that is invisible because it is meant for something else
-            // e.g. private message input typeahead is different from topic
-            // input typeahead but both can be present in the dom.
-            await page.waitForFunction(() => {
-                const selector = ".typeahead-menu .active a:visible";
-                return $(selector).length !== 0;
-            });
-
-            await page.evaluate(() => {
-                $(".typeahead-menu .active a:visible").trigger("click");
-            });
+            // We use [style*="display: block"] here to distinguish
+            // the visible typeahead menu from the invisible ones
+            // meant for something else; e.g., the private message
+            // input typeahead is different from the topic input
+            // typeahead but both can be present in the DOM.
+            const entry = await page.waitForSelector(
+                '.typeahead[style*="display: block"] .active a',
+                {visible: true},
+            );
+            await entry!.click();
         },
 
         async expect(page: Page, expected: string): Promise<void> {
