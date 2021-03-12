@@ -180,16 +180,6 @@ stream_data.add_sub(edgecase_stream_2);
 // streamTopicHandler and it would be parsed as edgecase_stream_2.
 stream_data.add_sub(amp_stream);
 
-// Check the default behavior of fenced code blocks
-// works properly before Markdown is initialized.
-run_test("fenced_block_defaults", () => {
-    const input = "\n```\nfenced code\n```\n\nand then after\n";
-    const expected =
-        '\n\n<div class="codehilite"><pre><span></span><code>fenced code\n</code></pre></div>\n\n\nand then after\n\n';
-    const output = fenced_code.process_fenced_code(input);
-    assert.equal(output, expected);
-});
-
 markdown.initialize(page_params.realm_filters, markdown_config.get_helpers());
 
 run_test("markdown_detection", () => {
