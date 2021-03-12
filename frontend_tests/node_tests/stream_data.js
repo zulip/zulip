@@ -813,7 +813,7 @@ test("get_invite_stream_data", () => {
     assert.deepEqual(stream_data.get_invite_stream_data(), expected_list);
 });
 
-test("all_topics_in_cache", () => {
+test("all_topics_in_cache", (override) => {
     // Add a new stream with first_message_id set.
     const general = {
         name: "general",
@@ -829,9 +829,15 @@ test("all_topics_in_cache", () => {
 
     assert.equal(stream_data.all_topics_in_cache(sub), false);
 
+    message_list.all.data.clear();
     message_list.all.data.add_messages(messages);
+
+    let has_found_newest = false;
+
+    override(message_list.all.data.fetch_status, "has_found_newest", () => has_found_newest);
+
     assert.equal(stream_data.all_topics_in_cache(sub), false);
-    message_list.all.data.fetch_status.has_found_newest = () => true;
+    has_found_newest = true;
     assert.equal(stream_data.all_topics_in_cache(sub), true);
 
     sub.first_message_id = 0;
