@@ -100,7 +100,6 @@ run_test("build_private_messages_list", (override) => {
     expected_data[0].is_zero = true;
     assert.deepEqual(pm_data, expected_data);
 
-    pm_list.initialize();
     pm_list._build_private_messages_list();
     assert.deepEqual(pm_data, expected_data);
 });
