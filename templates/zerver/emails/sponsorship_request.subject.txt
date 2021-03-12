@@ -1,1 +1,1 @@
-{% trans %}Sponsorship request ({{ organization_type }}) for {{ string_id }}{% endtrans %}
+Sponsorship request ({{ organization_type }}) for {{ string_id }}
