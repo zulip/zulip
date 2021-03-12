@@ -33,13 +33,18 @@ class zulip::profile::base {
         '20.04' => 'focal',
       }
       $base_packages = [
-        # Accurate time is essential
-        'ntp',
+        # Basics
+        'python3',
+        'puppet',
+        'git',
         # Used in scripts including install-yarn.sh
         'curl',
         'wget',
+        'jq',
         # Used to read /etc/zulip/zulip.conf for `zulipconf` Puppet function
         'crudini',
+        # Accurate time is essential
+        'ntp',
         # Used for tools like sponge
         'moreutils',
         # Nagios monitoring plugins
@@ -53,10 +58,14 @@ class zulip::profile::base {
     'redhat': {
       $release_name = "${::operatingsystem}${::operatingsystemmajrelease}"
       $base_packages = [
-        'ntp',
+        'python3',
+        'puppet',
+        'git',
         'curl',
         'wget',
+        'jq',
         'crudini',
+        'ntp',
         'moreutils',
         'nmap-ncat',
         'nagios-plugins',  # there is no dummy package on CentOS 7

@@ -323,9 +323,11 @@ if [ -z "$NO_DIST_UPGRADE" ]; then
 fi
 
 if [ "$package_system" = apt ]; then
+    # Note that any additions to these lists must also be added to
+    # `zulip::profile::base` such that the new dependency is seen by
+    # upgrades, as well as new installs.
     if ! apt-get install -y \
-        puppet git curl wget jq \
-        python3 crudini \
+        python3 puppet git curl wget jq crudini \
         "${ADDITIONAL_PACKAGES[@]}"; then
         set +x
         echo -e '\033[0;31m' >&2
@@ -336,8 +338,7 @@ if [ "$package_system" = apt ]; then
     fi
 elif [ "$package_system" = yum ]; then
     if ! yum install -y \
-        puppet git curl wget jq \
-        python3 crudini \
+        python3 puppet git curl wget jq crudini \
         "${ADDITIONAL_PACKAGES[@]}"; then
         set +x
         echo -e '\033[0;31m' >&2
