@@ -167,5 +167,3 @@ export function update_dom_with_unread_counts(counts) {
         counts.private_message_count,
     );
 }
-
-export function initialize() {}
