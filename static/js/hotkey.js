@@ -311,6 +311,49 @@ export function process_escape_key(e) {
     return true;
 }
 
+function handle_popover_events(event_name) {
+    if (popovers.actions_popped()) {
+        popovers.actions_menu_handle_keyboard(event_name);
+        return true;
+    }
+
+    if (popovers.message_info_popped()) {
+        popovers.user_info_popover_for_message_handle_keyboard(event_name);
+        return true;
+    }
+
+    if (popovers.user_info_popped()) {
+        popovers.user_info_popover_handle_keyboard(event_name);
+        return true;
+    }
+
+    if (popovers.user_sidebar_popped()) {
+        popovers.user_sidebar_popover_handle_keyboard(event_name);
+        return true;
+    }
+
+    if (stream_popover.stream_popped()) {
+        stream_popover.stream_sidebar_menu_handle_keyboard(event_name);
+        return true;
+    }
+
+    if (stream_popover.topic_popped()) {
+        stream_popover.topic_sidebar_menu_handle_keyboard(event_name);
+        return true;
+    }
+
+    if (stream_popover.all_messages_popped()) {
+        stream_popover.all_messages_sidebar_menu_handle_keyboard(event_name);
+        return true;
+    }
+
+    if (stream_popover.starred_messages_popped()) {
+        stream_popover.starred_messages_sidebar_menu_handle_keyboard(event_name);
+        return true;
+    }
+    return false;
+}
+
 // Returns true if we handled it, false if the browser should.
 export function process_enter_key(e) {
     if ($(".dropdown.open").length && $(e.target).attr("role") === "menuitem") {
@@ -335,43 +378,7 @@ export function process_enter_key(e) {
         return false;
     }
 
-    if (popovers.actions_popped()) {
-        popovers.actions_menu_handle_keyboard("enter");
-        return true;
-    }
-
-    if (popovers.user_sidebar_popped()) {
-        popovers.user_sidebar_popover_handle_keyboard("enter");
-        return true;
-    }
-
-    if (popovers.user_info_popped()) {
-        popovers.user_info_popover_handle_keyboard("enter");
-        return true;
-    }
-
-    if (popovers.message_info_popped()) {
-        popovers.user_info_popover_for_message_handle_keyboard("enter");
-        return true;
-    }
-
-    if (stream_popover.stream_popped()) {
-        stream_popover.stream_sidebar_menu_handle_keyboard("enter");
-        return true;
-    }
-
-    if (stream_popover.topic_popped()) {
-        stream_popover.topic_sidebar_menu_handle_keyboard("enter");
-        return true;
-    }
-
-    if (stream_popover.all_messages_popped()) {
-        stream_popover.all_messages_sidebar_menu_handle_keyboard("enter");
-        return true;
-    }
-
-    if (stream_popover.starred_messages_popped()) {
-        stream_popover.starred_messages_sidebar_menu_handle_keyboard("enter");
+    if (handle_popover_events("enter")) {
         return true;
     }
 
@@ -617,46 +624,8 @@ export function process_hotkey(e, hotkey) {
         return true;
     }
 
-    if (menu_dropdown_hotkeys.has(event_name)) {
-        if (popovers.actions_popped()) {
-            popovers.actions_menu_handle_keyboard(event_name);
-            return true;
-        }
-
-        if (popovers.message_info_popped()) {
-            popovers.user_info_popover_for_message_handle_keyboard(event_name);
-            return true;
-        }
-
-        if (popovers.user_info_popped()) {
-            popovers.user_info_popover_handle_keyboard(event_name);
-            return true;
-        }
-
-        if (popovers.user_sidebar_popped()) {
-            popovers.user_sidebar_popover_handle_keyboard(event_name);
-            return true;
-        }
-
-        if (stream_popover.stream_popped()) {
-            stream_popover.stream_sidebar_menu_handle_keyboard(event_name);
-            return true;
-        }
-
-        if (stream_popover.topic_popped()) {
-            stream_popover.topic_sidebar_menu_handle_keyboard(event_name);
-            return true;
-        }
-
-        if (stream_popover.all_messages_popped()) {
-            stream_popover.all_messages_sidebar_menu_handle_keyboard(event_name);
-            return true;
-        }
-
-        if (stream_popover.starred_messages_popped()) {
-            stream_popover.starred_messages_sidebar_menu_handle_keyboard(event_name);
-            return true;
-        }
+    if (menu_dropdown_hotkeys.has(event_name) && handle_popover_events(event_name)) {
+        return true;
     }
 
     // The next two sections date back to 00445c84 and are Mac/Chrome-specific,
