@@ -302,7 +302,6 @@ def filter_footer(text: str) -> str:
     else:
          # Be conservative and don't try to scrub content if there
          # isn't a trivial footer structure.
-         
          return text.replace(text.split("--")[1].strip(), "")
 
 
