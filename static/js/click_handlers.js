@@ -427,10 +427,13 @@ export function initialize() {
         mute_topic($(e.target));
     });
 
+    // RECENT TOPICS
+
     $("body").on("keydown", ".on_hover_topic_mute", convert_enter_to_click);
 
-    $("body").on("click", ".on_hover_topic_unmute", (e) => {
+    $("body").on("click", "#recent_topics_table .on_hover_topic_unmute", (e) => {
         e.stopPropagation();
+        recent_topics.focus_clicked_element($(e.target), recent_topics.COLUMNS.mute);
         const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id"), 10);
         const topic = $(e.currentTarget).attr("data-topic-name");
         muting_ui.unmute_topic(stream_id, topic);
@@ -438,15 +441,21 @@ export function initialize() {
 
     $("body").on("keydown", ".on_hover_topic_unmute", convert_enter_to_click);
 
-    // RECENT TOPICS
+    $("body").on("click", "#recent_topics_table .on_hover_topic_mute", (e) => {
+        e.stopPropagation();
+        const $elt = $(e.target);
+        recent_topics.focus_clicked_element($elt, recent_topics.COLUMNS.mute);
+        mute_topic($elt);
+    });
 
     $("body").on("click", "#recent_topics_search", (e) => {
         e.stopPropagation();
         recent_topics.change_focused_element(e, "click");
     });
 
-    $("body").on("click", ".on_hover_topic_read", (e) => {
+    $("body").on("click", "#recent_topics_table .on_hover_topic_read", (e) => {
         e.stopPropagation();
+        recent_topics.focus_clicked_element($(e.target), recent_topics.COLUMNS.read);
         const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id"), 10);
         const topic = $(e.currentTarget).attr("data-topic-name");
         unread_ops.mark_topic_as_read(stream_id, topic);
@@ -456,17 +465,20 @@ export function initialize() {
 
     $("body").on("click", ".btn-recent-filters", (e) => {
         e.stopPropagation();
+        recent_topics.change_focused_element(e, "click");
         recent_topics.set_filter(e.currentTarget.dataset.filter);
         recent_topics.update_filters_view();
     });
 
     $("body").on("click", "td.recent_topic_stream", (e) => {
         e.stopPropagation();
+        recent_topics.focus_clicked_element($(e.target), recent_topics.COLUMNS.stream);
         window.location.href = $(e.currentTarget).find("a").attr("href");
     });
 
     $("body").on("click", "td.recent_topic_name", (e) => {
         e.stopPropagation();
+        recent_topics.focus_clicked_element($(e.target), recent_topics.COLUMNS.topic);
         window.location.href = $(e.currentTarget).find("a").attr("href");
     });
 
