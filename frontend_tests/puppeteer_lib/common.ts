@@ -479,29 +479,11 @@ class CommonUtils {
         item: string,
     ): Promise<void> {
         console.log(`Looking in ${field_selector} to select ${str}, ${item}`);
-        await page.evaluate(
-            (field_selector: string, str: string, item: string) => {
-                // Set the value and then send a bogus keyup event to trigger
-                // the typeahead.
-                $(field_selector)
-                    .trigger("focus")
-                    .val(str)
-                    .trigger(new $.Event("keyup", {which: 0}));
-
-                // Trigger the typeahead.
-                // Reaching into the guts of Bootstrap Typeahead like this is not
-                // great, but I found it very hard to do it any other way.
-
-                const tah = $(field_selector).data().typeahead;
-                tah.mouseenter({
-                    currentTarget: $(`.typeahead:visible li:contains("${CSS.escape(item)}")`)[0],
-                });
-                tah.select();
-            },
-            field_selector,
-            str,
-            item,
+        await this.clear_and_type(page, field_selector, str);
+        const entry = await page.waitForXPath(
+            `//*[@class="typeahead dropdown-menu" and contains(@style, "display: block")]//li[contains(normalize-space(), "${item}")]//a`,
         );
+        await entry!.click();
     }
 
     async run_test(test_function: (page: Page) => Promise<void>): Promise<void> {

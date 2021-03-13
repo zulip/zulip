@@ -131,6 +131,8 @@ async function search_and_check(
     check: (page: Page) => Promise<void>,
     expected_narrow_title: string,
 ): Promise<void> {
+    await page.click(".search_icon");
+    await page.waitForSelector("#search_query", {visible: true});
     await common.select_item_via_typeahead(page, "#search_query", search_str, item_to_select);
     await check(page);
     assert.strictEqual(await page.title(), expected_narrow_title);
@@ -139,6 +141,8 @@ async function search_and_check(
 }
 
 async function search_silent_user(page: Page, str: string, item: string): Promise<void> {
+    await page.click(".search_icon");
+    await page.waitForSelector("#search_query", {visible: true});
     await common.select_item_via_typeahead(page, "#search_query", str, item);
     await page.waitForSelector("#silent_user", {visible: true});
     const expect_message = "You haven't received any messages sent by this user yet!";
@@ -165,6 +169,8 @@ async function expect_non_existing_users(page: Page): Promise<void> {
 }
 
 async function search_non_existing_user(page: Page, str: string, item: string): Promise<void> {
+    await page.click(".search_icon");
+    await page.waitForSelector("#search_query", {visible: true});
     await common.select_item_via_typeahead(page, "#search_query", str, item);
     await expect_non_existing_user(page);
     await un_narrow(page);
