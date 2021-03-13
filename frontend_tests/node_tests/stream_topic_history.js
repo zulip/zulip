@@ -13,7 +13,15 @@ const unread = zrequire("unread");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
 
-run_test("basics", () => {
+function test(label, f) {
+    run_test(label, (override) => {
+        unread.declare_bankruptcy();
+        stream_topic_history.reset();
+        f(override);
+    });
+}
+
+test("basics", () => {
     const stream_id = 55;
 
     stream_topic_history.add_message({
@@ -112,7 +120,7 @@ run_test("basics", () => {
     });
 });
 
-run_test("is_complete_for_stream_id", () => {
+test("is_complete_for_stream_id", () => {
     const sub = {
         name: "devel",
         stream_id: 444,
@@ -146,7 +154,7 @@ run_test("is_complete_for_stream_id", () => {
     assert.equal(stream_topic_history.is_complete_for_stream_id(sub.stream_id), false);
 });
 
-run_test("server_history", () => {
+test("server_history", () => {
     const sub = {
         name: "devel",
         stream_id: 66,
@@ -228,7 +236,7 @@ run_test("server_history", () => {
     assert.deepEqual(history, ["hist2", "hist1", "hist3"]);
 });
 
-run_test("test_unread_logic", () => {
+test("test_unread_logic", () => {
     const stream_id = 77;
 
     stream_topic_history.add_message({
@@ -265,7 +273,7 @@ run_test("test_unread_logic", () => {
     assert.deepEqual(history, ["toPic1", "unread1", "topic2", "UNREAD2"]);
 });
 
-run_test("test_stream_has_topics", () => {
+test("test_stream_has_topics", () => {
     const stream_id = 88;
 
     assert.equal(stream_topic_history.stream_has_topics(stream_id), false);
@@ -285,7 +293,7 @@ run_test("test_stream_has_topics", () => {
     assert.equal(stream_topic_history.stream_has_topics(stream_id), true);
 });
 
-run_test("server_history_end_to_end", () => {
+test("server_history_end_to_end", () => {
     stream_topic_history.reset();
 
     const stream_id = 99;
