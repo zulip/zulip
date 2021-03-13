@@ -74,6 +74,7 @@ function run_one_module(file) {
     console.info("running test " + path.basename(file, ".js"));
     test.set_current_file_name(file);
     require(file);
+    namespace.complain_about_unused_mocks();
 }
 
 test.set_verbose(files.length === 1);
