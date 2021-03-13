@@ -15,7 +15,7 @@ async function test_mention(page: Page): Promise<void> {
         stream_message_recipient_stream: "Verona",
         stream_message_recipient_topic: "Test mention all",
     });
-    await common.select_item_via_typeahead(page, "#compose-textarea", "@**all**", "all");
+    await common.select_item_via_typeahead(page, "#compose-textarea", "@**all", "all");
     await common.ensure_enter_does_not_send(page);
 
     console.log("Checking for all everyone warning");
