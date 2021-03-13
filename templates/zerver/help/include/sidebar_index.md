@@ -137,7 +137,7 @@
 * [Require topics in stream messages](/help/require-topics)
 * [Add custom emoji](/help/add-custom-emoji)
 * [Configure authentication methods](/help/configure-authentication-methods)
-* [Add a custom linkification filter](/help/add-a-custom-linkification-filter)
+* [Add a custom linkifier](/help/add-a-custom-linkifier)
 * [Message retention policy](/help/message-retention-policy)
 * [SAML authentication](/help/saml-authentication)
 

@@ -62,7 +62,7 @@ Numbered lists
 ## Links
 
 Zulip auto-linkifies URLs and valid stream names. You can also add a
-[custom linkifier](/help/add-a-custom-linkification-filter) to link
+[custom linkifier](/help/add-a-custom-linkifier) to link
 patterns like `#1234` to your ticketing system.
 
 ```

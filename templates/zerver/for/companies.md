@@ -57,7 +57,7 @@ Get events from GitHub, Stripe, Travis CI, JIRA, and
 [hundreds of other tools](/integrations) right in Zulip. Use topics to give
 each issue or decision its own place for discussion. Link to tickets in
 external sites with
-[custom linkification filters](/help/add-a-custom-linkification-filter) like
+[custom linkification filters](/help/add-a-custom-linkifier) like
 `Z1234` for Zendesk ticket #1234.
 
 ### Rich message formatting.

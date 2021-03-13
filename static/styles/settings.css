@@ -185,9 +185,9 @@ h3 .fa-question-circle-o {
     word-break: break-all;
 }
 
-#filter-settings {
-    #filter_pattern,
-    #filter_format_string {
+#linkifier-settings {
+    #linkifier_pattern,
+    #linkifier_format_string {
         width: calc(100% - 10em - 6em);
     }
 }
@@ -657,7 +657,7 @@ input[type="checkbox"] {
 }
 
 .add-new-profile-field-box,
-.add-new-filter-box {
+.add-new-linkifier-box {
     button {
         margin-left: calc(10em + 20px) !important;
     }
@@ -682,8 +682,8 @@ input[type="checkbox"] {
     }
 }
 
-#admin-filter-pattern-status,
-#admin-filter-format-status {
+#admin-linkifier-pattern-status,
+#admin-linkifier-format-status {
     margin: 20px 0 0 0;
 }
 
@@ -870,7 +870,7 @@ input[type="checkbox"] {
 #create_bot_form,
 #create_alert_word_form,
 .admin-emoji-form,
-.admin-filter-form,
+.admin-linkifier-form,
 .admin-profile-field-form,
 .edit_bot_form {
     .control-label {
@@ -1825,12 +1825,12 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
         margin: auto;
     }
 
-    #filter-settings .new-filter-form,
+    #linkifier-settings .new-linkifier-form,
     #profile-field-settings .new-profile-field-form {
         width: 100%;
     }
 
-    #filter-settings .new-filter-form .control-label,
+    #linkifier-settings .new-linkifier-form .control-label,
     #profile-field-settings .new-profile-field-form .control-label {
         display: block;
         width: 120px;
@@ -1841,7 +1841,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
         float: none;
     }
 
-    #filter-settings .new-filter-form .controls,
+    #linkifier-settings .new-linkifier-form .controls,
     #profile-field-settings .new-profile-field-form .controls {
         margin: auto;
         text-align: center;
