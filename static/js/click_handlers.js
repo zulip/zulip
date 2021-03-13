@@ -416,12 +416,15 @@ export function initialize() {
     });
 
     // MUTING
+    function mute_topic($elt) {
+        const stream_id = Number.parseInt($elt.attr("data-stream-id"), 10);
+        const topic = $elt.attr("data-topic-name");
+        muting_ui.mute_topic(stream_id, topic);
+    }
 
     $("body").on("click", ".on_hover_topic_mute", (e) => {
         e.stopPropagation();
-        const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id"), 10);
-        const topic = $(e.currentTarget).attr("data-topic-name");
-        muting_ui.mute_topic(stream_id, topic);
+        mute_topic($(e.target));
     });
 
     $("body").on("keydown", ".on_hover_topic_mute", convert_enter_to_click);
