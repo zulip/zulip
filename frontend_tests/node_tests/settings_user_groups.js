@@ -2,8 +2,6 @@
 
 const {strict: assert} = require("assert");
 
-const _ = require("lodash");
-
 const {stub_templates} = require("../zjsunit/handlebars");
 const {i18n} = require("../zjsunit/i18n");
 const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
@@ -450,12 +448,6 @@ test_ui("with_external_user", (override) => {
 
     const des_update_handler = $(user_group_selector).get_on_handler("input", ".description");
 
-    const member_change_handler = $(user_group_selector).get_on_handler("blur", ".input");
-
-    const name_change_handler = $(user_group_selector).get_on_handler("blur", ".name");
-
-    const des_change_handler = $(user_group_selector).get_on_handler("blur", ".description");
-
     const event = {
         stopPropagation: noop,
     };
@@ -466,12 +458,9 @@ test_ui("with_external_user", (override) => {
     assert.equal(delete_handler.call(fake_delete), undefined);
     assert.equal(name_update_handler(), undefined);
     assert.equal(des_update_handler(), undefined);
-    assert.equal(member_change_handler(), undefined);
-    assert.equal(name_change_handler(), undefined);
-    assert.equal(des_change_handler(), undefined);
     assert.equal(set_parents_result_called, 1);
     assert.equal(set_attributes_called, 1);
-    assert.equal(can_edit_called, 9);
+    assert.equal(can_edit_called, 6);
     assert(exit_button_called);
     assert.equal(user_group_find_called, 2);
     assert.equal(pill_container_find_called, 4);
@@ -600,69 +589,6 @@ test_ui("on_events", (override) => {
         assert(default_action_for_enter_stopped);
     })();
 
-    (function test_do_not_blur() {
-        const blur_event_classes = [".name", ".description", ".input"];
-        let api_endpoint_called = false;
-        channel.post = () => {
-            api_endpoint_called = true;
-        };
-        channel.patch = noop;
-        const fake_this = $.create("fake-#user-groups_do_not_blur");
-        const event = {
-            relatedTarget: fake_this,
-        };
-
-        // Any of the blur_exceptions trigger blur event.
-        for (const class_name of blur_event_classes) {
-            const handler = $(user_group_selector).get_on_handler("blur", class_name);
-            const blur_exceptions = _.without(
-                [".pill-container", ".name", ".description", ".input", ".delete"],
-                class_name,
-            );
-
-            for (const blur_exception of blur_exceptions) {
-                api_endpoint_called = false;
-                fake_this.closest = (class_name) => {
-                    if (class_name === blur_exception || class_name === user_group_selector) {
-                        return [1];
-                    }
-                    return [];
-                };
-                handler.call(fake_this, event);
-                assert(!api_endpoint_called);
-            }
-
-            api_endpoint_called = false;
-            fake_this.closest = (class_name) => {
-                if (class_name === ".typeahead") {
-                    return [1];
-                }
-                return [];
-            };
-            handler.call(fake_this, event);
-            assert(!api_endpoint_called);
-
-            // Cancel button triggers blur event.
-            let settings_user_groups_reload_called = false;
-            override(settings_user_groups, "reload", () => {
-                settings_user_groups_reload_called = true;
-            });
-            api_endpoint_called = false;
-            fake_this.closest = (class_name) => {
-                if (
-                    class_name === ".save-status.btn-danger" ||
-                    class_name === user_group_selector
-                ) {
-                    return [1];
-                }
-                return [];
-            };
-            handler.call(fake_this, event);
-            assert(!api_endpoint_called);
-            assert(settings_user_groups_reload_called);
-        }
-    })();
-
     (function test_update_cancel_button() {
         const handler_name = $(user_group_selector).get_on_handler("input", ".name");
         const handler_desc = $(user_group_selector).get_on_handler("input", ".description");
@@ -711,8 +637,11 @@ test_ui("on_events", (override) => {
     })();
 
     (function test_user_groups_save_group_changes_triggered() {
-        const handler_name = $(user_group_selector).get_on_handler("blur", ".name");
-        const handler_desc = $(user_group_selector).get_on_handler("blur", ".description");
+        const handler_name = $(user_group_selector).get_on_handler("click", "#save-user-group");
+        const handler_desc = $(user_group_selector).get_on_handler(
+            "click",
+            ".save-status.btn-danger",
+        );
         const sib_des = $(description_selector);
         const sib_name = $(name_selector);
         sib_name.text(i18n.t("mobile"));
@@ -803,7 +732,7 @@ test_ui("on_events", (override) => {
     })();
 
     (function test_user_groups_save_member_changes_triggered() {
-        const handler = $(user_group_selector).get_on_handler("blur", ".input");
+        const handler = $(user_group_selector).get_on_handler("click", "#save-user-group");
         const realm_user_group = {
             id: 1,
             name: "Mobile",
@@ -846,7 +775,7 @@ test_ui("on_events", (override) => {
             })();
         };
 
-        const fake_this = $.create("fake-#user-groups_blur_input");
+        const fake_this = $.create("fake-#user-groups_input");
         fake_this.set_parents_result(user_group_selector, $(user_group_selector));
         fake_this.closest = () => [];
         const event = {

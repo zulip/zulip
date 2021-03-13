@@ -9,8 +9,11 @@
             <img class="checkmark" src="/static/images/checkbox-green.svg" />
             {{t 'Saved' }}
         </button>
-        <button class="button save-status btn-danger small">
+        <button class="save-status btn-danger save-discard-widget-button button discard-button">
             {{t 'Discard changes' }}
+        </button>
+        <button class="save-discard-widget-button save-status button primary save-button" id='save-user-group'>
+            {{t 'Save changes' }}
         </button>
         <button class="button rounded small delete btn-danger">
             {{t 'Delete' }}
@@ -21,7 +24,7 @@
         <div class="input" contenteditable="true" data-placeholder="{{t 'Add member...' }}"></div>
     </div>
     <p class="save-instructions">
-        {{t "Click outside the input box to save. We'll automatically notify anyone that was added or removed."}}
+        {{t "We'll automatically notify anyone that was added or removed."}}
     </p>
 </div>
 {{/with}}
