@@ -54,6 +54,7 @@ function get_new_heights() {
         Number.parseInt($("#left-sidebar").css("marginTop"), 10) -
         Number.parseInt($(".narrows_panel").css("marginTop"), 10) -
         Number.parseInt($(".narrows_panel").css("marginBottom"), 10) -
+        $("#pinned_filters").safeOuterHeight(true) -
         $("#global_filters").safeOuterHeight(true) -
         $("#streams_header").safeOuterHeight(true) -
         add_streams_link_height;

@@ -123,16 +123,30 @@ export function build_stream_list(force_rerender) {
         return;
     }
 
+    const parent = $("#stream_filters");
+    const pin_parent = $("#pinned_filters");
     const elems = [];
+    const pin_elems = [];
 
+    // This function push new normal and dormant streams in the
+    // elems array.
     function add_sidebar_li(stream_id) {
         const sidebar_row = stream_sidebar.get_row(stream_id);
         sidebar_row.update_whether_active();
         elems.push(sidebar_row.get_li());
     }
 
+    // This function push new pinned and streams in the
+    // pin_elems array.
+    function pinned_add_sidebar_li(stream_id) {
+        const sidebar_row = exports.stream_sidebar.get_row(stream_id);
+        sidebar_row.update_whether_active();
+        pin_elems.push(sidebar_row.get_li());
+    }
+
     topic_list.clear();
     parent.empty();
+    pin_parent.empty();
 
     for (const stream_id of stream_groups.pinned_streams) {
         add_sidebar_li(stream_id);
@@ -143,7 +157,7 @@ export function build_stream_list(force_rerender) {
     const any_dormant_streams = stream_groups.dormant_streams.length > 0;
 
     if (any_pinned_streams && (any_normal_streams || any_dormant_streams)) {
-        elems.push('<hr class="stream-split">');
+        pin_elem.push('<hr class="stream-split">');
     }
 
     for (const stream_id of stream_groups.normal_streams) {
@@ -159,6 +173,7 @@ export function build_stream_list(force_rerender) {
     }
 
     parent.append(elems);
+    pin_parent.append(pin_elems);
 }
 
 export function get_stream_li(stream_id) {
@@ -213,6 +228,17 @@ export function zoom_in_topics(options) {
             elt.hide();
         }
     });
+
+    $("#pinned_filters li.narrow-filter").each(function () {
+        const elt = $(this);
+        const stream_id = options.stream_id;
+
+        if (stream_id_for_elt(elt) === stream_id) {
+            elt.show();
+        } else {
+            elt.hide();
+        }
+    });
 }
 
 export function zoom_out_topics() {
@@ -226,6 +252,7 @@ export function zoom_out_topics() {
 
     $("#streams_list").expectOne().removeClass("zoom-in").addClass("zoom-out");
     $("#stream_filters li.narrow-filter").show();
+    $("#pinned_filters li.narrow-filter").show();
 }
 
 export function set_in_home_view(stream_id, in_home) {
@@ -411,6 +438,7 @@ export function get_sidebar_stream_topic_info(filter) {
 
 function deselect_stream_items() {
     $("ul#stream_filters li").removeClass("active-filter");
+    $("ul#pinned_filters li").removeClass("active-filter");
 }
 
 export function update_stream_sidebar_for_narrow(filter) {
@@ -519,6 +547,22 @@ export function set_event_handlers() {
         e.preventDefault();
         e.stopPropagation();
     });
+
+    $("#pinned_filters").on("click", "li .subscription_block", (e) => {
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
+        const stream_id = stream_id_for_elt($(e.target).parents("li"));
+        const sub = stream_data.get_sub_by_id(stream_id);
+        popovers.hide_all();
+        narrow.by("stream", sub.name, {trigger: "sidebar"});
+
+        exports.clear_and_hide_search();
+
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
 
     $("#clear_search_stream_button").on("click", clear_search);
 

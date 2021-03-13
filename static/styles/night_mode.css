@@ -342,6 +342,7 @@ on a dark background, and don't change the dark labels dark either. */
     li.top_left_all_messages:hover .all-messages-sidebar-menu-icon,
     li.top_left_starred_messages:hover .starred-messages-sidebar-menu-icon,
     #stream_filters li:hover .stream-sidebar-menu-icon,
+    #pinned_filters li:hover .stream-sidebar-menu-icon,
     li.topic-list-item:hover .topic-sidebar-menu-icon {
         color: hsl(236, 33%, 80%);
     }

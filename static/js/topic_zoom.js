@@ -66,4 +66,11 @@ export function initialize() {
         e.preventDefault();
         e.stopPropagation();
     });
+
+    $("#pinned_filters").on("click", ".show-more-topics", (e) => {
+        zoom_in();
+
+        e.preventDefault();
+        e.stopPropagation();
+    });
 }

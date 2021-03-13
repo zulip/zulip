@@ -281,4 +281,31 @@ export function initialize() {
 
         e.preventDefault();
     });
+
+    $("#pinned_filters").on("click", ".topic-box", (e) => {
+        if (e.metaKey || e.ctrlKey) {
+            return;
+        }
+        if ($(e.target).closest(".show-more-topics").length > 0) {
+            return;
+        }
+
+        // In a more componentized world, we would delegate some
+        // of this stuff back up to our parents.
+
+        const stream_row = $(e.target).parents(".narrow-filter");
+        const stream_id = Number.parseInt(stream_row.attr("data-stream-id"), 10);
+        const sub = stream_data.get_sub_by_id(stream_id);
+        const topic = $(e.target).parents("li").attr("data-topic-name");
+
+        narrow.activate(
+            [
+                {operator: "stream", operand: sub.name},
+                {operator: "topic", operand: topic},
+            ],
+            {trigger: "sidebar"},
+        );
+
+        e.preventDefault();
+    });
 }

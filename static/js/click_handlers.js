@@ -626,7 +626,12 @@ export function initialize() {
     // MISC
 
     (function () {
-        const sel = ["#stream_filters", "#global_filters", "#user_presences"].join(", ");
+        const sel = [
+            "#stream_filters",
+            "#pinned_filters",
+            "#global_filters",
+            "#user_presences",
+        ].join(", ");
 
         $(sel).on("click", "a", function () {
             this.blur();
@@ -785,7 +790,7 @@ export function initialize() {
     // End Webathena code
 
     // disable the draggability for left-sidebar components
-    $("#stream_filters, #global_filters").on("dragstart", (e) => {
+    $("#stream_filters, #pinned_filters, #global_filters").on("dragstart", (e) => {
         e.target.blur();
         return false;
     });
