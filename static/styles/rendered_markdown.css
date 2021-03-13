@@ -283,6 +283,24 @@
         margin-right: 0.75em;
     }
 
+    .twitter-attachment {
+        display: block;
+        text-align: right;
+        margin-top: -18px;
+        color: hsl(300, 1%, 38%);
+    }
+
+    .fa-twitter {
+        color: hsl(203, 89%, 53%);
+        font-size: 16px;
+        position: relative;
+        top: 2px;
+    }
+
+    .twitter-timestamp {
+        font-size: 12px;
+    }
+
     .message_inline_ref {
         margin-bottom: 5px;
         margin-left: 5px;

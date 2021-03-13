@@ -1,4 +1,5 @@
 import copy
+import datetime
 import os
 import re
 from textwrap import dedent
@@ -891,15 +892,20 @@ class MarkdownTest(ZulipTestCase):
 
         mention_in_link_tweet_html = """<a href="http://t.co/@foo">http://foo.com</a>"""
 
-        media_tweet_html = (
-            '<a href="http://t.co/xo7pAhK6n3">'
-            "http://twitter.com/NEVNBoston/status/421654515616849920/photo/1</a>"
-        )
-
         emoji_in_tweet_html = """Zulip is <span aria-label=\"100\" class="emoji emoji-1f4af" role=\"img\" title="100">:100:</span>% open-source!"""
 
-        def make_inline_twitter_preview(url: str, tweet_html: str, image_html: str = "") -> str:
+        def make_inline_twitter_preview(
+            url: str,
+            tweet_html: str,
+            image_html: str = "",
+            utc_timestamp: str = "10/09/2011 22:23:38 (UTC+0000)",
+        ) -> str:
             ## As of right now, all previews are mocked to be the exact same tweet
+            timestamp = (
+                datetime.datetime.strptime(utc_timestamp, "%d/%m/%Y %H:%M:%S (%Z%z)")
+                .replace(tzinfo=datetime.timezone.utc)
+                .strftime("%B %d, %Y")
+            )
             return (
                 '<div class="inline-preview-twitter">'
                 '<div class="twitter-tweet">'
@@ -909,8 +915,17 @@ class MarkdownTest(ZulipTestCase):
                 "6f6d2f70726f66696c655f696d616765732f313338303931323137332f53637265656e5f73686f745f323031312d30362d30335f61745f372e33352e33"
                 '365f504d5f6e6f726d616c2e706e67">'
                 "</a>"
+                f'<a href="{url}">'
+                "Eoin McMillan @imeoin"
+                "</a>"
+                '<span class="twitter-attachment">'
+                '<i class="fa fa-twitter"></i>'
+                " | "
+                f'<span class="twitter-timestamp" title="{utc_timestamp}">'
+                f"{timestamp}"
+                "</span>"
+                "</span>"
                 f"<p>{tweet_html}</p>"
-                "<span>- Eoin McMillan (@imeoin)</span>"
                 f"{image_html}"
                 "</div>"
                 "</div>"
@@ -1083,7 +1098,7 @@ class MarkdownTest(ZulipTestCase):
                 make_link("http://twitter.com/wdaher/status/287977969287315459"),
                 make_inline_twitter_preview(
                     "http://twitter.com/wdaher/status/287977969287315459",
-                    media_tweet_html,
+                    "",
                     (
                         '<div class="twitter-image">'
                         '<a href="http://t.co/xo7pAhK6n3">'

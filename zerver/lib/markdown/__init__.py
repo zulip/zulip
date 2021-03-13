@@ -979,14 +979,20 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
         to_process.sort(key=lambda x: x["start"])
         p = current_node = Element("p")
 
-        def set_text(text: str) -> None:
+        def add_text(text: str) -> None:
             """
-            Helper to set the text or the tail of the current_node
+            Helper to add the text or the tail of the current_node.
             """
             if current_node == p:
-                current_node.text = text
+                if current_node.text is None:
+                    current_node.text = text
+                else:
+                    current_node.text += text
             else:
-                current_node.tail = text
+                if current_node.tail is None:
+                    current_node.tail = text
+                else:
+                    current_node.tail += text
 
         db_data = self.md.zulip_db_data
         current_index = 0
@@ -996,8 +1002,13 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 continue
             # Add text from the end of last link to the start of the current
             # link
-            set_text(text[current_index : item["start"]])
+            add_text(text[current_index : item["start"]])
             current_index = item["end"]
+            if item["type"] == "media":
+                # We avoid adding media data link (like photos, videos) to the Twitter Card
+                # and append the rest of the text (present in between current_index and
+                # item["start"]) to the previous element, hence, continuing from here is necessary.
+                continue
             if item["type"] != "emoji":
                 elem = url_to_a(db_data, item["url"], item["text"])
                 assert isinstance(elem, Element)
@@ -1007,7 +1018,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             p.append(elem)
 
         # Add any unused text
-        set_text(text[current_index:])
+        add_text(text[current_index:])
         return p
 
     def twitter_link(self, url: str) -> Optional[Element]:
@@ -1035,15 +1046,32 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             image_url = user.get("profile_image_url_https", user["profile_image_url"])
             profile_img.set("src", image_url)
 
+            screen_name_a = SubElement(tweet, "a")
+            screen_name_a.set("href", url)
+            screen_name_a.text = "{} @{}".format(user["name"], user["screen_name"])
+
+            twitter_attachment = SubElement(tweet, "span")
+            twitter_attachment.set("class", "twitter-attachment")
+            twitter_logo = SubElement(twitter_attachment, "i")
+            twitter_logo.set("class", "fa fa-twitter")
+            twitter_logo.tail = " | "
+
+            timestamp = SubElement(twitter_attachment, "span")
+            timestamp.set("class", "twitter-timestamp")
+            created_at = datetime.datetime.strptime(
+                res["created_at"], "%a %b %d %H:%M:%S %z %Y"
+            ).replace(tzinfo=datetime.timezone.utc)
+            TWITTER_TIMESTAMP_FORMAT = "%B %d, %Y"
+            TWITTER_TIMESTAMP_TITLE_FORMAT = "%d/%m/%Y %H:%M:%S (%Z%z)"
+            timestamp.text = created_at.strftime(TWITTER_TIMESTAMP_FORMAT)
+            timestamp.set("title", created_at.strftime(TWITTER_TIMESTAMP_TITLE_FORMAT))
+
             text = html.unescape(res["full_text"])
             urls = res.get("urls", [])
             user_mentions = res.get("user_mentions", [])
             media: List[Dict[str, Any]] = res.get("media", [])
             p = self.twitter_text(text, urls, user_mentions, media)
             tweet.append(p)
-
-            span = SubElement(tweet, "span")
-            span.text = "- {} (@{})".format(user["name"], user["screen_name"])
 
             # Add image previews
             for media_item in media:
