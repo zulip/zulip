@@ -7,6 +7,7 @@ if (module.hot) {
 
 export const status_classes = "alert-error alert-success alert-info alert-warning";
 
+// TODO: Move this to the portico codebase.
 export function autofocus(selector) {
     $(() => {
         $(selector).trigger("focus");
