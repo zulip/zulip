@@ -47,6 +47,13 @@ let row_focus = 0;
 // Start focus on the topic column, so Down+Enter works to visit a topic.
 let col_focus = 1;
 
+export const COLUMNS = {
+    stream: 0,
+    topic: 1,
+    mute: 2,
+    read: 3,
+};
+
 // The number of selectable actions in a recent_topics.  Used to
 // implement wraparound of elements with the right/left keys.  Must be
 // increased when we add new actions, or rethought if we add optional
@@ -552,6 +559,12 @@ function is_focus_at_last_table_row() {
     return row_focus === topic_rows.length - 1;
 }
 
+export function focus_clicked_element($elt, col) {
+    current_focus_elem = "table";
+    col_focus = col;
+    row_focus = $elt.closest("tr").index();
+}
+
 export function change_focused_element(e, input_key) {
     // Called from hotkeys.js; like all logic in that module,
     // returning true will cause the caller to do
@@ -620,6 +633,9 @@ export function change_focused_element(e, input_key) {
         }
     } else if ($elem.hasClass("btn-recent-filters")) {
         switch (input_key) {
+            case "click":
+                current_focus_elem = $elem;
+                return true;
             case "shift_tab":
             case "vim_left":
             case "left_arrow":
