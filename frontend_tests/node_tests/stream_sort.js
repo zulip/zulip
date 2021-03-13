@@ -8,11 +8,6 @@ const {run_test} = require("../zjsunit/test");
 const stream_data = zrequire("stream_data");
 const stream_sort = zrequire("stream_sort");
 
-run_test("no_subscribed_streams", () => {
-    assert.equal(stream_sort.sort_groups([]), undefined);
-    assert.equal(stream_sort.first_stream_id(), undefined);
-});
-
 const scalene = {
     subscribed: true,
     name: "scalene",
@@ -44,18 +39,36 @@ const weaving = {
     pin_to_top: false,
 };
 
-stream_data.add_sub(scalene);
-stream_data.add_sub(fast_tortoise);
-stream_data.add_sub(pneumonia);
-stream_data.add_sub(clarinet);
-stream_data.add_sub(weaving);
-
 function sort_groups(query) {
     const streams = stream_data.subscribed_stream_ids();
     return stream_sort.sort_groups(streams, query);
 }
 
-run_test("basics", (override) => {
+function test(label, f) {
+    run_test(label, (override) => {
+        stream_data.clear_subscriptions();
+        f(override);
+    });
+}
+
+test("no_subscribed_streams", () => {
+    const sorted = sort_groups("");
+    assert.deepEqual(sorted, {
+        dormant_streams: [],
+        normal_streams: [],
+        pinned_streams: [],
+        same_as_before: sorted.same_as_before,
+    });
+    assert.equal(stream_sort.first_stream_id(), undefined);
+});
+
+test("basics", (override) => {
+    stream_data.add_sub(scalene);
+    stream_data.add_sub(fast_tortoise);
+    stream_data.add_sub(pneumonia);
+    stream_data.add_sub(clarinet);
+    stream_data.add_sub(weaving);
+
     override(stream_data, "is_active", (sub) => sub.name !== "pneumonia");
 
     // Test sorting into categories/alphabetized
