@@ -294,7 +294,7 @@ run_test("format_drafts", (override) => {
     });
 
     override(drafts, "open_overlay", noop);
-    drafts.__Rewire__("set_initial_element", noop);
+    override(drafts, "set_initial_element", noop);
 
     $.create("#drafts_table .draft-row", {children: []});
     drafts.launch();
