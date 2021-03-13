@@ -458,6 +458,14 @@ reaction_remove_event = event_dict_type(
 )
 check_reaction_remove = make_checker(reaction_remove_event)
 
+realm_deactivated_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("realm")),
+        ("op", Equals("deactivated")),
+        ("realm_id", int),
+    ]
+)
+check_realm_deactivated = make_checker(realm_deactivated_event)
 
 bot_services_outgoing_type = DictType(
     required_keys=[

@@ -1010,6 +1010,12 @@ def do_deactivate_realm(realm: Realm, acting_user: Optional[UserProfile] = None)
         # notice when they try to log in.
         delete_user_sessions(user)
 
+    # This event will only ever be received by clients with an active
+    # longpoll connection, because by this point clients will be
+    # unable to authenticate again to their event queue (triggering an
+    # immediate reload into the page explaining the realm was
+    # deactivated). So the purpose of sending this is to flush all
+    # active longpoll connections for the realm.
     event = dict(type="realm", op="deactivated", realm_id=realm.id)
     send_event(realm, event, active_user_ids(realm.id))
 

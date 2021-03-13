@@ -2777,6 +2777,47 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent to all users in a Zulip organization when the
+                                organization (realm) is deactivated.  Its main purpose is to
+                                flush active longpolling connections so clients can immediately
+                                show the organization as deactivated.
+
+                                Clients cannot rely on receiving this event, because they will
+                                no longer be able to authenticate to the Zulip API due to the
+                                deactivation, and thus can miss it if they did not have an active
+                                longpolling connection at the moment of deactivation.
+
+                                Correct handling of realm deactivations requires that clients
+                                parse authentication errors from GET /events; if that is done
+                                correctly, the client can ignore this event type and rely on its
+                                handling of the `GET /events` request it will do immediately
+                                after processing this batch of events.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm
+                                op:
+                                  type: string
+                                  enum:
+                                    - deactivated
+                                realm_id:
+                                  type: integer
+                                  description: |
+                                    The ID of the deactivated realm.
+                              example:
+                                {
+                                  "type": "realm",
+                                  "op": "deactivated",
+                                  "realm_id": 2,
+                                  "id": 0,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event sent to all users in a Zulip organization when the
                                 configuration of the organization (realm) has changed.
 
                                 Unlike realm / update, supports multiple properties being changed

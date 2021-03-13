@@ -742,6 +742,15 @@ def apply_event(
                 if key == "authentication_methods":
                     state["realm_password_auth_enabled"] = value["Email"] or value["LDAP"]
                     state["realm_email_auth_enabled"] = value["Email"]
+        elif event["op"] == "deactivated":
+            # The realm has just been deactivated.  If our request had
+            # arrived a moment later, we'd have rendered the
+            # deactivation UI; if it'd been a moment sooner, we've
+            # have rendered the app and then immediately got this
+            # event (or actually, more likely, an auth error on GET
+            # /events) and immediately reloaded into the same
+            # deactivation UI. Passing achieves the same result.
+            pass
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "subscription":

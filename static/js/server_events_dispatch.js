@@ -249,6 +249,13 @@ export function dispatch_normal_event(event) {
                 page_params.realm_night_logo_source = event.data.night_logo_source;
                 realm_logo.rerender();
             } else if (event.op === "deactivated") {
+                // This handler is likely unnecessary, in that if we
+                // did nothing here, we'd reload and end up at the
+                // same place when we attempt the next `GET /events`
+                // and get an error.  Some clients will do that even
+                // with this code, if they didn't have an active
+                // longpoll waiting at the moment the realm was
+                // deactivated.
                 window.location.href = "/accounts/deactivated/";
             }
 

@@ -216,6 +216,7 @@ exports.fixtures = {
     realm__deactivated: {
         type: "realm",
         op: "deactivated",
+        realm_id: 2,
     },
 
     realm__update__bot_creation_policy: {
