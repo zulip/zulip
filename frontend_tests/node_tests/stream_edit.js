@@ -8,7 +8,7 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
-stub_templates(() => noop);
+stub_templates(() => "<stub>");
 
 const page_params = set_global("page_params", {});
 mock_cjs("jquery", $);

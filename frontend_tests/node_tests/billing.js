@@ -22,6 +22,8 @@ const helpers = mock_esm("../../static/js/billing/helpers", {
     set_tab: () => {},
 });
 
+zrequire("billing/billing");
+
 run_test("initialize", (override) => {
     let token_func;
 
@@ -69,7 +71,7 @@ run_test("initialize", (override) => {
     $("#payment-method").data = (key) =>
         document.querySelector("#payment-method").getAttribute("data-" + key);
 
-    zrequire("billing/billing");
+    $.get_initialize_function()();
 
     assert(set_tab_called);
     assert(stripe_checkout_configure_called);

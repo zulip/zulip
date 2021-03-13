@@ -14,9 +14,10 @@ const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
 
 mock_cjs("jquery", $);
+zrequire("../js/analytics/support");
 
 run_test("scrub_realm", () => {
-    zrequire("../js/analytics/support");
+    $.get_initialize_function()();
     const click_handler = $("body").get_on_handler("click", ".scrub-realm-button");
 
     const fake_this = $.create("fake-.scrub-realm-button");
