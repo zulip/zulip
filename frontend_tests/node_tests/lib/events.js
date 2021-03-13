@@ -479,6 +479,7 @@ exports.fixtures = {
 
     restart: {
         type: "restart",
+        server_generation: 2,
         immediate: true,
     },
 

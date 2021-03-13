@@ -1085,6 +1085,11 @@ def check_realm_user_update(
     )
 
 
+restart_event = event_dict_type(
+    required_keys=[("type", Equals("restart")), ("server_generation", int), ("immediate", bool)]
+)
+check_restart_event = make_checker(restart_event)
+
 stream_create_event = event_dict_type(
     required_keys=[
         ("type", Equals("stream")),
