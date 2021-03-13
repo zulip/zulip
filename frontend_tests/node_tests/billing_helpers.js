@@ -22,7 +22,7 @@ const loading = mock_esm("../../static/js/loading");
 set_global("document", {
     title: "Zulip",
 });
-set_global("location", {
+const location = set_global("location", {
     pathname: "/upgrade/",
     search: "",
     hash: "#billing",
@@ -276,6 +276,7 @@ run_test("set_tab", () => {
         hash_change_handler = handler;
     };
 
+    location.hash = "#billing";
     helpers.set_tab("upgrade");
     assert.equal(state.show_tab_billing, 1);
     assert.equal(state.scrollTop, 1);
