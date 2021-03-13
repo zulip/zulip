@@ -405,28 +405,36 @@ class CommonUtils {
      * The messages are sorted chronologically.
      */
     async get_rendered_messages(page: Page, table = "zhome"): Promise<[string, string[]][]> {
-        return await page.evaluate((table: string) => {
-            const $recipient_rows = $(`#${CSS.escape(table)}`).find(".recipient_row");
-            return $recipient_rows.toArray().map((element): [string, string[]] => {
-                const $el = $(element);
-                const stream_name = $el.find(".stream_label").text().trim();
-                const topic_name = $el.find(".stream_topic a").text().trim();
+        const recipient_rows = await page.$$(`#${CSS.escape(table)} .recipient_row`);
+        return Promise.all(
+            recipient_rows.map(
+                async (element): Promise<[string, string[]]> => {
+                    const stream_label = await element.$(".stream_label");
+                    const stream_name = (await this.get_element_text(stream_label!)).trim();
+                    const topic_label = await element.$(".stream_topic a");
+                    const topic_name =
+                        topic_label === null
+                            ? ""
+                            : (await this.get_element_text(topic_label)).trim();
+                    let key = stream_name;
+                    if (topic_name !== "") {
+                        // If topic_name is '' then this is PMs, so only
+                        // append > topic_name if we are not in PMs or Group PMs.
+                        key = `${stream_name} > ${topic_name}`;
+                    }
 
-                let key = stream_name;
-                if (topic_name !== "") {
-                    // If topic_name is '' then this is PMs, so only
-                    // append > topic_name if we are not in PMs or Group PMs.
-                    key = `${stream_name} > ${topic_name}`;
-                }
+                    const messages = await Promise.all(
+                        (
+                            await element.$$(".message_row .message_content")
+                        ).map(async (message_row) =>
+                            (await this.get_element_text(message_row)).trim(),
+                        ),
+                    );
 
-                const messages = $el
-                    .find(".message_row .message_content")
-                    .toArray()
-                    .map((message_row) => message_row.textContent!.trim());
-
-                return [key, messages];
-            });
-        }, table);
+                    return [key, messages];
+                },
+            ),
+        );
     }
 
     // This method takes in page, table to fetch the messages
