@@ -39,8 +39,6 @@ const stream_edit = zrequire("stream_edit");
 const stream_pill = zrequire("stream_pill");
 const user_pill = zrequire("user_pill");
 
-stream_edit.__Rewire__("sort_but_pin_current_user_on_top", noop);
-
 const jill = {
     email: "jill@zulip.com",
     user_id: 10,
@@ -97,6 +95,8 @@ function test_ui(label, f) {
 }
 
 test_ui("subscriber_pills", (override) => {
+    override(stream_edit, "sort_but_pin_current_user_on_top", noop);
+
     const subscriptions_table_selector = "#subscriptions_table";
     const input_field_stub = $.create(".input");
 
