@@ -484,7 +484,7 @@ var inline = {
   stream: noop,
   tex: noop,
   timestamp: noop,
-  realm_filters: [],
+  linkifiers: [],
   text: /^[\s\S]+?(?=[\\<!\[_*`$]| {2,}\n|$)/
 };
 
@@ -550,7 +550,7 @@ inline.zulip = merge({}, inline.breaks, {
   stream: /^#\*\*([^\*]+)\*\*/,
   tex: /^(\$\$([^\n_$](\\\$|[^\n$])*)\$\$(?!\$))\B/,
   timestamp: /^<time:([^>]+)>/,
-  realm_filters: [],
+  linkifiers: [],
   text: replace(inline.breaks.text)
     ('|', '|(\ud83c[\udd00-\udfff]|\ud83d[\udc00-\ude4f]|' +
           '\ud83d[\ude80-\udeff]|\ud83e[\udd00-\uddff]|' +
@@ -645,12 +645,12 @@ InlineLexer.prototype.output = function(src) {
       continue;
     }
 
-    // realm_filters (Zulip)
+    // linkifier (Zulip)
     var self = this;
-    this.rules.realm_filters.forEach(function (realm_filter) {
-      var ret = self.inlineReplacement(realm_filter, src, function(regex, groups, match) {
+    this.rules.linkifiers.forEach(function (linkifier) {
+      var ret = self.inlineReplacement(linkifier, src, function(regex, groups, match) {
         // Insert the created URL
-        href = self.realm_filter(regex, groups, match);
+        href = self.linkifier(regex, groups, match);
         if (href !== undefined) {
           href = escape(href);
           return self.renderer.link(href, href, match);
@@ -890,11 +890,11 @@ InlineLexer.prototype.timestamp = function (time) {
   return this.options.timestampHandler(time);
 };
 
-InlineLexer.prototype.realm_filter = function (filter, matches, orig) {
-  if (typeof this.options.realmFilterHandler !== 'function')
+InlineLexer.prototype.linkifier = function (linkifier, matches, orig) {
+  if (typeof this.options.linkifierHandler !== 'function')
     return;
 
-  return this.options.realmFilterHandler(filter, matches);
+  return this.options.linkifierHandler(linkifier, matches);
 };
 
 InlineLexer.prototype.usermention = function (username, orig, silent) {

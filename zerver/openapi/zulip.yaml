@@ -2321,7 +2321,7 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent to all users in a Zulip organization when the
-                                set of configured [linkifiers](/help/add-a-custom-linkification-filter)
+                                set of configured [linkifiers](/help/add-a-custom-linkifier)
                                 for the organization has changed.
 
                                 Processing this event is important to doing Markdown local echo
@@ -5779,7 +5779,7 @@ paths:
       tags: ["server_and_organizations"]
       description: |
         List all of an organization's configured
-        [linkifiers](/help/add-a-custom-linkification-filter), regular
+        [linkifiers](/help/add-a-custom-linkifier), regular
         expression patterns that are automatically linkified when they appear
         in messages and topics.
 
@@ -5829,7 +5829,7 @@ paths:
       operationId: add_linkifier
       tags: ["server_and_organizations"]
       description: |
-        Configure [linkifiers](/help/add-a-custom-linkification-filter),
+        Configure [linkifiers](/help/add-a-custom-linkifier),
         regular expression patterns that are automatically linkified when they
         appear in messages and topics.
 
@@ -5877,7 +5877,7 @@ paths:
       operationId: remove_linkifier
       tags: ["server_and_organizations"]
       description: |
-        Remove [linkifiers](/help/add-a-custom-linkification-filter), regular
+        Remove [linkifiers](/help/add-a-custom-linkifier), regular
         expression patterns that are automatically linkified when they appear
         in messages and topics.
 
@@ -6164,7 +6164,7 @@ paths:
                           Present if `realm_filters` is present in `fetch_event_types`.
 
                           An array of tuples (fixed-length arrays) where each tuple describes
-                          a single realm filter ([linkifier](/help/add-a-custom-linkification-filter).
+                          a single realm filter ([linkifier](/help/add-a-custom-linkifier).
                           The first element of the tuple is a string regex pattern which represents
                           the pattern that should be linkified on matching.
 

@@ -22,8 +22,8 @@ import * as message_store from "./message_store";
 // for example usage.
 let helpers;
 
-const realm_filter_map = new Map();
-let realm_filter_list = [];
+const linkifier_map = new Map();
+let linkifier_list = [];
 
 // Regexes that match some of our common backend-only Markdown syntax
 const backend_only_markdown_re = [
@@ -84,15 +84,15 @@ export function contains_backend_only_syntax(content) {
     // If it doesn't, we can immediately render it client-side for local echo.
     const markedup = backend_only_markdown_re.find((re) => re.test(content));
 
-    // If a realm filter doesn't start with some specified characters
+    // If a linkifier doesn't start with some specified characters
     // then don't render it locally. It is workaround for the fact that
     // javascript regex doesn't support lookbehind.
-    const false_filter_match = realm_filter_list.find((re) => {
+    const false_linkifier_match = linkifier_list.find((re) => {
         const pattern = /[^\s"'(,:<]/.source + re[0].source + /(?!\w)/.source;
         const regex = new RegExp(pattern);
         return regex.test(content);
     });
-    return markedup !== undefined || false_filter_match !== undefined;
+    return markedup !== undefined || false_linkifier_match !== undefined;
 }
 
 export function apply_markdown(message) {
@@ -212,9 +212,9 @@ export function add_topic_links(message) {
     const topic = message.topic;
     let links = [];
 
-    for (const realm_filter of realm_filter_list) {
-        const pattern = realm_filter[0];
-        const url = realm_filter[1];
+    for (const linkifier of linkifier_list) {
+        const pattern = linkifier[0];
+        const url = linkifier[1];
         let match;
         while ((match = pattern.exec(topic)) !== null) {
             let link_url = url;
@@ -340,8 +340,8 @@ function handleStreamTopic(stream_name, topic) {
     )}" href="/${_.escape(href)}">${_.escape(text)}</a>`;
 }
 
-function handleRealmFilter(pattern, matches) {
-    let url = realm_filter_map.get(pattern);
+function handleLinkifier(pattern, matches) {
+    let url = linkifier_map.get(pattern);
 
     let current_group = 1;
 
@@ -367,7 +367,7 @@ function handleTex(tex, fullmatch) {
     }
 }
 
-function python_to_js_filter(pattern, url) {
+function python_to_js_linkifier(pattern, url) {
     // Converts a python named-group regex to a javascript-compatible numbered
     // group regex... with a regex!
     const named_group_re = /\(?P<([^>]+?)>/g;
@@ -404,7 +404,7 @@ function python_to_js_filter(pattern, url) {
 
         pattern = pattern.replace(inline_flag_re, "");
     }
-    // Ideally we should have been checking that realm filters
+    // Ideally we should have been checking that linkifiers
     // begin with certain characters but since there is no
     // support for negative lookbehind in javascript, we check
     // for this condition in `contains_backend_only_syntax()`
@@ -418,36 +418,36 @@ function python_to_js_filter(pattern, url) {
         final_regex = new RegExp(pattern, js_flags);
     } catch (error) {
         // We have an error computing the generated regex syntax.
-        // We'll ignore this realm filter for now, but log this
+        // We'll ignore this linkifier for now, but log this
         // failure for debugging later.
-        blueslip.error("python_to_js_filter: " + error.message);
+        blueslip.error("python_to_js_linkifier: " + error.message);
     }
     return [final_regex, url];
 }
 
-export function update_realm_filter_rules(realm_filters) {
-    // Update the marked parser with our particular set of realm filters
-    realm_filter_map.clear();
-    realm_filter_list = [];
+export function update_linkifier_rules(linkifiers) {
+    // Update the marked parser with our particular set of linkifiers
+    linkifier_map.clear();
+    linkifier_list = [];
 
     const marked_rules = [];
 
-    for (const [pattern, url] of realm_filters) {
-        const [regex, final_url] = python_to_js_filter(pattern, url);
+    for (const [pattern, url] of linkifiers) {
+        const [regex, final_url] = python_to_js_linkifier(pattern, url);
         if (!regex) {
-            // Skip any realm filters that could not be converted
+            // Skip any linkifiers that could not be converted
             continue;
         }
 
-        realm_filter_map.set(regex, final_url);
-        realm_filter_list.push([regex, final_url]);
+        linkifier_map.set(regex, final_url);
+        linkifier_list.push([regex, final_url]);
         marked_rules.push(regex);
     }
 
-    marked.InlineLexer.rules.zulip.realm_filters = marked_rules;
+    marked.InlineLexer.rules.zulip.linkifiers = marked_rules;
 }
 
-export function initialize(realm_filters, helper_config) {
+export function initialize(linkifiers, helper_config) {
     helpers = helper_config;
 
     function disable_markdown_regex(rules, name) {
@@ -506,7 +506,7 @@ export function initialize(realm_filters, helper_config) {
     // Disable autolink as (a) it is not used in our backend and (b) it interferes with @mentions
     disable_markdown_regex(marked.InlineLexer.rules.zulip, "autolink");
 
-    update_realm_filter_rules(realm_filters);
+    update_linkifier_rules(linkifiers);
 
     // Tell our fenced code preprocessor how to insert arbitrary
     // HTML into the output. This generated HTML is safe to not escape
@@ -525,7 +525,7 @@ export function initialize(realm_filters, helper_config) {
         unicodeEmojiHandler: handleUnicodeEmoji,
         streamHandler: handleStream,
         streamTopicHandler: handleStreamTopic,
-        realmFilterHandler: handleRealmFilter,
+        linkifierHandler: handleLinkifier,
         texHandler: handleTex,
         timestampHandler: handleTimestamp,
         renderer: r,

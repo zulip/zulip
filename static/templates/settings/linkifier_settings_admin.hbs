@@ -1,4 +1,4 @@
-<div id="filter-settings" class="settings-section" data-name="filter-settings">
+<div id="linkifier-settings" class="settings-section" data-name="linkifier-settings">
     <div class="admin-table-wrapper">
 
         <p>
@@ -36,25 +36,25 @@
         </ul>
         <p>
             {{#tr this}}
-            More details are available <a href="/help/add-a-custom-linkification-filter" target="_blank" rel="noopener noreferrer">in the Help Center article</a>.
+            More details are available <a href="/help/add-a-custom-linkifier" target="_blank" rel="noopener noreferrer">in the Help Center article</a>.
             {{/tr}}
         </p>
 
         {{#if is_admin}}
-        <form class="form-horizontal admin-filter-form">
-            <div class="add-new-filter-box grey-box">
-                <div class="new-filter-form wrapper">
-                    <div class="settings-section-title new-filter-section-title">{{t "Add a new linkifier" }}</div>
-                    <div class="alert" id="admin-filter-status"></div>
+        <form class="form-horizontal admin-linkifier-form">
+            <div class="add-new-linkifier-box grey-box">
+                <div class="new-linkifier-form wrapper">
+                    <div class="settings-section-title new-linkifier-section-title">{{t "Add a new linkifier" }}</div>
+                    <div class="alert" id="admin-linkifier-status"></div>
                     <div class="control-group">
-                        <label for="filter_pattern" class="control-label">{{t "Pattern" }}</label>
-                        <input type="text" id="filter_pattern" name="pattern" placeholder="#(?P<id>[0-9]+)" />
-                        <div class="alert" id="admin-filter-pattern-status"></div>
+                        <label for="linkifier_pattern" class="control-label">{{t "Pattern" }}</label>
+                        <input type="text" id="linkifier_pattern" name="pattern" placeholder="#(?P<id>[0-9]+)" />
+                        <div class="alert" id="admin-linkifier-pattern-status"></div>
                     </div>
                     <div class="control-group">
-                        <label for="filter_format_string" class="control-label">{{t "URL format string" }}</label>
-                        <input type="text" id="filter_format_string" name="url_format_string" placeholder="https://github.com/zulip/zulip/issues/%(id)s" />
-                        <div class="alert" id="admin-filter-format-status"></div>
+                        <label for="linkifier_format_string" class="control-label">{{t "URL format string" }}</label>
+                        <input type="text" id="linkifier_format_string" name="url_format_string" placeholder="https://github.com/zulip/zulip/issues/%(id)s" />
+                        <div class="alert" id="admin-linkifier-format-status"></div>
                     </div>
                     <button type="submit" class="button rounded sea-green">
                         {{t 'Add linkifier' }}
@@ -66,7 +66,7 @@
 
         <input type="text" class="search" placeholder="{{t 'Filter linkifiers' }}" aria-label="{{t 'Filter linkifiers' }}"/>
         <div class="progressive-table-wrapper" data-simplebar>
-            <table class="table table-condensed table-striped wrapped-table admin_filters_table">
+            <table class="table table-condensed table-striped wrapped-table admin_linkifiers_table">
                 <thead>
                     <th class="active" data-sort="pattern">{{t "Pattern" }}</th>
                     <th data-sort="url">{{t "URL format string" }}</th>
@@ -74,7 +74,7 @@
                     <th class="actions">{{t "Actions" }}</th>
                     {{/if}}
                 </thead>
-                <tbody id="admin_filters_table" {{#unless is_admin}}class="required-text" data-empty="{{t 'No linkifiers set.' }}"{{/unless}}></tbody>
+                <tbody id="admin_linkifiers_table" {{#unless is_admin}}class="required-text" data-empty="{{t 'No linkifiers set.' }}"{{/unless}}></tbody>
             </table>
         </div>
     </div>
