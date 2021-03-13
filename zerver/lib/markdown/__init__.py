@@ -1191,6 +1191,13 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def is_absolute_url(self, url: str) -> bool:
         return bool(urllib.parse.urlparse(url).netloc)
 
+    def is_valid_preview_url(self, url: str) -> bool:
+        content = self.md.zulip_message.content.splitlines()
+        for message_row in content:
+            if message_row == url:
+                return True
+        return False
+
     def run(self, root: Element) -> None:
         # Get all URLs from the blob
         found_urls = walk_tree_with_family(root, self.get_url_data)
@@ -1310,22 +1317,23 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 continue
 
             if extracted_data:
-                if youtube is not None:
-                    title = self.youtube_title(extracted_data)
-                    if title is not None:
-                        if url == text:
-                            found_url.family.child.text = title
-                        else:
-                            found_url.family.child.text = text
-                    continue
-                self.add_embed(root, url, extracted_data)
-                if self.vimeo_id(url):
-                    title = self.vimeo_title(extracted_data)
-                    if title:
-                        if url == text:
-                            found_url.family.child.text = title
-                        else:
-                            found_url.family.child.text = text
+                if self.is_valid_preview_url(str(text)):
+                    if youtube is not None:
+                        title = self.youtube_title(extracted_data)
+                        if title is not None:
+                            if url == text:
+                                found_url.family.child.text = title
+                            else:
+                                found_url.family.child.text = text
+                        continue
+                    self.add_embed(root, url, extracted_data)
+                    if self.vimeo_id(url):
+                        title = self.vimeo_title(extracted_data)
+                        if title:
+                            if url == text:
+                                found_url.family.child.text = title
+                            else:
+                                found_url.family.child.text = text
 
 
 class Timestamp(markdown.inlinepatterns.Pattern):
