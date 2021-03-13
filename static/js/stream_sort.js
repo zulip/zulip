@@ -7,8 +7,6 @@ let previous_dormant;
 let all_streams = [];
 
 export function get_streams() {
-    // Right now this is only used for testing, but we should
-    // use it for things like hotkeys that cycle through streams.
     const sorted_streams = all_streams.map((stream_id) =>
         stream_data.maybe_get_stream_name(stream_id),
     );
@@ -46,10 +44,6 @@ function filter_streams_by_search(streams, search_term) {
 }
 
 export function sort_groups(streams, search_term) {
-    if (streams.length === 0) {
-        return undefined;
-    }
-
     streams = filter_streams_by_search(streams, search_term);
 
     function is_normal(sub) {
