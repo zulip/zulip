@@ -372,14 +372,14 @@ test_ui("zoom_in_and_zoom_out", () => {
     assert($("#streams_list").hasClass("zoom-out"));
 });
 
-test_ui("narrowing", () => {
+test_ui("narrowing", (override) => {
     initialize_stream_data();
 
     topic_list.close = noop;
     topic_list.rebuild = noop;
     topic_list.active_stream_id = noop;
     topic_list.get_stream_li = noop;
-    scroll_util.__Rewire__("scroll_element_into_container", noop);
+    override(scroll_util, "scroll_element_into_container", noop);
 
     assert(!$("<devel sidebar row html>").hasClass("active-filter"));
 
@@ -426,7 +426,8 @@ test_ui("focusout_user_filter", () => {
     click_handler(e);
 });
 
-test_ui("focus_user_filter", () => {
+test_ui("focus_user_filter", (override) => {
+    override(scroll_util, "scroll_element_into_container", noop);
     stream_list.set_event_handlers();
 
     initialize_stream_data();
@@ -440,6 +441,8 @@ test_ui("focus_user_filter", () => {
 });
 
 test_ui("sort_streams", (override) => {
+    override(scroll_util, "scroll_element_into_container", noop);
+
     // Get coverage on early-exit.
     stream_list.build_stream_list();
 
@@ -675,6 +678,8 @@ test_ui("rename_stream", (override) => {
 test_ui("refresh_pin", (override) => {
     initialize_stream_data();
 
+    override(scroll_util, "scroll_element_into_container", noop);
+
     const sub = {
         name: "maybe_pin",
         stream_id: 100,
@@ -694,7 +699,7 @@ test_ui("refresh_pin", (override) => {
 
     stub_templates(() => ({to_$: () => li_stub}));
 
-    stream_list.__Rewire__("update_count_in_dom", noop);
+    override(stream_list, "update_count_in_dom", noop);
     $("#stream_filters").append = noop;
 
     let scrolled;
@@ -707,19 +712,17 @@ test_ui("refresh_pin", (override) => {
     assert(scrolled);
 });
 
-test_ui("create_initial_sidebar_rows", () => {
+test_ui("create_initial_sidebar_rows", (override) => {
     initialize_stream_data();
 
     const html_dict = new Map();
 
-    stream_list.__Rewire__("stream_sidebar", {
-        has_row_for: () => false,
-        set_row(stream_id, widget) {
-            html_dict.set(stream_id, widget.get_li().html());
-        },
+    override(stream_list.stream_sidebar, "has_row_for", () => false);
+    override(stream_list.stream_sidebar, "set_row", (stream_id, widget) => {
+        html_dict.set(stream_id, widget.get_li().html());
     });
 
-    stream_list.__Rewire__("update_count_in_dom", noop);
+    override(stream_list, "update_count_in_dom", noop);
 
     stub_templates((template_name, data) => {
         assert.equal(template_name, "stream_sidebar_row");
