@@ -90,7 +90,7 @@ jobs:
           sudo sed -i '/^bind/s/bind.*/bind 0.0.0.0/' /etc/redis/redis.conf
 
       - name: Build production tarball
-        run: mispipe "./tools/ci/production-build 2>&1" ts
+        run: ./tools/ci/production-build 2>&1
 
       - name: Upload production build artifacts for install jobs
         uses: actions/upload-artifact@v2
@@ -171,23 +171,23 @@ jobs:
           sudo sed -i '/^bind/s/bind.*/bind 0.0.0.0/' /etc/redis/redis.conf
 
       - name: Production extract tarball
-        run: mispipe "/tmp/production-extract-tarball 2>&1" ts
+        run: /tmp/production-extract-tarball 2>&1
 
       - name: Install production
         run: |
           sudo service rabbitmq-server restart
-          sudo mispipe "/tmp/production-install 2>&1" ts
+          sudo /tmp/production-install 2>&1
 
       - name: Verify install
-        run: sudo mispipe "/tmp/production-verify 2>&1" ts
+        run: sudo /tmp/production-verify 2>&1
 
       - name: Upgrade postgresql
         if: ${{ matrix.is_bionic }}
-        run: sudo mispipe "/tmp/production-upgrade-pg 2>&1" ts
+        run: sudo /tmp/production-upgrade-pg 2>&1
 
       - name: Verify install after upgrading postgresql
         if: ${{ matrix.is_bionic }}
-        run: sudo mispipe "/tmp/production-verify 2>&1" ts
+        run: sudo /tmp/production-verify 2>&1
 
       - name: Report status
         if: failure()

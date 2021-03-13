@@ -98,28 +98,28 @@ jobs:
       - name: Install dependencies
         run: |
           # This is the main setup job for the test suite
-          mispipe "tools/ci/setup-backend --skip-dev-db-build" ts
+          ./tools/ci/setup-backend --skip-dev-db-build
 
           # Cleaning caches is mostly unnecessary in GitHub Actions, because
           # most builds don't get to write to the cache.
-          # mispipe "scripts/lib/clean-unused-caches --verbose --threshold 0 2>&1" ts
+          # scripts/lib/clean-unused-caches --verbose --threshold 0 2>&1
 
       - name: Run backend tests
         run: |
           . /srv/zulip-py3-venv/bin/activate && \
-          mispipe "./tools/ci/backend 2>&1" ts
+          ./tools/ci/backend 2>&1
 
       - name: Run frontend tests
         if: ${{ matrix.include_frontend_tests }}
         run: |
           . /srv/zulip-py3-venv/bin/activate
-          mispipe "./tools/ci/frontend 2>&1" ts
+          ./tools/ci/frontend 2>&1
 
       - name: Test locked requirements
         if: ${{ matrix.is_bionic }}
         run: |
           . /srv/zulip-py3-venv/bin/activate && \
-          mispipe "./tools/test-locked-requirements 2>&1" ts
+          ./tools/test-locked-requirements 2>&1
 
       - name: Upload coverage reports
 
@@ -153,7 +153,7 @@ jobs:
 
       - name: Check development database build
         if: ${{ matrix.is_focal }}
-        run: mispipe "tools/ci/setup-backend" ts
+        run: ./tools/ci/setup-backend
 
       - name: Report status
         if: failure()
