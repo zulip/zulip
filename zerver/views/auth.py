@@ -319,7 +319,11 @@ def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str
     response = create_response_for_otp_flow(
         api_key, otp, user_profile, encrypted_key_field_name="otp_encrypted_api_key"
     )
+    _notify_and_log_activity(request, user_profile)
+    return response
 
+
+def _notify_and_log_activity(request: HttpRequest, user_profile: UserProfile) -> None:
     # Since we are returning an API key instead of going through
     # the Django login() function (which creates a browser
     # session, etc.), the "new login" signal handler (which
@@ -333,8 +337,6 @@ def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str
     # Mark this request as having a logged-in user for our server logs.
     process_client(request, user_profile)
     request._requestor_for_logs = user_profile.format_requestor_for_logs()
-
-    return response
 
 
 def create_response_for_otp_flow(
