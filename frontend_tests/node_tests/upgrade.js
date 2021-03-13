@@ -28,6 +28,7 @@ set_global("page_params", {
 mock_cjs("jquery", $);
 
 const helpers = zrequire("../js/billing/helpers");
+zrequire("../js/billing/upgrade");
 
 run_test("initialize", (override) => {
     let token_func;
@@ -103,7 +104,7 @@ run_test("initialize", (override) => {
     $("#autopay-form").data = (key) =>
         document.querySelector("#autopay-form").getAttribute("data-" + key);
 
-    zrequire("../js/billing/upgrade");
+    $.get_initialize_function()();
 
     const e = {
         preventDefault: noop,

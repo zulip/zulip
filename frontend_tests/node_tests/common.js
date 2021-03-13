@@ -16,7 +16,9 @@ const common = zrequire("common");
 
 run_test("basics", () => {
     common.autofocus("#home");
+    $.get_initialize_function()();
     assert($("#home").is_focused());
+    $.clear_initialize_function();
 });
 
 run_test("phrase_match", () => {
