@@ -136,6 +136,16 @@ exports.zrequire = function (short_fn) {
 const staticPath = path.resolve(__dirname, "../../static") + path.sep;
 const templatesPath = staticPath + "templates" + path.sep;
 
+exports.complain_about_unused_mocks = function () {
+    for (const filename of module_mocks.keys()) {
+        if (!used_module_mocks.has(filename)) {
+            throw new Error(
+                `You asked to mock ${filename} but we never saw it during compilation.`,
+            );
+        }
+    }
+};
+
 exports.finish = function () {
     /*
         Handle cleanup tasks after we've run one module.
@@ -151,13 +161,6 @@ exports.finish = function () {
     Module._load = actual_load;
     actual_load = undefined;
 
-    for (const filename of module_mocks.keys()) {
-        if (!used_module_mocks.has(filename)) {
-            throw new Error(
-                `You asked to mock ${filename} but we never saw it during compilation.`,
-            );
-        }
-    }
     module_mocks.clear();
     used_module_mocks.clear();
 
