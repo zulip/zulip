@@ -1,3 +1,7 @@
+# NOTE: Everything test in this file should be in `tools/test-all`.  If there's a
+# reason not to run it there, it should be there as a comment
+# explaining why.
+
 name: Zulip CI
 
 on: [push, pull_request]
@@ -104,16 +108,115 @@ jobs:
           # most builds don't get to write to the cache.
           # scripts/lib/clean-unused-caches --verbose --threshold 0 2>&1
 
-      - name: Run backend tests
+      - name: Run tools test
         run: |
-          . /srv/zulip-py3-venv/bin/activate && \
-          ./tools/ci/backend 2>&1
+          source tools/ci/activate-venv
+          exec 2>&1
+          ./tools/test-tools
 
-      - name: Run frontend tests
+      - name: Run backend lint
+        run: |
+          source tools/ci/activate-venv
+          exec 2>&1
+          echo "Test suite is running under $(python --version)."
+          ./tools/lint --groups=backend --skip=gitlint,mypy # gitlint disabled because flaky
+
+      - name: Run frontend lint
         if: ${{ matrix.include_frontend_tests }}
         run: |
-          . /srv/zulip-py3-venv/bin/activate
-          ./tools/ci/frontend 2>&1
+          source tools/ci/activate-venv
+          exec 2>&1
+          ./tools/lint --groups=frontend --skip=gitlint # gitlint disabled because flaky
+
+      - name: Run backend tests
+        run: |
+          source tools/ci/activate-venv
+          exec 2>&1
+          # We need to pass a parallel level to test-backend because GitHub Actions'
+          # docker setup means the auto-detection logic sees the ~36 processes
+          # the Docker host has, not the ~2 processes of resources we're
+          # allocated.
+          ./tools/test-backend --coverage --include-webhooks --no-cov-cleanup --ban-console-output --parallel=6
+
+      - name: Run mypy
+        run: |
+          source tools/ci/activate-venv
+          exec 2>&1
+          # We run mypy after the backend tests so we get output from the
+          # backend tests, which tend to uncover more serious problems, first.
+          ./tools/run-mypy --version
+          ./tools/run-mypy
+
+      - name: Run miscellaneous tests
+        run: |
+          source tools/ci/activate-venv
+          exec 2>&1
+
+          # Currently our compiled requirements files will differ for different python versions
+          # so we will run test-locked-requirements only for Bionic.
+          # ./tools/test-locked-requirements
+          # ./tools/test-run-dev  # https://github.com/zulip/zulip/pull/14233
+          #
+          # This test has been persistently flaky at like 1% frequency, is slow,
+          # and is for a very specific single feature, so we don't run it by default:
+          # ./tools/test-queue-worker-reload
+
+          ./tools/test-migrations
+          ./tools/setup/optimize-svg
+          ./tools/setup/generate_integration_bots_avatars.py --check-missing
+
+      - name: Run documentation and api tests
+        run: |
+          source tools/ci/activate-venv
+          exec 2>&1
+          # In CI, we only test links we control in test-documentation to avoid flakes
+          ./tools/test-documentation --skip-external-links
+          ./tools/test-help-documentation --skip-external-links
+          ./tools/test-api
+
+      - name: Run node tests
+        if: ${{ matrix.include_frontend_tests }}
+        run: |
+          source tools/ci/activate-venv
+          exec 2>&1
+          # Run the node tests first, since they're fast and deterministic
+          ./tools/test-js-with-node --coverage
+
+      - name: Check schemas
+        if: ${{ matrix.include_frontend_tests }}
+        run: |
+          source tools/ci/activate-venv
+          exec 2>&1
+          # Check that various schemas are consistent. (is fast)
+          ./tools/check-schemas
+
+      - name: Check capitalization of strings
+        if: ${{ matrix.include_frontend_tests }}
+        run: |
+          source tools/ci/activate-venv
+          exec 2>&1
+          ./manage.py makemessages --locale en
+          PYTHONWARNINGS=ignore ./tools/check-capitalization --no-generate
+          PYTHONWARNINGS=ignore ./tools/check-frontend-i18n --no-generate
+
+      - name: Run puppeteer tests
+        if: ${{ matrix.include_frontend_tests }}
+        run: |
+          source tools/ci/activate-venv
+          exec 2>&1
+          ./tools/test-js-with-puppeteer
+
+      - name: Check for untracked files
+        run: |
+          source tools/ci/activate-venv
+          exec 2>&1
+          # This final check looks for untracked files that may have been
+          # created by test-backend or provision.
+          untracked="$(git ls-files --exclude-standard --others)"
+          if [ -n "$untracked" ]; then
+              printf >&2 "Error: untracked files:\n%s\n" "$untracked"
+              exit 1
+          fi
 
       - name: Test locked requirements
         if: ${{ matrix.is_bionic }}
