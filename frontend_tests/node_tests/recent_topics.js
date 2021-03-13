@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -36,14 +36,15 @@ const topic8 = "topic-8";
 const topic9 = "topic-9";
 const topic10 = "topic-10";
 
-const message_list = mock_module("message_list", {
+mock_cjs("jquery", $);
+const message_list = mock_esm("../../static/js/message_list", {
     all: {
         all_messages() {
             return messages;
         },
     },
 });
-const ListWidget = mock_module("list_widget", {
+const ListWidget = mock_esm("../../static/js/list_widget", {
     modifier: noop,
 
     create: (container, mapped_topic_values, opts) => {
@@ -70,27 +71,27 @@ const ListWidget = mock_module("list_widget", {
     render_item: (item) => ListWidget.modifier(item),
 });
 
-mock_module("compose_actions", {
+mock_esm("../../static/js/compose_actions", {
     cancel: noop,
 });
-mock_module("drafts", {
+mock_esm("../../static/js/drafts", {
     update_draft: noop,
 });
-mock_module("hash_util", {
+mock_esm("../../static/js/hash_util", {
     by_stream_uri: () => "https://www.example.com",
 
     by_stream_topic_uri: () => "https://www.example.com",
 });
-mock_module("narrow", {
+mock_esm("../../static/js/narrow", {
     set_narrow_title: noop,
 });
-mock_module("message_store", {
+mock_esm("../../static/js/message_store", {
     get: (msg_id) => messages[msg_id - 1],
 });
-mock_module("message_view_header", {
+mock_esm("../../static/js/message_view_header", {
     render_title_area: noop,
 });
-mock_module("muting", {
+mock_esm("../../static/js/muting", {
     is_topic_muted: (stream_id, topic) => {
         if (stream_id === stream1 && topic === topic7) {
             return true;
@@ -98,10 +99,10 @@ mock_module("muting", {
         return false;
     },
 });
-mock_module("recent_senders", {
+mock_esm("../../static/js/recent_senders", {
     get_topic_recent_senders: () => [1, 2],
 });
-mock_module("stream_data", {
+mock_esm("../../static/js/stream_data", {
     get_sub_by_id: (stream) => {
         if (stream === stream5) {
             // No data is available for deactivated streams
@@ -120,10 +121,10 @@ mock_module("stream_data", {
         false,
     id_is_subscribed: () => true,
 });
-mock_module("stream_list", {
+mock_esm("../../static/js/stream_list", {
     handle_narrow_deactivated: noop,
 });
-mock_module("timerender", {
+mock_esm("../../static/js/timerender", {
     last_seen_status_from_date: () => "Just now",
 
     get_full_datetime: () => ({
@@ -131,18 +132,16 @@ mock_module("timerender", {
         time: "time",
     }),
 });
-mock_module("top_left_corner", {
+mock_esm("../../static/js/top_left_corner", {
     narrow_to_recent_topics: noop,
 });
-mock_module("unread", {
-    unread_topic_counter: {
-        get: (stream_id, topic) => {
-            if (stream_id === 1 && topic === "topic-1") {
-                // Only stream1, topic-1 is read.
-                return 0;
-            }
-            return 1;
-        },
+mock_esm("../../static/js/unread", {
+    num_unread_for_topic: (stream_id, topic) => {
+        if (stream_id === 1 && topic === "topic-1") {
+            // Only stream1, topic-1 is read.
+            return 0;
+        }
+        return 1;
     },
 });
 

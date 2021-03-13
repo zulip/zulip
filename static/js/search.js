@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import {Filter} from "./filter";
 import * as message_view_header from "./message_view_header";
 import * as narrow from "./narrow";

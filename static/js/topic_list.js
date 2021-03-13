@@ -1,3 +1,4 @@
+import $ from "jquery";
 import _ from "lodash";
 
 import render_more_topics from "../templates/more_topics.hbs";

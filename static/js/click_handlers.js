@@ -1,3 +1,4 @@
+import $ from "jquery";
 import _ from "lodash";
 import WinChan from "winchan";
 

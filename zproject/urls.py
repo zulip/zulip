@@ -371,7 +371,7 @@ v1_api_and_json_patterns = [
     # It's important that this sit after users/me/presence so that
     # Django's URL resolution order doesn't break the
     # /users/me/presence endpoint.
-    rest_path("users/<email>/presence", GET=get_presence_backend),
+    rest_path("users/<user_id_or_email>/presence", GET=get_presence_backend),
     rest_path("realm/presence", GET=get_statuses_for_realm),
     rest_path("users/me/status", POST=update_user_status_backend),
     # user_groups -> zerver.views.user_groups

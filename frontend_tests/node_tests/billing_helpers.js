@@ -3,10 +3,10 @@
 const {strict: assert} = require("assert");
 const fs = require("fs");
 
-const jQueryFactory = require("jquery");
 const {JSDOM} = require("jsdom");
 
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const jQueryFactory = require("../zjsunit/real_jquery");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -14,13 +14,15 @@ const template = fs.readFileSync("templates/corporate/upgrade.html", "utf-8");
 const dom = new JSDOM(template, {pretendToBeVisual: true});
 const jquery = jQueryFactory(dom.window);
 
+mock_cjs("jquery", $);
+
 const page_params = set_global("page_params", {});
 const history = set_global("history", {});
-const loading = mock_module("loading");
+const loading = mock_esm("../../static/js/loading");
 set_global("document", {
     title: "Zulip",
 });
-set_global("location", {
+const location = set_global("location", {
     pathname: "/upgrade/",
     search: "",
     hash: "#billing",
@@ -274,6 +276,7 @@ run_test("set_tab", () => {
         hash_change_handler = handler;
     };
 
+    location.hash = "#billing";
     helpers.set_tab("upgrade");
     assert.equal(state.show_tab_billing, 1);
     assert.equal(state.scrollTop, 1);

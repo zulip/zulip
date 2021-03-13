@@ -5,7 +5,7 @@ const fs = require("fs");
 
 const {JSDOM} = require("jsdom");
 
-const {zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -13,8 +13,11 @@ const template = fs.readFileSync("templates/analytics/realm_details.html", "utf-
 const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
 
+mock_cjs("jquery", $);
+zrequire("../js/analytics/support");
+
 run_test("scrub_realm", () => {
-    zrequire("../js/analytics/support");
+    $.get_initialize_function()();
     const click_handler = $("body").get_on_handler("click", ".scrub-realm-button");
 
     const fake_this = $.create("fake-.scrub-realm-button");

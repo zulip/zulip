@@ -20,7 +20,15 @@ function set_filter(operators) {
     narrow_state.set_current_filter(new Filter(operators));
 }
 
-run_test("stream", () => {
+function test(label, f) {
+    run_test(label, (override) => {
+        narrow_state.reset_current_filter();
+        stream_data.clear_subscriptions();
+        f(override);
+    });
+}
+
+test("stream", () => {
     assert.equal(narrow_state.public_operators(), undefined);
     assert(!narrow_state.active());
 
@@ -52,8 +60,7 @@ run_test("stream", () => {
     assert.equal(narrow_state.search_string(), "stream:Test topic:Bar yo");
 });
 
-run_test("narrowed", () => {
-    narrow_state.reset_current_filter(); // not narrowed, basically
+test("narrowed", () => {
     assert(!narrow_state.narrowed_to_pms());
     assert(!narrow_state.narrowed_by_reply());
     assert(!narrow_state.narrowed_by_pm_reply());
@@ -118,7 +125,7 @@ run_test("narrowed", () => {
     assert(narrow_state.narrowed_to_starred());
 });
 
-run_test("operators", () => {
+test("operators", () => {
     set_filter([
         ["stream", "Foo"],
         ["topic", "Bar"],
@@ -140,7 +147,7 @@ run_test("operators", () => {
     assert.equal(result.length, 0);
 });
 
-run_test("excludes_muted_topics", () => {
+test("excludes_muted_topics", () => {
     set_filter([["stream", "devel"]]);
     assert(narrow_state.excludes_muted_topics());
 
@@ -163,7 +170,7 @@ run_test("excludes_muted_topics", () => {
     assert(!narrow_state.excludes_muted_topics());
 });
 
-run_test("set_compose_defaults", () => {
+test("set_compose_defaults", () => {
     set_filter([
         ["stream", "Foo"],
         ["topic", "Bar"],
@@ -202,7 +209,7 @@ run_test("set_compose_defaults", () => {
     assert.equal(stream_test.stream, "ROME");
 });
 
-run_test("update_email", () => {
+test("update_email", () => {
     const steve = {
         email: "steve@foo.com",
         user_id: 43,
@@ -222,7 +229,7 @@ run_test("update_email", () => {
     assert.deepEqual(filter.operands("stream"), ["steve@foo.com"]);
 });
 
-run_test("topic", () => {
+test("topic", () => {
     set_filter([
         ["stream", "Foo"],
         ["topic", "Bar"],
@@ -248,7 +255,7 @@ run_test("topic", () => {
     assert.equal(narrow_state.topic(), undefined);
 });
 
-run_test("stream", () => {
+test("stream_sub", () => {
     set_filter([]);
     assert.equal(narrow_state.stream(), undefined);
     assert.equal(narrow_state.stream_sub(), undefined);
@@ -271,7 +278,7 @@ run_test("stream", () => {
     assert.equal(narrow_state.stream(), undefined);
 });
 
-run_test("pm_string", () => {
+test("pm_string", () => {
     // This function will return undefined unless we're clearly
     // narrowed to a specific PM (including huddles) with real
     // users.

@@ -34,6 +34,8 @@ async function navigate_to_settings(page: Page): Promise<void> {
     await page.waitForSelector("#settings_page", {visible: true});
 
     await page.click("#settings_page .content-wrapper .exit");
+    // Wait until the overlay is completely closed.
+    await page.waitForSelector("#settings_overlay_container", {hidden: true});
 }
 
 async function navigate_to_subscriptions(page: Page): Promise<void> {
@@ -49,6 +51,8 @@ async function navigate_to_subscriptions(page: Page): Promise<void> {
     await page.waitForSelector("#subscriptions_table", {visible: true});
 
     await page.click("#subscription_overlay .exit");
+    // Wait until the overlay is completely closed.
+    await page.waitForSelector("#subscription_overlay", {hidden: true});
 }
 
 async function test_reload_hash(page: Page): Promise<void> {
@@ -93,7 +97,9 @@ async function navigation_tests(page: Page): Promise<void> {
     await test_reload_hash(page);
 
     // Verify that we're narrowed to the target stream
-    await common.wait_for_text(page, "#message_view_header .stream", "Verona");
+    await page.waitForXPath(
+        '//*[@id="message_view_header"]//*[@class="stream" and normalize-space()="Verona"]',
+    );
 
     await common.log_out(page);
 }

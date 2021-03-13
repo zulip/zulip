@@ -1,59 +1,115 @@
 "use strict";
 
-const actual_load = require("module")._load;
+const Module = require("module");
 const path = require("path");
+
+const callsites = require("callsites");
 
 const new_globals = new Set();
 let old_globals = {};
 
-let objs_installed;
-let mock_paths = {};
-let mocked_paths;
-let mock_names;
+let actual_load;
+const module_mocks = new Map();
+const used_module_mocks = new Set();
+
+const jquery_path = require.resolve("jquery");
+const real_jquery_path = require.resolve("../zjsunit/real_jquery.js");
+
+function load(request, parent, isMain) {
+    const filename = Module._resolveFilename(request, parent, isMain);
+    if (module_mocks.has(filename)) {
+        used_module_mocks.add(filename);
+        return module_mocks.get(filename);
+    }
+    if (filename === jquery_path && parent.filename !== real_jquery_path) {
+        // jQuery exposes an incompatible API to Node vs. browser, so
+        // this wouldn't work.
+        throw new Error("This test will need jquery mocked using zjquery or real_jquery");
+    }
+
+    return actual_load(request, parent, isMain);
+}
 
 exports.start = () => {
-    objs_installed = false;
-    mock_paths = {};
-    mocked_paths = new Set();
-    mock_names = new Set();
+    if (actual_load !== undefined) {
+        throw new Error("namespace.start was called twice in a row.");
+    }
+    actual_load = Module._load;
+    Module._load = load;
 };
 
-exports.mock_module = (short_fn, obj) => {
-    if (obj === undefined) {
-        obj = {};
+// We provide `mock_cjs` for mocking a CommonJS module, and `mock_esm` for
+// mocking an ES6 module.
+//
+// A CommonJS module:
+// - loads other modules using `require()`,
+// - assigns its public contents to the `exports` object or `module.exports`,
+// - consists of a single JavaScript value, typically an object or function,
+// - when imported by an ES6 module:
+//   * is shallow-copied to a collection of immutable bindings, if it's an
+//     object,
+//   * is converted to a single default binding, if not.
+//
+// An ES6 module:
+// - loads other modules using `import`,
+// - declares its public contents using `export` statements,
+// - consists of a collection of live bindings that may be mutated from inside
+//   but not outside the module,
+// - may have a default binding (that's just syntactic sugar for a binding
+//   named `default`),
+// - when required by a CommonJS module, always appears as an object.
+//
+// Most of our own modules are ES6 modules.
+//
+// For a third party module available in both formats that might present two
+// incompatible APIs (especially if the CommonJS module is a function),
+// Webpack will prefer the ES6 module if its availability is indicated by the
+// "module" field of package.json, while Node.js will not; we need to mock the
+// format preferred by Webpack.
+
+exports.mock_cjs = (request, obj) => {
+    const filename = Module._resolveFilename(
+        request,
+        require.cache[callsites()[1].getFileName()],
+        false,
+    );
+
+    if (module_mocks.has(filename)) {
+        throw new Error(`You already set up a mock for ${filename}`);
     }
 
-    if (typeof obj !== "object") {
-        throw new TypeError("We expect you to stub with an object.");
+    if (filename in require.cache) {
+        throw new Error(`It is too late to mock ${filename}; call this earlier.`);
     }
 
-    if (mock_names.has(short_fn)) {
-        throw new Error(`You already set up a mock for ${short_fn}`);
-    }
-
-    if (short_fn.startsWith("/") || short_fn.includes(".")) {
-        throw new Error(`
-            There is no need for a path like ${short_fn}.
-            We just assume the file is under static/js.
-        `);
-    }
-    if (objs_installed) {
-        throw new Error(`
-            It is too late to install this mock.  Consider instead:
-
-                foo.__Rewire__("${short_fn}", ...)
-
-            Or call this earlier.
-        `);
-    }
-
-    const base_path = path.resolve("./static/js");
-    const long_fn = path.join(base_path, short_fn);
-
-    obj.__esModule = true;
-    mock_paths[long_fn] = obj;
-    mock_names.add(short_fn);
+    module_mocks.set(filename, obj);
     return obj;
+};
+
+exports.mock_esm = (request, obj = {}) => {
+    if (typeof obj !== "object") {
+        throw new TypeError("An ES module must be mocked with an object");
+    }
+    return exports.mock_cjs(request, {...obj, __esModule: true});
+};
+
+exports.unmock_module = (request) => {
+    const filename = Module._resolveFilename(
+        request,
+        require.cache[callsites()[1].getFileName()],
+        false,
+    );
+
+    if (!module_mocks.has(filename)) {
+        throw new Error(`Cannot unmock ${filename}, which was not mocked`);
+    }
+
+    if (!used_module_mocks.has(filename)) {
+        throw new Error(`You asked to mock ${filename} but we never saw it during compilation.`);
+    }
+
+    module_mocks.delete(filename);
+    used_module_mocks.delete(filename);
 };
 
 exports.set_global = function (name, val) {
@@ -73,26 +129,22 @@ exports.set_global = function (name, val) {
     return val;
 };
 
-exports.zrequire = function (fn) {
-    objs_installed = true;
-
-    // Because we do lazy compilation, we don't reset the
-    // _load hook until our test runners calls `finish()`.
-    require("module")._load = (request, parent, isMain) => {
-        const long_fn = path.resolve(path.join(path.dirname(parent.filename), request));
-        if (mock_paths[long_fn]) {
-            mocked_paths.add(long_fn);
-            return mock_paths[long_fn];
-        }
-
-        return actual_load(request, parent, isMain);
-    };
-    const full_path = path.resolve(path.join("static/js", fn));
-    return require(full_path);
+exports.zrequire = function (short_fn) {
+    return require(`../../static/js/${short_fn}`);
 };
 
 const staticPath = path.resolve(__dirname, "../../static") + path.sep;
 const templatesPath = staticPath + "templates" + path.sep;
+
+exports.complain_about_unused_mocks = function () {
+    for (const filename of module_mocks.keys()) {
+        if (!used_module_mocks.has(filename)) {
+            throw new Error(
+                `You asked to mock ${filename} but we never saw it during compilation.`,
+            );
+        }
+    }
+};
 
 exports.finish = function () {
     /*
@@ -103,16 +155,15 @@ exports.finish = function () {
         running to do things like detecting pointless mocks
         and resetting our _load hook.
     */
-    for (const fn of Object.keys(mock_paths)) {
-        if (!mocked_paths.has(fn)) {
-            throw new Error(`
-                You asked to mock ${fn} but we never
-                saw it during compilation.
-            `);
-        }
+    if (actual_load === undefined) {
+        throw new Error("namespace.finish was called without namespace.start.");
     }
+    Module._load = actual_load;
+    actual_load = undefined;
 
-    require("module")._load = actual_load;
+    module_mocks.clear();
+    used_module_mocks.clear();
+
     for (const path of Object.keys(require.cache)) {
         if (path.startsWith(staticPath) && !path.startsWith(templatesPath)) {
             delete require.cache[path];
@@ -187,17 +238,10 @@ exports.with_overrides = function (test_function) {
 
         unused_funcs.get(obj).set(func_name, true);
 
-        let old_f =
+        const old_f =
             "__esModule" in obj && "__Rewire__" in obj && !(func_name in obj)
                 ? obj.__GetDependency__(func_name)
                 : obj[func_name];
-        if (old_f === undefined) {
-            // Create a dummy function so that we can
-            // attach _patched_with_override to it.
-            old_f = () => {
-                throw new Error(`There is no ${func_name}() field for this object.`);
-            };
-        }
 
         const new_f = function (...args) {
             unused_funcs.get(obj).delete(func_name);
@@ -217,9 +261,7 @@ exports.with_overrides = function (test_function) {
         } else {
             obj[func_name] = new_f;
             restore_callbacks.push(() => {
-                old_f._patched_with_override = true;
                 obj[func_name] = old_f;
-                delete old_f._patched_with_override;
             });
         }
     };

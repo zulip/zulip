@@ -1153,6 +1153,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     # display settings
     default_language: str = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
+    # This setting controls which view is rendered first when Zulip loads.
+    # Values for it are URL suffix after `#`.
+    default_view: str = models.TextField(default="recent_topics")
     dense_mode: bool = models.BooleanField(default=True)
     fluid_layout_width: bool = models.BooleanField(default=False)
     high_contrast_mode: bool = models.BooleanField(default=False)
@@ -1244,6 +1247,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     property_types = dict(
         color_scheme=int,
         default_language=str,
+        default_view=str,
         demote_inactive_streams=int,
         dense_mode=bool,
         emojiset=str,

@@ -2,10 +2,12 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
 
-const ui_report = mock_module("ui_report", {
+mock_cjs("jquery", $);
+const ui_report = mock_esm("../../static/js/ui_report", {
     displayed_error: false,
 
     error: () => {

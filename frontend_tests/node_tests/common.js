@@ -2,9 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+
+mock_cjs("jquery", $);
 
 const noop = () => {};
 
@@ -14,7 +16,9 @@ const common = zrequire("common");
 
 run_test("basics", () => {
     common.autofocus("#home");
+    $.get_initialize_function()();
     assert($("#home").is_focused());
+    $.clear_initialize_function();
 });
 
 run_test("phrase_match", () => {

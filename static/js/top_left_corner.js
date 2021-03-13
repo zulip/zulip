@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as resize from "./resize";

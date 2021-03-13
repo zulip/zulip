@@ -1,3 +1,4 @@
+import $ from "jquery";
 import _ from "lodash";
 
 import generated_emoji_codes from "../generated/emoji/emoji_codes.json";
@@ -38,7 +39,6 @@ import * as overlays from "./overlays";
 import * as panels from "./panels";
 import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
-import * as pm_list from "./pm_list";
 import * as presence from "./presence";
 import * as recent_topics from "./recent_topics";
 import * as reload from "./reload";
@@ -526,7 +526,6 @@ export function initialize_everything() {
     unread_ui.initialize();
     activity.initialize();
     emoji_picker.initialize();
-    pm_list.initialize();
     topic_list.initialize();
     topic_zoom.initialize();
     drafts.initialize();

@@ -1,3 +1,4 @@
+import $ from "jquery";
 import _ from "lodash";
 
 const contributors_list = page_params.contributors;

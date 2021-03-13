@@ -6,6 +6,11 @@ const topic_senders = new Map();
 // topic_senders[stream_id][sender_id] = latest_message_id
 const stream_senders = new Map();
 
+export function clear_for_testing() {
+    topic_senders.clear();
+    stream_senders.clear();
+}
+
 export function process_message_for_senders(message) {
     const stream_id = message.stream_id;
     const topic = message.topic;

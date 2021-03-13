@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -11,14 +11,15 @@ const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
 
-mock_module("resize", {
+mock_cjs("jquery", $);
+mock_esm("../../static/js/resize", {
     resize_page_components: noop,
 
     resize_stream_filters_container: noop,
 });
 
-const popovers = mock_module("popovers");
-const stream_popover = mock_module("stream_popover");
+const popovers = mock_esm("../../static/js/popovers");
+const stream_popover = mock_esm("../../static/js/stream_popover");
 
 const stream_list = zrequire("stream_list");
 

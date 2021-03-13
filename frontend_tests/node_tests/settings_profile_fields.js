@@ -3,11 +3,12 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const loading = mock_module("loading");
+mock_cjs("jquery", $);
+const loading = mock_esm("../../static/js/loading");
 const page_params = set_global("page_params", {});
 
 const SHORT_TEXT_ID = 1;
@@ -36,6 +37,8 @@ page_params.custom_profile_field_types = {
         name: EXTERNAL_ACCOUNT_NAME,
     },
 };
+
+mock_esm("sortablejs", {Sortable: {create: () => {}}});
 
 const settings_profile_fields = zrequire("settings_profile_fields");
 
@@ -74,8 +77,7 @@ function test_populate(opts) {
     assert.equal(num_appends, fields_data.length);
 }
 
-run_test("populate_profile_fields", (override) => {
-    override(settings_profile_fields, "create_sortable", () => {});
+run_test("populate_profile_fields", () => {
     const fields_data = [
         {
             type: SHORT_TEXT_ID,

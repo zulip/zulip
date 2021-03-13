@@ -2,22 +2,21 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 // We need these stubs to get by instanceof checks.
 // The ListWidget library allows you to insert objects
 // that are either jQuery, Element, or just raw HTML
 // strings.  We initially test with raw strings.
-const ui = mock_module("ui");
+const ui = mock_esm("../../static/js/ui");
 set_global("Element", () => {});
-set_global("jQuery", "stub");
 
 // We only need very simple jQuery wrappers for when the
 
 // "real" code wraps html or sets up click handlers.
 // We'll simulate most other objects ourselves.
-set_global("$", (arg) => {
+mock_cjs("jquery", (arg) => {
     if (arg.to_jquery) {
         return arg.to_jquery();
     }

@@ -19,12 +19,12 @@ from zerver.lib.cache import (
     get_cache_with_key,
     safe_cache_get_many,
     safe_cache_set_many,
-    user_profile_by_email_cache_key,
+    user_profile_by_id_cache_key,
     validate_cache_key,
 )
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import queries_captured
-from zerver.models import UserProfile, get_system_bot, get_user_profile_by_email
+from zerver.models import UserProfile, get_realm, get_system_bot, get_user, get_user_profile_by_id
 
 
 class AppsTest(ZulipTestCase):
@@ -258,8 +258,9 @@ class SafeCacheFunctionsTest(ZulipTestCase):
 
 class BotCacheKeyTest(ZulipTestCase):
     def test_bot_profile_key_deleted_on_save(self) -> None:
+        realm = get_realm(settings.SYSTEM_BOT_REALM)
         # Get the profile cached on both cache keys:
-        user_profile = get_user_profile_by_email(settings.EMAIL_GATEWAY_BOT)
+        user_profile = get_user(settings.EMAIL_GATEWAY_BOT, realm)
         bot_profile = get_system_bot(settings.EMAIL_GATEWAY_BOT)
         self.assertEqual(user_profile, bot_profile)
 
@@ -273,8 +274,12 @@ class BotCacheKeyTest(ZulipTestCase):
         bot_profile2 = get_system_bot(settings.EMAIL_GATEWAY_BOT)
         self.assertEqual(bot_profile2.can_forge_sender, flipped_setting)
 
-        user_profile2 = get_user_profile_by_email(settings.EMAIL_GATEWAY_BOT)
+        user_profile2 = get_user(settings.EMAIL_GATEWAY_BOT, realm)
         self.assertEqual(user_profile2.can_forge_sender, flipped_setting)
+
+
+def get_user_id(user: UserProfile) -> int:
+    return user.id  # nocoverage
 
 
 def get_user_email(user: UserProfile) -> str:
@@ -283,24 +288,25 @@ def get_user_email(user: UserProfile) -> str:
 
 class GenericBulkCachedFetchTest(ZulipTestCase):
     def test_query_function_called_only_if_needed(self) -> None:
+        hamlet = self.example_user("hamlet")
         # Get the user cached:
-        hamlet = get_user_profile_by_email(self.example_email("hamlet"))
+        get_user_profile_by_id(hamlet.id)
 
         class CustomException(Exception):
             pass
 
-        def query_function(emails: List[str]) -> List[UserProfile]:
+        def query_function(ids: List[int]) -> List[UserProfile]:
             raise CustomException("The query function was called")
 
         # query_function shouldn't be called, because the only requested object
         # is already cached:
-        result: Dict[str, UserProfile] = bulk_cached_fetch(
-            cache_key_function=user_profile_by_email_cache_key,
+        result: Dict[int, UserProfile] = bulk_cached_fetch(
+            cache_key_function=user_profile_by_id_cache_key,
             query_function=query_function,
-            object_ids=[self.example_email("hamlet")],
-            id_fetcher=get_user_email,
+            object_ids=[hamlet.id],
+            id_fetcher=get_user_id,
         )
-        self.assertEqual(result, {hamlet.delivery_email: hamlet})
+        self.assertEqual(result, {hamlet.id: hamlet})
         with self.assertLogs(level="INFO") as info_log:
             flush_cache(Mock())
         self.assertEqual(info_log.output, ["INFO:root:Clearing memcached cache after migrations"])
@@ -308,10 +314,10 @@ class GenericBulkCachedFetchTest(ZulipTestCase):
         # With the cache flushed, the query_function should get called:
         with self.assertRaises(CustomException):
             result = bulk_cached_fetch(
-                cache_key_function=user_profile_by_email_cache_key,
+                cache_key_function=user_profile_by_id_cache_key,
                 query_function=query_function,
-                object_ids=[self.example_email("hamlet")],
-                id_fetcher=get_user_email,
+                object_ids=[hamlet.id],
+                id_fetcher=get_user_id,
             )
 
     def test_empty_object_ids_list(self) -> None:

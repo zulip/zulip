@@ -1,4 +1,5 @@
 import autosize from "autosize";
+import $ from "jquery";
 
 import * as condense from "./condense";
 import * as message_viewport from "./message_viewport";

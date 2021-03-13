@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import {media_breakpoints} from "./css_variables";
 
 // A few of our width properties in Zulip depend on the width of the

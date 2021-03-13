@@ -2,8 +2,9 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
 
@@ -16,8 +17,9 @@ set_global("document", {
 });
 set_global("addEventListener", noop);
 
-const channel = mock_module("channel");
-mock_module("reload_state", {
+mock_cjs("jquery", $);
+const channel = mock_esm("../../static/js/channel");
+mock_esm("../../static/js/reload_state", {
     is_in_progress() {
         return false;
     },
@@ -33,7 +35,7 @@ set_global("page_params", {test_suite: false});
 // we also directly write to pointer
 set_global("pointer", {});
 
-mock_module("ui_report", {
+mock_esm("../../static/js/ui_report", {
     hide_error() {
         return false;
     },
@@ -42,13 +44,13 @@ mock_module("ui_report", {
     },
 });
 
-mock_module("stream_events", {
+mock_esm("../../static/js/stream_events", {
     update_property() {
         throw new Error("subs update error");
     },
 });
 
-const message_events = mock_module("message_events", {
+const message_events = mock_esm("../../static/js/message_events", {
     insert_new_messages() {
         throw new Error("insert error");
     },

@@ -630,12 +630,6 @@ html_rules: List["Rule"] = [
     },
     {
         "pattern": r'title="[^{\:]',
-        "exclude_line": {
-            (
-                "templates/zerver/app/markdown_help.html",
-                '<td class="rendered_markdown"><img alt=":heart:" class="emoji" src="/static/generated/emoji/images/emoji/heart.png" title=":heart:" /></td>',
-            ),
-        },
         "exclude": {
             "templates/zerver/emails",
             "templates/analytics/realm_details.html",
@@ -649,7 +643,6 @@ html_rules: List["Rule"] = [
         "exclude": {
             "static/templates/settings/display_settings.hbs",
             "templates/zerver/app/keyboard_shortcuts.html",
-            "templates/zerver/app/markdown_help.html",
         },
         "good_lines": ['<img src="{{source_url}}" alt="{{ _(name) }}" />', '<img alg="" />'],
         "bad_lines": ['<img alt="Foo Image" />'],
@@ -679,8 +672,6 @@ html_rules: List["Rule"] = [
         + "'"
         + "](display: ?none|background: {{|color: {{|background-color: {{).*",
         "exclude": {
-            # KaTeX output uses style attribute
-            "templates/zerver/app/markdown_help.html",
             # 5xx page doesn't have external CSS
             "static/html/5xx.html",
             # exclude_pattern above handles color, but have other issues:

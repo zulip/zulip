@@ -2,7 +2,7 @@ import {strict as assert} from "assert";
 import "css.escape";
 import path from "path";
 
-import {Browser, Page, launch} from "puppeteer";
+import {Browser, ElementHandle, Page, launch} from "puppeteer";
 
 import {test_credentials} from "../../var/puppeteer/test_credentials";
 
@@ -22,20 +22,16 @@ class CommonUtils {
             // a flake where the typeahead doesn't show up.
             await page.type("#private_message_recipient", recipient, {delay: 100});
 
-            // We use jQuery here because we need to use it's :visible
-            // pseudo selector to actually wait for typeahead item that
-            // is visible; there can be typeahead item with this selector
-            // that is invisible because it is meant for something else
-            // e.g. private message input typeahead is different from topic
-            // input typeahead but both can be present in the dom.
-            await page.waitForFunction(() => {
-                const selector = ".typeahead-menu .active a:visible";
-                return $(selector).length !== 0;
-            });
-
-            await page.evaluate(() => {
-                $(".typeahead-menu .active a:visible").trigger("click");
-            });
+            // We use [style*="display: block"] here to distinguish
+            // the visible typeahead menu from the invisible ones
+            // meant for something else; e.g., the private message
+            // input typeahead is different from the topic input
+            // typeahead but both can be present in the DOM.
+            const entry = await page.waitForSelector(
+                '.typeahead[style*="display: block"] .active a',
+                {visible: true},
+            );
+            await entry!.click();
         },
 
         async expect(page: Page, expected: string): Promise<void> {
@@ -102,6 +98,14 @@ class CommonUtils {
         // puppeteer upstream, we can delete this function and return
         // its callers to using `page.url()`
         return await page.evaluate("location.href");
+    }
+
+    // This function will clear the existing value of the element and
+    // replace it with the text.
+    async clear_and_type(page: Page, selector: string, text: string): Promise<void> {
+        // Select all text currently in the element.
+        await page.click(selector, {clickCount: 3});
+        await page.type(selector, text);
     }
 
     /**
@@ -181,17 +185,16 @@ class CommonUtils {
         }
     }
 
-    async get_text_from_selector(page: Page, selector: string): Promise<string> {
-        return await page.evaluate((selector: string) => $(selector).text().trim(), selector);
+    async get_element_text(element: ElementHandle<Element>): Promise<string> {
+        return (await element.getProperty("textContent"))!.jsonValue();
     }
 
-    async wait_for_text(page: Page, selector: string, text: string): Promise<void> {
-        await page.waitForFunction(
-            (selector: string, text: string) => $(selector).text().includes(text),
-            {},
-            selector,
-            text,
+    async get_text_from_selector(page: Page, selector: string): Promise<string> {
+        const elements = await page.$$(selector);
+        const texts = await Promise.all(
+            elements.map(async (element) => this.get_element_text(element)),
         );
+        return texts.join("").trim();
     }
 
     async get_stream_id(page: Page, stream_name: string): Promise<number> {
@@ -402,28 +405,36 @@ class CommonUtils {
      * The messages are sorted chronologically.
      */
     async get_rendered_messages(page: Page, table = "zhome"): Promise<[string, string[]][]> {
-        return await page.evaluate((table: string) => {
-            const $recipient_rows = $(`#${CSS.escape(table)}`).find(".recipient_row");
-            return $recipient_rows.toArray().map((element): [string, string[]] => {
-                const $el = $(element);
-                const stream_name = $el.find(".stream_label").text().trim();
-                const topic_name = $el.find(".stream_topic a").text().trim();
+        const recipient_rows = await page.$$(`#${CSS.escape(table)} .recipient_row`);
+        return Promise.all(
+            recipient_rows.map(
+                async (element): Promise<[string, string[]]> => {
+                    const stream_label = await element.$(".stream_label");
+                    const stream_name = (await this.get_element_text(stream_label!)).trim();
+                    const topic_label = await element.$(".stream_topic a");
+                    const topic_name =
+                        topic_label === null
+                            ? ""
+                            : (await this.get_element_text(topic_label)).trim();
+                    let key = stream_name;
+                    if (topic_name !== "") {
+                        // If topic_name is '' then this is PMs, so only
+                        // append > topic_name if we are not in PMs or Group PMs.
+                        key = `${stream_name} > ${topic_name}`;
+                    }
 
-                let key = stream_name;
-                if (topic_name !== "") {
-                    // If topic_name is '' then this is PMs, so only
-                    // append > topic_name if we are not in PMs or Group PMs.
-                    key = `${stream_name} > ${topic_name}`;
-                }
+                    const messages = await Promise.all(
+                        (
+                            await element.$$(".message_row .message_content")
+                        ).map(async (message_row) =>
+                            (await this.get_element_text(message_row)).trim(),
+                        ),
+                    );
 
-                const messages = $el
-                    .find(".message_row .message_content")
-                    .toArray()
-                    .map((message_row) => message_row.textContent!.trim());
-
-                return [key, messages];
-            });
-        }, table);
+                    return [key, messages];
+                },
+            ),
+        );
     }
 
     // This method takes in page, table to fetch the messages
@@ -468,29 +479,11 @@ class CommonUtils {
         item: string,
     ): Promise<void> {
         console.log(`Looking in ${field_selector} to select ${str}, ${item}`);
-        await page.evaluate(
-            (field_selector: string, str: string, item: string) => {
-                // Set the value and then send a bogus keyup event to trigger
-                // the typeahead.
-                $(field_selector)
-                    .trigger("focus")
-                    .val(str)
-                    .trigger(new $.Event("keyup", {which: 0}));
-
-                // Trigger the typeahead.
-                // Reaching into the guts of Bootstrap Typeahead like this is not
-                // great, but I found it very hard to do it any other way.
-
-                const tah = $(field_selector).data().typeahead;
-                tah.mouseenter({
-                    currentTarget: $(`.typeahead:visible li:contains("${CSS.escape(item)}")`)[0],
-                });
-                tah.select();
-            },
-            field_selector,
-            str,
-            item,
+        await this.clear_and_type(page, field_selector, str);
+        const entry = await page.waitForXPath(
+            `//*[@class="typeahead dropdown-menu" and contains(@style, "display: block")]//li[contains(normalize-space(), "${item}")]//a`,
         );
+        await entry!.click();
     }
 
     async run_test(test_function: (page: Page) => Promise<void>): Promise<void> {

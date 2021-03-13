@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import {localstorage} from "./localstorage";
 import * as notifications from "./notifications";
 import * as unread_ops from "./unread_ops";
@@ -50,7 +52,7 @@ function should_show_notifications(ls) {
 
 export function check_profile_incomplete() {
     if (!page_params.is_admin) {
-        return;
+        return false;
     }
 
     // Eventually, we might also check page_params.realm_icon_source,
@@ -58,8 +60,15 @@ export function check_profile_incomplete() {
     // since their organization might not have a logo yet.
     if (
         page_params.realm_description === "" ||
-        page_params.realm_description.startsWith("Organization imported from")
+        /^Organization imported from [A-Za-z]+[!.]$/.test(page_params.realm_description)
     ) {
+        return true;
+    }
+    return false;
+}
+
+export function show_profile_incomplete(is_profile_incomplete) {
+    if (is_profile_incomplete) {
         $("[data-process='profile-incomplete']").show();
     } else {
         $("[data-process='profile-incomplete']").hide();
@@ -78,10 +87,8 @@ export function initialize() {
         open($("[data-process='notifications']"));
     } else if (unread_ui.should_display_bankruptcy_banner()) {
         open($("[data-process='bankruptcy']"));
-    } else {
-        // TODO: This should be restructured with separate check and
-        // show calls.
-        check_profile_incomplete();
+    } else if (check_profile_incomplete()) {
+        open($("[data-process='profile-incomplete']"));
     }
 
     // Configure click handlers.

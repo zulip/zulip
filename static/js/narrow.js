@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as channel from "./channel";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";

@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 // This reloads the module in development rather than refreshing the page
 if (module.hot) {
     module.hot.accept();
@@ -5,6 +7,7 @@ if (module.hot) {
 
 export const status_classes = "alert-error alert-success alert-info alert-warning";
 
+// TODO: Move this to the portico codebase.
 export function autofocus(selector) {
     $(() => {
         $(selector).trigger("focus");

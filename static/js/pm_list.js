@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as buddy_data from "./buddy_data";
 import * as hash_util from "./hash_util";
 import * as narrow_state from "./narrow_state";
@@ -12,6 +14,11 @@ import * as vdom from "./vdom";
 
 let prior_dom;
 let private_messages_open = false;
+
+export function clear_for_testing() {
+    prior_dom = undefined;
+    private_messages_open = false;
+}
 
 // This module manages the "Private messages" section in the upper
 // left corner of the app.  This was split out from stream_list.js.
@@ -167,5 +174,3 @@ export function update_dom_with_unread_counts(counts) {
         counts.private_message_count,
     );
 }
-
-export function initialize() {}

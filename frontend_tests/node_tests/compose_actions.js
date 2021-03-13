@@ -2,9 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+
+mock_cjs("jquery", $);
 
 const noop = () => {};
 
@@ -15,28 +17,28 @@ set_global("document", {
     to_$: () => $("document-stub"),
 });
 
-const channel = mock_module("channel");
-const compose_fade = mock_module("compose_fade", {
+const channel = mock_esm("../../static/js/channel");
+const compose_fade = mock_esm("../../static/js/compose_fade", {
     clear_compose: noop,
 });
-const compose_pm_pill = mock_module("compose_pm_pill");
-const hash_util = mock_module("hash_util");
-const narrow_state = mock_module("narrow_state", {
+const compose_pm_pill = mock_esm("../../static/js/compose_pm_pill");
+const hash_util = mock_esm("../../static/js/hash_util");
+const narrow_state = mock_esm("../../static/js/narrow_state", {
     set_compose_defaults: noop,
 });
-mock_module("notifications", {
+mock_esm("../../static/js/notifications", {
     clear_compose_notifications: noop,
 });
-mock_module("reload_state", {
+mock_esm("../../static/js/reload_state", {
     is_in_progress: () => false,
 });
-mock_module("drafts", {
+mock_esm("../../static/js/drafts", {
     update_draft: noop,
 });
-mock_module("common", {
+mock_esm("../../static/js/common", {
     status_classes: "status_classes",
 });
-mock_module("unread_ops", {
+mock_esm("../../static/js/unread_ops", {
     notify_server_message_read: noop,
 });
 set_global("current_msg_list", {
@@ -53,30 +55,12 @@ const compose_state = zrequire("compose_state");
 const compose_actions = zrequire("compose_actions");
 const stream_data = zrequire("stream_data");
 
-compose_actions.__Rewire__("update_placeholder_text", noop);
-
 const start = compose_actions.start;
 const cancel = compose_actions.cancel;
 const get_focus_area = compose_actions._get_focus_area;
 const respond_to_message = compose_actions.respond_to_message;
 const reply_with_mention = compose_actions.reply_with_mention;
 const quote_and_reply = compose_actions.quote_and_reply;
-
-compose_state.__Rewire__(
-    "private_message_recipient",
-    (function () {
-        let recipient;
-
-        return function (arg) {
-            if (arg === undefined) {
-                return recipient;
-            }
-
-            recipient = arg;
-            return undefined;
-        };
-    })(),
-);
 
 function stub_selected_message(msg) {
     current_msg_list.selected_message = () => msg;
@@ -96,6 +80,25 @@ function assert_hidden(sel) {
     assert(!$(sel).visible());
 }
 
+function override_private_message_recipient(override) {
+    override(
+        compose_state,
+        "private_message_recipient",
+        (function () {
+            let recipient;
+
+            return function (arg) {
+                if (arg === undefined) {
+                    return recipient;
+                }
+
+                recipient = arg;
+                return undefined;
+            };
+        })(),
+    );
+}
+
 run_test("initial_state", () => {
     assert.equal(compose_state.composing(), false);
     assert.equal(compose_state.get_message_type(), false);
@@ -103,12 +106,13 @@ run_test("initial_state", () => {
 });
 
 run_test("start", (override) => {
-    compose_actions.__Rewire__("autosize_message_content", noop);
-    compose_actions.__Rewire__("expand_compose_box", noop);
-    compose_actions.__Rewire__("set_focus", noop);
-    compose_actions.__Rewire__("complete_starting_tasks", noop);
-    compose_actions.__Rewire__("blur_compose_inputs", noop);
-    compose_actions.__Rewire__("clear_textarea", noop);
+    override_private_message_recipient(override);
+    override(compose_actions, "autosize_message_content", () => {});
+    override(compose_actions, "expand_compose_box", () => {});
+    override(compose_actions, "set_focus", () => {});
+    override(compose_actions, "complete_starting_tasks", () => {});
+    override(compose_actions, "blur_compose_inputs", () => {});
+    override(compose_actions, "clear_textarea", () => {});
 
     let compose_defaults;
     override(narrow_state, "set_compose_defaults", () => compose_defaults);
@@ -213,7 +217,12 @@ run_test("start", (override) => {
     assert(!compose_state.composing());
 });
 
-run_test("respond_to_message", () => {
+run_test("respond_to_message", (override) => {
+    override(compose_actions, "set_focus", () => {});
+    override(compose_actions, "complete_starting_tasks", () => {});
+    override(compose_actions, "clear_textarea", () => {});
+    override_private_message_recipient(override);
+
     // Test PM
     const person = {
         user_id: 22,
@@ -251,6 +260,11 @@ run_test("respond_to_message", () => {
 });
 
 run_test("reply_with_mention", (override) => {
+    override(compose_actions, "set_focus", () => {});
+    override(compose_actions, "complete_starting_tasks", () => {});
+    override(compose_actions, "clear_textarea", () => {});
+    override_private_message_recipient(override);
+
     const msg = {
         type: "stream",
         stream: "devel",
@@ -292,6 +306,11 @@ run_test("reply_with_mention", (override) => {
 });
 
 run_test("quote_and_reply", (override) => {
+    override(compose_actions, "set_focus", () => {});
+    override(compose_actions, "complete_starting_tasks", () => {});
+    override(compose_actions, "clear_textarea", () => {});
+    override_private_message_recipient(override);
+
     let selected_message;
     override(current_msg_list, "selected_message", () => selected_message);
 

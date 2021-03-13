@@ -12,8 +12,7 @@ const stub_i18n = require("./i18n");
 const namespace = require("./namespace");
 const test = require("./test");
 const {make_zblueslip} = require("./zblueslip");
-
-global.$ = require("./zjquery");
+const zjquery = require("./zjquery");
 
 require("@babel/register")({
     extensions: [".es6", ".es", ".jsx", ".js", ".mjs", ".ts"],
@@ -61,7 +60,7 @@ Module.prototype.hot = {
 function short_tb(tb) {
     const lines = tb.split("\n");
 
-    const i = lines.findIndex((line) => line.includes("Module._compile"));
+    const i = lines.findIndex((line) => line.includes("run_one_module"));
 
     if (i === -1) {
         return tb;
@@ -71,10 +70,12 @@ function short_tb(tb) {
 }
 
 function run_one_module(file) {
-    global.$.clear_all_elements();
+    zjquery.clear_initialize_function();
+    zjquery.clear_all_elements();
     console.info("running test " + path.basename(file, ".js"));
     test.set_current_file_name(file);
     require(file);
+    namespace.complain_about_unused_mocks();
 }
 
 test.set_verbose(files.length === 1);

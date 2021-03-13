@@ -2,43 +2,45 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
 
-const message_live_update = mock_module("message_live_update");
-const settings_account = mock_module("settings_account", {
+mock_cjs("jquery", $);
+const message_live_update = mock_esm("../../static/js/message_live_update");
+const settings_account = mock_esm("../../static/js/settings_account", {
     update_email() {},
     update_full_name() {},
 });
 
-mock_module("activity", {
+mock_esm("../../static/js/activity", {
     redraw() {},
 });
-mock_module("compose", {
+mock_esm("../../static/js/compose", {
     update_email() {},
 });
-mock_module("gear_menu", {
+mock_esm("../../static/js/gear_menu", {
     update_org_settings_menu_item() {},
 });
-mock_module("narrow_state", {
+mock_esm("../../static/js/narrow_state", {
     update_email() {},
 });
-mock_module("pm_list", {
+mock_esm("../../static/js/pm_list", {
     update_private_messages() {},
 });
-mock_module("settings_linkifiers", {
+mock_esm("../../static/js/settings_linkifiers", {
     maybe_disable_widgets() {},
 });
-mock_module("settings_org", {
+mock_esm("../../static/js/settings_org", {
     maybe_disable_widgets() {},
 });
-mock_module("settings_profile_fields", {
+mock_esm("../../static/js/settings_profile_fields", {
     maybe_disable_widgets() {},
 });
-mock_module("settings_streams", {
+mock_esm("../../static/js/settings_streams", {
     maybe_disable_widgets() {},
 });
-mock_module("settings_users", {
+mock_esm("../../static/js/settings_users", {
     update_user_data() {},
 });
 

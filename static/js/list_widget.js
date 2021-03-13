@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as ui from "./ui";
 
 const DEFAULTS = {

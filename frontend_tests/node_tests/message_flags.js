@@ -2,13 +2,13 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const channel = mock_module("channel");
-const ui = mock_module("ui");
+const channel = mock_esm("../../static/js/channel");
+const ui = mock_esm("../../static/js/ui");
 
-mock_module("starred_messages", {
+mock_esm("../../static/js/starred_messages", {
     add: () => {},
 
     remove: () => {},
@@ -16,7 +16,7 @@ mock_module("starred_messages", {
 
 const message_flags = zrequire("message_flags");
 
-run_test("starred", () => {
+run_test("starred", (override) => {
     const message = {
         id: 50,
     };
@@ -32,10 +32,10 @@ run_test("starred", () => {
 
     let posted_data;
 
-    channel.post = (opts) => {
+    override(channel, "post", (opts) => {
         assert.equal(opts.url, "/json/messages/flags");
         posted_data = opts.data;
-    };
+    });
 
     message_flags.toggle_starred_and_update_server(message);
 
@@ -69,15 +69,20 @@ run_test("starred", () => {
         starred: false,
     });
 });
-run_test("read", () => {
+run_test("read", (override) => {
     // Way to capture posted info in every request
     let channel_post_opts;
-    channel.post = (opts) => {
+    override(channel, "post", (opts) => {
         channel_post_opts = opts;
-    };
+    });
 
     // For testing purpose limit the batch size value to 5 instead of 1000
-    message_flags.__Rewire__("_unread_batch_size", 5);
+    function send_read(messages) {
+        with_field(message_flags, "_unread_batch_size", 5, () => {
+            message_flags.send_read(messages);
+        });
+    }
+
     let msgs_to_flag_read = [
         {locally_echoed: false, id: 1},
         {locally_echoed: false, id: 2},
@@ -87,7 +92,7 @@ run_test("read", () => {
         {locally_echoed: false, id: 6},
         {locally_echoed: false, id: 7},
     ];
-    message_flags.send_read(msgs_to_flag_read);
+    send_read(msgs_to_flag_read);
     assert.deepEqual(channel_post_opts, {
         url: "/json/messages/flags",
         idempotent: true,
@@ -131,7 +136,7 @@ run_test("read", () => {
         {locally_echoed: false, id: 6},
         {locally_echoed: false, id: 7},
     ];
-    message_flags.send_read(msgs_to_flag_read);
+    send_read(msgs_to_flag_read);
     assert.deepEqual(channel_post_opts, {
         url: "/json/messages/flags",
         idempotent: true,

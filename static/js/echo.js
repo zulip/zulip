@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as alert_words from "./alert_words";
 import * as compose from "./compose";
 import * as local_message from "./local_message";

@@ -70,12 +70,12 @@ number of purposes:
      `apply_markdown` and `client_gravatar` features in our
      [events API docs](https://zulip.com/api/register-queue)).
 * Following our standard naming convention, input validation is done
-  inside the `check_message` function, which is responsible for
+  inside the `check_message` function in `zerver/lib/actions.py`, which is responsible for
   validating the user can send to the recipient,
   [rendering the Markdown](../subsystems/markdown.md), etc. --
   basically everything that can fail due to bad user input.
 * The core `do_send_messages` function (which handles actually sending
-  the message) is one of the most optimized and thus complex parts of
+  the message) in `zerver/lib/actions.py` is one of the most optimized and thus complex parts of
   the system.  But in short, its job is to atomically do a few key
   things:
    * Store a `Message` row in the database.

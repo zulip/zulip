@@ -5,6 +5,10 @@ import * as stream_data from "./stream_data";
 // This maps a stream_id to a LazySet of user_ids who are subscribed.
 const stream_subscribers = new Map();
 
+export function clear_for_testing() {
+    stream_subscribers.clear();
+}
+
 function assert_number(id) {
     if (typeof id !== "number") {
         blueslip.error(`You must pass ids as numbers to peer_data. id = ${id}`);

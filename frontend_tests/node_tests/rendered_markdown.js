@@ -2,11 +2,12 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-mock_module("rtl", {
+mock_cjs("jquery", $);
+mock_esm("../../static/js/rtl", {
     get_direction: () => "ltr",
 });
 const page_params = set_global("page_params", {emojiset: "apple"});

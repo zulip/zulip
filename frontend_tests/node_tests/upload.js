@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -22,20 +22,22 @@ set_global("csrf_token", "csrf_token");
 document.location.protocol = "https:";
 document.location.host = "foo.com";
 
-const compose_ui = zrequire("compose_ui");
-const compose_actions = zrequire("compose_actions");
+mock_cjs("jquery", $);
 
-const plugin_stub = {
+let uppy_stub;
+function Uppy(options) {
+    return uppy_stub.call(this, options);
+}
+Uppy.Plugin = {
     prototype: {
         constructor: null,
     },
 };
+mock_cjs("@uppy/core", Uppy);
 
+const compose_ui = zrequire("compose_ui");
+const compose_actions = zrequire("compose_actions");
 const upload = zrequire("upload");
-
-// Even though we stub out Uppy, we need to reference it
-// for line coverage purposes.
-assert(upload.__get__("Uppy"));
 
 run_test("feature_check", (override) => {
     const upload_button = $.create("upload-button-stub");
@@ -331,7 +333,7 @@ run_test("uppy_config", () => {
     let uppy_used_xhrupload = false;
     let uppy_used_progressbar = false;
 
-    function uppy_stub(config) {
+    uppy_stub = function (config) {
         uppy_stub_called = true;
         assert.equal(config.debug, false);
         assert.equal(config.autoProceed, true);
@@ -365,9 +367,7 @@ run_test("uppy_config", () => {
             },
             on: () => {},
         };
-    }
-    uppy_stub.Plugin = plugin_stub;
-    upload.__Rewire__("Uppy", uppy_stub);
+    };
     upload.setup_upload({mode: "compose"});
 
     assert.equal(uppy_stub_called, true);
@@ -480,7 +480,7 @@ run_test("uppy_events", (override) => {
     let state = {};
     let files = [];
 
-    function uppy_stub() {
+    uppy_stub = function () {
         return {
             setMeta: () => {},
             use: () => {},
@@ -502,9 +502,7 @@ run_test("uppy_events", (override) => {
                 },
             }),
         };
-    }
-    uppy_stub.Plugin = plugin_stub;
-    upload.__Rewire__("Uppy", uppy_stub);
+    };
     upload.setup_upload({mode: "compose"});
     assert.equal(Object.keys(callbacks).length, 5);
 

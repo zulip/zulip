@@ -22,6 +22,15 @@
             <div class="alert-notification" id="display-settings-status"></div>
 
             <div class="input-group">
+                <label for="default_view" class="dropdown-title">{{t "Default view" }}
+                    {{> ../help_link_widget link="/help/change-default-view" }}
+                </label>
+                <select name="default_view" id="default_view">
+                    {{> dropdown_options_widget option_values=default_view_values}}
+                </select>
+            </div>
+
+            <div class="input-group">
                 <label for="color_scheme" class="dropdown-title">{{t "Color scheme" }}
                 </label>
                 <select name="color_scheme" id="color_scheme">

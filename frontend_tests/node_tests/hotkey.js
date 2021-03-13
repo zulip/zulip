@@ -3,7 +3,8 @@
 const {strict: assert} = require("assert");
 
 const {
-    mock_module,
+    mock_cjs,
+    mock_esm,
     set_global,
     with_field,
     with_overrides,
@@ -11,6 +12,7 @@ const {
 } = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
 
 // Important note on these tests:
 
@@ -39,25 +41,26 @@ const page_params = set_global("page_params", {});
 // jQuery stuff should go away if we make an initialize() method.
 set_global("document", "document-stub");
 
-const compose_actions = mock_module("compose_actions");
-const condense = mock_module("condense");
-const drafts = mock_module("drafts");
-const emoji_picker = mock_module("emoji_picker", {
+mock_cjs("jquery", $);
+const compose_actions = mock_esm("../../static/js/compose_actions");
+const condense = mock_esm("../../static/js/condense");
+const drafts = mock_esm("../../static/js/drafts");
+const emoji_picker = mock_esm("../../static/js/emoji_picker", {
     reactions_popped: () => false,
 });
-const gear_menu = mock_module("gear_menu", {
+const gear_menu = mock_esm("../../static/js/gear_menu", {
     is_open: () => false,
 });
-const hashchange = mock_module("hashchange", {
+const hashchange = mock_esm("../../static/js/hashchange", {
     in_recent_topics_hash: () => false,
 });
-const lightbox = mock_module("lightbox");
-const list_util = mock_module("list_util");
-const message_edit = mock_module("message_edit");
-const muting_ui = mock_module("muting_ui");
-const narrow = mock_module("narrow");
-const navigate = mock_module("navigate");
-const overlays = mock_module("overlays", {
+const lightbox = mock_esm("../../static/js/lightbox");
+const list_util = mock_esm("../../static/js/list_util");
+const message_edit = mock_esm("../../static/js/message_edit");
+const muting_ui = mock_esm("../../static/js/muting_ui");
+const narrow = mock_esm("../../static/js/narrow");
+const navigate = mock_esm("../../static/js/navigate");
+const overlays = mock_esm("../../static/js/overlays", {
     is_active: () => false,
     settings_open: () => false,
     streams_open: () => false,
@@ -65,29 +68,29 @@ const overlays = mock_module("overlays", {
     drafts_open: () => false,
     info_overlay_open: () => false,
 });
-const popovers = mock_module("popovers", {
+const popovers = mock_esm("../../static/js/popovers", {
     actions_popped: () => false,
     message_info_popped: () => false,
     user_sidebar_popped: () => false,
     user_info_popped: () => false,
 });
-const reactions = mock_module("reactions");
-const search = mock_module("search");
-const stream_list = mock_module("stream_list");
-const subs = mock_module("subs");
+const reactions = mock_esm("../../static/js/reactions");
+const search = mock_esm("../../static/js/search");
+const stream_list = mock_esm("../../static/js/stream_list");
+const subs = mock_esm("../../static/js/subs");
 
-mock_module("stream_popover", {
+mock_esm("../../static/js/stream_popover", {
     stream_popped: () => false,
     topic_popped: () => false,
     all_messages_popped: () => false,
     starred_messages_popped: () => false,
 });
 
-mock_module("hotspots", {
+mock_esm("../../static/js/hotspots", {
     is_open: () => false,
 });
 
-mock_module("recent_topics", {
+mock_esm("../../static/js/recent_topics", {
     is_visible: () => false,
 });
 

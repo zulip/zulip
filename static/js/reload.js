@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as activity from "./activity";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
@@ -340,4 +342,13 @@ window.addEventListener("beforeunload", () => {
     // zulip.
     blueslip.log("Setting reload_in_progress in beforeunload handler");
     reload_state.set_state_to_in_progress();
+});
+
+reload_state.set_csrf_failed_handler(() => {
+    initiate({
+        immediate: true,
+        save_pointer: true,
+        save_narrow: true,
+        save_compose: true,
+    });
 });

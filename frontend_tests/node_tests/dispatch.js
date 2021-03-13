@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -18,47 +18,51 @@ const typing_person1 = events.typing_person1;
 
 set_global("setTimeout", (func) => func());
 
-const activity = mock_module("activity");
-const alert_words_ui = mock_module("alert_words_ui");
-const attachments_ui = mock_module("attachments_ui");
-const bot_data = mock_module("bot_data");
-const composebox_typeahead = mock_module("composebox_typeahead");
-const emoji_picker = mock_module("emoji_picker");
-const hotspots = mock_module("hotspots");
-const markdown = mock_module("markdown");
-const message_edit = mock_module("message_edit");
-const message_events = mock_module("message_events");
-const message_list = mock_module("message_list");
-const muting_ui = mock_module("muting_ui");
-const night_mode = mock_module("night_mode");
-const notifications = mock_module("notifications");
-const reactions = mock_module("reactions");
-const realm_icon = mock_module("realm_icon");
-const realm_logo = mock_module("realm_logo");
-const reload = mock_module("reload");
-const scroll_bar = mock_module("scroll_bar");
-const settings_account = mock_module("settings_account");
-const settings_bots = mock_module("settings_bots");
-const settings_display = mock_module("settings_display");
-const settings_emoji = mock_module("settings_emoji");
-const settings_exports = mock_module("settings_exports");
-const settings_invites = mock_module("settings_invites");
-const settings_linkifiers = mock_module("settings_linkifiers");
-const settings_notifications = mock_module("settings_notifications");
-const settings_org = mock_module("settings_org");
-const settings_profile_fields = mock_module("settings_profile_fields");
-const settings_streams = mock_module("settings_streams");
-const settings_user_groups = mock_module("settings_user_groups");
-const settings_users = mock_module("settings_users");
-const stream_data = mock_module("stream_data");
-const stream_events = mock_module("stream_events");
-const submessage = mock_module("submessage");
-const typing_events = mock_module("typing_events");
-const ui = mock_module("ui");
-const unread_ops = mock_module("unread_ops");
-const user_events = mock_module("user_events");
-const user_groups = mock_module("user_groups");
-mock_module("compose");
+mock_cjs("jquery", $);
+const activity = mock_esm("../../static/js/activity");
+const alert_words_ui = mock_esm("../../static/js/alert_words_ui");
+const attachments_ui = mock_esm("../../static/js/attachments_ui");
+const bot_data = mock_esm("../../static/js/bot_data");
+const composebox_typeahead = mock_esm("../../static/js/composebox_typeahead");
+const emoji_picker = mock_esm("../../static/js/emoji_picker");
+const hotspots = mock_esm("../../static/js/hotspots");
+const markdown = mock_esm("../../static/js/markdown");
+const message_edit = mock_esm("../../static/js/message_edit");
+const message_events = mock_esm("../../static/js/message_events");
+const message_list = mock_esm("../../static/js/message_list");
+const muting_ui = mock_esm("../../static/js/muting_ui");
+const night_mode = mock_esm("../../static/js/night_mode");
+const notifications = mock_esm("../../static/js/notifications");
+const reactions = mock_esm("../../static/js/reactions");
+const realm_icon = mock_esm("../../static/js/realm_icon");
+const realm_logo = mock_esm("../../static/js/realm_logo");
+const reload = mock_esm("../../static/js/reload");
+const scroll_bar = mock_esm("../../static/js/scroll_bar");
+const settings_account = mock_esm("../../static/js/settings_account");
+const settings_bots = mock_esm("../../static/js/settings_bots");
+const settings_display = mock_esm("../../static/js/settings_display");
+const settings_emoji = mock_esm("../../static/js/settings_emoji");
+const settings_exports = mock_esm("../../static/js/settings_exports");
+const settings_invites = mock_esm("../../static/js/settings_invites");
+const settings_linkifiers = mock_esm("../../static/js/settings_linkifiers");
+const settings_notifications = mock_esm("../../static/js/settings_notifications");
+const settings_org = mock_esm("../../static/js/settings_org");
+const settings_profile_fields = mock_esm("../../static/js/settings_profile_fields");
+const settings_streams = mock_esm("../../static/js/settings_streams");
+const settings_user_groups = mock_esm("../../static/js/settings_user_groups");
+const settings_users = mock_esm("../../static/js/settings_users");
+const stream_data = mock_esm("../../static/js/stream_data");
+const stream_events = mock_esm("../../static/js/stream_events");
+const submessage = mock_esm("../../static/js/submessage");
+const typing_events = mock_esm("../../static/js/typing_events");
+const ui = mock_esm("../../static/js/ui");
+const unread_ops = mock_esm("../../static/js/unread_ops");
+const user_events = mock_esm("../../static/js/user_events");
+const user_groups = mock_esm("../../static/js/user_groups");
+mock_esm("../../static/js/compose");
+
+const electron_bridge = set_global("electron_bridge", {});
+
 set_global("current_msg_list", {});
 set_global("home_msg_list", {});
 
@@ -105,6 +109,7 @@ function assert_same(actual, expected) {
 }
 
 run_test("alert_words", (override) => {
+    alert_words.initialize({alert_words: []});
     assert(!alert_words.has_alert_word("fire"));
     assert(!alert_words.has_alert_word("lunch"));
 
@@ -194,6 +199,7 @@ run_test("default_streams", (override) => {
 });
 
 run_test("hotspots", (override) => {
+    page_params.hotspots = [];
     const event = event_fixtures.hotspots;
     override(hotspots, "load_new", noop);
     dispatch(event);
@@ -262,6 +268,17 @@ run_test("realm settings", (override) => {
     override(settings_bots, "update_bot_permissions_ui", noop);
     override(notifications, "redraw_title", noop);
 
+    function test_electron_dispatch(event, fake_send_event) {
+        let called = false;
+
+        with_field(electron_bridge, "send_event", fake_send_event, () => {
+            dispatch(event);
+            called = true;
+        });
+
+        assert(called);
+    }
+
     // realm
     function test_realm_boolean(event, parameter_name) {
         page_params[parameter_name] = true;
@@ -306,20 +323,12 @@ run_test("realm settings", (override) => {
     test_realm_boolean(event, "realm_invite_required");
 
     event = event_fixtures.realm__update__name;
-    dispatch(event);
-    assert_same(page_params.realm_name, "new_realm_name");
 
-    let called = false;
-    set_global("electron_bridge", {
-        send_event: (key, val) => {
-            assert_same(key, "realm_name");
-            assert_same(val, "new_realm_name");
-            called = true;
-        },
+    test_electron_dispatch(event, (key, val) => {
+        assert_same(key, "realm_name");
+        assert_same(val, "new_realm_name");
     });
-
-    dispatch(event);
-    assert_same(called, true);
+    assert_same(page_params.realm_name, "new_realm_name");
 
     event = event_fixtures.realm__update__emails_restricted_to_domains;
     test_realm_boolean(event, "realm_emails_restricted_to_domains");
@@ -361,18 +370,11 @@ run_test("realm settings", (override) => {
     event = event_fixtures.realm__update_dict__icon;
     override(realm_icon, "rerender", noop);
 
-    called = false;
-    set_global("electron_bridge", {
-        send_event: (key, val) => {
-            assert_same(key, "realm_icon_url");
-            assert_same(val, "icon.png");
-            called = true;
-        },
+    test_electron_dispatch(event, (key, val) => {
+        assert_same(key, "realm_icon_url");
+        assert_same(val, "icon.png");
     });
 
-    dispatch(event);
-
-    assert_same(called, true);
     assert_same(page_params.realm_icon_url, "icon.png");
     assert_same(page_params.realm_icon_source, "U");
 
@@ -467,6 +469,7 @@ run_test("realm_emoji", (override) => {
     }
 
     // Make sure we start with nothing...
+    emoji.update_emojis([]);
     assert.equal(emoji.get_realm_emoji_url("spain"), undefined);
 
     dispatch(event);
@@ -568,6 +571,9 @@ run_test("submessage", (override) => {
 // For subscriptions, see dispatch_subs.js
 
 run_test("typing", (override) => {
+    // Simulate that we are not typing.
+    page_params.user_id = typing_person1.user_id + 1;
+
     let event = event_fixtures.typing__start;
     {
         const stub = make_stub();
@@ -588,9 +594,10 @@ run_test("typing", (override) => {
         assert_same(args.event.sender.user_id, typing_person1.user_id);
     }
 
+    // Get line coverage--we ignore our own typing events.
     page_params.user_id = typing_person1.user_id;
     event = event_fixtures.typing__start;
-    dispatch(event); // get line coverage
+    dispatch(event);
 });
 
 run_test("update_display_settings", (override) => {
@@ -674,6 +681,20 @@ run_test("update_display_settings", (override) => {
         dispatch(event);
         assert.equal(stub.num_calls, 1);
         assert(page_params.color_scheme, 3);
+    }
+
+    {
+        event = event_fixtures.update_display_settings__default_view_recent_topics;
+        page_params.default_view = "all_messages";
+        dispatch(event);
+        assert(page_params.default_view, "recent_topics");
+    }
+
+    {
+        event = event_fixtures.update_display_settings__default_view_all_messages;
+        page_params.default_view = "recent_topics";
+        dispatch(event);
+        assert(page_params.default_view, "all_messages");
     }
 
     {

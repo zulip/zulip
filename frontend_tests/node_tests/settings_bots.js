@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -27,14 +27,16 @@ const bot_data_params = {
     ],
 };
 
-const avatar = mock_module("avatar");
+mock_cjs("jquery", $);
+const avatar = mock_esm("../../static/js/avatar");
+
 function ClipboardJS(sel) {
     assert.equal(sel, "#copy_zuliprc");
 }
+mock_cjs("clipboard", ClipboardJS);
 
 const bot_data = zrequire("bot_data");
 const settings_bots = zrequire("settings_bots");
-settings_bots.__Rewire__("ClipboardJS", ClipboardJS);
 
 bot_data.initialize(bot_data_params);
 

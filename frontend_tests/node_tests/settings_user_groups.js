@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const _ = require("lodash");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -17,16 +17,17 @@ const pills = {
 
 let create_item_handler;
 
-const channel = mock_module("channel");
-const confirm_dialog = mock_module("confirm_dialog");
-const input_pill = mock_module("input_pill");
-const typeahead_helper = mock_module("typeahead_helper");
-const user_groups = mock_module("user_groups", {
+mock_cjs("jquery", $);
+const channel = mock_esm("../../static/js/channel");
+const confirm_dialog = mock_esm("../../static/js/confirm_dialog");
+const input_pill = mock_esm("../../static/js/input_pill");
+const typeahead_helper = mock_esm("../../static/js/typeahead_helper");
+const user_groups = mock_esm("../../static/js/user_groups", {
     get_user_group_from_id: noop,
     remove: noop,
     add: noop,
 });
-const ui_report = mock_module("ui_report");
+const ui_report = mock_esm("../../static/js/ui_report");
 
 const page_params = set_global("page_params", {});
 

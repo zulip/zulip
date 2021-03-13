@@ -2,18 +2,18 @@
 
 const {strict: assert} = require("assert");
 
-const jquery = require("jquery");
 const {JSDOM} = require("jsdom");
 
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const jquery = require("../zjsunit/real_jquery");
 const {run_test} = require("../zjsunit/test");
 
 const {window} = new JSDOM("<!DOCTYPE html><p>Hello world</p>");
 
 const {DOMParser, document} = window;
-const $ = set_global("$", jquery(window));
+const $ = jquery(window);
 
-const compose_ui = mock_module("compose_ui");
+const compose_ui = mock_esm("../../static/js/compose_ui");
 set_global("page_params", {
     development_environment: true,
 });

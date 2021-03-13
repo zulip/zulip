@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as activity from "./activity";
 import * as notifications from "./notifications";
 import * as pm_list from "./pm_list";

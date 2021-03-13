@@ -1,3 +1,4 @@
+import $ from "jquery";
 import _ from "lodash";
 
 import render_stream_privacy from "../templates/stream_privacy.hbs";

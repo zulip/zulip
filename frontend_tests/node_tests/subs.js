@@ -3,13 +3,14 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const denmark_stream_id = 101;
 
-const ui = mock_module("ui", {
+mock_cjs("jquery", $);
+const ui = mock_esm("../../static/js/ui", {
     get_content_element: (element) => element,
     get_scroll_element: (element) => element,
 });
@@ -17,7 +18,7 @@ const ui = mock_module("ui", {
 set_global("location", {
     hash: `#streams/${denmark_stream_id}/announce`,
 });
-mock_module("hash_util", {
+mock_esm("../../static/js/hash_util", {
     by_stream_uri: () => {},
 });
 set_global("page_params", {});

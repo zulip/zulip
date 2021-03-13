@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import render_widgets_poll_widget from "../templates/widgets/poll_widget.hbs";
 import render_widgets_poll_widget_results from "../templates/widgets/poll_widget_results.hbs";
 

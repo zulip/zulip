@@ -1863,6 +1863,7 @@ class UserDisplayActionTest(BaseAction):
         test_changes: Dict[str, Any] = dict(
             emojiset=["twitter"],
             default_language=["es", "de", "en"],
+            default_view=["all_messages", "recent_topics"],
             timezone=["America/Denver", "Pacific/Pago_Pago", "Pacific/Galapagos", ""],
             demote_inactive_streams=[2, 3, 1],
             color_scheme=[2, 3, 1],

@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import render_settings_upload_space_stats from "../templates/settings/upload_space_stats.hbs";
 import render_uploaded_files_list from "../templates/uploaded_files_list.hbs";
 

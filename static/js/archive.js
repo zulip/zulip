@@ -1,4 +1,5 @@
 import {format, isSameDay} from "date-fns";
+import $ from "jquery";
 import _ from "lodash";
 
 import render_archive_message_group from "../templates/archive_message_group.hbs";

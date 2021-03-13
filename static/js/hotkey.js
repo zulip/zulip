@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as emoji from "../shared/js/emoji";
 
 import * as activity from "./activity";
@@ -214,6 +216,12 @@ export function in_content_editable_widget(e) {
 
 // Returns true if we handled it, false if the browser should.
 export function process_escape_key(e) {
+    if (hashchange.in_recent_topics_hash() && recent_topics.change_focused_element(e, "escape")) {
+        // Recent topics uses escape to make focus from RT search / filters to topics table.
+        // If focus already in table it returns false.
+        return true;
+    }
+
     if (in_content_editable_widget(e)) {
         return false;
     }
@@ -299,7 +307,7 @@ export function process_escape_key(e) {
         return true;
     }
 
-    hashchange.go_to_location("");
+    hashchange.show_default_view();
     return true;
 }
 
@@ -504,7 +512,6 @@ export function process_hotkey(e, hotkey) {
         case "tab":
         case "shift_tab":
         case "open_recent_topics":
-        case "escape":
             if (
                 hashchange.in_recent_topics_hash() &&
                 !popovers.any_active() &&
@@ -765,7 +772,7 @@ export function process_hotkey(e, hotkey) {
             narrow.narrow_to_next_pm_string();
             return true;
         case "open_recent_topics":
-            hashchange.go_to_location("#");
+            hashchange.go_to_location("#recent_topics");
             return true;
         case "all_messages":
             hashchange.go_to_location("#all_messages");

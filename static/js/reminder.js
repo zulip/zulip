@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as channel from "./channel";
 import * as compose from "./compose";
 import * as hash_util from "./hash_util";

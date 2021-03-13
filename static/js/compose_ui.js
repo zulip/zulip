@@ -1,4 +1,5 @@
 import autosize from "autosize";
+import $ from "jquery";
 
 import * as people from "./people";
 import * as user_status from "./user_status";

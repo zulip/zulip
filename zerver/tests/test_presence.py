@@ -464,8 +464,15 @@ class SingleUserPresenceTests(ZulipTestCase):
         result = self.client_get("/json/users/cordelia@zulip.com/presence")
         self.assert_json_error(result, "No presence data for cordelia@zulip.com")
 
+        cordelia = self.example_user("cordelia")
+        result = self.client_get(f"/json/users/{cordelia.id}/presence")
+        self.assert_json_error(result, f"No presence data for {cordelia.id}")
+
         do_deactivate_user(self.example_user("cordelia"))
         result = self.client_get("/json/users/cordelia@zulip.com/presence")
+        self.assert_json_error(result, "No such user")
+
+        result = self.client_get(f"/json/users/{cordelia.id}/presence")
         self.assert_json_error(result, "No such user")
 
         result = self.client_get("/json/users/default-bot@zulip.com/presence")
@@ -476,9 +483,20 @@ class SingleUserPresenceTests(ZulipTestCase):
         result = self.client_get("/json/users/othello@zulip.com/presence", subdomain="zephyr")
         self.assert_json_error(result, "No such user")
 
+        othello = self.example_user("othello")
+        result = self.client_get(f"/json/users/{othello.id}/presence", subdomain="zephyr")
+        self.assert_json_error(result, "No such user")
+
         # Then, we check everything works
         self.login("hamlet")
         result = self.client_get("/json/users/othello@zulip.com/presence")
+        result_dict = result.json()
+        self.assertEqual(
+            set(result_dict["presence"].keys()), {"ZulipAndroid", "website", "aggregated"}
+        )
+        self.assertEqual(set(result_dict["presence"]["website"].keys()), {"status", "timestamp"})
+
+        result = self.client_get(f"/json/users/{othello.id}/presence")
         result_dict = result.json()
         self.assertEqual(
             set(result_dict["presence"].keys()), {"ZulipAndroid", "website", "aggregated"}

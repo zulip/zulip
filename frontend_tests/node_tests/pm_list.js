@@ -2,22 +2,23 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const narrow_state = mock_module("narrow_state");
-const pm_list_dom = mock_module("pm_list_dom");
-const unread = mock_module("unread");
-const unread_ui = mock_module("unread_ui");
-const vdom = mock_module("vdom", {
+mock_cjs("jquery", $);
+const narrow_state = mock_esm("../../static/js/narrow_state");
+const pm_list_dom = mock_esm("../../static/js/pm_list_dom");
+const unread = mock_esm("../../static/js/unread");
+const unread_ui = mock_esm("../../static/js/unread_ui");
+const vdom = mock_esm("../../static/js/vdom", {
     render: () => "fake-dom-for-pm-list",
 });
 
-mock_module("stream_popover", {
+mock_esm("../../static/js/stream_popover", {
     hide_topic_popover() {},
 });
-mock_module("ui", {
+mock_esm("../../static/js/ui", {
     get_content_element: (element) => element,
 });
 
@@ -53,7 +54,15 @@ people.add_active_user(me);
 people.add_active_user(bot_test);
 people.initialize_current_user(me.user_id);
 
-run_test("close", () => {
+function test(label, f) {
+    run_test(label, (override) => {
+        pm_conversations.recent.clear_for_testing();
+        pm_list.clear_for_testing();
+        f(override);
+    });
+}
+
+test("close", () => {
     let collapsed;
     $("#private-container").empty = () => {
         collapsed = true;
@@ -62,7 +71,7 @@ run_test("close", () => {
     assert(collapsed);
 });
 
-run_test("build_private_messages_list", (override) => {
+test("build_private_messages_list", (override) => {
     const timestamp = 0;
     pm_conversations.recent.insert([101, 102], timestamp);
 
@@ -100,13 +109,13 @@ run_test("build_private_messages_list", (override) => {
     expected_data[0].is_zero = true;
     assert.deepEqual(pm_data, expected_data);
 
-    pm_list.initialize();
     pm_list._build_private_messages_list();
     assert.deepEqual(pm_data, expected_data);
 });
 
-run_test("build_private_messages_list_bot", (override) => {
+test("build_private_messages_list_bot", (override) => {
     const timestamp = 0;
+    pm_conversations.recent.insert([101, 102], timestamp);
     pm_conversations.recent.insert([314], timestamp);
 
     override(unread, "num_unread_for_person", () => 1);
@@ -147,7 +156,7 @@ run_test("build_private_messages_list_bot", (override) => {
     assert.deepEqual(pm_data, expected_data);
 });
 
-run_test("update_dom_with_unread_counts", (override) => {
+test("update_dom_with_unread_counts", (override) => {
     let counts;
     let toggle_button_set;
     let expected_unread_count;
@@ -186,7 +195,7 @@ run_test("update_dom_with_unread_counts", (override) => {
     assert(toggle_button_set);
 });
 
-run_test("get_active_user_ids_string", (override) => {
+test("get_active_user_ids_string", (override) => {
     let active_filter;
 
     override(narrow_state, "filter", () => active_filter);
@@ -218,7 +227,7 @@ function private_filter() {
     };
 }
 
-run_test("is_all_privates", (override) => {
+test("is_all_privates", (override) => {
     let filter;
     override(narrow_state, "filter", () => filter);
 
@@ -229,7 +238,7 @@ run_test("is_all_privates", (override) => {
     assert.equal(pm_list.is_all_privates(), true);
 });
 
-run_test("expand", (override) => {
+test("expand", (override) => {
     override(narrow_state, "filter", private_filter);
     override(narrow_state, "active", () => true);
     override(pm_list, "_build_private_messages_list", () => "PM_LIST_CONTENTS");
@@ -245,10 +254,11 @@ run_test("expand", (override) => {
     assert($(".top_left_private_messages").hasClass("active-filter"));
 });
 
-run_test("update_private_messages", (override) => {
+test("update_private_messages", (override) => {
     let html_updated;
     let container_found;
 
+    override(narrow_state, "filter", private_filter);
     override(narrow_state, "active", () => true);
     override(pm_list, "_build_private_messages_list", () => "PM_LIST_CONTENTS");
 
@@ -265,12 +275,13 @@ run_test("update_private_messages", (override) => {
         find();
     });
 
+    pm_list.expand();
     pm_list.update_private_messages();
     assert(html_updated);
     assert(container_found);
 });
 
-run_test("ensure coverage", (override) => {
+test("ensure coverage", (override) => {
     // These aren't rigorous; they just cover cases
     // where functions early exit.
     override(narrow_state, "active", () => false);

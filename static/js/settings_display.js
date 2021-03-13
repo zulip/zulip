@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as channel from "./channel";
 import * as emojisets from "./emojisets";
 import * as loading from "./loading";
@@ -41,6 +43,8 @@ export function set_up() {
     $("#demote_inactive_streams").val(page_params.demote_inactive_streams);
 
     $("#color_scheme").val(page_params.color_scheme);
+
+    $("#default_view").val(page_params.default_view);
 
     $("#twenty_four_hour_time").val(JSON.stringify(page_params.twenty_four_hour_time));
 
@@ -106,6 +110,11 @@ export function set_up() {
 
     $("#color_scheme").on("change", function () {
         const data = {color_scheme: this.value};
+        change_display_setting(data, "#display-settings-status");
+    });
+
+    $("#default_view").on("change", function () {
+        const data = {default_view: JSON.stringify(this.value)};
         change_display_setting(data, "#display-settings-status");
     });
 
@@ -179,6 +188,7 @@ export function update_page() {
     $("#translate_emoticons").prop("checked", page_params.translate_emoticons);
     $("#twenty_four_hour_time").val(JSON.stringify(page_params.twenty_four_hour_time));
     $("#color_scheme").val(JSON.stringify(page_params.color_scheme));
+    $("#default_view").val(page_params.default_view);
 
     // TODO: Set emojiset selector here.
     // Longer term, we'll want to automate this function

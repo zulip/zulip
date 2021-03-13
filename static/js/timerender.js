@@ -8,6 +8,7 @@ import {
     parseISO,
     startOfToday,
 } from "date-fns";
+import $ from "jquery";
 
 let next_timerender_id = 0;
 

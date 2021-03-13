@@ -1,3 +1,4 @@
+import $ from "jquery";
 import TurndownService from "turndown/lib/turndown.cjs";
 
 import * as compose_ui from "./compose_ui";

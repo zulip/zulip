@@ -1,4 +1,5 @@
 import autosize from "autosize";
+import $ from "jquery";
 
 import {MessageListData} from "./message_list_data";
 import {MessageListView} from "./message_list_view";

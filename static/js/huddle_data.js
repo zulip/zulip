@@ -4,6 +4,10 @@ import * as people from "./people";
 
 const huddle_timestamps = new Map();
 
+export function clear_for_testing() {
+    huddle_timestamps.clear();
+}
+
 export function process_loaded_messages(messages) {
     for (const message of messages) {
         const huddle_string = people.huddle_string(message);

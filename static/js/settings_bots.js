@@ -1,4 +1,5 @@
 import ClipboardJS from "clipboard";
+import $ from "jquery";
 
 import render_bot_avatar_row from "../templates/bot_avatar_row.hbs";
 import render_edit_bot from "../templates/edit_bot.hbs";

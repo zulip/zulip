@@ -23,6 +23,11 @@ const stored_messages = new Map();
 */
 const message_user_ids = new Set();
 
+export function clear_for_testing() {
+    stored_messages.clear();
+    message_user_ids.clear();
+}
+
 export function user_ids() {
     return Array.from(message_user_ids);
 }
@@ -42,12 +47,6 @@ export function get(message_id) {
     }
 
     return stored_messages.get(message_id);
-}
-
-export function each(f) {
-    for (const [id, message] of stored_messages) {
-        f(message, id);
-    }
 }
 
 export function get_pm_emails(message) {
@@ -214,19 +213,19 @@ export function update_property(property, value, info) {
     switch (property) {
         case "sender_full_name":
         case "small_avatar_url":
-            each((msg) => {
+            for (const msg of stored_messages.values()) {
                 if (msg.sender_id && msg.sender_id === info.user_id) {
                     msg[property] = value;
                 }
-            });
+            }
             break;
         case "stream_name":
-            each((msg) => {
+            for (const msg of stored_messages.values()) {
                 if (msg.stream_id && msg.stream_id === info.stream_id) {
                     msg.display_recipient = value;
                     msg.stream = value;
                 }
-            });
+            }
             break;
     }
 }

@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import render_widgets_todo_widget from "../templates/widgets/todo_widget.hbs";
 import render_widgets_todo_widget_tasks from "../templates/widgets/todo_widget_tasks.hbs";
 

@@ -9,31 +9,40 @@
 // become clear as you keep reading.
 const {strict: assert} = require("assert");
 
-const {mock_module, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {
+    mock_cjs,
+    mock_esm,
+    set_global,
+    unmock_module,
+    with_field,
+    zrequire,
+} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
 
 // Some quick housekeeping:  Let's clear page_params, which is a data
 // structure that the server sends down to us when the app starts.  We
 // prefer to test with a clean slate.
 
-const activity = mock_module("activity");
-const channel = mock_module("channel");
+mock_cjs("jquery", $);
+const activity = mock_esm("../../static/js/activity");
+const channel = mock_esm("../../static/js/channel");
 const home_msg_list = set_global("home_msg_list", {});
-const message_list = mock_module("message_list");
-const message_live_update = mock_module("message_live_update");
-const message_util = mock_module("message_util");
-const message_viewport = mock_module("message_viewport");
-const notifications = mock_module("notifications");
-const overlays = mock_module("overlays");
-const pm_list = mock_module("pm_list");
-const resize = mock_module("resize");
-const settings_users = mock_module("settings_users");
-const topic_list = mock_module("topic_list");
-const unread_ui = mock_module("unread_ui");
+const message_list = mock_esm("../../static/js/message_list");
+const message_live_update = mock_esm("../../static/js/message_live_update");
+const message_util = mock_esm("../../static/js/message_util");
+const message_viewport = mock_esm("../../static/js/message_viewport");
+const notifications = mock_esm("../../static/js/notifications");
+const overlays = mock_esm("../../static/js/overlays");
+const pm_list = mock_esm("../../static/js/pm_list");
+const resize = mock_esm("../../static/js/resize");
+const settings_users = mock_esm("../../static/js/settings_users");
+const topic_list = mock_esm("../../static/js/topic_list");
+const unread_ui = mock_esm("../../static/js/unread_ui");
 
-let stream_list = mock_module("stream_list");
-let unread_ops = mock_module("unread_ops");
+let stream_list = mock_esm("../../static/js/stream_list");
+let unread_ops = mock_esm("../../static/js/unread_ops");
 
 set_global("page_params", {});
 
@@ -581,6 +590,7 @@ run_test("explore make_stub", (override) => {
 
 */
 
+unmock_module("../../static/js/unread_ops");
 unread_ops = zrequire("unread_ops");
 
 run_test("unread_ops", (override) => {
@@ -672,13 +682,9 @@ run_test("unread_ops", (override) => {
 
       stream_list.update_streams_sidebar
 
-    To make this test work, we will create a somewhat elaborate
-    function that fills in for jQuery (https://jquery.com/), so that
-    one boundary of our tests is how stream_list.js calls into
-    stream_list to manipulate DOM.
-
 */
 
+unmock_module("../../static/js/stream_list");
 stream_list = zrequire("stream_list");
 
 const social_stream = {
@@ -688,44 +694,11 @@ const social_stream = {
     subscribed: true,
 };
 
-function jquery_elem() {
-    // We create basic stubs for jQuery elements, so they
-    // just work.  We can extend these in cases where we want
-    // more detailed testing.
-    const elem = {};
-
-    elem.expectOne = () => elem;
-    elem.removeClass = () => elem;
-    elem.empty = () => elem;
-
-    return elem;
-}
-
 function make_jquery_helper() {
-    const stream_list_filter = jquery_elem();
-    stream_list_filter.val = () => "";
-
-    const stream_filters = jquery_elem();
-
     let appended_data;
-    stream_filters.append = (data) => {
+    $("#stream_filters").append = (data) => {
         appended_data = data;
     };
-
-    function fake_jquery(selector) {
-        switch (selector) {
-            case ".stream-list-filter":
-                return stream_list_filter;
-            case "ul#stream_filters li":
-                return jquery_elem();
-            case "#stream_filters":
-                return stream_filters;
-            default:
-                throw new Error("unknown selector: " + selector);
-        }
-    }
-
-    set_global("$", fake_jquery);
 
     return {
         verify_actions: () => {

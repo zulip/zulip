@@ -2,37 +2,39 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
-const color_data = mock_module("color_data");
-const message_util = mock_module("message_util");
-const stream_color = mock_module("stream_color");
-const stream_list = mock_module("stream_list");
-const stream_muting = mock_module("stream_muting");
-const subs = mock_module("subs", {
+
+mock_cjs("jquery", $);
+const color_data = mock_esm("../../static/js/color_data");
+const message_util = mock_esm("../../static/js/message_util");
+const stream_color = mock_esm("../../static/js/stream_color");
+const stream_list = mock_esm("../../static/js/stream_list");
+const stream_muting = mock_esm("../../static/js/stream_muting");
+const subs = mock_esm("../../static/js/subs", {
     update_settings_for_subscribed: noop,
 });
 
-mock_module("message_list", {
+mock_esm("../../static/js/message_list", {
     all: {
         all_messages() {
             return ["msg"];
         },
     },
 });
-mock_module("recent_topics", {
+mock_esm("../../static/js/recent_topics", {
     complete_rerender: () => {},
 });
-mock_module("settings_notifications", {
+mock_esm("../../static/js/settings_notifications", {
     update_page: () => {},
 });
 set_global("current_msg_list", {});
 
-mock_module("overlays", {streams_open: () => true});
+mock_esm("../../static/js/overlays", {streams_open: () => true});
 
 const {Filter} = zrequire("../js/filter");
 const message_view_header = zrequire("message_view_header");

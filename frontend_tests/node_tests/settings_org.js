@@ -3,21 +3,13 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {mock_module, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
 
 let form_data;
-
-const _jQuery = {
-    each(lst, f) {
-        for (const [k, v] of lst.entries()) {
-            f(k, v);
-        }
-    },
-};
 
 const _FormData = function () {
     return form_data;
@@ -32,7 +24,8 @@ const page_params = set_global("page_params", {
     realm_authentication_methods: {},
 });
 
-const realm_icon = mock_module("realm_icon");
+mock_cjs("jquery", $);
+const realm_icon = mock_esm("../../static/js/realm_icon");
 
 stub_templates((name, data) => {
     if (name === "settings/admin_realm_domains_list") {
@@ -42,17 +35,17 @@ stub_templates((name, data) => {
     throw new Error(`Unknown template ${name}`);
 });
 
-const channel = mock_module("channel");
-const overlays = mock_module("overlays");
+const channel = mock_esm("../../static/js/channel");
+const overlays = mock_esm("../../static/js/overlays");
 
-mock_module("list_widget", {
+mock_esm("../../static/js/list_widget", {
     create: () => ({init: noop}),
 });
-mock_module("loading", {
+mock_esm("../../static/js/loading", {
     make_indicator: noop,
     destroy_indicator: noop,
 });
-mock_module("ui_report", {
+mock_esm("../../static/js/ui_report", {
     success(msg, elem) {
         elem.val(msg);
     },
@@ -64,7 +57,6 @@ mock_module("ui_report", {
 
 set_global("csrf_token", "token-stub");
 set_global("FormData", _FormData);
-set_global("jQuery", _jQuery);
 
 const settings_config = zrequire("settings_config");
 const settings_bots = zrequire("settings_bots");

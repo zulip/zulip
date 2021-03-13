@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as hashchange from "./hashchange";
 
 if (window.electron_bridge !== undefined) {

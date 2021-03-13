@@ -1,4 +1,5 @@
 import Handlebars from "handlebars/runtime";
+import $ from "jquery";
 import _ from "lodash";
 
 import render_compose_all_everyone from "../templates/compose_all_everyone.hbs";

@@ -53,7 +53,11 @@ async function test_change_password(page: Page): Promise<void> {
     const change_password_button_selector = "#change_password_button";
     await page.waitForSelector(change_password_button_selector, {visible: true});
 
-    await page.waitForFunction(() => $(":focus").attr("id") === "change_password_modal");
+    // For some strange reason #change_password_modal:focus is not working with Firefox.
+    // The below line is an alternative to that.
+    // TODO: Replace the below line with `await page.waitForSelector("#change_password_modal:focus", {visible: true})`
+    // when the above issue is resolved.
+    await page.waitForFunction(() => document.activeElement!.id === "change_password_modal");
     await page.type("#old_password", test_credentials.default_user.password);
     await page.type("#new_password", "new_password");
     await page.click(change_password_button_selector);
@@ -72,6 +76,12 @@ async function test_get_api_key(page: Page): Promise<void> {
     await common.fill_form(page, "#api_key_form", {
         password: test_credentials.default_user.password,
     });
+
+    // When typing the password in Firefox, it shows "Not Secure" warning
+    // which was hiding the Get API Key button.
+    // You can see the screenshot of it in https://github.com/zulip/zulip/pull/17136.
+    // Focusing on it will remove the warning.
+    await page.focus(get_api_key_button_selector);
     await page.click(get_api_key_button_selector);
 
     await page.waitForSelector("#show_api_key", {visible: true});
@@ -162,13 +172,9 @@ async function test_edit_bot_form(page: Page): Promise<void> {
     // The form gets closed on saving. So, assert it's closed by waiting for it to be hidden.
     await page.waitForSelector("#edit_bot_modal", {hidden: true});
 
-    const bot1_name_selector = `.details:has(${bot1_edit_btn}) .name`;
-    await page.waitForFunction(
-        (bot1_name_selector: string) => $(bot1_name_selector).text() !== "Bot 1",
-        {},
-        bot1_name_selector,
+    await page.waitForXPath(
+        `//*[@class="btn open_edit_bot_form" and @data-email="${bot1_email}"]/ancestor::*[@class="details"]/*[@class="name" and text()="Bot one"]`,
     );
-    assert.strictEqual(await common.get_text_from_selector(page, bot1_name_selector), "Bot one");
 }
 
 async function test_your_bots_section(page: Page): Promise<void> {

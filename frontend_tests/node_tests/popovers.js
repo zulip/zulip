@@ -3,21 +3,22 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {mock_module, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 const noop = function () {};
 
-const rows = mock_module("rows");
-const stream_data = mock_module("stream_data");
-mock_module("emoji_picker", {
+mock_cjs("jquery", $);
+const rows = mock_esm("../../static/js/rows");
+const stream_data = mock_esm("../../static/js/stream_data");
+mock_esm("../../static/js/emoji_picker", {
     hide_emoji_popover: noop,
 });
-mock_module("message_viewport", {
+mock_esm("../../static/js/message_viewport", {
     height: () => 500,
 });
-mock_module("stream_popover", {
+mock_esm("../../static/js/stream_popover", {
     hide_stream_popover: noop,
     hide_topic_popover: noop,
     hide_all_messages_popover: noop,

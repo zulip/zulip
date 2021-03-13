@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import render_recent_topic_row from "../templates/recent_topic_row.hbs";
 import render_recent_topics_filters from "../templates/recent_topics_filters.hbs";
 import render_recent_topics_body from "../templates/recent_topics_table.hbs";
@@ -221,7 +223,7 @@ function format_topic(topic_data) {
     const topic_muted = Boolean(muting.is_topic_muted(stream_id, topic));
     const stream_muted = stream_data.is_muted(stream_id);
     const muted = topic_muted || stream_muted;
-    const unread_count = unread.unread_topic_counter.get(stream_id, topic);
+    const unread_count = unread.num_unread_for_topic(stream_id, topic);
 
     // Display in most recent sender first order
     const all_senders = recent_senders.get_topic_recent_senders(stream_id, topic);
@@ -299,7 +301,7 @@ export function filters_should_hide_topic(topic_data) {
     }
 
     if (filters.has("unread")) {
-        const unreadCount = unread.unread_topic_counter.get(msg.stream_id, msg.topic);
+        const unreadCount = unread.num_unread_for_topic(msg.stream_id, msg.topic);
         if (unreadCount === 0) {
             return true;
         }
@@ -543,6 +545,11 @@ export function hide() {
     navigate.plan_scroll_to_selected();
 }
 
+function is_focus_at_last_table_row() {
+    const topic_rows = $("#recent_topics_table table tbody tr");
+    return row_focus === topic_rows.length - 1;
+}
+
 export function change_focused_element(e, input_key) {
     // Called from hotkeys.js; like all logic in that module,
     // returning true will cause the caller to do
@@ -564,10 +571,13 @@ export function change_focused_element(e, input_key) {
         }
 
         switch (input_key) {
+            //  Allow broswer to handle all
+            //  character keypresses.
             case "vim_left":
             case "vim_right":
             case "vim_down":
             case "vim_up":
+            case "open_recent_topics":
                 return false;
             case "shift_tab":
                 current_focus_elem = filter_buttons().last();
@@ -600,6 +610,9 @@ export function change_focused_element(e, input_key) {
                 current_focus_elem = $("#recent_topics_search");
                 return true;
             case "escape":
+                if (current_focus_elem === "table") {
+                    return false;
+                }
                 set_table_focus(row_focus, col_focus);
                 return true;
         }
@@ -627,12 +640,20 @@ export function change_focused_element(e, input_key) {
             case "down_arrow":
                 set_table_focus(row_focus, col_focus);
                 return true;
+            case "escape":
+                if (current_focus_elem === "table") {
+                    return false;
+                }
+                set_table_focus(row_focus, col_focus);
+                return true;
         }
     } else if (current_focus_elem === "table") {
         // For arrowing around the table of topics, we implement left/right
         // wraparound.  Going off the top or the bottom takes one
         // to the navigation at the top (see set_table_focus).
         switch (input_key) {
+            case "escape":
+                return false;
             case "open_recent_topics":
                 set_default_focus();
                 return true;
@@ -653,18 +674,40 @@ export function change_focused_element(e, input_key) {
                 }
                 break;
             case "vim_down":
+                // We stop user at last table row
+                // so that user doesn't end up in
+                // input box where it is impossible to
+                // get out of using vim_up / vim_down
+                // keys. This also blocks the user from
+                // having `jjjj` typed in the input box
+                // when continuously pressing `j`.
+                if (is_focus_at_last_table_row()) {
+                    return true;
+                }
+                row_focus += 1;
+                break;
             case "down_arrow":
                 row_focus += 1;
                 break;
             case "vim_up":
+                // See comment on vim_down.
+                // Similarly, blocks the user from
+                // having `kkkk` typed in the input box
+                // when continuously pressing `k`.
+                if (row_focus === 0) {
+                    return true;
+                }
+                row_focus -= 1;
+                break;
             case "up_arrow":
                 row_focus -= 1;
         }
         set_table_focus(row_focus, col_focus);
         return true;
     }
-    if (current_focus_elem) {
+    if (current_focus_elem && input_key !== "escape") {
         current_focus_elem.trigger("focus");
+        return true;
     }
 
     return false;

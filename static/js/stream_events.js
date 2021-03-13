@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as color_data from "./color_data";
 import * as message_list from "./message_list";
 import * as message_util from "./message_util";

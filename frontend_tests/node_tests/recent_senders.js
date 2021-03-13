@@ -2,27 +2,51 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 let next_id = 0;
-const messages = [];
+const messages = new Map();
 
-const message_list = mock_module("message_list", {
+function make_stream_message({stream_id, topic, sender_id}) {
+    next_id += 1;
+
+    const message = {
+        type: "stream",
+        stream_id,
+        id: next_id,
+        topic,
+        sender_id,
+    };
+    messages.set(message.id, message);
+
+    return message;
+}
+
+const message_list = mock_esm("../../static/js/message_list", {
     all: {
         all_messages() {
-            return messages;
+            return Array.from(messages.values());
         },
     },
 });
-mock_module("message_store", {
-    get: (msg_id) => messages[msg_id - 1],
+mock_esm("../../static/js/message_store", {
+    get: (message_id) => messages.get(message_id),
 });
 
 const rs = zrequire("recent_senders");
 zrequire("message_util.js");
 
-run_test("process_message_for_senders", (override) => {
+function test(label, f) {
+    run_test(label, (override) => {
+        messages.clear();
+        next_id = 0;
+        rs.clear_for_testing();
+        f(override);
+    });
+}
+
+test("process_message_for_senders", (override) => {
     const stream1 = 1;
     const stream2 = 2;
     const stream3 = 3;
@@ -39,21 +63,17 @@ run_test("process_message_for_senders", (override) => {
     const stream5 = 5;
 
     // New stream
-    const message1 = {
-        type: "stream",
+    const message1 = make_stream_message({
         stream_id: stream1,
-        id: (next_id += 1),
         topic: topic1,
         sender_id: sender1,
-    };
-    const message2 = {
-        type: "stream",
+    });
+
+    const message2 = make_stream_message({
         stream_id: stream2,
-        id: (next_id += 1),
         topic: topic1,
         sender_id: sender2,
-    };
-    messages.push(message1, message2);
+    });
 
     rs.process_message_for_senders(message1);
     rs.process_message_for_senders(message2);
@@ -75,14 +95,11 @@ run_test("process_message_for_senders", (override) => {
     );
 
     // New topic
-    const message3 = {
-        type: "stream",
+    const message3 = make_stream_message({
         stream_id: stream1,
-        id: (next_id += 1),
         topic: topic2,
         sender_id: sender3,
-    };
-    messages.push(message3);
+    });
 
     rs.process_message_for_senders(message3);
     assert.equal(
@@ -91,14 +108,11 @@ run_test("process_message_for_senders", (override) => {
     );
 
     // New sender
-    const message4 = {
-        type: "stream",
+    const message4 = make_stream_message({
         stream_id: stream1,
-        id: (next_id += 1),
         topic: topic1,
         sender_id: sender2,
-    };
-    messages.push(message4);
+    });
 
     rs.process_message_for_senders(message4);
     assert.equal(
@@ -107,14 +121,11 @@ run_test("process_message_for_senders", (override) => {
     );
 
     // More recent message
-    const message5 = {
-        type: "stream",
+    const message5 = make_stream_message({
         stream_id: stream1,
-        id: (next_id += 1),
         topic: topic1,
         sender_id: sender1,
-    };
-    messages.push(message5);
+    });
 
     rs.process_message_for_senders(message5);
     assert.equal(
@@ -123,28 +134,21 @@ run_test("process_message_for_senders", (override) => {
     );
 
     // Same stream, but different topics
-    const message6 = {
-        type: "stream",
+    const message6 = make_stream_message({
         stream_id: stream3,
-        id: (next_id += 1),
         topic: topic1,
         sender_id: sender1,
-    };
-    const message7 = {
-        type: "stream",
+    });
+    const message7 = make_stream_message({
         stream_id: stream3,
-        id: (next_id += 1),
         topic: topic2,
         sender_id: sender2,
-    };
-    const message8 = {
-        type: "stream",
+    });
+    const message8 = make_stream_message({
         stream_id: stream3,
-        id: (next_id += 1),
         topic: topic3,
         sender_id: sender3,
-    };
-    messages.push(message6, message7, message8);
+    });
 
     rs.process_message_for_senders(message6);
     rs.process_message_for_senders(message7);
@@ -163,14 +167,11 @@ run_test("process_message_for_senders", (override) => {
     assert.equal(rs.compare_by_recency({}, {}, (next_id += 1), ""), 0);
 
     // new message in topic2
-    const message9 = {
-        type: "stream",
+    const message9 = make_stream_message({
         stream_id: stream3,
-        id: (next_id += 1),
         topic: topic2,
         sender_id: sender3,
-    };
-    messages.push(message9);
+    });
 
     rs.process_message_for_senders(message9);
 
@@ -179,7 +180,7 @@ run_test("process_message_for_senders", (override) => {
     assert.equal(rs.get_topic_recent_senders(stream3, topic2).toString(), "2,3");
 
     // message7's topic was changed by user
-    messages[6].topic = topic3;
+    message7.topic = topic3;
 
     rs.process_topic_edit(stream3, topic2, topic3);
     assert.equal(rs.get_topic_recent_senders(stream3, topic3).toString(), "2,3");
@@ -189,8 +190,8 @@ run_test("process_message_for_senders", (override) => {
     assert.equal(rs.get_topic_recent_senders(stream3, topic3).toString(), "2,3");
     assert.equal(rs.get_topic_recent_senders(stream4, topic3).toString(), "");
     // stream of topic3 was changed to stream4.
-    messages[6].stream_id = stream4; // message7's topic is topic3
-    messages[7].stream_id = stream4;
+    message7.stream_id = stream4; // message7's topic is topic3
+    message8.stream_id = stream4;
     rs.process_topic_edit(stream3, topic3, topic3, stream4);
     assert.equal(rs.get_topic_recent_senders(stream3, topic3).toString(), "");
     assert.equal(rs.get_topic_recent_senders(stream4, topic3).toString(), "2,3");
@@ -199,16 +200,16 @@ run_test("process_message_for_senders", (override) => {
     assert.equal(rs.get_topic_recent_senders(stream4, topic3).toString(), "2,3");
     assert.equal(rs.get_topic_recent_senders(stream5, topic4).toString(), "");
     // stream of topic3 was changed to stream5 and topic was changed to topic4.
-    messages[6].stream_id = stream5;
-    messages[7].stream_id = stream5;
-    messages[6].topic = topic4;
-    messages[7].topic = topic4;
+    message7.stream_id = stream5;
+    message8.stream_id = stream5;
+    message7.topic = topic4;
+    message8.topic = topic4;
     rs.process_topic_edit(stream4, topic3, topic4, stream5);
     assert.equal(rs.get_topic_recent_senders(stream4, topic3).toString(), "");
     assert.equal(rs.get_topic_recent_senders(stream5, topic4).toString(), "2,3");
 
-    // messages[0] (message1) and messages[4] (message5) were removed.
-    const reduced_msgs = [...messages.slice(1, 4), ...messages.slice(5)];
+    const reduced_msgs = [message3, message4, message7, message8];
+
     override(message_list.all, "all_messages", () => reduced_msgs);
     assert.equal(rs.get_topic_recent_senders(stream1, topic1).toString(), "2,1");
     // delete message1 and message5 sent by sender1

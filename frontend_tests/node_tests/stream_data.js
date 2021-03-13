@@ -7,11 +7,7 @@ const _ = require("lodash");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const page_params = set_global("page_params", {
-    is_admin: false,
-    realm_users: [],
-    is_guest: false,
-});
+let page_params;
 
 const color_data = zrequire("color_data");
 const stream_topic_history = zrequire("stream_topic_history");
@@ -28,14 +24,26 @@ const me = {
 };
 
 // set up user data
-people.add_active_user(me);
-people.initialize_current_user(me.user_id);
-
 function contains_sub(subs, sub) {
     return subs.some((s) => s.name === sub.name);
 }
 
-run_test("basics", () => {
+function test(label, f) {
+    run_test(label, (override) => {
+        page_params = set_global("page_params", {
+            is_admin: false,
+            realm_users: [],
+            is_guest: false,
+        });
+        people.init();
+        people.add_active_user(me);
+        people.initialize_current_user(me.user_id);
+        stream_data.clear_subscriptions();
+        f(override);
+    });
+}
+
+test("basics", () => {
     const denmark = {
         subscribed: false,
         color: "blue",
@@ -119,8 +127,7 @@ run_test("basics", () => {
     assert.equal(stream_data.slug_to_name("99whatever"), "99whatever");
 });
 
-run_test("renames", () => {
-    stream_data.clear_subscriptions();
+test("renames", () => {
     const id = 42;
     let sub = {
         name: "Denmark",
@@ -149,9 +156,7 @@ run_test("renames", () => {
     assert.equal(actual_id, 42);
 });
 
-run_test("is_active", () => {
-    stream_data.clear_subscriptions();
-
+test("is_active", () => {
     let sub;
 
     page_params.demote_inactive_streams =
@@ -235,7 +240,7 @@ run_test("is_active", () => {
     assert(stream_data.is_active(sub));
 });
 
-run_test("admin_options", () => {
+test("admin_options", () => {
     function make_sub() {
         const sub = {
             subscribed: false,
@@ -285,7 +290,7 @@ run_test("admin_options", () => {
     assert(sub.can_change_stream_permissions);
 });
 
-run_test("stream_settings", () => {
+test("stream_settings", () => {
     const cinnamon = {
         stream_id: 1,
         name: "c",
@@ -312,7 +317,6 @@ run_test("stream_settings", () => {
         stream_post_policy: stream_data.stream_post_policy_values.admins.code,
         message_retention_days: 10,
     };
-    stream_data.clear_subscriptions();
     stream_data.add_sub(cinnamon);
     stream_data.add_sub(amber);
     stream_data.add_sub(blue);
@@ -360,7 +364,7 @@ run_test("stream_settings", () => {
     assert.equal(sub_rows.length, 2);
 });
 
-run_test("default_stream_names", () => {
+test("default_stream_names", () => {
     const announce = {
         stream_id: 101,
         name: "announce",
@@ -387,7 +391,6 @@ run_test("default_stream_names", () => {
         invite_only: false,
     };
 
-    stream_data.clear_subscriptions();
     stream_data.set_realm_default_streams([announce, general]);
     stream_data.add_sub(announce);
     stream_data.add_sub(public_stream);
@@ -401,14 +404,13 @@ run_test("default_stream_names", () => {
     assert.deepEqual(default_stream_ids.sort(), [announce.stream_id, general.stream_id]);
 });
 
-run_test("delete_sub", () => {
+test("delete_sub", () => {
     const canada = {
         stream_id: 101,
         name: "Canada",
         subscribed: true,
     };
 
-    stream_data.clear_subscriptions();
     stream_data.add_sub(canada);
 
     assert(stream_data.is_subscribed("Canada"));
@@ -424,7 +426,7 @@ run_test("delete_sub", () => {
     stream_data.delete_sub(99999);
 });
 
-run_test("notifications", () => {
+test("notifications", () => {
     const india = {
         stream_id: 102,
         name: "India",
@@ -437,7 +439,6 @@ run_test("notifications", () => {
         push_notifications: null,
         wildcard_mentions_notify: null,
     };
-    stream_data.clear_subscriptions();
     stream_data.add_sub(india);
 
     assert(!stream_data.receives_notifications(india.stream_id, "desktop_notifications"));
@@ -588,7 +589,7 @@ const jazy = {
     is_muted: true,
 };
 
-run_test("is_muted", () => {
+test("is_muted", () => {
     stream_data.add_sub(tony);
     stream_data.add_sub(jazy);
     assert(!stream_data.is_stream_muted_by_name("tony"));
@@ -596,7 +597,7 @@ run_test("is_muted", () => {
     assert(stream_data.is_stream_muted_by_name("EEXISTS"));
 });
 
-run_test("is_notifications_stream_muted", () => {
+test("is_notifications_stream_muted", () => {
     stream_data.add_sub(tony);
     stream_data.add_sub(jazy);
 
@@ -607,14 +608,14 @@ run_test("is_notifications_stream_muted", () => {
     assert(stream_data.is_notifications_stream_muted());
 });
 
-run_test("realm_has_notifications_stream", () => {
+test("realm_has_notifications_stream", () => {
     page_params.realm_notifications_stream_id = 10;
     assert(stream_data.realm_has_notifications_stream());
     page_params.realm_notifications_stream_id = -1;
     assert(!stream_data.realm_has_notifications_stream());
 });
 
-run_test("remove_default_stream", () => {
+test("remove_default_stream", () => {
     const remove_me = {
         stream_id: 674,
         name: "remove_me",
@@ -628,12 +629,11 @@ run_test("remove_default_stream", () => {
     assert(!stream_data.is_default_stream_id(remove_me.stream_id));
 });
 
-run_test("canonicalized_name", () => {
+test("canonicalized_name", () => {
     assert.deepStrictEqual(stream_data.canonicalized_name("Stream_Bar"), "stream_bar");
 });
 
-run_test("create_sub", (override) => {
-    stream_data.clear_subscriptions();
+test("create_sub", (override) => {
     const india = {
         stream_id: 102,
         name: "India",
@@ -673,7 +673,7 @@ run_test("create_sub", (override) => {
     assert.equal(antarctica_sub.color, "#76ce90");
 });
 
-run_test("initialize", () => {
+test("initialize", () => {
     function get_params() {
         const params = {};
 
@@ -736,7 +736,10 @@ run_test("initialize", () => {
     assert.equal(stream_data.get_notifications_stream(), "foo");
 });
 
-run_test("filter inactives", () => {
+test("filter inactives", () => {
+    page_params.demote_inactive_streams =
+        settings_config.demote_inactive_streams_values.automatic.code;
+
     const params = {};
     params.unsubscribed = [];
     params.never_subscribed = [];
@@ -762,14 +765,14 @@ run_test("filter inactives", () => {
     assert(stream_data.is_filtering_inactives());
 });
 
-run_test("edge_cases", () => {
+test("edge_cases", () => {
     const bad_stream_ids = [555555, 99999];
 
     // just make sure we don't explode
     stream_data.sort_for_stream_settings(bad_stream_ids);
 });
 
-run_test("get_invite_stream_data", () => {
+test("get_invite_stream_data", () => {
     // add default stream
     const orie = {
         name: "Orie",
@@ -778,8 +781,6 @@ run_test("get_invite_stream_data", () => {
         subscribed: true,
     };
 
-    // clear all the data form stream_data, and people
-    stream_data.clear_subscriptions();
     people.init();
 
     stream_data.add_sub(orie);
@@ -812,7 +813,7 @@ run_test("get_invite_stream_data", () => {
     assert.deepEqual(stream_data.get_invite_stream_data(), expected_list);
 });
 
-run_test("all_topics_in_cache", () => {
+test("all_topics_in_cache", (override) => {
     // Add a new stream with first_message_id set.
     const general = {
         name: "general",
@@ -828,9 +829,15 @@ run_test("all_topics_in_cache", () => {
 
     assert.equal(stream_data.all_topics_in_cache(sub), false);
 
+    message_list.all.data.clear();
     message_list.all.data.add_messages(messages);
+
+    let has_found_newest = false;
+
+    override(message_list.all.data.fetch_status, "has_found_newest", () => has_found_newest);
+
     assert.equal(stream_data.all_topics_in_cache(sub), false);
-    message_list.all.data.fetch_status.has_found_newest = () => true;
+    has_found_newest = true;
     assert.equal(stream_data.all_topics_in_cache(sub), true);
 
     sub.first_message_id = 0;

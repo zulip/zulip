@@ -486,13 +486,21 @@ function make_zjquery() {
         return proxy;
     }
 
+    let initialize_function;
+
     const zjquery = function (arg, arg2) {
         if (typeof arg === "function") {
-            // If somebody is passing us a function, we emulate
-            // jQuery's behavior of running this function after
-            // page load time.  But there are no pages to load,
-            // so we just call it right away.
-            arg();
+            if (initialize_function) {
+                throw new Error(`
+                    We are trying to avoid the $(...) mechanism
+                    for initializing modules in our codebase,
+                    and the code that you are compiling/running
+                    has tried to do this twice.  Please either
+                    clean up the real code or reduce the scope
+                    of what you are testing in this test module.
+                `);
+            }
+            initialize_function = arg;
             return undefined;
         }
 
@@ -531,6 +539,14 @@ function make_zjquery() {
             elems.set(selector, elem);
         }
         return elems.get(selector);
+    };
+
+    zjquery.get_initialize_function = function () {
+        return initialize_function;
+    };
+
+    zjquery.clear_initialize_function = function () {
+        initialize_function = undefined;
     };
 
     zjquery.create = function (name, opts) {
@@ -608,6 +624,11 @@ function make_zjquery() {
 
 const $ = new Proxy(make_zjquery(), {
     set(obj, prop, value) {
+        if (obj[prop] && obj[prop]._patched_with_override) {
+            obj[prop] = value;
+            return true;
+        }
+
         if (value._patched_with_override) {
             obj[prop] = value;
             return true;

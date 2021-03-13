@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as emoji from "../shared/js/emoji";
 
 import * as activity from "./activity";
@@ -252,7 +254,7 @@ export function dispatch_normal_event(event) {
             if (page_params.is_admin) {
                 // Update the UI notice about the user's profile being
                 // incomplete, as we might have filled in the missing field(s).
-                panels.check_profile_incomplete();
+                panels.show_profile_incomplete(panels.check_profile_incomplete());
             }
             break;
         }
@@ -445,6 +447,7 @@ export function dispatch_normal_event(event) {
             const user_display_settings = [
                 "color_scheme",
                 "default_language",
+                "default_view",
                 "demote_inactive_streams",
                 "dense_mode",
                 "emojiset",

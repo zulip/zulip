@@ -1,3 +1,4 @@
+import $ from "jquery";
 import _ from "lodash";
 
 import * as blueslip from "../blueslip";

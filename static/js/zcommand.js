@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import marked from "../third/marked/lib/marked";
 
 import * as channel from "./channel";

@@ -2,11 +2,12 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_module, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const muting_ui = mock_module("muting_ui");
+mock_cjs("jquery", $);
+const muting_ui = mock_esm("../../static/js/muting_ui");
 
 const settings_muting = zrequire("settings_muting");
 const stream_data = zrequire("stream_data");

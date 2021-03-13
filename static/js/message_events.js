@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import * as alert_words from "./alert_words";
 import * as channel from "./channel";
 import * as compose_fade from "./compose_fade";
