@@ -42,5 +42,5 @@ A typical successful JSON response may look like:
 {generate_code_example|/messages:get|fixture(200)}
 
 [status-messages]: /help/format-your-message-using-markdown#status-messages
-[linkification-filters]: /help/add-a-custom-linkification-filter
+[linkifiers]: /help/add-a-custom-linkifier
 [message-flags]: /api/update-message-flags#available-flags

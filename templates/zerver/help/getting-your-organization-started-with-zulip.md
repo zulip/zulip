@@ -109,7 +109,7 @@ expert teaching other users how to use Zulip.
 ## Bonus things to set up
 
 * [Add custom profile fields](/help/add-custom-profile-fields).
-- [Automatically linkify](/help/add-a-custom-linkification-filter)
+- [Automatically linkify](/help/add-a-custom-linkifier)
   issue numbers.
 - [Write custom integrations](/api/integrations-overview)
   for your team’s workflow.

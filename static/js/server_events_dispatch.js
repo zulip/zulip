@@ -286,8 +286,8 @@ export function dispatch_normal_event(event) {
 
         case "realm_filters":
             page_params.realm_filters = event.realm_filters;
-            markdown.update_realm_filter_rules(page_params.realm_filters);
-            settings_linkifiers.populate_filters(page_params.realm_filters);
+            markdown.update_linkifier_rules(page_params.realm_filters);
+            settings_linkifiers.populate_linkifiers(page_params.realm_filters);
             break;
 
         case "realm_domains": {

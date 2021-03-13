@@ -5,56 +5,59 @@ import type {Page} from "puppeteer";
 import common from "../puppeteer_lib/common";
 
 async function test_add_linkifier(page: Page): Promise<void> {
-    await page.waitForSelector(".admin-filter-form", {visible: true});
-    await common.fill_form(page, "form.admin-filter-form", {
+    await page.waitForSelector(".admin-linkifier-form", {visible: true});
+    await common.fill_form(page, "form.admin-linkifier-form", {
         pattern: "#(?P<id>[0-9]+)",
         url_format_string: "https://trac.example.com/ticket/%(id)s",
     });
-    await page.click("form.admin-filter-form button.button");
+    await page.click("form.admin-linkifier-form button.button");
 
-    const admin_filter_status_selector = "div#admin-filter-status";
-    await page.waitForSelector(admin_filter_status_selector, {visible: true});
-    const admin_filter_status = await common.get_text_from_selector(
+    const admin_linkifier_status_selector = "div#admin-linkifier-status";
+    await page.waitForSelector(admin_linkifier_status_selector, {visible: true});
+    const admin_linkifier_status = await common.get_text_from_selector(
         page,
-        admin_filter_status_selector,
+        admin_linkifier_status_selector,
     );
-    assert.strictEqual(admin_filter_status, "Custom filter added!");
+    assert.strictEqual(admin_linkifier_status, "Custom linkifier added!");
 
-    await page.waitForSelector(".filter_row", {visible: true});
+    await page.waitForSelector(".linkifier_row", {visible: true});
     assert.strictEqual(
-        await common.get_text_from_selector(page, ".filter_row span.filter_pattern"),
+        await common.get_text_from_selector(page, ".linkifier_row span.linkifier_pattern"),
         "#(?P<id>[0-9]+)",
     );
     assert.strictEqual(
-        await common.get_text_from_selector(page, ".filter_row span.filter_url_format_string"),
+        await common.get_text_from_selector(
+            page,
+            ".linkifier_row span.linkifier_url_format_string",
+        ),
         "https://trac.example.com/ticket/%(id)s",
     );
 }
 
 async function test_delete_linkifier(page: Page): Promise<void> {
-    await page.click(".filter_row button");
-    await page.waitForSelector(".filter_row", {hidden: true});
+    await page.click(".linkifier_row button");
+    await page.waitForSelector(".linkifier_row", {hidden: true});
 }
 
 async function test_invalid_linkifier_pattern(page: Page): Promise<void> {
-    await page.waitForSelector(".admin-filter-form", {visible: true});
-    await common.fill_form(page, "form.admin-filter-form", {
+    await page.waitForSelector(".admin-linkifier-form", {visible: true});
+    await common.fill_form(page, "form.admin-linkifier-form", {
         pattern: "a$",
         url_format_string: "https://trac.example.com/ticket/%(id)s",
     });
-    await page.click("form.admin-filter-form button.button");
+    await page.click("form.admin-linkifier-form button.button");
 
-    await page.waitForSelector("div#admin-filter-pattern-status", {visible: true});
+    await page.waitForSelector("div#admin-linkifier-pattern-status", {visible: true});
     assert.strictEqual(
-        await common.get_text_from_selector(page, "div#admin-filter-pattern-status"),
+        await common.get_text_from_selector(page, "div#admin-linkifier-pattern-status"),
         "Failed: Invalid filter pattern.  Valid characters are [ a-zA-Z_#=/:+!-].",
     );
 }
 
-async function realm_linkifier_test(page: Page): Promise<void> {
+async function linkifier_test(page: Page): Promise<void> {
     await common.log_in(page);
     await common.manage_organization(page);
-    await page.click("li[data-section='filter-settings']");
+    await page.click("li[data-section='linkifier-settings']");
 
     await test_add_linkifier(page);
     await test_delete_linkifier(page);
@@ -63,4 +66,4 @@ async function realm_linkifier_test(page: Page): Promise<void> {
     await common.log_out(page);
 }
 
-common.run_test(realm_linkifier_test);
+common.run_test(linkifier_test);

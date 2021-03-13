@@ -12,7 +12,7 @@ Get Zulip notifications for Stripe events!
    **Add endpoint**.
 
 1. [Optional] In Zulip, add a
-   [linkification filter](/help/add-a-custom-linkification-filter) with
+   [linkification filter](/help/add-a-custom-linkifier) with
    **Pattern** `(?P<id>cus_[0-9a-zA-Z]+)` and **URL format string**
    `https://dashboard.stripe.com/customers/%(id)s`.
 

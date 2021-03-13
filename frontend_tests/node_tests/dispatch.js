@@ -484,11 +484,11 @@ run_test("realm_emoji", (override) => {
     }
 });
 
-run_test("realm_filters", (override) => {
+run_test("linkifier", (override) => {
     const event = event_fixtures.realm_filters;
     page_params.realm_filters = [];
-    override(settings_linkifiers, "populate_filters", noop);
-    override(markdown, "update_realm_filter_rules", noop);
+    override(settings_linkifiers, "populate_linkifiers", noop);
+    override(markdown, "update_linkifier_rules", noop);
     dispatch(event);
     assert_same(page_params.realm_filters, event.realm_filters);
 });

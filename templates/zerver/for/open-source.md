@@ -147,7 +147,7 @@ so they are useful for posterity.
 
 Efficiently refer to issues or code reviews with notation like `#1234` or
 `T1234`. You can set up any regex as a
-[custom linkification filter](/help/add-a-custom-linkification-filter) for
+[custom linkification filter](/help/add-a-custom-linkifier) for
 your organization.
 
 ### Hundreds of integrations.

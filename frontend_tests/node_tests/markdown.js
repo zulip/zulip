@@ -390,23 +390,23 @@ run_test("marked", () => {
             expected:
                 '<blockquote>\n<p>Mention in quote: <span class="user-mention silent" data-user-id="101">Cordelia Lear</span></p>\n</blockquote>\n<p>Mention outside quote: <span class="user-mention" data-user-id="101">@Cordelia Lear</span></p>',
         },
-        // Test only those realm filters which don't return True for
+        // Test only those linkifiers which don't return True for
         // `contains_backend_only_syntax()`. Those which return True
         // are tested separately.
         {
-            input: "This is a realm filter #1234 with text after it",
+            input: "This is a linkifier #1234 with text after it",
             expected:
-                '<p>This is a realm filter <a href="https://trac.example.com/ticket/1234" title="https://trac.example.com/ticket/1234">#1234</a> with text after it</p>',
+                '<p>This is a linkifier <a href="https://trac.example.com/ticket/1234" title="https://trac.example.com/ticket/1234">#1234</a> with text after it</p>',
         },
-        {input: "#1234is not a realm filter.", expected: "<p>#1234is not a realm filter.</p>"},
+        {input: "#1234is not a linkifier.", expected: "<p>#1234is not a linkifier.</p>"},
         {
-            input: "A pattern written as #1234is not a realm filter.",
-            expected: "<p>A pattern written as #1234is not a realm filter.</p>",
+            input: "A pattern written as #1234is not a linkifier.",
+            expected: "<p>A pattern written as #1234is not a linkifier.</p>",
         },
         {
-            input: "This is a realm filter with ZGROUP_123:45 groups",
+            input: "This is a linkifier with ZGROUP_123:45 groups",
             expected:
-                '<p>This is a realm filter with <a href="https://zone_45.zulip.net/ticket/123" title="https://zone_45.zulip.net/ticket/123">ZGROUP_123:45</a> groups</p>',
+                '<p>This is a linkifier with <a href="https://zone_45.zulip.net/ticket/123" title="https://zone_45.zulip.net/ticket/123">ZGROUP_123:45</a> groups</p>',
         },
         {input: "Test *italic*", expected: "<p>Test <em>italic</em></p>"},
         {
@@ -453,8 +453,8 @@ run_test("marked", () => {
         },
         {input: "@*notagroup*", expected: "<p>@*notagroup*</p>"},
         {
-            input: "This is a realm filter `hello` with text after it",
-            expected: "<p>This is a realm filter <code>hello</code> with text after it</p>",
+            input: "This is a linkifier `hello` with text after it",
+            expected: "<p>This is a linkifier <code>hello</code> with text after it</p>",
         },
         // Test the emoticon conversion
         {input: ":)", expected: "<p>:)</p>"},
@@ -650,39 +650,39 @@ run_test("message_flags", () => {
     assert.equal(message.mentioned, false);
 });
 
-run_test("backend_only_realm_filters", () => {
-    markdown.update_realm_filter_rules(page_params.realm_filters);
+run_test("backend_only_linkifiers", () => {
+    markdown.update_linkifier_rules(page_params.realm_filters);
 
-    const backend_only_realm_filters = [
+    const backend_only_linkifiers = [
         "Here is the PR-#123.",
         "Function abc() was introduced in (PR)#123.",
     ];
-    for (const content of backend_only_realm_filters) {
+    for (const content of backend_only_linkifiers) {
         assert.equal(markdown.contains_backend_only_syntax(content), true);
     }
 });
 
-run_test("python_to_js_filter", () => {
-    // The only way to reach python_to_js_filter is indirectly, hence the call
-    // to update_realm_filter_rules.
-    markdown.update_realm_filter_rules([["/a(?im)a/g"], ["/a(?L)a/g"]]);
-    let actual_value = marked.InlineLexer.rules.zulip.realm_filters;
+run_test("python_to_js_linkifier", () => {
+    // The only way to reach python_to_js_linkifier is indirectly, hence the call
+    // to update_linkifier_rules.
+    markdown.update_linkifier_rules([["/a(?im)a/g"], ["/a(?L)a/g"]]);
+    let actual_value = marked.InlineLexer.rules.zulip.linkifiers;
     let expected_value = [/\/aa\/g(?!\w)/gim, /\/aa\/g(?!\w)/g];
     assert.deepEqual(actual_value, expected_value);
     // Test case with multiple replacements.
-    markdown.update_realm_filter_rules([
+    markdown.update_linkifier_rules([
         ["#cf(?P<contest>\\d+)(?P<problem>[A-Z][\\dA-Z]*)", "http://google.com"],
     ]);
-    actual_value = marked.InlineLexer.rules.zulip.realm_filters;
+    actual_value = marked.InlineLexer.rules.zulip.linkifiers;
     expected_value = [/#cf(\d+)([A-Z][\dA-Z]*)(?!\w)/g];
     assert.deepEqual(actual_value, expected_value);
     // Test incorrect syntax.
     blueslip.expect(
         "error",
-        "python_to_js_filter: Invalid regular expression: /!@#@(!#&((!&(@#((?!\\w)/: Unterminated group",
+        "python_to_js_linkifier: Invalid regular expression: /!@#@(!#&((!&(@#((?!\\w)/: Unterminated group",
     );
-    markdown.update_realm_filter_rules([["!@#@(!#&((!&(@#(", "http://google.com"]]);
-    actual_value = marked.InlineLexer.rules.zulip.realm_filters;
+    markdown.update_linkifier_rules([["!@#@(!#&((!&(@#(", "http://google.com"]]);
+    actual_value = marked.InlineLexer.rules.zulip.linkifiers;
     expected_value = [];
     assert.deepEqual(actual_value, expected_value);
 });

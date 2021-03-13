@@ -58,7 +58,11 @@ link_mapping = {
         "Default streams",
         "/#organization/default-streams-list",
     ],
-    "filter-settings": ["Manage organization", "Linkifiers", "/#organization/filter-settings"],
+    "linkifier-settings": [
+        "Manage organization",
+        "Linkifiers",
+        "/#organization/linkifier-settings",
+    ],
     "profile-field-settings": [
         "Manage organization",
         "Custom profile fields",
