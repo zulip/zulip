@@ -79,35 +79,34 @@ const bot_with_owner = {
     bot_owner_full_name: "Human Myself",
 };
 
-function make_people() {
-    // sanity check
-    assert.equal(mark.user_id, 1005);
-
-    for (const i of _.range(mark.user_id + 1, 2000)) {
-        const person = {
-            user_id: i,
-            full_name: `Human ${i}`,
-            email: `person${i}@example.com`,
-        };
-        people.add_active_user(person);
-    }
-
+function add_canned_users() {
+    people.add_active_user(alice);
     people.add_active_user(bot);
     people.add_active_user(bot_with_owner);
+    people.add_active_user(fred);
+    people.add_active_user(jill);
+    people.add_active_user(mark);
+    people.add_active_user(old_user);
+    people.add_active_user(selma);
+}
+
+function test(label, f) {
+    run_test(label, (override) => {
+        user_status.initialize({user_status: {}});
+        presence.presence_info.clear();
+        people.init();
+        people.add_active_user(me);
+        people.initialize_current_user(me.user_id);
+        f(override);
+    });
+}
+
+test("huddle_fraction_present", () => {
     people.add_active_user(alice);
     people.add_active_user(fred);
     people.add_active_user(jill);
     people.add_active_user(mark);
-    people.add_active_user(selma);
-    people.add_active_user(me);
-    people.add_active_user(old_user);
 
-    people.initialize_current_user(me.user_id);
-}
-
-make_people();
-
-run_test("huddle_fraction_present", () => {
     let huddle = "alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com";
     huddle = people.emails_strings_to_user_ids_string(huddle);
 
@@ -147,8 +146,9 @@ function set_presence(user_id, status) {
     });
 }
 
-run_test("user_circle", () => {
-    presence.presence_info.clear();
+test("user_circle", () => {
+    add_canned_users();
+
     set_presence(selma.user_id, "active");
     set_presence(me.user_id, "active");
 
@@ -165,8 +165,7 @@ run_test("user_circle", () => {
     assert.equal(buddy_data.get_user_circle_class(me.user_id), "user_circle_green");
 });
 
-run_test("buddy_status", () => {
-    presence.presence_info.clear();
+test("buddy_status", () => {
     set_presence(selma.user_id, "active");
     set_presence(me.user_id, "active");
 
@@ -183,7 +182,9 @@ run_test("buddy_status", () => {
     assert.equal(buddy_data.buddy_status(me.user_id), "active");
 });
 
-run_test("title_data", () => {
+test("title_data", () => {
+    add_canned_users();
+
     // Groups
     let is_group = true;
     const user_ids_string = "9999,1000";
@@ -236,8 +237,8 @@ run_test("title_data", () => {
     assert.deepEqual(buddy_data.get_title_data(old_user.user_id, is_group), expected_data);
 });
 
-run_test("simple search", () => {
-    presence.presence_info.clear();
+test("simple search", () => {
+    add_canned_users();
 
     set_presence(selma.user_id, "active");
     set_presence(me.user_id, "active");
@@ -247,8 +248,19 @@ run_test("simple search", () => {
     assert.deepEqual(user_ids, [selma.user_id]);
 });
 
-run_test("bulk_data_hacks", () => {
-    presence.presence_info.clear();
+test("bulk_data_hacks", () => {
+    // sanity check
+    assert.equal(mark.user_id, 1005);
+
+    for (const i of _.range(mark.user_id + 1, 2000)) {
+        const person = {
+            user_id: i,
+            full_name: `Human ${i}`,
+            email: `person${i}@example.com`,
+        };
+        people.add_active_user(person);
+    }
+    add_canned_users();
 
     // Make 400 of the users active
     set_presence(selma.user_id, "active");
@@ -295,8 +307,7 @@ run_test("bulk_data_hacks", () => {
     assert.equal(user_ids.length, 700);
 });
 
-run_test("user_status", () => {
-    presence.presence_info.clear();
+test("user_status", () => {
     user_status.initialize({user_status: []});
     set_presence(me.user_id, "active");
     assert.equal(buddy_data.get_my_user_status(me.user_id), "translated: (you)");
@@ -306,8 +317,8 @@ run_test("user_status", () => {
     assert.equal(buddy_data.get_my_user_status(me.user_id), "translated: (you)");
 });
 
-run_test("level", () => {
-    presence.presence_info.clear();
+test("level", () => {
+    add_canned_users();
     assert.equal(buddy_data.level(me.user_id), 0);
     assert.equal(buddy_data.level(selma.user_id), 3);
 
@@ -333,9 +344,7 @@ run_test("level", () => {
     assert.equal(buddy_data.level(selma.user_id), 3);
 });
 
-run_test("user_last_seen_time_status", (override) => {
-    presence.presence_info.clear();
-
+test("user_last_seen_time_status", (override) => {
     set_presence(selma.user_id, "active");
     set_presence(me.user_id, "active");
 
@@ -362,7 +371,7 @@ run_test("user_last_seen_time_status", (override) => {
     assert.equal(buddy_data.user_last_seen_time_status(old_user.user_id), "May 12");
 });
 
-run_test("error handling", (override) => {
+test("error handling", (override) => {
     override(presence, "get_user_ids", () => [42]);
     blueslip.expect("error", "Unknown user_id in get_by_user_id: 42");
     blueslip.expect("warn", "Got user_id in presence but not people: 42");
