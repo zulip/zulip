@@ -239,12 +239,14 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(term, where_clause, params)
 
         term = dict(operator="is", operand="mentioned", negated=True)
-        where_clause = "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s OR (flags & %(flags_2)s) != %(param_2)s)"
+        where_clause = "WHERE NOT ((flags & %(flags_1)s) != %(param_1)s OR (flags & %(flags_2)s) != %(param_2)s OR (flags & %(flags_3)s) != %(param_3)s)"
         params = dict(
             flags_1=UserMessage.flags.mentioned.mask,
             param_1=0,
             flags_2=UserMessage.flags.wildcard_mentioned.mask,
             param_2=0,
+            flags_3=UserMessage.flags.online_mentioned.mask,
+            param_3=0,
         )
         self._do_add_term_test(term, where_clause, params)
 

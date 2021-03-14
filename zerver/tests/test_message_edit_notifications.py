@@ -458,6 +458,23 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             original_content, updated_content, expect_short_circuit=True, connected_to_zulip=True
         )
 
+    def test_updates_with_upgrade_online_mention(self) -> None:
+        # If there was a previous online mention delivered to the
+        # user (because wildcard_mention_notify=True), we don't notify
+        cordelia = self.example_user("cordelia")
+
+        original_content = "Mention @**online**"
+        updated_content = "now we mention @**Cordelia Lear**"
+        with mock.patch(
+            "zerver.lib.actions.get_current_active_user_ids", return_value={cordelia.id}
+        ):
+            self._send_and_update_message(
+                original_content,
+                updated_content,
+                expect_short_circuit=True,
+                connected_to_zulip=True,
+            )
+
     def test_updates_with_upgrade_wildcard_mention_disabled(self) -> None:
         # If the user has disabled notifications for wildcard
         # mentions, they won't have been notified at first, which
