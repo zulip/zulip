@@ -29,6 +29,7 @@ from zerver.lib.actions import (
     do_create_realm,
     do_deactivate_stream,
     do_deactivate_user,
+    do_destroy_stream,
     do_get_streams,
     do_remove_default_stream,
     do_remove_default_stream_group,
@@ -521,7 +522,7 @@ class StreamAdminTest(ZulipTestCase):
         self.subscribe(user_profile, stream.name)
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
-        result = self.client_delete(f"/json/streams/{stream.id}")
+        result = self.client_delete(f"/json/streams/{stream.id}", {"is_archive": orjson.dumps(True).decode()})
         self.assert_json_success(result)
         subscription_exists = (
             get_active_subscriptions_for_stream_id(stream.id)
@@ -540,7 +541,7 @@ class StreamAdminTest(ZulipTestCase):
             user_profile, sub, stream, "role", Subscription.ROLE_STREAM_ADMINISTRATOR
         )
 
-        result = self.client_delete(f"/json/streams/{stream.id}")
+        result = self.client_delete(f"/json/streams/{stream.id}", {"is_archive": orjson.dumps(True).decode()})
         self.assert_json_success(result)
         subscription_exists = (
             get_active_subscriptions_for_stream_id(stream.id)
@@ -563,6 +564,19 @@ class StreamAdminTest(ZulipTestCase):
             f"/json/streams/{stream.id}", {"is_archive": orjson.dumps(False).decode()}
         )
         self.assert_json_success(result)
+
+    def test_destroy_stream(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login_user(user_profile)
+        stream = self.make_stream("uniqueStream")
+
+        self.subscribe(user_profile, stream.name)
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        
+        # WIP: ideally this should be equal to one
+        # override stream.delete() or change how RealmAuditLog 
+        # tracks deleted streams
+        self.assertEqual(2, do_destroy_stream(stream))
 
     def test_deactivate_stream_removes_default_stream(self) -> None:
         stream = self.make_stream("new_stream")
@@ -649,7 +663,7 @@ class StreamAdminTest(ZulipTestCase):
         sub = get_subscription("new_stream", user_profile)
         self.assertFalse(sub.is_stream_admin)
 
-        result = self.client_delete(f"/json/streams/{stream.id}")
+        result = self.client_delete(f"/json/streams/{stream.id}", {"is_archive": orjson.dumps(True).decode()})
         self.assert_json_error(result, "Must be an organization or stream administrator")
 
     def test_private_stream_live_updates(self) -> None:
@@ -1347,7 +1361,7 @@ class StreamAdminTest(ZulipTestCase):
 
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
-            result = self.client_delete("/json/streams/" + str(stream_id))
+            result = self.client_delete(f"/json/streams/{stream.id}", {"is_archive": orjson.dumps(True).decode()})
         self.assert_json_success(result)
 
         # We no longer send subscription events for stream deactivations.

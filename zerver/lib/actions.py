@@ -1252,6 +1252,56 @@ def do_deactivate_stream(
     )
 
 
+def do_destroy_stream(
+    stream: Stream, log: bool = True, acting_user: Optional[UserProfile] = None
+) -> int:
+    # We want to mark all messages in the to-be-deactivated stream as
+    # read for all users; otherwise they will pollute queries like
+    # "Get the user's first unread message".  Since this can be an
+    # expensive operation, we do it via the deferred_work queue
+    # processor.
+    deferred_work_event = {
+        "type": "mark_stream_messages_as_read_for_everyone",
+        "stream_recipient_id": stream.recipient_id,
+    }
+    queue_json_publish("deferred_work", deferred_work_event)
+
+    # Get the affected user ids *before* we deactivate everybody.
+    affected_user_ids = can_access_stream_user_ids(stream)
+
+    get_active_subscriptions_for_stream_id(stream.id).update(active=False)
+
+    # If this is a default stream, remove it, properly sending a
+    # notification to browser clients.
+    if DefaultStream.objects.filter(realm_id=stream.realm_id, stream_id=stream.id).exists():
+        do_remove_default_stream(stream)
+
+    default_stream_groups_for_stream = DefaultStreamGroup.objects.filter(streams__id=stream.id)
+    for group in default_stream_groups_for_stream:
+        do_remove_streams_from_default_stream_group(stream.realm, group, [stream])
+
+    # Remove the old stream information from remote cache.
+    old_cache_key = get_stream_cache_key(stream.name, stream.realm_id)
+    cache_delete(old_cache_key)
+
+    stream_dict = stream.to_dict()
+    stream_dict.update(dict(name=stream.name, invite_only=stream.invite_only))
+
+    event = dict(type="stream", op="delete", streams=[stream_dict])
+    
+    send_event(stream.realm, event, affected_user_ids)
+
+    event_time = timezone_now()
+    RealmAuditLog.objects.create(
+        realm=stream.realm,
+        acting_user=acting_user,
+        event_type=RealmAuditLog.STREAM_DEACTIVATED,
+        event_time=event_time,
+    )
+    result = stream.delete()[0]
+    return result
+
+
 def send_user_email_update_event(user_profile: UserProfile) -> None:
     payload = dict(user_id=user_profile.id, new_email=user_profile.email)
     send_event(

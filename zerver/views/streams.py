@@ -32,6 +32,7 @@ from zerver.lib.actions import (
     do_create_default_stream_group,
     do_deactivate_stream,
     do_delete_messages,
+    do_destroy_stream,
     do_get_streams,
     do_remove_default_stream,
     do_remove_default_stream_group,
@@ -145,8 +146,10 @@ def deactivate_stream_backend(
     if is_archive is None or is_archive:
         do_deactivate_stream(stream, acting_user=user_profile)
     if not is_archive:
-        ## WIP: destroy stream
-        return json_error(_("Trying to destroy stream"))
+        result = do_destroy_stream(stream, acting_user=user_profile)
+
+        if result < 1:
+            return json_error(_("Did not delete stream"))
 
     return json_success()
 
