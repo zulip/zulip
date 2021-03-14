@@ -99,13 +99,20 @@ function override_private_message_recipient(override) {
     );
 }
 
-run_test("initial_state", () => {
+function test(label, f) {
+    run_test(label, (override) => {
+        people.init();
+        f(override);
+    });
+}
+
+test("initial_state", () => {
     assert.equal(compose_state.composing(), false);
     assert.equal(compose_state.get_message_type(), false);
     assert.equal(compose_state.has_message_content(), false);
 });
 
-run_test("start", (override) => {
+test("start", (override) => {
     override_private_message_recipient(override);
     override(compose_actions, "autosize_message_content", () => {});
     override(compose_actions, "expand_compose_box", () => {});
@@ -217,7 +224,7 @@ run_test("start", (override) => {
     assert(!compose_state.composing());
 });
 
-run_test("respond_to_message", (override) => {
+test("respond_to_message", (override) => {
     override(compose_actions, "set_focus", () => {});
     override(compose_actions, "complete_starting_tasks", () => {});
     override(compose_actions, "clear_textarea", () => {});
@@ -249,7 +256,6 @@ run_test("respond_to_message", (override) => {
         type: "stream",
         stream: "devel",
         topic: "python",
-        reply_to: "bob", // compose.start needs this for dubious reasons
     };
     stub_selected_message(msg);
 
@@ -259,7 +265,7 @@ run_test("respond_to_message", (override) => {
     assert.equal($("#stream_message_recipient_stream").val(), "devel");
 });
 
-run_test("reply_with_mention", (override) => {
+test("reply_with_mention", (override) => {
     override(compose_actions, "set_focus", () => {});
     override(compose_actions, "complete_starting_tasks", () => {});
     override(compose_actions, "clear_textarea", () => {});
@@ -269,7 +275,6 @@ run_test("reply_with_mention", (override) => {
         type: "stream",
         stream: "devel",
         topic: "python",
-        reply_to: "bob", // compose.start needs this for dubious reasons
         sender_full_name: "Bob Roberts",
         sender_id: 40,
     };
@@ -305,7 +310,14 @@ run_test("reply_with_mention", (override) => {
     assert.equal(syntax_to_insert, "@**Bob Roberts|40**");
 });
 
-run_test("quote_and_reply", (override) => {
+test("quote_and_reply", (override) => {
+    const steve = {
+        user_id: 90,
+        email: "steve@example.com",
+        full_name: "Steve Stephenson",
+    };
+    people.add_active_user(steve);
+
     override(compose_actions, "set_focus", () => {});
     override(compose_actions, "complete_starting_tasks", () => {});
     override(compose_actions, "clear_textarea", () => {});
@@ -326,9 +338,8 @@ run_test("quote_and_reply", (override) => {
         type: "stream",
         stream: "devel",
         topic: "python",
-        reply_to: "bob",
-        sender_full_name: "Bob Roberts",
-        sender_id: 40,
+        sender_full_name: "Steve Stephenson",
+        sender_id: 90,
     };
     hash_util.by_conversation_and_time_uri = () => "link_to_message";
     stub_channel_get({
@@ -350,7 +361,8 @@ run_test("quote_and_reply", (override) => {
     };
 
     replaced = false;
-    expected_replacement = "@_**Bob Roberts|40** [said](link_to_message):\n```quote\nTesting.\n```";
+    expected_replacement =
+        "@_**Steve Stephenson|90** [said](link_to_message):\n```quote\nTesting.\n```";
 
     quote_and_reply(opts);
     assert(replaced);
@@ -359,9 +371,8 @@ run_test("quote_and_reply", (override) => {
         type: "stream",
         stream: "devel",
         topic: "test",
-        reply_to: "bob",
-        sender_full_name: "Bob Roberts",
-        sender_id: 40,
+        sender_full_name: "Steve Stephenson",
+        sender_id: 90,
         raw_content: "Testing.",
     };
 
@@ -377,20 +388,19 @@ run_test("quote_and_reply", (override) => {
         type: "stream",
         stream: "devel",
         topic: "test",
-        reply_to: "bob",
-        sender_full_name: "Bob Roberts",
-        sender_id: 40,
+        sender_full_name: "Steve Stephenson",
+        sender_id: 90,
         raw_content: "```\nmultiline code block\nshoudln't mess with quotes\n```",
     };
 
     replaced = false;
     expected_replacement =
-        "@_**Bob Roberts|40** [said](link_to_message):\n````quote\n```\nmultiline code block\nshoudln't mess with quotes\n```\n````";
+        "@_**Steve Stephenson|90** [said](link_to_message):\n````quote\n```\nmultiline code block\nshoudln't mess with quotes\n```\n````";
     quote_and_reply(opts);
     assert(replaced);
 });
 
-run_test("get_focus_area", () => {
+test("get_focus_area", () => {
     assert.equal(get_focus_area("private", {}), "#private_message_recipient");
     assert.equal(
         get_focus_area("private", {
@@ -407,7 +417,7 @@ run_test("get_focus_area", () => {
     );
 });
 
-run_test("focus_in_empty_compose", (override) => {
+test("focus_in_empty_compose", (override) => {
     $("#compose-textarea").is = (attr) => {
         assert.equal(attr, ":focus");
         return $("#compose-textarea").is_focused;
@@ -428,7 +438,7 @@ run_test("focus_in_empty_compose", (override) => {
     assert(!compose_state.focus_in_empty_compose());
 });
 
-run_test("on_narrow", (override) => {
+test("on_narrow", (override) => {
     let narrowed_by_topic_reply;
     override(narrow_state, "narrowed_by_topic_reply", () => narrowed_by_topic_reply);
 
