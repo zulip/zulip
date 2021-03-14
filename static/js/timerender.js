@@ -12,6 +12,10 @@ import $ from "jquery";
 
 let next_timerender_id = 0;
 
+export function clear_for_testing() {
+    next_timerender_id = 0;
+}
+
 // Given a Date object 'time', returns an object:
 // {
 //      time_str:        a string for the current human-formatted version
