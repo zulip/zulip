@@ -99,6 +99,12 @@ const state = {
     old_hash: typeof window !== "undefined" ? window.location.hash : "#",
 };
 
+export function clear_for_testing() {
+    state.is_internal_change = false;
+    state.hash_before_overlay = null;
+    state.old_hash = "#";
+}
+
 function is_overlay_hash(hash) {
     // Hash changes within this list are overlays and should not unnarrow (etc.)
     const overlay_list = [
