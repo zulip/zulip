@@ -23,17 +23,6 @@ set_global("getSelection", () => ({
 zrequire("templates");
 const input_pill = zrequire("input_pill");
 
-let id_seq = 0;
-run_test("set_up_ids", () => {
-    // just get coverage on a simple one-liner:
-    input_pill.random_id();
-
-    input_pill.__Rewire__("random_id", () => {
-        id_seq += 1;
-        return "some_id" + id_seq;
-    });
-});
-
 function pill_html(value, data_id, img_src) {
     const has_image = img_src !== undefined;
 
@@ -50,7 +39,21 @@ function pill_html(value, data_id, img_src) {
     return require("../../static/templates/input_pill.hbs")(opts);
 }
 
-run_test("basics", () => {
+function override_random_id(override) {
+    let id_seq = 0;
+    override(input_pill, "random_id", () => {
+        id_seq += 1;
+        return "some_id" + id_seq;
+    });
+}
+
+run_test("random_id", () => {
+    // just get coverage on a simple one-liner:
+    input_pill.random_id();
+});
+
+run_test("basics", (override) => {
+    override_random_id(override);
     const config = {};
 
     blueslip.expect("error", "Pill needs container.");
@@ -126,8 +129,6 @@ function set_up() {
         get_text_from_item: (item) => item.display_value,
     };
 
-    id_seq = 0;
-
     return {
         config,
         pill_input,
@@ -136,7 +137,8 @@ function set_up() {
     };
 }
 
-run_test("copy from pill", () => {
+run_test("copy from pill", (override) => {
+    override_random_id(override);
     const info = set_up();
     const config = info.config;
     const container = info.container;
@@ -357,7 +359,8 @@ run_test("Enter key with text", () => {
     assert.deepEqual(widget.items(), [items.blue, items.red, items.yellow]);
 });
 
-run_test("insert_remove", () => {
+run_test("insert_remove", (override) => {
+    override_random_id(override);
     const info = set_up();
 
     const config = info.config;
@@ -461,7 +464,8 @@ run_test("insert_remove", () => {
     assert(next_pill_focused);
 });
 
-run_test("exit button on pill", () => {
+run_test("exit button on pill", (override) => {
+    override_random_id(override);
     const info = set_up();
 
     const config = info.config;
