@@ -1400,6 +1400,7 @@ input[type="checkbox"] {
         textarea {
             width: 320px;
             height: 80px;
+            resize: vertical;
         }
 
         &:hover .remove_date {
