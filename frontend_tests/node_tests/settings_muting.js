@@ -38,6 +38,7 @@ run_test("settings", () => {
         set_up_topic_ui_called = true;
     };
 
+    settings_muting.reset();
     assert.equal(settings_muting.loaded, false);
 
     settings_muting.set_up();
@@ -82,9 +83,4 @@ run_test("settings", () => {
     assert(unmute_topic_called);
     assert(set_up_topic_ui_called);
     assert.equal(topic_data_called, 2);
-});
-
-run_test("reset", () => {
-    settings_muting.reset();
-    assert.equal(settings_muting.loaded, false);
 });
