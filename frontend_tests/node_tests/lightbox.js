@@ -23,7 +23,14 @@ const rows = zrequire("rows");
 
 const lightbox = zrequire("lightbox");
 
-run_test("pan_and_zoom", (override) => {
+function test(label, f) {
+    run_test(label, (override) => {
+        lightbox.clear_for_testing();
+        f(override);
+    });
+}
+
+test("pan_and_zoom", (override) => {
     const img = $.create("img-stub");
     const link = $.create("link-stub");
     const msg = $.create("msg-stub");
@@ -54,7 +61,7 @@ run_test("pan_and_zoom", (override) => {
     assert.equal(fetched_zid, 1234);
 });
 
-run_test("youtube", (override) => {
+test("youtube", (override) => {
     const href = "https://youtube.com/some-random-clip";
     const img = $.create("img-stub");
     const link = $.create("link-stub");

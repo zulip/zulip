@@ -12,6 +12,11 @@ let is_open = false;
 // memoized instead of being looked up multiple times.
 const asset_map = new Map();
 
+export function clear_for_testing() {
+    is_open = false;
+    asset_map.clear();
+}
+
 export function render_lightbox_list_images(preview_source) {
     if (!is_open) {
         const images = Array.prototype.slice.call($(".focused_table .message_inline_image img"));
