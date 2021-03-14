@@ -4,7 +4,6 @@ import render_admin_linkifier_list from "../templates/admin_linkifier_list.hbs";
 
 import * as channel from "./channel";
 import * as ListWidget from "./list_widget";
-import * as loading from "./loading";
 import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 
@@ -76,8 +75,6 @@ export function populate_linkifiers(linkifiers_data) {
         },
         simplebar_container: $("#linkifier-settings .progressive-table-wrapper"),
     });
-
-    loading.destroy_indicator($("#admin_page_filters_loading_indicator"));
 }
 
 export function set_up() {
@@ -87,9 +84,6 @@ export function set_up() {
 
 export function build_page() {
     meta.loaded = true;
-
-    // create loading indicators
-    loading.make_indicator($("#admin_page_filters_loading_indicator"));
 
     // Populate linkifiers table
     populate_linkifiers(page_params.realm_filters);
