@@ -685,9 +685,12 @@ export function change_stream_description(e) {
     });
 }
 
-export function delete_stream(stream_id, alert_element, stream_row) {
+export function archive_stream(stream_id, alert_element, stream_row) {
     channel.del({
         url: "/json/streams/" + stream_id,
+        data: {
+            is_archive: JSON.stringify(true),
+        },
         error(xhr) {
             ui_report.error(i18n.t("Failed"), xhr, alert_element);
         },
@@ -865,7 +868,7 @@ export function initialize() {
             return;
         }
         const row = $(".stream-row.active");
-        delete_stream(stream_id, $(".stream_change_property_info"), row);
+        archive_stream(stream_id, $(".stream_change_property_info"), row);
     });
 
     $("#subscriptions_table").on("hide.bs.modal", "#deactivation_stream_modal", () => {

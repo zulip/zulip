@@ -8232,11 +8232,19 @@ paths:
       operationId: delete_stream
       tags: ["streams"]
       description: |
-        [Delete the stream](/help/delete-a-stream) with the ID `stream_id`.
+        [Archive/Delete the stream](/help/delete-a-stream) with the ID `stream_id`.
 
         `DELETE {{ api_url }}/v1/streams/{stream_id}`
       parameters:
         - $ref: "#/components/parameters/StreamIdInPath"
+        - name: is_archive
+          in: query
+          description: |
+            Change whether the stream shall be archived or deleted.
+          schema:
+            type: boolean
+          example: true
+          required: false
       responses:
         "200":
           description: Success.

@@ -521,7 +521,7 @@ class StreamAdminTest(ZulipTestCase):
         self.subscribe(user_profile, stream.name)
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
 
-        result = self.client_delete(f"/json/streams/{stream.id}")
+        result = self.client_delete(f"/json/streams/{stream.id}", {"is_archive": orjson.dumps(True).decode()})
         self.assert_json_success(result)
         subscription_exists = (
             get_active_subscriptions_for_stream_id(stream.id)
@@ -540,7 +540,7 @@ class StreamAdminTest(ZulipTestCase):
             user_profile, sub, stream, "role", Subscription.ROLE_STREAM_ADMINISTRATOR
         )
 
-        result = self.client_delete(f"/json/streams/{stream.id}")
+        result = self.client_delete(f"/json/streams/{stream.id}", {"is_archive": orjson.dumps(True).decode()})
         self.assert_json_success(result)
         subscription_exists = (
             get_active_subscriptions_for_stream_id(stream.id)
@@ -636,7 +636,7 @@ class StreamAdminTest(ZulipTestCase):
         sub = get_subscription("new_stream", user_profile)
         self.assertFalse(sub.is_stream_admin)
 
-        result = self.client_delete(f"/json/streams/{stream.id}")
+        result = self.client_delete(f"/json/streams/{stream.id}", {"is_archive": orjson.dumps(True).decode()})
         self.assert_json_error(result, "Must be an organization or stream administrator")
 
     def test_private_stream_live_updates(self) -> None:
@@ -946,7 +946,7 @@ class StreamAdminTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Invalid stream id")
 
-        result = self.client_delete(f"/json/streams/{stream_id}")
+        result = self.client_delete(f"/json/streams/{stream_id}", {"is_archive": orjson.dumps(True).decode()})
         self.assert_json_error(result, "Invalid stream id")
 
     def test_change_stream_description(self) -> None:
@@ -4174,7 +4174,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         def delete_stream(stream_name: str) -> None:
             stream_id = get_stream(stream_name, realm).id
-            result = self.client_delete(f"/json/streams/{stream_id}")
+            result = self.client_delete(f"/json/streams/{stream_id}", {"is_archive": orjson.dumps(True).decode()})
             self.assert_json_success(result)
 
         # Deleted/deactivated stream should not be returned in the helper results
