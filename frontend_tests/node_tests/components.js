@@ -7,15 +7,12 @@ const _ = require("lodash");
 const {mock_cjs, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-let keydown_f;
-let click_f;
-const tabs = [];
-let focused_tab;
+let env;
 
 function make_tab(i) {
     const self = {};
 
-    assert.equal(tabs.length, i);
+    assert.equal(env.tabs.length, i);
 
     self.stub = true;
     self.class = [];
@@ -54,11 +51,11 @@ function make_tab(i) {
 
     self.trigger = (type) => {
         if (type === "focus") {
-            focused_tab = i;
+            env.focused_tab = i;
         }
     };
 
-    tabs.push(self);
+    env.tabs.push(self);
 
     return self;
 }
@@ -70,24 +67,24 @@ const ind_tab = (function () {
 
     self.on = (name, f) => {
         if (name === "click") {
-            click_f = f;
+            env.click_f = f;
         } else if (name === "keydown") {
-            keydown_f = f;
+            env.keydown_f = f;
         }
     };
 
     self.removeClass = (c) => {
-        for (const tab of tabs) {
+        for (const tab of env.tabs) {
             tab.removeClass(c);
         }
     };
 
-    self.eq = (idx) => tabs[idx];
+    self.eq = (idx) => env.tabs[idx];
 
     return self;
 })();
 
-const switcher = (function () {
+function make_switcher() {
     const self = {};
 
     self.stub = true;
@@ -115,7 +112,7 @@ const switcher = (function () {
     };
 
     return self;
-})();
+}
 
 mock_cjs("jquery", (sel, attributes) => {
     if (sel.stub) {
@@ -125,9 +122,9 @@ mock_cjs("jquery", (sel, attributes) => {
 
     switch (sel) {
         case "<div class='tab-switcher'></div>":
-            return switcher;
+            return env.switcher;
         case "<div class='tab-switcher stream_sorter_toggle'></div>":
-            return switcher;
+            return env.switcher;
         case "<div>": {
             const tab_id = attributes["data-tab-id"];
             assert.deepEqual(
@@ -168,6 +165,14 @@ const LEFT_KEY = {which: 37, preventDefault: noop, stopPropagation: noop};
 const RIGHT_KEY = {which: 39, preventDefault: noop, stopPropagation: noop};
 
 run_test("basics", () => {
+    env = {
+        keydown_f: undefined,
+        click_f: undefined,
+        tabs: [],
+        focused_tab: undefined,
+        switcher: make_switcher(),
+    };
+
     let callback_args;
     let callback_value;
 
@@ -192,26 +197,26 @@ run_test("basics", () => {
         },
     });
 
-    assert.equal(widget.get(), switcher);
+    assert.equal(widget.get(), env.switcher);
 
-    assert.deepEqual(switcher.children, tabs);
+    assert.deepEqual(env.switcher.children, env.tabs);
 
-    assert.equal(switcher.addedClass, "stream_sorter_toggle");
+    assert.equal(env.switcher.addedClass, "stream_sorter_toggle");
 
-    assert.equal(focused_tab, 0);
-    assert.equal(tabs[0].class, "first selected");
-    assert.equal(tabs[1].class, "middle");
-    assert.equal(tabs[2].class, "last");
+    assert.equal(env.focused_tab, 0);
+    assert.equal(env.tabs[0].class, "first selected");
+    assert.equal(env.tabs[1].class, "middle");
+    assert.equal(env.tabs[2].class, "last");
     assert.deepEqual(callback_args, ["translated: Keyboard shortcuts", "keyboard-shortcuts"]);
     assert.equal(widget.value(), "translated: Keyboard shortcuts");
 
     callback_args = undefined;
 
     widget.goto("message-formatting");
-    assert.equal(focused_tab, 1);
-    assert.equal(tabs[0].class, "first");
-    assert.equal(tabs[1].class, "middle selected");
-    assert.equal(tabs[2].class, "last");
+    assert.equal(env.focused_tab, 1);
+    assert.equal(env.tabs[0].class, "first");
+    assert.equal(env.tabs[1].class, "middle selected");
+    assert.equal(env.tabs[2].class, "last");
     assert.deepEqual(callback_args, ["translated: Message formatting", "message-formatting"]);
     assert.equal(widget.value(), "translated: Message formatting");
 
@@ -221,58 +226,58 @@ run_test("basics", () => {
     assert.deepEqual(callback_args, ["translated: Message formatting", "message-formatting"]);
 
     callback_args = undefined;
-    keydown_f.call(tabs[focused_tab], RIGHT_KEY);
-    assert.equal(focused_tab, 2);
-    assert.equal(tabs[0].class, "first");
-    assert.equal(tabs[1].class, "middle");
-    assert.equal(tabs[2].class, "last selected");
+    env.keydown_f.call(env.tabs[env.focused_tab], RIGHT_KEY);
+    assert.equal(env.focused_tab, 2);
+    assert.equal(env.tabs[0].class, "first");
+    assert.equal(env.tabs[1].class, "middle");
+    assert.equal(env.tabs[2].class, "last selected");
     assert.deepEqual(callback_args, ["translated: Search operators", "search-operators"]);
     assert.equal(widget.value(), "translated: Search operators");
     assert.equal(widget.value(), callback_value);
 
     // try to crash the key handler
-    keydown_f.call(tabs[focused_tab], RIGHT_KEY);
+    env.keydown_f.call(env.tabs[env.focused_tab], RIGHT_KEY);
     assert.equal(widget.value(), "translated: Search operators");
 
     callback_args = undefined;
 
-    keydown_f.call(tabs[focused_tab], LEFT_KEY);
+    env.keydown_f.call(env.tabs[env.focused_tab], LEFT_KEY);
     assert.equal(widget.value(), "translated: Message formatting");
 
     callback_args = undefined;
 
-    keydown_f.call(tabs[focused_tab], LEFT_KEY);
+    env.keydown_f.call(env.tabs[env.focused_tab], LEFT_KEY);
     assert.equal(widget.value(), "translated: Keyboard shortcuts");
 
     // try to crash the key handler
-    keydown_f.call(tabs[focused_tab], LEFT_KEY);
+    env.keydown_f.call(env.tabs[env.focused_tab], LEFT_KEY);
     assert.equal(widget.value(), "translated: Keyboard shortcuts");
 
     callback_args = undefined;
     widget.disable_tab("message-formatting");
 
-    keydown_f.call(tabs[focused_tab], RIGHT_KEY);
+    env.keydown_f.call(env.tabs[env.focused_tab], RIGHT_KEY);
     assert.equal(widget.value(), "translated: Search operators");
 
     callback_args = undefined;
 
-    keydown_f.call(tabs[focused_tab], LEFT_KEY);
+    env.keydown_f.call(env.tabs[env.focused_tab], LEFT_KEY);
     assert.equal(widget.value(), "translated: Keyboard shortcuts");
 
     widget.enable_tab("message-formatting");
 
     callback_args = undefined;
 
-    click_f.call(tabs[1]);
+    env.click_f.call(env.tabs[1]);
     assert.equal(widget.value(), "translated: Message formatting");
 
     callback_args = undefined;
     widget.disable_tab("search-operators");
-    assert.equal(tabs[2].hasClass("disabled"), true);
-    assert.equal(tabs[2].class, "last disabled");
+    assert.equal(env.tabs[2].hasClass("disabled"), true);
+    assert.equal(env.tabs[2].class, "last disabled");
 
     widget.goto("keyboard-shortcuts");
-    assert.equal(focused_tab, 0);
+    assert.equal(env.focused_tab, 0);
     widget.goto("search-operators");
-    assert.equal(focused_tab, 0);
+    assert.equal(env.focused_tab, 0);
 });
