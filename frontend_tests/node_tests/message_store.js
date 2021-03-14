@@ -189,6 +189,12 @@ test("message_booleans_parity", () => {
         alerted: false,
     });
 
+    assert_bool_match(["online_mentioned"], {
+        mentioned: true,
+        mentioned_me_directly: false,
+        alerted: false,
+    });
+
     assert_bool_match(["mentioned"], {
         mentioned: true,
         mentioned_me_directly: true,
@@ -254,6 +260,13 @@ test("update_booleans", () => {
     message_store.update_booleans(message, flags);
     assert.equal(message.mentioned, true);
     assert.equal(message.mentioned_me_directly, false);
+    assert.equal(message.alerted, false);
+
+    flags = ["online_mentioned", "unread"];
+    message_store.update_booleans(message, flags);
+    assert.equal(message.mentioned, true);
+    assert.equal(message.mentioned_me_directly, false);
+    assert.equal(message.alerted, false);
 
     flags = ["read"];
     message_store.update_booleans(message, flags);
