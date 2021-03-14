@@ -435,7 +435,7 @@ def delete_stream(client: Client, stream_id: int) -> None:
     )
 
     # {code_example|start}
-    # Delete the stream named 'new stream'
+    # Delete the stream named 'stream to be deleted'
     stream_id = client.get_stream_id("stream to be deleted")["stream_id"]
     result = client.delete_stream(stream_id)
     # {code_example|end}
