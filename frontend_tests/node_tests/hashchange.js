@@ -7,7 +7,7 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 mock_cjs("jquery", $);
-const window_stub = $.create("window-stub");
+let window_stub;
 set_global("location", {
     protocol: "http:",
     host: "example.com",
@@ -117,7 +117,7 @@ run_test("people_slugs", () => {
     assert.equal(hash, "#narrow/pm-with/42-alice");
 });
 
-function test_helper() {
+function test_helper({override, change_tab}) {
     let events = [];
     let narrow_terms;
 
@@ -137,38 +137,42 @@ function test_helper() {
     stub(subs, "launch");
     stub(ui_util, "blur_active_element");
 
-    ui_util.change_tab_to = (hash) => {
-        events.push("change_tab_to " + hash);
-    };
+    if (change_tab) {
+        override(ui_util, "change_tab_to", (hash) => {
+            events.push("change_tab_to " + hash);
+        });
 
-    narrow.activate = (terms) => {
-        narrow_terms = terms;
-        events.push("narrow.activate");
-    };
+        override(narrow, "activate", (terms) => {
+            narrow_terms = terms;
+            events.push("narrow.activate");
+        });
 
-    info_overlay.show = (name) => {
-        events.push("info: " + name);
-    };
+        override(info_overlay, "show", (name) => {
+            events.push("info: " + name);
+        });
+    }
 
     return {
         clear_events: () => {
             events = [];
         },
         assert_events: (expected_events) => {
-            assert.deepEqual(expected_events, events);
+            assert.deepEqual(events, expected_events);
         },
         get_narrow_terms: () => narrow_terms,
     };
 }
 
 run_test("hash_interactions", (override) => {
+    window_stub = $.create("window-stub");
+
     override(recent_topics, "show", () => {});
     override(recent_topics, "is_visible", () => false);
-    const helper = test_helper();
+    const helper = test_helper({override, change_tab: true});
 
     window.location.hash = "#all_messages";
 
-    helper.clear_events();
+    hashchange.clear_for_testing();
     hashchange.initialize();
     helper.assert_events([
         [overlays, "close_for_hash_change"],
@@ -179,7 +183,7 @@ run_test("hash_interactions", (override) => {
     ]);
 
     helper.clear_events();
-    $(window).trigger("hashchange");
+    window_stub.trigger("hashchange");
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
@@ -191,7 +195,7 @@ run_test("hash_interactions", (override) => {
     window.location.hash = "#narrow/stream/Denmark";
 
     helper.clear_events();
-    $(window).trigger("hashchange");
+    window_stub.trigger("hashchange");
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
@@ -205,7 +209,7 @@ run_test("hash_interactions", (override) => {
     window.location.hash = "#narrow";
 
     helper.clear_events();
-    $(window).trigger("hashchange");
+    window_stub.trigger("hashchange");
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [message_viewport, "stop_auto_scrolling"],
@@ -219,7 +223,7 @@ run_test("hash_interactions", (override) => {
     window.location.hash = "#streams/whatever";
 
     helper.clear_events();
-    $(window).trigger("hashchange");
+    window_stub.trigger("hashchange");
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [subs, "launch"],
@@ -228,25 +232,25 @@ run_test("hash_interactions", (override) => {
     window.location.hash = "#keyboard-shortcuts/whatever";
 
     helper.clear_events();
-    $(window).trigger("hashchange");
+    window_stub.trigger("hashchange");
     helper.assert_events([[overlays, "close_for_hash_change"], "info: keyboard-shortcuts"]);
 
     window.location.hash = "#message-formatting/whatever";
 
     helper.clear_events();
-    $(window).trigger("hashchange");
+    window_stub.trigger("hashchange");
     helper.assert_events([[overlays, "close_for_hash_change"], "info: message-formatting"]);
 
     window.location.hash = "#search-operators/whatever";
 
     helper.clear_events();
-    $(window).trigger("hashchange");
+    window_stub.trigger("hashchange");
     helper.assert_events([[overlays, "close_for_hash_change"], "info: search-operators"]);
 
     window.location.hash = "#drafts";
 
     helper.clear_events();
-    $(window).trigger("hashchange");
+    window_stub.trigger("hashchange");
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [drafts, "launch"],
@@ -255,7 +259,7 @@ run_test("hash_interactions", (override) => {
     window.location.hash = "#settings/alert-words";
 
     helper.clear_events();
-    $(window).trigger("hashchange");
+    window_stub.trigger("hashchange");
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [settings, "launch"],
@@ -264,7 +268,7 @@ run_test("hash_interactions", (override) => {
     window.location.hash = "#organization/user-list-admin";
 
     helper.clear_events();
-    $(window).trigger("hashchange");
+    window_stub.trigger("hashchange");
     helper.assert_events([
         [overlays, "close_for_hash_change"],
         [admin, "launch"],
@@ -281,8 +285,8 @@ run_test("hash_interactions", (override) => {
     assert(called_back);
 });
 
-run_test("save_narrow", () => {
-    const helper = test_helper();
+run_test("save_narrow", (override) => {
+    const helper = test_helper({override});
 
     let operators = [{operator: "is", operand: "private"}];
 
@@ -293,9 +297,9 @@ run_test("save_narrow", () => {
     assert.equal(window.location.hash, "#narrow/is/private");
 
     let url_pushed;
-    history.pushState = (state, title, url) => {
+    override(history, "pushState", (state, title, url) => {
         url_pushed = url;
-    };
+    });
 
     operators = [{operator: "is", operand: "starred"}];
 
