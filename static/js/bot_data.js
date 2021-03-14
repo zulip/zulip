@@ -93,6 +93,7 @@ export function get_services(bot_id) {
 }
 
 export function initialize(params) {
+    bots.clear();
     for (const bot of params.realm_bots) {
         add(bot);
     }

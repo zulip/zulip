@@ -24,10 +24,6 @@ const fred = {
     user_id: 3,
 };
 
-people.add_active_user(me);
-people.add_active_user(fred);
-people.initialize_current_user(me.user_id);
-
 const bot_data_params = {
     realm_bots: [
         {email: "bot0@zulip.com", user_id: 42, full_name: "Bot 0", services: []},
@@ -40,12 +36,20 @@ const bot_data_params = {
     ],
 };
 
-bot_data.initialize(bot_data_params);
-// Our startup logic should have added Bot 0 from page_params.
-assert.equal(bot_data.get(42).full_name, "Bot 0");
-assert.equal(bot_data.get(314).full_name, "Outgoing webhook");
+function test(label, f) {
+    run_test(label, (override) => {
+        people.add_active_user(me);
+        people.initialize_current_user(me.user_id);
+        bot_data.initialize(bot_data_params);
+        // Our startup logic should have added Bot 0 from page_params.
+        assert.equal(bot_data.get(42).full_name, "Bot 0");
+        assert.equal(bot_data.get(314).full_name, "Outgoing webhook");
+        f(override);
+    });
+}
 
-run_test("test_basics", () => {
+test("test_basics", () => {
+    people.add_active_user(fred);
     const test_bot = {
         email: "bot1@zulip.com",
         user_id: 43,
