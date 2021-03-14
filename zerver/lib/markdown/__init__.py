@@ -1654,7 +1654,7 @@ class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
 
     # Original regex for blockquote is RE = re.compile(r'(^|\n)[ ]{0,3}>[ ]?(.*)')
     RE = re.compile(r"(^|\n)(?!(?:[ ]{0,3}>\s*(?:$|\n))*(?:$|\n))" r"[ ]{0,3}>[ ]?(.*)")
-    mention_re = re.compile(mention.find_mentions)
+    mention_re = re.compile(mention.FIND_MENTIONS_RE)
 
     # run() is very slightly forked from the base class; see notes below.
     def run(self, parent: Element, blocks: List[Any]) -> None:
@@ -1797,6 +1797,7 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
                 return None
 
             wildcard = mention.user_mention_matches_wildcard(name)
+            online_mention = mention.user_mention_matches_online(name)
 
             id_syntax_match = re.match(r".+\|(?P<user_id>\d+)$", name)
             if id_syntax_match:
@@ -1807,6 +1808,9 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
 
             if wildcard:
                 self.md.zulip_message.mentions_wildcard = True
+                user_id = "*"
+            elif online_mention:
+                self.md.zulip_message.online_mention = True
                 user_id = "*"
             elif user:
                 if not silent:
@@ -2160,13 +2164,13 @@ class Markdown(markdown.Markdown):
         reg.register(
             markdown.inlinepatterns.DoubleTagPattern(STRONG_EM_RE, "strong,em"), "strong_em", 100
         )
-        reg.register(UserMentionPattern(mention.find_mentions, self), "usermention", 95)
+        reg.register(UserMentionPattern(mention.FIND_MENTIONS_RE, self), "usermention", 95)
         reg.register(Tex(r"\B(?<!\$)\$\$(?P<body>[^\n_$](\\\$|[^$\n])*)\$\$(?!\$)\B"), "tex", 90)
         reg.register(StreamTopicPattern(get_compiled_stream_topic_link_regex(), self), "topic", 87)
         reg.register(StreamPattern(get_compiled_stream_link_regex(), self), "stream", 85)
         reg.register(Timestamp(r"<time:(?P<time>[^>]*?)>"), "timestamp", 75)
         reg.register(
-            UserGroupMentionPattern(mention.user_group_mentions, self), "usergroupmention", 65
+            UserGroupMentionPattern(mention.USER_GROUP_MENTIONS_RE, self), "usergroupmention", 65
         )
         reg.register(LinkInlineProcessor(markdown.inlinepatterns.LINK_RE, self), "link", 60)
         reg.register(AutoLink(get_web_link_regex(), self), "autolink", 55)
@@ -2371,15 +2375,20 @@ def get_possible_mentions_info(realm_id: int, mention_texts: Set[str]) -> List[F
 
 class MentionData:
     def __init__(self, realm_id: int, content: str) -> None:
-        mention_texts, has_wildcards = possible_mentions(content)
+        mention_texts, has_wildcards, has_online_mentions = possible_mentions(content)
         possible_mentions_info = get_possible_mentions_info(realm_id, mention_texts)
         self.full_name_info = {row["full_name"].lower(): row for row in possible_mentions_info}
         self.user_id_info = {row["id"]: row for row in possible_mentions_info}
         self.init_user_group_data(realm_id=realm_id, content=content)
         self.has_wildcards = has_wildcards
+        self.has_online_mentions = has_online_mentions
 
     def message_has_wildcards(self) -> bool:
         return self.has_wildcards
+
+    def message_has_online_mentions(self) -> bool:
+        # This function is used only for testing purposes
+        return self.has_online_mentions
 
     def init_user_group_data(self, realm_id: int, content: str) -> None:
         user_group_names = possible_user_group_mentions(content)

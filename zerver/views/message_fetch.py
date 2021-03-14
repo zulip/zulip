@@ -229,7 +229,8 @@ class NarrowBuilder:
         elif operand == "mentioned":
             cond1 = column("flags", Integer).op("&")(UserMessage.flags.mentioned.mask) != 0
             cond2 = column("flags", Integer).op("&")(UserMessage.flags.wildcard_mentioned.mask) != 0
-            cond = or_(cond1, cond2)
+            cond3 = column("flags", Integer).op("&")(UserMessage.flags.online_mentioned.mask) != 0
+            cond = or_(cond1, cond2, cond3)
             return query.where(maybe_negate(cond))
         elif operand == "alerted":
             cond = column("flags", Integer).op("&")(UserMessage.flags.has_alert_word.mask) != 0

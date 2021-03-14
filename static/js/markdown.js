@@ -100,7 +100,13 @@ export function apply_markdown(message) {
 
     const options = {
         userMentionHandler(mention, silently) {
-            if (mention === "all" || mention === "everyone" || mention === "stream") {
+            if (
+                mention === "all" ||
+                mention === "everyone" ||
+                mention === "stream" ||
+                mention === "online" ||
+                mention === "here"
+            ) {
                 message.mentioned = true;
                 return `<span class="user-mention" data-user-id="*">@${_.escape(mention)}</span>`;
             }

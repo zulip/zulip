@@ -196,6 +196,7 @@ export function dispatch_normal_event(event) {
                 video_chat_provider: compose.update_video_chat_button_display,
                 waiting_period_threshold: noop,
                 wildcard_mention_policy: noop,
+                online_mention_policy: noop,
             };
             if (
                 event.op === "update" &&

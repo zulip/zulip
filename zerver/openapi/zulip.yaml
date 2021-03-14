@@ -6860,6 +6860,22 @@ paths:
                           mentions in large streams, even when permitted to do so.
 
                           **Changes**: New in Zulip 4.0 (feature level 33).
+                      realm_online_mention_policy:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The policy for who can use online mentions in large streams.
+
+                          * 1 => Any user can use online mentions in large streams.
+                          * 2 => Only members can use online mentions in large streams.
+                          * 3 => Only full members can use online mentions in large streams.
+                          * 4 => Only stream and organization administrators can use online mentions in large streams.
+                          * 5 => Only organization administrators can use online mentions in large streams.
+                          * 6 => Nobody can use online mentions in large streams.
+
+                          All users will receive a warning/reminder when using
+                          mentions in large streams, even when permitted to do so.
                       realm_default_language:
                         type: string
                         description: |

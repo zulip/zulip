@@ -68,6 +68,7 @@ export function build_page() {
         USER_GROUP_EDIT_POLICY_MEMBERS: 1,
         realm_private_message_policy: page_params.realm_private_message_policy,
         realm_wildcard_mention_policy: page_params.realm_wildcard_mention_policy,
+        realm_online_mention_policy: page_params.realm_online_mention_policy,
         realm_name_changes_disabled: page_params.realm_name_changes_disabled,
         realm_email_changes_disabled: page_params.realm_email_changes_disabled,
         realm_avatar_changes_disabled: page_params.realm_avatar_changes_disabled,

@@ -203,6 +203,7 @@ class Realm(models.Model):
     ]
     SUBDOMAIN_FOR_ROOT_DOMAIN = ""
     WILDCARD_MENTION_THRESHOLD = 15
+    ONLINE_MENTION_THRESHOLD = 15
 
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
 
@@ -306,6 +307,27 @@ class Realm(models.Model):
         WILDCARD_MENTION_POLICY_STREAM_ADMINS,
         WILDCARD_MENTION_POLICY_ADMINS,
         WILDCARD_MENTION_POLICY_NOBODY,
+    ]
+
+    # Global policy for who is allowed to use online mentions in
+    # streams with a large number of subscribers.  Anyone can use
+    # online mentions in small streams regardless of this setting.
+    ONLINE_MENTION_POLICY_EVERYONE = 1
+    ONLINE_MENTION_POLICY_MEMBERS = 2
+    ONLINE_MENTION_POLICY_FULL_MEMBERS = 3
+    ONLINE_MENTION_POLICY_STREAM_ADMINS = 4
+    ONLINE_MENTION_POLICY_ADMINS = 5
+    ONLINE_MENTION_POLICY_NOBODY = 6
+    online_mention_policy: int = models.PositiveSmallIntegerField(
+        default=ONLINE_MENTION_POLICY_STREAM_ADMINS,
+    )
+    ONLINE_MENTION_POLICY_TYPES = [
+        ONLINE_MENTION_POLICY_EVERYONE,
+        ONLINE_MENTION_POLICY_MEMBERS,
+        ONLINE_MENTION_POLICY_FULL_MEMBERS,
+        ONLINE_MENTION_POLICY_STREAM_ADMINS,
+        ONLINE_MENTION_POLICY_ADMINS,
+        ONLINE_MENTION_POLICY_NOBODY,
     ]
 
     # Who in the organization has access to users' actual email
@@ -483,6 +505,7 @@ class Realm(models.Model):
         default_code_block_language=(str, type(None)),
         message_content_delete_limit_seconds=int,
         wildcard_mention_policy=int,
+        online_mention_policy=int,
     )
 
     DIGEST_WEEKDAY_VALUES = [0, 1, 2, 3, 4, 5, 6]
@@ -2285,6 +2308,7 @@ class AbstractUserMessage(models.Model):
         "collapsed",
         "mentioned",
         "wildcard_mentioned",
+        "online_mentioned",
         # These next 4 flags are from features that have since been removed.
         "summarize_in_home",
         "summarize_in_stream",
@@ -2315,6 +2339,7 @@ class AbstractUserMessage(models.Model):
         "has_alert_word",
         "mentioned",
         "wildcard_mentioned",
+        "online_mentioned",
         "historical",
         # Unused flags can't be edited.
         "force_expand",
@@ -2349,7 +2374,7 @@ class AbstractUserMessage(models.Model):
     @staticmethod
     def where_active_push_notification() -> str:
         # See where_starred for documentation.
-        return "flags & 4096 <> 0"
+        return "flags & 8192 <> 0"
 
     def flags_list(self) -> List[str]:
         flags = int(self.flags)
@@ -2681,6 +2706,24 @@ def get_user(email: str, realm: Realm) -> UserProfile:
     get_user_by_delivery_email.
     """
     return UserProfile.objects.select_related().get(email__iexact=email.strip(), realm=realm)
+
+
+def get_current_active_user_ids(active_user_ids: Set[int]) -> Set[int]:
+    # Matches presence.js constant
+    OFFLINE_THRESHOLD_SECS = 140
+    recent = timezone_now() - datetime.timedelta(seconds=OFFLINE_THRESHOLD_SECS)
+    rows = (
+        UserPresence.objects.filter(
+            user_profile_id__in=active_user_ids,
+            status=UserPresence.ACTIVE,
+            timestamp__gte=recent,
+        )
+        .exclude(client__name="ZulipMobile")
+        .distinct("user_profile_id")
+        .values("user_profile_id")
+    )
+
+    return {row["user_profile_id"] for row in rows}
 
 
 def get_active_user(email: str, realm: Realm) -> UserProfile:

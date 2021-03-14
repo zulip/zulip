@@ -201,6 +201,14 @@ export function find_wildcard_mentions(message_content) {
     return mention[3];
 }
 
+export function find_online_mentions(message_content) {
+    const mention = message_content.match(/(^|\s)(@\*{2}(online|here)\*{2})($|\s)/);
+    if (mention === null) {
+        return null;
+    }
+    return mention[3];
+}
+
 export const move_array_elements_to_front = function util_move_array_elements_to_front(
     array,
     selected,

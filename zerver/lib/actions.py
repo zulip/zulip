@@ -102,6 +102,7 @@ from zerver.lib.message import (
     access_message,
     get_last_message_id,
     normalize_body,
+    online_mention_allowed,
     render_markdown,
     truncate_topic,
     update_first_visible_message_id,
@@ -218,6 +219,7 @@ from zerver.models import (
     get_bot_dicts_in_realm,
     get_bot_services,
     get_client,
+    get_current_active_user_ids,
     get_default_stream_groups,
     get_huddle_recipient,
     get_huddle_user_ids,
@@ -1814,6 +1816,7 @@ def do_send_messages(
             user_messages = create_user_messages(
                 message=send_request.message,
                 um_eligible_user_ids=send_request.um_eligible_user_ids,
+                active_user_ids=send_request.active_user_ids,
                 long_term_idle_user_ids=send_request.long_term_idle_user_ids,
                 stream_push_user_ids=send_request.stream_push_user_ids,
                 stream_email_user_ids=send_request.stream_email_user_ids,
@@ -1980,6 +1983,7 @@ class UserMessageLite:
 def create_user_messages(
     message: Message,
     um_eligible_user_ids: AbstractSet[int],
+    active_user_ids: AbstractSet[int],
     long_term_idle_user_ids: AbstractSet[int],
     stream_push_user_ids: AbstractSet[int],
     stream_email_user_ids: AbstractSet[int],
@@ -1998,7 +2002,10 @@ def create_user_messages(
     # These properties on the Message are set via
     # render_markdown by code in the Markdown inline patterns
     wildcard = message.mentions_wildcard
+    online_mention = message.online_mention
     ids_with_alert_words = message.user_ids_with_alert_words
+    # These obtained current_active_user_ids are those whose OFFLINE_THRESHOLD_SECS = 140
+    current_active_user_ids = get_current_active_user_ids(set(active_user_ids))
 
     for um in ums_to_create:
         if (
@@ -2007,6 +2014,8 @@ def create_user_messages(
             um.flags |= UserMessage.flags.read
         if wildcard:
             um.flags |= UserMessage.flags.wildcard_mentioned
+        if online_mention and um.user_profile_id in current_active_user_ids:
+            um.flags |= UserMessage.flags.online_mentioned
         if um.user_profile_id in mentioned_user_ids:
             um.flags |= UserMessage.flags.mentioned
         if um.user_profile_id in ids_with_alert_words:
@@ -2828,6 +2837,12 @@ def check_message(
         if not wildcard_mention_allowed(sender, stream):
             raise JsonableError(
                 _("You do not have permission to use wildcard mentions in this stream.")
+            )
+
+    if stream is not None and message_send_dict.message.online_mention:
+        if not online_mention_allowed(sender, message_send_dict.active_user_ids):
+            raise JsonableError(
+                _("You do not have permission to use online mentions in this stream.")
             )
     return message_send_dict
 
@@ -5174,7 +5189,11 @@ def get_user_info_for_message_updates(message_id: int) -> MessageUpdateUserInfoR
 
     message_user_ids = {row["user_profile_id"] for row in rows}
 
-    mask = UserMessage.flags.mentioned | UserMessage.flags.wildcard_mentioned
+    mask = (
+        UserMessage.flags.mentioned
+        | UserMessage.flags.wildcard_mentioned
+        | UserMessage.flags.online_mentioned
+    )
 
     mention_user_ids = {row["user_profile_id"] for row in rows if int(row["flags"]) & mask}
 
@@ -5186,6 +5205,7 @@ def get_user_info_for_message_updates(message_id: int) -> MessageUpdateUserInfoR
 
 def update_user_message_flags(message: Message, ums: Iterable[UserMessage]) -> None:
     wildcard = message.mentions_wildcard
+    online_mention = message.online_mention
     mentioned_ids = message.mentions_user_ids
     ids_with_alert_words = message.user_ids_with_alert_words
     changed_ums: Set[UserMessage] = set()
@@ -5208,6 +5228,7 @@ def update_user_message_flags(message: Message, ums: Iterable[UserMessage]) -> N
         update_flag(um, mentioned, UserMessage.flags.mentioned)
 
         update_flag(um, wildcard, UserMessage.flags.wildcard_mentioned)
+        update_flag(um, online_mention, UserMessage.flags.online_mentioned)
 
     for um in changed_ums:
         um.save(update_fields=["flags"])
@@ -6019,23 +6040,8 @@ def filter_presence_idle_user_ids(user_ids: Set[int]) -> List[int]:
 
     if not user_ids:
         return []
-
-    # Matches presence.js constant
-    OFFLINE_THRESHOLD_SECS = 140
-
-    recent = timezone_now() - datetime.timedelta(seconds=OFFLINE_THRESHOLD_SECS)
-    rows = (
-        UserPresence.objects.filter(
-            user_profile_id__in=user_ids,
-            status=UserPresence.ACTIVE,
-            timestamp__gte=recent,
-        )
-        .exclude(client__name="ZulipMobile")
-        .distinct("user_profile_id")
-        .values("user_profile_id")
-    )
-    active_user_ids = {row["user_profile_id"] for row in rows}
-    idle_user_ids = user_ids - active_user_ids
+    current_active_user_ids = get_current_active_user_ids(user_ids)
+    idle_user_ids = user_ids - current_active_user_ids
     return sorted(idle_user_ids)
 
 
