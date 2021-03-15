@@ -156,6 +156,11 @@ export function set_up() {
     // Populate emoji table
     populate_emoji();
 
+    $("#clear_filter_emojis_search_button").on("click", () => {
+        $("#upload_file_search").val("");
+        set_up();
+    });
+
     $(".admin_emoji_table").on("click", ".delete", function (e) {
         e.preventDefault();
         e.stopPropagation();
