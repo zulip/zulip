@@ -95,7 +95,21 @@ function activate_home_tab() {
 }
 
 export function show_default_view() {
-    window.location.hash = page_params.default_view;
+    // We only allow all_messages and recent_topics
+    // to be rendered without a hash.
+    if (page_params.default_view === "recent_topics") {
+        recent_topics.show();
+    } else if (page_params.default_view === "all_messages") {
+        activate_home_tab();
+    } else {
+        // NOTE: Setting a hash which is not rendered on
+        // empty hash (like a stream narrow) will
+        // introduce a bug that user will not be able to
+        // go back in broswer history. See
+        // https://chat.zulip.org/#narrow/stream/9-issues/topic/Browser.20back.20button.20on.20RT
+        // for detailed description of the issue.
+        window.location.hash = page_params.default_view;
+    }
 }
 
 // Returns true if this function performed a narrow
@@ -112,8 +126,11 @@ function do_hashchange_normal(from_reload) {
             ui_util.change_tab_to("#message_feed_container");
             const operators = hash_util.parse_narrow(hash);
             if (operators === undefined) {
-                // If the narrow URL didn't parse, clear
-                // window.location.hash and send them to the home tab
+                // If the narrow URL didn't parse,
+                // send them to default_view.
+                // We cannot clear hash here since
+                // it will block user from going back
+                // in browser history.
                 show_default_view();
                 return false;
             }
