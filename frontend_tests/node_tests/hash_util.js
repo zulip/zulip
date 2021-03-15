@@ -128,6 +128,14 @@ run_test("test_active_stream", () => {
     assert.equal(hash_util.active_stream(), undefined);
 });
 
+run_test("test_is_create_new_stream_narrow", () => {
+    location.hash = "#streams/new";
+    assert.equal(hash_util.is_create_new_stream_narrow(), true);
+
+    location.hash = "#some/random/hash";
+    assert.equal(hash_util.is_create_new_stream_narrow(), false);
+});
+
 run_test("test_parse_narrow", () => {
     assert.deepEqual(hash_util.parse_narrow(["narrow", "stream", "99-frontend"]), [
         {negated: false, operator: "stream", operand: "frontend"},
