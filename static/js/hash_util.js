@@ -266,3 +266,7 @@ export function active_stream() {
 
     return undefined;
 }
+
+export function is_create_new_stream_narrow() {
+    return window.location.hash === "#streams/new";
+}

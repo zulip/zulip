@@ -754,7 +754,7 @@ export function launch(section) {
 export function switch_rows(event) {
     const active_data = get_active_data();
     let switch_row;
-    if (window.location.hash === "#streams/new") {
+    if (hash_util.is_create_new_stream_narrow()) {
         // Prevent switching stream rows when creating a new stream
         return false;
     } else if (!active_data.id || active_data.row.hasClass("notdisplayed")) {
