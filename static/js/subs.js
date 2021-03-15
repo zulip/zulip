@@ -116,14 +116,6 @@ export function get_active_data() {
     };
 }
 
-function get_hash_safe() {
-    if (typeof window.location.hash === "string") {
-        return window.location.hash.slice(1);
-    }
-
-    return "";
-}
-
 function selectText(element) {
     let range;
     let sel;
@@ -316,7 +308,7 @@ export function update_settings_for_subscribed(sub) {
 }
 
 export function show_active_stream_in_left_panel() {
-    const selected_row = get_hash_safe().split(/\//)[1];
+    const selected_row = hash_util.get_current_hash_section();
 
     if (Number.parseFloat(selected_row)) {
         const sub_row = row_for_stream_id(selected_row);
