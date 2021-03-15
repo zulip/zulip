@@ -299,6 +299,19 @@ function get_typeahead_result(query, current_stream, current_topic) {
 }
 
 run_test("sort_recipients", () => {
+    pm_conversations.clear_for_testing();
+    recent_senders.clear_for_testing();
+    peer_data.clear_for_testing();
+    a_bot.pm_recipient_count = 0;
+    a_user.pm_recipient_count = 0;
+    b_user_1.pm_recipient_count = 0;
+    b_user_2.pm_recipient_count = 0;
+    b_user_3.pm_recipient_count = 0;
+    b_bot.pm_recipient_count = 0;
+
+    const dev_sub = stream_data.get_sub("Dev");
+    const linux_sub = stream_data.get_sub("Linux");
+
     // Typeahead for recipientbox [query, "", undefined]
     assert.deepEqual(get_typeahead_result("b", ""), [
         "b_user_1@zulip.net",
@@ -328,8 +341,6 @@ run_test("sort_recipients", () => {
     peer_data.add_subscriber(1, people.get_user_id(subscriber_email_2));
     peer_data.add_subscriber(1, people.get_user_id(subscriber_email_3));
 
-    const dev_sub = stream_data.get_sub("Dev");
-    const linux_sub = stream_data.get_sub("Linux");
     stream_data.update_calculated_fields(dev_sub);
     stream_data.update_calculated_fields(linux_sub);
 
