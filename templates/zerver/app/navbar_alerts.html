@@ -28,11 +28,10 @@
     </div>
     <div data-process="profile-incomplete" class="alert alert-info">
         <div data-step="2">
-            {% trans %}
+            {% trans profile_link="#organization/organization-profile" %}
             Complete the
-            <a class="alert-link" href="#organization/organization-profile">
-                organization profile
-            </a> to brand and explain the purpose of this Zulip organization.
+            <a class="alert-link" href="{{ profile_link }}">organization profile</a>
+            to brand and explain the purpose of this Zulip organization.
             {% endtrans %}
         </div>
         <span class="close" data-dismiss="alert" aria-label="{{ _('Close') }}" role="button" tabindex=0>&times;</span>
