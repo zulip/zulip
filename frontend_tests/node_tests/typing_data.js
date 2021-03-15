@@ -7,7 +7,14 @@ const {run_test} = require("../zjsunit/test");
 
 const typing_data = zrequire("typing_data");
 
-run_test("basics", () => {
+function test(label, f) {
+    run_test(label, (override) => {
+        typing_data.clear_for_testing();
+        f(override);
+    });
+}
+
+test("basics", () => {
     // The typing_data needs to be robust with lists of
     // user ids being in arbitrary sorting order and
     // possibly in string form instead of integer. So all
@@ -52,7 +59,7 @@ run_test("basics", () => {
     assert.deepEqual(typing_data.get_group_typists([20, 40]), [20]);
 });
 
-run_test("timers", () => {
+test("timers", () => {
     const events = {};
 
     const stub_timer_id = "timer_id_stub";
