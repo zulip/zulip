@@ -8,7 +8,7 @@ const $ = require("../zjsunit/zjquery");
 
 mock_cjs("jquery", $);
 
-const events = [
+const sample_events = [
     {
         data: {
             option: "First option",
@@ -35,10 +35,12 @@ const events = [
     },
 ];
 
+let events;
 let widget_elem;
 let is_event_handled;
 let is_widget_activated;
-mock_esm("../../static/js/poll_widget", {
+
+const fake_poll_widget = {
     activate(data) {
         is_widget_activated = true;
         widget_elem = data.elem;
@@ -51,15 +53,28 @@ mock_esm("../../static/js/poll_widget", {
         };
         data.callback("test_data");
     },
-});
-set_global("document", "document-stub");
+};
 
 const narrow_state = mock_esm("../../static/js/narrow_state");
-set_global("current_msg_list", {});
+mock_esm("../../static/js/poll_widget", fake_poll_widget);
+
+const current_msg_list = set_global("current_msg_list", {});
+set_global("document", "document-stub");
 
 const widgetize = zrequire("widgetize");
 
-run_test("activate", (override) => {
+function test(label, f) {
+    run_test(label, (override) => {
+        events = [...sample_events];
+        widget_elem = undefined;
+        is_event_handled = false;
+        is_widget_activated = false;
+        widgetize.clear_for_testing();
+        f(override);
+    });
+}
+
+test("activate", (override) => {
     // Both widgetize.activate and widgetize.handle_event are tested
     // here to use the "caching" of widgets
     const row = $.create("<stub message row>");
