@@ -52,12 +52,12 @@
         <div data-step="1">
             {% trans count=page_params.unread_msgs.count %}
             Welcome back!  You have <span class="bankruptcy_unread_count">{{ count }}</span> unread messages.  Do you want to mark them all as read?
-            <span class="buttons">
-                <a class="alert-link accept-bankruptcy" role="button" tabindex=0>Yes, please!</a>
-                &bull;
-                <a class="alert-link exit" role="button" tabindex=0>No, I'll catch up.</a>
-            </span>
             {% endtrans %}
+            <span class="buttons">
+                <a class="alert-link accept-bankruptcy" role="button" tabindex=0>_("Yes, please!")</a>
+                &bull;
+                <a class="alert-link exit" role="button" tabindex=0>_("No, I'll catch up.")</a>
+            </span>
         </div>
         <span class="close" data-dismiss="alert" aria-label="{{ _('Close') }}" role="button" tabindex=0>&times;</span>
     </div>
