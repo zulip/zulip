@@ -93,6 +93,9 @@ mock_esm("../../static/js/muting", {
 mock_esm("../../static/js/narrow", {
     set_narrow_title: noop,
 });
+mock_esm("../../static/js/popovers", {
+    any_active: () => false,
+});
 mock_esm("../../static/js/recent_senders", {
     get_topic_recent_senders: () => [1, 2],
 });

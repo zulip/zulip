@@ -222,11 +222,13 @@ export function in_content_editable_widget(e) {
 // Returns true if we handled it, false if the browser should.
 export function process_escape_key(e) {
     if (
-        hashchange.in_recent_topics_hash() &&
+        recent_topics.is_in_focus() &&
+        // This will return false if `e.target` is not
+        // any of the recent topics elements by design.
         recent_topics.change_focused_element($(e.target), "escape")
     ) {
-        // Recent topics uses escape to make focus from RT search / filters to topics table.
-        // If focus already in table it returns false.
+        // Recent topics uses escape to switch focus from RT search / filters to topics table.
+        // If focus is already on the table it returns false.
         return true;
     }
 
