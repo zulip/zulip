@@ -485,7 +485,7 @@ run_test("sort broadcast mentions", () => {
 
     assert.deepEqual(
         results.map((r) => r.email),
-        ["all", "everyone", "stream"],
+        ["all", "everyone", "stream", "online", "here"],
     );
 
     // Reverse the list to test actual sorting
@@ -499,7 +499,7 @@ run_test("sort broadcast mentions", () => {
 
     assert.deepEqual(
         results2.map((r) => r.email),
-        ["all", "everyone", "stream", a_user.email, zman.email],
+        ["all", "everyone", "stream", "online", "here", a_user.email, zman.email],
     );
 });
 

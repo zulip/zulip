@@ -811,7 +811,7 @@ class QueryCountTest(ZulipTestCase):
                         acting_user=None,
                     )
 
-        self.assert_length(queries, 68)
+        self.assert_length(queries, 70)
         self.assert_length(cache_tries, 20)
         self.assert_length(events, 7)
 

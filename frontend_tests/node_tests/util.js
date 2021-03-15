@@ -206,10 +206,10 @@ run_test("all_and_everyone_mentions_regexp", () => {
     const messages_without_all_mentions = [
         "@all",
         "some text before @all some text after",
-        "`@everyone`",
-        "some_email@everyone.com",
-        "`@**everyone**`",
-        "some_email@**everyone**.com",
+        "`@all`",
+        "some_email@all.com",
+        "`@**all**`",
+        "some_email@**all**.com",
     ];
 
     const messages_without_everyone_mentions = [
@@ -244,7 +244,7 @@ run_test("all_and_everyone_mentions_regexp", () => {
     }
 
     for (i = 0; i < messages_without_all_mentions.length; i += 1) {
-        assert(!util.find_wildcard_mentions(messages_without_everyone_mentions[i]));
+        assert(!util.find_wildcard_mentions(messages_without_all_mentions[i]));
     }
 
     for (i = 0; i < messages_without_everyone_mentions.length; i += 1) {
@@ -253,6 +253,57 @@ run_test("all_and_everyone_mentions_regexp", () => {
 
     for (i = 0; i < messages_without_stream_mentions.length; i += 1) {
         assert(!util.find_wildcard_mentions(messages_without_stream_mentions[i]));
+    }
+});
+
+run_test("online_and_here_mentions_regexp", () => {
+    const messages_with_online_mentions = [
+        "@**online**",
+        "some text before @**online** some text after",
+        "@**online** some text after only",
+        "some text before only @**online**",
+    ];
+
+    const messages_with_here_mentions = [
+        "@**here**",
+        "some text before @**here** some text after",
+        "@**here** some text after only",
+        "some text before only @**here**",
+    ];
+
+    const messages_without_online_mentions = [
+        "@online",
+        "some text before @online some text after",
+        "`@online`",
+        "some_email@online.com",
+        "`@**online**`",
+        "some_email@**online**.com",
+    ];
+
+    const messages_without_here_mentions = [
+        "some text before @here some text after",
+        "@here",
+        "`@here`",
+        "some_email@here.com",
+        "`@**here**`",
+        "some_email@**here**.com",
+    ];
+
+    let i;
+    for (i = 0; i < messages_with_online_mentions.length; i += 1) {
+        assert(util.find_online_mentions(messages_with_online_mentions[i]));
+    }
+
+    for (i = 0; i < messages_with_here_mentions.length; i += 1) {
+        assert(util.find_online_mentions(messages_with_here_mentions[i]));
+    }
+
+    for (i = 0; i < messages_without_online_mentions.length; i += 1) {
+        assert(!util.find_online_mentions(messages_without_online_mentions[i]));
+    }
+
+    for (i = 0; i < messages_without_here_mentions.length; i += 1) {
+        assert(!util.find_online_mentions(messages_without_here_mentions[i]));
     }
 });
 

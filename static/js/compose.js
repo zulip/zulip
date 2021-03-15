@@ -6,6 +6,7 @@ import render_compose_all_everyone from "../templates/compose_all_everyone.hbs";
 import render_compose_announce from "../templates/compose_announce.hbs";
 import render_compose_invite_users from "../templates/compose_invite_users.hbs";
 import render_compose_not_subscribed from "../templates/compose_not_subscribed.hbs";
+import render_compose_online_here from "../templates/compose_online_here.hbs";
 import render_compose_private_stream_alert from "../templates/compose_private_stream_alert.hbs";
 
 import * as channel from "./channel";
@@ -22,6 +23,7 @@ import * as markdown from "./markdown";
 import * as notifications from "./notifications";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
+import * as presence from "./presence";
 import * as reminder from "./reminder";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
@@ -49,11 +51,14 @@ import * as zcommand from "./zcommand";
    true: user clicked YES */
 
 let user_acknowledged_all_everyone;
+let user_acknowledged_online_here;
 let user_acknowledged_announce;
 let wildcard_mention;
+let online_mention;
 let uppy;
 
 export let wildcard_mention_large_stream_threshold = 15;
+export const online_mention_large_online_users_threshold = 15;
 export const announce_warn_threshold = 60;
 export const uploads_domain = document.location.protocol + "//" + document.location.host;
 export const uploads_path = "/user_uploads";
@@ -86,6 +91,24 @@ function show_all_everyone_warnings(stream_id) {
     user_acknowledged_all_everyone = false;
 }
 
+function show_online_here_warnings(active_user_ids) {
+    const active_users_count = active_user_ids.length;
+
+    const online_here_template = render_compose_online_here({
+        count: active_users_count,
+        mention: online_mention,
+    });
+    const error_area_online_here = $("#compose-online-here");
+
+    // only show one error for any number of @online or @here mentions
+    if (!error_area_online_here.is(":visible")) {
+        error_area_online_here.append(online_here_template);
+    }
+
+    error_area_online_here.show();
+    user_acknowledged_online_here = false;
+}
+
 export function compute_show_video_chat_button() {
     const available_providers = page_params.realm_available_video_chat_providers;
     if (page_params.realm_video_chat_provider === available_providers.disabled.id) {
@@ -111,6 +134,12 @@ export function update_video_chat_button_display() {
 export function clear_all_everyone_warnings() {
     $("#compose-all-everyone").hide();
     $("#compose-all-everyone").empty();
+    $("#compose-send-status").hide();
+}
+
+export function clear_online_here_warnings() {
+    $("#compose-online-here").hide();
+    $("#compose-online-here").empty();
     $("#compose-send-status").hide();
 }
 
@@ -547,7 +576,51 @@ export function set_wildcard_mention_large_stream_threshold(value) {
     wildcard_mention_large_stream_threshold = value;
 }
 
-function validate_stream_message_mentions(stream_id) {
+export function online_mention_allowed() {
+    if (
+        page_params.realm_online_mention_policy ===
+        settings_config.online_mention_policy_values.by_everyone.code
+    ) {
+        return true;
+    }
+    if (
+        page_params.realm_online_mention_policy ===
+        settings_config.online_mention_policy_values.nobody.code
+    ) {
+        return false;
+    }
+    if (
+        page_params.realm_online_mention_policy ===
+        settings_config.online_mention_policy_values.by_stream_admins_only.code
+    ) {
+        // TODO: Check the user's stream-level role once stream-level admins exist.
+        return page_params.is_admin;
+    }
+    // TODO: Uncomment when we add support for stream-level administrators.
+    // if (
+    //     page_params.realm_online_mention_policy ===
+    //     settings_config.online_mention_policy_values.by_admins_only.code
+    // ) {
+    //     return page_params.is_admin;
+    // }
+    if (
+        page_params.realm_online_mention_policy ===
+        settings_config.online_mention_policy_values.by_full_members.code
+    ) {
+        if (page_params.is_admin) {
+            return true;
+        }
+        const person = people.get_by_user_id(page_params.user_id);
+        const current_datetime = new Date(Date.now());
+        const person_date_joined = new Date(person.date_joined);
+        const days = (current_datetime - person_date_joined) / 1000 / 86400;
+
+        return days >= page_params.realm_waiting_period_threshold && !page_params.is_guest;
+    }
+    return !page_params.is_guest;
+}
+
+function validate_stream_message_wildcard_mentions(stream_id) {
     const stream_count = peer_data.get_subscriber_count(stream_id) || 0;
 
     // If the user is attempting to do a wildcard mention in a large
@@ -577,6 +650,43 @@ function validate_stream_message_mentions(stream_id) {
     }
     // at this point, the user has either acknowledged the warning or removed @all / @everyone
     user_acknowledged_all_everyone = undefined;
+
+    return true;
+}
+
+function validate_stream_message_online_mentions() {
+    const user_ids = presence.get_user_ids();
+    const active_user_ids = user_ids.filter((user_id) => presence.is_active(user_id));
+    // If the user is attempting to do an online mention having a large
+    // online users, check if they permission to do so.
+    if (
+        online_mention !== null &&
+        active_user_ids.length > online_mention_large_online_users_threshold
+    ) {
+        if (!online_mention_allowed()) {
+            compose_error(
+                i18n.t("You do not have permission to use online mentions in this stream."),
+            );
+            return false;
+        }
+
+        if (
+            user_acknowledged_online_here === undefined ||
+            user_acknowledged_online_here === false
+        ) {
+            // user has not seen a warning message yet if undefined
+            show_online_here_warnings(active_user_ids);
+
+            $("#compose-send-button").prop("disabled", false);
+            $("#sending-indicator").hide();
+            return false;
+        }
+    } else {
+        // the message no longer contains @online or @here
+        clear_online_here_warnings();
+    }
+    // at this point, the user has either acknowledged the warning or removed @online / @here
+    user_acknowledged_online_here = undefined;
 
     return true;
 }
@@ -708,22 +818,32 @@ function validate_stream_message() {
        below; it's important that we update this state here before
        proceeding with further validation. */
     wildcard_mention = util.find_wildcard_mentions(compose_state.message_content());
+    online_mention = util.find_online_mentions(compose_state.message_content());
 
     // If both `@all` is mentioned and it's in `#announce`, just validate
     // for `@all`. Users shouldn't have to hit "yes" more than once.
     if (wildcard_mention !== null && stream_name === "announce") {
         if (
             !validate_stream_message_address_info(stream_name) ||
-            !validate_stream_message_mentions(sub.stream_id)
+            !validate_stream_message_wildcard_mentions(sub.stream_id)
         ) {
             return false;
         }
         // If either criteria isn't met, just do the normal validation.
     } else {
         if (
-            !validate_stream_message_address_info(stream_name) ||
-            !validate_stream_message_mentions(sub.stream_id) ||
-            !validate_stream_message_announce(sub)
+            wildcard_mention !== null &&
+            (!validate_stream_message_address_info(stream_name) ||
+                !validate_stream_message_wildcard_mentions(sub.stream_id) ||
+                !validate_stream_message_announce(sub))
+        ) {
+            return false;
+        }
+        if (
+            online_mention !== null &&
+            (!validate_stream_message_address_info(stream_name) ||
+                !validate_stream_message_online_mentions() ||
+                !validate_stream_message_announce(sub))
         ) {
             return false;
         }
@@ -1101,6 +1221,15 @@ export function initialize() {
         $(event.target).parents(".compose-all-everyone").remove();
         user_acknowledged_all_everyone = true;
         clear_all_everyone_warnings();
+        finish();
+    });
+
+    $("#compose-online-here").on("click", ".compose-online-here-confirm", (event) => {
+        event.preventDefault();
+
+        $(event.target).parents(".compose-online-here").remove();
+        user_acknowledged_online_here = true;
+        clear_online_here_warnings();
         finish();
     });
 

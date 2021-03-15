@@ -91,6 +91,7 @@ const compose_pm_pill = zrequire("compose_pm_pill");
 const echo = zrequire("echo");
 const compose = zrequire("compose");
 const upload = zrequire("upload");
+const presence = zrequire("presence");
 const settings_config = zrequire("settings_config");
 
 people.small_avatar_url_for_person = () => "http://example.com/example.png";
@@ -365,7 +366,49 @@ test_ui("test_wildcard_mention_allowed", () => {
     assert(!compose.wildcard_mention_allowed());
 });
 
-test_ui("validate_stream_message", (override) => {
+test_ui("test_online_mention_allowed", () => {
+    page_params.realm_online_mention_policy =
+        settings_config.online_mention_policy_values.by_everyone.code;
+    page_params.is_guest = true;
+    page_params.is_admin = false;
+    assert(compose.online_mention_allowed());
+
+    page_params.realm_online_mention_policy =
+        settings_config.online_mention_policy_values.nobody.code;
+    page_params.is_admin = true;
+    assert(!compose.online_mention_allowed());
+
+    page_params.realm_online_mention_policy =
+        settings_config.online_mention_policy_values.by_members.code;
+    page_params.is_guest = true;
+    page_params.is_admin = false;
+    assert(!compose.online_mention_allowed());
+
+    page_params.is_guest = false;
+    assert(compose.online_mention_allowed());
+
+    page_params.realm_online_mention_policy =
+        settings_config.online_mention_policy_values.by_stream_admins_only.code;
+    page_params.is_admin = false;
+    assert(!compose.online_mention_allowed());
+
+    // TODO: Add a by_admins_only case when we implement stream-level administrators.
+
+    page_params.is_admin = true;
+    assert(compose.online_mention_allowed());
+
+    page_params.realm_online_mention_policy =
+        settings_config.online_mention_policy_values.by_full_members.code;
+    const person = people.get_by_user_id(page_params.user_id);
+    person.date_joined = new Date(Date.now());
+    page_params.realm_waiting_period_threshold = 10;
+
+    assert(compose.online_mention_allowed());
+    page_params.is_admin = false;
+    assert(!compose.online_mention_allowed());
+});
+
+test_ui("validate_stream_message_for_wildcard_mentions", (override) => {
     // This test is in kind of continuation to test_validate but since it is
     // primarily used to get coverage over functions called from validate()
     // we are separating it up in different test. Though their relative position
@@ -409,6 +452,65 @@ test_ui("validate_stream_message", (override) => {
     assert.equal(
         $("#compose-error-msg").html(),
         i18n.t("You do not have permission to use wildcard mentions in this stream."),
+    );
+});
+
+test_ui("validate_stream_message_for_online_mentions", (override) => {
+    // This test is in kind of continuation to test_validate but since it is
+    // primarily used to get coverage over functions called from validate()
+    // we are separating it up in different test. Though their relative position
+    // of execution should not be changed.
+
+    assert(!$("#compose-online-here").visible());
+    assert(!$("#compose-send-status").visible());
+
+    const raw = {
+        active_timestamp: 1585745133,
+        idle_timestamp: 1585745091,
+        server_timestamp: 1585745140,
+    };
+
+    const status = presence.status_from_raw(raw);
+    // 5 users have active status.
+    // This helps to verify that no warning message is
+    // shown, as online_mention_large_online_users_threshold = 15.
+    for (let user_id = 1; user_id <= 5; user_id += 1) {
+        presence.presence_info.set(user_id, status);
+    }
+
+    stub_templates((template_name, data) => {
+        assert.equal(template_name, "compose_online_here");
+        assert.equal(data.count, 16);
+        return "compose_online_here_stub";
+    });
+    let compose_content;
+    $("#compose-online-here").append = function (data) {
+        compose_content = data;
+    };
+
+    compose_state.message_content("Hey @**online**");
+    assert(compose.validate());
+    assert.equal($("#compose-send-button").prop("disabled"), true);
+    assert(!$("#compose-send-status").visible());
+    assert(!$("#compose-online-here").visible());
+
+    override(compose, "online_mention_allowed", () => true);
+
+    for (let user_id = 6; user_id <= 16; user_id += 1) {
+        presence.presence_info.set(user_id, status);
+    }
+
+    assert(!compose.validate());
+    assert.equal($("#compose-send-button").prop("disabled"), false);
+    assert(!$("#compose-send-status").visible());
+    assert.equal(compose_content, "compose_online_here_stub");
+    assert($("#compose-online-here").visible());
+
+    override(compose, "online_mention_allowed", () => false);
+    assert(!compose.validate());
+    assert.equal(
+        $("#compose-error-msg").html(),
+        i18n.t("You do not have permission to use online mentions in this stream."),
     );
 });
 

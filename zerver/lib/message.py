@@ -48,6 +48,7 @@ from zerver.models import (
     Subscription,
     UserMessage,
     UserProfile,
+    get_current_active_user_ids,
     get_display_recipient_by_id,
     get_usermessage_by_message_id,
     query_for_ids,
@@ -798,6 +799,7 @@ def do_render_markdown(
     """
 
     message.mentions_wildcard = False
+    message.online_mention = False
     message.mentions_user_ids = set()
     message.mentions_user_group_ids = set()
     message.alert_words = set()
@@ -1060,9 +1062,10 @@ def extract_unread_data_from_um_rows(
         # TODO: Add support for alert words here as well.
         is_mentioned = (row["flags"] & UserMessage.flags.mentioned) != 0
         is_wildcard_mentioned = (row["flags"] & UserMessage.flags.wildcard_mentioned) != 0
+        is_online_mentioned = (row["flags"] & UserMessage.flags.online_mentioned) != 0
         if is_mentioned:
             mentions.add(message_id)
-        if is_wildcard_mentioned:
+        if is_wildcard_mentioned or is_online_mentioned:
             if msg_type == Recipient.STREAM:
                 stream_id = row["message__recipient__type_id"]
                 topic = row[MESSAGE__TOPIC]
@@ -1179,7 +1182,7 @@ def apply_unread_message_event(
 
     if "mentioned" in flags:
         state["mentions"].add(message_id)
-    if "wildcard_mentioned" in flags:
+    if "wildcard_mentioned" in flags or "onlined_mentioned" in flags:
         if message_id in state["unmuted_stream_msgs"]:
             state["mentions"].add(message_id)
 
@@ -1306,7 +1309,7 @@ def get_recent_private_conversations(user_profile: UserProfile) -> Dict[int, Dic
             um.message_id = m.id
         WHERE
             um.user_profile_id=%(user_profile_id)s AND
-            um.flags & 2048 <> 0 AND
+            um.flags & 4096 <> 0 AND
             m.recipient_id <> %(my_recipient_id)s
         ORDER BY message_id DESC
         LIMIT %(conversation_limit)s)
@@ -1395,3 +1398,35 @@ def wildcard_mention_allowed(sender: UserProfile, stream: Stream) -> bool:
         return not sender.is_guest
 
     raise AssertionError("Invalid wildcard mention policy")
+
+
+def online_mention_allowed(sender: UserProfile, active_user_ids: Set[int]) -> bool:
+    realm = sender.realm
+    current_active_user_ids = get_current_active_user_ids(active_user_ids)
+    # If there are fewer than Realm.ONLINE_MENTION_THRESHOLD, we
+    # allow sending.  In the future, we may want to make this behavior
+    # a default, and also just allow explicitly setting whether this
+    # applies to a stream as an override.
+    if len(current_active_user_ids) <= Realm.ONLINE_MENTION_THRESHOLD:
+        return True
+
+    if realm.online_mention_policy == Realm.ONLINE_MENTION_POLICY_NOBODY:
+        return False
+
+    if realm.online_mention_policy == Realm.ONLINE_MENTION_POLICY_EVERYONE:
+        return True
+
+    if realm.online_mention_policy == Realm.ONLINE_MENTION_POLICY_ADMINS:
+        return sender.is_realm_admin
+
+    if realm.online_mention_policy == Realm.ONLINE_MENTION_POLICY_STREAM_ADMINS:
+        # TODO: Change this when we implement stream administrators
+        return sender.is_realm_admin
+
+    if realm.online_mention_policy == Realm.ONLINE_MENTION_POLICY_FULL_MEMBERS:
+        return sender.is_realm_admin or (not sender.is_provisional_member and not sender.is_guest)
+
+    if realm.online_mention_policy == Realm.ONLINE_MENTION_POLICY_MEMBERS:
+        return not sender.is_guest
+
+    raise AssertionError("Invalid online mention policy")

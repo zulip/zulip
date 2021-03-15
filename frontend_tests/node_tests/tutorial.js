@@ -60,6 +60,8 @@ set_global("page_params", {});
 const util = zrequire("util");
 assert(!util.find_wildcard_mentions("boring text"));
 assert(util.find_wildcard_mentions("mention @**everyone**"));
+assert(!util.find_online_mentions("random text"));
+assert(util.find_online_mentions("mention @**here**"));
 
 // Let's test with people.js next.  We'll show this technique:
 //  * get a false value

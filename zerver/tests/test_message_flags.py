@@ -917,6 +917,11 @@ class GetUnreadMsgsTest(ZulipTestCase):
         result = get_unread_data()
         self.assertEqual(result["mentions"], [stream_message_id])
 
+        um.flags = UserMessage.flags.online_mentioned
+        um.save()
+        result = get_unread_data()
+        self.assertEqual(result["mentions"], [stream_message_id])
+
         um.flags = 0
         um.save()
         result = get_unread_data()
@@ -942,6 +947,11 @@ class GetUnreadMsgsTest(ZulipTestCase):
         result = get_unread_data()
         self.assertEqual(result["mentions"], [])
 
+        um.flags = UserMessage.flags.online_mentioned
+        um.save()
+        result = get_unread_data()
+        self.assertEqual(result["mentions"], [])
+
         um.flags = 0
         um.save()
         result = get_unread_data()
@@ -963,6 +973,11 @@ class GetUnreadMsgsTest(ZulipTestCase):
         self.assertEqual(result["mentions"], [])
 
         um.flags = UserMessage.flags.wildcard_mentioned
+        um.save()
+        result = get_unread_data()
+        self.assertEqual(result["mentions"], [])
+
+        um.flags = UserMessage.flags.online_mentioned
         um.save()
         result = get_unread_data()
         self.assertEqual(result["mentions"], [])

@@ -324,7 +324,7 @@ export function tokenize_compose_str(s) {
 }
 
 export function broadcast_mentions() {
-    return ["all", "everyone", "stream"].map((mention, idx) => ({
+    return ["all", "everyone", "stream", "online", "here"].map((mention, idx) => ({
         special_item_text: i18n.t("__wildcard_mention_token__ (Notify stream)", {
             wildcard_mention_token: mention,
         }),

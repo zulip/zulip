@@ -95,6 +95,9 @@ def update_realm(
     wildcard_mention_policy: Optional[int] = REQ(
         validator=check_int_in(Realm.WILDCARD_MENTION_POLICY_TYPES), default=None
     ),
+    online_mention_policy: Optional[int] = REQ(
+        validator=check_int_in(Realm.ONLINE_MENTION_POLICY_TYPES), default=None
+    ),
     email_address_visibility: Optional[int] = REQ(
         validator=check_int_in(Realm.EMAIL_ADDRESS_VISIBILITY_TYPES), default=None
     ),

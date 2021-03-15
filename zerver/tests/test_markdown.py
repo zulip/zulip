@@ -274,9 +274,19 @@ class MarkdownMiscTest(ZulipTestCase):
         self.assertEqual(user["email"], hamlet.email)
 
         self.assertFalse(mention_data.message_has_wildcards())
+        self.assertFalse(mention_data.message_has_online_mentions())
         content = "@**King Hamlet** @**Cordelia lear** @**all**"
         mention_data = MentionData(realm.id, content)
         self.assertTrue(mention_data.message_has_wildcards())
+        self.assertFalse(mention_data.message_has_online_mentions())
+        content = "@**King Hamlet** @**Cordelia lear** @**online**"
+        mention_data = MentionData(realm.id, content)
+        self.assertTrue(mention_data.message_has_online_mentions())
+        self.assertFalse(mention_data.message_has_wildcards())
+        content = "@**King Hamlet** @**Cordelia lear** @**all** @**online**"
+        mention_data = MentionData(realm.id, content)
+        self.assertTrue(mention_data.message_has_wildcards())
+        self.assertTrue(mention_data.message_has_online_mentions())
 
     def test_invalid_katex_path(self) -> None:
         with self.settings(DEPLOY_ROOT="/nonexistent"):
@@ -1758,6 +1768,7 @@ class MarkdownTest(ZulipTestCase):
             '<p><span class="user-mention" data-user-id="*">' "@all" "</span> test</p>",
         )
         self.assertTrue(msg.mentions_wildcard)
+        self.assertFalse(msg.online_mention)
 
     def test_mention_everyone(self) -> None:
         user_profile = self.example_user("othello")
@@ -1769,6 +1780,7 @@ class MarkdownTest(ZulipTestCase):
             '<p><span class="user-mention" data-user-id="*">' "@everyone" "</span> test</p>",
         )
         self.assertTrue(msg.mentions_wildcard)
+        self.assertFalse(msg.online_mention)
 
     def test_mention_stream(self) -> None:
         user_profile = self.example_user("othello")
@@ -1780,6 +1792,30 @@ class MarkdownTest(ZulipTestCase):
             '<p><span class="user-mention" data-user-id="*">' "@stream" "</span> test</p>",
         )
         self.assertTrue(msg.mentions_wildcard)
+
+    def test_mention_online(self) -> None:
+        user_profile = self.example_user("othello")
+        msg = Message(sender=user_profile, sending_client=get_client("test"))
+
+        content = "@**online** test"
+        self.assertEqual(
+            render_markdown(msg, content),
+            '<p><span class="user-mention" data-user-id="*">' "@online" "</span> test</p>",
+        )
+        self.assertTrue(msg.online_mention)
+        self.assertFalse(msg.mentions_wildcard)
+
+    def test_mention_here(self) -> None:
+        user_profile = self.example_user("othello")
+        msg = Message(sender=user_profile, sending_client=get_client("test"))
+
+        content = "@**here** test"
+        self.assertEqual(
+            render_markdown(msg, content),
+            '<p><span class="user-mention" data-user-id="*">' "@here" "</span> test</p>",
+        )
+        self.assertTrue(msg.online_mention)
+        self.assertFalse(msg.mentions_wildcard)
 
     def test_mention_at_wildcard(self) -> None:
         user_profile = self.example_user("othello")
@@ -1799,6 +1835,22 @@ class MarkdownTest(ZulipTestCase):
         self.assertFalse(msg.mentions_wildcard)
         self.assertEqual(msg.mentions_user_ids, set())
 
+    def test_mention_at_online(self) -> None:
+        user_profile = self.example_user("othello")
+        msg = Message(sender=user_profile, sending_client=get_client("test"))
+
+        content = "@online test"
+        self.assertEqual(render_markdown(msg, content), "<p>@online test</p>")
+        self.assertFalse(msg.online_mention)
+
+    def test_mention_at_here(self) -> None:
+        user_profile = self.example_user("othello")
+        msg = Message(sender=user_profile, sending_client=get_client("test"))
+
+        content = "@here test"
+        self.assertEqual(render_markdown(msg, content), "<p>@here test</p>")
+        self.assertFalse(msg.online_mention)
+
     def test_mention_word_starting_with_at_wildcard(self) -> None:
         user_profile = self.example_user("othello")
         msg = Message(sender=user_profile, sending_client=get_client("test"))
@@ -1806,6 +1858,7 @@ class MarkdownTest(ZulipTestCase):
         content = "test @alleycat.com test"
         self.assertEqual(render_markdown(msg, content), "<p>test @alleycat.com test</p>")
         self.assertFalse(msg.mentions_wildcard)
+        self.assertFalse(msg.online_mention)
         self.assertEqual(msg.mentions_user_ids, set())
 
     def test_mention_at_normal_user(self) -> None:
@@ -1815,6 +1868,7 @@ class MarkdownTest(ZulipTestCase):
         content = "@aaron test"
         self.assertEqual(render_markdown(msg, content), "<p>@aaron test</p>")
         self.assertFalse(msg.mentions_wildcard)
+        self.assertFalse(msg.online_mention)
         self.assertEqual(msg.mentions_user_ids, set())
 
     def test_mention_single(self) -> None:
@@ -1846,17 +1900,26 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(msg.mentions_user_ids, set())
 
     def test_possible_mentions(self) -> None:
-        def assert_mentions(content: str, names: Set[str], has_wildcards: bool = False) -> None:
-            self.assertEqual(possible_mentions(content), (names, has_wildcards))
+        def assert_mentions(
+            content: str,
+            names: Set[str],
+            has_wildcards: bool = False,
+            has_online_mentions: bool = False,
+        ) -> None:
+            self.assertEqual(
+                possible_mentions(content), (names, has_wildcards, has_online_mentions)
+            )
 
         assert_mentions("", set())
         assert_mentions("boring", set())
         assert_mentions("@**all**", set(), True)
+        assert_mentions("@**online**", set(), False, True)
         assert_mentions("smush@**steve**smush", set())
 
         assert_mentions(
-            "Hello @**King Hamlet** and @**Cordelia Lear**\n@**Foo van Barson|1234** @**all**",
+            "Hello @**King Hamlet** and @**Cordelia Lear**\n@**Foo van Barson|1234** @**all** @**online**",
             {"King Hamlet", "Cordelia Lear", "Foo van Barson|1234"},
+            True,
             True,
         )
 
@@ -2065,11 +2128,12 @@ class MarkdownTest(ZulipTestCase):
         assert_mentions("", set())
         assert_mentions("boring", set())
         assert_mentions("@**all**", set())
+        assert_mentions("@**online**", set())
         assert_mentions("smush@*steve*smush", set())
 
         assert_mentions(
             "@*support* Hello @**King Hamlet** and @**Cordelia Lear**\n"
-            "@**Foo van Barson** @**all**",
+            "@**Foo van Barson** @**all** @**online**",
             {"support"},
         )
 
