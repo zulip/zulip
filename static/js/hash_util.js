@@ -26,7 +26,14 @@ export function get_hash_section(hash) {
 // window.location.hash.  So we hide our URI-encoding
 // by replacing % with . (like MediaWiki).
 export function encodeHashComponent(str) {
-    return encodeURIComponent(str).replace(/\./g, "%2E").replace(/%/g, ".");
+    const characterToBeReplaced = {
+        "%": ".",
+        "(": ".28",
+        ")": ".29",
+    };
+    return encodeURIComponent(str)
+        .replace(/\./g, "%2E")
+        .replace(/[%()]/g, (matched) => characterToBeReplaced[matched]);
 }
 
 export function encode_operand(operator, operand) {

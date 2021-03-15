@@ -243,7 +243,7 @@ test_ui("actions_popover", (override) => {
             case "actions_popover_content":
                 assert.equal(
                     opts.conversation_time_uri,
-                    "http://chat.zulip.org/#narrow/stream/Bracket.20%28.20stream/topic/Actions.20%281%29/near/999",
+                    "http://chat.zulip.org/#narrow/stream/Bracket.20.28.20stream/topic/Actions.20.281.29/near/999",
                 );
                 return "actions-content";
             default:
