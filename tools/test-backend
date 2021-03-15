@@ -376,7 +376,7 @@ def main() -> None:
         cov = coverage.Coverage(
             data_suffix="", config_file="tools/coveragerc", concurrency="multiprocessing"
         )
-        # Do not clean .coverage file in CircleCi job so that coverage data can be uploaded.
+        # Do not clean .coverage file in continuous integration job so that coverage data can be uploaded.
         if not options.no_cov_cleanup:
             import atexit
 
