@@ -6604,6 +6604,13 @@ i18next@^19.0.0:
   dependencies:
     "@babel/runtime" "^7.12.0"
 
+ical-generator@^1.15.4:
+  version "1.15.4"
+  resolved "https://registry.yarnpkg.com/ical-generator/-/ical-generator-1.15.4.tgz#f7a26e5aae9ff59ff35b07b8c5e6ea117efdc99d"
+  integrity sha512-drXe4RLkfNlvDvdy/E6BUI9p+01L3ySK1ufNEYI9TxNKG9ZA3G60QWoZvD1dtmH4scwDxYu6/sZBPJvYVNrj8A==
+  dependencies:
+    moment-timezone "^0.5.32"
+
 iconv-lite@0.4.24:
   version "0.4.24"
   resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.4.24.tgz#2022b4b25fbddc21d2f524974a474aafe733908b"
@@ -8301,6 +8308,18 @@ mockdate@^3.0.2:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/mockdate/-/mockdate-3.0.2.tgz#a5a7bb5820da617747af424d7a4dcb22c6c03d79"
   integrity sha512-ldfYSUW1ocqSHGTK6rrODUiqAFPGAg0xaHqYJ5tvj1hQyFsjuHpuWgWFTZWwDVlzougN/s2/mhDr8r5nY5xDpA==
+
+moment-timezone@^0.5.32:
+  version "0.5.33"
+  resolved "https://registry.yarnpkg.com/moment-timezone/-/moment-timezone-0.5.33.tgz#b252fd6bb57f341c9b59a5ab61a8e51a73bbd22c"
+  integrity sha512-PTc2vcT8K9J5/9rDEPe5czSIKgLoGsH8UNpA4qZTVw0Vd/Uz19geE9abbIOQKaAQFcnQ3v5YEXrbSc5BpshH+w==
+  dependencies:
+    moment ">= 2.9.0"
+
+"moment@>= 2.9.0":
+  version "2.29.1"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.29.1.tgz#b2be769fa31940be9eeea6469c075e35006fa3d3"
+  integrity sha512-kHmoybcPV8Sqy59DwNDY3Jefr64lK/by/da0ViFcuA4DH0vQg5Q6Ze5VimxkfQNSC+Mls/Kx53s7TjP1RhFEDQ==
 
 monotone-convex-hull-2d@^1.0.1:
   version "1.0.1"

@@ -26,6 +26,9 @@ export default (_env: unknown, argv: {mode?: string}): webpack.Configuration[] =
     const config: webpack.Configuration = {
         name: "frontend",
         mode: production ? "production" : "development",
+        node: {
+            fs: "empty",
+        },
         context: __dirname,
         entry: production
             ? assets
