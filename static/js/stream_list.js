@@ -108,7 +108,9 @@ export function build_stream_list(force_rerender) {
     // which largely is a matter of arranging the individual rows in
     // the right order.
     const streams = stream_data.subscribed_stream_ids();
+    const parent = $("#stream_filters");
     if (streams.length === 0) {
+        parent.empty();
         return;
     }
 
@@ -120,7 +122,6 @@ export function build_stream_list(force_rerender) {
         return;
     }
 
-    const parent = $("#stream_filters");
     const elems = [];
 
     function add_sidebar_li(stream_id) {
