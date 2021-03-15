@@ -99,7 +99,7 @@ class DoRestCallTests(ZulipTestCase):
         bot_owner_notification = self.get_last_message()
         self.assertEqual(
             bot_owner_notification.content,
-            """[A message](http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/) triggered an outgoing webhook.
+            """[A message](http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/) to your bot @_**Outgoing Webhook** triggered an outgoing webhook.
 The webhook got a response with status code *500*.""",
         )
 
@@ -131,7 +131,7 @@ The webhook got a response with status code *500*.""",
         bot_owner_notification = self.get_last_message()
         self.assertEqual(
             bot_owner_notification.content,
-            """[A message](http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/) triggered an outgoing webhook.
+            """[A message](http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/) to your bot @_**Outgoing Webhook** triggered an outgoing webhook.
 The webhook got a response with status code *400*.""",
         )
 
@@ -215,7 +215,7 @@ The webhook got a response with status code *400*.""",
         bot_owner_notification = self.get_last_message()
         self.assertEqual(
             bot_owner_notification.content,
-            """[A message](http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/) triggered an outgoing webhook.
+            """[A message](http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/) to your bot @_**Outgoing Webhook** triggered an outgoing webhook.
 When trying to send a request to the webhook service, an exception of type RequestException occurred:
 ```
 I'm a generic exception :(

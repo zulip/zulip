@@ -236,10 +236,11 @@ def notify_bot_owner(
 ) -> None:
     message_url = get_message_url(event)
     bot_id = event["user_profile_id"]
-    bot_owner = get_user_profile_by_id(bot_id).bot_owner
+    bot = get_user_profile_by_id(bot_id)
+    bot_owner = bot.bot_owner
     assert bot_owner is not None
 
-    notification_message = f"[A message]({message_url}) triggered an outgoing webhook."
+    notification_message = f"[A message]({message_url}) to your bot @_**{bot.full_name}** triggered an outgoing webhook."
     if failure_message:
         notification_message += "\n" + failure_message
     if status_code:
