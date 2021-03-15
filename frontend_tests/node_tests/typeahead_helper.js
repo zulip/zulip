@@ -395,12 +395,12 @@ run_test("sort_recipients", () => {
     ]);
 });
 
-const all_obj = ct.broadcast_mentions()[0];
-assert.equal(all_obj.email, "all");
-assert.equal(all_obj.is_broadcast, true);
-assert.equal(all_obj.idx, 0);
-
 run_test("sort_recipients all mention", () => {
+    const all_obj = ct.broadcast_mentions()[0];
+    assert.equal(all_obj.email, "all");
+    assert.equal(all_obj.is_broadcast, true);
+    assert.equal(all_obj.idx, 0);
+
     // Test person email is "all" or "everyone"
     const test_objs = matches.concat([all_obj]);
 
@@ -448,6 +448,8 @@ run_test("sort_recipients dup bots", () => {
 });
 
 run_test("sort_recipients dup alls", () => {
+    const all_obj = ct.broadcast_mentions()[0];
+
     // full_name starts with same character but emails are 'all'
     const test_objs = [all_obj, a_user, all_obj];
 
@@ -507,10 +509,10 @@ run_test("test compare directly", () => {
     // This is important for ensuring test coverage.
     // We don't technically need it now, but our test
     // coverage is subject to the whims of how JS sorts.
+    const all_obj = ct.broadcast_mentions()[0];
+
     assert.equal(th.compare_people_for_relevance(all_obj, all_obj), 0);
-
     assert.equal(th.compare_people_for_relevance(all_obj, zman), -1);
-
     assert.equal(th.compare_people_for_relevance(zman, all_obj), 1);
 });
 
