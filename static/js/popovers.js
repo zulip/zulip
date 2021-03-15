@@ -549,10 +549,7 @@ export function toggle_actions_popover(element, id) {
             editability === message_edit.editability_types.TOPIC_ONLY;
         const should_display_quote_and_reply = message.content !== "<p>(deleted)</p>";
 
-        const conversation_time_uri = hash_util
-            .by_conversation_and_time_uri(message)
-            .replace(/\(/g, "%28")
-            .replace(/\)/g, "%29");
+        const conversation_time_uri = hash_util.by_conversation_and_time_uri(message);
 
         const should_display_delete_option = message_edit.get_deletability(message);
         const args = {
