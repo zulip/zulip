@@ -27,13 +27,12 @@ export function get_hash_section(hash) {
 // by replacing % with . (like MediaWiki).
 export function encodeHashComponent(str) {
     const characterToBeReplaced = {
+        ".": ".2E",
         "%": ".",
         "(": ".28",
         ")": ".29",
     };
-    return encodeURIComponent(str)
-        .replace(/\./g, "%2E")
-        .replace(/[%()]/g, (matched) => characterToBeReplaced[matched]);
+    return encodeURIComponent(str).replace(/[%().]/g, (matched) => characterToBeReplaced[matched]);
 }
 
 export function encode_operand(operator, operand) {
