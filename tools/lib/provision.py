@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 
 VAR_DIR_PATH = os.path.join(ZULIP_PATH, "var")
 
-CONTINUOUS_INTEGRATION = "GITHUB_ACTIONS" in os.environ or "CIRCLECI" in os.environ
+CONTINUOUS_INTEGRATION = "GITHUB_ACTIONS" in os.environ
 
 if not os.path.exists(os.path.join(ZULIP_PATH, ".git")):
     print(FAIL + "Error: No Zulip Git repository present!" + ENDC)

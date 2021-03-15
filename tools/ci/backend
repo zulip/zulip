@@ -8,7 +8,7 @@ set -x
 
 ./tools/lint --groups=backend --skip=gitlint,mypy # gitlint disabled because flaky
 ./tools/test-tools
-# We need to pass a parallel level to test-backend because CircleCI's
+# We need to pass a parallel level to test-backend because GitHub Actions'
 # docker setup means the auto-detection logic sees the ~36 processes
 # the Docker host has, not the ~2 processes of resources we're
 # allocated.

@@ -109,15 +109,15 @@ sooner is better.
 * *The CI build.* The tests need to pass. One can investigate
   any failures and figure out what to fix by clicking on a red X next
   to the commit hash or the Detail links on a pull request. (Example:
-  in [#10618](https://github.com/zulip/zulip/pull/10618), browse to
-  bottom and click the red X next to `c6044ee` to see the build jobs
-  for that commit. You can see that there are 5 build jobs in total.
-  All the 5 jobs run in CircleCI. You can see what caused
+  in [#17584](https://github.com/zulip/zulip/pull/17584),
+  click the red X before `49b10a3` to see the build jobs
+  for that commit. You can see that there are 7 build jobs in total.
+  All the 7 jobs run in GitHub Actions. You can see what caused
   the job to fail by clicking on the failed job. This will open
   up a page in the CI that has more details on why the job failed.
-  For example [this](https://circleci.com/gh/zulip/zulip/16617)
-  is the page of the `bionic-python-3.6` job. See our docs on
-  [continuous integration](../testing/continuous-integration.md)
+  For example [this](https://github.com/zulip/zulip/runs/2092955762)
+  is the page of the `Ubuntu 18.04 Bionic (Python 3.6, backend + frontend)` job.
+  See our docs on [continuous integration](../testing/continuous-integration.md)
   to learn more.
 
 * *Technical design.* There are a lot of considerations here:

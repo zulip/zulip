@@ -1,9 +1,9 @@
 # Continuous integration (CI)
 
-The Zulip server uses [CircleCI](https://circleci.com/) for continuous
-integration. CircleCI runs frontend, backend and end-to-end production
+The Zulip server uses [GitHub Actions](https://docs.github.com/en/actions) for continuous
+integration. GitHub Actions runs frontend, backend and end-to-end production
 installer tests. This page documents useful tools and tips when using
-CircleCI and debugging issues with it.
+GitHub Actions and debugging issues with it.
 
 ## Goals
 
@@ -22,65 +22,51 @@ in development. Except when working on the CI configuration itself, a
 developer should never have to repeatedly wait 10 minutes for a full CI
 run to iteratively debug something.
 
-## CircleCI
+## GitHub Actions
 
 ### Useful debugging tips and tools
 
 * Zulip uses the `ts` tool to log the current time on every line of
-the output in our CircleCI scripts.  You can use this output to
+the output in our GitHub Action scripts.  You can use this output to
 determine which steps are actually consuming a lot of time.
 
-* You can [sign up your personal repo for CircleCI][circleci-setup] so
-that every remote branch you push will be tested, which can be helpful
-when debugging something complicated.
+* GitHub Actions runs on every branch you push on your Zulip fork.
+This is helpful when debugging something complicated.
 
-* With your personal repo signed up, CircleCI
-[allows you to SSH][circleci-ssh] into the job container if a job
-fails. SSHing into the containers can be helpful, especially in rare
-cases where the tests are passing in your computer but failing in the
-CI. Make sure that you have uploaded your SSH keys to GitHub: CircleCI
-uses those SSH keys for authentication.
-
-[docker-hub]: https://hub.docker.com/
-[circleci-setup]: ../git/cloning.html#step-3-configure-continuous-integration-for-your-fork
-[circleci-ssh]: https://circleci.com/docs/2.0/ssh-access-jobs/
+* You can also ssh into a container to debug failures.  SSHing into
+the containers can be helpful, especially in rare cases where the
+tests are passing in your computer but failing in the CI. There are
+various
+[Actions](https://github.com/marketplace?type=actions&query=debug+ssh)
+available on GitHub Marketplace to help you SSH into a container. Use
+whichever you find easiest to set up.
 
 ### Suites
 
-The main CircleCI configuration file defining how the tests are run is
-[./circleci/config.yml][circleci-config].  Our code for running the
-tests in CI lives under `tools/ci`; but they are mostly thin wrappers
-around [Zulip's test suites](../testing/testing.md) or production
-installer tooling.
+We run multiple jobs during a GitHub Actions build to efficiently run
+Zulip's various test suites, some of them multiple times because we
+support multiple versions of the base OS. See the [Actions
+tabs](https://github.com/zulip/zulip/actions) for full list of Actions
+that we run.
 
-[circleci-config]: https://github.com/zulip/zulip/blob/master/.circleci/config.yml
+Files which define GitHub workflows live in `.github/workflows` directory.
+`zulip-ci.yml` is the main file where most of the tests are run.
+`production-suite.yml` builds a Zulip release tarball, which is
+then installed in a fresh container. Various Nagios and other
+checks are run to confirm the installation worked.
 
-We run multiple jobs during a CircleCI build to run Zulip's test
-suites on our supported production platforms. They are currently:
+`zulip-ci.yml` is designed to run our main test suites on all of our
+supported platforms. Out of them, only one of them runs the frontend
+tests, since `puppeteer` is slow and unlikely to catch issues that
+depend on the version of the base OS and/or Python.
 
-* bionic-backend-frontend
-* focal-backend
+Our code for running the tests in CI lives under `tools/ci`; but that
+logic is mostly thin wrappers around [Zulip's test
+suites](../testing/testing.md) or production installer.
 
-Each runs the Zulip backend test suites, using the indicated
-platform/OS.  As suggested by the names, only one
-suite runs the frontend test suites, since those are not
-platform-dependent.
-
-Additionally, there a couple jobs designed to do an end-to-end test on
-Zulip's production installer:
-
-* bionic-production-build
-* bionic-production-install
-* xenial-legacy
-
-The `production-build` job builds a Zulip release tarball, which is
-then installed in a fresh container in the `production-install` job;
-various Nagios and other checks are run to confirm the installation
-worked.
-
-The xenial-legacy tests are just designed to ensure we give the right
-error messages when trying to install or upgrade a Xenial system to
-master.
+The `Legacy OS` tests are designed to ensure we give good error
+messages when trying to upgrade Zulip servers running on very old base
+OS versions with EOL Python versions that Zulip no longer supports.
 
 ### Configuration
 
@@ -88,12 +74,12 @@ The remaining details in this section are primarily relevant for doing
 development on our CI system and/or provisioning process.
 
 The first key of the job section is `docker`. The docker key specifies
-the image CircleCI should get from [Docker Hub][docker-hub] for running
-the job. Once CircleCI fetches the image from Docker Hub, it will spin
+the image GitHub Action should get from [Docker Hub][docker-hub] for running
+the job. Once GitHub Action fetches the image from Docker Hub, it will spin
 up a docker container. See [images](#images) section to know more about
-the images we use in CircleCI for testing.
+the images we use in GitHub Action for testing.
 
-After booting the container from the configured image, CircleCI will
+After booting the container from the configured image, GitHub Action will
 create the directory mentioned in `working_directory` and all the
 steps are be run from here.
 
@@ -104,7 +90,7 @@ are defined in the `aliases` section at the top of the file.
 
 ### Images
 
-CircleCI tests are run in containers that are spun off from the images
+GitHub Action tests are run in containers that are spun off from the images
 maintained by Zulip team. The Dockerfiles for the various images can be
 generated by running `./tools/ci/generate-dockerfiles`. This command
 will generate the Dockerfiles of the three Ubuntu releases in
@@ -118,7 +104,7 @@ generated Dockerfiles.
 
 #### Caching
 
-An important element of making CircleCI perform effectively is caching
+An important element of making GitHub Action perform effectively is caching
 between jobs the various caches that live under `/srv/` in a Zulip
 development or production environment.  In particular, we cache the
 following:
@@ -126,7 +112,7 @@ following:
 * Python virtualenvs
 * node_modules directories
 
-This has a huge impact on the performance of running tests in CircleCI
+This has a huge impact on the performance of running tests in GitHub Action
 CI; without these caches, the average test time would be several times
 longer.
 

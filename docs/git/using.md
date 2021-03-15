@@ -125,7 +125,7 @@ Now you're ready to work on the issue or feature.
 
 ## Run linters and tests locally
 
-In addition to having CircleCI run tests and linters each time you
+In addition to having GitHub Actions run tests and linters each time you
 push a new commit, you can also run them locally. See
 [testing](../testing/testing.md) for details.
 
