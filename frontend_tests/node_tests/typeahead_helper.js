@@ -102,8 +102,8 @@ for (const person of matches) {
 }
 
 stream_data.create_streams([
-    {name: "Dev", subscribed: true, color: "blue", stream_id: 1},
-    {name: "Linux", subscribed: true, color: "red", stream_id: 2},
+    {name: "Dev", color: "blue", stream_id: 1},
+    {name: "Linux", color: "red", stream_id: 2},
 ]);
 
 run_test("sort_streams", (override) => {
