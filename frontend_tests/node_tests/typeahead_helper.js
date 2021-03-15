@@ -552,13 +552,14 @@ run_test("render_person when emails hidden", () => {
         rendered = true;
         return "typeahead-item-stub";
     });
+    th.clear_rendered_person(b_user_1.user_id);
     assert.equal(th.render_person(b_user_1), "typeahead-item-stub");
     assert(rendered);
 });
 
 run_test("render_person", () => {
-    page_params.is_admin = true;
     // Test render_person with regular person
+    page_params.is_admin = true;
     let rendered = false;
     stub_templates((template_name, args) => {
         assert.equal(template_name, "typeahead_list_item");
@@ -567,8 +568,13 @@ run_test("render_person", () => {
         rendered = true;
         return "typeahead-item-stub";
     });
+    th.clear_rendered_person(a_user.user_id);
     assert.equal(th.render_person(a_user), "typeahead-item-stub");
     assert(rendered);
+});
+
+run_test("render_person special_item_text", () => {
+    let rendered = false;
 
     // Test render_person with special_item_text person
     const special_person = {
@@ -579,6 +585,8 @@ run_test("render_person", () => {
         user_id: 7,
         special_item_text: "special_text",
     };
+    th.clear_rendered_person(special_person.user_id);
+
     rendered = false;
     stub_templates((template_name, args) => {
         assert.equal(template_name, "typeahead_list_item");
@@ -591,6 +599,8 @@ run_test("render_person", () => {
 });
 
 run_test("clear_rendered_person", () => {
+    th.clear_rendered_person(b_bot.user_id);
+
     let rendered = false;
     stub_templates((template_name, args) => {
         assert.equal(template_name, "typeahead_list_item");
@@ -618,11 +628,13 @@ run_test("clear_rendered_person", () => {
 run_test("render_stream", () => {
     // Test render_stream with short description
     let rendered = false;
-    let stream = {
+    const stream = {
         description: "This is a short description.",
         stream_id: 42,
         name: "Short Description",
     };
+    th.clear_rendered_stream(stream.stream_id);
+
     stub_templates((template_name, args) => {
         assert.equal(template_name, "typeahead_list_item");
         assert.equal(args.primary, stream.name);
@@ -632,14 +644,18 @@ run_test("render_stream", () => {
     });
     assert.equal(th.render_stream(stream), "typeahead-item-stub");
     assert(rendered);
+});
 
+run_test("render_stream w/long description", () => {
     // Test render_stream with long description
-    rendered = false;
-    stream = {
+    let rendered = false;
+    const stream = {
         description: "This is a very very very very very long description.",
         stream_id: 43,
         name: "Long Description",
     };
+    th.clear_rendered_stream(stream.stream_id);
+
     stub_templates((template_name, args) => {
         assert.equal(template_name, "typeahead_list_item");
         assert.equal(args.primary, stream.name);
@@ -659,6 +675,8 @@ run_test("clear_rendered_stream", () => {
         stream_id: 44,
         name: "Stream To Be Cleared",
     };
+
+    th.clear_rendered_stream(stream.stream_id);
     stub_templates((template_name, args) => {
         assert.equal(template_name, "typeahead_list_item");
         assert.equal(args.primary, stream.name);
