@@ -1,6 +1,11 @@
 <div id="attachments-settings" class="settings-section" data-name="uploaded-files">
     <div id="attachment-stats-holder"></div>
-    <input id="upload_file_search" class="search" type="text" placeholder="{{t 'Search uploads...' }}" aria-label="{{t 'Search uploads...' }}"/>
+    <div class="input-append upload_file_search_section">
+        <input class="search" id="upload_file_search" type="text" placeholder="{{t 'Search uploads...' }}" aria-label="{{t 'Search uploads...' }}">
+        <button type="button" class="btn clear_search_button" id="clear_upload_file_search_button">
+            <i class="fa fa-remove" aria-hidden="true"></i>
+        </button>
+    </div>
     <div class="clear-float"></div>
     <div class="alert" id="delete-upload-status"></div>
     <div class="progressive-table-wrapper" data-simplebar>
