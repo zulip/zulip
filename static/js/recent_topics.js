@@ -8,7 +8,6 @@ import * as compose from "./compose";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_state from "./compose_state";
 import * as hash_util from "./hash_util";
-import * as hashchange from "./hashchange";
 import * as ListWidget from "./list_widget";
 import {localstorage} from "./localstorage";
 import * as message_store from "./message_store";
@@ -75,7 +74,7 @@ export function is_in_focus() {
     // Check if user is focused on
     // recent topics.
     return (
-        hashchange.in_recent_topics_hash() &&
+        is_visible() &&
         !compose_state.composing() &&
         !popovers.any_active() &&
         !overlays.is_active() &&

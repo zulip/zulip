@@ -65,10 +65,6 @@ function maybe_hide_recent_topics() {
     return false;
 }
 
-export function in_recent_topics_hash() {
-    return ["#recent_topics"].includes(window.location.hash);
-}
-
 export function changehash(newhash) {
     if (browser_history.state.changing_hash) {
         return;
