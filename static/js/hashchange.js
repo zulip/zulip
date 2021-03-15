@@ -82,7 +82,7 @@ export function save_narrow(operators) {
     changehash(new_hash);
 }
 
-function activate_home_tab() {
+function show_all_message_view() {
     const coming_from_recent_topics = maybe_hide_recent_topics();
     ui_util.change_tab_to("#message_feed_container");
     narrow.deactivate(coming_from_recent_topics);
@@ -100,7 +100,7 @@ export function show_default_view() {
     if (page_params.default_view === "recent_topics") {
         recent_topics.show();
     } else if (page_params.default_view === "all_messages") {
-        activate_home_tab();
+        show_all_message_view();
     } else {
         // NOTE: Setting a hash which is not rendered on
         // empty hash (like a stream narrow) will
@@ -158,7 +158,7 @@ function do_hashchange_normal(from_reload) {
             recent_topics.show();
             break;
         case "#all_messages":
-            activate_home_tab();
+            show_all_message_view();
             break;
         case "#keyboard-shortcuts":
         case "#message-formatting":
