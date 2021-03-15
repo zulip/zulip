@@ -15,12 +15,12 @@ const ui = mock_esm("../../static/js/ui", {
     get_scroll_element: (element) => element,
 });
 
-set_global("location", {
-    hash: `#streams/${denmark_stream_id}/announce`,
-});
 mock_esm("../../static/js/hash_util", {
     by_stream_uri: () => {},
+    get_current_hash_section: () => denmark_stream_id,
 });
+
+set_global("page_params", {});
 
 const stream_data = zrequire("stream_data");
 const subs = zrequire("subs");
