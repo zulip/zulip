@@ -21,13 +21,13 @@ function returns_time(secs) {
 }
 
 run_test("basics", (override) => {
+    typing_status.initialize_state();
+
     // invalid conversation basically does nothing
     let worker = {};
     typing_status.update(worker, null);
 
     // Start setting up more testing state.
-    typing_status.initialize_state();
-
     const events = {};
 
     function set_timeout(f, delay) {
