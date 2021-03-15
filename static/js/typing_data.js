@@ -7,6 +7,11 @@ import * as util from "./util";
 const typist_dct = new Map();
 const inbound_timer_dict = new Map();
 
+export function clear_for_testing() {
+    typist_dct.clear();
+    inbound_timer_dict.clear();
+}
+
 function to_int(s) {
     return Number.parseInt(s, 10);
 }
