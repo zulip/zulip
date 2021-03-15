@@ -39,6 +39,68 @@ function assertSameEmails(lst1, lst2) {
     );
 }
 
+const a_bot = {
+    email: "a_bot@zulip.com",
+    full_name: "A Zulip test bot",
+    is_admin: false,
+    is_bot: true,
+    user_id: 1,
+};
+
+const a_user = {
+    email: "a_user@zulip.org",
+    full_name: "A Zulip user",
+    is_admin: false,
+    is_bot: false,
+    user_id: 2,
+};
+
+const b_user_1 = {
+    email: "b_user_1@zulip.net",
+    full_name: "Bob 1",
+    is_admin: false,
+    is_bot: false,
+    user_id: 3,
+};
+
+const b_user_2 = {
+    email: "b_user_2@zulip.net",
+    full_name: "Bob 2",
+    is_admin: true,
+    is_bot: false,
+    user_id: 4,
+};
+
+const b_user_3 = {
+    email: "b_user_3@zulip.net",
+    full_name: "Bob 3",
+    is_admin: false,
+    is_bot: false,
+    user_id: 5,
+};
+
+const b_bot = {
+    email: "b_bot@example.com",
+    full_name: "B bot",
+    is_admin: false,
+    is_bot: true,
+    user_id: 6,
+};
+
+const zman = {
+    email: "zman@test.net",
+    full_name: "Zman",
+    is_admin: false,
+    is_bot: false,
+    user_id: 7,
+};
+
+const matches = [a_bot, a_user, b_user_1, b_user_2, b_user_3, b_bot, zman];
+
+for (const person of matches) {
+    people.add_active_user(person);
+}
+
 stream_data.create_streams([
     {name: "Dev", subscribed: true, color: "blue", stream_id: 1},
     {name: "Linux", subscribed: true, color: "red", stream_id: 2},
@@ -225,68 +287,6 @@ run_test("sort_languages", () => {
     test_langs = th.sort_languages(test_langs, "j");
     assert.deepEqual(test_langs, ["j", "javascript", "java", "js"]);
 });
-
-const a_bot = {
-    email: "a_bot@zulip.com",
-    full_name: "A Zulip test bot",
-    is_admin: false,
-    is_bot: true,
-    user_id: 1,
-};
-
-const a_user = {
-    email: "a_user@zulip.org",
-    full_name: "A Zulip user",
-    is_admin: false,
-    is_bot: false,
-    user_id: 2,
-};
-
-const b_user_1 = {
-    email: "b_user_1@zulip.net",
-    full_name: "Bob 1",
-    is_admin: false,
-    is_bot: false,
-    user_id: 3,
-};
-
-const b_user_2 = {
-    email: "b_user_2@zulip.net",
-    full_name: "Bob 2",
-    is_admin: true,
-    is_bot: false,
-    user_id: 4,
-};
-
-const b_user_3 = {
-    email: "b_user_3@zulip.net",
-    full_name: "Bob 3",
-    is_admin: false,
-    is_bot: false,
-    user_id: 5,
-};
-
-const b_bot = {
-    email: "b_bot@example.com",
-    full_name: "B bot",
-    is_admin: false,
-    is_bot: true,
-    user_id: 6,
-};
-
-const zman = {
-    email: "zman@test.net",
-    full_name: "Zman",
-    is_admin: false,
-    is_bot: false,
-    user_id: 7,
-};
-
-const matches = [a_bot, a_user, b_user_1, b_user_2, b_user_3, b_bot, zman];
-
-for (const person of matches) {
-    people.add_active_user(person);
-}
 
 function get_typeahead_result(query, current_stream, current_topic) {
     const result = th.sort_recipients(
