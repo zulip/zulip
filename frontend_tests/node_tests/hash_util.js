@@ -119,6 +119,15 @@ run_test("build_reload_url", () => {
     assert.equal(hash_util.build_reload_url(), "+oldhash=");
 });
 
+run_test("test_active_stream", () => {
+    location.hash = "#streams/1/announce";
+    assert.equal(hash_util.active_stream().id, 1);
+    assert.equal(hash_util.active_stream().name, "announce");
+
+    location.hash = "#test/narrow";
+    assert.equal(hash_util.active_stream(), undefined);
+});
+
 run_test("test_parse_narrow", () => {
     assert.deepEqual(hash_util.parse_narrow(["narrow", "stream", "99-frontend"]), [
         {negated: false, operator: "stream", operand: "frontend"},

@@ -21,6 +21,7 @@ mock_esm("../../static/js/browser_history", {update: noop});
 mock_esm("../../static/js/hash_util", {
     stream_edit_uri: noop,
     by_stream_uri: noop,
+    active_stream: noop,
 });
 mock_esm("../../static/js/list_widget", {
     create: () => ({init: noop}),

@@ -145,23 +145,6 @@ function should_list_all_streams() {
     return !page_params.realm_is_zephyr_mirror_realm;
 }
 
-// this finds the stream that is actively open in the settings and focused in
-// the left side.
-export function active_stream() {
-    const hash_components = window.location.hash.slice(1).split(/\//);
-
-    // if the string casted to a number is valid, and another component
-    // after exists then it's a stream name/id pair.
-    if (typeof Number.parseFloat(hash_components[1]) === "number" && hash_components[2]) {
-        return {
-            id: Number.parseFloat(hash_components[1]),
-            name: hash_components[2],
-        };
-    }
-
-    return undefined;
-}
-
 export function set_muted(sub, is_muted, status_element) {
     stream_muting.update_is_muted(sub, is_muted);
     stream_edit.set_stream_property(sub, "is_muted", sub.is_muted, status_element);

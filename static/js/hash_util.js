@@ -249,3 +249,20 @@ export function is_overlay_hash(hash) {
 
     return overlay_list.includes(main_hash);
 }
+
+// this finds the stream that is actively open in the settings and focused in
+// the left side.
+export function active_stream() {
+    const hash_components = window.location.hash.slice(1).split(/\//);
+
+    // if the string casted to a number is valid, and another component
+    // after exists then it's a stream name/id pair.
+    if (typeof Number.parseFloat(hash_components[1]) === "number" && hash_components[2]) {
+        return {
+            id: Number.parseFloat(hash_components[1]),
+            name: hash_components[2],
+        };
+    }
+
+    return undefined;
+}
