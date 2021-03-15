@@ -1,47 +1,39 @@
-{!create-stream.md!}
+1. {!create-stream.md!}
 
-{!create-a-bot.md!}
+1. {!create-a-bot-indented.md!}
 
-### Install the plugin
+1. Install the "Zulip" plugin by going to
+   **Manage Jenkins > Manage Plugins > Available**,
+   typing in **Zulip**, and clicking **Install without Restart**.
 
-Install the "Zulip" plugin by going to
-**Manage Jenkins > Manage Plugins > Available**,
-typing in **Zulip**, and clicking **Install without
-restart**.
+      ![Plugin installation](/static/images/integrations/jenkins/001.png)
 
-![Plugin installation](/static/images/integrations/jenkins/001.png)
+1. Once the plugin is installed, configure it by going to
+   **Manage Jenkins > Configure System**. Scroll to the section
+   labeled **Zulip Notification Settings**, and specify your
+   Zulip server address, bot's email address and API key.
+   Optionally, you may configure a default stream or topic. You can also enable
+   smart notifications (i.e. only receive notifications when a build fails or
+   recovers from a failed state).
 
-### Configure the plugin
+      (If you don't see this option, you may first need to restart
+      Jenkins.)
 
-Once the plugin is installed, configure it by going to
-**Manage Jenkins > Configure System**. Scroll to the section
-labeled **Zulip Notification Settings**, and specify your
-Zulip server address, bot's email address and API key.
-Optionally, you may configure a default stream or topic. You can also enable
-smart notifications (i.e. only receive notifications when a build fails or
-recovers from a failed state).
+      ![Plugin configuration](/static/images/integrations/jenkins/002.png)
 
-(If you don't see this option, you may first need to restart
-Jenkins.)
+1. Once you've done that, it's time to configure one of your
+   freestyle projects to use the Zulip notification plugin. On your
+   Jenkins project page, click **Configure** on the left sidebar. Scroll to
+   the bottom until you find the section labeled **Post-build
+   Actions**. Click the dropdown and select **Zulip Notification**.
+   It should look as shown below. If you'd rather not use the defaults from
+   the global configuration, you can set a custom stream and topic.
+   If you don't specify a custom topic, the project name will be used as the
+   topic instead. Then click **Save**.
 
-![Plugin configuration](/static/images/integrations/jenkins/002.png)
+   ![Post-build action configuration](/static/images/integrations/jenkins/003.png)
 
-### Configure a post-build action for your project
-
-Once you've done that, it's time to configure one of your
-freestyle projects to use the Zulip notification plugin. On your
-Jenkins project page, click **Configure** on the left sidebar. Scroll to
-the bottom until you find the section labeled **Post-build
-Actions**. Click the dropdown and select **Zulip Notification**.
-It should look as shown below. If you'd rather not use the defaults from
-the global configuration, you can set a custom stream and topic.
-If you don't specify a custom topic, the project name will be used as the
-topic instead.
-Then click **Save**.
-
-![Post-build action configuration](/static/images/integrations/jenkins/003.png)
-
-When your builds fail or succeed, you'll see a message as shown below.
+   When your builds fail or succeed, you'll see a message as shown below.
 
 {!congrats.md!}
 
