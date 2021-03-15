@@ -23,25 +23,34 @@ Lastly, ensuring the your PR passes CI and is organized into coherent
 commits would help save reviewers time, which could otherwise be used
 to dive right into reviewing the PR's core functionality.
 
-### Guidelines for responding to a review feedback
+### Responding to a review feedback
 
-Posting a note after you updated the PR is especially beneficial for folks like
-Tim, who manage their code review queue via GitHub notifications. Simply pushing
-an update without notifying about it on GitHub indicates to the reviewer the
-contributor hasn't yet resolved that feedback, and they might miss out on doing
-any follow-up reviews.
+Once you've received a review and resolved any feedback, it's critical
+to update the GitHub thread to reflect that.  Best practices are to:
 
-The best way to address feedback posted on your PR is to reply individually to
-the respective inline review comments. Adding a note in the comments on how
-you addressed the feedback helps the reviewers know what to look for in a
-follow-up review, much more than you posting a text saying "Updated!". Also,
-do communicate if you notice any potential issues when addressing feedback,
-rather than doing a suggested change blindly.
+* Make sure that CI passes and the PR is rebased onto recent master.
+* Post comments on each feedback thread explaining at least how you
+  resolved the feedback, as well as any other useful information
+  (problems encountered, reasoning for why you picked one of several
+  options, a test you added to make sure the bug won't recur, etc.).
+* Mark any resolved threads as "resolved" in the GitHub UI, if
+  appropriate.
+* Post a summary comment in the main feed for the PR, explaining that
+  this is ready for another review, and summarizing any changes from
+  the previous version, details on how you tested the changes, new
+  screenshots/etc.  More detail is better than less, as long as you
+  take the time to write clearly.
 
-If you think any suggestion left on the PR requires a more complex discussion, it
-can be helpful to have the discussion on a topic in the Zulip development community
-server. In case you do that, make sure to post a short comment on the GitHub PR
-linking to the conversation so they're findable from each other.
+If you resolve the feedback, but the PR has merge conflicts, CI
+failures, or the most recent comment is the reviewer asking you to fix
+something, it's very likely that a potential reviewer skimming your PR
+will assume it isn't ready for review and move on to other work.
+
+If you need help or think an open discussion topic requires more
+feedback or a more complex discussion, move the discussion to a topic
+in the Zulip development community server.  Be sure to provide links
+from the GitHub PR to the conversation (and vise versa) so that it's
+convenient to read both conversations together.
 
 ## Principles of code review
 
