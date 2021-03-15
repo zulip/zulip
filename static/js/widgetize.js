@@ -13,6 +13,10 @@ const widgets = new Map([
 
 export const widget_contents = new Map();
 
+export function clear_for_testing() {
+    widget_contents.clear();
+}
+
 function set_widget_in_message(row, widget_elem) {
     const content_holder = row.find(".message_content");
     content_holder.empty().append(widget_elem);
