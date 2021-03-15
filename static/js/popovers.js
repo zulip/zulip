@@ -4,6 +4,7 @@ import ConfirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
 import $ from "jquery";
 
 import render_actions_popover_content from "../templates/actions_popover_content.hbs";
+import render_confirm_user_deactivation_modal from "../templates/confirm_user_deactivation_modal.hbs";
 import render_mobile_message_buttons_popover from "../templates/mobile_message_buttons_popover.hbs";
 import render_mobile_message_buttons_popover_content from "../templates/mobile_message_buttons_popover_content.hbs";
 import render_no_arrow_popover from "../templates/no_arrow_popover.hbs";
@@ -16,6 +17,7 @@ import render_user_info_popover_title from "../templates/user_info_popover_title
 import render_user_profile_modal from "../templates/user_profile_modal.hbs";
 
 import * as buddy_data from "./buddy_data";
+import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
@@ -230,6 +232,10 @@ function render_user_info_popover(
         is_active: people.is_active_user_for_popover(user.user_id),
         is_bot: user.is_bot,
         is_me,
+        is_user_admin: page_params.is_admin,
+        is_user_owner: page_params.is_owner,
+        is_owner: user.is_owner,
+        is_admin: user.is_admin,
         is_sender_popover,
         pm_with_uri: hash_util.pm_with_uri(user.email),
         user_circle_class: buddy_data.get_user_circle_class(user.user_id),
@@ -1275,6 +1281,49 @@ export function register_click_handlers() {
             // We unfocus this so keyboard shortcuts, etc., will work again.
             $(":focus").trigger("blur");
         }, 0);
+
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $("body").on("click", ".deactivate_user_from_popup_info", (e) => {
+        hide_all();
+
+        function confirm_deactivation() {
+            $("#confirm_user_deactivation_modal").modal("hide");
+            const user_id = elem_to_user_id($(e.target).parents("ul"));
+            const url = "/json/users/" + encodeURIComponent(user_id);
+            const request_method = channel.del;
+            request_method({
+                url,
+            });
+        }
+
+        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        const user = people.get_by_user_id(user_id);
+
+        $("#confirm_user_deactivation_modal_holder").html(render_confirm_user_deactivation_modal());
+        $("#confirm_user_deactivation_modal").find(".user_name").text(user.full_name);
+        $("#confirm_user_deactivation_modal").find(".email").text(user.email);
+        $("#confirm_user_deactivation_modal").on(
+            "click",
+            ".confirm_user_deactivation_button",
+            confirm_deactivation,
+        );
+        $("#confirm_user_deactivation_modal").modal("show");
+
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $("body").on("click", ".reactivate_user_from_popup_info", (e) => {
+        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        const url = "/json/users/" + encodeURIComponent(user_id) + "/reactivate";
+        const request_method = channel.post;
+        request_method({
+            url,
+        });
+        hide_all();
 
         e.stopPropagation();
         e.preventDefault();
