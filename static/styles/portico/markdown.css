@@ -112,7 +112,8 @@
             & > p {
                 display: inline-block;
                 vertical-align: top;
-                max-width: calc(100% - 32px);
+                /* This needs to be wide enough for 2-digit numbers. */
+                max-width: calc(100% - 40px);
                 position: relative;
                 top: -2px;
             }
