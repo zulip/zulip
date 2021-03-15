@@ -44,7 +44,8 @@ there are, you should strive to follow the patterns of the existing tests
 and add your own tests.
 
 A good first test to read is
-[tutorial.js](https://github.com/zulip/zulip/blob/master/frontend_tests/node_tests/tutorial.js).
+[example1.js](https://github.com/zulip/zulip/blob/master/frontend_tests/node_tests/example1.js).
+(And then there are several other example files.)
 
 ## How the node tests work
 
