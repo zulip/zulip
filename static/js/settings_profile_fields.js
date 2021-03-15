@@ -268,6 +268,8 @@ function set_up_choices_field_edit_form(profile_field, field_data) {
     update_choice_delete_btn(choice_list, false);
     Sortable.create(choice_list[0], {
         onUpdate() {},
+        filter: "input",
+        preventOnFilter: false,
     });
 }
 
@@ -407,6 +409,8 @@ export function do_populate_profile_fields(profile_fields_data) {
         const field_list = $("#admin_profile_fields_table")[0];
         Sortable.create(field_list, {
             onUpdate: update_field_order,
+            filter: "input",
+            preventOnFilter: false,
         });
     }
 
@@ -422,6 +426,8 @@ function set_up_choices_field() {
         const choice_list = $("#profile_field_choices")[0];
         Sortable.create(choice_list, {
             onUpdate() {},
+            filter: "input",
+            preventOnFilter: false,
         });
     }
 
