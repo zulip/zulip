@@ -39,12 +39,10 @@
     </div>
     <div data-process="insecure-desktop-app" class="alert alert-info red">
         <div data-step="1">
-            {% trans apps_page_link="https://zulip.com/apps" %}
-            You are using an old version of the Zulip desktop app with known security bugs.
-            <a class="alert-link" href="{{ apps_page_link }}" target="_blank" rel="noopener noreferrer">
-                Download the latest version.
+            _("You are using an old version of the Zulip desktop app with known security bugs.")
+            <a class="alert-link" href="https://zulip.com/apps" target="_blank" rel="noopener noreferrer">
+                _("Download the latest version.")
             </a>
-            {% endtrans %}
         </div>
         <span class="close" data-dismiss="alert" aria-label="{{ _('Close') }}" role="button" tabindex=0>&times;</span>
     </div>
