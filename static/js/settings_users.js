@@ -399,6 +399,11 @@ function start_data_load() {
     $("#admin_users_table").hide();
 
     populate_users();
+
+    $("#clear_user_list_search_button").on("click", ()=>{
+        $("#user_list_search").val("");
+        populate_users();
+    });
 }
 
 function open_human_form(person) {
