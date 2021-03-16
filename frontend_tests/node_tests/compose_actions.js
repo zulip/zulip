@@ -62,10 +62,6 @@ const respond_to_message = compose_actions.respond_to_message;
 const reply_with_mention = compose_actions.reply_with_mention;
 const quote_and_reply = compose_actions.quote_and_reply;
 
-function stub_selected_message(msg) {
-    current_msg_list.selected_message = () => msg;
-}
-
 function stub_channel_get(success_value) {
     channel.get = (opts) => {
         opts.success(success_value);
@@ -242,7 +238,7 @@ test("respond_to_message", (override) => {
         type: "private",
         sender_id: person.user_id,
     };
-    stub_selected_message(msg);
+    override(current_msg_list, "selected_message", () => msg);
 
     let opts = {
         reply_type: "personal",
@@ -257,7 +253,6 @@ test("respond_to_message", (override) => {
         stream: "devel",
         topic: "python",
     };
-    stub_selected_message(msg);
 
     opts = {};
 
@@ -278,7 +273,7 @@ test("reply_with_mention", (override) => {
         sender_full_name: "Bob Roberts",
         sender_id: 40,
     };
-    stub_selected_message(msg);
+    override(current_msg_list, "selected_message", () => msg);
 
     let syntax_to_insert;
     override(compose_ui, "insert_syntax_and_focus", (syntax) => {
