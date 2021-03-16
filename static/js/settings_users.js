@@ -404,6 +404,11 @@ function start_data_load() {
         $("#user_list_search").val("");
         populate_users();
     });
+
+    $("#clear_deactivated_user_list_search_button").on("click", ()=>{
+        $("#deactivated_user_list_search").val("");
+        populate_users();
+    });
 }
 
 function open_human_form(person) {
