@@ -558,6 +558,8 @@ stub_templates(() => "<recent_topics table stub>");
 
 test("basic assertions", (override) => {
     rt.clear_for_tests();
+    stub_templates(() => "<recent_topics table stub>");
+
     stub_out_filter_buttons();
     override(rt, "is_visible", () => true);
     rt.set_default_focus();
@@ -638,6 +640,8 @@ test("basic assertions", (override) => {
 });
 
 test("test_reify_local_echo_message", (override) => {
+    stub_templates(() => "<recent_topics table stub>");
+
     rt.clear_for_tests();
     stub_out_filter_buttons();
     override(rt, "is_visible", () => true);
