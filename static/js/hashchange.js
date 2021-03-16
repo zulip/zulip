@@ -18,6 +18,7 @@ import * as recent_topics from "./recent_topics";
 import * as search from "./search";
 import * as settings from "./settings";
 import * as settings_panel_menu from "./settings_panel_menu";
+import * as settings_toggle from "./settings_toggle";
 import * as subs from "./subs";
 import * as top_left_corner from "./top_left_corner";
 import * as ui_util from "./ui_util";
@@ -208,6 +209,19 @@ function do_hashchange_overlay(old_hash) {
 
         // TODO: handle other cases like internal settings
         //       changes.
+        return;
+    }
+
+    // This is a special case when user clicks on a URL that makes the overlay switch
+    // from org settings to user settings or user edits the URL to switch between them.
+    const settings_hashes = new Set(["settings", "organization"]);
+    // Ensure that we are just switching between user and org settings and the settings
+    // overlay is open.
+    const is_hashchange_internal =
+        settings_hashes.has(base) && settings_hashes.has(old_base) && overlays.settings_open();
+    if (is_hashchange_internal) {
+        settings_toggle.highlight_toggle(base);
+        settings_panel_menu.normal_settings.activate_section_or_default(section);
         return;
     }
 

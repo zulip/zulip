@@ -114,7 +114,9 @@ export class SettingsPanelMenu {
         this.curr_li.addClass("active");
 
         const settings_section_hash = "#" + this.hash_prefix + section;
-        browser_history.update(settings_section_hash);
+
+        // It could be that the hash has already been set.
+        browser_history.update_hash_internally_if_required(settings_section_hash);
 
         $(".settings-section").removeClass("show");
 
