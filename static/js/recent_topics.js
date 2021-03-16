@@ -565,14 +565,13 @@ export function focus_clicked_element($elt, col) {
     row_focus = $elt.closest("tr").index();
 }
 
-export function change_focused_element(e, input_key) {
+export function change_focused_element($elt, input_key) {
     // Called from hotkeys.js; like all logic in that module,
     // returning true will cause the caller to do
     // preventDefault/stopPropagation; false will let the browser
     // handle the key.
-    const $elem = $(e.target);
 
-    if (e.target.id === "recent_topics_search") {
+    if ($elt.attr("id") === "recent_topics_search") {
         // Since the search box a text area, we want the browser to handle
         // Left/Right and selection within the widget; but if the user
         // arrows off the edges, we should move focus to the adjacent widgets..
@@ -631,27 +630,27 @@ export function change_focused_element(e, input_key) {
                 set_table_focus(row_focus, col_focus);
                 return true;
         }
-    } else if ($elem.hasClass("btn-recent-filters")) {
+    } else if ($elt.hasClass("btn-recent-filters")) {
         switch (input_key) {
             case "click":
-                current_focus_elem = $elem;
+                current_focus_elem = $elt;
                 return true;
             case "shift_tab":
             case "vim_left":
             case "left_arrow":
-                if (filter_buttons().first()[0] === $elem[0]) {
+                if (filter_buttons().first()[0] === $elt[0]) {
                     current_focus_elem = $("#recent_topics_search");
                 } else {
-                    current_focus_elem = $elem.prev();
+                    current_focus_elem = $elt.prev();
                 }
                 break;
             case "tab":
             case "vim_right":
             case "right_arrow":
-                if (filter_buttons().last()[0] === $elem[0]) {
+                if (filter_buttons().last()[0] === $elt[0]) {
                     current_focus_elem = $("#recent_topics_search");
                 } else {
-                    current_focus_elem = $elem.next();
+                    current_focus_elem = $elt.next();
                 }
                 break;
             case "vim_down":

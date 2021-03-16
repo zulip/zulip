@@ -450,7 +450,7 @@ export function initialize() {
 
     $("body").on("click", "#recent_topics_search", (e) => {
         e.stopPropagation();
-        recent_topics.change_focused_element(e, "click");
+        recent_topics.change_focused_element($(e.target), "click");
     });
 
     $("body").on("click", "#recent_topics_table .on_hover_topic_read", (e) => {
@@ -465,7 +465,7 @@ export function initialize() {
 
     $("body").on("click", ".btn-recent-filters", (e) => {
         e.stopPropagation();
-        recent_topics.change_focused_element(e, "click");
+        recent_topics.change_focused_element($(e.target), "click");
         recent_topics.set_filter(e.currentTarget.dataset.filter);
         recent_topics.update_filters_view();
     });
