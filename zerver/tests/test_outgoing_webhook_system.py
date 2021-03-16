@@ -13,8 +13,9 @@ from zerver.lib.outgoing_webhook import (
 )
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.topic import TOPIC_NAME
+from zerver.lib.url_encoding import near_message_url
 from zerver.lib.users import add_service
-from zerver.models import Recipient, Service, UserProfile, get_display_recipient
+from zerver.models import Recipient, Service, UserProfile, get_display_recipient, get_realm
 
 
 class ResponseMock:
@@ -315,6 +316,46 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
             last_message.recipient.type,
             Recipient.PERSONAL,
         )
+
+    def test_pm_to_outgoing_webhook_bot_for_407_error_code(self) -> None:
+        bot_owner = self.example_user("othello")
+        bot = self.create_outgoing_bot(bot_owner)
+        sender = self.example_user("hamlet")
+        realm = get_realm("zulip")
+
+        response = ResponseMock(407)
+        expect_407 = mock.patch("requests.request", return_value=response)
+        expect_fail = mock.patch("zerver.lib.outgoing_webhook.fail_with_message")
+
+        with expect_407, expect_fail as mock_fail, self.assertLogs(level="WARNING"):
+            message_id = self.send_personal_message(sender, bot, content="foo")
+
+            # create message dict to get the message url
+            message = {
+                "display_recipient": [{"id": bot.id}, {"id": sender.id}],
+                "stream_id": 999,
+                TOPIC_NAME: "Foo",
+                "id": message_id,
+                "type": "",
+            }
+            message_url = near_message_url(realm, message)
+
+            last_message = self.get_last_message()
+            self.assertEqual(
+                last_message.content,
+                f"[A message]({message_url}) to your bot @_**{bot.full_name}** triggered an outgoing webhook.\n"
+                "The URL configured for the webhook is for a private or disallowed network.",
+            )
+            self.assertEqual(last_message.sender_id, bot.id)
+            self.assertEqual(
+                last_message.recipient.type_id,
+                bot_owner.id,
+            )
+            self.assertEqual(
+                last_message.recipient.type,
+                Recipient.PERSONAL,
+            )
+            self.assertTrue(mock_fail.called)
 
     @mock.patch(
         "requests.request",
