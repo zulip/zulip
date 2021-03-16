@@ -73,6 +73,7 @@ from zerver.views.auth import (
     create_preregistration_user,
     finish_desktop_flow,
     finish_mobile_flow,
+    finish_terminal_flow,
     get_safe_redirect_to,
     redirect_and_log_into_subdomain,
     redirect_to_deactivation_notice,
@@ -476,10 +477,15 @@ def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> Htt
     desktop_flow_otp = get_expirable_session_var(
         request.session, "registration_desktop_flow_otp", delete=True
     )
+    terminal_flow_otp = get_expirable_session_var(
+        request.session, "registration_terminal_flow_otp", delete=True
+    )
     if mobile_flow_otp is not None:
         return finish_mobile_flow(request, user_profile, mobile_flow_otp)
     elif desktop_flow_otp is not None:
         return finish_desktop_flow(request, user_profile, desktop_flow_otp)
+    elif terminal_flow_otp is not None:
+        return finish_terminal_flow(request, user_profile, terminal_flow_otp)
 
     do_login(request, user_profile)
     # Using 'mark_sanitized' to work around false positive where Pysa thinks

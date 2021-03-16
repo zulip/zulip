@@ -1046,6 +1046,7 @@ SOCIAL_AUTH_FIELDS_STORED_IN_SESSION = [
     "is_signup",
     "mobile_flow_otp",
     "desktop_flow_otp",
+    "terminal_flow_otp",
     "multiuse_object_key",
 ]
 SOCIAL_AUTH_LOGIN_ERROR_URL = "/login/"

@@ -119,6 +119,7 @@ def maybe_send_to_registration(
     full_name: str = "",
     mobile_flow_otp: Optional[str] = None,
     desktop_flow_otp: Optional[str] = None,
+    terminal_flow_otp: Optional[str] = None,
     is_signup: bool = False,
     password_required: bool = True,
     multiuse_object_key: str = "",
@@ -132,12 +133,13 @@ def maybe_send_to_registration(
     organization (checked in HomepageForm), and similar details.
     """
 
-    # In the desktop and mobile registration flows, the sign up
-    # happens in the browser so the user can use their
+    # In the desktop, mobile and terminal registration flows, the
+    # sign up happens in the browser so the user can use their
     # already-logged-in social accounts.  Then at the end, with the
     # user account created, we pass the appropriate data to the app
-    # via e.g. a `zulip://` redirect.  We store the OTP keys for the
-    # mobile/desktop flow in the session with 1-hour expiry, because
+    # via e.g. a `zulip://` redirect or redirect the user to a page
+    # with a copy-pastable encrypted token/key.  We store the OTP keys
+    # for these flows in the session with 1-hour expiry, because
     # we want this configuration of having a successful authentication
     # result in being logged into the app to persist if the user makes
     # mistakes while trying to authenticate (E.g. clicks the wrong
@@ -148,7 +150,7 @@ def maybe_send_to_registration(
     # approach of putting something in PreregistrationUser, because
     # that would apply to future registration attempts on other
     # devices, e.g. just creating an account on the web on their laptop.
-    assert not (mobile_flow_otp and desktop_flow_otp)
+    assert [mobile_flow_otp, desktop_flow_otp, terminal_flow_otp].count(None) >= 2
     if mobile_flow_otp:
         set_expirable_session_var(
             request.session, "registration_mobile_flow_otp", mobile_flow_otp, expiry_seconds=3600
@@ -156,6 +158,13 @@ def maybe_send_to_registration(
     elif desktop_flow_otp:
         set_expirable_session_var(
             request.session, "registration_desktop_flow_otp", desktop_flow_otp, expiry_seconds=3600
+        )
+    elif terminal_flow_otp:
+        set_expirable_session_var(
+            request.session,
+            "registration_terminal_flow_otp",
+            terminal_flow_otp,
+            expiry_seconds=3600,
         )
 
     if multiuse_object_key:
@@ -228,6 +237,7 @@ def maybe_send_to_registration(
         "multiuse_object_key": multiuse_object_key,
         "mobile_flow_otp": mobile_flow_otp,
         "desktop_flow_otp": desktop_flow_otp,
+        "terminal_flow_otp": terminal_flow_otp,
     }
     context.update(extra_context)
     return render(request, "zerver/accounts_home.html", context=context)
@@ -265,6 +275,8 @@ def login_or_register_remote_user(request: HttpRequest, result: ExternalAuthResu
       not have a Zulip account in this organization).
     * A zulip:// URL to send control back to the mobile or desktop apps if they
       are doing authentication using the mobile_flow_otp or desktop_flow_otp flow.
+    * A page with a copy-pastable string for the terminal app if they are doing
+      authentication using terminal_flow_otp.
     """
     user_profile = result.user_profile
     if user_profile is None or user_profile.is_mirror_dummy:
@@ -275,10 +287,13 @@ def login_or_register_remote_user(request: HttpRequest, result: ExternalAuthResu
     is_realm_creation = result.data_dict.get("is_realm_creation")
     mobile_flow_otp = result.data_dict.get("mobile_flow_otp")
     desktop_flow_otp = result.data_dict.get("desktop_flow_otp")
+    terminal_flow_otp = result.data_dict.get("terminal_flow_otp")
     if mobile_flow_otp is not None:
         return finish_mobile_flow(request, user_profile, mobile_flow_otp)
     elif desktop_flow_otp is not None:
         return finish_desktop_flow(request, user_profile, desktop_flow_otp)
+    elif terminal_flow_otp is not None:
+        return finish_terminal_flow(request, user_profile, terminal_flow_otp)
 
     do_login(request, user_profile)
 
@@ -321,6 +336,22 @@ def finish_mobile_flow(request: HttpRequest, user_profile: UserProfile, otp: str
     )
     _notify_and_log_activity(request, user_profile)
     return response
+
+
+def finish_terminal_flow(request: HttpRequest, user_profile: UserProfile, otp: str) -> HttpResponse:
+    """
+    For the terminal OAuth flow, we render the encrypted API key in a page
+    with a copy-paste button. The user can paste this into the terminal app
+    and continue with client-side decrypting to get the API key.
+    """
+    api_key = get_api_key(user_profile)
+    context = {
+        "redirect_data": otp_encrypt_api_key(api_key, otp),
+        "browser_url": reverse("login_page", kwargs={"template_name": "zerver/login.html"}),
+        "realm_icon_url": realm_icon_url(user_profile.realm),
+    }
+    _notify_and_log_activity(request, user_profile)
+    return render(request, "zerver/desktop_and_terminal_redirect.html", context=context)
 
 
 def _notify_and_log_activity(request: HttpRequest, user_profile: UserProfile) -> None:
@@ -486,16 +517,18 @@ def oauth_redirect_to_root(
 
     params["multiuse_object_key"] = request.GET.get("multiuse_object_key", "")
 
-    # mobile_flow_otp is a one-time pad provided by the app that we
+    # These otp's are a one-time pad provided by the app that we
     # can use to encrypt the API key when passing back to the app.
     mobile_flow_otp = request.GET.get("mobile_flow_otp")
     desktop_flow_otp = request.GET.get("desktop_flow_otp")
-
-    validate_otp_params(mobile_flow_otp, desktop_flow_otp)
+    terminal_flow_otp = request.GET.get("terminal_flow_otp")
+    validate_otp_params(mobile_flow_otp, desktop_flow_otp, terminal_flow_otp)
     if mobile_flow_otp is not None:
         params["mobile_flow_otp"] = mobile_flow_otp
     if desktop_flow_otp is not None:
         params["desktop_flow_otp"] = desktop_flow_otp
+    if terminal_flow_otp is not None:
+        params["terminal_flow_otp"] = terminal_flow_otp
 
     if next:
         params["next"] = next

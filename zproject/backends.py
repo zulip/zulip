@@ -1084,6 +1084,7 @@ class ExternalAuthDataDict(TypedDict, total=False):
     redirect_to: str
     mobile_flow_otp: Optional[str]
     desktop_flow_otp: Optional[str]
+    terminal_flow_otp: Optional[str]
     multiuse_object_key: str
     full_name_validated: bool
 
@@ -1470,7 +1471,8 @@ def social_auth_finish(
 
     mobile_flow_otp = strategy.session_get("mobile_flow_otp")
     desktop_flow_otp = strategy.session_get("desktop_flow_otp")
-    validate_otp_params(mobile_flow_otp, desktop_flow_otp)
+    terminal_flow_otp = strategy.session_get("terminal_flow_otp")
+    validate_otp_params(mobile_flow_otp, desktop_flow_otp, terminal_flow_otp)
 
     if user_profile is None or user_profile.is_mirror_dummy:
         is_signup = strategy.session_get("is_signup") == "1"
@@ -1491,13 +1493,14 @@ def social_auth_finish(
         full_name_validated=full_name_validated,
         mobile_flow_otp=mobile_flow_otp,
         desktop_flow_otp=desktop_flow_otp,
+        terminal_flow_otp=terminal_flow_otp,
     )
     if user_profile is None:
         data_dict.update(dict(full_name=full_name, email=email_address))
 
     result = ExternalAuthResult(user_profile=user_profile, data_dict=data_dict)
 
-    if mobile_flow_otp or desktop_flow_otp:
+    if mobile_flow_otp or desktop_flow_otp or terminal_flow_otp:
         if user_profile is not None and not user_profile.is_mirror_dummy:
             # For mobile and desktop app authentication, login_or_register_remote_user
             # will redirect to a special zulip:// URL that is handled by
@@ -1505,6 +1508,9 @@ def social_auth_finish(
             # redirect directly from here, saving a round trip over what
             # we need to do to create session cookies on the right domain
             # in the web login flow (below).
+            #
+            # For terminal app authentication, this flow will end in a
+            # page with a huge copy-pastable string.
             return login_or_register_remote_user(strategy.request, result)
         else:
             # The user needs to register, so we need to go the realm's
@@ -2208,14 +2214,22 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
 
 
 def validate_otp_params(
-    mobile_flow_otp: Optional[str] = None, desktop_flow_otp: Optional[str] = None
+    mobile_flow_otp: Optional[str] = None,
+    desktop_flow_otp: Optional[str] = None,
+    terminal_flow_otp: Optional[str] = None,
 ) -> None:
-    for otp in [mobile_flow_otp, desktop_flow_otp]:
+    for otp in [mobile_flow_otp, desktop_flow_otp, terminal_flow_otp]:
         if otp is not None and not is_valid_otp(otp):
             raise JsonableError(_("Invalid OTP"))
 
-    if mobile_flow_otp and desktop_flow_otp:
-        raise JsonableError(_("Can't use both mobile_flow_otp and desktop_flow_otp together."))
+    # None of the OTP's may have been set, but if they are we would only allow
+    # one of them to be used at a time.
+    if [mobile_flow_otp, desktop_flow_otp, terminal_flow_otp].count(None) < 2:
+        raise JsonableError(
+            _(
+                "Only one among mobile_flow_otp, desktop_flow_otp or terminal_flow_otp can be used at a time."
+            )
+        )
 
 
 def get_external_method_dicts(realm: Optional[Realm] = None) -> List[ExternalAuthMethodDictT]:
