@@ -263,20 +263,6 @@ const harry = {
     email: "harry@zulip.com",
 };
 
-people.add_active_user(alice);
-people.add_active_user(hamlet);
-people.add_active_user(othello);
-people.add_active_user(cordelia);
-people.add_active_user(lear);
-people.add_active_user(twin1);
-people.add_active_user(twin2);
-people.add_active_user(gael);
-people.add_active_user(hal);
-people.add_active_user(harry);
-people.add_active_user(deactivated_user);
-people.deactivate(deactivated_user);
-people.initialize_current_user(hamlet.user_id);
-
 const hamletcharacters = {
     name: "hamletcharacters",
     id: 1,
@@ -298,16 +284,39 @@ const call_center = {
     members: [],
 };
 
-user_groups.add(hamletcharacters);
-user_groups.add(backend);
-user_groups.add(call_center);
-
 const make_emoji = (emoji_dict) => ({
     emoji_name: emoji_dict.name,
     emoji_code: emoji_dict.emoji_code,
 });
 
-run_test("topics_seen_for", () => {
+function test(label, f) {
+    run_test(label, (override) => {
+        people.init();
+        user_groups.init();
+
+        people.add_active_user(alice);
+        people.add_active_user(hamlet);
+        people.add_active_user(othello);
+        people.add_active_user(cordelia);
+        people.add_active_user(lear);
+        people.add_active_user(twin1);
+        people.add_active_user(twin2);
+        people.add_active_user(gael);
+        people.add_active_user(hal);
+        people.add_active_user(harry);
+        people.add_active_user(deactivated_user);
+        people.deactivate(deactivated_user);
+        people.initialize_current_user(hamlet.user_id);
+
+        user_groups.add(hamletcharacters);
+        user_groups.add(backend);
+        user_groups.add(call_center);
+
+        f(override);
+    });
+}
+
+test("topics_seen_for", () => {
     stream_topic_history.get_recent_topic_names = (stream_id) => {
         assert.equal(stream_id, denmark_stream.stream_id);
         return ["With Twisted Metal", "acceptance", "civil fears"];
@@ -323,7 +332,7 @@ run_test("topics_seen_for", () => {
     assert.deepEqual(ct.topics_seen_for("non-existing-stream"), []);
 });
 
-run_test("content_typeahead_selected", () => {
+test("content_typeahead_selected", () => {
     const fake_this = {
         query: "",
         $element: {},
@@ -552,7 +561,7 @@ function sorted_names_from(subs) {
     return subs.map((sub) => sub.name).sort();
 }
 
-run_test("initialize", (override) => {
+test("initialize", (override) => {
     let expected_value;
 
     let stream_typeahead_called = false;
@@ -1120,7 +1129,7 @@ run_test("initialize", (override) => {
     assert(compose_textarea_typeahead_called);
 });
 
-run_test("begins_typeahead", (override) => {
+test("begins_typeahead", (override) => {
     const begin_typehead_this = {
         options: {
             completions: {
@@ -1333,7 +1342,7 @@ run_test("begins_typeahead", (override) => {
     }
 });
 
-run_test("tokenizing", () => {
+test("tokenizing", () => {
     assert.equal(ct.tokenize_compose_str("/m"), "/m");
     assert.equal(ct.tokenize_compose_str("1/3"), "");
     assert.equal(ct.tokenize_compose_str("foo bar"), "");
@@ -1355,7 +1364,7 @@ run_test("tokenizing", () => {
     assert.equal(ct.tokenize_compose_str("foo #streams@foo"), "#streams@foo");
 });
 
-run_test("content_highlighter", (override) => {
+test("content_highlighter", (override) => {
     let fake_this = {completing: "emoji"};
     const emoji = {emoji_name: "person shrugging", emoji_url: "¯\\_(ツ)_/¯"};
     let th_render_typeahead_item_called = false;
@@ -1422,7 +1431,7 @@ run_test("content_highlighter", (override) => {
     assert(th_render_slash_command_called);
 });
 
-run_test("filter_and_sort_mentions (normal)", () => {
+test("filter_and_sort_mentions (normal)", () => {
     const is_silent = false;
 
     const suggestions = ct.filter_and_sort_mentions(is_silent, "al");
@@ -1430,7 +1439,7 @@ run_test("filter_and_sort_mentions (normal)", () => {
     assert.deepEqual(suggestions, [mention_all, alice, hal, call_center]);
 });
 
-run_test("filter_and_sort_mentions (silent)", () => {
+test("filter_and_sort_mentions (silent)", () => {
     const is_silent = true;
 
     const suggestions = ct.filter_and_sort_mentions(is_silent, "al");
@@ -1438,7 +1447,7 @@ run_test("filter_and_sort_mentions (silent)", () => {
     assert.deepEqual(suggestions, [alice, hal]);
 });
 
-run_test("typeahead_results", () => {
+test("typeahead_results", () => {
     const stream_list = [denmark_stream, sweden_stream, netherland_stream];
 
     function compose_typeahead_results(completing, items, token) {
@@ -1514,7 +1523,7 @@ run_test("typeahead_results", () => {
     assert_stream_matches("city", [netherland_stream]);
 });
 
-run_test("message people", () => {
+test("message people", () => {
     let results;
 
     /*
