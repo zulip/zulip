@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -1517,8 +1517,6 @@ run_test("typeahead_results", () => {
 run_test("message people", () => {
     let results;
 
-    ct.__Rewire__("max_num_items", 2);
-
     /*
         We will simulate that we talk to Hal and Harry,
         while we don't talk to King Hamlet.  This will
@@ -1535,22 +1533,28 @@ run_test("message people", () => {
         filter_pills: false,
     };
 
-    results = ct.get_person_suggestions("Ha", opts);
+    function get_results(search_key) {
+        return with_field(ct, "max_num_items", 2, () =>
+            ct.get_person_suggestions(search_key, opts),
+        );
+    }
+
+    results = get_results("Ha");
     assert.deepEqual(results, [harry, hamletcharacters]);
 
     // Now let's exclude Hal.
     message_store.user_ids = () => [hamlet.user_id, harry.user_id];
 
-    results = ct.get_person_suggestions("Ha", opts);
+    results = get_results("Ha");
     assert.deepEqual(results, [harry, hamletcharacters]);
 
     message_store.user_ids = () => [hamlet.user_id, harry.user_id, hal.user_id];
 
-    results = ct.get_person_suggestions("Ha", opts);
+    results = get_results("Ha");
     assert.deepEqual(results, [harry, hamletcharacters]);
 
     people.deactivate(harry);
-    results = ct.get_person_suggestions("Ha", opts);
+    results = get_results("Ha");
     // harry is excluded since it has been deactivated.
     assert.deepEqual(results, [hamletcharacters, hal]);
 });
