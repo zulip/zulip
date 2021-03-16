@@ -4,6 +4,7 @@ const {strict: assert} = require("assert");
 
 const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 
 // We need these stubs to get by instanceof checks.
 // The ListWidget library allows you to insert objects

@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import * as blueslip from "./blueslip";
 import {LightboxCanvas} from "./lightbox_canvas";
 import * as message_store from "./message_store";
 import * as overlays from "./overlays";

@@ -1,5 +1,7 @@
 import _ from "lodash";
 
+import * as blueslip from "./blueslip";
+
 export function eq_array(a, b, eq) {
     if (a === b) {
         // either both are undefined, or they

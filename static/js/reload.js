@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import * as activity from "./activity";
+import * as blueslip from "./blueslip";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";

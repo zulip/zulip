@@ -1,3 +1,4 @@
+import * as blueslip from "./blueslip";
 import * as message_events from "./message_events";
 import * as message_list from "./message_list";
 

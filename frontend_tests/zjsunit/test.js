@@ -1,6 +1,7 @@
 "use strict";
 
 const namespace = require("./namespace");
+const zblueslip = require("./zblueslip");
 const $ = require("./zjquery");
 
 let current_file_name;
@@ -34,5 +35,5 @@ exports.run_test = (label, f, opts) => {
         throw error;
     }
     // defensively reset blueslip after each test.
-    window.blueslip.reset();
+    zblueslip.reset();
 };

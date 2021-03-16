@@ -1,5 +1,6 @@
 import * as alert_words_ui from "./alert_words_ui";
 import * as attachments_ui from "./attachments_ui";
+import * as blueslip from "./blueslip";
 import * as settings_account from "./settings_account";
 import * as settings_bots from "./settings_bots";
 import * as settings_display from "./settings_display";

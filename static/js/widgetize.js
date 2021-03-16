@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import * as blueslip from "./blueslip";
 import * as narrow_state from "./narrow_state";
 import * as poll_widget from "./poll_widget";
 import * as todo_widget from "./todo_widget";

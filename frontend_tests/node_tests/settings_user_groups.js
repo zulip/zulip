@@ -7,6 +7,7 @@ const _ = require("lodash");
 const {stub_templates} = require("../zjsunit/handlebars");
 const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};

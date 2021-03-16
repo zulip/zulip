@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import * as admin from "./admin";
+import * as blueslip from "./blueslip";
 import * as drafts from "./drafts";
 import * as floating_recipient_bar from "./floating_recipient_bar";
 import * as hash_util from "./hash_util";

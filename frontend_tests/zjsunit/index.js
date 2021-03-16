@@ -11,7 +11,7 @@ const handlebars = require("./handlebars");
 const stub_i18n = require("./i18n");
 const namespace = require("./namespace");
 const test = require("./test");
-const {make_zblueslip} = require("./zblueslip");
+const blueslip = require("./zblueslip");
 const zjquery = require("./zjquery");
 
 require("@babel/register")({
@@ -93,7 +93,8 @@ try {
         _.throttle = immediate;
         _.debounce = immediate;
 
-        const blueslip = namespace.set_global("blueslip", make_zblueslip());
+        namespace.mock_esm("../../static/js/blueslip", blueslip);
+        require("../../static/js/blueslip");
         namespace.set_global("i18n", stub_i18n);
 
         run_one_module(file);

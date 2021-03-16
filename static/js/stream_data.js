@@ -1,3 +1,4 @@
+import * as blueslip from "./blueslip";
 import * as color_data from "./color_data";
 import {FoldDict} from "./fold_dict";
 import * as hash_util from "./hash_util";

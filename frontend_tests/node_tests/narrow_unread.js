@@ -4,6 +4,7 @@ const {strict: assert} = require("assert");
 
 const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 
 const message_store = mock_esm("../../static/js/message_store");
 mock_esm("../../static/js/muting", {

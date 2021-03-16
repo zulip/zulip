@@ -1,6 +1,7 @@
 import $ from "jquery";
 import SimpleBar from "simplebar/dist/simplebar";
 
+import * as blueslip from "./blueslip";
 import * as common from "./common";
 import {localstorage} from "./localstorage";
 import * as message_list from "./message_list";
