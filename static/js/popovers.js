@@ -55,6 +55,17 @@ let userlist_placement = "right";
 
 let list_of_popovers = [];
 
+export function clear_for_testing() {
+    current_actions_popover_elem = undefined;
+    current_flatpickr_instance = undefined;
+    current_message_info_popover_elem = undefined;
+    current_mobile_message_buttons_popover_elem = undefined;
+    current_user_info_popover_elem = undefined;
+    current_playground_links_popover_elem = undefined;
+    list_of_popovers.length = 0;
+    userlist_placement = "right";
+}
+
 export function clipboard_enable(arg) {
     // arg is a selector or element
     // We extract this function for testing purpose.

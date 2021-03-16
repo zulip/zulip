@@ -94,6 +94,7 @@ function make_image_stubber() {
 function test_ui(label, f) {
     run_test(label, (override) => {
         override(popovers, "clipboard_enable", noop);
+        popovers.clear_for_testing();
         popovers.register_click_handlers();
         f(override);
     });
