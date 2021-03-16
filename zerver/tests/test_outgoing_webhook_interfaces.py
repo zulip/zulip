@@ -223,3 +223,27 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
         response = dict(text="test_content")
         success_response = self.handler.process_success(response)
         self.assertEqual(success_response, dict(content="test_content"))
+
+    def test_process_success_response_invalid(self) -> None:
+        class Stub:
+            def __init__(self, text: str) -> None:
+                self.text = text
+
+        def make_response(text: str) -> requests.Response:
+            return cast(requests.Response, Stub(text=text))
+
+        event = dict(
+            user_profile_id=99,
+            message=dict(type="private"),
+        )
+        service_handler = self.handler
+
+        # verify we don't try to send a message with no text/content
+        response = make_response(text=json.dumps(dict(text=None)))
+        with mock.patch("zerver.lib.outgoing_webhook.send_response_message") as m:
+            process_success_response(
+                event=event,
+                service_handler=service_handler,
+                response=response,
+            )
+        self.assertFalse(m.called)
