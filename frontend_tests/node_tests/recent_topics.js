@@ -325,7 +325,13 @@ function stub_out_filter_buttons() {
     }
 }
 
-run_test("test_recent_topics_show", () => {
+function test(label, f) {
+    run_test(label, (override) => {
+        f(override);
+    });
+}
+
+test("test_recent_topics_show", () => {
     // Note: unread count and urls are fake,
     // since they are generated in external libraries
     // and are not to be tested here.
@@ -357,7 +363,7 @@ run_test("test_recent_topics_show", () => {
     assert.equal(rt.inplace_rerender("stream_unknown:topic_unknown"), false);
 });
 
-run_test("test_filter_all", (override) => {
+test("test_filter_all", (override) => {
     // Just tests inplace rerender of a message
     // in All topics filter.
     const expected = {
@@ -402,7 +408,7 @@ run_test("test_filter_all", (override) => {
     assert.equal(rt.inplace_rerender("1:topic-1"), true);
 });
 
-run_test("test_filter_unread", (override) => {
+test("test_filter_unread", (override) => {
     // Tests rerender of all topics when filter changes to "unread".
     const expected = {
         filter_participated: false,
@@ -469,7 +475,7 @@ run_test("test_filter_unread", (override) => {
     rt.set_filter("all");
 });
 
-run_test("test_filter_participated", (override) => {
+test("test_filter_participated", (override) => {
     // Tests rerender of all topics when filter changes to "unread".
     const expected = {
         filter_participated: true,
@@ -533,7 +539,7 @@ run_test("test_filter_participated", (override) => {
     rt.set_filter("all");
 });
 
-run_test("test_update_unread_count", () => {
+test("test_update_unread_count", () => {
     rt.clear_for_tests();
     stub_out_filter_buttons();
     rt.set_filter("all");
@@ -548,7 +554,7 @@ run_test("test_update_unread_count", () => {
 // template rendering is tested in test_recent_topics_launch.
 stub_templates(() => "<recent_topics table stub>");
 
-run_test("basic assertions", (override) => {
+test("basic assertions", (override) => {
     rt.clear_for_tests();
     stub_out_filter_buttons();
     override(rt, "is_visible", () => true);
@@ -629,7 +635,7 @@ run_test("basic assertions", (override) => {
     assert.equal(rt.update_topic_is_muted(stream1, "topic-10"), false);
 });
 
-run_test("test_reify_local_echo_message", (override) => {
+test("test_reify_local_echo_message", (override) => {
     rt.clear_for_tests();
     stub_out_filter_buttons();
     override(rt, "is_visible", () => true);
@@ -678,7 +684,7 @@ run_test("test_reify_local_echo_message", (override) => {
     );
 });
 
-run_test("test_delete_messages", (override) => {
+test("test_delete_messages", (override) => {
     rt.clear_for_tests();
     stub_out_filter_buttons();
     rt.set_filter("all");
@@ -716,7 +722,7 @@ run_test("test_delete_messages", (override) => {
     rt.update_topics_of_deleted_message_ids([-1]);
 });
 
-run_test("test_topic_edit", () => {
+test("test_topic_edit", () => {
     // NOTE: This test should always run in the end as it modified the messages data.
     rt.clear_for_tests();
     stub_out_filter_buttons();
@@ -773,7 +779,7 @@ run_test("test_topic_edit", () => {
     assert.equal(rt.filters_should_hide_topic(all_topics.get("5:topic-8")), true);
 });
 
-run_test("test_search", () => {
+test("test_search", () => {
     rt.clear_for_tests();
     assert.equal(rt.topic_in_search_results("t", "general", "Recent Topic"), true);
     assert.equal(rt.topic_in_search_results("T", "general", "Recent Topic"), true);
