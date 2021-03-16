@@ -9,8 +9,8 @@ const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
 
-// Custom Data
-const messages = [];
+// We assign this in our test() wrapper.
+let messages;
 
 // sender1 == current user
 // sender2 == any other user
@@ -169,7 +169,8 @@ people.sender_info_with_small_avatar_urls_for_sender_ids = (ids) => ids;
 
 let id = 0;
 
-messages[0] = {
+const sample_messages = [];
+sample_messages[0] = {
     stream_id: stream1,
     stream: "stream1",
     id: (id += 1),
@@ -178,7 +179,7 @@ messages[0] = {
     type: "stream",
 };
 
-messages[1] = {
+sample_messages[1] = {
     stream_id: stream1,
     stream: "stream1",
     id: (id += 1),
@@ -187,7 +188,7 @@ messages[1] = {
     type: "stream",
 };
 
-messages[2] = {
+sample_messages[2] = {
     stream_id: stream1,
     stream: "stream1",
     id: (id += 1),
@@ -196,7 +197,7 @@ messages[2] = {
     type: "stream",
 };
 
-messages[3] = {
+sample_messages[3] = {
     stream_id: stream1,
     stream: "stream1",
     id: (id += 1),
@@ -205,7 +206,7 @@ messages[3] = {
     type: "stream",
 };
 
-messages[4] = {
+sample_messages[4] = {
     stream_id: stream1,
     stream: "stream1",
     id: (id += 1),
@@ -214,7 +215,7 @@ messages[4] = {
     type: "stream",
 };
 
-messages[5] = {
+sample_messages[5] = {
     stream_id: stream1,
     stream: "stream1",
     id: (id += 1),
@@ -223,7 +224,7 @@ messages[5] = {
     type: "stream",
 };
 
-messages[6] = {
+sample_messages[6] = {
     stream_id: stream1,
     stream: "stream1",
     id: (id += 1),
@@ -232,7 +233,7 @@ messages[6] = {
     type: "stream",
 };
 
-messages[7] = {
+sample_messages[7] = {
     stream_id: stream1,
     stream: "stream1",
     id: (id += 1),
@@ -241,7 +242,7 @@ messages[7] = {
     type: "stream",
 };
 
-messages[8] = {
+sample_messages[8] = {
     stream_id: stream1,
     stream: "stream1",
     id: (id += 1),
@@ -250,7 +251,7 @@ messages[8] = {
     type: "stream",
 };
 
-messages[9] = {
+sample_messages[9] = {
     stream_id: stream1,
     stream: "stream1",
     id: (id += 1),
@@ -260,7 +261,7 @@ messages[9] = {
 };
 
 // a message of stream4
-messages[10] = {
+sample_messages[10] = {
     stream_id: stream4,
     stream: "stream4",
     id: (id += 1),
@@ -327,6 +328,7 @@ function stub_out_filter_buttons() {
 
 function test(label, f) {
     run_test(label, (override) => {
+        messages = sample_messages.map((message) => ({...message}));
         f(override);
     });
 }
