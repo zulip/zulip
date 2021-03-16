@@ -316,11 +316,11 @@ function test(label, f) {
     });
 }
 
-test("topics_seen_for", () => {
-    stream_topic_history.get_recent_topic_names = (stream_id) => {
+test("topics_seen_for", (override) => {
+    override(stream_topic_history, "get_recent_topic_names", (stream_id) => {
         assert.equal(stream_id, denmark_stream.stream_id);
         return ["With Twisted Metal", "acceptance", "civil fears"];
-    };
+    });
 
     assert.deepEqual(ct.topics_seen_for("Denmark"), [
         "With Twisted Metal",
@@ -332,7 +332,7 @@ test("topics_seen_for", () => {
     assert.deepEqual(ct.topics_seen_for("non-existing-stream"), []);
 });
 
-test("content_typeahead_selected", () => {
+test("content_typeahead_selected", (override) => {
     const fake_this = {
         query: "",
         $element: {},
@@ -381,7 +381,7 @@ test("content_typeahead_selected", () => {
     // mention
     fake_this.completing = "mention";
 
-    compose.warn_if_mentioning_unsubscribed_user = () => {};
+    override(compose, "warn_if_mentioning_unsubscribed_user", () => {});
 
     fake_this.query = "@**Mark Tw";
     fake_this.token = "Mark Tw";
@@ -390,10 +390,10 @@ test("content_typeahead_selected", () => {
     assert.equal(actual_value, expected_value);
 
     let warned_for_mention = false;
-    compose.warn_if_mentioning_unsubscribed_user = (mentioned) => {
+    override(compose, "warn_if_mentioning_unsubscribed_user", (mentioned) => {
         assert.equal(mentioned, othello);
         warned_for_mention = true;
-    };
+    });
 
     fake_this.query = "@oth";
     fake_this.token = "oth";
@@ -422,13 +422,16 @@ test("content_typeahead_selected", () => {
 
     // silent mention
     fake_this.completing = "silent_mention";
-    compose.warn_if_mentioning_unsubscribed_user = () => {
-        throw new Error("unexpected call for silent mentions");
-    };
+    function unexpected_warn() {
+        throw new Error("unexpected warning about unsubscribed user");
+    }
 
     fake_this.query = "@_kin";
     fake_this.token = "kin";
-    actual_value = ct.content_typeahead_selected.call(fake_this, hamlet);
+    with_field(compose, "warn_if_mentioning_unsubscribed_user", unexpected_warn, () => {
+        actual_value = ct.content_typeahead_selected.call(fake_this, hamlet);
+    });
+
     expected_value = "@_**King Hamlet** ";
     assert.equal(actual_value, expected_value);
 
@@ -450,14 +453,11 @@ test("content_typeahead_selected", () => {
     expected_value = "@_**King Hamlet** ";
     assert.equal(actual_value, expected_value);
 
-    // user group mention
-    compose.warn_if_mentioning_unsubscribed_user = () => {
-        throw new Error("unexpected call for user groups");
-    };
-
     fake_this.query = "@back";
     fake_this.token = "back";
-    actual_value = ct.content_typeahead_selected.call(fake_this, backend);
+    with_field(compose, "warn_if_mentioning_unsubscribed_user", unexpected_warn, () => {
+        actual_value = ct.content_typeahead_selected.call(fake_this, backend);
+    });
     expected_value = "@*Backend* ";
     assert.equal(actual_value, expected_value);
 
@@ -476,10 +476,10 @@ test("content_typeahead_selected", () => {
     // stream
     fake_this.completing = "stream";
     let warned_for_stream_link = false;
-    compose.warn_if_private_stream_is_linked = (linked_stream) => {
+    override(compose, "warn_if_private_stream_is_linked", (linked_stream) => {
         assert.equal(linked_stream, sweden_stream);
         warned_for_stream_link = true;
-    };
+    });
 
     fake_this.query = "#swed";
     fake_this.token = "swed";
@@ -1042,9 +1042,9 @@ test("initialize", (override) => {
     page_params.enter_sends = false;
     event.metaKey = true;
     let compose_finish_called = false;
-    compose.finish = () => {
+    override(compose, "finish", () => {
         compose_finish_called = true;
-    };
+    });
 
     $("form#send_message_form").trigger(event);
     assert(compose_finish_called);
@@ -1096,13 +1096,13 @@ test("initialize", (override) => {
     $("#compose-send-button").fadeOut = noop;
     $("#compose-send-button").fadeIn = noop;
     let channel_post_called = false;
-    channel.post = (params) => {
+    override(channel, "post", (params) => {
         assert.equal(params.url, "/json/users/me/enter-sends");
         assert.equal(params.idempotent, true);
         assert.deepEqual(params.data, {enter_sends: page_params.enter_sends});
 
         channel_post_called = true;
-    };
+    });
     $("#enter_sends").is = () => false;
     $("#enter_sends").trigger("click");
 
@@ -1523,7 +1523,7 @@ test("typeahead_results", () => {
     assert_stream_matches("city", [netherland_stream]);
 });
 
-test("message people", () => {
+test("message people", (override) => {
     let results;
 
     /*
@@ -1534,7 +1534,7 @@ test("message people", () => {
         the sorting step.
     */
 
-    message_store.user_ids = () => [hal.user_id, harry.user_id];
+    override(message_store, "user_ids", () => [hal.user_id, harry.user_id]);
 
     const opts = {
         want_broadcast: false,
