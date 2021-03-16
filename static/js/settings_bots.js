@@ -82,6 +82,20 @@ export function type_id_to_string(type_id) {
     return page_params.bot_types.find((bot_type) => bot_type.type_id === type_id).name;
 }
 
+// This renders the Bot Description in paragraphs.
+// Replacing the \n tag with <p></p> for HTML
+// rendering.
+export function render_bot_desc(bot_description) {
+    const desc = bot_description.split("\n");
+    let ret = "";
+    for (let i = 0; i < desc.length; i += 1) {
+        desc[i] = "<p>" + desc[i] + "</p>";
+        ret += desc[i];
+    }
+    ret += "<br>";
+    return ret;
+}
+
 export function render_bots() {
     $("#active_bots_list").empty();
     $("#inactive_bots_list").empty();
@@ -90,9 +104,11 @@ export function render_bots() {
     let user_owns_an_active_bot = false;
 
     for (const elem of all_bots_for_current_user) {
+        const rendered_bot_description = render_bot_desc(elem.bot_description);
         add_bot_row({
             name: elem.full_name,
             email: elem.email,
+            bot_description: rendered_bot_description,
             user_id: elem.user_id,
             type: type_id_to_string(elem.bot_type),
             avatar_url: elem.avatar_url,
@@ -276,8 +292,7 @@ export function set_up() {
         submitHandler() {
             const bot_type = $("#create_bot_type :selected").val();
             const full_name = $("#create_bot_name").val();
-            const short_name =
-                $("#create_bot_short_name").val() || $("#create_bot_short_name").text();
+            const bot_description = $("#create_bot_description").val();
             const payload_url = $("#create_payload_url").val();
             const interface_type = $("#create_interface_type").val();
             const service_name = $("#select_service_name :selected").val();
@@ -287,7 +302,7 @@ export function set_up() {
             formData.append("csrfmiddlewaretoken", csrf_token);
             formData.append("bot_type", bot_type);
             formData.append("full_name", full_name);
-            formData.append("short_name", short_name);
+            formData.append("bot_description", bot_description);
 
             // If the selected bot_type is Outgoing webhook
             if (bot_type === OUTGOING_WEBHOOK_BOT_TYPE) {
@@ -316,7 +331,7 @@ export function set_up() {
                 success() {
                     hide_errors();
                     $("#create_bot_name").val("");
-                    $("#create_bot_short_name").val("");
+                    $("#create_bot_description").val("");
                     $("#create_payload_url").val("");
                     $("#payload_url_inputbox").hide();
                     $("#config_inputbox").hide();
@@ -477,6 +492,7 @@ export function set_up() {
                 const type = form.attr("data-type");
 
                 const full_name = form.find(".edit_bot_name").val();
+                const bot_description = form.find(".edit_bot_description").val();
                 const bot_owner_id = owner_widget.value();
                 const file_input = $(".edit_bot_form").find(".edit_bot_avatar_file_input");
                 const spinner = form.find(".edit_bot_spinner");
@@ -485,6 +501,7 @@ export function set_up() {
                 const formData = new FormData();
                 formData.append("csrfmiddlewaretoken", csrf_token);
                 formData.append("full_name", full_name);
+                formData.append("bot_description", bot_description);
                 formData.append("bot_owner_id", bot_owner_id);
 
                 if (type === OUTGOING_WEBHOOK_BOT_TYPE) {

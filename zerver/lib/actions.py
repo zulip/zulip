@@ -584,6 +584,7 @@ def created_bot_event(user_profile: UserProfile) -> Dict[str, Any]:
         email=user_profile.email,
         user_id=user_profile.id,
         full_name=user_profile.full_name,
+        bot_description=user_profile.bot_description,
         bot_type=user_profile.bot_type,
         is_active=user_profile.is_active,
         api_key=get_api_key(user_profile),
@@ -625,6 +626,7 @@ def do_create_user(
     bot_type: Optional[int] = None,
     role: Optional[int] = None,
     bot_owner: Optional[UserProfile] = None,
+    bot_description: Optional[str] = None,
     tos_version: Optional[str] = None,
     timezone: str = "",
     avatar_source: str = UserProfile.AVATAR_FROM_GRAVATAR,
@@ -647,6 +649,7 @@ def do_create_user(
         role=role,
         bot_type=bot_type,
         bot_owner=bot_owner,
+        bot_description=bot_description,
         tos_version=tos_version,
         timezone=timezone,
         avatar_source=avatar_source,
@@ -1274,9 +1277,16 @@ def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> 
     # We notify just the target user (and eventually org admins, only
     # when email_address_visibility=EMAIL_ADDRESS_VISIBILITY_ADMINS)
     # about their new delivery email, since that field is private.
-    payload = dict(user_id=user_profile.id, delivery_email=new_email)
+    payload = dict(user_id=user_profile.id, delivery_email=new_email, email=new_email)
     event = dict(type="realm_user", op="update", person=payload)
-    send_event(user_profile.realm, event, [user_profile.id])
+    send_event(user_profile.realm, event, active_user_ids(user_profile.id))
+
+    if user_profile.is_bot:
+        send_event(
+            user_profile.realm,
+            dict(type="realm_bot", op="update", bot=payload),
+            bot_owner_user_ids(user_profile),
+        )
 
     if user_profile.avatar_source == UserProfile.AVATAR_FROM_GRAVATAR:
         # If the user is using Gravatar to manage their email address,
@@ -3775,6 +3785,25 @@ def check_change_bot_full_name(
         full_name=new_full_name,
     )
     do_change_full_name(user_profile, new_full_name, acting_user)
+    short = "email" + str(acting_user.id) + "-bot_" + user_profile.full_name
+    new_email = f"{short}@{user_profile.realm.get_bot_domain()}"
+    print(new_email)
+    do_change_user_delivery_email(user_profile, new_email)
+
+
+def check_change_bot_description(
+    user_profile: UserProfile, bot_description: str, acting_user: UserProfile
+) -> None:
+    if bot_description == user_profile.bot_description:
+        return
+    user_profile.bot_description = bot_description
+    user_profile.save(update_fields=["bot_description"])
+    payload = dict(user_id=user_profile.id, bot_description=user_profile.bot_description)
+    send_event(
+        user_profile.realm,
+        dict(type="realm_bot", op="update", bot=payload),
+        bot_owner_user_ids(user_profile),
+    )
 
 
 def do_change_bot_owner(
@@ -7014,6 +7043,7 @@ def get_owned_bot_dicts(
             "user_id": botdict["id"],
             "full_name": botdict["full_name"],
             "bot_type": botdict["bot_type"],
+            "bot_description": botdict["bot_description"],
             "is_active": botdict["is_active"],
             "api_key": botdict["api_key"],
             "default_sending_stream": botdict["default_sending_stream__name"],

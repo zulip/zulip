@@ -13,6 +13,7 @@ const bot_fields = [
     "default_events_register_stream",
     "default_sending_stream",
     "email",
+    "bot_description",
     "full_name",
     "is_active",
     "owner", // TODO: eliminate
