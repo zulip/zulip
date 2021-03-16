@@ -182,7 +182,14 @@ stream_data.add_sub(amp_stream);
 
 markdown.initialize(page_params.realm_filters, markdown_config.get_helpers());
 
-run_test("markdown_detection", () => {
+function test(label, f) {
+    run_test(label, (override) => {
+        markdown.update_linkifier_rules(page_params.realm_filters);
+        f(override);
+    });
+}
+
+test("markdown_detection", () => {
     const no_markup = [
         "This is a plaintext message",
         "This is a plaintext: message",
@@ -228,7 +235,7 @@ run_test("markdown_detection", () => {
     }
 });
 
-run_test("marked_shared", () => {
+test("marked_shared", () => {
     const tests = markdown_test_cases.regular_tests;
 
     for (const test of tests) {
@@ -253,7 +260,7 @@ run_test("marked_shared", () => {
     }
 });
 
-run_test("message_flags", () => {
+test("message_flags", () => {
     let message = {raw_content: "@**Leo**"};
     markdown.apply_markdown(message);
     assert(!message.mentioned);
@@ -270,7 +277,7 @@ run_test("message_flags", () => {
     assert(!message.mentioned_me_directly);
 });
 
-run_test("marked", () => {
+test("marked", () => {
     const test_cases = [
         {input: "hello", expected: "<p>hello</p>"},
         {input: "hello there", expected: "<p>hello there</p>"},
@@ -529,7 +536,7 @@ run_test("marked", () => {
     }
 });
 
-run_test("topic_links", () => {
+test("topic_links", () => {
     let message = {type: "stream", topic: "No links here"};
     markdown.add_topic_links(message);
     assert.equal(message.topic_links.length, 0);
@@ -578,7 +585,7 @@ run_test("topic_links", () => {
     assert.equal(message.topic_links.length, 0);
 });
 
-run_test("message_flags", () => {
+test("message_flags", () => {
     let input = "/me is testing this";
     let message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
@@ -650,9 +657,7 @@ run_test("message_flags", () => {
     assert.equal(message.mentioned, false);
 });
 
-run_test("backend_only_linkifiers", () => {
-    markdown.update_linkifier_rules(page_params.realm_filters);
-
+test("backend_only_linkifiers", () => {
     const backend_only_linkifiers = [
         "Here is the PR-#123.",
         "Function abc() was introduced in (PR)#123.",
@@ -662,7 +667,7 @@ run_test("backend_only_linkifiers", () => {
     }
 });
 
-run_test("python_to_js_linkifier", () => {
+test("python_to_js_linkifier", () => {
     // The only way to reach python_to_js_linkifier is indirectly, hence the call
     // to update_linkifier_rules.
     markdown.update_linkifier_rules([["/a(?im)a/g"], ["/a(?L)a/g"]]);
@@ -687,7 +692,7 @@ run_test("python_to_js_linkifier", () => {
     assert.deepEqual(actual_value, expected_value);
 });
 
-run_test("translate_emoticons_to_names", () => {
+test("translate_emoticons_to_names", () => {
     // Simple test
     const test_text = "Testing :)";
     const expected = "Testing :smile:";
@@ -736,7 +741,7 @@ run_test("translate_emoticons_to_names", () => {
     }
 });
 
-run_test("missing unicode emojis", (override) => {
+test("missing unicode emojis", (override) => {
     const message = {raw_content: "\u{1F6B2}"};
 
     markdown.apply_markdown(message);
