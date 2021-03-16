@@ -216,7 +216,10 @@ export function in_content_editable_widget(e) {
 
 // Returns true if we handled it, false if the browser should.
 export function process_escape_key(e) {
-    if (hashchange.in_recent_topics_hash() && recent_topics.change_focused_element(e, "escape")) {
+    if (
+        hashchange.in_recent_topics_hash() &&
+        recent_topics.change_focused_element($(e.target), "escape")
+    ) {
         // Recent topics uses escape to make focus from RT search / filters to topics table.
         // If focus already in table it returns false.
         return true;
@@ -532,7 +535,7 @@ export function process_hotkey(e, hotkey) {
                 !$(".user-list-filter").is(":focus") &&
                 !$(".stream-list-filter").is(":focus")
             ) {
-                return recent_topics.change_focused_element(e, event_name);
+                return recent_topics.change_focused_element($(e.target), event_name);
             }
     }
 
