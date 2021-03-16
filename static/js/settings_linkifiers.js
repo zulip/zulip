@@ -94,6 +94,11 @@ export function build_page() {
     // Populate filters table
     populate_filters(page_params.realm_filters);
 
+    $("#clear_linkifier_settings_search_button").on("click", ()=>{
+        $("#linkifier_settings_search").val("");
+        build_page();
+    });
+
     $(".admin_filters_table").on("click", ".delete", function (e) {
         e.preventDefault();
         e.stopPropagation();
