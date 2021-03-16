@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -371,12 +371,14 @@ test("quote_and_reply", (override) => {
         raw_content: "Testing.",
     };
 
-    channel.get = () => {
+    function whiny_get() {
         assert.fail("channel.get should not be used if raw_content is present");
-    };
+    }
 
     replaced = false;
-    quote_and_reply(opts);
+    with_field(channel, "get", whiny_get, () => {
+        quote_and_reply(opts);
+    });
     assert(replaced);
 
     selected_message = {
