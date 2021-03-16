@@ -1845,6 +1845,36 @@ class MarkdownTest(ZulipTestCase):
         )
         self.assertEqual(msg.mentions_user_ids, set())
 
+    def test_mention_invalid_followed_by_valid(self) -> None:
+        sender_user_profile = self.example_user("othello")
+        user_profile = self.example_user("hamlet")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        user_id = user_profile.id
+
+        content = "@**Invalid user** and @**King Hamlet**"
+        self.assertEqual(
+            render_markdown(msg, content),
+            '<p>@<strong>Invalid user</strong> and <span class="user-mention" '
+            f'data-user-id="{user_id}">'
+            "@King Hamlet</span></p>",
+        )
+        self.assertEqual(msg.mentions_user_ids, {user_profile.id})
+
+    def test_silent_mention_invalid_followed_by_valid(self) -> None:
+        sender_user_profile = self.example_user("othello")
+        user_profile = self.example_user("hamlet")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        user_id = user_profile.id
+
+        content = "@_**Invalid user** and @_**King Hamlet**"
+        self.assertEqual(
+            render_markdown(msg, content),
+            '<p>@_<strong>Invalid user</strong> and <span class="user-mention silent" '
+            f'data-user-id="{user_id}">'
+            "King Hamlet</span></p>",
+        )
+        self.assertEqual(msg.mentions_user_ids, set())
+
     def test_possible_mentions(self) -> None:
         def assert_mentions(content: str, names: Set[str], has_wildcards: bool = False) -> None:
             self.assertEqual(possible_mentions(content), (names, has_wildcards))

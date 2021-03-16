@@ -1796,8 +1796,10 @@ class RealmFilterPattern(markdown.inlinepatterns.Pattern):
         )
 
 
-class UserMentionPattern(markdown.inlinepatterns.Pattern):
-    def handleMatch(self, m: Match[str]) -> Optional[Element]:
+class UserMentionPattern(markdown.inlinepatterns.InlineProcessor):
+    def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
+        self, m: Match[str], data: str
+    ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
         match = m.group("match")
         silent = m.group("silent") == "_"
 
@@ -1806,7 +1808,7 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
             if match.startswith("**") and match.endswith("**"):
                 name = match[2:-2]
             else:
-                return None
+                return None, None, None
 
             wildcard = mention.user_mention_matches_wildcard(name)
 
@@ -1827,7 +1829,7 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
                 user_id = str(user["id"])
             else:
                 # Don't highlight @mentions that don't refer to a valid user
-                return None
+                return None, None, None
 
             el = Element("span")
             el.set("data-user-id", user_id)
@@ -1838,8 +1840,8 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
                 el.set("class", "user-mention")
                 text = f"@{text}"
             el.text = markdown.util.AtomicString(text)
-            return el
-        return None
+            return el, m.start(), m.end()
+        return None, None, None
 
 
 class UserGroupMentionPattern(markdown.inlinepatterns.Pattern):
