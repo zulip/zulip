@@ -48,16 +48,6 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
             )
         self.assertTrue(m.called)
 
-        response = make_response(text=json.dumps(dict(content="")))
-
-        with mock.patch("zerver.lib.outgoing_webhook.send_response_message") as m:
-            process_success_response(
-                event=event,
-                service_handler=service_handler,
-                response=response,
-            )
-        self.assertFalse(m.called)
-
         response = make_response(text="unparsable text")
 
         with mock.patch("zerver.lib.outgoing_webhook.fail_with_message") as m:
@@ -237,6 +227,17 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
             message=dict(type="private"),
         )
         service_handler = self.handler
+
+        # verify we don't try to send a message with empty text/content
+        response = make_response(text=json.dumps(dict(text="")))
+
+        with mock.patch("zerver.lib.outgoing_webhook.send_response_message") as m:
+            process_success_response(
+                event=event,
+                service_handler=service_handler,
+                response=response,
+            )
+        self.assertFalse(m.called)
 
         # verify we don't try to send a message with no text/content
         response = make_response(text=json.dumps(dict(text=None)))
