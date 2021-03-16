@@ -1,3 +1,4 @@
+import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as people from "./people";
 import * as reload from "./reload";

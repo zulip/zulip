@@ -117,10 +117,6 @@ js_rules = RuleList(
             "description": 'Avoid using "msgid" as a variable name; use "message_id" instead.',
         },
         {
-            "pattern": r".*blueslip.warning\(.*",
-            "description": "The module blueslip has no function warning, try using blueslip.warn",
-        },
-        {
             "pattern": r"i18n\.t\([^)]+[^,\{\)]$",
             "description": "i18n string should not be a multiline string",
         },

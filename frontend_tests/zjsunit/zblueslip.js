@@ -1,6 +1,6 @@
 "use strict";
 
-exports.make_zblueslip = function () {
+function make_zblueslip() {
     const lib = {};
 
     const opts = {
@@ -124,4 +124,6 @@ exports.make_zblueslip = function () {
     lib.preview_node = (node) => "node:" + node;
 
     return lib;
-};
+}
+
+module.exports = make_zblueslip();

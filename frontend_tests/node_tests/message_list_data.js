@@ -4,6 +4,7 @@ const {strict: assert} = require("assert");
 
 const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 
 set_global("page_params", {});
 

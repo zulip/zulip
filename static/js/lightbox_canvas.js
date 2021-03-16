@@ -1,3 +1,4 @@
+import * as blueslip from "./blueslip";
 import * as overlays from "./overlays";
 
 const funcs = {

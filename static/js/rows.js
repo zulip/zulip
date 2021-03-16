@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import * as blueslip from "./blueslip";
 import * as message_store from "./message_store";
 // We don't need an andSelf() here because we already know
 // that our next element is *not* a message_row, so this

@@ -6,6 +6,7 @@ import render_subscription_settings from "../templates/subscription_settings.hbs
 import render_subscription_table_body from "../templates/subscription_table_body.hbs";
 import render_subscriptions from "../templates/subscriptions.hbs";
 
+import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as components from "./components";
 import * as compose_state from "./compose_state";

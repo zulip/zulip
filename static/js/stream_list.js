@@ -4,6 +4,7 @@ import _ from "lodash";
 import render_stream_privacy from "../templates/stream_privacy.hbs";
 import render_stream_sidebar_row from "../templates/stream_sidebar_row.hbs";
 
+import * as blueslip from "./blueslip";
 import * as hash_util from "./hash_util";
 import * as keydown_util from "./keydown_util";
 import {ListCursor} from "./list_cursor";

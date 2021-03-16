@@ -6,6 +6,7 @@ const _ = require("lodash");
 
 const {mock_cjs, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 
 set_global("setTimeout", (f, delay) => {
     assert.equal(delay, 0);

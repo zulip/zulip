@@ -6,6 +6,7 @@ const markdown_test_cases = require("../../zerver/tests/fixtures/markdown_test_c
 const markdown_assert = require("../zjsunit/markdown_assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 
 set_global("location", {
     origin: "http://zulip.zulipdev.com",

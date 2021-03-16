@@ -1,3 +1,4 @@
+import * as blueslip from "./blueslip";
 import * as people from "./people";
 import * as reload_state from "./reload_state";
 import * as server_events from "./server_events";

@@ -3,7 +3,6 @@
 // remove each declaration when the corresponding module is migrated
 // to TS.
 
-declare let blueslip: any;
 declare let csrf_token: any;
 declare let current_msg_list: any;
 declare let home_msg_list: any;

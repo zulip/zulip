@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import * as alert_words from "./alert_words";
+import * as blueslip from "./blueslip";
 import * as compose from "./compose";
 import * as local_message from "./local_message";
 import * as markdown from "./markdown";

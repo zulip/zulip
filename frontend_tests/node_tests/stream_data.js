@@ -6,6 +6,7 @@ const _ = require("lodash");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 
 let page_params;
 

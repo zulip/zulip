@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 
 const noop = () => {};
 

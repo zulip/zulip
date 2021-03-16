@@ -8,6 +8,7 @@ const MockDate = require("mockdate");
 
 const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 
 const message_store = mock_esm("../../static/js/message_store");
 const page_params = set_global("page_params", {});

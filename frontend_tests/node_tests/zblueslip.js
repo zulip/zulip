@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 
 /*
 
