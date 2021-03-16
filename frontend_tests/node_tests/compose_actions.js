@@ -337,7 +337,7 @@ test("quote_and_reply", (override) => {
         success_function = opts.success;
     });
 
-    current_msg_list.selected_id = () => 100;
+    override(current_msg_list, "selected_id", () => 100);
 
     override(compose_ui, "insert_syntax_and_focus", (syntax) => {
         assert.equal(syntax, "[Quoting…]\n");
