@@ -62,12 +62,6 @@ const respond_to_message = compose_actions.respond_to_message;
 const reply_with_mention = compose_actions.reply_with_mention;
 const quote_and_reply = compose_actions.quote_and_reply;
 
-function stub_channel_get(success_value) {
-    channel.get = (opts) => {
-        opts.success(success_value);
-    };
-}
-
 function assert_visible(sel) {
     assert($(sel).visible());
 }
@@ -337,8 +331,10 @@ test("quote_and_reply", (override) => {
         sender_id: 90,
     };
     hash_util.by_conversation_and_time_uri = () => "link_to_message";
-    stub_channel_get({
-        raw_content: "Testing.",
+
+    let success_function;
+    override(channel, "get", (opts) => {
+        success_function = opts.success;
     });
 
     current_msg_list.selected_id = () => 100;
@@ -360,6 +356,10 @@ test("quote_and_reply", (override) => {
         "@_**Steve Stephenson|90** [said](link_to_message):\n```quote\nTesting.\n```";
 
     quote_and_reply(opts);
+
+    success_function({
+        raw_content: "Testing.",
+    });
     assert(replaced);
 
     selected_message = {
