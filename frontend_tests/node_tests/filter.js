@@ -54,6 +54,22 @@ function assert_same_operators(result, terms) {
     assert.deepEqual(result, terms);
 }
 
+function get_predicate(operators) {
+    operators = operators.map((op) => ({
+        operator: op[0],
+        operand: op[1],
+    }));
+    return new Filter(operators).predicate();
+}
+
+function make_sub(name, stream_id) {
+    const sub = {
+        name,
+        stream_id,
+    };
+    stream_data.add_sub(sub);
+}
+
 run_test("basics", () => {
     let operators = [
         {operator: "stream", operand: "foo"},
@@ -382,6 +398,7 @@ run_test("show_first_unread", () => {
     assert(!filter.can_mark_messages_read());
     assert(filter.allow_use_first_unread_when_narrowing());
 });
+
 run_test("filter_with_new_params_topic", () => {
     const operators = [
         {operator: "stream", operand: "foo"},
@@ -521,22 +538,6 @@ run_test("canonicalization", () => {
     assert.equal(term.operator, "has");
     assert.equal(term.operand, "link");
 });
-
-function get_predicate(operators) {
-    operators = operators.map((op) => ({
-        operator: op[0],
-        operand: op[1],
-    }));
-    return new Filter(operators).predicate();
-}
-
-function make_sub(name, stream_id) {
-    const sub = {
-        name,
-        stream_id,
-    };
-    stream_data.add_sub(sub);
-}
 
 run_test("predicate_basics", () => {
     // Predicates are functions that accept a message object with the message
