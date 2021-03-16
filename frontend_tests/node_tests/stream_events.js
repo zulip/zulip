@@ -96,16 +96,13 @@ test("update_property", (override) => {
 
     // Invoke error for non-existent stream/property
     {
-        let errors = 0;
-        override(blueslip, "warn", () => {
-            errors += 1;
-        });
-
+        blueslip.expect("warn", "Update for an unknown subscription");
         stream_events.update_property(99, "color", "blue");
-        assert.equal(errors, 1);
+        blueslip.reset();
 
+        blueslip.expect("warn", "Unexpected subscription property type");
         stream_events.update_property(stream_id, "not_real", 42);
-        assert.equal(errors, 2);
+        blueslip.reset();
     }
 
     // Test update color
@@ -255,14 +252,11 @@ test("marked_(un)subscribed (early return)", () => {
     stream_events.mark_unsubscribed({subscribed: false});
 });
 
-test("marked_subscribed (error)", (override) => {
+test("marked_subscribed (error)", () => {
     // Test undefined error
-    let errors = 0;
-    override(blueslip, "error", () => {
-        errors += 1;
-    });
+    blueslip.expect("error", "Undefined sub passed to mark_subscribed");
     stream_events.mark_subscribed(undefined, [], "yellow");
-    assert.equal(errors, 1);
+    blueslip.reset();
 });
 
 test("marked_subscribed (normal)", (override) => {
@@ -319,21 +313,18 @@ test("marked_subscribed (color)", (override) => {
     };
 
     override(color_data, "pick_color", () => "green");
-    let warnings = 0;
-    override(blueslip, "warn", () => {
-        warnings += 1;
-    });
 
     // narrow state is undefined
     {
         const stub = make_stub();
         override(subs, "set_color", stub.f);
+        blueslip.expect("warn", "Frontend needed to pick a color in mark_subscribed");
         stream_events.mark_subscribed(sub, [], undefined);
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("id", "color");
         assert.equal(args.id, sub.stream_id);
         assert.equal(args.color, "green");
-        assert.equal(warnings, 1);
+        blueslip.reset();
     }
 });
 

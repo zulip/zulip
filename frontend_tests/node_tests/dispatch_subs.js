@@ -129,15 +129,13 @@ test("update", (override) => {
     assert.deepEqual(args.value, event.value);
 });
 
-test("add error handling", (override) => {
+test("add error handling", () => {
     // test blueslip errors/warns
     const event = event_fixtures.subscription__add;
 
-    const stub = make_stub();
-    override(blueslip, "error", stub.f);
+    blueslip.expect("error", "Subscribing to unknown stream with ID 101");
     dispatch(event);
-    assert.equal(stub.num_calls, 1);
-    assert.deepEqual(stub.get_args("param").param, "Subscribing to unknown stream with ID 101");
+    blueslip.reset();
 });
 
 test("peer event error handling (bad stream_ids/user_ids)", (override) => {
