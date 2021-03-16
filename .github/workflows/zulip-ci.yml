@@ -132,11 +132,7 @@ jobs:
         run: |
           source tools/ci/activate-venv
           exec 2>&1
-          # We need to pass a parallel level to test-backend because GitHub Actions'
-          # docker setup means the auto-detection logic sees the ~36 processes
-          # the Docker host has, not the ~2 processes of resources we're
-          # allocated.
-          ./tools/test-backend --coverage --include-webhooks --no-cov-cleanup --ban-console-output --parallel=6
+          ./tools/test-backend --coverage --include-webhooks --no-cov-cleanup --ban-console-output
 
       - name: Run mypy
         run: |
