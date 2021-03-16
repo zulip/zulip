@@ -857,6 +857,14 @@ export function incr_recipient_count(user_id) {
     pm_recipient_count_dict.set(user_id, old_count + 1);
 }
 
+export function clear_recipient_counts_for_testing() {
+    pm_recipient_count_dict.clear();
+}
+
+export function set_recipient_count_for_testing(user_id, count) {
+    pm_recipient_count_dict.set(user_id, count);
+}
+
 export function get_message_people() {
     /*
         message_people are roughly the people who have
