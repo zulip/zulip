@@ -103,14 +103,14 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                     <input type='hidden' name='timezone' id='timezone'/>
                     <label for="id_email" class="inline-block label-title">{{ _('Email') }}</label>
                     <div class="email-visibility-text">
-                        {% if EMAIL_ADDRESS_VISIBILITY == EMAIL_ADDRESS_VISIBILITY_ALL %}
-                        This email address will be visible to all users.
+                        {% if EMAIL_ADDRESS_VISIBILITY == EMAIL_ADDRESS_VISIBILITY_EVERYONE %}
+                        All users will be able to see this email address.
                         {% elif EMAIL_ADDRESS_VISIBILITY == EMAIL_ADDRESS_VISIBILITY_ADMINS %}
-                        This email address will only be visible to admin users.
-                        {% elif EMAIL_ADDRESS_VISIBILITY == EMAIL_ADDRESS_VISIBILITY_NONE %}
-                        This email address will not be visible to any users.
+                        Only admin users will be able to see this email address.
+                        {% elif EMAIL_ADDRESS_VISIBILITY == EMAIL_ADDRESS_VISIBILITY_NOBODY %}
+                        Users will not be able to see this email address.
                         {% else %}
-                        This email address will be visible to all users.
+                        All users will be able to see this email address.
                         {% endif %}
                     </div>
                     <div class="input-box">
