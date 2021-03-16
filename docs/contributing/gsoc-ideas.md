@@ -106,7 +106,7 @@ Your application should include the following:
   how you work, such as personal projects of yours, including any
   existing open source or open culture contributions you've made and
   any bug reports you've submitted to open source projects.
-* Some notes on what you are hoping to get out of your twelve-week project.
+* Some notes on what you are hoping to get out of your project.
 * A description of the project you'd like to do, and why you're
   excited about it.
 * Some notes on why you're excited about working on Zulip.
