@@ -42,25 +42,6 @@ your reminders directly in your Zulip feed.
 
     The `--user` flag specifies the user to send the reminder to.
 
-1.  There are two optional flags that you can specify when running this
-    script:
-
-    * `--calendar`: This flag specifies the calendar to watch from the
-      user’s Google account. By default, this flag is set to a user’s
-      primary or default calendar. To specify a calendar, you need the
-      calendar ID which can be obtained by going to Google Calendar and
-      clicking on the wedge next to the calendar’s name. Click on settings
-      in **Calendar settings** in the drop down, and look for the **Calendar
-      Address** section. Copy the **Calendar ID** from the right side of the
-      page and use that as the value for this flag.
-
-    ![Specify a calendar](/static/images/integrations/google/calendar/002.png)
-
-    * `--interval`: This flag specifies the interval of time - in
-      minutes - between receiving the reminder, and the actual event. For
-      example, an interval of 30 minutes would mean that you would receive a
-      reminder for an event 30 minutes before it is scheduled to occur.
-
 1.  Don’t close the terminal window with the bot running (you can use
     `screen` if needed). You will only get reminders if the bot is still
     running.
@@ -68,3 +49,24 @@ your reminders directly in your Zulip feed.
 {!congrats.md!}
 
 ![Calendar demo](/static/images/integrations/google/calendar/003.png)
+
+## Supported parameters
+
+There are two optional flags that you can specify when running this
+script:
+
+* `--calendar`: This flag specifies the calendar to watch from the
+  user’s Google account. By default, this flag is set to a user’s
+  primary or default calendar. To specify a calendar, you need the
+  calendar ID which can be obtained by going to Google Calendar and
+  clicking on the wedge next to the calendar’s name. Click on settings
+  in **Calendar settings** in the drop down, and look for the **Calendar
+  Address** section. Copy the **Calendar ID** from the right side of the
+  page and use that as the value for this flag.
+
+![Specify a calendar](/static/images/integrations/google/calendar/002.png)
+
+* `--interval`: This flag specifies the interval of time - in
+  minutes - between receiving the reminder, and the actual event. For
+  example, an interval of 30 minutes would mean that you would receive a
+  reminder for an event 30 minutes before it is scheduled to occur.
