@@ -92,6 +92,7 @@ function override_private_message_recipient(override) {
 function test(label, f) {
     run_test(label, (override) => {
         people.init();
+        compose_state.set_message_type(false);
         f(override);
     });
 }
@@ -255,6 +256,7 @@ test("respond_to_message", (override) => {
 });
 
 test("reply_with_mention", (override) => {
+    compose_state.set_message_type("stream");
     override(compose_actions, "set_focus", () => {});
     override(compose_actions, "complete_starting_tasks", () => {});
     override(compose_actions, "clear_textarea", () => {});
@@ -300,6 +302,7 @@ test("reply_with_mention", (override) => {
 });
 
 test("quote_and_reply", (override) => {
+    compose_state.set_message_type("stream");
     const steve = {
         user_id: 90,
         email: "steve@example.com",
