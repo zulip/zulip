@@ -67,18 +67,20 @@ def update_user_status_backend(
     user_profile: UserProfile,
     away: Optional[bool] = REQ(validator=check_bool, default=None),
     status_text: Optional[str] = REQ(str_validator=check_capped_string(60), default=None),
+    status_emoji: Optional[str] = REQ(str_validator=check_capped_string(60), default=None),
 ) -> HttpResponse:
 
     if status_text is not None:
         status_text = status_text.strip()
 
-    if (away is None) and (status_text is None):
+    if (away is None) and (status_text is None) and (status_emoji is None):
         return json_error(_("Client did not pass any new values."))
 
     do_update_user_status(
         user_profile=user_profile,
         away=away,
         status_text=status_text,
+        status_emoji=status_emoji,
         client_id=request.client.id,
     )
 

@@ -2383,6 +2383,11 @@ div.topic_edit_spinner .loading_indicator_spinner {
     margin-top: -7px;
     vertical-align: middle;
     top: 3px;
+    &.status_emoji {
+        top: 6px;
+        height: 20px;
+        width: 20px;
+    }
 }
 
 /* FIXME: Combine this rule with the one in portico.css somehow? */

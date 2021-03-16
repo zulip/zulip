@@ -618,6 +618,8 @@ export function dispatch_normal_event(event) {
                 if (message_lists.current === message_list.narrowed) {
                     message_list.narrowed.rerender();
                 }
+                // Rerender buddy list status emoji
+                activity.build_user_sidebar();
             }
             settings_display.update_page();
             break;
@@ -693,6 +695,14 @@ export function dispatch_normal_event(event) {
                 user_status.set_status_text({
                     user_id: event.user_id,
                     status_text: event.status_text,
+                });
+                activity.redraw_user(event.user_id);
+            }
+
+            if (event.status_emoji !== undefined) {
+                user_status.set_status_emoji({
+                    user_id: event.user_id,
+                    status_emoji: event.status_emoji,
                 });
                 activity.redraw_user(event.user_id);
             }

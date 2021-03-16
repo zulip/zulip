@@ -13,10 +13,12 @@ import * as compose_ui from "./compose_ui";
 import {i18n} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
+import * as overlays from "./overlays";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as rows from "./rows";
 import * as ui from "./ui";
+import * as user_status_ui from "./user_status_ui";
 
 // Emoji picker is of fixed width and height. Update these
 // whenever these values are changed in `reactions.css`.
@@ -157,7 +159,7 @@ export function rebuild_catalog() {
     }));
 }
 
-const generate_emoji_picker_content = function (id) {
+const generate_emoji_picker_content = function (id, is_status_emoji_popover) {
     let emojis_used = [];
 
     if (id !== undefined) {
@@ -169,6 +171,7 @@ const generate_emoji_picker_content = function (id) {
 
     return render_emoji_popover_content({
         message_id: id,
+        is_status_emoji_popover,
         emoji_categories: complete_emoji_catalog,
     });
 };
@@ -599,7 +602,7 @@ function register_popover_events(popover) {
     });
 }
 
-export function build_emoji_popover(elt, id) {
+export function build_emoji_popover(elt, id, is_status_emoji_popover) {
     const template_args = {
         class: "emoji-info-popover",
     };
@@ -626,7 +629,7 @@ export function build_emoji_popover(elt, id) {
         fix_positions: true,
         template,
         title: "",
-        content: generate_emoji_picker_content(id),
+        content: generate_emoji_picker_content(id, is_status_emoji_popover),
         html: true,
         trigger: "manual",
     });
@@ -662,7 +665,9 @@ export function toggle_emoji_popover(element, id) {
         message_lists.current.select_id(id);
     }
 
-    if (elt.data("popover") === undefined) {
+    if (overlays.user_status_overlay_open()) {
+        build_emoji_popover(elt, id, true);
+    } else if (elt.data("popover") === undefined) {
         // Keep the element over which the popover is based off visible.
         elt.addClass("reaction_button_visible");
         build_emoji_popover(elt, id);
@@ -752,6 +757,19 @@ export function register_click_handlers() {
         // .fa-chevron-down element as the base for the popover.
         const elem = $(".selected_message .actions_hover")[0];
         toggle_emoji_popover(elem, message_id);
+    });
+
+    $("body").on("click", ".status_emoji", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        toggle_emoji_popover(e.target);
+    });
+
+    $(document).on("click", ".emoji-popover-emoji.status", function (e) {
+        const emoji_name = $(this).attr("data-emoji-name");
+        user_status_ui.submit_new_status_emoji(emoji_name);
+        e.stopPropagation();
+        hide_emoji_popover();
     });
 
     $("body").on("click", ".emoji-popover-tab-item", function (e) {

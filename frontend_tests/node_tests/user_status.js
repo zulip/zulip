@@ -15,6 +15,7 @@ function initialize() {
             1: {away: true, status_text: "in a meeting"},
             2: {away: true},
             3: {away: true},
+            4: {status_emoji: "smiley"},
         },
     };
     user_status.initialize(params);
@@ -44,6 +45,18 @@ run_test("basics", () => {
         status_text: "",
     });
     assert.equal(user_status.get_status_text(2), undefined);
+
+    user_status.set_status_emoji({
+        user_id: 2,
+        status_emoji: "smiley",
+    });
+    assert.equal(user_status.get_status_emoji(2), "smiley");
+
+    user_status.set_status_emoji({
+        user_id: 2,
+        status_emoji: "",
+    });
+    assert.equal(user_status.get_status_emoji(2), undefined);
 });
 
 run_test("server", () => {
@@ -61,10 +74,10 @@ run_test("server", () => {
     assert.equal(sent_data, undefined);
 
     user_status.server_set_away();
-    assert.deepEqual(sent_data, {away: true, status_text: undefined});
+    assert.deepEqual(sent_data, {away: true, status_emoji: undefined, status_text: undefined});
 
     user_status.server_revoke_away();
-    assert.deepEqual(sent_data, {away: false, status_text: undefined});
+    assert.deepEqual(sent_data, {away: false, status_emoji: undefined, status_text: undefined});
 
     let called;
 

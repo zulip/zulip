@@ -732,11 +732,23 @@ run_test("update_display_settings", (override) => {
         event = event_fixtures.update_display_settings__emojiset;
         called = false;
         override(settings_display, "report_emojiset_change", stub.f);
+        override(activity, "build_user_sidebar", noop);
         page_params.emojiset = "text";
         dispatch(event);
         assert.equal(stub.num_calls, 1);
         assert_same(called, true);
         assert_same(page_params.emojiset, "google");
+    }
+
+    {
+        const stub = make_stub();
+        event = event_fixtures.update_display_settings__emojiset;
+        called = false;
+        override(settings_display, "report_emojiset_change", noop);
+        override(activity, "build_user_sidebar", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        assert_same(called, true);
     }
 
     override(starred_messages, "rerender_ui", noop);
@@ -887,6 +899,18 @@ run_test("user_status", (override) => {
         assert_same(args.user_id, test_user.user_id);
         const status_text = user_status.get_status_text(test_user.user_id);
         assert.equal(status_text, "out to lunch");
+    }
+
+    event = event_fixtures.user_status__set_status_emoji;
+    {
+        const stub = make_stub();
+        override(activity, "redraw_user", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("user_id");
+        assert_same(args.user_id, test_user.user_id);
+        const status_emoji = user_status.get_status_emoji(test_user.user_id);
+        assert.equal(status_emoji, "smiley");
     }
 });
 

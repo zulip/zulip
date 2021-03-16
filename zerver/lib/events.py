@@ -997,6 +997,7 @@ def apply_event(
         user_status = state["user_status"]
         away = event.get("away")
         status_text = event.get("status_text")
+        status_emoji = event.get("status_emoji")
 
         if user_id_str not in user_status:
             user_status[user_id_str] = {}
@@ -1012,6 +1013,12 @@ def apply_event(
                 user_status[user_id_str].pop("status_text", None)
             else:
                 user_status[user_id_str]["status_text"] = status_text
+
+        if status_emoji is not None:
+            if status_emoji == "":
+                user_status[user_id_str].pop("status_emoji", None)
+            else:
+                user_status[user_id_str]["status_emoji"] = status_emoji
 
         if not user_status[user_id_str]:
             user_status.pop(user_id_str, None)

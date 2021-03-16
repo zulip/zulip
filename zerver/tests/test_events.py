@@ -844,6 +844,7 @@ class NormalActionsTest(BaseAction):
                 user_profile=self.user_profile,
                 away=True,
                 status_text="out to lunch",
+                status_emoji=None,
                 client_id=client.id,
             )
         )
@@ -852,7 +853,11 @@ class NormalActionsTest(BaseAction):
 
         events = self.verify_action(
             lambda: do_update_user_status(
-                user_profile=self.user_profile, away=False, status_text="", client_id=client.id
+                user_profile=self.user_profile,
+                away=False,
+                status_text="",
+                status_emoji=None,
+                client_id=client.id,
             )
         )
 
@@ -860,7 +865,11 @@ class NormalActionsTest(BaseAction):
 
         events = self.verify_action(
             lambda: do_update_user_status(
-                user_profile=self.user_profile, away=True, status_text=None, client_id=client.id
+                user_profile=self.user_profile,
+                away=True,
+                status_text=None,
+                status_emoji=None,
+                client_id=client.id,
             )
         )
 
@@ -871,6 +880,7 @@ class NormalActionsTest(BaseAction):
                 user_profile=self.user_profile,
                 away=None,
                 status_text="at the beach",
+                status_emoji=None,
                 client_id=client.id,
             )
         )

@@ -42,6 +42,10 @@ export function drafts_open() {
     return open_overlay_name === "drafts";
 }
 
+export function user_status_overlay_open() {
+    return open_overlay_name === "user_status_overlay";
+}
+
 // To address bugs where mouse might apply to the streams/settings
 // overlays underneath an open modal within those settings UI, we add
 // this inline style to '.overlay.show', overriding the

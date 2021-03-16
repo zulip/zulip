@@ -4884,7 +4884,11 @@ def update_user_presence(
 
 
 def do_update_user_status(
-    user_profile: UserProfile, away: Optional[bool], status_text: Optional[str], client_id: int
+    user_profile: UserProfile,
+    away: Optional[bool],
+    status_text: Optional[str],
+    status_emoji: Optional[str],
+    client_id: int,
 ) -> None:
     if away is None:
         status = None
@@ -4899,6 +4903,7 @@ def do_update_user_status(
         user_profile_id=user_profile.id,
         status=status,
         status_text=status_text,
+        status_emoji=status_emoji,
         client_id=client_id,
     )
 
@@ -4912,6 +4917,9 @@ def do_update_user_status(
 
     if status_text is not None:
         event["status_text"] = status_text
+
+    if status_emoji is not None:
+        event["status_emoji"] = status_emoji
 
     send_event(realm, event, active_user_ids(realm.id))
 

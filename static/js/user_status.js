@@ -3,6 +3,7 @@ import * as channel from "./channel";
 
 const away_user_ids = new Set();
 const user_info = new Map();
+const user_status_emoji = new Map();
 
 export function server_update(opts) {
     channel.post({
@@ -10,6 +11,7 @@ export function server_update(opts) {
         data: {
             away: opts.away,
             status_text: opts.status_text,
+            status_emoji: opts.status_emoji,
         },
         idempotent: true,
         success() {
@@ -59,6 +61,19 @@ export function set_status_text(opts) {
     user_info.set(opts.user_id, opts.status_text);
 }
 
+export function get_status_emoji(user_id) {
+    return user_status_emoji.get(user_id);
+}
+
+export function set_status_emoji(opts) {
+    if (!opts.status_emoji) {
+        user_status_emoji.delete(opts.user_id);
+        return;
+    }
+
+    user_status_emoji.set(opts.user_id, opts.status_emoji);
+}
+
 export function initialize(params) {
     away_user_ids.clear();
     user_info.clear();
@@ -74,6 +89,10 @@ export function initialize(params) {
 
         if (dct.status_text) {
             user_info.set(user_id, dct.status_text);
+        }
+
+        if (dct.status_emoji) {
+            user_status_emoji.set(user_id, dct.status_emoji);
         }
     }
 }

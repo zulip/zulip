@@ -780,4 +780,10 @@ exports.fixtures = {
         user_id: test_user.user_id,
         status_text: "out to lunch",
     },
+
+    user_status__set_status_emoji: {
+        type: "user_status",
+        user_id: test_user.user_id,
+        status_emoji: "smiley",
+    },
 };

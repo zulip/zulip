@@ -37,6 +37,7 @@ class UserStatusTest(ZulipTestCase):
             user_profile_id=hamlet.id,
             status=UserStatus.AWAY,
             status_text=None,
+            status_emoji=None,
             client_id=client1.id,
         )
 
@@ -53,6 +54,7 @@ class UserStatusTest(ZulipTestCase):
             user_profile_id=hamlet.id,
             status=UserStatus.AWAY,
             status_text="out to lunch",
+            status_emoji=None,
             client_id=client2.id,
         )
 
@@ -72,6 +74,7 @@ class UserStatusTest(ZulipTestCase):
             user_profile_id=hamlet.id,
             status=UserStatus.NORMAL,
             status_text=None,
+            status_emoji=None,
             client_id=client2.id,
         )
 
@@ -85,6 +88,7 @@ class UserStatusTest(ZulipTestCase):
             user_profile_id=hamlet.id,
             status=None,
             status_text="",
+            status_emoji=None,
             client_id=client2.id,
         )
 
@@ -102,18 +106,21 @@ class UserStatusTest(ZulipTestCase):
             user_profile_id=hamlet.id,
             status=UserStatus.AWAY,
             status_text=None,
+            status_emoji=None,
             client_id=client1.id,
         )
         update_user_status(
             user_profile_id=cordelia.id,
             status=UserStatus.AWAY,
             status_text=None,
+            status_emoji=None,
             client_id=client2.id,
         )
         update_user_status(
             user_profile_id=king_lear.id,
             status=UserStatus.AWAY,
             status_text=None,
+            status_emoji=None,
             client_id=client2.id,
         )
 
@@ -128,6 +135,7 @@ class UserStatusTest(ZulipTestCase):
             user_profile_id=hamlet.id,
             status=UserStatus.NORMAL,
             status_text="in a meeting",
+            status_emoji=None,
             client_id=client2.id,
         )
 

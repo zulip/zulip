@@ -55,6 +55,23 @@ export function submit_new_status() {
     });
 }
 
+export function submit_new_status_emoji(new_status_emoji) {
+    const user_id = people.my_current_user_id();
+    const old_status_emoji = user_status.get_status_emoji(user_id) || "";
+
+    if (old_status_emoji === new_status_emoji) {
+        // on selecting the currently set emoji, reset status emoji
+        user_status.server_update({
+            status_emoji: "",
+        });
+        return;
+    }
+
+    user_status.server_update({
+        status_emoji: new_status_emoji,
+    });
+}
+
 export function update_button() {
     const user_id = people.my_current_user_id();
     let old_status_text = user_status.get_status_text(user_id) || "";

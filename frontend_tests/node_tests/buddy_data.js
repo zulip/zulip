@@ -18,6 +18,22 @@ const presence = zrequire("presence");
 const stream_data = zrequire("stream_data");
 const user_status = zrequire("user_status");
 const buddy_data = zrequire("buddy_data");
+const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
+const emoji = zrequire("../shared/js/emoji");
+
+const emoji_params = {
+    realm_emoji: {
+        991: {
+            id: "991",
+            name: "realm_emoji",
+            source_url: "/url/for/991",
+            deactivated: false,
+        },
+    },
+    emoji_codes,
+};
+
+emoji.initialize(emoji_params);
 
 // The buddy_data module is mostly tested indirectly through
 // activity.js, but we should feel free to add direct tests
@@ -301,6 +317,60 @@ test("buddy_status", () => {
     assert.equal(buddy_data.buddy_status(me.user_id), "away_me");
     user_status.revoke_away(me.user_id);
     assert.equal(buddy_data.buddy_status(me.user_id), "active");
+});
+
+test("get_emoji_info", () => {
+    let emoji_info;
+    page_params.emojiset = "text";
+    let emoji_name = "smile";
+    {
+        emoji_info = buddy_data.get_emoji_info(emoji_name);
+        assert.deepEqual(emoji_info, {
+            emoji_name: "smile",
+            emoji_alt_code: true,
+        });
+    }
+
+    page_params.emojiset = "google";
+    emoji_name = "smile";
+    {
+        emoji_info = buddy_data.get_emoji_info(emoji_name);
+        assert.deepEqual(emoji_info, {
+            emoji_name: "smile",
+            emoji_alt_code: false,
+            status_emoji_type: "unicode_emoji",
+            emoji_code: "1f642",
+        });
+    }
+
+    emoji_name = "zulip"; // Test adding zulip emoji.
+    {
+        emoji_info = buddy_data.get_emoji_info(emoji_name);
+        assert.deepEqual(emoji_info, {
+            emoji_name: "zulip",
+            emoji_alt_code: false,
+            status_emoji_type: "zulip_extra_emoji",
+            emoji_code: "zulip",
+            url: "/static/generated/emoji/images/emoji/unicode/zulip.png",
+        });
+    }
+
+    emoji_name = "realm_emoji"; // Test adding realm_emoji emoji.
+    {
+        emoji_info = buddy_data.get_emoji_info(emoji_name);
+        assert.deepEqual(emoji_info, {
+            emoji_name: "realm_emoji",
+            emoji_alt_code: false,
+            status_emoji_type: "realm_emoji",
+            emoji_code: "991",
+            url: "/url/for/991",
+        });
+    }
+
+    emoji_name = "unknown-emoji"; // Test sending an unknown emoji
+    blueslip.expect("warn", "Bad emoji name: " + emoji_name);
+    emoji_info = buddy_data.get_emoji_info(emoji_name);
+    assert.equal(emoji_info, "");
 });
 
 test("title_data", () => {

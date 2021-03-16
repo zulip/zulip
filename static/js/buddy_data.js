@@ -1,3 +1,5 @@
+import * as emoji from "../shared/js/emoji";
+
 import * as blueslip from "./blueslip";
 import * as compose_fade_users from "./compose_fade_users";
 import * as hash_util from "./hash_util";
@@ -184,17 +186,55 @@ export function user_last_seen_time_status(user_id) {
     return timerender.last_seen_status_from_date(last_active_date);
 }
 
+export function get_emoji_info(emoji_name) {
+    if (!emoji_name) {
+        return "";
+    }
+    const status_emoji_info = {
+        emoji_name,
+    };
+
+    status_emoji_info.emoji_alt_code = page_params.emojiset === "text";
+    if (status_emoji_info.emoji_alt_code) {
+        return status_emoji_info;
+    }
+
+    if (emoji.active_realm_emojis.has(emoji_name)) {
+        if (emoji_name === "zulip") {
+            status_emoji_info.status_emoji_type = "zulip_extra_emoji";
+        } else {
+            status_emoji_info.status_emoji_type = "realm_emoji";
+        }
+        const emoji_info = emoji.active_realm_emojis.get(emoji_name);
+        status_emoji_info.emoji_code = emoji_info.id;
+        status_emoji_info.url = emoji_info.emoji_url;
+    } else {
+        const codepoint = emoji.get_emoji_codepoint(emoji_name);
+        if (codepoint === undefined) {
+            blueslip.warn("Bad emoji name: " + emoji_name);
+            return "";
+        }
+        status_emoji_info.status_emoji_type = "unicode_emoji";
+        status_emoji_info.emoji_code = codepoint;
+    }
+    return status_emoji_info;
+}
+
 export function info_for(user_id) {
     const user_circle_class = get_user_circle_class(user_id);
     const person = people.get_by_user_id(user_id);
     const my_user_status = get_my_user_status(user_id);
     const user_circle_status = status_description(user_id);
 
+    const emoji_name = user_status.get_status_emoji(user_id);
+    const status_emoji_info = get_emoji_info(emoji_name);
+
     return {
         href: hash_util.pm_with_uri(person.email),
         name: person.full_name,
         user_id,
         my_user_status,
+        status_emoji_info,
         is_current_user: people.is_my_user_id(user_id),
         num_unread: get_num_unread(user_id),
         user_circle_class,

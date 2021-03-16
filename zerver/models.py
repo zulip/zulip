@@ -3001,6 +3001,7 @@ class UserStatus(models.Model):
 
     status: int = models.PositiveSmallIntegerField(default=NORMAL)
     status_text: str = models.CharField(max_length=255, default="")
+    status_emoji: str = models.CharField(max_length=255, default="")
 
 
 class DefaultStream(models.Model):

@@ -14,9 +14,9 @@
     }
 
     input.user_status {
-        width: 336px;
+        width: 305px;
         @media (width < $ml_min) {
-            width: 94%;
+            width: 84%;
         }
     }
 
