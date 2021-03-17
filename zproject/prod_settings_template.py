@@ -155,7 +155,7 @@ AUTHENTICATION_BACKENDS: Tuple[str, ...] = (
 ## optionally using LDAP as an authentication mechanism.
 
 import ldap
-from django_auth_ldap.config import LDAPSearch
+from django_auth_ldap.config import LDAPSearch, LDAPSearchUnion
 
 ## Connecting to the LDAP server.
 ##
