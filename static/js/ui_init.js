@@ -95,14 +95,13 @@ function message_hover(message_row) {
     if (current_message_hover && rows.id(current_message_hover) === id) {
         return;
     }
-    // Don't allow on-hover editing for local-only messages
-    if (message_row.hasClass("local")) {
-        return;
-    }
+
     const message = current_msg_list.get(rows.id(message_row));
     message_unhover();
     current_message_hover = message_row;
 
+    // Locally echoed messages have !is_topic_editable and thus go
+    // through this code path.
     if (!message_edit.is_topic_editable(message)) {
         // The actions and reactions icon hover logic is handled entirely by CSS
         return;
