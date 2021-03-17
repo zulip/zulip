@@ -86,7 +86,7 @@ def fork_exists(username: str) -> bool:
         sys.exit(1)
 
 
-def exit_if_droplet_exists(my_token: str, username: str, recreate: bool) -> None:
+def assert_droplet_does_not_exist(my_token: str, username: str, recreate: bool) -> None:
     print(f"Checking to see if droplet for {username} already exists...")
     manager = digitalocean.Manager(token=my_token)
     my_droplets = manager.get_all_droplets()
@@ -269,8 +269,7 @@ if __name__ == "__main__":
     fork_exists(username=username)
 
     api_token = config["digitalocean"]["api_token"]
-    # does the droplet already exist?
-    exit_if_droplet_exists(my_token=api_token, username=username, recreate=args.recreate)
+    assert_droplet_does_not_exist(my_token=api_token, username=username, recreate=args.recreate)
 
     # set user_data
     user_data = set_user_data(username=username, userkey_dicts=public_keys)
