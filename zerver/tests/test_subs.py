@@ -10,7 +10,6 @@ from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
 from zerver.decorator import JsonableError
-from zerver.lib import cache
 from zerver.lib.actions import (
     bulk_add_subscriptions,
     bulk_get_subscriber_user_ids,
@@ -3013,9 +3012,6 @@ class SubscriptionAPITest(ZulipTestCase):
         self.test_realm.notifications_stream_id = notifications_stream.id
         self.test_realm.save()
 
-        # Delete the UserProfile from the cache so the realm change will be
-        # picked up
-        cache.cache_delete(cache.user_profile_by_email_cache_key(self.test_email))
         with tornado_redirected_to_list(events):
             self.helper_check_subs_before_and_after_add(
                 self.streams + add_streams,
@@ -3066,10 +3062,6 @@ class SubscriptionAPITest(ZulipTestCase):
         self.test_realm.notifications_stream_id = notifications_stream.id
         self.test_realm.save()
 
-        # Delete the UserProfile from the cache so the realm change will be
-        # picked up
-        cache.cache_delete(cache.user_profile_by_email_cache_key(invitee.email))
-
         self.common_subscribe_to_streams(
             invitee,
             invite_streams,
@@ -3103,10 +3095,6 @@ class SubscriptionAPITest(ZulipTestCase):
         user = self.example_user("AARON")
         user.realm = realm
         user.save()
-
-        # Delete the UserProfile from the cache so the realm change will be
-        # picked up
-        cache.cache_delete(cache.user_profile_by_email_cache_key(user.email))
 
         self.common_subscribe_to_streams(
             user,
