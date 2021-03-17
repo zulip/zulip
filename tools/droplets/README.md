@@ -210,3 +210,12 @@ They can remove your SSH keys by running:
 ```
 $ python3 ~/zulip/tools/droplets/add_mentor.py <your username> --remove
 ```
+
+
+# Creating a production droplet
+
+`create.py` can also create a production droplet quickly for testing purposes.
+
+```
+$ python3 create.py <username> --production
+```
