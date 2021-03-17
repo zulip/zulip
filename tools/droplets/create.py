@@ -59,20 +59,22 @@ def assert_github_user_exists(github_username: str) -> bool:
         sys.exit(1)
 
 
-def get_keys(username: str) -> List[Dict[str, Any]]:
+def get_ssh_public_keys_from_github(github_username: str) -> List[Dict[str, Any]]:
     print("Checking to see that GitHub user has available public keys...")
-    apiurl_keys = f"https://api.github.com/users/{username}/keys"
+    apiurl_keys = f"https://api.github.com/users/{github_username}/keys"
     try:
         response = urllib.request.urlopen(apiurl_keys)
         userkeys = json.load(response)
         if not userkeys:
-            print(f"No keys found. Has user {username} added SSH keys to their GitHub account?")
+            print(
+                f"No keys found. Has user {github_username} added SSH keys to their GitHub account?"
+            )
             sys.exit(1)
         print("...public keys found!")
         return userkeys
     except urllib.error.HTTPError as err:
         print(err)
-        print(f"Has user {username} added SSH keys to their GitHub account?")
+        print(f"Has user {github_username} added SSH keys to their GitHub account?")
         sys.exit(1)
 
 
@@ -308,8 +310,7 @@ if __name__ == "__main__":
 
     assert_github_user_exists(github_username=username)
 
-    # grab user's public keys
-    public_keys = get_keys(username=username)
+    public_keys = get_ssh_public_keys_from_github(github_username=username)
 
     if args.production:
         subdomain = f"{username}-prod"
