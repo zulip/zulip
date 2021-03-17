@@ -105,13 +105,14 @@ def exit_if_droplet_exists(my_token: str, username: str, recreate: bool) -> None
     print("...No droplet found...proceeding.")
 
 
-def set_user_data(username: str, userkey_dicts: List[Dict[str, Any]]) -> str:
-    print("Setting cloud-config data, populated with GitHub user's public keys...")
-    userkeys = [userkey_dict["key"] for userkey_dict in userkey_dicts]
-    ssh_keys = "\n".join(userkeys)
+def get_ssh_keys_string_from_github_ssh_key_dicts(userkey_dicts: List[Dict[str, Any]]) -> str:
+    return "\n".join([userkey_dict["key"] for userkey_dict in userkey_dicts])
 
-    setup_root_ssh_keys = f"printf '{ssh_keys}' > /root/.ssh/authorized_keys"
-    setup_zulipdev_ssh_keys = f"printf '{ssh_keys}' > /home/zulipdev/.ssh/authorized_keys"
+
+def set_user_data(username: str, userkey_dicts: List[Dict[str, Any]]) -> str:
+    ssh_keys_string = get_ssh_keys_string_from_github_ssh_key_dicts(userkey_dicts)
+    setup_root_ssh_keys = f"printf '{ssh_keys_string}' > /root/.ssh/authorized_keys"
+    setup_zulipdev_ssh_keys = f"printf '{ssh_keys_string}' > /home/zulipdev/.ssh/authorized_keys"
 
     # We pass the hostname as username.zulipdev.org to the DigitalOcean API.
     # But some droplets (eg on 18.04) are created with with hostname set to just username.
