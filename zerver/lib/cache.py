@@ -487,13 +487,6 @@ def display_recipient_bulk_get_users_by_id_cache_key(user_id: int) -> str:
     return "bulk_fetch_display_recipients:" + user_profile_by_id_cache_key(user_id)
 
 
-def user_profile_by_email_cache_key(email: str) -> str:
-    # See the comment in zerver/lib/avatar_hash.py:gravatar_hash for why we
-    # are proactively encoding email addresses even though they will
-    # with high likelihood be ASCII-only for the foreseeable future.
-    return f"user_profile_by_email:{make_safe_digest(email.strip())}"
-
-
 def user_profile_cache_key_id(email: str, realm_id: int) -> str:
     return f"user_profile:{make_safe_digest(email.strip())}:{realm_id}"
 
@@ -585,7 +578,6 @@ def delete_user_profile_caches(user_profiles: Iterable["UserProfile"]) -> None:
 
     keys = []
     for user_profile in user_profiles:
-        keys.append(user_profile_by_email_cache_key(user_profile.delivery_email))
         keys.append(user_profile_by_id_cache_key(user_profile.id))
         for api_key in get_all_api_keys(user_profile):
             keys.append(user_profile_by_api_key_cache_key(api_key))
