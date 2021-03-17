@@ -610,7 +610,6 @@ html_rules: List["Rule"] = [
             "templates/zerver/hello.html",
             "templates/corporate/upgrade.html",
         },
-        "good_lines": ["{{ render_entrypoint('landing-page') }}"],
         "bad_lines": [
             '<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>'
         ],
