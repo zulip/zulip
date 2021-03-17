@@ -686,9 +686,9 @@ def process_avatars(record: Dict[str, Any]) -> None:
                 # same realm ID from a previous iteration).
                 os.remove(medium_file_path)
         try:
-            upload_backend.ensure_medium_avatar_image(user_profile=user_profile)
+            upload_backend.ensure_avatar_image(user_profile=user_profile, is_medium=True)
             if record.get("importer_should_thumbnail"):
-                upload_backend.ensure_basic_avatar_image(user_profile=user_profile)
+                upload_backend.ensure_avatar_image(user_profile=user_profile)
         except BadImageError:
             logging.warning(
                 "Could not thumbnail avatar image for user %s; ignoring",
