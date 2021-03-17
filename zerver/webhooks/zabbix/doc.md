@@ -1,5 +1,9 @@
 Receive Zabbix notifications in Zulip!
 
+!!! warn ""
+    **Note:** This guide is for Zabbix 5.2 and above; some older Zabbix versions have a
+    different workflow for creating an outgoing webhook.
+
 1. {!create-stream.md!}
 
 1. {!create-bot-construct-url-indented.md!}
