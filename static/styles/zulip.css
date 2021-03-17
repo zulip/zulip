@@ -2614,6 +2614,40 @@ select.inline_select_topic_edit {
     display: none;
 }
 
+#about-zulip {
+    .exit {
+        font-size: 1.5rem;
+        font-weight: 600;
+        background-color: transparent;
+        border: none;
+        position: absolute;
+        right: 8px;
+        z-index: 1;
+        color: hsl(0, 0%, 67%);
+    }
+
+    .overlay-content {
+        position: relative;
+        width: 300px;
+        border-radius: 4px;
+    }
+
+    .modal-body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #zulip_logo {
+        height: 40px;
+    }
+
+    .zulip_title {
+        font-weight: 600;
+        padding-bottom: 10px;
+    }
+}
+
 /* This max-width must be synced with message_viewport.is_narrow */
 @media (width < $xl_min) {
     .app-main,

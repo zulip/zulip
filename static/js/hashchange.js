@@ -1,5 +1,6 @@
 "use strict";
 
+const about_zulip = require("./about_zulip");
 const invite = require("./invite");
 
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
@@ -80,6 +81,7 @@ function is_overlay_hash(hash) {
         "keyboard-shortcuts",
         "message-formatting",
         "search-operators",
+        "about-zulip",
     ];
     const main_hash = hash_util.get_hash_category(hash);
 
@@ -134,6 +136,7 @@ function do_hashchange_normal(from_reload) {
         case "#organization":
         case "#settings":
         case "#recent_topics":
+        case "#about-zulip":
             blueslip.error("overlay logic skipped for: " + hash);
             break;
     }
@@ -239,6 +242,10 @@ function do_hashchange_overlay(old_hash) {
     if (base === "search-operators") {
         info_overlay.show("search-operators");
         return;
+    }
+
+    if (base === "about-zulip") {
+        about_zulip.launch();
     }
 }
 

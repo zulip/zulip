@@ -20,6 +20,7 @@ link:  Help center
 info:  Keyboard shortcuts
 info:  Message formatting
 info:  Search operators
+hash:  About Zulip
 ---
 link:  Desktop & mobile apps
 link:  Integrations
@@ -47,6 +48,7 @@ links:
     #streams
     #settings
     #organization
+    #about-zulip
     #invite
 
 When you click on the links there is a function
