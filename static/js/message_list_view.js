@@ -231,6 +231,17 @@ export class MessageListView {
         }
     }
 
+    set_calculated_message_container_variables(message_container) {
+        set_timestr(message_container);
+
+        // Make sure the right thing happens if the message was edited to mention us.
+        message_container.contains_mention = message_container.msg.mentioned;
+
+        this._maybe_format_me_message(message_container);
+        // Once all other variables are updated
+        this._add_msg_edited_vars(message_container);
+    }
+
     add_subscription_marker(group, last_msg_container, first_msg_container) {
         if (last_msg_container === undefined) {
             return;
@@ -334,8 +345,6 @@ export class MessageListView {
                 }
             }
 
-            set_timestr(message_container);
-
             message_container.include_sender = true;
             if (
                 !message_container.include_recipient &&
@@ -356,10 +365,7 @@ export class MessageListView {
                 );
             }
 
-            message_container.contains_mention = message_container.msg.mentioned;
-            this._maybe_format_me_message(message_container);
-            // Once all other variables are updated
-            this._add_msg_edited_vars(message_container);
+            this.set_calculated_message_container_variables(message_container);
 
             prev = message_container;
         }
@@ -1131,19 +1137,7 @@ export class MessageListView {
         const row = this.get_row(message_container.msg.id);
         const was_selected = this.list.selected_message() === message_container.msg;
 
-        // Re-render just this one message
-        this._maybe_format_me_message(message_container);
-        this._add_msg_edited_vars(message_container);
-
-        // The timestr of message_container can be outdated if locally
-        // echoed. When the server sends the new timestamp, though the
-        // timestamp gets updated in echo.js, the timestr does not.
-        // This updates the timestr which will be then be used to
-        // update the message_time during rerender.
-        set_timestr(message_container);
-
-        // Make sure the right thing happens if the message was edited to mention us.
-        message_container.contains_mention = message_container.msg.mentioned;
+        this.set_calculated_message_container_variables(message_container);
 
         const rendered_msg = $(this._get_message_template(message_container));
         if (message_content_edited) {
