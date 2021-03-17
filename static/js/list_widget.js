@@ -177,6 +177,24 @@ export function create($container, list, opts) {
         }
     };
 
+    // Used in case of Multiselect DropdownListWidget to retain
+    // previously checked items even after widget.clear()
+    widget.retain_selected_items = function () {
+        const items = {...opts.filter.multiselect};
+
+        if (items.selected_items) {
+            const data = items.selected_items;
+            for (const value of data) {
+                const list_item = $container.find(`li[data-value = "${value}"]`);
+                if (list_item.length) {
+                    const link_elem = list_item.find("a").expectOne();
+                    list_item.addClass("checked");
+                    link_elem.prepend('<i class="fa fa-check" aria-hidden="true"></i>');
+                }
+            }
+        }
+    };
+
     // Reads the provided list (in the scope directly above)
     // and renders the next block of messages automatically
     // into the specified container.
@@ -207,6 +225,9 @@ export function create($container, list, opts) {
 
         $container.append($(html));
         meta.offset += load_count;
+        if (opts.filter.multiselect) {
+            widget.retain_selected_items();
+        }
 
         if (opts.callback_after_render) {
             opts.callback_after_render();

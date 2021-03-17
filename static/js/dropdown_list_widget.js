@@ -8,6 +8,7 @@ export const DropdownListWidget = function (opts) {
     const init = () => {
         // Run basic sanity checks on opts, and set up sane defaults.
         opts = {
+            multiselect: false,
             null_value: null,
             render_text: (item_name) => item_name,
             on_update: () => {},
@@ -19,12 +20,16 @@ export const DropdownListWidget = function (opts) {
             opts.value = opts.null_value;
             blueslip.warn("dropdown-list-widget: Called without a default value; using null value");
         }
+        if (opts.multiselect) {
+            opts.selected_values = []; // Populate the values selected by user.
+        }
     };
     init();
 
     const render = (value) => {
         $(`#${CSS.escape(opts.container_id)} #${CSS.escape(opts.value_id)}`).data("value", value);
 
+        let text = "";
         const elem = $(`#${CSS.escape(opts.container_id)} #${CSS.escape(opts.widget_name)}_name`);
 
         if (!value || value === opts.null_value) {
@@ -35,8 +40,24 @@ export const DropdownListWidget = function (opts) {
         }
 
         // Happy path
-        const item = opts.data.find((x) => x.value === value.toString());
-        const text = opts.render_text(item.name);
+
+        if (opts.multiselect && Array.isArray(value)) {
+            const limit = opts.multiselect.limit;
+            let data_list = value;
+
+            if (data_list.length === 0) {
+                data_list = [opts.value.toString()];
+            }
+            if (limit < data_list.length) {
+                text = `${data_list.length} selected`;
+            } else {
+                const selected_data = opts.data.filter((x) => data_list.includes(x.value));
+                text = selected_data.map((data) => data.name).toString();
+            }
+        } else {
+            const item = opts.data.find((x) => x.value === value.toString());
+            text = opts.render_text(item.name);
+        }
         elem.text(text);
         elem.removeClass("text-warning");
         elem.closest(".input-group").find(".dropdown_list_reset_button:enabled").show();
@@ -48,10 +69,39 @@ export const DropdownListWidget = function (opts) {
     };
 
     const register_event_handlers = () => {
-        $(`#${CSS.escape(opts.container_id)} .dropdown-list-body`).on(
-            "click keypress",
-            ".list_item",
-            function (e) {
+        const add_check_mark = (element, value) => {
+            const link_elem = element.find("a").expectOne();
+            element.addClass("checked");
+            link_elem.prepend('<i class="fa fa-check" aria-hidden="true"></i>');
+            opts.selected_values.push(value);
+        };
+
+        const remove_check_mark = (element, value) => {
+            const icon = element.find("i").expectOne();
+            const index = opts.selected_values.indexOf(value);
+            if (index > -1) {
+                icon.remove();
+                element.removeClass("checked");
+                opts.selected_values.splice(index, 1);
+            }
+        };
+
+        const click_handler = $(`#${CSS.escape(opts.container_id)} .dropdown-list-body`);
+
+        if (opts.multiselect) {
+            click_handler.on("click keypress", ".list_item", function (e) {
+                const value = $(this).attr("data-value");
+
+                if ($(this).hasClass("checked")) {
+                    remove_check_mark($(this), value);
+                } else {
+                    add_check_mark($(this), value);
+                }
+
+                e.stopPropagation();
+            });
+        } else {
+            click_handler.on("click keypress", ".list_item", function (e) {
                 const setting_elem = $(this).closest(`.${CSS.escape(opts.widget_name)}_setting`);
                 if (e.type === "keypress") {
                     if (e.which === 13) {
@@ -62,10 +112,16 @@ export const DropdownListWidget = function (opts) {
                 }
                 const value = $(this).attr("data-value");
                 update(value);
-            },
-        );
+            });
+        }
         $(`#${CSS.escape(opts.container_id)} .dropdown_list_reset_button`).on("click", (e) => {
             update(opts.null_value);
+            e.preventDefault();
+        });
+
+        $(`#${CSS.escape(opts.container_id)} .multiselect_btn`).on("click", (e) => {
+            const value = opts.selected_values;
+            update(value);
             e.preventDefault();
         });
     };
@@ -89,6 +145,9 @@ export const DropdownListWidget = function (opts) {
                 element: search_input,
                 predicate(item, value) {
                     return item.name.toLowerCase().includes(value);
+                },
+                multiselect: {
+                    selected_items: opts.selected_values,
                 },
             },
             simplebar_container: $(`#${CSS.escape(opts.container_id)} .dropdown-list-wrapper`),
