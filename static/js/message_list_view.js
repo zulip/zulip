@@ -1135,6 +1135,13 @@ export class MessageListView {
         this._maybe_format_me_message(message_container);
         this._add_msg_edited_vars(message_container);
 
+        // The timestr of message_container can be outdated if locally
+        // echoed. When the server sends the new timestamp, though the
+        // timestamp gets updated in echo.js, the timestr does not.
+        // This updates the timestr which will be then be used to
+        // update the message_time during rerender.
+        set_timestr(message_container);
+
         // Make sure the right thing happens if the message was edited to mention us.
         message_container.contains_mention = message_container.msg.mentioned;
 
