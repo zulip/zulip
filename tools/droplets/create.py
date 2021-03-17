@@ -86,20 +86,20 @@ def fork_exists(username: str) -> bool:
         sys.exit(1)
 
 
-def assert_droplet_does_not_exist(my_token: str, username: str, recreate: bool) -> None:
-    print(f"Checking to see if droplet for {username} already exists...")
+def assert_droplet_does_not_exist(my_token: str, droplet_name: str, recreate: bool) -> None:
+    print(f"Checking to see if droplet {droplet_name} already exists...")
     manager = digitalocean.Manager(token=my_token)
     my_droplets = manager.get_all_droplets()
     for droplet in my_droplets:
-        if droplet.name.lower() == f"{username}.zulipdev.org":
+        if droplet.name.lower() == droplet_name:
             if not recreate:
                 print(
-                    "Droplet for user {} already exists. Pass --recreate if you "
-                    "need to recreate the droplet.".format(username)
+                    "Droplet {} already exists. Pass --recreate if you "
+                    "need to recreate the droplet.".format(droplet_name)
                 )
                 sys.exit(1)
             else:
-                print(f"Deleting existing droplet for {username}.")
+                print(f"Deleting existing droplet {droplet_name}.")
                 droplet.destroy()
                 return
     print("...No droplet found...proceeding.")
@@ -270,7 +270,9 @@ if __name__ == "__main__":
     fork_exists(username=username)
 
     api_token = config["digitalocean"]["api_token"]
-    assert_droplet_does_not_exist(my_token=api_token, username=username, recreate=args.recreate)
+    assert_droplet_does_not_exist(
+        my_token=api_token, droplet_name=droplet_domain_name, recreate=args.recreate
+    )
 
     # set user_data
     user_data = set_user_data(username=username, userkey_dicts=public_keys)
