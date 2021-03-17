@@ -14,7 +14,6 @@ from .settings import (
     EXTERNAL_HOST,
     LOCAL_DATABASE_PASSWORD,
     LOGGING,
-    WEBPACK_LOADER,
 )
 
 FULL_STACK_ZULIP_TEST = "FULL_STACK_ZULIP_TEST" in os.environ
@@ -109,11 +108,10 @@ SESSION_ENGINE = "django.contrib.sessions.backends.db"
 
 # Use production config from Webpack in tests
 if PUPPETEER_TESTS:
-    WEBPACK_FILE = "webpack-stats-production.json"
+    WEBPACK_STATS_FILE = os.path.join(DEPLOY_ROOT, "webpack-stats-production.json")
 else:
-    WEBPACK_FILE = os.path.join("var", "webpack-stats-test.json")
-WEBPACK_LOADER["DEFAULT"]["BUNDLE_DIR_NAME"] = "webpack-bundles/"
-WEBPACK_LOADER["DEFAULT"]["STATS_FILE"] = os.path.join(DEPLOY_ROOT, WEBPACK_FILE)
+    WEBPACK_STATS_FILE = os.path.join(DEPLOY_ROOT, "var", "webpack-stats-test.json")
+WEBPACK_BUNDLES = "webpack-bundles/"
 
 # Don't auto-restart Tornado server during automated tests
 AUTORELOAD = False

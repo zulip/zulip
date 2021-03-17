@@ -244,10 +244,6 @@ django-two-factor-auth[call,phonenumberslite,sms]==1.13 \
     --hash=sha256:24c2850a687c86800f4aa4131b7cebadf56f35be04ca359c4990578df1cc249a \
     --hash=sha256:afb60e62f22b1f29a568666c0444ab05cabe8acc4d7c54d833d67f7b50f842fd
     # via -r requirements/common.in
-django-webpack4-loader==0.0.5 \
-    --hash=sha256:baa043c4601ed763d161490e2888cf6aa93a2fd9b60681e6b19e35dc7fcb155d \
-    --hash=sha256:be90257041170f39c025ff674c9064569c9303b464536488b6a6cedd8e3d28be
-    # via -r requirements/common.in
 django[argon2]==3.1.7 \
     --hash=sha256:32ce792ee9b6a0cbbec340123e229ac9f765dff8c2a4ae9247a14b2ba3a365a7 \
     --hash=sha256:baf099db36ad31f970775d0be5587cc58a6256a6771a44eb795b554d45f211b8

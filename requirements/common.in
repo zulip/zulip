@@ -99,9 +99,6 @@ tornado==4.*  # https://github.com/zulip/zulip/issues/8913
 # Fast JSON parser
 orjson
 
-# Django extension for serving webpack modules
-django-webpack4-loader
-
 # Needed for iOS push notifications
 apns2
 
