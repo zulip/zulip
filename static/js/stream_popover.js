@@ -268,6 +268,7 @@ function build_all_messages_popover(e) {
     }
 
     popovers.hide_all();
+    exports.show_streamlist_sidebar();
 
     const content = render_all_messages_sidebar_actions();
 
@@ -293,6 +294,7 @@ function build_starred_messages_popover(e) {
     }
 
     popovers.hide_all();
+    exports.show_streamlist_sidebar();
 
     const content = render_starred_messages_sidebar_actions({
         starred_message_counts: page_params.starred_message_counts,
