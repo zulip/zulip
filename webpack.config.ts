@@ -8,7 +8,7 @@ import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import OptimizeCssAssetsPlugin from "optimize-css-assets-webpack-plugin";
 import TerserPlugin from "terser-webpack-plugin";
 import webpack from "webpack";
-import BundleTracker from "webpack4-bundle-tracker";
+import BundleTracker from "webpack-bundle-tracker";
 
 import DebugRequirePlugin from "./tools/debug-require-webpack-plugin";
 import assets from "./tools/webpack.assets.json";
@@ -242,8 +242,13 @@ export default (_env: unknown, argv: {mode?: string}): webpack.Configuration[] =
             new DebugRequirePlugin(),
             new BundleTracker({
                 filename: production
-                    ? "webpack-stats-production.json"
-                    : "var/webpack-stats-dev.json",
+                    ? "../../webpack-stats-production.json"
+                    : "../../var/webpack-stats-dev.json",
+                relativePath: true,
+                // Respecify many defaults until https://github.com/django-webpack/webpack-bundle-tracker/pull/55 is merged
+                path: path.resolve(__dirname, "static/webpack-bundles"),
+                integrity: false,
+                integrityHashes: [],
             }),
             ...(production
                 ? []

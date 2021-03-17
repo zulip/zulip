@@ -75,8 +75,8 @@
     "url-loader": "^4.1.1",
     "webfonts-loader": "^7.0.1",
     "webpack": "^4.33.0",
+    "webpack-bundle-tracker": "^1.0.0-alpha.1",
     "webpack-cli": "^3.3.2",
-    "webpack4-bundle-tracker": "^0.0.1-beta",
     "winchan": "^0.2.1",
     "xvfb": "^0.4.0",
     "zxcvbn": "^4.4.2"
