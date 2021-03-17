@@ -401,6 +401,7 @@ def remote_user_sso(
     request: HttpRequest,
     mobile_flow_otp: Optional[str] = REQ(default=None),
     desktop_flow_otp: Optional[str] = REQ(default=None),
+    terminal_flow_otp: Optional[str] = REQ(default=None),
     next: str = REQ(default="/"),
 ) -> HttpResponse:
     subdomain = get_subdomain(request)
@@ -423,10 +424,10 @@ def remote_user_sso(
     # enabled.
     validate_login_email(remote_user_to_email(remote_user))
 
-    # Here we support the mobile and desktop flow for REMOTE_USER_BACKEND; we
-    # validate the data format and then pass it through to
-    # login_or_register_remote_user if appropriate.
-    validate_otp_params(mobile_flow_otp, desktop_flow_otp)
+    # Here we support the mobile, desktop and terminal flows for
+    # REMOTE_USER_BACKEND; we validate the data format and then pass it
+    # through to login_or_register_remote_user if appropriate.
+    validate_otp_params(mobile_flow_otp, desktop_flow_otp, terminal_flow_otp)
 
     if realm is None:
         user_profile = None
@@ -438,6 +439,7 @@ def remote_user_sso(
         email=email,
         mobile_flow_otp=mobile_flow_otp,
         desktop_flow_otp=desktop_flow_otp,
+        terminal_flow_otp=terminal_flow_otp,
         redirect_to=next,
     )
     if realm:
