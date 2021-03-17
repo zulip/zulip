@@ -147,11 +147,11 @@ su -c 'git config --global pull.rebase true' zulipdev
 
 
 def create_droplet(
-    my_token: str, template_id: str, username: str, tags: List[str], user_data: str
+    my_token: str, template_id: str, name: str, tags: List[str], user_data: str
 ) -> str:
     droplet = digitalocean.Droplet(
         token=my_token,
-        name=f"{username}.zulipdev.org",
+        name=name,
         region="nyc3",
         image=template_id,
         size_slug="s-1vcpu-2gb",
@@ -255,6 +255,8 @@ if __name__ == "__main__":
     username = args.username.lower()
     print(f"Creating Zulip developer environment for GitHub user {username}...")
 
+    droplet_domain_name = f"{username}.zulipdev.org"
+
     # get config details
     config = get_config()
 
@@ -278,7 +280,7 @@ if __name__ == "__main__":
     ip_address = create_droplet(
         my_token=api_token,
         template_id=template_id,
-        username=username,
+        name=droplet_domain_name,
         tags=args.tags,
         user_data=user_data,
     )
