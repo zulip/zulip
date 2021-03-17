@@ -41,9 +41,9 @@ def get_config() -> configparser.ConfigParser:
     return config
 
 
-def user_exists(username: str) -> bool:
-    print(f"Checking to see if GitHub user {username} exists...")
-    user_api_url = f"https://api.github.com/users/{username}"
+def assert_github_user_exists(github_username: str) -> bool:
+    print(f"Checking to see if GitHub user {github_username} exists...")
+    user_api_url = f"https://api.github.com/users/{github_username}"
     try:
         response = urllib.request.urlopen(user_api_url)
         json.load(response)
@@ -51,7 +51,7 @@ def user_exists(username: str) -> bool:
         return True
     except urllib.error.HTTPError as err:
         print(err)
-        print(f"Does the GitHub user {username} exist?")
+        print(f"Does the GitHub user {github_username} exist?")
         sys.exit(1)
 
 
@@ -260,8 +260,7 @@ if __name__ == "__main__":
     # get config details
     config = get_config()
 
-    # see if droplet already exists for this user
-    user_exists(username=username)
+    assert_github_user_exists(github_username=username)
 
     # grab user's public keys
     public_keys = get_keys(username=username)
