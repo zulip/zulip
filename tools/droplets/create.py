@@ -4,9 +4,6 @@
 # Particularly useful for sprints/hackathons, interns, and other
 # situation where one wants to quickly onboard new contributors.
 #
-# This script takes one argument: the name of the GitHub user for whom you want
-# to create a Zulip developer environment. Requires Python 3.
-#
 # Requires python-digitalocean library:
 # https://github.com/koalalorenzo/python-digitalocean
 #
@@ -14,8 +11,6 @@
 # https://cloud.digitalocean.com/settings/api/tokens
 #
 # Copy conf.ini-template to conf.ini and populate with your API token.
-#
-# usage: python3 create.py <username>
 import argparse
 import configparser
 import json
@@ -29,7 +24,6 @@ from typing import Any, Dict, List
 import digitalocean
 import requests
 
-# initiation argument parser
 parser = argparse.ArgumentParser(description="Create a Zulip devopment VM DigitalOcean droplet.")
 parser.add_argument(
     "username", help="GitHub username for whom you want to create a Zulip dev droplet"
@@ -295,7 +289,6 @@ def get_zulip_oneclick_app_slug(api_token: str) -> str:
 
 
 if __name__ == "__main__":
-    # get command line arguments
     args = parser.parse_args()
     username = args.username.lower()
 
@@ -304,7 +297,6 @@ if __name__ == "__main__":
     else:
         print(f"Creating Zulip developer environment for GitHub user {username}...")
 
-    # get config details
     config = get_config()
     api_token = config["digitalocean"]["api_token"]
 
@@ -336,7 +328,6 @@ if __name__ == "__main__":
         my_token=api_token, droplet_name=droplet_domain_name, recreate=args.recreate
     )
 
-    # create droplet
     ip_address = create_droplet(
         my_token=api_token,
         template_id=template_id,
