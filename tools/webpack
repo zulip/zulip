@@ -91,20 +91,11 @@ def build_for_most_tests() -> None:
     # configuration for ALL tests, but figuring out the full history here
     # was out of the scope of the effort here to add some comments and
     # clean up names.
-    entries = {}
     with open("tools/webpack.assets.json") as json_data:
-        for entry in json.load(json_data).keys():
-            entries[entry] = [
-                {
-                    "name": f"{entry}.js",
-                    "publicPath": f"http://localhost:3000/webpack-stub/{entry}-stubentry.js",
-                    "path": f"/stubfolder/{entry}-stubfile.js",
-                }
-            ]
+        entries = json.load(json_data)
     stat_data = {
         "status": "done",
-        "chunks": entries,
-        "entryPoints": {name: [chunk] for name, chunk in entries.items()},
+        "chunks": {entry: [f"{entry}-stubentry.js"] for entry in entries},
     }
     directory = "var"
     if not os.path.exists(directory):

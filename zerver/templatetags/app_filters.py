@@ -178,7 +178,7 @@ def webpack_entry(entrypoint: str) -> List[str]:
         with open(settings.WEBPACK_STATS_FILE, "rb") as f:
             stats = orjson.loads(f.read())
         status = stats["status"]
-        if not settings.DEBUG or status != "compiling":
+        if not settings.DEBUG or status != "compile":
             break
         time.sleep(0.2)
 
@@ -186,11 +186,7 @@ def webpack_entry(entrypoint: str) -> List[str]:
         raise RuntimeError("Webpack compilation was not successful")
 
     return [
-        chunk_file["publicPath"]
-        if "publicPath" in chunk_file
-        else staticfiles_storage.url(settings.WEBPACK_BUNDLES + chunk_file["name"])
-        for chunk in stats["entryPoints"][entrypoint]
-        for chunk_file in chunk
-        if chunk_file["name"].endswith((".css", ".js"))
-        and not chunk_file["name"].endswith(".hot-update.js")
+        staticfiles_storage.url(settings.WEBPACK_BUNDLES + filename)
+        for filename in stats["chunks"][entrypoint]
+        if filename.endswith((".css", ".js")) and not filename.endswith(".hot-update.js")
     ]
