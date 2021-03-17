@@ -62,7 +62,6 @@ from zerver.lib.cache import (
     realm_user_dict_fields,
     realm_user_dicts_cache_key,
     user_profile_by_api_key_cache_key,
-    user_profile_by_email_cache_key,
     user_profile_by_id_cache_key,
     user_profile_cache_key,
 )
@@ -2605,9 +2604,8 @@ def get_user_profile_by_id(uid: int) -> UserProfile:
     return UserProfile.objects.select_related().get(id=uid)
 
 
-@cache_with_key(user_profile_by_email_cache_key, timeout=3600 * 24 * 7)
 def get_user_profile_by_email(email: str) -> UserProfile:
-    """This function is intended to be used by our unit tests and for
+    """This function is intended to be used for
     manual manage.py shell work; robust code must use get_user or
     get_user_by_delivery_email instead, because Zulip supports
     multiple users with a given (delivery) email address existing on a
