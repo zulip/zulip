@@ -443,7 +443,13 @@ $category-text: hsl(219, 23%, 33%);
 
         .button {
             padding: 11px 25px 11px 25px;
+            margin: 5px;
+            font-size: 0.9em;
         }
+    }
+
+    .integration-divider {
+        padding: 11px 15px 0 15px;
     }
 
     /* -- integration instructions -- */

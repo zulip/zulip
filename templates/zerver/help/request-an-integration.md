@@ -1,26 +1,17 @@
 # Request an integration
 
-Zulip provides its user over 100 native integrations. Several hundred more are
-available through [Hubot](https://hubot.github.com/), [Zapier](https://zapier.com/home),
-and [IFTTT](https://ifttt.com/) but there can be times where you don’t find an integration
-or bot you need.
+Zulip comes with over 100 native integrations. Hundreds more are
+available through [Hubot](https://hubot.github.com/),
+[Zapier](https://zapier.com/home), [IFTTT](https://ifttt.com/), and
+the [Slack compatible webhook](/integrations/doc/slack_incoming).
 
-In such cases, you can request the integration by filing a feature request on our
-GitHub issues page. While filing a feature request please provide as much detail
-and context as possible.
+However, sometimes there is no integration for a tool you use, or an
+existing integration doesn't do what you need. If that's the case for
+a third-party product you use, we'd love to [hear about
+it](/help/contact-support)!
 
-## Filing an issue
+Or if you're familiar with GitHub, you can [browse open integrations
+issues][integrations-issues], and if none exists, [open a new
+issue](https://github.com/zulip/zulip/issues/new).
 
-{start_tabs}
-
-1. Go to [Zulip's Issue page](https://github.com/zulip/zulip/issues).
-
-2. Click **New issue**.
-
-3. Fill out the fields, and click **Submit new issue**.
-
-!!! warn ""
-    Make sure no issue exists for the same integration request or feature
-    and once you are sure you can file an issue for the integration you want.
-
-{end_tabs}
+[integrations-issues]: https://github.com/zulip/zulip/issues?q=is%3Aopen+label%3A%22area%3A+integrations%22+is%3Aissue
