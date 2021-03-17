@@ -15,12 +15,14 @@ class TestGetNextHotspots(ZulipTestCase):
 
     def test_first_hotspot(self) -> None:
         hotspots = get_next_hotspots(self.user)
-        self.assertEqual(len(hotspots), 1)
-        self.assertEqual(hotspots[0]["name"], "intro_reply")
+        self.assertEqual(len(hotspots), 2)
+        self.assertEqual(hotspots[0]["name"], "intro_draft")
+        self.assertEqual(hotspots[1]["name"], "intro_reply")
 
     def test_some_done_some_not(self) -> None:
         do_mark_hotspot_as_read(self.user, "intro_reply")
         do_mark_hotspot_as_read(self.user, "intro_compose")
+        do_mark_hotspot_as_read(self.user, "intro_draft")
         hotspots = get_next_hotspots(self.user)
         self.assertEqual(len(hotspots), 1)
         self.assertEqual(hotspots[0]["name"], "intro_streams")
@@ -30,6 +32,7 @@ class TestGetNextHotspots(ZulipTestCase):
             self.assertNotEqual(self.user.tutorial_status, UserProfile.TUTORIAL_FINISHED)
             for hotspot in INTRO_HOTSPOTS:
                 do_mark_hotspot_as_read(self.user, hotspot)
+            self.assertEqual(len(get_next_hotspots(self.user)), len(NON_INTRO_HOTSPOTS))
 
             for hotspot in NON_INTRO_HOTSPOTS:
                 do_mark_hotspot_as_read(self.user, hotspot)

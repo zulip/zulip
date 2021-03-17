@@ -89,7 +89,7 @@ test("draft_model add", (override) => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     assert.equal(ls.get("draft"), undefined);
-
+    $("#hotspot_intro_draft_overlay").length = 0;
     override(Date, "now", () => 1);
     const expected = {...draft_1};
     expected.updatedAt = 1;
@@ -101,6 +101,7 @@ test("draft_model edit", () => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     assert.equal(ls.get("draft"), undefined);
+    $("#hotspot_intro_draft_overlay").length = 0;
     let id;
 
     with_overrides((override) => {
@@ -124,6 +125,7 @@ test("draft_model delete", (override) => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
     assert.equal(ls.get("draft"), undefined);
+    $("#hotspot_intro_draft_overlay").length = 0;
 
     override(Date, "now", () => 1);
     const expected = {...draft_1};

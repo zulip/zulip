@@ -64,6 +64,15 @@ const HOTSPOT_LOCATIONS = new Map([
             offset_y: 0,
         },
     ],
+    [
+        "intro_draft",
+        {
+            element: ".compose_drafts_button",
+            offset_x: 0,
+            offset_y: 0,
+            popover: TOP,
+        },
+    ],
 ]);
 
 // popover illustration url(s)

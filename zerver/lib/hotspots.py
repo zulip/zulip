@@ -44,7 +44,12 @@ INTRO_HOTSPOTS: Dict[str, Dict[str, Promise]] = {
 }
 
 
-NON_INTRO_HOTSPOTS: Dict[str, Dict[str, Promise]] = {}
+NON_INTRO_HOTSPOTS: Dict[str, Dict[str, Promise]] = {
+    "intro_draft": {
+        "title": gettext_lazy("Drafts"),
+        "description": gettext_lazy("Your message was saved as a draft!"),
+    },
+}
 
 # We would most likely implement new hotspots in the future that aren't
 # a part of the initial tutorial. To that end, classifying them into
