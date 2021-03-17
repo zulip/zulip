@@ -76,7 +76,7 @@ def get_keys(username: str) -> List[Dict[str, Any]]:
         sys.exit(1)
 
 
-def fork_exists(username: str) -> bool:
+def assert_user_forked_zulip_server_repo(username: str) -> bool:
     print("Checking to see GitHub user has forked zulip/zulip...")
     apiurl_fork = f"https://api.github.com/repos/{username}/zulip"
     try:
@@ -318,8 +318,7 @@ if __name__ == "__main__":
         user_data = generate_prod_droplet_user_data(username=username, userkey_dicts=public_keys)
 
     else:
-        # now make sure the user has forked zulip/zulip
-        fork_exists(username=username)
+        assert_user_forked_zulip_server_repo(username=username)
 
         subdomain = username
         droplet_domain_name = f"{subdomain}.zulipdev.org"
