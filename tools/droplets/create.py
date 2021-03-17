@@ -1,4 +1,6 @@
-# Creates a Droplet on DigitalOcean for remote Zulip development.
+# Creates a Zulip remote development environment droplet or
+# a production droplet in DigitalOcean.
+#
 # Particularly useful for sprints/hackathons, interns, and other
 # situation where one wants to quickly onboard new contributors.
 #
@@ -25,6 +27,7 @@ import urllib.request
 from typing import Any, Dict, List
 
 import digitalocean
+import requests
 
 # initiation argument parser
 parser = argparse.ArgumentParser(description="Create a Zulip devopment VM DigitalOcean droplet.")
@@ -33,6 +36,7 @@ parser.add_argument(
 )
 parser.add_argument("--tags", nargs="+", default=[])
 parser.add_argument("-f", "--recreate", action="store_true")
+parser.add_argument("-p", "--production", action="store_true")
 
 
 def get_config() -> configparser.ConfigParser:
@@ -109,7 +113,7 @@ def get_ssh_keys_string_from_github_ssh_key_dicts(userkey_dicts: List[Dict[str, 
     return "\n".join([userkey_dict["key"] for userkey_dict in userkey_dicts])
 
 
-def set_user_data(username: str, userkey_dicts: List[Dict[str, Any]]) -> str:
+def generate_dev_droplet_user_data(username: str, userkey_dicts: List[Dict[str, Any]]) -> str:
     ssh_keys_string = get_ssh_keys_string_from_github_ssh_key_dicts(userkey_dicts)
     setup_root_ssh_keys = f"printf '{ssh_keys_string}' > /root/.ssh/authorized_keys"
     setup_zulipdev_ssh_keys = f"printf '{ssh_keys_string}' > /home/zulipdev/.ssh/authorized_keys"
@@ -141,6 +145,22 @@ su -c '{server_repo_setup}' zulipdev
 su -c '{python_api_repo_setup}' zulipdev
 su -c 'git config --global core.editor nano' zulipdev
 su -c 'git config --global pull.rebase true' zulipdev
+"""
+    print("...returning cloud-config data.")
+    return cloudconf
+
+
+def generate_prod_droplet_user_data(username: str, userkey_dicts: List[Dict[str, Any]]) -> str:
+    ssh_keys_string = get_ssh_keys_string_from_github_ssh_key_dicts(userkey_dicts)
+    setup_root_ssh_keys = f"printf '{ssh_keys_string}' > /root/.ssh/authorized_keys"
+
+    cloudconf = f"""\
+#!/bin/bash
+
+{setup_root_ssh_keys}
+passwd -d root
+sed -i "s/PasswordAuthentication yes/PasswordAuthentication no/g" /etc/ssh/sshd_config
+service ssh restart
 """
     print("...returning cloud-config data.")
     return cloudconf
@@ -205,7 +225,7 @@ def create_dns_record(my_token: str, record_name: str, ip_address: str) -> None:
     domain.create_new_domain_record(type="A", name=wildcard_name, data=ip_address)
 
 
-def print_completion(droplet_domain_name: str) -> None:
+def print_dev_droplet_instructions(droplet_domain_name: str) -> None:
     print(
         """
 COMPLETE! Droplet for GitHub user {0} is available at {0}.zulipdev.org.
@@ -242,40 +262,79 @@ Your remote Zulip dev server has been created!
     print("------")
 
 
-if __name__ == "__main__":
-    # define id of image to create new droplets from
-    # You can get this with something like the following. You may need to try other pages.
-    # Broken in two to satisfy linter (line too long)
-    # curl -X GET -H "Content-Type: application/json" -u <API_KEY>: "https://api.digitaloc
-    # ean.com/v2/images?page=5" | grep --color=always base.zulipdev.org
-    template_id = "63219191"
+def print_production_droplet_instructions(droplet_domain_name: str) -> None:
+    print(
+        """
+-----
 
+Production droplet created successfully!
+
+Connect to the server by running
+
+ssh root@{}
+
+-----
+""".format(
+            droplet_domain_name
+        )
+    )
+
+
+def get_zulip_oneclick_app_slug(api_token: str) -> str:
+    response = requests.get(
+        "https://api.digitalocean.com/v2/1-clicks", headers={"Authorization": f"Bearer {api_token}"}
+    ).json()
+    one_clicks = response["1_clicks"]
+
+    for one_click in one_clicks:
+        if one_click["slug"].startswith("kandralabs"):
+            return one_click["slug"]
+    raise Exception("Unable to find Zulip One-click app slug")
+
+
+if __name__ == "__main__":
     # get command line arguments
     args = parser.parse_args()
     username = args.username.lower()
-    print(f"Creating Zulip developer environment for GitHub user {username}...")
 
-    subdomain = username
-    droplet_domain_name = f"{subdomain}.zulipdev.org"
+    if args.production:
+        print(f"Creating production droplet for GitHub user {username}...")
+    else:
+        print(f"Creating Zulip developer environment for GitHub user {username}...")
 
     # get config details
     config = get_config()
+    api_token = config["digitalocean"]["api_token"]
 
     assert_github_user_exists(github_username=username)
 
     # grab user's public keys
     public_keys = get_keys(username=username)
 
-    # now make sure the user has forked zulip/zulip
-    fork_exists(username=username)
+    if args.production:
+        subdomain = f"{username}-prod"
+        droplet_domain_name = f"{subdomain}.zulipdev.org"
+        template_id = get_zulip_oneclick_app_slug(api_token)
+        user_data = generate_prod_droplet_user_data(username=username, userkey_dicts=public_keys)
 
-    api_token = config["digitalocean"]["api_token"]
+    else:
+        # now make sure the user has forked zulip/zulip
+        fork_exists(username=username)
+
+        subdomain = username
+        droplet_domain_name = f"{subdomain}.zulipdev.org"
+        user_data = generate_dev_droplet_user_data(username=username, userkey_dicts=public_keys)
+
+        # define id of image to create new droplets from
+        # You can get this with something like the following. You may need to try other pages.
+        # Broken in two to satisfy linter (line too long)
+        # curl -X GET -H "Content-Type: application/json" -u <API_KEY>: "https://api.digitaloc
+        # ean.com/v2/images?page=5" | grep --color=always base.zulipdev.org
+        template_id = "63219191"
+
     assert_droplet_does_not_exist(
         my_token=api_token, droplet_name=droplet_domain_name, recreate=args.recreate
     )
-
-    # set user_data
-    user_data = set_user_data(username=username, userkey_dicts=public_keys)
 
     # create droplet
     ip_address = create_droplet(
@@ -288,6 +347,9 @@ if __name__ == "__main__":
 
     create_dns_record(my_token=api_token, record_name=subdomain, ip_address=ip_address)
 
-    print_completion(droplet_domain_name=droplet_domain_name)
+    if args.production:
+        print_production_droplet_instructions(droplet_domain_name=droplet_domain_name)
+    else:
+        print_dev_droplet_instructions(droplet_domain_name=droplet_domain_name)
 
     sys.exit(1)
