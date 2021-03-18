@@ -1844,11 +1844,13 @@ class UserMentionPattern(markdown.inlinepatterns.InlineProcessor):
         return None, None, None
 
 
-class UserGroupMentionPattern(markdown.inlinepatterns.Pattern):
-    def handleMatch(self, m: Match[str]) -> Optional[Element]:
-        match = m.group(2)
-
+class UserGroupMentionPattern(markdown.inlinepatterns.InlineProcessor):
+    def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
+        self, m: Match[str], data: str
+    ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
+        match = m.group(1)
         db_data = self.md.zulip_db_data
+
         if self.md.zulip_message and db_data is not None:
             name = extract_user_group(match)
             user_group = db_data["mention_data"].get_user_group(name)
@@ -1859,15 +1861,15 @@ class UserGroupMentionPattern(markdown.inlinepatterns.Pattern):
             else:
                 # Don't highlight @-mentions that don't refer to a valid user
                 # group.
-                return None
+                return None, None, None
 
             el = Element("span")
             el.set("class", "user-group-mention")
             el.set("data-user-group-id", user_group_id)
             text = f"@{name}"
             el.text = markdown.util.AtomicString(text)
-            return el
-        return None
+            return el, m.start(), m.end()
+        return None, None, None
 
 
 class StreamPattern(CompiledPattern):
