@@ -22,17 +22,18 @@ export function get_hash_section(hash) {
     return parts[1] || "";
 }
 
+const hashReplacements = new Map([
+    ["%", "."],
+    ["(", ".28"],
+    [")", ".29"],
+    [".", ".2E"],
+]);
+
 // Some browsers zealously URI-decode the contents of
 // window.location.hash.  So we hide our URI-encoding
 // by replacing % with . (like MediaWiki).
 export function encodeHashComponent(str) {
-    const characterToBeReplaced = {
-        ".": ".2E",
-        "%": ".",
-        "(": ".28",
-        ")": ".29",
-    };
-    return encodeURIComponent(str).replace(/[%().]/g, (matched) => characterToBeReplaced[matched]);
+    return encodeURIComponent(str).replace(/[%().]/g, (matched) => hashReplacements.get(matched));
 }
 
 export function encode_operand(operator, operand) {
