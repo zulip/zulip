@@ -2206,6 +2206,18 @@ class MarkdownTest(ZulipTestCase):
             ),
         )
 
+    def test_invalid_stream_followed_by_valid_mention(self) -> None:
+        denmark = get_stream("Denmark", get_realm("zulip"))
+        sender_user_profile = self.example_user("othello")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        content = "#**Invalid** and #**Denmark**"
+        self.assertEqual(
+            render_markdown(msg, content),
+            '<p>#<strong>Invalid</strong> and <a class="stream" data-stream-id="{d.id}" href="/#narrow/stream/{d.id}-Denmark">#{d.name}</a></p>'.format(
+                d=denmark,
+            ),
+        )
+
     def test_stream_multiple(self) -> None:
         sender_user_profile = self.example_user("othello")
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))

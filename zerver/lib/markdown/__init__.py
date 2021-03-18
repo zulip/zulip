@@ -147,7 +147,15 @@ STREAM_LINK_REGEX = r"""
 
 @one_time
 def get_compiled_stream_link_regex() -> Pattern[str]:
-    return verbose_compile(STREAM_LINK_REGEX)
+    # Not using verbose_compile as it adds ^(.*?) and
+    # (.*?)$ which cause extra overhead of matching
+    # pattern which is not required.
+    # With new InlineProcessor these extra patterns
+    # are not required.
+    return re.compile(
+        STREAM_LINK_REGEX,
+        re.DOTALL | re.UNICODE | re.VERBOSE,
+    )
 
 
 STREAM_TOPIC_LINK_REGEX = r"""
@@ -162,7 +170,15 @@ STREAM_TOPIC_LINK_REGEX = r"""
 
 @one_time
 def get_compiled_stream_topic_link_regex() -> Pattern[str]:
-    return verbose_compile(STREAM_TOPIC_LINK_REGEX)
+    # Not using verbose_compile as it adds ^(.*?) and
+    # (.*?)$ which cause extra overhead of matching
+    # pattern which is not required.
+    # With new InlineProcessor these extra patterns
+    # are not required.
+    return re.compile(
+        STREAM_TOPIC_LINK_REGEX,
+        re.DOTALL | re.UNICODE | re.VERBOSE,
+    )
 
 
 LINK_REGEX: Optional[Pattern[str]] = None
@@ -1872,7 +1888,14 @@ class UserGroupMentionPattern(markdown.inlinepatterns.InlineProcessor):
         return None, None, None
 
 
-class StreamPattern(CompiledPattern):
+class StreamPattern(markdown.inlinepatterns.InlineProcessor):
+    def __init__(self, compiled_re: Pattern[str], md: markdown.Markdown) -> None:
+        # This is similar to the superclass's small __init__ function,
+        # but we skip the compilation step and let the caller give us
+        # a compiled regex.
+        self.compiled_re = compiled_re
+        self.md = md
+
     def find_stream_by_name(self, name: str) -> Optional[Dict[str, Any]]:
         db_data = self.md.zulip_db_data
         if db_data is None:
@@ -1880,13 +1903,15 @@ class StreamPattern(CompiledPattern):
         stream = db_data["stream_names"].get(name)
         return stream
 
-    def handleMatch(self, m: Match[str]) -> Optional[Element]:
+    def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
+        self, m: Match[str], data: str
+    ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
         name = m.group("stream_name")
 
         if self.md.zulip_message:
             stream = self.find_stream_by_name(name)
             if stream is None:
-                return None
+                return None, None, None
             el = Element("a")
             el.set("class", "stream")
             el.set("data-stream-id", str(stream["id"]))
@@ -1899,11 +1924,18 @@ class StreamPattern(CompiledPattern):
             el.set("href", f"/#narrow/stream/{stream_url}")
             text = f"#{name}"
             el.text = markdown.util.AtomicString(text)
-            return el
-        return None
+            return el, m.start(), m.end()
+        return None, None, None
 
 
-class StreamTopicPattern(CompiledPattern):
+class StreamTopicPattern(markdown.inlinepatterns.InlineProcessor):
+    def __init__(self, compiled_re: Pattern[str], md: markdown.Markdown) -> None:
+        # This is similar to the superclass's small __init__ function,
+        # but we skip the compilation step and let the caller give us
+        # a compiled regex.
+        self.compiled_re = compiled_re
+        self.md = md
+
     def find_stream_by_name(self, name: str) -> Optional[Dict[str, Any]]:
         db_data = self.md.zulip_db_data
         if db_data is None:
@@ -1911,14 +1943,16 @@ class StreamTopicPattern(CompiledPattern):
         stream = db_data["stream_names"].get(name)
         return stream
 
-    def handleMatch(self, m: Match[str]) -> Optional[Element]:
+    def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
+        self, m: Match[str], data: str
+    ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
         stream_name = m.group("stream_name")
         topic_name = m.group("topic_name")
 
         if self.md.zulip_message:
             stream = self.find_stream_by_name(stream_name)
             if stream is None or topic_name is None:
-                return None
+                return None, None, None
             el = Element("a")
             el.set("class", "stream-topic")
             el.set("data-stream-id", str(stream["id"]))
@@ -1928,8 +1962,8 @@ class StreamTopicPattern(CompiledPattern):
             el.set("href", link)
             text = f"#{stream_name} > {topic_name}"
             el.text = markdown.util.AtomicString(text)
-            return el
-        return None
+            return el, m.start(), m.end()
+        return None, None, None
 
 
 def possible_linked_stream_names(content: str) -> Set[str]:
