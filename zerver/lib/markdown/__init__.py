@@ -1616,7 +1616,7 @@ class AutoLink(CompiledPattern):
 
 
 class OListProcessor(sane_lists.SaneOListProcessor):
-    def __init__(self, parser: Any) -> None:
+    def __init__(self, parser: BlockParser) -> None:
         parser.md.tab_length = 2
         super().__init__(parser)
         parser.md.tab_length = 4
@@ -1625,7 +1625,7 @@ class OListProcessor(sane_lists.SaneOListProcessor):
 class UListProcessor(sane_lists.SaneUListProcessor):
     """ Unordered lists, but with 2-space indent """
 
-    def __init__(self, parser: Any) -> None:
+    def __init__(self, parser: BlockParser) -> None:
         parser.md.tab_length = 2
         super().__init__(parser)
         parser.md.tab_length = 4
@@ -1637,7 +1637,7 @@ class ListIndentProcessor(markdown.blockprocessors.ListIndentProcessor):
     Based on markdown.blockprocessors.ListIndentProcessor, but with 2-space indent
     """
 
-    def __init__(self, parser: Any) -> None:
+    def __init__(self, parser: BlockParser) -> None:
 
         # HACK: Set the tab length to 2 just for the initialization of
         # this class, so that bulleted lists (and only bulleted lists)
@@ -1669,7 +1669,7 @@ class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
     mention_re = re.compile(mention.find_mentions)
 
     # run() is very slightly forked from the base class; see notes below.
-    def run(self, parent: Element, blocks: List[Any]) -> None:
+    def run(self, parent: Element, blocks: List[str]) -> None:
         block = blocks.pop(0)
         m = self.RE.search(block)
         if m:
