@@ -10,6 +10,13 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 44**
+
+* [`POST /register`](/api/register-queue): extended the `unread_msgs`
+  object to include `old_unreads_missing`, which indicates whether the
+  server truncated the `unread_msgs` due to excessive total unread
+  messages.
+
 **Feature level 43**
 
 * [`GET /users/{user_id_or_email}/presence`]: Added support for
