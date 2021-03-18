@@ -854,12 +854,18 @@ class GetUnreadMsgsTest(ZulipTestCase):
             aggregated_data = aggregate_unread_data(raw_unread_data)
             return aggregated_data
 
+        with mock.patch("zerver.lib.message.MAX_UNREAD_MESSAGES", 4):
+            result = get_unread_data()
+            self.assertEqual(result["count"], 2)
+            self.assertTrue(result["old_unreads_missing"])
+
         result = get_unread_data()
 
         # The count here reflects the count of unread messages that we will
         # report to users in the bankruptcy dialog, and for now it excludes unread messages
         # from muted treams, but it doesn't exclude unread messages from muted topics yet.
         self.assertEqual(result["count"], 4)
+        self.assertFalse(result["old_unreads_missing"])
 
         unread_pm = result["pms"][0]
         self.assertEqual(unread_pm["sender_id"], sender_id)

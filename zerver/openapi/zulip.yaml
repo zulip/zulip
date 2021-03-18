@@ -6438,6 +6438,18 @@ paths:
                               For muted streams, wildcard mentions will not be considered for this array.
                             items:
                               type: integer
+                          old_unreads_missing:
+                            type: boolean
+                            description: |
+                              True if this data set was truncated because the user has too many
+                              unread messages.  When truncation occurs, only the most recent
+                              `MAX_UNREAD_MESSAGES` (currently 50000) messages will be considered
+                              when forming this response.  When true, we recommend that clients
+                              display a warning, as they are likely to produce erroneous results
+                              until reloaded with the user having fewer than `MAX_UNREAD_MESSAGES`
+                              unread messages.
+
+                              **Changes**: New in Zulip 4.0 (feature level 44).
                       starred_messages:
                         type: array
                         items:
