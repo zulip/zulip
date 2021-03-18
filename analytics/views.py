@@ -149,7 +149,7 @@ def stats_for_realm(request: HttpRequest, realm_str: str) -> HttpResponse:
     try:
         realm = get_realm(realm_str)
     except Realm.DoesNotExist:
-        return HttpResponseNotFound(f"Realm {realm_str} does not exist")
+        return HttpResponseNotFound()
 
     return render_stats(
         request,
@@ -1729,7 +1729,7 @@ def get_realm_activity(request: HttpRequest, realm_str: str) -> HttpResponse:
     try:
         admins = Realm.objects.get(string_id=realm_str).get_human_admin_users()
     except Realm.DoesNotExist:
-        return HttpResponseNotFound(f"Realm {realm_str} does not exist")
+        return HttpResponseNotFound()
 
     admin_emails = {admin.delivery_email for admin in admins}
 
