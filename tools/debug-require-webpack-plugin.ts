@@ -4,94 +4,111 @@
 
 import path from "path";
 
-import type webpack from "webpack";
-import {Template} from "webpack";
+import type {ResolveRequest} from "enhanced-resolve";
+import type {Chunk, Compiler, WebpackPluginInstance} from "webpack";
+import {NormalModule, Template} from "webpack";
 
-export default class DebugRequirePlugin {
-    apply(compiler: webpack.Compiler): void {
-        const resolved = new Map();
+export default class DebugRequirePlugin implements WebpackPluginInstance {
+    apply(compiler: Compiler): void {
+        const resolved = new Map<string, Set<string>>();
         const nameSymbol = Symbol("DebugRequirePluginName");
-        let debugRequirePath: string | undefined;
+        type NamedRequest = ResolveRequest & {
+            [nameSymbol]?: string;
+        };
+        let debugRequirePath: string | false = false;
 
-        (compiler as any).resolverFactory.hooks.resolver
+        compiler.resolverFactory.hooks.resolver
             .for("normal")
-            .tap("DebugRequirePlugin", (resolver: any) => {
-                resolver.getHook("beforeRawModule").tap("DebugRequirePlugin", (req: any) => {
-                    req[nameSymbol] = req[nameSymbol] || req.request;
-                });
-
-                resolver.getHook("beforeRelative").tap("DebugRequirePlugin", (req: any) => {
-                    const inPath = path.relative(compiler.context, req.path);
-                    if (!inPath.startsWith("../")) {
-                        req[nameSymbol] = req[nameSymbol] || "./" + inPath;
+            .tap("DebugRequirePlugin", (resolver) => {
+                resolver.getHook("beforeRawModule").tap("DebugRequirePlugin", (req) => {
+                    if (!(nameSymbol in req)) {
+                        (req as NamedRequest)[nameSymbol] = req.request;
                     }
+                    return undefined!;
                 });
 
-                resolver.getHook("beforeResolved").tap("DebugRequirePlugin", (req: any) => {
-                    if (req[nameSymbol]) {
-                        const names = resolved.get(req.path);
-                        if (names) {
-                            names.add(req[nameSymbol]);
-                        } else {
-                            resolved.set(req.path, new Set([req[nameSymbol]]));
+                resolver.getHook("beforeRelative").tap("DebugRequirePlugin", (req) => {
+                    if (req.path !== false) {
+                        const inPath = path.relative(compiler.context, req.path);
+                        if (!inPath.startsWith("../") && !(nameSymbol in req)) {
+                            (req as NamedRequest)[nameSymbol] = "./" + inPath;
                         }
                     }
+                    return undefined!;
                 });
+
+                resolver
+                    .getHook("beforeResolved")
+                    .tap("DebugRequirePlugin", (req: ResolveRequest) => {
+                        const name = (req as NamedRequest)[nameSymbol];
+                        if (name !== undefined && req.path !== false) {
+                            const names = resolved.get(req.path);
+                            if (names) {
+                                names.add(name);
+                            } else {
+                                resolved.set(req.path, new Set([name]));
+                            }
+                        }
+                        return undefined!;
+                    });
             });
 
         compiler.hooks.beforeCompile.tapPromise(
             "DebugRequirePlugin",
-            async ({normalModuleFactory}: any) => {
+            async ({normalModuleFactory}) => {
                 const resolver = normalModuleFactory.getResolver("normal");
-                debugRequirePath = await new Promise((resolve, reject) =>
+                debugRequirePath = await new Promise((resolve) =>
                     resolver.resolve(
                         {},
                         __dirname,
                         "./debug-require",
                         {},
-                        (err?: Error, result?: string) => (err ? reject(err) : resolve(result)),
+                        (err?: Error | null, result?: string | false) =>
+                            resolve(err ? false : result!),
                     ),
                 );
             },
         );
 
-        compiler.hooks.compilation.tap("DebugRequirePlugin", (compilation: any) => {
-            compilation.mainTemplate.hooks.beforeStartup.tap(
+        compiler.hooks.compilation.tap("DebugRequirePlugin", (compilation) => {
+            compilation.mainTemplate.hooks.bootstrap.tap(
                 "DebugRequirePlugin",
-                (source: string, chunk: webpack.compilation.Chunk) => {
+                (source: string, chunk: Chunk) => {
                     const ids: [string, string | number][] = [];
-                    let debugRequireId;
-                    chunk.hasModuleInGraph(
-                        ({resource, rawRequest, id}: any) => {
-                            if (resource === debugRequirePath) {
-                                debugRequireId = id;
-                            }
-                            for (const name of resolved.get(resource) || []) {
-                                ids.push([
-                                    rawRequest.slice(0, rawRequest.lastIndexOf("!") + 1) + name,
-                                    id,
-                                ]);
+                    let hasDebugRequire = false;
+                    compilation.chunkGraph.hasModuleInGraph(
+                        chunk,
+                        (m) => {
+                            if (m instanceof NormalModule) {
+                                const id = compilation.chunkGraph.getModuleId(m);
+                                if (m.resource === debugRequirePath) {
+                                    hasDebugRequire = true;
+                                }
+                                for (const name of resolved.get(m.resource) ?? []) {
+                                    ids.push([
+                                        m.rawRequest.slice(0, m.rawRequest.lastIndexOf("!") + 1) +
+                                            name,
+                                        id,
+                                    ]);
+                                }
                             }
                             return false;
                         },
                         () => true,
                     );
 
-                    if (debugRequireId === undefined) {
+                    if (!hasDebugRequire) {
                         return source;
                     }
 
                     ids.sort();
-                    const {requireFn} = compilation.mainTemplate;
                     return Template.asString([
                         source,
-                        `${requireFn}(${JSON.stringify(
-                            debugRequireId,
-                        )}).initialize(${JSON.stringify(
+                        `__webpack_require__.debugRequireIds = ${JSON.stringify(
                             Object.fromEntries(ids),
                             null,
                             "\t",
-                        )}, modules);`,
+                        )};`,
                     ]);
                 },
             );
