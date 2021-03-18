@@ -55,7 +55,7 @@ class BuddyListConf {
     }
 }
 
-class BuddyList extends BuddyListConf {
+export class BuddyList extends BuddyListConf {
     keys = [];
 
     populate(opts) {

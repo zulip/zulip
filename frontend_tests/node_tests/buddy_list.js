@@ -20,7 +20,7 @@ mock_esm("../../static/js/message_viewport", {
 });
 
 const people = zrequire("people");
-const {buddy_list} = zrequire("buddy_list");
+const {BuddyList} = zrequire("buddy_list");
 
 function init_simulated_scrolling() {
     const elem = {
@@ -43,7 +43,9 @@ const alice = {
 };
 people.add_active_user(alice);
 
-function populate_list_with_just_alice() {
+run_test("get_items", () => {
+    const buddy_list = new BuddyList();
+
     // We don't make alice_li an actual jQuery stub,
     // because our test only cares that it comes
     // back from get_items.
@@ -54,16 +56,12 @@ function populate_list_with_just_alice() {
     });
     buddy_list.container.set_find_results(sel, container);
 
-    return alice_li;
-}
-
-run_test("get_items", () => {
-    const alice_li = populate_list_with_just_alice();
     const items = buddy_list.get_items();
     assert.deepEqual(items, [alice_li]);
 });
 
 run_test("basics", (override) => {
+    const buddy_list = new BuddyList();
     init_simulated_scrolling();
 
     override(buddy_list, "get_data_from_keys", (opts) => {
@@ -105,6 +103,7 @@ run_test("basics", (override) => {
 });
 
 run_test("big_list", (override) => {
+    const buddy_list = new BuddyList();
     const elem = init_simulated_scrolling();
 
     // Don't actually render, but do simulate filling up
@@ -139,6 +138,7 @@ run_test("big_list", (override) => {
 });
 
 run_test("force_render", (override) => {
+    const buddy_list = new BuddyList();
     buddy_list.render_count = 50;
 
     let num_rendered = 0;
@@ -160,6 +160,8 @@ run_test("force_render", (override) => {
 });
 
 run_test("find_li w/force_render", (override) => {
+    const buddy_list = new BuddyList();
+
     // If we call find_li w/force_render set, and the
     // key is not already rendered in DOM, then the
     // widget will call show_key to force-render it.
@@ -196,6 +198,7 @@ run_test("find_li w/force_render", (override) => {
 });
 
 run_test("find_li w/bad key", (override) => {
+    const buddy_list = new BuddyList();
     override(buddy_list, "get_li_from_key", () => ({length: 0}));
 
     const undefined_li = buddy_list.find_li({
@@ -207,6 +210,7 @@ run_test("find_li w/bad key", (override) => {
 });
 
 run_test("scrolling", (override) => {
+    const buddy_list = new BuddyList();
     init_simulated_scrolling();
 
     buddy_list.populate({
