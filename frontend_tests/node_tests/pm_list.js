@@ -56,7 +56,7 @@ people.initialize_current_user(me.user_id);
 
 function test(label, f) {
     run_test(label, (override) => {
-        pm_conversations.recent.clear_for_testing();
+        pm_conversations.clear_for_testing();
         pm_list.clear_for_testing();
         f(override);
     });
