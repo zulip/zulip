@@ -2,7 +2,8 @@ import {strict as assert} from "assert";
 import "css.escape";
 import path from "path";
 
-import {Browser, ElementHandle, Page, launch} from "puppeteer";
+import type {Browser, ElementHandle, Page} from "puppeteer";
+import {launch} from "puppeteer";
 
 import {test_credentials} from "../../var/puppeteer/test_credentials";
 

@@ -1,6 +1,6 @@
 import ErrorStackParser from "error-stack-parser";
 import $ from "jquery";
-import StackFrame from "stackframe";
+import type StackFrame from "stackframe";
 import StackTraceGPS from "stacktrace-gps";
 
 import render_blueslip_stacktrace from "../templates/blueslip_stacktrace.hbs";

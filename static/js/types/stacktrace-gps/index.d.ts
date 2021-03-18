@@ -1,5 +1,5 @@
-import SourceMap from "source-map";
-import StackFrame from "stackframe";
+import type SourceMap from "source-map";
+import type StackFrame from "stackframe";
 
 declare namespace StackTraceGPS {
     type StackTraceGPSOptions = {

@@ -4,7 +4,8 @@
 
 import path from "path";
 
-import webpack, {Template} from "webpack";
+import type webpack from "webpack";
+import {Template} from "webpack";
 
 export default class DebugRequirePlugin {
     apply(compiler: webpack.Compiler): void {
