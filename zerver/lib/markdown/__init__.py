@@ -11,8 +11,20 @@ import urllib.parse
 from collections import defaultdict, deque
 from dataclasses import dataclass
 from io import StringIO
-from typing import Any, Callable, Dict, Generic, List, Optional, Set, Tuple, TypeVar, Union
-from typing.re import Match, Pattern
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Generic,
+    List,
+    Match,
+    Optional,
+    Pattern,
+    Set,
+    Tuple,
+    TypeVar,
+    Union,
+)
 from urllib.parse import urlencode, urlsplit
 from xml.etree import ElementTree as etree
 from xml.etree.ElementTree import Element, SubElement
@@ -111,14 +123,14 @@ ElementStringNone = Union[Element, Optional[str]]
 EMOJI_REGEX = r"(?P<syntax>:[\w\-\+]+:)"
 
 
-def verbose_compile(pattern: str) -> Any:
+def verbose_compile(pattern: str) -> Pattern[str]:
     return re.compile(
         f"^(.*?){pattern}(.*?)$",
         re.DOTALL | re.UNICODE | re.VERBOSE,
     )
 
 
-def normal_compile(pattern: str) -> Any:
+def normal_compile(pattern: str) -> Pattern[str]:
     return re.compile(
         fr"^(.*?){pattern}(.*)$",
         re.DOTALL | re.UNICODE,
@@ -134,7 +146,7 @@ STREAM_LINK_REGEX = r"""
 
 
 @one_time
-def get_compiled_stream_link_regex() -> Pattern:
+def get_compiled_stream_link_regex() -> Pattern[str]:
     return verbose_compile(STREAM_LINK_REGEX)
 
 
@@ -149,14 +161,14 @@ STREAM_TOPIC_LINK_REGEX = r"""
 
 
 @one_time
-def get_compiled_stream_topic_link_regex() -> Pattern:
+def get_compiled_stream_topic_link_regex() -> Pattern[str]:
     return verbose_compile(STREAM_TOPIC_LINK_REGEX)
 
 
-LINK_REGEX: Pattern = None
+LINK_REGEX: Optional[Pattern[str]] = None
 
 
-def get_web_link_regex() -> str:
+def get_web_link_regex() -> Pattern[str]:
     # We create this one time, but not at startup.  So the
     # first message rendered in any process will have some
     # extra costs.  It's roughly 75ms to run this code, so
@@ -1465,7 +1477,7 @@ class UnicodeEmoji(markdown.inlinepatterns.Pattern):
 
 
 class Emoji(markdown.inlinepatterns.Pattern):
-    def handleMatch(self, match: Match[str]) -> Optional[Element]:
+    def handleMatch(self, match: Match[str]) -> Optional[Union[str, Element]]:
         orig_syntax = match.group("syntax")
         name = orig_syntax[1:-1]
 
@@ -1588,7 +1600,7 @@ def url_to_a(
 
 
 class CompiledPattern(markdown.inlinepatterns.Pattern):
-    def __init__(self, compiled_re: Pattern, md: markdown.Markdown) -> None:
+    def __init__(self, compiled_re: Pattern[str], md: markdown.Markdown) -> None:
         # This is similar to the superclass's small __init__ function,
         # but we skip the compilation step and let the caller give us
         # a compiled regex.
@@ -1857,7 +1869,7 @@ class UserGroupMentionPattern(markdown.inlinepatterns.Pattern):
 
 
 class StreamPattern(CompiledPattern):
-    def find_stream_by_name(self, name: Match[str]) -> Optional[Dict[str, Any]]:
+    def find_stream_by_name(self, name: str) -> Optional[Dict[str, Any]]:
         db_data = self.md.zulip_db_data
         if db_data is None:
             return None
@@ -1888,7 +1900,7 @@ class StreamPattern(CompiledPattern):
 
 
 class StreamTopicPattern(CompiledPattern):
-    def find_stream_by_name(self, name: Match[str]) -> Optional[Dict[str, Any]]:
+    def find_stream_by_name(self, name: str) -> Optional[Dict[str, Any]]:
         db_data = self.md.zulip_db_data
         if db_data is None:
             return None
