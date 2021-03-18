@@ -9,7 +9,7 @@ const people = zrequire("people");
 const pmc = zrequire("pm_conversations");
 
 function initialize_recents(params) {
-    pmc.recent.clear_for_testing();
+    pmc.clear_for_testing();
     pmc.recent.initialize(params);
 }
 
