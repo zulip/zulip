@@ -205,7 +205,7 @@ def create_dns_record(my_token: str, record_name: str, ip_address: str) -> None:
     domain.create_new_domain_record(type="A", name=wildcard_name, data=ip_address)
 
 
-def print_completion(username: str) -> None:
+def print_completion(droplet_domain_name: str) -> None:
     print(
         """
 COMPLETE! Droplet for GitHub user {0} is available at {0}.zulipdev.org.
@@ -216,15 +216,15 @@ Instructions for use are below. (copy and paste to the user)
 Your remote Zulip dev server has been created!
 
 - Connect to your server by running
-  `ssh zulipdev@{0}.zulipdev.org` on the command line
+  `ssh zulipdev@{0}` on the command line
   (Terminal for macOS and Linux, Bash for Git on Windows).
 - There is no password; your account is configured to use your SSH keys.
 - Once you log in, you should see `(zulip-py3-venv) ~$`.
 - To start the dev server, `cd zulip` and then run `./tools/run-dev.py`.
 - While the dev server is running, you can see the Zulip server in your browser at
-  http://{0}.zulipdev.org:9991.
+  http://{0}:9991.
 """.format(
-            username
+            droplet_domain_name
         )
     )
 
@@ -286,7 +286,6 @@ if __name__ == "__main__":
 
     create_dns_record(my_token=api_token, record_name=subdomain, ip_address=ip_address)
 
-    # print completion message
-    print_completion(username=username)
+    print_completion(droplet_domain_name=droplet_domain_name)
 
     sys.exit(1)
