@@ -190,18 +190,18 @@ def delete_existing_records(records: List[digitalocean.Record], record_name: str
         print(f"Deleted {count} existing A records for {record_name}.zulipdev.org.")
 
 
-def create_dns_record(my_token: str, username: str, ip_address: str) -> None:
+def create_dns_record(my_token: str, record_name: str, ip_address: str) -> None:
     domain = digitalocean.Domain(token=my_token, name="zulipdev.org")
     domain.load()
     records = domain.get_records()
 
-    delete_existing_records(records, username)
-    wildcard_name = "*." + username
+    delete_existing_records(records, record_name)
+    wildcard_name = "*." + record_name
     delete_existing_records(records, wildcard_name)
 
-    print(f"Creating new A record for {username}.zulipdev.org that points to {ip_address}.")
-    domain.create_new_domain_record(type="A", name=username, data=ip_address)
-    print(f"Creating new A record for *.{username}.zulipdev.org that points to {ip_address}.")
+    print(f"Creating new A record for {record_name}.zulipdev.org that points to {ip_address}.")
+    domain.create_new_domain_record(type="A", name=record_name, data=ip_address)
+    print(f"Creating new A record for *.{record_name}.zulipdev.org that points to {ip_address}.")
     domain.create_new_domain_record(type="A", name=wildcard_name, data=ip_address)
 
 
@@ -255,7 +255,8 @@ if __name__ == "__main__":
     username = args.username.lower()
     print(f"Creating Zulip developer environment for GitHub user {username}...")
 
-    droplet_domain_name = f"{username}.zulipdev.org"
+    subdomain = username
+    droplet_domain_name = f"{subdomain}.zulipdev.org"
 
     # get config details
     config = get_config()
@@ -283,8 +284,7 @@ if __name__ == "__main__":
         user_data=user_data,
     )
 
-    # create dns entry
-    create_dns_record(my_token=api_token, username=username, ip_address=ip_address)
+    create_dns_record(my_token=api_token, record_name=subdomain, ip_address=ip_address)
 
     # print completion message
     print_completion(username=username)
