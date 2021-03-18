@@ -200,6 +200,11 @@ export function update_closed_compose_buttons_for_stream() {
     update_closed_compose_buttons(text_stream);
 }
 
+export function update_closed_compose_buttons_for_recent_topics() {
+    const text_stream = $t({defaultMessage: "Compose message"});
+    update_closed_compose_buttons(text_stream);
+}
+
 function update_fade() {
     if (!compose_state.composing()) {
         return;

@@ -19,10 +19,10 @@ import * as narrow_state from "./narrow_state";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as recent_topics from "./recent_topics";
 import * as reload_state from "./reload_state";
 import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
-import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
 
 export function blur_compose_inputs() {
@@ -132,7 +132,6 @@ export function complete_starting_tasks(msg_type, opts) {
     // makes testing a bit easier.
 
     maybe_scroll_up_selected_message();
-    ui_util.change_tab_to("#message_feed_container");
     compose_fade.start_compose(msg_type);
     stream_bar.decorate(opts.stream, $("#stream-message .message_header_stream"), true);
     $(document).trigger(new $.Event("compose_started.zulip", opts));
@@ -215,6 +214,7 @@ export function start(msg_type, opts) {
     expand_compose_box();
 
     opts = fill_in_opts_from_current_narrowed_view(msg_type, opts);
+
     // If we are invoked by a compose hotkey (c or x) or new topic
     // button, do not assume that we know what the message's topic or
     // PM recipient should be.
@@ -290,47 +290,55 @@ export function cancel() {
 }
 
 export function respond_to_message(opts) {
-    let msg_type;
     // Before initiating a reply to a message, if there's an
     // in-progress composition, snapshot it.
     drafts.update_draft();
 
-    const message = message_lists.current.selected_message();
-
-    if (message === undefined) {
-        // empty narrow implementation
-        if (
-            !narrow_state.narrowed_by_pm_reply() &&
-            !narrow_state.narrowed_by_stream_reply() &&
-            !narrow_state.narrowed_by_topic_reply()
-        ) {
-            compose.nonexistent_stream_reply_error();
+    let message;
+    let msg_type;
+    if (recent_topics.is_visible()) {
+        message = recent_topics.get_focused_row_message();
+        if (message === undefined) {
             return;
         }
-        const current_filter = narrow_state.filter();
-        const first_term = current_filter.operators()[0];
-        const first_operator = first_term.operator;
-        const first_operand = first_term.operand;
+    } else {
+        message = message_lists.current.selected_message();
 
-        if (first_operator === "stream" && !stream_data.is_subscribed(first_operand)) {
-            compose.nonexistent_stream_reply_error();
+        if (message === undefined) {
+            // empty narrow implementation
+            if (
+                !narrow_state.narrowed_by_pm_reply() &&
+                !narrow_state.narrowed_by_stream_reply() &&
+                !narrow_state.narrowed_by_topic_reply()
+            ) {
+                compose.nonexistent_stream_reply_error();
+                return;
+            }
+            const current_filter = narrow_state.filter();
+            const first_term = current_filter.operators()[0];
+            const first_operator = first_term.operator;
+            const first_operand = first_term.operand;
+
+            if (first_operator === "stream" && !stream_data.is_subscribed(first_operand)) {
+                compose.nonexistent_stream_reply_error();
+                return;
+            }
+
+            // Set msg_type to stream by default in the case of an empty
+            // home view.
+            msg_type = "stream";
+            if (narrow_state.narrowed_by_pm_reply()) {
+                msg_type = "private";
+            }
+
+            const new_opts = fill_in_opts_from_current_narrowed_view(msg_type, opts);
+            start(new_opts.message_type, new_opts);
             return;
         }
 
-        // Set msg_type to stream by default in the case of an empty
-        // home view.
-        msg_type = "stream";
-        if (narrow_state.narrowed_by_pm_reply()) {
-            msg_type = "private";
+        if (message_lists.current.can_mark_messages_read()) {
+            unread_ops.notify_server_message_read(message);
         }
-
-        const new_opts = fill_in_opts_from_current_narrowed_view(msg_type, opts);
-        start(new_opts.message_type, new_opts);
-        return;
-    }
-
-    if (message_lists.current.can_mark_messages_read()) {
-        unread_ops.notify_server_message_read(message);
     }
 
     // Important note: A reply_type of 'personal' is for the R hotkey

@@ -4,8 +4,8 @@ import * as compose_actions from "./compose_actions";
 import * as message_lists from "./message_lists";
 import * as popovers from "./popovers";
 
-function update_reply_recipient_label() {
-    const message = message_lists.current.selected_message();
+export function update_reply_recipient_label(message) {
+    message = message || message_lists.current.selected_message();
     let recipient_label = "";
     if (message) {
         if (message.stream && message.topic) {

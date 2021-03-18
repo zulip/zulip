@@ -86,3 +86,11 @@ run_test("reply_label", () => {
         test_reply_label(expected_label);
     }
 });
+
+run_test("test_custom_message_input", () => {
+    compose_closed_ui.update_reply_recipient_label({
+        stream: "stream test",
+        topic: "topic test",
+    });
+    test_reply_label("#stream test > topic test");
+});

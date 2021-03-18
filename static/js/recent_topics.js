@@ -4,8 +4,9 @@ import render_recent_topic_row from "../templates/recent_topic_row.hbs";
 import render_recent_topics_filters from "../templates/recent_topics_filters.hbs";
 import render_recent_topics_body from "../templates/recent_topics_table.hbs";
 
-import * as compose_actions from "./compose_actions";
-import * as drafts from "./drafts";
+import * as compose from "./compose";
+import * as compose_closed_ui from "./compose_closed_ui";
+import * as compose_state from "./compose_state";
 import * as hash_util from "./hash_util";
 import * as hashchange from "./hashchange";
 import * as ListWidget from "./list_widget";
@@ -75,6 +76,7 @@ export function is_in_focus() {
     // recent topics.
     return (
         hashchange.in_recent_topics_hash() &&
+        !compose_state.composing() &&
         !popovers.any_active() &&
         !overlays.is_active() &&
         !$(".home-page-input").is(":focus")
@@ -120,7 +122,26 @@ function set_table_focus(row, col) {
         topic_rows.eq(row).find(".recent_topics_focusable").eq(col).children().trigger("focus");
     }, 0);
     current_focus_elem = "table";
+
+    const topic_row = topic_rows.eq(row);
+    const message = {
+        stream: topic_row.find(".recent_topic_stream a").text(),
+        topic: topic_row.find(".recent_topic_name a").text(),
+    };
+    compose_closed_ui.update_reply_recipient_label(message);
     return true;
+}
+
+export function get_focused_row_message() {
+    if (is_table_focused()) {
+        const recent_topic_id_prefix_len = "recent_topic:".length;
+        const topic_rows = $("#recent_topics_table table tbody tr");
+        const topic_row = topic_rows.eq(row_focus);
+        const topic_id = topic_row.attr("id").slice(recent_topic_id_prefix_len);
+        const topic_last_msg_id = topics.get(topic_id).last_msg_id;
+        return message_store.get(topic_last_msg_id);
+    }
+    return undefined;
 }
 
 function revive_current_focus() {
@@ -538,13 +559,10 @@ export function show() {
     $("#message_view_header_underpadding").hide();
     $(".header").css("padding-bottom", "0px");
 
-    // Save text in compose box if open.
-    drafts.update_draft();
-    // Close the compose box, this removes
-    // any arbitrary bug for compose box in recent topics.
-    // This is required since, Recent Topics is the only view
-    // with no compose box.
-    compose_actions.cancel();
+    // We want to show `new stream message` instead of
+    // `new topic`, which we are already doing in this
+    // function. So, we reuse it here.
+    compose.update_closed_compose_buttons_for_recent_topics();
 
     narrow_state.reset_current_filter();
     narrow.set_narrow_title("Recent topics");
