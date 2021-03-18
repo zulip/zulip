@@ -2056,6 +2056,27 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(msg.mentions_user_ids, {user_profile.id})
         self.assertEqual(msg.mentions_user_group_ids, {user_group.id})
 
+    def test_invalid_user_group_followed_by_valid_mention_single(self) -> None:
+        sender_user_profile = self.example_user("othello")
+        user_profile = self.example_user("hamlet")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        user_id = user_profile.id
+        user_group = self.create_user_group_for_test("support")
+
+        content = "@**King Hamlet** @*Invalid user group* @*support*"
+        self.assertEqual(
+            render_markdown(msg, content),
+            '<p><span class="user-mention" '
+            f'data-user-id="{user_id}">'
+            "@King Hamlet</span> "
+            "@<em>Invalid user group</em> "
+            '<span class="user-group-mention" '
+            f'data-user-group-id="{user_group.id}">'
+            "@support</span></p>",
+        )
+        self.assertEqual(msg.mentions_user_ids, {user_profile.id})
+        self.assertEqual(msg.mentions_user_group_ids, {user_group.id})
+
     def test_user_group_mention_atomic_string(self) -> None:
         sender_user_profile = self.example_user("othello")
         realm = get_realm("zulip")
