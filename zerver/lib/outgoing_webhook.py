@@ -241,23 +241,23 @@ def notify_bot_owner(
     assert bot_owner is not None
 
     notification_message = f"[A message]({message_url}) to your bot @_**{bot.full_name}** triggered an outgoing webhook."
-    if failure_message:
-        notification_message += "\n" + failure_message
-    if status_code == 407:
-        notification_message += (
-            "\nThe URL configured for the webhook is for a private or disallowed network."
-        )
-    elif status_code:
-        notification_message += f"\nThe webhook got a response with status code *{status_code}*."
-    if response_content and status_code != 407:
-        notification_message += (
-            f"\nThe response contains the following payload:\n```\n{response_content!r}\n```"
-        )
     if exception:
         notification_message += (
             "\nWhen trying to send a request to the webhook service, an exception "
             f"of type {type(exception).__name__} occurred:\n```\n{exception}\n```"
         )
+    elif failure_message:
+        notification_message += "\n" + failure_message
+    elif status_code == 407:
+        notification_message += (
+            "\nThe URL configured for the webhook is for a private or disallowed network."
+        )
+    elif status_code:
+        notification_message += f"\nThe webhook got a response with status code *{status_code}*."
+        if response_content:
+            notification_message += (
+                f"\nThe response contains the following payload:\n```\n{response_content!r}\n```"
+            )
 
     message_info = dict(
         type="private",
