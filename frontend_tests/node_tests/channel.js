@@ -305,3 +305,37 @@ run_test("xhr_error_message", () => {
     msg = "some message";
     assert.equal(channel.xhr_error_message(msg, xhr), "some message: file not found");
 });
+
+run_test("while_reloading", () => {
+    reload_state.set_state_to_in_progress();
+
+    assert.equal(channel.get({ignore_reload: false}), undefined);
+
+    let orig_success_called = false;
+    let orig_error_called = false;
+
+    test_with_mock_ajax({
+        run_code() {
+            channel.del({
+                url: "/json/endpoint",
+                ignore_reload: true,
+                success() {
+                    orig_success_called = true;
+                },
+                error() {
+                    orig_error_called = true;
+                },
+            });
+        },
+
+        check_ajax_options(options) {
+            blueslip.expect("log", "Ignoring DELETE /json/endpoint response while reloading");
+            options.simulate_success();
+            assert(!orig_success_called);
+
+            blueslip.expect("log", "Ignoring DELETE /json/endpoint error response while reloading");
+            options.simulate_error();
+            assert(!orig_error_called);
+        },
+    });
+});
