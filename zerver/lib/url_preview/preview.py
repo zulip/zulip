@@ -1,6 +1,5 @@
 import re
-from typing import Any, Callable, Dict, Optional
-from typing.re import Match
+from typing import Any, Callable, Dict, Match, Optional
 
 import magic
 import requests
@@ -37,7 +36,7 @@ HEADERS = {"User-Agent": ZULIP_URL_PREVIEW_USER_AGENT}
 TIMEOUT = 15
 
 
-def is_link(url: str) -> Match[str]:
+def is_link(url: str) -> Optional[Match[str]]:
     return link_regex.match(smart_text(url))
 
 
