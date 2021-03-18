@@ -301,8 +301,6 @@ td .button {
     }
 
     input[type="text"].search {
-        float: right;
-        margin: 2px 5px 2px 0;
         padding: 2px 5px;
         font-size: 0.9em;
     }
@@ -1182,7 +1180,6 @@ input[type="checkbox"] {
 
     input.search {
         font-size: 0.9rem;
-        margin: 10px 0 20px 0;
     }
 
     .form-sidebar {

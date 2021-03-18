@@ -90,6 +90,11 @@ function render_attachments_ui() {
     const uploaded_files_table = $("#uploaded_files_table").expectOne();
     const $search_input = $("#upload_file_search");
 
+    $("#clear_upload_file_search_button").on("click", () => {
+        $("#upload_file_search").val("");
+        render_attachments_ui();
+    });
+
     ListWidget.create(uploaded_files_table, attachments, {
         name: "uploaded-files-list",
         modifier(attachment) {
