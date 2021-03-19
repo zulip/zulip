@@ -144,6 +144,23 @@ run_test("read", (override) => {
         success: channel_post_opts.success,
     });
 
+    // Messages still not acked yet
+    const events = {};
+    const stub_delay = 100;
+    function set_timeout(f, delay) {
+        assert.equal(delay, stub_delay);
+        events.f = f;
+        events.timer_set = true;
+        return;
+    }
+    set_global("setTimeout", set_timeout);
+    // Mock successful flagging of ids
+    success_response_data = {
+        messages: [3, 4, 5, 6, 7],
+    };
+    channel_post_opts.success(success_response_data);
+    assert(events.timer_set);
+
     // Mark them non local
     local_msg_1.locally_echoed = false;
     local_msg_2.locally_echoed = false;
