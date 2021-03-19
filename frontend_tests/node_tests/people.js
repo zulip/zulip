@@ -1089,5 +1089,23 @@ test_people("get_active_message_people", () => {
     assert.deepEqual(active_message_people, [steven, maria]);
 });
 
+test_people("huddle_string", () => {
+    assert.equal(people.huddle_string({type: "stream"}), undefined);
+
+    function huddle(user_ids) {
+        return people.huddle_string({
+            type: "private",
+            display_recipient: user_ids.map((id) => ({id})),
+        });
+    }
+
+    people.add_active_user(maria);
+    people.add_active_user(bob);
+
+    assert.equal(huddle([]), undefined);
+    assert.equal(huddle([me.user_id, maria.user_id]), undefined);
+    assert.equal(huddle([me.user_id, maria.user_id, bob.user_id]), "203,302");
+});
+
 // reset to native Date()
 MockDate.reset();
