@@ -572,17 +572,22 @@ class Realm(models.Model):
             role__in=roles,
         )
 
-    def get_human_admin_users(self) -> QuerySet:
+    def get_human_admin_users(self, include_realm_owners: bool = True) -> QuerySet:
         """Use this in contexts where we want only human users with
         administrative privileges, like sending an email to all of a
         realm's administrators (bots don't have real email addresses).
         """
+        if include_realm_owners:
+            roles = [UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_REALM_OWNER]
+        else:
+            roles = [UserProfile.ROLE_REALM_ADMINISTRATOR]
+
         # TODO: Change return type to QuerySet[UserProfile]
         return UserProfile.objects.filter(
             realm=self,
             is_bot=False,
             is_active=True,
-            role__in=[UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_REALM_OWNER],
+            role__in=roles,
         )
 
     def get_human_billing_admin_users(self) -> Sequence["UserProfile"]:
