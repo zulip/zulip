@@ -265,7 +265,7 @@ form#add_new_subscription {
                     }
 
                     &:last-of-type {
-                        padding-right: 10px;
+                        padding-right: 15px;
                     }
 
                     &.unsubscribe {
