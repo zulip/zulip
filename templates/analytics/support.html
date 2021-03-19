@@ -40,7 +40,7 @@
             <b>Email</b>: {{ user.email }}<br>
             <b>Date joined</b>: {{ user.date_joined|timesince }} ago<br>
             <b>Is active</b>: {{ user.is_active }}<br>
-            <b>Is admin</b>: {{ user.is_realm_admin }}<br>
+            <b>Role</b>: {{ user.get_role_name() }}<br>
             <hr>
             <div>
                 {% include "analytics/realm_details.html" %}

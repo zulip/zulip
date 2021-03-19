@@ -579,6 +579,7 @@ class TestSupportEndpoint(ZulipTestCase):
                     "<h3>King Hamlet</h3>",
                     "<b>Email</b>: hamlet@zulip.com",
                     "<b>Is active</b>: True<br>",
+                    "<b>Role</b>: Member<br>",
                     "<b>Admins</b>: desdemona@zulip.com, iago@zulip.com\n",
                     'class="copy-button" data-copytext="desdemona@zulip.com, iago@zulip.com"',
                 ],
@@ -592,6 +593,18 @@ class TestSupportEndpoint(ZulipTestCase):
                     "<h3>Othello, the Moor of Venice</h3>",
                     "<b>Email</b>: othello@zulip.com",
                     "<b>Is active</b>: True<br>",
+                    "<b>Role</b>: Member<br>",
+                ],
+                result,
+            )
+
+        def check_polonius_user_query_result(result: HttpResponse) -> None:
+            self.assert_in_success_response(
+                [
+                    "<h3>Polonius</h3>",
+                    "<b>Email</b>: polonius@zulip.com",
+                    "<b>Is active</b>: True<br>",
+                    "<b>Role</b>: Guest<br>",
                 ],
                 result,
             )
@@ -729,6 +742,10 @@ class TestSupportEndpoint(ZulipTestCase):
 
         result = self.client_get("/activity/support", {"q": "hamlet@zulip.com"})
         check_hamlet_user_query_result(result)
+        check_zulip_realm_query_result(result)
+
+        result = self.client_get("/activity/support", {"q": self.example_email("polonius")})
+        check_polonius_user_query_result(result)
         check_zulip_realm_query_result(result)
 
         result = self.client_get("/activity/support", {"q": "lear"})
