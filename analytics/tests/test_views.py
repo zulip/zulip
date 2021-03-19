@@ -592,23 +592,27 @@ class TestSupportEndpoint(ZulipTestCase):
 
         def check_hamlet_user_query_result(result: HttpResponse) -> None:
             assert_user_details_in_html_response(
-                result, "King Hamlet", "hamlet@zulip.com", "Member"
+                result, "King Hamlet", self.example_email("hamlet"), "Member"
             )
             self.assert_in_success_response(
                 [
-                    "<b>Admins</b>: desdemona@zulip.com, iago@zulip.com\n",
-                    'class="copy-button" data-copytext="desdemona@zulip.com, iago@zulip.com"',
+                    f"<b>Admins</b>: {self.example_email('desdemona')}, {self.example_email('iago')}\n",
+                    'class="copy-button" data-copytext="{}, {}"'.format(
+                        self.example_email("desdemona"), self.example_email("iago")
+                    ),
                 ],
                 result,
             )
 
         def check_othello_user_query_result(result: HttpResponse) -> None:
             assert_user_details_in_html_response(
-                result, "Othello, the Moor of Venice", "othello@zulip.com", "Member"
+                result, "Othello, the Moor of Venice", self.example_email("othello"), "Member"
             )
 
         def check_polonius_user_query_result(result: HttpResponse) -> None:
-            assert_user_details_in_html_response(result, "Polonius", "polonius@zulip.com", "Guest")
+            assert_user_details_in_html_response(
+                result, "Polonius", self.example_email("polonius"), "Guest"
+            )
 
         def check_zulip_realm_query_result(result: HttpResponse) -> None:
             zulip_realm = get_realm("zulip")
@@ -745,7 +749,7 @@ class TestSupportEndpoint(ZulipTestCase):
             ['<input type="text" name="q" class="input-xxlarge search-query"'], result
         )
 
-        result = self.client_get("/activity/support", {"q": "hamlet@zulip.com"})
+        result = self.client_get("/activity/support", {"q": self.example_email("hamlet")})
         check_hamlet_user_query_result(result)
         check_zulip_realm_query_result(result)
 
