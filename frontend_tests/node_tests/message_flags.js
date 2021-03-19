@@ -171,6 +171,34 @@ run_test("read", (override) => {
     });
 });
 
+run_test("read_empty_data", (override) => {
+    // Way to capture posted info in every request
+    let channel_post_opts;
+    override(channel, "post", (opts) => {
+        channel_post_opts = opts;
+    });
+
+    // For testing purpose limit the batch size value to 5 instead of 1000
+    function send_read(messages) {
+        with_field(message_flags, "_unread_batch_size", 5, () => {
+            message_flags.send_read(messages);
+        });
+    }
+
+    // send read to obtain success callback
+    send_read({locally_echoed: false, id: 1});
+
+    // verify early return on empty data
+    const success_callback = channel_post_opts.success;
+    channel_post_opts = {};
+    let empty_data;
+    success_callback(empty_data);
+    assert.deepEqual(channel_post_opts, {});
+    empty_data = {messages: undefined};
+    success_callback(empty_data);
+    assert.deepEqual(channel_post_opts, {});
+});
+
 run_test("collapse_and_uncollapse", (override) => {
     // Way to capture posted info in every request
     let channel_post_opts;
