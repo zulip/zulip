@@ -128,6 +128,8 @@ class PermissionTest(ZulipTestCase):
         self.assertTrue(user_profile in admin_users)
         admin_users = user_profile.realm.get_admin_users_and_bots()
         self.assertTrue(user_profile in admin_users)
+        admin_users = user_profile.realm.get_admin_users_and_bots(include_realm_owners=False)
+        self.assertFalse(user_profile in admin_users)
 
     def test_updating_non_existent_user(self) -> None:
         self.login("hamlet")

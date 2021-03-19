@@ -553,16 +553,23 @@ class Realm(models.Model):
     def get_active_emoji(self) -> Dict[str, Dict[str, Iterable[str]]]:
         return get_active_realm_emoji_uncached(self)
 
-    def get_admin_users_and_bots(self) -> Sequence["UserProfile"]:
+    def get_admin_users_and_bots(
+        self, include_realm_owners: bool = True
+    ) -> Sequence["UserProfile"]:
         """Use this in contexts where we want administrative users as well as
         bots with administrator privileges, like send_event calls for
         notifications to all administrator users.
         """
+        if include_realm_owners:
+            roles = [UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_REALM_OWNER]
+        else:
+            roles = [UserProfile.ROLE_REALM_ADMINISTRATOR]
+
         # TODO: Change return type to QuerySet[UserProfile]
         return UserProfile.objects.filter(
             realm=self,
             is_active=True,
-            role__in=[UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_REALM_OWNER],
+            role__in=roles,
         )
 
     def get_human_admin_users(self) -> QuerySet:
