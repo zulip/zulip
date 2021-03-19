@@ -16,9 +16,10 @@
                 </div>
                 <div class="inline-block">
                     <span id="emoji-file-name"></span>
-                    <input type="file" name="emoji_file_input" class="notvisible"
-                      id="emoji_file_input" value="{{t 'Upload image or GIF' }}"/>
-                    <button class="button white rounded" style="display: none;" id="emoji_image_clear_button">{{t "Clear emoji image" }}</button>
+                    <input type="file" name="emoji_file_input" class="notvisible" id="emoji_file_input"
+                      value="{{t 'Upload image or GIF' }}" />
+                    <button class="button white rounded" style="display: none;" id="emoji_image_clear_button">{{t "Clear
+                        emoji image" }}</button>
                     <button class="button rounded" id="emoji_upload_button">{{t "Upload image or GIF" }}</button>
                 </div>
                 <button id="admin_emoji_submit" type="submit" class="button rounded sea-green">
@@ -32,8 +33,13 @@
         </div>
     </form>
 
-    <input type="text" class="search" placeholder="{{t 'Filter emojis' }}"
-      aria-label="{{t 'Filter emojis' }}"/>
+    <div class="input-append filter_emojis_search_section">
+        <input class="search" id="filter_emojis_search" type="text" placeholder="{{t 'Filter emojis' }}"
+          aria-label="{{t 'Filter emojis' }}">
+        <button type="button" class="btn clear_search_button" id="clear_filter_emojis_search_button">
+            <i class="fa fa-remove" aria-hidden="true"></i>
+        </button>
+    </div>
     <div class="progressive-table-wrapper" data-simplebar>
         <table class="table table-condensed table-striped wrapped-table admin_emoji_table">
             <thead>

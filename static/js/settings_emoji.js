@@ -88,6 +88,11 @@ export function populate_emoji() {
         }
     }
 
+    $("#clear_filter_emojis_search_button").on("click", () => {
+        $("#filter_emojis_search").val("");
+        populate_emoji();
+    });
+
     const emoji_table = $("#admin_emoji_table").expectOne();
     ListWidget.create(emoji_table, Object.values(emoji_data), {
         name: "emoji_list",
