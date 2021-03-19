@@ -167,6 +167,16 @@ function populate_users() {
 
     section.active.create_table(active_user_ids);
     section.deactivated.create_table(deactivated_user_ids);
+
+<<<<<<< Updated upstream
+    $("#clear_user_list_search_button").on("click", () => {
+        $("#user_list_search").val("");
+=======
+    $("#clear_deactivated_user_list_search_button").on("click", () => {
+        $("#deactivated_user_list_search").val("");
+>>>>>>> Stashed changes
+        populate_users();
+    });
 }
 
 function reset_scrollbar($sel) {
@@ -327,6 +337,12 @@ section.active.create_table = (active_users) => {
 
     loading.destroy_indicator($("#admin_page_users_loading_indicator"));
     $("#admin_users_table").show();
+
+    
+    $("#clear_user_list_search_button").on("click", () => {
+        $("#user_list_search").val("");
+        section.active.create_table(active_users);
+    });
 };
 
 section.deactivated.create_table = (deactivated_users) => {
