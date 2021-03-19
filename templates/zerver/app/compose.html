@@ -101,6 +101,11 @@
                                     <a role="button" id="undo_markdown_preview" class="message-control-button fa fa-edit" aria-label="{{ _('Write') }}" tabindex=0 style="display:none;" title="{{ _('Write') }}"></a>
                                     <a role="button" class="message-control-button fa fa-video-camera video_link" aria-label="{{ _('Add video call') }}" tabindex=0 title="{{ _('Add video call') }}"></a>
                                     <a role="button" class="message-control-button fa fa-smile-o" aria-label="{{_('Add emoji')}}" id="emoji_map" tabindex=0 title="{{ _('Add emoji') }}"></a>
+                                    {% if giphy_api_available %}
+                                    <a role="button" class="message-control-button" aria-label="{{_('Add GIF')}}" id="compose_box_giphy_grid" title="{{ _('Add GIF') }}">
+                                        <img id="compose_giphy_logo" tabindex=0 src="/static/images/GIPHY_logo.png">
+                                    </a>
+                                    {% endif %}
                                     <a class="message-control-link drafts-link" href="#drafts" title="{{ _('Drafts') }} (d)">{{ _('Drafts') }}</a>
                                     <a role="button" class="message-control-link" tabindex=0 data-overlay-trigger="message-formatting">{{ _('Help') }}</a>
                                     <span id="sending-indicator"></span>

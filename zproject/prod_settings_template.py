@@ -563,6 +563,10 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## system-level monitoring tools.
 # LOGGING_SHOW_PID = False
 
+#################
+## Animated GIF integration powered by GIPHY.  See:
+## https://zulip.readthedocs.io/en/latest/production/giphy-gif-integration.html
+# GIPHY_API_KEY = "<Your API key from GIPHY>"
 
 ################
 ## Video call integrations.

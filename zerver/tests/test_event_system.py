@@ -882,6 +882,7 @@ class FetchQueriesTest(ZulipTestCase):
             update_message_flags=5,
             user_status=1,
             video_calls=0,
+            giphy=0,
         )
 
         wanted_event_types = {item[0][0] for item in want_mock.call_args_list}

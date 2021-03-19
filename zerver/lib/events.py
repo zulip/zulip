@@ -444,6 +444,18 @@ def fetch_initial_state_data(
     if want("video_calls"):
         state["has_zoom_token"] = settings_user.zoom_token is not None
 
+    if want("giphy"):
+        # Normally, it would be a nasty security bug to send a
+        # server's API key to end users. However, GIPHY's API key
+        # security model is precisely to do that; every service
+        # publishes its API key (and GIPHY's client-side JS libraries
+        # require the API key to work).  This security model makes
+        # sense because GIPHY API keys are all essentially equivalent
+        # in letting one search for GIFs; GIPHY only requires API keys
+        # to exist at all so that they can deactivate them in cases of
+        # abuse.
+        state["giphy_api_key"] = settings.GIPHY_API_KEY if settings.GIPHY_API_KEY else ""
+
     return state
 
 

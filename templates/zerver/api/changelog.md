@@ -10,6 +10,11 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 47**
+
+* [`POST /register`](/api/register-queue): Added a new `giphy_api_key`
+  field, which is required to fetch GIFs using the GIPHY API.
+
 **Feature level 46**
 
 * [`GET /messages`](/api/get-messages) and [`GET

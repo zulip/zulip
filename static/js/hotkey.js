@@ -275,6 +275,13 @@ export function process_escape_key(e) {
         }
 
         if (compose_state.composing()) {
+            // Hide GIPHY popover if it's open.
+            if ($("#giphy_grid_in_popover").length) {
+                $("#compose_box_giphy_grid").popover("hide");
+                $("#compose-textarea").trigger("focus");
+                return true;
+            }
+
             // Check for errors in compose box; close errors if they exist
             if ($("#compose-send-status").css("display") !== "none") {
                 $("#compose-send-status").hide();

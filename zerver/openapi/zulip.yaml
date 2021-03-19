@@ -7115,6 +7115,19 @@ paths:
                           A boolean which signifies whether the user has a zoom token and has thus completed
                           OAuth flow for the [Zoom integration](/help/start-a-call).  Clients need
                           to know whether initiating Zoom OAuth is required before creating a Zoom call.
+                      giphy_api_key:
+                        type: string
+                        description: |
+                          Present if `giphy` is present in `fetch_event_types`.
+
+                          GIPHY's client-side SDKs needs this API key to use the GIPHY API.
+                          GIPHY API keys are not secret (their main purpose appears to be
+                          allowing GIPHY to block a problematic app).  Please don't use our API
+                          key for an app unrelated to Zulip.
+
+                          Developers of clients should also read the
+                          [GIPHY API TOS](https://support.giphy.com/hc/en-us/articles/360028134111-GIPHY-API-Terms-of-Service-)
+                          before using this API key.
                       enable_desktop_notifications:
                         type: boolean
                         description: |

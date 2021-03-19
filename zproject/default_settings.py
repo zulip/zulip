@@ -133,6 +133,9 @@ MAX_FILE_UPLOAD_SIZE = 25
 # Jitsi Meet video call integration; set to None to disable integration.
 JITSI_SERVER_URL = "https://meet.jit.si"
 
+# GIPHY API key.
+GIPHY_API_KEY = get_secret("giphy_api_key")
+
 # Allow setting BigBlueButton settings in zulip-secrets.conf in
 # development; this is useful since there are no public BigBlueButton servers.
 BIG_BLUE_BUTTON_URL = get_secret("big_blue_button_url", development_only=True)
