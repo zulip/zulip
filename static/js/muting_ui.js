@@ -90,6 +90,11 @@ export function set_up_muted_topics_ui() {
     const muted_topics_table = $("#muted_topics_table");
     const $search_input = $("#muted_topics_search");
 
+    $("#clear_muted_topics_search_button").on("click", () => {
+        $("#muted_topics_search").val("");
+        set_up_muted_topics_ui();
+    });
+
     ListWidget.create(muted_topics_table, muted_topics, {
         name: "muted-topics-list",
         modifier(muted_topics) {

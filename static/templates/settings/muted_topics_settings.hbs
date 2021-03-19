@@ -1,5 +1,10 @@
 <div id="muted-topic-settings" class="settings-section" data-name="muted-topics">
-    <input id="muted_topics_search" class="search" type="text" placeholder="{{t 'Search muted topics...' }}" aria-label="{{t 'Search muted topics...' }}"/>
+    <div class="input-append muted_topics_search_section">
+        <input class="search" id="muted_topics_search" type="text" placeholder="{{t 'Search muted topics...' }}" aria-label="{{t 'Search muted topics...' }}">
+        <button type="button" class="btn clear_search_button" id="clear_muted_topics_search_button">
+            <i class="fa fa-remove" aria-hidden="true"></i>
+        </button>
+    </div>
     <div class="progressive-table-wrapper" data-simplebar data-list-widget="muted-topics-list">
         <table class="table table-condensed table-striped wrapped-table">
             <thead>
