@@ -12,7 +12,11 @@ from analytics.models import FillState, RealmCount, UserCount
 from analytics.views import rewrite_client_arrays, sort_by_totals, sort_client_labels
 from corporate.lib.stripe import add_months, update_sponsorship_status
 from corporate.models import Customer, CustomerPlan, LicenseLedger, get_customer_by_realm
-from zerver.lib.actions import do_create_multiuse_invite_link, do_send_realm_reactivation_email
+from zerver.lib.actions import (
+    do_create_multiuse_invite_link,
+    do_send_realm_reactivation_email,
+    do_set_realm_property,
+)
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import reset_emails_in_zulip_realm
 from zerver.lib.timestamp import ceiling_to_day, ceiling_to_hour, datetime_to_timestamp
@@ -716,6 +720,10 @@ class TestSupportEndpoint(ZulipTestCase):
         self.assertEqual(result["Location"], "/login/")
 
         self.login("iago")
+
+        do_set_realm_property(
+            get_realm("zulip"), "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_NOBODY
+        )
 
         customer = Customer.objects.create(realm=get_realm("lear"), stripe_customer_id="cus_123")
         now = datetime(2016, 1, 2, tzinfo=timezone.utc)

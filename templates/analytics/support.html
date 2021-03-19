@@ -37,7 +37,7 @@
         <div class="support-query-result new-style">
             <span class="label">user</span>
             <h3>{{ user.full_name }}</h3>
-            <b>Email</b>: {{ user.email }}<br>
+            <b>Email</b>: {{ user.delivery_email }}<br>
             <b>Date joined</b>: {{ user.date_joined|timesince }} ago<br>
             <b>Is active</b>: {{ user.is_active }}<br>
             <b>Role</b>: {{ user.get_role_name() }}<br>
