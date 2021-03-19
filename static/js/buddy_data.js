@@ -1,5 +1,5 @@
 import * as blueslip from "./blueslip";
-import * as compose_fade from "./compose_fade";
+import * as compose_fade_users from "./compose_fade_users";
 import * as hash_util from "./hash_util";
 import * as people from "./people";
 import * as presence from "./presence";
@@ -268,7 +268,7 @@ export function get_title_data(user_ids_string, is_group) {
 
 export function get_item(user_id) {
     const info = info_for(user_id);
-    compose_fade.update_user_info([info], fade_config);
+    compose_fade_users.update_user_info([info], fade_config);
     return info;
 }
 
@@ -334,7 +334,7 @@ export function get_filtered_and_sorted_user_ids(user_filter_text) {
 
 export function get_items_for_users(user_ids) {
     const user_info = user_ids.map((user_id) => info_for(user_id));
-    compose_fade.update_user_info(user_info, fade_config);
+    compose_fade_users.update_user_info(user_info, fade_config);
     return user_info;
 }
 
