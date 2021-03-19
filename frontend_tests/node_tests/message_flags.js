@@ -170,3 +170,37 @@ run_test("read", (override) => {
         success: channel_post_opts.success,
     });
 });
+
+run_test("collapse_and_uncollapse", (override) => {
+    // Way to capture posted info in every request
+    let channel_post_opts;
+    override(channel, "post", (opts) => {
+        channel_post_opts = opts;
+    });
+
+    const msg = {id: 5};
+
+    message_flags.save_collapsed(msg);
+
+    assert.deepEqual(channel_post_opts, {
+        url: "/json/messages/flags",
+        idempotent: true,
+        data: {
+            messages: "[5]",
+            op: "add",
+            flag: "collapsed",
+        },
+    });
+
+    message_flags.save_uncollapsed(msg);
+
+    assert.deepEqual(channel_post_opts, {
+        url: "/json/messages/flags",
+        idempotent: true,
+        data: {
+            messages: "[5]",
+            op: "remove",
+            flag: "collapsed",
+        },
+    });
+});
