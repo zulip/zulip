@@ -576,14 +576,26 @@ class TestSupportEndpoint(ZulipTestCase):
     def test_search(self) -> None:
         reset_emails_in_zulip_realm()
 
-        def check_hamlet_user_query_result(result: HttpResponse) -> None:
+        def assert_user_details_in_html_response(
+            html_response: str, full_name: str, email: str, role: str
+        ) -> None:
             self.assert_in_success_response(
                 [
                     '<span class="label">user</span>\n',
-                    "<h3>King Hamlet</h3>",
-                    "<b>Email</b>: hamlet@zulip.com",
+                    f"<h3>{full_name}</h3>",
+                    f"<b>Email</b>: {email}",
                     "<b>Is active</b>: True<br>",
-                    "<b>Role</b>: Member<br>",
+                    f"<b>Role</b>: {role}<br>",
+                ],
+                html_response,
+            )
+
+        def check_hamlet_user_query_result(result: HttpResponse) -> None:
+            assert_user_details_in_html_response(
+                result, "King Hamlet", "hamlet@zulip.com", "Member"
+            )
+            self.assert_in_success_response(
+                [
                     "<b>Admins</b>: desdemona@zulip.com, iago@zulip.com\n",
                     'class="copy-button" data-copytext="desdemona@zulip.com, iago@zulip.com"',
                 ],
@@ -591,27 +603,12 @@ class TestSupportEndpoint(ZulipTestCase):
             )
 
         def check_othello_user_query_result(result: HttpResponse) -> None:
-            self.assert_in_success_response(
-                [
-                    '<span class="label">user</span>\n',
-                    "<h3>Othello, the Moor of Venice</h3>",
-                    "<b>Email</b>: othello@zulip.com",
-                    "<b>Is active</b>: True<br>",
-                    "<b>Role</b>: Member<br>",
-                ],
-                result,
+            assert_user_details_in_html_response(
+                result, "Othello, the Moor of Venice", "othello@zulip.com", "Member"
             )
 
         def check_polonius_user_query_result(result: HttpResponse) -> None:
-            self.assert_in_success_response(
-                [
-                    "<h3>Polonius</h3>",
-                    "<b>Email</b>: polonius@zulip.com",
-                    "<b>Is active</b>: True<br>",
-                    "<b>Role</b>: Guest<br>",
-                ],
-                result,
-            )
+            assert_user_details_in_html_response(result, "Polonius", "polonius@zulip.com", "Guest")
 
         def check_zulip_realm_query_result(result: HttpResponse) -> None:
             zulip_realm = get_realm("zulip")
