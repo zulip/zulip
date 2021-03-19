@@ -17,12 +17,22 @@ IGNORED_EVENTS = [
     "attachment_created",
     "issuelink_created",
     "issuelink_deleted",
+    # issuelink_created and issuelink_deleted events are ignored because creating or removing
+    # JIRA issue link doesn't trigger any events. This means that the operation can't be used
+    # to trigger notification or posts.
     "jira:version_released",
-    "jira:worklog_updated",
+    # jira:version_released event is ignored because it sometimes provide inaccurate
+    # information.
+    # Means in the expected result in the Version updated event body, the value for "released" should be 'true'.
+    # But in the actual result the value for "release" in the Version updated event body is showing as 'false'
     "sprint_closed",
     "sprint_started",
+    # Currently, when a Sprint is started, created, updated, or deleted, no email notification is sent and no event is fired.
+    # It would be good to have this, to have more control over who receives an email and what systems are notified.
     "worklog_created",
     "worklog_updated",
+    # workload_created and workload_update events is ignored because JQL filter for Webhooks
+    # doesn't work correctly when Comment or Worklog related events are fired.
 ]
 
 
