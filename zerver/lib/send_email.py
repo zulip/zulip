@@ -8,9 +8,12 @@ from email.policy import default
 from email.utils import formataddr, parseaddr
 from typing import Any, Dict, List, Mapping, Optional, Tuple
 
+import backoff
 import orjson
 from django.conf import settings
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives, get_connection
+from django.core.mail.backends.base import BaseEmailBackend
+from django.core.mail.backends.smtp import EmailBackend
 from django.core.mail.message import sanitize_address
 from django.core.management import CommandError
 from django.db import transaction
@@ -24,6 +27,8 @@ from confirmation.models import generate_key
 from scripts.setup.inline_email_css import inline_template
 from zerver.lib.logging_util import log_to_file
 from zerver.models import EMAIL_TYPES, Realm, ScheduledEmail, UserProfile, get_user_profile_by_id
+
+MAX_CONNECTION_TRIES = 3
 
 ## Logging setup ##
 
@@ -207,6 +212,7 @@ def send_email(
     language: Optional[str] = None,
     context: Dict[str, Any] = {},
     realm: Optional[Realm] = None,
+    connection: Optional[BaseEmailBackend] = None,
 ) -> None:
     mail = build_email(
         template_prefix,
@@ -222,13 +228,37 @@ def send_email(
     template = template_prefix.split("/")[-1]
     logger.info("Sending %s email to %s", template, mail.to)
 
-    if mail.send() == 0:
+    if connection is None:
+        connection = get_connection()
+    # This will call .open() for us, which is a no-op if it's already open;
+    # it will only call .close() if it was not open to begin with
+    if connection.send_messages([mail]) == 0:
         logger.error("Error sending %s email to %s", template, mail.to)
         raise EmailNotDeliveredException
 
 
 def send_email_from_dict(email_dict: Mapping[str, Any]) -> None:
     send_email(**dict(email_dict))
+
+
+@backoff.on_exception(backoff.expo, OSError, max_tries=MAX_CONNECTION_TRIES, logger=None)
+def initialize_connection(connection: Optional[BaseEmailBackend] = None) -> BaseEmailBackend:
+    if not connection:
+        connection = get_connection()
+    if connection.open():
+        # If it's a new connection, no need to no-op to check connectivity
+        return connection
+    # No-op to ensure that we don't return a connection that has been closed by the mail server
+    if isinstance(connection, EmailBackend):
+        try:
+            status = connection.connection.noop()[0]
+        except Exception:
+            status = -1
+        if status != 250:
+            # Close and connect again.
+            connection.close()
+            connection.open()
+    return connection
 
 
 def send_future_email(

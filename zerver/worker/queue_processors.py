@@ -37,6 +37,7 @@ from typing import (
 import orjson
 import sentry_sdk
 from django.conf import settings
+from django.core.mail.backends.smtp import EmailBackend
 from django.db import connection
 from django.db.models import F
 from django.utils.timezone import now as timezone_now
@@ -82,6 +83,7 @@ from zerver.lib.send_email import (
     EmailNotDeliveredException,
     FromAddress,
     handle_send_email_format_changes,
+    initialize_connection,
     send_email_from_dict,
     send_future_email,
 )
@@ -169,6 +171,9 @@ def check_and_send_restart_signal() -> None:
         pass
 
 
+# If you change the function on which this decorator is used be careful that the new
+# function doesn't delete the "failed_tries" attribute of "data" which is needed for
+# "retry_event" to work correctly; see EmailSendingWorker for an example with deepcopy.
 def retry_send_email_failures(
     func: Callable[[ConcreteQueueWorker, Dict[str, Any]], None],
 ) -> Callable[[ConcreteQueueWorker, Dict[str, Any]], None]:
@@ -609,17 +614,36 @@ class MissedMessageWorker(QueueProcessingWorker):
 
 
 @assign_queue("email_senders")
-class EmailSendingWorker(QueueProcessingWorker):
+class EmailSendingWorker(LoopQueueProcessingWorker):
+    def __init__(self) -> None:
+        super().__init__()
+        self.connection: EmailBackend = initialize_connection(None)
+
     @retry_send_email_failures
-    def consume(self, event: Dict[str, Any]) -> None:
+    def send_email(self, event: Dict[str, Any]) -> None:
         # Copy the event, so that we don't pass the `failed_tries'
         # data to send_email_from_dict (which neither takes that
-        # argument nor needs that data).
+        # argument nor needs that data). Also used to avoid including
+        # the 'connection' in event which is not serializable as JSON
+        # and would make RabbitMQ crash.
         copied_event = copy.deepcopy(event)
         if "failed_tries" in copied_event:
             del copied_event["failed_tries"]
-        handle_send_email_format_changes(copied_event)
+        # Refresh connection
+        self.connection = initialize_connection(self.connection)
+        copied_event["connection"] = self.connection
         send_email_from_dict(copied_event)
+
+    def consume_batch(self, events: List[Dict[str, Any]]) -> None:
+        for event in events:
+            handle_send_email_format_changes(event)
+            self.send_email(event)
+
+    def stop(self) -> None:
+        try:
+            self.connection.close()
+        finally:
+            super().stop()
 
 
 @assign_queue("missedmessage_mobile_notifications")

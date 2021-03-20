@@ -185,3 +185,6 @@ tlds
 
 # Unicode Collation Algorithm for sorting multilingual strings
 pyuca
+
+# Handle connection retries with exponential backoff
+backoff
