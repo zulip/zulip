@@ -177,6 +177,11 @@ function populate_users() {
 >>>>>>> Stashed changes
         populate_users();
     });
+
+    $("#clear_deactivated_user_list_search_button").on("click", () => {
+        $("#deactivated_user_list_search").val("");
+        populate_users();
+    });
 }
 
 function reset_scrollbar($sel) {
