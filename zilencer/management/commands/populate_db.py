@@ -607,7 +607,7 @@ class Command(BaseCommand):
                 "emacs": {"text": "Emacs", "order": "2"},
             }
             favorite_editor = try_add_realm_custom_profile_field(
-                zulip_realm, "Favorite editor", CustomProfileField.CHOICE, field_data=field_data
+                zulip_realm, "Favorite editor", CustomProfileField.SELECT, field_data=field_data
             )
             birthday = try_add_realm_custom_profile_field(
                 zulip_realm, "Birthday", CustomProfileField.DATE

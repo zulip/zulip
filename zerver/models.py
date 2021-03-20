@@ -3298,24 +3298,24 @@ class CustomProfileField(models.Model):
 
     SHORT_TEXT = 1
     LONG_TEXT = 2
-    CHOICE = 3
+    SELECT = 3
     DATE = 4
     URL = 5
     USER = 6
     EXTERNAL_ACCOUNT = 7
 
     # These are the fields whose validators require more than var_name
-    # and value argument. i.e. CHOICE require field_data, USER require
+    # and value argument. i.e. SELECT require field_data, USER require
     # realm as argument.
-    CHOICE_FIELD_TYPE_DATA: List[ExtendedFieldElement] = [
-        (CHOICE, ugettext_lazy("List of options"), validate_choice_field, str, "CHOICE"),
+    SELECT_FIELD_TYPE_DATA: List[ExtendedFieldElement] = [
+        (SELECT, ugettext_lazy("List of options"), validate_choice_field, str, "SELECT"),
     ]
     USER_FIELD_TYPE_DATA: List[UserFieldElement] = [
         (USER, ugettext_lazy("Person picker"), check_valid_user_ids, ast.literal_eval, "USER"),
     ]
 
-    CHOICE_FIELD_VALIDATORS: Dict[int, ExtendedValidator] = {
-        item[0]: item[2] for item in CHOICE_FIELD_TYPE_DATA
+    SELECT_FIELD_VALIDATORS: Dict[int, ExtendedValidator] = {
+        item[0]: item[2] for item in SELECT_FIELD_TYPE_DATA
     }
     USER_FIELD_VALIDATORS: Dict[int, RealmUserValidator] = {
         item[0]: item[2] for item in USER_FIELD_TYPE_DATA
@@ -3336,7 +3336,7 @@ class CustomProfileField(models.Model):
         ),
     ]
 
-    ALL_FIELD_TYPES = [*FIELD_TYPE_DATA, *CHOICE_FIELD_TYPE_DATA, *USER_FIELD_TYPE_DATA]
+    ALL_FIELD_TYPES = [*FIELD_TYPE_DATA, *SELECT_FIELD_TYPE_DATA, *USER_FIELD_TYPE_DATA]
 
     FIELD_VALIDATORS: Dict[int, Validator[Union[int, str, List[int]]]] = {
         item[0]: item[2] for item in FIELD_TYPE_DATA
@@ -3355,7 +3355,7 @@ class CustomProfileField(models.Model):
     # type/name/hint.
     #
     # The format depends on the type.  Field types SHORT_TEXT, LONG_TEXT,
-    # DATE, URL, and USER leave this null.  Fields of type CHOICE store the
+    # DATE, URL, and USER leave this null.  Fields of type SELECT store the
     # choices' descriptions.
     #
     # Note: There is no performance overhead of using TextField in PostgreSQL.

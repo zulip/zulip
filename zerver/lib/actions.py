@@ -6748,7 +6748,7 @@ def try_add_realm_custom_profile_field(
     field = CustomProfileField(realm=realm, name=name, field_type=field_type)
     field.hint = hint
     if (
-        field.field_type == CustomProfileField.CHOICE
+        field.field_type == CustomProfileField.SELECT
         or field.field_type == CustomProfileField.EXTERNAL_ACCOUNT
     ):
         field.field_data = orjson.dumps(field_data or {}).decode()
@@ -6783,7 +6783,7 @@ def try_update_realm_custom_profile_field(
     field.name = name
     field.hint = hint
     if (
-        field.field_type == CustomProfileField.CHOICE
+        field.field_type == CustomProfileField.SELECT
         or field.field_type == CustomProfileField.EXTERNAL_ACCOUNT
     ):
         field.field_data = orjson.dumps(field_data or {}).decode()

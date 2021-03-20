@@ -87,7 +87,7 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.login("iago")
         data: Dict[str, Union[str, int]] = {}
         data["name"] = "Favorite programming language"
-        data["field_type"] = CustomProfileField.CHOICE
+        data["field_type"] = CustomProfileField.SELECT
 
         data["field_data"] = "invalid"
         result = self.client_post("/json/realm/profile_fields", info=data)
