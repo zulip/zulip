@@ -75,6 +75,11 @@ export function populate_linkifiers(linkifiers_data) {
         },
         simplebar_container: $("#linkifier-settings .progressive-table-wrapper"),
     });
+
+    $("#clear_linkifier_settings_search_button").on("click", () => {
+        $("#linkifier_settings_search").val("");
+        populate_linkifiers(page_params.realm_filters);
+    });
 }
 
 export function set_up() {
