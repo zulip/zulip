@@ -269,7 +269,7 @@ function build_all_messages_popover(e) {
     }
 
     popovers.hide_all();
-    exports.show_streamlist_sidebar();
+    show_streamlist_sidebar();
 
     const content = render_all_messages_sidebar_actions();
 
@@ -295,7 +295,7 @@ function build_starred_messages_popover(e) {
     }
 
     popovers.hide_all();
-    exports.show_streamlist_sidebar();
+    show_streamlist_sidebar();
 
     const show_unstar_all_button = starred_messages.get_count() > 0;
     const content = render_starred_messages_sidebar_actions({
