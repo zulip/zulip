@@ -10,6 +10,7 @@ const ui = mock_esm("../../static/js/ui");
 
 mock_esm("../../static/js/starred_messages", {
     add: () => {},
+    get_starred_msg_ids: () => [1, 2, 3, 4, 5],
     get_starred_message_ids_in_topic: () => [2, 4, 5],
     remove: () => {},
 });
@@ -90,6 +91,22 @@ run_test("starring local echo", () => {
         locally_echoed: true,
         starred: false,
     });
+});
+
+run_test("unstar_all", (override) => {
+    // Way to capture posted info in every request
+    let posted_data;
+    override(channel, "post", (opts) => {
+        assert.equal(opts.url, "/json/messages/flags");
+        posted_data = opts.data;
+    });
+
+    // we've set get_starred_msg_ids to return [1, 2, 3, 4, 5]
+    const expected_data = {messages: "[1,2,3,4,5]", flag: "starred", op: "remove"};
+
+    message_flags.unstar_all_messages();
+
+    assert.deepEqual(posted_data, expected_data);
 });
 
 run_test("unstar_all_in_topic", (override) => {

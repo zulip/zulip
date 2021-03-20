@@ -79,7 +79,6 @@ EXEMPT_FILES = {
     "static/js/message_edit_history.js",
     "static/js/message_events.js",
     "static/js/message_fetch.js",
-    "static/js/message_flags.js",
     "static/js/message_list_data.js",
     "static/js/message_list.js",
     "static/js/message_list_view.js",
