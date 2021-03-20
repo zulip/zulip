@@ -11,6 +11,12 @@ let reload_in_progress = false;
 let reload_pending = false;
 export let csrf_failed_handler;
 
+export function clear_for_testing() {
+    reload_in_progress = false;
+    reload_pending = false;
+    csrf_failed_handler = undefined;
+}
+
 export function is_pending() {
     return reload_pending;
 }
