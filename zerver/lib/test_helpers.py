@@ -690,6 +690,9 @@ def mock_queue_publish(
 ) -> Iterator[mock.MagicMock]:
     inner = mock.MagicMock(**kwargs)
 
+    # This helper ensures that events published to the queues are
+    # serializable as JSON; unserializable events would make RabbitMQ
+    # crash in production.
     def verify_serialize(
         queue_name: str,
         event: Dict[str, object],
