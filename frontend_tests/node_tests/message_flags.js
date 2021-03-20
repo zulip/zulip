@@ -65,6 +65,29 @@ run_test("starred", (override) => {
         starred: false,
     });
 });
+
+run_test("starring local echo", () => {
+    // verify early return for locally echoed message
+    const locally_echoed_message = {
+        id: 51,
+        starred: false,
+        locally_echoed: true,
+    };
+
+    message_flags.toggle_starred_and_update_server(locally_echoed_message);
+
+    // ui.update_starred_view not called
+
+    // channel post request not made
+
+    // starred flag unchanged
+    assert.deepEqual(locally_echoed_message, {
+        id: 51,
+        locally_echoed: true,
+        starred: false,
+    });
+});
+
 run_test("read", (override) => {
     // Way to capture posted info in every request
     let channel_post_opts;
