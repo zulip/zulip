@@ -813,6 +813,15 @@ run_test("update_message (remove star)", (override) => {
     assert.equal(msg.starred, false);
 });
 
+run_test("update_message (wrong data)", (override) => {
+    override(starred_messages, "rerender_ui", noop);
+    const event = event_fixtures.update_message_flags__starred_add;
+    // message does not exist
+    event.messages = [0];
+    dispatch(event);
+    // update_starred_view never gets invoked, early return is successful
+});
+
 run_test("delete_message", (override) => {
     const event = event_fixtures.delete_message;
 
