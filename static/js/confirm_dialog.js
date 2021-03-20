@@ -72,7 +72,7 @@ export function launch(conf) {
         conf.on_click();
     });
 
-    confirm_dialog.on("hide", () => {
+    confirm_dialog.on("hidden.bs.modal", () => {
         confirm_dialog.remove();
     });
 
