@@ -272,6 +272,7 @@ export function dispatch_normal_event(event) {
             } else if (event.op === "update") {
                 bot_data.update(event.bot.user_id, event.bot);
             }
+            settings_bots.eventually_render_bots();
             settings_users.update_bot_data(event.bot.user_id);
             break;
 

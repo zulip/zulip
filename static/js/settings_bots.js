@@ -1,5 +1,6 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
+import _ from "lodash";
 
 import render_bot_avatar_row from "../templates/bot_avatar_row.hbs";
 import render_edit_bot from "../templates/edit_bot.hbs";
@@ -82,7 +83,7 @@ export function type_id_to_string(type_id) {
     return page_params.bot_types.find((bot_type) => bot_type.type_id === type_id).name;
 }
 
-export function render_bots() {
+function render_bots() {
     $("#active_bots_list").empty();
     $("#inactive_bots_list").empty();
 
@@ -122,6 +123,15 @@ export function render_bots() {
         $("#inactive_bots_list").show();
     }
 }
+
+// The reason we debounce this call is very wonky. I just moved it
+// from bot_data.js as part of breaking dependencies. Basically, it
+// allows the server response to win the race against events.
+// TODO: Organize the code so that we clear loading spinners and
+//       switch tabs within the UI when the event comes in.
+export const eventually_render_bots = _.debounce(() => {
+    render_bots();
+}, 50);
 
 export function generate_zuliprc_uri(bot_id) {
     const bot = bot_data.get(bot_id);
