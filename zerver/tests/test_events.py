@@ -111,8 +111,8 @@ from zerver.lib.event_schema import (
     check_reaction_add,
     check_reaction_remove,
     check_realm_bot_add,
+    check_realm_bot_deactivate,
     check_realm_bot_delete,
-    check_realm_bot_remove,
     check_realm_bot_update,
     check_realm_domains_add,
     check_realm_domains_change,
@@ -1468,7 +1468,7 @@ class NormalActionsTest(BaseAction):
         action = lambda: do_deactivate_user(bot)
         events = self.verify_action(action, num_events=2)
         check_realm_user_remove("events[0]", events[0])
-        check_realm_bot_remove("events[1]", events[1])
+        check_realm_bot_deactivate("events[1]", events[1])
 
     def test_do_reactivate_user(self) -> None:
         bot = self.create_bot("test")

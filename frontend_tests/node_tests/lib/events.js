@@ -364,20 +364,20 @@ exports.fixtures = {
         },
     },
 
+    realm_bot__deactivate: {
+        type: "realm_bot",
+        op: "deactivate",
+        bot: {
+            user_id: 42,
+            full_name: "The Bot",
+        },
+    },
+
     realm_bot__delete: {
         type: "realm_bot",
         op: "delete",
         bot: {
             user_id: 42,
-        },
-    },
-
-    realm_bot__remove: {
-        type: "realm_bot",
-        op: "remove",
-        bot: {
-            user_id: 42,
-            full_name: "The Bot",
         },
     },
 

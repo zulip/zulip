@@ -10,6 +10,10 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 44**
+
+* The `remove event` for `realm_bot` is renamed to `deactivate`.
+
 **Feature level 43**
 
 * [`GET /users/{user_id_or_email}/presence`]: Added support for
@@ -33,6 +37,7 @@ below features are supported.
 **Feature level 39**
 
 * Added new [GET /users/{email}](/api/get-user-by-email) endpoint.
+* The `remove event` for `realm_bot` is renamed to `deactivate`.
 
 **Feature level 38**
 

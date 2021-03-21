@@ -412,7 +412,7 @@ run_test("realm_bot add", (override) => {
 });
 
 run_test("realm_bot remove", (override) => {
-    const event = event_fixtures.realm_bot__remove;
+    const event = event_fixtures.realm_bot__deactivate;
     const bot_stub = make_stub();
     const admin_stub = make_stub();
     override(bot_data, "deactivate", bot_stub.f);

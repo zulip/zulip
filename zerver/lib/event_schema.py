@@ -557,7 +557,7 @@ realm_bot_delete_event = event_dict_type(
 )
 check_realm_bot_delete = make_checker(realm_bot_delete_event)
 
-bot_type_for_remove = DictType(
+bot_type_for_deactivate = DictType(
     required_keys=[
         # Why does remove have full_name but delete doesn't?
         # Why do we have both a remove and a delete event
@@ -567,14 +567,14 @@ bot_type_for_remove = DictType(
     ]
 )
 
-realm_bot_remove_event = event_dict_type(
+realm_bot_deactivate_event = event_dict_type(
     required_keys=[
         ("type", Equals("realm_bot")),
-        ("op", Equals("remove")),
-        ("bot", bot_type_for_remove),
+        ("op", Equals("deactivate")),
+        ("bot", bot_type_for_deactivate),
     ]
 )
-check_realm_bot_remove = make_checker(realm_bot_remove_event)
+check_realm_bot_deactivate = make_checker(realm_bot_deactivate_event)
 
 bot_type_for_update = DictType(
     required_keys=[

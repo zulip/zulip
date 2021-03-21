@@ -2668,7 +2668,7 @@ paths:
                                 op:
                                   type: string
                                   enum:
-                                    - remove
+                                    - deactivate
                                 bot:
                                   type: object
                                   description: |
@@ -2685,7 +2685,7 @@ paths:
                               example:
                                 {
                                   "type": "realm_bot",
-                                  "op": "remove",
+                                  "op": "deactivate",
                                   "bot":
                                     {"user_id": 35, "full_name": "Foo Bot"},
                                   "id": 1,
@@ -2694,8 +2694,6 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent to all users when a bot has been deactivated.
-                                Note that this is very similar to the bot_remove event
-                                and one of them will be removed soon.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
