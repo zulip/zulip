@@ -316,6 +316,27 @@ function close_read_hotspots(new_hotspots) {
     }
 }
 
+export function open_popover_if_hotspot_exist(hotspot_name, bind_element = null) {
+    const overlay_name = "hotspot_" + hotspot_name + "_overlay";
+
+    if (is_hotspot_displayed(hotspot_name)) {
+        overlays.open_overlay({
+            name: overlay_name,
+            $overlay: $(`#${CSS.escape(overlay_name)}`),
+            on_close: function () {
+                // close popover
+                $(this).css({display: "block"});
+                $(this).animate(
+                    {opacity: 1},
+                    {
+                        duration: 300,
+                    },
+                );
+            }.bind(bind_element),
+        });
+    }
+}
+
 export function load_new(new_hotspots) {
     close_read_hotspots(new_hotspots);
     for (const hotspot of new_hotspots) {
@@ -338,24 +359,8 @@ export function initialize() {
         const [, hotspot_name] = /^hotspot_(.*)_icon$/.exec(
             $(e.target).closest(".hotspot-icon").attr("id"),
         );
-        const overlay_name = "hotspot_" + hotspot_name + "_overlay";
 
-        overlays.open_overlay({
-            name: overlay_name,
-            $overlay: $(`#${CSS.escape(overlay_name)}`),
-            on_close: function () {
-                // close popover
-                $(this).css({display: "block"});
-                $(this).animate(
-                    {opacity: 1},
-                    {
-                        duration: 300,
-                    },
-                );
-
-                meta.opened_hotspot_name = null;
-            }.bind(this),
-        });
+        open_popover_if_hotspot_exist(hotspot_name, this);
 
         meta.opened_hotspot_name = hotspot_name;
         e.preventDefault();
