@@ -3285,7 +3285,6 @@ class SubscriptionAPITest(ZulipTestCase):
         do_change_user_role(othello, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.assertTrue(othello.can_subscribe_other_users())
 
-        do_change_user_role(othello, UserProfile.ROLE_MEMBER)
         do_change_user_role(othello, UserProfile.ROLE_GUEST)
         self.assertFalse(othello.can_subscribe_other_users())
 
