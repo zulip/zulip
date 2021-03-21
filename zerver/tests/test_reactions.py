@@ -318,6 +318,53 @@ class ReactionTest(ZulipTestCase):
         )
         self.assert_json_error(second, "Reaction already exists.")
 
+    def test_add_reaction_deactivated_stream(self) -> None:
+        """
+        Reacting to a message in a deactivated stream fails
+        """
+        stream = self.make_stream("toDeactivate")
+        sender = self.example_user("hamlet")
+        reaction_sender = self.example_user("othello")
+        self.subscribe(sender, stream.name)
+        self.subscribe(reaction_sender, stream.name)
+        msg_id = self.send_stream_message(sender, stream.name)
+        stream.deactivated = True
+        stream.save()
+
+        reaction_info = {
+            "emoji_name": "smile",
+        }
+
+        add = self.api_post(reaction_sender, f"/api/v1/messages/{msg_id}/reactions", reaction_info)
+        self.assert_json_error(add, "Cannot edit content in deactivated stream.")
+
+    def test_remove_reaction_deactivated_stream(self) -> None:
+        """
+        Reacting to a message in a deactivated stream fails
+        """
+        stream = self.make_stream("toDeactivate")
+        sender = self.example_user("hamlet")
+        reaction_sender = self.example_user("othello")
+        self.subscribe(sender, stream.name)
+        self.subscribe(reaction_sender, stream.name)
+        msg_id = self.send_stream_message(sender, stream.name)
+
+        reaction_info = {
+            "emoji_name": "smile",
+        }
+
+        add = self.api_post(reaction_sender, f"/api/v1/messages/{msg_id}/reactions", reaction_info)
+        self.assert_json_success(add)
+
+        stream.deactivated = True
+        stream.save()
+
+        delete = self.api_delete(
+            reaction_sender, f"/api/v1/messages/{msg_id}/reactions", reaction_info
+        )
+
+        self.assert_json_error(delete, "Cannot edit content in deactivated stream.")
+
     def test_remove_nonexisting_reaction(self) -> None:
         """
         Removing a reaction twice fails
