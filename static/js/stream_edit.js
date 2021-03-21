@@ -392,6 +392,11 @@ function show_subscription_settings(sub) {
 
     const opts = {source: get_users_for_subscriber_typeahead, stream: true};
     pill_typeahead.set_up(sub_settings.find(".input"), pill_widget, opts);
+
+    $("#clear_subscriber_search_button").on("click", () => {
+        $("#subscriber_search").val("");
+        show_subscription_settings(sub);
+    });
 }
 
 export function is_notification_setting(setting_label) {
