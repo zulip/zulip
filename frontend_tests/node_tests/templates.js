@@ -34,3 +34,12 @@ run_test("rendered_markdown", () => {
         '<a href="http://example.com" target="_blank" rel="noopener noreferrer" title="http://example.com/">good</a>\n';
     assert.equal(html, expected_html);
 });
+
+run_test("numberFormat", () => {
+    const args = {
+        number: 1000000,
+    };
+
+    const html = require("./templates/numberFormat.hbs")(args);
+    assert.equal(html, "1,000,000\n");
+});
