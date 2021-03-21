@@ -26,6 +26,7 @@ from zerver.tornado.event_queue import (
     clear_client_event_queues_for_testing,
     get_client_info_for_message_event,
     process_message_event,
+    send_restart_events,
 )
 from zerver.tornado.views import get_events
 from zerver.views.events_register import _default_all_public_streams, _default_narrow
@@ -782,6 +783,50 @@ class ClientDescriptorsTest(ZulipTestCase):
                     flags=[],
                 ),
             ],
+        )
+
+
+class RestartEventsTest(ZulipTestCase):
+    def test_restart(self) -> None:
+        hamlet = self.example_user("hamlet")
+        realm = hamlet.realm
+
+        clear_client_event_queues_for_testing()
+
+        queue_data = dict(
+            all_public_streams=False,
+            apply_markdown=True,
+            client_gravatar=True,
+            client_type_name="website",
+            event_types=None,
+            last_connection_time=time.time(),
+            queue_timeout=0,
+            realm_id=realm.id,
+            user_profile_id=hamlet.id,
+        )
+        client = allocate_client_descriptor(queue_data)
+
+        send_restart_events(immediate=True)
+
+        # For now we only verify that a virtual event
+        # gets added to the client's event_queue.  We
+        # may decide to write a deeper test in the future
+        # that exercises the finish_handler.
+        virtual_events = client.event_queue.virtual_events
+        self.assertEqual(len(virtual_events), 1)
+        restart_event = virtual_events["restart"]
+
+        # TODO: add a schema checker for this to event_schema.py
+        # and exercise it here (as well as the more concrete
+        # check)
+        self.assertEqual(
+            restart_event,
+            dict(
+                type="restart",
+                server_generation=settings.SERVER_GENERATION,
+                immediate=True,
+                id=0,
+            ),
         )
 
 
