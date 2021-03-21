@@ -856,22 +856,8 @@ export function initialize() {
             .attr("id")
             .replace("hotspot_", "")
             .replace("_icon", "");
-        const overlay_name = "hotspot_" + hotspot_name + "_overlay";
 
-        overlays.open_overlay({
-            name: overlay_name,
-            overlay: $(`#${CSS.escape(overlay_name)}`),
-            on_close: function () {
-                // close popover
-                $(this).css({display: "block"});
-                $(this).animate(
-                    {opacity: 1},
-                    {
-                        duration: 300,
-                    },
-                );
-            }.bind(this),
-        });
+        hotspots.open_popover_if_hotspot_exist(hotspot_name, this);
 
         e.preventDefault();
         e.stopPropagation();

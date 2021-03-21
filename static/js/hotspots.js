@@ -7,6 +7,7 @@ import render_intro_reply_hotspot from "../templates/intro_reply_hotspot.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
+import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as popovers from "./popovers";
 
@@ -282,6 +283,27 @@ function close_read_hotspots(new_hotspots) {
     for (const hotspot_name of unwanted_hotspots) {
         close_hotspot_icon($(`#hotspot_${CSS.escape(hotspot_name)}_icon`));
         $(`#hotspot_${CSS.escape(hotspot_name)}_overlay`).remove();
+    }
+}
+
+export function open_popover_if_hotspot_exist(hotspot_name, bind_element = null) {
+    const overlay_name = "hotspot_" + hotspot_name + "_overlay";
+
+    if (is_hotspot_exist(hotspot_name)) {
+        overlays.open_overlay({
+            name: overlay_name,
+            overlay: $(`#${CSS.escape(overlay_name)}`),
+            on_close: function () {
+                // close popover
+                $(this).css({display: "block"});
+                $(this).animate(
+                    {opacity: 1},
+                    {
+                        duration: 300,
+                    },
+                );
+            }.bind(bind_element),
+        });
     }
 }
 
