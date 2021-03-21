@@ -86,6 +86,11 @@ function populate_invites(invites_data) {
     });
 
     loading.destroy_indicator($("#admin_page_invites_loading_indicator"));
+
+    $("#clear_invites_list_search_button").on("click", () => {
+        $("#invites_list_search").val("");
+        populate_invites(invites_data);
+    });
 }
 
 function do_revoke_invite() {
