@@ -3216,6 +3216,7 @@ class SubscriptionAPITest(ZulipTestCase):
         do_set_realm_property(
             realm, "create_stream_policy", Realm.POLICY_ADMINS_ONLY, acting_user=None
         )
+        do_change_user_role(user_profile, UserProfile.ROLE_MODERATOR, acting_user=None)
         result = self.common_subscribe_to_streams(
             user_profile,
             ["new_stream1"],
@@ -3225,6 +3226,23 @@ class SubscriptionAPITest(ZulipTestCase):
 
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         self.common_subscribe_to_streams(user_profile, ["new_stream1"])
+
+        do_set_realm_property(
+            realm, "create_stream_policy", Realm.POLICY_MODERATORS_ONLY, acting_user=None
+        )
+        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
+        # Make sure that we are checking the permission with a full member,
+        # as full member is the user just below moderator in the role hierarchy.
+        self.assertFalse(user_profile.is_provisional_member)
+        result = self.common_subscribe_to_streams(
+            user_profile,
+            ["new_stream2"],
+            allow_fail=True,
+        )
+        self.assert_json_error(result, "Only administrators and moderators can create streams.")
+
+        do_change_user_role(user_profile, UserProfile.ROLE_MODERATOR, acting_user=None)
+        self.common_subscribe_to_streams(user_profile, ["new_stream2"])
 
         do_set_realm_property(
             realm, "create_stream_policy", Realm.POLICY_MEMBERS_ONLY, acting_user=None
@@ -3240,7 +3258,7 @@ class SubscriptionAPITest(ZulipTestCase):
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
         self.common_subscribe_to_streams(
             self.test_user,
-            ["new_stream2"],
+            ["new_stream3"],
         )
 
         do_set_realm_property(
@@ -3249,7 +3267,7 @@ class SubscriptionAPITest(ZulipTestCase):
         do_set_realm_property(realm, "waiting_period_threshold", 100000, acting_user=None)
         result = self.common_subscribe_to_streams(
             user_profile,
-            ["new_stream3"],
+            ["new_stream4"],
             allow_fail=True,
         )
         self.assert_json_error(result, "Your account is too new to create streams.")
@@ -3262,12 +3280,20 @@ class SubscriptionAPITest(ZulipTestCase):
         do_change_user_role(othello, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         self.assertTrue(othello.can_create_streams())
 
-        do_change_user_role(othello, UserProfile.ROLE_MEMBER, acting_user=None)
+        do_change_user_role(othello, UserProfile.ROLE_MODERATOR, acting_user=None)
         do_set_realm_property(
             othello.realm, "create_stream_policy", Realm.POLICY_ADMINS_ONLY, acting_user=None
         )
+        self.assertFalse(othello.can_create_streams())
+
+        do_set_realm_property(
+            othello.realm, "create_stream_policy", Realm.POLICY_MODERATORS_ONLY, acting_user=None
+        )
+        self.assertTrue(othello.can_create_streams())
+
+        do_change_user_role(othello, UserProfile.ROLE_MEMBER, acting_user=None)
         # Make sure that we are checking the permission with a full member,
-        # as full member is the user just below admin in the role hierarchy.
+        # as full member is the user just below moderator in the role hierarchy.
         self.assertFalse(othello.is_provisional_member)
         self.assertFalse(othello.can_create_streams())
 
@@ -3289,6 +3315,8 @@ class SubscriptionAPITest(ZulipTestCase):
         )
         self.assertFalse(othello.can_create_streams())
 
+        # Ensure that the new moderators can also create streams because moderator
+        # being above the full member in role hierarchy.
         do_change_user_role(othello, UserProfile.ROLE_MODERATOR, acting_user=None)
         self.assertTrue(othello.can_create_streams())
 

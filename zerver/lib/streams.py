@@ -604,6 +604,8 @@ def list_to_streams(
         if not user_profile.can_create_streams():
             if user_profile.realm.create_stream_policy == Realm.POLICY_ADMINS_ONLY:
                 raise JsonableError(_("Only administrators can create streams."))
+            if user_profile.realm.create_stream_policy == Realm.POLICY_MODERATORS_ONLY:
+                raise JsonableError(_("Only administrators and moderators can create streams."))
             if user_profile.realm.create_stream_policy == Realm.POLICY_FULL_MEMBERS_ONLY:
                 raise JsonableError(_("Your account is too new to create streams."))
             raise JsonableError(_("Not allowed for guest users"))
