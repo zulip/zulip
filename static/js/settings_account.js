@@ -14,6 +14,7 @@ import * as people from "./people";
 import * as pill_typeahead from "./pill_typeahead";
 import * as popovers from "./popovers";
 import * as settings_bots from "./settings_bots";
+import * as settings_data from "./settings_data";
 import * as settings_ui from "./settings_ui";
 import * as setup from "./setup";
 import * as ui_report from "./ui_report";
@@ -42,28 +43,8 @@ export function update_full_name(new_full_name) {
     }
 }
 
-export function user_can_change_name() {
-    if (page_params.is_admin) {
-        return true;
-    }
-    if (page_params.realm_name_changes_disabled || page_params.server_name_changes_disabled) {
-        return false;
-    }
-    return true;
-}
-
-export function user_can_change_avatar() {
-    if (page_params.is_admin) {
-        return true;
-    }
-    if (page_params.realm_avatar_changes_disabled || page_params.server_avatar_changes_disabled) {
-        return false;
-    }
-    return true;
-}
-
 export function update_name_change_display() {
-    if (!user_can_change_name()) {
+    if (!settings_data.user_can_change_name()) {
         $("#full_name").prop("disabled", true);
         $(".change_name_tooltip").show();
     } else {
@@ -83,7 +64,7 @@ export function update_email_change_display() {
 }
 
 export function update_avatar_change_display() {
-    if (!user_can_change_avatar()) {
+    if (!settings_data.user_can_change_avatar()) {
         $("#user-avatar-upload-widget .image_upload_button").prop("disabled", true);
         $("#user-avatar-upload-widget .image-delete-button .button").prop("disabled", true);
     } else {
@@ -393,7 +374,7 @@ export function set_up() {
     $("#change_full_name").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (user_can_change_name()) {
+        if (settings_data.user_can_change_name()) {
             $("#change_full_name_modal").find("input[name='full_name']").val(page_params.full_name);
             overlays.open_modal("#change_full_name_modal");
         }

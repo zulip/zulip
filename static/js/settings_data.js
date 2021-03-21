@@ -56,6 +56,26 @@ export function get_time_preferences(user_timezone) {
     };
 }
 
+export function user_can_change_name() {
+    if (page_params.is_admin) {
+        return true;
+    }
+    if (page_params.realm_name_changes_disabled || page_params.server_name_changes_disabled) {
+        return false;
+    }
+    return true;
+}
+
+export function user_can_change_avatar() {
+    if (page_params.is_admin) {
+        return true;
+    }
+    if (page_params.realm_avatar_changes_disabled || page_params.server_avatar_changes_disabled) {
+        return false;
+    }
+    return true;
+}
+
 export function user_can_change_logo() {
     return page_params.is_admin && page_params.zulip_plan_is_not_limited;
 }
