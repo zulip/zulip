@@ -253,11 +253,13 @@ class Realm(models.Model):
     POLICY_MEMBERS_ONLY = 1
     POLICY_ADMINS_ONLY = 2
     POLICY_FULL_MEMBERS_ONLY = 3
+    POLICY_MODERATORS_ONLY = 4
 
     COMMON_POLICY_TYPES = [
         POLICY_MEMBERS_ONLY,
         POLICY_ADMINS_ONLY,
         POLICY_FULL_MEMBERS_ONLY,
+        POLICY_MODERATORS_ONLY,
     ]
 
     # Who in the organization is allowed to create streams.
@@ -1447,6 +1449,12 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
         policy_value = getattr(self.realm, policy_name)
         if policy_value == Realm.POLICY_ADMINS_ONLY:
+            return False
+
+        if self.is_moderator:
+            return True
+
+        if policy_value == Realm.POLICY_MODERATORS_ONLY:
             return False
 
         if self.is_guest:
