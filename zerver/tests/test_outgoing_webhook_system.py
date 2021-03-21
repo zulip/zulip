@@ -230,7 +230,7 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         return self.create_test_bot(
             "outgoing-webhook",
             bot_owner,
-            full_name="Outgoing Webhook bot",
+            bot_description="Outgoing Webhook bot",
             bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
             service_name="foo-service",
         )
@@ -241,8 +241,9 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         bot = do_create_user(
             bot_owner=bot_owner,
             bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
-            full_name="Outgoing Webhook Bot",
-            email="whatever",
+            bot_description="Outgoing Webhook Bot",
+            email="whatever-bot@zerver.testserver",
+            full_name="whatever",
             realm=bot_owner.realm,
             password=None,
             acting_user=None,

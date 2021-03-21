@@ -372,7 +372,6 @@ def rate_limit_password_reset_form_by_email(email: str) -> None:
 class CreateUserForm(forms.Form):
     full_name = forms.CharField(max_length=100)
     email = forms.EmailField()
-    desc = forms.CharField(widget=forms.Textarea)
 
 
 class OurAuthenticationForm(AuthenticationForm):

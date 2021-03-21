@@ -1277,9 +1277,9 @@ def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> 
     # We notify just the target user (and eventually org admins, only
     # when email_address_visibility=EMAIL_ADDRESS_VISIBILITY_ADMINS)
     # about their new delivery email, since that field is private.
-    payload = dict(user_id=user_profile.id, delivery_email=new_email, email=new_email)
+    payload = dict(user_id=user_profile.id, delivery_email=new_email)
     event = dict(type="realm_user", op="update", person=payload)
-    send_event(user_profile.realm, event, active_user_ids(user_profile.id))
+    send_event(user_profile.realm, event, [user_profile.id])
 
     if user_profile.is_bot:
         send_event(
@@ -3785,9 +3785,8 @@ def check_change_bot_full_name(
         full_name=new_full_name,
     )
     do_change_full_name(user_profile, new_full_name, acting_user)
-    short = "email" + str(acting_user.id) + "-bot_" + user_profile.full_name
+    short = user_profile.full_name + "-bot"
     new_email = f"{short}@{user_profile.realm.get_bot_domain()}"
-    print(new_email)
     do_change_user_delivery_email(user_profile, new_email)
 
 

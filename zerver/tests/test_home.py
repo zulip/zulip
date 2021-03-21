@@ -240,8 +240,8 @@ class HomeTest(ZulipTestCase):
 
         # Create bot for realm_bots testing. Must be done before fetching home_page.
         bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
+            "bot_description": "The Bot of Hamlet",
+            "full_name": "hambot",
         }
         self.client_post("/json/bots", bot_info)
 
@@ -275,6 +275,7 @@ class HomeTest(ZulipTestCase):
         realm_bots_expected_keys = [
             "api_key",
             "avatar_url",
+            "bot_description",
             "bot_type",
             "default_all_public_streams",
             "default_events_register_stream",

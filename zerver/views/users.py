@@ -329,6 +329,7 @@ def patch_bot_backend(
     json_result = dict(
         full_name=bot.full_name,
         bot_description=bot.bot_description,
+        email=bot.email,
         avatar_url=avatar_url(bot),
         service_interface=service_interface,
         service_payload_url=service_payload_url,
@@ -366,7 +367,7 @@ def add_bot_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     full_name_raw: str = REQ("full_name"),
-    bot_description: str = REQ("bot_description"),
+    bot_description: Optional[str] = REQ("bot_description"),
     bot_type: int = REQ(validator=check_int, default=UserProfile.DEFAULT_BOT),
     payload_url: str = REQ(validator=check_url, default=""),
     service_name: Optional[str] = REQ(default=None),
@@ -383,8 +384,8 @@ def add_bot_backend(
     # desc = check_short_name(desc_raw)
     full_name = check_full_name(full_name_raw)
     if bot_type != UserProfile.INCOMING_WEBHOOK_BOT:
-        service_name = service_name
-    short_name = "email" + str(user_profile.id) + "-bot_" + full_name
+        service_name = service_name or full_name
+    short_name = full_name + "-bot"
     try:
         email = f"{short_name}@{user_profile.realm.get_bot_domain()}"
     except InvalidFakeEmailDomain:
@@ -394,7 +395,7 @@ def add_bot_backend(
                 "Please contact your server administrator."
             )
         )
-    form = CreateUserForm({"full_name": full_name, "email": email, "desc": bot_description})
+    form = CreateUserForm({"full_name": full_name, "email": email})
 
     if bot_type == UserProfile.EMBEDDED_BOT:
         if not settings.EMBEDDED_BOTS_ENABLED:

@@ -279,7 +279,7 @@ class TestCreateStreams(ZulipTestCase):
         self.subscribe(iago, announce_stream.name)
         self.subscribe(hamlet, announce_stream.name)
 
-        notification_bot = UserProfile.objects.get(full_name="Notification Bot")
+        notification_bot = UserProfile.objects.get(full_name="notification")
         self.login_user(iago)
 
         initial_message_count = Message.objects.count()

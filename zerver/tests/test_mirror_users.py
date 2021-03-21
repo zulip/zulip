@@ -183,6 +183,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
             # We use the minimal, un-mocked function.
             kwargs["bot_type"] = None
             kwargs["bot_owner"] = None
+            kwargs["bot_description"] = None
             kwargs["tos_version"] = None
             kwargs["timezone"] = timezone_now()
             create_user_profile(**kwargs).save()

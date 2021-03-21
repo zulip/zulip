@@ -65,8 +65,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
     def create_bot(self, **extras: Any) -> Dict[str, Any]:
         bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
+            "bot_description": "The Bot of Hamlet",
+            "full_name": "hambot",
             "bot_type": "1",
         }
         bot_info.update(extras)
@@ -95,17 +95,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         # Invalid username
         bot_info = dict(
-            full_name="My bot name",
-            short_name="@",
-        )
-        result = self.client_post("/json/bots", bot_info)
-        self.assert_json_error(result, "Bad name or username")
-        self.assert_num_bots_equal(0)
-
-        # Empty username
-        bot_info = dict(
-            full_name="My bot name",
-            short_name="",
+            bot_description="My bot description",
+            full_name="Bot Name",
         )
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, "Bad name or username")
@@ -116,8 +107,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login("hamlet")
         self.assert_num_bots_equal(0)
         bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
+            "bot_description": "The Bot of Hamlet",
+            "full_name": "hambot",
             "bot_type": "1",
         }
         result = self.client_post("/json/bots", bot_info)
@@ -134,7 +125,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assert_num_bots_equal(0)
         bot_info = dict(
             full_name="a",
-            short_name="bot",
+            bot_description="Short bot description",
         )
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, "Name too short!")
@@ -147,11 +138,11 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         num_bots = 3
         for i in range(num_bots):
-            full_name = f"Bot {i}"
-            short_name = f"bot-{i}"
+            bot_description = f"Bot {i}"
+            full_name = f"bot-{i}"
             bot_info = dict(
                 full_name=full_name,
-                short_name=short_name,
+                bot_description=bot_description,
                 bot_type=1,
             )
             result = self.client_post("/json/bots", bot_info)
@@ -189,7 +180,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                     email="hambot-bot@zulip.testserver",
                     user_id=bot.id,
                     bot_type=bot.bot_type,
-                    full_name="The Bot of Hamlet",
+                    full_name="hambot",
+                    bot_description="The Bot of Hamlet",
                     is_active=True,
                     api_key=result["api_key"],
                     avatar_url=result["avatar_url"],
@@ -247,23 +239,14 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.create_bot()
         self.assert_num_bots_equal(1)
 
-        # The short_name is used in the email, which we call
+        # The full_name is used in the email, which we call
         # "Username" for legacy reasons.
         bot_info = dict(
-            full_name="whatever",
-            short_name="hambot",
+            bot_description="Whatever description",
+            full_name="hambot",
         )
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, "Username already in use")
-
-        dup_full_name = "The Bot of Hamlet"
-
-        bot_info = dict(
-            full_name=dup_full_name,
-            short_name="whatever",
-        )
-        result = self.client_post("/json/bots", bot_info)
-        self.assert_json_error(result, "Name is already in use!")
 
     def test_add_bot_with_user_avatar(self) -> None:
         email = "hambot-bot@zulip.testserver"
@@ -287,8 +270,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assert_num_bots_equal(0)
         with get_test_image_file("img.png") as fp1, get_test_image_file("img.gif") as fp2:
             bot_info = dict(
+                bot_description="whatever",
                 full_name="whatever",
-                short_name="whatever",
                 file1=fp1,
                 file2=fp2,
             )
@@ -350,7 +333,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                     email="hambot-bot@zulip.testserver",
                     user_id=bot.id,
                     bot_type=bot.bot_type,
-                    full_name="The Bot of Hamlet",
+                    full_name="hambot",
+                    bot_description="The Bot of Hamlet",
                     is_active=True,
                     api_key=result["api_key"],
                     avatar_url=result["avatar_url"],
@@ -445,7 +429,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                 bot=dict(
                     email="hambot-bot@zulip.testserver",
                     user_id=profile.id,
-                    full_name="The Bot of Hamlet",
+                    bot_description="The Bot of Hamlet",
+                    full_name="hambot",
                     bot_type=profile.bot_type,
                     is_active=True,
                     api_key=result["api_key"],
@@ -469,8 +454,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         do_change_stream_invite_only(stream, True)
 
         bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
+            "bot_description": "The Bot of Hamlet",
+            "full_name": "hambot",
             "default_sending_stream": "Denmark",
         }
         result = self.client_post("/json/bots", bot_info)
@@ -516,7 +501,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
                 op="add",
                 bot=dict(
                     email="hambot-bot@zulip.testserver",
-                    full_name="The Bot of Hamlet",
+                    bot_description="The Bot of Hamlet",
+                    full_name="hambot",
                     user_id=bot_profile.id,
                     bot_type=bot_profile.bot_type,
                     is_active=True,
@@ -542,8 +528,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         self.assert_num_bots_equal(0)
         bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
+            "bot_description": "The Bot of Hamlet",
+            "full_name": "hambot",
             "default_events_register_stream": "Denmark",
         }
         result = self.client_post("/json/bots", bot_info)
@@ -587,15 +573,15 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login_user(user)
 
         bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
+            "bot_description": "The Bot of Hamlet",
+            "full_name": "hambot",
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
 
         bot_info = {
-            "full_name": "The Another Bot of Hamlet",
-            "short_name": "hambot-another",
+            "bot_description": "The Another Bot of Hamlet",
+            "full_name": "hambot-another",
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
@@ -618,8 +604,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         user = self.mit_user("starnine")
         self.login_user(user)
         bot_info = {
-            "full_name": "The Bot in zephyr",
-            "short_name": "starn-bot",
+            "bot_description": "The Bot in zephyr",
+            "full_name": "starn-bot",
             "bot_type": "1",
         }
         result = self.client_post("/json/bots", bot_info, subdomain="zephyr")
@@ -728,8 +714,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
     def test_add_bot_with_bot_type_invalid(self) -> None:
         bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
+            "bot_description": "The Bot of Hamlet",
+            "full_name": "hambot",
             "bot_type": 7,
         }
 
@@ -741,8 +727,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
     def test_no_generic_bots_allowed_for_non_admins(self) -> None:
         bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
+            "bot_description": "The Bot of Hamlet",
+            "full_name": "hambot",
             "bot_type": 1,
         }
         bot_email = "hambot-bot@zulip.testserver"
@@ -798,8 +784,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
     def test_no_bots_allowed_for_non_admins(self) -> None:
         bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
+            "bot_description": "The Bot of Hamlet",
+            "full_name": "hambot",
             "bot_type": 1,
         }
         bot_realm = get_realm("zulip")
@@ -838,8 +824,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_patch_bot_full_name(self) -> None:
         self.login("hamlet")
         bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
+            "bot_description": "The Bot of Hamlet",
+            "full_name": "hambot",
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
@@ -858,11 +844,11 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_patch_bot_full_name_in_use(self) -> None:
         self.login("hamlet")
 
-        original_name = "The Bot of Hamlet"
+        original_name = "hambot"
 
         bot_info = {
-            "full_name": original_name,
-            "short_name": "hambot",
+            "bot_description": "The Bot of Hamlet",
+            "full_name": "hambot",
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
@@ -881,29 +867,17 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         result = self.client_patch(url, bot_info)
         self.assert_json_error(result, "Name is already in use!")
 
-        # We can use our own name (with extra whitespace), and the
-        # server should silently do nothing.
-        original_name_with_padding = "   " + original_name + " "
-        bot_info = {
-            "full_name": original_name_with_padding,
-        }
-        result = self.client_patch(url, bot_info)
-        self.assert_json_success(result)
-
-        bot = self.get_bot_user(bot_email)
-        self.assertEqual(bot.full_name, original_name)
-
         # And let's do a sanity check with an actual name change
         # after our various attempts that either failed or did
         # nothing.
         bot_info = {
-            "full_name": "Hal",
+            "full_name": "Halbot",
         }
         result = self.client_patch(url, bot_info)
         self.assert_json_success(result)
-
+        bot_email = "Halbot-bot@zulip.testserver"
         bot = self.get_bot_user(bot_email)
-        self.assertEqual(bot.full_name, "Hal")
+        self.assertEqual(bot.full_name, "Halbot")
 
     def test_patch_bot_full_name_non_bot(self) -> None:
         self.login("iago")
@@ -918,8 +892,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         othello = self.example_user("othello")
 
         bot_info: Dict[str, object] = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
+            "bot_description": "The Bot of Hamlet",
+            "full_name": "hambot",
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
@@ -935,7 +909,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         self.login("othello")
         bot = self.get_bot()
-        self.assertEqual("The Bot of Hamlet", bot["full_name"])
+        self.assertEqual("hambot", bot["full_name"])
 
     def test_patch_bot_owner_bad_user_id(self) -> None:
         self.login("hamlet")
@@ -1011,8 +985,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assert_num_bots_equal(1)
 
         bot_info: Dict[str, object] = {
-            "full_name": "Another Bot of Hamlet",
-            "short_name": "hamelbot",
+            "bot_description": "Another Bot of Hamlet",
+            "full_name": "hamelbot",
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
@@ -1026,11 +1000,31 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         profile = get_user(email, get_realm("zulip"))
         self.assertEqual(profile.bot_owner, self.example_user("hamlet"))
 
+    def test_patch_bot_description(self) -> None:
+        self.login("hamlet")
+        bot_info = {
+            "bot_description": "The Bot of Hamlet",
+            "full_name": "hambot",
+        }
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+        bot_info = {
+            "bot_description": "The Bot of Hamlet patched",
+        }
+        email = "hambot-bot@zulip.testserver"
+        result = self.client_patch(f"/json/bots/{self.get_bot_user(email).id}", bot_info)
+        self.assert_json_success(result)
+
+        self.assertEqual("The Bot of Hamlet patched", result.json()["bot_description"])
+
+        bot = self.get_bot()
+        self.assertEqual("The Bot of Hamlet patched", bot["bot_description"])
+
     def test_patch_bot_avatar(self) -> None:
         self.login("hamlet")
         bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
+            "bot_description": "The Bot of Hamlet",
+            "full_name": "hambot",
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
@@ -1070,8 +1064,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_patch_bot_to_stream(self) -> None:
         self.login("hamlet")
         bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
+            "bot_description": "The Bot of Hamlet",
+            "full_name": "hambot",
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
@@ -1090,8 +1084,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_patch_bot_to_stream_not_subscribed(self) -> None:
         self.login("hamlet")
         bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
+            "bot_description": "The Bot of Hamlet",
+            "full_name": "hambot",
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
@@ -1110,8 +1104,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_patch_bot_to_stream_none(self) -> None:
         self.login("hamlet")
         bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
+            "bot_description": "The Bot of Hamlet",
+            "full_name": "hambot",
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
@@ -1137,8 +1131,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         do_change_stream_invite_only(stream, True)
 
         bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
+            "bot_description": "The Bot of Hamlet",
+            "full_name": "hambot",
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
@@ -1163,8 +1157,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         do_change_stream_invite_only(stream, True)
 
         bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
+            "bot_description": "The Bot of Hamlet",
+            "full_name": "hambot",
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
@@ -1179,8 +1173,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_patch_bot_to_stream_not_found(self) -> None:
         self.login("hamlet")
         bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
+            "bot_description": "The Bot of Hamlet",
+            "full_name": "hambot",
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
@@ -1195,8 +1189,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
         bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
+            "bot_description": "The Bot of Hamlet",
+            "full_name": "hambot",
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
@@ -1244,8 +1238,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         do_change_stream_invite_only(stream, True)
 
         bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
+            "bot_description": "The Bot of Hamlet",
+            "full_name": "hambot",
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
@@ -1269,8 +1263,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         do_change_stream_invite_only(stream, True)
 
         bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
+            "bot_description": "The Bot of Hamlet",
+            "full_name": "hambot",
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
@@ -1284,8 +1278,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_patch_bot_events_register_stream_none(self) -> None:
         self.login("hamlet")
         bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
+            "bot_description": "The Bot of Hamlet",
+            "full_name": "hambot",
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
@@ -1309,8 +1303,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_patch_bot_events_register_stream_not_found(self) -> None:
         self.login("hamlet")
         bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
+            "bot_description": "The Bot of Hamlet",
+            "full_name": "hambot",
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
@@ -1324,8 +1318,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_patch_bot_default_all_public_streams_true(self) -> None:
         self.login("hamlet")
         bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
+            "bot_description": "The Bot of Hamlet",
+            "full_name": "hambot",
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
@@ -1344,8 +1338,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_patch_bot_default_all_public_streams_false(self) -> None:
         self.login("hamlet")
         bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
+            "bot_description": "The Bot of Hamlet",
+            "full_name": "hambot",
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
@@ -1364,8 +1358,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_patch_bot_via_post(self) -> None:
         self.login("hamlet")
         bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
+            "bot_description": "The Bot of Hamlet",
+            "full_name": "hambot",
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
@@ -1398,8 +1392,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_patch_outgoing_webhook_bot(self) -> None:
         self.login("hamlet")
         bot_info = {
-            "full_name": "The Bot of Hamlet",
-            "short_name": "hambot",
+            "bot_description": "The Bot of Hamlet",
+            "full_name": "hambot",
             "bot_type": UserProfile.OUTGOING_WEBHOOK_BOT,
             "payload_url": orjson.dumps("http://foo.bar.com").decode(),
             "service_interface": Service.GENERIC,
@@ -1425,7 +1419,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.create_test_bot(
             "test",
             self.example_user("hamlet"),
-            full_name="Bot with config data",
+            bot_description="Bot with config data",
             bot_type=UserProfile.EMBEDDED_BOT,
             service_name="giphy",
             config_data=orjson.dumps({"key": "12345678"}).decode(),
@@ -1440,8 +1434,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_outgoing_webhook_invalid_interface(self) -> None:
         self.login("hamlet")
         bot_info = {
-            "full_name": "Outgoing Webhook test bot",
-            "short_name": "outgoingservicebot",
+            "bot_description": "Outgoing Webhook test bot",
+            "full_name": "outgoingservicebot",
             "bot_type": UserProfile.OUTGOING_WEBHOOK_BOT,
             "payload_url": orjson.dumps("http://127.0.0.1:5002").decode(),
             "interface_type": -1,
@@ -1456,8 +1450,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_create_outgoing_webhook_bot(self, **extras: Any) -> None:
         self.login("hamlet")
         bot_info = {
-            "full_name": "Outgoing Webhook test bot",
-            "short_name": "outgoingservicebot",
+            "full_name": "outgoingservicebot",
+            "bot_description": "Outgoing Webhook test bot",
             "bot_type": UserProfile.OUTGOING_WEBHOOK_BOT,
             "payload_url": orjson.dumps("http://127.0.0.1:5002").decode(),
         }
@@ -1500,8 +1494,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_outgoing_webhook_interface_type(self) -> None:
         self.login("hamlet")
         bot_info = {
-            "full_name": "Outgoing Webhook test bot",
-            "short_name": "outgoingservicebot",
+            "bot_description": "Outgoing Webhook test bot",
+            "full_name": "outgoingservicebot",
             "bot_type": UserProfile.OUTGOING_WEBHOOK_BOT,
             "payload_url": orjson.dumps("http://127.0.0.1:5002").decode(),
             "interface_type": -1,
@@ -1516,7 +1510,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_create_embedded_bot_with_disabled_embedded_bots(self, **extras: Any) -> None:
         with self.settings(EMBEDDED_BOTS_ENABLED=False):
             self.fail_to_create_test_bot(
-                short_name="embeddedservicebot",
+                full_name="embeddedservicebot",
                 user_profile=self.example_user("hamlet"),
                 bot_type=UserProfile.EMBEDDED_BOT,
                 service_name="followup",
@@ -1528,7 +1522,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_create_embedded_bot(self, **extras: Any) -> None:
         bot_config_info = {"key": "value"}
         self.create_test_bot(
-            short_name="embeddedservicebot",
+            full_name="embeddedservicebot",
             user_profile=self.example_user("hamlet"),
             bot_type=UserProfile.EMBEDDED_BOT,
             service_name="followup",
@@ -1546,7 +1540,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
     def test_create_embedded_bot_with_incorrect_service_name(self, **extras: Any) -> None:
         self.fail_to_create_test_bot(
-            short_name="embeddedservicebot",
+            full_name="embeddedservicebot",
             user_profile=self.example_user("hamlet"),
             bot_type=UserProfile.EMBEDDED_BOT,
             service_name="not_existing_service",
@@ -1556,7 +1550,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
     def test_create_embedded_bot_with_invalid_config_value(self, **extras: Any) -> None:
         self.fail_to_create_test_bot(
-            short_name="embeddedservicebot",
+            full_name="embeddedservicebot",
             user_profile=self.example_user("hamlet"),
             service_name="followup",
             config_data=orjson.dumps({"invalid": ["config", "value"]}).decode(),
@@ -1567,8 +1561,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         # Test to create embedded bot with an incorrect config value
         incorrect_bot_config_info = {"key": "incorrect key"}
         bot_info = {
-            "full_name": "Embedded test bot",
-            "short_name": "embeddedservicebot3",
+            "bot_description": "Embedded test bot",
+            "full_name": "embeddedservicebot3",
             "bot_type": UserProfile.EMBEDDED_BOT,
             "service_name": "giphy",
             "config_data": orjson.dumps(incorrect_bot_config_info).decode(),
@@ -1594,14 +1588,14 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_create_incoming_webhook_bot_with_service_name_and_with_keys(self) -> None:
         self.login("hamlet")
         bot_metadata = {
-            "full_name": "My Stripe Bot",
-            "short_name": "my-stripe",
+            "bot_description": "My Stripe Bot",
+            "full_name": "my-stripe",
             "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
             "service_name": "stripe",
             "config_data": orjson.dumps({"stripe_api_key": "sample-api-key"}).decode(),
         }
         self.create_bot(**bot_metadata)
-        new_bot = UserProfile.objects.get(full_name="My Stripe Bot")
+        new_bot = UserProfile.objects.get(bot_description="My Stripe Bot")
         config_data = get_bot_config(new_bot)
         self.assertEqual(
             config_data, {"integration_id": "stripe", "stripe_api_key": "sample-api-key"}
@@ -1611,8 +1605,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_create_incoming_webhook_bot_with_service_name_incorrect_keys(self) -> None:
         self.login("hamlet")
         bot_metadata = {
-            "full_name": "My Stripe Bot",
-            "short_name": "my-stripe",
+            "bot_description": "My Stripe Bot",
+            "full_name": "my-stripe",
             "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
             "service_name": "stripe",
             "config_data": orjson.dumps({"stripe_api_key": "_invalid_key"}).decode(),
@@ -1622,14 +1616,14 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         expected_error_message = 'Invalid stripe_api_key value _invalid_key (stripe_api_key starts with a "_" and is hence invalid.)'
         self.assertEqual(orjson.loads(response.content)["msg"], expected_error_message)
         with self.assertRaises(UserProfile.DoesNotExist):
-            UserProfile.objects.get(full_name="My Stripe Bot")
+            UserProfile.objects.get(bot_description="My Stripe Bot")
 
     @patch("zerver.lib.integrations.WEBHOOK_INTEGRATIONS", stripe_sample_config_options)
     def test_create_incoming_webhook_bot_with_service_name_without_keys(self) -> None:
         self.login("hamlet")
         bot_metadata = {
-            "full_name": "My Stripe Bot",
-            "short_name": "my-stripe",
+            "bot_description": "My Stripe Bot",
+            "full_name": "my-stripe",
             "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
             "service_name": "stripe",
         }
@@ -1638,18 +1632,18 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         expected_error_message = "Missing configuration parameters: {'stripe_api_key'}"
         self.assertEqual(orjson.loads(response.content)["msg"], expected_error_message)
         with self.assertRaises(UserProfile.DoesNotExist):
-            UserProfile.objects.get(full_name="My Stripe Bot")
+            UserProfile.objects.get(bot_description="My Stripe Bot")
 
     @patch("zerver.lib.integrations.WEBHOOK_INTEGRATIONS", stripe_sample_config_options)
     def test_create_incoming_webhook_bot_without_service_name(self) -> None:
         self.login("hamlet")
         bot_metadata = {
-            "full_name": "My Stripe Bot",
-            "short_name": "my-stripe",
+            "bot_description": "My Stripe Bot",
+            "full_name": "my-stripe",
             "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
         }
         self.create_bot(**bot_metadata)
-        new_bot = UserProfile.objects.get(full_name="My Stripe Bot")
+        new_bot = UserProfile.objects.get(bot_description="My Stripe Bot")
         with self.assertRaises(ConfigError):
             get_bot_config(new_bot)
 
@@ -1657,8 +1651,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_create_incoming_webhook_bot_with_incorrect_service_name(self) -> None:
         self.login("hamlet")
         bot_metadata = {
-            "full_name": "My Stripe Bot",
-            "short_name": "my-stripe",
+            "bot_description": "My Stripe Bot",
+            "full_name": "my-stripe",
             "bot_type": UserProfile.INCOMING_WEBHOOK_BOT,
             "service_name": "stripes",
         }
@@ -1667,4 +1661,4 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         expected_error_message = "Invalid integration 'stripes'."
         self.assertEqual(orjson.loads(response.content)["msg"], expected_error_message)
         with self.assertRaises(UserProfile.DoesNotExist):
-            UserProfile.objects.get(full_name="My Stripe Bot")
+            UserProfile.objects.get(bot_description="My Stripe Bot")

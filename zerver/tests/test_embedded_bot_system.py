@@ -20,7 +20,7 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
         self.bot_profile = self.create_test_bot(
             "embedded",
             self.user_profile,
-            full_name="Embedded bot",
+            bot_description="Embedded bot",
             bot_type=UserProfile.EMBEDDED_BOT,
             service_name="helloworld",
             config_data=orjson.dumps({"foo": "bar"}).decode(),
@@ -90,7 +90,7 @@ class TestEmbeddedBotFailures(ZulipTestCase):
     def test_message_embedded_bot_with_invalid_service(self) -> None:
         user_profile = self.example_user("othello")
         self.create_test_bot(
-            short_name="embedded",
+            full_name="embedded",
             user_profile=user_profile,
             bot_type=UserProfile.EMBEDDED_BOT,
             service_name="helloworld",

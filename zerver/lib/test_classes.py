@@ -446,32 +446,32 @@ Output:
         return get_system_bot(settings.NOTIFICATION_BOT)
 
     def create_test_bot(
-        self, short_name: str, user_profile: UserProfile, full_name: str = "Foo Bot", **extras: Any
+        self, full_name: str, user_profile: UserProfile, bot_description: str = "Foo Bot", **extras: Any
     ) -> UserProfile:
         self.login_user(user_profile)
         bot_info = {
-            "short_name": short_name,
             "full_name": full_name,
+            "bot_description": bot_description,
         }
         bot_info.update(extras)
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
-        bot_email = f"{short_name}-bot@zulip.testserver"
+        bot_email = f"{full_name}-bot@zulip.testserver"
         bot_profile = get_user(bot_email, user_profile.realm)
         return bot_profile
 
     def fail_to_create_test_bot(
         self,
-        short_name: str,
+        full_name: str,
         user_profile: UserProfile,
-        full_name: str = "Foo Bot",
+        bot_description: str = "Foo Bot",
         *,
         assert_json_error_msg: str,
         **extras: Any,
     ) -> None:
         self.login_user(user_profile)
         bot_info = {
-            "short_name": short_name,
+            "bot_description": bot_description,
             "full_name": full_name,
         }
         bot_info.update(extras)
