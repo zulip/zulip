@@ -7,9 +7,9 @@ import * as admin from "./admin";
 import * as blueslip from "./blueslip";
 import * as overlays from "./overlays";
 import * as people from "./people";
-import * as settings_account from "./settings_account";
 import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
+import * as settings_data from "./settings_data";
 import * as settings_notifications from "./settings_notifications";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_sections from "./settings_sections";
@@ -94,8 +94,8 @@ export function build_page() {
         show_push_notifications_tooltip: settings_config.all_notifications()
             .show_push_notifications_tooltip,
         display_settings: settings_config.get_all_display_settings(),
-        user_can_change_name: settings_account.user_can_change_name(),
-        user_can_change_avatar: settings_account.user_can_change_avatar(),
+        user_can_change_name: settings_data.user_can_change_name(),
+        user_can_change_avatar: settings_data.user_can_change_avatar(),
     });
 
     $(".settings-box").html(rendered_settings_tab);
