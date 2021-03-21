@@ -540,7 +540,7 @@ def check_realm_bot_add(
         raise AssertionError(f"Unknown bot_type: {bot_type}")
 
 
-bot_type_for_delete = DictType(
+bot_type_for_change_owner = DictType(
     required_keys=[
         # for legacy reasons we have a dict here
         # with only one key
@@ -548,16 +548,18 @@ bot_type_for_delete = DictType(
     ]
 )
 
-realm_bot_delete_event = event_dict_type(
+realm_bot_change_owner_event = event_dict_type(
+    # This event was earlier named as delete but it's name did not align with
+    # the action it performed so it is renamed as change_owner.
     required_keys=[
         ("type", Equals("realm_bot")),
-        ("op", Equals("delete")),
-        ("bot", bot_type_for_delete),
+        ("op", Equals("change_owner")),
+        ("bot", bot_type_for_change_owner),
     ]
 )
-check_realm_bot_delete = make_checker(realm_bot_delete_event)
+check_realm_bot_change_owner = make_checker(realm_bot_change_owner_event)
 
-bot_type_for_remove = DictType(
+bot_type_for_deactivate = DictType(
     required_keys=[
         # Why does remove have full_name but delete doesn't?
         # Why do we have both a remove and a delete event
@@ -567,14 +569,14 @@ bot_type_for_remove = DictType(
     ]
 )
 
-realm_bot_remove_event = event_dict_type(
+realm_bot_deactivate_event = event_dict_type(
     required_keys=[
         ("type", Equals("realm_bot")),
-        ("op", Equals("remove")),
-        ("bot", bot_type_for_remove),
+        ("op", Equals("deactivate")),
+        ("bot", bot_type_for_deactivate),
     ]
 )
-check_realm_bot_remove = make_checker(realm_bot_remove_event)
+check_realm_bot_deactivate = make_checker(realm_bot_deactivate_event)
 
 bot_type_for_update = DictType(
     required_keys=[

@@ -1170,7 +1170,7 @@ def do_deactivate_user(
     if user_profile.is_bot:
         event = dict(
             type="realm_bot",
-            op="remove",
+            op="deactivate",
             bot=dict(user_id=user_profile.id, full_name=user_profile.full_name),
         )
         send_event(user_profile.realm, event, bot_owner_user_ids(user_profile))
@@ -3804,7 +3804,7 @@ def do_change_bot_owner(
             user_profile.realm,
             dict(
                 type="realm_bot",
-                op="delete",
+                op="change_owner",
                 bot=dict(
                     user_id=user_profile.id,
                 ),
