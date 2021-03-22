@@ -11,28 +11,6 @@ import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as unread_ui from "./unread_ui";
 
-export function get_notifications_table_row_data(notify_settings) {
-    return settings_config.general_notifications_table_labels.realm.map((column, index) => {
-        const setting_name = notify_settings[index];
-        if (setting_name === undefined) {
-            return {
-                setting_name: "",
-                is_disabled: true,
-                is_checked: false,
-            };
-        }
-        const checkbox = {
-            setting_name,
-            is_disabled: false,
-        };
-        if (column === "mobile") {
-            checkbox.is_disabled = !page_params.realm_push_notifications_enabled;
-        }
-        checkbox.is_checked = page_params[setting_name];
-        return checkbox;
-    });
-}
-
 export const desktop_icon_count_display_values = {
     messages: {
         code: 1,

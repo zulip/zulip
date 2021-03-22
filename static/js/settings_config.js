@@ -1,4 +1,3 @@
-import * as settings_notifications from "./settings_notifications";
 /*
     This file contains translations between the integer values used in
     the Zulip API to describe values in dropdowns, radio buttons, and
@@ -340,17 +339,37 @@ export const all_notification_settings = other_notification_settings.concat(
     stream_notification_settings,
 );
 
+export function get_notifications_table_row_data(notify_settings) {
+    return general_notifications_table_labels.realm.map((column, index) => {
+        const setting_name = notify_settings[index];
+        if (setting_name === undefined) {
+            return {
+                setting_name: "",
+                is_disabled: true,
+                is_checked: false,
+            };
+        }
+        const checkbox = {
+            setting_name,
+            is_disabled: false,
+        };
+        if (column === "mobile") {
+            checkbox.is_disabled = !page_params.realm_push_notifications_enabled;
+        }
+        checkbox.is_checked = page_params[setting_name];
+        return checkbox;
+    });
+}
+
 export const all_notifications = () => ({
     general_settings: [
         {
             label: i18n.t("Streams"),
-            notification_settings: settings_notifications.get_notifications_table_row_data(
-                stream_notification_settings,
-            ),
+            notification_settings: get_notifications_table_row_data(stream_notification_settings),
         },
         {
             label: i18n.t("PMs, mentions, and alerts"),
-            notification_settings: settings_notifications.get_notifications_table_row_data(
+            notification_settings: get_notifications_table_row_data(
                 pm_mention_notification_settings,
             ),
         },

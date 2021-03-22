@@ -25,9 +25,6 @@ mock_esm("../../static/js/hashchange", {update_browser_history: noop});
 mock_esm("../../static/js/list_widget", {
     create: () => ({init: noop}),
 });
-mock_esm("../../static/js/settings_notifications", {
-    get_notifications_table_row_data: noop,
-});
 mock_esm("../../static/js/stream_color", {
     set_colorpicker_color: noop,
 });
