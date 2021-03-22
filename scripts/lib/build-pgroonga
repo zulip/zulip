@@ -2,7 +2,7 @@
 set -x
 set -e
 
-PGROONGA_VERSION="2.2.3"
+PGROONGA_VERSION="2.2.8"
 
 cd "$(mktemp -d)"
 
