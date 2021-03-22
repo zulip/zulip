@@ -12,9 +12,9 @@ import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as presence from "./presence";
-import * as server_events from "./server_events";
 import {UserSearch} from "./user_search";
 import * as user_status from "./user_status";
+import * as watchdog from "./watchdog";
 
 export let user_cursor;
 export let user_filter;
@@ -195,7 +195,7 @@ export function send_presence_to_server(want_redraw) {
         return;
     }
 
-    server_events.check_for_unsuspend();
+    watchdog.check_for_unsuspend();
 
     channel.post({
         url: "/json/users/me/presence",

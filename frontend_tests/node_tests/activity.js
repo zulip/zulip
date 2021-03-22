@@ -51,11 +51,11 @@ mock_esm("../../static/js/resize", {
 mock_esm("../../static/js/scroll_util", {
     scroll_element_into_container: () => {},
 });
-mock_esm("../../static/js/server_events", {
-    check_for_unsuspend() {},
-});
 mock_esm("../../static/js/stream_popover", {
     show_streamlist_sidebar() {},
+});
+mock_esm("../../static/js/watchdog", {
+    check_for_unsuspend() {},
 });
 set_global("document", _document);
 

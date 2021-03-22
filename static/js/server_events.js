@@ -11,6 +11,7 @@ import * as reload_state from "./reload_state";
 import * as sent_messages from "./sent_messages";
 import * as server_events_dispatch from "./server_events_dispatch";
 import * as ui_report from "./ui_report";
+import * as watchdog from "./watchdog";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
 
@@ -302,26 +303,8 @@ export function home_view_loaded() {
     $(document).trigger("home_view_loaded.zulip");
 }
 
-let watchdog_time = Date.now();
-
-export function check_for_unsuspend() {
-    const new_time = Date.now();
-    if (new_time - watchdog_time > 20000) {
-        // 20 seconds.
-        // Defensively reset watchdog_time here in case there's an
-        // exception in one of the event handlers
-        watchdog_time = new_time;
-        // Our app's JS wasn't running, which probably means the machine was
-        // asleep.
-        $(document).trigger("unsuspend");
-    }
-    watchdog_time = new_time;
-}
-
-setInterval(check_for_unsuspend, 5000);
-
 export function initialize() {
-    $(document).on("unsuspend", () => {
+    watchdog.on_unsuspend(() => {
         // Immediately poll for new events on unsuspend
         blueslip.log("Restarting get_events due to unsuspend");
         get_events_failures = 0;
