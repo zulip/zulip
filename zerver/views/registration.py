@@ -446,7 +446,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
     if realm is None:
         email_address_visibility = str(Realm.email_address_visibility)
     else:
-            email_address_visibility = str(realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE)
+        email_address_visibility = str(realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE)
 
     return render(
         request,
