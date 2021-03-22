@@ -3,6 +3,7 @@ import $ from "jquery";
 import * as emoji from "../shared/js/emoji";
 
 import * as activity from "./activity";
+import * as browser_history from "./browser_history";
 import * as common from "./common";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
@@ -734,7 +735,7 @@ export function process_hotkey(e, hotkey) {
             gear_menu.open();
             return true;
         case "show_shortcuts": // Show keyboard shortcuts page
-            hashchange.go_to_location("keyboard-shortcuts");
+            browser_history.go_to_location("keyboard-shortcuts");
             return true;
         case "stream_cycle_backward":
             narrow.stream_cycle_backward();
@@ -749,10 +750,10 @@ export function process_hotkey(e, hotkey) {
             narrow.narrow_to_next_pm_string();
             return true;
         case "open_recent_topics":
-            hashchange.go_to_location("#recent_topics");
+            browser_history.go_to_location("#recent_topics");
             return true;
         case "all_messages":
-            hashchange.go_to_location("#all_messages");
+            browser_history.go_to_location("#all_messages");
             return true;
     }
 

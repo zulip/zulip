@@ -9,9 +9,9 @@ import render_topic_sidebar_actions from "../templates/topic_sidebar_actions.hbs
 import render_unstar_messages_modal from "../templates/unstar_messages_modal.hbs";
 
 import * as blueslip from "./blueslip";
+import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as hash_util from "./hash_util";
-import * as hashchange from "./hashchange";
 import * as message_edit from "./message_edit";
 import * as message_flags from "./message_flags";
 import * as muting from "./muting";
@@ -400,7 +400,7 @@ export function register_stream_handlers() {
         hide_stream_popover();
 
         const stream_edit_hash = hash_util.stream_edit_uri(sub);
-        hashchange.go_to_location(stream_edit_hash);
+        browser_history.go_to_location(stream_edit_hash);
     });
 
     // Pin/unpin

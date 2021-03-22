@@ -9,6 +9,7 @@ import render_buddy_list_tooltip_content from "../templates/buddy_list_tooltip_c
 
 import * as activity from "./activity";
 import * as blueslip from "./blueslip";
+import * as browser_history from "./browser_history";
 import * as buddy_data from "./buddy_data";
 import * as channel from "./channel";
 import * as compose from "./compose";
@@ -16,7 +17,6 @@ import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
 import * as emoji_picker from "./emoji_picker";
 import * as hash_util from "./hash_util";
-import * as hashchange from "./hashchange";
 import * as hotspots from "./hotspots";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
@@ -282,7 +282,7 @@ export function initialize() {
         // so we re-encode the hash.
         const stream_id = Number.parseInt($(this).attr("data-stream-id"), 10);
         if (stream_id) {
-            hashchange.go_to_location(hash_util.by_stream_uri(stream_id));
+            browser_history.go_to_location(hash_util.by_stream_uri(stream_id));
             return;
         }
         window.location.href = $(this).attr("href");
@@ -716,7 +716,7 @@ export function initialize() {
 
     $("body").on("click", "[data-overlay-trigger]", function () {
         const target = $(this).attr("data-overlay-trigger");
-        hashchange.go_to_location(target);
+        browser_history.go_to_location(target);
     });
 
     function handle_compose_click(e) {
@@ -752,7 +752,7 @@ export function initialize() {
 
     $("#streams_inline_cog").on("click", (e) => {
         e.stopPropagation();
-        hashchange.go_to_location("streams/subscribed");
+        browser_history.go_to_location("streams/subscribed");
     });
 
     $("#streams_filter_icon").on("click", (e) => {

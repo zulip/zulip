@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import * as admin from "./admin";
 import * as blueslip from "./blueslip";
+import * as browser_history from "./browser_history";
 import * as drafts from "./drafts";
 import * as floating_recipient_bar from "./floating_recipient_bar";
 import * as hash_util from "./hash_util";
@@ -94,35 +95,6 @@ function activate_home_tab() {
     setTimeout(navigate.maybe_scroll_to_selected, 0);
 }
 
-const state = {
-    is_internal_change: false,
-    hash_before_overlay: null,
-    old_hash: typeof window !== "undefined" ? window.location.hash : "#",
-};
-
-export function clear_for_testing() {
-    state.is_internal_change = false;
-    state.hash_before_overlay = null;
-    state.old_hash = "#";
-}
-
-function is_overlay_hash(hash) {
-    // Hash changes within this list are overlays and should not unnarrow (etc.)
-    const overlay_list = [
-        "streams",
-        "drafts",
-        "settings",
-        "organization",
-        "invite",
-        "keyboard-shortcuts",
-        "message-formatting",
-        "search-operators",
-    ];
-    const main_hash = hash_util.get_hash_category(hash);
-
-    return overlay_list.includes(main_hash);
-}
-
 export function show_default_view() {
     window.location.hash = page_params.default_view;
 }
@@ -199,7 +171,7 @@ function do_hashchange_overlay(old_hash) {
     const old_base = hash_util.get_hash_category(old_hash);
     const section = hash_util.get_hash_section(window.location.hash);
 
-    const coming_from_overlay = is_overlay_hash(old_hash || "#");
+    const coming_from_overlay = hash_util.is_overlay_hash(old_hash || "#");
 
     // Start by handling the specific case of going
     // from something like streams/all to streams_subscribed.
@@ -248,7 +220,7 @@ function do_hashchange_overlay(old_hash) {
     // NORMAL FLOW: basically, launch the overlay:
 
     if (!coming_from_overlay) {
-        state.hash_before_overlay = old_hash;
+        browser_history.set_hash_before_overlay(old_hash);
     }
 
     if (base === "streams") {
@@ -293,15 +265,15 @@ function do_hashchange_overlay(old_hash) {
 }
 
 function hashchanged(from_reload, e) {
-    const old_hash = e && (e.oldURL ? new URL(e.oldURL).hash : state.old_hash);
-    state.old_hash = window.location.hash;
+    const old_hash = e && (e.oldURL ? new URL(e.oldURL).hash : browser_history.old_hash());
 
-    if (state.is_internal_change) {
-        state.is_internal_change = false;
+    const was_internal_change = browser_history.save_old_hash();
+
+    if (was_internal_change) {
         return undefined;
     }
 
-    if (is_overlay_hash(window.location.hash)) {
+    if (hash_util.is_overlay_hash(window.location.hash)) {
         do_hashchange_overlay(old_hash);
         return undefined;
     }
@@ -312,28 +284,6 @@ function hashchanged(from_reload, e) {
     const ret = do_hashchange_normal(from_reload);
     changing_hash = false;
     return ret;
-}
-
-export function update_browser_history(new_hash) {
-    const old_hash = window.location.hash;
-
-    if (!new_hash.startsWith("#")) {
-        blueslip.error("programming error: prefix hashes with #: " + new_hash);
-        return;
-    }
-
-    if (old_hash === new_hash) {
-        // If somebody is calling us with the same hash we already have, it's
-        // probably harmless, and we just ignore it.  But it could be a symptom
-        // of disorganized code that's prone to an infinite loop of repeatedly
-        // assigning the same hash.
-        blueslip.info("ignoring probably-harmless call to update_browser_history: " + new_hash);
-        return;
-    }
-
-    state.old_hash = old_hash;
-    state.is_internal_change = true;
-    window.location.hash = new_hash;
 }
 
 export function replace_hash(hash) {
@@ -347,26 +297,9 @@ export function replace_hash(hash) {
     window.history.replaceState(null, null, url);
 }
 
-export function go_to_location(hash) {
-    // Call this function when you WANT the hashchanged
-    // function to run.
-    window.location.hash = hash;
-}
-
 export function initialize() {
     $(window).on("hashchange", (e) => {
         hashchanged(false, e.originalEvent);
     });
     hashchanged(true);
-}
-
-export function exit_overlay(callback) {
-    if (is_overlay_hash(window.location.hash)) {
-        ui_util.blur_active_element();
-        const new_hash = state.hash_before_overlay || "#";
-        update_browser_history(new_hash);
-        if (typeof callback === "function") {
-            callback();
-        }
-    }
 }

@@ -5,12 +5,12 @@ import $ from "jquery";
 import render_draft_table_body from "../templates/draft_table_body.hbs";
 
 import * as blueslip from "./blueslip";
+import * as browser_history from "./browser_history";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
-import * as hashchange from "./hashchange";
 import {localstorage} from "./localstorage";
 import * as markdown from "./markdown";
 import * as narrow from "./narrow";
@@ -527,7 +527,7 @@ export function open_overlay() {
         name: "drafts",
         overlay: $("#draft_overlay"),
         on_close() {
-            hashchange.exit_overlay();
+            browser_history.exit_overlay();
         },
     });
 }

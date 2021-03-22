@@ -54,12 +54,12 @@ all of this (would be a good project to add them to the
 [Puppeteer suite][testing-with-puppeteer]) and there's enough complexity
 that it's easy to accidentally break something.
 
-The main external API is below:
+The main external API lives in `static/js/browser_history.js`:
 
-* `hashchange.update_browser_history` is used to update the browser
+* `browser_history.update` is used to update the browser
   history, and it should be called when the app code is taking care
   of updating the UI directly
-* `hashchange.go_to_location` is used when you want the `hashchange`
+* `browser_history.go_to_location` is used when you want the `hashchange`
   module to actually dispatch building the next page
 
 Internally you have these functions:

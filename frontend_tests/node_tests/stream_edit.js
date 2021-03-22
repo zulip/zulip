@@ -17,11 +17,11 @@ const ui = mock_esm("../../static/js/ui", {
     get_scroll_element: noop,
 });
 
+mock_esm("../../static/js/browser_history", {update: noop});
 mock_esm("../../static/js/hash_util", {
     stream_edit_uri: noop,
     by_stream_uri: noop,
 });
-mock_esm("../../static/js/hashchange", {update_browser_history: noop});
 mock_esm("../../static/js/list_widget", {
     create: () => ({init: noop}),
 });

@@ -7,9 +7,9 @@ import render_subscription_settings from "../templates/subscription_settings.hbs
 import render_subscription_stream_privacy_modal from "../templates/subscription_stream_privacy_modal.hbs";
 
 import * as blueslip from "./blueslip";
+import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as hash_util from "./hash_util";
-import * as hashchange from "./hashchange";
 import * as input_pill from "./input_pill";
 import * as ListWidget from "./list_widget";
 import * as narrow_state from "./narrow_state";
@@ -34,7 +34,7 @@ export let pill_widget;
 
 function setup_subscriptions_stream_hash(sub) {
     const hash = hash_util.stream_edit_uri(sub);
-    hashchange.update_browser_history(hash);
+    browser_history.update(hash);
 }
 
 function compare_by_email(a, b) {
@@ -50,9 +50,9 @@ function compare_by_name(a, b) {
 
 export function setup_subscriptions_tab_hash(tab_key_value) {
     if (tab_key_value === "all-streams") {
-        hashchange.update_browser_history("#streams/all");
+        browser_history.update("#streams/all");
     } else if (tab_key_value === "subscribed") {
-        hashchange.update_browser_history("#streams/subscribed");
+        browser_history.update("#streams/subscribed");
     } else {
         blueslip.debug("Unknown tab_key_value: " + tab_key_value);
     }

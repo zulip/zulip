@@ -209,3 +209,20 @@ export function parse_narrow(hash) {
     }
     return operators;
 }
+
+export function is_overlay_hash(hash) {
+    // Hash changes within this list are overlays and should not unnarrow (etc.)
+    const overlay_list = [
+        "streams",
+        "drafts",
+        "settings",
+        "organization",
+        "invite",
+        "keyboard-shortcuts",
+        "message-formatting",
+        "search-operators",
+    ];
+    const main_hash = get_hash_category(hash);
+
+    return overlay_list.includes(main_hash);
+}

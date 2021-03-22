@@ -42,6 +42,7 @@ const page_params = set_global("page_params", {});
 set_global("document", "document-stub");
 
 mock_cjs("jquery", $);
+const browser_history = mock_esm("../../static/js/browser_history");
 const compose_actions = mock_esm("../../static/js/compose_actions");
 const condense = mock_esm("../../static/js/condense");
 const drafts = mock_esm("../../static/js/drafts");
@@ -50,9 +51,6 @@ const emoji_picker = mock_esm("../../static/js/emoji_picker", {
 });
 const gear_menu = mock_esm("../../static/js/gear_menu", {
     is_open: () => false,
-});
-const hashchange = mock_esm("../../static/js/hashchange", {
-    in_recent_topics_hash: () => false,
 });
 const lightbox = mock_esm("../../static/js/lightbox");
 const list_util = mock_esm("../../static/js/list_util");
@@ -78,6 +76,10 @@ const reactions = mock_esm("../../static/js/reactions");
 const search = mock_esm("../../static/js/search");
 const stream_list = mock_esm("../../static/js/stream_list");
 const subs = mock_esm("../../static/js/subs");
+
+mock_esm("../../static/js/hashchange", {
+    in_recent_topics_hash: () => false,
+});
 
 mock_esm("../../static/js/stream_popover", {
     stream_popped: () => false,
@@ -293,7 +295,7 @@ run_test("streams", (override) => {
 });
 
 run_test("basic mappings", () => {
-    assert_mapping("?", hashchange, "go_to_location");
+    assert_mapping("?", browser_history, "go_to_location");
     assert_mapping("/", search, "initiate_search");
     assert_mapping("w", activity, "initiate_search");
     assert_mapping("q", stream_list, "initiate_search");

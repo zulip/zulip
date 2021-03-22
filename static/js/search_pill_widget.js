@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import * as hashchange from "./hashchange";
+import * as browser_history from "./browser_history";
 import * as search_pill from "./search_pill";
 
 export let widget;
@@ -14,7 +14,7 @@ export function initialize() {
 
     widget.onPillRemove(() => {
         if (widget.items().length === 0) {
-            hashchange.go_to_location("");
+            browser_history.go_to_location("");
         }
     });
 

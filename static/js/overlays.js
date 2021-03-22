@@ -1,7 +1,7 @@
 import $ from "jquery";
 
 import * as blueslip from "./blueslip";
-import * as hashchange from "./hashchange";
+import * as browser_history from "./browser_history";
 import * as popovers from "./popovers";
 
 let active_overlay;
@@ -224,7 +224,7 @@ export function open_settings() {
         name: "settings",
         overlay: $("#settings_overlay_container"),
         on_close() {
-            hashchange.exit_overlay();
+            browser_history.exit_overlay();
         },
     });
 }

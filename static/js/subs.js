@@ -7,11 +7,11 @@ import render_subscription_table_body from "../templates/subscription_table_body
 import render_subscriptions from "../templates/subscriptions.hbs";
 
 import * as blueslip from "./blueslip";
+import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as components from "./components";
 import * as compose_state from "./compose_state";
 import * as hash_util from "./hash_util";
-import * as hashchange from "./hashchange";
 import * as loading from "./loading";
 import * as message_live_update from "./message_live_update";
 import * as message_view_header from "./message_view_header";
@@ -745,7 +745,7 @@ export function launch(section) {
             name: "subscriptions",
             overlay: $("#subscription_overlay"),
             on_close() {
-                hashchange.exit_overlay();
+                browser_history.exit_overlay();
             },
         });
         change_state(section);
@@ -819,7 +819,7 @@ export function view_stream() {
     if (row_data) {
         const stream_narrow_hash =
             "#narrow/stream/" + hash_util.encode_stream_name(row_data.object.name);
-        hashchange.go_to_location(stream_narrow_hash);
+        browser_history.go_to_location(stream_narrow_hash);
     }
 }
 
@@ -942,7 +942,7 @@ export function do_open_create_stream() {
 
 export function open_create_stream() {
     do_open_create_stream();
-    hashchange.update_browser_history("#streams/new");
+    browser_history.update("#streams/new");
 }
 
 export function sub_or_unsub(sub, stream_row) {
