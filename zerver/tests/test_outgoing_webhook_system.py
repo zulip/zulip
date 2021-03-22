@@ -3,6 +3,7 @@ from unittest import mock
 
 import orjson
 import requests
+import responses
 
 from version import ZULIP_VERSION
 from zerver.lib.actions import do_create_user
@@ -228,6 +229,35 @@ When trying to send a request to the webhook service, an exception of type Reque
 I'm a generic exception :(
 ```""",
         )
+        assert bot_user.bot_owner is not None
+        self.assertEqual(bot_owner_notification.recipient_id, bot_user.bot_owner.recipient_id)
+
+    def test_jsonable_exception(self) -> None:
+        bot_user = self.example_user("outgoing_webhook_bot")
+        mock_event = self.mock_event(bot_user)
+        service_handler = GenericOutgoingWebhookService("token", bot_user, "service")
+
+        # The "widget_content" key is required to be a string which is
+        # itself JSON-encoded; passing arbitrary text data in it will
+        # cause the hook to fail.
+        response = {"content": "whatever", "widget_content": "test"}
+        expect_logging_info = self.assertLogs(level="INFO")
+        expect_fail = mock.patch("zerver.lib.outgoing_webhook.fail_with_message")
+
+        with responses.RequestsMock(assert_all_requests_are_fired=True) as requests_mock:
+            requests_mock.add(
+                requests_mock.POST, "https://example.zulip.com", status=200, json=response
+            )
+            with expect_logging_info, expect_fail as mock_fail:
+                do_rest_call("https://example.zulip.com", mock_event, service_handler)
+            self.assertTrue(mock_fail.called)
+            bot_owner_notification = self.get_last_message()
+            self.assertEqual(
+                bot_owner_notification.content,
+                """[A message](http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/) to your bot @_**Outgoing Webhook** triggered an outgoing webhook.
+The outgoing webhook server attempted to send a message in Zulip, but that request resulted in the following error:
+> Widgets: API programmer sent invalid JSON content""",
+            )
         assert bot_user.bot_owner is not None
         self.assertEqual(bot_owner_notification.recipient_id, bot_user.bot_owner.recipient_id)
 
