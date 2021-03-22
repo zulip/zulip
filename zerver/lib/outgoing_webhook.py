@@ -322,7 +322,15 @@ def do_rest_call(
             request_data=request_data,
         )
         if str(response.status_code).startswith("2"):
-            process_success_response(event, service_handler, response)
+            try:
+                process_success_response(event, service_handler, response)
+            except JsonableError as e:
+                response_message = e.msg
+                logging.info("Outhook trigger failed:", stack_info=True)
+                fail_with_message(event, response_message)
+                response_message = f"The outgoing webhook server attempted to send a message in Zulip, but that request resulted in the following error:\n> {e}"
+                notify_bot_owner(event, failure_message=response_message)
+                return None
         else:
             logging.warning(
                 "Message %(message_url)s triggered an outgoing webhook, returning status "
