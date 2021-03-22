@@ -178,7 +178,10 @@ export function render_markdown_timestamp(time, text) {
     const timestring = format(time, "E, MMM d yyyy, " + hourformat);
     const titlestring = "This time is in your timezone. Original text was '" + text + "'.";
     return {
-        text: timestring,
+        text:
+            timestring +
+            " " +
+            time.toLocaleTimeString("en-us", {timeZoneName: "short"}).split(" ")[2],
         title: titlestring,
     };
 }
