@@ -11,21 +11,6 @@ import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as unread_ui from "./unread_ui";
 
-export const desktop_icon_count_display_values = {
-    messages: {
-        code: 1,
-        description: i18n.t("All unreads"),
-    },
-    notifiable: {
-        code: 2,
-        description: i18n.t("Private messages and mentions"),
-    },
-    none: {
-        code: 3,
-        description: i18n.t("None"),
-    },
-};
-
 function rerender_ui() {
     const unmatched_streams_table = $("#stream-specific-notify-table");
     if (unmatched_streams_table.length === 0) {

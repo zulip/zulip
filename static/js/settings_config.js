@@ -434,3 +434,18 @@ const map_language_to_playground_info = {
 };
 
 export const get_playground_info_for_languages = (lang) => map_language_to_playground_info[lang];
+
+export const desktop_icon_count_display_values = {
+    messages: {
+        code: 1,
+        description: i18n.t("All unreads"),
+    },
+    notifiable: {
+        code: 2,
+        description: i18n.t("Private messages and mentions"),
+    },
+    none: {
+        code: 3,
+        description: i18n.t("None"),
+    },
+};

@@ -10,7 +10,6 @@ import * as people from "./people";
 import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
-import * as settings_notifications from "./settings_notifications";
 import * as settings_panel_menu from "./settings_panel_menu";
 import * as settings_sections from "./settings_sections";
 import * as settings_toggle from "./settings_toggle";
@@ -90,7 +89,7 @@ export function build_page() {
         twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
         general_settings: settings_config.all_notifications().general_settings,
         notification_settings: settings_config.all_notifications().settings,
-        desktop_icon_count_display_values: settings_notifications.desktop_icon_count_display_values,
+        desktop_icon_count_display_values: settings_config.desktop_icon_count_display_values,
         show_push_notifications_tooltip: settings_config.all_notifications()
             .show_push_notifications_tooltip,
         display_settings: settings_config.get_all_display_settings(),
