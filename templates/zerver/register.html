@@ -106,7 +106,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                         {% if EMAIL_ADDRESS_VISIBILITY == EMAIL_ADDRESS_VISIBILITY_EVERYONE %}
                         All users will be able to see this email address.
                         {% elif EMAIL_ADDRESS_VISIBILITY == EMAIL_ADDRESS_VISIBILITY_ADMINS %}
-                        Only admin users will be able to see this email address.
+                        Only organization administrators will be able to see this email address.
                         {% elif EMAIL_ADDRESS_VISIBILITY == EMAIL_ADDRESS_VISIBILITY_NOBODY %}
                         Users will not be able to see this email address.
                         {% else %}
