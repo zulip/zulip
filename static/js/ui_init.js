@@ -55,6 +55,7 @@ import * as settings_sections from "./settings_sections";
 import * as settings_toggle from "./settings_toggle";
 import * as spoilers from "./spoilers";
 import * as starred_messages from "./starred_messages";
+import * as stream_bar from "./stream_bar";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
@@ -66,7 +67,6 @@ import * as topic_zoom from "./topic_zoom";
 import * as tutorial from "./tutorial";
 import * as typing from "./typing";
 import * as ui from "./ui";
-import * as ui_util from "./ui_util";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
 import * as user_groups from "./user_groups";
@@ -253,7 +253,7 @@ export function initialize_kitchen_sink_stuff() {
     });
 
     $("#stream_message_recipient_stream").on("blur", function () {
-        ui_util.decorate_stream_bar(this.value, $("#stream-message .message_header_stream"), true);
+        stream_bar.decorate(this.value, $("#stream-message .message_header_stream"), true);
     });
 
     $(window).on("blur", () => {

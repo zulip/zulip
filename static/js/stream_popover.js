@@ -20,10 +20,10 @@ import * as narrow from "./narrow";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
 import * as starred_messages from "./starred_messages";
+import * as stream_bar from "./stream_bar";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as subs from "./subs";
-import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
 
 // We handle stream popovers and topic popovers in this
@@ -343,10 +343,10 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
     const stream_header_colorblock = $(".topic_stream_edit_header").find(
         ".stream_header_colorblock",
     );
-    ui_util.decorate_stream_bar(current_stream_name, stream_header_colorblock, false);
+    stream_bar.decorate(current_stream_name, stream_header_colorblock, false);
     $("#select_stream_id").on("change", function () {
         const stream_name = stream_data.maybe_get_stream_name(Number.parseInt(this.value, 10));
-        ui_util.decorate_stream_bar(stream_name, stream_header_colorblock, false);
+        stream_bar.decorate(stream_name, stream_header_colorblock, false);
     });
 
     $("#move_topic_modal").modal("show");

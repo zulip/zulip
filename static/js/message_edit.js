@@ -17,9 +17,9 @@ import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
 import * as resize from "./resize";
 import * as rows from "./rows";
+import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 import * as ui_report from "./ui_report";
-import * as ui_util from "./ui_util";
 import * as upload from "./upload";
 
 const currently_editing_messages = new Map();
@@ -365,10 +365,10 @@ function edit_message(row, raw_content) {
     const message_edit_countdown_timer = row.find(".message_edit_countdown_timer");
     const copy_message = row.find(".copy_message");
 
-    ui_util.decorate_stream_bar(message.stream, stream_header_colorblock, false);
+    stream_bar.decorate(message.stream, stream_header_colorblock, false);
     message_edit_stream.on("change", function () {
         const stream_name = stream_data.maybe_get_stream_name(Number.parseInt(this.value, 10));
-        ui_util.decorate_stream_bar(stream_name, stream_header_colorblock, false);
+        stream_bar.decorate(stream_name, stream_header_colorblock, false);
     });
 
     if (editability === editability_types.NO) {

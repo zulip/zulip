@@ -17,6 +17,7 @@ import * as narrow_state from "./narrow_state";
 import * as notifications from "./notifications";
 import * as people from "./people";
 import * as reload_state from "./reload_state";
+import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
@@ -134,7 +135,7 @@ export function complete_starting_tasks(msg_type, opts) {
     maybe_scroll_up_selected_message();
     ui_util.change_tab_to("#message_feed_container");
     compose_fade.start_compose(msg_type);
-    ui_util.decorate_stream_bar(opts.stream, $("#stream-message .message_header_stream"), true);
+    stream_bar.decorate(opts.stream, $("#stream-message .message_header_stream"), true);
     $(document).trigger(new $.Event("compose_started.zulip", opts));
     update_placeholder_text();
 }
