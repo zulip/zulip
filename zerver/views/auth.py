@@ -1074,6 +1074,9 @@ def password_reset(request: HttpRequest) -> HttpResponse:
         template_name="zerver/reset.html",
         form_class=ZulipPasswordResetForm,
         success_url="/accounts/password/reset/done/",
+        initial={
+            "email":request.user.email
+        }
     )
     return view_func(request)
 
