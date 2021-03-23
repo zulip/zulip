@@ -62,8 +62,7 @@ We will be using Microsoft's new feature [WSL
 2](https://docs.microsoft.com/en-us/windows/wsl/wsl2-about) for
 installation.
 
-WSL2 can be uninstalled by following the instructions [here from Microsoft]
-(https://docs.microsoft.com/en-us/windows/wsl/faq#how-do-i-uninstall-a-wsl-distribution).
+WSL2 can be uninstalled by following the instructions **[here from Microsoft][uninstall_directly]**.
 
 1. Install WSL 2 by following the instructions provided by Microsoft
 [here](https://docs.microsoft.com/en-us/windows/wsl/wsl2-install).
@@ -340,3 +339,5 @@ how to use zulip-cloud9 package.
 [zulip-rtd-git-cloning]: ../git/cloning.html#step-1b-clone-to-your-machine
 [zulip-rtd-git-connect]: ../git/cloning.html#step-1c-connect-your-fork-to-zulip-upstream
 [port-forward-setup]: ../development/remote.html#running-the-development-server
+[uninstall_directly]: ..//docs.microsoft.com/en-us/windows/wsl/faq#how-do-i-uninstall-a-wsl-distribution-
+
