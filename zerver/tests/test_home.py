@@ -10,7 +10,7 @@ from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
 from corporate.models import Customer, CustomerPlan
-from zerver.lib.actions import do_change_logo_source, do_create_user
+from zerver.lib.actions import do_change_logo_source, do_change_plan_type, do_create_user
 from zerver.lib.events import add_realm_logo_fields
 from zerver.lib.home import get_furthest_read_time
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
