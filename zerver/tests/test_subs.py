@@ -3204,34 +3204,34 @@ class SubscriptionAPITest(ZulipTestCase):
 
     def test_can_create_streams(self) -> None:
         othello = self.example_user("othello")
-        othello.role = UserProfile.ROLE_REALM_ADMINISTRATOR
+        do_change_user_role(othello, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.assertTrue(othello.can_create_streams())
 
-        othello.role = UserProfile.ROLE_MEMBER
-        othello.realm.create_stream_policy = Realm.POLICY_ADMINS_ONLY
+        do_change_user_role(othello, UserProfile.ROLE_MEMBER)
+        do_set_realm_property(othello.realm, "create_stream_policy", Realm.POLICY_ADMINS_ONLY)
         # Make sure that we are checking the permission with a full member,
         # as full member is the user just below admin in the role hierarchy.
         self.assertFalse(othello.is_provisional_member)
         self.assertFalse(othello.can_create_streams())
 
-        othello.realm.create_stream_policy = Realm.POLICY_MEMBERS_ONLY
-        othello.role = UserProfile.ROLE_GUEST
+        do_set_realm_property(othello.realm, "create_stream_policy", Realm.POLICY_MEMBERS_ONLY)
+        do_change_user_role(othello, UserProfile.ROLE_GUEST)
         self.assertFalse(othello.can_create_streams())
 
-        othello.role = UserProfile.ROLE_MEMBER
+        do_change_user_role(othello, UserProfile.ROLE_MEMBER)
         self.assertTrue(othello.can_create_streams())
 
-        othello.realm.waiting_period_threshold = 1000
-        othello.realm.create_stream_policy = Realm.POLICY_FULL_MEMBERS_ONLY
+        do_set_realm_property(othello.realm, "waiting_period_threshold", 1000)
+        do_set_realm_property(othello.realm, "create_stream_policy", Realm.POLICY_FULL_MEMBERS_ONLY)
         othello.date_joined = timezone_now() - timedelta(
             days=(othello.realm.waiting_period_threshold - 1)
         )
         self.assertFalse(othello.can_create_streams())
 
-        othello.role = UserProfile.ROLE_MODERATOR
+        do_change_user_role(othello, UserProfile.ROLE_MODERATOR)
         self.assertTrue(othello.can_create_streams())
 
-        othello.role = UserProfile.ROLE_MEMBER
+        do_change_user_role(othello, UserProfile.ROLE_MEMBER)
         othello.date_joined = timezone_now() - timedelta(
             days=(othello.realm.waiting_period_threshold + 1)
         )
