@@ -1,4 +1,5 @@
 import datetime
+import hashlib
 import itertools
 import logging
 import os
@@ -1209,17 +1210,13 @@ def do_deactivate_stream(
     # special prefix that both indicates that the stream is deactivated and
     # frees up the original name for reuse.
     old_name = stream.name
-    new_name = ("!DEACTIVATED:" + old_name)[: Stream.MAX_NAME_LENGTH]
-    for i in range(20):
-        if stream_name_in_use(new_name, stream.realm_id):
-            # This stream has already been deactivated, keep prepending !s until
-            # we have a unique stream name or you've hit a rename limit.
-            new_name = ("!" + new_name)[: Stream.MAX_NAME_LENGTH]
-        else:
-            break
 
-    # If you don't have a unique name at this point, this will fail later in the
-    # code path.
+    # Prepend a substring of the hashed stream ID to the new stream name
+    streamID = str(stream.id)
+    stream_id_hash_object = hashlib.sha512(streamID.encode("utf-8"))
+    hashed_stream_id = stream_id_hash_object.hexdigest()[0:7]
+
+    new_name = (hashed_stream_id + "!DEACTIVATED:" + old_name)[: Stream.MAX_NAME_LENGTH]
 
     stream.name = new_name[: Stream.MAX_NAME_LENGTH]
     stream.save(update_fields=["name", "deactivated", "invite_only"])
