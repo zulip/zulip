@@ -2365,21 +2365,10 @@ div.topic_edit_spinner .loading_indicator_spinner {
     top: 1px;
 }
 
-.notifications-gravatar img {
-    max-width: 25px;
-    max-height: 25px;
-    padding-left: 4px;
-    padding-top: 4px;
-}
-
 .empty_feed_notice {
     padding: 3em 1em;
     display: none;
     text-align: center;
-}
-
-.notification {
-    cursor: pointer;
 }
 
 .message-fade,

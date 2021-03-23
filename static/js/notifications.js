@@ -2,7 +2,6 @@ import $ from "jquery";
 import _ from "lodash";
 
 import render_compose_notification from "../templates/compose_notification.hbs";
-import render_notification from "../templates/notification.hbs";
 
 import * as alert_words from "./alert_words";
 import * as blueslip from "./blueslip";
@@ -149,36 +148,6 @@ export function is_window_focused() {
     return window_focused;
 }
 
-function in_browser_notify(message, title, content, raw_operators, opts) {
-    const notification_html = $(
-        render_notification({
-            gravatar_url: people.small_avatar_url(message),
-            title,
-            content,
-            message_id: message.id,
-        }),
-    );
-
-    $(".top-right")
-        .notify({
-            message: {
-                html: notification_html,
-            },
-            fadeOut: {
-                enabled: true,
-                delay: 4000,
-            },
-        })
-        .show();
-
-    $(`.notification[data-message-id='${CSS.escape(message.id)}']`)
-        .expectOne()
-        .data("narrow", {
-            raw_operators,
-            opts_notif: opts,
-        });
-}
-
 export function notify_above_composebox(note, link_class, link_msg_id, link_text) {
     const notification_html = $(
         render_compose_notification({
@@ -245,8 +214,6 @@ export function process_notification(notification) {
     let title = message.sender_full_name;
     let msg_count = 1;
     let notification_source;
-    let raw_operators = [];
-    const opts = {trigger: "notification click"};
     // Convert the content to plain text, replacing emoji with their alt text
     content = $("<div/>").html(message.content);
     ui.replace_emoji_with_text(content);
@@ -315,16 +282,10 @@ export function process_notification(notification) {
         } else {
             title += " (to you)";
         }
-
-        raw_operators = [{operand: message.reply_to, operator: "pm-with"}];
     }
 
     if (message.type === "stream") {
         title += " (to " + message.stream + " > " + topic + ")";
-        raw_operators = [
-            {operator: "stream", operand: message.stream},
-            {operator: "topic", operand: topic},
-        ];
     }
 
     if (notification.desktop_notify) {
@@ -356,8 +317,6 @@ export function process_notification(notification) {
                 notice_memory.delete(key);
             });
         }
-    } else {
-        in_browser_notify(message, title, content, raw_operators, opts);
     }
 }
 

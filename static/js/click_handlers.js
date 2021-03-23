@@ -298,14 +298,6 @@ export function initialize() {
         user_status_ui.update_button();
     });
 
-    // NOTIFICATION CLICK
-
-    $("body").on("click", ".notification", function () {
-        const payload = $(this).data("narrow");
-        ui_util.change_tab_to("#message_feed_container");
-        narrow.activate(payload.raw_operators, payload.opts_notif);
-    });
-
     // MESSAGE EDITING
 
     $("body").on("click", ".edit_content_button", function (e) {

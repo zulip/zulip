@@ -1,7 +1,6 @@
 import "./common";
 
 // Import third party libraries
-import "../../third/bootstrap-notify/js/bootstrap-notify";
 import "../../third/bootstrap-typeahead/typeahead";
 import "../../third/bootstrap-tooltip/tooltip";
 import "../../third/bootstrap-tooltip/tooltip.css";
@@ -30,7 +29,6 @@ import "../zulip_test";
 
 // Import styles
 
-import "../../third/bootstrap-notify/css/bootstrap-notify.css";
 import "spectrum-colorpicker/spectrum.css";
 import "katex/dist/katex.css";
 import "flatpickr/dist/flatpickr.css";
