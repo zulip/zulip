@@ -2365,15 +2365,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
     top: 1px;
 }
 
-#notifications-area {
-    position: fixed;
-    z-index: 10;
-    bottom: 0;
-    right: 20px;
-    width: 200px;
-    height: auto;
-}
-
 .notifications-gravatar img {
     max-width: 25px;
     max-height: 25px;

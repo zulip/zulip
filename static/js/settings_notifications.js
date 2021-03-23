@@ -90,7 +90,7 @@ export function set_up() {
     });
 
     $("#play_notification_sound").on("click", () => {
-        $("#notifications-area").find("audio")[0].play();
+        $("#notification-sound-audio")[0].play();
     });
 
     const notification_sound_dropdown = $("#notification_sound");

@@ -28,8 +28,6 @@ const notice_memory = new Map();
 // case after a server-initiated reload.
 let window_focused = document.hasFocus && document.hasFocus();
 
-let supports_sound;
-
 let NotificationAPI;
 
 export function set_notification_api(n) {
@@ -69,14 +67,6 @@ export function get_notifications() {
     return notice_memory;
 }
 
-function get_audio_file_path(audio_element, audio_file_without_extension) {
-    if (audio_element.canPlayType('audio/ogg; codecs="vorbis"')) {
-        return audio_file_without_extension + ".ogg";
-    }
-
-    return audio_file_without_extension + ".mp3";
-}
-
 export function initialize() {
     $(window)
         .on("focus", () => {
@@ -95,40 +85,18 @@ export function initialize() {
             window_focused = false;
         });
 
-    const audio = $("<audio>");
-    if (audio[0].canPlayType === undefined) {
-        supports_sound = false;
-    } else {
-        supports_sound = true;
-
-        $("#notifications-area").append(audio);
-        audio.append($("<source>").attr("loop", "yes"));
-        const source = $("#notifications-area audio source");
-
-        if (audio[0].canPlayType('audio/ogg; codecs="vorbis"')) {
-            source.attr("type", "audio/ogg");
-        } else {
-            source.attr("type", "audio/mpeg");
-        }
-
-        const audio_file_without_extension =
-            "/static/audio/notification_sounds/" + page_params.notification_sound;
-        source.attr("src", get_audio_file_path(audio[0], audio_file_without_extension));
-    }
+    update_notification_sound_source();
 }
 
 function update_notification_sound_source() {
-    // Simplified version of the source creation in `exports.initialize`, for
-    // updating the source instead of creating it for the first time.
-    const audio = $("#notifications-area audio");
-    const source = $("#notifications-area audio source");
     const audio_file_without_extension =
         "/static/audio/notification_sounds/" + page_params.notification_sound;
-    source.attr("src", get_audio_file_path(audio[0], audio_file_without_extension));
+    $("#notification-sound-source-ogg").attr("src", `${audio_file_without_extension}.ogg`);
+    $("#notification-sound-source-mp3").attr("src", `${audio_file_without_extension}.mp3`);
 
     // Load it so that it is ready to be played; without this the old sound
     // is played.
-    $("#notifications-area").find("audio")[0].load();
+    $("#notification-sound-audio")[0].load();
 }
 
 export function permission_state() {
@@ -552,8 +520,8 @@ export function received_messages(messages) {
                 desktop_notify: granted_desktop_notifications_permission(),
             });
         }
-        if (should_send_audible_notification(message) && supports_sound) {
-            $("#notifications-area").find("audio")[0].play();
+        if (should_send_audible_notification(message)) {
+            $("#notification-sound-audio")[0].play();
         }
     }
 }
