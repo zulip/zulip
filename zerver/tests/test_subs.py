@@ -1,3 +1,4 @@
+import hashlib
 import random
 from datetime import timedelta
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Union
@@ -1330,7 +1331,8 @@ class StreamAdminTest(ZulipTestCase):
 
         # Simulate that a stream by the same name has already been
         # deactivated, just to exercise our renaming logic:
-        ensure_stream(realm, "!DEACTIVATED:" + active_name)
+        # Since we do not know the id of these simulated stream we prepend the name with a random hashed_stream_id
+        ensure_stream(realm, "DB32B77" + "!DEACTIVATED:" + active_name)
 
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
@@ -1352,7 +1354,8 @@ class StreamAdminTest(ZulipTestCase):
 
         # A deleted stream's name is changed, is deactivated, is invite-only,
         # and has no subscribers.
-        deactivated_stream_name = "!!DEACTIVATED:" + active_name
+        hashed_stream_id = hashlib.sha512(str(stream_id).encode("utf-8")).hexdigest()[0:7]
+        deactivated_stream_name = hashed_stream_id + "!DEACTIVATED:" + active_name
         deactivated_stream = get_stream(deactivated_stream_name, realm)
         self.assertTrue(deactivated_stream.deactivated)
         self.assertTrue(deactivated_stream.invite_only)
