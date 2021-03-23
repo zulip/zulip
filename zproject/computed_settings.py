@@ -172,7 +172,7 @@ MIDDLEWARE = (
     # With the exception of it's dependencies,
     # our logging middleware should be the top middleware item.
     "zerver.middleware.TagRequests",
-    "zerver.middleware.SetRemoteAddrFromForwardedFor",
+    "zerver.middleware.SetRemoteAddrFromRealIpHeader",
     "zerver.middleware.RequestContext",
     "zerver.middleware.LogRequests",
     "zerver.middleware.JsonErrorHandler",
