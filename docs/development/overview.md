@@ -31,9 +31,7 @@ development environment:
 * On popular Linux platforms, you can **[install directly][install-direct]**.
 * On **other Linux/UNIX** distributions, you'll need to follow slightly different
   instructions to **[install manually][install-generic]**.
-
-Unfortunately, the only supported method to install on Windows is the [Vagrant
-method][install-vagrant].
+* On Windows, you can **[install directly][install-via-wsl]** via wsl.
 
 ## Slow internet connections
 
@@ -88,3 +86,4 @@ machine, take a look at our tips for
 [using-dev-env]: using.md
 [testing]: ../testing/testing.md
 [ci]: ../git/cloning.html#step-3-configure-continuous-integration-for-your-fork
+[install-via-wsl]: ../development/setup-advanced.html#installing-directly-on-windows-10-experimental
