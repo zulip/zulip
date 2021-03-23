@@ -1,3 +1,4 @@
+import {isValid, parseISO} from "date-fns";
 import $ from "jquery";
 import _ from "lodash";
 import WinChan from "winchan";
@@ -38,6 +39,7 @@ import * as settings_toggle from "./settings_toggle";
 import * as stream_edit from "./stream_edit";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
+import * as timerender from "./timerender";
 import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import * as user_status_ui from "./user_status_ui";
@@ -267,6 +269,42 @@ export function initialize() {
     });
 
     $("#main_div").on("mouseleave", ".message_reaction", (e) => {
+        e.stopPropagation();
+        $(e.currentTarget).tooltip("destroy");
+    });
+
+    // TOOLTIP FOR TIMESTAMPS
+
+    $("#main_div").on("mouseenter", "time", (e) => {
+        e.stopPropagation();
+        const elem = $(e.currentTarget);
+        const time_str = elem.attr("datetime");
+        if (time_str === undefined) {
+            return;
+        }
+
+        const timestamp = parseISO(time_str);
+        if (isValid(timestamp)) {
+            const text = elem.attr("data-title");
+            const rendered_time = timerender.render_markdown_timestamp(timestamp, text);
+
+            elem.tooltip({
+                title: rendered_time.title,
+                trigger: "hover",
+                placement: "bottom",
+                animation: false,
+            });
+            elem.tooltip("show");
+            $(".tooltip, .tooltip-inner").css({
+                "margin-left": "15px",
+                "max-width": $(window).width() * 0.6,
+            });
+            // Remove the arrow from the tooltip.
+            $(".tooltip-arrow").remove();
+        }
+    });
+
+    $("#main_div").on("mouseleave", "time", (e) => {
         e.stopPropagation();
         $(e.currentTarget).tooltip("destroy");
     });

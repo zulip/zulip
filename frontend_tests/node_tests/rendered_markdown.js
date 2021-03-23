@@ -218,7 +218,7 @@ run_test("timestamp", () => {
     );
 
     assert.equal(
-        $timestamp.attr("title"),
+        $timestamp.attr("data-title"),
         "This time is in your timezone. Original text was 'never-been-set'.",
     );
     assert.equal($timestamp_invalid.text(), "never-been-set");
