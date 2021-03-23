@@ -3256,7 +3256,22 @@ class SubscriptionAPITest(ZulipTestCase):
         )
         self.assert_json_error(result, "Only administrators can modify other users' subscriptions.")
 
+        do_change_user_role(self.test_user, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        self.common_subscribe_to_streams(
+            self.test_user, ["stream1"], {"principals": orjson.dumps([invitee_user_id]).decode()}
+        )
+
         do_set_realm_property(realm, "invite_to_stream_policy", Realm.POLICY_MEMBERS_ONLY)
+        do_change_user_role(self.test_user, UserProfile.ROLE_GUEST)
+        result = self.common_subscribe_to_streams(
+            self.test_user,
+            ["stream2"],
+            {"principals": orjson.dumps([invitee_user_id]).decode()},
+            allow_fail=True,
+        )
+        self.assert_json_error(result, "Not allowed for guest users")
+
+        do_change_user_role(self.test_user, UserProfile.ROLE_MEMBER)
         self.common_subscribe_to_streams(
             self.test_user,
             ["stream2"],
