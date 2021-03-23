@@ -171,9 +171,9 @@ function do_hashchange_overlay(old_hash) {
         // background and recent topics seems preferable for that.
         recent_topics.show();
     }
-    const base = hash_util.get_hash_category(window.location.hash);
+    const base = hash_util.get_current_hash_category();
     const old_base = hash_util.get_hash_category(old_hash);
-    const section = hash_util.get_hash_section(window.location.hash);
+    const section = hash_util.get_current_hash_section();
 
     const coming_from_overlay = hash_util.is_overlay_hash(old_hash || "#");
 

@@ -23,6 +23,14 @@ export function get_hash_section(hash) {
     return parts[1] || "";
 }
 
+export function get_current_hash_category() {
+    return get_hash_category(window.location.hash);
+}
+
+export function get_current_hash_section() {
+    return get_hash_section(window.location.hash);
+}
+
 const hashReplacements = new Map([
     ["%", "."],
     ["(", ".28"],
