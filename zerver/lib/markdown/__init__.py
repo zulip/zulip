@@ -59,6 +59,7 @@ from zerver.lib.exceptions import MarkdownRenderingException
 from zerver.lib.markdown import fenced_code
 from zerver.lib.markdown.fenced_code import FENCE_RE
 from zerver.lib.mention import extract_user_group, possible_mentions, possible_user_group_mentions
+from zerver.lib.subdomains import is_static_or_current_realm_url
 from zerver.lib.tex import render_tex
 from zerver.lib.thumbnail import user_uploads_or_external
 from zerver.lib.timeout import TimeoutExpired, timeout
@@ -574,15 +575,27 @@ def get_tweet_id(url: str) -> Optional[str]:
     return tweet_id_match.group("tweetid")
 
 
-class InlineHttpsProcessor(markdown.treeprocessors.Treeprocessor):
+class InlineImageProcessor(markdown.treeprocessors.Treeprocessor):
+    """
+    Rewrite inline img tags to serve external content via Camo.
+
+    This rewrites all images, except ones that are served from the current
+    realm or global STATIC_URL. This is to ensure that each realm only loads
+    images that are hosted on that realm or by the global installation,
+    avoiding information leakage to external domains or between realms. We need
+    to disable proxying of images hosted on the same realm, because otherwise
+    we will break images in /user_uploads/, which require authorization to
+    view.
+    """
+
     def run(self, root: Element) -> None:
         # Get all URLs from the blob
         found_imgs = walk_tree(root, lambda e: e if e.tag == "img" else None)
         for img in found_imgs:
             url = img.get("src")
             assert url is not None
-            if urllib.parse.urlsplit(url).scheme != "http":
-                # Don't rewrite images on our own site (e.g. emoji).
+            if is_static_or_current_realm_url(url, self.md.zulip_realm):
+                # Don't rewrite images on our own site (e.g. emoji, user uploads).
                 continue
             img.set("src", get_camo_url(url))
 
@@ -2268,7 +2281,7 @@ class Markdown(markdown.Markdown):
             InlineInterestingLinkProcessor(self), "inline_interesting_links", 15
         )
         if settings.CAMO_URI:
-            treeprocessors.register(InlineHttpsProcessor(self), "rewrite_to_https", 10)
+            treeprocessors.register(InlineImageProcessor(self), "rewrite_images_proxy", 10)
         return treeprocessors
 
     def build_postprocessors(self) -> markdown.util.Registry:
@@ -2289,7 +2302,7 @@ class Markdown(markdown.Markdown):
             # not removed
             self.inlinePatterns = get_sub_registry(self.inlinePatterns, ["autolink"])
             self.treeprocessors = get_sub_registry(
-                self.treeprocessors, ["inline_interesting_links", "rewrite_to_https"]
+                self.treeprocessors, ["inline_interesting_links", "rewrite_images_proxy"]
             )
             # insert new 'inline' processor because we have changed self.inlinePatterns
             # but InlineProcessor copies md as self.md in __init__.
