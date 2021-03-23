@@ -1713,7 +1713,7 @@ class StreamAdminTest(ZulipTestCase):
         # Cannot create stream because not an admin.
         stream_name = ["admins_only"]
         result = self.common_subscribe_to_streams(user_profile, stream_name, allow_fail=True)
-        self.assert_json_error(result, "User cannot create streams.")
+        self.assert_json_error(result, "Only administrators can create streams.")
 
         # Make current user an admin.
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
@@ -1738,7 +1738,7 @@ class StreamAdminTest(ZulipTestCase):
         # period.
         stream_name = ["waiting_period"]
         result = self.common_subscribe_to_streams(user_profile, stream_name, allow_fail=True)
-        self.assert_json_error(result, "User cannot create streams.")
+        self.assert_json_error(result, "Your account is too new to create streams.")
 
         # Make user account 11 days old..
         user_profile.date_joined = timezone_now() - timedelta(days=11)
@@ -3191,9 +3191,12 @@ class SubscriptionAPITest(ZulipTestCase):
         )
 
     def test_user_settings_for_adding_streams(self) -> None:
+        do_set_realm_property(
+            self.test_user.realm, "create_stream_policy", Realm.POLICY_ADMINS_ONLY
+        )
         with mock.patch("zerver.models.UserProfile.can_create_streams", return_value=False):
             result = self.common_subscribe_to_streams(self.test_user, ["stream1"], allow_fail=True)
-            self.assert_json_error(result, "User cannot create streams.")
+            self.assert_json_error(result, "Only administrators can create streams.")
 
         with mock.patch("zerver.models.UserProfile.can_create_streams", return_value=True):
             self.common_subscribe_to_streams(self.test_user, ["stream2"])
@@ -3201,6 +3204,48 @@ class SubscriptionAPITest(ZulipTestCase):
         # User should still be able to subscribe to an existing stream
         with mock.patch("zerver.models.UserProfile.can_create_streams", return_value=False):
             self.common_subscribe_to_streams(self.test_user, ["stream2"])
+
+    def test_user_settings_for_creating_streams(self) -> None:
+        user_profile = self.example_user("cordelia")
+        realm = user_profile.realm
+
+        do_set_realm_property(realm, "create_stream_policy", Realm.POLICY_ADMINS_ONLY)
+        result = self.common_subscribe_to_streams(
+            user_profile,
+            ["new_stream1"],
+            allow_fail=True,
+        )
+        self.assert_json_error(result, "Only administrators can create streams.")
+
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        self.common_subscribe_to_streams(user_profile, ["new_stream1"])
+
+        do_set_realm_property(realm, "create_stream_policy", Realm.POLICY_MEMBERS_ONLY)
+        do_change_user_role(user_profile, UserProfile.ROLE_GUEST)
+        result = self.common_subscribe_to_streams(
+            user_profile,
+            ["new_stream2"],
+            allow_fail=True,
+        )
+        self.assert_json_error(result, "Not allowed for guest users")
+
+        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER)
+        self.common_subscribe_to_streams(
+            self.test_user,
+            ["new_stream2"],
+        )
+
+        do_set_realm_property(realm, "create_stream_policy", Realm.POLICY_FULL_MEMBERS_ONLY)
+        do_set_realm_property(realm, "waiting_period_threshold", 100000)
+        result = self.common_subscribe_to_streams(
+            user_profile,
+            ["new_stream3"],
+            allow_fail=True,
+        )
+        self.assert_json_error(result, "Your account is too new to create streams.")
+
+        do_set_realm_property(realm, "waiting_period_threshold", 0)
+        self.common_subscribe_to_streams(user_profile, ["new_stream3"])
 
     def test_can_create_streams(self) -> None:
         othello = self.example_user("othello")
@@ -3601,7 +3646,7 @@ class SubscriptionAPITest(ZulipTestCase):
             }
         ]
 
-        with self.assertRaisesRegex(JsonableError, "User cannot create streams."):
+        with self.assertRaisesRegex(JsonableError, "Not allowed for guest users"):
             list_to_streams(streams_raw, guest_user)
 
         stream = self.make_stream("private_stream", invite_only=True)
