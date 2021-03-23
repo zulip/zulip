@@ -340,16 +340,16 @@ export function dispatch_normal_event(event) {
 
         case "realm_user":
             switch (event.op) {
-            case "add":
-                people.add_active_user(event.person);
-                break;
-            case "remove":
-                people.deactivate(event.person);
-                stream_events.remove_deactivated_user_from_all_streams(event.person.user_id);
-                break;
-            case "update":
-                user_events.update_person(event.person);
-                break;
+                case "add":
+                    people.add_active_user(event.person);
+                    break;
+                case "remove":
+                    people.deactivate(event.person);
+                    stream_events.remove_deactivated_user_from_all_streams(event.person.user_id);
+                    break;
+                case "update":
+                    user_events.update_person(event.person);
+                    break;
             }
             break;
 
