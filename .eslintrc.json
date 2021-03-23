@@ -209,7 +209,6 @@
             "files": ["static/**"],
             "env": {
                 "browser": true,
-                "commonjs": true,
                 "node": false
             },
             "rules": {
@@ -223,7 +222,6 @@
             "files": ["static/shared/**"],
             "env": {
                 "browser": false,
-                "commonjs": false,
                 "shared-node-browser": true
             },
             "rules": {
