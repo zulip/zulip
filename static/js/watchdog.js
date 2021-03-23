@@ -1,6 +1,20 @@
 const unsuspend_callbacks = [];
 let watchdog_time = Date.now();
 
+// This field keeps track of whether we are attempting to
+// force-reconnect to the events server due to suspecting we are
+// offline.  It is important for avoiding races with the presence
+// system when coming back from unsuspend.
+let suspect_offline = false;
+
+export function set_suspect_offline(suspected) {
+    suspect_offline = suspected;
+}
+
+export function suspects_user_is_offline() {
+    return suspect_offline;
+}
+
 /*
     Our watchdog code checks every 5 seconds to make sure that we
     haven't gone 20 seconds since the last "5-second-ago" check.

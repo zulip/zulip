@@ -183,7 +183,7 @@ export function send_presence_to_server(want_redraw) {
     // don't appear in people.js.  We handle this in 2 stages.  First,
     // here, we trigger an extra run of the clock-jump check that
     // detects whether this device just resumed from suspend.  This
-    // ensures that server_events.suspect_offline is always up-to-date
+    // ensures that watchdog.suspect_offline is always up-to-date
     // before we initiate a presence request.
     //
     // If we did just resume, it will also trigger an immediate
