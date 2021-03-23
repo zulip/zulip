@@ -45,7 +45,7 @@ export function get_group_typists(group: number[]): number[] {
     return muted_users.filter_muted_user_ids(user_ids);
 }
 
-export function get_all_typists(): number[] {
+export function get_all_direct_message_typists(): number[] {
     let typists = [...typist_dct.values()].flat();
     typists = util.sorted_ids(typists);
     return muted_users.filter_muted_user_ids(typists);

@@ -47,8 +47,8 @@ function get_users_typing_for_narrow() {
         const group = [...narrow_user_ids, page_params.user_id];
         return typing_data.get_group_typists(group);
     }
-    // Get all users typing (in all private conversations with current user)
-    return typing_data.get_all_typists();
+    // Get all users typing (in all direct message conversations with current user)
+    return typing_data.get_all_direct_message_typists();
 }
 
 export function render_notifications_for_narrow() {
