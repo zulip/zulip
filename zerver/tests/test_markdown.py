@@ -1830,6 +1830,13 @@ class MarkdownTest(ZulipTestCase):
         )
         self.assertEqual(msg.mentions_user_ids, {user_profile.id})
 
+        content = f"@**|{user_id}**"
+        self.assertEqual(
+            render_markdown(msg, content),
+            '<p><span class="user-mention" ' f'data-user-id="{user_id}">' "@King Hamlet</span></p>",
+        )
+        self.assertEqual(msg.mentions_user_ids, {user_profile.id})
+
     def test_mention_silent(self) -> None:
         sender_user_profile = self.example_user("othello")
         user_profile = self.example_user("hamlet")
@@ -1875,9 +1882,21 @@ class MarkdownTest(ZulipTestCase):
         )
         self.assertEqual(msg.mentions_user_ids, set())
 
+        content = f"@_**|123456789** and @_**|{user_id}**"
+        self.assertEqual(
+            render_markdown(msg, content),
+            "<p>@_<strong>|123456789</strong> and "
+            '<span class="user-mention silent" '
+            f'data-user-id="{user_id}">'
+            "King Hamlet</span></p>",
+        )
+        self.assertEqual(msg.mentions_user_ids, set())
+
     def test_possible_mentions(self) -> None:
         def assert_mentions(content: str, names: Set[str], has_wildcards: bool = False) -> None:
             self.assertEqual(possible_mentions(content), (names, has_wildcards))
+
+        aaron = self.example_user("aaron")
 
         assert_mentions("", set())
         assert_mentions("boring", set())
@@ -1885,8 +1904,8 @@ class MarkdownTest(ZulipTestCase):
         assert_mentions("smush@**steve**smush", set())
 
         assert_mentions(
-            "Hello @**King Hamlet** and @**Cordelia Lear**\n@**Foo van Barson|1234** @**all**",
-            {"King Hamlet", "Cordelia Lear", "Foo van Barson|1234"},
+            f"Hello @**King Hamlet**, @**|{aaron.id}** and @**Cordelia Lear**\n@**Foo van Barson|1234** @**all**",
+            {"King Hamlet", f"|{aaron.id}", "Cordelia Lear", "Foo van Barson|1234"},
             True,
         )
 

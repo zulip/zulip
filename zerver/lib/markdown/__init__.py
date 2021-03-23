@@ -1884,7 +1884,7 @@ class UserMentionPattern(markdown.inlinepatterns.InlineProcessor):
 
             wildcard = mention.user_mention_matches_wildcard(name)
 
-            id_syntax_match = re.match(r".+\|(?P<user_id>\d+)$", name)
+            id_syntax_match = re.match(r"(.+)?\|(?P<user_id>\d+)$", name)
             if id_syntax_match:
                 id = int(id_syntax_match.group("user_id"))
                 user = db_data["mention_data"].get_user_by_id(id)
@@ -2445,18 +2445,25 @@ def get_possible_mentions_info(realm_id: int, mention_texts: Set[str]) -> List[F
     if not mention_texts:
         return []
 
-    # Remove the trailing part of the `name|id` mention syntax,
-    # thus storing only full names in full_names.
     full_names = set()
-    name_re = r"(?P<full_name>.+)\|\d+$"
+    mention_ids: Set[int] = set()
+
+    name_re = r"(?P<full_name>.+)?\|(?P<mention_id>\d+)$"
     for mention_text in mention_texts:
         name_syntax_match = re.match(name_re, mention_text)
         if name_syntax_match:
-            full_names.add(name_syntax_match.group("full_name"))
+            full_name = name_syntax_match.group("full_name")
+            mention_id = name_syntax_match.group("mention_id")
+            if full_name:
+                full_names.add(name_syntax_match.group("full_name"))
+            else:
+                mention_ids.add(int(mention_id))
         else:
             full_names.add(mention_text)
 
     q_list = {Q(full_name__iexact=full_name) for full_name in full_names}
+    id_q_list = {Q(id=id) for id in mention_ids}
+    q_list |= id_q_list
 
     rows = (
         UserProfile.objects.filter(

@@ -109,7 +109,7 @@ export function apply_markdown(message) {
             let full_name;
             let user_id;
 
-            const id_regex = /(.+)\|(\d+)$/g; // For @**user|id** syntax
+            const id_regex = /^(.+)?\|(\d+)$/; // For @**user|id** and @**|id** syntax
             const match = id_regex.exec(mention);
 
             if (match) {
@@ -131,9 +131,20 @@ export function apply_markdown(message) {
                 full_name = match[1];
                 user_id = Number.parseInt(match[2], 10);
 
-                if (!helpers.is_valid_full_name_and_user_id(full_name, user_id)) {
-                    user_id = undefined;
-                    full_name = undefined;
+                if (full_name === undefined) {
+                    // For @**|id** syntax
+                    if (!helpers.is_valid_user_id(user_id)) {
+                        // silently ignore invalid user id.
+                        user_id = undefined;
+                    } else {
+                        full_name = helpers.get_actual_name_from_user_id(user_id);
+                    }
+                } else {
+                    // For @**user|id** syntax
+                    if (!helpers.is_valid_full_name_and_user_id(full_name, user_id)) {
+                        user_id = undefined;
+                        full_name = undefined;
+                    }
                 }
             }
 

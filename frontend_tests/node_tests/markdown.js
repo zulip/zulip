@@ -447,6 +447,16 @@ test("marked", () => {
             expected:
                 '<p><span class="user-mention" data-user-id="106">@Brother of Bobby|123</span></p>',
         },
+        {
+            input: "@**|106** valid user id.",
+            expected:
+                '<p><span class="user-mention" data-user-id="106">@Brother of Bobby|123</span> valid user id.</p>',
+        },
+        {
+            input: "@**|123|106** comes under user|id case.",
+            expected: "<p>@**|123|106** comes under user|id case.</p>",
+        },
+        {input: "@**|1234** invalid id.", expected: "<p>@**|1234** invalid id.</p>"},
         {input: "T\n@hamletcharacters", expected: "<p>T<br>\n@hamletcharacters</p>"},
         {
             input: "T\n@*hamletcharacters*",
