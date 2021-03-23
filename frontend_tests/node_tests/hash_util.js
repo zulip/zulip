@@ -14,7 +14,7 @@ const ui_report = mock_esm("../../static/js/ui_report", {
         ui_report.displayed_error = true;
     },
 });
-set_global("location", {
+const location = set_global("location", {
     protocol: "https:",
     host: "example.com",
     pathname: "/",
@@ -87,6 +87,9 @@ run_test("test_get_hash_category", () => {
     assert.deepEqual(hash_util.get_hash_category("#settings/display-settings"), "settings");
     assert.deepEqual(hash_util.get_hash_category("#drafts"), "drafts");
     assert.deepEqual(hash_util.get_hash_category("invites"), "invites");
+
+    location.hash = "#settings/your-account";
+    assert.deepEqual(hash_util.get_current_hash_category(), "settings");
 });
 
 run_test("test_get_hash_section", () => {
@@ -97,6 +100,9 @@ run_test("test_get_hash_section", () => {
 
     assert.equal(hash_util.get_hash_section("#drafts"), "");
     assert.equal(hash_util.get_hash_section(""), "");
+
+    location.hash = "#settings/your-account";
+    assert.deepEqual(hash_util.get_current_hash_section(), "your-account");
 });
 
 run_test("test_parse_narrow", () => {
