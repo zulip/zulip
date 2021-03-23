@@ -3209,6 +3209,9 @@ class SubscriptionAPITest(ZulipTestCase):
 
         othello.role = UserProfile.ROLE_MEMBER
         othello.realm.create_stream_policy = Realm.POLICY_ADMINS_ONLY
+        # Make sure that we are checking the permission with a full member,
+        # as full member is the user just below admin in the role hierarchy.
+        self.assertFalse(othello.is_provisional_member)
         self.assertFalse(othello.can_create_streams())
 
         othello.realm.create_stream_policy = Realm.POLICY_MEMBERS_ONLY
@@ -3216,6 +3219,8 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertFalse(othello.can_create_streams())
 
         othello.role = UserProfile.ROLE_MEMBER
+        self.assertTrue(othello.can_create_streams())
+
         othello.realm.waiting_period_threshold = 1000
         othello.realm.create_stream_policy = Realm.POLICY_FULL_MEMBERS_ONLY
         othello.date_joined = timezone_now() - timedelta(
@@ -3285,10 +3290,20 @@ class SubscriptionAPITest(ZulipTestCase):
         do_change_user_role(othello, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.assertTrue(othello.can_subscribe_other_users())
 
+        do_set_realm_property(othello.realm, "invite_to_stream_policy", Realm.POLICY_ADMINS_ONLY)
+        do_change_user_role(othello, UserProfile.ROLE_MEMBER)
+        # Make sure that we are checking the permission with a full member,
+        # as full member is the user just below admin in the role hierarchy.
+        self.assertFalse(othello.is_provisional_member)
+        self.assertFalse(othello.can_subscribe_other_users())
+
+        do_set_realm_property(othello.realm, "invite_to_stream_policy", Realm.POLICY_MEMBERS_ONLY)
         do_change_user_role(othello, UserProfile.ROLE_GUEST)
         self.assertFalse(othello.can_subscribe_other_users())
 
         do_change_user_role(othello, UserProfile.ROLE_MEMBER)
+        self.assertTrue(othello.can_subscribe_other_users())
+
         do_set_realm_property(othello.realm, "waiting_period_threshold", 1000)
         do_set_realm_property(
             othello.realm, "invite_to_stream_policy", Realm.POLICY_FULL_MEMBERS_ONLY
