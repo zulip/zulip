@@ -10,6 +10,9 @@ import {
 } from "date-fns";
 import $ from "jquery";
 
+import timezones from "../generated/timezones.json";
+
+import * as blueslip from "./blueslip";
 import {i18n} from "./i18n";
 import {page_params} from "./page_params";
 
@@ -127,6 +130,17 @@ function maybe_add_update_list_entry(entry) {
     if (entry.needs_update) {
         update_list.push(entry);
     }
+}
+
+export function get_abbreviated_timezone() {
+    const tz_values = timezones.timezones;
+    const timezone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    if (!Object.keys(timezones.timezones).includes(timezone)) {
+        blueslip.warn("Invalid browser timezone detected.");
+        return "";
+    }
+    return tz_values[timezone].abbreviation;
 }
 
 function render_date_span(elem, rendered_time, rendered_time_above) {

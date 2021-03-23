@@ -180,7 +180,10 @@ run_test("timestamp", () => {
     rm.update_elements($content);
 
     // Final asserts
-    assert.equal($timestamp.html(), '<i class="fa fa-clock-o"></i>\nThu, Jan 1 1970, 12:00 AM\n');
+    assert.equal(
+        $timestamp.html(),
+        '<i class="fa fa-clock-o"></i>\nThu, Jan 1 1970, 12:00 AM UTC\n',
+    );
     assert.equal(
         $timestamp.attr("title"),
         "This time is in your timezone. Original text was 'never-been-set'.",
@@ -197,14 +200,17 @@ run_test("timestamp-twenty-four-hour-time", () => {
     // We will temporarily change the 24h setting for this test.
     with_field(page_params, "twenty_four_hour_time", true, () => {
         rm.update_elements($content);
-        assert.equal($timestamp.html(), '<i class="fa fa-clock-o"></i>\nWed, Jul 15 2020, 20:40\n');
+        assert.equal(
+            $timestamp.html(),
+            '<i class="fa fa-clock-o"></i>\nWed, Jul 15 2020, 20:40 UTC\n',
+        );
     });
 
     with_field(page_params, "twenty_four_hour_time", false, () => {
         rm.update_elements($content);
         assert.equal(
             $timestamp.html(),
-            '<i class="fa fa-clock-o"></i>\nWed, Jul 15 2020, 8:40 PM\n',
+            '<i class="fa fa-clock-o"></i>\nWed, Jul 15 2020, 8:40 PM UTC\n',
         );
     });
 });
