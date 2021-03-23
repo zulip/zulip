@@ -1,3 +1,5 @@
+/* eslint-env commonjs */
+
 "use strict";
 
 const {Filter} = require("./filter");

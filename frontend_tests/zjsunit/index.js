@@ -1,6 +1,5 @@
 "use strict";
 
-const Module = require("module");
 const path = require("path");
 
 require("css.escape");
@@ -51,11 +50,6 @@ const window = new Proxy(global, {
 handlebars.hook_require();
 
 const noop = function () {};
-
-// Set up fake module.hot
-Module.prototype.hot = {
-    accept: noop,
-};
 
 function short_tb(tb) {
     const lines = tb.split("\n");

@@ -1,11 +1,11 @@
 import $ from "jquery";
 
+import render_confirm_delete_user_avatar from "../templates/confirm_delete_user_avatar.hbs";
+
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import * as settings_data from "./settings_data";
 import * as upload_widget from "./upload_widget";
-
-const render_confirm_delete_user_avatar = require("../templates/confirm_delete_user_avatar.hbs");
 
 export function build_bot_create_widget() {
     // We have to do strange gyrations with the file input to clear it,
