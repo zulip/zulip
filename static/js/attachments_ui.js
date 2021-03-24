@@ -113,6 +113,13 @@ function render_attachments_ui() {
     });
 
     ui.reset_scrollbar(uploaded_files_table.closest(".progressive-table-wrapper"));
+
+    // Clear the input field when clicked on cross icon and
+    // render the uploaded_files_table again.
+    $("#clear_upload_file_search_button").on("click", () => {
+        $("#upload_file_search").val("");
+        render_attachments_ui();
+    });
 }
 
 function format_attachment_data(new_attachments) {
