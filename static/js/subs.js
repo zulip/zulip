@@ -25,7 +25,6 @@ import * as stream_edit from "./stream_edit";
 import * as stream_list from "./stream_list";
 import * as stream_muting from "./stream_muting";
 import * as stream_ui_updates from "./stream_ui_updates";
-import * as typeahead_helper from "./typeahead_helper";
 import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 import * as util from "./util";
@@ -193,9 +192,6 @@ export function update_stream_name(sub, new_name) {
 
     // Update the message feed.
     message_live_update.update_stream_name(stream_id, new_name);
-
-    // Clear rendered typeahead cache
-    typeahead_helper.clear_rendered_stream(stream_id);
 
     // Update compose_state if needed
     if (compose_state.stream_name() === old_name) {
