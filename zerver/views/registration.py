@@ -443,10 +443,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         return login_and_go_to_home(request, auth_result)
 
     # email address visibility
-    if realm is None:
-        email_address_visibility = str(Realm.email_address_visibility)
-    else:
-        email_address_visibility = str(realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE)
+    email_address_visibility = get_email_address_visibility(realm)
 
     return render(
         request,
@@ -471,12 +468,26 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             "MAX_NAME_LENGTH": str(UserProfile.MAX_NAME_LENGTH),
             "MAX_PASSWORD_LENGTH": str(form.MAX_PASSWORD_LENGTH),
             "MAX_REALM_SUBDOMAIN_LENGTH": str(Realm.MAX_REALM_SUBDOMAIN_LENGTH),
+            "EMAIL_ADDRESS_VISIBILITY_EVERYONE": email_address_visibility,
+            "EMAIL_ADDRESS_VISIBILITY_ADMINS": email_address_visibility,
+            "EMAIL_ADDRESS_VISIBILITY_NOBODY": email_address_visibility,
             "EMAIL_ADDRESS_VISIBILITY": email_address_visibility,
-            "EMAIL_ADDRESS_VISIBILITY_EVERYONE": str(Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE),
-            "EMAIL_ADDRESS_VISIBILITY_ADMINS": str(Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS),
-            "EMAIL_ADDRESS_VISIBILITY_NOBODY": str(Realm.EMAIL_ADDRESS_VISIBILITY_NOBODY),
         },
     )
+
+
+def get_email_address_visibility(realm: Optional[Realm]) -> str:
+    # print(str(realm.email_address_visibility))
+    if realm is None:
+        return "All users will be able to see this email address."
+    if realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+        return "All users will be able to see this email address."
+    elif realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS:
+        return "Only organization administrators will be able to see this email address."
+    elif realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_NOBODY:
+        return "Users will not be able to see this email address."
+    else:
+        return "All users will be able to see this email address."
 
 
 def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
