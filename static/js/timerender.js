@@ -286,10 +286,7 @@ export const absolute_time = (function () {
         return str;
     };
 
-    return function (timestamp, today) {
-        if (typeof today === "undefined") {
-            today = new Date();
-        }
+    return function (timestamp, today = new Date()) {
         const date = new Date(timestamp);
         const is_older_year = today.getFullYear() - date.getFullYear() > 0;
         const H_24 = page_params.twenty_four_hour_time;

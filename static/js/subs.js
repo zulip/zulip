@@ -112,7 +112,7 @@ export function get_active_data() {
 }
 
 function get_hash_safe() {
-    if (typeof window !== "undefined" && typeof window.location.hash === "string") {
+    if (typeof window.location.hash === "string") {
         return window.location.hash.slice(1);
     }
 

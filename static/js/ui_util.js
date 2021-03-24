@@ -11,14 +11,14 @@ export function change_tab_to(tabname) {
 export function place_caret_at_end(el) {
     el.focus();
 
-    if (typeof window.getSelection !== "undefined" && typeof document.createRange !== "undefined") {
+    if (window.getSelection !== undefined && document.createRange !== undefined) {
         const range = document.createRange();
         range.selectNodeContents(el);
         range.collapse(false);
         const sel = window.getSelection();
         sel.removeAllRanges();
         sel.addRange(range);
-    } else if (typeof document.body.createTextRange !== "undefined") {
+    } else if (document.body.createTextRange !== undefined) {
         const textRange = document.body.createTextRange();
         textRange.moveToElementText(el);
         textRange.collapse(false);

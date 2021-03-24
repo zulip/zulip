@@ -679,7 +679,7 @@ export function maybe_get_stream_name(stream_id) {
 
 export function is_user_subscribed(stream_id, user_id) {
     const sub = get_sub_by_id(stream_id);
-    if (typeof sub === "undefined" || !sub.can_access_subscribers) {
+    if (sub === undefined || !sub.can_access_subscribers) {
         // If we don't know about the stream, or we ourselves cannot access subscriber list,
         // so we return undefined (treated as falsy if not explicitly handled).
         blueslip.warn(
@@ -687,7 +687,7 @@ export function is_user_subscribed(stream_id, user_id) {
         );
         return undefined;
     }
-    if (typeof user_id === "undefined") {
+    if (user_id === undefined) {
         blueslip.warn("Undefined user_id passed to function is_user_subscribed");
         return undefined;
     }

@@ -122,11 +122,8 @@ function do_revoke_invite() {
     });
 }
 
-export function set_up(initialize_event_handlers) {
+export function set_up(initialize_event_handlers = true) {
     meta.loaded = true;
-    if (typeof initialize_event_handlers === "undefined") {
-        initialize_event_handlers = true;
-    }
 
     // create loading indicators
     loading.make_indicator($("#admin_page_invites_loading_indicator"));
