@@ -1630,9 +1630,16 @@ class UserGroup(models.Model):
     members: Manager = models.ManyToManyField(UserProfile, through="UserGroupMembership")
     realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
     description: str = models.TextField(default="")
+    active: bool = models.BooleanField(default=True, db_index=True)
 
     class Meta:
-        unique_together = (("realm", "name"),)
+        constraints = [
+            models.UniqueConstraint(
+                fields=["name", "realm"],
+                condition=Q(active=True),
+                name="unique active user group per realm",
+            ),
+        ]
 
 
 class UserGroupMembership(models.Model):
