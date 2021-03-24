@@ -66,7 +66,7 @@ function delete_profile_field(e) {
     update_profile_fields_table_element();
 }
 
-function read_choice_field_data_from_form(field_elem) {
+function read_select_field_data_from_form(field_elem) {
     const field_data = {};
     let field_order = 1;
     $(field_elem)
@@ -116,7 +116,7 @@ function clear_form_data() {
     $("#profile_field_hint").val("").closest(".control-group").show();
     // Set default type "Short Text" in field type dropdown
     $("#profile_field_type").val(field_types.SHORT_TEXT.id);
-    // Clear data from choice field form
+    // Clear data from select field form
     $("#profile_field_choices").html("");
     create_choice_row($("#profile_field_choices"));
     update_choice_delete_btn($("#profile_field_choices"), false);
@@ -154,10 +154,10 @@ function set_up_create_field_form() {
 }
 
 function read_field_data_from_form(field_type_id, field_elem) {
-    // Only read field data if we are creating a choice field
+    // Only read field data if we are creating a select field
     // or external account field.
     if (field_type_id === field_types.SELECT.id) {
-        return read_choice_field_data_from_form(field_elem);
+        return read_select_field_data_from_form(field_elem);
     } else if (field_type_id === field_types.EXTERNAL_ACCOUNT.id) {
         return read_external_account_field_data(field_elem);
     }
@@ -248,8 +248,8 @@ function set_up_external_account_field_edit_form(field_elem, url_pattern_val) {
     }
 }
 
-function set_up_choices_field_edit_form(profile_field, field_data) {
-    // Re-render field choices in edit form to load initial choice data
+function set_up_select_field_edit_form(profile_field, field_data) {
+    // Re-render field choices in edit form to load initial select data
     const choice_list = profile_field.form.find(".edit_profile_field_choices_container");
     choice_list.off();
     choice_list.html("");
@@ -290,7 +290,7 @@ function open_edit_form(e) {
     }
 
     if (Number.parseInt(field.type, 10) === field_types.SELECT.id) {
-        set_up_choices_field_edit_form(profile_field, field_data);
+        set_up_select_field_edit_form(profile_field, field_data);
     }
 
     if (Number.parseInt(field.type, 10) === field_types.EXTERNAL_ACCOUNT.id) {
@@ -419,7 +419,7 @@ export function do_populate_profile_fields(profile_fields_data) {
     loading.destroy_indicator($("#admin_page_profile_fields_loading_indicator"));
 }
 
-function set_up_choices_field() {
+function set_up_select_field() {
     create_choice_row("#profile_field_choices");
     update_choice_delete_btn($("#profile_field_choices"), false);
 
@@ -435,7 +435,7 @@ function set_up_choices_field() {
     const field_type = $("#profile_field_type").val();
 
     if (Number.parseInt(field_type, 10) !== field_types.SELECT.id) {
-        // If 'Choice' type is already selected, show choice row.
+        // If 'Select' type is already selected, show choice row.
         $("#profile_field_choices_row").hide();
     }
 
@@ -489,7 +489,7 @@ export function build_page() {
     $("#admin_profile_fields_table").on("click", ".delete", delete_profile_field);
     $("#profile-field-settings").on("click", "#add-custom-profile-field-btn", create_profile_field);
     $("#admin_profile_fields_table").on("click", ".open-edit-form", open_edit_form);
-    set_up_choices_field();
+    set_up_select_field();
     set_up_external_account_field();
     clear_form_data();
 }
