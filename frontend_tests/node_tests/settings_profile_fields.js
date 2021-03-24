@@ -13,11 +13,11 @@ const loading = mock_esm("../../static/js/loading");
 
 const SHORT_TEXT_ID = 1;
 
-const CHOICE_ID = 3;
+const SELECT_ID = 3;
 const EXTERNAL_ACCOUNT_ID = 7;
 
 const SHORT_TEXT_NAME = "Short Text";
-const CHOICE_NAME = "Choice";
+const SELECT_NAME = "Select";
 const EXTERNAL_ACCOUNT_NAME = "External account";
 
 page_params.custom_profile_fields = {};
@@ -28,9 +28,9 @@ page_params.custom_profile_field_types = {
         id: SHORT_TEXT_ID,
         name: SHORT_TEXT_NAME,
     },
-    CHOICE: {
-        id: CHOICE_ID,
-        name: CHOICE_NAME,
+    SELECT: {
+        id: SELECT_ID,
+        name: SELECT_NAME,
     },
     EXTERNAL_ACCOUNT: {
         id: EXTERNAL_ACCOUNT_ID,
@@ -87,7 +87,7 @@ run_test("populate_profile_fields", () => {
             field_data: "",
         },
         {
-            type: CHOICE_ID,
+            type: SELECT_ID,
             id: 30,
             name: "meal",
             hint: "lunch",
@@ -130,7 +130,7 @@ run_test("populate_profile_fields", () => {
                 hint: "blue?",
                 type: SHORT_TEXT_NAME,
                 choices: [],
-                is_choice_field: false,
+                is_select_field: false,
                 is_external_account_field: false,
             },
             can_modify: true,
@@ -141,12 +141,12 @@ run_test("populate_profile_fields", () => {
                 id: 30,
                 name: "meal",
                 hint: "lunch",
-                type: CHOICE_NAME,
+                type: SELECT_NAME,
                 choices: [
                     {order: 0, value: "0", text: "lunch"},
                     {order: 1, value: "1", text: "dinner"},
                 ],
-                is_choice_field: true,
+                is_select_field: true,
                 is_external_account_field: false,
             },
             can_modify: true,
@@ -159,7 +159,7 @@ run_test("populate_profile_fields", () => {
                 hint: "username only",
                 type: EXTERNAL_ACCOUNT_NAME,
                 choices: [],
-                is_choice_field: false,
+                is_select_field: false,
                 is_external_account_field: true,
             },
             can_modify: true,
@@ -172,7 +172,7 @@ run_test("populate_profile_fields", () => {
                 hint: "username only",
                 type: EXTERNAL_ACCOUNT_NAME,
                 choices: [],
-                is_choice_field: false,
+                is_select_field: false,
                 is_external_account_field: true,
             },
             can_modify: true,

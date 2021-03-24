@@ -133,7 +133,7 @@ export function append_custom_profile_fields(element_id, user_id) {
     const all_field_template_types = new Map([
         [all_field_types.LONG_TEXT.id, "text"],
         [all_field_types.SHORT_TEXT.id, "text"],
-        [all_field_types.CHOICE.id, "choice"],
+        [all_field_types.SELECT.id, "select"],
         [all_field_types.USER.id, "user"],
         [all_field_types.DATE.id, "date"],
         [all_field_types.EXTERNAL_ACCOUNT.id, "text"],
@@ -142,13 +142,13 @@ export function append_custom_profile_fields(element_id, user_id) {
 
     for (const field of all_custom_fields) {
         let field_value = people.get_custom_profile_data(user_id, field.id);
-        const is_choice_field = field.type === all_field_types.CHOICE.id;
+        const is_select_field = field.type === all_field_types.SELECT.id;
         const field_choices = [];
 
         if (field_value === undefined || field_value === null) {
             field_value = {value: "", rendered_value: ""};
         }
-        if (is_choice_field) {
+        if (is_select_field) {
             const field_choice_dict = JSON.parse(field.field_data);
             for (const choice in field_choice_dict) {
                 if (choice) {
@@ -168,7 +168,7 @@ export function append_custom_profile_fields(element_id, user_id) {
             is_long_text_field: field.type === all_field_types.LONG_TEXT.id,
             is_user_field: field.type === all_field_types.USER.id,
             is_date_field: field.type === all_field_types.DATE.id,
-            is_choice_field,
+            is_select_field,
             field_choices,
         });
         $(element_id).append(html);

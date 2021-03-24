@@ -156,7 +156,7 @@ function set_up_create_field_form() {
 function read_field_data_from_form(field_type_id, field_elem) {
     // Only read field data if we are creating a choice field
     // or external account field.
-    if (field_type_id === field_types.CHOICE.id) {
+    if (field_type_id === field_types.SELECT.id) {
         return read_choice_field_data_from_form(field_elem);
     } else if (field_type_id === field_types.EXTERNAL_ACCOUNT.id) {
         return read_external_account_field_data(field_elem);
@@ -289,7 +289,7 @@ function open_edit_form(e) {
         field_data = JSON.parse(field.field_data);
     }
 
-    if (Number.parseInt(field.type, 10) === field_types.CHOICE.id) {
+    if (Number.parseInt(field.type, 10) === field_types.SELECT.id) {
         set_up_choices_field_edit_form(profile_field, field_data);
     }
 
@@ -384,7 +384,7 @@ export function do_populate_profile_fields(profile_fields_data) {
             field_data = JSON.parse(profile_field.field_data);
         }
         let choices = [];
-        if (profile_field.type === field_types.CHOICE.id) {
+        if (profile_field.type === field_types.SELECT.id) {
             choices = parse_field_choices_from_field_data(field_data);
         }
 
@@ -396,7 +396,7 @@ export function do_populate_profile_fields(profile_fields_data) {
                     hint: profile_field.hint,
                     type: field_type_id_to_string(profile_field.type),
                     choices,
-                    is_choice_field: profile_field.type === field_types.CHOICE.id,
+                    is_select_field: profile_field.type === field_types.SELECT.id,
                     is_external_account_field:
                         profile_field.type === field_types.EXTERNAL_ACCOUNT.id,
                 },
@@ -434,14 +434,14 @@ function set_up_choices_field() {
 
     const field_type = $("#profile_field_type").val();
 
-    if (Number.parseInt(field_type, 10) !== field_types.CHOICE.id) {
+    if (Number.parseInt(field_type, 10) !== field_types.SELECT.id) {
         // If 'Choice' type is already selected, show choice row.
         $("#profile_field_choices_row").hide();
     }
 
     $("#profile_field_type").on("change", (e) => {
         const selected_field_id = Number.parseInt($(e.target).val(), 10);
-        if (selected_field_id === field_types.CHOICE.id) {
+        if (selected_field_id === field_types.SELECT.id) {
             $("#profile_field_choices_row").show();
         } else {
             $("#profile_field_choices_row").hide();
