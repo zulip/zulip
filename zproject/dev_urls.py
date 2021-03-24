@@ -10,6 +10,7 @@ from django.views.generic import TemplateView
 from django.views.static import serve
 
 from zerver.views.auth import config_error, login_page
+from zerver.views.development.cache import remove_caches
 from zerver.views.development.email_log import clear_emails, email_page, generate_all_emails
 from zerver.views.development.integrations import (
     check_send_webhook_fixture_message,
@@ -73,6 +74,8 @@ urls = [
     path("devtools/integrations/<integration_name>/fixtures", get_fixtures),
     path("config-error/<error_category_name>", config_error, name="config_error"),
     path("config-error/remoteuser/<error_category_name>", config_error),
+    # Special endpoint to remove all the server-side caches.
+    path("flush_caches", remove_caches),
 ]
 
 # Serve static assets via the Django server
