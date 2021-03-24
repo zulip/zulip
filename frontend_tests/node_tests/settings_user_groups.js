@@ -413,10 +413,7 @@ test_ui("with_external_user", (override) => {
 
     // Test the 'off' handlers on the pill-container
     const turned_off = {};
-    pill_container_stub.off = (event_name, sel) => {
-        if (sel === undefined) {
-            sel = "whole";
-        }
+    pill_container_stub.off = (event_name, sel = "whole") => {
         turned_off[event_name + "/" + sel] = true;
     };
 

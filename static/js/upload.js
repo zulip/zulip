@@ -99,10 +99,7 @@ export function hide_upload_status(config) {
     get_item("send_status", config).removeClass("alert-info").hide();
 }
 
-export function show_error_message(config, message) {
-    if (!message) {
-        message = i18n.t("An unknown error occurred.");
-    }
+export function show_error_message(config, message = i18n.t("An unknown error occurred.")) {
     get_item("send_button", config).prop("disabled", false);
     get_item("send_status", config).addClass("alert-error").removeClass("alert-info").show();
     get_item("send_status_message", config).text(message);
@@ -304,7 +301,7 @@ export function setup_upload(config) {
     });
 
     uppy.on("upload-error", (file, error, response) => {
-        const message = response ? response.body.msg : null;
+        const message = response ? response.body.msg : undefined;
         uppy.cancelAll();
         show_error_message(config, message);
         compose_ui.replace_syntax(get_translated_status(file), "", get_item("textarea", config));

@@ -57,13 +57,7 @@ run_test("msg_edited_vars", () => {
     //   * message that includes sender
     //   * message without sender
 
-    function build_message_context(message, message_context) {
-        if (message_context === undefined) {
-            message_context = {};
-        }
-        if (message === undefined) {
-            message = {};
-        }
+    function build_message_context(message = {}, message_context = {}) {
         message_context = {
             include_sender: true,
             ...message_context,
@@ -130,13 +124,7 @@ run_test("merge_message_groups", () => {
     // MessageListView has lots of DOM code, so we are going to test the message
     // group mearging logic on its own.
 
-    function build_message_context(message, message_context) {
-        if (message_context === undefined) {
-            message_context = {};
-        }
-        if (message === undefined) {
-            message = {};
-        }
+    function build_message_context(message = {}, message_context = {}) {
         message_context = {
             include_sender: true,
             ...message_context,

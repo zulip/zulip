@@ -55,26 +55,18 @@ export function smart_insert(textarea, syntax) {
     autosize.update(textarea);
 }
 
-export function insert_syntax_and_focus(syntax, textarea) {
+export function insert_syntax_and_focus(syntax, textarea = $("#compose-textarea")) {
     // Generic helper for inserting syntax into the main compose box
     // where the cursor was and focusing the area.  Mostly a thin
     // wrapper around smart_insert.
-    if (textarea === undefined) {
-        textarea = $("#compose-textarea");
-    }
     smart_insert(textarea, syntax);
 }
 
-export function replace_syntax(old_syntax, new_syntax, textarea) {
+export function replace_syntax(old_syntax, new_syntax, textarea = $("#compose-textarea")) {
     // Replaces `old_syntax` with `new_syntax` text in the compose box. Due to
     // the way that JavaScript handles string replacements, if `old_syntax` is
     // a string it will only replace the first instance. If `old_syntax` is
     // a RegExp with a global flag, it will replace all instances.
-
-    if (textarea === undefined) {
-        textarea = $("#compose-textarea");
-    }
-
     textarea.val(
         textarea.val().replace(
             old_syntax,

@@ -127,13 +127,11 @@ export class MessageList {
         return this.data.can_mark_messages_read();
     }
 
-    clear(opts) {
-        opts = {clear_selected_id: true, ...opts};
-
+    clear({clear_selected_id = true} = {}) {
         this.data.clear();
         this.view.clear_rendering_state(true);
 
-        if (opts.clear_selected_id) {
+        if (clear_selected_id) {
             this.data.clear_selected_id();
         }
     }
@@ -294,11 +292,9 @@ export class MessageList {
         this.append_to_view(viewable_messages, opts);
     }
 
-    append_to_view(messages, opts) {
-        opts = {messages_are_new: false, ...opts};
-
+    append_to_view(messages, {messages_are_new = false} = {}) {
         this.num_appends += 1;
-        const render_info = this.view.append(messages, opts.messages_are_new);
+        const render_info = this.view.append(messages, messages_are_new);
         return render_info;
     }
 

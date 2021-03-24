@@ -75,13 +75,11 @@ export function get_log() {
 const reported_errors = new Set();
 const last_report_attempt = new Map();
 
-function report_error(msg, stack, opts) {
-    opts = {show_ui_msg: false, ...opts};
-
-    if (stack === undefined) {
-        stack = "No stacktrace available";
-    }
-
+function report_error(
+    msg,
+    stack = "No stacktrace available",
+    {show_ui_msg = false, more_info} = {},
+) {
     if (page_params.debug_mode) {
         // In development, we display blueslip errors in the web UI,
         // to make them hard to miss.
@@ -114,8 +112,8 @@ function report_error(msg, stack, opts) {
         data: {
             message: msg,
             stacktrace: stack,
-            ui_message: opts.show_ui_msg,
-            more_info: JSON.stringify(opts.more_info),
+            ui_message: show_ui_msg,
+            more_info: JSON.stringify(more_info),
             href: window.location.href,
             user_agent: window.navigator.userAgent,
             log: logger.get_log().join("\n"),
@@ -123,7 +121,7 @@ function report_error(msg, stack, opts) {
         timeout: 3 * 1000,
         success() {
             reported_errors.add(key);
-            if (opts.show_ui_msg && ui_report !== undefined) {
+            if (show_ui_msg && ui_report !== undefined) {
                 // There are a few races here (and below in the error
                 // callback):
                 // 1) The ui_report module or something it requires might
@@ -153,7 +151,7 @@ function report_error(msg, stack, opts) {
             }
         },
         error() {
-            if (opts.show_ui_msg && ui_report !== undefined) {
+            if (show_ui_msg && ui_report !== undefined) {
                 ui_report.client_error(
                     "Oops.  It seems something has gone wrong. Please try reloading the page.",
                     $("#home-error"),
@@ -234,10 +232,7 @@ export function warn(msg, more_info) {
     }
 }
 
-export function error(msg, more_info, stack) {
-    if (stack === undefined) {
-        stack = new Error("dummy").stack;
-    }
+export function error(msg, more_info, stack = new Error("dummy").stack) {
     const args = build_arg_list(msg, more_info);
     logger.error(...args);
     report_error(msg, stack, {more_info});

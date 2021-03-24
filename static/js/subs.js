@@ -441,13 +441,9 @@ export function render_left_panel_superset() {
 }
 
 // LeftPanelParams { input: String, subscribed_only: Boolean, sort_order: String }
-export function redraw_left_panel(left_panel_params) {
+export function redraw_left_panel(left_panel_params = get_left_panel_params()) {
     // We only get left_panel_params passed in from tests.  Real
     // code calls get_left_panel_params().
-    if (left_panel_params === undefined) {
-        left_panel_params = get_left_panel_params();
-    }
-
     show_active_stream_in_left_panel();
 
     function stream_id_for_row(row) {

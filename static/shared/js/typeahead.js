@@ -108,7 +108,7 @@ export function get_emoji_matcher(query) {
     };
 }
 
-export function triage(query, objs, get_item) {
+export function triage(query, objs, get_item = (x) => x) {
     /*
         We split objs into four groups:
 
@@ -120,10 +120,6 @@ export function triage(query, objs, get_item) {
         Then we concat the first three groups into
         `matches` and then call the rest `rest`.
     */
-
-    if (!get_item) {
-        get_item = (x) => x;
-    }
 
     const exactMatch = [];
     const beginswithCaseSensitive = [];

@@ -1150,10 +1150,7 @@ test("begins_typeahead", (override) => {
         assert.deepEqual(values, reference);
     }
 
-    function assert_stream_list(input, rest) {
-        if (rest === undefined) {
-            rest = "";
-        }
+    function assert_stream_list(input, rest = "") {
         const values = get_values(input, rest);
         assert.deepEqual(sorted_names_from(values), ["Denmark", "Sweden", "The Netherlands"]);
     }

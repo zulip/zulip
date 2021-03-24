@@ -168,9 +168,7 @@ function hide_ui_connection_error() {
     $("#connection-error").removeClass("get-events-error");
 }
 
-function get_events(options) {
-    options = {dont_block: false, ...options};
-
+function get_events({dont_block = false} = {}) {
     if (reload_state.is_in_progress()) {
         return;
     }
@@ -182,7 +180,7 @@ function get_events(options) {
         return;
     }
 
-    get_events_params.dont_block = options.dont_block || get_events_failures > 0;
+    get_events_params.dont_block = dont_block || get_events_failures > 0;
 
     if (get_events_params.dont_block) {
         // If we're requesting an immediate re-connect to the server,

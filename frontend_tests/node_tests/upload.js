@@ -672,7 +672,7 @@ run_test("uppy_events", (override) => {
     override(upload, "show_error_message", (config, message) => {
         show_error_message_called = true;
         assert.equal(config.mode, "compose");
-        assert.equal(message, null);
+        assert.equal(message, undefined);
     });
     uppy_cancel_all_called = false;
     on_upload_error_callback(file, null, null);

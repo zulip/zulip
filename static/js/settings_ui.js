@@ -19,27 +19,24 @@ export const strings = {
 // Generic function for informing users about changes to the settings
 // UI.  Intended to replace the old system that was built around
 // direct calls to `ui_report`.
-export function do_settings_change(request_method, url, data, status_element, opts) {
+export function do_settings_change(
+    request_method,
+    url,
+    data,
+    status_element,
+    {
+        success_msg = strings.success,
+        success_continuation,
+        error_continuation,
+        sticky = false,
+        error_msg_element,
+    } = {},
+) {
     const spinner = $(status_element).expectOne();
     spinner.fadeTo(0, 1);
     loading.make_indicator(spinner, {text: strings.saving});
-    let success_msg;
-    let success_continuation;
-    let error_continuation;
-    let remove_after = 1000;
+    const remove_after = sticky ? null : 1000;
     const appear_after = 500;
-
-    if (opts !== undefined) {
-        success_msg = opts.success_msg;
-        success_continuation = opts.success_continuation;
-        error_continuation = opts.error_continuation;
-        if (opts.sticky) {
-            remove_after = null;
-        }
-    }
-    if (success_msg === undefined) {
-        success_msg = strings.success;
-    }
 
     request_method({
         url,
@@ -50,17 +47,13 @@ export function do_settings_change(request_method, url, data, status_element, op
                 display_checkmark(spinner);
             }, appear_after);
             if (success_continuation !== undefined) {
-                if (opts !== undefined && opts.success_continuation_arg) {
-                    success_continuation(opts.success_continuation_arg);
-                } else {
-                    success_continuation(reponse_data);
-                }
+                success_continuation(reponse_data);
             }
         },
         error(xhr) {
-            if (opts !== undefined && opts.error_msg_element) {
+            if (error_msg_element) {
                 loading.destroy_indicator(spinner);
-                ui_report.error(strings.failure, xhr, opts.error_msg_element);
+                ui_report.error(strings.failure, xhr, error_msg_element);
             } else {
                 ui_report.error(strings.failure, xhr, spinner);
             }

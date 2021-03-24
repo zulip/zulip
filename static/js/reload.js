@@ -29,9 +29,6 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
         return;
     }
 
-    if (send_after_reload === undefined) {
-        send_after_reload = 0;
-    }
     let url = "#reload:send_after_reload=" + Number(send_after_reload);
     url += "+csrf_token=" + encodeURIComponent(csrf_token);
 
@@ -199,10 +196,6 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
         }
     }
 
-    if (message === undefined) {
-        message = "Reloading ...";
-    }
-
     // TODO: We need a better API for showing messages.
     ui_report.message(message, $("#reloading-application"));
     blueslip.log("Starting server requested page reload");
@@ -232,32 +225,16 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
     window.location.reload(true);
 }
 
-export function initiate(options) {
-    options = {
-        immediate: false,
-        save_pointer: true,
-        save_narrow: true,
-        save_compose: true,
-        send_after_reload: false,
-        ...options,
-    };
-
-    if (
-        options.save_pointer === undefined ||
-        options.save_narrow === undefined ||
-        options.save_compose === undefined
-    ) {
-        blueslip.error("reload.initiate() called without explicit save options.");
-    }
-
-    if (options.immediate) {
-        do_reload_app(
-            options.send_after_reload,
-            options.save_pointer,
-            options.save_narrow,
-            options.save_compose,
-            options.message,
-        );
+export function initiate({
+    immediate = false,
+    save_pointer = true,
+    save_narrow = true,
+    save_compose = true,
+    send_after_reload = false,
+    message = "Reloading ...",
+}) {
+    if (immediate) {
+        do_reload_app(send_after_reload, save_pointer, save_narrow, save_compose, message);
     }
 
     if (reload_state.is_pending()) {
@@ -294,13 +271,7 @@ export function initiate(options) {
     let compose_started_handler;
 
     function reload_from_idle() {
-        do_reload_app(
-            false,
-            options.save_pointer,
-            options.save_narrow,
-            options.save_compose,
-            options.message,
-        );
+        do_reload_app(false, save_pointer, save_narrow, save_compose, message);
     }
 
     // Make sure we always do a reload eventually after

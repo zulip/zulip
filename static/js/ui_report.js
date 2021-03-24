@@ -9,11 +9,7 @@ import * as common from "./common";
    cls- class that we want to add/remove to/from the status_box
 */
 
-export function message(response, status_box, cls, remove_after) {
-    if (cls === undefined) {
-        cls = "alert";
-    }
-
+export function message(response, status_box, cls = "alert", remove_after = false) {
     // Note we use html() below, since we can rely on our callers escaping HTML
     // via i18n.t when interpolating data.
     status_box
