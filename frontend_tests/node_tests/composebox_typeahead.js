@@ -690,25 +690,6 @@ test("initialize", (override) => {
         ];
         assert.deepEqual(actual_value, expected_value);
 
-        // Even though the items passed to .highlighter() are the full
-        // objects of the users matching the query, it only returns the
-        // HTML string with the "User_name <email>" format, with the
-        // corresponding parts in bold.
-        options.query = "oth";
-        actual_value = options.highlighter(othello);
-        expected_value = `        <span class="user_circle_empty user_circle"></span>\n        <img class="typeahead-image" src="/avatar/${othello.user_id}&amp;s&#x3D;50" />\n<strong>Othello, the Moor of Venice</strong>`;
-        assert.equal(actual_value, expected_value);
-
-        options.query = "Lear";
-        actual_value = options.highlighter(cordelia);
-        expected_value = `        <span class="user_circle_empty user_circle"></span>\n        <img class="typeahead-image" src="/avatar/${cordelia.user_id}&amp;s&#x3D;50" />\n<strong>Cordelia Lear</strong>`;
-        assert.equal(actual_value, expected_value);
-
-        options.query = "othello@zulip.com, co";
-        actual_value = options.highlighter(cordelia);
-        expected_value = `        <span class="user_circle_empty user_circle"></span>\n        <img class="typeahead-image" src="/avatar/${cordelia.user_id}&amp;s&#x3D;50" />\n<strong>Cordelia Lear</strong>`;
-        assert.equal(actual_value, expected_value);
-
         function matcher(query, person) {
             query = typeahead.clean_query_lowercase(query);
             return ct.query_matches_person(query, person);
@@ -872,7 +853,11 @@ test("initialize", (override) => {
         // content_highlighter.
         fake_this = {completing: "mention", token: "othello"};
         actual_value = options.highlighter.call(fake_this, othello);
-        expected_value = `        <span class="user_circle_empty user_circle"></span>\n        <img class="typeahead-image" src="/avatar/${othello.user_id}&amp;s&#x3D;50" />\n<strong>Othello, the Moor of Venice</strong>`;
+        expected_value =
+            `        <span class="user_circle_empty user_circle"></span>\n` +
+            `        <img class="typeahead-image" src="/avatar/${othello.user_id}&amp;s&#x3D;50" />\n` +
+            `<strong>Othello, the Moor of Venice</strong>&nbsp;&nbsp;\n` +
+            `<small class="autocomplete_secondary">othello@zulip.com</small>\n`;
         assert.equal(actual_value, expected_value);
 
         fake_this = {completing: "mention", token: "hamletcharacters"};

@@ -14,7 +14,6 @@ import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget
 import * as loading from "./loading";
 import * as overlays from "./overlays";
 import * as people from "./people";
-import * as typeahead_helper from "./typeahead_helper";
 
 export function hide_errors() {
     $("#bot_table_error").hide();
@@ -525,7 +524,6 @@ export function set_up() {
                         errors.hide();
                         edit_button.show();
                         avatar_widget.clear();
-                        typeahead_helper.clear_rendered_person(bot_id);
                         if (data.avatar_url) {
                             // Note that the avatar_url won't actually change on the backend
                             // when the user had a previous uploaded avatar.  Only the content
