@@ -327,6 +327,13 @@ section.active.create_table = (active_users) => {
 
     loading.destroy_indicator($("#admin_page_users_loading_indicator"));
     $("#admin_users_table").show();
+
+    // Clear the input field when clicked on cross icon and
+    // render the admin_users_table again.
+    $("#clear_user_list_search_button").on("click", () => {
+        $("#user_list_search").val("");
+        section.active.create_table(active_users);
+    });
 };
 
 section.deactivated.create_table = (deactivated_users) => {

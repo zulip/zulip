@@ -1,7 +1,12 @@
 <div id="admin-user-list" class="settings-section" data-name="user-list-admin">
     <h3 class="inline-block">{{t "Users" }}</h3>
 
-    <input type="text" class="search" placeholder="{{t 'Filter users' }}" aria-label="{{t 'Filter users' }}"/>
+    <div class="input-append user_list_search_section">
+        <input class="search" id="user_list_search" type="text" placeholder="{{t 'Filter users' }}" aria-label="{{t 'Filter users' }}">
+        <button type="button" class="btn clear_search_button" id="clear_user_list_search_button">
+            <i class="fa fa-remove" aria-hidden="true"></i>
+        </button>
+    </div>
     <div class="alert-notification" id="user-field-status"></div>
     <div class="clear-float"></div>
 

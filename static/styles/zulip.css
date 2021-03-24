@@ -1753,7 +1753,8 @@ div.focused_table {
 
 .upload_file_search_section,
 .muted_topics_search_section,
-.emojis_search_section {
+.emojis_search_section,
+.user_list_search_section {
     float: right;
     margin: 10px 0 20px 0;
 }
