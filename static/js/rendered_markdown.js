@@ -237,4 +237,15 @@ export const update_elements = (content) => {
             return ":" + text + ":";
         });
     }
+
+    content.find("span.katex-display").each(function () {
+        // Long LaTeX equations gets cut off from right instead of scrolling horizontally.
+        // Also applying normal overflow css rule doesn't solve the problem of vertical cutoff of
+        // superscripts in integration upper limits.
+        // We do this by applying a div element wrapping katex.diplay span element and applying
+        // overflow css rule.
+        // Everything about this is discussed in the issue: https://github.com/zulip/zulip/issues/14422
+        const outer_div_katex = '<div class="katex-outer"></div>';
+        $(this).wrap(outer_div_katex);
+    });
 };

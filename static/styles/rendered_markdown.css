@@ -155,8 +155,10 @@
     }
 
     /* LaTeX styling */
-    .katex-display {
-        margin: 0 0;
+    .katex-outer {
+        display: block;
+        overflow-x: auto;
+        text-align: center;
     }
 
     .tex-error {

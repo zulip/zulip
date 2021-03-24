@@ -78,6 +78,7 @@ const get_content_element = () => {
     $content.set_find_results(".emoji", $array([]));
     $content.set_find_results("div.spoiler-header", $array([]));
     $content.set_find_results("div.codehilite", $array([]));
+    $content.set_find_results("span.katex-display", $array([]));
     return $content;
 };
 
@@ -273,4 +274,17 @@ run_test("spoiler-header-empty-fill", () => {
     $header.html("");
     rm.update_elements($content);
     assert.equal(toggle_button_html + "<p>translated: Spoiler</p>", $header.html());
+});
+
+run_test("katex-display", () => {
+    // Setup
+    const $content = get_content_element();
+    const $katex = $.create("span.katex-display");
+    $content.set_find_results("span.katex-display", $array([$katex]));
+
+    // Test that span.katex-display is wrapped by an outer div element.
+    const outer_div_katex = '<div class="katex-outer"></div>';
+    $katex.set_parent(outer_div_katex);
+    rm.update_elements($content);
+    assert.equal(outer_div_katex, $katex.parent());
 });

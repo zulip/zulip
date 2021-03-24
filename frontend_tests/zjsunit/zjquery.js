@@ -414,6 +414,9 @@ function make_new_elem(selector, opts) {
         visible() {
             return shown;
         },
+        wrap() {
+            return self;
+        },
     };
 
     if (opts.children) {
