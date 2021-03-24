@@ -1751,7 +1751,8 @@ div.focused_table {
     }
 }
 
-.upload_file_search_section {
+.upload_file_search_section,
+.muted_topics_search_section {
     float: right;
     margin: 10px 0 20px 0;
 }

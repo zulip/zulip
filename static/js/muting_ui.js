@@ -107,6 +107,13 @@ export function set_up_muted_topics_ui() {
         parent_container: $("#muted-topic-settings"),
         simplebar_container: $("#muted-topic-settings .progressive-table-wrapper"),
     });
+
+    // Clear the input field when clicked on cross icon and
+    // render the muted_topics_table again.
+    $("#clear_muted_topics_search_button").on("click", () => {
+        $("#muted_topics_search").val("");
+        set_up_muted_topics_ui();
+    });
 }
 
 export function mute_topic(stream_id, topic) {
