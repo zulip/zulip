@@ -2,7 +2,7 @@ import {strict as assert} from "assert";
 import "css.escape";
 import path from "path";
 
-import type {Browser, ElementHandle, Page} from "puppeteer";
+import type {Browser, ConsoleMessage, ElementHandle, Page} from "puppeteer";
 import {launch} from "puppeteer";
 
 import {test_credentials} from "../../var/puppeteer/test_credentials";
@@ -492,6 +492,17 @@ class CommonUtils {
         // a screenshot of it when the test fails.
         const browser = await this.ensure_browser();
         const page = await this.get_page();
+        page.on("console", (message: ConsoleMessage) => {
+            const {url, lineNumber, columnNumber} = message.location();
+            console.log(
+                `${url}:${lineNumber + 1}:${columnNumber}: ${message.type()}: ${message.text()}`,
+            );
+            if (message.type() === "trace") {
+                for (const {url, lineNumber, columnNumber} of message.stackTrace()) {
+                    console.log(`    at ${url}:${lineNumber + 1}:${columnNumber}`);
+                }
+            }
+        });
         try {
             await test_function(page);
         } catch (error: unknown) {
