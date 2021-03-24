@@ -299,6 +299,13 @@ section.bots.create_table = () => {
 
     loading.destroy_indicator($("#admin_page_bots_loading_indicator"));
     $bots_table.show();
+
+    // Clear the input field when clicked on cross icon and
+    // render the admin_bots_table again.
+    $("#clear_bot_list_search_button").on("click", () => {
+        $("#bot_list_search").val("");
+        section.bots.create_table();
+    });
 };
 
 section.active.create_table = (active_users) => {

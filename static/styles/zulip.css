@@ -1755,7 +1755,8 @@ div.focused_table {
 .muted_topics_search_section,
 .emojis_search_section,
 .user_list_search_section,
-.deactivated_user_search_section {
+.deactivated_user_search_section,
+.bot_list_search_section {
     float: right;
     margin: 10px 0 20px 0;
 }
