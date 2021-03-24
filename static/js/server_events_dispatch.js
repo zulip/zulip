@@ -157,6 +157,9 @@ export function dispatch_normal_event(event) {
                 case "remove":
                     reactions.remove_reaction(event);
                     break;
+                default:
+                    blueslip.error("Unexpected event type reaction/" + event.op);
+                    break;
             }
             break;
 
