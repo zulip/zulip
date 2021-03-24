@@ -5,10 +5,13 @@ import shlex
 import subprocess
 import sys
 
+import requests
+
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from scripts.lib.zulip_tools import ENDC, FAIL, OKGREEN
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from zerver.lib.test_fixtures import reset_zulip_test_database
 
 # Request the special webpack setup for frontend integration tests,
 # where webpack assets are compiled up front rather than running in
@@ -83,6 +86,13 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
                 flush=True,
             )
             ret = subprocess.call(cmd)
+
+            # Resetting test environment.
+            reset_zulip_test_database()
+            # We are calling to /flush_caches to remove all the server-side caches.
+            response = requests.get("http://zulip.zulipdev.com:9981/flush_caches")
+            assert response.status_code == 200
+
             if ret != 0:
                 return ret, current_test_num
             current_test_num += 1
