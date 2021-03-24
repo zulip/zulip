@@ -721,26 +721,6 @@ export function register_click_handlers() {
         toggle_emoji_popover(this, message_id);
     });
 
-    $("#main_div").on("mouseenter", ".reaction_button", (e) => {
-        e.stopPropagation();
-
-        const elem = $(e.currentTarget);
-        const title = i18n.t("Add emoji reaction");
-        elem.tooltip({
-            title: title + " (:)",
-            trigger: "hover",
-            placement: "bottom",
-            animation: false,
-        });
-        elem.tooltip("show");
-        $(".tooltip-arrow").remove();
-    });
-
-    $("#main_div").on("mouseleave", ".reaction_button", (e) => {
-        e.stopPropagation();
-        $(e.currentTarget).tooltip("hide");
-    });
-
     $("body").on("click", ".actions_popover .reaction_button", (e) => {
         const message_id = $(e.currentTarget).data("message-id");
         e.preventDefault();
