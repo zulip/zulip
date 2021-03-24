@@ -880,4 +880,6 @@ run_test("realm_export", (override) => {
 run_test("server_event_dispatch_op_errors", () => {
     blueslip.expect("error", "Unexpected event type subscription/other");
     server_events_dispatch.dispatch_normal_event({type: "subscription", op: "other"});
+    blueslip.expect("error", "Unexpected event type reaction/other");
+    server_events_dispatch.dispatch_normal_event({type: "reaction", op: "other"});
 });
