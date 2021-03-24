@@ -20,14 +20,14 @@ that's running one of:
 
 You can just run the Zulip provision script on your machine.
 
-**Note**: you should not use the `root` user to run the installation.
+**Note**: You should not use the `root` user to run the installation.
 If you are using a [remote server](../development/remote.md), see
 the
 [section on creating appropriate user accounts](../development/remote.html#setting-up-user-accounts).
 
 ```eval_rst
 .. warning::
-    there is no supported uninstallation process with this
+    There is no supported uninstallation process with this
     method.  If you want that, use the Vagrant environment, where you can
     just do `vagrant destroy` to clean up the development environment.
 ```
@@ -168,7 +168,8 @@ likely only a few lines of changes to `tools/lib/provision.py` and
 `scripts/lib/setup-apt-repo` if you'd like to do it yourself and
 submit a pull request, or you can ask for help in
 [#development help](https://chat.zulip.org/#narrow/stream/49-development-help)
-on chat.zulip.org, and a core team member can help add support for you.
+on chat.zulip.org, and a core team member can help guide you through
+adding support for the platform.
 
 ### On OpenBSD 5.8 (experimental):
 
@@ -312,7 +313,7 @@ you can sign up [here](https://aws.amazon.com/cloud9/).
 
 #### Install zulip-cloud9
 
-There's an NPM package, `zulip-cloud9`, that provides a wrapper around
+There's a NPM package, `zulip-cloud9`, that provides a wrapper around
 the Zulip development server for use in the Cloud9 environment.
 
 Note: `npm i -g zulip-cloud9` does not work in zulip's virtual
