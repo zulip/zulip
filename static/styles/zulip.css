@@ -1758,7 +1758,8 @@ div.focused_table {
 .deactivated_user_search_section,
 .bot_list_search_section,
 .default_streams_list_search_section,
-.linkifier_settings_search_section {
+.linkifier_settings_search_section,
+.invites_list_search_section {
     float: right;
     margin: 10px 0 20px 0;
 }
