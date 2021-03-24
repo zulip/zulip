@@ -31,7 +31,7 @@ development environment:
 * On popular Linux platforms, you can **[install directly][install-direct]**.
 * On **other Linux/UNIX** distributions, you'll need to follow slightly different
   instructions to **[install manually][install-generic]**.
-* On Windows, you can **[install directly][install-via-wsl]** via wsl.
+* On Windows, you can **[install directly][install-via-wsl]** via WSL 2.
 
 ## Slow internet connections
 
