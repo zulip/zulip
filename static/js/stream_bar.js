@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import * as stream_color from "./stream_color";
+import * as color_class from "./color_class";
 import * as stream_data from "./stream_data";
 
 function update_lock_icon_for_stream(stream_name) {
@@ -29,6 +29,6 @@ export function decorate(stream_name, element, is_compose) {
     }
     element
         .css("background-color", color)
-        .removeClass(stream_color.color_classes)
-        .addClass(stream_color.get_color_class(color));
+        .removeClass("dark_background")
+        .addClass(color_class.get_css_class(color));
 }

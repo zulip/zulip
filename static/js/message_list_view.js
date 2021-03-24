@@ -9,6 +9,7 @@ import render_single_message from "../templates/single_message.hbs";
 
 import * as activity from "./activity";
 import * as blueslip from "./blueslip";
+import * as color_class from "./color_class";
 import * as compose from "./compose";
 import * as compose_fade from "./compose_fade";
 import * as condense from "./condense";
@@ -23,7 +24,6 @@ import * as reactions from "./reactions";
 import * as recent_topics from "./recent_topics";
 import * as rendered_markdown from "./rendered_markdown";
 import * as rows from "./rows";
-import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as submessage from "./submessage";
 import * as timerender from "./timerender";
@@ -138,7 +138,7 @@ function populate_group_from_message_container(group, message_container) {
 
     if (group.is_stream) {
         group.background_color = stream_data.get_color(message_container.msg.stream);
-        group.color_class = stream_color.get_color_class(group.background_color);
+        group.color_class = color_class.get_css_class(group.background_color);
         group.invite_only = stream_data.get_invite_only(message_container.msg.stream);
         group.topic = message_container.msg.topic;
         group.match_topic = util.get_match_topic(message_container.msg);

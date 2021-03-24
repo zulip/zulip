@@ -26,13 +26,10 @@ mock_esm("../../static/js/ui", {get_scroll_element: (element) => element});
 
 const {Filter} = zrequire("../js/filter");
 const stream_sort = zrequire("stream_sort");
-const stream_color = zrequire("stream_color");
 const unread = zrequire("unread");
 const stream_data = zrequire("stream_data");
 const scroll_util = zrequire("scroll_util");
 const stream_list = zrequire("stream_list");
-
-stream_color.initialize();
 
 const devel = {
     name: "devel",

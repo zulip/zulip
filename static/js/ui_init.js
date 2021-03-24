@@ -56,7 +56,6 @@ import * as settings_toggle from "./settings_toggle";
 import * as spoilers from "./spoilers";
 import * as starred_messages from "./starred_messages";
 import * as stream_bar from "./stream_bar";
-import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_list from "./stream_list";
@@ -481,7 +480,6 @@ export function initialize_everything() {
     message_viewport.initialize();
     initialize_kitchen_sink_stuff();
     echo.initialize();
-    stream_color.initialize();
     stream_edit.initialize();
     stream_data.initialize(stream_data_params);
     pm_conversations.recent.initialize(pm_conversations_params);
