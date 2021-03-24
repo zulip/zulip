@@ -1,4 +1,8 @@
+import $ from "jquery";
 import tippy, {delegate} from "tippy.js";
+
+import * as reactions from "./reactions";
+import * as rows from "./rows";
 
 // We override the defaults set by tippy library here,
 // so make sure to check this too after checking tippyjs
@@ -36,5 +40,17 @@ export function initialize() {
         // Make all html elements having this class
         // show tippy styled tooltip on hover.
         target: ".tippy-zulip-tooltip",
+    });
+
+    // message reaction tooltip showing who reacted.
+    delegate("body", {
+        target: ".message_reaction",
+        onShow(instance) {
+            const elem = $(instance.reference);
+            const local_id = elem.attr("data-reaction-id");
+            const message_id = rows.get_message_id(instance.reference);
+            const title = reactions.get_reaction_title_data(message_id, local_id);
+            instance.setContent(title);
+        },
     });
 }
