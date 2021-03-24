@@ -62,8 +62,7 @@ We will be using Microsoft's new feature [WSL
 2](https://docs.microsoft.com/en-us/windows/wsl/wsl2-about) for
 installation.
 
-WSL2 can be uninstalled by following the instructions [here from Microsoft]
-(https://docs.microsoft.com/en-us/windows/wsl/faq#how-do-i-uninstall-a-wsl-distribution).
+WSL 2 can be uninstalled by following the instructions [here from Microsoft](https://docs.microsoft.com/en-us/windows/wsl/faq#how-do-i-uninstall-a-wsl-distribution-).
 
 1. Install WSL 2 by following the instructions provided by Microsoft
 [here](https://docs.microsoft.com/en-us/windows/wsl/wsl2-install).
