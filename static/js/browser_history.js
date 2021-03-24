@@ -5,7 +5,7 @@ import * as ui_util from "./ui_util";
 const state = {
     is_internal_change: false,
     hash_before_overlay: null,
-    old_hash: typeof window !== "undefined" ? window.location.hash : "#",
+    old_hash: window.location.hash,
 };
 
 export function clear_for_testing() {
