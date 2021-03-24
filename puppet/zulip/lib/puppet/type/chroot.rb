@@ -1,12 +1,12 @@
 Puppet::Type.newtype(:chroot) do
-    ensurable
-    newparam(:release) do
-       desc "The name of the release"
-       isnamevar
-    end
-    newparam(:distro) do
-       desc "The name of the Linux distribution (Debian, Ubuntu)"
-    end
+  ensurable
+  newparam(:release) do
+    desc "The name of the release"
+    isnamevar
+  end
+  newparam(:distro) do
+    desc "The name of the Linux distribution (Debian, Ubuntu)"
+  end
 end
 
 Puppet::Type.type(:chroot).provide(:chroot) do
@@ -16,12 +16,12 @@ Puppet::Type.type(:chroot).provide(:chroot) do
 
   def create
     if @resource[:distro] == "ubuntu"
-        mirror = "http://mirror.cc.columbia.edu/pub/linux/ubuntu/archive/"
+      mirror = "http://mirror.cc.columbia.edu/pub/linux/ubuntu/archive/"
     else
-        mirror = "http://mirror.cc.columbia.edu/debian"
+      mirror = "http://mirror.cc.columbia.edu/debian"
     end
     ["amd64", "i386"].each { |x|
-        system("mk-sbuild #{@resource[:release]} --arch=#{x} --debootstrap-mirror=#{mirror} --distro=#{@resource[:distro]}")
+      system("mk-sbuild #{@resource[:release]} --arch=#{x} --debootstrap-mirror=#{mirror} --distro=#{@resource[:distro]}")
     }
   end
 
