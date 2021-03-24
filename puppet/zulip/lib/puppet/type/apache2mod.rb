@@ -1,9 +1,9 @@
 Puppet::Type.newtype(:apache2mod) do
-    ensurable
-    newparam(:name) do
-       desc "The name of the module to enable"
-       isnamevar
-    end
+  ensurable
+  newparam(:name) do
+    desc "The name of the module to enable"
+    isnamevar
+  end
 end
 
 Puppet::Type.type(:apache2mod).provide(:apache2mod) do
