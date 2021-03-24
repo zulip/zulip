@@ -6392,7 +6392,14 @@ paths:
                           the 50000 most recent unread messages the user has received.  This will usually
                           contain every unread message the user has received, but clients should support
                           users with even more unread messages (and not hardcode the number 50000).
+                        additionalProperties: false
                         properties:
+                          count:
+                            type: integer
+                            description: |
+                              The total number of unread messages to display; this includes private
+                              and group private messages, as well as all messags to unmuted topics
+                              on unmuted streams.
                           pms:
                             type: array
                             description: |
