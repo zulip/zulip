@@ -32,8 +32,13 @@
         </div>
     </form>
 
-    <input type="text" class="search" placeholder="{{t 'Filter emojis' }}"
-      aria-label="{{t 'Filter emojis' }}"/>
+    <div class="input-append emojis_search_section">
+        <input class="search" id="emojis_search" type="text" placeholder="{{t 'Filter emojis' }}"
+          aria-label="{{t 'Filter emojis' }}">
+        <button type="button" class="btn clear_search_button" id="clear_emojis_search_button">
+            <i class="fa fa-remove" aria-hidden="true"></i>
+        </button>
+    </div>
     <div class="progressive-table-wrapper" data-simplebar>
         <table class="table table-condensed table-striped wrapped-table admin_emoji_table">
             <thead>

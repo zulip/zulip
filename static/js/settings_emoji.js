@@ -123,6 +123,13 @@ export function populate_emoji() {
     });
 
     loading.destroy_indicator($("#admin_page_emoji_loading_indicator"));
+
+    // Clear the input field when clicked on cross icon and
+    // render the admin_emoji_table again.
+    $("#clear_emojis_search_button").on("click", () => {
+        $("#emojis_search").val("");
+        populate_emoji();
+    });
 }
 
 export function build_emoji_upload_widget() {
