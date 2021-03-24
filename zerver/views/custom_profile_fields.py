@@ -29,7 +29,7 @@ from zerver.lib.validator import (
     check_list,
     check_string,
     check_union,
-    validate_choice_field_data,
+    validate_select_field_data,
 )
 from zerver.models import CustomProfileField, UserProfile, custom_profile_fields_for_realm
 
@@ -62,7 +62,7 @@ def validate_custom_field_data(field_type: int, field_data: ProfileFieldData) ->
             # Choice type field must have at least have one choice
             if len(field_data) < 1:
                 raise JsonableError(_("Field must have at least one choice."))
-            validate_choice_field_data(field_data)
+            validate_select_field_data(field_data)
         elif field_type == CustomProfileField.EXTERNAL_ACCOUNT:
             validate_external_account_field_data(field_data)
     except ValidationError as error:

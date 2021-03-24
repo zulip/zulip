@@ -88,7 +88,7 @@ from zerver.lib.validator import (
     check_long_string,
     check_short_string,
     check_url,
-    validate_choice_field,
+    validate_select_field,
 )
 
 MAX_TOPIC_NAME_LENGTH = 60
@@ -3308,7 +3308,7 @@ class CustomProfileField(models.Model):
     # and value argument. i.e. SELECT require field_data, USER require
     # realm as argument.
     SELECT_FIELD_TYPE_DATA: List[ExtendedFieldElement] = [
-        (SELECT, ugettext_lazy("List of options"), validate_choice_field, str, "SELECT"),
+        (SELECT, ugettext_lazy("List of options"), validate_select_field, str, "SELECT"),
     ]
     USER_FIELD_TYPE_DATA: List[UserFieldElement] = [
         (USER, ugettext_lazy("Person picker"), check_valid_user_ids, ast.literal_eval, "USER"),
