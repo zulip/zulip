@@ -75,6 +75,13 @@ export function populate_linkifiers(linkifiers_data) {
         },
         simplebar_container: $("#linkifier-settings .progressive-table-wrapper"),
     });
+
+    // Clear the input field when clicked on cross icon and
+    // render the admin_linkifiers_table again.
+    $("#clear_linkifier_settings_search_button").on("click", () => {
+        $("#linkifier_settings_search").val("");
+        populate_linkifiers(linkifiers_data);
+    });
 }
 
 export function set_up() {
