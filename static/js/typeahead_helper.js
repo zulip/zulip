@@ -273,17 +273,9 @@ export function sort_recipients(
     query,
     current_stream,
     current_topic,
-    groups,
-    max_num_items,
+    groups = [],
+    max_num_items = 20,
 ) {
-    if (!groups) {
-        groups = [];
-    }
-
-    if (max_num_items === undefined) {
-        max_num_items = 20;
-    }
-
     function sort_relevance(items) {
         return sort_people_for_relevance(items, current_stream, current_topic);
     }

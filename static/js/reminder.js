@@ -42,11 +42,7 @@ function patch_request_for_scheduling(request, message_content, deliver_at, deli
     return new_request;
 }
 
-export function schedule_message(request) {
-    if (request === undefined) {
-        request = compose.create_message_object();
-    }
-
+export function schedule_message(request = compose.create_message_object()) {
     const raw_message = request.content.split("\n");
     const command_line = raw_message[0];
     const message = raw_message.slice(1).join("\n");

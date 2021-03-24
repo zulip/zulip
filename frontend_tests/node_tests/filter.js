@@ -38,19 +38,9 @@ people.add_active_user(steve);
 people.initialize_current_user(me.user_id);
 
 function assert_same_operators(result, terms) {
-    terms = terms.map((term) => {
-        // If negated flag is undefined, we explicitly
-        // set it to false.
-        let negated = term.negated;
-        if (!negated) {
-            negated = false;
-        }
-        return {
-            negated,
-            operator: term.operator,
-            operand: term.operand,
-        };
-    });
+    // If negated flag is undefined, we explicitly
+    // set it to false.
+    terms = terms.map(({negated = false, operator, operand}) => ({negated, operator, operand}));
     assert.deepEqual(result, terms);
 }
 

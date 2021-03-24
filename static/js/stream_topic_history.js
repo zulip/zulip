@@ -94,17 +94,14 @@ export class PerStreamHistory {
         }
     }
 
-    add_or_update(opts) {
-        const topic_name = opts.topic_name;
-        let message_id = opts.message_id || 0;
-
+    add_or_update({topic_name, message_id = 0}) {
         message_id = Number.parseInt(message_id, 10);
         this.update_stream_max_message_id(message_id);
 
         const existing = this.topics.get(topic_name);
 
         if (!existing) {
-            this.topics.set(opts.topic_name, {
+            this.topics.set(topic_name, {
                 message_id,
                 pretty_name: topic_name,
                 historical: false,

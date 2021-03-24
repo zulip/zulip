@@ -13,10 +13,7 @@ import * as ui_report from "./ui_report";
 let attachments;
 let upload_space_used;
 
-export function bytes_to_size(bytes, kb_with_1024_bytes) {
-    if (kb_with_1024_bytes === undefined) {
-        kb_with_1024_bytes = false;
-    }
+export function bytes_to_size(bytes, kb_with_1024_bytes = false) {
     const kb_size = kb_with_1024_bytes ? 1024 : 1000;
     const sizes = ["B", "KB", "MB", "GB", "TB"];
     if (bytes === 0) {

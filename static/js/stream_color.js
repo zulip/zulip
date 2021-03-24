@@ -70,8 +70,7 @@ export function set_colorpicker_color(colorpicker, color) {
     });
 }
 
-export function update_stream_color(sub, color, opts) {
-    opts = {update_historical: false, ...opts};
+export function update_stream_color(sub, color, {update_historical = false} = {}) {
     sub.color = color;
     const stream_id = sub.stream_id;
     // The swatch in the subscription row header.
@@ -94,7 +93,7 @@ export function update_stream_color(sub, color, opts) {
         )}'] .large-icon`,
     ).css("color", color);
 
-    if (opts.update_historical) {
+    if (update_historical) {
         update_historical_message_color(sub.name, color);
     }
     update_stream_sidebar_swatch_color(stream_id, color);

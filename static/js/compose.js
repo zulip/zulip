@@ -334,11 +334,7 @@ export function send_message_success(local_id, message_id, locally_echoed) {
     echo.reify_message_id(local_id, message_id);
 }
 
-export function send_message(request) {
-    if (request === undefined) {
-        request = create_message_object();
-    }
-
+export function send_message(request = create_message_object()) {
     if (request.type === "private") {
         request.to = JSON.stringify(request.to);
     } else {

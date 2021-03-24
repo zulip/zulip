@@ -202,17 +202,9 @@ export class Filter {
         return operator;
     }
 
-    static canonicalize_term(opts) {
-        let negated = opts.negated;
-        let operator = opts.operator;
-        let operand = opts.operand;
-
-        // Make negated be explicitly false for both clarity and
+    static canonicalize_term({negated = false, operator, operand}) {
+        // Make negated explicitly default to false for both clarity and
         // simplifying deepEqual checks in the tests.
-        if (!negated) {
-            negated = false;
-        }
-
         operator = Filter.canonicalize_operator(operator);
 
         switch (operator) {
