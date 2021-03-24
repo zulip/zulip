@@ -325,6 +325,7 @@ form#add_new_subscription {
 
 .subscriber-search {
     margin: 10px 0 0 0;
+    font-size: 0.9rem;
 }
 
 .subscriber_list_add .form-inline {
