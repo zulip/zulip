@@ -1821,6 +1821,11 @@ class Client(models.Model):
 get_client_cache: Dict[str, Client] = {}
 
 
+def clear_client_cache() -> None:  # nocoverage
+    global get_client_cache
+    get_client_cache = {}
+
+
 def get_client(name: str) -> Client:
     # Accessing KEY_PREFIX through the module is necessary
     # because we need the updated value of the variable.
