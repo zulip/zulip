@@ -57,6 +57,13 @@ export function build_default_stream_table() {
     });
 
     loading.destroy_indicator($("#admin_page_default_streams_loading_indicator"));
+
+    // Clear the input field when clicked on cross icon and
+    // render the admin_default_streams_table again.
+    $("#clear_default_streams_list_search_button").on("click", () => {
+        $("#default_streams_list_search").val("");
+        build_default_stream_table();
+    });
 }
 
 export function update_default_streams_table() {
