@@ -2,7 +2,7 @@ import {strict as assert} from "assert";
 import "css.escape";
 import path from "path";
 
-import type {Browser, ConsoleMessage, ElementHandle, Page} from "puppeteer";
+import type {Browser, ConsoleMessage, ConsoleMessageLocation, ElementHandle, Page} from "puppeteer";
 import {launch} from "puppeteer";
 
 import {test_credentials} from "../../var/puppeteer/test_credentials";
@@ -492,25 +492,48 @@ class CommonUtils {
         // a screenshot of it when the test fails.
         const browser = await this.ensure_browser();
         const page = await this.get_page();
+
         page.on("console", (message: ConsoleMessage) => {
-            const {url, lineNumber, columnNumber} = message.location();
-            console.log(
-                `${url}:${lineNumber + 1}:${columnNumber}: ${message.type()}: ${message.text()}`,
-            );
+            function context({url, lineNumber, columnNumber}: ConsoleMessageLocation): string {
+                if (lineNumber === undefined || columnNumber === undefined) {
+                    return `${url}`;
+                }
+                return `${url}:${lineNumber + 1}:${columnNumber + 1}`;
+            }
+
+            console.log(`${context(message.location())}: ${message.type()}: ${message.text()}`);
             if (message.type() === "trace") {
-                for (const {url, lineNumber, columnNumber} of message.stackTrace()) {
-                    console.log(`    at ${url}:${lineNumber + 1}:${columnNumber}`);
+                for (const frame of message.stackTrace()) {
+                    console.log(`    at ${context(frame)}`);
                 }
             }
         });
+
+        let page_errored = false;
+        page.on("pageerror", async (error: Error) => {
+            console.error("Page error:", error);
+            page_errored = true;
+
+            try {
+                // Take a screenshot, and increment the screenshot_id.
+                await this.screenshot(page, `failure-${this.screenshot_id}`);
+                this.screenshot_id += 1;
+            } finally {
+                console.log("Closing page to stop the test...");
+                await page.close();
+            }
+        });
+
         try {
             await test_function(page);
         } catch (error: unknown) {
             console.log(error);
 
-            // Take a screenshot, and increment the screenshot_id.
-            await this.screenshot(page, `failure-${this.screenshot_id}`);
-            this.screenshot_id += 1;
+            if (!page_errored) {
+                // Take a screenshot, and increment the screenshot_id.
+                await this.screenshot(page, `failure-${this.screenshot_id}`);
+                this.screenshot_id += 1;
+            }
 
             await browser.close();
             process.exit(1);
