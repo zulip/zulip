@@ -361,6 +361,13 @@ section.deactivated.create_table = (deactivated_users) => {
 
     loading.destroy_indicator($("#admin_page_deactivated_users_loading_indicator"));
     $("#admin_deactivated_users_table").show();
+
+    // Clear the input field when clicked on cross icon and
+    // render the admin_deactivated_users_table again.
+    $("#clear_deactivated_user_list_search_button").on("click", () => {
+        $("#deactivated_user_list_search").val("");
+        section.deactivated.create_table(deactivated_users);
+    });
 };
 
 export function update_bot_data(bot_user_id) {
