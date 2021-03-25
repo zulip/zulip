@@ -120,6 +120,11 @@ jobs:
             is_focal: true
             os: focal
 
+          - docker_image: ligmitz/actions:buster
+            name: Buster production install
+            is_buster: true
+            os: buster
+
     name: ${{ matrix.name  }}
     container: ${{ matrix.docker_image }}
     runs-on: ubuntu-latest
