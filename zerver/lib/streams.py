@@ -1,6 +1,5 @@
 from typing import Iterable, List, Optional, Tuple, Union
 
-from django.conf import settings
 from django.db.models.query import QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
@@ -225,6 +224,26 @@ def access_stream_for_send_message(
         else:
             raise JsonableError(e.msg)
 
+    # forwarder_user_profile cases should be analyzed first, as incorrect
+    # message forging is cause for denying access regardless of any other factors.
+    if forwarder_user_profile is not None and forwarder_user_profile != sender:
+        if (
+            forwarder_user_profile.can_forge_sender
+            and forwarder_user_profile.realm_id == sender.realm_id
+            and sender.realm_id == stream.realm_id
+        ):
+            return
+        else:
+            raise JsonableError(_("User not authorized for this query"))
+
+    if is_cross_realm_bot_email(sender.delivery_email):
+        return
+
+    if stream.realm_id != sender.realm_id:
+        # Sending to other realm's streams is always disallowed,
+        # with the exception of cross-realm bots.
+        raise JsonableError(_("User not authorized for this query"))
+
     if stream.is_web_public:
         # Even guest users can write to web-public streams.
         return
@@ -238,22 +257,13 @@ def access_stream_for_send_message(
         return
 
     if sender.can_forge_sender:
-        return
-
-    if forwarder_user_profile is not None and forwarder_user_profile.can_forge_sender:
+        # can_forge_sender allows sending to any stream in the realm.
         return
 
     if sender.is_bot and (
         sender.bot_owner is not None and subscribed_to_stream(sender.bot_owner, stream.id)
     ):
         # Bots can send to any stream their owner can.
-        return
-
-    if sender.delivery_email == settings.WELCOME_BOT:
-        # The welcome bot welcomes folks to the stream.
-        return
-
-    if sender.delivery_email == settings.NOTIFICATION_BOT:
         return
 
     # All other cases are an error.
