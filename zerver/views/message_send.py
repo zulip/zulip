@@ -31,7 +31,6 @@ from zerver.models import (
     RealmDomain,
     UserProfile,
     email_to_domain,
-    get_realm,
     get_user_including_cross_realm,
 )
 
@@ -211,14 +210,9 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
 
     realm = None
     if realm_str and realm_str != user_profile.realm.string_id:
-        if not is_super_user:
-            # The email gateway bot needs to be able to send messages in
-            # any realm.
-            return json_error(_("User not authorized for this query"))
-        try:
-            realm = get_realm(realm_str)
-        except Realm.DoesNotExist:
-            return json_error(_("Unknown organization '{}'").format(realm_str))
+        # The realm_str parameter does nothing, because it has to match
+        # the user's realm - but we keep it around for backward compatibility.
+        return json_error(_("User not authorized for this query"))
 
     if client.name in ["zephyr_mirror", "irc_mirror", "jabber_mirror", "JabberMirror"]:
         # Here's how security works for mirroring:

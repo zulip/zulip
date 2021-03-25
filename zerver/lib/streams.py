@@ -1,6 +1,5 @@
 from typing import Any, Iterable, List, Mapping, Optional, Set, Tuple, Union
 
-from django.conf import settings
 from django.db.models.query import QuerySet
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
@@ -165,6 +164,30 @@ def access_stream_for_send_message(sender: UserProfile,
         elif sender.is_new_member:
             raise JsonableError(_("New members cannot send to this stream."))
 
+    # forwarder_user_profile cases should be analyzed first, as incorrect
+    # message forging is cause for denying access regardless of any other factors.
+    if forwarder_user_profile is not None and forwarder_user_profile != sender:
+        if (
+            forwarder_user_profile.is_api_super_user
+            and forwarder_user_profile.realm_id == sender.realm_id
+            and sender.realm_id == stream.realm_id
+        ):
+            return
+        else:
+            raise JsonableError(_("User not authorized for this query"))
+
+    if is_cross_realm_bot_email(sender.delivery_email):
+        return
+
+    if stream.realm_id != sender.realm_id:
+        # Sending to other realm's streams is always disallowed,
+        # with the exception of cross-realm bots.
+        raise JsonableError(_("User not authorized for this query"))
+
+    if stream.is_web_public:
+        # Even guest users can write to web-public streams.
+        return
+
     if not (stream.invite_only or sender.is_guest):
         # This is a public stream and sender is not a guest user
         return
@@ -174,21 +197,13 @@ def access_stream_for_send_message(sender: UserProfile,
         return
 
     if sender.is_api_super_user:
+        # is_api_super_user allows sending to any stream in the realm.
         return
 
-    if (forwarder_user_profile is not None and forwarder_user_profile.is_api_super_user):
-        return
-
-    if sender.is_bot and (sender.bot_owner is not None and
-                          subscribed_to_stream(sender.bot_owner, stream.id)):
+    if sender.is_bot and (
+        sender.bot_owner is not None and subscribed_to_stream(sender.bot_owner, stream.id)
+    ):
         # Bots can send to any stream their owner can.
-        return
-
-    if sender.delivery_email == settings.WELCOME_BOT:
-        # The welcome bot welcomes folks to the stream.
-        return
-
-    if sender.delivery_email == settings.NOTIFICATION_BOT:
         return
 
     # All other cases are an error.

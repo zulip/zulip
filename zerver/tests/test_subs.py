@@ -3455,7 +3455,7 @@ class SubscriptionAPITest(ZulipTestCase):
                 dict(principals=ujson.dumps([user1.id, user2.id])),
                 invite_only=True,
             )
-        self.assert_length(queries, 40)
+        self.assert_length(queries, 37)
 
         # Test creating a public stream with announce when realm has a notification stream.
         notifications_stream = get_stream(self.streams[0], self.test_realm)
