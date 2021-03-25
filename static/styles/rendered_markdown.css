@@ -460,6 +460,10 @@
     display: none;
 }
 
+.informational-overlays .copy_codeblock {
+    display: none;
+}
+
 .preview_content .code_external_link {
     right: 12px;
 }
