@@ -33,7 +33,7 @@ from zerver.lib.request import JsonableError
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
 from zerver.lib.streams import StreamDict, create_streams_if_needed, get_public_streams_queryset
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import POSTRequestMock, get_user_messages, queries_captured
+from zerver.lib.test_helpers import HostRequestMock, get_user_messages, queries_captured
 from zerver.lib.topic import MATCH_TOPIC, TOPIC_NAME
 from zerver.lib.topic_mutes import set_topic_mutes
 from zerver.lib.types import DisplayRecipientT
@@ -2927,7 +2927,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self, query_params: Dict[str, object], expected: str
     ) -> None:
         user_profile = self.example_user("hamlet")
-        request = POSTRequestMock(query_params, user_profile)
+        request = HostRequestMock(query_params, user_profile)
         with queries_captured() as queries:
             get_messages_backend(request, user_profile)
 
@@ -2986,7 +2986,7 @@ class GetOldMessagesTest(ZulipTestCase):
             num_after=10,
             narrow='[["stream", "England"]]',
         )
-        request = POSTRequestMock(query_params, user_profile)
+        request = HostRequestMock(query_params, user_profile)
 
         payload = get_messages_backend(request, user_profile)
         result = orjson.loads(payload.content)
@@ -3023,7 +3023,7 @@ class GetOldMessagesTest(ZulipTestCase):
             num_after=10,
             narrow="[]",
         )
-        request = POSTRequestMock(query_params, user_profile)
+        request = HostRequestMock(query_params, user_profile)
 
         payload = get_messages_backend(request, user_profile)
         result = orjson.loads(payload.content)
@@ -3036,7 +3036,7 @@ class GetOldMessagesTest(ZulipTestCase):
             num_after=10,
             narrow="[]",
         )
-        request = POSTRequestMock(query_params, user_profile)
+        request = HostRequestMock(query_params, user_profile)
 
         payload = get_messages_backend(request, user_profile)
         result = orjson.loads(payload.content)
@@ -3050,7 +3050,7 @@ class GetOldMessagesTest(ZulipTestCase):
             num_after=10,
             narrow="[]",
         )
-        request = POSTRequestMock(query_params, user_profile)
+        request = HostRequestMock(query_params, user_profile)
 
         payload = get_messages_backend(request, user_profile)
         result = orjson.loads(payload.content)
@@ -3064,7 +3064,7 @@ class GetOldMessagesTest(ZulipTestCase):
             num_after=10,
             narrow="[]",
         )
-        request = POSTRequestMock(query_params, user_profile)
+        request = HostRequestMock(query_params, user_profile)
 
         payload = get_messages_backend(request, user_profile)
         result = orjson.loads(payload.content)
@@ -3078,7 +3078,7 @@ class GetOldMessagesTest(ZulipTestCase):
             num_after=10,
             narrow="[]",
         )
-        request = POSTRequestMock(query_params, user_profile)
+        request = HostRequestMock(query_params, user_profile)
 
         payload = get_messages_backend(request, user_profile)
         result = orjson.loads(payload.content)
@@ -3106,7 +3106,7 @@ class GetOldMessagesTest(ZulipTestCase):
             num_after=10,
             narrow="[]",
         )
-        request = POSTRequestMock(query_params, user_profile)
+        request = HostRequestMock(query_params, user_profile)
 
         with queries_captured() as all_queries:
             get_messages_backend(request, user_profile)
@@ -3151,7 +3151,7 @@ class GetOldMessagesTest(ZulipTestCase):
             num_after=10,
             narrow="[]",
         )
-        request = POSTRequestMock(query_params, user_profile)
+        request = HostRequestMock(query_params, user_profile)
 
         first_visible_message_id = first_unread_message_id + 2
         with first_visible_id_as(first_visible_message_id):
@@ -3177,7 +3177,7 @@ class GetOldMessagesTest(ZulipTestCase):
             num_after=10,
             narrow="[]",
         )
-        request = POSTRequestMock(query_params, user_profile)
+        request = HostRequestMock(query_params, user_profile)
 
         with queries_captured() as all_queries:
             get_messages_backend(request, user_profile)
@@ -3229,7 +3229,7 @@ class GetOldMessagesTest(ZulipTestCase):
             num_after=0,
             narrow='[["stream", "Scotland"]]',
         )
-        request = POSTRequestMock(query_params, user_profile)
+        request = HostRequestMock(query_params, user_profile)
 
         with queries_captured() as all_queries:
             get_messages_backend(request, user_profile)

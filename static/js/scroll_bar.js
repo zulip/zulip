@@ -1,6 +1,7 @@
-"use strict";
+import $ from "jquery";
 
-const {media_breakpoints} = require("./css_variables");
+import {media_breakpoints} from "./css_variables";
+
 // A few of our width properties in Zulip depend on the width of the
 // browser scrollbar that is generated at the far right side of the
 // page, which unfortunately varies depending on the browser and
@@ -35,7 +36,7 @@ function getScrollbarWidth() {
 
 let sbWidth;
 
-exports.initialize = function () {
+export function initialize() {
     // Workaround for browsers with fixed scrollbars
     sbWidth = getScrollbarWidth();
 
@@ -55,7 +56,7 @@ exports.initialize = function () {
 
         $("#compose").css("left", "-" + sbWidth + "px");
         $(".compose-content").css({left: sbWidth + "px", "margin-right": 7 + sbWidth + "px"});
-        $("#keyboard-icon").css({right: sbWidth + 35 + "px"});
+        $("#keyboard-icon").css({"margin-right": sbWidth + "px"});
 
         $("head").append(
             "<style> @media (min-width: " +
@@ -71,10 +72,10 @@ exports.initialize = function () {
                 "</style>",
         );
     }
-    exports.set_layout_width();
-};
+    set_layout_width();
+}
 
-exports.set_layout_width = function () {
+export function set_layout_width() {
     // This logic unfortunately leads to a flash of mispositioned
     // content when reloading a Zulip browser window.  More details
     // are available in the comments on the max-width of 1400px in
@@ -90,6 +91,4 @@ exports.set_layout_width = function () {
         $(".fixed-app .app-main").css("max-width", 1400 + sbWidth + "px");
         $("#compose-container").css("max-width", 1400 + sbWidth + "px");
     }
-};
-
-window.scroll_bar = exports;
+}

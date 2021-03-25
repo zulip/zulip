@@ -216,6 +216,7 @@ exports.fixtures = {
     realm__deactivated: {
         type: "realm",
         op: "deactivated",
+        realm_id: 2,
     },
 
     realm__update__bot_creation_policy: {
@@ -478,6 +479,7 @@ exports.fixtures = {
 
     restart: {
         type: "restart",
+        server_generation: 2,
         immediate: true,
     },
 
@@ -562,8 +564,6 @@ exports.fixtures = {
     subscription__update: {
         type: "subscription",
         op: "update",
-        email: test_user.email,
-        name: streams.devel.name,
         stream_id: streams.devel.stream_id,
         property: "pin_to_top",
         value: true,
@@ -609,6 +609,20 @@ exports.fixtures = {
         setting_name: "default_language",
         setting: "fr",
         language_name: "French",
+        user: test_user.email,
+    },
+
+    update_display_settings__default_view_all_messages: {
+        type: "update_display_settings",
+        setting_name: "default_view",
+        setting: 1,
+        user: test_user.email,
+    },
+
+    update_display_settings__default_view_recent_topics: {
+        type: "update_display_settings",
+        setting_name: "default_view",
+        setting: "recent_topics",
         user: test_user.email,
     },
 

@@ -6,6 +6,7 @@ const markdown_test_cases = require("../../zerver/tests/fixtures/markdown_test_c
 const markdown_assert = require("../zjsunit/markdown_assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 
 set_global("location", {
     origin: "http://zulip.zulipdev.com",
@@ -32,15 +33,13 @@ set_global("Image", Image);
 const doc = "";
 set_global("document", doc);
 
-zrequire("hash_util");
-const emoji = zrequire("emoji", "shared/js/emoji");
-const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
-const pygments_data = zrequire("pygments_data", "generated/pygments_data.json");
-const fenced_code = zrequire("fenced_code", "shared/js/fenced_code");
+const emoji = zrequire("../shared/js/emoji");
+const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
+const pygments_data = zrequire("../generated/pygments_data.json");
+const fenced_code = zrequire("../shared/js/fenced_code");
 const markdown_config = zrequire("markdown_config");
-const marked = zrequire("marked", "third/marked/lib/marked");
+const marked = zrequire("../third/marked/lib/marked");
 const markdown = zrequire("markdown");
-zrequire("message_store");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const user_groups = zrequire("user_groups");
@@ -182,19 +181,16 @@ stream_data.add_sub(edgecase_stream_2);
 // streamTopicHandler and it would be parsed as edgecase_stream_2.
 stream_data.add_sub(amp_stream);
 
-// Check the default behavior of fenced code blocks
-// works properly before Markdown is initialized.
-run_test("fenced_block_defaults", () => {
-    const input = "\n```\nfenced code\n```\n\nand then after\n";
-    const expected =
-        '\n\n<div class="codehilite"><pre><span></span><code>fenced code\n</code></pre></div>\n\n\nand then after\n\n';
-    const output = fenced_code.process_fenced_code(input);
-    assert.equal(output, expected);
-});
-
 markdown.initialize(page_params.realm_filters, markdown_config.get_helpers());
 
-run_test("markdown_detection", () => {
+function test(label, f) {
+    run_test(label, (override) => {
+        markdown.update_linkifier_rules(page_params.realm_filters);
+        f(override);
+    });
+}
+
+test("markdown_detection", () => {
     const no_markup = [
         "This is a plaintext message",
         "This is a plaintext: message",
@@ -240,7 +236,7 @@ run_test("markdown_detection", () => {
     }
 });
 
-run_test("marked_shared", () => {
+test("marked_shared", () => {
     const tests = markdown_test_cases.regular_tests;
 
     for (const test of tests) {
@@ -265,7 +261,7 @@ run_test("marked_shared", () => {
     }
 });
 
-run_test("message_flags", () => {
+test("message_flags", () => {
     let message = {raw_content: "@**Leo**"};
     markdown.apply_markdown(message);
     assert(!message.mentioned);
@@ -282,7 +278,7 @@ run_test("message_flags", () => {
     assert(!message.mentioned_me_directly);
 });
 
-run_test("marked", () => {
+test("marked", () => {
     const test_cases = [
         {input: "hello", expected: "<p>hello</p>"},
         {input: "hello there", expected: "<p>hello there</p>"},
@@ -402,23 +398,23 @@ run_test("marked", () => {
             expected:
                 '<blockquote>\n<p>Mention in quote: <span class="user-mention silent" data-user-id="101">Cordelia Lear</span></p>\n</blockquote>\n<p>Mention outside quote: <span class="user-mention" data-user-id="101">@Cordelia Lear</span></p>',
         },
-        // Test only those realm filters which don't return True for
+        // Test only those linkifiers which don't return True for
         // `contains_backend_only_syntax()`. Those which return True
         // are tested separately.
         {
-            input: "This is a realm filter #1234 with text after it",
+            input: "This is a linkifier #1234 with text after it",
             expected:
-                '<p>This is a realm filter <a href="https://trac.example.com/ticket/1234" title="https://trac.example.com/ticket/1234">#1234</a> with text after it</p>',
+                '<p>This is a linkifier <a href="https://trac.example.com/ticket/1234" title="https://trac.example.com/ticket/1234">#1234</a> with text after it</p>',
         },
-        {input: "#1234is not a realm filter.", expected: "<p>#1234is not a realm filter.</p>"},
+        {input: "#1234is not a linkifier.", expected: "<p>#1234is not a linkifier.</p>"},
         {
-            input: "A pattern written as #1234is not a realm filter.",
-            expected: "<p>A pattern written as #1234is not a realm filter.</p>",
+            input: "A pattern written as #1234is not a linkifier.",
+            expected: "<p>A pattern written as #1234is not a linkifier.</p>",
         },
         {
-            input: "This is a realm filter with ZGROUP_123:45 groups",
+            input: "This is a linkifier with ZGROUP_123:45 groups",
             expected:
-                '<p>This is a realm filter with <a href="https://zone_45.zulip.net/ticket/123" title="https://zone_45.zulip.net/ticket/123">ZGROUP_123:45</a> groups</p>',
+                '<p>This is a linkifier with <a href="https://zone_45.zulip.net/ticket/123" title="https://zone_45.zulip.net/ticket/123">ZGROUP_123:45</a> groups</p>',
         },
         {input: "Test *italic*", expected: "<p>Test <em>italic</em></p>"},
         {
@@ -451,6 +447,16 @@ run_test("marked", () => {
             expected:
                 '<p><span class="user-mention" data-user-id="106">@Brother of Bobby|123</span></p>',
         },
+        {
+            input: "@**|106** valid user id.",
+            expected:
+                '<p><span class="user-mention" data-user-id="106">@Brother of Bobby|123</span> valid user id.</p>',
+        },
+        {
+            input: "@**|123|106** comes under user|id case.",
+            expected: "<p>@**|123|106** comes under user|id case.</p>",
+        },
+        {input: "@**|1234** invalid id.", expected: "<p>@**|1234** invalid id.</p>"},
         {input: "T\n@hamletcharacters", expected: "<p>T<br>\n@hamletcharacters</p>"},
         {
             input: "T\n@*hamletcharacters*",
@@ -465,8 +471,8 @@ run_test("marked", () => {
         },
         {input: "@*notagroup*", expected: "<p>@*notagroup*</p>"},
         {
-            input: "This is a realm filter `hello` with text after it",
-            expected: "<p>This is a realm filter <code>hello</code> with text after it</p>",
+            input: "This is a linkifier `hello` with text after it",
+            expected: "<p>This is a linkifier <code>hello</code> with text after it</p>",
         },
         // Test the emoticon conversion
         {input: ":)", expected: "<p>:)</p>"},
@@ -541,7 +547,7 @@ run_test("marked", () => {
     }
 });
 
-run_test("topic_links", () => {
+test("topic_links", () => {
     let message = {type: "stream", topic: "No links here"};
     markdown.add_topic_links(message);
     assert.equal(message.topic_links.length, 0);
@@ -590,7 +596,7 @@ run_test("topic_links", () => {
     assert.equal(message.topic_links.length, 0);
 });
 
-run_test("message_flags", () => {
+test("message_flags", () => {
     let input = "/me is testing this";
     let message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
@@ -662,42 +668,42 @@ run_test("message_flags", () => {
     assert.equal(message.mentioned, false);
 });
 
-run_test("backend_only_realm_filters", () => {
-    const backend_only_realm_filters = [
+test("backend_only_linkifiers", () => {
+    const backend_only_linkifiers = [
         "Here is the PR-#123.",
         "Function abc() was introduced in (PR)#123.",
     ];
-    for (const content of backend_only_realm_filters) {
+    for (const content of backend_only_linkifiers) {
         assert.equal(markdown.contains_backend_only_syntax(content), true);
     }
 });
 
-run_test("python_to_js_filter", () => {
-    // The only way to reach python_to_js_filter is indirectly, hence the call
-    // to update_realm_filter_rules.
-    markdown.update_realm_filter_rules([["/a(?im)a/g"], ["/a(?L)a/g"]]);
-    let actual_value = marked.InlineLexer.rules.zulip.realm_filters;
+test("python_to_js_linkifier", () => {
+    // The only way to reach python_to_js_linkifier is indirectly, hence the call
+    // to update_linkifier_rules.
+    markdown.update_linkifier_rules([["/a(?im)a/g"], ["/a(?L)a/g"]]);
+    let actual_value = marked.InlineLexer.rules.zulip.linkifiers;
     let expected_value = [/\/aa\/g(?!\w)/gim, /\/aa\/g(?!\w)/g];
     assert.deepEqual(actual_value, expected_value);
     // Test case with multiple replacements.
-    markdown.update_realm_filter_rules([
+    markdown.update_linkifier_rules([
         ["#cf(?P<contest>\\d+)(?P<problem>[A-Z][\\dA-Z]*)", "http://google.com"],
     ]);
-    actual_value = marked.InlineLexer.rules.zulip.realm_filters;
+    actual_value = marked.InlineLexer.rules.zulip.linkifiers;
     expected_value = [/#cf(\d+)([A-Z][\dA-Z]*)(?!\w)/g];
     assert.deepEqual(actual_value, expected_value);
     // Test incorrect syntax.
     blueslip.expect(
         "error",
-        "python_to_js_filter: Invalid regular expression: /!@#@(!#&((!&(@#((?!\\w)/: Unterminated group",
+        "python_to_js_linkifier: Invalid regular expression: /!@#@(!#&((!&(@#((?!\\w)/: Unterminated group",
     );
-    markdown.update_realm_filter_rules([["!@#@(!#&((!&(@#(", "http://google.com"]]);
-    actual_value = marked.InlineLexer.rules.zulip.realm_filters;
+    markdown.update_linkifier_rules([["!@#@(!#&((!&(@#(", "http://google.com"]]);
+    actual_value = marked.InlineLexer.rules.zulip.linkifiers;
     expected_value = [];
     assert.deepEqual(actual_value, expected_value);
 });
 
-run_test("translate_emoticons_to_names", () => {
+test("translate_emoticons_to_names", () => {
     // Simple test
     const test_text = "Testing :)";
     const expected = "Testing :smile:";
@@ -746,7 +752,7 @@ run_test("translate_emoticons_to_names", () => {
     }
 });
 
-run_test("missing unicode emojis", (override) => {
+test("missing unicode emojis", (override) => {
     const message = {raw_content: "\u{1F6B2}"};
 
     markdown.apply_markdown(message);

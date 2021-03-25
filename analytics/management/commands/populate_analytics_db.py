@@ -16,7 +16,7 @@ from analytics.models import (
     StreamCount,
     UserCount,
 )
-from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, do_change_user_role
+from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, do_change_user_role, do_create_realm
 from zerver.lib.create_user import create_user
 from zerver.lib.timestamp import floor_to_day
 from zerver.models import Client, Realm, Recipient, Stream, Subscription, UserProfile
@@ -73,9 +73,10 @@ class Command(BaseCommand):
 
         installation_time = timezone_now() - timedelta(days=self.DAYS_OF_DATA)
         last_end_time = floor_to_day(timezone_now())
-        realm = Realm.objects.create(
+        realm = do_create_realm(
             string_id="analytics", name="Analytics", date_created=installation_time
         )
+
         with mock.patch("zerver.lib.create_user.timezone_now", return_value=installation_time):
             shylock = create_user(
                 "shylock@analytics.ds",

@@ -2,54 +2,52 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
+const $ = require("../zjsunit/zjquery");
 
-set_global("activity", {
-    redraw() {},
-});
-
-set_global("settings_linkifiers", {
-    maybe_disable_widgets() {},
-});
-set_global("settings_org", {
-    maybe_disable_widgets() {},
-});
-set_global("settings_profile_fields", {
-    maybe_disable_widgets() {},
-});
-set_global("settings_streams", {
-    maybe_disable_widgets() {},
-});
-set_global("settings_users", {
-    update_user_data() {},
-});
-
-set_global("gear_menu", {
-    update_org_settings_menu_item() {},
-});
-const page_params = set_global("page_params", {
-    is_admin: true,
-});
-
-set_global("pm_list", {
-    update_private_messages() {},
-});
-
-set_global("narrow_state", {
-    update_email() {},
-});
-
-set_global("compose", {
-    update_email() {},
-});
-
-const settings_account = set_global("settings_account", {
+mock_cjs("jquery", $);
+const message_live_update = mock_esm("../../static/js/message_live_update");
+const settings_account = mock_esm("../../static/js/settings_account", {
     update_email() {},
     update_full_name() {},
 });
 
-const message_live_update = set_global("message_live_update", {});
+mock_esm("../../static/js/activity", {
+    redraw() {},
+});
+mock_esm("../../static/js/compose", {
+    update_email() {},
+});
+mock_esm("../../static/js/gear_menu", {
+    update_org_settings_menu_item() {},
+});
+mock_esm("../../static/js/narrow_state", {
+    update_email() {},
+});
+mock_esm("../../static/js/pm_list", {
+    update_private_messages() {},
+});
+mock_esm("../../static/js/settings_linkifiers", {
+    maybe_disable_widgets() {},
+});
+mock_esm("../../static/js/settings_org", {
+    maybe_disable_widgets() {},
+});
+mock_esm("../../static/js/settings_profile_fields", {
+    maybe_disable_widgets() {},
+});
+mock_esm("../../static/js/settings_streams", {
+    maybe_disable_widgets() {},
+});
+mock_esm("../../static/js/settings_users", {
+    update_user_data() {},
+});
+
+const page_params = set_global("page_params", {
+    is_admin: true,
+});
 
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");

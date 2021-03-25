@@ -36,12 +36,11 @@ async function test_change_new_stream_notifications_setting(page: Page): Promise
         "verona",
     );
 
-    const verona_in_dropdown =
-        "#realm_notifications_stream_id_widget .dropdown-list-body > li:nth-of-type(1)";
-
-    await common.wait_for_text(page, verona_in_dropdown, "Verona");
-    await page.waitForSelector(verona_in_dropdown, {visible: true});
-    await page.evaluate((selector: string) => $(selector).trigger("click"), verona_in_dropdown);
+    const verona_in_dropdown = await page.waitForXPath(
+        '//*[@id="realm_notifications_stream_id_widget"]//*[@class="dropdown-list-body"]/li[1]',
+        {visible: true},
+    );
+    await verona_in_dropdown!.click();
 
     await submit_notifications_stream_settings(page);
 
@@ -300,7 +299,7 @@ async function test_upload_realm_icon_image(page: Page): Promise<void> {
         visible: true,
     });
     await page.waitForSelector("#realm-icon-upload-widget .upload-spinner-background", {
-        visible: false,
+        hidden: true,
     });
     await page.waitForSelector(
         '#realm-icon-upload-widget .image-block[src^="/user_avatars/2/realm/icon.png?version=2"]',
@@ -312,7 +311,7 @@ async function delete_realm_icon(page: Page): Promise<void> {
     await page.click("li[data-section='organization-profile']");
     await page.click("#realm-icon-upload-widget .image-delete-button");
 
-    await page.waitForSelector("#realm-icon-upload-widget .image-delete-button", {visible: false});
+    await page.waitForSelector("#realm-icon-upload-widget .image-delete-button", {hidden: true});
 }
 
 async function test_organization_profile(page: Page): Promise<void> {
@@ -320,13 +319,13 @@ async function test_organization_profile(page: Page): Promise<void> {
     const gravatar_selctor =
         '#realm-icon-upload-widget .image-block[src^="https://secure.gravatar.com/avatar/"]';
     await page.waitForSelector(gravatar_selctor, {visible: true});
-    await page.waitForSelector("#realm-icon-upload-widget .image-delete-button", {visible: false});
+    await page.waitForSelector("#realm-icon-upload-widget .image-delete-button", {hidden: true});
 
     await test_upload_realm_icon_image(page);
     await page.waitForSelector("#realm-icon-upload-widget .image-delete-button", {visible: true});
 
     await delete_realm_icon(page);
-    await page.waitForSelector("#realm-icon-upload-widget .image-delete-button", {visible: false});
+    await page.waitForSelector("#realm-icon-upload-widget .image-delete-button", {hidden: true});
     await page.waitForSelector(gravatar_selctor, {visible: true});
 }
 
@@ -337,7 +336,7 @@ async function submit_default_user_settings(page: Page): Promise<void> {
     );
     await page.click("#org-submit-user-defaults");
     const saved_status = '#org-submit-user-defaults[data-status="saved"]';
-    await page.waitForSelector(saved_status, {visible: false});
+    await page.waitForSelector(saved_status, {hidden: true});
 }
 
 async function test_change_organization_default_language(page: Page): Promise<void> {
@@ -387,9 +386,15 @@ async function admin_test(page: Page): Promise<void> {
     await test_change_organization_default_language(page);
 
     await test_organization_permissions(page);
-    await test_custom_realm_emoji(page);
+    // Currently, Firefox (with puppeteer) does not support file upload:
+    //    https://github.com/puppeteer/puppeteer/issues/6688.
+    // Until that is resolved upstream, we need to skip the tests that involve
+    // doing file upload on Firefox.
+    if (!common.is_firefox) {
+        await test_custom_realm_emoji(page);
+        await test_organization_profile(page);
+    }
     await test_default_streams(page);
-    await test_organization_profile(page);
     await test_authentication_methods(page);
 }
 

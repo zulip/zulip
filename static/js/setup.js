@@ -1,3 +1,7 @@
+import $ from "jquery";
+
+import * as blueslip from "./blueslip";
+import * as loading from "./loading";
 import * as util from "./util";
 
 // Miscellaneous early setup.
@@ -60,16 +64,10 @@ $(() => {
         }
     });
 
-    if (typeof $ !== "undefined") {
-        $.fn.expectOne = function () {
-            if (blueslip && this.length !== 1) {
-                blueslip.error("Expected one element in jQuery set, " + this.length + " found");
-            }
-            return this;
-        };
-
-        $.fn.within = function (sel) {
-            return $(this).is(sel) || $(this).closest(sel).length;
-        };
-    }
+    $.fn.expectOne = function () {
+        if (blueslip && this.length !== 1) {
+            blueslip.error("Expected one element in jQuery set, " + this.length + " found");
+        }
+        return this;
+    };
 });

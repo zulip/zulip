@@ -2,9 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
@@ -18,51 +19,56 @@ const typing_person1 = events.typing_person1;
 
 set_global("setTimeout", (func) => func());
 
-const activity = set_global("activity", {});
-const alert_words_ui = set_global("alert_words_ui", {});
-const attachments_ui = set_global("attachments_ui", {});
-const bot_data = set_global("bot_data", {});
-set_global("compose", {});
-const composebox_typeahead = set_global("composebox_typeahead", {});
+mock_cjs("jquery", $);
+const activity = mock_esm("../../static/js/activity");
+const alert_words_ui = mock_esm("../../static/js/alert_words_ui");
+const attachments_ui = mock_esm("../../static/js/attachments_ui");
+const bot_data = mock_esm("../../static/js/bot_data");
+const composebox_typeahead = mock_esm("../../static/js/composebox_typeahead");
+const emoji_picker = mock_esm("../../static/js/emoji_picker");
+const hotspots = mock_esm("../../static/js/hotspots");
+const markdown = mock_esm("../../static/js/markdown");
+const message_edit = mock_esm("../../static/js/message_edit");
+const message_events = mock_esm("../../static/js/message_events");
+const message_list = mock_esm("../../static/js/message_list");
+const muting_ui = mock_esm("../../static/js/muting_ui");
+const night_mode = mock_esm("../../static/js/night_mode");
+const notifications = mock_esm("../../static/js/notifications");
+const reactions = mock_esm("../../static/js/reactions");
+const realm_icon = mock_esm("../../static/js/realm_icon");
+const realm_logo = mock_esm("../../static/js/realm_logo");
+const reload = mock_esm("../../static/js/reload");
+const scroll_bar = mock_esm("../../static/js/scroll_bar");
+const settings_account = mock_esm("../../static/js/settings_account");
+const settings_bots = mock_esm("../../static/js/settings_bots");
+const settings_display = mock_esm("../../static/js/settings_display");
+const settings_emoji = mock_esm("../../static/js/settings_emoji");
+const settings_exports = mock_esm("../../static/js/settings_exports");
+const settings_invites = mock_esm("../../static/js/settings_invites");
+const settings_linkifiers = mock_esm("../../static/js/settings_linkifiers");
+const settings_notifications = mock_esm("../../static/js/settings_notifications");
+const settings_org = mock_esm("../../static/js/settings_org");
+const settings_profile_fields = mock_esm("../../static/js/settings_profile_fields");
+const settings_streams = mock_esm("../../static/js/settings_streams");
+const settings_user_groups = mock_esm("../../static/js/settings_user_groups");
+const settings_users = mock_esm("../../static/js/settings_users");
+const stream_data = mock_esm("../../static/js/stream_data");
+const stream_events = mock_esm("../../static/js/stream_events");
+const submessage = mock_esm("../../static/js/submessage");
+const typing_events = mock_esm("../../static/js/typing_events");
+const ui = mock_esm("../../static/js/ui");
+const unread_ops = mock_esm("../../static/js/unread_ops");
+const user_events = mock_esm("../../static/js/user_events");
+const user_groups = mock_esm("../../static/js/user_groups");
+mock_esm("../../static/js/compose");
+
+const electron_bridge = set_global("electron_bridge", {});
+
 set_global("current_msg_list", {});
-const emoji_picker = set_global("emoji_picker", {});
 set_global("home_msg_list", {});
-const hotspots = set_global("hotspots", {});
-const markdown = set_global("markdown", {});
-const message_edit = set_global("message_edit", {});
-const message_events = set_global("message_events", {});
-const message_list = set_global("message_list", {});
-const muting_ui = set_global("muting_ui", {});
-const night_mode = set_global("night_mode", {});
-const notifications = set_global("notifications", {});
-const reactions = set_global("reactions", {});
-const realm_icon = set_global("realm_icon", {});
-const realm_logo = set_global("realm_logo", {});
-const reload = set_global("reload", {});
-const scroll_bar = set_global("scroll_bar", {});
-const settings_account = set_global("settings_account", {});
-const settings_bots = set_global("settings_bots", {});
-const settings_display = set_global("settings_display", {});
-const settings_emoji = set_global("settings_emoji", {});
-const settings_exports = set_global("settings_exports", {});
-const settings_invites = set_global("settings_invites", {});
-const settings_linkifiers = set_global("settings_linkifiers", {});
-const settings_notifications = set_global("settings_notifications", {});
-const settings_org = set_global("settings_org", {});
-const settings_profile_fields = set_global("settings_profile_fields", {});
-const settings_streams = set_global("settings_streams", {});
-const settings_user_groups = set_global("settings_user_groups", {});
-const settings_users = set_global("settings_users", {});
-const stream_data = set_global("stream_data", {});
-const stream_events = set_global("stream_events", {});
-const submessage = set_global("submessage", {});
-const typing_events = set_global("typing_events", {});
-const ui = set_global("ui", {});
-const unread_ops = set_global("unread_ops", {});
-const user_events = set_global("user_events", {});
-const user_groups = set_global("user_groups", {});
 
 // page_params is highly coupled to dispatching now
+
 const page_params = set_global("page_params", {
     test_suite: false,
     is_admin: true,
@@ -71,19 +77,16 @@ const page_params = set_global("page_params", {
 
 // For data-oriented modules, just use them, don't stub them.
 const alert_words = zrequire("alert_words");
-zrequire("unread");
 const stream_topic_history = zrequire("stream_topic_history");
 const stream_list = zrequire("stream_list");
-zrequire("message_flags");
 const message_store = zrequire("message_store");
 const people = zrequire("people");
 const starred_messages = zrequire("starred_messages");
 const user_status = zrequire("user_status");
 
-const emoji = zrequire("emoji", "shared/js/emoji");
+const emoji = zrequire("../shared/js/emoji");
 
 const server_events_dispatch = zrequire("server_events_dispatch");
-zrequire("panels");
 
 function dispatch(ev) {
     server_events_dispatch.dispatch_normal_event(ev);
@@ -95,7 +98,7 @@ people.add_active_user(test_user);
 message_store.add_message_metadata(test_message);
 
 const realm_emoji = {};
-const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
+const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
 
 emoji.initialize({realm_emoji, emoji_codes});
 
@@ -107,6 +110,7 @@ function assert_same(actual, expected) {
 }
 
 run_test("alert_words", (override) => {
+    alert_words.initialize({alert_words: []});
     assert(!alert_words.has_alert_word("fire"));
     assert(!alert_words.has_alert_word("lunch"));
 
@@ -196,6 +200,7 @@ run_test("default_streams", (override) => {
 });
 
 run_test("hotspots", (override) => {
+    page_params.hotspots = [];
     const event = event_fixtures.hotspots;
     override(hotspots, "load_new", noop);
     dispatch(event);
@@ -264,6 +269,17 @@ run_test("realm settings", (override) => {
     override(settings_bots, "update_bot_permissions_ui", noop);
     override(notifications, "redraw_title", noop);
 
+    function test_electron_dispatch(event, fake_send_event) {
+        let called = false;
+
+        with_field(electron_bridge, "send_event", fake_send_event, () => {
+            dispatch(event);
+            called = true;
+        });
+
+        assert(called);
+    }
+
     // realm
     function test_realm_boolean(event, parameter_name) {
         page_params[parameter_name] = true;
@@ -308,20 +324,12 @@ run_test("realm settings", (override) => {
     test_realm_boolean(event, "realm_invite_required");
 
     event = event_fixtures.realm__update__name;
-    dispatch(event);
-    assert_same(page_params.realm_name, "new_realm_name");
 
-    let called = false;
-    set_global("electron_bridge", {
-        send_event: (key, val) => {
-            assert_same(key, "realm_name");
-            assert_same(val, "new_realm_name");
-            called = true;
-        },
+    test_electron_dispatch(event, (key, val) => {
+        assert_same(key, "realm_name");
+        assert_same(val, "new_realm_name");
     });
-
-    dispatch(event);
-    assert_same(called, true);
+    assert_same(page_params.realm_name, "new_realm_name");
 
     event = event_fixtures.realm__update__emails_restricted_to_domains;
     test_realm_boolean(event, "realm_emails_restricted_to_domains");
@@ -363,18 +371,11 @@ run_test("realm settings", (override) => {
     event = event_fixtures.realm__update_dict__icon;
     override(realm_icon, "rerender", noop);
 
-    called = false;
-    set_global("electron_bridge", {
-        send_event: (key, val) => {
-            assert_same(key, "realm_icon_url");
-            assert_same(val, "icon.png");
-            called = true;
-        },
+    test_electron_dispatch(event, (key, val) => {
+        assert_same(key, "realm_icon_url");
+        assert_same(val, "icon.png");
     });
 
-    dispatch(event);
-
-    assert_same(called, true);
     assert_same(page_params.realm_icon_url, "icon.png");
     assert_same(page_params.realm_icon_source, "U");
 
@@ -401,6 +402,7 @@ run_test("realm_bot add", (override) => {
     const bot_stub = make_stub();
     const admin_stub = make_stub();
     override(bot_data, "add", bot_stub.f);
+    override(settings_bots, "eventually_render_bots", () => {});
     override(settings_users, "update_bot_data", admin_stub.f);
     dispatch(event);
 
@@ -416,6 +418,7 @@ run_test("realm_bot remove", (override) => {
     const bot_stub = make_stub();
     const admin_stub = make_stub();
     override(bot_data, "deactivate", bot_stub.f);
+    override(settings_bots, "eventually_render_bots", () => {});
     override(settings_users, "update_bot_data", admin_stub.f);
     dispatch(event);
 
@@ -437,6 +440,7 @@ run_test("realm_bot update", (override) => {
     const bot_stub = make_stub();
     const admin_stub = make_stub();
     override(bot_data, "update", bot_stub.f);
+    override(settings_bots, "eventually_render_bots", () => {});
     override(settings_users, "update_bot_data", admin_stub.f);
 
     dispatch(event);
@@ -469,6 +473,7 @@ run_test("realm_emoji", (override) => {
     }
 
     // Make sure we start with nothing...
+    emoji.update_emojis([]);
     assert.equal(emoji.get_realm_emoji_url("spain"), undefined);
 
     dispatch(event);
@@ -483,11 +488,11 @@ run_test("realm_emoji", (override) => {
     }
 });
 
-run_test("realm_filters", (override) => {
+run_test("linkifier", (override) => {
     const event = event_fixtures.realm_filters;
     page_params.realm_filters = [];
-    override(settings_linkifiers, "populate_filters", noop);
-    override(markdown, "update_realm_filter_rules", noop);
+    override(settings_linkifiers, "populate_linkifiers", noop);
+    override(markdown, "update_linkifier_rules", noop);
     dispatch(event);
     assert_same(page_params.realm_filters, event.realm_filters);
 });
@@ -499,10 +504,12 @@ run_test("realm_domains", (override) => {
     dispatch(event);
     assert_same(page_params.realm_domains, [event.realm_domain]);
 
+    override(settings_org, "populate_realm_domains", noop);
     event = event_fixtures.realm_domains__change;
     dispatch(event);
     assert_same(page_params.realm_domains, [event.realm_domain]);
 
+    override(settings_org, "populate_realm_domains", noop);
     event = event_fixtures.realm_domains__remove;
     dispatch(event);
     assert_same(page_params.realm_domains, []);
@@ -570,6 +577,9 @@ run_test("submessage", (override) => {
 // For subscriptions, see dispatch_subs.js
 
 run_test("typing", (override) => {
+    // Simulate that we are not typing.
+    page_params.user_id = typing_person1.user_id + 1;
+
     let event = event_fixtures.typing__start;
     {
         const stub = make_stub();
@@ -590,9 +600,10 @@ run_test("typing", (override) => {
         assert_same(args.event.sender.user_id, typing_person1.user_id);
     }
 
+    // Get line coverage--we ignore our own typing events.
     page_params.user_id = typing_person1.user_id;
     event = event_fixtures.typing__start;
-    dispatch(event); // get line coverage
+    dispatch(event);
 });
 
 run_test("update_display_settings", (override) => {
@@ -676,6 +687,20 @@ run_test("update_display_settings", (override) => {
         dispatch(event);
         assert.equal(stub.num_calls, 1);
         assert(page_params.color_scheme, 3);
+    }
+
+    {
+        event = event_fixtures.update_display_settings__default_view_recent_topics;
+        page_params.default_view = "all_messages";
+        dispatch(event);
+        assert(page_params.default_view, "recent_topics");
+    }
+
+    {
+        event = event_fixtures.update_display_settings__default_view_all_messages;
+        page_params.default_view = "recent_topics";
+        dispatch(event);
+        assert(page_params.default_view, "all_messages");
     }
 
     {
@@ -850,4 +875,34 @@ run_test("realm_export", (override) => {
     assert.equal(stub.num_calls, 1);
     const args = stub.get_args("exports");
     assert.equal(args.exports, event.exports);
+});
+
+run_test("server_event_dispatch_op_errors", (override) => {
+    blueslip.expect("error", "Unexpected event type subscription/other");
+    server_events_dispatch.dispatch_normal_event({type: "subscription", op: "other"});
+    blueslip.expect("error", "Unexpected event type reaction/other");
+    server_events_dispatch.dispatch_normal_event({type: "reaction", op: "other"});
+    blueslip.expect("error", "Unexpected event type realm/update_dict/other");
+    server_events_dispatch.dispatch_normal_event({
+        type: "realm",
+        op: "update_dict",
+        property: "other",
+    });
+    blueslip.expect("error", "Unexpected event type realm_bot/other");
+    server_events_dispatch.dispatch_normal_event({type: "realm_bot", op: "other"});
+    blueslip.expect("error", "Unexpected event type realm_domains/other");
+    server_events_dispatch.dispatch_normal_event({type: "realm_domains", op: "other"});
+    blueslip.expect("error", "Unexpected event type realm_user/other");
+    server_events_dispatch.dispatch_normal_event({type: "realm_user", op: "other"});
+    blueslip.expect("error", "Unexpected event type stream/other");
+    server_events_dispatch.dispatch_normal_event({type: "stream", op: "other"});
+    blueslip.expect("error", "Unexpected event type typing/other");
+    server_events_dispatch.dispatch_normal_event({
+        type: "typing",
+        sender: {user_id: 5},
+        op: "other",
+    });
+    override(settings_user_groups, "reload", noop);
+    blueslip.expect("error", "Unexpected event type user_group/other");
+    server_events_dispatch.dispatch_normal_event({type: "user_group", op: "other"});
 });

@@ -1,21 +1,103 @@
 "use strict";
 
+const Module = require("module");
 const path = require("path");
+
+const callsites = require("callsites");
 
 const new_globals = new Set();
 let old_globals = {};
+
+let actual_load;
+const module_mocks = new Map();
+const used_module_mocks = new Set();
+
+const jquery_path = require.resolve("jquery");
+const real_jquery_path = require.resolve("../zjsunit/real_jquery.js");
+
+function load(request, parent, isMain) {
+    const filename = Module._resolveFilename(request, parent, isMain);
+    if (module_mocks.has(filename)) {
+        used_module_mocks.add(filename);
+        return module_mocks.get(filename);
+    }
+    if (filename === jquery_path && parent.filename !== real_jquery_path) {
+        // jQuery exposes an incompatible API to Node vs. browser, so
+        // this wouldn't work.
+        throw new Error("This test will need jquery mocked using zjquery or real_jquery");
+    }
+
+    return actual_load(request, parent, isMain);
+}
+
+exports.start = () => {
+    if (actual_load !== undefined) {
+        throw new Error("namespace.start was called twice in a row.");
+    }
+    actual_load = Module._load;
+    Module._load = load;
+};
+
+// We provide `mock_cjs` for mocking a CommonJS module, and `mock_esm` for
+// mocking an ES6 module.
+//
+// A CommonJS module:
+// - loads other modules using `require()`,
+// - assigns its public contents to the `exports` object or `module.exports`,
+// - consists of a single JavaScript value, typically an object or function,
+// - when imported by an ES6 module:
+//   * is shallow-copied to a collection of immutable bindings, if it's an
+//     object,
+//   * is converted to a single default binding, if not.
+//
+// An ES6 module:
+// - loads other modules using `import`,
+// - declares its public contents using `export` statements,
+// - consists of a collection of live bindings that may be mutated from inside
+//   but not outside the module,
+// - may have a default binding (that's just syntactic sugar for a binding
+//   named `default`),
+// - when required by a CommonJS module, always appears as an object.
+//
+// Most of our own modules are ES6 modules.
+//
+// For a third party module available in both formats that might present two
+// incompatible APIs (especially if the CommonJS module is a function),
+// Webpack will prefer the ES6 module if its availability is indicated by the
+// "module" field of package.json, while Node.js will not; we need to mock the
+// format preferred by Webpack.
+
+exports.mock_cjs = (request, obj) => {
+    const filename = Module._resolveFilename(
+        request,
+        require.cache[callsites()[1].getFileName()],
+        false,
+    );
+
+    if (module_mocks.has(filename)) {
+        throw new Error(`You already set up a mock for ${filename}`);
+    }
+
+    if (filename in require.cache) {
+        throw new Error(`It is too late to mock ${filename}; call this earlier.`);
+    }
+
+    module_mocks.set(filename, obj);
+    return obj;
+};
+
+exports.mock_esm = (request, obj = {}) => {
+    if (typeof obj !== "object") {
+        throw new TypeError("An ES module must be mocked with an object");
+    }
+    return exports.mock_cjs(request, {...obj, __esModule: true});
+};
 
 exports.set_global = function (name, val) {
     if (val === null) {
         throw new Error(`
             We try to avoid using null in our codebase.
         `);
-    }
-
-    // Add this for debugging and to allow with_overrides
-    // to know that we're dealing with stubbed code.
-    if (typeof val === "object") {
-        val._patched_with_set_global = true;
     }
 
     if (!(name in old_globals)) {
@@ -28,31 +110,39 @@ exports.set_global = function (name, val) {
     return val;
 };
 
-function require_path(name, fn) {
-    if (fn === undefined) {
-        fn = "../../static/js/" + name;
-    } else if (/^generated\/|^js\/|^shared\/|^third\//.test(fn)) {
-        // FIXME: Stealing part of the NPM namespace is confusing.
-        fn = "../../static/" + fn;
-    }
-
-    return fn;
-}
-
-exports.zrequire = function (name, fn) {
-    return require(require_path(name, fn));
-};
-
-exports.reset_module = function (name, fn) {
-    fn = require_path(name, fn);
-    delete require.cache[require.resolve(fn)];
-    return require(fn);
+exports.zrequire = function (short_fn) {
+    return require(`../../static/js/${short_fn}`);
 };
 
 const staticPath = path.resolve(__dirname, "../../static") + path.sep;
 const templatesPath = staticPath + "templates" + path.sep;
 
-exports.restore = function () {
+exports.complain_about_unused_mocks = function () {
+    for (const filename of module_mocks.keys()) {
+        if (!used_module_mocks.has(filename)) {
+            console.error(`You asked to mock ${filename} but we never saw it during compilation.`);
+        }
+    }
+};
+
+exports.finish = function () {
+    /*
+        Handle cleanup tasks after we've run one module.
+
+        Note that we currently do lazy compilation of modules,
+        so we need to wait till the module tests finish
+        running to do things like detecting pointless mocks
+        and resetting our _load hook.
+    */
+    if (actual_load === undefined) {
+        throw new Error("namespace.finish was called without namespace.start.");
+    }
+    Module._load = actual_load;
+    actual_load = undefined;
+
+    module_mocks.clear();
+    used_module_mocks.clear();
+
     for (const path of Object.keys(require.cache)) {
         if (path.startsWith(staticPath) && !path.startsWith(templatesPath)) {
             delete require.cache[path];
@@ -67,16 +157,26 @@ exports.restore = function () {
 };
 
 exports.with_field = function (obj, field, val, f) {
-    const had_val = Object.prototype.hasOwnProperty.call(obj, field);
-    const old_val = obj[field];
-    try {
-        obj[field] = val;
-        return f();
-    } finally {
-        if (had_val) {
-            obj[field] = old_val;
-        } else {
-            delete obj[field];
+    if ("__esModule" in obj && "__Rewire__" in obj) {
+        const old_val = field in obj ? obj[field] : obj.__GetDependency__(field);
+        try {
+            obj.__Rewire__(field, val);
+            return f();
+        } finally {
+            obj.__Rewire__(field, old_val);
+        }
+    } else {
+        const had_val = Object.prototype.hasOwnProperty.call(obj, field);
+        const old_val = obj[field];
+        try {
+            obj[field] = val;
+            return f();
+        } finally {
+            if (had_val) {
+                obj[field] = old_val;
+            } else {
+                delete obj[field];
+            }
         }
     }
 };
@@ -87,8 +187,6 @@ exports.with_overrides = function (test_function) {
 
     const restore_callbacks = [];
     const unused_funcs = new Map();
-    const funcs = new Map();
-
     const override = function (obj, func_name, f) {
         // Given an object `obj` (which is usually a module object),
         // we re-map `obj[func_name]` to the `f` passed in by the caller.
@@ -106,37 +204,12 @@ exports.with_overrides = function (test_function) {
             throw new TypeError(`We cannot override a function for ${typeof obj} objects`);
         }
 
-        if (obj[func_name] === undefined) {
-            if (obj !== global.$ && !obj._patched_with_set_global) {
-                throw new Error(`
-                    It looks like you are overriding ${func_name}
-                    for a module that never defined it, which probably
-                    indicates that you have a typo or are doing
-                    something hacky in the test.
-                `);
-            }
-        } else if (typeof obj[func_name] !== "function") {
+        if (obj[func_name] !== undefined && typeof obj[func_name] !== "function") {
             throw new TypeError(`
                 You are overriding a non-function with a function.
                 This is almost certainly an error.
             `);
         }
-
-        if (!funcs.has(obj)) {
-            funcs.set(obj, new Map());
-        }
-
-        if (funcs.get(obj).has(func_name)) {
-            // Prevent overriding the same function twice, so that
-            // it's super easy to reason about our logic to restore
-            // the original function.  Usually if somebody sees this
-            // error, it's a symptom of not breaking up tests enough.
-            throw new Error(
-                "You can only override a function one time. Use with_field for more granular control.",
-            );
-        }
-
-        funcs.get(obj).set(func_name, true);
 
         if (!unused_funcs.has(obj)) {
             unused_funcs.set(obj, new Map());
@@ -144,14 +217,10 @@ exports.with_overrides = function (test_function) {
 
         unused_funcs.get(obj).set(func_name, true);
 
-        let old_f = obj[func_name];
-        if (old_f === undefined) {
-            // Create a dummy function so that we can
-            // attach _patched_with_override to it.
-            old_f = () => {
-                throw new Error(`There is no ${func_name}() field for this object.`);
-            };
-        }
+        const old_f =
+            "__esModule" in obj && "__Rewire__" in obj && !(func_name in obj)
+                ? obj.__GetDependency__(func_name)
+                : obj[func_name];
 
         const new_f = function (...args) {
             unused_funcs.get(obj).delete(func_name);
@@ -163,13 +232,17 @@ exports.with_overrides = function (test_function) {
         // code can also use this, as needed.)
         new_f._patched_with_override = true;
 
-        obj[func_name] = new_f;
-
-        restore_callbacks.push(() => {
-            old_f._patched_with_override = true;
-            obj[func_name] = old_f;
-            delete old_f._patched_with_override;
-        });
+        if ("__esModule" in obj && "__Rewire__" in obj) {
+            obj.__Rewire__(func_name, new_f);
+            restore_callbacks.push(() => {
+                obj.__Rewire__(func_name, old_f);
+            });
+        } else {
+            obj[func_name] = new_f;
+            restore_callbacks.push(() => {
+                obj[func_name] = old_f;
+            });
+        }
     };
 
     try {

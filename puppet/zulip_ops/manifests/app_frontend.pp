@@ -9,7 +9,7 @@ class zulip_ops::app_frontend {
     'autossh',
   ]
   package { $app_packages: ensure => 'installed' }
-  $default_host_domain = zulipconf('nagios', 'default_host_domain', undef)
+  $redis_hostname = zulipconf('redis', 'hostname', undef)
 
   file { '/etc/logrotate.d/zulip':
     ensure => file,

@@ -75,4 +75,9 @@ class RecentPrivateMessages {
     }
 }
 
-export const recent = new RecentPrivateMessages();
+export let recent = new RecentPrivateMessages();
+
+export function clear_for_testing() {
+    recent = new RecentPrivateMessages();
+    partners.clear();
+}

@@ -2,10 +2,9 @@
 
 const {strict: assert} = require("assert");
 
-const rewiremock = require("rewiremock/node");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
 
 // Dependencies
 
@@ -26,15 +25,15 @@ const _navigator = {
 };
 set_global("navigator", _navigator);
 
+mock_cjs("jquery", $);
+
 const muting = zrequire("muting");
 const stream_data = zrequire("stream_data");
 const ui = zrequire("ui");
 const spoilers = zrequire("spoilers");
 spoilers.hide_spoilers_in_notification = () => {};
 
-const notifications = rewiremock.proxy(() => zrequire("notifications"), {
-    "../../static/js/favicon": {},
-});
+const notifications = zrequire("notifications");
 
 // Not muted streams
 const general = {

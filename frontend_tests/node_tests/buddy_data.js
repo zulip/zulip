@@ -4,15 +4,19 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 
 const page_params = set_global("page_params", {});
 
-const timerender = set_global("timerender", {});
+const timerender = mock_esm("../../static/js/timerender");
 
+const compose_fade_helper = zrequire("compose_fade_helper");
+const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const presence = zrequire("presence");
+const stream_data = zrequire("stream_data");
 const user_status = zrequire("user_status");
 const buddy_data = zrequire("buddy_data");
 
@@ -79,35 +83,37 @@ const bot_with_owner = {
     bot_owner_full_name: "Human Myself",
 };
 
-function make_people() {
-    // sanity check
-    assert.equal(mark.user_id, 1005);
-
-    for (const i of _.range(mark.user_id + 1, 2000)) {
-        const person = {
-            user_id: i,
-            full_name: `Human ${i}`,
-            email: `person${i}@example.com`,
-        };
-        people.add_active_user(person);
-    }
-
+function add_canned_users() {
+    people.add_active_user(alice);
     people.add_active_user(bot);
     people.add_active_user(bot_with_owner);
+    people.add_active_user(fred);
+    people.add_active_user(jill);
+    people.add_active_user(mark);
+    people.add_active_user(old_user);
+    people.add_active_user(selma);
+}
+
+function test(label, f) {
+    run_test(label, (override) => {
+        compose_fade_helper.clear_focused_recipient();
+        stream_data.clear_subscriptions();
+        peer_data.clear_for_testing();
+        user_status.initialize({user_status: {}});
+        presence.presence_info.clear();
+        people.init();
+        people.add_active_user(me);
+        people.initialize_current_user(me.user_id);
+        f(override);
+    });
+}
+
+test("huddle_fraction_present", () => {
     people.add_active_user(alice);
     people.add_active_user(fred);
     people.add_active_user(jill);
     people.add_active_user(mark);
-    people.add_active_user(selma);
-    people.add_active_user(me);
-    people.add_active_user(old_user);
 
-    people.initialize_current_user(me.user_id);
-}
-
-make_people();
-
-run_test("huddle_fraction_present", () => {
     let huddle = "alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com";
     huddle = people.emails_strings_to_user_ids_string(huddle);
 
@@ -116,7 +122,7 @@ run_test("huddle_fraction_present", () => {
     presence_info.set(fred.user_id, {status: "idle"}); // does not count as present
     // jill not in list
     presence_info.set(mark.user_id, {status: "offline"}); // does not count
-    presence.presence_info = presence_info;
+    presence.__Rewire__("presence_info", presence_info);
 
     assert.equal(buddy_data.huddle_fraction_present(huddle), 0.5);
 
@@ -124,7 +130,7 @@ run_test("huddle_fraction_present", () => {
     for (const user of [alice, fred, jill, mark]) {
         presence_info.set(user.user_id, {status: "active"}); // counts as present
     }
-    presence.presence_info = presence_info;
+    presence.__Rewire__("presence_info", presence_info);
 
     assert.equal(buddy_data.huddle_fraction_present(huddle), 1);
 
@@ -135,38 +141,24 @@ run_test("huddle_fraction_present", () => {
     presence_info.set(fred.user_id, {status: "idle"}); // does not count as present
     // jill not in list
     presence_info.set(mark.user_id, {status: "offline"}); // does not count
-    presence.presence_info = presence_info;
+    presence.__Rewire__("presence_info", presence_info);
 
     assert.equal(buddy_data.huddle_fraction_present(huddle), undefined);
 });
 
-function activate_people() {
-    presence.presence_info.clear();
+function set_presence(user_id, status) {
+    presence.presence_info.set(user_id, {
+        status,
+        last_active: 9999,
+    });
+}
 
-    function set_presence(user_id, status) {
-        presence.presence_info.set(user_id, {
-            status,
-            last_active: 9999,
-        });
-    }
+test("user_circle", () => {
+    add_canned_users();
 
-    // Make 400 of the users active
     set_presence(selma.user_id, "active");
     set_presence(me.user_id, "active");
 
-    for (const user_id of _.range(1000, 1400)) {
-        set_presence(user_id, "active");
-    }
-
-    // And then 300 not active
-    for (const user_id of _.range(1400, 1700)) {
-        set_presence(user_id, "offline");
-    }
-}
-
-activate_people();
-
-run_test("user_circle", () => {
     assert.equal(buddy_data.get_user_circle_class(selma.user_id), "user_circle_green");
     user_status.set_away(selma.user_id);
     assert.equal(buddy_data.get_user_circle_class(selma.user_id), "user_circle_empty_line");
@@ -180,7 +172,125 @@ run_test("user_circle", () => {
     assert.equal(buddy_data.get_user_circle_class(me.user_id), "user_circle_green");
 });
 
-run_test("buddy_status", () => {
+test("compose fade interactions (streams)", () => {
+    const sub = {
+        stream_id: 101,
+        name: "Devel",
+        subscribed: true,
+    };
+    stream_data.add_sub(sub);
+    stream_data.subscribe_myself(sub);
+    stream_data.update_calculated_fields(sub);
+
+    people.add_active_user(fred);
+
+    set_presence(fred.user_id, "active");
+
+    function faded() {
+        return buddy_data.get_item(fred.user_id).faded;
+    }
+
+    // If we are not narrowed, then we don't fade fred in the buddy list.
+    assert.equal(faded(), false);
+
+    // If we narrow to a stream that fred has not subscribed
+    // to, we will fade him.
+    compose_fade_helper.set_focused_recipient({
+        type: "stream",
+        stream_id: sub.stream_id,
+        topic: "whatever",
+    });
+    assert.equal(faded(), true);
+
+    // If we subscribe, we don't fade.
+    peer_data.add_subscriber(sub.stream_id, fred.user_id);
+    assert.equal(faded(), false);
+
+    // Test our punting logic.
+    const bogus_stream_id = 99999;
+    assert.equal(stream_data.get_sub_by_id(bogus_stream_id), undefined);
+
+    compose_fade_helper.set_focused_recipient({
+        type: "stream",
+        stream_id: bogus_stream_id,
+    });
+
+    assert.equal(faded(), false);
+});
+
+test("compose fade interactions (missing topic)", () => {
+    const sub = {
+        stream_id: 102,
+        name: "Social",
+        subscribed: true,
+    };
+    stream_data.add_sub(sub);
+    stream_data.subscribe_myself(sub);
+    stream_data.update_calculated_fields(sub);
+
+    people.add_active_user(fred);
+
+    set_presence(fred.user_id, "active");
+
+    function faded() {
+        return buddy_data.get_item(fred.user_id).faded;
+    }
+
+    // If we are not narrowed, then we don't fade fred in the buddy list.
+    assert.equal(faded(), false);
+
+    // If we narrow to a stream that fred has not subscribed
+    // to, we will fade him.
+    compose_fade_helper.set_focused_recipient({
+        type: "stream",
+        stream_id: sub.stream_id,
+        topic: "whatever",
+    });
+    assert.equal(faded(), true);
+
+    // If the user clears the topic, we won't fade fred.
+    compose_fade_helper.set_focused_recipient({
+        type: "stream",
+        stream_id: sub.stream_id,
+        topic: "",
+    });
+    assert.equal(faded(), false);
+});
+
+test("compose fade interactions (PMs)", () => {
+    people.add_active_user(fred);
+
+    set_presence(fred.user_id, "active");
+
+    function faded() {
+        return buddy_data.get_item(fred.user_id).faded;
+    }
+
+    // Dont fade if we're not in a narrow.
+    assert.equal(faded(), false);
+
+    // Fade fred if we are narrowed to a PM narrow that does
+    // not include him.
+    compose_fade_helper.set_focused_recipient({
+        type: "private",
+        to_user_ids: "9999999",
+    });
+    assert.equal(faded(), true);
+
+    // Now include fred in a narrow with jill, and we will
+    // stop fading him.
+    compose_fade_helper.set_focused_recipient({
+        type: "private",
+        to_user_ids: [fred.user_id, jill.user_id].join(","),
+    });
+
+    assert.equal(faded(), false);
+});
+
+test("buddy_status", () => {
+    set_presence(selma.user_id, "active");
+    set_presence(me.user_id, "active");
+
     assert.equal(buddy_data.buddy_status(selma.user_id), "active");
     user_status.set_away(selma.user_id);
     assert.equal(buddy_data.buddy_status(selma.user_id), "away_them");
@@ -194,7 +304,9 @@ run_test("buddy_status", () => {
     assert.equal(buddy_data.buddy_status(me.user_id), "active");
 });
 
-run_test("title_data", () => {
+test("title_data", () => {
+    add_canned_users();
+
     // Groups
     let is_group = true;
     const user_ids_string = "9999,1000";
@@ -247,13 +359,44 @@ run_test("title_data", () => {
     assert.deepEqual(buddy_data.get_title_data(old_user.user_id, is_group), expected_data);
 });
 
-run_test("simple search", () => {
+test("simple search", () => {
+    add_canned_users();
+
+    set_presence(selma.user_id, "active");
+    set_presence(me.user_id, "active");
+
     const user_ids = buddy_data.get_filtered_and_sorted_user_ids("sel");
 
     assert.deepEqual(user_ids, [selma.user_id]);
 });
 
-run_test("bulk_data_hacks", () => {
+test("bulk_data_hacks", () => {
+    // sanity check
+    assert.equal(mark.user_id, 1005);
+
+    for (const i of _.range(mark.user_id + 1, 2000)) {
+        const person = {
+            user_id: i,
+            full_name: `Human ${i}`,
+            email: `person${i}@example.com`,
+        };
+        people.add_active_user(person);
+    }
+    add_canned_users();
+
+    // Make 400 of the users active
+    set_presence(selma.user_id, "active");
+    set_presence(me.user_id, "active");
+
+    for (const user_id of _.range(1000, 1400)) {
+        set_presence(user_id, "active");
+    }
+
+    // And then 300 not active
+    for (const user_id of _.range(1400, 1700)) {
+        set_presence(user_id, "offline");
+    }
+
     let user_ids;
 
     // Even though we have 1000 users, we only get the 400 active
@@ -280,13 +423,15 @@ run_test("bulk_data_hacks", () => {
 
     // Make our shrink limit higher, and go back to an empty search.
     // We won't get all 1000 users, just the present ones.
-    buddy_data.max_size_before_shrinking = 50000;
-
-    user_ids = buddy_data.get_filtered_and_sorted_user_ids("");
+    with_field(buddy_data, "max_size_before_shrinking", 50000, () => {
+        user_ids = buddy_data.get_filtered_and_sorted_user_ids("");
+    });
     assert.equal(user_ids.length, 700);
 });
 
-run_test("level", () => {
+test("user_status", () => {
+    user_status.initialize({user_status: []});
+    set_presence(me.user_id, "active");
     assert.equal(buddy_data.get_my_user_status(me.user_id), "translated: (you)");
     user_status.set_away(me.user_id);
     assert.equal(buddy_data.get_my_user_status(me.user_id), "translated: (unavailable)");
@@ -294,8 +439,8 @@ run_test("level", () => {
     assert.equal(buddy_data.get_my_user_status(me.user_id), "translated: (you)");
 });
 
-run_test("level", () => {
-    presence.presence_info.clear();
+test("level", () => {
+    add_canned_users();
     assert.equal(buddy_data.level(me.user_id), 0);
     assert.equal(buddy_data.level(selma.user_id), 3);
 
@@ -321,7 +466,10 @@ run_test("level", () => {
     assert.equal(buddy_data.level(selma.user_id), 3);
 });
 
-run_test("user_last_seen_time_status", (override) => {
+test("user_last_seen_time_status", (override) => {
+    set_presence(selma.user_id, "active");
+    set_presence(me.user_id, "active");
+
     assert.equal(buddy_data.user_last_seen_time_status(selma.user_id), "translated: Active now");
 
     page_params.realm_is_zephyr_mirror_realm = true;
@@ -345,7 +493,7 @@ run_test("user_last_seen_time_status", (override) => {
     assert.equal(buddy_data.user_last_seen_time_status(old_user.user_id), "May 12");
 });
 
-run_test("error handling", (override) => {
+test("error handling", (override) => {
     override(presence, "get_user_ids", () => [42]);
     blueslip.expect("error", "Unknown user_id in get_by_user_id: 42");
     blueslip.expect("warn", "Got user_id in presence but not people: 42");

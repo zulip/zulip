@@ -1,6 +1,13 @@
-"use strict";
+import $ from "jquery";
+
+import * as blueslip from "./blueslip";
+import * as reload_state from "./reload_state";
 
 const pending_requests = [];
+
+export function clear_for_tests() {
+    pending_requests.length = 0;
+}
 
 function add_pending_request(jqXHR) {
     pending_requests.push(jqXHR);
@@ -38,7 +45,7 @@ function call(args, idempotent) {
 
         if (reload_state.is_in_progress()) {
             // If we're in the process of reloading the browser,
-            // there's no point in running the success handler,
+            // there's no point in running the error handler,
             // because all of our state is about to be discarded
             // anyway.
             blueslip.log(`Ignoring ${args.type} ${args.url} error response while reloading`);
@@ -47,13 +54,11 @@ function call(args, idempotent) {
 
         if (xhr.status === 403) {
             try {
-                if (JSON.parse(xhr.responseText).code === "CSRF_FAILED") {
-                    reload.initiate({
-                        immediate: true,
-                        save_pointer: true,
-                        save_narrow: true,
-                        save_compose: true,
-                    });
+                if (
+                    JSON.parse(xhr.responseText).code === "CSRF_FAILED" &&
+                    reload_state.csrf_failed_handler !== undefined
+                ) {
+                    reload_state.csrf_failed_handler();
                 }
             } catch (error) {
                 blueslip.error(
@@ -98,28 +103,28 @@ function call(args, idempotent) {
     return jqXHR;
 }
 
-exports.get = function (options) {
+export function get(options) {
     const args = {type: "GET", dataType: "json", ...options};
     return call(args, options.idempotent);
-};
+}
 
-exports.post = function (options) {
+export function post(options) {
     const args = {type: "POST", dataType: "json", ...options};
     return call(args, options.idempotent);
-};
+}
 
-exports.put = function (options) {
+export function put(options) {
     const args = {type: "PUT", dataType: "json", ...options};
     return call(args, options.idempotent);
-};
+}
 
 // Not called exports.delete because delete is a reserved word in JS
-exports.del = function (options) {
+export function del(options) {
     const args = {type: "DELETE", dataType: "json", ...options};
     return call(args, options.idempotent);
-};
+}
 
-exports.patch = function (options) {
+export function patch(options) {
     // Send a PATCH as a POST in order to work around QtWebkit
     // (Linux/Windows desktop app) not supporting PATCH body.
     if (options.processData === false) {
@@ -129,16 +134,14 @@ exports.patch = function (options) {
     } else {
         options.data = {...options.data, method: "PATCH"};
     }
-    return exports.post(options, options.idempotent);
-};
+    return post(options, options.idempotent);
+}
 
-exports.xhr_error_message = function (message, xhr) {
+export function xhr_error_message(message, xhr) {
     if (xhr.status.toString().charAt(0) === "4") {
         // Only display the error response for 4XX, where we've crafted
         // a nice response.
         message += ": " + JSON.parse(xhr.responseText).msg;
     }
     return message;
-};
-
-window.channel = exports;
+}

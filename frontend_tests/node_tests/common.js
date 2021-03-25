@@ -2,9 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+
+mock_cjs("jquery", $);
 
 const noop = () => {};
 
@@ -14,7 +16,9 @@ const common = zrequire("common");
 
 run_test("basics", () => {
     common.autofocus("#home");
+    $.get_initialize_function()();
     assert($("#home").is_focused());
+    $.clear_initialize_function();
 });
 
 run_test("phrase_match", () => {
@@ -70,8 +74,8 @@ run_test("copy_data_attribute_value", (override) => {
     assert(faded_out);
 });
 
-run_test("adjust_mac_shortcuts non-mac", () => {
-    common.has_mac_keyboard = () => false;
+run_test("adjust_mac_shortcuts non-mac", (override) => {
+    override(common, "has_mac_keyboard", () => false);
 
     // The adjust_mac_shortcuts has a really simple guard
     // at the top, and we just test the early-return behavior
@@ -79,7 +83,7 @@ run_test("adjust_mac_shortcuts non-mac", () => {
     common.adjust_mac_shortcuts("selector-that-does-not-exist");
 });
 
-run_test("adjust_mac_shortcuts mac", () => {
+run_test("adjust_mac_shortcuts mac", (override) => {
     const keys_to_test_mac = new Map([
         ["Backspace", "Delete"],
         ["Enter", "Return"],
@@ -95,7 +99,7 @@ run_test("adjust_mac_shortcuts mac", () => {
         ["Ctrl + Backspace + End", "⌘ + Delete + Fn + →"],
     ]);
 
-    common.has_mac_keyboard = () => true;
+    override(common, "has_mac_keyboard", () => true);
 
     const test_items = [];
     let key_no = 1;

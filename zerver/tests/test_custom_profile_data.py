@@ -83,11 +83,11 @@ class CreateCustomProfileFieldTest(CustomProfileFieldTestCase):
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, "A field with that label already exists.")
 
-    def test_create_choice_field(self) -> None:
+    def test_create_select_field(self) -> None:
         self.login("iago")
         data: Dict[str, Union[str, int]] = {}
         data["name"] = "Favorite programming language"
-        data["field_type"] = CustomProfileField.CHOICE
+        data["field_type"] = CustomProfileField.SELECT
 
         data["field_data"] = "invalid"
         result = self.client_post("/json/realm/profile_fields", info=data)
@@ -646,13 +646,13 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
             if field_dict["id"] == field.id:
                 self.assertEqual(field_dict["value"], "foobar")
 
-    def test_update_invalid_choice_field(self) -> None:
+    def test_update_invalid_select_field(self) -> None:
         field_name = "Favorite editor"
         self.assert_error_update_invalid_value(
             field_name, "foobar", f"'foobar' is not a valid choice for '{field_name}'."
         )
 
-    def test_update_choice_field_successfully(self) -> None:
+    def test_update_select_field_successfully(self) -> None:
         self.login("iago")
         realm = get_realm("zulip")
         field = CustomProfileField.objects.get(name="Favorite editor", realm=realm)

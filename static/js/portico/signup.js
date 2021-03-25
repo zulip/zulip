@@ -1,3 +1,7 @@
+import $ from "jquery";
+
+import * as common from "../common";
+
 $(() => {
     // NB: this file is included on multiple pages.  In each context,
     // some of the jQuery selectors below will return empty lists.
@@ -210,4 +214,3 @@ $(() => {
         this.parentNode.submit();
     });
 });
-export {};

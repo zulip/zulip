@@ -2,10 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-set_global("ui", {
+mock_esm("../../static/js/ui", {
     get_scroll_element: (element) => element,
 });
 

@@ -1,9 +1,14 @@
-"use strict";
+import $ from "jquery";
 
-const people = require("./people");
-const util = require("./util");
+import * as channel from "./channel";
+import * as compose from "./compose";
+import * as hash_util from "./hash_util";
+import * as notifications from "./notifications";
+import * as people from "./people";
+import * as transmit from "./transmit";
+import * as util from "./util";
 
-const deferred_message_types = {
+export const deferred_message_types = {
     scheduled: {
         delivery_type: "send_later",
         test: /^\/schedule/,
@@ -16,13 +21,11 @@ const deferred_message_types = {
     },
 };
 
-exports.deferred_message_types = deferred_message_types;
-
-exports.is_deferred_delivery = function (message_content) {
+export function is_deferred_delivery(message_content) {
     const reminders_test = deferred_message_types.reminders.test;
     const scheduled_test = deferred_message_types.scheduled.test;
     return reminders_test.test(message_content) || scheduled_test.test(message_content);
-};
+}
 
 function patch_request_for_scheduling(request, message_content, deliver_at, delivery_type) {
     if (request.type === "private") {
@@ -39,7 +42,7 @@ function patch_request_for_scheduling(request, message_content, deliver_at, deli
     return new_request;
 }
 
-exports.schedule_message = function (request) {
+export function schedule_message(request) {
     if (request === undefined) {
         request = compose.create_message_object();
     }
@@ -101,9 +104,9 @@ exports.schedule_message = function (request) {
     $("#compose-textarea").prop("disabled", true);
 
     transmit.send_message(request, success, error);
-};
+}
 
-exports.do_set_reminder_for_message = function (message_id, timestamp) {
+export function do_set_reminder_for_message(message_id, timestamp) {
     const row = $(`[zid='${CSS.escape(message_id)}']`);
     function error() {
         row.find(".alert-msg")
@@ -126,7 +129,7 @@ exports.do_set_reminder_for_message = function (message_id, timestamp) {
             success(data) {
                 if (current_msg_list === msg_list) {
                     message.raw_content = data.raw_content;
-                    exports.do_set_reminder_for_message(message_id, timestamp);
+                    do_set_reminder_for_message(message_id, timestamp);
                 }
             },
             error,
@@ -166,6 +169,4 @@ exports.do_set_reminder_for_message = function (message_id, timestamp) {
         deferred_message_types.reminders.delivery_type,
     );
     transmit.send_message(reminder_message, success, error);
-};
-
-window.reminder = exports;
+}

@@ -126,8 +126,12 @@ class PermissionTest(ZulipTestCase):
         self.assertTrue(user_profile.is_realm_owner)
         admin_users = user_profile.realm.get_human_admin_users()
         self.assertTrue(user_profile in admin_users)
+        admin_users = user_profile.realm.get_human_admin_users(include_realm_owners=False)
+        self.assertFalse(user_profile in admin_users)
         admin_users = user_profile.realm.get_admin_users_and_bots()
         self.assertTrue(user_profile in admin_users)
+        admin_users = user_profile.realm.get_admin_users_and_bots(include_realm_owners=False)
+        self.assertFalse(user_profile in admin_users)
 
     def test_updating_non_existent_user(self) -> None:
         self.login("hamlet")
@@ -1183,6 +1187,7 @@ class UserProfileTest(ZulipTestCase):
         hamlet.color_scheme = UserProfile.COLOR_SCHEME_LIGHT
 
         cordelia.default_language = "de"
+        cordelia.default_view = "all_messages"
         cordelia.emojiset = "twitter"
         cordelia.timezone = "America/Phoenix"
         cordelia.color_scheme = UserProfile.COLOR_SCHEME_NIGHT

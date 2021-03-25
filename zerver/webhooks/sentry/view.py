@@ -129,14 +129,14 @@ def handle_event_payload(event: Dict[str, Any]) -> Tuple[str, str]:
                     exception_frame = frame
                     break
 
-            if exception_frame and exception_frame["context_line"]:
-                pre_context = convert_lines_to_traceback_string(exception_frame["pre_context"])
-
+            if exception_frame and "context_line" in exception_frame:
+                pre_context = convert_lines_to_traceback_string(
+                    exception_frame.get("pre_context", None)
+                )
                 context_line = exception_frame["context_line"] + "\n"
-                if not context_line:
-                    context_line = "\n"  # nocoverage
-
-                post_context = convert_lines_to_traceback_string(exception_frame["post_context"])
+                post_context = convert_lines_to_traceback_string(
+                    exception_frame.get("post_context", None)
+                )
 
                 context.update(
                     syntax_highlight_as=syntax_highlight_as,

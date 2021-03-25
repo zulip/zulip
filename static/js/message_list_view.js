@@ -1,16 +1,33 @@
-"use strict";
+import {isSameDay} from "date-fns";
+import $ from "jquery";
+import _ from "lodash";
 
-const {isSameDay} = require("date-fns");
-const _ = require("lodash");
+import render_bookend from "../templates/bookend.hbs";
+import render_message_group from "../templates/message_group.hbs";
+import render_recipient_row from "../templates/recipient_row.hbs";
+import render_single_message from "../templates/single_message.hbs";
 
-const render_bookend = require("../templates/bookend.hbs");
-const render_message_group = require("../templates/message_group.hbs");
-const render_recipient_row = require("../templates/recipient_row.hbs");
-const render_single_message = require("../templates/single_message.hbs");
-
-const people = require("./people");
-const rendered_markdown = require("./rendered_markdown");
-const util = require("./util");
+import * as activity from "./activity";
+import * as blueslip from "./blueslip";
+import * as color_class from "./color_class";
+import * as compose from "./compose";
+import * as compose_fade from "./compose_fade";
+import * as condense from "./condense";
+import * as hash_util from "./hash_util";
+import * as message_edit from "./message_edit";
+import * as message_store from "./message_store";
+import * as message_viewport from "./message_viewport";
+import * as narrow_state from "./narrow_state";
+import * as people from "./people";
+import * as popovers from "./popovers";
+import * as reactions from "./reactions";
+import * as recent_topics from "./recent_topics";
+import * as rendered_markdown from "./rendered_markdown";
+import * as rows from "./rows";
+import * as stream_data from "./stream_data";
+import * as submessage from "./submessage";
+import * as timerender from "./timerender";
+import * as util from "./util";
 
 function same_day(earlier_msg, later_msg) {
     if (earlier_msg === undefined || later_msg === undefined) {
@@ -121,7 +138,7 @@ function populate_group_from_message_container(group, message_container) {
 
     if (group.is_stream) {
         group.background_color = stream_data.get_color(message_container.msg.stream);
-        group.color_class = stream_color.get_color_class(group.background_color);
+        group.color_class = color_class.get_css_class(group.background_color);
         group.invite_only = stream_data.get_invite_only(message_container.msg.stream);
         group.topic = message_container.msg.topic;
         group.match_topic = util.get_match_topic(message_container.msg);
@@ -148,7 +165,7 @@ function populate_group_from_message_container(group, message_container) {
     render_group_display_date(group, message_container);
 }
 
-class MessageListView {
+export class MessageListView {
     constructor(list, table_name, collapse_messages) {
         this.list = list;
         this.collapse_messages = collapse_messages;
@@ -212,6 +229,17 @@ class MessageListView {
             message_container.edited_alongside_sender = false;
             message_container.edited_status_msg = false;
         }
+    }
+
+    set_calculated_message_container_variables(message_container) {
+        set_timestr(message_container);
+
+        // Make sure the right thing happens if the message was edited to mention us.
+        message_container.contains_mention = message_container.msg.mentioned;
+
+        this._maybe_format_me_message(message_container);
+        // Once all other variables are updated
+        this._add_msg_edited_vars(message_container);
     }
 
     add_subscription_marker(group, last_msg_container, first_msg_container) {
@@ -317,8 +345,6 @@ class MessageListView {
                 }
             }
 
-            set_timestr(message_container);
-
             message_container.include_sender = true;
             if (
                 !message_container.include_recipient &&
@@ -339,10 +365,7 @@ class MessageListView {
                 );
             }
 
-            message_container.contains_mention = message_container.msg.mentioned;
-            this._maybe_format_me_message(message_container);
-            // Once all other variables are updated
-            this._add_msg_edited_vars(message_container);
+            this.set_calculated_message_container_variables(message_container);
 
             prev = message_container;
         }
@@ -503,7 +526,7 @@ class MessageListView {
     _post_process($message_rows) {
         // $message_rows wraps one or more message rows
 
-        if ($message_rows.constructor !== jQuery) {
+        if (!($message_rows instanceof $)) {
             // An assertion check that we're calling this properly
             blueslip.error("programming error--pass in jQuery objects");
         }
@@ -614,10 +637,7 @@ class MessageListView {
             }
         };
 
-        // This function processes messages into chunks with separators between them,
-        // and templates them to be inserted as table rows into the DOM.
-
-        if (message_containers.length === 0 || this.table_name === undefined) {
+        if (message_containers.length === 0) {
             return undefined;
         }
 
@@ -1117,12 +1137,7 @@ class MessageListView {
         const row = this.get_row(message_container.msg.id);
         const was_selected = this.list.selected_message() === message_container.msg;
 
-        // Re-render just this one message
-        this._maybe_format_me_message(message_container);
-        this._add_msg_edited_vars(message_container);
-
-        // Make sure the right thing happens if the message was edited to mention us.
-        message_container.contains_mention = message_container.msg.mentioned;
+        this.set_calculated_message_container_variables(message_container);
 
         const rendered_msg = $(this._get_message_template(message_container));
         if (message_content_edited) {
@@ -1289,6 +1304,3 @@ class MessageListView {
         }
     }
 }
-
-module.exports = MessageListView;
-window.MessageListView = MessageListView;

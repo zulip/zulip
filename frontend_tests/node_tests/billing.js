@@ -5,7 +5,7 @@ const fs = require("fs");
 
 const {JSDOM} = require("jsdom");
 
-const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -13,12 +13,16 @@ const template = fs.readFileSync("templates/corporate/billing.html", "utf-8");
 const dom = new JSDOM(template, {pretendToBeVisual: true});
 const document = dom.window.document;
 
-const helpers = set_global("helpers", {
-    set_tab: () => {},
-});
 const StripeCheckout = set_global("StripeCheckout", {
     configure: () => {},
 });
+
+mock_cjs("jquery", $);
+const helpers = mock_esm("../../static/js/billing/helpers", {
+    set_tab: () => {},
+});
+
+zrequire("billing/billing");
 
 run_test("initialize", (override) => {
     let token_func;
@@ -67,7 +71,7 @@ run_test("initialize", (override) => {
     $("#payment-method").data = (key) =>
         document.querySelector("#payment-method").getAttribute("data-" + key);
 
-    zrequire("billing", "js/billing/billing");
+    $.get_initialize_function()();
 
     assert(set_tab_called);
     assert(stripe_checkout_configure_called);

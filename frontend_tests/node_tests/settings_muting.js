@@ -2,13 +2,13 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
-const muting_ui = set_global("muting_ui", {});
+mock_cjs("jquery", $);
+const muting_ui = mock_esm("../../static/js/muting_ui");
 
-zrequire("timerender");
 const settings_muting = zrequire("settings_muting");
 const stream_data = zrequire("stream_data");
 const muting = zrequire("muting");
@@ -38,6 +38,7 @@ run_test("settings", () => {
         set_up_topic_ui_called = true;
     };
 
+    settings_muting.reset();
     assert.equal(settings_muting.loaded, false);
 
     settings_muting.set_up();
@@ -82,9 +83,4 @@ run_test("settings", () => {
     assert(unmute_topic_called);
     assert(set_up_topic_ui_called);
     assert.equal(topic_data_called, 2);
-});
-
-run_test("reset", () => {
-    settings_muting.reset();
-    assert.equal(settings_muting.loaded, false);
 });

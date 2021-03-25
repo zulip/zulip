@@ -1,17 +1,45 @@
-"use strict";
-
-const _ = require("lodash");
-const WinChan = require("winchan");
+import $ from "jquery";
+import _ from "lodash";
+import WinChan from "winchan";
 
 // You won't find every click handler here, but it's a good place to start!
 
-const render_buddy_list_tooltip = require("../templates/buddy_list_tooltip.hbs");
-const render_buddy_list_tooltip_content = require("../templates/buddy_list_tooltip_content.hbs");
+import render_buddy_list_tooltip from "../templates/buddy_list_tooltip.hbs";
+import render_buddy_list_tooltip_content from "../templates/buddy_list_tooltip_content.hbs";
 
-const message_edit_history = require("./message_edit_history");
-const settings_panel_menu = require("./settings_panel_menu");
-const user_status_ui = require("./user_status_ui");
-const util = require("./util");
+import * as activity from "./activity";
+import * as blueslip from "./blueslip";
+import * as browser_history from "./browser_history";
+import * as buddy_data from "./buddy_data";
+import * as channel from "./channel";
+import * as compose from "./compose";
+import * as compose_actions from "./compose_actions";
+import * as compose_state from "./compose_state";
+import * as emoji_picker from "./emoji_picker";
+import * as hash_util from "./hash_util";
+import * as hotspots from "./hotspots";
+import * as message_edit from "./message_edit";
+import * as message_edit_history from "./message_edit_history";
+import * as message_flags from "./message_flags";
+import * as message_store from "./message_store";
+import * as muting_ui from "./muting_ui";
+import * as narrow from "./narrow";
+import * as notifications from "./notifications";
+import * as overlays from "./overlays";
+import * as popovers from "./popovers";
+import * as reactions from "./reactions";
+import * as recent_topics from "./recent_topics";
+import * as rows from "./rows";
+import * as server_events from "./server_events";
+import * as settings_panel_menu from "./settings_panel_menu";
+import * as settings_toggle from "./settings_toggle";
+import * as stream_edit from "./stream_edit";
+import * as stream_list from "./stream_list";
+import * as stream_popover from "./stream_popover";
+import * as ui_util from "./ui_util";
+import * as unread_ops from "./unread_ops";
+import * as user_status_ui from "./user_status_ui";
+import * as util from "./util";
 
 function convert_enter_to_click(e) {
     const key = e.which;
@@ -21,7 +49,7 @@ function convert_enter_to_click(e) {
     }
 }
 
-exports.initialize = function () {
+export function initialize() {
     // MESSAGE CLICKING
 
     function initialize_long_tap() {
@@ -254,7 +282,7 @@ exports.initialize = function () {
         // so we re-encode the hash.
         const stream_id = Number.parseInt($(this).attr("data-stream-id"), 10);
         if (stream_id) {
-            hashchange.go_to_location(hash_util.by_stream_uri(stream_id));
+            browser_history.go_to_location(hash_util.by_stream_uri(stream_id));
             return;
         }
         window.location.href = $(this).attr("href");
@@ -268,14 +296,6 @@ exports.initialize = function () {
         $("input.user_status").val(user_status_value);
         user_status_ui.toggle_clear_message_button();
         user_status_ui.update_button();
-    });
-
-    // NOTIFICATION CLICK
-
-    $("body").on("click", ".notification", function () {
-        const payload = $(this).data("narrow");
-        ui_util.change_tab_to("#message_feed_container");
-        narrow.activate(payload.raw_operators, payload.opts_notif);
     });
 
     // MESSAGE EDITING
@@ -389,18 +409,24 @@ exports.initialize = function () {
     });
 
     // MUTING
+    function mute_topic($elt) {
+        const stream_id = Number.parseInt($elt.attr("data-stream-id"), 10);
+        const topic = $elt.attr("data-topic-name");
+        muting_ui.mute_topic(stream_id, topic);
+    }
 
     $("body").on("click", ".on_hover_topic_mute", (e) => {
         e.stopPropagation();
-        const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id"), 10);
-        const topic = $(e.currentTarget).attr("data-topic-name");
-        muting_ui.mute_topic(stream_id, topic);
+        mute_topic($(e.target));
     });
+
+    // RECENT TOPICS
 
     $("body").on("keydown", ".on_hover_topic_mute", convert_enter_to_click);
 
-    $("body").on("click", ".on_hover_topic_unmute", (e) => {
+    $("body").on("click", "#recent_topics_table .on_hover_topic_unmute", (e) => {
         e.stopPropagation();
+        recent_topics.focus_clicked_element($(e.target), recent_topics.COLUMNS.mute);
         const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id"), 10);
         const topic = $(e.currentTarget).attr("data-topic-name");
         muting_ui.unmute_topic(stream_id, topic);
@@ -408,15 +434,21 @@ exports.initialize = function () {
 
     $("body").on("keydown", ".on_hover_topic_unmute", convert_enter_to_click);
 
-    // RECENT TOPICS
+    $("body").on("click", "#recent_topics_table .on_hover_topic_mute", (e) => {
+        e.stopPropagation();
+        const $elt = $(e.target);
+        recent_topics.focus_clicked_element($elt, recent_topics.COLUMNS.mute);
+        mute_topic($elt);
+    });
 
     $("body").on("click", "#recent_topics_search", (e) => {
         e.stopPropagation();
-        recent_topics.change_focused_element(e, "click");
+        recent_topics.change_focused_element($(e.target), "click");
     });
 
-    $("body").on("click", ".on_hover_topic_read", (e) => {
+    $("body").on("click", "#recent_topics_table .on_hover_topic_read", (e) => {
         e.stopPropagation();
+        recent_topics.focus_clicked_element($(e.target), recent_topics.COLUMNS.read);
         const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id"), 10);
         const topic = $(e.currentTarget).attr("data-topic-name");
         unread_ops.mark_topic_as_read(stream_id, topic);
@@ -426,12 +458,20 @@ exports.initialize = function () {
 
     $("body").on("click", ".btn-recent-filters", (e) => {
         e.stopPropagation();
+        recent_topics.change_focused_element($(e.target), "click");
         recent_topics.set_filter(e.currentTarget.dataset.filter);
         recent_topics.update_filters_view();
     });
 
+    $("body").on("click", "td.recent_topic_stream", (e) => {
+        e.stopPropagation();
+        recent_topics.focus_clicked_element($(e.target), recent_topics.COLUMNS.stream);
+        window.location.href = $(e.currentTarget).find("a").attr("href");
+    });
+
     $("body").on("click", "td.recent_topic_name", (e) => {
         e.stopPropagation();
+        recent_topics.focus_clicked_element($(e.target), recent_topics.COLUMNS.topic);
         window.location.href = $(e.currentTarget).find("a").attr("href");
     });
 
@@ -668,7 +708,7 @@ exports.initialize = function () {
 
     $("body").on("click", "[data-overlay-trigger]", function () {
         const target = $(this).attr("data-overlay-trigger");
-        hashchange.go_to_location(target);
+        browser_history.go_to_location(target);
     });
 
     function handle_compose_click(e) {
@@ -704,7 +744,7 @@ exports.initialize = function () {
 
     $("#streams_inline_cog").on("click", (e) => {
         e.stopPropagation();
-        hashchange.go_to_location("streams/subscribed");
+        browser_history.go_to_location("streams/subscribed");
     });
 
     $("#streams_filter_icon").on("click", (e) => {
@@ -978,6 +1018,4 @@ exports.initialize = function () {
     $(".settings-header.mobile .fa-chevron-left").on("click", () => {
         settings_panel_menu.mobile_deactivate_section();
     });
-};
-
-window.click_handlers = exports;
+}

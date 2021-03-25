@@ -1,3 +1,6 @@
+import $ from "jquery";
+
+import * as keydown_util from "./keydown_util";
 /* USAGE:
     Toggle x = components.toggle({
         selected: Integer selected_index,

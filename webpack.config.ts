@@ -38,6 +38,11 @@ export default (_env: unknown, argv: {mode?: string}): webpack.Configuration[] =
         module: {
             rules: [
                 {
+                    test: require.resolve("./static/js/zulip_test"),
+                    loader: "expose-loader",
+                    options: {exposes: "zulip_test"},
+                },
+                {
                     test: require.resolve("./tools/debug-require"),
                     loader: "expose-loader",
                     options: {exposes: "require"},
@@ -267,6 +272,13 @@ export default (_env: unknown, argv: {mode?: string}): webpack.Configuration[] =
             publicPath: "/webpack/",
             stats: "errors-only",
             noInfo: true,
+        },
+        watchOptions: {
+            ignored: [
+                // Prevent Emacs file locks from crashing webpack-dev-server
+                // https://github.com/webpack/webpack-dev-server/issues/2821
+                "**/.#*",
+            ],
         },
     };
 

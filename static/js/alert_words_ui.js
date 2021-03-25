@@ -1,10 +1,11 @@
-"use strict";
+import $ from "jquery";
 
-const render_alert_word_settings_item = require("../templates/settings/alert_word_settings_item.hbs");
+import render_alert_word_settings_item from "../templates/settings/alert_word_settings_item.hbs";
 
-const alert_words = require("./alert_words");
+import * as alert_words from "./alert_words";
+import * as channel from "./channel";
 
-exports.render_alert_words_ui = function () {
+export function render_alert_words_ui() {
     const words = alert_words.get_word_list();
     words.sort();
     const word_list = $("#alert_words_list");
@@ -20,7 +21,7 @@ exports.render_alert_words_ui = function () {
 
     // Focus new alert word name text box.
     $("#create_alert_word_name").trigger("focus");
-};
+}
 
 function update_alert_word_status(status_text, is_error) {
     const alert_word_status = $("#alert_word_status");
@@ -63,7 +64,6 @@ function add_alert_word(alert_word) {
 
 function remove_alert_word(alert_word) {
     const words_to_be_removed = [alert_word];
-
     channel.del({
         url: "/json/users/me/alert_words",
         data: {alert_words: JSON.stringify(words_to_be_removed)},
@@ -76,10 +76,10 @@ function remove_alert_word(alert_word) {
     });
 }
 
-exports.set_up_alert_words = function () {
+export function set_up_alert_words() {
     // The settings page must be rendered before this function gets called.
 
-    exports.render_alert_words_ui();
+    render_alert_words_ui();
 
     $("#create_alert_word_form").on("click", "#create_alert_word_button", () => {
         const word = $("#create_alert_word_name").val();
@@ -87,7 +87,7 @@ exports.set_up_alert_words = function () {
     });
 
     $("#alert_words_list").on("click", ".remove-alert-word", (event) => {
-        const word = $(event.currentTarget).parents("li").find(".value").text();
+        const word = $(event.currentTarget).parents("tr").find(".value").text().trim();
         remove_alert_word(word);
     });
 
@@ -96,7 +96,6 @@ exports.set_up_alert_words = function () {
         // Handle Enter (13) as "add".
         if (key === 13) {
             event.preventDefault();
-
             const word = $(event.target).val();
             add_alert_word(word);
         }
@@ -107,6 +106,4 @@ exports.set_up_alert_words = function () {
         const alert = $(event.currentTarget).parents(".alert");
         alert.hide();
     });
-};
-
-window.alert_words_ui = exports;
+}

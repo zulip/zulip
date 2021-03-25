@@ -1,6 +1,6 @@
-"use strict";
+import $ from "jquery";
 
-exports.update_padding = function (opts) {
+export function update_padding(opts) {
     const content = $(opts.content_sel);
     const padding = $(opts.padding_sel);
     const total_rows = opts.total_rows;
@@ -19,6 +19,4 @@ exports.update_padding = function (opts) {
 
     padding.height(new_padding_height);
     padding.width(1);
-};
-
-window.padded_widget = exports;
+}

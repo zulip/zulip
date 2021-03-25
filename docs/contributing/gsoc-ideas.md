@@ -106,7 +106,7 @@ Your application should include the following:
   how you work, such as personal projects of yours, including any
   existing open source or open culture contributions you've made and
   any bug reports you've submitted to open source projects.
-* Some notes on what you are hoping to get out of your twelve-week project.
+* Some notes on what you are hoping to get out of your project.
 * A description of the project you'd like to do, and why you're
   excited about it.
 * Some notes on why you're excited about working on Zulip.
@@ -564,6 +564,18 @@ Experts: Aman Agrawal, Neil Pilgrim.
   upgrade it from an alpha to an advertised feature.  **Skills
   required**: Python 3 development skills, good communication and
   project management skills, good at reading code and testing.
+
+### Archive tool
+
+Code: [zulip-archive](https://github.com/zulip/zulip-archive)
+Experts: Rein Zustand, Steve Howell
+
+- Work on zulip-archive, which provides a Google-indexable read-only
+  archive of Zulip conversations.  The issue tracker for the project
+  has a great set of introductory/small projects; the overall goal is
+  to make the project super convenient to use for our OSS communities.
+  **Skills useful**: Python 3, reading feedback from users, CSS,
+  GitHub Actions.
 
 ## Circulating proposals (March to April)
 

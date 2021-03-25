@@ -1,3 +1,7 @@
+import $ from "jquery";
+
+import * as common from "../common";
+
 export function detect_user_os() {
     if (/android/i.test(navigator.userAgent)) {
         return "android";

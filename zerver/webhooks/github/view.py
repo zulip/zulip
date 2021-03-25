@@ -381,6 +381,37 @@ def get_status_body(helper: Helper) -> str:
     )
 
 
+def get_locked_or_unlocked_pull_request_body(helper: Helper) -> str:
+    payload = helper.payload
+
+    action = payload["action"]
+
+    message = "{sender} has locked [PR #{pr_number}]({pr_url}) as {reason} and limited conversation to collaborators."
+    if action == "unlocked":
+        message = "{sender} has unlocked [PR #{pr_number}]({pr_url})."
+    return message.format(
+        sender=get_sender_name(payload),
+        pr_number=payload["pull_request"]["number"],
+        pr_url=payload["pull_request"]["html_url"],
+        reason=payload["pull_request"]["active_lock_reason"],
+    )
+
+
+def get_pull_request_auto_merge_body(helper: Helper) -> str:
+    payload = helper.payload
+
+    action = payload["action"]
+
+    message = "{sender} has enabled auto merge for [PR #{pr_number}]({pr_url})."
+    if action == "auto_merge_disabled":
+        message = "{sender} has disabled auto merge for [PR #{pr_number}]({pr_url})."
+    return message.format(
+        sender=get_sender_name(payload),
+        pr_number=payload["pull_request"]["number"],
+        pr_url=payload["pull_request"]["html_url"],
+    )
+
+
 def get_pull_request_ready_for_review_body(helper: Helper) -> str:
     payload = helper.payload
 
@@ -603,6 +634,8 @@ EVENT_FUNCTION_MAPPER: Dict[str, Callable[[Helper], str]] = {
     "pull_request_review": get_pull_request_review_body,
     "pull_request_review_comment": get_pull_request_review_comment_body,
     "pull_request_review_requested": get_pull_request_review_requested_body,
+    "pull_request_auto_merge": get_pull_request_auto_merge_body,
+    "locked_or_unlocked_pull_request": get_locked_or_unlocked_pull_request_body,
     "push_commits": get_push_commits_body,
     "push_tags": get_push_tags_body,
     "release": get_release_body,
@@ -707,6 +740,10 @@ def get_zulip_event_name(
             return "pull_request_review_requested"
         if action == "ready_for_review":
             return "pull_request_ready_for_review"
+        if action in ("locked", "unlocked"):
+            return "locked_or_unlocked_pull_request"
+        if action in ("auto_merge_enabled", "auto_merge_disabled"):
+            return "pull_request_auto_merge"
         if action in IGNORED_PULL_REQUEST_ACTIONS:
             return None
     elif header_event == "push":

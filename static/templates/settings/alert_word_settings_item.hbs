@@ -1,13 +1,14 @@
 {{! Alert word in the settings page that can be removed }}
-<li class="alert-word-item" data-word='{{word}}'>
-    <div class="alert-word-information-box grey-box">
+
+<tr class="alert-word-item" data-word='{{word}}'>
+    <td>
         <div class="alert_word_listing">
             <span class="value">{{word}}</span>
         </div>
-        <div class="edit-alert-word-buttons">
-            <button type="submit" class="button small btn-danger remove-alert-word" title="{{t 'Delete alert word' }}" data-word="{{word}}">
-                <i class="fa fa-trash-o" aria-hidden="true"></i>
-            </button>
-        </div>
-    </div>
-</li>
+    </td>
+    <td>
+        <button type="submit" class="button rounded small delete btn-danger remove-alert-word" title="{{t 'Delete alert word' }}" data-word="{{word}}">
+            <i class="fa fa-trash-o" aria-hidden="true"></i>
+        </button>
+    </td>
+</tr>

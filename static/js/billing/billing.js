@@ -1,3 +1,7 @@
+import $ from "jquery";
+
+import * as helpers from "./helpers";
+
 export function initialize() {
     helpers.set_tab("billing");
 

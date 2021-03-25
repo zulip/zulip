@@ -2,7 +2,12 @@ import {strict as assert} from "assert";
 import "css.escape";
 import path from "path";
 
-import {Browser, Page, launch} from "puppeteer";
+import ErrorStackParser from "error-stack-parser";
+import fetch from "node-fetch";
+import type {Browser, ConsoleMessage, ConsoleMessageLocation, ElementHandle, Page} from "puppeteer";
+import {launch} from "puppeteer";
+import StackFrame from "stackframe";
+import StackTraceGPS from "stacktrace-gps";
 
 import {test_credentials} from "../../var/puppeteer/test_credentials";
 
@@ -14,34 +19,32 @@ type Message = Record<string, string | boolean> & {recipient?: string; content: 
 class CommonUtils {
     browser: Browser | null = null;
     screenshot_id = 0;
+    is_firefox = process.env.PUPPETEER_PRODUCT === "firefox";
     realm_url = "http://zulip.zulipdev.com:9981/";
+    gps = new StackTraceGPS({ajax: async (url) => (await fetch(url)).text()});
+
     pm_recipient = {
         async set(page: Page, recipient: string): Promise<void> {
             // Without using the delay option here there seems to be
             // a flake where the typeahead doesn't show up.
             await page.type("#private_message_recipient", recipient, {delay: 100});
 
-            // We use jQuery here because we need to use it's :visible
-            // pseudo selector to actually wait for typeahead item that
-            // is visible; there can be typeahead item with this selector
-            // that is invisible because it is meant for something else
-            // e.g. private message input typeahead is different from topic
-            // input typeahead but both can be present in the dom.
-            await page.waitForFunction(() => {
-                const selector = ".typeahead-menu .active a:visible";
-                return $(selector).length !== 0;
-            });
-
-            await page.evaluate(() => {
-                $(".typeahead-menu .active a:visible").trigger("click");
-            });
+            // We use [style*="display: block"] here to distinguish
+            // the visible typeahead menu from the invisible ones
+            // meant for something else; e.g., the private message
+            // input typeahead is different from the topic input
+            // typeahead but both can be present in the DOM.
+            const entry = await page.waitForSelector(
+                '.typeahead[style*="display: block"] .active a',
+                {visible: true},
+            );
+            await entry!.click();
         },
 
         async expect(page: Page, expected: string): Promise<void> {
-            const actual_recipients = await page.evaluate(() => {
-                const compose_state = window.require("./static/js/compose_state");
-                return compose_state.private_message_recipient();
-            });
+            const actual_recipients = await page.evaluate(() =>
+                zulip_test.private_message_recipient(),
+            );
             assert.equal(actual_recipients, expected);
         },
     };
@@ -66,7 +69,10 @@ class CommonUtils {
                     "--no-sandbox",
                     "--disable-setuid-sandbox",
                 ],
-                defaultViewport: {width: 1280, height: 1024},
+                // TODO: Change defaultViewport to 1280x1024 when puppeteer fixes the window size issue with firefox.
+                // Here is link to the issue that is tracking the above problem https://github.com/puppeteer/puppeteer/issues/6442.
+                // @ts-expect-error: Because of https://github.com/puppeteer/puppeteer/issues/6885
+                defaultViewport: null,
                 headless: true,
             });
         }
@@ -89,6 +95,24 @@ class CommonUtils {
         await page.screenshot({
             path: screenshot_path,
         });
+    }
+
+    async page_url_with_fragment(page: Page): Promise<string> {
+        // `page.url()` does not include the url fragment when running
+        // Puppeteer with Firefox: https://github.com/puppeteer/puppeteer/issues/6787.
+        //
+        // This function hacks around that issue; once it's fixed in
+        // puppeteer upstream, we can delete this function and return
+        // its callers to using `page.url()`
+        return await page.evaluate("location.href");
+    }
+
+    // This function will clear the existing value of the element and
+    // replace it with the text.
+    async clear_and_type(page: Page, selector: string, text: string): Promise<void> {
+        // Select all text currently in the element.
+        await page.click(selector, {clickCount: 3});
+        await page.type(selector, text);
     }
 
     /**
@@ -168,34 +192,30 @@ class CommonUtils {
         }
     }
 
-    async get_text_from_selector(page: Page, selector: string): Promise<string> {
-        return await page.evaluate((selector: string) => $(selector).text().trim(), selector);
+    async get_element_text(element: ElementHandle<Element>): Promise<string> {
+        return (await element.getProperty("textContent"))!.jsonValue();
     }
 
-    async wait_for_text(page: Page, selector: string, text: string): Promise<void> {
-        await page.waitForFunction(
-            (selector: string, text: string) => $(selector).text().includes(text),
-            {},
-            selector,
-            text,
+    async get_text_from_selector(page: Page, selector: string): Promise<string> {
+        const elements = await page.$$(selector);
+        const texts = await Promise.all(
+            elements.map(async (element) => this.get_element_text(element)),
         );
+        return texts.join("").trim();
     }
 
     async get_stream_id(page: Page, stream_name: string): Promise<number> {
-        return await page.evaluate((stream_name: string) => {
-            const stream_data = window.require("./static/js/stream_data");
-            return stream_data.get_stream_id(stream_name);
-        }, stream_name);
+        return await page.evaluate(
+            (stream_name: string) => zulip_test.get_stream_id(stream_name),
+            stream_name,
+        );
     }
 
     async get_user_id_from_name(page: Page, name: string): Promise<number> {
         if (this.fullname[name] !== undefined) {
             name = this.fullname[name];
         }
-        return await page.evaluate((name: string) => {
-            const people = window.require("./static/js/people");
-            return people.get_user_id_from_name(name);
-        }, name);
+        return await page.evaluate((name: string) => zulip_test.get_user_id_from_name(name), name);
     }
 
     async get_internal_email_from_name(page: Page, name: string): Promise<string> {
@@ -203,9 +223,8 @@ class CommonUtils {
             name = this.fullname[name];
         }
         return await page.evaluate((fullname: string) => {
-            const people = window.require("./static/js/people");
-            const user_id = people.get_user_id_from_name(fullname);
-            return people.get_by_user_id(user_id).email;
+            const user_id = zulip_test.get_user_id_from_name(fullname);
+            return zulip_test.get_person_by_user_id(user_id).email;
         }, name);
     }
 
@@ -293,7 +312,6 @@ class CommonUtils {
                     - does it look to have been
                       re-rendered based on server info?
             */
-                const rows = window.require("./static/js/rows");
                 const last_msg = current_msg_list.last();
                 if (last_msg === undefined) {
                     return false;
@@ -307,8 +325,8 @@ class CommonUtils {
                     return false;
                 }
 
-                const row = rows.last_visible();
-                if (rows.id(row) !== last_msg.id) {
+                const row = zulip_test.last_visible_row();
+                if (zulip_test.row_id(row) !== last_msg.id) {
                     return false;
                 }
 
@@ -366,17 +384,14 @@ class CommonUtils {
         await page.click("#compose-send-button");
 
         // Sending should clear compose box content.
-        this.assert_compose_box_content(page, "");
+        await this.assert_compose_box_content(page, "");
 
         if (!outside_view) {
             await this.wait_for_fully_processed_message(page, params.content);
         }
 
         // Close the compose box after sending the message.
-        await page.evaluate(() => {
-            const compose_actions = window.require("./static/js/compose_actions");
-            compose_actions.cancel();
-        });
+        await page.evaluate(() => zulip_test.cancel_compose());
         // Make sure the compose box is closed.
         await page.waitForSelector("#compose-textarea", {hidden: true});
     }
@@ -397,28 +412,36 @@ class CommonUtils {
      * The messages are sorted chronologically.
      */
     async get_rendered_messages(page: Page, table = "zhome"): Promise<[string, string[]][]> {
-        return await page.evaluate((table: string) => {
-            const $recipient_rows = $(`#${CSS.escape(table)}`).find(".recipient_row");
-            return $recipient_rows.toArray().map((element): [string, string[]] => {
-                const $el = $(element);
-                const stream_name = $el.find(".stream_label").text().trim();
-                const topic_name = $el.find(".stream_topic a").text().trim();
+        const recipient_rows = await page.$$(`#${CSS.escape(table)} .recipient_row`);
+        return Promise.all(
+            recipient_rows.map(
+                async (element): Promise<[string, string[]]> => {
+                    const stream_label = await element.$(".stream_label");
+                    const stream_name = (await this.get_element_text(stream_label!)).trim();
+                    const topic_label = await element.$(".stream_topic a");
+                    const topic_name =
+                        topic_label === null
+                            ? ""
+                            : (await this.get_element_text(topic_label)).trim();
+                    let key = stream_name;
+                    if (topic_name !== "") {
+                        // If topic_name is '' then this is PMs, so only
+                        // append > topic_name if we are not in PMs or Group PMs.
+                        key = `${stream_name} > ${topic_name}`;
+                    }
 
-                let key = stream_name;
-                if (topic_name !== "") {
-                    // If topic_name is '' then this is PMs, so only
-                    // append > topic_name if we are not in PMs or Group PMs.
-                    key = `${stream_name} > ${topic_name}`;
-                }
+                    const messages = await Promise.all(
+                        (
+                            await element.$$(".message_row .message_content")
+                        ).map(async (message_row) =>
+                            (await this.get_element_text(message_row)).trim(),
+                        ),
+                    );
 
-                const messages = $el
-                    .find(".message_row .message_content")
-                    .toArray()
-                    .map((message_row) => message_row.textContent!.trim());
-
-                return [key, messages];
-            });
-        }, table);
+                    return [key, messages];
+                },
+            ),
+        );
     }
 
     // This method takes in page, table to fetch the messages
@@ -449,7 +472,7 @@ class CommonUtils {
         await page.click(organization_settings);
         await page.waitForSelector("#settings_overlay_container.show", {visible: true});
 
-        const url = page.url();
+        const url = await this.page_url_with_fragment(page);
         assert(/^http:\/\/[^/]+\/#organization/.test(url), "Unexpected manage organization URL");
 
         const organization_settings_data_section = "li[data-section='organization-settings']";
@@ -463,29 +486,11 @@ class CommonUtils {
         item: string,
     ): Promise<void> {
         console.log(`Looking in ${field_selector} to select ${str}, ${item}`);
-        await page.evaluate(
-            (field_selector: string, str: string, item: string) => {
-                // Set the value and then send a bogus keyup event to trigger
-                // the typeahead.
-                $(field_selector)
-                    .trigger("focus")
-                    .val(str)
-                    .trigger(new $.Event("keyup", {which: 0}));
-
-                // Trigger the typeahead.
-                // Reaching into the guts of Bootstrap Typeahead like this is not
-                // great, but I found it very hard to do it any other way.
-
-                const tah = $(field_selector).data().typeahead;
-                tah.mouseenter({
-                    currentTarget: $(`.typeahead:visible li:contains("${CSS.escape(item)}")`)[0],
-                });
-                tah.select();
-            },
-            field_selector,
-            str,
-            item,
+        await this.clear_and_type(page, field_selector, str);
+        const entry = await page.waitForXPath(
+            `//*[@class="typeahead dropdown-menu" and contains(@style, "display: block")]//li[contains(normalize-space(), "${item}")]//a`,
         );
+        await entry!.click();
     }
 
     async run_test(test_function: (page: Page) => Promise<void>): Promise<void> {
@@ -493,18 +498,103 @@ class CommonUtils {
         // a screenshot of it when the test fails.
         const browser = await this.ensure_browser();
         const page = await this.get_page();
+
+        // Used to keep console messages in order after async source mapping
+        let console_ready = Promise.resolve();
+
+        page.on("console", (message: ConsoleMessage) => {
+            const context = async ({
+                url,
+                lineNumber,
+                columnNumber,
+            }: ConsoleMessageLocation): Promise<string> => {
+                if (lineNumber === undefined || columnNumber === undefined) {
+                    return `${url}`;
+                }
+
+                let frame = new StackFrame({
+                    fileName: url,
+                    lineNumber: lineNumber + 1,
+                    columnNumber: columnNumber + 1,
+                });
+                try {
+                    frame = await this.gps.getMappedLocation(frame);
+                } catch {
+                    // Ignore source mapping errors
+                }
+                return `${frame.fileName}:${frame.lineNumber}:${frame.columnNumber}`;
+            };
+
+            const console_ready1 = console_ready;
+            console_ready = (async () => {
+                let output = `${await context(
+                    message.location(),
+                )}: ${message.type()}: ${message.text()}`;
+                if (message.type() === "trace") {
+                    for (const frame of message.stackTrace()) {
+                        output += `\n    at ${await context(frame)}`;
+                    }
+                }
+                await console_ready1;
+                console.log(output);
+            })();
+        });
+
+        let page_errored = false;
+        page.on("pageerror", (error: Error) => {
+            page_errored = true;
+
+            // Puppeteer gives us the stack as the message for some reason.
+            const error1 = new Error("dummy");
+            error1.stack = error.message;
+
+            const console_ready1 = console_ready;
+            console_ready = (async () => {
+                const frames = await Promise.all(
+                    ErrorStackParser.parse(error1).map(async (frame1) => {
+                        let frame = (frame1 as unknown) as StackFrame;
+                        try {
+                            frame = await this.gps.getMappedLocation(frame);
+                        } catch {
+                            // Ignore source mapping errors
+                        }
+                        return `\n    at ${frame.functionName} (${frame.fileName}:${frame.lineNumber}:${frame.columnNumber})`;
+                    }),
+                );
+                await console_ready1;
+                console.error("Page error:", error.message.split("\n", 1)[0] + frames.join(""));
+            })();
+
+            const console_ready2 = console_ready;
+            console_ready = (async () => {
+                try {
+                    // Take a screenshot, and increment the screenshot_id.
+                    await this.screenshot(page, `failure-${this.screenshot_id}`);
+                    this.screenshot_id += 1;
+                } finally {
+                    await console_ready2;
+                    console.log("Closing page to stop the test...");
+                    await page.close();
+                }
+            })();
+        });
+
         try {
             await test_function(page);
+
+            if (page_errored) {
+                throw new Error("Page threw an error");
+            }
         } catch (error: unknown) {
-            console.log(error);
+            if (!page_errored) {
+                // Take a screenshot, and increment the screenshot_id.
+                await this.screenshot(page, `failure-${this.screenshot_id}`);
+                this.screenshot_id += 1;
+            }
 
-            // Take a screenshot, and increment the screenshot_id.
-            await this.screenshot(page, `failure-${this.screenshot_id}`);
-            this.screenshot_id += 1;
-
-            await browser.close();
-            process.exit(1);
+            throw error;
         } finally {
+            await console_ready;
             await browser.close();
         }
     }

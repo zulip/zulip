@@ -1,9 +1,14 @@
-"use strict";
+import $ from "jquery";
 
-const people = require("./people");
-const util = require("./util");
+import * as compose_actions from "./compose_actions";
+import * as input_pill from "./input_pill";
+import * as people from "./people";
+import * as user_pill from "./user_pill";
+import * as util from "./util";
 
-exports.initialize_pill = function () {
+export let widget;
+
+export function initialize_pill() {
     const container = $("#private_message_recipient").parent();
 
     const pill = input_pill.create({
@@ -13,62 +18,60 @@ exports.initialize_pill = function () {
     });
 
     return pill;
-};
+}
 
-exports.initialize = function () {
-    exports.widget = exports.initialize_pill();
+export function initialize() {
+    widget = initialize_pill();
 
-    exports.widget.onPillCreate(() => {
+    widget.onPillCreate(() => {
         compose_actions.update_placeholder_text();
     });
 
-    exports.widget.onPillRemove(() => {
+    widget.onPillRemove(() => {
         compose_actions.update_placeholder_text();
     });
-};
+}
 
-exports.clear = function () {
-    exports.widget.clear();
-};
+export function clear() {
+    widget.clear();
+}
 
-exports.set_from_typeahead = function (person) {
+export function set_from_typeahead(person) {
     // We expect person to be an object returned from people.js.
     user_pill.append_person({
-        pill_widget: exports.widget,
+        pill_widget: widget,
         person,
     });
-};
+}
 
-exports.set_from_emails = function (value) {
+export function set_from_emails(value) {
     // value is something like "alice@example.com,bob@example.com"
-    exports.clear();
-    exports.widget.appendValue(value);
-};
+    clear();
+    widget.appendValue(value);
+}
 
-exports.get_user_ids = function () {
-    return user_pill.get_user_ids(exports.widget);
-};
+export function get_user_ids() {
+    return user_pill.get_user_ids(widget);
+}
 
-exports.has_unconverted_data = function () {
-    return user_pill.has_unconverted_data(exports.widget);
-};
+export function has_unconverted_data() {
+    return user_pill.has_unconverted_data(widget);
+}
 
-exports.get_user_ids_string = function () {
-    const user_ids = exports.get_user_ids();
+export function get_user_ids_string() {
+    const user_ids = get_user_ids();
     const sorted_user_ids = util.sorted_ids(user_ids);
     const user_ids_string = sorted_user_ids.join(",");
     return user_ids_string;
-};
+}
 
-exports.get_emails = function () {
+export function get_emails() {
     // return something like "alice@example.com,bob@example.com"
-    const user_ids = exports.get_user_ids();
+    const user_ids = get_user_ids();
     const emails = user_ids.map((id) => people.get_by_user_id(id).email).join(",");
     return emails;
-};
+}
 
-exports.filter_taken_users = function (persons) {
-    return user_pill.filter_taken_users(persons, exports.widget);
-};
-
-window.compose_pm_pill = exports;
+export function filter_taken_users(persons) {
+    return user_pill.filter_taken_users(persons, widget);
+}

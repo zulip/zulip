@@ -2,16 +2,17 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 
 const noop = () => {};
 
 const page_params = set_global("page_params", {});
-const channel = set_global("channel", {});
-const reload = set_global("reload", {});
-const reload_state = set_global("reload_state", {});
-const sent_messages = set_global("sent_messages", {
+const channel = mock_esm("../../static/js/channel");
+const reload = mock_esm("../../static/js/reload");
+const reload_state = mock_esm("../../static/js/reload_state");
+const sent_messages = mock_esm("../../static/js/sent_messages", {
     start_tracking_message: noop,
     report_server_ack: noop,
 });
@@ -97,7 +98,7 @@ run_test("transmit_message_ajax_reload_pending", () => {
     assert(reload_initiated);
 });
 
-run_test("reply_message_stream", () => {
+run_test("reply_message_stream", (override) => {
     const stream_message = {
         type: "stream",
         stream: "social",
@@ -110,9 +111,9 @@ run_test("reply_message_stream", () => {
 
     let send_message_args;
 
-    transmit.send_message = (args) => {
+    override(transmit, "send_message", (args) => {
         send_message_args = args;
-    };
+    });
 
     page_params.user_id = 44;
     page_params.queue_id = 66;
@@ -134,7 +135,7 @@ run_test("reply_message_stream", () => {
     });
 });
 
-run_test("reply_message_private", () => {
+run_test("reply_message_private", (override) => {
     const fred = {
         user_id: 3,
         email: "fred@example.com",
@@ -153,9 +154,9 @@ run_test("reply_message_private", () => {
 
     let send_message_args;
 
-    transmit.send_message = (args) => {
+    override(transmit, "send_message", (args) => {
         send_message_args = args;
-    };
+    });
 
     page_params.user_id = 155;
     page_params.queue_id = 177;

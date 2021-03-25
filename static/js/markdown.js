@@ -1,12 +1,13 @@
-"use strict";
+import {isValid} from "date-fns";
+import katex from "katex";
+import _ from "lodash";
 
-const {isValid} = require("date-fns");
-const katex = require("katex");
-const _ = require("lodash");
+import * as emoji from "../shared/js/emoji";
+import * as fenced_code from "../shared/js/fenced_code";
+import marked from "../third/marked/lib/marked";
 
-const emoji = require("../shared/js/emoji");
-const fenced_code = require("../shared/js/fenced_code");
-const marked = require("../third/marked/lib/marked");
+import * as blueslip from "./blueslip";
+import * as message_store from "./message_store";
 
 // This contains zulip's frontend Markdown implementation; see
 // docs/subsystems/markdown.md for docs on our Markdown syntax.  The other
@@ -22,8 +23,8 @@ const marked = require("../third/marked/lib/marked");
 // for example usage.
 let helpers;
 
-const realm_filter_map = new Map();
-let realm_filter_list = [];
+const linkifier_map = new Map();
+let linkifier_list = [];
 
 // Regexes that match some of our common backend-only Markdown syntax
 const backend_only_markdown_re = [
@@ -38,7 +39,7 @@ const backend_only_markdown_re = [
     /\S*(?:twitter|youtube).com\/\S*/,
 ];
 
-exports.translate_emoticons_to_names = (text) => {
+export function translate_emoticons_to_names(text) {
     // Translates emoticons in a string to their colon syntax.
     let translated = text;
     let replacement_text;
@@ -76,26 +77,26 @@ exports.translate_emoticons_to_names = (text) => {
     }
 
     return translated;
-};
+}
 
-exports.contains_backend_only_syntax = function (content) {
+export function contains_backend_only_syntax(content) {
     // Try to guess whether or not a message contains syntax that only the
     // backend Markdown processor can correctly handle.
     // If it doesn't, we can immediately render it client-side for local echo.
     const markedup = backend_only_markdown_re.find((re) => re.test(content));
 
-    // If a realm filter doesn't start with some specified characters
+    // If a linkifier doesn't start with some specified characters
     // then don't render it locally. It is workaround for the fact that
     // javascript regex doesn't support lookbehind.
-    const false_filter_match = realm_filter_list.find((re) => {
+    const false_linkifier_match = linkifier_list.find((re) => {
         const pattern = /[^\s"'(,:<]/.source + re[0].source + /(?!\w)/.source;
         const regex = new RegExp(pattern);
         return regex.test(content);
     });
-    return markedup !== undefined || false_filter_match !== undefined;
-};
+    return markedup !== undefined || false_linkifier_match !== undefined;
+}
 
-exports.apply_markdown = function (message) {
+export function apply_markdown(message) {
     message_store.init_booleans(message);
 
     const options = {
@@ -108,7 +109,7 @@ exports.apply_markdown = function (message) {
             let full_name;
             let user_id;
 
-            const id_regex = /(.+)\|(\d+)$/g; // For @**user|id** syntax
+            const id_regex = /^(.+)?\|(\d+)$/; // For @**user|id** and @**|id** syntax
             const match = id_regex.exec(mention);
 
             if (match) {
@@ -130,9 +131,20 @@ exports.apply_markdown = function (message) {
                 full_name = match[1];
                 user_id = Number.parseInt(match[2], 10);
 
-                if (!helpers.is_valid_full_name_and_user_id(full_name, user_id)) {
-                    user_id = undefined;
-                    full_name = undefined;
+                if (full_name === undefined) {
+                    // For @**|id** syntax
+                    if (!helpers.is_valid_user_id(user_id)) {
+                        // silently ignore invalid user id.
+                        user_id = undefined;
+                    } else {
+                        full_name = helpers.get_actual_name_from_user_id(user_id);
+                    }
+                } else {
+                    // For @**user|id** syntax
+                    if (!helpers.is_valid_full_name_and_user_id(full_name, user_id)) {
+                        user_id = undefined;
+                        full_name = undefined;
+                    }
                 }
             }
 
@@ -201,10 +213,10 @@ exports.apply_markdown = function (message) {
     };
     // Our python-markdown processor appends two \n\n to input
     message.content = marked(message.raw_content + "\n\n", options).trim();
-    message.is_me_message = exports.is_status_message(message.raw_content);
-};
+    message.is_me_message = is_status_message(message.raw_content);
+}
 
-exports.add_topic_links = function (message) {
+export function add_topic_links(message) {
     if (message.type !== "stream") {
         message.topic_links = [];
         return;
@@ -212,9 +224,9 @@ exports.add_topic_links = function (message) {
     const topic = message.topic;
     let links = [];
 
-    for (const realm_filter of realm_filter_list) {
-        const pattern = realm_filter[0];
-        const url = realm_filter[1];
+    for (const linkifier of linkifier_list) {
+        const pattern = linkifier[0];
+        const url = linkifier[1];
         let match;
         while ((match = pattern.exec(topic)) !== null) {
             let link_url = url;
@@ -239,11 +251,11 @@ exports.add_topic_links = function (message) {
     }
 
     message.topic_links = links;
-};
+}
 
-exports.is_status_message = function (raw_content) {
+export function is_status_message(raw_content) {
     return raw_content.startsWith("/me ");
-};
+}
 
 function make_emoji_span(codepoint, title, alt_text) {
     return `<span aria-label="${_.escape(title)}" class="emoji emoji-${_.escape(
@@ -340,8 +352,8 @@ function handleStreamTopic(stream_name, topic) {
     )}" href="/${_.escape(href)}">${_.escape(text)}</a>`;
 }
 
-function handleRealmFilter(pattern, matches) {
-    let url = realm_filter_map.get(pattern);
+function handleLinkifier(pattern, matches) {
+    let url = linkifier_map.get(pattern);
 
     let current_group = 1;
 
@@ -367,7 +379,7 @@ function handleTex(tex, fullmatch) {
     }
 }
 
-function python_to_js_filter(pattern, url) {
+function python_to_js_linkifier(pattern, url) {
     // Converts a python named-group regex to a javascript-compatible numbered
     // group regex... with a regex!
     const named_group_re = /\(?P<([^>]+?)>/g;
@@ -404,7 +416,7 @@ function python_to_js_filter(pattern, url) {
 
         pattern = pattern.replace(inline_flag_re, "");
     }
-    // Ideally we should have been checking that realm filters
+    // Ideally we should have been checking that linkifiers
     // begin with certain characters but since there is no
     // support for negative lookbehind in javascript, we check
     // for this condition in `contains_backend_only_syntax()`
@@ -418,36 +430,36 @@ function python_to_js_filter(pattern, url) {
         final_regex = new RegExp(pattern, js_flags);
     } catch (error) {
         // We have an error computing the generated regex syntax.
-        // We'll ignore this realm filter for now, but log this
+        // We'll ignore this linkifier for now, but log this
         // failure for debugging later.
-        blueslip.error("python_to_js_filter: " + error.message);
+        blueslip.error("python_to_js_linkifier: " + error.message);
     }
     return [final_regex, url];
 }
 
-exports.update_realm_filter_rules = function (realm_filters) {
-    // Update the marked parser with our particular set of realm filters
-    realm_filter_map.clear();
-    realm_filter_list = [];
+export function update_linkifier_rules(linkifiers) {
+    // Update the marked parser with our particular set of linkifiers
+    linkifier_map.clear();
+    linkifier_list = [];
 
     const marked_rules = [];
 
-    for (const [pattern, url] of realm_filters) {
-        const [regex, final_url] = python_to_js_filter(pattern, url);
+    for (const [pattern, url] of linkifiers) {
+        const [regex, final_url] = python_to_js_linkifier(pattern, url);
         if (!regex) {
-            // Skip any realm filters that could not be converted
+            // Skip any linkifiers that could not be converted
             continue;
         }
 
-        realm_filter_map.set(regex, final_url);
-        realm_filter_list.push([regex, final_url]);
+        linkifier_map.set(regex, final_url);
+        linkifier_list.push([regex, final_url]);
         marked_rules.push(regex);
     }
 
-    marked.InlineLexer.rules.zulip.realm_filters = marked_rules;
-};
+    marked.InlineLexer.rules.zulip.linkifiers = marked_rules;
+}
 
-exports.initialize = function (realm_filters, helper_config) {
+export function initialize(linkifiers, helper_config) {
     helpers = helper_config;
 
     function disable_markdown_regex(rules, name) {
@@ -485,7 +497,7 @@ exports.initialize = function (realm_filters, helper_config) {
 
         // In this scenario, the message has to be from the user, so the only
         // requirement should be that they have the setting on.
-        return exports.translate_emoticons_to_names(src);
+        return translate_emoticons_to_names(src);
     }
 
     // Disable lheadings
@@ -506,7 +518,7 @@ exports.initialize = function (realm_filters, helper_config) {
     // Disable autolink as (a) it is not used in our backend and (b) it interferes with @mentions
     disable_markdown_regex(marked.InlineLexer.rules.zulip, "autolink");
 
-    exports.update_realm_filter_rules(realm_filters);
+    update_linkifier_rules(linkifiers);
 
     // Tell our fenced code preprocessor how to insert arbitrary
     // HTML into the output. This generated HTML is safe to not escape
@@ -525,12 +537,10 @@ exports.initialize = function (realm_filters, helper_config) {
         unicodeEmojiHandler: handleUnicodeEmoji,
         streamHandler: handleStream,
         streamTopicHandler: handleStreamTopic,
-        realmFilterHandler: handleRealmFilter,
+        linkifierHandler: handleLinkifier,
         texHandler: handleTex,
         timestampHandler: handleTimestamp,
         renderer: r,
         preprocessors: [preprocess_code_blocks, preprocess_translate_emoticons],
     });
-};
-
-window.markdown = exports;
+}

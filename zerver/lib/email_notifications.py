@@ -1,3 +1,5 @@
+# See https://zulip.readthedocs.io/en/latest/subsystems/notifications.html
+
 import re
 from collections import defaultdict
 from datetime import timedelta

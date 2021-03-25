@@ -12,12 +12,12 @@
         </div>
         <div class="edit-bot-form-box">
             <div class="edit-bot-owner">
-                <label>{{t "Owner" }}</label>
+                <label for="bot_owner_select">{{t "Owner" }}</label>
                 {{> settings/dropdown_list_widget
                   widget_name="bot_owner"
                   list_placeholder=(t 'Filter users')
                   reset_button_text=(t '[Remove owner]')
-                  }}
+                  label="" }}
             </div>
             <div class="">
                 <label for="edit_bot_name">{{t "Full name" }}</label>

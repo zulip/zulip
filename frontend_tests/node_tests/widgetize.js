@@ -2,19 +2,80 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
 
-const poll_widget = set_global("poll_widget", {});
-set_global("document", "document-stub");
+mock_cjs("jquery", $);
 
-const narrow_state = set_global("narrow_state", {});
-set_global("current_msg_list", {});
+const sample_events = [
+    {
+        data: {
+            option: "First option",
+            idx: 1,
+            type: "new_option",
+        },
+        sender_id: 101,
+    },
+    {
+        data: {
+            option: "Second option",
+            idx: 1,
+            type: "new_option",
+        },
+        sender_id: 102,
+    },
+    {
+        data: {
+            option: "Third option",
+            idx: 1,
+            type: "new_option",
+        },
+        sender_id: 102,
+    },
+];
+
+let events;
+let widget_elem;
+let is_event_handled;
+let is_widget_activated;
+
+const fake_poll_widget = {
+    activate(data) {
+        is_widget_activated = true;
+        widget_elem = data.elem;
+        assert(widget_elem.hasClass("widget-content"));
+        widget_elem.handle_events = (e) => {
+            is_event_handled = true;
+            assert.notDeepStrictEqual(e, events);
+            events.shift();
+            assert.deepStrictEqual(e, events);
+        };
+        data.callback("test_data");
+    },
+};
+
+const narrow_state = mock_esm("../../static/js/narrow_state");
+mock_esm("../../static/js/poll_widget", fake_poll_widget);
+
+const current_msg_list = set_global("current_msg_list", {});
+set_global("document", "document-stub");
 
 const widgetize = zrequire("widgetize");
 
-run_test("activate", (override) => {
+function test(label, f) {
+    run_test(label, (override) => {
+        events = [...sample_events];
+        widget_elem = undefined;
+        is_event_handled = false;
+        is_widget_activated = false;
+        widgetize.clear_for_testing();
+        f(override);
+    });
+}
+
+test("activate", (override) => {
     // Both widgetize.activate and widgetize.handle_event are tested
     // here to use the "caching" of widgets
     const row = $.create("<stub message row>");
@@ -24,33 +85,6 @@ run_test("activate", (override) => {
 
     let narrow_active;
     override(narrow_state, "active", () => narrow_active);
-
-    const events = [
-        {
-            data: {
-                option: "First option",
-                idx: 1,
-                type: "new_option",
-            },
-            sender_id: 101,
-        },
-        {
-            data: {
-                option: "Second option",
-                idx: 1,
-                type: "new_option",
-            },
-            sender_id: 102,
-        },
-        {
-            data: {
-                option: "Third option",
-                idx: 1,
-                type: "new_option",
-            },
-            sender_id: 102,
-        },
-    ];
 
     const opts = {
         events: events.slice(),
@@ -66,23 +100,7 @@ run_test("activate", (override) => {
         widget_type: "poll",
     };
 
-    let widget_elem;
-    let is_event_handled;
-    let is_widget_activated;
     let is_widget_elem_inserted;
-
-    override(poll_widget, "activate", (data) => {
-        is_widget_activated = true;
-        widget_elem = data.elem;
-        assert(widget_elem.hasClass("widget-content"));
-        widget_elem.handle_events = (e) => {
-            is_event_handled = true;
-            assert.notDeepStrictEqual(e, events);
-            events.shift();
-            assert.deepStrictEqual(e, events);
-        };
-        data.callback("test_data");
-    });
 
     message_content.append = (elem) => {
         is_widget_elem_inserted = true;

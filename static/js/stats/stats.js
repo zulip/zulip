@@ -1,6 +1,9 @@
+import $ from "jquery";
+import PlotlyBar from "plotly.js/lib/bar";
 import Plotly from "plotly.js/lib/core";
+import PlotlyPie from "plotly.js/lib/pie";
 
-Plotly.register([require("plotly.js/lib/bar"), require("plotly.js/lib/pie")]);
+Plotly.register([PlotlyBar, PlotlyPie]);
 
 const font_14pt = {
     family: "Source Sans 3",

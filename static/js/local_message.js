@@ -1,23 +1,25 @@
-"use strict";
+import * as blueslip from "./blueslip";
+import * as message_events from "./message_events";
+import * as message_list from "./message_list";
 
 function truncate_precision(float) {
     return Number.parseFloat(float.toFixed(3));
 }
 
-exports.insert_message = function (message) {
+export function insert_message(message) {
     // It is a little bit funny to go through the message_events
     // codepath, but it's sort of the idea behind local echo that
     // we are simulating server events before they actually arrive.
     message_events.insert_new_messages([message], true);
-};
+}
 
-exports.get_next_id_float = (function () {
+export const get_next_id_float = (function () {
     const already_used = new Set();
 
     return function () {
         const local_id_increment = 0.01;
         let latest = page_params.max_message_id;
-        if (typeof message_list.all !== "undefined" && message_list.all.last() !== undefined) {
+        if (message_list.all.last() !== undefined) {
             latest = message_list.all.last().id;
         }
         latest = Math.max(0, latest);
@@ -47,5 +49,3 @@ exports.get_next_id_float = (function () {
         return local_id_float;
     };
 })();
-
-window.local_message = exports;

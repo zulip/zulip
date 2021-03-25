@@ -1,3 +1,5 @@
+# See https://zulip.readthedocs.io/en/latest/subsystems/notifications.html
+
 import base64
 import logging
 import re

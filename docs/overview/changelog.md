@@ -790,7 +790,7 @@ and is enabled by default in that case. To disable it, set
   New authentication backends supported by python-social-auth can now be
   added with just a few dozen lines of code.
 - Added API documentation for user groups and custom emoji.
-- Administrators can now easily delete all messages in a topic.
+- Administrators can now easily delete a topic.
 - Added display of a user's role (administrator, guest, etc.) in
   various relevant places.
 - Added support for sending "topic" rather than the legacy "subject"

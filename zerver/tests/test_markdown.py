@@ -12,6 +12,7 @@ from markdown import Markdown
 
 from zerver.lib.actions import (
     do_add_alert_words,
+    do_create_realm,
     do_remove_realm_emoji,
     do_set_realm_property,
     do_set_user_display_setting,
@@ -47,7 +48,6 @@ from zerver.lib.user_groups import create_user_group
 from zerver.models import (
     MAX_MESSAGE_LENGTH,
     Message,
-    Realm,
     RealmEmoji,
     RealmFilter,
     Stream,
@@ -472,7 +472,7 @@ class MarkdownTest(ZulipTestCase):
 
         clear_state_for_testing()
         with self.settings(ENABLE_FILE_LINKS=False):
-            realm = Realm.objects.create(string_id="file_links_test")
+            realm = do_create_realm(string_id="file_links_test", name="file_links_test")
             maybe_update_markdown_engines(realm.id, False)
             converted = markdown_convert(msg, message_realm=realm)
             self.assertEqual(
@@ -1830,6 +1830,13 @@ class MarkdownTest(ZulipTestCase):
         )
         self.assertEqual(msg.mentions_user_ids, {user_profile.id})
 
+        content = f"@**|{user_id}**"
+        self.assertEqual(
+            render_markdown(msg, content),
+            '<p><span class="user-mention" ' f'data-user-id="{user_id}">' "@King Hamlet</span></p>",
+        )
+        self.assertEqual(msg.mentions_user_ids, {user_profile.id})
+
     def test_mention_silent(self) -> None:
         sender_user_profile = self.example_user("othello")
         user_profile = self.example_user("hamlet")
@@ -1845,9 +1852,51 @@ class MarkdownTest(ZulipTestCase):
         )
         self.assertEqual(msg.mentions_user_ids, set())
 
+    def test_mention_invalid_followed_by_valid(self) -> None:
+        sender_user_profile = self.example_user("othello")
+        user_profile = self.example_user("hamlet")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        user_id = user_profile.id
+
+        content = "@**Invalid user** and @**King Hamlet**"
+        self.assertEqual(
+            render_markdown(msg, content),
+            '<p>@<strong>Invalid user</strong> and <span class="user-mention" '
+            f'data-user-id="{user_id}">'
+            "@King Hamlet</span></p>",
+        )
+        self.assertEqual(msg.mentions_user_ids, {user_profile.id})
+
+    def test_silent_mention_invalid_followed_by_valid(self) -> None:
+        sender_user_profile = self.example_user("othello")
+        user_profile = self.example_user("hamlet")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        user_id = user_profile.id
+
+        content = "@_**Invalid user** and @_**King Hamlet**"
+        self.assertEqual(
+            render_markdown(msg, content),
+            '<p>@_<strong>Invalid user</strong> and <span class="user-mention silent" '
+            f'data-user-id="{user_id}">'
+            "King Hamlet</span></p>",
+        )
+        self.assertEqual(msg.mentions_user_ids, set())
+
+        content = f"@_**|123456789** and @_**|{user_id}**"
+        self.assertEqual(
+            render_markdown(msg, content),
+            "<p>@_<strong>|123456789</strong> and "
+            '<span class="user-mention silent" '
+            f'data-user-id="{user_id}">'
+            "King Hamlet</span></p>",
+        )
+        self.assertEqual(msg.mentions_user_ids, set())
+
     def test_possible_mentions(self) -> None:
         def assert_mentions(content: str, names: Set[str], has_wildcards: bool = False) -> None:
             self.assertEqual(possible_mentions(content), (names, has_wildcards))
+
+        aaron = self.example_user("aaron")
 
         assert_mentions("", set())
         assert_mentions("boring", set())
@@ -1855,8 +1904,8 @@ class MarkdownTest(ZulipTestCase):
         assert_mentions("smush@**steve**smush", set())
 
         assert_mentions(
-            "Hello @**King Hamlet** and @**Cordelia Lear**\n@**Foo van Barson|1234** @**all**",
-            {"King Hamlet", "Cordelia Lear", "Foo van Barson|1234"},
+            f"Hello @**King Hamlet**, @**|{aaron.id}** and @**Cordelia Lear**\n@**Foo van Barson|1234** @**all**",
+            {"King Hamlet", f"|{aaron.id}", "Cordelia Lear", "Foo van Barson|1234"},
             True,
         )
 
@@ -2026,6 +2075,27 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(msg.mentions_user_ids, {user_profile.id})
         self.assertEqual(msg.mentions_user_group_ids, {user_group.id})
 
+    def test_invalid_user_group_followed_by_valid_mention_single(self) -> None:
+        sender_user_profile = self.example_user("othello")
+        user_profile = self.example_user("hamlet")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        user_id = user_profile.id
+        user_group = self.create_user_group_for_test("support")
+
+        content = "@**King Hamlet** @*Invalid user group* @*support*"
+        self.assertEqual(
+            render_markdown(msg, content),
+            '<p><span class="user-mention" '
+            f'data-user-id="{user_id}">'
+            "@King Hamlet</span> "
+            "@<em>Invalid user group</em> "
+            '<span class="user-group-mention" '
+            f'data-user-group-id="{user_group.id}">'
+            "@support</span></p>",
+        )
+        self.assertEqual(msg.mentions_user_ids, {user_profile.id})
+        self.assertEqual(msg.mentions_user_group_ids, {user_group.id})
+
     def test_user_group_mention_atomic_string(self) -> None:
         sender_user_profile = self.example_user("othello")
         realm = get_realm("zulip")
@@ -2151,6 +2221,18 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(
             render_markdown(msg, content),
             '<p><a class="stream" data-stream-id="{d.id}" href="/#narrow/stream/{d.id}-Denmark">#{d.name}</a></p>'.format(
+                d=denmark,
+            ),
+        )
+
+    def test_invalid_stream_followed_by_valid_mention(self) -> None:
+        denmark = get_stream("Denmark", get_realm("zulip"))
+        sender_user_profile = self.example_user("othello")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        content = "#**Invalid** and #**Denmark**"
+        self.assertEqual(
+            render_markdown(msg, content),
+            '<p>#<strong>Invalid</strong> and <a class="stream" data-stream-id="{d.id}" href="/#narrow/stream/{d.id}-Denmark">#{d.name}</a></p>'.format(
                 d=denmark,
             ),
         )
@@ -2377,7 +2459,9 @@ class MarkdownTest(ZulipTestCase):
         )
         self.assertEqual(converted, expected_output)
 
-        realm = Realm.objects.create(string_id="code_block_processor_test")
+        realm = do_create_realm(
+            string_id="code_block_processor_test", name="code_block_processor_test"
+        )
         maybe_update_markdown_engines(realm.id, True)
         converted = markdown_convert(msg, message_realm=realm, email_gateway=True)
         expected_output = (

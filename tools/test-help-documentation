@@ -13,8 +13,13 @@ from lib import sanity_check
 
 sanity_check.check_venv(__file__)
 
+os.chdir(ZULIP_PATH)
+sys.path.insert(0, ZULIP_PATH)
+
+from tools.lib.test_script import add_provision_check_override_param
+
 parser = argparse.ArgumentParser()
-parser.add_argument("--force", action="store_true", help="Run tests despite possible problems.")
+add_provision_check_override_param(parser)
 parser.add_argument(
     "--skip-external-links",
     dest="skip_external_link_check",
@@ -23,8 +28,6 @@ parser.add_argument(
 )
 options = parser.parse_args()
 
-os.chdir(ZULIP_PATH)
-sys.path.insert(0, ZULIP_PATH)
 from tools.lib.test_server import test_server_running
 
 os.makedirs("var/help-documentation", exist_ok=True)
@@ -57,7 +60,9 @@ def vnu_servlet() -> Iterator[None]:
         proc.terminate()
 
 
-with vnu_servlet(), test_server_running(options.force, external_host, log_file=LOG_FILE, dots=True):
+with vnu_servlet(), test_server_running(
+    options.skip_provision_check, external_host, log_file=LOG_FILE, dots=True
+):
     ret_help_doc = subprocess.call(
         ["scrapy", "crawl_with_status", *extra_args, "help_documentation_crawler"],
         cwd="tools/documentation_crawler",

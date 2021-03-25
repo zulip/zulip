@@ -5,13 +5,15 @@ const {strict: assert} = require("assert");
 const {add} = require("date-fns");
 const MockDate = require("mockdate");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 let page_params = set_global("page_params", {
     twenty_four_hour_time: true,
 });
+
+mock_cjs("jquery", $);
 
 const timerender = zrequire("timerender");
 
@@ -85,6 +87,8 @@ run_test("render_now_returns_year_with_year_boundary", () => {
 });
 
 run_test("render_date_renders_time_html", () => {
+    timerender.clear_for_testing();
+
     const today = new Date(1555091573000); // Friday 4/12/2019 5:52:53 PM (UTC+0)
     const message_time = today;
     const expected_html = i18n.t("Today");
@@ -296,6 +300,8 @@ run_test("last_seen_status_from_date", () => {
 
 run_test("set_full_datetime", () => {
     let time = new Date(1549958107000); // Tuesday 2/12/2019 07:55:07 AM (UTC+0)
+
+    page_params.twenty_four_hour_time = true;
     let time_str = timerender.stringify_time(time);
     let expected = "07:55";
     assert.equal(time_str, expected);

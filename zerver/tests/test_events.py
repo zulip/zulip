@@ -52,6 +52,7 @@ from zerver.lib.actions import (
     do_create_default_stream_group,
     do_create_multiuse_invite_link,
     do_create_user,
+    do_deactivate_realm,
     do_deactivate_stream,
     do_deactivate_user,
     do_delete_messages,
@@ -114,6 +115,7 @@ from zerver.lib.event_schema import (
     check_realm_bot_delete,
     check_realm_bot_remove,
     check_realm_bot_update,
+    check_realm_deactivated,
     check_realm_domains_add,
     check_realm_domains_change,
     check_realm_domains_remove,
@@ -1477,6 +1479,19 @@ class NormalActionsTest(BaseAction):
         events = self.verify_action(action, num_events=2)
         check_realm_bot_add("events[1]", events[1])
 
+    def test_do_deactivate_realm(self) -> None:
+        realm = self.user_profile.realm
+        action = lambda: do_deactivate_realm(realm)
+
+        # We delete sessions of all active users when a realm is
+        # deactivated, and redirect them to a deactivated page in
+        # order to inform that realm/organization has been
+        # deactivated.  state_change_expected is False is kinda
+        # correct because were one to somehow compute page_params (as
+        # this test does), but that's not actually possible.
+        events = self.verify_action(action, state_change_expected=False)
+        check_realm_deactivated("events[0]", events[0])
+
     def test_do_mark_hotspot_as_read(self) -> None:
         self.user_profile.tutorial_status = UserProfile.TUTORIAL_WAITING
         self.user_profile.save(update_fields=["tutorial_status"])
@@ -1863,6 +1878,7 @@ class UserDisplayActionTest(BaseAction):
         test_changes: Dict[str, Any] = dict(
             emojiset=["twitter"],
             default_language=["es", "de", "en"],
+            default_view=["all_messages", "recent_topics"],
             timezone=["America/Denver", "Pacific/Pago_Pago", "Pacific/Galapagos", ""],
             demote_inactive_streams=[2, 3, 1],
             color_scheme=[2, 3, 1],

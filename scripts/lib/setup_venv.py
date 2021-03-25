@@ -20,8 +20,8 @@ VENV_DEPENDENCIES = [
     "python3-dev",  # Needed to install typed-ast dependency of mypy
     "python3-pip",
     "virtualenv",
-    "libxml2-dev",  # Used for installing talon and python-xmlsec
-    "libxslt1-dev",  # Used for installing talon
+    "libxml2-dev",  # Used for installing talon-core and python-xmlsec
+    "libxslt1-dev",  # Used for installing talon-core
     "libpq-dev",  # Needed by psycopg2
     "libssl-dev",  # Needed to build pycurl and other libraries
     "libmagic1",  # Used for install python-magic
@@ -354,8 +354,12 @@ def do_setup_virtualenv(venv_path: str, requirements_file: str) -> None:
     try:
         install_venv_deps(pip, requirements_file)
     except subprocess.CalledProcessError:
-        # Might be a failure due to network connection issues. Retrying...
-        print(WARNING + "`pip install` failed; retrying..." + ENDC)
-        install_venv_deps(pip, requirements_file)
+        try:
+            # Might be a failure due to network connection issues. Retrying...
+            print(WARNING + "`pip install` failed; retrying..." + ENDC)
+            install_venv_deps(pip, requirements_file)
+        except BaseException as e:
+            # Suppress exception chaining
+            raise e from None
 
     run_as_root(["chmod", "-R", "a+rX", venv_path])

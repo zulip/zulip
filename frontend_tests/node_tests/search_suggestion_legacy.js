@@ -2,16 +2,15 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const page_params = set_global("page_params", {
     search_pills_enabled: false,
 });
-set_global("message_store", {
+mock_esm("../../static/js/message_store", {
     user_ids: () => [],
 });
-set_global("narrow", {});
 
 const settings_config = zrequire("settings_config");
 page_params.realm_email_address_visibility =
@@ -19,17 +18,13 @@ page_params.realm_email_address_visibility =
 
 const huddle_data = zrequire("huddle_data");
 
-zrequire("typeahead_helper");
-zrequire("Filter", "js/filter");
 const narrow_state = zrequire("narrow_state");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const people = zrequire("people");
-zrequire("unread");
-zrequire("common");
 const search = zrequire("search_suggestion");
 
-search.max_num_of_search_results = 15;
+search.__Rewire__("max_num_of_search_results", 15);
 
 const me = {
     email: "myself@zulip.com",
@@ -70,23 +65,30 @@ function init() {
     people.add_active_user(jeff);
 
     people.initialize_current_user(me.user_id);
+
+    stream_topic_history.reset();
+    huddle_data.clear_for_testing();
 }
-init();
 
 page_params.is_admin = true;
-
-stream_topic_history.reset();
 
 function get_suggestions(base_query, query) {
     return search.get_suggestions(base_query, query);
 }
 
-run_test("basic_get_suggestions", () => {
+function test(label, f) {
+    run_test(label, (override) => {
+        init();
+        f(override);
+    });
+}
+
+test("basic_get_suggestions", (override) => {
     const query = "fred";
 
-    stream_data.subscribed_streams = () => [];
+    override(stream_data, "subscribed_streams", () => []);
 
-    narrow_state.stream = () => "office";
+    override(narrow_state, "stream", () => "office");
 
     const suggestions = get_suggestions("", query);
 
@@ -94,12 +96,8 @@ run_test("basic_get_suggestions", () => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-run_test("subset_suggestions", () => {
+test("subset_suggestions", () => {
     const query = "stream:Denmark topic:Hamlet shakespeare";
-
-    stream_data.subscribed_streams = () => [];
-
-    narrow_state.stream = () => {};
 
     const suggestions = get_suggestions("", query);
 
@@ -112,11 +110,7 @@ run_test("subset_suggestions", () => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-run_test("private_suggestions", () => {
-    stream_data.subscribed_streams = () => [];
-
-    narrow_state.stream = () => {};
-
+test("private_suggestions", () => {
     let query = "is:private";
     let suggestions = get_suggestions("", query);
     let expected = [
@@ -225,11 +219,7 @@ run_test("private_suggestions", () => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-run_test("group_suggestions", () => {
-    stream_data.subscribed_streams = () => [];
-
-    narrow_state.stream = () => {};
-
+test("group_suggestions", () => {
     // Entering a comma in a pm-with query should immediately generate
     // suggestions for the next person.
     let query = "pm-with:bob@zulip.com,";
@@ -369,14 +359,10 @@ run_test("group_suggestions", () => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-init();
-
-run_test("empty_query_suggestions", () => {
+test("empty_query_suggestions", (override) => {
     const query = "";
 
-    stream_data.subscribed_streams = () => ["devel", "office"];
-
-    narrow_state.stream = () => {};
+    override(stream_data, "subscribed_streams", () => ["devel", "office"]);
 
     const suggestions = get_suggestions("", query);
 
@@ -412,12 +398,12 @@ run_test("empty_query_suggestions", () => {
     assert.equal(describe("has:attachment"), "Messages with one or more attachment");
 });
 
-run_test("has_suggestions", () => {
+test("has_suggestions", (override) => {
     // Checks that category wise suggestions are displayed instead of a single
     // default suggestion when suggesting `has` operator.
     let query = "h";
-    stream_data.subscribed_streams = () => ["devel", "office"];
-    narrow_state.stream = () => {};
+    override(stream_data, "subscribed_streams", () => ["devel", "office"]);
+    override(narrow_state, "stream", () => {});
 
     let suggestions = get_suggestions("", query);
     let expected = ["h", "has:link", "has:image", "has:attachment"];
@@ -471,9 +457,9 @@ run_test("has_suggestions", () => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-run_test("check_is_suggestions", () => {
-    stream_data.subscribed_streams = () => ["devel", "office"];
-    narrow_state.stream = () => {};
+test("check_is_suggestions", (override) => {
+    override(stream_data, "subscribed_streams", () => ["devel", "office"]);
+    override(narrow_state, "stream", () => {});
 
     let query = "i";
     let suggestions = get_suggestions("", query);
@@ -540,10 +526,10 @@ run_test("check_is_suggestions", () => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-run_test("sent_by_me_suggestions", () => {
-    stream_data.subscribed_streams = () => [];
+test("sent_by_me_suggestions", (override) => {
+    override(stream_data, "subscribed_streams", () => []);
 
-    narrow_state.stream = () => {};
+    override(narrow_state, "stream", () => {});
 
     let query = "";
     let suggestions = get_suggestions("", query);
@@ -611,18 +597,18 @@ run_test("sent_by_me_suggestions", () => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-run_test("topic_suggestions", () => {
+test("topic_suggestions", (override) => {
     let suggestions;
     let expected;
 
-    stream_data.subscribed_streams = () => ["office"];
+    override(stream_data, "subscribed_streams", () => ["office"]);
 
-    narrow_state.stream = () => "office";
+    override(narrow_state, "stream", () => "office");
 
     const devel_id = 44;
     const office_id = 77;
 
-    stream_data.get_stream_id = (stream_name) => {
+    override(stream_data, "get_stream_id", (stream_name) => {
         switch (stream_name) {
             case "office":
                 return office_id;
@@ -631,9 +617,8 @@ run_test("topic_suggestions", () => {
             default:
                 return undefined;
         }
-    };
+    });
 
-    stream_topic_history.reset();
     suggestions = get_suggestions("", "te");
     expected = [
         "te",
@@ -707,14 +692,10 @@ run_test("topic_suggestions", () => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-run_test("whitespace_glitch", () => {
+test("whitespace_glitch", (override) => {
     const query = "stream:office "; // note trailing space
 
-    stream_data.subscribed_streams = () => ["office"];
-
-    narrow_state.stream = () => {};
-
-    stream_topic_history.reset();
+    override(stream_data, "subscribed_streams", () => ["office"]);
 
     const suggestions = get_suggestions("", query);
 
@@ -723,12 +704,10 @@ run_test("whitespace_glitch", () => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-run_test("stream_completion", () => {
-    stream_data.subscribed_streams = () => ["office", "dev help"];
+test("stream_completion", (override) => {
+    override(stream_data, "subscribed_streams", () => ["office", "dev help"]);
 
-    narrow_state.stream = () => {};
-
-    stream_topic_history.reset();
+    override(narrow_state, "stream", () => {});
 
     let query = "stream:of";
     let suggestions = get_suggestions("", query);
@@ -746,12 +725,12 @@ run_test("stream_completion", () => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-run_test("people_suggestions", () => {
+test("people_suggestions", (override) => {
     let query = "te";
 
-    stream_data.subscribed_streams = () => [];
+    override(stream_data, "subscribed_streams", () => []);
 
-    narrow_state.stream = () => {};
+    override(narrow_state, "stream", () => {});
 
     const ted = {
         email: "ted@zulip.com",
@@ -773,8 +752,6 @@ run_test("people_suggestions", () => {
     people.add_active_user(ted);
     people.add_active_user(bob);
     people.add_active_user(alice);
-
-    stream_topic_history.reset();
 
     let suggestions = get_suggestions("", query);
 
@@ -828,7 +805,7 @@ run_test("people_suggestions", () => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-run_test("operator_suggestions", () => {
+test("operator_suggestions", () => {
     // Completed operator should return nothing
     let query = "stream:";
     let suggestions = get_suggestions("", query);
@@ -862,12 +839,8 @@ run_test("operator_suggestions", () => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
-run_test("queries_with_spaces", () => {
-    stream_data.subscribed_streams = () => ["office", "dev help"];
-
-    narrow_state.stream = () => {};
-
-    stream_topic_history.reset();
+test("queries_with_spaces", (override) => {
+    override(stream_data, "subscribed_streams", () => ["office", "dev help"]);
 
     // test allowing spaces with quotes surrounding operand
     let query = 'stream:"dev he"';

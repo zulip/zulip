@@ -21,7 +21,9 @@ async function test_add_new_profile_field(page: Page): Promise<void> {
         await common.get_text_from_selector(page, "div#admin-add-profile-field-status"),
         "Saved",
     );
-    await common.wait_for_text(page, `${profile_field_row} span.profile_field_name`, "Teams");
+    await page.waitForXPath(
+        '//*[@id="admin_profile_fields_table"]//tr[last()-1]/td[normalize-space()="Teams"]',
+    );
     assert.strictEqual(
         await common.get_text_from_selector(page, `${profile_field_row} span.profile_field_type`),
         "Short text",
@@ -37,7 +39,9 @@ async function test_edit_profile_field(page: Page): Promise<void> {
     await page.click(`${profile_field_form} button.submit`);
 
     await page.waitForSelector("#admin-profile-field-status img", {visible: true});
-    await common.wait_for_text(page, `${profile_field_row} span.profile_field_name`, "team");
+    await page.waitForXPath(
+        '//*[@id="admin_profile_fields_table"]//tr[last()-1]/td[normalize-space()="team"]',
+    );
     assert.strictEqual(
         await common.get_text_from_selector(page, `${profile_field_row} span.profile_field_type`),
         "Short text",

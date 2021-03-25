@@ -140,7 +140,7 @@ def test_authorization_errors_fatal(client: Client, nonadmin_client: Client) -> 
     validate_against_openapi_schema(result, "/users/me/subscriptions", "post", "400_1")
 
 
-@openapi_test_function("/users/{email}/presence:get")
+@openapi_test_function("/users/{user_id_or_email}/presence:get")
 def get_user_presence(client: Client) -> None:
 
     # {code_example|start}
@@ -148,7 +148,7 @@ def get_user_presence(client: Client) -> None:
     result = client.get_user_presence("iago@zulip.com")
     # {code_example|end}
 
-    validate_against_openapi_schema(result, "/users/{email}/presence", "get", "200")
+    validate_against_openapi_schema(result, "/users/{user_id_or_email}/presence", "get", "200")
 
 
 @openapi_test_function("/users/me/presence:post")
@@ -390,6 +390,23 @@ def get_profile(client: Client) -> None:
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/users/me", "get", "200")
+
+
+@openapi_test_function("/users/me:delete")
+def deactivate_own_user(client: Client, owner_client: Client) -> None:
+    user_id = client.get_profile()["user_id"]
+
+    # {code_example|start}
+    # Deactivate the account of the current user/bot that requests.
+    result = client.call_endpoint(
+        url="/users/me",
+        method="DELETE",
+    )
+    # {code_example|end}
+
+    # Reactivate the account to avoid polluting other tests.
+    owner_client.reactivate_user_by_id(user_id)
+    validate_against_openapi_schema(result, "/users/me", "delete", "200")
 
 
 @openapi_test_function("/get_stream_id:get")
@@ -1295,7 +1312,7 @@ def test_messages(client: Client, nonadmin_client: Client) -> None:
     test_delete_message_edit_permission_error(client, nonadmin_client)
 
 
-def test_users(client: Client) -> None:
+def test_users(client: Client, owner_client: Client) -> None:
 
     create_user(client)
     get_members(client)
@@ -1320,6 +1337,7 @@ def test_users(client: Client) -> None:
     get_alert_words(client)
     add_alert_words(client)
     remove_alert_words(client)
+    deactivate_own_user(client, owner_client)
 
 
 def test_streams(client: Client, nonadmin_client: Client) -> None:
@@ -1371,10 +1389,10 @@ def test_errors(client: Client) -> None:
     test_invalid_stream_error(client)
 
 
-def test_the_api(client: Client, nonadmin_client: Client) -> None:
+def test_the_api(client: Client, nonadmin_client: Client, owner_client: Client) -> None:
 
     get_user_agent(client)
-    test_users(client)
+    test_users(client, owner_client)
     test_streams(client, nonadmin_client)
     test_messages(client, nonadmin_client)
     test_queues(client)

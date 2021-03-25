@@ -2,17 +2,26 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const channel = set_global("channel", {});
-const message_list = set_global("message_list", {});
+const channel = mock_esm("../../static/js/channel");
+const message_list = mock_esm("../../static/js/message_list");
+const message_util = mock_esm("../../static/js/message_util");
 
 const unread = zrequire("unread");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
 
-run_test("basics", () => {
+function test(label, f) {
+    run_test(label, (override) => {
+        unread.declare_bankruptcy();
+        stream_topic_history.reset();
+        f(override);
+    });
+}
+
+test("basics", () => {
     const stream_id = 55;
 
     stream_topic_history.add_message({
@@ -56,10 +65,8 @@ run_test("basics", () => {
     assert.deepEqual(history, ["Topic1", "topic2"]);
     assert.deepEqual(max_message_id, 104);
 
-    set_global("message_util", {
-        get_messages_in_topic: () => [{id: 101}, {id: 102}],
-        get_max_message_id_in_stream: () => 103,
-    });
+    message_util.get_messages_in_topic = () => [{id: 101}, {id: 102}];
+    message_util.get_max_message_id_in_stream = () => 103;
     // Removing the last msg in topic1 changes the order
     stream_topic_history.remove_messages({
         stream_id,
@@ -73,10 +80,7 @@ run_test("basics", () => {
     max_message_id = stream_topic_history.get_max_message_id(stream_id);
     assert.deepEqual(max_message_id, 103);
 
-    set_global("message_util", {
-        get_messages_in_topic: () => [{id: 102}],
-        get_max_message_id_in_stream: () => 103,
-    });
+    message_util.get_messages_in_topic = () => [{id: 102}];
     // Removing first topic1 message has no effect.
     stream_topic_history.remove_messages({
         stream_id,
@@ -116,7 +120,7 @@ run_test("basics", () => {
     });
 });
 
-run_test("is_complete_for_stream_id", () => {
+test("is_complete_for_stream_id", () => {
     const sub = {
         name: "devel",
         stream_id: 444,
@@ -150,7 +154,7 @@ run_test("is_complete_for_stream_id", () => {
     assert.equal(stream_topic_history.is_complete_for_stream_id(sub.stream_id), false);
 });
 
-run_test("server_history", () => {
+test("server_history", () => {
     const sub = {
         name: "devel",
         stream_id: 66,
@@ -232,7 +236,7 @@ run_test("server_history", () => {
     assert.deepEqual(history, ["hist2", "hist1", "hist3"]);
 });
 
-run_test("test_unread_logic", () => {
+test("test_unread_logic", () => {
     const stream_id = 77;
 
     stream_topic_history.add_message({
@@ -269,7 +273,7 @@ run_test("test_unread_logic", () => {
     assert.deepEqual(history, ["toPic1", "unread1", "topic2", "UNREAD2"]);
 });
 
-run_test("test_stream_has_topics", () => {
+test("test_stream_has_topics", () => {
     const stream_id = 88;
 
     assert.equal(stream_topic_history.stream_has_topics(stream_id), false);
@@ -289,7 +293,7 @@ run_test("test_stream_has_topics", () => {
     assert.equal(stream_topic_history.stream_has_topics(stream_id), true);
 });
 
-run_test("server_history_end_to_end", () => {
+test("server_history_end_to_end", () => {
     stream_topic_history.reset();
 
     const stream_id = 99;

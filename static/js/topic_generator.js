@@ -1,5 +1,9 @@
+import * as muting from "./muting";
 import * as pm_conversations from "./pm_conversations";
+import * as stream_data from "./stream_data";
 import * as stream_sort from "./stream_sort";
+import * as stream_topic_history from "./stream_topic_history";
+import * as unread from "./unread";
 
 export function next_topic(streams, get_topics, has_unread_messages, curr_stream, curr_topic) {
     const curr_stream_index = streams.indexOf(curr_stream); // -1 if not found

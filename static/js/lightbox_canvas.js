@@ -1,3 +1,6 @@
+import * as blueslip from "./blueslip";
+import * as overlays from "./overlays";
+
 const funcs = {
     setZoom(meta, zoom) {
         // condition to handle zooming event by zoom hotkeys

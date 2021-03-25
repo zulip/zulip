@@ -382,6 +382,8 @@ RATE_LIMITING_RULES = {
 # other domains, but we use this list as an extra precaution.
 RATE_LIMITING_DOMAINS_FOR_TORNADO = ["api_by_user"]
 
+# These ratelimits are also documented publicly at
+# https://zulip.readthedocs.io/en/latest/production/email-gateway.html
 RATE_LIMITING_MIRROR_REALM_RULES = [
     (60, 50),  # 50 emails per minute
     (300, 120),  # 120 emails per 5 minutes

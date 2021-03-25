@@ -42,7 +42,6 @@ EXEMPT_FILES = {
     "static/js/billing/helpers.js",
     "static/js/blueslip.js",
     "static/js/blueslip_stacktrace.ts",
-    "static/js/channel.js",
     "static/js/click_handlers.js",
     "static/js/compose_actions.js",
     "static/js/composebox_typeahead.js",
@@ -105,7 +104,6 @@ EXEMPT_FILES = {
     "static/js/realm_logo.js",
     "static/js/recent_topics.js",
     "static/js/reload.js",
-    "static/js/reload_state.js",
     "static/js/reminder.js",
     "static/js/rendered_markdown.js",
     "static/js/resize.js",
@@ -134,7 +132,8 @@ EXEMPT_FILES = {
     "static/js/settings_users.js",
     "static/js/setup.js",
     "static/js/spoilers.js",
-    "static/js/starred_messages.js",
+    "static/js/starred_messages_ui.js",
+    "static/js/stream_bar.js",
     "static/js/stream_color.js",
     "static/js/stream_create.js",
     "static/js/stream_edit.js",
@@ -145,7 +144,6 @@ EXEMPT_FILES = {
     "static/js/submessage.js",
     "static/js/subs.js",
     "static/js/message_view_header.js",
-    "static/js/templates.js",
     "static/js/timerender.js",
     "static/js/todo_widget.js",
     "static/js/topic_list.js",
@@ -164,18 +162,19 @@ EXEMPT_FILES = {
     "static/js/zcommand.js",
     "static/js/zform.js",
     "static/js/zulip.js",
+    "static/js/zulip_test.js",
 }
+
+from tools.lib.test_script import add_provision_check_override_param, assert_provisioning_status_ok
 
 parser = argparse.ArgumentParser(USAGE)
 parser.add_argument("--coverage", action="store_true", help="Get coverage report")
-parser.add_argument("--force", action="store_true", help="Run tests despite possible problems.")
+add_provision_check_override_param(parser)
 parser.add_argument("args", nargs=argparse.REMAINDER)
 options = parser.parse_args()
 individual_files = options.args
 
-from tools.lib.test_script import assert_provisioning_status_ok
-
-assert_provisioning_status_ok(options.force)
+assert_provisioning_status_ok(options.skip_provision_check)
 
 
 def get_dev_host() -> str:

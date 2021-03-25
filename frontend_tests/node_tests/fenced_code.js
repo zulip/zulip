@@ -5,7 +5,17 @@ const {strict: assert} = require("assert");
 const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const fenced_code = zrequire("fenced_code", "shared/js/fenced_code");
+const fenced_code = zrequire("../shared/js/fenced_code");
+
+// Check the default behavior of fenced code blocks
+// works properly before Markdown is initialized.
+run_test("fenced_block_defaults", () => {
+    const input = "\n```\nfenced code\n```\n\nand then after\n";
+    const expected =
+        '\n\n<div class="codehilite"><pre><span></span><code>fenced code\n</code></pre></div>\n\n\nand then after\n\n';
+    const output = fenced_code.process_fenced_code(input);
+    assert.equal(output, expected);
+});
 
 run_test("get_unused_fence", () => {
     assert.equal(fenced_code.get_unused_fence("```js\nsomething\n```"), "`".repeat(4));

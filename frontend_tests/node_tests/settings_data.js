@@ -44,6 +44,46 @@ run_test("email_for_user_settings", () => {
     assert.equal(email(isaac), isaac.email);
 });
 
+run_test("user_can_change_name", () => {
+    const can_change_name = settings_data.user_can_change_name;
+
+    page_params.is_admin = true;
+    assert.equal(can_change_name(), true);
+
+    page_params.is_admin = false;
+    page_params.realm_name_changes_disabled = true;
+    page_params.server_name_changes_disabled = false;
+    assert.equal(can_change_name(), false);
+
+    page_params.realm_name_changes_disabled = false;
+    page_params.server_name_changes_disabled = false;
+    assert.equal(can_change_name(), true);
+
+    page_params.realm_name_changes_disabled = false;
+    page_params.server_name_changes_disabled = true;
+    assert.equal(can_change_name(), false);
+});
+
+run_test("user_can_change_avatar", () => {
+    const can_change_avatar = settings_data.user_can_change_avatar;
+
+    page_params.is_admin = true;
+    assert.equal(can_change_avatar(), true);
+
+    page_params.is_admin = false;
+    page_params.realm_avatar_changes_disabled = true;
+    page_params.server_avatar_changes_disabled = false;
+    assert.equal(can_change_avatar(), false);
+
+    page_params.realm_avatar_changes_disabled = false;
+    page_params.server_avatar_changes_disabled = false;
+    assert.equal(can_change_avatar(), true);
+
+    page_params.realm_avatar_changes_disabled = false;
+    page_params.server_avatar_changes_disabled = true;
+    assert.equal(can_change_avatar(), false);
+});
+
 run_test("user_can_change_logo", () => {
     const can_change_logo = settings_data.user_can_change_logo;
 

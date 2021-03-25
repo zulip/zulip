@@ -2,8 +2,9 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
 
 set_global("document", {});
@@ -11,7 +12,8 @@ set_global("document", {});
 const noop = () => {};
 const example_img_link = "http://example.com/example.png";
 
-set_global("ui_util", {
+mock_cjs("jquery", $);
+mock_esm("../../static/js/ui_util", {
     place_caret_at_end: noop,
 });
 
@@ -21,17 +23,6 @@ set_global("getSelection", () => ({
 
 zrequire("templates");
 const input_pill = zrequire("input_pill");
-
-let id_seq = 0;
-run_test("set_up_ids", () => {
-    // just get coverage on a simple one-liner:
-    input_pill.random_id();
-
-    input_pill.random_id = () => {
-        id_seq += 1;
-        return "some_id" + id_seq;
-    };
-});
 
 function pill_html(value, data_id, img_src) {
     const has_image = img_src !== undefined;
@@ -49,7 +40,21 @@ function pill_html(value, data_id, img_src) {
     return require("../../static/templates/input_pill.hbs")(opts);
 }
 
-run_test("basics", () => {
+function override_random_id(override) {
+    let id_seq = 0;
+    override(input_pill, "random_id", () => {
+        id_seq += 1;
+        return "some_id" + id_seq;
+    });
+}
+
+run_test("random_id", () => {
+    // just get coverage on a simple one-liner:
+    input_pill.random_id();
+});
+
+run_test("basics", (override) => {
+    override_random_id(override);
     const config = {};
 
     blueslip.expect("error", "Pill needs container.");
@@ -125,8 +130,6 @@ function set_up() {
         get_text_from_item: (item) => item.display_value,
     };
 
-    id_seq = 0;
-
     return {
         config,
         pill_input,
@@ -135,7 +138,8 @@ function set_up() {
     };
 }
 
-run_test("copy from pill", () => {
+run_test("copy from pill", (override) => {
+    override_random_id(override);
     const info = set_up();
     const config = info.config;
     const container = info.container;
@@ -356,7 +360,8 @@ run_test("Enter key with text", () => {
     assert.deepEqual(widget.items(), [items.blue, items.red, items.yellow]);
 });
 
-run_test("insert_remove", () => {
+run_test("insert_remove", (override) => {
+    override_random_id(override);
     const info = set_up();
 
     const config = info.config;
@@ -460,7 +465,8 @@ run_test("insert_remove", () => {
     assert(next_pill_focused);
 });
 
-run_test("exit button on pill", () => {
+run_test("exit button on pill", (override) => {
+    override_random_id(override);
     const info = set_up();
 
     const config = info.config;
@@ -562,7 +568,7 @@ run_test("misc things", () => {
     container_click_handler.call(this_, {target: this_});
 });
 
-run_test("clear", () => {
+run_test("appendValue/clear", () => {
     const pill_input = $.create("pill_input");
     const container = $.create("container");
     container.set_find_results(".input", pill_input);
@@ -578,6 +584,11 @@ run_test("clear", () => {
 
     const widget = input_pill.create(config);
 
+    // First test some early-exit code.
+    widget.appendValue("");
+    assert.deepEqual(widget._get_pills_for_testing(), []);
+
+    // Now set up real data.
     widget.appendValue("red,yellow,blue");
 
     const pills = widget._get_pills_for_testing();

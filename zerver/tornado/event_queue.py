@@ -693,7 +693,7 @@ def missedmessage_hook(
     """The receiver_is_off_zulip logic used to determine whether a user
     has no active client suffers from a somewhat fundamental race
     condition.  If the client is no longer on the Internet,
-    receiver_is_off_zulip will still return true for
+    receiver_is_off_zulip will still return False for
     DEFAULT_EVENT_QUEUE_TIMEOUT_SECS, until the queue is
     garbage-collected.  This would cause us to reliably miss
     push/email notifying users for messages arriving during the
@@ -765,7 +765,7 @@ def missedmessage_hook(
 
 def receiver_is_off_zulip(user_profile_id: int) -> bool:
     # If a user has no message-receiving event queues, they've got no open zulip
-    # session so we notify them
+    # session so we notify them.
     all_client_descriptors = get_client_descriptors_for_user(user_profile_id)
     message_event_queues = [
         client for client in all_client_descriptors if client.accepts_messages()
@@ -789,7 +789,11 @@ def maybe_enqueue_notifications(
 ) -> Dict[str, bool]:
     """This function has a complete unit test suite in
     `test_enqueue_notifications` that should be expanded as we add
-    more features here."""
+    more features here.
+
+    See https://zulip.readthedocs.io/en/latest/subsystems/notifications.html
+    for high-level design documentation.
+    """
     notified: Dict[str, bool] = {}
 
     if (idle or always_push_notify) and (

@@ -10,7 +10,6 @@ from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
 from zerver.decorator import JsonableError
-from zerver.lib import cache
 from zerver.lib.actions import (
     bulk_add_subscriptions,
     bulk_get_subscriber_user_ids,
@@ -1079,7 +1078,7 @@ class StreamAdminTest(ZulipTestCase):
         def test_non_admin(how_old: int, is_new: bool, policy: int) -> None:
             user_profile.date_joined = timezone_now() - timedelta(days=how_old)
             user_profile.save()
-            self.assertEqual(user_profile.is_new_member, is_new)
+            self.assertEqual(user_profile.is_provisional_member, is_new)
             stream_id = get_stream("stream_name1", user_profile.realm).id
             result = self.client_patch(
                 f"/json/streams/{stream_id}", {"stream_post_policy": orjson.dumps(policy).decode()}
@@ -1380,7 +1379,7 @@ class StreamAdminTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
 
-        other_realm = Realm.objects.create(string_id="other")
+        other_realm = do_create_realm(string_id="other", name="other")
         stream = self.make_stream("other_realm_stream", realm=other_realm)
 
         result = self.client_delete("/json/streams/" + str(stream.id))
@@ -1713,7 +1712,7 @@ class StreamAdminTest(ZulipTestCase):
         # Cannot create stream because not an admin.
         stream_name = ["admins_only"]
         result = self.common_subscribe_to_streams(user_profile, stream_name, allow_fail=True)
-        self.assert_json_error(result, "User cannot create streams.")
+        self.assert_json_error(result, "Only administrators can create streams.")
 
         # Make current user an admin.
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
@@ -1738,7 +1737,7 @@ class StreamAdminTest(ZulipTestCase):
         # period.
         stream_name = ["waiting_period"]
         result = self.common_subscribe_to_streams(user_profile, stream_name, allow_fail=True)
-        self.assert_json_error(result, "User cannot create streams.")
+        self.assert_json_error(result, "Your account is too new to create streams.")
 
         # Make user account 11 days old..
         user_profile.date_joined = timezone_now() - timedelta(days=11)
@@ -3013,9 +3012,6 @@ class SubscriptionAPITest(ZulipTestCase):
         self.test_realm.notifications_stream_id = notifications_stream.id
         self.test_realm.save()
 
-        # Delete the UserProfile from the cache so the realm change will be
-        # picked up
-        cache.cache_delete(cache.user_profile_by_email_cache_key(self.test_email))
         with tornado_redirected_to_list(events):
             self.helper_check_subs_before_and_after_add(
                 self.streams + add_streams,
@@ -3066,10 +3062,6 @@ class SubscriptionAPITest(ZulipTestCase):
         self.test_realm.notifications_stream_id = notifications_stream.id
         self.test_realm.save()
 
-        # Delete the UserProfile from the cache so the realm change will be
-        # picked up
-        cache.cache_delete(cache.user_profile_by_email_cache_key(invitee.email))
-
         self.common_subscribe_to_streams(
             invitee,
             invite_streams,
@@ -3103,10 +3095,6 @@ class SubscriptionAPITest(ZulipTestCase):
         user = self.example_user("AARON")
         user.realm = realm
         user.save()
-
-        # Delete the UserProfile from the cache so the realm change will be
-        # picked up
-        cache.cache_delete(cache.user_profile_by_email_cache_key(user.email))
 
         self.common_subscribe_to_streams(
             user,
@@ -3191,9 +3179,12 @@ class SubscriptionAPITest(ZulipTestCase):
         )
 
     def test_user_settings_for_adding_streams(self) -> None:
+        do_set_realm_property(
+            self.test_user.realm, "create_stream_policy", Realm.POLICY_ADMINS_ONLY
+        )
         with mock.patch("zerver.models.UserProfile.can_create_streams", return_value=False):
             result = self.common_subscribe_to_streams(self.test_user, ["stream1"], allow_fail=True)
-            self.assert_json_error(result, "User cannot create streams.")
+            self.assert_json_error(result, "Only administrators can create streams.")
 
         with mock.patch("zerver.models.UserProfile.can_create_streams", return_value=True):
             self.common_subscribe_to_streams(self.test_user, ["stream2"])
@@ -3202,27 +3193,78 @@ class SubscriptionAPITest(ZulipTestCase):
         with mock.patch("zerver.models.UserProfile.can_create_streams", return_value=False):
             self.common_subscribe_to_streams(self.test_user, ["stream2"])
 
+    def test_user_settings_for_creating_streams(self) -> None:
+        user_profile = self.example_user("cordelia")
+        realm = user_profile.realm
+
+        do_set_realm_property(realm, "create_stream_policy", Realm.POLICY_ADMINS_ONLY)
+        result = self.common_subscribe_to_streams(
+            user_profile,
+            ["new_stream1"],
+            allow_fail=True,
+        )
+        self.assert_json_error(result, "Only administrators can create streams.")
+
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        self.common_subscribe_to_streams(user_profile, ["new_stream1"])
+
+        do_set_realm_property(realm, "create_stream_policy", Realm.POLICY_MEMBERS_ONLY)
+        do_change_user_role(user_profile, UserProfile.ROLE_GUEST)
+        result = self.common_subscribe_to_streams(
+            user_profile,
+            ["new_stream2"],
+            allow_fail=True,
+        )
+        self.assert_json_error(result, "Not allowed for guest users")
+
+        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER)
+        self.common_subscribe_to_streams(
+            self.test_user,
+            ["new_stream2"],
+        )
+
+        do_set_realm_property(realm, "create_stream_policy", Realm.POLICY_FULL_MEMBERS_ONLY)
+        do_set_realm_property(realm, "waiting_period_threshold", 100000)
+        result = self.common_subscribe_to_streams(
+            user_profile,
+            ["new_stream3"],
+            allow_fail=True,
+        )
+        self.assert_json_error(result, "Your account is too new to create streams.")
+
+        do_set_realm_property(realm, "waiting_period_threshold", 0)
+        self.common_subscribe_to_streams(user_profile, ["new_stream3"])
+
     def test_can_create_streams(self) -> None:
         othello = self.example_user("othello")
-        othello.role = UserProfile.ROLE_REALM_ADMINISTRATOR
+        do_change_user_role(othello, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.assertTrue(othello.can_create_streams())
 
-        othello.role = UserProfile.ROLE_MEMBER
-        othello.realm.create_stream_policy = Realm.POLICY_ADMINS_ONLY
+        do_change_user_role(othello, UserProfile.ROLE_MEMBER)
+        do_set_realm_property(othello.realm, "create_stream_policy", Realm.POLICY_ADMINS_ONLY)
+        # Make sure that we are checking the permission with a full member,
+        # as full member is the user just below admin in the role hierarchy.
+        self.assertFalse(othello.is_provisional_member)
         self.assertFalse(othello.can_create_streams())
 
-        othello.realm.create_stream_policy = Realm.POLICY_MEMBERS_ONLY
-        othello.role = UserProfile.ROLE_GUEST
+        do_set_realm_property(othello.realm, "create_stream_policy", Realm.POLICY_MEMBERS_ONLY)
+        do_change_user_role(othello, UserProfile.ROLE_GUEST)
         self.assertFalse(othello.can_create_streams())
 
-        othello.role = UserProfile.ROLE_MEMBER
-        othello.realm.waiting_period_threshold = 1000
-        othello.realm.create_stream_policy = Realm.POLICY_FULL_MEMBERS_ONLY
+        do_change_user_role(othello, UserProfile.ROLE_MEMBER)
+        self.assertTrue(othello.can_create_streams())
+
+        do_set_realm_property(othello.realm, "waiting_period_threshold", 1000)
+        do_set_realm_property(othello.realm, "create_stream_policy", Realm.POLICY_FULL_MEMBERS_ONLY)
         othello.date_joined = timezone_now() - timedelta(
             days=(othello.realm.waiting_period_threshold - 1)
         )
         self.assertFalse(othello.can_create_streams())
 
+        do_change_user_role(othello, UserProfile.ROLE_MODERATOR)
+        self.assertTrue(othello.can_create_streams())
+
+        do_change_user_role(othello, UserProfile.ROLE_MEMBER)
         othello.date_joined = timezone_now() - timedelta(
             days=(othello.realm.waiting_period_threshold + 1)
         )
@@ -3247,7 +3289,22 @@ class SubscriptionAPITest(ZulipTestCase):
         )
         self.assert_json_error(result, "Only administrators can modify other users' subscriptions.")
 
+        do_change_user_role(self.test_user, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        self.common_subscribe_to_streams(
+            self.test_user, ["stream1"], {"principals": orjson.dumps([invitee_user_id]).decode()}
+        )
+
         do_set_realm_property(realm, "invite_to_stream_policy", Realm.POLICY_MEMBERS_ONLY)
+        do_change_user_role(self.test_user, UserProfile.ROLE_GUEST)
+        result = self.common_subscribe_to_streams(
+            self.test_user,
+            ["stream2"],
+            {"principals": orjson.dumps([invitee_user_id]).decode()},
+            allow_fail=True,
+        )
+        self.assert_json_error(result, "Not allowed for guest users")
+
+        do_change_user_role(self.test_user, UserProfile.ROLE_MEMBER)
         self.common_subscribe_to_streams(
             self.test_user,
             ["stream2"],
@@ -3281,11 +3338,20 @@ class SubscriptionAPITest(ZulipTestCase):
         do_change_user_role(othello, UserProfile.ROLE_REALM_ADMINISTRATOR)
         self.assertTrue(othello.can_subscribe_other_users())
 
+        do_set_realm_property(othello.realm, "invite_to_stream_policy", Realm.POLICY_ADMINS_ONLY)
         do_change_user_role(othello, UserProfile.ROLE_MEMBER)
+        # Make sure that we are checking the permission with a full member,
+        # as full member is the user just below admin in the role hierarchy.
+        self.assertFalse(othello.is_provisional_member)
+        self.assertFalse(othello.can_subscribe_other_users())
+
+        do_set_realm_property(othello.realm, "invite_to_stream_policy", Realm.POLICY_MEMBERS_ONLY)
         do_change_user_role(othello, UserProfile.ROLE_GUEST)
         self.assertFalse(othello.can_subscribe_other_users())
 
         do_change_user_role(othello, UserProfile.ROLE_MEMBER)
+        self.assertTrue(othello.can_subscribe_other_users())
+
         do_set_realm_property(othello.realm, "waiting_period_threshold", 1000)
         do_set_realm_property(
             othello.realm, "invite_to_stream_policy", Realm.POLICY_FULL_MEMBERS_ONLY
@@ -3295,6 +3361,10 @@ class SubscriptionAPITest(ZulipTestCase):
         )
         self.assertFalse(othello.can_subscribe_other_users())
 
+        do_change_user_role(othello, UserProfile.ROLE_MODERATOR)
+        self.assertTrue(othello.can_subscribe_other_users())
+
+        do_change_user_role(othello, UserProfile.ROLE_MEMBER)
         othello.date_joined = timezone_now() - timedelta(
             days=(othello.realm.waiting_period_threshold + 1)
         )
@@ -3533,7 +3603,7 @@ class SubscriptionAPITest(ZulipTestCase):
         new_member = self.nonreg_user("test")
 
         do_set_realm_property(new_member.realm, "waiting_period_threshold", 10)
-        self.assertTrue(new_member.is_new_member)
+        self.assertTrue(new_member.is_provisional_member)
 
         stream = self.make_stream("stream1")
         do_change_stream_post_policy(stream, Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS)
@@ -3564,7 +3634,7 @@ class SubscriptionAPITest(ZulipTestCase):
             }
         ]
 
-        with self.assertRaisesRegex(JsonableError, "User cannot create streams."):
+        with self.assertRaisesRegex(JsonableError, "Not allowed for guest users"):
             list_to_streams(streams_raw, guest_user)
 
         stream = self.make_stream("private_stream", invite_only=True)

@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const typeahead = zrequire("typeahead", "shared/js/typeahead");
+const typeahead = zrequire("../shared/js/typeahead");
 
 // The data structures here may be different for
 // different apps; the only key thing is we look
@@ -109,6 +109,22 @@ run_test("triage", () => {
         {
             matches: [jo, joan],
             rest: [alice, alicia, steve, stephanie],
+        },
+    );
+
+    assert.deepEqual(
+        typeahead.triage(" ", names, (r) => r.name),
+        {
+            matches: [],
+            rest: [alice, alicia, joan, jo, steve, stephanie],
+        },
+    );
+
+    assert.deepEqual(
+        typeahead.triage(";", names, (r) => r.name),
+        {
+            matches: [],
+            rest: [alice, alicia, joan, jo, steve, stephanie],
         },
     );
 });

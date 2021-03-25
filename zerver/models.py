@@ -62,7 +62,6 @@ from zerver.lib.cache import (
     realm_user_dict_fields,
     realm_user_dicts_cache_key,
     user_profile_by_api_key_cache_key,
-    user_profile_by_email_cache_key,
     user_profile_by_id_cache_key,
     user_profile_cache_key,
 )
@@ -88,7 +87,7 @@ from zerver.lib.validator import (
     check_long_string,
     check_short_string,
     check_url,
-    validate_choice_field,
+    validate_select_field,
 )
 
 MAX_TOPIC_NAME_LENGTH = 60
@@ -553,29 +552,41 @@ class Realm(models.Model):
     def get_active_emoji(self) -> Dict[str, Dict[str, Iterable[str]]]:
         return get_active_realm_emoji_uncached(self)
 
-    def get_admin_users_and_bots(self) -> Sequence["UserProfile"]:
+    def get_admin_users_and_bots(
+        self, include_realm_owners: bool = True
+    ) -> Sequence["UserProfile"]:
         """Use this in contexts where we want administrative users as well as
         bots with administrator privileges, like send_event calls for
         notifications to all administrator users.
         """
+        if include_realm_owners:
+            roles = [UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_REALM_OWNER]
+        else:
+            roles = [UserProfile.ROLE_REALM_ADMINISTRATOR]
+
         # TODO: Change return type to QuerySet[UserProfile]
         return UserProfile.objects.filter(
             realm=self,
             is_active=True,
-            role__in=[UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_REALM_OWNER],
+            role__in=roles,
         )
 
-    def get_human_admin_users(self) -> QuerySet:
+    def get_human_admin_users(self, include_realm_owners: bool = True) -> QuerySet:
         """Use this in contexts where we want only human users with
         administrative privileges, like sending an email to all of a
         realm's administrators (bots don't have real email addresses).
         """
+        if include_realm_owners:
+            roles = [UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_REALM_OWNER]
+        else:
+            roles = [UserProfile.ROLE_REALM_ADMINISTRATOR]
+
         # TODO: Change return type to QuerySet[UserProfile]
         return UserProfile.objects.filter(
             realm=self,
             is_bot=False,
             is_active=True,
-            role__in=[UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_REALM_OWNER],
+            role__in=roles,
         )
 
     def get_human_billing_admin_users(self) -> Sequence["UserProfile"]:
@@ -1153,6 +1164,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     # display settings
     default_language: str = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
+    # This setting controls which view is rendered first when Zulip loads.
+    # Values for it are URL suffix after `#`.
+    default_view: str = models.TextField(default="recent_topics")
     dense_mode: bool = models.BooleanField(default=True)
     fluid_layout_width: bool = models.BooleanField(default=False)
     high_contrast_mode: bool = models.BooleanField(default=False)
@@ -1244,6 +1258,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     property_types = dict(
         color_scheme=int,
         default_language=str,
+        default_view=str,
         demote_inactive_streams=int,
         dense_mode=bool,
         emojiset=str,
@@ -1336,7 +1351,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return f"<UserProfile: {self.email} {self.realm}>"
 
     @property
-    def is_new_member(self) -> bool:
+    def is_provisional_member(self) -> bool:
+        if self.is_moderator:
+            return False
         diff = (timezone_now() - self.date_joined).days
         if diff < self.realm.waiting_period_threshold:
             return True
@@ -1378,6 +1395,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             # We need to be careful to not accidentally change
             # ROLE_REALM_ADMINISTRATOR to ROLE_MEMBER here.
             self.role = UserProfile.ROLE_MEMBER
+
+    @property
+    def is_moderator(self) -> bool:
+        return self.role == UserProfile.ROLE_MODERATOR
 
     @property
     def is_incoming_webhook(self) -> bool:
@@ -1433,7 +1454,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
         if policy_value == Realm.POLICY_MEMBERS_ONLY:
             return True
-        return not self.is_new_member
+        return not self.is_provisional_member
 
     def can_create_streams(self) -> bool:
         return self.has_permission("create_stream_policy")
@@ -2595,9 +2616,8 @@ def get_user_profile_by_id(uid: int) -> UserProfile:
     return UserProfile.objects.select_related().get(id=uid)
 
 
-@cache_with_key(user_profile_by_email_cache_key, timeout=3600 * 24 * 7)
 def get_user_profile_by_email(email: str) -> UserProfile:
-    """This function is intended to be used by our unit tests and for
+    """This function is intended to be used for
     manual manage.py shell work; robust code must use get_user or
     get_user_by_delivery_email instead, because Zulip supports
     multiple users with a given (delivery) email address existing on a
@@ -2817,6 +2837,17 @@ def get_huddle_backend(huddle_hash: str, id_list: List[int]) -> Huddle:
 
 
 class UserActivity(models.Model):
+    """Data table recording the last time each user hit Zulip endpoints
+    via which Clients; unlike UserPresence, these data are not exposed
+    to users via the Zulip API.
+
+    Useful for debugging as well as to answer analytics questions like
+    "How many users have accessed the Zulip mobile app in the last
+    month?" or "Which users/organizations have recently used API
+    endpoint X that is about to be desupported" for communications
+    and database migration purposes.
+    """
+
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     user_profile: UserProfile = models.ForeignKey(UserProfile, on_delete=CASCADE)
     client: Client = models.ForeignKey(Client, on_delete=CASCADE)
@@ -2840,6 +2871,10 @@ class UserActivityInterval(models.Model):
 
 class UserPresence(models.Model):
     """A record from the last time we heard from a given user on a given client.
+
+    NOTE: Users can disable updates to this table (see UserProfile.presence_enabled),
+    so this cannot be used to determine if a user was recently active on Zulip.
+    The UserActivity table is recommended for that purpose.
 
     This is a tricky subsystem, because it is highly optimized.  See the docs:
       https://zulip.readthedocs.io/en/latest/subsystems/presence.html
@@ -2964,7 +2999,7 @@ class DefaultStreamGroup(models.Model):
             name=self.name,
             id=self.id,
             description=self.description,
-            streams=[stream.to_dict() for stream in self.streams.all()],
+            streams=[stream.to_dict() for stream in self.streams.all().order_by("name")],
         )
 
 
@@ -3261,24 +3296,24 @@ class CustomProfileField(models.Model):
 
     SHORT_TEXT = 1
     LONG_TEXT = 2
-    CHOICE = 3
+    SELECT = 3
     DATE = 4
     URL = 5
     USER = 6
     EXTERNAL_ACCOUNT = 7
 
     # These are the fields whose validators require more than var_name
-    # and value argument. i.e. CHOICE require field_data, USER require
+    # and value argument. i.e. SELECT require field_data, USER require
     # realm as argument.
-    CHOICE_FIELD_TYPE_DATA: List[ExtendedFieldElement] = [
-        (CHOICE, ugettext_lazy("List of options"), validate_choice_field, str, "CHOICE"),
+    SELECT_FIELD_TYPE_DATA: List[ExtendedFieldElement] = [
+        (SELECT, ugettext_lazy("List of options"), validate_select_field, str, "CHOICE"),
     ]
     USER_FIELD_TYPE_DATA: List[UserFieldElement] = [
         (USER, ugettext_lazy("Person picker"), check_valid_user_ids, ast.literal_eval, "USER"),
     ]
 
-    CHOICE_FIELD_VALIDATORS: Dict[int, ExtendedValidator] = {
-        item[0]: item[2] for item in CHOICE_FIELD_TYPE_DATA
+    SELECT_FIELD_VALIDATORS: Dict[int, ExtendedValidator] = {
+        item[0]: item[2] for item in SELECT_FIELD_TYPE_DATA
     }
     USER_FIELD_VALIDATORS: Dict[int, RealmUserValidator] = {
         item[0]: item[2] for item in USER_FIELD_TYPE_DATA
@@ -3299,7 +3334,7 @@ class CustomProfileField(models.Model):
         ),
     ]
 
-    ALL_FIELD_TYPES = [*FIELD_TYPE_DATA, *CHOICE_FIELD_TYPE_DATA, *USER_FIELD_TYPE_DATA]
+    ALL_FIELD_TYPES = [*FIELD_TYPE_DATA, *SELECT_FIELD_TYPE_DATA, *USER_FIELD_TYPE_DATA]
 
     FIELD_VALIDATORS: Dict[int, Validator[Union[int, str, List[int]]]] = {
         item[0]: item[2] for item in FIELD_TYPE_DATA
@@ -3318,7 +3353,7 @@ class CustomProfileField(models.Model):
     # type/name/hint.
     #
     # The format depends on the type.  Field types SHORT_TEXT, LONG_TEXT,
-    # DATE, URL, and USER leave this null.  Fields of type CHOICE store the
+    # DATE, URL, and USER leave this null.  Fields of type SELECT store the
     # choices' descriptions.
     #
     # Note: There is no performance overhead of using TextField in PostgreSQL.

@@ -106,7 +106,7 @@ places:
   your changes won't be supported in the frontend processor.
 * If desired, the typeahead logic in `static/js/composebox_typeahead.js`.
 * The test suite, probably via adding entries to `zerver/tests/fixtures/markdown_test_cases.json`.
-* The in-app Markdown documentation (`templates/zerver/app/markdown_help.html`).
+* The in-app Markdown documentation (`markdown_help_rows` in `static/js/info_overlay.js`).
 * The list of changes to Markdown at the end of this document.
 
 Important considerations for any changes are:

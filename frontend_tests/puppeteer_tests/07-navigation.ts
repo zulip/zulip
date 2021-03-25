@@ -34,6 +34,8 @@ async function navigate_to_settings(page: Page): Promise<void> {
     await page.waitForSelector("#settings_page", {visible: true});
 
     await page.click("#settings_page .content-wrapper .exit");
+    // Wait until the overlay is completely closed.
+    await page.waitForSelector("#settings_overlay_container", {hidden: true});
 }
 
 async function navigate_to_subscriptions(page: Page): Promise<void> {
@@ -49,6 +51,8 @@ async function navigate_to_subscriptions(page: Page): Promise<void> {
     await page.waitForSelector("#subscriptions_table", {visible: true});
 
     await page.click("#subscription_overlay .exit");
+    // Wait until the overlay is completely closed.
+    await page.waitForSelector("#subscription_overlay", {hidden: true});
 }
 
 async function test_reload_hash(page: Page): Promise<void> {
@@ -57,10 +61,8 @@ async function test_reload_hash(page: Page): Promise<void> {
 
     const initial_hash = await page.evaluate(() => window.location.hash);
 
-    await page.evaluate(() => {
-        const reload = window.require("./static/js/reload");
-        reload.initiate({immediate: true});
-    });
+    await page.evaluate(() => zulip_test.initiate_reload({immediate: true}));
+    await page.waitForNavigation();
     await page.waitForSelector("#zfilt", {visible: true});
 
     const page_load_time = await page.evaluate(() => page_params.page_load_time);
@@ -75,10 +77,7 @@ async function navigation_tests(page: Page): Promise<void> {
 
     await navigate_to_settings(page);
 
-    const verona_id = await page.evaluate(() => {
-        const stream_data = window.require("./static/js/stream_data");
-        return stream_data.get_stream_id("Verona");
-    });
+    const verona_id = await page.evaluate(() => zulip_test.get_stream_id("Verona"));
     const verona_narrow = `narrow/stream/${verona_id}-Verona`;
 
     await navigate_to(page, verona_narrow, "message_feed_container");
@@ -98,7 +97,9 @@ async function navigation_tests(page: Page): Promise<void> {
     await test_reload_hash(page);
 
     // Verify that we're narrowed to the target stream
-    await common.wait_for_text(page, "#message_view_header .stream", "Verona");
+    await page.waitForXPath(
+        '//*[@id="message_view_header"]//*[@class="stream" and normalize-space()="Verona"]',
+    );
 
     await common.log_out(page);
 }

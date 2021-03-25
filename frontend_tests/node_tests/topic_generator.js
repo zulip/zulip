@@ -39,7 +39,7 @@ run_test("streams", () => {
     assert_prev_stream("announce", "test here");
 });
 
-run_test("topics", () => {
+run_test("topics", (override) => {
     const streams = [1, 2, 3, 4];
     const topics = new Map([
         [1, ["read", "read", "1a", "1b", "read", "1c"]],
@@ -85,7 +85,7 @@ run_test("topics", () => {
         devel: devel_stream_id,
     };
 
-    stream_topic_history.get_recent_topic_names = (stream_id) => {
+    override(stream_topic_history, "get_recent_topic_names", (stream_id) => {
         switch (stream_id) {
             case muted_stream_id:
                 return ["ms-topic1", "ms-topic2"];
@@ -94,16 +94,17 @@ run_test("topics", () => {
         }
 
         return [];
-    };
+    });
 
-    stream_data.get_stream_id = (stream_name) => stream_id_dct[stream_name];
+    override(stream_data, "get_stream_id", (stream_name) => stream_id_dct[stream_name]);
 
-    stream_data.is_stream_muted_by_name = (stream_name) => stream_name === "muted";
+    override(stream_data, "is_stream_muted_by_name", (stream_name) => stream_name === "muted");
 
-    unread.topic_has_any_unread = (stream_id) =>
-        [devel_stream_id, muted_stream_id].includes(stream_id);
+    override(unread, "topic_has_any_unread", (stream_id) =>
+        [devel_stream_id, muted_stream_id].includes(stream_id),
+    );
 
-    muting.is_topic_muted = (stream_name, topic) => topic === "muted";
+    override(muting, "is_topic_muted", (stream_name, topic) => topic === "muted");
 
     let next_item = tg.get_next_topic("announce", "whatever");
     assert.deepEqual(next_item, {
@@ -118,10 +119,10 @@ run_test("topics", () => {
     });
 });
 
-run_test("get_next_unread_pm_string", () => {
+run_test("get_next_unread_pm_string", (override) => {
     pm_conversations.recent.get_strings = () => ["1", "read", "2,3", "4", "unk"];
 
-    unread.num_unread_for_person = (user_ids_string) => {
+    override(unread, "num_unread_for_person", (user_ids_string) => {
         if (user_ids_string === "unk") {
             return undefined;
         }
@@ -131,7 +132,7 @@ run_test("get_next_unread_pm_string", () => {
         }
 
         return 5; // random non-zero value
-    };
+    });
 
     assert.equal(tg.get_next_unread_pm_string(), "1");
     assert.equal(tg.get_next_unread_pm_string("4"), "1");
@@ -141,7 +142,7 @@ run_test("get_next_unread_pm_string", () => {
     assert.equal(tg.get_next_unread_pm_string("read"), "2,3");
     assert.equal(tg.get_next_unread_pm_string("2,3"), "4");
 
-    unread.num_unread_for_person = () => 0;
+    override(unread, "num_unread_for_person", () => 0);
 
     assert.equal(tg.get_next_unread_pm_string("2,3"), undefined);
 });

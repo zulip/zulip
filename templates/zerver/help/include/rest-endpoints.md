@@ -40,6 +40,7 @@
 * [Create a user](/api/create-user)
 * [Deactivate a user](/api/deactivate-user)
 * [Reactivate a user](/api/reactivate-user)
+* [Deactivate own user](/api/deactivate-own-user)
 * [Set "typing" status](/api/set-typing-status)
 * [Get user presence](/api/get-user-presence)
 * [Get attachments](/api/get-attachments)

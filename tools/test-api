@@ -16,19 +16,19 @@ os.chdir(ZULIP_PATH)
 
 from zulip import Client
 
-from tools.lib.test_script import assert_provisioning_status_ok
+from tools.lib.test_script import add_provision_check_override_param, assert_provisioning_status_ok
 from tools.lib.test_server import test_server_running
 
 usage = """test-api [options]"""
 parser = argparse.ArgumentParser(usage)
-parser.add_argument(
-    "--force", action="store_true", help="Run tests despite possible provisioning problems."
-)
+add_provision_check_override_param(parser)
 options = parser.parse_args()
 
-assert_provisioning_status_ok(options.force)
+assert_provisioning_status_ok(options.skip_provision_check)
 
-with test_server_running(force=options.force, external_host="zulipdev.com:9981"):
+with test_server_running(
+    skip_provision_check=options.skip_provision_check, external_host="zulipdev.com:9981"
+):
     # Zerver imports should happen after `django.setup()` is run
     # by the test_server_running decorator.
     from zerver.lib.actions import do_create_user
@@ -59,6 +59,18 @@ with test_server_running(force=options.force, external_host="zulipdev.com:9981")
         site=site,
     )
 
+    # Prepare the owner client
+    email = "desdemona@zulip.com"  # desdemona is an owner
+    realm = get_realm("zulip")
+    user = get_user(email, realm)
+    api_key = get_api_key(user)
+    site = "http://zulip.zulipdev.com:9981"
+    owner_client = Client(
+        email=email,
+        api_key=api_key,
+        site=site,
+    )
+
     # Prepare a generic bot client for curl testing
     email = "default-bot@zulip.com"
     realm = get_realm("zulip")
@@ -82,8 +94,8 @@ with test_server_running(force=options.force, external_host="zulipdev.com:9981")
         site=site,
     )
 
-    test_the_api(client, nonadmin_client)
-    test_generated_curl_examples_for_success(client)
+    test_the_api(client, nonadmin_client, owner_client)
+    test_generated_curl_examples_for_success(client, owner_client)
     test_js_bindings(client)
 
     # Test error payloads

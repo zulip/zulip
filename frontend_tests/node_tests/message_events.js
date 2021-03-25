@@ -2,24 +2,24 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
 
-const condense = set_global("condense", {});
-set_global("current_msg_list", {});
-const message_edit = set_global("message_edit", {});
-const message_list = set_global("message_list", {});
-const notifications = set_global("notifications", {});
+mock_cjs("jquery", $);
+const condense = mock_esm("../../static/js/condense");
+const message_edit = mock_esm("../../static/js/message_edit");
+const message_list = mock_esm("../../static/js/message_list");
+const notifications = mock_esm("../../static/js/notifications");
 const page_params = set_global("page_params", {});
-const pm_list = set_global("pm_list", {});
-const stream_list = set_global("stream_list", {});
-const unread_ui = set_global("unread_ui", {});
+const pm_list = mock_esm("../../static/js/pm_list");
+const stream_list = mock_esm("../../static/js/stream_list");
+const unread_ui = mock_esm("../../static/js/unread_ui");
+set_global("current_msg_list", {});
 
+const people = zrequire("people");
 const message_events = zrequire("message_events");
 const message_store = zrequire("message_store");
-zrequire("muting");
-const people = zrequire("people");
-zrequire("recent_senders");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const unread = zrequire("unread");

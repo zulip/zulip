@@ -3782,6 +3782,35 @@ class FetchAPIKeyTest(ZulipTestCase):
             )
         self.assert_json_success(result)
 
+    @override_settings(
+        AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",),
+        AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn", "org_membership": "department"},
+    )
+    def test_ldap_auth_email_auth_organization_restriction(self) -> None:
+        self.init_default_ldap_database()
+        # We do test two combinations here:
+        # The first user has no (department) attribute set
+        # The second user has one set, but to a different value
+        result = self.client_post(
+            "/api/v1/fetch_api_key",
+            dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+        )
+        self.assert_json_error(result, "Your username or password is incorrect.", 403)
+
+        self.change_ldap_user_attr("hamlet", "department", "testWrongRealm")
+        result = self.client_post(
+            "/api/v1/fetch_api_key",
+            dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+        )
+        self.assert_json_error(result, "Your username or password is incorrect.", 403)
+
+        self.change_ldap_user_attr("hamlet", "department", "zulip")
+        result = self.client_post(
+            "/api/v1/fetch_api_key",
+            dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+        )
+        self.assert_json_success(result)
+
     def test_inactive_user(self) -> None:
         do_deactivate_user(self.user_profile)
         result = self.client_post(
@@ -5125,7 +5154,7 @@ class TestLDAP(ZulipLDAPTestCase):
     def test_login_success_with_different_subdomain(self) -> None:
         ldap_user_attr_map = {"full_name": "cn"}
 
-        Realm.objects.create(string_id="acme")
+        do_create_realm(string_id="acme", name="acme")
         with self.settings(
             LDAP_APPEND_DOMAIN="zulip.com", AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map
         ):
@@ -5348,7 +5377,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         )
 
     def test_user_in_multiple_realms(self) -> None:
-        test_realm = do_create_realm("test", "test", False)
+        test_realm = do_create_realm("test", "test", emails_restricted_to_domains=False)
         hamlet = self.example_user("hamlet")
         email = hamlet.delivery_email
         hamlet2 = do_create_user(email, None, test_realm, hamlet.full_name, acting_user=None)

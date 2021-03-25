@@ -458,6 +458,14 @@ reaction_remove_event = event_dict_type(
 )
 check_reaction_remove = make_checker(reaction_remove_event)
 
+realm_deactivated_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("realm")),
+        ("op", Equals("deactivated")),
+        ("realm_id", int),
+    ]
+)
+check_realm_deactivated = make_checker(realm_deactivated_event)
 
 bot_services_outgoing_type = DictType(
     required_keys=[
@@ -1077,6 +1085,11 @@ def check_realm_user_update(
     )
 
 
+restart_event = event_dict_type(
+    required_keys=[("type", Equals("restart")), ("server_generation", int), ("immediate", bool)]
+)
+check_restart_event = make_checker(restart_event)
+
 stream_create_event = event_dict_type(
     required_keys=[
         ("type", Equals("stream")),
@@ -1225,8 +1238,6 @@ subscription_update_event = event_dict_type(
         ("property", str),
         ("stream_id", int),
         ("value", value_type),
-        ("name", str),
-        ("email", str),
     ]
 )
 _check_subscription_update = make_checker(subscription_update_event)

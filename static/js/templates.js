@@ -14,8 +14,6 @@ import * as util from "./util";
 // Furthermore, waiting for DOM ready would introduce race conditions with
 // other DOM-ready callbacks that attempt to render templates.
 
-Handlebars.registerHelper("plural", (condition, one, other) => (condition === 1 ? one : other));
-
 Handlebars.registerHelper({
     eq(a, b) {
         return a === b;

@@ -625,23 +625,21 @@ def apply_event(
                             p["profile_data"][str(custom_field_id)] = {
                                 "value": custom_field_new_value,
                             }
-
+        else:
+            raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "realm_bot":
         if event["op"] == "add":
             state["realm_bots"].append(event["bot"])
-
-        if event["op"] == "remove":
+        elif event["op"] == "remove":
             user_id = event["bot"]["user_id"]
             for bot in state["realm_bots"]:
                 if bot["user_id"] == user_id:
                     bot["is_active"] = False
-
-        if event["op"] == "delete":
+        elif event["op"] == "delete":
             state["realm_bots"] = [
                 item for item in state["realm_bots"] if item["user_id"] != event["bot"]["user_id"]
             ]
-
-        if event["op"] == "update":
+        elif event["op"] == "update":
             for bot in state["realm_bots"]:
                 if bot["user_id"] == event["bot"]["user_id"]:
                     if "owner_id" in event["bot"]:
@@ -649,7 +647,8 @@ def apply_event(
                         bot["owner_id"] = bot_owner_id
                     else:
                         bot.update(event["bot"])
-
+        else:
+            raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "stream":
         if event["op"] == "create":
             for stream in event["streams"]:
@@ -743,6 +742,17 @@ def apply_event(
                 if key == "authentication_methods":
                     state["realm_password_auth_enabled"] = value["Email"] or value["LDAP"]
                     state["realm_email_auth_enabled"] = value["Email"]
+        elif event["op"] == "deactivated":
+            # The realm has just been deactivated.  If our request had
+            # arrived a moment later, we'd have rendered the
+            # deactivation UI; if it'd been a moment sooner, we've
+            # have rendered the app and then immediately got this
+            # event (or actually, more likely, an auth error on GET
+            # /events) and immediately reloaded into the same
+            # deactivation UI. Passing achieves the same result.
+            pass
+        else:
+            raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "subscription":
         if event["op"] == "add":
             added_stream_ids = {sub["stream_id"] for sub in event["subscriptions"]}
@@ -783,7 +793,7 @@ def apply_event(
 
         elif event["op"] == "update":
             for sub in state["subscriptions"]:
-                if sub["name"].lower() == event["name"].lower():
+                if sub["stream_id"] == event["stream_id"]:
                     sub[event["property"]] = event["value"]
         elif event["op"] == "peer_add":
             if include_subscribers:
@@ -813,6 +823,8 @@ def apply_event(
                         if sub["stream_id"] in stream_ids:
                             subscribers = set(sub["subscribers"]) - user_ids
                             sub["subscribers"] = sorted(list(subscribers))
+        else:
+            raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "presence":
         if slim_presence:
             user_key = str(event["user_id"])
@@ -923,6 +935,8 @@ def apply_event(
                 for realm_domain in state["realm_domains"]
                 if realm_domain["domain"] != event["domain"]
             ]
+        else:
+            raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "realm_emoji":
         state["realm_emoji"] = event["realm_emoji"]
     elif event["type"] == "realm_export":
@@ -966,6 +980,8 @@ def apply_event(
             state["realm_user_groups"] = [
                 ug for ug in state["realm_user_groups"] if ug["id"] != event["group_id"]
             ]
+        else:
+            raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "user_status":
         user_id_str = str(event["user_id"])
         user_status = state["user_status"]

@@ -1,6 +1,8 @@
+import $ from "jquery";
 import _ from "lodash";
 
 import * as blueslip from "../blueslip";
+import * as common from "../common";
 
 import * as google_analytics from "./google-analytics";
 import {path_parts} from "./landing-page";

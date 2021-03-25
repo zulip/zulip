@@ -1,6 +1,5 @@
 import re
-from typing import Any, List, Optional
-from typing.re import Match
+from typing import Any, List, Match, Optional
 
 from markdown import Markdown
 from markdown.extensions import Extension
@@ -58,7 +57,11 @@ link_mapping = {
         "Default streams",
         "/#organization/default-streams-list",
     ],
-    "filter-settings": ["Manage organization", "Linkifiers", "/#organization/filter-settings"],
+    "linkifier-settings": [
+        "Manage organization",
+        "Linkifiers",
+        "/#organization/linkifier-settings",
+    ],
     "profile-field-settings": [
         "Manage organization",
         "Custom profile fields",

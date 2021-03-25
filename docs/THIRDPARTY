@@ -96,13 +96,6 @@ Copyright: 2012 Twitter, Inc
 License: Apache-2.0
 Comment: Bootstrap tooltip and bootstrap popover.  The software has been modified.
 
-Files: static/third/bootstrap-notify/*
-Copyright: 2013 Nijiko Yonskai
- 2012 Goodybag, Inc.
- 2012 Twitter, Inc
-License: Apache-2.0
-Comment: The software has been modified.
-
 Files: static/generated/emoji/images/emoji/unicode/*
 Copyright: Google, Inc.
 License: Apache-2.0

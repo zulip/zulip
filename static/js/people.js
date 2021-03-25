@@ -4,7 +4,10 @@ import _ from "lodash";
 
 import * as typeahead from "../shared/js/typeahead";
 
+import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
+import * as message_store from "./message_store";
+import * as reload_state from "./reload_state";
 import * as settings_data from "./settings_data";
 import * as util from "./util";
 
@@ -853,6 +856,14 @@ export function get_recipient_count(person) {
 export function incr_recipient_count(user_id) {
     const old_count = pm_recipient_count_dict.get(user_id) || 0;
     pm_recipient_count_dict.set(user_id, old_count + 1);
+}
+
+export function clear_recipient_counts_for_testing() {
+    pm_recipient_count_dict.clear();
+}
+
+export function set_recipient_count_for_testing(user_id, count) {
+    pm_recipient_count_dict.set(user_id, count);
 }
 
 export function get_message_people() {

@@ -1,6 +1,5 @@
-"use strict";
+import * as util from "./util";
 
-const util = require("./util");
 // How to determine the direction of a paragraph (P1-P3): https://www.unicode.org/reports/tr9/tr9-35.html#The_Paragraph_Level
 // Embedding level: https://www.unicode.org/reports/tr9/tr9-35.html#BD2
 // How to find the matching PDI for an isolation initiator: https://www.unicode.org/reports/tr9/tr9-35.html#BD9
@@ -108,7 +107,7 @@ function get_bidi_class(ch) {
  * @param {string} str The string to get its direction.
  * @returns {'ltr' | 'rtl'}
  */
-exports.get_direction = function (str) {
+export function get_direction(str) {
     let isolations = 0;
     for (let i = 0; i < str.length; i += 1) {
         // Extracting high and low surrogates and putting them together.
@@ -148,19 +147,17 @@ exports.get_direction = function (str) {
         }
     }
     return "ltr";
-};
+}
 
-exports.set_rtl_class_for_textarea = function (textarea) {
+export function set_rtl_class_for_textarea(textarea) {
     // Set the rtl class if the text has an rtl direction, remove it otherwise
     let text = textarea.val();
     if (text.startsWith("```quote")) {
         text = text.slice(8);
     }
-    if (exports.get_direction(text) === "rtl") {
+    if (get_direction(text) === "rtl") {
         textarea.addClass("rtl");
     } else {
         textarea.removeClass("rtl");
     }
-};
-
-window.rtl = exports;
+}

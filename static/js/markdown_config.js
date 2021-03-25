@@ -1,4 +1,7 @@
+import * as hash_util from "./hash_util";
 import * as people from "./people";
+import * as stream_data from "./stream_data";
+import * as user_groups from "./user_groups";
 
 /*
     This config is in a separate file for partly
@@ -28,6 +31,7 @@ export const get_helpers = () => ({
     get_user_id_from_name: people.get_user_id_from_name,
     is_valid_full_name_and_user_id: people.is_valid_full_name_and_user_id,
     my_user_id: people.my_current_user_id,
+    is_valid_user_id: people.is_known_user_id,
 
     // user groups
     get_user_group_from_name: user_groups.get_user_group_from_name,

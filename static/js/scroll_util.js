@@ -1,6 +1,6 @@
-"use strict";
+import * as ui from "./ui";
 
-exports.scroll_delta = function (opts) {
+export function scroll_delta(opts) {
     const elem_top = opts.elem_top;
     const container_height = opts.container_height;
     const elem_bottom = opts.elem_bottom;
@@ -18,9 +18,9 @@ exports.scroll_delta = function (opts) {
     }
 
     return delta;
-};
+}
 
-exports.scroll_element_into_container = function (elem, container) {
+export function scroll_element_into_container(elem, container) {
     // This does the minimum amount of scrolling that is needed to make
     // the element visible.  It doesn't try to center the element, so
     // this will be non-intrusive to users when they already have
@@ -36,13 +36,11 @@ exports.scroll_element_into_container = function (elem, container) {
         container_height: container.height(),
     };
 
-    const delta = exports.scroll_delta(opts);
+    const delta = scroll_delta(opts);
 
     if (delta === 0) {
         return;
     }
 
     container.scrollTop(container.scrollTop() + delta);
-};
-
-window.scroll_util = exports;
+}

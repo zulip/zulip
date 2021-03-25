@@ -1,4 +1,8 @@
+import $ from "jquery";
 import TurndownService from "turndown/lib/turndown.cjs";
+
+import * as compose_ui from "./compose_ui";
+import * as rows from "./rows";
 
 function find_boundary_tr(initial_tr, iterate_row) {
     let j;

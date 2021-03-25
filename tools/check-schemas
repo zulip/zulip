@@ -107,7 +107,7 @@ def check_event(name: str, event: Dict[str, Any]) -> None:
             print(f"\n{EVENTS_JS} has bad data for {name}:\n\n")
             raise
     else:
-        print(f"NEED SCHEMA: {name}")
+        print(f"WARNING - NEED SCHEMA: {name}")
 
 
 def read_fixtures() -> Dict[str, Any]:
@@ -184,14 +184,13 @@ def validate_openapi_against_event_schema() -> None:
 
     for sub_node in node:
         name = sub_node["properties"]["type"]["enum"][0]
-        for key in ["op", "operation"]:
-            if key in sub_node["properties"]:
-                name += "_" + sub_node["properties"][key]["enum"][0]
+        if "op" in sub_node["properties"]:
+            name += "_" + sub_node["properties"]["op"]["enum"][0]
 
         name += "_event"
 
         if not hasattr(event_schema, name):
-            print("NEED SCHEMA to match OpenAPI", name)
+            print("WARNING - NEED SCHEMA to match OpenAPI", name)
             continue
 
         openapi_type = from_openapi(sub_node)
@@ -225,6 +224,7 @@ def run() -> None:
     for name, event in fixtures.items():
         check_event(name, event)
     validate_openapi_against_event_schema()
+    print("Successful check. All tests passed.")
 
 
 if __name__ == "__main__":

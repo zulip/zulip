@@ -1,20 +1,25 @@
-"use strict";
+import _ from "lodash";
 
-const _ = require("lodash");
+import * as channel from "./channel";
+import * as message_store from "./message_store";
+import * as starred_messages from "./starred_messages";
+import * as ui from "./ui";
+import * as unread_ops from "./unread_ops";
 
-function send_flag_update(message, flag, op) {
+function send_flag_update_for_messages(msg_ids, flag, op) {
     channel.post({
         url: "/json/messages/flags",
         idempotent: true,
         data: {
-            messages: JSON.stringify([message.id]),
+            messages: JSON.stringify(msg_ids),
             flag,
             op,
         },
     });
 }
-exports._unread_batch_size = 1000;
-exports.send_read = (function () {
+export const _unread_batch_size = 1000;
+
+export const send_read = (function () {
     let queue = [];
     let on_success;
     let start;
@@ -28,7 +33,7 @@ exports.send_read = (function () {
             return;
         }
 
-        const real_msg_ids_batch = real_msg_ids.slice(0, exports._unread_batch_size);
+        const real_msg_ids_batch = real_msg_ids.slice(0, _unread_batch_size);
 
         // We have some real IDs.  If there are any left in the queue when this
         // call finishes, they will be handled in the success callback.
@@ -63,17 +68,17 @@ exports.send_read = (function () {
     return add;
 })();
 
-exports.save_collapsed = function (message) {
-    send_flag_update(message, "collapsed", "add");
-};
+export function save_collapsed(message) {
+    send_flag_update_for_messages([message.id], "collapsed", "add");
+}
 
-exports.save_uncollapsed = function (message) {
-    send_flag_update(message, "collapsed", "remove");
-};
+export function save_uncollapsed(message) {
+    send_flag_update_for_messages([message.id], "collapsed", "remove");
+}
 
 // This updates the state of the starred flag in local data
 // structures, and triggers a UI rerender.
-exports.update_starred_flag = function (message_id, new_value) {
+export function update_starred_flag(message_id, new_value) {
     const message = message_store.get(message_id);
     if (message === undefined) {
         // If we don't have the message locally, do nothing; if later
@@ -82,9 +87,9 @@ exports.update_starred_flag = function (message_id, new_value) {
     }
     message.starred = new_value;
     ui.update_starred_view(message_id, new_value);
-};
+}
 
-exports.toggle_starred_and_update_server = function (message) {
+export function toggle_starred_and_update_server(message) {
     if (message.locally_echoed) {
         // This is defensive code for when you hit the "*" key
         // before we get a server ack.  It's rare that somebody
@@ -103,25 +108,20 @@ exports.toggle_starred_and_update_server = function (message) {
     ui.update_starred_view(message.id, message.starred);
 
     if (message.starred) {
-        send_flag_update(message, "starred", "add");
+        send_flag_update_for_messages([message.id], "starred", "add");
         starred_messages.add([message.id]);
     } else {
-        send_flag_update(message, "starred", "remove");
+        send_flag_update_for_messages([message.id], "starred", "remove");
         starred_messages.remove([message.id]);
     }
-};
+}
 
-exports.unstar_all_messages = function () {
+export function unstar_all_messages() {
     const starred_msg_ids = starred_messages.get_starred_msg_ids();
-    channel.post({
-        url: "/json/messages/flags",
-        idempotent: true,
-        data: {
-            messages: JSON.stringify(starred_msg_ids),
-            flag: "starred",
-            op: "remove",
-        },
-    });
-};
+    send_flag_update_for_messages(starred_msg_ids, "starred", "remove");
+}
 
-window.message_flags = exports;
+export function unstar_all_messages_in_topic(stream_id, topic) {
+    const starred_message_ids = starred_messages.get_starred_message_ids_in_topic(stream_id, topic);
+    send_flag_update_for_messages(starred_message_ids, "starred", "remove");
+}

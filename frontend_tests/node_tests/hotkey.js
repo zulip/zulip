@@ -2,42 +2,20 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, with_field, with_overrides, zrequire} = require("../zjsunit/namespace");
+const {
+    mock_cjs,
+    mock_esm,
+    set_global,
+    with_field,
+    with_overrides,
+    zrequire,
+} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
-
-const popovers = set_global("popovers", {
-    actions_popped: () => false,
-    message_info_popped: () => false,
-    user_sidebar_popped: () => false,
-    user_info_popped: () => false,
-});
-const overlays = set_global("overlays", {
-    is_active: () => false,
-    settings_open: () => false,
-    streams_open: () => false,
-    lightbox_open: () => false,
-    drafts_open: () => false,
-    info_overlay_open: () => false,
-});
-
-set_global("stream_popover", {
-    stream_popped: () => false,
-    topic_popped: () => false,
-    all_messages_popped: () => false,
-    starred_messages_popped: () => false,
-});
-const emoji_picker = set_global("emoji_picker", {
-    reactions_popped: () => false,
-});
-set_global("hotspots", {
-    is_open: () => false,
-});
-const gear_menu = set_global("gear_menu", {
-    is_open: () => false,
-});
+const $ = require("../zjsunit/zjquery");
 
 // Important note on these tests:
+
 //
 // The way the Zulip hotkey tests work is as follows.  First, we set
 // up various contexts by monkey-patching the various hotkeys exports
@@ -63,23 +41,60 @@ const page_params = set_global("page_params", {});
 // jQuery stuff should go away if we make an initialize() method.
 set_global("document", "document-stub");
 
-const compose_actions = set_global("compose_actions", {});
-const condense = set_global("condense", {});
-const drafts = set_global("drafts", {});
-const hashchange = set_global("hashchange", {
+mock_cjs("jquery", $);
+const browser_history = mock_esm("../../static/js/browser_history");
+const compose_actions = mock_esm("../../static/js/compose_actions");
+const condense = mock_esm("../../static/js/condense");
+const drafts = mock_esm("../../static/js/drafts");
+const emoji_picker = mock_esm("../../static/js/emoji_picker", {
+    reactions_popped: () => false,
+});
+const gear_menu = mock_esm("../../static/js/gear_menu", {
+    is_open: () => false,
+});
+const lightbox = mock_esm("../../static/js/lightbox");
+const list_util = mock_esm("../../static/js/list_util");
+const message_edit = mock_esm("../../static/js/message_edit");
+const muting_ui = mock_esm("../../static/js/muting_ui");
+const narrow = mock_esm("../../static/js/narrow");
+const navigate = mock_esm("../../static/js/navigate");
+const overlays = mock_esm("../../static/js/overlays", {
+    is_active: () => false,
+    settings_open: () => false,
+    streams_open: () => false,
+    lightbox_open: () => false,
+    drafts_open: () => false,
+    info_overlay_open: () => false,
+});
+const popovers = mock_esm("../../static/js/popovers", {
+    actions_popped: () => false,
+    message_info_popped: () => false,
+    user_sidebar_popped: () => false,
+    user_info_popped: () => false,
+});
+const reactions = mock_esm("../../static/js/reactions");
+const search = mock_esm("../../static/js/search");
+const stream_list = mock_esm("../../static/js/stream_list");
+const subs = mock_esm("../../static/js/subs");
+
+mock_esm("../../static/js/hashchange", {
     in_recent_topics_hash: () => false,
 });
-set_global("info_overlay", {});
-const lightbox = set_global("lightbox", {});
-const list_util = set_global("list_util", {});
-const message_edit = set_global("message_edit", {});
-const muting_ui = set_global("muting_ui", {});
-const narrow = set_global("narrow", {});
-const navigate = set_global("navigate", {});
-const reactions = set_global("reactions", {});
-const search = set_global("search", {});
-const stream_list = set_global("stream_list", {});
-const subs = set_global("subs", {});
+
+mock_esm("../../static/js/stream_popover", {
+    stream_popped: () => false,
+    topic_popped: () => false,
+    all_messages_popped: () => false,
+    starred_messages_popped: () => false,
+});
+
+mock_esm("../../static/js/hotspots", {
+    is_open: () => false,
+});
+
+mock_esm("../../static/js/recent_topics", {
+    is_visible: () => false,
+});
 
 set_global("current_msg_list", {
     empty() {
@@ -99,15 +114,11 @@ set_global("current_msg_list", {
         return 101;
     },
 });
-set_global("recent_topics", {
-    is_visible: () => false,
-});
 
-const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
-const emoji = zrequire("emoji", "shared/js/emoji");
+const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
+const emoji = zrequire("../shared/js/emoji");
 const activity = zrequire("activity");
 const hotkey = zrequire("hotkey");
-zrequire("common");
 
 emoji.initialize({
     realm_emoji: {},
@@ -123,8 +134,8 @@ function stubbing(module, func_name_to_stub, test_function) {
 }
 
 // Set up defaults for most tests.
-hotkey.in_content_editable_widget = () => false;
-hotkey.processing_text = () => false;
+hotkey.__Rewire__("in_content_editable_widget", () => false);
+hotkey.__Rewire__("processing_text", () => false);
 
 run_test("mappings", () => {
     function map_press(which, shiftKey) {
@@ -284,7 +295,7 @@ run_test("streams", (override) => {
 });
 
 run_test("basic mappings", () => {
-    assert_mapping("?", hashchange, "go_to_location");
+    assert_mapping("?", browser_history, "go_to_location");
     assert_mapping("/", search, "initiate_search");
     assert_mapping("w", activity, "initiate_search");
     assert_mapping("q", stream_list, "initiate_search");
@@ -473,10 +484,10 @@ run_test("motion_keys", () => {
     assert_mapping("right_arrow", lightbox, "next");
     overlays.lightbox_open = () => false;
 
-    hotkey.in_content_editable_widget = () => true;
+    hotkey.__Rewire__("in_content_editable_widget", () => true);
     assert_unmapped("down_arrow");
     assert_unmapped("up_arrow");
-    hotkey.in_content_editable_widget = () => false;
+    hotkey.__Rewire__("in_content_editable_widget", () => false);
 
     overlays.settings_open = () => true;
     assert_unmapped("end");

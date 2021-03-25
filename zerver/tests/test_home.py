@@ -10,7 +10,7 @@ from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
 from corporate.models import Customer, CustomerPlan
-from zerver.lib.actions import do_change_logo_source, do_create_user
+from zerver.lib.actions import do_change_logo_source, do_change_plan_type, do_create_user
 from zerver.lib.events import add_realm_logo_fields
 from zerver.lib.home import get_furthest_read_time
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
@@ -53,6 +53,7 @@ class HomeTest(ZulipTestCase):
         "debug_mode",
         "default_language",
         "default_language_name",
+        "default_view",
         "delivery_email",
         "demote_inactive_streams",
         "dense_mode",
@@ -615,7 +616,7 @@ class HomeTest(ZulipTestCase):
                         is_guest=False,
                     ),
                     dict(
-                        avatar_version=email_gateway_bot.avatar_version,
+                        avatar_version=notification_bot.avatar_version,
                         bot_owner_id=None,
                         bot_type=1,
                         email=notification_bot.email,
@@ -629,7 +630,7 @@ class HomeTest(ZulipTestCase):
                         is_guest=False,
                     ),
                     dict(
-                        avatar_version=email_gateway_bot.avatar_version,
+                        avatar_version=welcome_bot.avatar_version,
                         bot_owner_id=None,
                         bot_type=1,
                         email=welcome_bot.email,
@@ -763,8 +764,7 @@ class HomeTest(ZulipTestCase):
 
         # Don't show plans to guest users
         self.login("polonius")
-        realm.plan_type = Realm.LIMITED
-        realm.save(update_fields=["plan_type"])
+        do_change_plan_type(realm, Realm.LIMITED)
         result_html = self._get_home_page().content.decode("utf-8")
         self.assertNotIn("Plans", result_html)
 
@@ -774,13 +774,11 @@ class HomeTest(ZulipTestCase):
         self.assertIn("Plans", result_html)
 
         # Show plans link to no one, including admins, if SELF_HOSTED or STANDARD
-        realm.plan_type = Realm.SELF_HOSTED
-        realm.save(update_fields=["plan_type"])
+        do_change_plan_type(realm, Realm.SELF_HOSTED)
         result_html = self._get_home_page().content.decode("utf-8")
         self.assertNotIn("Plans", result_html)
 
-        realm.plan_type = Realm.STANDARD
-        realm.save(update_fields=["plan_type"])
+        do_change_plan_type(realm, Realm.STANDARD)
         result_html = self._get_home_page().content.decode("utf-8")
         self.assertNotIn("Plans", result_html)
 

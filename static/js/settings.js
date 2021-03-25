@@ -1,10 +1,20 @@
-"use strict";
+import $ from "jquery";
 
-const timezones = require("../generated/timezones.json");
-const render_settings_tab = require("../templates/settings_tab.hbs");
+import timezones from "../generated/timezones.json";
+import render_settings_tab from "../templates/settings_tab.hbs";
 
-const people = require("./people");
-const settings_config = require("./settings_config");
+import * as admin from "./admin";
+import * as blueslip from "./blueslip";
+import * as overlays from "./overlays";
+import * as people from "./people";
+import * as settings_bots from "./settings_bots";
+import * as settings_config from "./settings_config";
+import * as settings_data from "./settings_data";
+import * as settings_panel_menu from "./settings_panel_menu";
+import * as settings_sections from "./settings_sections";
+import * as settings_toggle from "./settings_toggle";
+
+export let settings_label;
 
 $("body").ready(() => {
     $("#settings_overlay_container").on("click", (e) => {
@@ -26,7 +36,7 @@ $("body").ready(() => {
 });
 
 function setup_settings_label() {
-    exports.settings_label = {
+    settings_label = {
         // settings_notification
         enable_online_push_notifications: i18n.t(
             "Send mobile notifications even if I'm online (useful for testing)",
@@ -60,7 +70,7 @@ function setup_settings_label() {
     };
 }
 
-exports.build_page = function () {
+export function build_page() {
     setup_settings_label();
 
     const rendered_settings_tab = render_settings_tab({
@@ -72,34 +82,35 @@ exports.build_page = function () {
         botserverrc: "botserverrc",
         timezones: timezones.timezones,
         can_create_new_bots: settings_bots.can_create_new_bots(),
-        settings_label: exports.settings_label,
+        settings_label,
         demote_inactive_streams_values: settings_config.demote_inactive_streams_values,
         color_scheme_values: settings_config.color_scheme_values,
+        default_view_values: settings_config.default_view_values,
         twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
         general_settings: settings_config.all_notifications().general_settings,
         notification_settings: settings_config.all_notifications().settings,
-        desktop_icon_count_display_values: settings_notifications.desktop_icon_count_display_values,
+        desktop_icon_count_display_values: settings_config.desktop_icon_count_display_values,
         show_push_notifications_tooltip: settings_config.all_notifications()
             .show_push_notifications_tooltip,
         display_settings: settings_config.get_all_display_settings(),
-        user_can_change_name: settings_account.user_can_change_name(),
-        user_can_change_avatar: settings_account.user_can_change_avatar(),
+        user_can_change_name: settings_data.user_can_change_name(),
+        user_can_change_avatar: settings_data.user_can_change_avatar(),
     });
 
     $(".settings-box").html(rendered_settings_tab);
-};
+}
 
-exports.launch = function (section) {
-    exports.build_page();
+export function launch(section) {
+    build_page();
     admin.build_page();
     settings_sections.reset_sections();
 
     overlays.open_settings();
     settings_panel_menu.normal_settings.activate_section_or_default(section);
     settings_toggle.highlight_toggle("settings");
-};
+}
 
-exports.set_settings_header = function (key) {
+export function set_settings_header(key) {
     const header_text = $(
         `#settings_page .sidebar-list [data-section='${CSS.escape(key)}'] .text`,
     ).text();
@@ -113,6 +124,4 @@ exports.set_settings_header = function (key) {
                 " sidebar list. Please add it.",
         );
     }
-};
-
-window.settings = exports;
+}

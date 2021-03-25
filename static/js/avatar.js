@@ -1,6 +1,13 @@
-"use strict";
+import $ from "jquery";
 
-exports.build_bot_create_widget = function () {
+import render_confirm_delete_user_avatar from "../templates/confirm_delete_user_avatar.hbs";
+
+import * as channel from "./channel";
+import * as confirm_dialog from "./confirm_dialog";
+import * as settings_data from "./settings_data";
+import * as upload_widget from "./upload_widget";
+
+export function build_bot_create_widget() {
     // We have to do strange gyrations with the file input to clear it,
     // where we replace it wholesale, so we generalize the file input with
     // a callback function.
@@ -20,9 +27,9 @@ exports.build_bot_create_widget = function () {
         clear_button,
         upload_button,
     );
-};
+}
 
-exports.build_bot_edit_widget = function (target) {
+export function build_bot_edit_widget(target) {
     const get_file_input = function () {
         return target.find(".edit_bot_avatar_file_input");
     };
@@ -39,9 +46,9 @@ exports.build_bot_edit_widget = function (target) {
         clear_button,
         upload_button,
     );
-};
+}
 
-exports.build_user_avatar_widget = function (upload_function) {
+export function build_user_avatar_widget(upload_function) {
     const get_file_input = function () {
         return $("#user-avatar-upload-widget .image_file_input").expectOne();
     };
@@ -56,20 +63,33 @@ exports.build_user_avatar_widget = function (upload_function) {
     $("#user-avatar-upload-widget .image-delete-button").on("click keydown", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        channel.del({
-            url: "/json/users/me/avatar",
-            success() {
-                $("#user-avatar-upload-widget .image-delete-button").hide();
-                $("#user-avatar-source").show();
-                // Need to clear input because of a small edge case
-                // where you try to upload the same image you just deleted.
-                get_file_input().val("");
-                // Rest of the work is done via the user_events -> avatar_url event we will get
-            },
+        function delete_user_avatar() {
+            channel.del({
+                url: "/json/users/me/avatar",
+                success() {
+                    $("#user-avatar-upload-widget .image-delete-button").hide();
+                    $("#user-avatar-source").show();
+                    // Need to clear input because of a small edge case
+                    // where you try to upload the same image you just deleted.
+                    get_file_input().val("");
+                    // Rest of the work is done via the user_events -> avatar_url event we will get
+                },
+            });
+        }
+        const modal_parent = $("#account-settings");
+
+        const html_body = render_confirm_delete_user_avatar();
+
+        confirm_dialog.launch({
+            parent: modal_parent,
+            html_heading: i18n.t("Delete profile picture"),
+            html_body,
+            html_yes_button: i18n.t("Delete"),
+            on_click: delete_user_avatar,
         });
     });
 
-    if (settings_account.user_can_change_avatar()) {
+    if (settings_data.user_can_change_avatar()) {
         return upload_widget.build_direct_upload_widget(
             get_file_input,
             $("#user-avatar-upload-widget .image_file_input_error").expectOne(),
@@ -80,6 +100,4 @@ exports.build_user_avatar_widget = function (upload_function) {
     }
 
     return undefined;
-};
-
-window.avatar = exports;
+}

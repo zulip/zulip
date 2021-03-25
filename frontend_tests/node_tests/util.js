@@ -110,14 +110,23 @@ run_test("robust_uri_decode", () => {
     assert.equal(util.robust_uri_decode("xxx%3Ayyy"), "xxx:yyy");
     assert.equal(util.robust_uri_decode("xxx%3"), "xxx");
 
-    set_global("decodeURIComponent", () => {
-        throw new Error("foo");
-    });
-    try {
-        util.robust_uri_decode("%E0%A4%A");
-    } catch (error) {
-        assert.equal(error.message, "foo");
-    }
+    let error_message;
+    with_field(
+        global,
+        "decodeURIComponent",
+        () => {
+            throw new Error("foo");
+        },
+        () => {
+            try {
+                util.robust_uri_decode("%E0%A4%A");
+            } catch (error) {
+                error_message = error.message;
+            }
+        },
+    );
+
+    assert.equal(error_message, "foo");
 });
 
 run_test("dumb_strcmp", () => {

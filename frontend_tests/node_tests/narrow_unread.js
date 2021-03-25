@@ -2,17 +2,17 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 
-const message_store = set_global("message_store", {});
-set_global("page_params", {});
-
-set_global("muting", {
+mock_esm("../../static/js/muting", {
     is_topic_muted: () => false,
 });
+set_global("page_params", {});
 
-const Filter = zrequire("Filter", "js/filter");
+const {Filter} = zrequire("../js/filter");
+const message_store = zrequire("message_store");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const unread = zrequire("unread");
@@ -43,6 +43,9 @@ function candidate_ids() {
 }
 
 run_test("get_unread_ids", () => {
+    unread.declare_bankruptcy();
+    narrow_state.reset_current_filter();
+
     let unread_ids;
     let terms;
 
@@ -68,14 +71,8 @@ run_test("get_unread_ids", () => {
         display_recipient: [{id: alice.user_id}],
     };
 
-    message_store.get = (msg_id) => {
-        if (msg_id === stream_msg.id) {
-            return stream_msg;
-        } else if (msg_id === private_msg.id) {
-            return private_msg;
-        }
-        throw new Error("unexpected id");
-    };
+    message_store.create_mock_message(stream_msg);
+    message_store.create_mock_message(private_msg);
 
     stream_data.add_sub(sub);
 
@@ -195,12 +192,12 @@ run_test("get_unread_ids", () => {
     });
 });
 
-run_test("defensive code", () => {
+run_test("defensive code", (override) => {
     // Test defensive code.  We actually avoid calling
     // _possible_unread_message_ids for any case where we
     // couldn't compute the unread message ids, but that
     // invariant is hard to future-proof.
-    narrow_state._possible_unread_message_ids = () => undefined;
+    override(narrow_state, "_possible_unread_message_ids", () => undefined);
     const terms = [{operator: "some-unhandled-case", operand: "whatever"}];
     set_filter(terms);
     assert_unread_info({

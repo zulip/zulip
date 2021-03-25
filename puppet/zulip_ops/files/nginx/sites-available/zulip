@@ -1,14 +1,17 @@
 include /etc/nginx/zulip-include/upstreams;
 
 server {
-    listen 443;
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
 
-    # While a proper wildcard cert is recommended, because nginx
-    # doesn't actually check SSL certificates when reverse proxying
-    # :(, one can get away with a snake-oil cert if one wants.
-    ssl on;
-    ssl_certificate /etc/ssl/certs/wildcard-zulipchat.com.combined-chain.crt;
-    ssl_certificate_key /etc/ssl/private/wildcard-zulipchat.com.key;
+    # This server is behind an ALB, which does not check the
+    # certificate validity:
+    # https://kevin.burke.dev/kevin/aws-alb-validation-tls-reply/
+    #
+    # Snakeoil verts are good for 10 years after initial creation, but
+    # the ALBs don't even check expiration. ¯\_(ツ)_/¯
+    ssl_certificate /etc/ssl/certs/ssl-cert-snakeoil.pem;
+    ssl_certificate_key /etc/ssl/private/ssl-cert-snakeoil.key;
 
     server_name zulipchat.com *.zulipchat.com;
 

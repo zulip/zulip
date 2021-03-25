@@ -43,7 +43,7 @@ options, new in Zulip 2.1, that we don't document there because they
 are primarily useful to API clients:
 
 * `sender:1234`: Search messages sent by user ID `1234`.
-* `stream:1234`: Search messages sent to the stream with ID `123`.
+* `stream:1234`: Search messages sent to the stream with ID `1234`.
 * `pm-with:1234`: Search the private message conversation between
   you and user ID `1234`.
 * `pm-with:1234,5678`: Search the private message conversation between

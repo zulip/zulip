@@ -3974,7 +3974,7 @@ class UserSignUpTest(InviteUserBase):
         ldap_user_attr_map = {
             "full_name": "cn",
         }
-        do_create_realm("test", "test", False)
+        do_create_realm("test", "test", emails_restricted_to_domains=False)
 
         with self.settings(
             POPULATE_PROFILE_VIA_LDAP=True,

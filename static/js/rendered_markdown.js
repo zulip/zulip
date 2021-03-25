@@ -1,12 +1,18 @@
 import ClipboardJS from "clipboard";
+import {parseISO, isValid} from "date-fns";
+import $ from "jquery";
 
 import copy_code_button from "../templates/copy_code_button.hbs";
+import render_markdown_timestamp from "../templates/markdown_timestamp.hbs";
 import view_code_in_playground from "../templates/view_code_in_playground.hbs";
 
+import * as blueslip from "./blueslip";
 import * as people from "./people";
+import * as rtl from "./rtl";
 import * as settings_config from "./settings_config";
-
-const {parseISO, isValid} = require("date-fns");
+import * as stream_data from "./stream_data";
+import * as timerender from "./timerender";
+import * as user_groups from "./user_groups";
 
 /*
     rendered_markdown
@@ -158,7 +164,10 @@ export const update_elements = (content) => {
         if (isValid(timestamp)) {
             const text = $(this).text();
             const rendered_time = timerender.render_markdown_timestamp(timestamp, text);
-            $(this).text(rendered_time.text);
+            const rendered_timestamp = render_markdown_timestamp({
+                text: rendered_time.text,
+            });
+            $(this).html(rendered_timestamp);
             $(this).attr("title", rendered_time.title);
         } else {
             // This shouldn't happen. If it does, we're very interested in debugging it.

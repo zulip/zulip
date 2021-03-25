@@ -44,7 +44,8 @@ async function open_streams_modal(page: Page): Promise<void> {
     await page.click(all_streams_selector);
 
     await page.waitForSelector("#subscription_overlay.new-style", {visible: true});
-    assert(page.url().includes("#streams/all"));
+    const url = await common.page_url_with_fragment(page);
+    assert(url.includes("#streams/all"));
 }
 
 async function test_subscription_button_verona_stream(page: Page): Promise<void> {

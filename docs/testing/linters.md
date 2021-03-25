@@ -51,7 +51,7 @@ note are:
 * `--skip` and `--only`: Only run certain linters.
 * `-m`: Only check modified files.
 
-Finally, you can rely on our CircleCI setup to run linters for you,
+Finally, you can rely on our continuous integration setup to run linters for you,
 but it is good practice to run lint checks locally.
 
 ```eval_rst

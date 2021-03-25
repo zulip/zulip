@@ -12,7 +12,11 @@ from analytics.models import FillState, RealmCount, UserCount
 from analytics.views import rewrite_client_arrays, sort_by_totals, sort_client_labels
 from corporate.lib.stripe import add_months, update_sponsorship_status
 from corporate.models import Customer, CustomerPlan, LicenseLedger, get_customer_by_realm
-from zerver.lib.actions import do_create_multiuse_invite_link, do_send_realm_reactivation_email
+from zerver.lib.actions import (
+    do_create_multiuse_invite_link,
+    do_send_realm_reactivation_email,
+    do_set_realm_property,
+)
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import reset_emails_in_zulip_realm
 from zerver.lib.timestamp import ceiling_to_day, ceiling_to_hour, datetime_to_timestamp
@@ -572,28 +576,42 @@ class TestSupportEndpoint(ZulipTestCase):
     def test_search(self) -> None:
         reset_emails_in_zulip_realm()
 
-        def check_hamlet_user_query_result(result: HttpResponse) -> None:
+        def assert_user_details_in_html_response(
+            html_response: str, full_name: str, email: str, role: str
+        ) -> None:
             self.assert_in_success_response(
                 [
                     '<span class="label">user</span>\n',
-                    "<h3>King Hamlet</h3>",
-                    "<b>Email</b>: hamlet@zulip.com",
+                    f"<h3>{full_name}</h3>",
+                    f"<b>Email</b>: {email}",
                     "<b>Is active</b>: True<br>",
-                    "<b>Admins</b>: desdemona@zulip.com, iago@zulip.com\n",
-                    'class="copy-button" data-copytext="desdemona@zulip.com, iago@zulip.com"',
+                    f"<b>Role</b>: {role}<br>",
+                ],
+                html_response,
+            )
+
+        def check_hamlet_user_query_result(result: HttpResponse) -> None:
+            assert_user_details_in_html_response(
+                result, "King Hamlet", self.example_email("hamlet"), "Member"
+            )
+            self.assert_in_success_response(
+                [
+                    f"<b>Admins</b>: {self.example_email('desdemona')}, {self.example_email('iago')}\n",
+                    'class="copy-button" data-copytext="{}, {}"'.format(
+                        self.example_email("desdemona"), self.example_email("iago")
+                    ),
                 ],
                 result,
             )
 
         def check_othello_user_query_result(result: HttpResponse) -> None:
-            self.assert_in_success_response(
-                [
-                    '<span class="label">user</span>\n',
-                    "<h3>Othello, the Moor of Venice</h3>",
-                    "<b>Email</b>: othello@zulip.com",
-                    "<b>Is active</b>: True<br>",
-                ],
-                result,
+            assert_user_details_in_html_response(
+                result, "Othello, the Moor of Venice", self.example_email("othello"), "Member"
+            )
+
+        def check_polonius_user_query_result(result: HttpResponse) -> None:
+            assert_user_details_in_html_response(
+                result, "Polonius", self.example_email("polonius"), "Guest"
             )
 
         def check_zulip_realm_query_result(result: HttpResponse) -> None:
@@ -704,6 +722,10 @@ class TestSupportEndpoint(ZulipTestCase):
 
         self.login("iago")
 
+        do_set_realm_property(
+            get_realm("zulip"), "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_NOBODY
+        )
+
         customer = Customer.objects.create(realm=get_realm("lear"), stripe_customer_id="cus_123")
         now = datetime(2016, 1, 2, tzinfo=timezone.utc)
         plan = CustomerPlan.objects.create(
@@ -727,8 +749,12 @@ class TestSupportEndpoint(ZulipTestCase):
             ['<input type="text" name="q" class="input-xxlarge search-query"'], result
         )
 
-        result = self.client_get("/activity/support", {"q": "hamlet@zulip.com"})
+        result = self.client_get("/activity/support", {"q": self.example_email("hamlet")})
         check_hamlet_user_query_result(result)
+        check_zulip_realm_query_result(result)
+
+        result = self.client_get("/activity/support", {"q": self.example_email("polonius")})
+        check_polonius_user_query_result(result)
         check_zulip_realm_query_result(result)
 
         result = self.client_get("/activity/support", {"q": "lear"})

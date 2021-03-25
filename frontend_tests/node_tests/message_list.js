@@ -2,9 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
 
 // These unit tests for static/js/message_list.js emphasize the model-ish
@@ -13,7 +14,10 @@ const $ = require("../zjsunit/zjquery");
 
 const noop = function () {};
 
-set_global("Filter", noop);
+mock_cjs("jquery", $);
+mock_esm("../../static/js/filter", {
+    Filter: noop,
+});
 set_global("document", {
     to_$() {
         return {
@@ -22,14 +26,10 @@ set_global("document", {
     },
 });
 
-const narrow_state = set_global("narrow_state", {});
-const stream_data = set_global("stream_data", {});
-set_global("recent_topics", {
-    is_visible: () => false,
-});
+const narrow_state = mock_esm("../../static/js/narrow_state");
+const stream_data = mock_esm("../../static/js/stream_data");
 
 const muting = zrequire("muting");
-zrequire("MessageListView", "js/message_list_view");
 const {MessageList} = zrequire("message_list");
 
 function accept_all_filter() {

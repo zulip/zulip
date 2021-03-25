@@ -11,8 +11,20 @@ import urllib.parse
 from collections import defaultdict, deque
 from dataclasses import dataclass
 from io import StringIO
-from typing import Any, Callable, Dict, Generic, List, Optional, Set, Tuple, TypeVar, Union
-from typing.re import Match, Pattern
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Generic,
+    List,
+    Match,
+    Optional,
+    Pattern,
+    Set,
+    Tuple,
+    TypeVar,
+    Union,
+)
 from urllib.parse import urlencode, urlsplit
 from xml.etree import ElementTree as etree
 from xml.etree.ElementTree import Element, SubElement
@@ -111,14 +123,14 @@ ElementStringNone = Union[Element, Optional[str]]
 EMOJI_REGEX = r"(?P<syntax>:[\w\-\+]+:)"
 
 
-def verbose_compile(pattern: str) -> Any:
+def verbose_compile(pattern: str) -> Pattern[str]:
     return re.compile(
         f"^(.*?){pattern}(.*?)$",
         re.DOTALL | re.UNICODE | re.VERBOSE,
     )
 
 
-def normal_compile(pattern: str) -> Any:
+def normal_compile(pattern: str) -> Pattern[str]:
     return re.compile(
         fr"^(.*?){pattern}(.*)$",
         re.DOTALL | re.UNICODE,
@@ -134,8 +146,16 @@ STREAM_LINK_REGEX = r"""
 
 
 @one_time
-def get_compiled_stream_link_regex() -> Pattern:
-    return verbose_compile(STREAM_LINK_REGEX)
+def get_compiled_stream_link_regex() -> Pattern[str]:
+    # Not using verbose_compile as it adds ^(.*?) and
+    # (.*?)$ which cause extra overhead of matching
+    # pattern which is not required.
+    # With new InlineProcessor these extra patterns
+    # are not required.
+    return re.compile(
+        STREAM_LINK_REGEX,
+        re.DOTALL | re.UNICODE | re.VERBOSE,
+    )
 
 
 STREAM_TOPIC_LINK_REGEX = r"""
@@ -149,14 +169,22 @@ STREAM_TOPIC_LINK_REGEX = r"""
 
 
 @one_time
-def get_compiled_stream_topic_link_regex() -> Pattern:
-    return verbose_compile(STREAM_TOPIC_LINK_REGEX)
+def get_compiled_stream_topic_link_regex() -> Pattern[str]:
+    # Not using verbose_compile as it adds ^(.*?) and
+    # (.*?)$ which cause extra overhead of matching
+    # pattern which is not required.
+    # With new InlineProcessor these extra patterns
+    # are not required.
+    return re.compile(
+        STREAM_TOPIC_LINK_REGEX,
+        re.DOTALL | re.UNICODE | re.VERBOSE,
+    )
 
 
-LINK_REGEX: Pattern = None
+LINK_REGEX: Optional[Pattern[str]] = None
 
 
-def get_web_link_regex() -> str:
+def get_web_link_regex() -> Pattern[str]:
     # We create this one time, but not at startup.  So the
     # first message rendered in any process will have some
     # extra costs.  It's roughly 75ms to run this code, so
@@ -562,16 +590,18 @@ class InlineHttpsProcessor(markdown.treeprocessors.Treeprocessor):
 class BacktickInlineProcessor(markdown.inlinepatterns.BacktickInlineProcessor):
     """ Return a `<code>` element containing the matching text. """
 
-    def handleMatch(self, m: Match[str], data: str) -> Tuple[Union[None, Element], int, int]:
+    def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
+        self, m: Match[str], data: str
+    ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
         # Let upstream's implementation do its job as it is, we'll
         # just replace the text to not strip the group because it
         # makes it impossible to put leading/trailing whitespace in
         # an inline code block.
-        el, start, end = super().handleMatch(m, data)
-        if m.group(3):
+        el, start, end = ret = super().handleMatch(m, data)
+        if el is not None and m.group(3):
             # upstream's code here is: m.group(3).strip() rather than m.group(3).
             el.text = markdown.util.AtomicString(markdown.util.code_escape(m.group(3)))
-        return el, start, end
+        return ret
 
 
 class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
@@ -1463,7 +1493,7 @@ class UnicodeEmoji(markdown.inlinepatterns.Pattern):
 
 
 class Emoji(markdown.inlinepatterns.Pattern):
-    def handleMatch(self, match: Match[str]) -> Optional[Element]:
+    def handleMatch(self, match: Match[str]) -> Optional[Union[str, Element]]:
         orig_syntax = match.group("syntax")
         name = orig_syntax[1:-1]
 
@@ -1586,7 +1616,7 @@ def url_to_a(
 
 
 class CompiledPattern(markdown.inlinepatterns.Pattern):
-    def __init__(self, compiled_re: Pattern, md: markdown.Markdown) -> None:
+    def __init__(self, compiled_re: Pattern[str], md: markdown.Markdown) -> None:
         # This is similar to the superclass's small __init__ function,
         # but we skip the compilation step and let the caller give us
         # a compiled regex.
@@ -1595,14 +1625,70 @@ class CompiledPattern(markdown.inlinepatterns.Pattern):
 
 
 class AutoLink(CompiledPattern):
+    """AutoLink takes care of linkifying link-format strings directly
+    present in the message (i.e. without markdown link syntax).  In
+    some hardcoded cases, it will rewrite the label to what the user
+    probably wanted if they'd taken the time to do so.
+    """
+
+    # Ideally, we'd use a dynamic commit prefix length based on the
+    # size of the repository, like Git itself does, but we're
+    # shortening Git commit IDs without looking at the corresponding
+    # repository.  It's not essential that the shortenings are
+    # globally unique as they're just shorthand, but 12 characters is
+    # the minimum to be unique for projects with about 1M commits.
+    COMMIT_ID_PREFIX_LENGTH = 12
+
+    def shorten_links(self, href: str) -> Optional[str]:
+        parts = urllib.parse.urlparse(href)
+        scheme, netloc, path, params, query, fragment = parts
+        if scheme == "https" and netloc in ["github.com"]:
+            # Split the path to extract our 4 variables.
+
+            # To do it cleanly without multiple if branches based on which of these
+            # variables are present, we here add a list of ["", "", ""...]
+            # to the result of path.split, which at worst can be []. We also remove
+            # the first empty string we'd get from "/foo/bar".split("/").
+
+            # Example path: "/foo/bar" output: ["foo", "bar", "", "", ""]
+            #         path: ""         output: ["", "", "", "", ""]
+            organisation, repository, artifact, value, remaining_path = (
+                path.split("/", 5)[1:] + [""] * 5
+            )[:5]
+
+            # Decide what type of links to shorten.
+            if not organisation or not repository or not artifact or not value:
+                return None
+            repo_short_text = "{}/{}".format(organisation, repository)
+
+            if fragment or remaining_path:
+                # We only intend to shorten links for the basic issue, PR, and commit ones.
+                return None
+
+            if netloc == "github.com":
+                return self.shorten_github_links(artifact, repo_short_text, value)
+        return None
+
+    def shorten_github_links(
+        self, artifact: str, repo_short_text: str, value: str
+    ) -> Optional[str]:
+        if artifact in ["pull", "issues"]:
+            return "{}#{}".format(repo_short_text, value)
+        if artifact == "commit":
+            return "{}@{}".format(repo_short_text, value[0 : self.COMMIT_ID_PREFIX_LENGTH])
+        return None
+
     def handleMatch(self, match: Match[str]) -> ElementStringNone:
         url = match.group("url")
         db_data = self.md.zulip_db_data
+        shortened_text = self.shorten_links(url)
+        if shortened_text is not None:
+            return url_to_a(db_data, url, shortened_text)
         return url_to_a(db_data, url)
 
 
 class OListProcessor(sane_lists.SaneOListProcessor):
-    def __init__(self, parser: Any) -> None:
+    def __init__(self, parser: BlockParser) -> None:
         parser.md.tab_length = 2
         super().__init__(parser)
         parser.md.tab_length = 4
@@ -1611,7 +1697,7 @@ class OListProcessor(sane_lists.SaneOListProcessor):
 class UListProcessor(sane_lists.SaneUListProcessor):
     """ Unordered lists, but with 2-space indent """
 
-    def __init__(self, parser: Any) -> None:
+    def __init__(self, parser: BlockParser) -> None:
         parser.md.tab_length = 2
         super().__init__(parser)
         parser.md.tab_length = 4
@@ -1623,7 +1709,7 @@ class ListIndentProcessor(markdown.blockprocessors.ListIndentProcessor):
     Based on markdown.blockprocessors.ListIndentProcessor, but with 2-space indent
     """
 
-    def __init__(self, parser: Any) -> None:
+    def __init__(self, parser: BlockParser) -> None:
 
         # HACK: Set the tab length to 2 just for the initialization of
         # this class, so that bulleted lists (and only bulleted lists)
@@ -1655,7 +1741,7 @@ class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
     mention_re = re.compile(mention.find_mentions)
 
     # run() is very slightly forked from the base class; see notes below.
-    def run(self, parent: Element, blocks: List[Any]) -> None:
+    def run(self, parent: Element, blocks: List[str]) -> None:
         block = blocks.pop(0)
         m = self.RE.search(block)
         if m:
@@ -1782,8 +1868,10 @@ class RealmFilterPattern(markdown.inlinepatterns.Pattern):
         )
 
 
-class UserMentionPattern(markdown.inlinepatterns.Pattern):
-    def handleMatch(self, m: Match[str]) -> Optional[Element]:
+class UserMentionPattern(markdown.inlinepatterns.InlineProcessor):
+    def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
+        self, m: Match[str], data: str
+    ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
         match = m.group("match")
         silent = m.group("silent") == "_"
 
@@ -1792,11 +1880,11 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
             if match.startswith("**") and match.endswith("**"):
                 name = match[2:-2]
             else:
-                return None
+                return None, None, None
 
             wildcard = mention.user_mention_matches_wildcard(name)
 
-            id_syntax_match = re.match(r".+\|(?P<user_id>\d+)$", name)
+            id_syntax_match = re.match(r"(.+)?\|(?P<user_id>\d+)$", name)
             if id_syntax_match:
                 id = int(id_syntax_match.group("user_id"))
                 user = db_data["mention_data"].get_user_by_id(id)
@@ -1813,7 +1901,7 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
                 user_id = str(user["id"])
             else:
                 # Don't highlight @mentions that don't refer to a valid user
-                return None
+                return None, None, None
 
             el = Element("span")
             el.set("data-user-id", user_id)
@@ -1824,15 +1912,17 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
                 el.set("class", "user-mention")
                 text = f"@{text}"
             el.text = markdown.util.AtomicString(text)
-            return el
-        return None
+            return el, m.start(), m.end()
+        return None, None, None
 
 
-class UserGroupMentionPattern(markdown.inlinepatterns.Pattern):
-    def handleMatch(self, m: Match[str]) -> Optional[Element]:
-        match = m.group(2)
-
+class UserGroupMentionPattern(markdown.inlinepatterns.InlineProcessor):
+    def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
+        self, m: Match[str], data: str
+    ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
+        match = m.group(1)
         db_data = self.md.zulip_db_data
+
         if self.md.zulip_message and db_data is not None:
             name = extract_user_group(match)
             user_group = db_data["mention_data"].get_user_group(name)
@@ -1843,32 +1933,41 @@ class UserGroupMentionPattern(markdown.inlinepatterns.Pattern):
             else:
                 # Don't highlight @-mentions that don't refer to a valid user
                 # group.
-                return None
+                return None, None, None
 
             el = Element("span")
             el.set("class", "user-group-mention")
             el.set("data-user-group-id", user_group_id)
             text = f"@{name}"
             el.text = markdown.util.AtomicString(text)
-            return el
-        return None
+            return el, m.start(), m.end()
+        return None, None, None
 
 
-class StreamPattern(CompiledPattern):
-    def find_stream_by_name(self, name: Match[str]) -> Optional[Dict[str, Any]]:
+class StreamPattern(markdown.inlinepatterns.InlineProcessor):
+    def __init__(self, compiled_re: Pattern[str], md: markdown.Markdown) -> None:
+        # This is similar to the superclass's small __init__ function,
+        # but we skip the compilation step and let the caller give us
+        # a compiled regex.
+        self.compiled_re = compiled_re
+        self.md = md
+
+    def find_stream_by_name(self, name: str) -> Optional[Dict[str, Any]]:
         db_data = self.md.zulip_db_data
         if db_data is None:
             return None
         stream = db_data["stream_names"].get(name)
         return stream
 
-    def handleMatch(self, m: Match[str]) -> Optional[Element]:
+    def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
+        self, m: Match[str], data: str
+    ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
         name = m.group("stream_name")
 
         if self.md.zulip_message:
             stream = self.find_stream_by_name(name)
             if stream is None:
-                return None
+                return None, None, None
             el = Element("a")
             el.set("class", "stream")
             el.set("data-stream-id", str(stream["id"]))
@@ -1881,26 +1980,35 @@ class StreamPattern(CompiledPattern):
             el.set("href", f"/#narrow/stream/{stream_url}")
             text = f"#{name}"
             el.text = markdown.util.AtomicString(text)
-            return el
-        return None
+            return el, m.start(), m.end()
+        return None, None, None
 
 
-class StreamTopicPattern(CompiledPattern):
-    def find_stream_by_name(self, name: Match[str]) -> Optional[Dict[str, Any]]:
+class StreamTopicPattern(markdown.inlinepatterns.InlineProcessor):
+    def __init__(self, compiled_re: Pattern[str], md: markdown.Markdown) -> None:
+        # This is similar to the superclass's small __init__ function,
+        # but we skip the compilation step and let the caller give us
+        # a compiled regex.
+        self.compiled_re = compiled_re
+        self.md = md
+
+    def find_stream_by_name(self, name: str) -> Optional[Dict[str, Any]]:
         db_data = self.md.zulip_db_data
         if db_data is None:
             return None
         stream = db_data["stream_names"].get(name)
         return stream
 
-    def handleMatch(self, m: Match[str]) -> Optional[Element]:
+    def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
+        self, m: Match[str], data: str
+    ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
         stream_name = m.group("stream_name")
         topic_name = m.group("topic_name")
 
         if self.md.zulip_message:
             stream = self.find_stream_by_name(stream_name)
             if stream is None or topic_name is None:
-                return None
+                return None, None, None
             el = Element("a")
             el.set("class", "stream-topic")
             el.set("data-stream-id", str(stream["id"]))
@@ -1910,8 +2018,8 @@ class StreamTopicPattern(CompiledPattern):
             el.set("href", link)
             text = f"#{stream_name} > {topic_name}"
             el.text = markdown.util.AtomicString(text)
-            return el
-        return None
+            return el, m.start(), m.end()
+        return None, None, None
 
 
 def possible_linked_stream_names(content: str) -> Set[str]:
@@ -2002,11 +2110,17 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
 
         return el
 
-    def handleMatch(self, m: Match[str], data: str) -> Tuple[Union[None, Element], int, int]:
-        el, match_start, index = super().handleMatch(m, data)
-        if el is not None:
+    def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
+        self, m: Match[str], data: str
+    ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
+        ret = super().handleMatch(m, data)
+        if ret[0] is not None:
+            el: Optional[Element]
+            el, match_start, index = ret
             el = self.zulip_specific_link_changes(el)
-        return el, match_start, index
+            if el is not None:
+                return el, match_start, index
+        return None, None, None
 
 
 def get_sub_registry(r: markdown.util.Registry, keys: List[str]) -> markdown.util.Registry:
@@ -2331,18 +2445,25 @@ def get_possible_mentions_info(realm_id: int, mention_texts: Set[str]) -> List[F
     if not mention_texts:
         return []
 
-    # Remove the trailing part of the `name|id` mention syntax,
-    # thus storing only full names in full_names.
     full_names = set()
-    name_re = r"(?P<full_name>.+)\|\d+$"
+    mention_ids: Set[int] = set()
+
+    name_re = r"(?P<full_name>.+)?\|(?P<mention_id>\d+)$"
     for mention_text in mention_texts:
         name_syntax_match = re.match(name_re, mention_text)
         if name_syntax_match:
-            full_names.add(name_syntax_match.group("full_name"))
+            full_name = name_syntax_match.group("full_name")
+            mention_id = name_syntax_match.group("mention_id")
+            if full_name:
+                full_names.add(name_syntax_match.group("full_name"))
+            else:
+                mention_ids.add(int(mention_id))
         else:
             full_names.add(mention_text)
 
     q_list = {Q(full_name__iexact=full_name) for full_name in full_names}
+    id_q_list = {Q(id=id) for id in mention_ids}
+    q_list |= id_q_list
 
     rows = (
         UserProfile.objects.filter(

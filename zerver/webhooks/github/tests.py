@@ -250,6 +250,24 @@ class GitHubWebhookTest(WebhookTestCase):
         expected_message = "baxterthehacker created [PR Review Comment on #1 Update the README with new information](https://github.com/baxterthehacker/public-repo/pull/1#discussion_r29724692):\n\n~~~ quote\nMaybe you should use more emojji on this line.\n~~~"
         self.check_webhook("pull_request_review_comment", expected_topic, expected_message)
 
+    def test_pull_request_locked(self) -> None:
+        expected_message = "tushar912 has locked [PR #1](https://github.com/tushar912/public-repo/pull/1) as off-topic and limited conversation to collaborators."
+        self.check_webhook("pull_request__locked", TOPIC_PR, expected_message)
+
+    def test_pull_request_unlocked(self) -> None:
+        expected_message = (
+            "tushar912 has unlocked [PR #1](https://github.com/tushar912/public-repo/pull/1)."
+        )
+        self.check_webhook("pull_request__unlocked", TOPIC_PR, expected_message)
+
+    def test_pull_request_auto_merge_enabled(self) -> None:
+        expected_message = "tushar912 has enabled auto merge for [PR #1](https://github.com/tushar912/public-repo/pull/1)."
+        self.check_webhook("pull_request__auto_merge_enabled", TOPIC_PR, expected_message)
+
+    def test_pull_request_auto_merge_disabled(self) -> None:
+        expected_message = "tushar912 has disabled auto merge for [PR #1](https://github.com/tushar912/public-repo/pull/1)."
+        self.check_webhook("pull_request__auto_merge_disabled", TOPIC_PR, expected_message)
+
     def test_push_tag_msg(self) -> None:
         expected_message = "baxterthehacker pushed tag abc."
         self.check_webhook("push__tag", TOPIC_REPO, expected_message)

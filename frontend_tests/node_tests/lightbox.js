@@ -2,27 +2,35 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 set_global("Image", class Image {});
-set_global("overlays", {
+mock_cjs("jquery", $);
+mock_esm("../../static/js/overlays", {
     close_overlay: () => {},
+
     close_active: () => {},
     open_overlay: () => {},
 });
-set_global("popovers", {
+mock_esm("../../static/js/popovers", {
     hide_all: () => {},
 });
 
+const message_store = mock_esm("../../static/js/message_store");
 const rows = zrequire("rows");
+
 const lightbox = zrequire("lightbox");
-const message_store = set_global("message_store", {});
 
-rows.is_draft_row = () => false;
+function test(label, f) {
+    run_test(label, (override) => {
+        lightbox.clear_for_testing();
+        f(override);
+    });
+}
 
-run_test("pan_and_zoom", (override) => {
+test("pan_and_zoom", (override) => {
     const img = $.create("img-stub");
     const link = $.create("link-stub");
     const msg = $.create("msg-stub");
@@ -53,7 +61,7 @@ run_test("pan_and_zoom", (override) => {
     assert.equal(fetched_zid, 1234);
 });
 
-run_test("youtube", (override) => {
+test("youtube", (override) => {
     const href = "https://youtube.com/some-random-clip";
     const img = $.create("img-stub");
     const link = $.create("link-stub");

@@ -14,6 +14,7 @@
 * [Review your settings](/help/review-your-settings)
 * [Change your profile picture](/help/change-your-profile-picture)
 * [Change your language](/help/change-your-language)
+* [Change default view](/help/change-default-view)
 * [Use 24-hour time](/help/change-the-time-format)
 * [Joining an organization](/help/join-a-zulip-organization)
 * [Switching between organizations](/help/switching-between-organizations)
@@ -136,7 +137,7 @@
 * [Require topics in stream messages](/help/require-topics)
 * [Add custom emoji](/help/add-custom-emoji)
 * [Configure authentication methods](/help/configure-authentication-methods)
-* [Add a custom linkification filter](/help/add-a-custom-linkification-filter)
+* [Add a custom linkifier](/help/add-a-custom-linkifier)
 * [Message retention policy](/help/message-retention-policy)
 * [SAML authentication](/help/saml-authentication)
 

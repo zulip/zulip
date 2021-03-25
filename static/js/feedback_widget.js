@@ -1,4 +1,8 @@
+import $ from "jquery";
+
 import render_feedback_container from "../templates/feedback_container.hbs";
+
+import * as blueslip from "./blueslip";
 
 /*
 

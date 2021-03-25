@@ -1,3 +1,5 @@
+import $ from "jquery";
+
 import render_favicon_svg from "../templates/favicon.svg.hbs";
 
 import favicon_font_url from "!url-loader!font-subset-loader2?glyphs=0123456789KMGT∞!source-sans/TTF/SourceSans3-Bold.ttf";

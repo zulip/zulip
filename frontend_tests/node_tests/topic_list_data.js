@@ -4,25 +4,22 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const narrow_state = set_global("narrow_state", {
-    topic() {},
-});
-set_global("unread", {});
-const muting = set_global("muting", {
+const muting = mock_esm("../../static/js/muting", {
     is_topic_muted() {
         return false;
     },
 });
-set_global("message_list", {});
+const narrow_state = mock_esm("../../static/js/narrow_state", {
+    topic() {},
+});
 
-zrequire("hash_util");
 const stream_data = zrequire("stream_data");
-const unread = zrequire("unread");
 const stream_topic_history = zrequire("stream_topic_history");
 const topic_list_data = zrequire("topic_list_data");
+const unread = zrequire("unread");
 
 const general = {
     stream_id: 556,
@@ -36,7 +33,14 @@ function get_list_info(zoomed) {
     return topic_list_data.get_list_info(stream_id, zoomed);
 }
 
-run_test("get_list_info w/real stream_topic_history", (override) => {
+function test(label, f) {
+    run_test(label, (override) => {
+        stream_topic_history.reset();
+        f(override);
+    });
+}
+
+test("get_list_info w/real stream_topic_history", (override) => {
     let list_info;
     const empty_list_info = get_list_info();
 
@@ -79,7 +83,7 @@ run_test("get_list_info w/real stream_topic_history", (override) => {
     assert.equal(list_info.num_possible_topics, 7);
 });
 
-run_test("get_list_info unreads", (override) => {
+test("get_list_info unreads", (override) => {
     let list_info;
 
     override(stream_topic_history, "get_recent_topic_names", () =>

@@ -2,50 +2,41 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const $ = require("../zjsunit/zjquery");
 
-set_global("resize", {
+mock_cjs("jquery", $);
+mock_esm("../../static/js/resize", {
     resize_stream_filters_container: () => {},
 });
 
-const channel = set_global("channel", {});
-const compose = set_global("compose", {});
-const compose_actions = set_global("compose_actions", {});
-set_global("current_msg_list", {});
-const hashchange = set_global("hashchange", {});
-set_global("home_msg_list", {});
-const message_fetch = set_global("message_fetch", {});
-const message_list = set_global("message_list", {
+const channel = mock_esm("../../static/js/channel");
+const compose = mock_esm("../../static/js/compose");
+const compose_actions = mock_esm("../../static/js/compose_actions");
+const hashchange = mock_esm("../../static/js/hashchange");
+const message_fetch = mock_esm("../../static/js/message_fetch");
+const message_list = mock_esm("../../static/js/message_list", {
     set_narrowed(value) {
-        this.narrowed = value;
+        message_list.narrowed = value;
     },
 });
-const message_scroll = set_global("message_scroll", {});
-set_global("message_util", {});
-const notifications = set_global("notifications", {});
-set_global("page_params", {});
-const search = set_global("search", {});
-const stream_list = set_global("stream_list", {});
-const message_view_header = set_global("message_view_header", {});
-const top_left_corner = set_global("top_left_corner", {});
-const typing_events = set_global("typing_events", {});
-const ui_util = set_global("ui_util", {});
-const unread_ops = set_global("unread_ops", {});
-set_global("search_pill_widget", {
-    widget: {
-        clear() {
-            return true;
-        },
-        appendValue() {
-            return true;
-        },
-    },
-});
-set_global("recent_topics", {
+const message_scroll = mock_esm("../../static/js/message_scroll");
+const message_view_header = mock_esm("../../static/js/message_view_header");
+const notifications = mock_esm("../../static/js/notifications");
+const search = mock_esm("../../static/js/search");
+const stream_list = mock_esm("../../static/js/stream_list");
+const top_left_corner = mock_esm("../../static/js/top_left_corner");
+const typing_events = mock_esm("../../static/js/typing_events");
+const ui_util = mock_esm("../../static/js/ui_util");
+const unread_ops = mock_esm("../../static/js/unread_ops");
+mock_esm("../../static/js/recent_topics", {
     hide: () => {},
     is_visible: () => {},
 });
+set_global("current_msg_list", {});
+set_global("home_msg_list", {});
+set_global("page_params", {});
 
 //
 // We have strange hacks in narrow.activate to sleep 0
@@ -55,15 +46,13 @@ set_global("setTimeout", (f, t) => {
     f();
 });
 
-set_global("muting", {
+mock_esm("../../static/js/muting", {
     is_topic_muted: () => false,
 });
 
 const util = zrequire("util");
 const narrow_state = zrequire("narrow_state");
 const stream_data = zrequire("stream_data");
-zrequire("Filter", "js/filter");
-zrequire("unread");
 const narrow = zrequire("narrow");
 
 const denmark = {

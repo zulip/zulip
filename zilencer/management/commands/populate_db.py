@@ -607,7 +607,7 @@ class Command(BaseCommand):
                 "emacs": {"text": "Emacs", "order": "2"},
             }
             favorite_editor = try_add_realm_custom_profile_field(
-                zulip_realm, "Favorite editor", CustomProfileField.CHOICE, field_data=field_data
+                zulip_realm, "Favorite editor", CustomProfileField.SELECT, field_data=field_data
             )
             birthday = try_add_realm_custom_profile_field(
                 zulip_realm, "Birthday", CustomProfileField.DATE
@@ -872,8 +872,13 @@ def generate_and_send_messages(
     random.shuffle(dialog)
     texts = itertools.cycle(dialog)
 
+    # We need to filter out streams from the analytics realm as we don't want to generate
+    # messages to its streams - and they might also have no subscribers, which would break
+    # our message generation mechanism below.
+    stream_ids = Stream.objects.filter(realm=get_realm("zulip")).values_list("id", flat=True)
     recipient_streams: List[int] = [
-        klass.id for klass in Recipient.objects.filter(type=Recipient.STREAM)
+        recipient.id
+        for recipient in Recipient.objects.filter(type=Recipient.STREAM, type_id__in=stream_ids)
     ]
     recipient_huddles: List[int] = [h.id for h in Recipient.objects.filter(type=Recipient.HUDDLE)]
 

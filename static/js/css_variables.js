@@ -1,3 +1,5 @@
+/* eslint-env commonjs */
+
 "use strict";
 
 // Media query breakpoints according to Bootstrap 4.5

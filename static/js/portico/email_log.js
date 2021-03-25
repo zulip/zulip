@@ -1,3 +1,7 @@
+import $ from "jquery";
+
+import * as channel from "../channel";
+
 $(() => {
     // This code will be executed when the user visits /emails in
     // development mode and email_log.html is rendered.
@@ -43,4 +47,3 @@ $(() => {
         });
     });
 });
-export {};

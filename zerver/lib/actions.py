@@ -70,7 +70,7 @@ from zerver.lib.cache import (
     flush_user_profile,
     to_dict_cache_key_id,
     user_profile_by_api_key_cache_key,
-    user_profile_by_email_cache_key,
+    user_profile_delivery_email_cache_key,
 )
 from zerver.lib.create_user import create_user, get_display_email_address
 from zerver.lib.email_mirror_helpers import encode_email_address, encode_email_address_helper
@@ -1010,6 +1010,12 @@ def do_deactivate_realm(realm: Realm, acting_user: Optional[UserProfile] = None)
         # notice when they try to log in.
         delete_user_sessions(user)
 
+    # This event will only ever be received by clients with an active
+    # longpoll connection, because by this point clients will be
+    # unable to authenticate again to their event queue (triggering an
+    # immediate reload into the page explaining the realm was
+    # deactivated). So the purpose of sending this is to flush all
+    # active longpoll connections for the realm.
     event = dict(type="realm", op="deactivated", realm_id=realm.id)
     send_event(realm, event, active_user_ids(realm.id))
 
@@ -1338,7 +1344,8 @@ def compute_jabber_user_fullname(email: str) -> str:
 
 
 @cache_with_key(
-    lambda realm, email, f: user_profile_by_email_cache_key(email), timeout=3600 * 24 * 7
+    lambda realm, email, f: user_profile_delivery_email_cache_key(email, realm),
+    timeout=3600 * 24 * 7,
 )
 def create_mirror_user_if_needed(
     realm: Realm, email: str, email_to_fullname: Callable[[str], str]
@@ -3697,11 +3704,9 @@ def do_change_subscription_property(
     event = dict(
         type="subscription",
         op="update",
-        email=user_profile.email,
         property=event_property_name,
         value=event_value,
         stream_id=stream.id,
-        name=stream.name,
     )
     send_event(user_profile.realm, event, [user_profile.id])
 
@@ -4385,7 +4390,11 @@ def do_change_stream_message_retention_days(
 
 
 def do_create_realm(
-    string_id: str, name: str, emails_restricted_to_domains: Optional[bool] = None
+    string_id: str,
+    name: str,
+    *,
+    emails_restricted_to_domains: Optional[bool] = None,
+    date_created: Optional[datetime.datetime] = None,
 ) -> Realm:
     if Realm.objects.filter(string_id=string_id).exists():
         raise AssertionError(f"Realm {string_id} already exists!")
@@ -4396,6 +4405,11 @@ def do_create_realm(
     kwargs: Dict[str, Any] = {}
     if emails_restricted_to_domains is not None:
         kwargs["emails_restricted_to_domains"] = emails_restricted_to_domains
+    if date_created is not None:
+        # The date_created parameter is intended only for use by test
+        # suites that want to backdate the date of a realm's creation.
+        assert not settings.PRODUCTION
+        kwargs["date_created"] = date_created
     realm = Realm(string_id=string_id, name=name, **kwargs)
     realm.save()
 
@@ -5119,10 +5133,10 @@ def send_message_moved_breadcrumbs(
     user_profile: UserProfile,
     old_stream: Stream,
     old_topic: str,
+    old_thread_notification_string: Optional[str],
     new_stream: Stream,
     new_topic: Optional[str],
-    send_notification_to_old_thread: bool,
-    send_notification_to_new_thread: bool,
+    new_thread_notification_string: Optional[str],
 ) -> None:
     # Since moving content between streams is highly disruptive,
     # it's worth adding a couple tombstone messages showing what
@@ -5135,26 +5149,27 @@ def send_message_moved_breadcrumbs(
     user_mention = f"@_**{user_profile.full_name}|{user_profile.id}**"
     old_topic_link = f"#**{old_stream.name}>{old_topic}**"
     new_topic_link = f"#**{new_stream.name}>{new_topic}**"
-    if send_notification_to_new_thread:
+
+    if new_thread_notification_string is not None:
         with override_language(new_stream.realm.default_language):
             internal_send_stream_message(
                 sender,
                 new_stream,
                 new_topic,
-                _("This topic was moved here from {old_location} by {user}").format(
+                new_thread_notification_string.format(
                     old_location=old_topic_link,
                     user=user_mention,
                 ),
             )
 
-    if send_notification_to_old_thread:
+    if old_thread_notification_string is not None:
         with override_language(old_stream.realm.default_language):
             # Send a notification to the old stream that the topic was moved.
             internal_send_stream_message(
                 sender,
                 old_stream,
                 old_topic,
-                _("This topic was moved by {user} to {new_location}").format(
+                old_thread_notification_string.format(
                     user=user_mention,
                     new_location=new_topic_link,
                 ),
@@ -5614,14 +5629,24 @@ def do_update_message(
 
     if len(changed_messages) > 0 and new_stream is not None and stream_being_edited is not None:
         # Notify users that the topic was moved.
+        old_thread_notification_string = None
+        if send_notification_to_old_thread:
+            old_thread_notification_string = _("This topic was moved by {user} to {new_location}")
+
+        new_thread_notification_string = None
+        if send_notification_to_new_thread:
+            new_thread_notification_string = _(
+                "This topic was moved here from {old_location} by {user}"
+            )
+
         send_message_moved_breadcrumbs(
             user_profile,
             stream_being_edited,
             orig_topic_name,
+            old_thread_notification_string,
             new_stream,
             topic_name,
-            send_notification_to_old_thread,
-            send_notification_to_new_thread,
+            new_thread_notification_string,
         )
 
     return len(changed_messages)
@@ -6724,7 +6749,7 @@ def try_add_realm_custom_profile_field(
     field = CustomProfileField(realm=realm, name=name, field_type=field_type)
     field.hint = hint
     if (
-        field.field_type == CustomProfileField.CHOICE
+        field.field_type == CustomProfileField.SELECT
         or field.field_type == CustomProfileField.EXTERNAL_ACCOUNT
     ):
         field.field_data = orjson.dumps(field_data or {}).decode()
@@ -6759,7 +6784,7 @@ def try_update_realm_custom_profile_field(
     field.name = name
     field.hint = hint
     if (
-        field.field_type == CustomProfileField.CHOICE
+        field.field_type == CustomProfileField.SELECT
         or field.field_type == CustomProfileField.EXTERNAL_ACCOUNT
     ):
         field.field_data = orjson.dumps(field_data or {}).decode()

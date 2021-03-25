@@ -1,10 +1,19 @@
 import autosize from "autosize";
 import ClipboardJS from "clipboard";
+import $ from "jquery";
 
 import copy_invite_link from "../templates/copy_invite_link.hbs";
 import render_invitation_failed_error from "../templates/invitation_failed_error.hbs";
 import render_invite_subscription from "../templates/invite_subscription.hbs";
 import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
+
+import * as browser_history from "./browser_history";
+import * as channel from "./channel";
+import * as common from "./common";
+import * as overlays from "./overlays";
+import * as stream_data from "./stream_data";
+import * as ui from "./ui";
+import * as ui_report from "./ui_report";
 
 function reset_error_messages() {
     $("#invite_status").hide().text("").removeClass(common.status_classes);
@@ -160,7 +169,7 @@ export function launch() {
         name: "invite",
         overlay: $("#invite-user"),
         on_close() {
-            hashchange.exit_overlay();
+            browser_history.exit_overlay();
         },
     });
 

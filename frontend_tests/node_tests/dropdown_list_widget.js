@@ -2,18 +2,17 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
-const _ListWidget = {
+mock_cjs("jquery", $);
+mock_esm("../../static/js/list_widget", {
     create: () => ({init: noop}),
-};
-set_global("ListWidget", _ListWidget);
-
-const dropdown_list_widget = zrequire("dropdown_list_widget");
-zrequire("scroll_util");
+});
+const {DropdownListWidget: dropdown_list_widget} = zrequire("dropdown_list_widget");
 
 const setup_zjquery_data = (name) => {
     const input_group = $(".input_group");
@@ -55,6 +54,12 @@ run_test("basic_functions", () => {
     assert.equal($widget.text(), "translated: not set");
     assert.equal(widget.value(), "");
     assert.equal(updated_value, null);
+    assert(!reset_button.visible());
+
+    widget.update("four");
+    assert.equal($widget.text(), "translated: not set");
+    assert.equal(widget.value(), "four");
+    assert.equal(updated_value, "four");
     assert(!reset_button.visible());
 });
 

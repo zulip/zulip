@@ -103,13 +103,13 @@ first-time contributors][zulip-rtd-dev-first-time].
 
 This step is optional, but recommended.
 
-The Zulip Server project is configured to use [CircleCI][circle-ci]
+The Zulip Server project is configured to use [GitHub Actions][github-actions]
 to test and create builds upon each new commit and pull request.
-CircleCI is the primary CI that runs frontend and backend
+GitHub Actions is the primary CI that runs frontend and backend
 tests across a wide range of Ubuntu distributions.
 
-CircleCI is free for open source projects and it's easy to
-configure for your own fork of Zulip. After doing so, CircleCI
+GitHub Actions is free for open source projects and it's easy to
+configure for your own fork of Zulip. After doing so, GitHub Actions
 will run tests for new refs you push to GitHub and email you the outcome
 (you can also view the results in the web interface).
 
@@ -119,21 +119,13 @@ submitting a pull request.  We generally recommend a workflow where as
 you make changes, you use a fast edit-refresh cycle running individual
 tests locally until your changes work.  But then once you've gotten
 the tests you'd expect to be relevant to your changes working, push a
-branch to run the full test suite in CircleCI before
-you create a pull request.  While you wait for CircleCI jobs
+branch to run the full test suite in GitHub Actions before
+you create a pull request.  While you wait for GitHub Actions jobs
 to run, you can start working on your next task.  When the tests finish,
 you can create a pull request that you already know passes the tests.
 
-### Set up CircleCI
-
-First, sign in to [CircleCI][circle-ci] with your GitHub account and authorize
-CircleCI to access your GitHub account and repositories. Once you've logged
-in you'll be in the  **Projects** section which will list all your GitHub
-repositories. Now goto the row of Zulip and click on **Set Up Project**.
-You'll then see a sample hello world config. As your forked repository from Zulip
-will already have the config file, so click on **Start Building** and then choose
-the **Add Manually** option. After that click on **Start Building** to run the build.
-![Screencast of CircleCI setup](../images/zulip-circleci.gif)
+GitHub Actions will run all the jobs by default on your forked repository.
+You can check the `Actions` tab of your repository to see the builds.
 
 [gitbook-rebase]: https://git-scm.com/book/en/v2/Git-Branching-Rebasing
 [github-help-add-ssh-key]: https://help.github.com/en/articles/adding-a-new-ssh-key-to-your-github-account
@@ -142,7 +134,7 @@ the **Add Manually** option. After that click on **Start Building** to run the b
 [github-help-sync-fork]: https://help.github.com/en/articles/syncing-a-fork
 [github-zulip]: https://github.com/zulip/
 [github-zulip-zulip]: https://github.com/zulip/zulip/
-[circle-ci]:https://circleci.com/
+[github-actions]: https://docs.github.com/en/actions
 [zulip-rtd-dev-first-time]: ../development/setup-vagrant.md
 [zulip-rtd-dev-overview]: ../development/overview.md
 [zulip-rtd-tools-setup]: ../git/zulip-tools.html#set-up-git-repo-script

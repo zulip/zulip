@@ -2,10 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 
-const reload_state = set_global("reload_state", {
+const reload_state = mock_esm("../../static/js/reload_state", {
     is_in_progress: () => false,
 });
 
@@ -22,12 +23,12 @@ people.init();
 people.add_active_user(me);
 people.initialize_current_user(me.user_id);
 
-run_test("report_late_add", () => {
+run_test("report_late_add", (override) => {
     blueslip.expect("error", "Added user late: user_id=55 email=foo@example.com");
     people.report_late_add(55, "foo@example.com");
 
     blueslip.expect("log", "Added user late: user_id=55 email=foo@example.com");
-    reload_state.is_in_progress = () => true;
+    override(reload_state, "is_in_progress", () => true);
     people.report_late_add(55, "foo@example.com");
 });
 
@@ -39,7 +40,7 @@ run_test("is_my_user_id", () => {
     assert.equal(people.is_my_user_id(me.user_id.toString()), true);
 });
 
-run_test("blueslip", () => {
+run_test("blueslip", (override) => {
     const unknown_email = "alicebobfred@example.com";
 
     blueslip.expect("debug", "User email operand unknown: " + unknown_email);
@@ -103,8 +104,8 @@ run_test("blueslip", () => {
     const reply_to = people.pm_reply_to(message);
     assert(reply_to.includes("?"));
 
-    people.__Rewire__("pm_with_user_ids", () => [42]);
-    people.__Rewire__("get_by_user_id", () => {});
+    override(people, "pm_with_user_ids", () => [42]);
+    override(people, "get_by_user_id", () => {});
     blueslip.expect("error", "Unknown people in message");
     const uri = people.pm_with_url({});
     assert.equal(uri.indexOf("unk"), uri.length - 3);

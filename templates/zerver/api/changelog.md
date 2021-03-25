@@ -10,6 +10,33 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 44**
+
+* [`POST /register`](/api/register-queue): extended the `unread_msgs`
+  object to include `old_unreads_missing`, which indicates whether the
+  server truncated the `unread_msgs` due to excessive total unread
+  messages.
+
+**Feature level 43**
+
+* [`GET /users/{user_id_or_email}/presence`]: Added support for
+ passing the `user_id` to identify the target user.
+
+**Feature level 42**
+
+* `PATCH /settings/display`: Added a new `default_view` setting allowing
+  the user to [set the default view](/help/change-default-view).
+
+**Feature level 41**
+
+* [`GET /events`](/api/get-events): Removed `name` field from update
+  subscription events.
+
+**Feature level 40**
+
+* [`GET /events`](/api/get-events): Removed `email` field from update
+  subscription events.
+
 **Feature level 39**
 
 * Added new [GET /users/{email}](/api/get-user-by-email) endpoint.

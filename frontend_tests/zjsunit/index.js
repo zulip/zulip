@@ -1,6 +1,5 @@
 "use strict";
 
-const Module = require("module");
 const path = require("path");
 
 require("css.escape");
@@ -11,9 +10,8 @@ const handlebars = require("./handlebars");
 const stub_i18n = require("./i18n");
 const namespace = require("./namespace");
 const test = require("./test");
-const {make_zblueslip} = require("./zblueslip");
-
-global.$ = require("./zjquery");
+const blueslip = require("./zblueslip");
+const zjquery = require("./zjquery");
 
 require("@babel/register")({
     extensions: [".es6", ".es", ".jsx", ".js", ".mjs", ".ts"],
@@ -23,7 +21,10 @@ require("@babel/register")({
             "^" + _.escapeRegExp(path.resolve(__dirname, "../../static/shared/js") + path.sep),
         ),
     ],
-    plugins: ["rewire-ts"],
+    plugins: [
+        "babel-plugin-rewire-ts",
+        ["@babel/plugin-transform-modules-commonjs", {lazy: () => true}],
+    ],
 });
 
 // Create a helper function to avoid sneaky delays in tests.
@@ -50,15 +51,10 @@ handlebars.hook_require();
 
 const noop = function () {};
 
-// Set up fake module.hot
-Module.prototype.hot = {
-    accept: noop,
-};
-
 function short_tb(tb) {
     const lines = tb.split("\n");
 
-    const i = lines.findIndex((line) => line.includes("Module._compile"));
+    const i = lines.findIndex((line) => line.includes("run_one_module"));
 
     if (i === -1) {
         return tb;
@@ -68,16 +64,19 @@ function short_tb(tb) {
 }
 
 function run_one_module(file) {
-    global.$.clear_all_elements();
+    zjquery.clear_initialize_function();
+    zjquery.clear_all_elements();
     console.info("running test " + path.basename(file, ".js"));
     test.set_current_file_name(file);
     require(file);
+    namespace.complain_about_unused_mocks();
 }
 
 test.set_verbose(files.length === 1);
 
 try {
     for (const file of files) {
+        namespace.start();
         namespace.set_global("window", window);
         namespace.set_global("to_$", () => window);
         namespace.set_global("location", {
@@ -88,7 +87,8 @@ try {
         _.throttle = immediate;
         _.debounce = immediate;
 
-        const blueslip = namespace.set_global("blueslip", make_zblueslip());
+        namespace.mock_esm("../../static/js/blueslip", blueslip);
+        require("../../static/js/blueslip");
         namespace.set_global("i18n", stub_i18n);
 
         run_one_module(file);
@@ -97,7 +97,7 @@ try {
             blueslip.reset();
         }
 
-        namespace.restore();
+        namespace.finish();
         Handlebars.HandlebarsEnvironment.call(Handlebars);
     }
 } catch (error) {

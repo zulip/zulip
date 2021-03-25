@@ -1,8 +1,8 @@
-"use strict";
+import $ from "jquery";
 
-const render_loader = require("../templates/loader.hbs");
+import render_loader from "../templates/loader.hbs";
 
-exports.make_indicator = function (outer_container, opts) {
+export function make_indicator(outer_container, opts) {
     opts = opts || {};
     let container = outer_container;
 
@@ -47,9 +47,9 @@ exports.make_indicator = function (outer_container, opts) {
     container.css({width: 38 + text_width, height: 0});
 
     outer_container.data("destroying", false);
-};
+}
 
-exports.destroy_indicator = function (container) {
+export function destroy_indicator(container) {
     if (container.data("destroying")) {
         return;
     }
@@ -62,6 +62,4 @@ exports.destroy_indicator = function (container) {
     container.removeData("spinner_obj");
     container.empty();
     container.css({width: 0, height: 0});
-};
-
-window.loading = exports;
+}

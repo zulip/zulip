@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {set_global, zrequire, with_overrides} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire, with_overrides} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -24,15 +24,15 @@ const localStorage = set_global("localStorage", {
         ls_container.clear();
     },
 });
-set_global("compose", {});
-const compose_state = set_global("compose_state", {});
-set_global("stream_data", {
+mock_cjs("jquery", $);
+const compose_state = mock_esm("../../static/js/compose_state");
+mock_esm("../../static/js/markdown", {
+    apply_markdown: noop,
+});
+mock_esm("../../static/js/stream_data", {
     get_color() {
         return "#FFFFFF";
     },
-});
-set_global("markdown", {
-    apply_markdown: noop,
 });
 set_global("page_params", {
     twenty_four_hour_time: false,
@@ -41,7 +41,6 @@ set_global("page_params", {
 const {localstorage} = zrequire("localstorage");
 const drafts = zrequire("drafts");
 const timerender = zrequire("timerender");
-zrequire("stream_color");
 
 const legacy_draft = {
     stream: "stream",
@@ -76,14 +75,20 @@ const short_msg = {
     content: "a",
 };
 
-run_test("legacy", () => {
+function test(label, f) {
+    run_test(label, (override) => {
+        localStorage.clear();
+        f(override);
+    });
+}
+
+test("legacy", () => {
     assert.deepEqual(drafts.restore_message(legacy_draft), compose_args_for_legacy_draft);
 });
 
-run_test("draft_model add", (override) => {
+test("draft_model add", (override) => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
-    localStorage.clear();
     assert.equal(ls.get("draft"), undefined);
 
     override(Date, "now", () => 1);
@@ -93,10 +98,9 @@ run_test("draft_model add", (override) => {
     assert.deepEqual(draft_model.getDraft(id), expected);
 });
 
-run_test("draft_model edit", () => {
+test("draft_model edit", () => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
-    localStorage.clear();
     assert.equal(ls.get("draft"), undefined);
     let id;
 
@@ -117,10 +121,9 @@ run_test("draft_model edit", () => {
     });
 });
 
-run_test("draft_model delete", (override) => {
+test("draft_model delete", (override) => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
-    localStorage.clear();
     assert.equal(ls.get("draft"), undefined);
 
     override(Date, "now", () => 1);
@@ -133,7 +136,7 @@ run_test("draft_model delete", (override) => {
     assert.deepEqual(draft_model.getDraft(id), false);
 });
 
-run_test("snapshot_message", (override) => {
+test("snapshot_message", (override) => {
     let curr_draft;
 
     function map(field, f) {
@@ -160,13 +163,13 @@ run_test("snapshot_message", (override) => {
     assert.equal(drafts.snapshot_message(), undefined);
 });
 
-run_test("initialize", () => {
+test("initialize", (override) => {
     window.addEventListener = (event_name, f) => {
         assert.equal(event_name, "beforeunload");
         let called = false;
-        drafts.update_draft = () => {
+        override(drafts, "update_draft", () => {
             called = true;
-        };
+        });
         f();
         assert(called);
     };
@@ -178,7 +181,7 @@ run_test("initialize", () => {
     message_content.trigger("focusout");
 });
 
-run_test("remove_old_drafts", () => {
+test("remove_old_drafts", () => {
     const draft_3 = {
         stream: "stream",
         subject: "topic",
@@ -195,7 +198,6 @@ run_test("remove_old_drafts", () => {
     };
     const draft_model = drafts.draft_model;
     const ls = localstorage();
-    localStorage.clear();
     const data = {id3: draft_3, id4: draft_4};
     ls.set("drafts", data);
     assert.deepEqual(draft_model.get(), data);
@@ -204,31 +206,51 @@ run_test("remove_old_drafts", () => {
     assert.deepEqual(draft_model.get(), {id3: draft_3});
 });
 
-run_test("format_drafts", (override) => {
+test("format_drafts", (override) => {
     override(drafts, "remove_old_drafts", noop);
 
-    draft_1.updatedAt = new Date(1549958107000).getTime(); // 2/12/2019 07:55:07 AM (UTC+0)
-    draft_2.updatedAt = new Date(1549958107000).setDate(-1);
+    function feb12() {
+        return new Date(1549958107000); // 2/12/2019 07:55:07 AM (UTC+0)
+    }
+
+    function date(offset) {
+        return feb12().setDate(offset);
+    }
+
+    const draft_1 = {
+        stream: "stream",
+        topic: "topic",
+        type: "stream",
+        content: "Test Stream Message",
+        updatedAt: feb12().getTime(),
+    };
+    const draft_2 = {
+        private_message_recipient: "aaron@zulip.com",
+        reply_to: "aaron@zulip.com",
+        type: "private",
+        content: "Test Private Message",
+        updatedAt: date(-1),
+    };
     const draft_3 = {
         stream: "stream 2",
         subject: "topic",
         type: "stream",
         content: "Test Stream Message 2",
-        updatedAt: new Date(1549958107000).setDate(-10),
+        updatedAt: date(-10),
     };
     const draft_4 = {
         private_message_recipient: "aaron@zulip.com",
         reply_to: "iago@zulip.com",
         type: "private",
         content: "Test Private Message 2",
-        updatedAt: new Date(1549958107000).setDate(-5),
+        updatedAt: date(-5),
     };
     const draft_5 = {
         private_message_recipient: "aaron@zulip.com",
         reply_to: "zoe@zulip.com",
         type: "private",
         content: "Test Private Message 3",
-        updatedAt: new Date(1549958107000).setDate(-2),
+        updatedAt: date(-2),
     };
 
     const expected = [
@@ -279,13 +301,12 @@ run_test("format_drafts", (override) => {
 
     const draft_model = drafts.draft_model;
     const ls = localstorage();
-    localStorage.clear();
     const data = {id1: draft_1, id2: draft_2, id3: draft_3, id4: draft_4, id5: draft_5};
     ls.set("drafts", data);
     assert.deepEqual(draft_model.get(), data);
 
     const stub_render_now = timerender.render_now;
-    timerender.render_now = (time) => stub_render_now(time, new Date(1549958107000));
+    override(timerender, "render_now", (time) => stub_render_now(time, new Date(1549958107000)));
 
     stub_templates((template_name, data) => {
         assert.equal(template_name, "draft_table_body");
@@ -295,9 +316,9 @@ run_test("format_drafts", (override) => {
     });
 
     override(drafts, "open_overlay", noop);
-    drafts.set_initial_element = noop;
+    override(drafts, "set_initial_element", noop);
 
     $.create("#drafts_table .draft-row", {children: []});
     drafts.launch();
-    timerender.render_now = stub_render_now;
+    timerender.__Rewire__("render_now", stub_render_now);
 });

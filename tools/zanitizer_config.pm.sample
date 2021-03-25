@@ -9,9 +9,10 @@ sub scrub_text {
 }
 
 sub scrub_filename {
-    if (m%^secret-directory/% || m%settings\.ini$%) {
+    if ( m%^secret-directory/% || m%settings\.ini$% ) {
         undef $_;
-    } else {
+    }
+    else {
         s/bruce/batman/g;
     }
 }

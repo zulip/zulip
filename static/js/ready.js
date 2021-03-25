@@ -1,2 +1,5 @@
-$("#app-loading").addClass("loaded");
-export {};
+import $ from "jquery";
+
+$(() => {
+    $("#app-loading").addClass("loaded");
+});
