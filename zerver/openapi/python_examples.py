@@ -1101,6 +1101,22 @@ def update_notification_settings(client: Client) -> None:
     validate_against_openapi_schema(result, "/settings/notifications", "patch", "200")
 
 
+@openapi_test_function("/settings/display:patch")
+def update_display_settings(client: Client) -> None:
+
+    # {code_example|start}
+    # Show user list on left sidebar in narrow windows.
+    # Change emoji set used for display to Google modern.
+    request = {
+        "left_side_userlist": True,
+        "emojiset": '"google"',
+    }
+    result = client.call_endpoint("settings/display", method="PATCH", request=request)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/settings/display", "patch", "200")
+
+
 @openapi_test_function("/user_uploads:post")
 def upload_file(client: Client) -> None:
     path_to_file = os.path.join(ZULIP_DIR, "zerver", "tests", "images", "img.jpg")
@@ -1391,6 +1407,7 @@ def test_users(client: Client, owner_client: Client) -> None:
     get_subscription_status(client)
     get_profile(client)
     update_notification_settings(client)
+    update_display_settings(client)
     upload_file(client)
     get_attachments(client)
     set_typing_status(client)

@@ -266,8 +266,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/settings",
         "/users/me/avatar",
         "/users/me/api_key/regenerate",
-        # Not very useful outside the UI
-        "/settings/display",
         # Much more valuable would be an org admin bulk-upload feature.
         "/users/me/profile_data",
         #### Should be documented as part of interactive bots documentation

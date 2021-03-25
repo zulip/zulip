@@ -8949,6 +8949,236 @@ paths:
                         "msg": "",
                         "result": "success",
                       }
+  /settings/display:
+    patch:
+      operationId: update_display_settings
+      tags: ["users"]
+      description: |
+        This endpoint is used to edit the current user's user interface settings.
+
+        `PATCH {{ api_url }}/v1/settings/display`
+      parameters:
+        - name: twenty_four_hour_time
+          in: query
+          description: |
+            Whether time should be [displayed in 24-hour notation](/help/change-the-time-format).
+          schema:
+            type: boolean
+          example: true
+        - name: dense_mode
+          in: query
+          description: |
+            This setting has no effect at present.  It is reserved for use in controlling
+            the default font size in Zulip.
+          schema:
+            type: boolean
+          example: true
+        - name: starred_message_counts
+          in: query
+          description: |
+            Whether clients should display the [number of starred
+            messages](/help/star-a-message#display-the-number-of-starred-messages).
+          schema:
+            type: boolean
+          example: true
+        - name: fluid_layout_width
+          in: query
+          description: |
+            Whether to use the [maximum available screen width](/help/enable-full-width-display)
+            for the webapp's center panel (message feed, recent topics) on wide screens.
+          schema:
+            type: boolean
+          example: true
+        - name: high_contrast_mode
+          in: query
+          description: |
+            This setting is reserved for use to control variations in Zulip's design
+            to help visually impaired users.
+          schema:
+            type: boolean
+          example: true
+        - name: color_scheme
+          in: query
+          description: |
+            Controls which [color theme](/help/night-mode) to use.
+
+            * 1 - Automatic
+            * 2 - Night mode
+            * 3 - Day mode
+
+            Automatic detection is implementing using the standard `prefers-color-scheme`
+            media query.
+          content:
+            application/json:
+              schema:
+                type: integer
+                enum:
+                  - 1
+                  - 2
+                  - 3
+              example: 1
+        - name: translate_emoticons
+          in: query
+          description: |
+            Whether to [translate emoticons to emoji](/help/enable-emoticon-translations)
+            in messages the user sends.
+          schema:
+            type: boolean
+          example: true
+        - name: default_language
+          in: query
+          description: |
+            What [default language](/help/change-your-language) to use for the account.
+
+            This controls both the Zulip UI as well as email notifications sent to the user.
+
+            The value needs to be a standard language code that the Zulip server has
+            translation data for; for example, `"en"` for English` or `"de"` for German.
+          content:
+            application/json:
+              schema:
+                type: string
+              example: "en"
+        - name: default_view
+          in: query
+          description: |
+            The [default view](/help/change-default-view) used when opening a new
+            Zulip webapp window or hitting the `Esc` keyboard shortcut repeatedly.
+
+            * "recent_topics" - Recent topics view
+            * "all_messages" - All messages view
+          schema:
+            type: string
+          example: all_messages
+        - name: left_side_userlist
+          in: query
+          description: |
+            Whether the users list on left sidebar in narrow windows.
+
+            This feature is not heavily used and is likely to be reworked.
+          schema:
+            type: boolean
+          example: true
+        - name: emojiset
+          in: query
+          description: |
+            The user's configured [emoji set](/help/emoji-and-emoticons#use-emoticons),
+            used to display emoji to the user everything they appear in the UI.
+
+            * "google" - Google modern
+            * "google-blob" - Google classic
+            * "twitter" - Twitter
+            * "text" - Plain text
+          schema:
+            type: string
+          example: google
+        - name: demote_inactive_streams
+          in: query
+          description: |
+            Whether to [demote inactive streams](/help/manage-inactive-streams) in the left sidebar.
+
+            * 1 - Automatic
+            * 2 - Always
+            * 3 - Never
+          content:
+            application/json:
+              schema:
+                type: integer
+                enum:
+                  - 1
+                  - 2
+                  - 3
+              example: 1
+        - name: timezone
+          in: query
+          description: |
+            The user's [configured timezone](/help/change-your-timezone).
+
+            Timezone values supported by the server are served at
+            [/static/generated/timezones.json](/static/generated/timezones.json).
+          content:
+            application/json:
+              schema:
+                type: string
+              example: "Asia/Kolkata"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      twenty_four_hour_time:
+                        type: boolean
+                        description: |
+                          The setting for `twenty_four_hour_time`, if it was changed in this request.
+                      dense_mode:
+                        type: boolean
+                        description: |
+                          The setting for `dense_mode`, if it was changed in this request.
+                          This setting is however reserved for future, and can not be
+                          modified in production environment.
+                      starred_message_counts:
+                        type: boolean
+                        description: |
+                          The setting for `starred_message_counts`, if it was changed
+                          in this request.
+                      fluid_layout_width:
+                        type: boolean
+                        description: |
+                          The setting for `fluid_layout_width`, if it was changed
+                          in this request.
+                      high_contrast_mode:
+                        type: boolean
+                        description: |
+                          The setting for `high_contrast_mode`, if it was changed in
+                          this request.
+                          This setting is however reserved for future, and can not be
+                          modified in production environment.
+                      color_scheme:
+                        type: integer
+                        description: |
+                          The numerical key corresponding to new `color_scheme` if it was changed in this request.
+                      translate_emoticons:
+                        type: boolean
+                        description: |
+                          The setting for `translate_emoticons`, if it was changed in this request.
+                      default_language:
+                        type: string
+                        description: |
+                          The language code corresponding to new `default_language` if it was changed in this request.
+                      default_view:
+                        type: string
+                        description: |
+                          The new setting for `default_view`, if it was changed in this request.
+                      left_side_userlist:
+                        type: boolean
+                        description: |
+                          The setting for `left_side_userlist`, if it was changed in this request.
+                      emojiset:
+                        type: string
+                        description: |
+                          The string identifier corresponding to new `emojiset` if it was changed in this request.
+                      demote_inactive_streams:
+                        type: integer
+                        description: |
+                          The numerical key corresponding to new `demote_inactive_streams` setting if it was changed in this request.
+                      timezone:
+                        type: string
+                        description: |
+                          The setting for `timezone`, if it was changed in this request.
+                    example:
+                      {
+                        "emojiset": "google",
+                        "left_side_userlist": true,
+                        "msg": "",
+                        "result": "success",
+                      }
   /streams:
     get:
       operationId: get_streams
