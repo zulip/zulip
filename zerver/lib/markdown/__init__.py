@@ -1884,11 +1884,22 @@ class UserMentionPattern(markdown.inlinepatterns.InlineProcessor):
 
             wildcard = mention.user_mention_matches_wildcard(name)
 
-            id_syntax_match = re.match(r"(.+)?\|(?P<user_id>\d+)$", name)
+            # For @**|id** and @**name|id** mention syntaxes.
+            id_syntax_match = re.match(r"(?P<full_name>.+)?\|(?P<user_id>\d+)$", name)
             if id_syntax_match:
+                full_name = id_syntax_match.group("full_name")
                 id = int(id_syntax_match.group("user_id"))
                 user = db_data["mention_data"].get_user_by_id(id)
+
+                # For @**name|id**, we need to specifically check that
+                # name matches the full_name of user in mention_data.
+                # This enforces our decision that
+                # @**user_1_name|id_for_user_2** should be invalid syntax.
+                if full_name:
+                    if user and user["full_name"] != full_name:
+                        return None, None, None
             else:
+                # For @**name** syntax.
                 user = db_data["mention_data"].get_user_by_name(name)
 
             if wildcard:
@@ -2445,8 +2456,7 @@ def get_possible_mentions_info(realm_id: int, mention_texts: Set[str]) -> List[F
     if not mention_texts:
         return []
 
-    full_names = set()
-    mention_ids: Set[int] = set()
+    q_list = set()
 
     name_re = r"(?P<full_name>.+)?\|(?P<mention_id>\d+)$"
     for mention_text in mention_texts:
@@ -2455,15 +2465,15 @@ def get_possible_mentions_info(realm_id: int, mention_texts: Set[str]) -> List[F
             full_name = name_syntax_match.group("full_name")
             mention_id = name_syntax_match.group("mention_id")
             if full_name:
-                full_names.add(name_syntax_match.group("full_name"))
+                # For **name|id** mentions as mention_id
+                # cannot be null inside this block.
+                q_list.add(Q(full_name__iexact=full_name, id=mention_id))
             else:
-                mention_ids.add(int(mention_id))
+                # For **|id** syntax.
+                q_list.add(Q(id=mention_id))
         else:
-            full_names.add(mention_text)
-
-    q_list = {Q(full_name__iexact=full_name) for full_name in full_names}
-    id_q_list = {Q(id=id) for id in mention_ids}
-    q_list |= id_q_list
+            # For **name** syntax.
+            q_list.add(Q(full_name__iexact=mention_text))
 
     rows = (
         UserProfile.objects.filter(

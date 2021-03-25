@@ -1867,6 +1867,24 @@ class MarkdownTest(ZulipTestCase):
         )
         self.assertEqual(msg.mentions_user_ids, {user_profile.id})
 
+    def test_invalid_mention_not_uses_valid_mention_data(self) -> None:
+        sender_user_profile = self.example_user("othello")
+        hamlet = self.example_user("hamlet")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+
+        # Even though King Hamlet will be present in mention data as
+        # it was was fetched for first mention but second mention is
+        # incorrect(as it uses hamlet's id) so it should not be able
+        # to use that data for creating a valid mention.
+
+        content = f"@**King Hamlet|10** and @**aaron|{hamlet.id}**"
+        self.assertEqual(
+            render_markdown(msg, content),
+            f'<p><span class="user-mention" data-user-id="{hamlet.id}">'
+            f"@King Hamlet</span> and @<strong>aaron|{hamlet.id}</strong></p>",
+        )
+        self.assertEqual(msg.mentions_user_ids, {hamlet.id})
+
     def test_silent_mention_invalid_followed_by_valid(self) -> None:
         sender_user_profile = self.example_user("othello")
         user_profile = self.example_user("hamlet")
