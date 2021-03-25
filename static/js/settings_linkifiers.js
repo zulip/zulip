@@ -40,6 +40,25 @@ function sort_url(a, b) {
     return compare_values(a.url_format, b.url_format);
 }
 
+function handle_linkifier_api_error(xhr, pattern_status, format_status, linkifier_status) {
+    // The endpoint uses the Django ValidationError system for error
+    // handling, which returns somewhat complicated error
+    // dictionaries. This logic parses them.
+    const errors = JSON.parse(xhr.responseText).errors;
+    if (errors.pattern !== undefined) {
+        xhr.responseText = JSON.stringify({msg: errors.pattern});
+        ui_report.error($t_html({defaultMessage: "Failed"}), xhr, pattern_status);
+    }
+    if (errors.url_format_string !== undefined) {
+        xhr.responseText = JSON.stringify({msg: errors.url_format_string});
+        ui_report.error($t_html({defaultMessage: "Failed"}), xhr, format_status);
+    }
+    if (errors.__all__ !== undefined) {
+        xhr.responseText = JSON.stringify({msg: errors.__all__});
+        ui_report.error($t_html({defaultMessage: "Failed"}), xhr, linkifier_status);
+    }
+}
+
 export function populate_linkifiers(linkifiers_data) {
     if (!meta.loaded) {
         return;
@@ -141,20 +160,13 @@ export function build_page() {
                     );
                 },
                 error(xhr) {
-                    const errors = JSON.parse(xhr.responseText).errors;
                     add_linkifier_button.prop("disabled", false);
-                    if (errors.pattern !== undefined) {
-                        xhr.responseText = JSON.stringify({msg: errors.pattern});
-                        ui_report.error($t_html({defaultMessage: "Failed"}), xhr, pattern_status);
-                    }
-                    if (errors.url_format_string !== undefined) {
-                        xhr.responseText = JSON.stringify({msg: errors.url_format_string});
-                        ui_report.error($t_html({defaultMessage: "Failed"}), xhr, format_status);
-                    }
-                    if (errors.__all__ !== undefined) {
-                        xhr.responseText = JSON.stringify({msg: errors.__all__});
-                        ui_report.error($t_html({defaultMessage: "Failed"}), xhr, linkifier_status);
-                    }
+                    handle_linkifier_api_error(
+                        xhr,
+                        pattern_status,
+                        format_status,
+                        linkifier_status,
+                    );
                 },
             });
         });
