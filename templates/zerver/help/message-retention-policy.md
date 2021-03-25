@@ -1,4 +1,4 @@
-# Message retention policy (beta)
+# Message retention policy
 
 {!owner-only.md!}
 
