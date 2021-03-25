@@ -159,6 +159,21 @@
         display: block;
         overflow-x: auto;
         text-align: center;
+        &::-webkit-scrollbar {
+            height: 8px;
+            width: 10px;
+            background-color: hsla(0, 0%, 0%, 0.05);
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background-color: hsla(0, 0%, 0%, 0.3);
+            border-radius: 20px;
+            transition: all 0.2s ease;
+        }
+
+        &::-webkit-scrollbar-thumb:hover {
+            background-color: hsla(0, 0%, 0%, 0.6);
+        }
     }
 
     .tex-error {
