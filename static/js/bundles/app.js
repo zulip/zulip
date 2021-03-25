@@ -1,19 +1,16 @@
 import "./common";
 
-// Import third party libraries
+// Import third party jQuery plugins
 import "../../third/bootstrap-typeahead/typeahead";
 import "../../third/bootstrap-tooltip/tooltip";
-import "../../third/bootstrap-tooltip/tooltip.css";
 import "jquery-caret-plugin/dist/jquery.caret";
 import "../../third/jquery-idle/jquery.idle";
 import "spectrum-colorpicker";
 import "jquery-validation";
 import "flatpickr";
-import "flatpickr/dist/plugins/confirmDate/confirmDate";
 
 // Import app JS
 import "../i18n";
-import "../fold_dict";
 import "../setup";
 import "../message_list";
 import "../reload";
@@ -28,7 +25,7 @@ import "../desktop_integration";
 import "../zulip_test";
 
 // Import styles
-
+import "../../third/bootstrap-tooltip/tooltip.css";
 import "spectrum-colorpicker/spectrum.css";
 import "katex/dist/katex.css";
 import "flatpickr/dist/flatpickr.css";
