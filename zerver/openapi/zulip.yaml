@@ -7555,18 +7555,27 @@ paths:
                           Present if `update_display_settings` is present in `fetch_event_types`.
 
                           The color scheme selected by the user.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       default_language:
                         type: string
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`.
 
                           The default language chosen by the user.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       demote_inactive_streams:
                         type: integer
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`.
 
                           Whether the user has chosen to demote inactive streams.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       dense_mode:
                         type: boolean
                         description: |
@@ -7574,18 +7583,27 @@ paths:
 
                           Whether the user has switched on dense mode.  Dense mode is an experimental
                           feature that is only available in development environments.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       emojiset:
                         type: string
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`.
 
                           The name of the emojiset that the user has chosen.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       fluid_layout_width:
                         type: boolean
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`.
 
                           Whether the user has chosen for the layout width to be fluid.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       default_view:
                         type: string
                         description: |
@@ -7595,12 +7613,18 @@ paths:
                           as the URL suffix after `#` to be rendered when Zulip loads.
 
                           Currently supported values are `all_messages` and `recent_topics`.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       high_contrast_mode:
                         type: boolean
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`.
 
                           Whether has switched on high contrast mode.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       left_side_userlist:
                         type: boolean
                         description: |
@@ -7609,6 +7633,9 @@ paths:
                           Whether the user has chosen for the userlist to be displayed
                           on the left side of the screen (for desktop app and webapp) in narrow
                           windows.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       starred_message_counts:
                         type: boolean
                         description: |
@@ -7616,6 +7643,9 @@ paths:
 
                           Whether the user has chosen the number of starred messages to
                           be displayed similar to unread counts.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       timezone:
                         type: string
                         description: |
@@ -7623,6 +7653,9 @@ paths:
 
                           The timezone configured for the user.  This is used primarily to display
                           the user's timezone to other users.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       translate_emoticons:
                         type: boolean
                         description: |
@@ -7630,6 +7663,9 @@ paths:
 
                           Whether the user has chosen for emoticons to be translated into emoji
                           in the Zulip compose box.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       twenty_four_hour_time:
                         type: boolean
                         description: |
@@ -7637,6 +7673,9 @@ paths:
 
                           Whether the user has chosen a twenty four hour time display (true)
                           or a twelve hour one (false).
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       emojiset_choices:
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`.
@@ -7646,6 +7685,9 @@ paths:
 
                           Only relevant to clients with configuration UI for choosing an emojiset;
                           the currently selected emojiset is available in the `emojiset` key.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                         type: array
                         items:
                           type: object
