@@ -1,5 +1,8 @@
 Learn how Zulip integrations work with this simple Hello World example!
 
+This webhook is Zulip's official [example
+integration](/api/incoming-webhooks-walkthrough).
+
 1.  The Hello World webhook will use the `test` stream, which is
     by default in the Zulip dev environment. If you are running
     Zulip in production, you should make sure that this stream exists.
@@ -10,8 +13,9 @@ Learn how Zulip integrations work with this simple Hello World example!
 
     `{{ api_url }}/v1/external/helloworld?api_key=abcdefgh&stream=test`
 
-1.  To trigger a notification using this webhook, use
-   `send_webhook_fixture_message` from the Zulip command line:
+1.  To trigger a notification using this webhook, you can use
+    `send_webhook_fixture_message` from a [Zulip development
+    environment](https://zulip.readthedocs.io/en/latest/development/overview.html):
 
         (zulip-py3-venv) vagrant@ubuntu-bionic:/srv/zulip$
         ./manage.py send_webhook_fixture_message \
