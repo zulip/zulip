@@ -32,6 +32,7 @@ stub_templates((name, data) => {
 const channel = mock_esm("../../static/js/channel");
 const overlays = mock_esm("../../static/js/overlays");
 
+mock_esm("../../static/js/csrf", {csrf_token: "token-stub"});
 mock_esm("../../static/js/list_widget", {
     create: () => ({init: noop}),
 });
@@ -49,7 +50,6 @@ mock_esm("../../static/js/ui_report", {
     },
 });
 
-set_global("csrf_token", "token-stub");
 set_global("FormData", _FormData);
 
 const settings_config = zrequire("settings_config");

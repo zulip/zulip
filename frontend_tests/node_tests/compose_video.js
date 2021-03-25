@@ -15,7 +15,6 @@ const upload = mock_esm("../../static/js/upload");
 mock_esm("../../static/js/resize", {
     watch_manual_resize() {},
 });
-set_global("csrf_token", "fake-csrf-token");
 set_global("document", {
     execCommand() {
         return false;

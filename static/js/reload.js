@@ -5,6 +5,7 @@ import * as blueslip from "./blueslip";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
+import {csrf_token} from "./csrf";
 import * as hashchange from "./hashchange";
 import {localstorage} from "./localstorage";
 import * as message_list from "./message_list";

@@ -9,6 +9,7 @@ import * as avatar from "./avatar";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as common from "./common";
+import {csrf_token} from "./csrf";
 import {i18n} from "./i18n";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";

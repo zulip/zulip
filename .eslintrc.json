@@ -122,7 +122,6 @@
         {
             "files": ["static/js/**"],
             "globals": {
-                "csrf_token": false,
                 "current_msg_list": true,
                 "home_msg_list": false,
                 "StripeCheckout": false,
