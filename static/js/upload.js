@@ -7,6 +7,7 @@ import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
+import {csrf_token} from "./csrf";
 import {i18n} from "./i18n";
 import {page_params} from "./page_params";
 

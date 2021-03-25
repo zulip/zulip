@@ -1,20 +1,11 @@
-/* eslint-env commonjs */
+import $ from "jquery";
 
-"use strict";
+export let csrf_token;
 
-const $ = require("jquery");
-
-let csrf_token;
 $(() => {
     // This requires that we used Jinja2's {% csrf_input %} somewhere on the page.
     const csrf_input = $('input[name="csrfmiddlewaretoken"]');
-    if (csrf_input.length > 0) {
-        csrf_token = csrf_input.attr("value");
-    } else {
-        csrf_token = undefined;
-    }
-    window.csrf_token = csrf_token;
-
+    csrf_token = csrf_input.attr("value");
     if (csrf_token === undefined) {
         return;
     }

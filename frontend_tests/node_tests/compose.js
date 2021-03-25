@@ -1021,7 +1021,6 @@ test_ui("initialize", (override) => {
     $("#compose #attach_files").addClass("notdisplayed");
 
     set_global("document", "document-stub");
-    set_global("csrf_token", "fake-csrf-token");
 
     page_params.max_file_upload_size_mib = 512;
 
