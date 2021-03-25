@@ -9,6 +9,7 @@ import * as compose_state from "./compose_state";
 import * as condense from "./condense";
 import {Filter} from "./filter";
 import * as hashchange from "./hashchange";
+import {i18n} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_fetch from "./message_fetch";
 import * as message_list from "./message_list";

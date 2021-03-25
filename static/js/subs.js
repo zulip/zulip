@@ -12,6 +12,7 @@ import * as channel from "./channel";
 import * as components from "./components";
 import * as compose_state from "./compose_state";
 import * as hash_util from "./hash_util";
+import {i18n} from "./i18n";
 import * as loading from "./loading";
 import * as message_live_update from "./message_live_update";
 import * as message_view_header from "./message_view_header";

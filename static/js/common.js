@@ -1,5 +1,7 @@
 import $ from "jquery";
 
+import {i18n} from "./i18n";
+
 export const status_classes = "alert-error alert-success alert-info alert-warning";
 
 // TODO: Move this to the portico codebase.

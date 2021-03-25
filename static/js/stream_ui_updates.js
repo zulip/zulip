@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import render_subscription_type from "../templates/subscription_type.hbs";
 
+import {i18n} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as peer_data from "./peer_data";
 import * as stream_data from "./stream_data";

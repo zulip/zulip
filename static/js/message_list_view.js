@@ -14,6 +14,7 @@ import * as compose from "./compose";
 import * as compose_fade from "./compose_fade";
 import * as condense from "./condense";
 import * as hash_util from "./hash_util";
+import {i18n} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";

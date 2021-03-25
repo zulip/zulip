@@ -6,6 +6,7 @@ import render_subscription_invites_warning_modal from "../templates/subscription
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
+import {i18n} from "./i18n";
 import * as loading from "./loading";
 import * as peer_data from "./peer_data";
 import * as people from "./people";

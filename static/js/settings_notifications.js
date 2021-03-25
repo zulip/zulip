@@ -3,6 +3,7 @@ import $ from "jquery";
 import render_stream_specific_notification_row from "../templates/settings/stream_specific_notification_row.hbs";
 
 import * as channel from "./channel";
+import {i18n} from "./i18n";
 import * as notifications from "./notifications";
 import * as settings_config from "./settings_config";
 import * as settings_org from "./settings_org";

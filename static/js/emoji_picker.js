@@ -10,6 +10,7 @@ import render_emoji_showcase from "../templates/emoji_showcase.hbs";
 
 import * as blueslip from "./blueslip";
 import * as compose_ui from "./compose_ui";
+import {i18n} from "./i18n";
 import * as message_store from "./message_store";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";

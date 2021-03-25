@@ -5,6 +5,7 @@ import render_settings_revoke_invite_modal from "../templates/settings/revoke_in
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
+import {i18n} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import * as people from "./people";

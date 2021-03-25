@@ -5,6 +5,7 @@ import render_settings_tab from "../templates/settings_tab.hbs";
 
 import * as admin from "./admin";
 import * as blueslip from "./blueslip";
+import {i18n} from "./i18n";
 import * as overlays from "./overlays";
 import * as people from "./people";
 import * as settings_bots from "./settings_bots";

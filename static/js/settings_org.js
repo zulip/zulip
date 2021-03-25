@@ -7,6 +7,7 @@ import render_settings_admin_realm_domains_list from "../templates/settings/admi
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget";
+import {i18n} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
 import * as realm_icon from "./realm_icon";

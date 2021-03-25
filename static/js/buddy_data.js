@@ -1,6 +1,7 @@
 import * as blueslip from "./blueslip";
 import * as compose_fade_users from "./compose_fade_users";
 import * as hash_util from "./hash_util";
+import {i18n} from "./i18n";
 import * as people from "./people";
 import * as presence from "./presence";
 import * as timerender from "./timerender";

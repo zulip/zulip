@@ -24,6 +24,7 @@ import * as condense from "./condense";
 import * as emoji_picker from "./emoji_picker";
 import * as feature_flags from "./feature_flags";
 import * as hash_util from "./hash_util";
+import {i18n} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_viewport from "./message_viewport";

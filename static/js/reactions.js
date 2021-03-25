@@ -7,6 +7,7 @@ import render_message_reaction from "../templates/message_reaction.hbs";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as emoji_picker from "./emoji_picker";
+import {i18n} from "./i18n";
 import * as message_store from "./message_store";
 import * as people from "./people";
 

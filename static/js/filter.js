@@ -1,6 +1,7 @@
 import Handlebars from "handlebars/runtime";
 import _ from "lodash";
 
+import {i18n} from "./i18n";
 import * as message_parser from "./message_parser";
 import * as message_store from "./message_store";
 import * as people from "./people";

@@ -1,5 +1,6 @@
 import Handlebars from "handlebars/runtime";
 
+import {i18n} from "./i18n";
 import * as util from "./util";
 
 // Below, we register Zulip-specific extensions to the handlebars API.

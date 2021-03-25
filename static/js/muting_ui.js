@@ -5,6 +5,7 @@ import render_topic_muted from "../templates/topic_muted.hbs";
 
 import * as channel from "./channel";
 import * as feedback_widget from "./feedback_widget";
+import {i18n} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as muting from "./muting";
 import * as overlays from "./overlays";

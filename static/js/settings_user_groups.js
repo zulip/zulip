@@ -6,6 +6,7 @@ import render_confirm_delete_user from "../templates/confirm_delete_user.hbs";
 
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
+import {i18n} from "./i18n";
 import * as people from "./people";
 import * as pill_typeahead from "./pill_typeahead";
 import * as ui_report from "./ui_report";

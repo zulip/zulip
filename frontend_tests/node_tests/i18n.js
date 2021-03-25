@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {set_global, unmock_module, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 // We download our translations in `page_params` (which
@@ -20,6 +20,7 @@ set_global("page_params", {
 // We use `i18n.js` to initialize `i18next` and
 // to set `i18n` to `i18next` on the global namespace
 // for `templates.js`.
+unmock_module("../../static/js/i18n");
 zrequire("i18n");
 zrequire("templates");
 
