@@ -2999,7 +2999,7 @@ class DefaultStreamGroup(models.Model):
             name=self.name,
             id=self.id,
             description=self.description,
-            streams=[stream.to_dict() for stream in self.streams.all()],
+            streams=[stream.to_dict() for stream in self.streams.all().order_by("name")],
         )
 
 
