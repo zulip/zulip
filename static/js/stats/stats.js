@@ -3,6 +3,8 @@ import PlotlyBar from "plotly.js/lib/bar";
 import Plotly from "plotly.js/lib/core";
 import PlotlyPie from "plotly.js/lib/pie";
 
+import {i18n} from "../i18n";
+
 Plotly.register([PlotlyBar, PlotlyPie]);
 
 const font_14pt = {

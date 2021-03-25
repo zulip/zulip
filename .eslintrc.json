@@ -108,8 +108,7 @@
             "files": ["frontend_tests/node_tests/**"],
             "globals": {
                 "current_msg_list": false,
-                "home_msg_list": false,
-                "i18n": false
+                "home_msg_list": false
             }
         },
         {
@@ -127,7 +126,6 @@
                 "csrf_token": false,
                 "current_msg_list": true,
                 "home_msg_list": false,
-                "i18n": false,
                 "page_params": false,
                 "StripeCheckout": false,
                 "zxcvbn": false

@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const {add} = require("date-fns");
 const MockDate = require("mockdate");
 
+const {i18n} = require("../zjsunit/i18n");
 const {mock_cjs, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");

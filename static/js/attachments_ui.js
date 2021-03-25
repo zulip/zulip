@@ -4,6 +4,7 @@ import render_settings_upload_space_stats from "../templates/settings/upload_spa
 import render_uploaded_files_list from "../templates/uploaded_files_list.hbs";
 
 import * as channel from "./channel";
+import {i18n} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import * as timerender from "./timerender";

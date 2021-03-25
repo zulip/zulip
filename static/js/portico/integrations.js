@@ -3,6 +3,7 @@ import _ from "lodash";
 
 import * as blueslip from "../blueslip";
 import * as common from "../common";
+import {i18n} from "../i18n";
 
 import * as google_analytics from "./google-analytics";
 import {path_parts} from "./landing-page";

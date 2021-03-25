@@ -12,6 +12,7 @@ import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as drafts from "./drafts";
 import * as hash_util from "./hash_util";
+import {i18n} from "./i18n";
 import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
 import * as notifications from "./notifications";

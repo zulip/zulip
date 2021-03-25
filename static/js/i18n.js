@@ -19,4 +19,4 @@ i18next.init({
     returnEmptyString: false, // Empty string is not a valid translation.
 });
 
-window.i18n = i18next;
+export const i18n = i18next;

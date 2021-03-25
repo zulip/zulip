@@ -10,6 +10,8 @@ import {
 } from "date-fns";
 import $ from "jquery";
 
+import {i18n} from "./i18n";
+
 let next_timerender_id = 0;
 
 export function clear_for_testing() {

@@ -7,6 +7,7 @@ import render_markdown_timestamp from "../templates/markdown_timestamp.hbs";
 import view_code_in_playground from "../templates/view_code_in_playground.hbs";
 
 import * as blueslip from "./blueslip";
+import {i18n} from "./i18n";
 import * as people from "./people";
 import * as rtl from "./rtl";
 import * as settings_config from "./settings_config";

@@ -3,6 +3,7 @@ import $ from "jquery";
 import * as channel from "./channel";
 import * as compose from "./compose";
 import * as hash_util from "./hash_util";
+import {i18n} from "./i18n";
 import * as notifications from "./notifications";
 import * as people from "./people";
 import * as transmit from "./transmit";

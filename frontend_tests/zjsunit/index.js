@@ -89,7 +89,8 @@ try {
 
         namespace.mock_esm("../../static/js/blueslip", blueslip);
         require("../../static/js/blueslip");
-        namespace.set_global("i18n", stub_i18n);
+        namespace.mock_esm("../../static/js/i18n", stub_i18n);
+        require("../../static/js/i18n");
 
         run_one_module(file);
 

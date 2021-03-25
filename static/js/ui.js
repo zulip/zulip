@@ -3,6 +3,7 @@ import SimpleBar from "simplebar/dist/simplebar";
 
 import * as blueslip from "./blueslip";
 import * as common from "./common";
+import {i18n} from "./i18n";
 import {localstorage} from "./localstorage";
 import * as message_list from "./message_list";
 

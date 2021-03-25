@@ -5,6 +5,7 @@ import render_markdown_help from "../templates/markdown_help.hbs";
 import * as browser_history from "./browser_history";
 import * as common from "./common";
 import * as components from "./components";
+import {i18n} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as markdown from "./markdown";
 import * as overlays from "./overlays";

@@ -6,6 +6,7 @@ import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as common from "./common";
 import * as feedback_widget from "./feedback_widget";
+import {i18n} from "./i18n";
 import * as night_mode from "./night_mode";
 import * as scroll_bar from "./scroll_bar";
 

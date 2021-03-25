@@ -2,6 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 
 import * as common from "./common";
+import {i18n} from "./i18n";
 
 /* Arguments used in the report_* functions are,
    response- response that we want to display

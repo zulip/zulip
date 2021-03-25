@@ -11,6 +11,7 @@ import * as compose_actions from "./compose_actions";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
 import * as echo from "./echo";
+import {i18n} from "./i18n";
 import * as loading from "./loading";
 import * as markdown from "./markdown";
 import * as message_store from "./message_store";

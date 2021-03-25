@@ -6,6 +6,7 @@ const {parseISO} = require("date-fns");
 const _ = require("lodash");
 const MockDate = require("mockdate");
 
+const {i18n} = require("../zjsunit/i18n");
 const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");

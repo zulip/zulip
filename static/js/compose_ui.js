@@ -1,6 +1,7 @@
 import autosize from "autosize";
 import $ from "jquery";
 
+import {i18n} from "./i18n";
 import * as people from "./people";
 import * as user_status from "./user_status";
 

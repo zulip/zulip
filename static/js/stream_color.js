@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import * as color_class from "./color_class";
+import {i18n} from "./i18n";
 import * as message_view_header from "./message_view_header";
 import * as subs from "./subs";
 

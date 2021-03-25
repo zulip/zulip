@@ -7,6 +7,7 @@ import * as alert_words from "./alert_words";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as favicon from "./favicon";
+import {i18n} from "./i18n";
 import * as message_store from "./message_store";
 import * as muting from "./muting";
 import * as narrow from "./narrow";

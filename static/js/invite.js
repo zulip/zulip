@@ -10,6 +10,7 @@ import render_settings_dev_env_email_access from "../templates/settings/dev_env_
 import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as common from "./common";
+import {i18n} from "./i18n";
 import * as overlays from "./overlays";
 import * as stream_data from "./stream_data";
 import * as ui from "./ui";

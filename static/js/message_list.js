@@ -2,6 +2,7 @@ import autosize from "autosize";
 import $ from "jquery";
 
 import * as blueslip from "./blueslip";
+import {i18n} from "./i18n";
 import {MessageListData} from "./message_list_data";
 import {MessageListView} from "./message_list_view";
 import * as narrow from "./narrow";

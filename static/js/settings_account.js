@@ -9,6 +9,7 @@ import * as avatar from "./avatar";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as common from "./common";
+import {i18n} from "./i18n";
 import * as overlays from "./overlays";
 import * as people from "./people";
 import * as pill_typeahead from "./pill_typeahead";

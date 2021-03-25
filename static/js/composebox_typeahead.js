@@ -13,6 +13,7 @@ import * as compose from "./compose";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
+import {i18n} from "./i18n";
 import * as message_store from "./message_store";
 import * as people from "./people";
 import * as rows from "./rows";

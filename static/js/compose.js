@@ -18,6 +18,7 @@ import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as drafts from "./drafts";
 import * as echo from "./echo";
+import {i18n} from "./i18n";
 import * as loading from "./loading";
 import * as markdown from "./markdown";
 import * as notifications from "./notifications";
