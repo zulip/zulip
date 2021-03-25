@@ -400,7 +400,6 @@ export function set_filter(filter) {
 function show_selected_filters() {
     // Add `btn-selected-filter` to the buttons to show
     // which filters are applied.
-    load_filters();
     if (filters.size === 0) {
         $("#recent_topics_filter_buttons")
             .find('[data-filter="all"]')
@@ -455,6 +454,7 @@ export function complete_rerender() {
         return;
     }
     // Prepare header
+    load_filters();
     const rendered_body = render_recent_topics_body({
         filter_participated: filters.has("participated"),
         filter_unread: filters.has("unread"),
