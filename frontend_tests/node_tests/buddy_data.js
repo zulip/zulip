@@ -4,11 +4,10 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
-
-const page_params = set_global("page_params", {});
+const {page_params} = require("../zjsunit/zpage_params");
 
 const timerender = mock_esm("../../static/js/timerender");
 

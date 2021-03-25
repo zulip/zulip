@@ -1,3 +1,4 @@
+import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 
 /*

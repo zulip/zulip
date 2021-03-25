@@ -14,6 +14,7 @@ import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget
 import {i18n} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as people from "./people";
 
 export function hide_errors() {

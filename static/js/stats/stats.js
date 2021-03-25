@@ -4,6 +4,7 @@ import Plotly from "plotly.js/lib/core";
 import PlotlyPie from "plotly.js/lib/pie";
 
 import {i18n} from "../i18n";
+import {page_params} from "../page_params";
 
 Plotly.register([PlotlyBar, PlotlyPie]);
 

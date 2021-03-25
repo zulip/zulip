@@ -19,6 +19,7 @@ import * as message_store from "./message_store";
 import * as message_view_header from "./message_view_header";
 import * as narrow_state from "./narrow_state";
 import * as notifications from "./notifications";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as recent_topics from "./recent_topics";
 import * as resize from "./resize";

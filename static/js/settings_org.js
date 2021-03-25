@@ -10,6 +10,7 @@ import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget
 import {i18n} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as realm_icon from "./realm_icon";
 import * as realm_logo from "./realm_logo";
 import * as settings_config from "./settings_config";

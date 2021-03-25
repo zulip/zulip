@@ -7,6 +7,7 @@ const {i18n} = require("../zjsunit/i18n");
 const {mock_cjs, mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = function () {};
 
@@ -28,11 +29,9 @@ mock_esm("../../static/js/stream_popover", {
 });
 
 set_global("current_msg_list", {});
-set_global("page_params", {
-    is_admin: false,
-    realm_email_address_visibility: 3,
-    custom_profile_fields: [],
-});
+page_params.is_admin = false;
+page_params.realm_email_address_visibility = 3;
+page_params.custom_profile_fields = [];
 
 const people = zrequire("people");
 const user_status = zrequire("user_status");

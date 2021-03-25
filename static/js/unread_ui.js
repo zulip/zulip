@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import * as activity from "./activity";
 import * as notifications from "./notifications";
+import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
 import * as stream_list from "./stream_list";
 import * as top_left_corner from "./top_left_corner";

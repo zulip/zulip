@@ -8,6 +8,7 @@ import * as message_scroll from "./message_scroll";
 import * as message_store from "./message_store";
 import * as message_util from "./message_util";
 import * as narrow from "./narrow";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as recent_topics from "./recent_topics";

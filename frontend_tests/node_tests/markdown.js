@@ -7,23 +7,22 @@ const markdown_assert = require("../zjsunit/markdown_assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
+const {page_params} = require("../zjsunit/zpage_params");
 
 set_global("location", {
     origin: "http://zulip.zulipdev.com",
 });
 
-const page_params = set_global("page_params", {
-    realm_users: [],
-    realm_filters: [
-        ["#(?P<id>[0-9]{2,8})", "https://trac.example.com/ticket/%(id)s"],
-        ["ZBUG_(?P<id>[0-9]{2,8})", "https://trac2.zulip.net/ticket/%(id)s"],
-        [
-            "ZGROUP_(?P<id>[0-9]{2,8}):(?P<zone>[0-9]{1,8})",
-            "https://zone_%(zone)s.zulip.net/ticket/%(id)s",
-        ],
+page_params.realm_users = [];
+page_params.realm_filters = [
+    ["#(?P<id>[0-9]{2,8})", "https://trac.example.com/ticket/%(id)s"],
+    ["ZBUG_(?P<id>[0-9]{2,8})", "https://trac2.zulip.net/ticket/%(id)s"],
+    [
+        "ZGROUP_(?P<id>[0-9]{2,8}):(?P<zone>[0-9]{1,8})",
+        "https://zone_%(zone)s.zulip.net/ticket/%(id)s",
     ],
-    translate_emoticons: false,
-});
+];
+page_params.translate_emoticons = false;
 
 function Image() {
     return {};

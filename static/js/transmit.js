@@ -1,5 +1,6 @@
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as reload from "./reload";
 import * as reload_state from "./reload_state";

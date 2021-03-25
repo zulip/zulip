@@ -8,6 +8,7 @@ import * as channel from "./channel";
 import {i18n} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as timerender from "./timerender";

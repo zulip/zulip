@@ -10,8 +10,6 @@ mock_cjs("jquery", $);
 
 const noop = () => {};
 
-set_global("page_params", {});
-
 set_global("document", {
     location: {}, // we need this to load compose.js
     to_$: () => $("document-stub"),

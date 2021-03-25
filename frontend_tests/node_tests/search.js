@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
@@ -25,9 +26,7 @@ mock_esm("../../static/js/ui_util", {
     place_caret_at_end: noop,
 });
 
-set_global("page_params", {
-    search_pills_enabled: true,
-});
+page_params.search_pills_enabled = true;
 set_global("setTimeout", (func) => func());
 
 const search = zrequire("search");

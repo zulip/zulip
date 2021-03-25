@@ -6,6 +6,7 @@ import render_settings_profile_field_choice from "../templates/settings/profile_
 
 import * as channel from "./channel";
 import * as loading from "./loading";
+import {page_params} from "./page_params";
 import * as settings_ui from "./settings_ui";
 
 const meta = {

@@ -8,6 +8,7 @@ import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import {i18n} from "./i18n";
+import {page_params} from "./page_params";
 
 export function make_upload_absolute(uri) {
     if (uri.startsWith(compose.uploads_path)) {

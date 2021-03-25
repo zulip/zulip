@@ -116,7 +116,6 @@
             "globals": {
                 "$": false,
                 "current_msg_list": false,
-                "page_params": false,
                 "zulip_test": false
             }
         },
@@ -126,7 +125,6 @@
                 "csrf_token": false,
                 "current_msg_list": true,
                 "home_msg_list": false,
-                "page_params": false,
                 "StripeCheckout": false,
                 "zxcvbn": false
             }

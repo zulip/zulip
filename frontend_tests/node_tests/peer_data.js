@@ -8,19 +8,18 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 
-set_global("page_params", {
-    is_admin: false,
-    realm_users: [],
-    is_guest: false,
-});
+page_params.is_admin = false;
+page_params.realm_users = [];
+page_params.is_guest = false;
 
 const me = {
     email: "me@zulip.com",

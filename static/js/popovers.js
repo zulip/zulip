@@ -33,6 +33,7 @@ import * as muting_ui from "./muting_ui";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as reminder from "./reminder";
 import * as resize from "./resize";

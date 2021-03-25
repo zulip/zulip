@@ -25,6 +25,7 @@ import * as muting_ui from "./muting_ui";
 import * as narrow from "./narrow";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_topics from "./recent_topics";

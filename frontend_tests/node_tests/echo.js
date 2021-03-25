@@ -6,10 +6,10 @@ const MockDate = require("mockdate");
 
 const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const local_message = mock_esm("../../static/js/local_message");
 const markdown = mock_esm("../../static/js/markdown");
-const page_params = set_global("page_params", {});
 
 let disparities = [];
 let messages_to_rerender = [];

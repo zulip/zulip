@@ -6,13 +6,12 @@ const {add} = require("date-fns");
 const MockDate = require("mockdate");
 
 const {i18n} = require("../zjsunit/i18n");
-const {mock_cjs, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
-let page_params = set_global("page_params", {
-    twenty_four_hour_time: true,
-});
+page_params.twenty_four_hour_time = true;
 
 mock_cjs("jquery", $);
 
@@ -163,9 +162,7 @@ run_test("get_timestamp_for_flatpickr", () => {
 });
 
 run_test("absolute_time_12_hour", () => {
-    page_params = set_global("page_params", {
-        twenty_four_hour_time: false,
-    });
+    page_params.twenty_four_hour_time = false;
 
     // timestamp with hour > 12, same year
     let timestamp = 1555091573000; // 4/12/2019 5:52:53 PM (UTC+0)
@@ -195,9 +192,7 @@ run_test("absolute_time_12_hour", () => {
 });
 
 run_test("absolute_time_24_hour", () => {
-    page_params = set_global("page_params", {
-        twenty_four_hour_time: true,
-    });
+    page_params.twenty_four_hour_time = true;
 
     // timestamp with hour > 12, same year
     let timestamp = 1555091573000; // 4/12/2019 5:52:53 PM (UTC+0)

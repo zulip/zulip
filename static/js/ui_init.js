@@ -37,6 +37,7 @@ import * as muting from "./muting";
 import * as navigate from "./navigate";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as panels from "./panels";
 import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
@@ -366,8 +367,8 @@ export function initialize_everything() {
         of them will consume data from the server
         in the form of `page_params`.
 
-        The global `page_params` var is basically
-        a massive dictionary with all the information
+        The `page_params` variable is basically a
+        massive dictionary with all the information
         that the client needs to run the app.  Here
         are some examples of what it includes:
 

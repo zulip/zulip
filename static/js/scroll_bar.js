@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import {media_breakpoints} from "./css_variables";
+import {page_params} from "./page_params";
 
 // A few of our width properties in Zulip depend on the width of the
 // browser scrollbar that is generated at the far right side of the

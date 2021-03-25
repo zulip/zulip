@@ -11,6 +11,7 @@ const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 mock_cjs("jquery", $);
 
@@ -49,7 +50,6 @@ const channel = mock_esm("../../static/js/channel");
 const loading = mock_esm("../../static/js/loading");
 const local_message = mock_esm("../../static/js/local_message");
 const markdown = mock_esm("../../static/js/markdown");
-const page_params = set_global("page_params", {});
 const reminder = mock_esm("../../static/js/reminder", {
     is_deferred_delivery: noop,
 });

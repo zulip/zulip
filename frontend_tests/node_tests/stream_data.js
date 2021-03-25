@@ -4,11 +4,10 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
-
-let page_params;
+const {page_params} = require("../zjsunit/zpage_params");
 
 const color_data = zrequire("color_data");
 const stream_topic_history = zrequire("stream_topic_history");
@@ -31,11 +30,9 @@ function contains_sub(subs, sub) {
 
 function test(label, f) {
     run_test(label, (override) => {
-        page_params = set_global("page_params", {
-            is_admin: false,
-            realm_users: [],
-            is_guest: false,
-        });
+        page_params.is_admin = false;
+        page_params.realm_users = [];
+        page_params.is_guest = false;
         people.init();
         people.add_active_user(me);
         people.initialize_current_user(me.user_id);

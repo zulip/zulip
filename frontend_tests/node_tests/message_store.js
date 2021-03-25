@@ -6,6 +6,7 @@ const {mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespa
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
@@ -19,10 +20,8 @@ mock_esm("../../static/js/recent_senders", {
 
 set_global("document", "document-stub");
 set_global("home_msg_list", {});
-set_global("page_params", {
-    realm_allow_message_editing: true,
-    is_admin: true,
-});
+page_params.realm_allow_message_editing = true;
+page_params.is_admin = true;
 
 const util = zrequire("util");
 const people = zrequire("people");

@@ -8,6 +8,7 @@ const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
@@ -16,8 +17,6 @@ let form_data;
 const _FormData = function () {
     return form_data;
 };
-
-let page_params;
 
 mock_cjs("jquery", $);
 const realm_icon = mock_esm("../../static/js/realm_icon");
@@ -62,14 +61,12 @@ const dropdown_list_widget = zrequire("dropdown_list_widget");
 
 function test(label, f) {
     run_test(label, (override) => {
-        page_params = set_global("page_params", {
-            is_admin: false,
-            realm_domains: [
-                {domain: "example.com", allow_subdomains: true},
-                {domain: "example.org", allow_subdomains: false},
-            ],
-            realm_authentication_methods: {},
-        });
+        page_params.is_admin = false;
+        page_params.realm_domains = [
+            {domain: "example.com", allow_subdomains: true},
+            {domain: "example.org", allow_subdomains: false},
+        ];
+        page_params.realm_authentication_methods = {};
         settings_org.reset();
         f(override);
     });

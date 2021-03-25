@@ -3,6 +3,8 @@
 
 import i18next from "i18next";
 
+import {page_params} from "./page_params";
+
 i18next.init({
     lng: "lang",
     resources: {

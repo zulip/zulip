@@ -2,12 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const {page_params} = require("../zjsunit/zpage_params");
 
-const page_params = set_global("page_params", {
-    search_pills_enabled: false,
-});
+page_params.search_pills_enabled = false;
 mock_esm("../../static/js/message_store", {
     user_ids: () => [],
 });

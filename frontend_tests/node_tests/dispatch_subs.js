@@ -6,6 +6,7 @@ const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const events = require("./lib/events");
 
@@ -15,7 +16,6 @@ const test_user = events.test_user;
 const compose_fade = mock_esm("../../static/js/compose_fade");
 const narrow_state = mock_esm("../../static/js/narrow_state");
 const overlays = mock_esm("../../static/js/overlays");
-const page_params = set_global("page_params", {});
 const settings_org = mock_esm("../../static/js/settings_org");
 const settings_streams = mock_esm("../../static/js/settings_streams");
 const stream_events = mock_esm("../../static/js/stream_events");

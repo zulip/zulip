@@ -5,6 +5,7 @@ import * as compose from "./compose";
 import * as hash_util from "./hash_util";
 import {i18n} from "./i18n";
 import * as notifications from "./notifications";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as transmit from "./transmit";
 import * as util from "./util";

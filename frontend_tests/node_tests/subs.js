@@ -21,7 +21,6 @@ set_global("location", {
 mock_esm("../../static/js/hash_util", {
     by_stream_uri: () => {},
 });
-set_global("page_params", {});
 
 const stream_data = zrequire("stream_data");
 const subs = zrequire("subs");

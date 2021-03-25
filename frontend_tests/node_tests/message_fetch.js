@@ -24,8 +24,6 @@ mock_esm("../../static/js/message_list_view", {
 mock_esm("../../static/js/recent_topics", {
     process_messages: noop,
 });
-// Still required for page_params.initial_pointer
-set_global("page_params", {});
 mock_esm("../../static/js/ui_report", {
     hide_error: noop,
 });

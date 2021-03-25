@@ -14,6 +14,7 @@ import * as message_util from "./message_util";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as notifications from "./notifications";
+import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
 import * as recent_senders from "./recent_senders";
 import * as recent_topics from "./recent_topics";

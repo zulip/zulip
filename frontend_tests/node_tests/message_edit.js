@@ -2,12 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const {page_params} = require("../zjsunit/zpage_params");
 
-let page_params = set_global("page_params", {
-    realm_community_topic_editing_limit_seconds: 259200,
-});
+page_params.realm_community_topic_editing_limit_seconds = 259200;
 
 const message_edit = zrequire("message_edit");
 
@@ -51,22 +50,15 @@ run_test("get_editability", () => {
         sent_by_me: true,
     };
 
-    page_params = set_global("page_params", {
-        realm_allow_message_editing: false,
-    });
+    page_params.realm_allow_message_editing = false;
     assert.equal(get_editability(message), editability_types.NO);
 
-    page_params = set_global("page_params", {
-        realm_allow_message_editing: true,
-        // Limit of 0 means no time limit on editing messages
-        realm_message_content_edit_limit_seconds: 0,
-    });
+    page_params.realm_allow_message_editing = true;
+    // Limit of 0 means no time limit on editing messages
+    page_params.realm_message_content_edit_limit_seconds = 0;
     assert.equal(get_editability(message), editability_types.FULL);
 
-    page_params = set_global("page_params", {
-        realm_allow_message_editing: true,
-        realm_message_content_edit_limit_seconds: 10,
-    });
+    page_params.realm_message_content_edit_limit_seconds = 10;
     const now = new Date();
     const current_timestamp = now / 1000;
     message.timestamp = current_timestamp - 60;
@@ -85,13 +77,11 @@ run_test("get_editability", () => {
         sent_by_me: false,
         type: "stream",
     };
-    page_params = set_global("page_params", {
-        realm_allow_community_topic_editing: true,
-        realm_allow_message_editing: true,
-        realm_message_content_edit_limit_seconds: 0,
-        realm_community_topic_editing_limit_seconds: 259200,
-        is_admin: false,
-    });
+    page_params.realm_allow_community_topic_editing = true;
+    page_params.realm_allow_message_editing = true;
+    page_params.realm_message_content_edit_limit_seconds = 0;
+    page_params.realm_community_topic_editing_limit_seconds = 259200;
+    page_params.is_admin = false;
     message.timestamp = current_timestamp - 60;
     assert.equal(get_editability(message), editability_types.TOPIC_ONLY);
 
@@ -116,11 +106,9 @@ run_test("get_editability", () => {
 });
 
 run_test("get_deletability", () => {
-    page_params = set_global("page_params", {
-        is_admin: true,
-        realm_allow_message_deleting: false,
-        realm_message_content_delete_limit_seconds: 0,
-    });
+    page_params.is_admin = true;
+    page_params.realm_allow_message_deleting = false;
+    page_params.realm_message_content_delete_limit_seconds = 0;
     const message = {
         sent_by_me: false,
         locally_echoed: true,

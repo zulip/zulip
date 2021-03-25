@@ -12,6 +12,7 @@ const namespace = require("./namespace");
 const test = require("./test");
 const blueslip = require("./zblueslip");
 const zjquery = require("./zjquery");
+const zpage_params = require("./zpage_params");
 
 require("@babel/register")({
     extensions: [".es6", ".es", ".jsx", ".js", ".mjs", ".ts"],
@@ -86,11 +87,14 @@ try {
         namespace.set_global("setInterval", noop);
         _.throttle = immediate;
         _.debounce = immediate;
+        zpage_params.reset();
 
         namespace.mock_esm("../../static/js/blueslip", blueslip);
         require("../../static/js/blueslip");
         namespace.mock_esm("../../static/js/i18n", stub_i18n);
         require("../../static/js/i18n");
+        namespace.mock_esm("../../static/js/page_params", zpage_params);
+        require("../../static/js/page_params");
 
         run_one_module(file);
 

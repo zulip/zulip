@@ -2,13 +2,13 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
-const page_params = set_global("page_params", {});
 const channel = mock_esm("../../static/js/channel");
 const reload = mock_esm("../../static/js/reload");
 const reload_state = mock_esm("../../static/js/reload_state");

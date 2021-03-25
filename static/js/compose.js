@@ -22,6 +22,7 @@ import {i18n} from "./i18n";
 import * as loading from "./loading";
 import * as markdown from "./markdown";
 import * as notifications from "./notifications";
+import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as reminder from "./reminder";
