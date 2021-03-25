@@ -18,6 +18,7 @@ import * as narrow from "./narrow";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
 import * as starred_messages from "./starred_messages";
+import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_bar from "./stream_bar";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
@@ -432,7 +433,7 @@ export function register_stream_handlers() {
         hide_starred_messages_popover();
         e.preventDefault();
         e.stopPropagation();
-        starred_messages.confirm_unstar_all_messages();
+        starred_messages_ui.confirm_unstar_all_messages();
     });
 
     // Unstar all messages in topic
@@ -442,7 +443,7 @@ export function register_stream_handlers() {
         const topic_name = $(".sidebar-popover-unstar-all-in-topic").attr("data-topic-name");
         const stream_id = $(".sidebar-popover-unstar-all-in-topic").attr("data-stream-id");
         hide_topic_popover();
-        starred_messages.confirm_unstar_all_messages_in_topic(
+        starred_messages_ui.confirm_unstar_all_messages_in_topic(
             Number.parseInt(stream_id, 10),
             topic_name,
         );
