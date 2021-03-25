@@ -68,7 +68,10 @@ whitespace_rules: List["Rule"] = [
     {
         "pattern": "\t",
         "strip": "\n",
-        "exclude": {"tools/ci/success-http-headers.template.txt"},
+        "exclude": {
+            "tools/ci/success-http-headers.template.txt",
+            "tools/ci/success-http-headers.template.debian.txt",
+        },
         "description": "Fix tab-based whitespace",
     },
 ]
