@@ -109,8 +109,7 @@
             "globals": {
                 "current_msg_list": false,
                 "home_msg_list": false,
-                "i18n": false,
-                "location": false
+                "i18n": false
             }
         },
         {
