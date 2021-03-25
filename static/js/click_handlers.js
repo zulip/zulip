@@ -643,25 +643,12 @@ export function initialize() {
         server_events.restart_get_events({dont_block: true});
     });
 
-    // this will hide the alerts that you click "x" on.
-    $("body").on("click", ".alert-box > div .exit", function () {
-        const $alert = $(this).closest(".alert-box > div");
-        $alert.addClass("fade-out");
-        setTimeout(() => {
-            $alert.removeClass("fade-out show");
-        }, 300);
-    });
-
     $("#settings_page").on("click", ".collapse-settings-btn", () => {
         settings_toggle.toggle_org_setting_collapse();
     });
 
     $(".organization-box").on("show.bs.modal", () => {
         popovers.hide_all();
-    });
-
-    $(".alert-box").on("click", ".stackframe .expand", function () {
-        $(this).parent().siblings(".code-context").toggle("fast");
     });
 
     // COMPOSE
