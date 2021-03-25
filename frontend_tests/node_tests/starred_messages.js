@@ -8,7 +8,6 @@ const {run_test} = require("../zjsunit/test");
 
 const page_params = set_global("page_params", {});
 
-zrequire("timerender");
 const message_store = zrequire("message_store");
 const starred_messages = zrequire("starred_messages");
 const stream_popover = zrequire("stream_popover");

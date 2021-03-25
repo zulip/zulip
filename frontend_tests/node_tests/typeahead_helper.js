@@ -18,11 +18,6 @@ const recent_senders = zrequire("recent_senders");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
-zrequire("narrow");
-zrequire("user_status");
-zrequire("presence");
-zrequire("buddy_data");
-zrequire("hash_util");
 
 const emoji = zrequire("../shared/js/emoji");
 const pygments_data = zrequire("../generated/pygments_data.json");
