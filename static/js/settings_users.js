@@ -12,6 +12,7 @@ import {i18n} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as presence from "./presence";
 import * as settings_account from "./settings_account";

@@ -13,6 +13,7 @@ const {
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 // Important note on these tests:
 
@@ -35,8 +36,6 @@ window.location.hash = "#all_messages";
 set_global("navigator", {
     platform: "",
 });
-
-const page_params = set_global("page_params", {});
 
 // jQuery stuff should go away if we make an initialize() method.
 set_global("document", "document-stub");

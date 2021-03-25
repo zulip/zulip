@@ -6,14 +6,13 @@ const _ = require("lodash");
 
 const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const {page_params} = require("../zjsunit/zpage_params");
 
 set_global("document", "document-stub");
 
 const noop = () => {};
 
-const page_params = set_global("page_params", {
-    twenty_four_hour_time: false,
-});
+page_params.twenty_four_hour_time = false;
 set_global("home_msg_list", "stub");
 // timerender calls setInterval when imported
 mock_esm("../../static/js/timerender", {

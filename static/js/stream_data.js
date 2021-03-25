@@ -4,6 +4,7 @@ import {FoldDict} from "./fold_dict";
 import * as hash_util from "./hash_util";
 import {i18n} from "./i18n";
 import * as message_list from "./message_list";
+import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as settings_config from "./settings_config";

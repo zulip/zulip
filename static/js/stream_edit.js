@@ -15,6 +15,7 @@ import * as input_pill from "./input_pill";
 import * as ListWidget from "./list_widget";
 import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as pill_typeahead from "./pill_typeahead";

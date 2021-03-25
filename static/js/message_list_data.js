@@ -4,6 +4,7 @@ import * as blueslip from "./blueslip";
 import {FetchStatus} from "./fetch_status";
 import {Filter} from "./filter";
 import * as muting from "./muting";
+import {page_params} from "./page_params";
 import * as unread from "./unread";
 import * as util from "./util";
 

@@ -6,6 +6,7 @@ const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
@@ -31,7 +32,7 @@ set_global("home_msg_list", {
         return 1;
     },
 });
-set_global("page_params", {test_suite: false});
+page_params.test_suite = false;
 
 // we also directly write to pointer
 set_global("pointer", {});

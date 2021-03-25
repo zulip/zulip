@@ -7,6 +7,7 @@ import render_intro_reply_hotspot from "../templates/intro_reply_hotspot.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
+import {page_params} from "./page_params";
 import * as popovers from "./popovers";
 
 // popover orientations

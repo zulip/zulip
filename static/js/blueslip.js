@@ -9,6 +9,7 @@
 import $ from "jquery";
 
 import * as blueslip_stacktrace from "./blueslip_stacktrace";
+import {page_params} from "./page_params";
 import * as ui_report from "./ui_report";
 
 if (Error.stackTraceLimit !== undefined) {

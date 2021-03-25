@@ -13,6 +13,7 @@ import * as muting from "./muting";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as spoilers from "./spoilers";

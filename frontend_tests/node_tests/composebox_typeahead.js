@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_cjs, mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
@@ -17,8 +18,6 @@ const message_store = mock_esm("../../static/js/message_store", {
     user_ids: () => [],
 });
 const stream_topic_history = mock_esm("../../static/js/stream_topic_history");
-
-const page_params = set_global("page_params", {});
 
 let autosize_called;
 

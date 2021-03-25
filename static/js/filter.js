@@ -4,6 +4,7 @@ import _ from "lodash";
 import {i18n} from "./i18n";
 import * as message_parser from "./message_parser";
 import * as message_store from "./message_store";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
 import * as unread from "./unread";

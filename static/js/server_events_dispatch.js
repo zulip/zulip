@@ -23,6 +23,7 @@ import * as narrow_state from "./narrow_state";
 import * as night_mode from "./night_mode";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as panels from "./panels";
 import * as peer_data from "./peer_data";
 import * as people from "./people";

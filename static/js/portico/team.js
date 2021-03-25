@@ -1,6 +1,8 @@
 import $ from "jquery";
 import _ from "lodash";
 
+import {page_params} from "../page_params";
+
 const contributors_list = page_params.contributors;
 
 const repo_name_to_tab_name = {

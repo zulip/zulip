@@ -8,6 +8,7 @@ const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const alice_user_id = 5;
 
@@ -57,9 +58,7 @@ set_global("current_msg_list", {
     },
 });
 set_global("document", "document-stub");
-set_global("page_params", {
-    user_id: alice_user_id,
-});
+page_params.user_id = alice_user_id;
 
 const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
 const emoji = zrequire("../shared/js/emoji");

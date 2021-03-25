@@ -5,6 +5,7 @@ import render_settings_organization_settings_tip from "../templates/settings/org
 
 import {i18n} from "./i18n";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as settings from "./settings";
 import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";

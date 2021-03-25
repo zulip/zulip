@@ -6,8 +6,6 @@ const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 
-set_global("page_params", {});
-
 set_global("setTimeout", (f, delay) => {
     assert.equal(delay, 0);
     return f();

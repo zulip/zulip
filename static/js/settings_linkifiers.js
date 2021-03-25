@@ -5,6 +5,7 @@ import render_admin_linkifier_list from "../templates/admin_linkifier_list.hbs";
 import * as channel from "./channel";
 import {i18n} from "./i18n";
 import * as ListWidget from "./list_widget";
+import {page_params} from "./page_params";
 import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 

@@ -8,6 +8,7 @@ import * as channel from "./channel";
 import * as keydown_util from "./keydown_util";
 import {ListCursor} from "./list_cursor";
 import * as narrow from "./narrow";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";

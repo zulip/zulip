@@ -9,6 +9,7 @@ import * as message_list from "./message_list";
 import * as message_store from "./message_store";
 import * as narrow_state from "./narrow_state";
 import * as notifications from "./notifications";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";

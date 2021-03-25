@@ -12,6 +12,7 @@ import * as channel from "./channel";
 import * as common from "./common";
 import {i18n} from "./i18n";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as stream_data from "./stream_data";
 import * as ui from "./ui";
 import * as ui_report from "./ui_report";

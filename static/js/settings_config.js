@@ -1,4 +1,5 @@
 import {i18n} from "./i18n";
+import {page_params} from "./page_params";
 
 /*
     This file contains translations between the integer values used in

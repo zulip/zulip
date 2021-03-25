@@ -5,6 +5,7 @@ import render_confirm_delete_user_avatar from "../templates/confirm_delete_user_
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import {i18n} from "./i18n";
+import {page_params} from "./page_params";
 import * as settings_data from "./settings_data";
 import * as upload_widget from "./upload_widget";
 

@@ -1,6 +1,7 @@
 import * as blueslip from "./blueslip";
 import * as message_events from "./message_events";
 import * as message_list from "./message_list";
+import {page_params} from "./page_params";
 
 function truncate_precision(float) {
     return Number.parseFloat(float.toFixed(3));

@@ -10,6 +10,7 @@ const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
@@ -30,8 +31,6 @@ const user_groups = mock_esm("../../static/js/user_groups", {
     add: noop,
 });
 const ui_report = mock_esm("../../static/js/ui_report");
-
-const page_params = set_global("page_params", {});
 
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");

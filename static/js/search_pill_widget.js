@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import * as browser_history from "./browser_history";
+import {page_params} from "./page_params";
 import * as search_pill from "./search_pill";
 
 export let widget;

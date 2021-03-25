@@ -6,6 +6,7 @@ const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 mock_cjs("jquery", $);
 const window_stub = $.create("window-stub");
@@ -14,10 +15,8 @@ $(window).idle = () => {};
 
 let filter_key_handlers;
 
-const page_params = set_global("page_params", {
-    realm_users: [],
-    user_id: 999,
-});
+page_params.realm_users = [];
+page_params.user_id = 999;
 
 const _document = {
     hasFocus() {

@@ -36,7 +36,6 @@ mock_esm("../../static/js/recent_topics", {
 });
 set_global("current_msg_list", {});
 set_global("home_msg_list", {});
-set_global("page_params", {});
 
 //
 // We have strange hacks in narrow.activate to sleep 0

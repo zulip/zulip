@@ -16,6 +16,7 @@ import {i18n} from "./i18n";
 import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
 import * as notifications from "./notifications";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as reload_state from "./reload_state";
 import * as stream_bar from "./stream_bar";

@@ -2,11 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const {with_overrides, set_global, zrequire} = require("../zjsunit/namespace");
+const {with_overrides, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
-
-const page_params = set_global("page_params", {});
+const {page_params} = require("../zjsunit/zpage_params");
 
 const message_store = zrequire("message_store");
 const starred_messages = zrequire("starred_messages");

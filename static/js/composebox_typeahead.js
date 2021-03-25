@@ -15,6 +15,7 @@ import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import {i18n} from "./i18n";
 import * as message_store from "./message_store";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as rows from "./rows";
 import * as settings_data from "./settings_data";

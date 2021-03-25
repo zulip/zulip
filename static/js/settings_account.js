@@ -11,6 +11,7 @@ import * as channel from "./channel";
 import * as common from "./common";
 import {i18n} from "./i18n";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pill_typeahead from "./pill_typeahead";
 import * as popovers from "./popovers";

@@ -19,6 +19,7 @@ import * as message_edit from "./message_edit";
 import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";

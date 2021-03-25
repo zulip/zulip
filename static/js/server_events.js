@@ -6,6 +6,7 @@ import * as channel from "./channel";
 import * as echo from "./echo";
 import * as message_events from "./message_events";
 import * as message_store from "./message_store";
+import {page_params} from "./page_params";
 import * as reload from "./reload";
 import * as reload_state from "./reload_state";
 import * as sent_messages from "./sent_messages";

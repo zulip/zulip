@@ -9,6 +9,7 @@ import * as hashchange from "./hashchange";
 import {localstorage} from "./localstorage";
 import * as message_list from "./message_list";
 import * as narrow_state from "./narrow_state";
+import {page_params} from "./page_params";
 import * as reload_state from "./reload_state";
 import * as server_events from "./server_events";
 import * as ui_report from "./ui_report";

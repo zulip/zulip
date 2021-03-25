@@ -116,12 +116,12 @@ like the following toward the top of your test file:
 For modules that you want to completely stub out, use a pattern like
 this:
 
->     set_global('page_params', {
->         email: 'bob@zulip.com'
+>     const reminder = mock_esm("../../static/js/reminder", {
+>         is_deferred_delivery: noop,
 >     });
 >
 >     // then maybe further down
->     page_params.email = 'alice@zulip.com';
+>     reminder.is_deferred_delivery = () => true;
 
 One can similarly stub out functions in a module's exported interface
 with either `noop` functions or actual code.

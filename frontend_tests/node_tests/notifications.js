@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_cjs, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 // Dependencies
 
@@ -13,13 +14,11 @@ set_global("document", {
         return true;
     },
 });
-const page_params = set_global("page_params", {
-    is_admin: false,
-    realm_users: [],
-    enable_desktop_notifications: true,
-    enable_sounds: true,
-    wildcard_mentions_notify: true,
-});
+page_params.is_admin = false;
+page_params.realm_users = [];
+page_params.enable_desktop_notifications = true;
+page_params.enable_sounds = true;
+page_params.wildcard_mentions_notify = true;
 const _navigator = {
     userAgent: "Mozilla/5.0 AppleWebKit/537.36 Chrome/64.0.3282.167 Safari/537.36",
 };

@@ -9,6 +9,7 @@ import * as channel from "./channel";
 import * as emoji_picker from "./emoji_picker";
 import {i18n} from "./i18n";
 import * as message_store from "./message_store";
+import {page_params} from "./page_params";
 import * as people from "./people";
 
 export const view = {}; // function namespace

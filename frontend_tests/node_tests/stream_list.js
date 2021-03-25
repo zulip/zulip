@@ -6,13 +6,12 @@ const {stub_templates} = require("../zjsunit/handlebars");
 const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 set_global("document", "document-stub");
 
-const page_params = set_global("page_params", {
-    is_admin: false,
-    realm_users: [],
-});
+page_params.is_admin = false;
+page_params.realm_users = [];
 
 const noop = () => {};
 

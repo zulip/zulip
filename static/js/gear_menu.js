@@ -4,6 +4,7 @@ import * as hashchange from "./hashchange";
 import {i18n} from "./i18n";
 import * as message_viewport from "./message_viewport";
 import * as navigate from "./navigate";
+import {page_params} from "./page_params";
 
 /*
 For various historical reasons there isn't one

@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import * as blueslip from "./blueslip";
 import * as loading from "./loading";
+import {page_params} from "./page_params";
 import * as util from "./util";
 
 // Miscellaneous early setup.

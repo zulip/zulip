@@ -15,6 +15,7 @@ import * as message_edit from "./message_edit";
 import * as muting from "./muting";
 import * as muting_ui from "./muting_ui";
 import * as narrow from "./narrow";
+import {page_params} from "./page_params";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
 import * as starred_messages from "./starred_messages";

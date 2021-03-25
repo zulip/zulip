@@ -7,12 +7,12 @@ const _ = require("lodash");
 const MockDate = require("mockdate");
 
 const {i18n} = require("../zjsunit/i18n");
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const message_store = mock_esm("../../static/js/message_store");
-const page_params = set_global("page_params", {});
 
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");

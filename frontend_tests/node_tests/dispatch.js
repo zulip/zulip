@@ -7,6 +7,7 @@ const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
@@ -69,11 +70,9 @@ set_global("home_msg_list", {});
 
 // page_params is highly coupled to dispatching now
 
-const page_params = set_global("page_params", {
-    test_suite: false,
-    is_admin: true,
-    realm_description: "already set description",
-});
+page_params.test_suite = false;
+page_params.is_admin = true;
+page_params.realm_description = "already set description";
 
 // For data-oriented modules, just use them, don't stub them.
 const alert_words = zrequire("alert_words");

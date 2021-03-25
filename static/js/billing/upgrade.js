@@ -1,5 +1,7 @@
 import $ from "jquery";
 
+import {page_params} from "../page_params";
+
 import * as helpers from "./helpers";
 
 export const initialize = () => {
