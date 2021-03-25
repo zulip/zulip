@@ -10,7 +10,7 @@ export function initialize(): void {
         }, 300);
     });
 
-    $(".alert-box").on("click", ".stackframe .expand", function () {
-        $(this).parent().siblings(".code-context").toggle("fast");
+    $(".alert-box").on("click", ".stackframe", function () {
+        $(this).siblings(".code-context").toggle("fast");
     });
 }
