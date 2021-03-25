@@ -90,7 +90,7 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
             # Resetting test environment.
             reset_zulip_test_database()
             # We are calling to /flush_caches to remove all the server-side caches.
-            response = requests.get("http://zulip.zulipdev.com:9981/flush_caches")
+            response = requests.post("http://zulip.zulipdev.com:9981/flush_caches")
             assert response.status_code == 200
 
             if ret != 0:
