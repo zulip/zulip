@@ -6,7 +6,7 @@ import * as hash_util from "./hash_util";
 import * as loading from "./loading";
 import * as message_fetch from "./message_fetch";
 import * as message_viewport from "./message_viewport";
-import * as narrow from "./narrow";
+import * as narrow_banner from "./narrow_banner";
 import * as narrow_state from "./narrow_state";
 import * as recent_topics from "./recent_topics";
 import * as unread_ops from "./unread_ops";
@@ -65,7 +65,7 @@ export function hide_indicators() {
 export function show_history_limit_notice() {
     $(".top-messages-logo").hide();
     $(".history-limited-box").show();
-    narrow.hide_empty_narrow_message();
+    narrow_banner.hide_empty_narrow_message();
 }
 
 export function hide_history_limit_notice() {

@@ -90,6 +90,7 @@ EXEMPT_FILES = {
     "static/js/message_viewport.js",
     "static/js/muting_ui.js",
     "static/js/narrow.js",
+    "static/js/narrow_banner.js",
     "static/js/navigate.js",
     "static/js/night_mode.js",
     "static/js/notifications.js",

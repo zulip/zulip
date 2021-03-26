@@ -14,6 +14,7 @@ const stream_topic_history = mock_esm("../../static/js/stream_topic_history");
 
 const hash_util = zrequire("hash_util");
 const compose_state = zrequire("compose_state");
+const narrow_banner = zrequire("narrow_banner");
 const narrow_state = zrequire("narrow_state");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
@@ -73,7 +74,7 @@ run_test("uris", () => {
 
 run_test("show_empty_narrow_message", () => {
     narrow_state.reset_current_filter();
-    narrow.show_empty_narrow_message();
+    narrow_banner.show_empty_narrow_message();
     assert.equal($(".empty_feed_notice").visible(), false);
     assert($("#empty_narrow_message").visible());
     assert.equal(
@@ -83,55 +84,55 @@ run_test("show_empty_narrow_message", () => {
 
     // for non-existent or private stream
     set_filter([["stream", "Foo"]]);
-    narrow.show_empty_narrow_message();
+    narrow_banner.show_empty_narrow_message();
     assert($("#nonsubbed_private_nonexistent_stream_narrow_message").visible());
 
     // for non sub public stream
     stream_data.add_sub({name: "ROME", stream_id: 99});
     stream_data.update_calculated_fields(stream_data.get_sub("ROME"));
     set_filter([["stream", "Rome"]]);
-    narrow.show_empty_narrow_message();
+    narrow_banner.show_empty_narrow_message();
     assert($("#nonsubbed_stream_narrow_message").visible());
 
     set_filter([["is", "starred"]]);
-    narrow.show_empty_narrow_message();
+    narrow_banner.show_empty_narrow_message();
     assert($("#empty_star_narrow_message").visible());
 
     set_filter([["is", "mentioned"]]);
-    narrow.show_empty_narrow_message();
+    narrow_banner.show_empty_narrow_message();
     assert($("#empty_narrow_all_mentioned").visible());
 
     set_filter([["is", "private"]]);
-    narrow.show_empty_narrow_message();
+    narrow_banner.show_empty_narrow_message();
     assert($("#empty_narrow_all_private_message").visible());
 
     set_filter([["is", "unread"]]);
-    narrow.show_empty_narrow_message();
+    narrow_banner.show_empty_narrow_message();
     assert($("#no_unread_narrow_message").visible());
 
     set_filter([["pm-with", ["Yo"]]]);
-    narrow.show_empty_narrow_message();
+    narrow_banner.show_empty_narrow_message();
     assert($("#non_existing_user").visible());
 
     people.add_active_user(alice);
     set_filter([["pm-with", ["alice@example.com", "Yo"]]]);
-    narrow.show_empty_narrow_message();
+    narrow_banner.show_empty_narrow_message();
     assert($("#non_existing_users").visible());
 
     set_filter([["pm-with", "alice@example.com"]]);
-    narrow.show_empty_narrow_message();
+    narrow_banner.show_empty_narrow_message();
     assert($("#empty_narrow_private_message").visible());
 
     set_filter([["group-pm-with", "alice@example.com"]]);
-    narrow.show_empty_narrow_message();
+    narrow_banner.show_empty_narrow_message();
     assert($("#empty_narrow_group_private_message").visible());
 
     set_filter([["sender", "ray@example.com"]]);
-    narrow.show_empty_narrow_message();
+    narrow_banner.show_empty_narrow_message();
     assert($("#silent_user").visible());
 
     set_filter([["sender", "sinwar@example.com"]]);
-    narrow.show_empty_narrow_message();
+    narrow_banner.show_empty_narrow_message();
     assert($("#non_existing_user").visible());
 
     const display = $("#empty_search_stop_words_string");
@@ -142,7 +143,7 @@ run_test("show_empty_narrow_message", () => {
     };
 
     set_filter([["search", "grail"]]);
-    narrow.show_empty_narrow_message();
+    narrow_banner.show_empty_narrow_message();
     assert($("#empty_search_narrow_message").visible());
 
     assert.equal(items.length, 2);
@@ -163,7 +164,7 @@ run_test("show_search_stopwords", () => {
     };
 
     set_filter([["search", "what about grail"]]);
-    narrow.show_empty_narrow_message();
+    narrow_banner.show_empty_narrow_message();
     assert($("#empty_search_narrow_message").visible());
 
     assert.equal(items.length, 3);
@@ -176,7 +177,7 @@ run_test("show_search_stopwords", () => {
         ["stream", "streamA"],
         ["search", "what about grail"],
     ]);
-    narrow.show_empty_narrow_message();
+    narrow_banner.show_empty_narrow_message();
     assert($("#empty_search_narrow_message").visible());
 
     assert.equal(items.length, 4);
@@ -191,7 +192,7 @@ run_test("show_search_stopwords", () => {
         ["topic", "topicA"],
         ["search", "what about grail"],
     ]);
-    narrow.show_empty_narrow_message();
+    narrow_banner.show_empty_narrow_message();
     assert($("#empty_search_narrow_message").visible());
 
     assert.equal(items.length, 4);
@@ -212,7 +213,7 @@ run_test("show_invalid_narrow_message", () => {
         ["stream", "streamA"],
         ["stream", "streamB"],
     ]);
-    narrow.show_empty_narrow_message();
+    narrow_banner.show_empty_narrow_message();
     assert($("#empty_search_narrow_message").visible());
     assert.equal(
         display.text(),
@@ -223,7 +224,7 @@ run_test("show_invalid_narrow_message", () => {
         ["topic", "topicA"],
         ["topic", "topicB"],
     ]);
-    narrow.show_empty_narrow_message();
+    narrow_banner.show_empty_narrow_message();
     assert($("#empty_search_narrow_message").visible());
     assert.equal(
         display.text(),
@@ -237,7 +238,7 @@ run_test("show_invalid_narrow_message", () => {
         ["sender", "alice@example.com"],
         ["sender", "ray@example.com"],
     ]);
-    narrow.show_empty_narrow_message();
+    narrow_banner.show_empty_narrow_message();
     assert($("#empty_search_narrow_message").visible());
     assert.equal(
         display.text(),
