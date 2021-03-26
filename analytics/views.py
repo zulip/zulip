@@ -112,7 +112,6 @@ def render_stats(
         data_url_suffix=data_url_suffix,
         for_installation=for_installation,
         remote=remote,
-        debug_mode=False,
     )
 
     request_language = get_and_set_request_language(
