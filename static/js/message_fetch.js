@@ -7,7 +7,7 @@ import * as message_list from "./message_list";
 import * as message_scroll from "./message_scroll";
 import * as message_store from "./message_store";
 import * as message_util from "./message_util";
-import * as narrow from "./narrow";
+import * as narrow_banner from "./narrow_banner";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
@@ -45,7 +45,7 @@ function process_result(data, opts) {
     ) {
         // Even after trying to load more messages, we have no
         // messages to display in this narrow.
-        narrow.show_empty_narrow_message();
+        narrow_banner.show_empty_narrow_message();
     }
 
     messages = messages.map((message) => {

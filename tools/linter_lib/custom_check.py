@@ -132,12 +132,6 @@ js_rules = RuleList(
         {
             "pattern": r"i18n\.t\(.+\).*\+",
             "description": "Do not concatenate i18n strings",
-            "exclude_line": {
-                (
-                    "static/js/narrow.js",
-                    'i18n.t("Some common words were excluded from your search.") +',
-                ),
-            },
         },
         {"pattern": r"\+.*i18n\.t\(.+\)", "description": "Do not concatenate i18n strings"},
         {

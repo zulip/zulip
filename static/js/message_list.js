@@ -5,7 +5,7 @@ import * as blueslip from "./blueslip";
 import {i18n} from "./i18n";
 import {MessageListData} from "./message_list_data";
 import {MessageListView} from "./message_list_view";
-import * as narrow from "./narrow";
+import * as narrow_banner from "./narrow_banner";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as stream_data from "./stream_data";
@@ -74,7 +74,7 @@ export class MessageList {
             // If adding some new messages to the message tables caused
             // our current narrow to no longer be empty, hide the empty
             // feed placeholder text.
-            narrow.hide_empty_narrow_message();
+            narrow_banner.hide_empty_narrow_message();
         }
 
         if (this === narrowed && !this.empty() && this.selected_id() === -1) {
@@ -363,9 +363,9 @@ export class MessageList {
 
         if (this === narrowed) {
             if (this.empty()) {
-                narrow.show_empty_narrow_message();
+                narrow_banner.show_empty_narrow_message();
             } else {
-                narrow.hide_empty_narrow_message();
+                narrow_banner.hide_empty_narrow_message();
             }
         }
         this.rerender_view();
