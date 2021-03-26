@@ -181,7 +181,7 @@ run_test("user groups", (override) => {
 });
 
 run_test("custom profile fields", (override) => {
-    const event = event_fixtures.custom_profile_fields__update;
+    const event = event_fixtures.custom_profile_fields;
     override(settings_profile_fields, "populate_profile_fields", noop);
     override(settings_account, "add_custom_profile_fields_to_settings", noop);
     dispatch(event);

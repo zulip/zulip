@@ -10,6 +10,13 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 45**
+
+* [`GET /events`](/api/get-events): Removed useless `op` field from
+  `custom_profile_fields` events.  These events contain the full set
+  of configured `custom_profile_fields` for the organization
+  regardless of what triggered the change.
+
 **Feature level 44**
 
 * [`POST /register`](/api/register-queue): extended the `unread_msgs`
