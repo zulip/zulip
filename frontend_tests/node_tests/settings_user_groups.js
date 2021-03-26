@@ -575,15 +575,8 @@ test_ui("on_events", (override) => {
             const data = {
                 id: 1,
             };
-            let settings_user_groups_reload_called = false;
             assert.equal(opts.url, "/json/user_groups/1");
             assert.deepEqual(opts.data, data);
-
-            override(settings_user_groups, "reload", () => {
-                settings_user_groups_reload_called = true;
-            });
-            opts.success();
-            assert(settings_user_groups_reload_called);
 
             fake_this.text(i18n.t("fake-text"));
             opts.error();

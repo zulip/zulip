@@ -145,6 +145,17 @@ run_test("user groups", (override) => {
         assert_same(args.group, event.group);
     }
 
+    event = event_fixtures.user_group__remove;
+    {
+        const stub = make_stub();
+        override(user_groups, "get_user_group_from_id", stub.f);
+        override(user_groups, "remove", noop);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("group_id");
+        assert_same(args.group_id, event.group_id);
+    }
+
     event = event_fixtures.user_group__add_members;
     {
         const stub = make_stub();
