@@ -153,13 +153,7 @@ def get_user_presence(client: Client) -> None:
 
 @openapi_test_function("/users/me/presence:post")
 def update_presence(client: Client) -> None:
-    request = {
-        "status": "active",
-        "ping_only": False,
-        "new_user_input": False,
-    }
-
-    result = client.update_presence(request)
+    result = client.update_presence(status="active", ping_only=False, new_user_input=False)
 
     assert result["result"] == "success"
 
@@ -169,18 +163,13 @@ def create_user(client: Client) -> None:
 
     # {code_example|start}
     # Create a user
-    request = {
-        "email": "newbie@zulip.com",
-        "password": "temp",
-        "full_name": "New User",
-    }
-    result = client.create_user(request)
+    result = client.create_user(email="newbie@zulip.com", password="temp", full_name="New User")
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/users", "post", "200")
 
     # Test "Email already used error"
-    result = client.create_user(request)
+    result = client.create_user(email="newbie@zulip.com", password="temp", full_name="New User")
 
     validate_against_openapi_schema(result, "/users", "post", "400")
 
@@ -202,16 +191,16 @@ def get_members(client: Client) -> None:
     assert newbie["full_name"] == "New User"
 
     # {code_example|start}
-    # You may pass the `client_gravatar` query parameter as follows:
-    result = client.get_members({"client_gravatar": True})
+    # You may pass the `client_gravatar` argument as follows:
+    result = client.get_members(client_gravatar=True)
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/users", "get", "200")
     assert result["members"][0]["avatar_url"] is None
 
     # {code_example|start}
-    # You may pass the `include_custom_profile_fields` query parameter as follows:
-    result = client.get_members({"include_custom_profile_fields": True})
+    # You may pass the `include_custom_profile_fields` argument as follows:
+    result = client.get_members(include_custom_profile_fields=True)
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/users", "get", "200")
@@ -577,25 +566,14 @@ def toggle_mute_topic(client: Client) -> None:
 
     # {code_example|start}
     # Mute the topic "boat party" in the stream "Denmark"
-    request = {
-        "stream": "Denmark",
-        "topic": "boat party",
-        "op": "add",
-    }
-    result = client.mute_topic(request)
+    result = client.mute_topic(stream="Denmark", topic="boat party", op="add")
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/users/me/subscriptions/muted_topics", "patch", "200")
 
     # {code_example|start}
     # Unmute the topic "boat party" in the stream "Denmark"
-    request = {
-        "stream": "Denmark",
-        "topic": "boat party",
-        "op": "remove",
-    }
-
-    result = client.mute_topic(request)
+    result = client.mute_topic(stream="Denmark", topic="boat party", op="remove")
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/users/me/subscriptions/muted_topics", "patch", "200")
@@ -666,10 +644,7 @@ def render_message(client: Client) -> None:
 
     # {code_example|start}
     # Render a message
-    request = {
-        "content": "**foo**",
-    }
-    result = client.render_message(request)
+    result = client.render_message(content="**foo**")
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/messages/render", "post", "200")
@@ -1093,11 +1068,7 @@ def set_typing_status(client: Client) -> None:
     user_id1 = 10
     user_id2 = 11
 
-    request = {
-        "op": "start",
-        "to": [user_id1, user_id2],
-    }
-    result = client.set_typing_status(request)
+    result = client.set_typing_status(op="start", to=[user_id1, user_id2])
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/typing", "post", "200")
@@ -1107,11 +1078,7 @@ def set_typing_status(client: Client) -> None:
     user_id1 = 10
     user_id2 = 11
 
-    request = {
-        "op": "stop",
-        "to": [user_id1, user_id2],
-    }
-    result = client.set_typing_status(request)
+    result = client.set_typing_status(op="stop", to=[user_id1, user_id2])
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/typing", "post", "200")
@@ -1223,7 +1190,7 @@ def test_invalid_api_key(client_with_invalid_key: Client) -> None:
 
 
 def test_missing_request_argument(client: Client) -> None:
-    result = client.render_message({})
+    result = client.render_message()
 
     validate_against_openapi_schema(result, "/rest-error-handling", "post", "400_1")
 
