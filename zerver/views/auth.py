@@ -1070,9 +1070,9 @@ def logout_then_login(request: HttpRequest, **kwargs: Any) -> HttpResponse:
 
 
 def password_reset(request: HttpRequest) -> HttpResponse:
-    email=None
+    email = None
     if request.user.is_authenticated:
-        email=request.user.email
+        email = request.user.email
     view_func = DjangoPasswordResetView.as_view(
         template_name="zerver/reset.html",
         form_class=ZulipPasswordResetForm,
