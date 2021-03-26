@@ -91,7 +91,6 @@ from zerver.lib.actions import (
     do_update_user_presence,
     do_update_user_status,
     lookup_default_stream_groups,
-    notify_realm_custom_profile_fields,
     remove_members_from_user_group,
     try_add_realm_custom_profile_field,
     try_update_realm_custom_profile_field,
@@ -698,33 +697,24 @@ class NormalActionsTest(BaseAction):
 
     def test_custom_profile_fields_events(self) -> None:
         realm = self.user_profile.realm
-        try_add_realm_custom_profile_field(
-            realm=realm, name="Expertise", field_type=CustomProfileField.LONG_TEXT
-        )
 
         events = self.verify_action(
-            lambda: notify_realm_custom_profile_fields(self.user_profile.realm),
-            state_change_expected=False,
+            lambda: try_add_realm_custom_profile_field(
+                realm=realm, name="Expertise", field_type=CustomProfileField.LONG_TEXT
+            )
         )
         check_custom_profile_fields("events[0]", events[0])
 
         field = realm.customprofilefield_set.get(realm=realm, name="Biography")
         name = field.name
         hint = "Biography of the user"
-        try_update_realm_custom_profile_field(realm, field, name, hint=hint)
 
         events = self.verify_action(
-            lambda: notify_realm_custom_profile_fields(self.user_profile.realm),
-            state_change_expected=False,
+            lambda: try_update_realm_custom_profile_field(realm, field, name, hint=hint)
         )
         check_custom_profile_fields("events[0]", events[0])
 
-        do_remove_realm_custom_profile_field(realm, field)
-
-        events = self.verify_action(
-            lambda: notify_realm_custom_profile_fields(self.user_profile.realm),
-            state_change_expected=False,
-        )
+        events = self.verify_action(lambda: do_remove_realm_custom_profile_field(realm, field))
         check_custom_profile_fields("events[0]", events[0])
 
     def test_custom_profile_field_data_events(self) -> None:

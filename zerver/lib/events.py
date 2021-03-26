@@ -530,6 +530,16 @@ def apply_event(
         state["hotspots"] = event["hotspots"]
     elif event["type"] == "custom_profile_fields":
         state["custom_profile_fields"] = event["fields"]
+        custom_profile_field_ids = {field["id"] for field in state["custom_profile_fields"]}
+
+        if "raw_users" in state:
+            for user_dict in state["raw_users"].values():
+                if "profile_data" not in user_dict:
+                    continue
+                profile_data = user_dict["profile_data"]
+                for (field_id, field_data) in list(profile_data.items()):
+                    if int(field_id) not in custom_profile_field_ids:
+                        del profile_data[field_id]
     elif event["type"] == "realm_user":
         person = event["person"]
         person_user_id = person["user_id"]
