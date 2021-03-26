@@ -3091,20 +3091,26 @@ class SubscriptionAPITest(ZulipTestCase):
             result, f"Stream name '{stream_name}' contains NULL (0x00) characters."
         )
 
-    def test_user_settings_for_adding_streams(self) -> None:
+    def _test_user_settings_for_adding_streams(self, stream_policy: str, invite_only: bool) -> None:
         do_set_realm_property(
-            self.test_user.realm, "create_stream_policy", Realm.POLICY_ADMINS_ONLY, acting_user=None
+            self.test_user.realm, stream_policy, Realm.POLICY_ADMINS_ONLY, acting_user=None
         )
+
         with mock.patch("zerver.models.UserProfile.can_create_streams", return_value=False):
-            result = self.common_subscribe_to_streams(self.test_user, ["stream1"], allow_fail=True)
+            result = self.common_subscribe_to_streams(
+                self.test_user, ["stream1"], invite_only=invite_only, allow_fail=True
+            )
             self.assert_json_error(result, "Insufficient permission")
 
         with mock.patch("zerver.models.UserProfile.can_create_streams", return_value=True):
-            self.common_subscribe_to_streams(self.test_user, ["stream2"])
+            self.common_subscribe_to_streams(self.test_user, ["stream2"], invite_only=invite_only)
 
         # User should still be able to subscribe to an existing stream
         with mock.patch("zerver.models.UserProfile.can_create_streams", return_value=False):
-            self.common_subscribe_to_streams(self.test_user, ["stream2"])
+            self.common_subscribe_to_streams(self.test_user, ["stream2"], invite_only=invite_only)
+
+    def test_user_settings_for_adding_streams(self) -> None:
+        self._test_user_settings_for_adding_streams("create_stream_policy", invite_only=False)
 
     def _test_user_settings_for_creating_streams(
         self, stream_policy: str, invite_only: bool
@@ -3112,9 +3118,7 @@ class SubscriptionAPITest(ZulipTestCase):
         user_profile = self.example_user("cordelia")
         realm = user_profile.realm
 
-        do_set_realm_property(
-            realm, stream_policy, Realm.POLICY_ADMINS_ONLY, acting_user=None
-        )
+        do_set_realm_property(realm, stream_policy, Realm.POLICY_ADMINS_ONLY, acting_user=None)
         do_change_user_role(user_profile, UserProfile.ROLE_MODERATOR, acting_user=None)
         result = self.common_subscribe_to_streams(
             user_profile,
@@ -3127,9 +3131,7 @@ class SubscriptionAPITest(ZulipTestCase):
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         self.common_subscribe_to_streams(user_profile, ["new_stream1"], invite_only=invite_only)
 
-        do_set_realm_property(
-            realm, stream_policy, Realm.POLICY_MODERATORS_ONLY, acting_user=None
-        )
+        do_set_realm_property(realm, stream_policy, Realm.POLICY_MODERATORS_ONLY, acting_user=None)
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
         # Make sure that we are checking the permission with a full member,
         # as full member is the user just below moderator in the role hierarchy.
@@ -3144,9 +3146,7 @@ class SubscriptionAPITest(ZulipTestCase):
         do_change_user_role(user_profile, UserProfile.ROLE_MODERATOR, acting_user=None)
         self.common_subscribe_to_streams(user_profile, ["new_stream2"])
 
-        do_set_realm_property(
-            realm, stream_policy, Realm.POLICY_MEMBERS_ONLY, acting_user=None
-        )
+        do_set_realm_property(realm, stream_policy, Realm.POLICY_MEMBERS_ONLY, acting_user=None)
         do_change_user_role(user_profile, UserProfile.ROLE_GUEST, acting_user=None)
         result = self.common_subscribe_to_streams(
             user_profile,
