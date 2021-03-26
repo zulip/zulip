@@ -1207,12 +1207,11 @@ def update_user_group_members(client: Client, user_group_id: int) -> None:
     ensure_users([8, 10, 11], ["cordelia", "hamlet", "iago"])
     # {code_example|start}
     request = {
-        "group_id": user_group_id,
         "delete": [8, 10],
         "add": [11],
     }
 
-    result = client.update_user_group_members(request)
+    result = client.update_user_group_members(user_group_id, request)
     # {code_example|end}
     validate_against_openapi_schema(result, "/user_groups/{group_id}/members", "post", "200")
 

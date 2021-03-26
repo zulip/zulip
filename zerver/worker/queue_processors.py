@@ -31,7 +31,6 @@ from typing import (
     Tuple,
     Type,
     TypeVar,
-    cast,
 )
 
 import orjson
@@ -43,7 +42,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import override as override_language
 from django.utils.translation import ugettext as _
 from sentry_sdk import add_breadcrumb, configure_scope
-from zulip_bots.lib import ExternalBotHandler, extract_query_without_mention
+from zulip_bots.lib import extract_query_without_mention
 
 from zerver.context_processors import common_context
 from zerver.lib.actions import (
@@ -776,7 +775,7 @@ class EmbeddedBotWorker(QueueProcessingWorker):
                 if event["trigger"] == "mention":
                     message["content"] = extract_query_without_mention(
                         message=message,
-                        client=cast(ExternalBotHandler, self.get_bot_api_client(user_profile)),
+                        client=self.get_bot_api_client(user_profile),
                     )
                     assert message["content"] is not None
                 bot_handler.handle_message(
