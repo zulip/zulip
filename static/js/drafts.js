@@ -141,6 +141,13 @@ function draft_notify() {
     $(".alert-draft").delay(1000).fadeOut(500);
 }
 
+export function save_draft(draft) {
+    // Save the draft and notify the user
+    const new_draft_id = draft_model.addDraft(draft);
+    $("#compose-textarea").data("draft-id", new_draft_id);
+    draft_notify();
+}
+
 export function update_draft() {
     const draft = snapshot_message();
 
@@ -165,9 +172,7 @@ export function update_draft() {
 
     // We have never saved a draft for this message, so add
     // one.
-    const new_draft_id = draft_model.addDraft(draft);
-    $("#compose-textarea").data("draft-id", new_draft_id);
-    draft_notify();
+    save_draft(draft);
 }
 
 export function delete_draft_after_send() {
