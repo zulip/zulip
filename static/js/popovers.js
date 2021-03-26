@@ -42,6 +42,7 @@ import * as settings_account from "./settings_account";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_profile_fields from "./settings_profile_fields";
+import * as stream_data from "./stream_data";
 import * as stream_popover from "./stream_popover";
 import * as user_groups from "./user_groups";
 import * as user_status from "./user_status";
@@ -377,7 +378,8 @@ export function show_user_profile(user) {
     const profile_data = page_params.custom_profile_fields
         .map((f) => get_custom_profile_field_data(user, f, field_types, dateFormat))
         .filter((f) => f.name !== undefined);
-
+    const user_streams = stream_data.subscribed_subs();
+    const groups_of_user = user_groups.get_user_groups_of_user(user.user_id);
     const args = {
         full_name: user.full_name,
         email: people.get_visible_email(user),
@@ -390,6 +392,8 @@ export function show_user_profile(user) {
         user_time: people.get_user_time(user.user_id),
         user_type: people.get_user_type(user.user_id),
         user_is_guest: user.is_guest,
+        groups_of_user,
+        user_streams,
     };
 
     $("#user-profile-modal-holder").html(render_user_profile_modal(args));
