@@ -4,6 +4,7 @@ import * as alert_words from "./alert_words";
 import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
 import * as compose from "./compose";
+import * as drafts from "./drafts";
 import * as local_message from "./local_message";
 import * as markdown from "./markdown";
 import * as message_events from "./message_events";
@@ -75,6 +76,18 @@ function resend_message(message, row) {
 
     sent_messages.start_resend(local_id);
     transmit.send_message(message, on_success, on_error);
+}
+
+function save_failed_message_as_draft(message) {
+    // Pass the message object of the failed message in parameters
+
+    // The message content has been applied markdown, but we need
+    // to save the draft with raw_content
+    message.content = message.raw_content;
+
+    // Finally save the new draft and abort current message
+    drafts.save_draft(message);
+    abort_message(message);
 }
 
 export function build_display_recipient(message) {
@@ -436,4 +449,5 @@ export function initialize() {
 
     on_failed_action(".remove-failed-message", abort_message);
     on_failed_action(".refresh-failed-message", resend_message);
+    on_failed_action(".failed-convert-to-draft", save_failed_message_as_draft);
 }

@@ -803,6 +803,16 @@ td.pointer {
     top: 8px !important;
 }
 
+.failed-convert-to-draft {
+    position: absolute;
+    right: -59px;
+
+    .button {
+        /* Needs important as preference of app_components.css is higher than zulip.css */
+        padding: 1px 10px !important;
+    }
+}
+
 .message_controls {
     display: inline-block;
     position: absolute;
