@@ -3692,19 +3692,6 @@ class SubscriptionAPITest(ZulipTestCase):
         stream = get_stream("Denmark", guest_user.realm)
         self.assertEqual(filter_stream_authorization(guest_user, [stream]), ([], [stream]))
 
-        # Test UserProfile.can_create_streams for guest users.
-        streams_raw: List[StreamDict] = [
-            {
-                "invite_only": False,
-                "history_public_to_subscribers": None,
-                "name": "new_stream",
-                "stream_post_policy": Stream.STREAM_POST_POLICY_EVERYONE,
-            }
-        ]
-
-        with self.assertRaisesRegex(JsonableError, "Insufficient permission"):
-            list_to_streams(streams_raw, guest_user)
-
         stream = self.make_stream("private_stream", invite_only=True)
         result = self.common_subscribe_to_streams(guest_user, ["private_stream"], allow_fail=True)
         self.assert_json_error(result, "Not allowed for guest users")
