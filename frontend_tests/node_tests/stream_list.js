@@ -128,9 +128,9 @@ test_ui("create_sidebar_row", (override) => {
     assert(topic_list_cleared);
 
     const expected_elems = [
-        devel_sidebar, //pinned
-        split, //separator
-        social_sidebar, //not pinned
+        devel_sidebar, // pinned
+        split, // separator
+        social_sidebar, // not pinned
     ];
 
     assert.deepEqual(appended_elems, expected_elems);

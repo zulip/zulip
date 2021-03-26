@@ -741,7 +741,7 @@ test("test_topic_edit", () => {
         "4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1",
     );
 
-    ////////////////// test change topic //////////////////
+    // ---------------- test change topic ----------------
     verify_topic_data(all_topics, stream1, topic6, messages[8].id, true);
     assert.equal(all_topics.get(get_topic_key(stream1, topic8)), undefined);
 
@@ -754,7 +754,7 @@ test("test_topic_edit", () => {
     verify_topic_data(all_topics, stream1, topic8, messages[8].id, true);
     assert.equal(all_topics.get(get_topic_key(stream1, topic6)), undefined);
 
-    ////////////////// test stream change //////////////////
+    // ---------------- test stream change ----------------
     verify_topic_data(all_topics, stream1, topic1, messages[0].id, true);
     assert.equal(all_topics.get(get_topic_key(stream2, topic1)), undefined);
 
@@ -765,7 +765,7 @@ test("test_topic_edit", () => {
     assert.equal(all_topics.get(get_topic_key(stream1, topic1)), undefined);
     verify_topic_data(all_topics, stream2, topic1, messages[0].id, true);
 
-    ////////////////// test stream & topic change //////////////////
+    // ---------------- test stream & topic change ----------------
     verify_topic_data(all_topics, stream2, topic1, messages[0].id, true);
     assert.equal(all_topics.get(get_topic_key(stream3, topic9)), undefined);
 

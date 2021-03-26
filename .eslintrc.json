@@ -87,7 +87,7 @@
             }
         ],
         "radix": "error",
-        "spaced-comment": "off",
+        "spaced-comment": ["error", "always", {"markers": ["/"]}],
         "strict": "error",
         "unicorn/consistent-function-scoping": "off",
         "unicorn/explicit-length-check": "off",

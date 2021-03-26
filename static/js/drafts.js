@@ -463,7 +463,7 @@ function drafts_scroll(next_focus_draft_row) {
     const total_dist = dist_from_top + next_focus_draft_row[0].clientHeight;
     const dist_from_bottom = $(".drafts-container")[0].clientHeight - total_dist;
     if (dist_from_bottom < -4) {
-        //-4 is the min dist from the bottom that will require extra scrolling.
+        // -4 is the min dist from the bottom that will require extra scrolling.
         $(".drafts-list")[0].scrollTop += $(".drafts-list")[0].clientHeight / 2;
     }
 }
