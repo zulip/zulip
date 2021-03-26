@@ -919,7 +919,6 @@ six==1.15.0 \
     #   talon-core
     #   traitlets
     #   twilio
-    #   zulip
 social-auth-app-django==4.0.0 \
     --hash=sha256:2c69e57df0b30c9c1823519c5f1992cbe4f3f98fdc7d95c840e091a752708840 \
     --hash=sha256:567ad0e028311541d7dfed51d3bf2c60440a6fd236d5d4d06c5a618b3d6c57c5 \
@@ -1019,6 +1018,7 @@ typing-extensions==3.7.4.3 \
     # via
     #   -r requirements/common.in
     #   importlib-metadata
+    #   zulip-bots
 uhashring==2.0 \
     --hash=sha256:c44c53e88ab01222d3a14346af6aac72a5b3b8ea1a1ddc8d102d0c893bf3e249
     # via python-binary-memcached
@@ -1067,13 +1067,13 @@ zipp==3.4.1 \
     --hash=sha256:3607921face881ba3e026887d8150cca609d517579abe052ac81fc5aeffdbd76 \
     --hash=sha256:51cb66cc54621609dd593d1787f286ee42a5c0adbb4b29abea5a63edc3e03098
     # via importlib-metadata
-https://github.com/zulip/python-zulip-api/archive/0.7.0.zip/#egg=zulip==0.7.0_git&subdirectory=zulip \
-    --hash=sha256:161e3f38a9d27bf76a30da3d3d81f5f1b71a8c2c8144e0c4a33cd15018606d9f
+https://github.com/zulip/python-zulip-api/archive/70f457f82ab3e2fa6fc489f950e46e105dc27ae3.zip#egg=zulip==0.7.1+git&subdirectory=zulip \
+    --hash=sha256:56efd8b260de2cd5cb80b1fa994c99eeda8d4d91d4b481115a615933a1c74761
     # via
     #   -r requirements/common.in
     #   zulip-bots
-https://github.com/zulip/python-zulip-api/archive/0.7.0.zip/#egg=zulip_bots==0.7.0+git&subdirectory=zulip_bots \
-    --hash=sha256:161e3f38a9d27bf76a30da3d3d81f5f1b71a8c2c8144e0c4a33cd15018606d9f
+https://github.com/zulip/python-zulip-api/archive/70f457f82ab3e2fa6fc489f950e46e105dc27ae3.zip#egg=zulip_bots==0.7.1+git&subdirectory=zulip_bots \
+    --hash=sha256:56efd8b260de2cd5cb80b1fa994c99eeda8d4d91d4b481115a615933a1c74761
     # via -r requirements/common.in
 zxcvbn==4.4.28 \
     --hash=sha256:151bd816817e645e9064c354b13544f85137ea3320ca3be1fb6873ea75ef7dc1

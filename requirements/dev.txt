@@ -1381,7 +1381,6 @@ six==1.15.0 \
     #   traitlets
     #   twilio
     #   w3lib
-    #   zulip
 snakeviz==2.1.0 \
     --hash=sha256:8ce375b18ae4a749516d7e6c6fbbf8be6177c53974f53534d8eadb646cd279b1 \
     --hash=sha256:92ad876fb6a201a7e23a6b85ea96d9643a51e285667c253a8653643804f7cb68
@@ -1603,6 +1602,7 @@ typing-extensions==3.7.4.3 \
     #   sqlalchemy-stubs
     #   typing-inspect
     #   zulint
+    #   zulip-bots
 typing-inspect==0.6.0 \
     --hash=sha256:3b98390df4d999a28cf5b35d8b333425af5da2ece8a4ea9e98f71e7591347b4f \
     --hash=sha256:8f1b1dd25908dbfd81d3bebc218011531e7ab614ba6e5bf7826d887c834afab7 \
@@ -1740,13 +1740,13 @@ zope.interface==5.3.0 \
 https://github.com/zulip/zulint/archive/20508eb8939e909806e6c8018fadfc24e854a02a.zip#egg=zulint==0.0.1 \
     --hash=sha256:d3fba0d7232c769b1aaff042315f1d9a92dcc5c522b907c744af457c6752fcd2
     # via -r requirements/dev.in
-https://github.com/zulip/python-zulip-api/archive/0.7.0.zip/#egg=zulip==0.7.0_git&subdirectory=zulip \
-    --hash=sha256:161e3f38a9d27bf76a30da3d3d81f5f1b71a8c2c8144e0c4a33cd15018606d9f
+https://github.com/zulip/python-zulip-api/archive/70f457f82ab3e2fa6fc489f950e46e105dc27ae3.zip#egg=zulip==0.7.1+git&subdirectory=zulip \
+    --hash=sha256:56efd8b260de2cd5cb80b1fa994c99eeda8d4d91d4b481115a615933a1c74761
     # via
     #   -r requirements/common.in
     #   zulip-bots
-https://github.com/zulip/python-zulip-api/archive/0.7.0.zip/#egg=zulip_bots==0.7.0+git&subdirectory=zulip_bots \
-    --hash=sha256:161e3f38a9d27bf76a30da3d3d81f5f1b71a8c2c8144e0c4a33cd15018606d9f
+https://github.com/zulip/python-zulip-api/archive/70f457f82ab3e2fa6fc489f950e46e105dc27ae3.zip#egg=zulip_bots==0.7.1+git&subdirectory=zulip_bots \
+    --hash=sha256:56efd8b260de2cd5cb80b1fa994c99eeda8d4d91d4b481115a615933a1c74761
     # via -r requirements/common.in
 zxcvbn==4.4.28 \
     --hash=sha256:151bd816817e645e9064c354b13544f85137ea3320ca3be1fb6873ea75ef7dc1
