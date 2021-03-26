@@ -1,17 +1,9 @@
 import * as blueslip from "./blueslip";
-import * as message_events from "./message_events";
 import * as message_list from "./message_list";
 import {page_params} from "./page_params";
 
 function truncate_precision(float) {
     return Number.parseFloat(float.toFixed(3));
-}
-
-export function insert_message(message) {
-    // It is a little bit funny to go through the message_events
-    // codepath, but it's sort of the idea behind local echo that
-    // we are simulating server events before they actually arrive.
-    message_events.insert_new_messages([message], true);
 }
 
 export const get_next_id_float = (function () {
