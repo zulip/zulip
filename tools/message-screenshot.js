@@ -1,6 +1,6 @@
 "use strict";
 
-/* global $, CSS, navigate */
+/* global $, CSS */
 
 const path = require("path");
 
@@ -60,8 +60,8 @@ async function run() {
         // remove unread marker and don't select message
         const marker = `#zfilt${CSS.escape(options.messageId)} .unread_marker`;
         await page.evaluate((sel) => $(sel).remove(), marker);
-        await page.evaluate(() => navigate.up());
         const messageBox = await page.$(messageSelector);
+        await page.keyboard.press("KeyK");
         const messageGroup = (await messageBox.$x(".."))[0];
         // Compute screenshot area, with some padding around the message group
         const clip = {...(await messageGroup.boundingBox())};
