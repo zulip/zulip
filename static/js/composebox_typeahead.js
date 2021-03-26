@@ -26,9 +26,9 @@ import * as typeahead_helper from "./typeahead_helper";
 import * as user_groups from "./user_groups";
 import * as user_pill from "./user_pill";
 
-//************************************
+// **********************************
 // AN IMPORTANT NOTE ABOUT TYPEAHEADS
-//************************************
+// **********************************
 // They do not do any HTML escaping, at all.
 // And your input to them is rendered as though it were HTML by
 // the default highlighter.
