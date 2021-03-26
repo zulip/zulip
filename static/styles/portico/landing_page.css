@@ -3863,3 +3863,17 @@ nav {
     font-size: 13px;
     padding-left: 10px;
 }
+
+.carousel-control.right:hover #next {
+    display: block;
+}
+
+.carousel-label {
+    display: none;
+    font-family: inherit;
+    font-size: 12px;
+}
+
+.carousel-control.left:hover #previous {
+    display: block;
+}
