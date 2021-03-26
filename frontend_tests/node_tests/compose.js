@@ -48,7 +48,6 @@ const _document = {
 set_global("document", _document);
 const channel = mock_esm("../../static/js/channel");
 const loading = mock_esm("../../static/js/loading");
-const local_message = mock_esm("../../static/js/local_message");
 const markdown = mock_esm("../../static/js/markdown");
 const reminder = mock_esm("../../static/js/reminder", {
     is_deferred_delivery: noop,
@@ -724,9 +723,9 @@ test_ui("send_message", (override) => {
         override(compose_state, "private_message_recipient", () => "alice@example.com");
 
         const server_message_id = 127;
-        local_message.insert_message = (message) => {
+        override(echo, "insert_message", (message) => {
             assert.equal(message.timestamp, fake_now);
-        };
+        });
 
         markdown.apply_markdown = () => {};
         markdown.add_topic_links = () => {};

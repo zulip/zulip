@@ -5,6 +5,7 @@ import * as blueslip from "./blueslip";
 import * as compose from "./compose";
 import * as local_message from "./local_message";
 import * as markdown from "./markdown";
+import * as message_events from "./message_events";
 import * as message_list from "./message_list";
 import * as message_store from "./message_store";
 import * as narrow_state from "./narrow_state";
@@ -26,6 +27,13 @@ import * as util from "./util";
 
 const waiting_for_id = new Map();
 let waiting_for_ack = new Map();
+
+function insert_message(message) {
+    // It is a little bit funny to go through the message_events
+    // codepath, but it's sort of the idea behind local echo that
+    // we are simulating server events before they actually arrive.
+    message_events.insert_new_messages([message], true);
+}
 
 function failed_message_success(message_id) {
     message_store.get(message_id).failed_request = false;
@@ -159,7 +167,7 @@ export function insert_local_message(message_request, local_id_float) {
     waiting_for_ack.set(message.local_id, message);
 
     message.display_recipient = build_display_recipient(message);
-    local_message.insert_message(message);
+    insert_message(message);
     return message;
 }
 

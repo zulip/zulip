@@ -8,7 +8,6 @@ const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {page_params} = require("../zjsunit/zpage_params");
 
-const local_message = mock_esm("../../static/js/local_message");
 const markdown = mock_esm("../../static/js/markdown");
 
 let disparities = [];
@@ -188,7 +187,7 @@ run_test("insert_local_message streams", (override) => {
         add_topic_links_called = true;
     });
 
-    override(local_message, "insert_message", (message) => {
+    override(echo, "insert_message", (message) => {
         assert.equal(message.display_recipient, "general");
         assert.equal(message.timestamp, fake_now);
         assert.equal(message.sender_email, "iago@zulip.com");
@@ -232,7 +231,7 @@ run_test("insert_local_message PM", (override) => {
     let apply_markdown_called = false;
     let insert_message_called = false;
 
-    override(local_message, "insert_message", (message) => {
+    override(echo, "insert_message", (message) => {
         assert.equal(message.display_recipient.length, 3);
         insert_message_called = true;
     });
