@@ -26,9 +26,9 @@ run_test("starred", (override) => {
     });
     let ui_updated;
 
-    ui.update_starred_view = () => {
+    override(ui, "update_starred_view", () => {
         ui_updated = true;
-    };
+    });
 
     let posted_data;
 
