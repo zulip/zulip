@@ -1809,68 +1809,6 @@ class StreamAdminTest(ZulipTestCase):
         stream_name = ["waiting_period"]
         self.common_subscribe_to_streams(user_profile, stream_name)
 
-    def test_invite_to_stream_by_invite_period_threshold(self) -> None:
-        """
-        Non admin users with account age greater or equal to the invite
-        to stream threshold should be able to invite others to a stream.
-        """
-        hamlet_user = self.example_user("hamlet")
-        hamlet_user.date_joined = timezone_now()
-        hamlet_user.save()
-
-        cordelia_user = self.example_user("cordelia")
-        cordelia_user.date_joined = timezone_now()
-        cordelia_user.save()
-
-        do_set_realm_property(
-            hamlet_user.realm,
-            "invite_to_stream_policy",
-            Realm.POLICY_FULL_MEMBERS_ONLY,
-            acting_user=None,
-        )
-        cordelia_user_id = cordelia_user.id
-
-        self.login_user(hamlet_user)
-        do_change_user_role(hamlet_user, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
-
-        # Hamlet creates a stream as an admin..
-        stream_name = ["waitingperiodtest"]
-        self.common_subscribe_to_streams(hamlet_user, stream_name)
-
-        # Can only invite users to stream if their account is ten days old..
-        do_change_user_role(hamlet_user, UserProfile.ROLE_MEMBER, acting_user=None)
-        do_set_realm_property(hamlet_user.realm, "waiting_period_threshold", 10, acting_user=None)
-
-        # Attempt and fail to invite Cordelia to the stream..
-        result = self.common_subscribe_to_streams(
-            hamlet_user,
-            stream_name,
-            {"principals": orjson.dumps([cordelia_user_id]).decode()},
-            allow_fail=True,
-        )
-        self.assert_json_error(result, "Insufficient permission")
-
-        # Anyone can invite users..
-        do_set_realm_property(hamlet_user.realm, "waiting_period_threshold", 0, acting_user=None)
-
-        # Attempt and succeed to invite Cordelia to the stream..
-        self.common_subscribe_to_streams(
-            hamlet_user, stream_name, {"principals": orjson.dumps([cordelia_user_id]).decode()}
-        )
-
-        # Set threshold to 20 days..
-        do_set_realm_property(hamlet_user.realm, "waiting_period_threshold", 20, acting_user=None)
-        # Make Hamlet's account 21 days old..
-        hamlet_user.date_joined = timezone_now() - timedelta(days=21)
-        hamlet_user.save()
-        # Unsubscribe Cordelia..
-        self.unsubscribe(cordelia_user, stream_name[0])
-
-        # Attempt and succeed to invite Aaron to the stream..
-        self.common_subscribe_to_streams(
-            hamlet_user, stream_name, {"principals": orjson.dumps([cordelia_user_id]).decode()}
-        )
-
     def test_remove_already_not_subbed(self) -> None:
         """
         Trying to unsubscribe someone who already isn't subscribed to a stream
