@@ -38,9 +38,9 @@
     </div>
     <div data-process="insecure-desktop-app" class="alert alert-info red">
         <div data-step="1">
-            _("You are using an old version of the Zulip desktop app with known security bugs.")
+            {{ _("You are using an old version of the Zulip desktop app with known security bugs.") }}
             <a class="alert-link" href="https://zulip.com/apps" target="_blank" rel="noopener noreferrer">
-                _("Download the latest version.")
+                {{ _("Download the latest version.") }}
             </a>
         </div>
         <span class="close" data-dismiss="alert" aria-label="{{ _('Close') }}" role="button" tabindex=0>&times;</span>
@@ -51,9 +51,9 @@
             Welcome back!  You have <span class="bankruptcy_unread_count">{{ count }}</span> unread messages.  Do you want to mark them all as read?
             {% endtrans %}
             <span class="buttons">
-                <a class="alert-link accept-bankruptcy" role="button" tabindex=0>_("Yes, please!")</a>
+                <a class="alert-link accept-bankruptcy" role="button" tabindex=0>{{ _("Yes, please!") }}</a>
                 &bull;
-                <a class="alert-link exit" role="button" tabindex=0>_("No, I'll catch up.")</a>
+                <a class="alert-link exit" role="button" tabindex=0>{{ _("No, I'll catch up.") }}</a>
             </span>
         </div>
         <span class="close" data-dismiss="alert" aria-label="{{ _('Close') }}" role="button" tabindex=0>&times;</span>
