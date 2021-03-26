@@ -349,10 +349,6 @@ export function set_up() {
                 data: {
                     id: group_id,
                 },
-                success() {
-                    user_groups.remove(user_group);
-                    reload();
-                },
                 error() {
                     btn.text(i18n.t("Failed!"));
                 },
