@@ -1390,10 +1390,6 @@ paths:
                                     - $ref: "#/components/schemas/EventTypeSchema"
                                     - enum:
                                         - custom_profile_fields
-                                op:
-                                  type: string
-                                  enum:
-                                    - add
                                 fields:
                                   type: array
                                   description: |
@@ -1405,7 +1401,6 @@ paths:
                               example:
                                 {
                                   "type": "custom_profile_fields",
-                                  "op": "add",
                                   "fields":
                                     [
                                       {

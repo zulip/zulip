@@ -6715,9 +6715,9 @@ def check_attachment_reference_change(message: Message) -> bool:
     return message.attachment_set.exists()
 
 
-def notify_realm_custom_profile_fields(realm: Realm, operation: str) -> None:
+def notify_realm_custom_profile_fields(realm: Realm) -> None:
     fields = custom_profile_fields_for_realm(realm.id)
-    event = dict(type="custom_profile_fields", op=operation, fields=[f.as_dict() for f in fields])
+    event = dict(type="custom_profile_fields", fields=[f.as_dict() for f in fields])
     send_event(realm, event, active_user_ids(realm.id))
 
 
@@ -6735,7 +6735,7 @@ def try_add_realm_default_custom_profile_field(
     field.save()
     field.order = field.id
     field.save(update_fields=["order"])
-    notify_realm_custom_profile_fields(realm, "add")
+    notify_realm_custom_profile_fields(realm)
     return field
 
 
@@ -6757,7 +6757,7 @@ def try_add_realm_custom_profile_field(
     field.save()
     field.order = field.id
     field.save(update_fields=["order"])
-    notify_realm_custom_profile_fields(realm, "add")
+    notify_realm_custom_profile_fields(realm)
     return field
 
 
@@ -6767,7 +6767,7 @@ def do_remove_realm_custom_profile_field(realm: Realm, field: CustomProfileField
     associated with it in CustomProfileFieldValue model.
     """
     field.delete()
-    notify_realm_custom_profile_fields(realm, "delete")
+    notify_realm_custom_profile_fields(realm)
 
 
 def do_remove_realm_custom_profile_fields(realm: Realm) -> None:
@@ -6789,7 +6789,7 @@ def try_update_realm_custom_profile_field(
     ):
         field.field_data = orjson.dumps(field_data or {}).decode()
     field.save()
-    notify_realm_custom_profile_fields(realm, "update")
+    notify_realm_custom_profile_fields(realm)
 
 
 def try_reorder_realm_custom_profile_fields(realm: Realm, order: List[int]) -> None:
@@ -6801,7 +6801,7 @@ def try_reorder_realm_custom_profile_fields(realm: Realm, order: List[int]) -> N
     for field in fields:
         field.order = order_mapping[field.id]
         field.save(update_fields=["order"])
-    notify_realm_custom_profile_fields(realm, "update")
+    notify_realm_custom_profile_fields(realm)
 
 
 def notify_user_update_custom_profile_data(

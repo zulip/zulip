@@ -65,6 +65,7 @@ from zerver.lib.actions import (
     do_remove_default_stream,
     do_remove_default_stream_group,
     do_remove_reaction,
+    do_remove_realm_custom_profile_field,
     do_remove_realm_domain,
     do_remove_realm_emoji,
     do_remove_realm_filter,
@@ -92,6 +93,7 @@ from zerver.lib.actions import (
     lookup_default_stream_groups,
     notify_realm_custom_profile_fields,
     remove_members_from_user_group,
+    try_add_realm_custom_profile_field,
     try_update_realm_custom_profile_field,
 )
 from zerver.lib.event_schema import (
@@ -165,6 +167,7 @@ from zerver.lib.test_helpers import (
 from zerver.lib.topic import TOPIC_NAME
 from zerver.models import (
     Attachment,
+    CustomProfileField,
     Message,
     MultiuseInvite,
     PreregistrationUser,
@@ -694,20 +697,32 @@ class NormalActionsTest(BaseAction):
         check_typing_stop("events[0]", events[0])
 
     def test_custom_profile_fields_events(self) -> None:
+        realm = self.user_profile.realm
+        try_add_realm_custom_profile_field(
+            realm=realm, name="Expertise", field_type=CustomProfileField.LONG_TEXT
+        )
+
         events = self.verify_action(
-            lambda: notify_realm_custom_profile_fields(self.user_profile.realm, "add"),
+            lambda: notify_realm_custom_profile_fields(self.user_profile.realm),
             state_change_expected=False,
         )
         check_custom_profile_fields("events[0]", events[0])
 
-        realm = self.user_profile.realm
         field = realm.customprofilefield_set.get(realm=realm, name="Biography")
         name = field.name
         hint = "Biography of the user"
         try_update_realm_custom_profile_field(realm, field, name, hint=hint)
 
         events = self.verify_action(
-            lambda: notify_realm_custom_profile_fields(self.user_profile.realm, "add"),
+            lambda: notify_realm_custom_profile_fields(self.user_profile.realm),
+            state_change_expected=False,
+        )
+        check_custom_profile_fields("events[0]", events[0])
+
+        do_remove_realm_custom_profile_field(realm, field)
+
+        events = self.verify_action(
+            lambda: notify_realm_custom_profile_fields(self.user_profile.realm),
             state_change_expected=False,
         )
         check_custom_profile_fields("events[0]", events[0])

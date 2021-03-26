@@ -184,7 +184,6 @@ custom_profile_field_type = DictType(
 custom_profile_fields_event = event_dict_type(
     required_keys=[
         ("type", Equals("custom_profile_fields")),
-        ("op", Equals("add")),
         ("fields", ListType(custom_profile_field_type)),
     ]
 )
