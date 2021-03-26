@@ -32,7 +32,7 @@ jedi<0.18.0
 Pillow
 
 # Needed for building complex DB queries
-SQLAlchemy
+SQLAlchemy==1.3.*  # 1.4 has badly busted type annotations
 
 # Needed for S3 file uploads
 boto3
@@ -73,7 +73,7 @@ markdown-include
 pika
 
 # Needed to access our database
-psycopg2 --no-binary psycopg2
+psycopg2
 
 # Needed for memcached usage
 python-binary-memcached
