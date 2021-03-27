@@ -142,20 +142,12 @@ The webhook got a response with status code *400*.""",
         mock_event = self.mock_event(bot_user)
         service_handler = GenericOutgoingWebhookService("token", bot_user, "service")
 
-        with mock.patch("requests.sessions.Session.send") as mock_send, self.assertLogs(
-            level="WARNING"
-        ) as m:
+        with mock.patch("requests.sessions.Session.send") as mock_send:
+            mock_send.return_value = ResponseMock(200)
             final_response = do_rest_call(
                 "https://example.com/", "payload-stub", mock_event, service_handler
             )
             assert final_response is not None
-
-            self.assertEqual(
-                m.output,
-                [
-                    f'WARNING:root:Message http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/ triggered an outgoing webhook, returning status code {final_response.status_code}.\n Content of response (in quotes): "{final_response.text}"'
-                ],
-            )
 
             mock_send.assert_called_once()
             prepared_request = mock_send.call_args[0][0]
