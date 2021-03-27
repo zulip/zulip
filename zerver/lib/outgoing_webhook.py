@@ -5,7 +5,7 @@ from typing import Any, AnyStr, Dict, Optional
 
 import requests
 from django.utils.translation import ugettext as _
-from requests import Response
+from requests import Response, Session
 
 from version import ZULIP_VERSION
 from zerver.decorator import JsonableError
@@ -30,6 +30,7 @@ class OutgoingWebhookServiceInterface(metaclass=abc.ABCMeta):
         self.token: str = token
         self.user_profile: UserProfile = user_profile
         self.service_name: str = service_name
+        self.session: Session = Session()
 
     @abc.abstractmethod
     def make_request(self, base_url: str, event: Dict[str, Any]) -> Optional[Response]:
@@ -70,7 +71,7 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
         headers = {
             "User-Agent": user_agent,
         }
-        return requests.request("POST", base_url, json=request_data, headers=headers)
+        return self.session.post(base_url, json=request_data, headers=headers)
 
     def process_success(self, response_json: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         if "response_not_required" in response_json and response_json["response_not_required"]:
@@ -112,7 +113,7 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
             ("trigger_word", event["trigger"]),
             ("service_id", event["user_profile_id"]),
         ]
-        return requests.request("POST", base_url, data=request_data)
+        return self.session.post(base_url, data=request_data)
 
     def process_success(self, response_json: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         if "text" in response_json:
