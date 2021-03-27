@@ -2,7 +2,7 @@ import {strict as assert} from "assert";
 
 import type {Page} from "puppeteer";
 
-import common from "../puppeteer_lib/common";
+import * as common from "../puppeteer_lib/common";
 
 async function get_stream_li(page: Page, stream_name: string): Promise<string> {
     const stream_id = await common.get_stream_id(page, stream_name);

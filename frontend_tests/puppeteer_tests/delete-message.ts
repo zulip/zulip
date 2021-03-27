@@ -1,6 +1,6 @@
 import type {Page} from "puppeteer";
 
-import common from "../puppeteer_lib/common";
+import * as common from "../puppeteer_lib/common";
 
 async function click_delete_and_return_last_msg_id(page: Page): Promise<string | undefined> {
     return await page.evaluate(() => {
