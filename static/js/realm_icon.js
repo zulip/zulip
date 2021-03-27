@@ -4,7 +4,7 @@ import * as channel from "./channel";
 import {page_params} from "./page_params";
 import * as upload_widget from "./upload_widget";
 
-export function build_realm_icon_widget(upload_function) {
+export function build_realm_icon_widget() {
     const get_file_input = function () {
         return $("#realm-icon-upload-widget .image_file_input").expectOne();
     };
@@ -29,7 +29,6 @@ export function build_realm_icon_widget(upload_function) {
         get_file_input,
         $("#realm-icon-upload-widget .image_file_input_error").expectOne(),
         $("#realm-icon-upload-widget .image_upload_button").expectOne(),
-        upload_function,
         page_params.max_icon_file_size,
     );
 }

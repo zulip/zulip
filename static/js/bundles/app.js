@@ -20,6 +20,7 @@ import "../settings";
 import "../ui_init";
 import "../desktop_integration";
 import "../zulip_test";
+import "../image_upload_widget";
 
 // Import styles
 import "tippy.js/dist/tippy.css";

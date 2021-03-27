@@ -19,7 +19,6 @@ const _FormData = function () {
 };
 
 mock_cjs("jquery", $);
-const realm_icon = mock_esm("../../static/js/realm_icon");
 
 stub_templates((name, data) => {
     if (name === "settings/admin_realm_domains_list") {
@@ -339,28 +338,6 @@ function test_change_save_button_state() {
         assert.equal(save_button.attr("data-status"), "failed");
         assert.equal(save_button_text.text(), "translated: Save changes");
     }
-}
-
-function test_upload_realm_icon(override, upload_realm_logo_or_icon) {
-    form_data = {
-        append(field, val) {
-            form_data[field] = val;
-        },
-    };
-
-    const file_input = [{files: ["image1.png", "image2.png"]}];
-
-    let posted;
-    override(channel, "post", (req) => {
-        posted = true;
-        assert.equal(req.url, "/json/realm/icon");
-        assert.equal(req.data.csrfmiddlewaretoken, "token-stub");
-        assert.equal(req.data["file-0"], "image1.png");
-        assert.equal(req.data["file-1"], "image2.png");
-    });
-
-    upload_realm_logo_or_icon(file_input, null, true);
-    assert(posted);
 }
 
 function test_change_allow_subdomains(change_allow_subdomains) {
@@ -746,11 +723,6 @@ test("set_up", (override) => {
         },
     };
 
-    let upload_realm_logo_or_icon;
-    realm_icon.build_realm_icon_widget = (f) => {
-        upload_realm_logo_or_icon = f;
-    };
-
     override(dropdown_list_widget, "DropdownListWidget", () => ({
         render: noop,
         update: noop,
@@ -789,7 +761,6 @@ test("set_up", (override) => {
             ".subsection-header .subsection-changes-save .button",
         ),
     );
-    test_upload_realm_icon(override, upload_realm_logo_or_icon);
     test_change_allow_subdomains(
         $("#realm_domains_table").get_on_handler("change", ".allow-subdomains"),
     );
