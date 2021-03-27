@@ -163,7 +163,6 @@ export function build_stream_list(force_rerender) {
     } else {
         parent.append('<div class="stream-not-found"> No search results </div>');
     }
-    
 }
 
 export function get_stream_li(stream_id) {
