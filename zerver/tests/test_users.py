@@ -1328,7 +1328,7 @@ class ActivateTest(ZulipTestCase):
         user = self.example_user("hamlet")
         do_deactivate_user(user)
         self.assertFalse(user.is_active)
-        do_reactivate_user(user)
+        do_reactivate_user(user, acting_user=None)
         self.assertTrue(user.is_active)
 
     def test_api(self) -> None:

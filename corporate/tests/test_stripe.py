@@ -2720,7 +2720,7 @@ class LicenseLedgerTest(StripeTestCase):
         self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
         user = do_create_user("email", "password", get_realm("zulip"), "name", acting_user=None)
         do_deactivate_user(user)
-        do_reactivate_user(user)
+        do_reactivate_user(user, acting_user=None)
         # Not a proper use of do_activate_user, but fine for this test
         do_activate_user(user, acting_user=None)
         ledger_entries = list(

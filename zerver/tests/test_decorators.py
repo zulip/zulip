@@ -1134,7 +1134,7 @@ class LoginRequiredTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
 
         # Verify succeeds if user reactivated
-        do_reactivate_user(user_profile)
+        do_reactivate_user(user_profile, acting_user=None)
         self.login_user(user_profile)
         result = self.client_get("/accounts/accept_terms/")
         self.assert_in_response("I agree to the", result)
@@ -1198,7 +1198,7 @@ class InactiveUserTest(ZulipTestCase):
         self.assert_json_error_contains(result, "Not logged in", status_code=401)
 
         # Even if a logged-in session was leaked, it still wouldn't work
-        do_reactivate_user(user_profile)
+        do_reactivate_user(user_profile, acting_user=None)
         self.login_user(user_profile)
         user_profile.is_active = False
         user_profile.save()
@@ -1656,7 +1656,7 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
         user_profile.is_active = False
         user_profile.save()
         self.assert_json_error_contains(self._do_test(user_profile), "Account is deactivated")
-        do_reactivate_user(user_profile)
+        do_reactivate_user(user_profile, acting_user=None)
 
     def test_authenticated_json_post_view_if_user_realm_is_deactivated(self) -> None:
         user_profile = self.example_user("hamlet")
