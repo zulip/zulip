@@ -11,7 +11,7 @@ import * as message_lists from "./message_lists";
 import * as muting from "./muting";
 import * as overlays from "./overlays";
 import * as recent_topics from "./recent_topics";
-import * as settings_muting from "./settings_muting";
+import * as settings_muted_topics from "./settings_muted_topics";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
@@ -36,7 +36,7 @@ export function rerender_on_topic_update() {
     if (message_lists.current !== message_lists.home) {
         message_lists.home.update_topic_muting_and_rerender();
     }
-    if (overlays.settings_open() && settings_muting.loaded) {
+    if (overlays.settings_open() && settings_muted_topics.loaded) {
         set_up_muted_topics_ui();
     }
 }
