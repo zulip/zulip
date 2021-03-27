@@ -22,7 +22,7 @@ function make_message_view_header(filter) {
     const message_view_header = {};
     if (recent_topics.is_visible()) {
         return {
-            title: i18n.t("Recent topics (beta)"),
+            title: i18n.t("Recent topics"),
             icon: "clock-o",
         };
     }
