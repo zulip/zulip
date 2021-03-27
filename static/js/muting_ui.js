@@ -157,3 +157,7 @@ export function toggle_topic_mute(message) {
         mute_topic(stream_id, topic);
     }
 }
+
+export function handle_user_updates(muted_user_ids) {
+    muting.set_muted_users(muted_user_ids);
+}

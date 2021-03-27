@@ -239,6 +239,17 @@ run_test("muted_topics", (override) => {
     assert_same(args.muted_topics, event.muted_topics);
 });
 
+run_test("muted_users", (override) => {
+    const event = event_fixtures.muted_users;
+
+    const stub = make_stub();
+    override(muting_ui, "handle_user_updates", stub.f);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
+    const args = stub.get_args("muted_users");
+    assert_same(args.muted_users, event.muted_users);
+});
+
 run_test("presence", (override) => {
     const event = event_fixtures.presence;
 

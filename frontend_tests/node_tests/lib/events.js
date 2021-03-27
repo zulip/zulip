@@ -167,6 +167,20 @@ exports.fixtures = {
         ],
     },
 
+    muted_users: {
+        type: "muted_users",
+        muted_users: [
+            {
+                id: 5,
+                timestamp: fake_then,
+            },
+            {
+                id: 23,
+                timestamp: fake_now,
+            },
+        ],
+    },
+
     presence: {
         type: "presence",
         email: "alice@example.com",

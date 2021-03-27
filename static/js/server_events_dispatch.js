@@ -133,6 +133,10 @@ export function dispatch_normal_event(event) {
             muting_ui.handle_topic_updates(event.muted_topics);
             break;
 
+        case "muted_users":
+            muting_ui.handle_user_updates(event.muted_users);
+            break;
+
         case "presence":
             activity.update_presence_info(event.user_id, event.presence, event.server_timestamp);
             break;
