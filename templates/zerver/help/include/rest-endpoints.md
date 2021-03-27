@@ -50,6 +50,8 @@
 * [Update a user group](/api/update-user-group)
 * [Delete a user group](/api/remove-user-group)
 * [Update user group members](/api/update-user-group-members)
+* [Mute a user](/api/mute-user)
+* [Unmute a user](/api/unmute-user)
 
 #### Server & organizations
 

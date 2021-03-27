@@ -10,6 +10,15 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 48**
+
+* [`POST /users/me/muted_users/{muted_user_id}`](/api/mute-user),
+  [`DELETE /users/me/muted_users/{muted_user_id}`](/api/unmute-user):
+  New endpoints added to mute/unmute users.
+* [`GET /events`](/api/get-events): Added new event type `muted_users`
+  which will be sent to a user when the set of users muted by them has
+  changed.
+
 **Feature level 47**
 
 * [`POST /register`](/api/register-queue): Added a new `giphy_api_key`

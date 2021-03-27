@@ -160,6 +160,7 @@ ALL_ZULIP_TABLES = {
     "zerver_userprofile_user_permissions",
     "zerver_userstatus",
     "zerver_mutedtopic",
+    "zerver_muteduser",
 }
 
 # This set contains those database tables that we expect to not be
@@ -223,6 +224,7 @@ NON_EXPORTED_TABLES = {
     # export before they reach full production status.
     "zerver_defaultstreamgroup",
     "zerver_defaultstreamgroup_streams",
+    "zerver_muteduser",
     "zerver_submessage",
     # This is low priority, since users can easily just reset themselves to away.
     "zerver_userstatus",

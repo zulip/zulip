@@ -1697,6 +1697,50 @@ paths:
                                   "id": 0,
                                 }
                             - type: object
+                              description: |
+                                Event sent to a user's clients when that user's set of
+                                configured muted users have changed.
+
+                                **Changes**: New in Zulip 4.0 (feature level 48).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - muted_users
+                                muted_users:
+                                  type: array
+                                  description: |
+                                    A list of dictionaries where each dictionary describes
+                                    a muted user.
+                                  items:
+                                    type: object
+                                    additionalProperties: false
+                                    description: |
+                                      Object containing the user id and timestamp of a muted user.
+                                    properties:
+                                      id:
+                                        type: integer
+                                        description: |
+                                          The ID of the muted user.
+                                      timestamp:
+                                        type: integer
+                                        description: |
+                                          An integer UNIX timestamp representing when the user was muted.
+                              additionalProperties: false
+                              example:
+                                {
+                                  "type": "muted_users",
+                                  "muted_users":
+                                    [
+                                      {"id": 1, "timestamp": 1594825442},
+                                      {"id": 22, "timestamp": 1654865392},
+                                    ],
+                                  "id": 0,
+                                }
+                            - type: object
                               additionalProperties: false
                               description: |
                                 Event sent when the set of onboarding "hotspots" to show for
@@ -5590,6 +5634,77 @@ paths:
                       - $ref: "#/components/schemas/JsonError"
                       - example:
                           {"msg": "Topic is not muted", "result": "error"}
+  /users/me/muted_users/{muted_user_id}:
+    post:
+      operationId: mute_user
+      tags: ["users"]
+      description: |
+        This endpoint mutes a user.  Messages sent by users you've muted will
+        be automatically marked as read and hidden.
+
+        `POST {{ api_url }}/v1/users/me/muted_users/{muted_user_id}`
+
+        **Changes**: New in Zulip 4.0 (feature level 48).
+      parameters:
+        - $ref: "#/components/parameters/MutedUserId"
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - example: {"msg": "", "result": "success"}
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/JsonError"
+                      - example: {"msg": "Cannot mute self", "result": "error"}
+                  - allOf:
+                      - $ref: "#/components/schemas/JsonError"
+                      - example: {"msg": "No such user", "result": "error"}
+                  - allOf:
+                      - $ref: "#/components/schemas/JsonError"
+                      - example:
+                          {"msg": "User already muted", "result": "error"}
+    delete:
+      operationId: unmute_user
+      tags: ["users"]
+      description: |
+        This endpoint unmutes a user.
+
+        `DELETE {{ api_url }}/v1/users/me/muted_users/{muted_user_id}`
+
+        **Changes**: New in Zulip 4.0 (feature level 48).
+      parameters:
+        - $ref: "#/components/parameters/MutedUserId"
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - example: {"msg": "", "result": "success"}
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/JsonError"
+                      - example: {"msg": "No such user", "result": "error"}
+                  - allOf:
+                      - $ref: "#/components/schemas/JsonError"
+                      - example: {"msg": "User is not muted", "result": "error"}
+
   /users/{user_id}/subscriptions/{stream_id}:
     get:
       operationId: get_subscription_status
@@ -6660,6 +6775,29 @@ paths:
                             oneOf:
                               - type: string
                               - type: integer
+                      muted_users:
+                        type: array
+                        description: |
+                          Present if `muted_users` is present in `fetch_event_types`.
+
+                          A list of dictionaries where each dictionary describes
+                          a muted user.
+
+                          **Changes**: New in Zulip 4.0 (feature level 48).
+                        items:
+                          type: object
+                          additionalProperties: false
+                          description: |
+                            Object containing the user id and timestamp of a muted user.
+                          properties:
+                            id:
+                              type: integer
+                              description: |
+                                The ID of the muted user.
+                            timestamp:
+                              type: integer
+                              description: |
+                                An integer UNIX timestamp representing when the user was muted.
                       presences:
                         type: object
                         description: |
@@ -11058,6 +11196,15 @@ components:
       schema:
         type: integer
       example: 12
+      required: true
+    MutedUserId:
+      name: muted_user_id
+      in: path
+      description: |
+        The ID of the user to mute/un-mute.
+      schema:
+        type: integer
+      example: 10
       required: true
     StreamPostPolicy:
       name: stream_post_policy

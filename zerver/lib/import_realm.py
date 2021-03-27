@@ -45,6 +45,7 @@ from zerver.models import (
     Huddle,
     Message,
     MutedTopic,
+    MutedUser,
     Reaction,
     Realm,
     RealmAuditLog,
@@ -111,6 +112,7 @@ ID_MAP: Dict[str, Dict[int, int]] = {
     "recipient_to_huddle_map": {},
     "userhotspot": {},
     "mutedtopic": {},
+    "muteduser": {},
     "service": {},
     "usergroup": {},
     "usergroupmembership": {},
@@ -1067,6 +1069,13 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         re_map_foreign_keys(data, "zerver_mutedtopic", "recipient", related_table="recipient")
         update_model_ids(MutedTopic, data, "mutedtopic")
         bulk_import_model(data, MutedTopic)
+
+    if "zerver_muteduser" in data:
+        fix_datetime_fields(data, "zerver_muteduser")
+        re_map_foreign_keys(data, "zerver_muteduser", "user_profile", related_table="user_profile")
+        re_map_foreign_keys(data, "zerver_muteduser", "muted_user", related_table="user_profile")
+        update_model_ids(MutedUser, data, "muteduser")
+        bulk_import_model(data, MutedUser)
 
     if "zerver_service" in data:
         re_map_foreign_keys(data, "zerver_service", "user_profile", related_table="user_profile")

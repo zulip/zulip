@@ -45,6 +45,7 @@ from zerver.lib.stream_subscription import handle_stream_notifications_compatibi
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.topic_mutes import get_topic_mutes
 from zerver.lib.user_groups import user_groups_in_realm_serialized
+from zerver.lib.user_mutes import get_user_mutes
 from zerver.lib.user_status import get_user_info_dict
 from zerver.lib.users import get_cross_realm_dicts, get_raw_user_data, is_administrator_role
 from zerver.models import (
@@ -158,6 +159,9 @@ def fetch_initial_state_data(
 
     if want("muted_topics"):
         state["muted_topics"] = [] if user_profile is None else get_topic_mutes(user_profile)
+
+    if want("muted_users"):
+        state["muted_users"] = [] if user_profile is None else get_user_mutes(user_profile)
 
     if want("presence"):
         state["presences"] = (
@@ -969,6 +973,8 @@ def apply_event(
         state["alert_words"] = event["alert_words"]
     elif event["type"] == "muted_topics":
         state["muted_topics"] = event["muted_topics"]
+    elif event["type"] == "muted_users":
+        state["muted_users"] = event["muted_users"]
     elif event["type"] == "realm_filters":
         state["realm_filters"] = event["realm_filters"]
     elif event["type"] == "update_display_settings":

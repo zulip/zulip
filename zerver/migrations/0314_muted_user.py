@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
                 ),
                 ("date_muted", models.DateTimeField(default=django.utils.timezone.now)),
                 (
-                    "muted_user_profile",
+                    "muted_user",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="+",
@@ -41,7 +41,7 @@ class Migration(migrations.Migration):
                 ),
             ],
             options={
-                "unique_together": {("user_profile", "muted_user_profile")},
+                "unique_together": {("user_profile", "muted_user")},
             },
         ),
     ]

@@ -601,6 +601,32 @@ def toggle_mute_topic(client: Client) -> None:
     validate_against_openapi_schema(result, "/users/me/subscriptions/muted_topics", "patch", "200")
 
 
+@openapi_test_function("/users/me/muted_users/{muted_user_id}:post")
+def add_user_mute(client: Client) -> None:
+    ensure_users([10], ["hamlet"])
+    # {code_example|start}
+    # Mute user with ID 10
+    muted_user_id = 10
+    result = client.call_endpoint(url=f"/users/me/muted_users/{muted_user_id}", method="POST")
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/users/me/muted_users/{muted_user_id}", "post", "200")
+
+
+@openapi_test_function("/users/me/muted_users/{muted_user_id}:delete")
+def remove_user_mute(client: Client) -> None:
+    ensure_users([10], ["hamlet"])
+    # {code_example|start}
+    # Unmute user with ID 10
+    muted_user_id = 10
+    result = client.call_endpoint(url=f"/users/me/muted_users/{muted_user_id}", method="DELETE")
+    # {code_example|end}
+
+    validate_against_openapi_schema(
+        result, "/users/me/muted_users/{muted_user_id}", "delete", "200"
+    )
+
+
 @openapi_test_function("/mark_all_as_read:post")
 def mark_all_as_read(client: Client) -> None:
 
@@ -1352,6 +1378,8 @@ def test_users(client: Client, owner_client: Client) -> None:
     add_alert_words(client)
     remove_alert_words(client)
     deactivate_own_user(client, owner_client)
+    add_user_mute(client)
+    remove_user_mute(client)
 
 
 def test_streams(client: Client, nonadmin_client: Client) -> None:

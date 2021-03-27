@@ -337,6 +337,21 @@ muted_topics_event = event_dict_type(
 )
 check_muted_topics = make_checker(muted_topics_event)
 
+muted_user_type = DictType(
+    required_keys=[
+        ("id", int),
+        ("timestamp", int),
+    ]
+)
+
+muted_users_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("muted_users")),
+        ("muted_users", ListType(muted_user_type)),
+    ]
+)
+check_muted_users = make_checker(muted_users_event)
+
 _check_topic_links = DictType(
     required_keys=[
         ("text", str),

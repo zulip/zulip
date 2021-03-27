@@ -5,7 +5,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import ugettext as _
 
-from zerver.lib.actions import do_mute_topic, do_unmute_topic
+from zerver.lib.actions import do_mute_topic, do_mute_user, do_unmute_topic, do_unmute_user
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import (
@@ -16,6 +16,8 @@ from zerver.lib.streams import (
     check_for_exactly_one_stream_arg,
 )
 from zerver.lib.topic_mutes import topic_is_muted
+from zerver.lib.user_mutes import user_is_muted
+from zerver.lib.users import access_user_by_id
 from zerver.lib.validator import check_int
 from zerver.models import UserProfile
 
@@ -85,3 +87,29 @@ def update_muted_topic(
             stream_name=stream,
             topic_name=topic,
         )
+
+
+def mute_user(request: HttpRequest, user_profile: UserProfile, muted_user_id: int) -> HttpResponse:
+    if user_profile.id == muted_user_id:
+        return json_error(_("Cannot mute self"))
+
+    muted_user = access_user_by_id(user_profile, muted_user_id, allow_bots=False, for_admin=False)
+    date_muted = timezone_now()
+
+    if user_is_muted(user_profile, muted_user):
+        return json_error(_("User already muted"))
+
+    do_mute_user(user_profile, muted_user, date_muted)
+    return json_success()
+
+
+def unmute_user(
+    request: HttpRequest, user_profile: UserProfile, muted_user_id: int
+) -> HttpResponse:
+    muted_user = access_user_by_id(user_profile, muted_user_id, allow_bots=False, for_admin=False)
+
+    if not user_is_muted(user_profile, muted_user):
+        return json_error(_("User is not muted"))
+
+    do_unmute_user(user_profile, muted_user)
+    return json_success()

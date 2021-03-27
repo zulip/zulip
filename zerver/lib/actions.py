@@ -167,6 +167,7 @@ from zerver.lib.upload import (
     upload_emoji_image,
 )
 from zerver.lib.user_groups import access_user_group_by_id, create_user_group
+from zerver.lib.user_mutes import add_user_mute, get_user_mutes, remove_user_mute
 from zerver.lib.user_status import update_user_status
 from zerver.lib.users import (
     check_bot_name_available,
@@ -6483,6 +6484,24 @@ def do_mute_topic(
 def do_unmute_topic(user_profile: UserProfile, stream: Stream, topic: str) -> None:
     remove_topic_mute(user_profile, stream.id, topic)
     event = dict(type="muted_topics", muted_topics=get_topic_mutes(user_profile))
+    send_event(user_profile.realm, event, [user_profile.id])
+
+
+def do_mute_user(
+    user_profile: UserProfile,
+    muted_user: UserProfile,
+    date_muted: Optional[datetime.datetime] = None,
+) -> None:
+    if date_muted is None:
+        date_muted = timezone_now()
+    add_user_mute(user_profile, muted_user, date_muted)
+    event = dict(type="muted_users", muted_users=get_user_mutes(user_profile))
+    send_event(user_profile.realm, event, [user_profile.id])
+
+
+def do_unmute_user(user_profile: UserProfile, muted_user: UserProfile) -> None:
+    remove_user_mute(user_profile, muted_user)
+    event = dict(type="muted_users", muted_users=get_user_mutes(user_profile))
     send_event(user_profile.realm, event, [user_profile.id])
 
 

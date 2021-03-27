@@ -80,7 +80,7 @@ from zerver.views.message_flags import (
     update_message_flags,
 )
 from zerver.views.message_send import render_message_backend, send_message_backend, zcommand_backend
-from zerver.views.muting import update_muted_topic
+from zerver.views.muting import mute_user, unmute_user, update_muted_topic
 from zerver.views.portico import (
     app_download_link_redirect,
     apps_view,
@@ -462,6 +462,7 @@ v1_api_and_json_patterns = [
     ),
     # muting -> zerver.views.muting
     rest_path("users/me/subscriptions/muted_topics", PATCH=update_muted_topic),
+    rest_path("users/me/muted_users/<int:muted_user_id>", POST=mute_user, DELETE=unmute_user),
     # used to register for an event queue in tornado
     rest_path("register", POST=events_register_backend),
     # events -> zerver.tornado.views

@@ -59,6 +59,7 @@ from zerver.lib.actions import (
     do_invite_users,
     do_mark_hotspot_as_read,
     do_mute_topic,
+    do_mute_user,
     do_reactivate_user,
     do_regenerate_api_key,
     do_remove_alert_words,
@@ -81,6 +82,7 @@ from zerver.lib.actions import (
     do_set_user_display_setting,
     do_set_zoom_token,
     do_unmute_topic,
+    do_unmute_user,
     do_update_embedded_data,
     do_update_message,
     do_update_message_flags,
@@ -109,6 +111,7 @@ from zerver.lib.event_schema import (
     check_invites_changed,
     check_message,
     check_muted_topics,
+    check_muted_users,
     check_presence,
     check_reaction_add,
     check_reaction_remove,
@@ -999,6 +1002,14 @@ class NormalActionsTest(BaseAction):
 
         events = self.verify_action(lambda: do_unmute_topic(self.user_profile, stream, "topic"))
         check_muted_topics("events[0]", events[0])
+
+    def test_muted_users_events(self) -> None:
+        muted_user = self.example_user("othello")
+        events = self.verify_action(lambda: do_mute_user(self.user_profile, muted_user))
+        check_muted_users("events[0]", events[0])
+
+        events = self.verify_action(lambda: do_unmute_user(self.user_profile, muted_user))
+        check_muted_users("events[0]", events[0])
 
     def test_change_avatar_fields(self) -> None:
         events = self.verify_action(
