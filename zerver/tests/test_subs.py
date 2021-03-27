@@ -49,6 +49,7 @@ from zerver.lib.response import json_error, json_success
 from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
     num_subscribers_for_stream_id,
+    subscriber_ids_with_stream_history_access,
 )
 from zerver.lib.streams import (
     StreamDict,
@@ -515,6 +516,38 @@ class StreamAdminTest(ZulipTestCase):
         stream = get_stream("public_stream", realm)
         self.assertFalse(stream.invite_only)
         self.assertTrue(stream.history_public_to_subscribers)
+
+    def test_subscriber_ids_with_stream_history_access(self) -> None:
+        hamlet = self.example_user("hamlet")
+        polonius = self.example_user("polonius")
+
+        stream1 = self.make_stream(
+            "history_private_stream", invite_only=True, history_public_to_subscribers=False
+        )
+        self.subscribe(hamlet, stream1.name)
+        self.subscribe(polonius, stream1.name)
+        self.assertEqual(set(), subscriber_ids_with_stream_history_access(stream1))
+
+        stream2 = self.make_stream(
+            "history_public_web_private_stream",
+            invite_only=True,
+            is_web_public=False,
+            history_public_to_subscribers=True,
+        )
+        self.subscribe(hamlet, stream2.name)
+        self.subscribe(polonius, stream2.name)
+        self.assertEqual({hamlet.id}, subscriber_ids_with_stream_history_access(stream2))
+
+        stream3 = self.make_stream(
+            "history_public_web_public_stream",
+            is_web_public=True,
+            history_public_to_subscribers=True,
+        )
+        self.subscribe(hamlet, stream3.name)
+        self.subscribe(polonius, stream3.name)
+        self.assertEqual(
+            {hamlet.id, polonius.id}, subscriber_ids_with_stream_history_access(stream3)
+        )
 
     def test_deactivate_stream_backend(self) -> None:
         user_profile = self.example_user("hamlet")

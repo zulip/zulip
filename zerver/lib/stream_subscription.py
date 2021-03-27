@@ -246,3 +246,35 @@ def handle_stream_notifications_compatibility(
         stream_dict[notification_type] = (
             False if user_profile is None else getattr(user_profile, target_attr)
         )
+
+
+def subscriber_ids_with_stream_history_access(stream: Stream) -> Set[int]:
+    """Returns the set of active user IDs who can access any message
+    history on this stream (regardless of whether they have a
+    UserMessage) based on the stream's configuration.
+
+    1. if !history_public_to_subscribers:
+          History is not available to anyone
+    2. if history_public_to_subscribers and is_web_public:
+          All subscribers can access the history including guests
+    3. if history_public_to_subscribers and !is_web_public:
+          All subscribers can access the history excluding guests
+
+    """
+
+    if not stream.is_history_public_to_subscribers():
+        return set()
+
+    subscriptions = get_active_subscriptions_for_stream_id(stream.id)
+    if stream.is_web_public:
+        return set(
+            subscriptions.filter(user_profile__is_active=True).values_list(
+                "user_profile__id", flat=True
+            )
+        )
+
+    return set(
+        subscriptions.filter(user_profile__is_active=True)
+        .exclude(user_profile__role=600)
+        .values_list("user_profile__id", flat=True)
+    )
