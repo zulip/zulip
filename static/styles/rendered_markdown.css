@@ -156,7 +156,12 @@
 
     /* LaTeX styling */
     .katex-display {
-        margin: 0 0;
+        /* KaTeX sometimes overdraws its bounding box by a little, so we
+           enlarge its scrolling area by stealing 3px from the margin
+           of the enclosing <p>. */
+        margin: -3px 0;
+        padding: 3px 0;
+        overflow: auto hidden;
     }
 
     .tex-error {
