@@ -98,7 +98,6 @@ html {
     display: inline-flex;
 
     box-shadow: 0 -20px 50px hsl(0deg 0% 0% / 4%);
-    overflow: auto;
 
     color: hsl(0deg 0% 27%);
 
@@ -125,7 +124,7 @@ html {
         height: calc(100vh - 59px);
 
         border-right: 1px solid hsl(219deg 10% 97%);
-        overflow: auto;
+        position: fixed;
 
         background-color: hsl(153deg 32% 55%);
         color: hsl(0deg 0% 100%);
@@ -252,10 +251,10 @@ html {
     background-color: hsl(0deg 0% 100%);
     width: calc(100vw - 300px);
     height: calc(100vh - 59px);
+    margin-left: 300px;
 
     & :target {
-        /* Match to where simplebar scrolls */
-        scroll-margin-top: 20px;
+        scroll-margin-top: 59px;
     }
     /* Highlight the headings as well as the first child
       of any targeted div, as in the API documentation. */
@@ -1061,6 +1060,7 @@ input.new-organization-button {
     .app.help {
         .markdown {
             width: 100vw;
+            margin-left: 0;
 
             .content {
                 max-width: none;
@@ -1072,7 +1072,7 @@ input.new-organization-button {
             display: block;
             position: fixed;
             top: 70px;
-            left: 9px;
+            right: calc(100% - 40px);
             fill: hsl(0deg 0% 100%);
             z-index: 2;
             transition: all 0.3s ease;
@@ -1082,7 +1082,7 @@ input.new-organization-button {
         .sidebar {
             position: fixed;
             top: 59px;
-            right: calc(100vw - 50px);
+            right: calc(100% - 50px);
             width: 100%;
             min-width: unset;
             height: calc(100vh - 59px);
@@ -1102,7 +1102,7 @@ input.new-organization-button {
             }
 
             + .hamburger {
-                transform: translateX(calc(100vw - 50px));
+                right: 12px;
             }
 
             ~ .markdown {
