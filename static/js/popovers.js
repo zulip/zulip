@@ -239,9 +239,15 @@ function render_user_info_popover(
         }
     }
 
+    const is_dev = page_params.development_environment;
+    const muting_allowed = is_dev && !is_me && !user.is_bot;
+    const is_muted = muting.is_user_muted(user.user_id);
+
     const args = {
         can_revoke_away,
         can_set_away,
+        can_mute: muting_allowed && !is_muted,
+        can_unmute: muting_allowed && is_muted,
         has_message_context,
         is_active: people.is_active_user_for_popover(user.user_id),
         is_bot: user.is_bot,
@@ -1064,6 +1070,24 @@ export function register_click_handlers() {
 
         user_status_ui.open_overlay();
 
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $("body").on("click", ".info_popover_actions .sidebar-popover-mute-user", (e) => {
+        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        hide_message_info_popover();
+        hide_user_sidebar_popover();
+        e.stopPropagation();
+        e.preventDefault();
+        muting_ui.confirm_mute_user(user_id);
+    });
+
+    $("body").on("click", ".info_popover_actions .sidebar-popover-unmute-user", (e) => {
+        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        hide_message_info_popover();
+        hide_user_sidebar_popover();
+        muting_ui.unmute_user(user_id);
         e.stopPropagation();
         e.preventDefault();
     });

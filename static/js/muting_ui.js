@@ -1,15 +1,19 @@
 import $ from "jquery";
 
+import render_confirm_mute_user from "../templates/confirm_mute_user.hbs";
 import render_muted_topic_ui_row from "../templates/muted_topic_ui_row.hbs";
 import render_topic_muted from "../templates/topic_muted.hbs";
 
 import * as channel from "./channel";
+import * as confirm_dialog from "./confirm_dialog";
 import * as feedback_widget from "./feedback_widget";
 import {$t} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as message_lists from "./message_lists";
 import * as muting from "./muting";
 import * as overlays from "./overlays";
+import * as people from "./people";
+import * as popovers from "./popovers";
 import * as recent_topics from "./recent_topics";
 import * as settings_muted_topics from "./settings_muted_topics";
 import * as stream_data from "./stream_data";
@@ -158,6 +162,40 @@ export function toggle_topic_mute(message) {
     }
 }
 
+export function mute_user(user_id) {
+    channel.post({
+        url: "/json/users/me/muted_users/" + user_id,
+        idempotent: true,
+    });
+}
+
+export function confirm_mute_user(user_id) {
+    function on_click() {
+        mute_user(user_id);
+    }
+
+    const modal_parent = $(".mute-user-modal-holder");
+    const html_body = render_confirm_mute_user({
+        user_name: people.get_full_name(user_id),
+    });
+
+    confirm_dialog.launch({
+        parent: modal_parent,
+        html_heading: $t({defaultMessage: "Mute user"}),
+        html_body,
+        html_yes_button: $t({defaultMessage: "Confirm"}),
+        on_click,
+    });
+}
+
+export function unmute_user(user_id) {
+    channel.del({
+        url: "/json/users/me/muted_users/" + user_id,
+        idempotent: true,
+    });
+}
+
 export function handle_user_updates(muted_user_ids) {
+    popovers.hide_all();
     muting.set_muted_users(muted_user_ids);
 }

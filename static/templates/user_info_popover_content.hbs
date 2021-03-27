@@ -150,4 +150,21 @@
             <i class="fa fa-paper-plane" aria-hidden="true"></i> {{#tr}}View messages sent{{/tr}}
         </a>
     </li>
+
+    {{#if can_mute }}
+    <hr />
+    <li>
+        <a tabindex="0" class="sidebar-popover-mute-user">
+            <i class="fa fa-eye-slash" aria-hidden="true"></i> {{#tr}}Mute this user{{/tr}}
+        </a>
+    </li>
+    {{/if}}
+    {{#if can_unmute}}
+    <hr />
+    <li>
+        <a tabindex="0" class="sidebar-popover-unmute-user">
+            <i class="fa fa-eye" aria-hidden="true"></i> {{#tr}}Unmute this user{{/tr}}
+        </a>
+    </li>
+    {{/if}}
 </ul>
