@@ -43,7 +43,9 @@ async function test_change_new_stream_notifications_setting(page: Page): Promise
     );
 
     const rome_in_dropdown = await page.waitForSelector(
-        'xpath///*[@id="realm_notifications_stream_id_widget"]//*[@class="dropdown-list-body"]/li[1]',
+        `xpath///*[@id="realm_notifications_stream_id_widget"]//*[${common.has_class_x(
+            "dropdown-list-body",
+        )}]/li[1]`,
         {visible: true},
     );
     assert.ok(rome_in_dropdown);
