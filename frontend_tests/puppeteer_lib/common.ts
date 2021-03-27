@@ -186,6 +186,10 @@ export async function check_form_contents(
     }
 }
 
+export function has_class_x(class_name: string): string {
+    return `contains(concat(" ", @class, " "), " ${class_name} ")`;
+}
+
 export async function get_element_text(element: ElementHandle<Element>): Promise<string> {
     const text = await (await element.getProperty("innerText"))!.jsonValue();
     assert.ok(typeof text === "string");
@@ -507,7 +511,9 @@ export async function select_item_via_typeahead(
     console.log(`Looking in ${field_selector} to select ${str}, ${item}`);
     await clear_and_type(page, field_selector, str);
     const entry = await page.waitForSelector(
-        `xpath///*[@class="typeahead dropdown-menu" and contains(@style, "display: block")]//li[contains(normalize-space(), "${item}")]//a`,
+        `xpath///*[${has_class_x(
+            "typeahead",
+        )} and contains(@style, "display: block")]//li[contains(normalize-space(), "${item}")]//a`,
         {visible: true},
     );
     assert.ok(entry);

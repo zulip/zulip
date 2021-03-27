@@ -178,7 +178,11 @@ async function test_edit_bot_form(page: Page): Promise<void> {
     await page.waitForSelector("#edit_bot_modal", {hidden: true});
 
     await page.waitForSelector(
-        `xpath///*[@class="btn open_edit_bot_form" and @data-email="${bot1_email}"]/ancestor::*[@class="details"]/*[@class="name" and text()="Bot one"]`,
+        `xpath///*[${common.has_class_x(
+            "open_edit_bot_form",
+        )} and @data-email="${bot1_email}"]/ancestor::*[${common.has_class_x(
+            "details",
+        )}]/*[${common.has_class_x("name")} and text()="Bot one"]`,
     );
 
     await common.wait_for_micromodal_to_close(page);
@@ -222,7 +226,11 @@ async function test_invalid_edit_bot_form(page: Page): Promise<void> {
     );
     await page.click(cancel_button_selector);
     await page.waitForSelector(
-        `xpath///*[@class="btn open_edit_bot_form" and @data-email="${bot1_email}"]/ancestor::*[@class="details"]/*[@class="name" and text()="Bot one"]`,
+        `xpath///*[${common.has_class_x(
+            "open_edit_bot_form",
+        )} and @data-email="${bot1_email}"]/ancestor::*[${common.has_class_x(
+            "details",
+        )}]/*[${common.has_class_x("name")} and text()="Bot one"]`,
     );
 
     await common.wait_for_micromodal_to_close(page);

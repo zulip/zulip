@@ -109,7 +109,9 @@ async function navigation_tests(page: Page): Promise<void> {
 
     // Verify that we're narrowed to the target stream
     await page.waitForSelector(
-        'xpath///*[@id="message_view_header"]//*[@class="stream" and normalize-space()="Verona"]',
+        `xpath///*[@id="message_view_header"]//*[${common.has_class_x(
+            "stream",
+        )} and normalize-space()="Verona"]`,
     );
 }
 
