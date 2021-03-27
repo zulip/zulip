@@ -106,6 +106,7 @@ export async function page_url_with_fragment(page: Page): Promise<string> {
 export async function clear_and_type(page: Page, selector: string, text: string): Promise<void> {
     // Select all text currently in the element.
     await page.click(selector, {clickCount: 3});
+    await page.keyboard.press("Delete");
     await page.type(selector, text);
 }
 
@@ -301,6 +302,10 @@ export async function assert_compose_box_content(
 }
 
 export async function wait_for_fully_processed_message(page: Page, content: string): Promise<void> {
+    // Wait in parallel for the message list scroll animation, which
+    // interferes with Puppeteer accurately clicking on messages.
+    const scroll_delay = page.waitForTimeout(400);
+
     await page.waitForFunction(
         (content: string) => {
             /*
@@ -354,6 +359,8 @@ export async function wait_for_fully_processed_message(page: Page, content: stri
         {},
         content,
     );
+
+    await scroll_delay;
 }
 
 // Wait for any previous send to finish, then send a message.

@@ -81,7 +81,7 @@ async function expect_cordelia_private_narrow(page: Page): Promise<void> {
 }
 
 async function un_narrow(page: Page): Promise<void> {
-    if (await page.evaluate(() => $(".message_comp").is(":visible"))) {
+    if ((await (await page.$(".message_comp"))!.boundingBox())?.height) {
         await page.keyboard.press("Escape");
     }
     await page.click(".top_left_all_messages");
@@ -100,7 +100,7 @@ async function expect_recent_topics(page: Page): Promise<void> {
 
 async function test_navigations_from_home(page: Page): Promise<void> {
     console.log("Narrowing by clicking stream");
-    await page.evaluate(() => $(`*[title='Narrow to stream "Verona"']`).trigger("click"));
+    await page.click(`#zhome [title='Narrow to stream "Verona"']`);
     await expect_verona_stream(page);
 
     assert.strictEqual(await page.title(), "Verona - Zulip Dev - Zulip");
@@ -108,27 +108,23 @@ async function test_navigations_from_home(page: Page): Promise<void> {
     await expect_home(page);
 
     console.log("Narrowing by clicking topic");
-    await page.click('*[title="Narrow to stream \\"Verona\\", topic \\"test\\""]');
+    await page.click(`#zhome [title='Narrow to stream "Verona", topic "test"']`);
     await expect_verona_stream_test_topic(page);
 
     await un_narrow(page);
     await expect_home(page);
 
     console.log("Narrowing by clicking group personal header");
-    await page.evaluate(() =>
-        $(
-            '*[title="Narrow to your private messages with Cordelia, Lear\'s daughter, King Hamlet"]',
-        ).trigger("click"),
+    await page.click(
+        `#zhome [title="Narrow to your private messages with Cordelia, Lear's daughter, King Hamlet"]`,
     );
     await expect_huddle(page);
 
     await un_narrow(page);
     await expect_home(page);
 
-    await page.evaluate(() =>
-        $(
-            '*[title="Narrow to your private messages with Cordelia, Lear\'s daughter, King Hamlet"]',
-        ).trigger("click"),
+    await page.click(
+        `#zhome [title="Narrow to your private messages with Cordelia, Lear's daughter, King Hamlet"]`,
     );
     await un_narrow_by_clicking_org_icon(page);
     await expect_recent_topics(page);
@@ -294,15 +290,7 @@ async function arrow(page: Page, direction: "Up" | "Down"): Promise<void> {
 }
 
 async function test_search_venice(page: Page): Promise<void> {
-    await page.evaluate(() => {
-        $(".stream-list-filter")
-            .expectOne()
-            .trigger("focus")
-            .val("vEnI") // Must be case insensitive.
-            .trigger("input")
-            .trigger("click");
-    });
-
+    await common.clear_and_type(page, ".stream-list-filter", "vEnI"); // Must be case insensitive.
     await page.waitForSelector(await get_stream_li(page, "Denmark"), {hidden: true});
     await page.waitForSelector(await get_stream_li(page, "Verona"), {hidden: true});
     await page.waitForSelector((await get_stream_li(page, "Venice")) + ".highlighted_stream", {
@@ -310,9 +298,7 @@ async function test_search_venice(page: Page): Promise<void> {
     });
 
     // Clearing list gives back all the streams in the list
-    await page.evaluate(() =>
-        $(".stream-list-filter").expectOne().trigger("focus").val("").trigger("input"),
-    );
+    await common.clear_and_type(page, ".stream-list-filter", "");
     await page.waitForSelector(await get_stream_li(page, "Denmark"), {visible: true});
     await page.waitForSelector(await get_stream_li(page, "Venice"), {visible: true});
     await page.waitForSelector(await get_stream_li(page, "Verona"), {visible: true});
@@ -463,17 +449,20 @@ async function test_narrow_public_streams(page: Page): Promise<void> {
     await page.goto(`http://zulip.zulipdev.com:9981/#streams/${stream_id}/Denmark`);
     await page.waitForSelector("button.sub_unsub_button", {visible: true});
     await page.click("button.sub_unsub_button");
-    await page.waitForFunction(() => $("button.sub_unsub_button").text().trim() === "Subscribe");
+    await page.waitForSelector(
+        `xpath///button[${common.has_class_x(
+            "sub_unsub_button",
+        )} and normalize-space()="Subscribe"]`,
+    );
     await page.click(".subscriptions-header .exit-sign");
     await page.waitForSelector("#subscription_overlay", {hidden: true});
     await page.goto(`http://zulip.zulipdev.com:9981/#narrow/stream/${stream_id}-Denmark`);
-    await page.waitForFunction(() => $(".recipient_row:visible").length >= 3);
-    assert.equal(await page.evaluate(() => $(".stream-status:visible").length), 1);
+    await page.waitForSelector("#zfilt .recipient_row ~ .recipient_row ~ .recipient_row");
+    assert.ok((await page.$("#zfilt .stream-status")) !== null);
 
     await page.goto("http://zulip.zulipdev.com:9981/#narrow/streams/public");
-    await page.waitForFunction(() => $(".recipient_row:visible").length >= 3);
-
-    assert.equal(await page.evaluate(() => $(".stream-status:visible").length), 0);
+    await page.waitForSelector("#zfilt .recipient_row ~ .recipient_row ~ .recipient_row");
+    assert.ok((await page.$("#zfilt .stream-status")) === null);
 }
 
 async function message_basic_tests(page: Page): Promise<void> {

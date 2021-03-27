@@ -1,13 +1,21 @@
-import type {Page} from "puppeteer";
+import {strict as assert} from "assert";
+
+import type {ElementHandle, Page} from "puppeteer";
 
 import * as common from "../puppeteer_lib/common";
 
 async function trigger_edit_last_message(page: Page): Promise<void> {
-    await page.evaluate(() => {
-        const $msg = $("#zhome .message_row").last();
-        $msg.find(".message_control_button.actions_hover").trigger("click");
-        $(".popover_edit_message").trigger("click");
-    });
+    const msg = (await page.$$("#zhome .message_row")).at(-1) as ElementHandle<Element>;
+    const id = await (await msg.getProperty("id")).jsonValue();
+    await msg.hover();
+    const info = await page.waitForSelector(
+        `#${CSS.escape(id)} .message_control_button.actions_hover`,
+        {visible: true},
+    );
+    assert.ok(info !== null);
+    await info.click();
+    await page.waitForSelector(".popover_edit_message", {visible: true});
+    await page.click(".popover_edit_message");
     await page.waitForSelector(".message_edit_content", {visible: true});
 }
 
@@ -34,25 +42,35 @@ async function test_stream_message_edit(page: Page): Promise<void> {
 }
 
 async function test_edit_message_with_slash_me(page: Page): Promise<void> {
+    const last_message_xpath = `(//*[@id="zhome"]//*[${common.has_class_x("messagebox")}])[last()]`;
+
     await common.send_message(page, "stream", {
         stream: "Verona",
         topic: "edits",
         content: "/me test editing a message with me",
     });
-    await page.waitForFunction(
-        () => $(".last_message .status-message").text() === "test editing a message with me",
+    await page.waitForSelector(
+        `xpath/${last_message_xpath}//*[${common.has_class_x(
+            "status-message",
+        )} and text()="test editing a message with me"]`,
     );
-    await page.waitForFunction(
-        () => $(".last_message .sender_name-in-status").text().trim() === "Desdemona",
+    await page.waitForSelector(
+        `xpath/${last_message_xpath}//*[${common.has_class_x(
+            "sender_name-in-status",
+        )} and normalize-space()="Desdemona"]`,
     );
 
     await edit_stream_message(page, "edited", "/me test edited a message with me");
 
-    await page.waitForFunction(
-        () => $(".last_message .status-message").text() === "test edited a message with me",
+    await page.waitForSelector(
+        `xpath/${last_message_xpath}//*[${common.has_class_x(
+            "status-message",
+        )} and text()="test edited a message with me"]`,
     );
-    await page.waitForFunction(
-        () => $(".last_message .sender_name-in-status").text().trim() === "Desdemona",
+    await page.waitForSelector(
+        `xpath/${last_message_xpath}//*[${common.has_class_x(
+            "sender_name-in-status",
+        )} and normalize-space()="Desdemona"]`,
     );
 }
 

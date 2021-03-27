@@ -1,6 +1,6 @@
 import {strict as assert} from "assert";
 
-import type {Page} from "puppeteer";
+import type {ElementHandle, Page} from "puppeteer";
 
 import {test_credentials} from "../../var/puppeteer/test_credentials";
 import * as common from "../puppeteer_lib/common";
@@ -12,10 +12,8 @@ const zuliprc_regex =
     /^data:application\/octet-stream;charset=utf-8,\[api]\nemail=.+\nkey=.+\nsite=.+\n$/;
 
 async function get_decoded_url_in_selector(page: Page, selector: string): Promise<string> {
-    return await page.evaluate(
-        (selector: string) => decodeURIComponent($(selector).attr("href")!),
-        selector,
-    );
+    const a = (await page.$(selector)) as ElementHandle<HTMLAnchorElement>;
+    return decodeURIComponent(await (await a.getProperty("href")).jsonValue());
 }
 
 async function open_settings(page: Page): Promise<void> {
@@ -43,7 +41,9 @@ async function test_change_full_name(page: Page): Promise<void> {
 
     await page.click("#settings_content .profile-settings-form");
     await page.waitForSelector(".full-name-change-form .alert-success", {visible: true});
-    await page.waitForFunction(() => $("#full_name").val() === "New name");
+    await page.waitForFunction(
+        () => document.querySelector<HTMLInputElement>("#full_name")?.value === "New name",
+    );
 }
 
 async function test_change_password(page: Page): Promise<void> {

@@ -35,17 +35,11 @@ async function test_change_new_stream_notifications_setting(page: Page): Promise
         "#realm_notifications_stream_id_widget  .dropdown-search > input[type=text]",
         "rome",
     );
-    await page.waitForFunction(
-        () =>
-            $(
-                "#realm_notifications_stream_id_widget  .dropdown-search > input[type=text]",
-            ).val() === "rome",
-    );
 
     const rome_in_dropdown = await page.waitForSelector(
         `xpath///*[@id="realm_notifications_stream_id_widget"]//*[${common.has_class_x(
             "dropdown-list-body",
-        )}]/li[1]`,
+        )} and count(li)=1]/li[normalize-space()="Rome"]`,
         {visible: true},
     );
     assert.ok(rome_in_dropdown);
@@ -126,11 +120,7 @@ async function test_changing_create_streams_and_invite_to_stream_policies(
         for (const [policy_value_name, policy_value] of Object.entries(policy_values)) {
             console.log(`Test setting ${policy} policy to '${policy_value_name}'.`);
             await page.waitForSelector(selector, {visible: true});
-            await page.evaluate(
-                (selector, policy_value) => $(selector).val(policy_value).trigger("change"),
-                selector,
-                policy_value,
-            );
+            await page.select(selector, `${policy_value}`);
             await submit_stream_permissions_change(page);
         }
     }
@@ -161,21 +151,17 @@ async function submit_joining_organization_change(page: Page): Promise<void> {
 async function test_set_new_user_threshold_to_three_days(page: Page): Promise<void> {
     console.log("Test setting new user threshold to three days.");
     await page.waitForSelector("#id_realm_waiting_period_setting", {visible: true});
-    await page.evaluate(() =>
-        $("#id_realm_waiting_period_setting").val("three_days").trigger("change"),
-    );
+    await page.select("#id_realm_waiting_period_setting", "three_days");
     await submit_joining_organization_change(page);
 }
 
 async function test_set_new_user_threshold_to_N_days(page: Page): Promise<void> {
     console.log("Test setting new user threshold to three days.");
     await page.waitForSelector("#id_realm_waiting_period_setting", {visible: true});
-    await page.evaluate(() =>
-        $("#id_realm_waiting_period_setting").val("custom_days").trigger("change"),
-    );
+    await page.select("#id_realm_waiting_period_setting", "custom_days");
 
-    const N = 10;
-    await page.evaluate((N: number) => $("#id_realm_waiting_period_threshold").val(N), N);
+    const N = "10";
+    await common.clear_and_type(page, "#id_realm_waiting_period_threshold", N);
     await submit_joining_organization_change(page);
 }
 
@@ -218,7 +204,7 @@ async function test_delete_emoji(page: Page): Promise<void> {
     await page.click("tr#emoji_zulip_logo button.delete");
 
     // assert the emoji is deleted.
-    await page.waitForFunction(() => $("tr#emoji_zulip_logo").length === 0);
+    await page.waitForSelector("tr#emoji_zulip_logo", {hidden: true});
 }
 
 async function test_custom_realm_emoji(page: Page): Promise<void> {
@@ -227,28 +213,6 @@ async function test_custom_realm_emoji(page: Page): Promise<void> {
 
     await test_add_emoji(page);
     await test_delete_emoji(page);
-}
-
-async function get_suggestions(page: Page, str: string): Promise<void> {
-    await page.evaluate((str: string) => {
-        $(".create_default_stream")
-            .trigger("focus")
-            .val(str)
-            .trigger(new $.Event("keyup", {which: 0}));
-    }, str);
-}
-
-async function select_from_suggestions(page: Page, item: string): Promise<void> {
-    await page.evaluate((item: string) => {
-        const tah = $(".create_default_stream").data().typeahead;
-        tah.mousemove({
-            currentTarget: $(`.typeahead:visible li:contains("${CSS.escape(item)}")`)[0],
-        });
-        tah.mouseenter({
-            currentTarget: $(`.typeahead:visible li:contains("${CSS.escape(item)}")`)[0],
-        });
-        tah.select();
-    }, item);
 }
 
 async function test_add_default_stream(
@@ -260,8 +224,7 @@ async function test_add_default_stream(
     // etc). 'O' is used to make sure that it works even if there are multiple suggestions.
     // Uppercase 'O' is used instead of the lowercase version to make sure that the suggestions
     // are case insensitive.
-    await get_suggestions(page, "o");
-    await select_from_suggestions(page, stream_name);
+    await common.select_item_via_typeahead(page, ".create_default_stream", "O", stream_name);
     await page.click(".default-stream-form #do_submit_stream");
 
     await page.waitForSelector(row, {visible: true});
@@ -271,7 +234,7 @@ async function test_remove_default_stream(page: Page, row: string): Promise<void
     await page.click(row + " button.remove-default-stream");
 
     // assert row doesn't exist.
-    await page.waitForFunction((row: string) => $(row).length === 0, {}, row);
+    await page.waitForSelector(row, {hidden: true});
 }
 
 async function test_default_streams(page: Page): Promise<void> {
@@ -349,10 +312,8 @@ async function test_authentication_methods(page: Page): Promise<void> {
     await page.waitForSelector(".method_row[data-method='Google'] input[type='checkbox'] + span", {
         visible: true,
     });
-    await page.waitForFunction(
-        () =>
-            !($(".method_row[data-method='Google'] input[type='checkbox']")[0] as HTMLInputElement)
-                .checked,
+    await page.waitForSelector(
+        ".method_row[data-method='Google'] input[type='checkbox']:not(:checked)",
     );
 }
 

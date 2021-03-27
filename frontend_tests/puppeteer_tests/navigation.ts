@@ -93,9 +93,7 @@ async function navigation_tests(page: Page): Promise<void> {
 
     await navigate_using_left_sidebar(page, verona_narrow, "message_feed_container");
 
-    // Hardcoded this instead of using `navigate_to`
-    // as Puppeteer cannot click hidden elements.
-    await page.evaluate(() => $("a[href='#message_feed_container]'").trigger("click"));
+    await page.click(".home-link");
     await wait_for_tab(page, "message_feed_container");
 
     await navigate_to_subscriptions(page);
