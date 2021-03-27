@@ -1697,7 +1697,7 @@ class GetOldMessagesTest(ZulipTestCase):
             [self.example_user("iago"), self.example_user("aaron")],
         )
         aaron = self.example_user("aaron")
-        do_deactivate_user(aaron)
+        do_deactivate_user(aaron, acting_user=None)
         self.assertFalse(aaron.is_active)
 
         personals = [

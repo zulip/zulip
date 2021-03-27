@@ -1322,7 +1322,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
                 "value__sum"
             ],
         )
-        do_deactivate_user(user)
+        do_deactivate_user(user, acting_user=None)
         self.assertEqual(
             0,
             RealmCount.objects.filter(property=property, subgroup=False).aggregate(Sum("value"))[
@@ -1336,7 +1336,7 @@ class TestLoggingCountStats(AnalyticsTestCase):
                 "value__sum"
             ],
         )
-        do_deactivate_user(user)
+        do_deactivate_user(user, acting_user=None)
         self.assertEqual(
             0,
             RealmCount.objects.filter(property=property, subgroup=False).aggregate(Sum("value"))[
@@ -1662,7 +1662,7 @@ class TestActiveUsersAudit(AnalyticsTestCase):
         user4 = do_create_user(
             "email4", "password", self.default_realm, "full_name", acting_user=None
         )
-        do_deactivate_user(user2)
+        do_deactivate_user(user2, acting_user=None)
         do_activate_user(user3, acting_user=None)
         do_reactivate_user(user4, acting_user=None)
         end_time = floor_to_day(timezone_now()) + self.DAY
@@ -1785,7 +1785,7 @@ class TestRealmActiveHumans(AnalyticsTestCase):
         time_zero = floor_to_day(timezone_now()) + self.DAY
         update_user_activity_interval(user1, time_zero)
         update_user_activity_interval(user2, time_zero)
-        do_deactivate_user(user2)
+        do_deactivate_user(user2, acting_user=None)
         for property in [
             "active_users_audit:is_bot:day",
             "15day_actives::day",

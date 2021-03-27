@@ -468,7 +468,7 @@ class SingleUserPresenceTests(ZulipTestCase):
         result = self.client_get(f"/json/users/{cordelia.id}/presence")
         self.assert_json_error(result, f"No presence data for {cordelia.id}")
 
-        do_deactivate_user(self.example_user("cordelia"))
+        do_deactivate_user(self.example_user("cordelia"), acting_user=None)
         result = self.client_get("/json/users/cordelia@zulip.com/presence")
         self.assert_json_error(result, "No such user")
 

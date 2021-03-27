@@ -903,7 +903,7 @@ class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
                         "Deactivating user %s because they are disabled in LDAP.",
                         user.delivery_email,
                     )
-                    do_deactivate_user(user)
+                    do_deactivate_user(user, acting_user=None)
                 # Do an early return to avoid trying to sync additional data.
                 return (user, built)
             elif not user.is_active:
@@ -949,7 +949,7 @@ def sync_user_from_ldap(user_profile: UserProfile, logger: logging.Logger) -> bo
             if settings.LDAP_DEACTIVATE_NON_MATCHING_USERS is None
             else settings.LDAP_DEACTIVATE_NON_MATCHING_USERS
         ):
-            do_deactivate_user(user_profile)
+            do_deactivate_user(user_profile, acting_user=None)
             logger.info("Deactivated non-matching user: %s", user_profile.delivery_email)
             return True
         elif user_profile.is_active:

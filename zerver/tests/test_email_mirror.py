@@ -1041,7 +1041,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
 
         mm_address = create_missed_message_address(user_profile, message)
 
-        do_deactivate_user(user_profile)
+        do_deactivate_user(user_profile, acting_user=None)
 
         incoming_valid_message = EmailMessage()
         incoming_valid_message.set_content("TestMissedMessageEmailMessages Body")

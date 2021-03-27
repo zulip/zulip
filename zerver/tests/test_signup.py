@@ -443,7 +443,7 @@ class PasswordResetTest(ZulipTestCase):
     def test_password_reset_for_deactivated_user(self) -> None:
         user_profile = self.example_user("hamlet")
         email = user_profile.delivery_email
-        do_deactivate_user(user_profile)
+        do_deactivate_user(user_profile, acting_user=None)
 
         # start the password reset process by supplying an email address
         result = self.client_post("/accounts/password/reset/", {"email": email})
@@ -654,7 +654,7 @@ class LoginTest(ZulipTestCase):
 
     def test_login_deactivated_user(self) -> None:
         user_profile = self.example_user("hamlet")
-        do_deactivate_user(user_profile)
+        do_deactivate_user(user_profile, acting_user=None)
         result = self.login_with_return(self.example_email("hamlet"), "xxx")
         self.assertEqual(result.status_code, 200)
         self.assert_in_response("Your account is no longer active.", result)
@@ -4768,7 +4768,7 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertEqual(len(outbox), 1)
 
     def test_find_team_deactivated_user(self) -> None:
-        do_deactivate_user(self.example_user("hamlet"))
+        do_deactivate_user(self.example_user("hamlet"), acting_user=None)
         data = {"emails": self.example_email("hamlet")}
         result = self.client_post("/accounts/find/", data)
         self.assertEqual(result.status_code, 302)
