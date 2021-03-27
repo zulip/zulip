@@ -78,4 +78,8 @@ export function launch(conf) {
 
     // Open the modal
     overlays.open_modal("#confirm_dialog_modal");
+
+    conf.parent.on("shown.bs.modal", () => {
+        yes_button.trigger("focus");
+    });
 }
