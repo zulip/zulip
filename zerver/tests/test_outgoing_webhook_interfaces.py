@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, cast
+from typing import Any, Dict
 from unittest import mock
 
 import requests
@@ -25,20 +25,15 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
         )
 
     def test_process_success_response(self) -> None:
-        class Stub:
-            def __init__(self, text: str) -> None:
-                self.text = text
-
-        def make_response(text: str) -> requests.Response:
-            return cast(requests.Response, Stub(text=text))
-
         event = dict(
             user_profile_id=99,
             message=dict(type="private"),
         )
         service_handler = self.handler
 
-        response = make_response(text=json.dumps(dict(content="whatever")))
+        response = mock.Mock(spec=requests.Response)
+        response.status_code = 200
+        response.text = json.dumps(dict(content="whatever"))
 
         with mock.patch("zerver.lib.outgoing_webhook.send_response_message") as m:
             process_success_response(
@@ -48,7 +43,9 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
             )
         self.assertTrue(m.called)
 
-        response = make_response(text="unparsable text")
+        response = mock.Mock(spec=requests.Response)
+        response.status_code = 200
+        response.text = "unparsable text"
 
         with mock.patch("zerver.lib.outgoing_webhook.fail_with_message") as m:
             process_success_response(
