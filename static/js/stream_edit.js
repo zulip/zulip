@@ -745,7 +745,7 @@ export function initialize() {
 
     $("#subscriptions_table").on("click", "#change-stream-privacy-button", change_stream_privacy);
 
-    $("#subscriptions_table").on("click", ".close-privacy-modal", (e) => {
+    $("#subscriptions_table").on("click", ".close-modal-btn", (e) => {
         // Re-enable background mouse events when we close the modal
         // via the "x" in the corner.  (The other modal-close code
         // paths call `overlays.close_modal`, rather than using
