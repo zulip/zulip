@@ -103,23 +103,14 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
         }
 
         test_url = "https://example.com/example"
-        response = mock.Mock(spec=requests.Response)
-        response.status_code = 200
-        expect_200 = mock.patch("requests.request", return_value=response)
-        with expect_200 as mock_request:
+        with mock.patch.object(self.handler, "session") as session:
             self.handler.make_request(
                 test_url,
                 event,
             )
-            mock_request.assert_called_once()
-            self.assertEqual(
-                mock_request.call_args[0],
-                (
-                    "POST",
-                    test_url,
-                ),
-            )
-            request_data = mock_request.call_args[1]["json"]
+            session.post.assert_called_once()
+            self.assertEqual(session.post.call_args[0], (test_url,))
+            request_data = session.post.call_args[1]["json"]
 
         validate_against_openapi_schema(request_data, "/zulip-outgoing-webhook", "post", "200")
         self.assertEqual(request_data["data"], "@**test**")
@@ -199,20 +190,14 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
 
     def test_make_request_stream_message(self) -> None:
         test_url = "https://example.com/example"
-        with mock.patch("requests.request") as mock_request:
+        with mock.patch.object(self.handler, "session") as session:
             self.handler.make_request(
                 test_url,
                 self.stream_message_event,
             )
-            mock_request.assert_called_once()
-            self.assertEqual(
-                mock_request.call_args[0],
-                (
-                    "POST",
-                    test_url,
-                ),
-            )
-            request_data = mock_request.call_args[1]["data"]
+            session.post.assert_called_once()
+            self.assertEqual(session.post.call_args[0], (test_url,))
+            request_data = session.post.call_args[1]["data"]
 
         self.assertEqual(request_data[0][1], "abcdef")  # token
         self.assertEqual(request_data[1][1], "zulip")  # team_id
@@ -229,12 +214,12 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
     @mock.patch("zerver.lib.outgoing_webhook.fail_with_message")
     def test_make_request_private_message(self, mock_fail_with_message: mock.Mock) -> None:
         test_url = "https://example.com/example"
-        with mock.patch("requests.request") as mock_request:
+        with mock.patch.object(self.handler, "session") as session:
             response = self.handler.make_request(
                 test_url,
                 self.private_message_event,
             )
-            mock_request.assert_not_called()
+            session.post.assert_not_called()
         self.assertIsNone(response)
         self.assertTrue(mock_fail_with_message.called)
 
