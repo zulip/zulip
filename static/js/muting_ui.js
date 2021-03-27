@@ -32,11 +32,9 @@ export function rerender_on_topic_update() {
 
     stream_list.update_streams_sidebar();
     recent_topics.complete_rerender();
-    if (message_lists.current.excludes_muted_topics) {
-        message_lists.current.update_muting_and_rerender();
-    }
+    message_lists.current.update_topic_muting_and_rerender();
     if (message_lists.current !== message_lists.home) {
-        message_lists.home.update_muting_and_rerender();
+        message_lists.home.update_topic_muting_and_rerender();
     }
     if (overlays.settings_open() && settings_muting.loaded) {
         set_up_muted_topics_ui();
