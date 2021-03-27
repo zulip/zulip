@@ -1557,7 +1557,7 @@ class StreamMessagesTest(ZulipTestCase):
                 body=content,
             )
 
-        self.assert_length(queries, 12)
+        self.assert_length(queries, 13)
 
     def test_stream_message_dict(self) -> None:
         user_profile = self.example_user("iago")

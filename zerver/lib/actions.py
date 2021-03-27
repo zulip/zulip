@@ -167,7 +167,7 @@ from zerver.lib.upload import (
     upload_emoji_image,
 )
 from zerver.lib.user_groups import access_user_group_by_id, create_user_group
-from zerver.lib.user_mutes import add_user_mute, get_user_mutes
+from zerver.lib.user_mutes import add_user_mute, get_muting_users, get_user_mutes
 from zerver.lib.user_status import update_user_status
 from zerver.lib.users import (
     check_bot_name_available,
@@ -1848,6 +1848,11 @@ def do_send_messages(
             # Service bots (outgoing webhook bots and embedded bots) don't store UserMessage rows;
             # they will be processed later.
             mentioned_user_ids = send_request.message.mentions_user_ids
+
+            # Extend the set with users who have muted the sender.
+            mark_as_read_for_users = get_muting_users(send_request.message.sender)
+            mark_as_read_for_users.update(mark_as_read)
+
             user_messages = create_user_messages(
                 message=send_request.message,
                 um_eligible_user_ids=send_request.um_eligible_user_ids,
@@ -1855,7 +1860,7 @@ def do_send_messages(
                 stream_push_user_ids=send_request.stream_push_user_ids,
                 stream_email_user_ids=send_request.stream_email_user_ids,
                 mentioned_user_ids=mentioned_user_ids,
-                mark_as_read=mark_as_read,
+                mark_as_read_for_users=mark_as_read_for_users,
             )
 
             for um in user_messages:
@@ -2030,7 +2035,7 @@ def create_user_messages(
     stream_push_user_ids: AbstractSet[int],
     stream_email_user_ids: AbstractSet[int],
     mentioned_user_ids: AbstractSet[int],
-    mark_as_read: Sequence[int] = [],
+    mark_as_read_for_users: Set[int],
 ) -> List[UserMessageLite]:
     ums_to_create = []
     for user_profile_id in um_eligible_user_ids:
@@ -2049,7 +2054,7 @@ def create_user_messages(
     for um in ums_to_create:
         if (
             um.user_profile_id == message.sender.id and message.sent_by_human()
-        ) or um.user_profile_id in mark_as_read:
+        ) or um.user_profile_id in mark_as_read_for_users:
             um.flags |= UserMessage.flags.read
         if wildcard:
             um.flags |= UserMessage.flags.wildcard_mentioned
