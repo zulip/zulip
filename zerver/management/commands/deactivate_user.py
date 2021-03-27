@@ -45,5 +45,5 @@ class Command(ZulipBaseCommand):
         if not options["for_real"]:
             raise CommandError("This was a dry run. Pass -f to actually deactivate.")
 
-        do_deactivate_user(user_profile)
+        do_deactivate_user(user_profile, acting_user=None)
         print("Sessions deleted, user deactivated.")

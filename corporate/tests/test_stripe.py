@@ -1531,7 +1531,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual(get_latest_seat_count(realm), initial_count + 1)
 
         # Test that inactive users aren't counted
-        do_deactivate_user(user2)
+        do_deactivate_user(user2, acting_user=None)
         self.assertEqual(get_latest_seat_count(realm), initial_count)
 
         # Test guests
@@ -2719,7 +2719,7 @@ class LicenseLedgerTest(StripeTestCase):
     def test_user_changes(self) -> None:
         self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
         user = do_create_user("email", "password", get_realm("zulip"), "name", acting_user=None)
-        do_deactivate_user(user)
+        do_deactivate_user(user, acting_user=None)
         do_reactivate_user(user, acting_user=None)
         # Not a proper use of do_activate_user, but fine for this test
         do_activate_user(user, acting_user=None)

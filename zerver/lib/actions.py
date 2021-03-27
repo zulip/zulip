@@ -1090,7 +1090,7 @@ def do_delete_user(user_profile: UserProfile) -> None:
     if user_profile.realm.is_zephyr_mirror_realm:
         raise AssertionError("Deleting zephyr mirror users is not supported")
 
-    do_deactivate_user(user_profile)
+    do_deactivate_user(user_profile, acting_user=None)
 
     subscribed_huddle_recipient_ids = set(
         Subscription.objects.filter(
@@ -1122,7 +1122,7 @@ def do_delete_user(user_profile: UserProfile) -> None:
 
 
 def do_deactivate_user(
-    user_profile: UserProfile, acting_user: Optional[UserProfile] = None, _cascade: bool = True
+    user_profile: UserProfile, _cascade: bool = True, *, acting_user: Optional[UserProfile]
 ) -> None:
     if not user_profile.is_active:
         return
@@ -1184,7 +1184,7 @@ def do_deactivate_user(
             is_bot=True, is_active=True, bot_owner=user_profile
         )
         for profile in bot_profiles:
-            do_deactivate_user(profile, acting_user=acting_user, _cascade=False)
+            do_deactivate_user(profile, _cascade=False, acting_user=acting_user)
 
 
 def do_deactivate_stream(

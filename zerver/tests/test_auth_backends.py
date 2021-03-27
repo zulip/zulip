@@ -162,7 +162,7 @@ class AuthBackendTest(ZulipTestCase):
         self.assertEqual(user_profile, result)
 
         # Verify auth fails with a deactivated user
-        do_deactivate_user(user_profile)
+        do_deactivate_user(user_profile, acting_user=None)
         result = backend.authenticate(**good_kwargs)
         if isinstance(backend, SocialAuthMixin):
             # Returns a redirect to login page with an error.
@@ -1067,7 +1067,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
 
     def test_social_auth_deactivated_user(self) -> None:
         user_profile = self.example_user("hamlet")
-        do_deactivate_user(user_profile)
+        do_deactivate_user(user_profile, acting_user=None)
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
         # We expect to go through the "choose email" screen here,
         # because there won't be an existing user account we can
@@ -3812,7 +3812,7 @@ class FetchAPIKeyTest(ZulipTestCase):
         self.assert_json_success(result)
 
     def test_inactive_user(self) -> None:
-        do_deactivate_user(self.user_profile)
+        do_deactivate_user(self.user_profile, acting_user=None)
         result = self.client_post(
             "/api/v1/fetch_api_key",
             dict(username=self.email, password=initial_password(self.email)),
@@ -3853,7 +3853,7 @@ class DevFetchAPIKeyTest(ZulipTestCase):
         self.assert_json_error_contains(result, "This user is not registered.", 403)
 
     def test_inactive_user(self) -> None:
-        do_deactivate_user(self.user_profile)
+        do_deactivate_user(self.user_profile, acting_user=None)
         result = self.client_post("/api/v1/dev_fetch_api_key", dict(username=self.email))
         self.assert_json_error_contains(result, "Your account has been disabled", 403)
 
@@ -5181,7 +5181,7 @@ class TestLDAP(ZulipLDAPTestCase):
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
     def test_login_failure_due_to_deactivated_user(self) -> None:
         user_profile = self.example_user("hamlet")
-        do_deactivate_user(user_profile)
+        do_deactivate_user(user_profile, acting_user=None)
         with self.settings(LDAP_APPEND_DOMAIN="zulip.com"):
             user_profile = self.backend.authenticate(
                 request=mock.MagicMock(),
@@ -5364,7 +5364,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         )
 
     def test_reactivate_user(self) -> None:
-        do_deactivate_user(self.example_user("hamlet"))
+        do_deactivate_user(self.example_user("hamlet"), acting_user=None)
 
         with self.settings(
             AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn", "userAccountControl": "userAccountControl"}
@@ -5411,7 +5411,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             )
             self.assertFalse(result)
 
-            do_deactivate_user(othello)
+            do_deactivate_user(othello, acting_user=None)
             mock_logger = mock.MagicMock()
             result = sync_user_from_ldap(othello, mock_logger)
             # In this case the logger shouldn't be used.

@@ -1184,7 +1184,7 @@ class InactiveUserTest(ZulipTestCase):
         """
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
-        do_deactivate_user(user_profile)
+        do_deactivate_user(user_profile, acting_user=None)
 
         result = self.client_post(
             "/json/messages",
@@ -1249,7 +1249,7 @@ class InactiveUserTest(ZulipTestCase):
 
         """
         user_profile = self.example_user("hamlet")
-        do_deactivate_user(user_profile)
+        do_deactivate_user(user_profile, acting_user=None)
 
         result = self.login_with_return(self.example_email("hamlet"))
         self.assert_in_response("Your account is no longer active.", result)
@@ -1278,7 +1278,7 @@ class InactiveUserTest(ZulipTestCase):
             self.assertTrue(form.is_valid())
 
         # Test a mirror-dummy deactivated user.
-        do_deactivate_user(user_profile)
+        do_deactivate_user(user_profile, acting_user=None)
         user_profile.save()
 
         form = OurAuthenticationForm(request, payload)
@@ -1301,7 +1301,7 @@ class InactiveUserTest(ZulipTestCase):
 
         """
         user_profile = self.example_user("hamlet")
-        do_deactivate_user(user_profile)
+        do_deactivate_user(user_profile, acting_user=None)
 
         api_key = get_api_key(user_profile)
         url = f"/api/v1/external/jira?api_key={api_key}&stream=jira_custom"
