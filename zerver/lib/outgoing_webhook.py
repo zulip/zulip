@@ -31,6 +31,7 @@ class OutgoingWebhookServiceInterface(metaclass=abc.ABCMeta):
         self.user_profile: UserProfile = user_profile
         self.service_name: str = service_name
         self.session: Session = Session()
+        self.session.headers.update({"User-Agent": "ZulipOutgoingWebhook/" + ZULIP_VERSION})
 
     @abc.abstractmethod
     def make_request(self, base_url: str, event: Dict[str, Any]) -> Optional[Response]:
@@ -67,11 +68,7 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
             "trigger": event["trigger"],
         }
 
-        user_agent = "ZulipOutgoingWebhook/" + ZULIP_VERSION
-        headers = {
-            "User-Agent": user_agent,
-        }
-        return self.session.post(base_url, json=request_data, headers=headers)
+        return self.session.post(base_url, json=request_data)
 
     def process_success(self, response_json: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         if "response_not_required" in response_json and response_json["response_not_required"]:
