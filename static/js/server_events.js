@@ -19,7 +19,10 @@ import * as watchdog from "./watchdog";
 
 let waiting_on_homeview_load = true;
 
+let pause_events = false;
+
 let events_stored_while_loading = [];
+let events_stored_while_pause = [];
 
 let get_events_xhr;
 let get_events_timeout;
@@ -53,9 +56,19 @@ function get_events_success(events) {
         return;
     }
 
+    if (pause_events) {
+        events_stored_while_pause = events_stored_while_pause.concat(events);
+        return;
+    }
+
     if (events_stored_while_loading.length > 0) {
         events = events_stored_while_loading.concat(events);
         events_stored_while_loading = [];
+    }
+
+    if (events_stored_while_pause.length > 0) {
+        events = events_stored_while_pause.concat(events);
+        events_stored_while_pause = [];
     }
 
     // Most events are dispatched via the code server_events_dispatch,
@@ -168,6 +181,16 @@ function show_ui_connection_error() {
 function hide_ui_connection_error() {
     ui_report.hide_error($("#connection-error"));
     $("#connection-error").removeClass("get-events-error");
+}
+
+function show_pause_traffic() {
+    ui_report.show_error($("#pause-traffic"));
+    $("#pause-traffic").addClass("get-events-error");
+}
+
+function hide_pause_traffic() {
+    ui_report.hide_error($("#pause-traffic"));
+    $("#pause-traffic").removeClass("get-events-error");
 }
 
 function get_events({dont_block = false} = {}) {
@@ -295,6 +318,17 @@ export function home_view_loaded() {
     waiting_on_homeview_load = false;
     get_events_success([]);
     $(document).trigger("home_view_loaded.zulip");
+}
+
+export function pause_toggle() {
+    if (pause_events) {
+        hide_pause_traffic();
+        pause_events = false;
+    } else {
+        show_pause_traffic();
+        pause_events = true;
+    }
+    get_events_success([]);
 }
 
 export function initialize() {

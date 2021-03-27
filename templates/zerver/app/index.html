@@ -67,6 +67,10 @@
             {% trans %}<strong class="message">Unable to connect to
             Zulip.</strong>  Updates may be delayed.{% endtrans %} {{ _('Retrying soon...') }} <a class="restart_get_events_button">{{ _('Try now.') }}</a>
         </div>
+        <div class="alert alert_sidebar alert-error home-error-bar" id="pause-traffic">
+            <div class="exit"></div>
+            {% trans %}<strong class="message">The Traffic is paused. To Unpause press 'b'</strong> {% endtrans %}
+        </div>
         <div class="alert alert_sidebar alert-error home-error-bar" id="zephyr-mirror-error">
             <div class="exit"></div>
             {# The below isn't tagged for translation

@@ -31,6 +31,7 @@ import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_topics from "./recent_topics";
 import * as search from "./search";
+import * as server_events from "./server_events";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
 import * as subs from "./subs";
@@ -130,6 +131,7 @@ const keypress_mappings = {
     83: {name: "narrow_by_topic", message_view_only: true}, // 'S'
     86: {name: "view_selected_stream", message_view_only: false}, // 'V'
     97: {name: "all_messages", message_view_only: true}, // 'a'
+    98: {name: "pause", message_view_only: true}, // 'b'
     99: {name: "compose", message_view_only: true}, // 'c'
     100: {name: "open_drafts", message_view_only: true}, // 'd'
     101: {name: "edit_message", message_view_only: true}, // 'e'
@@ -775,6 +777,9 @@ export function process_hotkey(e, hotkey) {
     switch (event_name) {
         case "compose": // 'c': compose
             compose_actions.start("stream", {trigger: "compose_hotkey"});
+            return true;
+        case "pause":
+            server_events.pause_toggle();
             return true;
         case "compose_private_message":
             compose_actions.start("private", {trigger: "compose_hotkey"});
