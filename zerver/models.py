@@ -1845,6 +1845,18 @@ class MutedTopic(models.Model):
         return f"<MutedTopic: ({self.user_profile.email}, {self.stream.name}, {self.topic_name}, {self.date_muted})>"
 
 
+class MutedUser(models.Model):
+    user_profile = models.ForeignKey(UserProfile, related_name="+", on_delete=CASCADE)
+    muted_user_profile = models.ForeignKey(UserProfile, related_name="+", on_delete=CASCADE)
+    date_muted: datetime.datetime = models.DateTimeField(default=timezone_now)
+
+    class Meta:
+        unique_together = ("user_profile", "muted_user_profile")
+
+    def __str__(self) -> str:
+        return f"<MutedUser: {self.user_profile.email} -> {self.muted_user_profile.email}>"
+
+
 class Client(models.Model):
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     name: str = models.CharField(max_length=30, db_index=True, unique=True)
