@@ -4,6 +4,7 @@ const emoji = require("../shared/js/emoji");
 
 const copy_and_paste = require("./copy_and_paste");
 const feedback_widget = require("./feedback_widget");
+const { pause_toggle } = require("./server_events");
 const topic_zoom = require("./topic_zoom");
 
 function do_narrow_action(action) {
@@ -98,6 +99,7 @@ const keypress_mappings = {
     82: {name: "respond_to_author", message_view_only: true}, // 'R'
     83: {name: "narrow_by_topic", message_view_only: true}, //'S'
     86: {name: "view_selected_stream", message_view_only: false}, //'V'
+    97: {name: "pause", message_view_only: true}, // 'a'
     99: {name: "compose", message_view_only: true}, // 'c'
     100: {name: "open_drafts", message_view_only: true}, // 'd'
     101: {name: "edit_message", message_view_only: true}, // 'e'
@@ -702,6 +704,10 @@ exports.process_hotkey = function (e, hotkey) {
     switch (event_name) {
         case "compose": // 'c': compose
             compose_actions.start("stream", {trigger: "compose_hotkey"});
+            return true;
+        case "pause":
+            console.log("pause");
+            server_events.pause_toggle();
             return true;
         case "compose_private_message":
             compose_actions.start("private", {trigger: "compose_hotkey"});
