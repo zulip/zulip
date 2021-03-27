@@ -269,7 +269,7 @@ export class BuddyList extends BuddyListConf {
 
         // Add a fudge factor.
         height += 10;
-        
+
         if (this.keys.length === 0) {
             this.container = $(this.container_sel);
             this.container.append('<div class="user-not-found"> User not found </div>');
