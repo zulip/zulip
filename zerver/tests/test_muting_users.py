@@ -224,3 +224,44 @@ class MutedUsersTests(ZulipTestCase):
         self.assert_usermessage_read_flag(othello, stream_message, False)
         self.assert_usermessage_read_flag(othello, huddle_message, False)
         self.assert_usermessage_read_flag(othello, pm_to_othello, False)
+
+    def test_existing_messages_from_muted_user_marked_as_read(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+
+        self.make_stream("general")
+        self.subscribe(hamlet, "general")
+        self.subscribe(cordelia, "general")
+        self.subscribe(othello, "general")
+
+        # Have Cordelia send messages to Hamlet and Othello.
+        stream_message = self.send_stream_message(cordelia, "general", "Spam in stream")
+        huddle_message = self.send_huddle_message(cordelia, [hamlet, othello], "Spam in huddle")
+        pm_to_hamlet = self.send_personal_message(cordelia, hamlet, "Spam in PM")
+        pm_to_othello = self.send_personal_message(cordelia, othello, "Spam in PM")
+
+        # These messages are unreads for both Hamlet and Othello right now.
+        self.assert_usermessage_read_flag(hamlet, stream_message, False)
+        self.assert_usermessage_read_flag(hamlet, huddle_message, False)
+        self.assert_usermessage_read_flag(hamlet, pm_to_hamlet, False)
+
+        self.assert_usermessage_read_flag(othello, stream_message, False)
+        self.assert_usermessage_read_flag(othello, huddle_message, False)
+        self.assert_usermessage_read_flag(othello, pm_to_othello, False)
+
+        # Hamlet mutes Cordelia.
+        url = "/api/v1/users/me/muted_users/{}".format(cordelia.id)
+        result = self.api_post(hamlet, url)
+        self.assert_json_success(result)
+
+        # The messages sent earlier should be marked as read for Hamlet.
+        self.assert_usermessage_read_flag(hamlet, stream_message, True)
+        self.assert_usermessage_read_flag(hamlet, huddle_message, True)
+        self.assert_usermessage_read_flag(hamlet, pm_to_hamlet, True)
+
+        # These messages are still unreads for Othello, since he did not mute Cordelia.
+        self.assert_usermessage_read_flag(othello, stream_message, False)
+        self.assert_usermessage_read_flag(othello, huddle_message, False)
+        self.assert_usermessage_read_flag(othello, pm_to_othello, False)

@@ -5051,6 +5051,46 @@ def do_mark_stream_messages_as_read(
     return count
 
 
+def do_mark_muted_user_messages_as_read(
+    user_profile: UserProfile,
+    muted_user: UserProfile,
+) -> int:
+    messages = UserMessage.objects.filter(
+        user_profile=user_profile, message__sender=muted_user
+    ).extra(where=[UserMessage.where_unread()])
+
+    message_ids = list(messages.values_list("message__id", flat=True))
+
+    count = messages.update(
+        flags=F("flags").bitor(UserMessage.flags.read),
+    )
+
+    event = dict(
+        type="update_message_flags",
+        op="add",
+        operation="add",
+        flag="read",
+        messages=message_ids,
+        all=False,
+    )
+    event_time = timezone_now()
+
+    send_event(user_profile.realm, event, [user_profile.id])
+    do_clear_mobile_push_notifications_for_ids([user_profile.id], message_ids)
+
+    do_increment_logging_stat(
+        user_profile, COUNT_STATS["messages_read::hour"], None, event_time, increment=count
+    )
+    do_increment_logging_stat(
+        user_profile,
+        COUNT_STATS["messages_read_interactions::hour"],
+        None,
+        event_time,
+        increment=min(1, count),
+    )
+    return count
+
+
 def do_update_mobile_push_notification(
     message: Message, prior_mention_user_ids: Set[int], stream_push_user_ids: Set[int]
 ) -> None:
@@ -6515,6 +6555,7 @@ def do_mute_user(
     if date_muted is None:
         date_muted = timezone_now()
     add_user_mute(user_profile, muted_user, date_muted)
+    do_mark_muted_user_messages_as_read(user_profile, muted_user)
     event = dict(type="muted_users", muted_users=get_user_mutes(user_profile))
     send_event(user_profile.realm, event, [user_profile.id])
 

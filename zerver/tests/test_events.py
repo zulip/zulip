@@ -1011,8 +1011,11 @@ class NormalActionsTest(BaseAction):
 
     def test_muted_users_events(self) -> None:
         muted_user = self.example_user("othello")
-        events = self.verify_action(lambda: do_mute_user(self.user_profile, muted_user))
-        check_muted_users("events[0]", events[0])
+        events = self.verify_action(
+            lambda: do_mute_user(self.user_profile, muted_user), num_events=2
+        )
+        check_update_message_flags_add("events[0]", events[0])
+        check_muted_users("events[1]", events[1])
 
         mute_object = get_mute_object(self.user_profile, muted_user)
         assert mute_object is not None
