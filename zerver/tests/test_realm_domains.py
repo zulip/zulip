@@ -72,7 +72,9 @@ class RealmDomainTest(ZulipTestCase):
         mit_user_profile = self.mit_user("sipbtest")
         self.login_user(mit_user_profile)
 
-        do_change_user_role(mit_user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        do_change_user_role(
+            mit_user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None
+        )
 
         result = self.client_post(
             "/json/realm/domains", info=data, HTTP_HOST=mit_user_profile.realm.host

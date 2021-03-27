@@ -4188,7 +4188,7 @@ def do_change_default_all_public_streams(
 
 
 def do_change_user_role(
-    user_profile: UserProfile, value: int, acting_user: Optional[UserProfile] = None
+    user_profile: UserProfile, value: int, *, acting_user: Optional[UserProfile]
 ) -> None:
     old_value = user_profile.role
     user_profile.role = value

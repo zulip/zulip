@@ -124,7 +124,7 @@ class TestCustomEmails(ZulipTestCase):
 
     def test_send_custom_email_admins_only(self) -> None:
         admin_user = self.example_user("hamlet")
-        do_change_user_role(admin_user, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        do_change_user_role(admin_user, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
 
         non_admin_user = self.example_user("cordelia")
 
