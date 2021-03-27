@@ -94,7 +94,6 @@ function render_code_sections() {
     });
 }
 
-new SimpleBar($(".markdown")[0]);
 new SimpleBar($(".sidebar")[0]);
 
 // Scroll to anchor link when clicked. Note that landing-page.js has a
