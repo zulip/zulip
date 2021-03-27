@@ -300,7 +300,9 @@ def process_success_response(
 
 
 def do_rest_call(
-    base_url: str, event: Dict[str, Any], service_handler: Any
+    base_url: str,
+    event: Dict[str, Any],
+    service_handler: OutgoingWebhookServiceInterface,
 ) -> Optional[Response]:
     """Returns response of call if no exception occurs."""
     try:
