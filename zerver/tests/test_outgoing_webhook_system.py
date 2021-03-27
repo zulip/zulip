@@ -25,17 +25,15 @@ class ResponseMock:
         self.text = content.decode()
 
 
-def request_exception_error(
-    http_method: Any, final_url: Any, data: Any, **request_kwargs: Any
-) -> Any:
+def request_exception_error(http_method: Any, final_url: Any, **request_kwargs: Any) -> Any:
     raise requests.exceptions.RequestException("I'm a generic exception :(")
 
 
-def timeout_error(http_method: Any, final_url: Any, data: Any, **request_kwargs: Any) -> Any:
+def timeout_error(http_method: Any, final_url: Any, **request_kwargs: Any) -> Any:
     raise requests.exceptions.Timeout("Time is up!")
 
 
-def connection_error(http_method: Any, final_url: Any, data: Any, **request_kwargs: Any) -> Any:
+def connection_error(http_method: Any, final_url: Any, **request_kwargs: Any) -> Any:
     raise requests.exceptions.ConnectionError()
 
 
@@ -144,8 +142,12 @@ The webhook got a response with status code *400*.""",
         mock_event = self.mock_event(bot_user)
         service_handler = GenericOutgoingWebhookService("token", bot_user, "service")
 
-        with mock.patch("requests.request") as mock_request, self.assertLogs(level="WARNING") as m:
-            final_response = do_rest_call("", "payload-stub", mock_event, service_handler)
+        with mock.patch("requests.sessions.Session.send") as mock_send, self.assertLogs(
+            level="WARNING"
+        ) as m:
+            final_response = do_rest_call(
+                "https://example.com/", "payload-stub", mock_event, service_handler
+            )
             assert final_response is not None
 
             self.assertEqual(
@@ -155,15 +157,14 @@ The webhook got a response with status code *400*.""",
                 ],
             )
 
-        kwargs = mock_request.call_args[1]
-        self.assertEqual(kwargs["data"], "payload-stub")
-
-        user_agent = "ZulipOutgoingWebhook/" + ZULIP_VERSION
-        headers = {
-            "content-type": "application/json",
-            "User-Agent": user_agent,
-        }
-        self.assertEqual(kwargs["headers"], headers)
+            mock_send.assert_called_once()
+            prepared_request = mock_send.call_args[0][0]
+            user_agent = "ZulipOutgoingWebhook/" + ZULIP_VERSION
+            headers = {
+                "Content-Type": "application/json",
+                "User-Agent": user_agent,
+            }
+            self.assertLessEqual(headers.items(), prepared_request.headers.items())
 
     def test_error_handling(self) -> None:
         bot_user = self.example_user("outgoing_webhook_bot")

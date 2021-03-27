@@ -74,11 +74,9 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
     def send_data_to_server(self, base_url: str, request_data: Any) -> Response:
         user_agent = "ZulipOutgoingWebhook/" + ZULIP_VERSION
         headers = {
-            "content-type": "application/json",
             "User-Agent": user_agent,
         }
-        response = requests.request("POST", base_url, data=request_data, headers=headers)
-        return response
+        return requests.request("POST", base_url, json=request_data, headers=headers)
 
     def process_success(self, response_json: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         if "response_not_required" in response_json and response_json["response_not_required"]:
