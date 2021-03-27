@@ -2,7 +2,7 @@ import {strict as assert} from "assert";
 
 import type {Page} from "puppeteer";
 
-import common from "../puppeteer_lib/common";
+import * as common from "../puppeteer_lib/common";
 
 type Playground = {
     playground_name: string;

@@ -1,6 +1,6 @@
 import type {Page} from "puppeteer";
 
-import common from "../puppeteer_lib/common";
+import * as common from "../puppeteer_lib/common";
 
 async function trigger_edit_last_message(page: Page): Promise<void> {
     await page.evaluate(() => {

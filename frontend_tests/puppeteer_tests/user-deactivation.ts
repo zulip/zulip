@@ -2,7 +2,7 @@ import {strict as assert} from "assert";
 
 import type {Page} from "puppeteer";
 
-import common from "../puppeteer_lib/common";
+import * as common from "../puppeteer_lib/common";
 
 async function navigate_to_user_list(page: Page): Promise<void> {
     const menu_selector = "#settings-dropdown";

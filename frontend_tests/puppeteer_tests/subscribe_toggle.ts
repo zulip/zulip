@@ -1,6 +1,6 @@
 import type {ElementHandle, Page} from "puppeteer";
 
-import common from "../puppeteer_lib/common";
+import * as common from "../puppeteer_lib/common";
 
 async function test_subscription_button(page: Page): Promise<void> {
     const stream_selector = "[data-stream-name='Venice']";

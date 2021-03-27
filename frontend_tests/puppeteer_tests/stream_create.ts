@@ -2,7 +2,7 @@ import {strict as assert} from "assert";
 
 import type {Page} from "puppeteer";
 
-import common from "../puppeteer_lib/common";
+import * as common from "../puppeteer_lib/common";
 
 async function user_row_selector(page: Page, name: string): Promise<string> {
     const user_id = await common.get_user_id_from_name(page, name);

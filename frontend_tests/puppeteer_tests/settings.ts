@@ -3,7 +3,7 @@ import {strict as assert} from "assert";
 import type {Page} from "puppeteer";
 
 import {test_credentials} from "../../var/puppeteer/test_credentials";
-import common from "../puppeteer_lib/common";
+import * as common from "../puppeteer_lib/common";
 
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
 const GENERIC_BOT_TYPE = "1";
