@@ -705,7 +705,6 @@ exports.process_hotkey = function (e, hotkey) {
             compose_actions.start("stream", {trigger: "compose_hotkey"});
             return true;
         case "pause":
-            console.log("pause");
             server_events.pause_toggle();
             return true;
         case "compose_private_message":

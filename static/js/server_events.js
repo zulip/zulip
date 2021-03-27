@@ -315,7 +315,6 @@ exports.home_view_loaded = function home_view_loaded() {
     $(document).trigger("home_view_loaded.zulip");
 };
 exports.pause_toggle = function pause_toggle() {
-    console.log(pause_events);
     if (pause_events) {
         hide_pause_traffic();
         pause_events = false;
