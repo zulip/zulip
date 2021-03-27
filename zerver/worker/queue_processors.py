@@ -742,9 +742,7 @@ class OutgoingWebhookWorker(QueueProcessingWorker):
         for service in services:
             event["service_name"] = str(service.name)
             service_handler = get_outgoing_webhook_service_handler(service)
-            request_data = service_handler.build_bot_request(event)
-            if request_data:
-                do_rest_call(service.base_url, request_data, event, service_handler)
+            do_rest_call(service.base_url, event, service_handler)
 
 
 @assign_queue("embedded_bots")
