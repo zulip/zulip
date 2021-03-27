@@ -167,6 +167,7 @@ The webhook got a response with status code *400*.""",
             headers = {
                 "Content-Type": "application/json",
                 "User-Agent": user_agent,
+                "X-Smokescreen-Role": "webhook",
             }
             self.assertLessEqual(headers.items(), prepared_request.headers.items())
 
