@@ -133,6 +133,7 @@ from zerver.lib.stream_subscription import (
     get_stream_subscriptions_for_users,
     get_subscribed_stream_ids_for_user,
     num_subscribers_for_stream_id,
+    subscriber_ids_with_stream_history_access,
 )
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.streams import (
@@ -2159,18 +2160,28 @@ def notify_reaction_update(
     update_to_dict_cache([message])
 
     # Recipients for message update events, including reactions, are
-    # everyone who got the original message.  This means reactions
-    # won't live-update in preview narrows, but it's the right
-    # performance tradeoff, since otherwise we'd need to send all
-    # reactions to public stream messages to every browser for every
-    # client in the organization, which doesn't scale.
+    # everyone who got the original message, plus subscribers of
+    # streams with the access to stream's full history.
     #
-    # However, to ensure that reactions do live-update for any user
-    # who has actually participated in reacting to a message, we add a
+    # This means reactions won't live-update in preview narrows for a
+    # stream the user isn't yet subscribed to; this is the right
+    # performance tradeoff to avoid sending every reaction to public
+    # stream messages to all users.
+    #
+    # To ensure that reactions do live-update for any user who has
+    # actually participated in reacting to a message, we add a
     # "historical" UserMessage row for any user who reacts to message,
-    # subscribing them to future notifications.
-    ums = UserMessage.objects.filter(message=message.id)
-    send_event(user_profile.realm, event, [um.user_profile_id for um in ums])
+    # subscribing them to future notifications, even if they are not
+    # subscribed to the stream.
+    user_ids = set(
+        UserMessage.objects.filter(message=message.id).values_list("user_profile_id", flat=True)
+    )
+    if message.recipient.type == Recipient.STREAM:
+        stream_id = message.recipient.type_id
+        stream = Stream.objects.get(id=stream_id)
+        user_ids |= subscriber_ids_with_stream_history_access(stream)
+
+    send_event(user_profile.realm, event, list(user_ids))
 
 
 def do_add_reaction(

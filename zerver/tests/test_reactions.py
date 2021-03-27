@@ -4,6 +4,7 @@ from unittest import mock
 import orjson
 from django.http import HttpResponse
 
+from zerver.lib.actions import do_change_stream_invite_only, do_change_stream_web_public
 from zerver.lib.cache import cache_get, to_dict_cache_key_id
 from zerver.lib.emoji import emoji_name_to_emoji_code
 from zerver.lib.message import extract_message_dict
@@ -478,6 +479,141 @@ class ReactionEventTest(ZulipTestCase):
         self.assertEqual(event["op"], "remove")
         self.assertEqual(event["emoji_name"], "smile")
         self.assertEqual(event["message_id"], pm_id)
+
+    def test_reaction_event_scope(self) -> None:
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        polonius = self.example_user("polonius")
+        reaction_info = {
+            "emoji_name": "smile",
+        }
+
+        # Test `invite_only` streams with `!history_public_to_subscribers` and `!is_web_public`
+        stream = self.make_stream(
+            "test_reactions_stream", invite_only=True, history_public_to_subscribers=False
+        )
+        self.subscribe(iago, stream.name)
+        message_before_id = self.send_stream_message(
+            iago, "test_reactions_stream", "before subscription history private"
+        )
+        self.subscribe(hamlet, stream.name)
+        self.subscribe(polonius, stream.name)
+
+        # Hamlet and Polonius joined after the message was sent, and
+        # so only Iago should receive the event.
+        events: List[Mapping[str, Any]] = []
+        with tornado_redirected_to_list(events):
+            result = self.api_post(
+                iago, f"/api/v1/messages/{message_before_id}/reactions", reaction_info
+            )
+        self.assert_json_success(result)
+        self.assert_length(events, 1)
+        event = events[0]["event"]
+        self.assertEqual(event["type"], "reaction")
+        event_user_ids = set(events[0]["users"])
+        self.assertEqual(event_user_ids, {iago.id})
+        remove = self.api_delete(
+            iago, f"/api/v1/messages/{message_before_id}/reactions", reaction_info
+        )
+        self.assert_json_success(remove)
+
+        # Reaction to a Message sent after subscription, should
+        # trigger events for all subscribers (Iago, Hamlet and Polonius).
+        message_after_id = self.send_stream_message(
+            iago, "test_reactions_stream", "after subscription history private"
+        )
+        events = []
+        with tornado_redirected_to_list(events):
+            result = self.api_post(
+                iago, f"/api/v1/messages/{message_after_id}/reactions", reaction_info
+            )
+        self.assert_json_success(result)
+        self.assert_length(events, 1)
+        event = events[0]["event"]
+        self.assertEqual(event["type"], "reaction")
+        event_user_ids = set(events[0]["users"])
+        self.assertEqual(event_user_ids, {iago.id, hamlet.id, polonius.id})
+        remove = self.api_delete(
+            iago, f"/api/v1/messages/{message_after_id}/reactions", reaction_info
+        )
+        self.assert_json_success(remove)
+
+        # Make stream history public to subscribers
+        do_change_stream_invite_only(stream, False, history_public_to_subscribers=True)
+        # Since stream history is public to subscribers, reacting to
+        # message_before_id should notify all non-guest subscribers:
+        # Iago and Hamlet.
+        events = []
+        with tornado_redirected_to_list(events):
+            result = self.api_post(
+                iago, f"/api/v1/messages/{message_before_id}/reactions", reaction_info
+            )
+        self.assert_json_success(result)
+        self.assert_length(events, 1)
+        event = events[0]["event"]
+        self.assertEqual(event["type"], "reaction")
+        event_user_ids = set(events[0]["users"])
+        self.assertEqual(event_user_ids, {iago.id, hamlet.id})
+        remove = self.api_delete(
+            iago, f"/api/v1/messages/{message_before_id}/reactions", reaction_info
+        )
+        self.assert_json_success(remove)
+
+        # Make stream web_public as well.
+        do_change_stream_web_public(stream, True)
+        # For is_web_public streams, events even on old messages
+        # should go to all subscribers, including guests like polonius.
+        events = []
+        with tornado_redirected_to_list(events):
+            result = self.api_post(
+                iago, f"/api/v1/messages/{message_before_id}/reactions", reaction_info
+            )
+        self.assert_json_success(result)
+        self.assert_length(events, 1)
+        event = events[0]["event"]
+        self.assertEqual(event["type"], "reaction")
+        event_user_ids = set(events[0]["users"])
+        self.assertEqual(event_user_ids, {iago.id, hamlet.id, polonius.id})
+        remove = self.api_delete(
+            iago, f"/api/v1/messages/{message_before_id}/reactions", reaction_info
+        )
+        self.assert_json_success(remove)
+
+        # Private message, event should go to both participants.
+        private_message_id = self.send_personal_message(
+            iago,
+            hamlet,
+            "hello to single reciever",
+        )
+        events = []
+        with tornado_redirected_to_list(events):
+            result = self.api_post(
+                hamlet, f"/api/v1/messages/{private_message_id}/reactions", reaction_info
+            )
+        self.assert_json_success(result)
+        self.assert_length(events, 1)
+        event = events[0]["event"]
+        self.assertEqual(event["type"], "reaction")
+        event_user_ids = set(events[0]["users"])
+        self.assertEqual(event_user_ids, {iago.id, hamlet.id})
+
+        # Group private message; event should go to all participants.
+        huddle_message_id = self.send_huddle_message(
+            hamlet,
+            [polonius, iago],
+            "hello message to muliple reciever",
+        )
+        events = []
+        with tornado_redirected_to_list(events):
+            result = self.api_post(
+                polonius, f"/api/v1/messages/{huddle_message_id}/reactions", reaction_info
+            )
+        self.assert_json_success(result)
+        self.assert_length(events, 1)
+        event = events[0]["event"]
+        self.assertEqual(event["type"], "reaction")
+        event_user_ids = set(events[0]["users"])
+        self.assertEqual(event_user_ids, {iago.id, hamlet.id, polonius.id})
 
 
 class EmojiReactionBase(ZulipTestCase):
