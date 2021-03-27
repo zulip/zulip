@@ -6,7 +6,6 @@ import render_settings_admin_realm_domains_list from "../templates/settings/admi
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
-import {csrf_token} from "./csrf";
 import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget";
 import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
@@ -1054,59 +1053,10 @@ export function build_page() {
         });
     });
 
-    function realm_icon_logo_upload_complete(spinner, upload_text, delete_button) {
-        spinner.css({visibility: "hidden"});
-        upload_text.show();
-        delete_button.show();
-    }
-
-    function realm_icon_logo_upload_start(spinner, upload_text, delete_button) {
-        spinner.css({visibility: "visible"});
-        upload_text.hide();
-        delete_button.hide();
-    }
-
-    function upload_realm_logo_or_icon(file_input, night) {
-        const form_data = new FormData();
-        let widget;
-        const url = "/json/realm/logo";
-
-        form_data.append("csrfmiddlewaretoken", csrf_token);
-        for (const [i, file] of Array.prototype.entries.call(file_input[0].files)) {
-            form_data.append("file-" + i, file);
-        }
-        if (night) {
-            widget = "#realm-night-logo-upload-widget";
-        } else {
-            widget = "#realm-day-logo-upload-widget";
-        }
-        form_data.append("night", JSON.stringify(night));
-        const spinner = $(`${widget} .upload-spinner-background`).expectOne();
-        const upload_text = $(`${widget}  .image-upload-text`).expectOne();
-        const delete_button = $(`${widget}  .image-delete-button`).expectOne();
-        const error_field = $(`${widget}  .image_file_input_error`).expectOne();
-        realm_icon_logo_upload_start(spinner, upload_text, delete_button);
-        error_field.hide();
-        channel.post({
-            url,
-            data: form_data,
-            cache: false,
-            processData: false,
-            contentType: false,
-            success() {
-                realm_icon_logo_upload_complete(spinner, upload_text, delete_button);
-            },
-            error(xhr) {
-                realm_icon_logo_upload_complete(spinner, upload_text, delete_button);
-                ui_report.error("", xhr, error_field);
-            },
-        });
-    }
-
     realm_icon.build_realm_icon_widget();
     if (page_params.zulip_plan_is_not_limited) {
-        realm_logo.build_realm_logo_widget(upload_realm_logo_or_icon, false);
-        realm_logo.build_realm_logo_widget(upload_realm_logo_or_icon, true);
+        realm_logo.build_realm_logo_widget(true);
+        realm_logo.build_realm_logo_widget(false);
     }
 
     $("#deactivate_realm_button").on("click", (e) => {

@@ -130,22 +130,29 @@ export function build_direct_upload_widget(
 ) {
     // default value of max uploaded file size
     max_file_upload_size = max_file_upload_size || default_max_file_size;
+
     function accept() {
         input_error.hide();
         let url;
         const widget_selector = upload_button.closest(".image_upload_widget").attr("id");
-        const realm_logo_section = upload_button.closest(".image_upload_widget");
-        if (realm_logo_section.attr("id") === "realm-night-logo-upload-widget") {
-            upload_function(get_file_input(), true, false);
-        } else if (realm_logo_section.attr("id") === "realm-day-logo-upload-widget") {
-            upload_function(get_file_input(), false, false);
-        } else if (widget_selector === "realm-icon-upload-widget") {
+        let night_param = false;
+        if (widget_selector === "realm-icon-upload-widget") {
             url = "/json/realm/icon";
-        } else {
+        } else if (widget_selector === "user-avatar-upload-widget") {
             upload_function(get_file_input(), null, true);
         }
-        const upload_widget = new ImageUploadWidget(url, widget_selector);
-        upload_widget.image_upload(get_file_input());
+        // Set url for realm-logo
+        else {
+            // Change night_param to true if night logo.
+            if (widget_selector === "realm-night-logo-upload-widget") {
+                night_param = true;
+            }
+            // Else night_param remains false and url is assigned regardless.
+            url = "/json/realm/logo";
+        }
+
+        const image_upload_widget = new ImageUploadWidget(url, widget_selector, night_param);
+        image_upload_widget.image_upload(get_file_input());
     }
 
     function clear() {

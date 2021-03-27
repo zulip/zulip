@@ -5,7 +5,7 @@ import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 import * as upload_widget from "./upload_widget";
 
-export function build_realm_logo_widget(upload_function, is_night) {
+export function build_realm_logo_widget(is_night) {
     let logo_section_id = "#realm-day-logo-upload-widget";
     let logo_source = page_params.realm_logo_source;
 
@@ -47,7 +47,6 @@ export function build_realm_logo_widget(upload_function, is_night) {
         get_file_input,
         file_input_error_elem.expectOne(),
         upload_button_elem.expectOne(),
-        upload_function,
         page_params.max_logo_file_size,
     );
 }

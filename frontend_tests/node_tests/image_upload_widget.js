@@ -35,11 +35,25 @@ run_test("image_upload_widget", () => {
                 form_data[field] = val;
             },
         };
+        let url;
+        let night_param = false;
 
-        const image_upload_widget = new ImageUploadWidget(null, widget);
+        if (widget === "realm-icon-upload-widget") {
+            url = "/json/realm/icon";
+        }
+        // Set url for realm-logo
+        else {
+            // Change night_param to true if night logo.
+            if (widget === "realm-night-logo-upload-widget") {
+                night_param = true;
+            }
+            // Else night_param remains false and url is assigned regardless.
+            url = "/json/realm/logo";
+        }
+
+        const image_upload_widget = new ImageUploadWidget(url, widget, night_param);
         const file_input = [{files: ["image1.png", "image2.png"]}];
         let posted;
-        const url = image_upload_widget.url;
         const spinner = $(`#${widget} .upload-spinner-background`);
         const upload_text = $(`#${widget}  .image-upload-text`);
         const delete_button = $(`#${widget}  .image-delete-button`);
@@ -62,6 +76,7 @@ run_test("image_upload_widget", () => {
         test_complete_upload(spinner, upload_text, delete_button, error_text);
         assert(posted);
     }
-
+    test_image_upload("realm-day-logo-upload-widget");
+    test_image_upload("realm-night-logo-upload-widget");
     test_image_upload("realm-icon-upload-widget");
 });

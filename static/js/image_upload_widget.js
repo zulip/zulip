@@ -5,15 +5,19 @@ import {csrf_token} from "./csrf";
 import * as ui_report from "./ui_report";
 
 export class ImageUploadWidget {
-    constructor(url, selector) {
+    constructor(url, selector, night_param) {
         this.url = url;
         this.selector = selector;
+        this.night_param = night_param;
     }
 
     image_upload(input_file) {
         const form_data = new FormData();
         const widget_selector = this.selector;
+        const night_param = this.night_param;
+
         form_data.append("csrfmiddlewaretoken", csrf_token);
+        form_data.append("night", JSON.stringify(night_param));
         for (const [i, file] of Array.prototype.entries.call(input_file[0].files)) {
             form_data.append("file-" + i, file);
         }
