@@ -108,21 +108,21 @@ class PermissionTest(ZulipTestCase):
 
     def test_get_admin_users(self) -> None:
         user_profile = self.example_user("hamlet")
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER)
+        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
         self.assertFalse(user_profile.is_realm_owner)
         admin_users = user_profile.realm.get_human_admin_users()
         self.assertFalse(user_profile in admin_users)
         admin_users = user_profile.realm.get_admin_users_and_bots()
         self.assertFalse(user_profile in admin_users)
 
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         self.assertFalse(user_profile.is_realm_owner)
         admin_users = user_profile.realm.get_human_admin_users()
         self.assertTrue(user_profile in admin_users)
         admin_users = user_profile.realm.get_admin_users_and_bots()
         self.assertTrue(user_profile in admin_users)
 
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER)
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=None)
         self.assertTrue(user_profile.is_realm_owner)
         admin_users = user_profile.realm.get_human_admin_users()
         self.assertTrue(user_profile in admin_users)
@@ -136,7 +136,7 @@ class PermissionTest(ZulipTestCase):
     def test_updating_non_existent_user(self) -> None:
         self.login("hamlet")
         admin = self.example_user("hamlet")
-        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
 
         invalid_user_id = 1000
         result = self.client_patch(f"/json/users/{invalid_user_id}", {})
@@ -150,7 +150,7 @@ class PermissionTest(ZulipTestCase):
         iago = self.example_user("iago")
         realm = iago.realm
 
-        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER)
+        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER, acting_user=None)
 
         result = self.client_get("/json/users")
         self.assert_json_success(result)
@@ -200,7 +200,7 @@ class PermissionTest(ZulipTestCase):
             result, "The owner permission cannot be removed from the only organization owner."
         )
 
-        do_change_user_role(iago, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        do_change_user_role(iago, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         self.login("iago")
         with tornado_redirected_to_list([]):
             result = self.client_patch(f"/json/users/{desdemona.id}", req)
@@ -464,7 +464,7 @@ class PermissionTest(ZulipTestCase):
         iago = self.example_user("iago")
         self.login_user(iago)
         hamlet = self.example_user("hamlet")
-        do_change_user_role(hamlet, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        do_change_user_role(hamlet, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         self.assertFalse(hamlet.is_guest)
         self.assertTrue(hamlet.is_realm_admin)
 
@@ -512,7 +512,7 @@ class PermissionTest(ZulipTestCase):
     def test_change_owner_to_guest(self) -> None:
         self.login("desdemona")
         iago = self.example_user("iago")
-        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER)
+        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER, acting_user=None)
         self.assertFalse(iago.is_guest)
         self.assertTrue(iago.is_realm_owner)
 
@@ -584,7 +584,7 @@ class PermissionTest(ZulipTestCase):
         desdemona = self.example_user("desdemona")
         self.login_user(desdemona)
         iago = self.example_user("iago")
-        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER)
+        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER, acting_user=None)
         self.assertTrue(iago.is_realm_owner)
 
         # Test changing a user from admin to owner and revoking admin status
@@ -888,7 +888,7 @@ class AdminCreateUserTest(ZulipTestCase):
         admin = self.example_user("hamlet")
         realm = admin.realm
         self.login_user(admin)
-        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         valid_params = dict(
             email="romeo@zulip.net",
             password="xxxx",
@@ -901,11 +901,11 @@ class AdminCreateUserTest(ZulipTestCase):
 
         do_change_can_create_users(admin, True)
         # can_create_users is insufficient without being a realm administrator:
-        do_change_user_role(admin, UserProfile.ROLE_MEMBER)
+        do_change_user_role(admin, UserProfile.ROLE_MEMBER, acting_user=None)
         result = self.client_post("/json/users", valid_params)
         self.assert_json_error(result, "Must be an organization administrator")
 
-        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
 
         result = self.client_post("/json/users", {})
         self.assert_json_error(result, "Missing 'email' argument")
@@ -1333,7 +1333,7 @@ class ActivateTest(ZulipTestCase):
 
     def test_api(self) -> None:
         admin = self.example_user("othello")
-        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         self.login("othello")
 
         user = self.example_user("hamlet")
@@ -1358,7 +1358,7 @@ class ActivateTest(ZulipTestCase):
 
         iago = self.example_user("iago")
         desdemona = self.example_user("desdemona")
-        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER)
+        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER, acting_user=None)
 
         # Cannot deactivate a user with the bot api
         result = self.client_delete("/json/bots/{}".format(self.example_user("hamlet").id))
@@ -1385,7 +1385,7 @@ class ActivateTest(ZulipTestCase):
 
     def test_api_with_insufficient_permissions(self) -> None:
         non_admin = self.example_user("othello")
-        do_change_user_role(non_admin, UserProfile.ROLE_MEMBER)
+        do_change_user_role(non_admin, UserProfile.ROLE_MEMBER, acting_user=None)
         self.login("othello")
 
         # Cannot deactivate a user with the users api
