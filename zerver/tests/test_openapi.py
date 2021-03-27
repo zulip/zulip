@@ -1007,7 +1007,7 @@ class OpenAPIAttributesTest(ZulipTestCase):
         * All example responses match their schema.
         * That no opaque object exists.
         """
-        EXCLUDE = ["/real-time", "/register", "/events"]
+        EXCLUDE = ["/real-time"]
         VALID_TAGS = [
             "users",
             "server_and_organizations",
