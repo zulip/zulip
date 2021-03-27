@@ -22,17 +22,14 @@ function get_message_selector(text: string): string {
 }
 
 async function test_send_messages(page: Page): Promise<void> {
-    const initial_msgs_count = await page.evaluate(() => $("#zhome .message_row").length);
+    const initial_msgs_count = (await page.$$("#zhome .message_row")).length;
 
     await common.send_multiple_messages(page, [
         {stream: "Verona", topic: "Reply test", content: "Compose stream reply test"},
         {recipient: "cordelia@zulip.com", content: "Compose private message reply test"},
     ]);
 
-    assert.equal(
-        await page.evaluate(() => $("#zhome .message_row").length),
-        initial_msgs_count + 2,
-    );
+    assert.equal((await page.$$("#zhome .message_row")).length, initial_msgs_count + 2);
 }
 
 async function test_stream_compose_keyboard_shortcut(page: Page): Promise<void> {
@@ -120,16 +117,15 @@ async function test_narrow_to_private_messages_with_cordelia(page: Page): Promis
 
     await page.keyboard.press("KeyC");
     await page.waitForSelector("#compose", {visible: true});
-    await page.waitForFunction(
-        () => document.activeElement === $(".compose_table #stream_message_recipient_stream")[0],
-    );
+    await page.waitForSelector(".compose_table #stream_message_recipient_stream:focus", {
+        visible: true,
+    });
     await close_compose_box(page);
 }
 
 async function test_send_multirecipient_pm_from_cordelia_pm_narrow(page: Page): Promise<void> {
     const recipients = ["cordelia@zulip.com", "othello@zulip.com"];
     const multiple_recipients_pm = "A huddle to check spaces";
-    const pm_selector = `.messagebox:contains('${CSS.escape(multiple_recipients_pm)}')`;
     await common.send_message(page, "private", {
         recipient: recipients.join(", "),
         outside_view: true,
@@ -140,10 +136,13 @@ async function test_send_multirecipient_pm_from_cordelia_pm_narrow(page: Page): 
     await page.click(".top_left_all_messages");
 
     await page.waitForSelector("#zhome .message_row", {visible: true});
-    await page.waitForFunction((selector: string) => $(selector).length !== 0, {}, pm_selector);
-    await page.evaluate((selector: string) => {
-        $(selector).slice(-1)[0].click();
-    }, pm_selector);
+    const pm = await page.waitForSelector(
+        `xpath/(//*[${common.has_class_x(
+            "messagebox",
+        )} and contains(normalize-space(), "${multiple_recipients_pm}")])[last()]`,
+    );
+    assert.ok(pm !== null);
+    await pm.click();
     await page.waitForSelector("#compose-textarea", {visible: true});
     const recipient_internal_emails = [
         await common.get_internal_email_from_name(page, "othello"),
@@ -184,24 +183,21 @@ async function test_markdown_preview_without_any_content(page: Page): Promise<vo
 
 async function test_markdown_rendering(page: Page): Promise<void> {
     await page.waitForSelector("#compose .markdown_preview", {visible: true});
-    let markdown_preview_element = await page.$("#compose .preview_content");
-    assert.ok(markdown_preview_element);
-    assert.equal(
-        await page.evaluate((element: Element) => element.textContent, markdown_preview_element),
-        "",
-    );
+    assert.equal(await common.get_text_from_selector(page, "#compose .preview_content"), "");
     await common.fill_form(page, 'form[action^="/json/messages"]', {
         content: "**Markdown preview** >> Test for Markdown preview",
     });
     await page.click("#compose .markdown_preview");
-    await page.waitForSelector("#compose .preview_content", {visible: true});
+    const preview_content = (await page.waitForSelector(
+        `xpath///*[@id="compose"]//*[${common.has_class_x(
+            "preview_content",
+        )} and normalize-space()!=""]`,
+        {visible: true},
+    )) as ElementHandle<Element>;
     const expected_markdown_html =
         "<p><strong>Markdown preview</strong> &gt;&gt; Test for Markdown preview</p>";
-    await page.waitForFunction(() => $("#compose .preview_content").html() !== "");
-    markdown_preview_element = await page.$("#compose .preview_content");
-    assert.ok(markdown_preview_element);
     assert.equal(
-        await page.evaluate((element: Element) => element.innerHTML, markdown_preview_element),
+        await (await preview_content.getProperty("innerHTML")).jsonValue(),
         expected_markdown_html,
     );
 }

@@ -143,7 +143,6 @@
         {
             "files": ["frontend_tests/puppeteer_lib/**", "frontend_tests/puppeteer_tests/**"],
             "globals": {
-                "$": false,
                 "zulip_test": false
             }
         },
