@@ -7,9 +7,13 @@ import * as util from "./util";
 
 // Miscellaneous early setup.
 export let password_change_in_progress = false;
+export let last_password_change_start_time = null;
 
 export function set_password_change_in_progress(value) {
     password_change_in_progress = value;
+    if (value) {
+        last_password_change_start_time = new Date();
+    }
 }
 
 $(() => {
@@ -42,9 +46,21 @@ $(() => {
         return this.outerWidth(...args) || 0;
     };
 
+    // Attach the time when the request was initiated to its XHR
+    // object.  This allows us to detect race situations where a
+    // password change completed before we got a response that failed
+    // due to the ongoing password change.
+    $(document).ajaxSend((event, xhr) => {
+        xhr.initiatedTime = new Date();
+    });
+
     // For some reason, jQuery wants this to be attached to an element.
     $(document).ajaxError((event, xhr) => {
-        if (password_change_in_progress) {
+        if (
+            password_change_in_progress ||
+            (last_password_change_start_time &&
+                xhr.initiatedTime <= last_password_change_start_time)
+        ) {
             // The backend for handling password change API requests
             // will replace the user's session; this results in a
             // brief race where any API request will fail with a 401
