@@ -3,9 +3,10 @@ from unittest import mock
 
 import orjson
 
+from zerver.lib.cache import cache_get, get_muting_users_cache_key
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.user_mutes import get_mute_object, get_user_mutes
+from zerver.lib.user_mutes import get_mute_object, get_muting_users, get_user_mutes
 from zerver.models import RealmAuditLog
 
 
@@ -161,3 +162,26 @@ class MutedUsersTests(ZulipTestCase):
                 orjson.dumps({"unmuted_user_id": cordelia.id}).decode(),
             ),
         )
+
+    def test_get_muting_users(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+        cordelia = self.example_user("cordelia")
+
+        self.assertEqual(None, cache_get(get_muting_users_cache_key(cordelia)))
+        self.assertEqual(set(), get_muting_users(cordelia))
+        self.assertEqual(set(), cache_get(get_muting_users_cache_key(cordelia))[0])
+
+        url = "/api/v1/users/me/muted_users/{}".format(cordelia.id)
+        result = self.api_post(hamlet, url)
+        self.assert_json_success(result)
+        self.assertEqual(None, cache_get(get_muting_users_cache_key(cordelia)))
+        self.assertEqual({hamlet.id}, get_muting_users(cordelia))
+        self.assertEqual({hamlet.id}, cache_get(get_muting_users_cache_key(cordelia))[0])
+
+        url = "/api/v1/users/me/muted_users/{}".format(cordelia.id)
+        result = self.api_delete(hamlet, url)
+        self.assert_json_success(result)
+        self.assertEqual(None, cache_get(get_muting_users_cache_key(cordelia)))
+        self.assertEqual(set(), get_muting_users(cordelia))
+        self.assertEqual(set(), cache_get(get_muting_users_cache_key(cordelia))[0])

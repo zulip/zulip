@@ -50,6 +50,7 @@ from zerver.lib.cache import (
     cache_set,
     cache_with_key,
     flush_message,
+    flush_muting_users_cache,
     flush_realm,
     flush_stream,
     flush_submessage,
@@ -1914,6 +1915,10 @@ class MutedUser(models.Model):
 
     def __str__(self) -> str:
         return f"<MutedUser: {self.user_profile.email} -> {self.muted_user.email}>"
+
+
+post_save.connect(flush_muting_users_cache, sender=MutedUser)
+post_delete.connect(flush_muting_users_cache, sender=MutedUser)
 
 
 class Client(models.Model):
