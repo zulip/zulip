@@ -55,7 +55,7 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
             )
         self.assertTrue(m.called)
 
-    def test_build_bot_request(self) -> None:
+    def test_make_request(self) -> None:
         othello = self.example_user("othello")
         stream = get_stream("Denmark", othello.realm)
         message_id = self.send_stream_message(
@@ -102,8 +102,25 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
             "trigger": "mention",
         }
 
-        request_data = self.handler.build_bot_request(event)
-        request_data = json.loads(request_data)
+        test_url = "https://example.com/example"
+        response = mock.Mock(spec=requests.Response)
+        response.status_code = 200
+        expect_200 = mock.patch("requests.request", return_value=response)
+        with expect_200 as mock_request:
+            self.handler.make_request(
+                test_url,
+                event,
+            )
+            mock_request.assert_called_once()
+            self.assertEqual(
+                mock_request.call_args[0],
+                (
+                    "POST",
+                    test_url,
+                ),
+            )
+            request_data = mock_request.call_args[1]["json"]
+
         validate_against_openapi_schema(request_data, "/zulip-outgoing-webhook", "post", "200")
         self.assertEqual(request_data["data"], "@**test**")
         self.assertEqual(request_data["token"], "abcdef")
@@ -180,8 +197,22 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
         service_class = get_service_interface_class(SLACK_INTERFACE)
         self.handler = service_class(token="abcdef", user_profile=None, service_name="test-service")
 
-    def test_build_bot_request_stream_message(self) -> None:
-        request_data = self.handler.build_bot_request(self.stream_message_event)
+    def test_make_request_stream_message(self) -> None:
+        test_url = "https://example.com/example"
+        with mock.patch("requests.request") as mock_request:
+            self.handler.make_request(
+                test_url,
+                self.stream_message_event,
+            )
+            mock_request.assert_called_once()
+            self.assertEqual(
+                mock_request.call_args[0],
+                (
+                    "POST",
+                    test_url,
+                ),
+            )
+            request_data = mock_request.call_args[1]["data"]
 
         self.assertEqual(request_data[0][1], "abcdef")  # token
         self.assertEqual(request_data[1][1], "zulip")  # team_id
@@ -196,10 +227,15 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
         self.assertEqual(request_data[10][1], 12)  # user_profile_id
 
     @mock.patch("zerver.lib.outgoing_webhook.fail_with_message")
-    def test_build_bot_request_private_message(self, mock_fail_with_message: mock.Mock) -> None:
-
-        request_data = self.handler.build_bot_request(self.private_message_event)
-        self.assertIsNone(request_data)
+    def test_make_request_private_message(self, mock_fail_with_message: mock.Mock) -> None:
+        test_url = "https://example.com/example"
+        with mock.patch("requests.request") as mock_request:
+            response = self.handler.make_request(
+                test_url,
+                self.private_message_event,
+            )
+            mock_request.assert_not_called()
+        self.assertIsNone(response)
         self.assertTrue(mock_fail_with_message.called)
 
     def test_process_success(self) -> None:

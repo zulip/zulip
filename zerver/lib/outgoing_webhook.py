@@ -32,11 +32,7 @@ class OutgoingWebhookServiceInterface(metaclass=abc.ABCMeta):
         self.service_name: str = service_name
 
     @abc.abstractmethod
-    def build_bot_request(self, event: Dict[str, Any]) -> Optional[Any]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def send_data_to_server(self, base_url: str, request_data: Any) -> Response:
+    def make_request(self, base_url: str, event: Dict[str, Any]) -> Optional[Response]:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -45,7 +41,7 @@ class OutgoingWebhookServiceInterface(metaclass=abc.ABCMeta):
 
 
 class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
-    def build_bot_request(self, event: Dict[str, Any]) -> Optional[Any]:
+    def make_request(self, base_url: str, event: Dict[str, Any]) -> Optional[Response]:
         """
         We send a simple version of the message to outgoing
         webhooks, since most of them really only need
@@ -69,9 +65,7 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
             "token": self.token,
             "trigger": event["trigger"],
         }
-        return json.dumps(request_data)
 
-    def send_data_to_server(self, base_url: str, request_data: Any) -> Response:
         user_agent = "ZulipOutgoingWebhook/" + ZULIP_VERSION
         headers = {
             "User-Agent": user_agent,
@@ -99,7 +93,7 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
 
 class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
-    def build_bot_request(self, event: Dict[str, Any]) -> Optional[Any]:
+    def make_request(self, base_url: str, event: Dict[str, Any]) -> Optional[Response]:
         if event["message"]["type"] == "private":
             failure_message = "Slack outgoing webhooks don't support private messages."
             fail_with_message(event, failure_message)
@@ -118,12 +112,7 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
             ("trigger_word", event["trigger"]),
             ("service_id", event["user_profile_id"]),
         ]
-
-        return request_data
-
-    def send_data_to_server(self, base_url: str, request_data: Any) -> Response:
-        response = requests.request("POST", base_url, data=request_data)
-        return response
+        return requests.request("POST", base_url, data=request_data)
 
     def process_success(self, response_json: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         if "text" in response_json:
@@ -311,14 +300,16 @@ def process_success_response(
 
 
 def do_rest_call(
-    base_url: str, request_data: Any, event: Dict[str, Any], service_handler: Any
+    base_url: str, event: Dict[str, Any], service_handler: Any
 ) -> Optional[Response]:
     """Returns response of call if no exception occurs."""
     try:
-        response = service_handler.send_data_to_server(
-            base_url=base_url,
-            request_data=request_data,
+        response = service_handler.make_request(
+            base_url,
+            event,
         )
+        if not response:
+            return None
         if str(response.status_code).startswith("2"):
             process_success_response(event, service_handler, response)
         else:

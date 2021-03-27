@@ -47,10 +47,23 @@ class DoRestCallTests(ZulipTestCase):
             "message": {
                 "display_recipient": "Verona",
                 "stream_id": 999,
+                "sender_id": bot_user.id,
+                "sender_email": bot_user.email,
+                "sender_realm_id": bot_user.realm.id,
+                "sender_realm_str": bot_user.realm.string_id,
+                "sender_delivery_email": bot_user.delivery_email,
+                "sender_full_name": bot_user.full_name,
+                "sender_avatar_source": UserProfile.AVATAR_FROM_GRAVATAR,
+                "sender_avatar_version": 1,
+                "recipient_type": "stream",
+                "recipient_type_id": 999,
+                "sender_is_mirror_dummy": False,
                 TOPIC_NAME: "Foo",
                 "id": "",
                 "type": "stream",
+                "timestamp": 1,
             },
+            "trigger": "mention",
             "user_profile_id": bot_user.id,
             "command": "",
             "service_name": "",
@@ -66,14 +79,14 @@ class DoRestCallTests(ZulipTestCase):
 
         expect_send_response = mock.patch("zerver.lib.outgoing_webhook.send_response_message")
         with expect_200, expect_send_response as mock_send:
-            do_rest_call("", None, mock_event, service_handler)
+            do_rest_call("", mock_event, service_handler)
         self.assertTrue(mock_send.called)
 
         for service_class in [GenericOutgoingWebhookService, SlackOutgoingWebhookService]:
             handler = service_class("token", bot_user, "service")
 
             with expect_200:
-                do_rest_call("", None, mock_event, handler)
+                do_rest_call("", mock_event, handler)
 
             # TODO: assert something interesting here?
 
@@ -86,7 +99,7 @@ class DoRestCallTests(ZulipTestCase):
         with mock.patch("requests.request", return_value=response), self.assertLogs(
             level="WARNING"
         ) as m:
-            final_response = do_rest_call("", None, mock_event, service_handler)
+            final_response = do_rest_call("", mock_event, service_handler)
             assert final_response is not None
 
             self.assertEqual(
@@ -115,7 +128,7 @@ The webhook got a response with status code *500*.""",
         expect_fail = mock.patch("zerver.lib.outgoing_webhook.fail_with_message")
 
         with expect_400, expect_fail as mock_fail, self.assertLogs(level="WARNING") as m:
-            final_response = do_rest_call("", None, mock_event, service_handler)
+            final_response = do_rest_call("", mock_event, service_handler)
             assert final_response is not None
 
             self.assertEqual(
@@ -144,9 +157,7 @@ The webhook got a response with status code *400*.""",
 
         with mock.patch("requests.sessions.Session.send") as mock_send:
             mock_send.return_value = ResponseMock(200)
-            final_response = do_rest_call(
-                "https://example.com/", "payload-stub", mock_event, service_handler
-            )
+            final_response = do_rest_call("https://example.com/", mock_event, service_handler)
             assert final_response is not None
 
             mock_send.assert_called_once()
@@ -167,7 +178,7 @@ The webhook got a response with status code *400*.""",
         def helper(side_effect: Any, error_text: str) -> None:
 
             with mock.patch("requests.request", side_effect=side_effect):
-                do_rest_call("", None, mock_event, service_handler)
+                do_rest_call("", mock_event, service_handler)
 
             bot_owner_notification = self.get_last_message()
             self.assertIn(error_text, bot_owner_notification.content)
@@ -202,7 +213,7 @@ The webhook got a response with status code *400*.""",
         # Don't think that we should catch and assert whole log output(which is actually a very big error traceback).
         # We are already asserting bot_owner_notification.content which verifies exception did occur.
         with expect_request_exception, expect_logging_exception, expect_fail as mock_fail:
-            do_rest_call("", None, mock_event, service_handler)
+            do_rest_call("", mock_event, service_handler)
 
         self.assertTrue(mock_fail.called)
 
@@ -260,7 +271,8 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
 
         sender = self.example_user("hamlet")
 
-        with mock.patch("zerver.worker.queue_processors.do_rest_call") as m:
+        with mock.patch("requests.request") as mock_request:
+            mock_request.return_value = ResponseMock(200)
             self.send_personal_message(
                 sender,
                 bot,
@@ -268,10 +280,11 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
             )
 
         url_token_tups = set()
-        for item in m.call_args_list:
+        for item in mock_request.call_args_list:
             args = item[0]
-            base_url = args[0]
-            request_data = orjson.loads(args[1])
+            base_url = args[1]
+            kwargs = item[1]
+            request_data = kwargs["json"]
             tup = (base_url, request_data["token"])
             url_token_tups.add(tup)
             message_data = request_data["message"]
