@@ -1,3 +1,9 @@
+$dark-blue: hsl(209, 80%, 17%);
+$light-blue: hsl(212, 91%, 69%);
+$purple: hsl(238, 86%, 71%);
+$light-green: hsl(155, 62%, 71%);
+$purple-blue-gradient: linear-gradient(0deg, $purple, $light-blue);
+
 body {
     background-color: hsl(0, 0%, 98%);
     font-family: "Source Sans 3", sans-serif;
@@ -153,7 +159,7 @@ html {
         border-right: 1px solid hsl(219, 10%, 97%);
         overflow: auto;
 
-        background-color: hsl(153, 30%, 35%);
+        background: $purple-blue-gradient;
         color: hsl(0, 0%, 100%);
 
         -webkit-overflow-scrolling: touch;
@@ -246,7 +252,7 @@ html {
 
         a {
             &.highlighted {
-                background-color: hsl(152, 37%, 23%);
+                background-color: $dark-blue;
 
                 /* Extend highlight to entire width of sidebar, not just link area */
                 /* This has been changed from "+" to "- -" because of issue #8403.
