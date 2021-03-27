@@ -344,8 +344,11 @@ run_test("realm settings", ({override}) => {
         assert.equal(page_params[parameter_name], 1);
     }
 
-    let event = event_fixtures.realm__update__create_stream_policy;
-    test_realm_integer(event, "realm_create_stream_policy");
+    let event = event_fixtures.realm__update__create_private_stream_policy;
+    test_realm_integer(event, "realm_create_private_stream_policy");
+
+    event = event_fixtures.realm__update__create_public_stream_policy;
+    test_realm_integer(event, "realm_create_public_stream_policy");
 
     event = event_fixtures.realm__update__invite_to_stream_policy;
     test_realm_integer(event, "realm_invite_to_stream_policy");

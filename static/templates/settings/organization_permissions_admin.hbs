@@ -98,8 +98,14 @@
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
                 <div class="input-group">
-                    <label for="realm_create_stream_policy" class="dropdown-title">{{t "Who can create streams" }}</label>
-                    <select name="realm_create_stream_policy" id="id_realm_create_stream_policy" class="prop-element" data-setting-widget-type="number">
+                    <label for="realm_create_public_stream_policy" class="dropdown-title">{{t "Who can create public streams" }}</label>
+                    <select name="realm_create_public_stream_policy" id="id_realm_create_public_stream_policy" class="prop-element" data-setting-widget-type="number">
+                        {{> dropdown_options_widget option_values=common_policy_values}}
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="realm_create_private_stream_policy" class="dropdown-title">{{t "Who can create private streams" }}</label>
+                    <select name="realm_create_private_stream_policy" id="id_realm_create_private_stream_policy" class="prop-element" data-setting-widget-type="number">
                         {{> dropdown_options_widget option_values=common_policy_values}}
                     </select>
                 </div>

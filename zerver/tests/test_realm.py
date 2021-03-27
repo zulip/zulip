@@ -467,7 +467,8 @@ class RealmTest(ZulipTestCase):
 
         invalid_values = dict(
             bot_creation_policy=10,
-            create_stream_policy=10,
+            create_public_stream_policy=10,
+            create_private_stream_policy=10,
             invite_to_stream_policy=10,
             email_address_visibility=10,
             message_retention_days=10,
@@ -817,7 +818,8 @@ class RealmAPITest(ZulipTestCase):
             message_retention_days=[10, 20],
             name=["Zulip", "New Name"],
             waiting_period_threshold=[10, 20],
-            create_stream_policy=Realm.COMMON_POLICY_TYPES,
+            create_private_stream_policy=Realm.COMMON_POLICY_TYPES,
+            create_public_stream_policy=Realm.COMMON_POLICY_TYPES,
             user_group_edit_policy=Realm.COMMON_POLICY_TYPES,
             private_message_policy=Realm.PRIVATE_MESSAGE_POLICY_TYPES,
             invite_to_stream_policy=Realm.COMMON_POLICY_TYPES,

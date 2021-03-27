@@ -100,7 +100,10 @@ def update_realm(
     bot_creation_policy: Optional[int] = REQ(
         json_validator=check_int_in(Realm.BOT_CREATION_POLICY_TYPES), default=None
     ),
-    create_stream_policy: Optional[int] = REQ(
+    create_public_stream_policy: Optional[int] = REQ(
+        json_validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
+    ),
+    create_private_stream_policy: Optional[int] = REQ(
         json_validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
     ),
     invite_to_stream_policy: Optional[int] = REQ(

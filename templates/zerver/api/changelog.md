@@ -11,6 +11,17 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 102**
+
+* [`POST /register`](/api/register-queue), `PATCH /realm`: The
+  `create_stream_policy` setting was split into two settings for
+  different types of streams: `create_private_stream_policy` and
+  `create_public_stream_policy`.
+* [`POST /register`](/api/register-queue): The `create_stream_policy`
+  property was deprecated in favor of the
+  `create_private_stream_policy` and `create_public_stream_policy`
+  properties, but it still available for backwards-compatibility.
+
 **Feature level 101**
 
 * [`POST /register`](/api/register-queue), `PATCH /realm`: Replaced

@@ -168,9 +168,14 @@ function test_policy(label, policy, validation_func) {
 }
 
 test_policy(
-    "user_can_create_streams",
-    "realm_create_stream_policy",
-    settings_data.user_can_create_streams,
+    "user_can_create_private_streams",
+    "realm_create_private_stream_policy",
+    settings_data.user_can_create_private_streams,
+);
+test_policy(
+    "user_can_create_public_streams",
+    "realm_create_public_stream_policy",
+    settings_data.user_can_create_public_streams,
 );
 test_policy(
     "user_can_subscribe_other_users",

@@ -15,7 +15,8 @@ export const page_params: {
     is_spectator: boolean;
     realm_add_custom_emoji_policy: number;
     realm_avatar_changes_disabled: boolean;
-    realm_create_stream_policy: number;
+    realm_create_private_stream_policy: number;
+    realm_create_public_stream_policy: number;
     realm_delete_own_message_policy: number;
     realm_edit_topic_policy: number;
     realm_email_address_visibility: number;

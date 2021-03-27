@@ -411,7 +411,14 @@ def fetch_initial_state_data(
             client_gravatar=False,
         )
 
-        state["can_create_streams"] = settings_user.can_create_streams()
+        state["can_create_private_streams"] = settings_user.can_create_private_streams()
+        state["can_create_public_streams"] = settings_user.can_create_public_streams()
+        # TODO/compatibility: Deprecated in Zulip 5.0 (feature level
+        # 102); we can remove this once we no longer need to support
+        # legacy mobile app versions that read the old property.
+        state["can_create_streams"] = (
+            settings_user.can_create_private_streams() or settings_user.can_create_public_streams()
+        )
         state["can_subscribe_other_users"] = settings_user.can_subscribe_other_users()
         state["can_invite_others_to_realm"] = settings_user.can_invite_others_to_realm()
         state["is_admin"] = settings_user.is_realm_admin
@@ -743,7 +750,11 @@ def apply_event(
                     state["is_moderator"] = person["role"] == UserProfile.ROLE_MODERATOR
                     state["is_guest"] = person["role"] == UserProfile.ROLE_GUEST
                     # Recompute properties based on is_admin/is_guest
-                    state["can_create_streams"] = user_profile.can_create_streams()
+                    state["can_create_private_streams"] = user_profile.can_create_private_streams()
+                    state["can_create_public_streams"] = user_profile.can_create_public_streams()
+                    state["can_create_streams"] = (
+                        state["can_create_private_streams"] or state["can_create_public_streams"]
+                    )
                     state["can_subscribe_other_users"] = user_profile.can_subscribe_other_users()
                     state["can_invite_others_to_realm"] = user_profile.can_invite_others_to_realm()
 
@@ -924,7 +935,8 @@ def apply_event(
                 state["realm_upload_quota_mib"] = event["extra_data"]["upload_quota"]
 
             policy_permission_dict = {
-                "create_stream_policy": "can_create_streams",
+                "create_public_stream_policy": "can_create_public_streams",
+                "create_private_stream_policy": "can_create_private_streams",
                 "invite_to_stream_policy": "can_subscribe_other_users",
                 "invite_to_realm_policy": "can_invite_others_to_realm",
             }
@@ -943,6 +955,10 @@ def apply_event(
                         event["property"]
                     )
 
+            # Finally, we need to recompute this value from its inputs.
+            state["can_create_streams"] = (
+                state["can_create_private_streams"] or state["can_create_public_streams"]
+            )
         elif event["op"] == "update_dict":
             for key, value in event["data"].items():
                 state["realm_" + key] = value

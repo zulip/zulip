@@ -193,7 +193,8 @@ function get_subsection_property_elements(element) {
 }
 
 const simple_dropdown_properties = [
-    "realm_create_stream_policy",
+    "realm_create_private_stream_policy",
+    "realm_create_public_stream_policy",
     "realm_invite_to_stream_policy",
     "realm_user_group_edit_policy",
     "realm_private_message_policy",

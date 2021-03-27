@@ -240,10 +240,17 @@ exports.fixtures = {
         value: 1,
     },
 
-    realm__update__create_stream_policy: {
+    realm__update__create_private_stream_policy: {
         type: "realm",
         op: "update",
-        property: "create_stream_policy",
+        property: "create_private_stream_policy",
+        value: 2,
+    },
+
+    realm__update__create_public_stream_policy: {
+        type: "realm",
+        op: "update",
+        property: "create_public_stream_policy",
         value: 2,
     },
 

@@ -292,7 +292,10 @@ class Realm(models.Model):
     add_custom_emoji_policy: int = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
 
     # Who in the organization is allowed to create streams.
-    create_stream_policy: int = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
+    create_public_stream_policy: int = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
+    create_private_stream_policy: int = models.PositiveSmallIntegerField(
+        default=POLICY_MEMBERS_ONLY
+    )
 
     # Who in the organization is allowed to delete messages they themselves sent.
     delete_own_message_policy: bool = models.PositiveSmallIntegerField(default=POLICY_ADMINS_ONLY)
@@ -605,7 +608,8 @@ class Realm(models.Model):
         add_custom_emoji_policy=int,
         allow_edit_history=bool,
         bot_creation_policy=int,
-        create_stream_policy=int,
+        create_public_stream_policy=int,
+        create_private_stream_policy=int,
         invite_to_stream_policy=int,
         move_messages_between_streams_policy=int,
         default_language=str,
@@ -1834,7 +1838,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     def has_permission(self, policy_name: str) -> bool:
         if policy_name not in [
             "add_custom_emoji_policy",
-            "create_stream_policy",
+            "create_private_stream_policy",
+            "create_public_stream_policy",
             "delete_own_message_policy",
             "edit_topic_policy",
             "invite_to_stream_policy",
@@ -1872,8 +1877,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         assert policy_value == Realm.POLICY_FULL_MEMBERS_ONLY
         return not self.is_provisional_member
 
-    def can_create_streams(self) -> bool:
-        return self.has_permission("create_stream_policy")
+    def can_create_public_streams(self) -> bool:
+        return self.has_permission("create_public_stream_policy")
+
+    def can_create_private_streams(self) -> bool:
+        return self.has_permission("create_private_stream_policy")
 
     def can_subscribe_other_users(self) -> bool:
         return self.has_permission("invite_to_stream_policy")
