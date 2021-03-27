@@ -911,7 +911,7 @@ class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
                     "Reactivating user %s because they are not disabled in LDAP.",
                     user.delivery_email,
                 )
-                do_reactivate_user(user)
+                do_reactivate_user(user, acting_user=None)
 
         self.sync_avatar_from_ldap(user, ldap_user)
         self.sync_full_name_from_ldap(user, ldap_user)

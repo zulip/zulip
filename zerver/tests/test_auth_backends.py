@@ -176,7 +176,7 @@ class AuthBackendTest(ZulipTestCase):
             self.assertIsNone(result)
 
         # Reactivate the user and verify auth works again
-        do_reactivate_user(user_profile)
+        do_reactivate_user(user_profile, acting_user=None)
         result = backend.authenticate(**good_kwargs)
         self.assertEqual(user_profile, result)
 

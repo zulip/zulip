@@ -728,9 +728,7 @@ def do_activate_user(user_profile: UserProfile, *, acting_user: Optional[UserPro
     notify_created_user(user_profile)
 
 
-def do_reactivate_user(
-    user_profile: UserProfile, acting_user: Optional[UserProfile] = None
-) -> None:
+def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserProfile]) -> None:
     # Unlike do_activate_user, this is meant for re-activating existing users,
     # so it doesn't reset their password, etc.
     user_profile.is_active = True
