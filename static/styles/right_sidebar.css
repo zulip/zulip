@@ -17,6 +17,12 @@
     overflow-x: hidden;
     list-style-position: inside; /* Draw the bullets inside our box */
 
+    .user-not-found {
+        margin-left: 10px;
+        color: hsl(0, 0%, 67%);
+        font-style: italic;
+    }
+    
     li {
         overflow: hidden;
         white-space: nowrap;
