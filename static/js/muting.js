@@ -6,18 +6,20 @@ import * as timerender from "./timerender";
 
 const muted_topics = new Map();
 
+function get_time_from_date_muted(date_muted) {
+    if (date_muted === undefined) {
+        return Date.now();
+    }
+    return date_muted * 1000;
+}
+
 export function add_muted_topic(stream_id, topic, date_muted) {
     let sub_dict = muted_topics.get(stream_id);
     if (!sub_dict) {
         sub_dict = new FoldDict();
         muted_topics.set(stream_id, sub_dict);
     }
-    let time;
-    if (date_muted === undefined) {
-        time = Date.now();
-    } else {
-        time = date_muted * 1000;
-    }
+    const time = get_time_from_date_muted(date_muted);
     sub_dict.set(topic, time);
 }
 
