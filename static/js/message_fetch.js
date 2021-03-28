@@ -12,7 +12,6 @@ import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as recent_topics from "./recent_topics";
-import * as server_events from "./server_events";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as ui_report from "./ui_report";
@@ -403,7 +402,7 @@ export function start_backfilling_messages() {
     });
 }
 
-export function initialize() {
+export function initialize(home_view_loaded) {
     // get the initial message list
     function load_more(data) {
         // If we haven't selected a message in the home view yet, and
@@ -420,7 +419,8 @@ export function initialize() {
         }
 
         if (data.found_newest) {
-            server_events.home_view_loaded();
+            // See server_events.js for this callback.
+            home_view_loaded();
             start_backfilling_messages();
             return;
         }

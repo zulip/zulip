@@ -506,7 +506,7 @@ export function initialize_everything() {
     user_groups.initialize(user_groups_params);
     unread.initialize();
     bot_data.initialize(bot_params); // Must happen after people.initialize()
-    message_fetch.initialize();
+    message_fetch.initialize(server_events.home_view_loaded);
     message_scroll.initialize();
     emoji.initialize({
         realm_emoji: emoji_params.realm_emoji,
