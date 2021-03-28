@@ -307,8 +307,21 @@ export function reify_message_id(local_id, server_id) {
     const opts = {old_id: Number.parseFloat(local_id), new_id: server_id};
 
     message_store.reify_message_id(opts);
+    update_message_lists(opts);
     notifications.reify_message_id(opts);
     recent_topics.reify_message_id_if_available(opts);
+}
+
+export function update_message_lists({old_id, new_id}) {
+    for (const msg_list of [message_list.all, home_msg_list, message_list.narrowed]) {
+        if (msg_list !== undefined) {
+            msg_list.change_message_id(old_id, new_id);
+
+            if (msg_list.view !== undefined) {
+                msg_list.view.change_message_id(old_id, new_id);
+            }
+        }
+    }
 }
 
 export function process_from_server(messages) {

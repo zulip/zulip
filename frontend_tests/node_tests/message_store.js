@@ -3,7 +3,6 @@
 const {strict: assert} = require("assert");
 
 const {mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
-const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -19,7 +18,6 @@ mock_esm("../../static/js/recent_senders", {
 });
 
 set_global("document", "document-stub");
-set_global("home_msg_list", {});
 page_params.realm_allow_message_editing = true;
 page_params.is_admin = true;
 
@@ -238,6 +236,17 @@ test("errors", () => {
     );
 });
 
+test("reify_message_id", () => {
+    const message = {type: "private", id: 500};
+
+    message_store.update_message_cache(message);
+    assert.equal(message_store.get_cached_message(500), message);
+
+    message_store.reify_message_id({old_id: 500, new_id: 501});
+    assert.equal(message_store.get_cached_message(500), undefined);
+    assert.equal(message_store.get_cached_message(501), message);
+});
+
 test("update_booleans", () => {
     const message = {};
 
@@ -322,44 +331,6 @@ test("update_property", () => {
     assert.equal(message1.display_recipient, "Prod");
     assert.equal(message2.stream, denmark.name);
     assert.equal(message2.display_recipient, denmark.name);
-});
-
-test("message_id_change", () => {
-    const message = {
-        sender_email: "me@example.com",
-        sender_id: me.user_id,
-        type: "private",
-        display_recipient: convert_recipients([me, bob, cindy]),
-        flags: ["has_alert_word"],
-        id: 401,
-    };
-    message_helper.process_new_message(message);
-
-    const opts = {
-        old_id: 401,
-        new_id: 402,
-    };
-
-    {
-        const stub = make_stub();
-        home_msg_list.change_message_id = stub.f;
-        message_store.reify_message_id(opts);
-        assert.equal(stub.num_calls, 1);
-        const msg_id = stub.get_args("old", "new");
-        assert.equal(msg_id.old, 401);
-        assert.equal(msg_id.new, 402);
-    }
-
-    home_msg_list.view = {};
-    {
-        const stub = make_stub();
-        home_msg_list.view.change_message_id = stub.f;
-        message_store.reify_message_id(opts);
-        assert.equal(stub.num_calls, 1);
-        const msg_id = stub.get_args("old", "new");
-        assert.equal(msg_id.old, 401);
-        assert.equal(msg_id.new, 402);
-    }
 });
 
 test("errors", () => {

@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const MockDate = require("mockdate");
 
 const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const {page_params} = require("../zjsunit/zpage_params");
 
@@ -167,6 +168,28 @@ run_test("build_display_recipient", () => {
     iago = display_recipient.find((recipient) => recipient.email === "iago@zulip.com");
     assert.equal(iago.full_name, "Iago");
     assert.equal(iago.id, 123);
+});
+
+run_test("update_message_lists", () => {
+    home_msg_list.view = {};
+
+    const stub = make_stub();
+    const view_stub = make_stub();
+
+    home_msg_list.change_message_id = stub.f;
+    home_msg_list.view.change_message_id = view_stub.f;
+
+    echo.update_message_lists({old_id: 401, new_id: 402});
+
+    assert.equal(stub.num_calls, 1);
+    const args = stub.get_args("old", "new");
+    assert.equal(args.old, 401);
+    assert.equal(args.new, 402);
+
+    assert.equal(view_stub.num_calls, 1);
+    const view_args = view_stub.get_args("old", "new");
+    assert.equal(view_args.old, 401);
+    assert.equal(view_args.new, 402);
 });
 
 run_test("insert_local_message streams", (override) => {

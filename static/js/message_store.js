@@ -1,5 +1,4 @@
 import * as blueslip from "./blueslip";
-import * as message_list from "./message_list";
 import * as people from "./people";
 
 const stored_messages = new Map();
@@ -137,21 +136,9 @@ export function update_property(property, value, info) {
     }
 }
 
-export function reify_message_id(opts) {
-    const old_id = opts.old_id;
-    const new_id = opts.new_id;
+export function reify_message_id({old_id, new_id}) {
     if (stored_messages.has(old_id)) {
         stored_messages.set(new_id, stored_messages.get(old_id));
         stored_messages.delete(old_id);
-    }
-
-    for (const msg_list of [message_list.all, home_msg_list, message_list.narrowed]) {
-        if (msg_list !== undefined) {
-            msg_list.change_message_id(old_id, new_id);
-
-            if (msg_list.view !== undefined) {
-                msg_list.view.change_message_id(old_id, new_id);
-            }
-        }
     }
 }
