@@ -51,25 +51,25 @@ run_test("get starred ids in topic", () => {
 
     // id: 1 isn't inserted, to test handling the case
     // when message_store.get() returns undefined
-    message_store.create_mock_message({
+    message_store.update_message_cache({
         id: 2,
         type: "private",
     });
-    message_store.create_mock_message({
+    message_store.update_message_cache({
         // Different stream
         id: 3,
         type: "stream",
         stream_id: 19,
         topic: "topic",
     });
-    message_store.create_mock_message({
+    message_store.update_message_cache({
         // Different topic
         id: 4,
         type: "stream",
         stream_id: 20,
         topic: "some other topic",
     });
-    message_store.create_mock_message({
+    message_store.update_message_cache({
         // Correct match
         id: 5,
         type: "stream",

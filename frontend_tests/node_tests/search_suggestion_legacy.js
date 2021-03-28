@@ -2,14 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, zrequire} = require("../zjsunit/namespace");
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {page_params} = require("../zjsunit/zpage_params");
 
 page_params.search_pills_enabled = false;
-mock_esm("../../static/js/message_store", {
-    user_ids: () => [],
-});
 
 const settings_config = zrequire("settings_config");
 page_params.realm_email_address_visibility =

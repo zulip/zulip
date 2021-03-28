@@ -70,8 +70,8 @@ run_test("get_unread_ids", () => {
         display_recipient: [{id: alice.user_id}],
     };
 
-    message_store.create_mock_message(stream_msg);
-    message_store.create_mock_message(private_msg);
+    message_store.update_message_cache(stream_msg);
+    message_store.update_message_cache(private_msg);
 
     stream_data.add_sub(sub);
 

@@ -7,7 +7,7 @@ import * as typeahead from "../shared/js/typeahead";
 import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
 import {i18n} from "./i18n";
-import * as message_store from "./message_store";
+import * as message_user_ids from "./message_user_ids";
 import * as reload_state from "./reload_state";
 import * as settings_data from "./settings_data";
 import * as util from "./util";
@@ -882,7 +882,7 @@ export function get_message_people() {
         at the message_store code to see the precise
         semantics
     */
-    const message_people = message_store
+    const message_people = message_user_ids
         .user_ids()
         .map((user_id) => people_by_user_id_dict.get(user_id))
         .filter(Boolean);

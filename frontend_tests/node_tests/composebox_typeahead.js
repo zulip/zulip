@@ -14,7 +14,7 @@ const channel = mock_esm("../../static/js/channel");
 const compose = mock_esm("../../static/js/compose", {
     finish: noop,
 });
-const message_store = mock_esm("../../static/js/message_store", {
+const message_user_ids = mock_esm("../../static/js/message_user_ids", {
     user_ids: () => [],
 });
 const stream_topic_history = mock_esm("../../static/js/stream_topic_history");
@@ -1511,7 +1511,8 @@ test("message people", (override) => {
         the sorting step.
     */
 
-    override(message_store, "user_ids", () => [hal.user_id, harry.user_id]);
+    let user_ids = [hal.user_id, harry.user_id];
+    override(message_user_ids, "user_ids", () => user_ids);
 
     const opts = {
         want_broadcast: false,
@@ -1529,12 +1530,12 @@ test("message people", (override) => {
     assert.deepEqual(results, [harry, hamletcharacters]);
 
     // Now let's exclude Hal.
-    message_store.user_ids = () => [hamlet.user_id, harry.user_id];
+    user_ids = [hamlet.user_id, harry.user_id];
 
     results = get_results("Ha");
     assert.deepEqual(results, [harry, hamletcharacters]);
 
-    message_store.user_ids = () => [hamlet.user_id, harry.user_id, hal.user_id];
+    user_ids = [hamlet.user_id, harry.user_id, hal.user_id];
 
     results = get_results("Ha");
     assert.deepEqual(results, [harry, hamletcharacters]);

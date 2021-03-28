@@ -78,6 +78,7 @@ page_params.realm_description = "already set description";
 const alert_words = zrequire("alert_words");
 const stream_topic_history = zrequire("stream_topic_history");
 const stream_list = zrequire("stream_list");
+const message_helper = zrequire("message_helper");
 const message_store = zrequire("message_store");
 const people = zrequire("people");
 const starred_messages = zrequire("starred_messages");
@@ -94,7 +95,7 @@ function dispatch(ev) {
 people.init();
 people.add_active_user(test_user);
 
-message_store.add_message_metadata(test_message);
+message_helper.process_new_message(test_message);
 
 const realm_emoji = {};
 const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");

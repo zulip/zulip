@@ -19,6 +19,7 @@ set_global("current_msg_list", {});
 
 const people = zrequire("people");
 const message_events = zrequire("message_events");
+const message_helper = zrequire("message_helper");
 const message_store = zrequire("message_store");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
@@ -68,7 +69,7 @@ run_test("update_messages", () => {
         type: "stream",
     };
 
-    message_store.add_message_metadata(original_message);
+    message_helper.process_new_message(original_message);
     message_store.set_message_booleans(original_message);
 
     assert.equal(original_message.mentioned, true);
