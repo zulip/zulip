@@ -31,6 +31,7 @@ export function rerender_on_topic_update() {
     // re-doing a mute or unmute is a pretty recoverable thing.
 
     stream_list.update_streams_sidebar();
+    recent_topics.complete_rerender();
     if (message_lists.current.excludes_muted_topics) {
         message_lists.current.update_muting_and_rerender();
     }
