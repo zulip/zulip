@@ -2,6 +2,7 @@ import * as alert_words from "./alert_words";
 import * as message_store from "./message_store";
 import * as message_user_ids from "./message_user_ids";
 import * as people from "./people";
+import * as pm_conversations from "./pm_conversations";
 import * as recent_senders from "./recent_senders";
 import * as stream_topic_history from "./stream_topic_history";
 import * as util from "./util";
@@ -59,7 +60,7 @@ export function process_new_message(message) {
             message.pm_with_url = people.pm_with_url(message);
             message.to_user_ids = people.pm_reply_user_string(message);
 
-            message_store.process_message_for_recent_private_messages(message);
+            pm_conversations.process_message(message);
 
             if (people.is_my_user_id(message.sender_id)) {
                 for (const recip of message.display_recipient) {

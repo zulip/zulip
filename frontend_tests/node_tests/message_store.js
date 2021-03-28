@@ -233,7 +233,7 @@ test("errors", () => {
         "set_partner",
         () => assert(false),
         () => {
-            message_store.process_message_for_recent_private_messages(message);
+            pm_conversations.process_message(message);
         },
     );
 });
