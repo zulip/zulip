@@ -2357,6 +2357,12 @@ div.topic_edit_spinner .loading_indicator_spinner {
     max-height: 60vh;
 }
 
+#move_topic_modal {
+    .stream_header_colorblock {
+        margin-bottom: 20px;
+    }
+}
+
 #invitee_emails {
     min-height: 40px;
     max-height: 300px;
