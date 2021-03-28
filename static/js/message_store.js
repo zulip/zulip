@@ -1,7 +1,6 @@
 import * as blueslip from "./blueslip";
 import * as message_list from "./message_list";
 import * as people from "./people";
-import * as pm_conversations from "./pm_conversations";
 
 const stored_messages = new Map();
 
@@ -67,19 +66,6 @@ export function get_pm_full_names(message) {
         .sort();
 
     return names.join(", ");
-}
-
-export function process_message_for_recent_private_messages(message) {
-    const user_ids = people.pm_with_user_ids(message);
-    if (!user_ids) {
-        return;
-    }
-
-    for (const user_id of user_ids) {
-        pm_conversations.set_partner(user_id);
-    }
-
-    pm_conversations.recent.insert(user_ids, message.id);
 }
 
 export function set_message_booleans(message) {
