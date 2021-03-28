@@ -12,7 +12,6 @@ const {page_params} = require("../zjsunit/zpage_params");
 const color_data = zrequire("color_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const people = zrequire("people");
-const stream_color = zrequire("stream_color");
 const stream_data = zrequire("stream_data");
 const message_list = zrequire("message_list");
 const settings_config = zrequire("settings_config");
@@ -96,7 +95,7 @@ test("basics", () => {
     assert(!stream_data.get_invite_only("unknown"));
 
     assert.equal(stream_data.get_color("social"), "red");
-    assert.equal(stream_data.get_color("unknown"), stream_color.default_color);
+    assert.equal(stream_data.get_color("unknown"), "#c2c2c2");
 
     assert.equal(stream_data.get_name("denMARK"), "Denmark");
     assert.equal(stream_data.get_name("unknown Stream"), "unknown Stream");
