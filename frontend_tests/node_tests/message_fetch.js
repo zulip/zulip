@@ -32,7 +32,6 @@ const channel = mock_esm("../../static/js/channel");
 const message_store = mock_esm("../../static/js/message_store");
 const message_util = mock_esm("../../static/js/message_util");
 const pm_list = mock_esm("../../static/js/pm_list");
-const server_events = mock_esm("../../static/js/server_events");
 const stream_list = mock_esm("../../static/js/stream_list", {
     maybe_scroll_narrow_into_view: () => {},
 });
@@ -57,8 +56,6 @@ const alice = {
     full_name: "Alice",
 };
 people.add_active_user(alice);
-
-server_events.home_view_loaded = noop;
 
 function stub_message_view(list) {
     list.view.append = noop;
@@ -209,7 +206,7 @@ function test_fetch_success(opts) {
     process_results.verify();
 }
 
-function initial_fetch_step() {
+function initial_fetch_step(home_view_loaded) {
     const self = {};
 
     let fetch;
@@ -220,7 +217,7 @@ function initial_fetch_step() {
             expected_opts_data: initialize_data.initial_fetch.req,
         });
 
-        message_fetch.initialize();
+        message_fetch.initialize(home_view_loaded);
     };
 
     self.finish = () => {
@@ -283,7 +280,13 @@ function test_backfill_idle(idle_config) {
 run_test("initialize", () => {
     reset_lists();
 
-    const step1 = initial_fetch_step();
+    let home_loaded = false;
+
+    function home_view_loaded() {
+        home_loaded = true;
+    }
+
+    const step1 = initial_fetch_step(home_view_loaded);
 
     step1.prep();
 
@@ -292,7 +295,9 @@ run_test("initialize", () => {
     step2.prep();
     step1.finish();
 
+    assert(!home_loaded);
     const idle_config = step2.finish();
+    assert(home_loaded);
 
     test_backfill_idle(idle_config);
 });
