@@ -11,6 +11,7 @@ const {run_test} = require("../zjsunit/test");
 // data objects.  Also, we start testing some objects that have
 // deeper dependencies.
 
+const message_helper = zrequire("message_helper");
 const message_store = zrequire("message_store");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
@@ -67,9 +68,9 @@ run_test("message_store", () => {
     assert.equal(in_message.alerted, true);
 
     // Let's add a message into our message_store via
-    // add_message_metadata.
+    // message_helper.process_new_message.
     assert.equal(message_store.get(in_message.id), undefined);
-    message_store.add_message_metadata(in_message);
+    message_helper.process_new_message(in_message);
     const message = message_store.get(in_message.id);
     assert.equal(message, in_message);
 

@@ -26,7 +26,9 @@ page_params.is_admin = true;
 const util = zrequire("util");
 const people = zrequire("people");
 const pm_conversations = zrequire("pm_conversations");
+const message_helper = zrequire("message_helper");
 const message_store = zrequire("message_store");
+const message_user_ids = zrequire("message_user_ids");
 
 const denmark = {
     subscribed: false,
@@ -94,7 +96,7 @@ function test(label, f) {
     });
 }
 
-test("add_message_metadata", () => {
+test("process_new_message", () => {
     let message = {
         sender_email: "me@example.com",
         sender_id: me.user_id,
@@ -105,9 +107,9 @@ test("add_message_metadata", () => {
         id: 2067,
     };
     message_store.set_message_booleans(message);
-    message_store.add_message_metadata(message);
+    message_helper.process_new_message(message);
 
-    assert.deepEqual(message_store.user_ids().sort(), [me.user_id, bob.user_id, cindy.user_id]);
+    assert.deepEqual(message_user_ids.user_ids().sort(), [me.user_id, bob.user_id, cindy.user_id]);
 
     assert.equal(message.is_private, true);
     assert.equal(message.reply_to, "bob@example.com,cindy@example.com");
@@ -129,7 +131,7 @@ test("add_message_metadata", () => {
         match_subject: "topic foo",
         match_content: "bar content",
     };
-    message = message_store.add_message_metadata(message);
+    message = message_helper.process_new_message(message);
 
     assert.equal(message.reply_to, "bob@example.com,cindy@example.com");
     assert.equal(message.to_user_ids, "103,104");
@@ -148,13 +150,13 @@ test("add_message_metadata", () => {
     };
 
     message_store.set_message_booleans(message);
-    message_store.add_message_metadata(message);
+    message_helper.process_new_message(message);
     assert.deepEqual(message.stream, message.display_recipient);
     assert.equal(message.reply_to, "denise@example.com");
     assert.deepEqual(message.flags, undefined);
     assert.equal(message.alerted, false);
 
-    assert.deepEqual(message_store.user_ids().sort(), [
+    assert.deepEqual(message_user_ids.user_ids().sort(), [
         me.user_id,
         bob.user_id,
         cindy.user_id,
@@ -296,7 +298,7 @@ test("update_property", () => {
     };
     for (const message of [message1, message2]) {
         message_store.set_message_booleans(message);
-        message_store.add_message_metadata(message);
+        message_helper.process_new_message(message);
     }
 
     assert.equal(message1.sender_full_name, alice.full_name);
@@ -331,7 +333,7 @@ test("message_id_change", () => {
         flags: ["has_alert_word"],
         id: 401,
     };
-    message_store.add_message_metadata(message);
+    message_helper.process_new_message(message);
 
     const opts = {
         old_id: 401,

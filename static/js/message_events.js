@@ -8,6 +8,7 @@ import * as condense from "./condense";
 import * as huddle_data from "./huddle_data";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
+import * as message_helper from "./message_helper";
 import * as message_list from "./message_list";
 import * as message_store from "./message_store";
 import * as message_util from "./message_util";
@@ -59,14 +60,14 @@ function maybe_add_narrowed_messages(messages, msg_list) {
                 }
             }
 
-            // This second call to add_message_metadata in the
+            // This second call to process_new_message in the
             // insert_new_messages code path helps in very rare race
             // conditions, where e.g. the current user's name was
             // edited in between when they sent the message and when
             // we hear back from the server and can echo the new
             // message.  Arguably, it's counterproductive complexity.
             new_messages = new_messages.map((message) =>
-                message_store.add_message_metadata(message),
+                message_helper.process_new_message(message),
             );
 
             message_util.add_new_messages(new_messages, msg_list);
@@ -87,7 +88,7 @@ function maybe_add_narrowed_messages(messages, msg_list) {
 }
 
 export function insert_new_messages(messages, sent_by_this_client) {
-    messages = messages.map((message) => message_store.add_message_metadata(message));
+    messages = messages.map((message) => message_helper.process_new_message(message));
 
     unread.process_loaded_messages(messages);
     huddle_data.process_loaded_messages(messages);

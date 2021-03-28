@@ -176,9 +176,9 @@ test("changing_topics", () => {
         unread: true,
     };
 
-    message_store.create_mock_message(message);
-    message_store.create_mock_message(other_message);
-    message_store.create_mock_message(sticky_message);
+    message_store.update_message_cache(message);
+    message_store.update_message_cache(other_message);
+    message_store.update_message_cache(sticky_message);
 
     unread.process_loaded_messages([sticky_message]);
     count = unread.num_unread_for_topic(stream_id, "sticky");

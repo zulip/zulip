@@ -29,6 +29,7 @@ mock_esm("../../static/js/ui_report", {
 });
 
 const channel = mock_esm("../../static/js/channel");
+const message_helper = mock_esm("../../static/js/message_helper");
 const message_store = mock_esm("../../static/js/message_store");
 const message_util = mock_esm("../../static/js/message_util");
 const pm_list = mock_esm("../../static/js/pm_list");
@@ -127,7 +128,7 @@ function config_process_results(messages) {
         messages_processed_for_bools.push(message);
     };
 
-    message_store.add_message_metadata = (message) => message;
+    message_helper.process_new_message = (message) => message;
 
     message_util.do_unread_count_updates = (arg) => {
         assert.deepEqual(arg, messages);

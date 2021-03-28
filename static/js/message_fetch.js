@@ -3,6 +3,7 @@ import $ from "jquery";
 import * as channel from "./channel";
 import {Filter} from "./filter";
 import * as huddle_data from "./huddle_data";
+import * as message_helper from "./message_helper";
 import * as message_list from "./message_list";
 import * as message_scroll from "./message_scroll";
 import * as message_store from "./message_store";
@@ -49,7 +50,7 @@ function process_result(data, opts) {
 
     messages = messages.map((message) => {
         message_store.set_message_booleans(message);
-        return message_store.add_message_metadata(message);
+        return message_helper.process_new_message(message);
     });
 
     // In case any of the newly fetched messages are new, add them to
