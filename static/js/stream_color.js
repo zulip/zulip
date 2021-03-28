@@ -5,8 +5,6 @@ import {i18n} from "./i18n";
 import * as message_view_header from "./message_view_header";
 import * as subs from "./subs";
 
-export const default_color = "#c2c2c2";
-
 function update_table_stream_color(table, stream_name, color) {
     // This is ugly, but temporary, as the new design will make it
     // so that we only have color in the headers.

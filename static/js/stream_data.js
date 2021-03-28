@@ -8,9 +8,10 @@ import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
-import * as stream_color from "./stream_color";
 import * as stream_topic_history from "./stream_topic_history";
 import * as util from "./util";
+
+const DEFAULT_COLOR = "#c2c2c2";
 
 // Expose get_subscriber_count for our automated puppeteer tests.
 export const get_subscriber_count = peer_data.get_subscriber_count;
@@ -544,7 +545,7 @@ export function canonicalized_name(stream_name) {
 export function get_color(stream_name) {
     const sub = get_sub(stream_name);
     if (sub === undefined) {
-        return stream_color.default_color;
+        return DEFAULT_COLOR;
     }
     return sub.color;
 }
