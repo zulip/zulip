@@ -1563,7 +1563,6 @@ nav {
     &:hover {
         color: hsl(220, 23%, 33%);
     }
-
     &.right {
         right: 40px;
     }
