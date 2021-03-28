@@ -785,14 +785,9 @@ export function switch_rows(event) {
 
 export function keyboard_sub() {
     const active_data = get_active_data();
-    const stream_filter_tab = $(active_data.tabs[0]).text();
     const row_data = get_row_data(active_data.row);
     if (row_data) {
         sub_or_unsub(row_data.object);
-        if (row_data.object.subscribed && stream_filter_tab === "Subscribed") {
-            active_data.row.addClass("notdisplayed");
-            active_data.row.removeClass("active");
-        }
     }
 }
 
