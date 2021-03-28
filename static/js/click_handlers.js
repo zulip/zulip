@@ -410,7 +410,7 @@ export function initialize() {
         muting_ui.mute_topic(stream_id, topic);
     }
 
-    $("body").on("click", ".on_hover_topic_mute", (e) => {
+    $("body").on("click", ".message_header .on_hover_topic_mute", (e) => {
         e.stopPropagation();
         mute_topic($(e.target));
     });
