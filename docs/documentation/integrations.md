@@ -15,8 +15,13 @@ Usually, this involves a few steps:
   See [Markdown macros](#markdown-macros) for further details.
 
 * Make sure you've added your integration to
-  `zerver/lib/integrations.py`; this results in your integration
-  appearing on the `/integrations` page.
+  `zerver/lib/integrations.py` in both the `WEBHOOK_INTEGRATIONS`
+  section (or `INTEGRATIONS` if not a webhook), and the
+  `DOC_SCREENSHOT_CONFIG` sections.  These registries configure your
+  integration to appear on the `/integrations` page and make it
+  possible to automatically generate the screenshot of a sample
+  message (which is important for the screenshots to be updated as
+  Zulip's design changes).
 
 * You'll need to add a SVG graphic
   of your integration's logo under the
@@ -40,12 +45,11 @@ Usually, this involves a few steps:
   the screenshot using `tools/generate-integration-docs-screenshot`:
 
   ```sh
-  ./tools/generate-integration-docs-screenshot \
-      zerver/webhooks/pingdom/fixtures/imap_down_to_up.json
+  ./tools/generate-integration-docs-screenshot --integration integrationname
   ```
 
   If you have trouble using this tool, you can also manually generate the
-  screenshot using `send_webhook_fixture_message`. When generating the
+  screenshot using `manage.py send_webhook_fixture_message`. When generating the
   screenshot of a sample message using this method, give your test bot a nice
   name like "GitHub Bot", use the project's logo as the bot's avatar, and take
   the screenshot showing the stream/topic bar for the message, not just the
