@@ -24,7 +24,7 @@ django.setup()
 import argparse
 import base64
 import subprocess
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 from urllib.parse import parse_qsl, urlencode
 
 import orjson
@@ -41,6 +41,7 @@ from zerver.lib.actions import (
 from zerver.lib.integrations import (
     DOC_SCREENSHOT_CONFIG,
     INTEGRATIONS,
+    Integration,
     ScreenshotConfig,
     WebhookIntegration,
     get_fixture_and_image_paths,
@@ -93,9 +94,25 @@ def create_integration_stream(integration: WebhookIntegration, bot: UserProfile)
     bulk_add_subscriptions(realm, [stream], [bot, bot.bot_owner], acting_user=bot)
 
 
-def get_integration(integration_name: str) -> WebhookIntegration:
+def get_fixture_info(fixture_path: str) -> Tuple[Any, bool, str]:
+    json_fixture = fixture_path.endswith(".json")
+    _, fixture_name = split_fixture_path(fixture_path)
+
+    if fixture_name:
+        if json_fixture:
+            with open(fixture_path, "rb") as fb:
+                data = orjson.loads(fb.read())
+        else:
+            with open(fixture_path) as f:
+                data = f.read().strip()
+    else:
+        data = ""
+
+    return data, json_fixture, fixture_name
+
+
+def get_integration(integration_name: str) -> Integration:
     integration = INTEGRATIONS[integration_name]
-    assert isinstance(integration, WebhookIntegration), "Not a WebhookIntegration"
     return integration
 
 
@@ -126,18 +143,7 @@ def send_bot_payload_message(
 ) -> bool:
     # Delete all messages, so new message is the only one it's message group
     Message.objects.filter(sender=bot).delete()
-    json_fixture = fixture_path.endswith(".json")
-    _, fixture_name = split_fixture_path(fixture_path)
-
-    if fixture_name:
-        if json_fixture:
-            with open(fixture_path, "rb") as fb:
-                data = orjson.loads(fb.read())
-        else:
-            with open(fixture_path) as f:
-                data = f.read().strip()
-    else:
-        data = ""
+    data, json_fixture, fixture_name = get_fixture_info(fixture_path)
 
     headers = get_requests_headers(integration.name, fixture_name)
     headers.update(config.custom_headers)
@@ -156,6 +162,7 @@ def send_bot_payload_message(
     if not json_fixture and data:
         # We overwrite any params in fixture with our params. stream name, for
         # example, may be defined in the fixture.
+        assert isinstance(data, str)
         parsed_params = dict(parse_qsl(data))
         parsed_params.update(params)
         params = parsed_params
