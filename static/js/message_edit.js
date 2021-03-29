@@ -556,7 +556,7 @@ export function start(row, edit_box_open_callback) {
     });
 }
 
-export function start_topic_edit(recipient_row) {
+export function start_inline_topic_edit(recipient_row) {
     const form = $(render_topic_edit_form());
     current_msg_list.show_edit_topic_on_recipient_row(recipient_row, form);
     form.on("keydown", handle_inline_topic_edit_keydown);
