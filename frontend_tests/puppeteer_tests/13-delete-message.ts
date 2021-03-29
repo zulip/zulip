@@ -35,6 +35,7 @@ async function delete_message_test(page: Page): Promise<void> {
     await page.waitForSelector("#do_delete_message_spinner .loading_indicator_spinner", {
         hidden: true,
     });
+    await common.log_out(page);
 }
 
 common.run_test(delete_message_test);
