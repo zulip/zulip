@@ -13,7 +13,6 @@ const color_data = zrequire("color_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
-const message_list = zrequire("message_list");
 const settings_config = zrequire("settings_config");
 
 const me = {
@@ -808,38 +807,4 @@ test("get_invite_stream_data", () => {
         default_stream: false,
     });
     assert.deepEqual(stream_data.get_invite_stream_data(), expected_list);
-});
-
-test("all_topics_in_cache", (override) => {
-    // Add a new stream with first_message_id set.
-    const general = {
-        name: "general",
-        stream_id: 21,
-        first_message_id: null,
-    };
-    const messages = [
-        {id: 1, stream_id: 21},
-        {id: 2, stream_id: 21},
-        {id: 3, stream_id: 21},
-    ];
-    const sub = stream_data.create_sub_from_server_data(general);
-
-    assert.equal(stream_data.all_topics_in_cache(sub), false);
-
-    message_list.all.data.clear();
-    message_list.all.data.add_messages(messages);
-
-    let has_found_newest = false;
-
-    override(message_list.all.data.fetch_status, "has_found_newest", () => has_found_newest);
-
-    assert.equal(stream_data.all_topics_in_cache(sub), false);
-    has_found_newest = true;
-    assert.equal(stream_data.all_topics_in_cache(sub), true);
-
-    sub.first_message_id = 0;
-    assert.equal(stream_data.all_topics_in_cache(sub), false);
-
-    sub.first_message_id = 2;
-    assert.equal(stream_data.all_topics_in_cache(sub), true);
 });
