@@ -67,7 +67,7 @@ def run() -> None:
     )
     linter_config.external_linter(
         "puppet",
-        ["puppet", "parser", "validate"],
+        ["env", "RUBYOPT=-W0", "puppet", "parser", "validate"],
         ["pp"],
         description="Runs the puppet parser validator, checking for syntax errors.",
     )
