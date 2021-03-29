@@ -17,6 +17,7 @@ import render_user_profile_modal from "../templates/user_profile_modal.hbs";
 
 import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
+import * as components from "./components";
 import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
@@ -398,6 +399,25 @@ export function show_user_profile(user) {
 
     $("#user-profile-modal-holder").html(render_user_profile_modal(args));
     $("#user-profile-modal").modal("show");
+    $(".tabcontent").hide();
+    $("#profile").show();
+    const opts = {
+        selected: 0,
+        child_wants_focus: true,
+        values: [
+            {label: i18n.t("Profile"), key: "profile"},
+            {label: i18n.t("Groups"), key: "groups"},
+            {label: i18n.t("Streams"), key: "streams"},
+        ],
+        callback(name, key) {
+            $(".tabcontent").hide();
+            $("#" + key).show();
+        },
+    };
+
+    const elem = components.toggle(opts).get();
+    elem.addClass("large allow-overflow");
+    $("#tab-toggle").append(elem);
 
     settings_account.initialize_custom_user_type_fields(
         "#user-profile-modal #content",

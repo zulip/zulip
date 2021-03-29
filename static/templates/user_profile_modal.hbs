@@ -1,20 +1,21 @@
-<div id="user-profile-modal" class="modal modal-bg fade{{#unless profile_data.length}} no-fields{{/unless}}" tabindex="-1"
-  role="dialog" aria-labelledby="user_profile_modal label" aria-hidden="true">
+<div id="user-profile-modal" class="modal new-style modal-bg fade{{#unless profile_data.length}} no-fields{{/unless}}"
+  tabindex="-1" role="dialog" aria-labelledby="user_profile_modal label" aria-hidden="true">
     <div class="modal-body" id="body" data-simplebar data-simplebar-auto-hide="false">
         <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}">
             <span aria-hidden="true" id="exit-sign">&times;</span>
         </button>
-        <div id="avatar"{{#if user_is_guest}} class="guest-avatar"{{/if}} style="background-image: url('{{user_avatar}}');" ></div>
+        <div id="name">
+            {{full_name}}
+            {{#if is_me}}
+            <a href="/#settings/your-account">
+                <i class="fa fa-edit" id="edit-button" aria-hidden="true"></i>
+            </a>
+            {{/if}}
+        </div>
+        <div id="tab-toggle" class="center"></div>
+        <div id="avatar" {{#if user_is_guest}} class="guest-avatar" {{/if}}
+          style="background-image: url('{{user_avatar}}');"></div>
         <div id="default-section">
-            <div id="name">
-                {{full_name}}
-                {{#if is_me}}
-                <a href="/#settings/your-account">
-                    <i class="fa fa-edit" id="edit-button" aria-hidden="true"></i>
-                </a>
-                {{/if}}
-            </div>
-            <br>
             {{#if show_email}}
             <div id="email" class="default-field">
                 <span class="name">{{#tr this}}Email{{/tr}}</span>
@@ -40,28 +41,52 @@
             </div>
             {{/if}}
         </div>
-        <hr>
-        <div id="content">
-            {{#each profile_data}}
-            <div data-type="{{this.type}}" class="field-section custom_user_field" data-field-id="{{this.id}}">
-                <div class="name">{{this.name}}</div>
-                {{#if this.is_user_field}}
-                    <div class="pill-container not-editable" data-field-id="{{this.id}}">
-                        <div class="input" contenteditable="false" style="display: none;"></div>
+        <div class="tab-data">
+            <div class="tabcontent active" id="profile">
+                <div id="content">
+                    {{#each profile_data}}
+                    <div data-type="{{this.type}}" class="field-section custom_user_field" data-field-id="{{this.id}}">
+                        <div class="name">{{this.name}}</div>
+                        {{#if this.is_user_field}}
+                            <div class="pill-container not-editable" data-field-id="{{this.id}}">
+                                <div class="input" contenteditable="false" style="display: none;"></div>
+                            </div>
+                            {{else if this.is_link}}
+                            <a href="{{this.value}}" target="_blank" rel="noopener noreferrer" class="value">{{this.value}}</a>
+                            {{else if this.is_external_account}}
+                            <a href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="value">{{this.value}}</a>
+                        {{else}}
+                            {{#if this.rendered_value}}
+                            <div class="value rendered_markdown">{{rendered_markdown this.rendered_value}}</div>
+                            {{else}}
+                            <div class="value">{{this.value}}</div>
+                            {{/if}}
+                        {{/if}}
                     </div>
-                    {{else if this.is_link}}
-                    <a href="{{this.value}}" target="_blank" rel="noopener noreferrer" class="value">{{this.value}}</a>
-                    {{else if this.is_external_account}}
-                    <a href="{{this.link}}" target="_blank" rel="noopener noreferrer" class="value">{{this.value}}</a>
-                {{else}}
-                    {{#if this.rendered_value}}
-                    <div class="value rendered_markdown">{{rendered_markdown this.rendered_value}}</div>
-                    {{else}}
-                    <div class="value">{{this.value}}</div>
-                    {{/if}}
-                {{/if}}
+                    {{/each}}
+                </div>
             </div>
-            {{/each}}
+
+            <div class="tabcontent" id="groups">
+                <div id="groups-list-section" class="list-section">
+                    <ul>
+                        {{#each groups_of_user}}
+                        <li>{{this.name}}</li>
+                        {{/each}}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="tabcontent" id="streams">
+                <div id="streams-list-section" class="list-section">
+                    <ul>
+                        {{#each user_streams}}
+                        <li>{{this.name}}</li>
+                        {{/each}}
+                    </ul>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
