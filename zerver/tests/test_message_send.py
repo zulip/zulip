@@ -204,6 +204,26 @@ class MessagePOSTTest(ZulipTestCase):
             "Only organization administrators can send to this stream.",
         )
 
+        moderator_profile = self.example_user("shiva")
+        self.login_user(moderator_profile)
+
+        # Moderators and their owned bots cannot send to STREAM_POST_POLICY_ADMINS streams
+        self._send_and_verify_message(
+            moderator_profile,
+            stream_name,
+            "Only organization administrators can send to this stream.",
+        )
+        moderator_owned_bot = self.create_test_bot(
+            short_name="whatever3",
+            full_name="whatever3",
+            user_profile=moderator_profile,
+        )
+        self._send_and_verify_message(
+            moderator_owned_bot,
+            stream_name,
+            "Only organization administrators can send to this stream.",
+        )
+
         # Bots without owner (except cross realm bot) cannot send to announcement only streams
         bot_without_owner = do_create_user(
             email="free-bot@zulip.testserver",
