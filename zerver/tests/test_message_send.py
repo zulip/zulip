@@ -166,7 +166,7 @@ class MessagePOSTTest(ZulipTestCase):
 
     def test_sending_message_as_stream_post_policy_admins(self) -> None:
         """
-        Sending messages to streams which only the admins can create and post to.
+        Sending messages to streams which only the admins can post to.
         """
         admin_profile = self.example_user("iago")
         self.login_user(admin_profile)
@@ -234,7 +234,7 @@ class MessagePOSTTest(ZulipTestCase):
 
     def test_sending_message_as_stream_post_policy_restrict_new_members(self) -> None:
         """
-        Sending messages to streams which new members cannot create and post to.
+        Sending messages to streams which new members cannot post to.
         """
         admin_profile = self.example_user("iago")
         self.login_user(admin_profile)
