@@ -233,11 +233,15 @@ def split_fixture_path(path: str) -> Tuple[str, str]:
 
 
 @dataclass
-class ScreenshotConfig:
+class BaseScreenshotConfig:
     fixture_name: str
     image_name: str = "001.png"
     image_dir: Optional[str] = None
     bot_name: Optional[str] = None
+
+
+@dataclass
+class ScreenshotConfig(BaseScreenshotConfig):
     payload_as_query_param: bool = False
     payload_param_name: str = "payload"
     extra_params: Dict[str, str] = field(default_factory=dict)
@@ -246,9 +250,12 @@ class ScreenshotConfig:
 
 
 def get_fixture_and_image_paths(
-    integration: WebhookIntegration, screenshot_config: ScreenshotConfig
+    integration: Integration, screenshot_config: BaseScreenshotConfig
 ) -> Tuple[str, str]:
-    fixture_dir = os.path.join("zerver", "webhooks", integration.name, "fixtures")
+    if isinstance(integration, WebhookIntegration):
+        fixture_dir = os.path.join("zerver", "webhooks", integration.name, "fixtures")
+    else:
+        fixture_dir = os.path.join("zerver", "integration_fixtures", integration.name)
     fixture_path = os.path.join(fixture_dir, screenshot_config.fixture_name)
     image_dir = screenshot_config.image_dir or integration.name
     image_name = screenshot_config.image_name
@@ -658,7 +665,7 @@ NO_SCREENSHOT_WEBHOOKS = {
 }
 
 
-DOC_SCREENSHOT_CONFIG: Dict[str, List[ScreenshotConfig]] = {
+DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
     "airbrake": [ScreenshotConfig("error_message.json")],
     "alertmanager": [
         ScreenshotConfig("alert.json", extra_params={"name": "topic", "desc": "description"})
