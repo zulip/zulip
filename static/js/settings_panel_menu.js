@@ -3,9 +3,9 @@ import $ from "jquery";
 import * as browser_history from "./browser_history";
 import * as keydown_util from "./keydown_util";
 import * as popovers from "./popovers";
+import * as sb from "./sb";
 import * as settings from "./settings";
 import * as settings_sections from "./settings_sections";
-import * as ui from "./ui";
 
 export let normal_settings;
 export let org_settings;
@@ -122,7 +122,7 @@ export class SettingsPanelMenu {
 
         this.get_panel().addClass("show");
 
-        ui.reset_scrollbar($("#settings_content"));
+        sb.reset_scrollbar($("#settings_content"));
 
         const $settings_overlay_container = $("#settings_overlay_container");
         $settings_overlay_container.find(".right").addClass("show");

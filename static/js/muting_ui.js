@@ -10,11 +10,11 @@ import * as ListWidget from "./list_widget";
 import * as muting from "./muting";
 import * as overlays from "./overlays";
 import * as recent_topics from "./recent_topics";
+import * as sb from "./sb";
 import * as settings_muting from "./settings_muting";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
-import * as ui from "./ui";
 import * as unread_ui from "./unread_ui";
 
 function timestamp_ms() {
@@ -102,7 +102,7 @@ export function set_up_muted_topics_ui() {
                 return item.topic.toLocaleLowerCase().includes(value);
             },
             onupdate() {
-                ui.reset_scrollbar(muted_topics_table.closest(".progressive-table-wrapper"));
+                sb.reset_scrollbar(muted_topics_table.closest(".progressive-table-wrapper"));
             },
         },
         parent_container: $("#muted-topic-settings"),

@@ -10,7 +10,7 @@ import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as people from "./people";
-import * as ui from "./ui";
+import * as sb from "./sb";
 import * as ui_report from "./ui_report";
 import * as upload_widget from "./upload_widget";
 
@@ -113,7 +113,7 @@ export function populate_emoji() {
                 return item.name.toLowerCase().includes(value);
             },
             onupdate() {
-                ui.reset_scrollbar(emoji_table);
+                sb.reset_scrollbar(emoji_table);
             },
         },
         parent_container: $("#emoji-settings").expectOne(),

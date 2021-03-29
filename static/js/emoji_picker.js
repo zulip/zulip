@@ -15,7 +15,7 @@ import * as message_store from "./message_store";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as rows from "./rows";
-import * as ui from "./ui";
+import * as sb from "./sb";
 
 // Emoji picker is of fixed width and height. Update these
 // whenever these values are changed in `reactions.css`.
@@ -243,7 +243,7 @@ function filter_emojis() {
             message_id,
         });
         $(".emoji-search-results").html(rendered_search_results);
-        ui.reset_scrollbar($(".emoji-search-results-container"));
+        sb.reset_scrollbar($(".emoji-search-results-container"));
         if (!search_results_visible) {
             show_search_results();
         }
@@ -341,10 +341,10 @@ function maybe_change_focused_emoji($emoji_map, next_section, next_index, preser
         if (!preserve_scroll) {
             next_emoji.trigger("focus");
         } else {
-            const start = ui.get_scroll_element($emoji_map).scrollTop();
+            const start = sb.get_scroll_element($emoji_map).scrollTop();
             next_emoji.trigger("focus");
-            if (ui.get_scroll_element($emoji_map).scrollTop() !== start) {
-                ui.get_scroll_element($emoji_map).scrollTop(start);
+            if (sb.get_scroll_element($emoji_map).scrollTop() !== start) {
+                sb.get_scroll_element($emoji_map).scrollTop(start);
             }
         }
         update_emoji_showcase(next_emoji);
@@ -361,7 +361,7 @@ function maybe_change_active_section(next_section) {
         current_index = 0;
         const offset = section_head_offsets[current_section];
         if (offset) {
-            ui.get_scroll_element($emoji_map).scrollTop(offset.position_y);
+            sb.get_scroll_element($emoji_map).scrollTop(offset.position_y);
             maybe_change_focused_emoji($emoji_map, current_section, current_index);
         }
     }
@@ -449,7 +449,7 @@ export function navigate(event_name, e) {
         if (event_name === "down_arrow" || (is_cursor_at_end && event_name === "right_arrow")) {
             selected_emoji.trigger("focus");
             if (current_section === 0 && current_index < 6) {
-                ui.get_scroll_element($emoji_map).scrollTop(0);
+                sb.get_scroll_element($emoji_map).scrollTop(0);
             }
             update_emoji_showcase(selected_emoji);
             return true;
@@ -473,8 +473,8 @@ export function navigate(event_name, e) {
             // consistent (cursor goes to the end of the filter
             // string).
             $(".emoji-popover-filter").trigger("focus").caret(Number.POSITIVE_INFINITY);
-            ui.get_scroll_element($emoji_map).scrollTop(0);
-            ui.get_scroll_element($(".emoji-search-results-container")).scrollTop(0);
+            sb.get_scroll_element($emoji_map).scrollTop(0);
+            sb.get_scroll_element($(".emoji-search-results-container")).scrollTop(0);
             current_section = 0;
             current_index = 0;
             reset_emoji_showcase();
@@ -580,8 +580,8 @@ export function emoji_select_tab(elt) {
 function register_popover_events(popover) {
     const $emoji_map = popover.find(".emoji-popover-emoji-map");
 
-    ui.get_scroll_element($emoji_map).on("scroll", () => {
-        emoji_select_tab(ui.get_scroll_element($emoji_map));
+    sb.get_scroll_element($emoji_map).on("scroll", () => {
+        emoji_select_tab(sb.get_scroll_element($emoji_map));
     });
 
     $(".emoji-popover-filter").on("input", filter_emojis);
@@ -765,7 +765,7 @@ export function register_click_handlers() {
         );
 
         if (offset) {
-            ui.get_scroll_element($emoji_map).scrollTop(offset.position_y);
+            sb.get_scroll_element($emoji_map).scrollTop(offset.position_y);
         }
     });
 

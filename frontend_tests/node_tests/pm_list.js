@@ -18,9 +18,6 @@ const vdom = mock_esm("../../static/js/vdom", {
 mock_esm("../../static/js/stream_popover", {
     hide_topic_popover() {},
 });
-mock_esm("../../static/js/ui", {
-    get_content_element: (element) => element,
-});
 
 const people = zrequire("people");
 const pm_conversations = zrequire("pm_conversations");

@@ -8,7 +8,7 @@ import * as navigate from "./navigate";
 import {page_params} from "./page_params";
 import * as panels from "./panels";
 import * as popovers from "./popovers";
-import * as ui from "./ui";
+import * as sb from "./sb";
 import * as util from "./util";
 
 let narrow_window = false;
@@ -91,7 +91,7 @@ function left_userlist_get_new_heights() {
     const buddy_list_wrapper = $("#buddy_list_wrapper").expectOne();
 
     const stream_filters_real_height = stream_filters.prop("scrollHeight");
-    const user_list_real_height = ui.get_scroll_element(buddy_list_wrapper).prop("scrollHeight");
+    const user_list_real_height = sb.get_scroll_element(buddy_list_wrapper).prop("scrollHeight");
 
     res.total_leftlist_height =
         viewport_height -

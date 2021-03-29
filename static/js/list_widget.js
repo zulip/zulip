@@ -1,7 +1,7 @@
 import $ from "jquery";
 
 import * as blueslip from "./blueslip";
-import * as ui from "./ui";
+import * as sb from "./sb";
 
 const DEFAULTS = {
     INITIAL_RENDER_COUNT: 80,
@@ -269,7 +269,7 @@ export function create($container, list, opts) {
     };
 
     widget.set_up_event_handlers = function () {
-        meta.scroll_container = ui.get_scroll_element(opts.simplebar_container);
+        meta.scroll_container = sb.get_scroll_element(opts.simplebar_container);
 
         // on scroll of the nearest scrolling container, if it hits the bottom
         // of the container then fetch a new block of items and render them.

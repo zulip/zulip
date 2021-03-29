@@ -6,7 +6,7 @@ import * as channel from "./channel";
 import {i18n} from "./i18n";
 import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
-import * as ui from "./ui";
+import * as sb from "./sb";
 import * as ui_report from "./ui_report";
 
 const meta = {
@@ -66,7 +66,7 @@ export function populate_linkifiers(linkifiers_data) {
                 );
             },
             onupdate() {
-                ui.reset_scrollbar(linkifiers_table);
+                sb.reset_scrollbar(linkifiers_table);
             },
         },
         parent_container: $("#linkifier-settings").expectOne(),

@@ -5,10 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-mock_esm("../../static/js/ui", {
-    get_scroll_element: (element) => element,
-});
-
+const sb = mock_esm("../../static/js/sb");
 const scroll_util = zrequire("scroll_util");
 
 run_test("scroll_delta", () => {
@@ -88,7 +85,8 @@ run_test("scroll_delta", () => {
     );
 });
 
-run_test("scroll_element_into_container", () => {
+run_test("scroll_element_into_container", (override) => {
+    override(sb, "get_scroll_element", (element) => element);
     const container = (function () {
         let top = 3;
         return {

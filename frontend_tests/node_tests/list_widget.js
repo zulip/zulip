@@ -6,15 +6,17 @@ const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 
+const sb = mock_esm("../../static/js/sb", {
+    get_scroll_element: (element) => element,
+});
+
 // We need these stubs to get by instanceof checks.
 // The ListWidget library allows you to insert objects
 // that are either jQuery, Element, or just raw HTML
 // strings.  We initially test with raw strings.
-const ui = mock_esm("../../static/js/ui");
 set_global("Element", () => {});
 
 // We only need very simple jQuery wrappers for when the
-
 // "real" code wraps html or sets up click handlers.
 // We'll simulate most other objects ourselves.
 mock_cjs("jquery", (arg) => {
@@ -142,17 +144,17 @@ function div(item) {
     return "<div>" + item + "</div>";
 }
 
-run_test("scrolling", () => {
+run_test("scrolling", (override) => {
     const container = make_container();
     const scroll_container = make_scroll_container();
 
     const items = [];
 
     let get_scroll_element_called = false;
-    ui.get_scroll_element = (element) => {
+    override(sb, "get_scroll_element", (element) => {
         get_scroll_element_called = true;
         return element;
-    };
+    });
 
     for (let i = 0; i < 200; i += 1) {
         items.push("item " + i);

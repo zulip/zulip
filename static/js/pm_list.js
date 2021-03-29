@@ -6,8 +6,8 @@ import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
 import * as pm_list_dom from "./pm_list_dom";
+import * as sb from "./sb";
 import * as stream_popover from "./stream_popover";
-import * as ui from "./ui";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
 import * as vdom from "./vdom";
@@ -45,7 +45,7 @@ function set_count(count) {
 
 function remove_expanded_private_messages() {
     stream_popover.hide_topic_popover();
-    ui.get_content_element($("#private-container")).empty();
+    sb.get_content_element($("#private-container")).empty();
 }
 
 export function close() {
@@ -131,7 +131,7 @@ export function update_private_messages() {
     }
 
     if (private_messages_open) {
-        const container = ui.get_content_element($("#private-container"));
+        const container = sb.get_content_element($("#private-container"));
         const new_dom = _build_private_messages_list();
 
         function replace_content(html) {

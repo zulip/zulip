@@ -110,6 +110,7 @@ EXEMPT_FILES = {
     "static/js/rendered_markdown.js",
     "static/js/resize.js",
     "static/js/rows.js",
+    "static/js/sb.js",
     "static/js/scroll_bar.js",
     "static/js/search_pill_widget.js",
     "static/js/sent_messages.js",

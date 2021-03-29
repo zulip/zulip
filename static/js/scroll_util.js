@@ -1,4 +1,4 @@
-import * as ui from "./ui";
+import * as sb from "./sb";
 
 export function scroll_delta(opts) {
     const elem_top = opts.elem_top;
@@ -26,7 +26,7 @@ export function scroll_element_into_container(elem, container) {
     // this will be non-intrusive to users when they already have
     // the element visible.
 
-    container = ui.get_scroll_element(container);
+    container = sb.get_scroll_element(container);
     const elem_top = elem.position().top;
     const elem_bottom = elem_top + elem.innerHeight();
 

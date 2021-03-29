@@ -19,6 +19,7 @@ import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as pill_typeahead from "./pill_typeahead";
+import * as sb from "./sb";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_ui from "./settings_ui";
@@ -27,7 +28,6 @@ import * as stream_data from "./stream_data";
 import * as stream_pill from "./stream_pill";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as subs from "./subs";
-import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 import * as user_pill from "./user_pill";
 import * as util from "./util";
@@ -262,7 +262,7 @@ function submit_add_subscriber_form(e) {
         );
 
         const html = render_stream_subscription_info({subscribed_users, already_subscribed_users});
-        ui.get_content_element(stream_subscription_info_elem).html(html);
+        sb.get_content_element(stream_subscription_info_elem).html(html);
         stream_subscription_info_elem.addClass("text-success").removeClass("text-error");
     }
 
@@ -439,7 +439,7 @@ export function show_settings_for(node) {
         stream_post_policy_values: stream_data.stream_post_policy_values,
         message_retention_text: get_retention_policy_text_for_subscription_type(sub),
     });
-    ui.get_content_element($(".subscriptions .right .settings")).html(html);
+    sb.get_content_element($(".subscriptions .right .settings")).html(html);
 
     const sub_settings = settings_for_sub(sub);
 

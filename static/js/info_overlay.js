@@ -11,7 +11,7 @@ import * as markdown from "./markdown";
 import * as overlays from "./overlays";
 import * as popovers from "./popovers";
 import * as rendered_markdown from "./rendered_markdown";
-import * as ui from "./ui";
+import * as sb from "./sb";
 import * as util from "./util";
 
 // Make it explicit that our toggler is undefined until
@@ -162,7 +162,7 @@ export function set_up_toggler() {
         callback(name, key) {
             $(".overlay-modal").hide();
             $(`#${CSS.escape(key)}`).show();
-            ui.get_scroll_element($(`#${CSS.escape(key)}`).find(".modal-body")).trigger("focus");
+            sb.get_scroll_element($(`#${CSS.escape(key)}`).find(".modal-body")).trigger("focus");
         },
     };
 
@@ -177,7 +177,7 @@ export function set_up_toggler() {
     });
 
     for (const modal of modals) {
-        ui.get_scroll_element(modal).prop("tabindex", 0);
+        sb.get_scroll_element(modal).prop("tabindex", 0);
         keydown_util.handle({
             elem: modal,
             handlers: {

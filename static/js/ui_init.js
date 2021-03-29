@@ -47,6 +47,7 @@ import * as recent_topics from "./recent_topics";
 import * as reload from "./reload";
 import * as resize from "./resize";
 import * as rows from "./rows";
+import * as sb from "./sb";
 import * as scroll_bar from "./scroll_bar";
 import * as search from "./search";
 import * as search_pill_widget from "./search_pill_widget";
@@ -157,7 +158,7 @@ export function initialize_kitchen_sink_stuff() {
     // element is already at the top or bottom.  Otherwise we get a
     // new scroll event on the parent (?).
     $(".modal-body, .scrolling_list, input, textarea").on("wheel", function (e) {
-        const self = ui.get_scroll_element($(this));
+        const self = sb.get_scroll_element($(this));
         const scroll = self.scrollTop();
         const delta = e.originalEvent.deltaY;
 

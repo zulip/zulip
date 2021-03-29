@@ -13,9 +13,6 @@ stub_templates(() => "<stub>");
 
 mock_cjs("jquery", $);
 const typeahead_helper = mock_esm("../../static/js/typeahead_helper");
-const ui = mock_esm("../../static/js/ui", {
-    get_scroll_element: noop,
-});
 
 mock_esm("../../static/js/browser_history", {update: noop});
 mock_esm("../../static/js/hash_util", {
@@ -24,6 +21,9 @@ mock_esm("../../static/js/hash_util", {
 });
 mock_esm("../../static/js/list_widget", {
     create: () => ({init: noop}),
+});
+const sb = mock_esm("../../static/js/sb", {
+    get_scroll_element: noop,
 });
 mock_esm("../../static/js/stream_color", {
     set_colorpicker_color: noop,
@@ -119,10 +119,10 @@ test_ui("subscriber_pills", (override) => {
     $add_subscribers_form.closest = () => $subscription_settings;
 
     let template_rendered = false;
-    ui.get_content_element = () => {
+    override(sb, "get_content_element", () => {
         template_rendered = true;
         return {html: noop};
-    };
+    });
 
     let expected_user_ids = [];
     let input_typeahead_called = false;

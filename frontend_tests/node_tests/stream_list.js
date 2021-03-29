@@ -18,10 +18,11 @@ const noop = () => {};
 mock_cjs("jquery", $);
 const narrow_state = mock_esm("../../static/js/narrow_state");
 const topic_list = mock_esm("../../static/js/topic_list");
+
 mock_esm("../../static/js/keydown_util", {
     handle: noop,
 });
-mock_esm("../../static/js/ui", {get_scroll_element: (element) => element});
+mock_esm("../../static/js/sb", {get_scroll_element: (element) => element});
 
 const {Filter} = zrequire("../js/filter");
 const stream_sort = zrequire("stream_sort");

@@ -19,6 +19,7 @@ import * as message_view_header from "./message_view_header";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as sb from "./sb";
 import * as scroll_util from "./scroll_util";
 import * as search_util from "./search_util";
 import * as stream_create from "./stream_create";
@@ -27,7 +28,6 @@ import * as stream_edit from "./stream_edit";
 import * as stream_list from "./stream_list";
 import * as stream_muting from "./stream_muting";
 import * as stream_ui_updates from "./stream_ui_updates";
-import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 import * as util from "./util";
 
@@ -276,14 +276,14 @@ export function add_sub_to_table(sub) {
     add_tooltip_to_left_panel_row(new_row);
 
     if (stream_create.get_name() === sub.name) {
-        ui.get_content_element($(".streams-list")).prepend(new_row);
-        ui.reset_scrollbar($(".streams-list"));
+        sb.get_content_element($(".streams-list")).prepend(new_row);
+        sb.reset_scrollbar($(".streams-list"));
     } else {
-        ui.get_content_element($(".streams-list")).append(new_row);
+        sb.get_content_element($(".streams-list")).append(new_row);
     }
 
     const settings_html = render_subscription_settings(sub);
-    ui.get_content_element($(".subscriptions .settings")).append($(settings_html));
+    sb.get_content_element($(".subscriptions .settings")).append($(settings_html));
 
     if (stream_create.get_name() === sub.name) {
         // This `stream_create.get_name()` check tells us whether the
@@ -439,7 +439,7 @@ export function render_left_panel_superset() {
         return render_subscriptions(template_data);
     });
 
-    ui.get_content_element($("#subscriptions_table .streams-list")).html(html);
+    sb.get_content_element($("#subscriptions_table .streams-list")).html(html);
 }
 
 // LeftPanelParams { input: String, subscribed_only: Boolean, sort_order: String }
@@ -484,12 +484,12 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()) {
         widgets.set(stream_id, $(row).detach());
     }
 
-    ui.reset_scrollbar($("#subscription_overlay .streams-list"));
+    sb.reset_scrollbar($("#subscription_overlay .streams-list"));
 
     const all_stream_ids = [...buckets.name, ...buckets.desc, ...buckets.other];
 
     for (const stream_id of all_stream_ids) {
-        ui.get_content_element($("#subscriptions_table .streams-list")).append(
+        sb.get_content_element($("#subscriptions_table .streams-list")).append(
             widgets.get(stream_id),
         );
     }

@@ -10,7 +10,7 @@ const $ = require("../zjsunit/zjquery");
 const denmark_stream_id = 101;
 
 mock_cjs("jquery", $);
-const ui = mock_esm("../../static/js/ui", {
+const sb = mock_esm("../../static/js/sb", {
     get_content_element: (element) => element,
     get_scroll_element: (element) => element,
 });
@@ -108,10 +108,10 @@ run_test("redraw_left_panel", (override) => {
     $.create("#subscriptions_table .stream-row", {children: sub_stubs});
 
     let ui_called = false;
-    ui.reset_scrollbar = (elem) => {
+    override(sb, "reset_scrollbar", (elem) => {
         ui_called = true;
         assert.equal(elem, $("#subscription_overlay .streams-list"));
-    };
+    });
 
     // Filtering has the side effect of setting the "active" class
     // on our current stream, even if it doesn't match the filter.

@@ -7,9 +7,9 @@ import {i18n} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
+import * as sb from "./sb";
 import * as stream_data from "./stream_data";
 import * as typeahead_helper from "./typeahead_helper";
-import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 
 const meta = {
@@ -50,7 +50,7 @@ export function build_default_stream_table() {
                 return item.name.toLowerCase().includes(query.toLowerCase());
             },
             onupdate() {
-                ui.reset_scrollbar(table);
+                sb.reset_scrollbar(table);
             },
         },
         parent_container: $("#admin-default-streams-list").expectOne(),

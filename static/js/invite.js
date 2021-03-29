@@ -13,8 +13,8 @@ import * as common from "./common";
 import {i18n} from "./i18n";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
+import * as sb from "./sb";
 import * as stream_data from "./stream_data";
-import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 
 function reset_error_messages() {
@@ -112,7 +112,7 @@ function submit_invitation_form() {
             $("#submit-invitation").text(i18n.t("Invite"));
             $("#submit-invitation").prop("disabled", false);
             $("#invitee_emails").focus();
-            ui.get_scroll_element($("#invite_user_form .modal-body"))[0].scrollTop = 0;
+            sb.get_scroll_element($("#invite_user_form .modal-body"))[0].scrollTop = 0;
         },
     });
 }

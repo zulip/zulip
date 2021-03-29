@@ -13,13 +13,13 @@ import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
+import * as sb from "./sb";
 import * as scroll_util from "./scroll_util";
 import * as stream_data from "./stream_data";
 import * as stream_popover from "./stream_popover";
 import * as stream_sort from "./stream_sort";
 import * as topic_list from "./topic_list";
 import * as topic_zoom from "./topic_zoom";
-import * as ui from "./ui";
 import * as unread from "./unread";
 
 export let stream_cursor;
@@ -529,7 +529,7 @@ export function set_event_handlers() {
         });
 
     // check for user scrolls on streams list for first time
-    ui.get_scroll_element($("#stream-filters-container")).on("scroll", function () {
+    sb.get_scroll_element($("#stream-filters-container")).on("scroll", function () {
         has_scrolled = true;
         // remove listener once user has scrolled
         $(this).off("scroll");
