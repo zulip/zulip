@@ -741,6 +741,7 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
     "json": [ScreenshotConfig("json_github_push__1_commit.json")],
     "librato": [ScreenshotConfig("three_conditions_alert.json", payload_as_query_param=True)],
     "mention": [ScreenshotConfig("webfeeds.json")],
+    "nagios": [BaseScreenshotConfig("service_notify.json")],
     "netlify": [ScreenshotConfig("deploy_building.json")],
     "newrelic": [ScreenshotConfig("alert.txt", "002.png")],
     "opbeat": [ScreenshotConfig("error_reopen.json")],
