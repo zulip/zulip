@@ -1055,12 +1055,9 @@ def upload_file(client: Client) -> None:
     # {code_example|start}
     # Upload a file
     with open(path_to_file, "rb") as fp:
-        result = client.call_endpoint(
-            "user_uploads",
-            method="POST",
-            files=[fp],
-        )
+        result = client.upload_file(fp)
 
+    # Share the file by including it in a message.
     client.send_message(
         {
             "type": "stream",
