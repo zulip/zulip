@@ -237,32 +237,42 @@ server is restarted, files are copied into that directory.
   without breaking the rendering of old messages (or doing a
   mass-rerender of old messages).
 
-### CommonJS/TypeScript modules
+### ES6/TypeScript modules
 
-Webpack provides seamless interoperability between different module
-systems such as CommonJS, AMD and ES6. Our JS files are written in the
-CommonJS format, which specifies public functions and variables as
-properties of the special `module.exports` object.  We also currently
-assign said object to the global `window` variable, which is a hack
-allowing us to use modules without importing them with the `require()`
-statement.
+JavaScript modules in the frontend are [ES6
+modules](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules)
+that are [transpiled by
+webpack](https://webpack.js.org/api/module-methods/#es6-recommended).
+Any variable, function, etc. can be made public by adding the
+[`export`
+keyword](https://developer.mozilla.org/en-US/docs/web/javascript/reference/statements/export),
+and consumed from another module using the [`import`
+statement](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import).
 
 New modules should ideally be written in TypeScript (though in cases
 where one is moving code from an existing JavaScript module, the new
 commit should just move the code, not translate it to TypeScript).
-
 TypeScript provides more accurate information to development tools,
-allowing for better refactoring, auto-completion and static
-analysis. TypeScript uses an ES6-like module system.  Any declaration
-can be made public by adding the `export` keyword. Consuming
-variables, functions, etc exported from another module should be done
-with the `import` statement as oppose to accessing them from the
-global `window` scope.  Internally our TypeScript compiler is
-configured to transpile TS to the ES6 module system.
+allowing for better refactoring, auto-completion and static analysis.
+TypeScript also uses the ES6 module system.  See our documentation on
+[TypeScript static types](../testing/typescript).
 
-Read more about these module systems here:
-* [TypeScript modules](https://www.typescriptlang.org/docs/handbook/modules.html)
-* [CommonJS](https://nodejs.org/api/modules.html#modules_modules)
+Webpack does not ordinarily allow modules to be accessed directly from
+the browser console, but for debugging convenience, we have a custom
+webpack plugin (`tools/debug-require-webpack-plugin.ts`) that exposes
+a version of the `require()` function to the development environment
+browser console for this purpose.  For example, you can access our
+`people` module by evaluating `people =
+require("./static/js/people")`, or the third-party `lodash` module
+with `_ = require("lodash")`.  This mechanism is **not** a stable API
+and should not be used for any purpose other than interactive
+debugging.
+
+We have one module, `zulip_test`, that’s exposed as a global variable
+using `expose-loader` for direct use in Puppeteer tests and in the
+production browser console.  If you need to access a variable or
+function in those scenarios, add it to `zulip_test`.  This is also
+**not** a stable API.
 
 [Jinja2]: http://jinja.pocoo.org/
 [Handlebars]: https://handlebarsjs.com/
