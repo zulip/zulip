@@ -1699,6 +1699,7 @@ class Stream(models.Model):
     STREAM_POST_POLICY_EVERYONE = 1
     STREAM_POST_POLICY_ADMINS = 2
     STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS = 3
+    STREAM_POST_POLICY_MODERATORS = 4
     # TODO: Implement policy to restrict posting to a user group or admins.
 
     # Who in the organization has permission to send messages to this stream.
@@ -1707,6 +1708,7 @@ class Stream(models.Model):
         STREAM_POST_POLICY_EVERYONE,
         STREAM_POST_POLICY_ADMINS,
         STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS,
+        STREAM_POST_POLICY_MODERATORS,
     ]
 
     # The unique thing about Zephyr public streams is that we never list their

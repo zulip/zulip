@@ -9536,6 +9536,7 @@ components:
             * 1 => Any user can post.
             * 2 => Only administrators can post.
             * 3 => Only full members can post.
+            * 4 => Only moderators can post.
 
             **Changes**: New in Zulip 3.0, replacing the previous
             `is_announcement_only` boolean.
@@ -10082,6 +10083,7 @@ components:
             * 1 => Any user can post.
             * 2 => Only administrators can post.
             * 3 => Only full members can post.
+            * 4 => Only moderators can post.
 
             **Changes**: New in Zulip 3.0, replacing the previous
             `is_announcement_only` boolean.
@@ -10993,6 +10995,7 @@ components:
         * 1 => Any user can post.
         * 2 => Only administrators can post.
         * 3 => Only full members can post.
+        * 4 => Only moderators can post.
 
         **Changes**: New in Zulip 3.0, replacing the previous
         `is_announcement_only` boolean.
