@@ -312,7 +312,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.assertFalse(moderator_profile.is_provisional_member)
 
         # Moderators and their owned bots can send to STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS
-        # streams, even if the admin is a new user
+        # streams, even if the moderator is a new user
         self._send_and_verify_message(moderator_profile, stream_name)
         moderator_owned_bot = self.create_test_bot(
             short_name="whatever3",
