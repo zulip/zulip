@@ -65,6 +65,10 @@ async function realm_creation_tests(page: Page): Promise<void> {
     // Check if realm is created and user is logged in by checking if
     // element of id `lightbox_overlay` exists.
     await page.waitForSelector("#lightbox_overlay"); // if element doesn't exist,timeout error raises
+
+    // Updating common.realm_url because we are redirecting to it when logging out.
+    common.realm_url = page.url();
+    await common.log_out(page);
 }
 
 common.run_test(realm_creation_tests);

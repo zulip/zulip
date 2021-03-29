@@ -277,6 +277,7 @@ async function drafts_test(page: Page): Promise<void> {
     await test_delete_draft(page);
     await test_save_draft_by_reloading(page);
     await test_delete_draft_on_sending(page);
+    await common.log_out(page);
 }
 
 common.run_test(drafts_test);

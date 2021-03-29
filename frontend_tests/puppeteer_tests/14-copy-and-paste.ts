@@ -160,6 +160,7 @@ async function copy_paste_test(page: Page): Promise<void> {
     await test_copying_last_from_prev_all_from_next(page);
     await test_copying_all_from_prev_first_from_next(page);
     await test_copying_messages_from_several_topics(page);
+    await common.log_out(page);
 }
 
 common.run_test(copy_paste_test);
