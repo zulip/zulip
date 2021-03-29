@@ -12,10 +12,24 @@ in bursts.
 #### Highlights
 
 - Added copy-to-clipboard button on code blocks, making it convenient
-  to extract code for external use.
-- Significant work towards support for web-public streams (visible to
-  the Internet without creating an account).
-- Significant work towards stream-level administrator users.
+  to extract code for external use. Code blocks now have a "View in
+  playground" button for certain programming languages.
+- Recent topics is no longer beta, no longer an overlay, and is now
+  the default landing view. The previous default, "All messages", is
+  still available, and the default view can now be configured via
+  "Display settings".
+- Completed API documentation for Zulip's real-time events system.  It
+  is now possible to write a decent Zulip client with minimal
+  interaction with the Zulip server development team.
+- Added new organization settings: wildcard mention policy.
+- Integrated [smokescreen][smokescreen], an outgoing proxy designed to
+  help protect against SSRF attacks; outgoing HTTP requests that can
+  be triggered by end users are routed through this service.
+  We recommend that self-hosted installations configure it.
+- Links to issues or pull requests on GitHub are now automatically
+  converted to have shorter labels for more convenient reading.
+- Over 20 changes to the [Zulip API](https://zulip.com/api/changelog),
+  largely to support new settings or simplify API documentation.
 
 #### Upgrade notes for 4.0
 
@@ -24,11 +38,29 @@ in bursts.
   for multiple Tornado processes.  Since Tornado only listens on
   localhost, this change should have no visible effect unless another
   service is using port 9800.
+- Zulip's top-level puppet classes have been renamed, largely from
+  `zulip::foo` to `zulip::profile::foo`. Configuration referencing
+  these `/etc/zulip/zulip.conf` will be automatically updated during
+  the upgrade process, but if you have a complex deployment or you
+  maintain `zulip.conf` is another system (E.g. with the [manual
+  configuration][docker-zulip-manual] option for
+  [docker-zulip][docker-zulip]), you'll want to manually update the
+  `puppet_classes` variable.
+- Zulip's supervisord configuration now lives in `/etc/supervisor/conf.d/zulip/`
+- Consider enabling [smokescreen][smokescreen]
+- Private streams can no longer be default streams (i.e. the ones new
+  users are automatically added to).
+- We rewrote the template for `/etc/zulip/settings.py` to be more
+  readable.  Installations that have been running for more than a year
+  may want to carefully resync the comments from
+  `/home/zulip/deployments/current/zproject/prod_settings_template.py`.
+
+[docker-zulip-manual]: https://github.com/zulip/docker-zulip#manual-configuration
+[smokescreen]: ../production/deployment.html#using-an-outgoing-http-proxy
 
 #### Full feature changelog
 
 - Community topic editing time limit increased to 3 days for members.
-- Removed HipChat import tool.
 - Added support for moving topics to private streams.
 - Added support for subscribing another stream's membership to a stream.
 - Added RealmAuditLog for most settings state changes in Zulip; this
@@ -38,27 +70,73 @@ in bursts.
 - Added documentation for using `wal-g` for continuous PostgreSQL backups.
 - Added loading spinners for message editing widgets.
 - Added live update of compose placeholder text when recipients change.
+- Added keyboard navigation for popover menus that were missing it.
+- Added documentation for all [zulip.conf settings][zulip-conf-settings].
+- Added types for all parameters in the API documentation.
+- Added dozens of new notification sound options.
+- Added menu option to unstar all messages in a topic.
+- Added confirmation dialog before deleting your profile picture.
+- Added API endpoint to fetch user details by email address.
+- Added API endpoint to fetch presence details by user ID.
+- Added new LDAP configuration options for servers hosting multiple organizations.
+- Added new `@**|user_id**` mention syntax intended for use in bots.
+- Updated integrations: NewRelic, Bitbucket, Zabbix.
+- New integrations: JotForm.
+- Improved formatting of GitHub and GitLab integrations.
+- Improved the user experience for multi-user invitations.
+- Improved several rendered-message styling details.
+- Improved design of `<time>` widgets.
+- Improved format of `nginx` logs to include hostname and request time.
+- Redesigned the left sidebar menu icons (now `\vdots`, not a chevron).
 - The Zoom integration is now stable (no longer beta).
-- Completed API documentation for Zulip's real-time events system.
+- Favicon unread counts are more attractive and support large numbers.
+- Presence circles for users are now shown in mention typeahead.
+- Fixed performance issues when creating hundreds of new users in
+  quick succession (E.g. at the start of a conference or event).
 - Fixed numerous rare exceptions when running Zulip at scale.
 - Fixed various UI and accessibility issues in the registration and new
   user invitation flows.
-- Fixed live update and UI bugs with streams being deactivated.
+- Fixed live update and UI bugs with streams being deactivated or renamed.
+- Fixed a subtle Firefox bug with `Esc` breaking keyboard accessibility.
+- Fixed name not being populated currently with Apple authentication.
+- Fixed several subtle bugs in the "Stream settings" UI.
+- Fixed error handling for incoming emails that fail to send.
+- Fixed a subtle bug with timestamps for messages that take a long
+  time to send.
+- Fixed missing horizontal scrollbar for overflowing rendered LaTeX.
+- Increased size of typeahead box for mentions from 5 to 8.
+- Typeahead now always ranks exact string matches first.
+- Redesigned "Alert words" settings UI.
 - Refactored typeahead and emoji components to be shareable with the
   mobile codebase.
 - Replaced the old CasperJS frontend test suite with Puppeteer.
 - Switched to `orjson` for JSON serialization, resulting in better
   performance and more standards-compliant validation.
+- Split the previous `api_super_user` permission into
+  `can_create_user` and `can_forge_sender` (used for mirroring).
 - Various API endpoints creating objects now return the ID of the
   created object.
 - Fixed screenreader accessibility of many components, including
   the compose box, message editing, popovers, and many more.
-- Improved formatting of GitLab integration.
+- Fixed transparency issues uploading some animated GIFs as custom emoji.
 - Improved positioning logic for inline YouTube previews.
+- Improved performance of several high-throughput queue processors.
 - Upgraded our ancient forked version of bootstrap, on a path towards
   removing the last forked dependencies from the codebase.
+- Upgraded Django to 3.1 (as well as essentially every other dependency).
 - Updated webapp codebase to use many modern ES6 patterns.
+- Upgraded Zulip's core font to Source Sans 3, which supports more languages.
 - Relabeled :smile: and :stuck_out_tongue: emoji to use better codepoints.
+- Reduced the size of Zulip's main JavaScript bundle by removing `moment.js`.
+- Simplified logic for responsive UI with different browser sizes.
+- Fixed several subtle bugs in the compose and message-edit UIs.
+  steady-state load for an idle Zulip server.
+- Removed HipChat import tool, because HipChat has been long EOL.
+- Reformatted the Python codebase with Black, and the frontend
+  codebase with Prettier.
+- Migrated testing from CircleCI to GitHub Actions.
+
+[zulip-conf-settings]: ../production/deployment.html#system-and-deployment-configuration
 
 ## Zulip 3.x series
 
@@ -352,7 +430,7 @@ in bursts.
   any invitation objects already corrupted by the buggy version of the
   `0198_preregistrationuser_invited_as` migration.
 - Fixed missing quoting of certain attributes in HTML templates.
-- Allow /etc/zulip to be a symlink (for docker-zulip).
+- Allow /etc/zulip to be a symlink (for [docker-zulip][docker-zulip]).
 - Disabled access from insecure Zulip Desktop releases below version 5.2.0.
 - Adjusted Slack import documentation to help administrators avoid OOM
   kills when doing Slack import on low-RAM systems.
@@ -1939,3 +2017,5 @@ easily read them all when upgrading across multiple releases.
 * [Upgrade notes for 1.9.0](#upgrade-notes-for-1-9-0)
 * [Upgrade notes for 1.8.0](#upgrade-notes-for-1-8-0)
 * [Upgrade notes for 1.7.0](#upgrade-notes-for-1-7-0)
+
+[docker-zulip]: https://github.com/zulip/docker-zulip
