@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const autosize = require("autosize");
 
 const {i18n} = require("../zjsunit/i18n");
-const {mock_cjs, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
@@ -17,9 +17,19 @@ set_global("document", {
     },
 });
 
+mock_esm("../../static/js/message_lists", {
+    current: {
+        can_mark_messages_read: () => true,
+    },
+});
+
 const compose_ui = zrequire("compose_ui");
 const people = zrequire("people");
 const user_status = zrequire("user_status");
+const hash_util = mock_esm("../../static/js/hash_util");
+const channel = mock_esm("../../static/js/channel");
+const compose_actions = zrequire("compose_actions");
+const message_lists = zrequire("message_lists");
 
 const alice = {
     email: "alice@zulip.com",
@@ -228,4 +238,79 @@ run_test("compute_placeholder_text", () => {
     // Group PM
     opts.private_message_recipient = "alice@zulip.com,bob@zulip.com";
     assert.equal(compose_ui.compute_placeholder_text(opts), i18n.t("Message Alice, Bob"));
+});
+
+run_test("quote_and_reply", (override) => {
+    const selected_message = {
+        type: "stream",
+        stream: "devel",
+        topic: "python",
+        sender_full_name: "Steve Stephenson",
+        sender_id: 90,
+    };
+    hash_util.by_conversation_and_time_uri = () =>
+        "https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado";
+    override(message_lists.current, "selected_message", () => selected_message);
+    override(message_lists.current, "selected_id", () => 100);
+
+    let success_function;
+    override(channel, "get", (opts) => {
+        success_function = opts.success;
+    });
+
+    $("#compose-textarea").val = function (...args) {
+        if (args.length === 0) {
+            return this.value || "";
+        }
+        [this.value] = args;
+        if (args[0]) {
+            this.pos = args[0].length;
+        }
+        return this;
+    };
+
+    $("#compose-textarea").caret = function (arg) {
+        if (typeof arg === "number") {
+            this.pos = arg;
+            return this;
+        }
+        if (arg) {
+            const insert_pos = this.pos;
+            const before = this.val().slice(0, this.pos);
+            const after = this.val().slice(this.pos);
+            this.val(before + arg + after);
+            // the val() we're using within this function will break the value of pos, resetting it to the end,
+            // so we make sure to correct this
+            this.pos = insert_pos + arg.length;
+            return this;
+        }
+        return this.pos;
+    };
+
+    function set_compose_content_with_caret(content) {
+        const caret_position = content.indexOf("%");
+        content = content.slice(0, caret_position) + content.slice(caret_position + 1); // remove the "%"
+        $("#compose-textarea").val(content);
+        $("#compose-textarea").caret(caret_position);
+        $("#compose-textarea").trigger("focus");
+    }
+    function get_compose_content_with_caret() {
+        const caret_position = $("#compose-textarea").caret();
+        const content =
+            $("#compose-textarea").val().slice(0, caret_position) +
+            "%" +
+            $("#compose-textarea").val().slice(caret_position); // insert the "%"
+        return content;
+    }
+
+    set_compose_content_with_caret("hello %there"); // "%" is used to encode/display position of focus before change
+    compose_actions.quote_and_reply();
+    assert.equal(get_compose_content_with_caret(), "[Quoting…]\n%hello there");
+    success_function({
+        raw_content: "Testing caret position",
+    });
+    assert.equal(
+        get_compose_content_with_caret(),
+        "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n```quote\nTesting caret position\n```\nhello there%",
+    );
 });
