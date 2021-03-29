@@ -1,5 +1,6 @@
 import * as channel from "./channel";
 import {FoldDict} from "./fold_dict";
+import * as message_list from "./message_list";
 import * as message_util from "./message_util";
 import * as stream_data from "./stream_data";
 import * as unread from "./unread";
@@ -7,20 +8,46 @@ import * as unread from "./unread";
 const stream_dict = new Map(); // stream_id -> PerStreamHistory object
 const fetched_stream_ids = new Set();
 
+export function all_topics_in_cache(sub) {
+    // Checks whether this browser's cache of contiguous messages
+    // (used to locally render narrows) in message_list.all has all
+    // messages from a given stream, and thus all historical topics
+    // for it.  Because message_list.all is a range, we just need to
+    // compare it to the range of history on the stream.
+
+    // If the cache isn't initialized, it's a clear false.
+    if (message_list.all === undefined || message_list.all.empty()) {
+        return false;
+    }
+
+    // If the cache doesn't have the latest messages, we can't be sure
+    // we have all topics.
+    if (!message_list.all.data.fetch_status.has_found_newest()) {
+        return false;
+    }
+
+    if (sub.first_message_id === null) {
+        // If the stream has no message history, we have it all
+        // vacuously.  This should be a very rare condition, since
+        // stream creation sends a message.
+        return true;
+    }
+
+    // Now, we can just compare the first cached message to the first
+    // message ID in the stream; if it's older, we're good, otherwise,
+    // we might be missing the oldest topics in this stream in our
+    // cache.
+    const first_cached_message = message_list.all.first();
+    return first_cached_message.id <= sub.first_message_id;
+}
+
 export function is_complete_for_stream_id(stream_id) {
     if (fetched_stream_ids.has(stream_id)) {
         return true;
     }
 
-    /*
-        TODO: We should possibly move all_topics_in_cache
-        from stream_data to here, since the function
-        mostly looks at message_list.all and has little
-        to do with typical stream_data stuff.  (We just
-        need sub.first_message_id.)
-    */
     const sub = stream_data.get_sub_by_id(stream_id);
-    const in_cache = stream_data.all_topics_in_cache(sub);
+    const in_cache = all_topics_in_cache(sub);
 
     if (in_cache) {
         /*
