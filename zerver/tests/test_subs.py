@@ -1087,6 +1087,7 @@ class StreamAdminTest(ZulipTestCase):
 
         policies = [
             Stream.STREAM_POST_POLICY_ADMINS,
+            Stream.STREAM_POST_POLICY_MODERATORS,
             Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS,
         ]
 
@@ -3720,6 +3721,23 @@ class SubscriptionAPITest(ZulipTestCase):
 
         json = result.json()
         self.assertEqual(json["subscribed"], {new_member.email: ["stream1"]})
+        self.assertEqual(json["already_subscribed"], {})
+
+    def test_subscribe_to_stream_post_policy_moderators_stream(self) -> None:
+        """
+        Members can subscribe to streams where only admins and moderators can post
+        """
+        member = self.example_user("AARON")
+        stream = self.make_stream("stream1")
+        # Make sure that we are testing this with full member which is just below the moderator
+        # in the role hierarchy.
+        self.assertFalse(member.is_provisional_member)
+        do_change_stream_post_policy(stream, Stream.STREAM_POST_POLICY_MODERATORS)
+        result = self.common_subscribe_to_streams(member, ["stream1"])
+        self.assert_json_success(result)
+
+        json = result.json()
+        self.assertEqual(json["subscribed"], {member.email: ["stream1"]})
         self.assertEqual(json["already_subscribed"], {})
 
     def test_guest_user_subscribe(self) -> None:

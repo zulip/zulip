@@ -195,6 +195,13 @@ def check_stream_access_based_on_stream_post_policy(sender: UserProfile, stream:
         pass
     elif stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS:
         raise JsonableError(_("Only organization administrators can send to this stream."))
+    elif (
+        stream.stream_post_policy == Stream.STREAM_POST_POLICY_MODERATORS
+        and not sender.is_moderator
+    ):
+        raise JsonableError(
+            _("Only organization administrators and moderators can send to this stream.")
+        )
     elif stream.stream_post_policy != Stream.STREAM_POST_POLICY_EVERYONE and sender.is_guest:
         raise JsonableError(_("Guests cannot send to this stream."))
     elif (

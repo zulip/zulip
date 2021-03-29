@@ -252,6 +252,88 @@ class MessagePOSTTest(ZulipTestCase):
             guest_profile, stream_name, "Only organization administrators can send to this stream."
         )
 
+    def test_sending_message_as_stream_post_policy_moderators(self) -> None:
+        """
+        Sending messages to streams which only the moderators can post to.
+        """
+        admin_profile = self.example_user("iago")
+        self.login_user(admin_profile)
+
+        stream_name = "Verona"
+        stream = get_stream(stream_name, admin_profile.realm)
+        do_change_stream_post_policy(stream, Stream.STREAM_POST_POLICY_MODERATORS)
+
+        # Admins and their owned bots can send to STREAM_POST_POLICY_MODERATORS streams
+        self._send_and_verify_message(admin_profile, stream_name)
+        admin_owned_bot = self.create_test_bot(
+            short_name="whatever1",
+            full_name="whatever1",
+            user_profile=admin_profile,
+        )
+        self._send_and_verify_message(admin_owned_bot, stream_name)
+
+        moderator_profile = self.example_user("shiva")
+        self.login_user(moderator_profile)
+
+        # Moderators and their owned bots can send to STREAM_POST_POLICY_MODERATORS streams
+        self._send_and_verify_message(moderator_profile, stream_name)
+        moderator_owned_bot = self.create_test_bot(
+            short_name="whatever2",
+            full_name="whatever2",
+            user_profile=moderator_profile,
+        )
+        self._send_and_verify_message(moderator_owned_bot, stream_name)
+
+        non_admin_profile = self.example_user("hamlet")
+        self.login_user(non_admin_profile)
+
+        # Members and their owned bots cannot send to STREAM_POST_POLICY_MODERATORS streams
+        self._send_and_verify_message(
+            non_admin_profile,
+            stream_name,
+            "Only organization administrators and moderators can send to this stream.",
+        )
+        non_admin_owned_bot = self.create_test_bot(
+            short_name="whatever3",
+            full_name="whatever3",
+            user_profile=non_admin_profile,
+        )
+        self._send_and_verify_message(
+            non_admin_owned_bot,
+            stream_name,
+            "Only organization administrators and moderators can send to this stream.",
+        )
+
+        # Bots without owner (except cross realm bot) cannot send to STREAM_POST_POLICY_MODERATORS streams.
+        bot_without_owner = do_create_user(
+            email="free-bot@zulip.testserver",
+            password="",
+            realm=non_admin_profile.realm,
+            full_name="freebot",
+            bot_type=UserProfile.DEFAULT_BOT,
+            acting_user=None,
+        )
+        self._send_and_verify_message(
+            bot_without_owner,
+            stream_name,
+            "Only organization administrators and moderators can send to this stream.",
+        )
+
+        # Cross realm bots should be allowed
+        notification_bot = get_system_bot("notification-bot@zulip.com")
+        internal_send_stream_message(
+            notification_bot, stream, "Test topic", "Test message by notification bot"
+        )
+        self.assertEqual(self.get_last_message().content, "Test message by notification bot")
+
+        guest_profile = self.example_user("polonius")
+        # Guests cannot send to non-STREAM_POST_POLICY_EVERYONE streams
+        self._send_and_verify_message(
+            guest_profile,
+            stream_name,
+            "Only organization administrators and moderators can send to this stream.",
+        )
+
     def test_sending_message_as_stream_post_policy_restrict_new_members(self) -> None:
         """
         Sending messages to streams which new members cannot post to.
