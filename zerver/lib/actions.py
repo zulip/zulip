@@ -694,36 +694,37 @@ def do_create_user(
 
 
 def do_activate_user(user_profile: UserProfile, *, acting_user: Optional[UserProfile]) -> None:
-    user_profile.is_active = True
-    user_profile.is_mirror_dummy = False
-    user_profile.set_unusable_password()
-    user_profile.date_joined = timezone_now()
-    user_profile.tos_version = settings.TOS_VERSION
-    user_profile.save(
-        update_fields=["is_active", "date_joined", "password", "is_mirror_dummy", "tos_version"]
-    )
+    with transaction.atomic():
+        user_profile.is_active = True
+        user_profile.is_mirror_dummy = False
+        user_profile.set_unusable_password()
+        user_profile.date_joined = timezone_now()
+        user_profile.tos_version = settings.TOS_VERSION
+        user_profile.save(
+            update_fields=["is_active", "date_joined", "password", "is_mirror_dummy", "tos_version"]
+        )
 
-    event_time = user_profile.date_joined
-    RealmAuditLog.objects.create(
-        realm=user_profile.realm,
-        modified_user=user_profile,
-        acting_user=acting_user,
-        event_type=RealmAuditLog.USER_ACTIVATED,
-        event_time=event_time,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
-            }
-        ).decode(),
-    )
-    do_increment_logging_stat(
-        user_profile.realm,
-        COUNT_STATS["active_users_log:is_bot:day"],
-        user_profile.is_bot,
-        event_time,
-    )
-    if settings.BILLING_ENABLED:
-        update_license_ledger_if_needed(user_profile.realm, event_time)
+        event_time = user_profile.date_joined
+        RealmAuditLog.objects.create(
+            realm=user_profile.realm,
+            modified_user=user_profile,
+            acting_user=acting_user,
+            event_type=RealmAuditLog.USER_ACTIVATED,
+            event_time=event_time,
+            extra_data=orjson.dumps(
+                {
+                    RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
+                }
+            ).decode(),
+        )
+        do_increment_logging_stat(
+            user_profile.realm,
+            COUNT_STATS["active_users_log:is_bot:day"],
+            user_profile.is_bot,
+            event_time,
+        )
+        if settings.BILLING_ENABLED:
+            update_license_ledger_if_needed(user_profile.realm, event_time)
 
     notify_created_user(user_profile)
 
@@ -731,30 +732,31 @@ def do_activate_user(user_profile: UserProfile, *, acting_user: Optional[UserPro
 def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserProfile]) -> None:
     # Unlike do_activate_user, this is meant for re-activating existing users,
     # so it doesn't reset their password, etc.
-    user_profile.is_active = True
-    user_profile.save(update_fields=["is_active"])
+    with transaction.atomic():
+        user_profile.is_active = True
+        user_profile.save(update_fields=["is_active"])
 
-    event_time = timezone_now()
-    RealmAuditLog.objects.create(
-        realm=user_profile.realm,
-        modified_user=user_profile,
-        acting_user=acting_user,
-        event_type=RealmAuditLog.USER_REACTIVATED,
-        event_time=event_time,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
-            }
-        ).decode(),
-    )
-    do_increment_logging_stat(
-        user_profile.realm,
-        COUNT_STATS["active_users_log:is_bot:day"],
-        user_profile.is_bot,
-        event_time,
-    )
-    if settings.BILLING_ENABLED:
-        update_license_ledger_if_needed(user_profile.realm, event_time)
+        event_time = timezone_now()
+        RealmAuditLog.objects.create(
+            realm=user_profile.realm,
+            modified_user=user_profile,
+            acting_user=acting_user,
+            event_type=RealmAuditLog.USER_REACTIVATED,
+            event_time=event_time,
+            extra_data=orjson.dumps(
+                {
+                    RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
+                }
+            ).decode(),
+        )
+        do_increment_logging_stat(
+            user_profile.realm,
+            COUNT_STATS["active_users_log:is_bot:day"],
+            user_profile.is_bot,
+            event_time,
+        )
+        if settings.BILLING_ENABLED:
+            update_license_ledger_if_needed(user_profile.realm, event_time)
 
     notify_created_user(user_profile)
 
@@ -1136,34 +1138,36 @@ def do_deactivate_user(
         # Ideally, we need to also ensure their zephyr mirroring bot
         # isn't running, but that's a separate issue.
         user_profile.is_mirror_dummy = True
-    user_profile.is_active = False
-    user_profile.save(update_fields=["is_active", "is_mirror_dummy"])
 
-    delete_user_sessions(user_profile)
-    clear_scheduled_emails([user_profile.id])
+    with transaction.atomic():
+        user_profile.is_active = False
+        user_profile.save(update_fields=["is_active", "is_mirror_dummy"])
 
-    event_time = timezone_now()
-    RealmAuditLog.objects.create(
-        realm=user_profile.realm,
-        modified_user=user_profile,
-        acting_user=acting_user,
-        event_type=RealmAuditLog.USER_DEACTIVATED,
-        event_time=event_time,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
-            }
-        ).decode(),
-    )
-    do_increment_logging_stat(
-        user_profile.realm,
-        COUNT_STATS["active_users_log:is_bot:day"],
-        user_profile.is_bot,
-        event_time,
-        increment=-1,
-    )
-    if settings.BILLING_ENABLED:
-        update_license_ledger_if_needed(user_profile.realm, event_time)
+        delete_user_sessions(user_profile)
+        clear_scheduled_emails([user_profile.id])
+
+        event_time = timezone_now()
+        RealmAuditLog.objects.create(
+            realm=user_profile.realm,
+            modified_user=user_profile,
+            acting_user=acting_user,
+            event_type=RealmAuditLog.USER_DEACTIVATED,
+            event_time=event_time,
+            extra_data=orjson.dumps(
+                {
+                    RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
+                }
+            ).decode(),
+        )
+        do_increment_logging_stat(
+            user_profile.realm,
+            COUNT_STATS["active_users_log:is_bot:day"],
+            user_profile.is_bot,
+            event_time,
+            increment=-1,
+        )
+        if settings.BILLING_ENABLED:
+            update_license_ledger_if_needed(user_profile.realm, event_time)
 
     event = dict(
         type="realm_user",

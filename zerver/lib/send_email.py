@@ -308,7 +308,7 @@ def clear_scheduled_invitation_emails(email: str) -> None:
     items.delete()
 
 
-@transaction.atomic()
+@transaction.atomic(savepoint=False)
 def clear_scheduled_emails(user_ids: List[int], email_type: Optional[int] = None) -> None:
     # We need to obtain a FOR UPDATE lock on the selected rows to keep a concurrent
     # execution of this function (or something else) from deleting them before we access
