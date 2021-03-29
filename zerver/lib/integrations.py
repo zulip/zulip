@@ -745,7 +745,11 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
     "mention": [ScreenshotConfig("webfeeds.json")],
     "nagios": [BaseScreenshotConfig("service_notify.json")],
     "netlify": [ScreenshotConfig("deploy_building.json")],
-    "newrelic": [ScreenshotConfig("alert.txt", "002.png")],
+    "newrelic": [
+        ScreenshotConfig("incident_opened.json", "001.png"),
+        ScreenshotConfig("incident_acknowledged.json", "002.png"),
+        ScreenshotConfig("incident_closed.json", "003.png"),
+    ],
     "opbeat": [ScreenshotConfig("error_reopen.json")],
     "opsgenie": [ScreenshotConfig("addrecipient.json", image_name="000.png")],
     "pagerduty": [ScreenshotConfig("trigger_v2.json")],
