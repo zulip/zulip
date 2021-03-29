@@ -54,14 +54,14 @@ async function run() {
         ]);
 
         // Navigate to message and capture screenshot
-        await page.goto(`http://${host}/#narrow/near/${options.messageId}`);
+        await page.goto(`http://${host}/#narrow/id/${options.messageId}`);
         const messageSelector = `#zfilt${CSS.escape(options.messageId)}`;
         await page.waitForSelector(messageSelector);
         // remove unread marker and don't select message
         const marker = `#zfilt${CSS.escape(options.messageId)} .unread_marker`;
         await page.evaluate((sel) => $(sel).remove(), marker);
         const messageBox = await page.$(messageSelector);
-        await page.keyboard.press("KeyK");
+        await page.evaluate((msg) => $(msg).removeClass("selected_message"), messageSelector);
         const messageGroup = (await messageBox.$x(".."))[0];
         // Compute screenshot area, with some padding around the message group
         const clip = {...(await messageGroup.boundingBox())};
