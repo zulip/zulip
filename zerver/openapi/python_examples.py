@@ -308,15 +308,18 @@ def get_subscription_status(client: Client) -> None:
     )
 
 
-@openapi_test_function("/realm/filters:get")
-def get_realm_filters(client: Client) -> None:
+@openapi_test_function("/realm/linkifiers:get")
+def get_realm_linkifiers(client: Client) -> None:
 
     # {code_example|start}
     # Fetch all the filters in this organization
-    result = client.get_realm_filters()
+    result = client.call_endpoint(
+        url="/realm/linkifiers",
+        method="GET",
+    )
     # {code_example|end}
 
-    validate_against_openapi_schema(result, "/realm/filters", "get", "200")
+    validate_against_openapi_schema(result, "/realm/linkifiers", "get", "200")
 
 
 @openapi_test_function("/realm/profile_fields:get")
@@ -1459,7 +1462,7 @@ def test_queues(client: Client) -> None:
 
 def test_server_organizations(client: Client) -> None:
 
-    get_realm_filters(client)
+    get_realm_linkifiers(client)
     add_realm_filter(client)
     add_realm_playground(client)
     get_server_settings(client)

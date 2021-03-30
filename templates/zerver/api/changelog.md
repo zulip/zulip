@@ -10,6 +10,23 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 54**
+
+* `GET /realm/filters` has been removed and replace with [`GET
+  /realm/linkifiers`](/api/get-linkifiers) which returns the data in a
+  cleaner dictionary format.
+* [`GET /events`](/api/get-events): Introduced new event type
+  `realm_linkifiers`.  The previous `realm_filters` event type is
+  still supported for backwards compatibility, but will be removed in
+  a future release.
+* [`POST /register`](/api/register-queue): The response now supports a
+  `realm_linkifiers` event type, containing the same data as the
+  legacy `realm_filters` key, with a more extensible object
+  format. The previous `realm_filters` event type is still supported
+  for backwards compatibility, but will be removed in a future
+  release. The legacy `realm_filters` key is deprecated but remains
+  available for backwards compatibility.
+
 **Feature level 53**
 
 * [`POST /register`](/api/register-queue): Added `max_topic_length`

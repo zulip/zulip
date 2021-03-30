@@ -128,6 +128,7 @@ from zerver.lib.event_schema import (
     check_realm_emoji_update,
     check_realm_export,
     check_realm_filters,
+    check_realm_linkifiers,
     check_realm_playgrounds,
     check_realm_update,
     check_realm_update_dict,
@@ -1349,13 +1350,18 @@ class NormalActionsTest(BaseAction):
         regex = "#(?P<id>[123])"
         url = "https://realm.com/my_realm_filter/%(id)s"
 
-        events = self.verify_action(lambda: do_add_linkifier(self.user_profile.realm, regex, url))
-        check_realm_filters("events[0]", events[0])
+        events = self.verify_action(
+            lambda: do_add_linkifier(self.user_profile.realm, regex, url), num_events=2
+        )
+        check_realm_linkifiers("events[0]", events[0])
+        check_realm_filters("events[1]", events[1])
 
         events = self.verify_action(
-            lambda: do_remove_linkifier(self.user_profile.realm, "#(?P<id>[123])")
+            lambda: do_remove_linkifier(self.user_profile.realm, "#(?P<id>[123])"),
+            num_events=2,
         )
-        check_realm_filters("events[0]", events[0])
+        check_realm_linkifiers("events[0]", events[0])
+        check_realm_filters("events[1]", events[1])
 
     def test_realm_domain_events(self) -> None:
         events = self.verify_action(

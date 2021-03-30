@@ -262,8 +262,9 @@ v1_api_and_json_patterns = [
     rest_path("realm/icon", POST=upload_icon, DELETE=delete_icon_backend, GET=get_icon_backend),
     # realm/logo -> zerver.views.realm_logo
     rest_path("realm/logo", POST=upload_logo, DELETE=delete_logo_backend, GET=get_logo_backend),
-    # realm/filters -> zerver.views.realm_linkifiers
-    rest_path("realm/filters", GET=list_linkifiers, POST=create_linkifier),
+    # realm/filters and realm/linkifiers -> zerver.views.realm_linkifiers
+    rest_path("realm/linkifiers", GET=list_linkifiers),
+    rest_path("realm/filters", POST=create_linkifier),
     rest_path("realm/filters/<int:filter_id>", DELETE=delete_linkifier),
     # realm/playgrounds -> zerver.views.realm_playgrounds
     rest_path("realm/playgrounds", POST=add_realm_playground),

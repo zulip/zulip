@@ -62,6 +62,7 @@ from zerver.models import (
     get_default_stream_groups,
     get_realm_domains,
     get_realm_playgrounds,
+    linkifiers_for_realm,
     realm_filters_for_realm,
 )
 from zerver.tornado.django_api import get_user_events, request_event_queue
@@ -263,6 +264,10 @@ def fetch_initial_state_data(
     if want("realm_emoji"):
         state["realm_emoji"] = realm.get_emoji()
 
+    if want("realm_linkifiers"):
+        state["realm_linkifiers"] = linkifiers_for_realm(realm.id)
+
+    # Backwards compatibility code.
     if want("realm_filters"):
         state["realm_filters"] = realm_filters_for_realm(realm.id)
 
@@ -993,6 +998,8 @@ def apply_event(
         state["muted_users"] = event["muted_users"]
     elif event["type"] == "realm_filters":
         state["realm_filters"] = event["realm_filters"]
+    elif event["type"] == "realm_linkifiers":
+        state["realm_linkifiers"] = event["realm_linkifiers"]
     elif event["type"] == "realm_playgrounds":
         state["realm_playgrounds"] = event["realm_playgrounds"]
     elif event["type"] == "update_display_settings":

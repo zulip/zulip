@@ -2377,6 +2377,69 @@ paths:
 
                                 Processing this event is important to doing Markdown local echo
                                 correctly.
+
+                                **Changes**: New in Zulip 4.0 (feature level 54), replacing the
+                                previous `realm_filters` event type, which is still sent for
+                                backwards compatibility reasons.
+
+                                Clients should migrate to requesting and processing the
+                                `realm_linkifiers` event type when possible, since we plan to remove
+                                the legacy `realm_filters` logic entirely in a future release.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_linkifiers
+                                realm_linkifiers:
+                                  type: array
+                                  description: |
+                                    Array of dictionaries where each dictionary contains details about
+                                    a single realm linkifier.
+                                  items:
+                                    type: object
+                                    additionalProperties: false
+                                    properties:
+                                      pattern:
+                                        type: string
+                                        description: |
+                                          The string regex pattern which represents the pattern that
+                                          should be linkified by this linkifier.
+                                      url_format:
+                                        type: string
+                                        description: |
+                                          The URL format string to be used for linkifying matches.
+
+                                      id:
+                                        type: integer
+                                        description: |
+                                          The ID of the linkifier.
+                              example:
+                                {
+                                  "type": "realm_linkifiers",
+                                  "realm_linkifiers":
+                                    [
+                                      {
+                                        "pattern": "#(?P<id>[123])",
+                                        "url_format": "https://realm.com/my_realm_filter/%(id)s",
+                                        "id": 1,
+                                      },
+                                    ],
+                                  "id": 0,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              deprecated: true
+                              description: |
+                                Legacy event type. Sent to all users in a Zulip organization
+                                when the set of configured [linkifiers](/help/add-a-custom-linkifier)
+                                for the organization has changed.
+
+                                **Changes**: Deprecated in Zulip 4.0 (feature level 54), replaced by
+                                the `realm_linkifiers` event type, which has a clearer name and format,
+                                instead.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -6485,7 +6548,7 @@ paths:
                         "msg": "Cannot deactivate the only organization owner",
                         "result": "error",
                       }
-  /realm/filters:
+  /realm/linkifiers:
     get:
       operationId: get_linkifiers
       tags: ["server_and_organizations"]
@@ -6495,7 +6558,11 @@ paths:
         expression patterns that are automatically linkified when they appear
         in messages and topics.
 
-        `GET {{ api_url }}/v1/realm/filters`
+        `GET {{ api_url }}/v1/realm/linkifiers`
+
+        **Changes**: New in Zulip 4.0 (feature level 54). On older versions,
+        a similar `GET /realm/filters` endpoint was available with each entry in
+        a `[pattern, url_format, id]` tuple format.
       responses:
         "200":
           description: Success.
@@ -6508,35 +6575,41 @@ paths:
                     properties:
                       result: {}
                       msg: {}
-                      filters:
+                      linkifiers:
                         type: array
-                        items:
-                          type: array
-                          items:
-                            oneOf:
-                              - type: string
-                              - type: integer
                         description: |
-                          An array of tuples, each representing one of
-                          the linkifiers set up in the
-                          organization. Each of these tuples contain the
-                          pattern, the formatted URL and the filter's
-                          ID, in that order. See the [Create
-                          linkifiers](/api/add-linkifier) article for
-                          details on what each field means.
+                          An array of objects, where each object describes a linkifier.
+                        items:
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            pattern:
+                              type: string
+                              description: |
+                                The string regex pattern which represents the pattern that
+                                should be linkified by this linkifier.
+                            url_format:
+                              type: string
+                              description: |
+                                The URL format string to be used for linkifying matches.
+                            id:
+                              type: integer
+                              description: |
+                                The ID of the linkifier.
                     example:
                       {
                         "msg": "",
-                        "filters":
+                        "linkifiers":
                           [
-                            [
-                              "#(?P<id>[0-9]+)",
-                              "https://github.com/zulip/zulip/issues/%(id)s",
-                              1,
-                            ],
+                            {
+                              "pattern": "#(?P<id>[0-9]+)",
+                              "url_format": "https://github.com/zulip/zulip/issues/%(id)s",
+                              "id": 1,
+                            },
                           ],
                         "result": "success",
                       }
+  /realm/filters:
     post:
       operationId: add_linkifier
       tags: ["server_and_organizations"]
@@ -7009,8 +7082,37 @@ paths:
                           - type: array
                             items:
                               type: integer
+                      realm_linkifiers:
+                        type: array
+                        description: |
+                          Present if `realm_linkifiers` is present in `fetch_event_types`.
+
+                          Array of objects where each object describes a single
+                          [linkifier](/help/add-a-custom-linkifier).
+
+                          **Changes**: New in Zulip 4.0 (feature level 54). Clients can
+                          access these data on older server versions via the previous
+                          `realm_filters` key.
+                        items:
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            pattern:
+                              type: string
+                              description: |
+                                The string regex pattern which represents the pattern that
+                                should be linkified on matching.
+                            url_format:
+                              type: string
+                              description: |
+                                The URL with which the pattern matching string should be linkified.
+                            id:
+                              type: integer
+                              description: |
+                                The ID of the linkifier.
                       realm_filters:
                         type: array
+                        deprecated: true
                         items:
                           type: array
                           items:
@@ -7018,16 +7120,20 @@ paths:
                               - type: integer
                               - type: string
                         description: |
-                          Present if `realm_filters` is present in `fetch_event_types`.
+                          Legacy property for linkifiers. Present if `realm_filters` is
+                          present in `fetch_event_types`.
 
                           An array of tuples (fixed-length arrays) where each tuple describes
-                          a single realm filter ([linkifier](/help/add-a-custom-linkifier).
+                          a single [linkifier](/help/add-a-custom-linkifier).
                           The first element of the tuple is a string regex pattern which represents
                           the pattern that should be linkified on matching.
 
                           The second element is the URL with which the
                           pattern matching string should be linkified with and the third element
                           is the id of the realm filter.
+
+                          **Changes**: Deprecated in Zulip 4.0 (feature level 54), replaced by
+                          the `realm_linkifiers` key instead.
                       realm_playgrounds:
                         type: array
                         items:

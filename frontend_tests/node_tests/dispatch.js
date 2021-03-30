@@ -516,13 +516,13 @@ run_test("realm_emoji", (override) => {
     }
 });
 
-run_test("linkifier", (override) => {
-    const event = event_fixtures.realm_filters;
-    page_params.realm_filters = [];
+run_test("realm_linkifiers", (override) => {
+    const event = event_fixtures.realm_linkifiers;
+    page_params.realm_linkifiers = [];
     override(settings_linkifiers, "populate_linkifiers", noop);
     override(markdown, "update_linkifier_rules", noop);
     dispatch(event);
-    assert_same(page_params.realm_filters, event.realm_filters);
+    assert_same(page_params.realm_linkifiers, event.realm_linkifiers);
 });
 
 run_test("realm_domains", (override) => {

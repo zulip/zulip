@@ -781,9 +781,26 @@ def check_realm_export(
     assert has_failed_timestamp == (export["failed_timestamp"] is not None)
 
 
-# This type, like other instances of TupleType, is a legacy feature of
-# a very old Zulip API; we plan to replace it with an object as those
-# are more extensible.
+realm_linkifier_type = DictType(
+    required_keys=[
+        ("pattern", str),
+        ("url_format", str),
+        ("id", int),
+    ]
+)
+
+realm_linkifiers_event = event_dict_type(
+    [
+        ("type", Equals("realm_linkifiers")),
+        ("realm_linkifiers", ListType(realm_linkifier_type)),
+    ]
+)
+check_realm_linkifiers = make_checker(realm_linkifiers_event)
+
+
+# This is a legacy event type to ensure backwards compatibility
+# for old clients. Newer clients should handle only the
+# "realm_linkifiers" event above.
 realm_filter_type = TupleType(
     [
         # we should make this an object

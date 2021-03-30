@@ -236,6 +236,7 @@ from zerver.models import (
     get_user_by_id_in_realm_including_cross_realm,
     get_user_profile_by_id,
     is_cross_realm_bot_email,
+    linkifiers_for_realm,
     query_for_ids,
     realm_filters_for_realm,
     validate_attachment_request,
@@ -6593,6 +6594,13 @@ def do_mark_hotspot_as_read(user: UserProfile, hotspot: str) -> None:
 
 
 def notify_linkifiers(realm: Realm) -> None:
+    realm_linkifiers = linkifiers_for_realm(realm.id)
+    event = dict(type="realm_linkifiers", realm_linkifiers=realm_linkifiers)
+    send_event(realm, event, active_user_ids(realm.id))
+
+    # Below is code for backwards compatibility. The now deprecated
+    # "realm_filters" event-type is used by older clients, and uses
+    # tuples.
     realm_filters = realm_filters_for_realm(realm.id)
     event = dict(type="realm_filters", realm_filters=realm_filters)
     send_event(realm, event, active_user_ids(realm.id))

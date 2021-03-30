@@ -10,10 +10,10 @@ class RealmFilterTest(ZulipTestCase):
         self.login("iago")
         realm = get_realm("zulip")
         do_add_linkifier(realm, "#(?P<id>[123])", "https://realm.com/my_realm_filter/%(id)s")
-        result = self.client_get("/json/realm/filters")
+        result = self.client_get("/json/realm/linkifiers")
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
-        self.assertEqual(len(result.json()["filters"]), 1)
+        self.assertEqual(len(result.json()["linkifiers"]), 1)
 
     def test_create(self) -> None:
         self.login("iago")

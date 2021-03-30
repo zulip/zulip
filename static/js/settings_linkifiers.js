@@ -23,21 +23,21 @@ export function maybe_disable_widgets() {
     }
 }
 
-function compare_by_index(a, b, i) {
-    if (a[i] > b[i]) {
+function compare_values(x, y) {
+    if (x > y) {
         return 1;
-    } else if (a[i] === b[i]) {
+    } else if (x === y) {
         return 0;
     }
     return -1;
 }
 
 function sort_pattern(a, b) {
-    return compare_by_index(a, b, 0);
+    return compare_values(a.pattern, b.pattern);
 }
 
 function sort_url(a, b) {
-    return compare_by_index(a, b, 1);
+    return compare_values(a.url_format, b.url_format);
 }
 
 export function populate_linkifiers(linkifiers_data) {
@@ -51,9 +51,9 @@ export function populate_linkifiers(linkifiers_data) {
         modifier(linkifier) {
             return render_admin_linkifier_list({
                 linkifier: {
-                    pattern: linkifier[0],
-                    url_format_string: linkifier[1],
-                    id: linkifier[2],
+                    pattern: linkifier.pattern,
+                    url_format_string: linkifier.url_format,
+                    id: linkifier.id,
                 },
                 can_modify: page_params.is_admin,
             });
@@ -62,7 +62,8 @@ export function populate_linkifiers(linkifiers_data) {
             element: linkifiers_table.closest(".settings-section").find(".search"),
             predicate(item, value) {
                 return (
-                    item[0].toLowerCase().includes(value) || item[1].toLowerCase().includes(value)
+                    item.pattern.toLowerCase().includes(value) ||
+                    item.url_format.toLowerCase().includes(value)
                 );
             },
             onupdate() {
@@ -88,7 +89,7 @@ export function build_page() {
     meta.loaded = true;
 
     // Populate linkifiers table
-    populate_linkifiers(page_params.realm_filters);
+    populate_linkifiers(page_params.realm_linkifiers);
 
     $(".admin_linkifiers_table").on("click", ".delete", function (e) {
         e.preventDefault();

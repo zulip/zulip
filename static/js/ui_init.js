@@ -496,7 +496,7 @@ export function initialize_everything() {
         realm_emoji: emoji_params.realm_emoji,
         emoji_codes: generated_emoji_codes,
     });
-    markdown.initialize(page_params.realm_filters, markdown_config.get_helpers());
+    markdown.initialize(page_params.realm_linkifiers, markdown_config.get_helpers());
     compose.initialize();
     composebox_typeahead.initialize(); // Must happen after compose.initialize()
     search.initialize();

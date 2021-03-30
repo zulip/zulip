@@ -89,7 +89,7 @@ export function contains_backend_only_syntax(content) {
     // then don't render it locally. It is workaround for the fact that
     // javascript regex doesn't support lookbehind.
     const false_linkifier_match = linkifier_list.find((re) => {
-        const pattern = /[^\s"'(,:<]/.source + re[0].source + /(?!\w)/.source;
+        const pattern = /[^\s"'(,:<]/.source + re.pattern.source + /(?!\w)/.source;
         const regex = new RegExp(pattern);
         return regex.test(content);
     });
@@ -225,8 +225,8 @@ export function add_topic_links(message) {
     const links = [];
 
     for (const linkifier of linkifier_list) {
-        const pattern = linkifier[0];
-        const url = linkifier[1];
+        const pattern = linkifier.pattern;
+        const url = linkifier.url_format;
         let match;
         while ((match = pattern.exec(topic)) !== null) {
             let link_url = url;
@@ -451,15 +451,18 @@ export function update_linkifier_rules(linkifiers) {
 
     const marked_rules = [];
 
-    for (const [pattern, url] of linkifiers) {
-        const [regex, final_url] = python_to_js_linkifier(pattern, url);
+    for (const linkifier of linkifiers) {
+        const [regex, final_url] = python_to_js_linkifier(linkifier.pattern, linkifier.url_format);
         if (!regex) {
             // Skip any linkifiers that could not be converted
             continue;
         }
 
         linkifier_map.set(regex, final_url);
-        linkifier_list.push([regex, final_url]);
+        linkifier_list.push({
+            pattern: regex,
+            url_format: final_url,
+        });
         marked_rules.push(regex);
     }
 
