@@ -31,6 +31,7 @@ import * as markdown from "./markdown";
 import * as markdown_config from "./markdown_config";
 import * as message_edit from "./message_edit";
 import * as message_fetch from "./message_fetch";
+import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
 import * as message_view_header from "./message_view_header";
 import * as message_viewport from "./message_viewport";
@@ -97,7 +98,7 @@ function message_hover(message_row) {
         return;
     }
 
-    const message = current_msg_list.get(rows.id(message_row));
+    const message = message_lists.current.get(rows.id(message_row));
     message_unhover();
     current_message_hover = message_row;
 
@@ -266,7 +267,7 @@ export function initialize_kitchen_sink_stuff() {
     });
 
     $(document).on("message_selected.zulip", (event) => {
-        if (current_msg_list !== event.msg_list) {
+        if (message_lists.current !== event.msg_list) {
             return;
         }
         if (event.id === -1) {
@@ -279,7 +280,7 @@ export function initialize_kitchen_sink_stuff() {
 
         if (event.then_scroll) {
             if (row.length === 0) {
-                const row_from_dom = current_msg_list.get_row(event.id);
+                const row_from_dom = message_lists.current.get_row(event.id);
                 const messages = event.msg_list.all_messages();
                 blueslip.debug("message_selected missing selected row", {
                     previously_selected_id: event.previously_selected_id,
@@ -291,7 +292,7 @@ export function initialize_kitchen_sink_stuff() {
                     selected_id_from_idx: messages[event.msg_list.selected_idx()].id,
                     msg_list_sorted: _.isEqual(
                         messages.map((message) => message.id),
-                        current_msg_list
+                        message_lists.current
                             .all_messages()
                             .map((message) => message.id)
                             .sort(),
@@ -300,7 +301,7 @@ export function initialize_kitchen_sink_stuff() {
                 });
             }
             if (event.target_scroll_offset !== undefined) {
-                current_msg_list.view.set_message_offset(event.target_scroll_offset);
+                message_lists.current.view.set_message_offset(event.target_scroll_offset);
             } else {
                 // Scroll to place the message within the current view;
                 // but if this is the initial placement of the pointer,
@@ -316,7 +317,7 @@ export function initialize_kitchen_sink_stuff() {
     $("#main_div").on("mouseenter", ".message_time", (e) => {
         const time_elem = $(e.target);
         const row = time_elem.closest(".message_row");
-        const message = current_msg_list.get(rows.id(row));
+        const message = message_lists.current.get(rows.id(row));
         timerender.set_full_datetime(message, time_elem);
     });
 
@@ -475,6 +476,7 @@ export function initialize_everything() {
 
     const user_status_params = pop_fields("user_status");
 
+    message_lists.initialize();
     alert_popup.initialize();
     alert_words.initialize(alert_words_params);
     emojisets.initialize();

@@ -8,6 +8,7 @@ import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as favicon from "./favicon";
 import {i18n} from "./i18n";
+import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as muting from "./muting";
 import * as narrow from "./narrow";
@@ -519,7 +520,7 @@ function get_message_header(message) {
 }
 
 export function get_local_notify_mix_reason(message) {
-    const row = current_msg_list.get_row(message.id);
+    const row = message_lists.current.get_row(message.id);
     if (row.length > 0) {
         // If our message is in the current message list, we do
         // not have a mix, so we are happy.
@@ -605,7 +606,7 @@ export function notify_local_mixes(messages, need_user_to_scroll) {
 }
 
 // for callback when we have to check with the server if a message should be in
-// the current_msg_list (!can_apply_locally; a.k.a. "a search").
+// the message_lists.current (!can_apply_locally; a.k.a. "a search").
 export function notify_messages_outside_current_search(messages) {
     for (const message of messages) {
         if (!people.is_current_user(message.sender_email)) {
@@ -654,7 +655,7 @@ export function register_click_handlers() {
     });
     $("#out-of-view-notification").on("click", ".compose_notification_scroll_to_message", (e) => {
         const message_id = $(e.currentTarget).data("message-id");
-        current_msg_list.select_id(message_id);
+        message_lists.current.select_id(message_id);
         navigate.scroll_to_selected();
         e.stopPropagation();
         e.preventDefault();

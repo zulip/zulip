@@ -30,6 +30,7 @@ mock_esm("../../static/js/ui_report", {
 
 const channel = mock_esm("../../static/js/channel");
 const message_helper = mock_esm("../../static/js/message_helper");
+const message_lists = mock_esm("../../static/js/message_lists");
 const message_store = mock_esm("../../static/js/message_store");
 const message_util = mock_esm("../../static/js/message_util");
 const pm_list = mock_esm("../../static/js/pm_list");
@@ -80,10 +81,10 @@ function make_all_list() {
 }
 
 function reset_lists() {
-    set_global("home_msg_list", make_home_msg_list());
-    set_global("current_msg_list", home_msg_list);
+    message_lists.home = make_home_msg_list();
+    message_lists.current = message_lists.home;
     message_list.__Rewire__("all", make_all_list());
-    stub_message_view(home_msg_list);
+    stub_message_view(message_lists.home);
     stub_message_view(message_list.all);
 }
 
@@ -313,7 +314,7 @@ function simulate_narrow() {
         table_name: "zfilt",
         filter,
     });
-    set_global("current_msg_list", msg_list);
+    message_lists.current = msg_list;
 
     return msg_list;
 }
@@ -424,7 +425,7 @@ run_test("loading_newer", () => {
 
     (function test_home() {
         reset_lists();
-        const msg_list = home_msg_list;
+        const msg_list = message_lists.home;
 
         const data = [
             {

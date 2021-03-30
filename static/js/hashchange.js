@@ -8,6 +8,7 @@ import * as floating_recipient_bar from "./floating_recipient_bar";
 import * as hash_util from "./hash_util";
 import * as info_overlay from "./info_overlay";
 import * as invite from "./invite";
+import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as narrow from "./narrow";
 import * as navigate from "./navigate";
@@ -126,7 +127,7 @@ function do_hashchange_normal(from_reload) {
             if (from_reload) {
                 blueslip.debug("We are narrowing as part of a reload.");
                 if (page_params.initial_narrow_pointer !== undefined) {
-                    home_msg_list.pre_narrow_offset = page_params.initial_offset;
+                    message_lists.home.pre_narrow_offset = page_params.initial_offset;
                     narrow_opts.then_select_id = page_params.initial_narrow_pointer;
                     narrow_opts.then_select_offset = page_params.initial_narrow_offset;
                 }

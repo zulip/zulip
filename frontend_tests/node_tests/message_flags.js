@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 const channel = mock_esm("../../static/js/channel");
@@ -20,10 +20,6 @@ run_test("starred", (override) => {
     const message = {
         id: 50,
     };
-    set_global("current_msg_list", {
-        all_messages: () => [message],
-        is_search: () => false,
-    });
     let ui_updated;
 
     ui.update_starred_view = () => {

@@ -18,6 +18,7 @@ import * as message_edit from "./message_edit";
 import * as message_events from "./message_events";
 import * as message_flags from "./message_flags";
 import * as message_list from "./message_list";
+import * as message_lists from "./message_lists";
 import * as muting_ui from "./muting_ui";
 import * as narrow_state from "./narrow_state";
 import * as night_mode from "./night_mode";
@@ -426,7 +427,7 @@ export function dispatch_normal_event(event) {
                         settings_streams.update_default_streams_table();
                         stream_data.remove_default_stream(stream.stream_id);
                         if (is_narrowed_to_stream) {
-                            current_msg_list.update_trailing_bookend();
+                            message_lists.current.update_trailing_bookend();
                         }
                         if (page_params.realm_notifications_stream_id === stream.stream_id) {
                             page_params.realm_notifications_stream_id = -1;
@@ -560,8 +561,8 @@ export function dispatch_normal_event(event) {
             }
             if (event.setting_name === "twenty_four_hour_time") {
                 // Rerender the whole message list UI
-                home_msg_list.rerender();
-                if (current_msg_list === message_list.narrowed) {
+                message_lists.home.rerender();
+                if (message_lists.current === message_list.narrowed) {
                     message_list.narrowed.rerender();
                 }
             }
@@ -613,8 +614,8 @@ export function dispatch_normal_event(event) {
                 settings_display.report_emojiset_change();
 
                 // Rerender the whole message list UI
-                home_msg_list.rerender();
-                if (current_msg_list === message_list.narrowed) {
+                message_lists.home.rerender();
+                if (message_lists.current === message_list.narrowed) {
                     message_list.narrowed.rerender();
                 }
             }

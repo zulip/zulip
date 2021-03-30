@@ -21,6 +21,13 @@ const message_list = mock_esm("../../static/js/message_list", {
         message_list.narrowed = value;
     },
 });
+const message_lists = mock_esm("../../static/js/message_lists", {
+    home: {},
+    current: {},
+    set_current(msg_list) {
+        message_lists.current = msg_list;
+    },
+});
 const message_scroll = mock_esm("../../static/js/message_scroll");
 const message_view_header = mock_esm("../../static/js/message_view_header");
 const notifications = mock_esm("../../static/js/notifications");
@@ -34,8 +41,6 @@ mock_esm("../../static/js/recent_topics", {
     hide: () => {},
     is_visible: () => {},
 });
-set_global("current_msg_list", {});
-set_global("home_msg_list", {});
 
 //
 // We have strange hacks in narrow.activate to sleep 0
@@ -151,8 +156,8 @@ run_test("basics", () => {
         offset: () => ({top: 25}),
     };
 
-    current_msg_list.selected_id = () => -1;
-    current_msg_list.get_row = () => row;
+    message_lists.current.selected_id = () => -1;
+    message_lists.current.get_row = () => row;
 
     message_list.all = {
         all_messages: () => messages,
@@ -206,8 +211,8 @@ run_test("basics", () => {
         [message_view_header, "initialize"],
     ]);
 
-    current_msg_list.selected_id = () => -1;
-    current_msg_list.get_row = () => row;
+    message_lists.current.selected_id = () => -1;
+    message_lists.current.get_row = () => row;
     util.sorted_ids = () => [];
 
     narrow.activate([{operator: "is", operand: "private"}], {

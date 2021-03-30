@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
@@ -27,13 +27,15 @@ mock_esm("../../static/js/message_list", {
         },
     },
 });
+const message_lists = mock_esm("../../static/js/message_lists", {
+    current: {},
+});
 mock_esm("../../static/js/recent_topics", {
     complete_rerender: () => {},
 });
 mock_esm("../../static/js/settings_notifications", {
     update_page: () => {},
 });
-set_global("current_msg_list", {});
 
 mock_esm("../../static/js/overlays", {streams_open: () => true});
 
@@ -280,7 +282,7 @@ test("marked_subscribed (normal)", (override) => {
     override(stream_list, "add_sidebar_row", stream_list_stub.f);
     override(message_util, "do_unread_count_updates", message_util_stub.f);
     override(message_view_header, "render_title_area", message_view_header_stub.f);
-    override(current_msg_list, "update_trailing_bookend", () => {
+    override(message_lists.current, "update_trailing_bookend", () => {
         list_updated = true;
     });
 
@@ -384,7 +386,7 @@ test("mark_unsubscribed (render_title_area)", (override) => {
     override(message_view_header, "render_title_area", message_view_header_stub.f);
     override(stream_data, "unsubscribe_myself", noop);
     override(subs, "update_settings_for_unsubscribed", noop);
-    override(current_msg_list, "update_trailing_bookend", noop);
+    override(message_lists.current, "update_trailing_bookend", noop);
     override(stream_list, "remove_sidebar_row", noop);
 
     stream_events.mark_unsubscribed(sub);

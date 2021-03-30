@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
@@ -11,11 +11,12 @@ mock_cjs("jquery", $);
 const condense = mock_esm("../../static/js/condense");
 const message_edit = mock_esm("../../static/js/message_edit");
 const message_list = mock_esm("../../static/js/message_list");
+const message_lists = mock_esm("../../static/js/message_lists");
 const notifications = mock_esm("../../static/js/notifications");
 const pm_list = mock_esm("../../static/js/pm_list");
 const stream_list = mock_esm("../../static/js/stream_list");
 const unread_ui = mock_esm("../../static/js/unread_ui");
-set_global("current_msg_list", {});
+message_lists.current = {};
 
 const people = zrequire("people");
 const message_events = zrequire("message_events");
@@ -90,15 +91,15 @@ run_test("update_messages", () => {
         },
     ];
 
-    current_msg_list.get_row = (message_id) => {
+    message_lists.current.get_row = (message_id) => {
         assert.equal(message_id, 111);
         return ["row-stub"];
     };
-    current_msg_list.view = {};
+    message_lists.current.view = {};
 
     let rendered_mgs;
 
-    current_msg_list.view.rerender_messages = (msgs_to_rerender, message_content_edited) => {
+    message_lists.current.view.rerender_messages = (msgs_to_rerender, message_content_edited) => {
         rendered_mgs = msgs_to_rerender;
         assert.equal(message_content_edited, true);
     };

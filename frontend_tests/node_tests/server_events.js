@@ -21,17 +21,18 @@ set_global("addEventListener", noop);
 
 mock_cjs("jquery", $);
 const channel = mock_esm("../../static/js/channel");
+const message_lists = mock_esm("../../static/js/message_lists");
 mock_esm("../../static/js/reload_state", {
     is_in_progress() {
         return false;
     },
 });
-set_global("home_msg_list", {
+message_lists.home = {
     select_id: noop,
     selected_id() {
         return 1;
     },
-});
+};
 page_params.test_suite = false;
 
 // we also directly write to pointer

@@ -39,9 +39,9 @@ mock_esm("../../static/js/common", {
 mock_esm("../../static/js/unread_ops", {
     notify_server_message_read: noop,
 });
-set_global("current_msg_list", {
-    can_mark_messages_read() {
-        return true;
+mock_esm("../../static/js/message_lists", {
+    current: {
+        can_mark_messages_read: () => true,
     },
 });
 
@@ -51,6 +51,7 @@ const compose_ui = zrequire("compose_ui");
 const compose = zrequire("compose");
 const compose_state = zrequire("compose_state");
 const compose_actions = zrequire("compose_actions");
+const message_lists = zrequire("message_lists");
 const stream_data = zrequire("stream_data");
 
 const start = compose_actions.start;
@@ -231,7 +232,7 @@ test("respond_to_message", (override) => {
         type: "private",
         sender_id: person.user_id,
     };
-    override(current_msg_list, "selected_message", () => msg);
+    override(message_lists.current, "selected_message", () => msg);
 
     let opts = {
         reply_type: "personal",
@@ -267,7 +268,7 @@ test("reply_with_mention", (override) => {
         sender_full_name: "Bob Roberts",
         sender_id: 40,
     };
-    override(current_msg_list, "selected_message", () => msg);
+    override(message_lists.current, "selected_message", () => msg);
 
     let syntax_to_insert;
     override(compose_ui, "insert_syntax_and_focus", (syntax) => {
@@ -314,7 +315,7 @@ test("quote_and_reply", (override) => {
     override_private_message_recipient(override);
 
     let selected_message;
-    override(current_msg_list, "selected_message", () => selected_message);
+    override(message_lists.current, "selected_message", () => selected_message);
 
     let expected_replacement;
     let replaced;
@@ -339,7 +340,7 @@ test("quote_and_reply", (override) => {
         success_function = opts.success;
     });
 
-    override(current_msg_list, "selected_id", () => 100);
+    override(message_lists.current, "selected_id", () => 100);
 
     override(compose_ui, "insert_syntax_and_focus", (syntax) => {
         assert.equal(syntax, "[Quoting…]\n");

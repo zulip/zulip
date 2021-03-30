@@ -4,6 +4,7 @@ import * as channel from "./channel";
 import * as compose from "./compose";
 import * as hash_util from "./hash_util";
 import {i18n} from "./i18n";
+import * as message_lists from "./message_lists";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -117,15 +118,15 @@ export function do_set_reminder_for_message(message_id, timestamp) {
             });
     }
 
-    const message = current_msg_list.get(message_id);
+    const message = message_lists.current.get(message_id);
 
     if (!message.raw_content) {
-        const msg_list = current_msg_list;
+        const msg_list = message_lists.current;
         channel.get({
             url: "/json/messages/" + message.id,
             idempotent: true,
             success(data) {
-                if (current_msg_list === msg_list) {
+                if (message_lists.current === msg_list) {
                     message.raw_content = data.raw_content;
                     do_set_reminder_for_message(message_id, timestamp);
                 }

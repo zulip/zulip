@@ -13,6 +13,7 @@ import * as message_edit from "./message_edit";
 import * as message_fetch from "./message_fetch";
 import * as message_list from "./message_list";
 import {MessageListData} from "./message_list_data";
+import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
 import * as message_store from "./message_store";
 import * as message_view_header from "./message_view_header";
@@ -93,19 +94,19 @@ function report_unnarrow_time() {
 }
 
 export function save_pre_narrow_offset_for_reload() {
-    if (current_msg_list.selected_id() !== -1) {
-        if (current_msg_list.selected_row().length === 0) {
+    if (message_lists.current.selected_id() !== -1) {
+        if (message_lists.current.selected_row().length === 0) {
             blueslip.debug("narrow.activate missing selected row", {
-                selected_id: current_msg_list.selected_id(),
-                selected_idx: current_msg_list.selected_idx(),
-                selected_idx_exact: current_msg_list
+                selected_id: message_lists.current.selected_id(),
+                selected_idx: message_lists.current.selected_idx(),
+                selected_idx_exact: message_lists.current
                     .all_messages()
-                    .indexOf(current_msg_list.get(current_msg_list.selected_id())),
-                render_start: current_msg_list.view._render_win_start,
-                render_end: current_msg_list.view._render_win_end,
+                    .indexOf(message_lists.current.get(message_lists.current.selected_id())),
+                render_start: message_lists.current.view._render_win_start,
+                render_end: message_lists.current.view._render_win_end,
             });
         }
-        current_msg_list.pre_narrow_offset = current_msg_list.selected_row().offset().top;
+        message_lists.current.pre_narrow_offset = message_lists.current.selected_row().offset().top;
     }
 }
 
@@ -152,7 +153,7 @@ function update_narrow_title(filter) {
 export function activate(raw_operators, opts) {
     /* Main entrypoint for switching to a new view / message list.
        Note that for historical reasons related to the current
-       client-side caching structure, the "All messages"/home_msg_list
+       client-side caching structure, the "All messages"/message_lists.home
        view is reached via `narrow.deactivate()`.
 
        The name is based on "narrowing to a subset of the user's
@@ -160,7 +161,7 @@ export function activate(raw_operators, opts) {
 
        raw_operators: Narrowing/search operators; used to construct
        a Filter object that decides which messages belong in the
-       view.  Required (See the above note on how `home_msg_list` works)
+       view.  Required (See the above note on how `message_lists.home` works)
 
        All other options are encoded via the `opts` dictionary:
 
@@ -213,7 +214,7 @@ export function activate(raw_operators, opts) {
     blueslip.debug("Narrowed", {
         operators: operators.map((e) => e.operator),
         trigger: opts ? opts.trigger : undefined,
-        previous_id: current_msg_list.selected_id(),
+        previous_id: message_lists.current.selected_id(),
     });
 
     opts = {
@@ -244,7 +245,7 @@ export function activate(raw_operators, opts) {
         // having a near: narrow auto-reloaded.
         id_info.target_id = opts.then_select_id;
         if (opts.then_select_offset === undefined) {
-            const row = current_msg_list.get_row(opts.then_select_id);
+            const row = message_lists.current.get_row(opts.then_select_id);
             if (row.length > 0) {
                 opts.then_select_offset = row.offset().top;
             }
@@ -301,8 +302,8 @@ export function activate(raw_operators, opts) {
 
     msg_list.start_time = start_time;
 
-    // Show the new set of messages.  It is important to set current_msg_list to
-    // the view right as it's being shown, because we rely on current_msg_list
+    // Show the new set of messages.  It is important to set message_lists.current to
+    // the view right as it's being shown, because we rely on message_lists.current
     // being shown for deciding when to condense messages.
     $("body").addClass("narrowed_view");
     $("#zfilt").addClass("focused_table");
@@ -310,7 +311,7 @@ export function activate(raw_operators, opts) {
 
     ui_util.change_tab_to("#message_feed_container");
     message_list.set_narrowed(msg_list);
-    current_msg_list = message_list.narrowed;
+    message_lists.set_current(message_list.narrowed);
 
     let then_select_offset;
     if (id_info.target_id === id_info.final_select_id) {
@@ -701,7 +702,7 @@ export function by(operator, operand, opts) {
 }
 
 export function by_topic(target_id, opts) {
-    // don't use current_msg_list as it won't work for muted messages or for out-of-narrow links
+    // don't use message_lists.current as it won't work for muted messages or for out-of-narrow links
     const original = message_store.get(target_id);
     if (original.type !== "stream") {
         // Only stream messages have topics, but the
@@ -726,7 +727,7 @@ export function by_topic(target_id, opts) {
 // Called for the 'narrow by stream' hotkey.
 export function by_recipient(target_id, opts) {
     opts = {then_select_id: target_id, ...opts};
-    // don't use current_msg_list as it won't work for muted messages or for out-of-narrow links
+    // don't use message_lists.current as it won't work for muted messages or for out-of-narrow links
     const message = message_store.get(target_id);
 
     // We don't check msg_list.can_mark_messages_read here only because
@@ -805,7 +806,7 @@ function handle_post_narrow_deactivate_processes() {
     narrow_title = "All messages";
     notifications.redraw_title();
     message_scroll.hide_top_of_narrow_notices();
-    message_scroll.update_top_of_narrow_notices(home_msg_list);
+    message_scroll.update_top_of_narrow_notices(message_lists.home);
 }
 
 export function deactivate(coming_from_recent_topics = false) {
@@ -813,16 +814,16 @@ export function deactivate(coming_from_recent_topics = false) {
     // always use browser_history.go_to_location("#all_messages") to
     // activate All message narrow.
     /*
-      Switches current_msg_list from narrowed_msg_list to
-      home_msg_list ("All messages"), ending the current narrow.  This
-      is a very fast operation, because we keep home_msg_list's data
+      Switches message_lists.current from narrowed_msg_list to
+      message_lists.home ("All messages"), ending the current narrow.  This
+      is a very fast operation, because we keep message_lists.home's data
       cached and updated in the DOM at all times, making it suitable
       for rapid access via keyboard shortcuts.
 
-      Long-term, we will likely want to make `home_msg_list` not
+      Long-term, we will likely want to make `message_lists.home` not
       special in any way, and instead just have a generic
       message_list_data structure caching system that happens to have
-      home_msg_list in it.
+      message_lists.home in it.
      */
     search.clear_search_form();
     // Both All messages and Recent Topics have `undefined` filter.
@@ -852,16 +853,16 @@ export function deactivate(coming_from_recent_topics = false) {
     $("body").removeClass("narrowed_view");
     $("#zfilt").removeClass("focused_table");
     $("#zhome").addClass("focused_table");
-    current_msg_list = home_msg_list;
+    message_lists.set_current(message_lists.home);
     condense.condense_and_collapse($("#zhome div.message_row"));
 
     message_scroll.hide_indicators();
     hashchange.save_narrow();
 
-    if (current_msg_list.selected_id() !== -1) {
+    if (message_lists.current.selected_id() !== -1) {
         const preserve_pre_narrowing_screen_position =
-            current_msg_list.selected_row().length > 0 &&
-            current_msg_list.pre_narrow_offset !== undefined;
+            message_lists.current.selected_row().length > 0 &&
+            message_lists.current.pre_narrow_offset !== undefined;
         let message_id_to_select;
         const select_opts = {
             then_scroll: true,
@@ -878,7 +879,7 @@ export function deactivate(coming_from_recent_topics = false) {
             // We read some unread messages in a narrow. Instead of going back to
             // where we were before the narrow, go to our first unread message (or
             // the bottom of the feed, if there are no unread messages).
-            message_id_to_select = current_msg_list.first_unread_message_id();
+            message_id_to_select = message_lists.current.first_unread_message_id();
         } else {
             // We narrowed, but only backwards in time (ie no unread were read). Try
             // to go back to exactly where we were before narrowing.
@@ -886,11 +887,11 @@ export function deactivate(coming_from_recent_topics = false) {
                 // We scroll the user back to exactly the offset from the selected
                 // message that they were at the time that they narrowed.
                 // TODO: Make this correctly handle the case of resizing while narrowed.
-                select_opts.target_scroll_offset = current_msg_list.pre_narrow_offset;
+                select_opts.target_scroll_offset = message_lists.current.pre_narrow_offset;
             }
-            message_id_to_select = current_msg_list.selected_id();
+            message_id_to_select = message_lists.current.selected_id();
         }
-        current_msg_list.select_id(message_id_to_select, select_opts);
+        message_lists.current.select_id(message_id_to_select, select_opts);
     }
 
     handle_post_narrow_deactivate_processes();

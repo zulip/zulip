@@ -312,7 +312,7 @@ class CommonUtils {
                     - does it look to have been
                       re-rendered based on server info?
             */
-                const last_msg = current_msg_list.last();
+                const last_msg = zulip_test.current_msg_list.last();
                 if (last_msg === undefined) {
                     return false;
                 }

@@ -20,6 +20,7 @@ import * as lightbox from "./lightbox";
 import * as list_util from "./list_util";
 import * as message_edit from "./message_edit";
 import * as message_flags from "./message_flags";
+import * as message_lists from "./message_lists";
 import * as message_view_header from "./message_view_header";
 import * as muting_ui from "./muting_ui";
 import * as narrow from "./narrow";
@@ -37,7 +38,7 @@ import * as topic_zoom from "./topic_zoom";
 import * as ui from "./ui";
 
 function do_narrow_action(action) {
-    action(current_msg_list.selected_id(), {trigger: "hotkey"});
+    action(message_lists.current.selected_id(), {trigger: "hotkey"});
     return true;
 }
 
@@ -792,7 +793,7 @@ export function process_hotkey(e, hotkey) {
             return true;
     }
 
-    if (current_msg_list.empty()) {
+    if (message_lists.current.empty()) {
         return false;
     }
 
@@ -825,7 +826,7 @@ export function process_hotkey(e, hotkey) {
             return true;
     }
 
-    const msg = current_msg_list.selected_message();
+    const msg = message_lists.current.selected_message();
     // Shortcuts that operate on a message
     switch (event_name) {
         case "message_actions":
@@ -870,7 +871,7 @@ export function process_hotkey(e, hotkey) {
             compose_actions.quote_and_reply({trigger: "hotkey"});
             return true;
         case "edit_message": {
-            const row = current_msg_list.get_row(msg.id);
+            const row = message_lists.current.get_row(msg.id);
             message_edit.start(row);
             return true;
         }

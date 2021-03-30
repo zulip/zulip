@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import * as blueslip from "./blueslip";
+import * as message_lists from "./message_lists";
 import * as narrow_state from "./narrow_state";
 import * as poll_widget from "./poll_widget";
 import * as todo_widget from "./todo_widget";
@@ -84,8 +85,8 @@ export function activate(in_opts) {
 
 export function set_widgets_for_list() {
     for (const [idx, widget_elem] of widget_contents) {
-        if (current_msg_list.get(idx) !== undefined) {
-            const row = current_msg_list.get_row(idx);
+        if (message_lists.current.get(idx) !== undefined) {
+            const row = message_lists.current.get_row(idx);
             set_widget_in_message(row, widget_elem);
         }
     }

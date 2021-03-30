@@ -16,6 +16,7 @@ import * as condense from "./condense";
 import * as hash_util from "./hash_util";
 import {i18n} from "./i18n";
 import * as message_edit from "./message_edit";
+import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
@@ -326,11 +327,11 @@ export class MessageListView {
                 message_container.subscribed = false;
                 message_container.unsubscribed = false;
 
-                // This home_msg_list condition can be removed
+                // This message_lists.home condition can be removed
                 // once we filter historical messages from the
                 // home view on the server side (which requires
                 // having an index on UserMessage.flags)
-                if (this.list !== home_msg_list) {
+                if (this.list !== message_lists.home) {
                     this.add_subscription_marker(current_group, prev, message_container);
                 }
 
@@ -412,7 +413,7 @@ export class MessageListView {
             return true;
             // Add a subscription marker
         } else if (
-            this.list !== home_msg_list &&
+            this.list !== message_lists.home &&
             last_msg_container.msg.historical !== first_msg_container.msg.historical
         ) {
             second_group.bookend_top = true;
@@ -631,7 +632,7 @@ export class MessageListView {
         const restore_scroll_position = () => {
             if (
                 !recent_topics.is_visible() &&
-                list === current_msg_list &&
+                list === message_lists.current &&
                 orig_scrolltop_offset !== undefined
             ) {
                 list.view.set_message_offset(orig_scrolltop_offset);
@@ -789,7 +790,7 @@ export class MessageListView {
             }
         }
 
-        if (list === current_msg_list) {
+        if (list === message_lists.current) {
             // Update the fade.
 
             const get_element = (message_group) => {
@@ -804,7 +805,7 @@ export class MessageListView {
             compose_fade.update_rendered_message_groups(new_message_groups, get_element);
         }
 
-        if (list === current_msg_list && messages_are_new) {
+        if (list === message_lists.current && messages_are_new) {
             // First, in single-recipient narrows, potentially
             // auto-scroll to the latest message if it was sent by us.
             if (narrow_state.narrowed_by_reply()) {

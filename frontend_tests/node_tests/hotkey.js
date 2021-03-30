@@ -54,6 +54,7 @@ const gear_menu = mock_esm("../../static/js/gear_menu", {
 const lightbox = mock_esm("../../static/js/lightbox");
 const list_util = mock_esm("../../static/js/list_util");
 const message_edit = mock_esm("../../static/js/message_edit");
+const message_lists = mock_esm("../../static/js/message_lists");
 const muting_ui = mock_esm("../../static/js/muting_ui");
 const narrow = mock_esm("../../static/js/narrow");
 const navigate = mock_esm("../../static/js/navigate");
@@ -95,7 +96,7 @@ mock_esm("../../static/js/recent_topics", {
     is_visible: () => false,
 });
 
-set_global("current_msg_list", {
+message_lists.current = {
     empty() {
         return false;
     },
@@ -112,7 +113,7 @@ set_global("current_msg_list", {
     get_row() {
         return 101;
     },
-});
+};
 
 const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
 const emoji = zrequire("../shared/js/emoji");
@@ -331,7 +332,7 @@ run_test("misc", () => {
 
     // Check that they do nothing without a selected message
     with_overrides((override) => {
-        override(current_msg_list, "empty", () => true);
+        override(message_lists.current, "empty", () => true);
         assert_unmapped(message_view_only_keys);
     });
 
@@ -440,7 +441,7 @@ run_test("motion_keys", () => {
     }
 
     list_util.inside_list = () => false;
-    current_msg_list.empty = () => true;
+    message_lists.current.empty = () => true;
     overlays.settings_open = () => false;
     overlays.streams_open = () => false;
     overlays.lightbox_open = () => false;
@@ -458,7 +459,7 @@ run_test("motion_keys", () => {
     assert_mapping("down_arrow", list_util, "go_down");
     list_util.inside_list = () => false;
 
-    current_msg_list.empty = () => false;
+    message_lists.current.empty = () => false;
     assert_mapping("down_arrow", navigate, "down");
     assert_mapping("end", navigate, "to_end");
     assert_mapping("home", navigate, "to_home");

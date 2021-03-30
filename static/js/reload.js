@@ -9,6 +9,7 @@ import {csrf_token} from "./csrf";
 import * as hashchange from "./hashchange";
 import {localstorage} from "./localstorage";
 import * as message_list from "./message_list";
+import * as message_lists from "./message_lists";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as reload_state from "./reload_state";
@@ -51,20 +52,20 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
     }
 
     if (save_pointer) {
-        const pointer = home_msg_list.selected_id();
+        const pointer = message_lists.home.selected_id();
         if (pointer !== -1) {
             url += "+pointer=" + pointer;
         }
     }
 
     if (save_narrow) {
-        const row = home_msg_list.selected_row();
+        const row = message_lists.home.selected_row();
         if (!narrow_state.active()) {
             if (row.length > 0) {
                 url += "+offset=" + row.offset().top;
             }
         } else {
-            url += "+offset=" + home_msg_list.pre_narrow_offset;
+            url += "+offset=" + message_lists.home.pre_narrow_offset;
 
             const narrow_pointer = message_list.narrowed.selected_id();
             if (narrow_pointer !== -1) {

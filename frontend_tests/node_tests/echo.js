@@ -4,12 +4,13 @@ const {strict: assert} = require("assert");
 
 const MockDate = require("mockdate");
 
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const {page_params} = require("../zjsunit/zpage_params");
 
 const markdown = mock_esm("../../static/js/markdown");
+const message_lists = mock_esm("../../static/js/message_lists");
 
 let disparities = [];
 let messages_to_rerender = [];
@@ -30,16 +31,16 @@ mock_esm("../../static/js/message_store", {
     update_booleans: () => {},
 });
 
-set_global("home_msg_list", {
+message_lists.home = {
     view: {
         rerender_messages: (msgs) => {
             messages_to_rerender = msgs;
         },
     },
-});
+};
 
 mock_esm("../../static/js/message_list");
-set_global("current_msg_list", "");
+message_lists.current = "";
 
 const echo = zrequire("echo");
 const people = zrequire("people");
@@ -171,13 +172,13 @@ run_test("build_display_recipient", () => {
 });
 
 run_test("update_message_lists", () => {
-    home_msg_list.view = {};
+    message_lists.home.view = {};
 
     const stub = make_stub();
     const view_stub = make_stub();
 
-    home_msg_list.change_message_id = stub.f;
-    home_msg_list.view.change_message_id = view_stub.f;
+    message_lists.home.change_message_id = stub.f;
+    message_lists.home.view.change_message_id = view_stub.f;
 
     echo.update_message_lists({old_id: 401, new_id: 402});
 

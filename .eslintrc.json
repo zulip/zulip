@@ -105,25 +105,15 @@
     },
     "overrides": [
         {
-            "files": ["frontend_tests/node_tests/**"],
-            "globals": {
-                "current_msg_list": false,
-                "home_msg_list": false
-            }
-        },
-        {
             "files": ["frontend_tests/puppeteer_lib/**", "frontend_tests/puppeteer_tests/**"],
             "globals": {
                 "$": false,
-                "current_msg_list": false,
                 "zulip_test": false
             }
         },
         {
             "files": ["static/js/**"],
             "globals": {
-                "current_msg_list": true,
-                "home_msg_list": false,
                 "StripeCheckout": false,
                 "zxcvbn": false
             }

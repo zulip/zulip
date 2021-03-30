@@ -27,6 +27,7 @@ import * as hash_util from "./hash_util";
 import {i18n} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
+import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as muting from "./muting";
 import * as muting_ui from "./muting_ui";
@@ -309,7 +310,7 @@ function show_user_info_popover_for_message(element, user, message) {
         // by clicking on the same element that caused the popover.
         return;
     }
-    current_msg_list.select_id(message.id);
+    message_lists.current.select_id(message.id);
     const elt = $(element);
     if (elt.data("popover") === undefined) {
         if (user === undefined) {
@@ -487,7 +488,7 @@ function show_user_group_info_popover(element, group, message) {
         // by clicking on the same element that caused the popover.
         return;
     }
-    current_msg_list.select_id(message.id);
+    message_lists.current.select_id(message.id);
     const elt = $(element);
     if (elt.data("popover") === undefined) {
         const args = {
@@ -517,10 +518,10 @@ export function toggle_actions_popover(element, id) {
     }
 
     $(element).closest(".message_row").toggleClass("has_popover has_actions_popover");
-    current_msg_list.select_id(id);
+    message_lists.current.select_id(id);
     const elt = $(element);
     if (elt.data("popover") === undefined) {
-        const message = current_msg_list.get(id);
+        const message = message_lists.current.get(id);
         const editability = message_edit.get_editability(message);
         let use_edit_icon;
         let editability_menu_item;
@@ -604,10 +605,10 @@ export function toggle_actions_popover(element, id) {
 export function render_actions_remind_popover(element, id) {
     hide_all();
     $(element).closest(".message_row").toggleClass("has_popover has_actions_popover");
-    current_msg_list.select_id(id);
+    message_lists.current.select_id(id);
     const elt = $(element);
     if (elt.data("popover") === undefined) {
-        const message = current_msg_list.get(id);
+        const message = message_lists.current.get(id);
         const args = {
             message,
         };
@@ -818,7 +819,7 @@ export function show_sender_info() {
     const $message = $(".selected_message");
     const $sender = $message.find(".sender_info_hover");
 
-    const message = current_msg_list.get(rows.id($message));
+    const message = message_lists.current.get(rows.id($message));
     const user = people.get_by_user_id(message.sender_id);
     show_user_info_popover_for_message($sender[0], user, message);
     if (current_message_info_popover_elem) {
@@ -885,7 +886,7 @@ export function register_click_handlers() {
         function (e) {
             const row = $(this).closest(".message_row");
             e.stopPropagation();
-            const message = current_msg_list.get(rows.id(row));
+            const message = message_lists.current.get(rows.id(row));
             const user = people.get_by_user_id(message.sender_id);
             show_user_info_popover_for_message(this, user, message);
         },
@@ -901,7 +902,7 @@ export function register_click_handlers() {
         }
         const row = $(this).closest(".message_row");
         e.stopPropagation();
-        const message = current_msg_list.get(rows.id(row));
+        const message = message_lists.current.get(rows.id(row));
         let user;
         if (id_string) {
             const user_id = Number.parseInt(id_string, 10);
@@ -916,7 +917,7 @@ export function register_click_handlers() {
         const user_group_id = Number.parseInt($(this).attr("data-user-group-id"), 10);
         const row = $(this).closest(".message_row");
         e.stopPropagation();
-        const message = current_msg_list.get(rows.id(row));
+        const message = message_lists.current.get(rows.id(row));
         const group = user_groups.get_user_group_from_id(user_group_id, true);
         if (group === undefined) {
             // This user group has likely been deleted.
@@ -1204,8 +1205,8 @@ export function register_click_handlers() {
     });
     $("body").on("click", ".popover_toggle_collapse", (e) => {
         const message_id = $(e.currentTarget).data("message-id");
-        const row = current_msg_list.get_row(message_id);
-        const message = current_msg_list.get(rows.id(row));
+        const row = message_lists.current.get_row(message_id);
+        const message = message_lists.current.get(rows.id(row));
 
         hide_actions_popover();
 
@@ -1222,7 +1223,7 @@ export function register_click_handlers() {
     });
     $("body").on("click", ".popover_edit_message", (e) => {
         const message_id = $(e.currentTarget).data("message-id");
-        const row = current_msg_list.get_row(message_id);
+        const row = message_lists.current.get_row(message_id);
         hide_actions_popover();
         message_edit.start(row);
         e.stopPropagation();
@@ -1230,8 +1231,8 @@ export function register_click_handlers() {
     });
     $("body").on("click", ".view_edit_history", (e) => {
         const message_id = $(e.currentTarget).data("message-id");
-        const row = current_msg_list.get_row(message_id);
-        const message = current_msg_list.get(rows.id(row));
+        const row = message_lists.current.get_row(message_id);
+        const message = message_lists.current.get(rows.id(row));
         const message_history_cancel_btn = $("#message-history-cancel");
 
         hide_actions_popover();

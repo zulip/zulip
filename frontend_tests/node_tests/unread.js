@@ -4,19 +4,15 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {page_params} = require("../zjsunit/zpage_params");
 
 page_params.realm_push_notifications_enabled = false;
 
-const muting = zrequire("muting");
-
-set_global("current_msg_list", {});
-set_global("home_msg_list", {});
-
 const {FoldDict} = zrequire("fold_dict");
 const message_store = zrequire("message_store");
+const muting = zrequire("muting");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const unread = zrequire("unread");

@@ -17,6 +17,9 @@ const stream_data = mock_esm("../../static/js/stream_data");
 mock_esm("../../static/js/emoji_picker", {
     hide_emoji_popover: noop,
 });
+const message_lists = mock_esm("../../static/js/message_lists", {
+    current: {},
+});
 mock_esm("../../static/js/message_viewport", {
     height: () => 500,
 });
@@ -28,7 +31,6 @@ mock_esm("../../static/js/stream_popover", {
     hide_streamlist_sidebar: noop,
 });
 
-set_global("current_msg_list", {});
 page_params.is_admin = false;
 page_params.realm_email_address_visibility = 3;
 page_params.custom_profile_fields = [];
@@ -119,12 +121,12 @@ test_ui("sender_hover", (override) => {
 
     rows.id = () => message.id;
 
-    current_msg_list.get = (msg_id) => {
+    message_lists.current.get = (msg_id) => {
         assert.equal(msg_id, message.id);
         return message;
     };
 
-    current_msg_list.select_id = (msg_id) => {
+    message_lists.current.select_id = (msg_id) => {
         assert.equal(msg_id, message.id);
     };
 
@@ -218,7 +220,7 @@ test_ui("actions_popover", (override) => {
         stream_id: 123,
     };
 
-    current_msg_list.get = (msg_id) => {
+    message_lists.current.get = (msg_id) => {
         assert.equal(msg_id, message.id);
         return message;
     };

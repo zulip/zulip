@@ -13,7 +13,9 @@ set_global("document", "document-stub");
 const noop = () => {};
 
 page_params.twenty_four_hour_time = false;
-set_global("home_msg_list", "stub");
+
+mock_esm("../../static/js/message_lists", {home: "stub"});
+
 // timerender calls setInterval when imported
 mock_esm("../../static/js/timerender", {
     render_date(time1, time2) {
