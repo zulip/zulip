@@ -1137,7 +1137,7 @@ def do_deactivate_user(
         # isn't running, but that's a separate issue.
         user_profile.is_mirror_dummy = True
     user_profile.is_active = False
-    user_profile.save(update_fields=["is_active"])
+    user_profile.save(update_fields=["is_active", "is_mirror_dummy"])
 
     delete_user_sessions(user_profile)
     clear_scheduled_emails([user_profile.id])
