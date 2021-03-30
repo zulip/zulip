@@ -331,6 +331,7 @@ export class MessageList {
         recipient_row.find(".edit_content_button").hide();
         recipient_row.find(".stream_topic").hide();
         recipient_row.find(".topic_edit").show();
+        recipient_row.find(".always_visible_topic_edit").hide();
     }
 
     hide_edit_topic_on_recipient_row(recipient_row) {
@@ -339,6 +340,7 @@ export class MessageList {
         recipient_row.find(".edit_content_button").show();
         recipient_row.find(".topic_edit_form").empty();
         recipient_row.find(".topic_edit").hide();
+        recipient_row.find(".always_visible_topic_edit").show();
     }
 
     show_message_as_read(message, options) {
