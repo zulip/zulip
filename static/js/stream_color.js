@@ -3,6 +3,7 @@ import $ from "jquery";
 import * as color_class from "./color_class";
 import {i18n} from "./i18n";
 import * as message_view_header from "./message_view_header";
+import * as popovers from "./popovers";
 import * as subs from "./subs";
 
 function update_table_stream_color(table, stream_name, color) {
@@ -103,7 +104,9 @@ function picker_do_change_color(color) {
     const stream_id = Number.parseInt($(this).attr("stream_id"), 10);
     const hex_color = color.toHexString();
     subs.set_color(stream_id, hex_color);
+    popovers.hide_all();
 }
+
 subscriptions_table_colorpicker_options.change = picker_do_change_color;
 
 export const sidebar_popover_colorpicker_options = {
