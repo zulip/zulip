@@ -1781,7 +1781,7 @@ OUTER_CAPTURE_GROUP = "linkifier_actual_match"
 
 
 def prepare_realm_pattern(source: str) -> str:
-    """Augment a realm filter so it only matches after start-of-string,
+    """Augment a linkifier so it only matches after start-of-string,
     whitespace, or opening delimiters, won't match if there are word
     characters directly after, and saves what was matched as
     OUTER_CAPTURE_GROUP."""
@@ -2059,7 +2059,7 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
         if not el.text or not el.text.strip():
             el.text = href
 
-        # Prevent realm_filters from running on the content of a Markdown link, breaking up the link.
+        # Prevent linkifiers from running on the content of a Markdown link, breaking up the link.
         # This is a monkey-patch, but it might be worth sending a version of this change upstream.
         el.text = markdown.util.AtomicString(el.text)
 
@@ -2633,7 +2633,7 @@ def do_convert(
         # Spend at most 5 seconds rendering; this protects the backend
         # from being overloaded by bugs (e.g. Markdown logic that is
         # extremely inefficient in corner cases) as well as user
-        # errors (e.g. a realm filter that makes some syntax
+        # errors (e.g. a linkifier that makes some syntax
         # infinite-loop).
         rendered_content = timeout(5, lambda: _md_engine.convert(content))
 

@@ -6505,12 +6505,12 @@ def notify_realm_filters(realm: Realm) -> None:
 def do_add_realm_filter(realm: Realm, pattern: str, url_format_string: str) -> int:
     pattern = pattern.strip()
     url_format_string = url_format_string.strip()
-    realm_filter = RealmFilter(realm=realm, pattern=pattern, url_format_string=url_format_string)
-    realm_filter.full_clean()
-    realm_filter.save()
+    linkifier = RealmFilter(realm=realm, pattern=pattern, url_format_string=url_format_string)
+    linkifier.full_clean()
+    linkifier.save()
     notify_realm_filters(realm)
 
-    return realm_filter.id
+    return linkifier.id
 
 
 def do_remove_realm_filter(

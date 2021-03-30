@@ -24,13 +24,13 @@ class RealmFilterTest(ZulipTestCase):
         data["pattern"] = "$a"
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_error(
-            result, "Invalid filter pattern.  Valid characters are [ a-zA-Z_#=/:+!-]."
+            result, "Invalid linkifier pattern.  Valid characters are [ a-zA-Z_#=/:+!-]."
         )
 
         data["pattern"] = r"ZUL-(?P<id>\d++)"
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_error(
-            result, "Invalid filter pattern.  Valid characters are [ a-zA-Z_#=/:+!-]."
+            result, "Invalid linkifier pattern.  Valid characters are [ a-zA-Z_#=/:+!-]."
         )
 
         data["pattern"] = r"ZUL-(?P<id>\d+)"

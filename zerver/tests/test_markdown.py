@@ -1257,12 +1257,12 @@ class MarkdownTest(ZulipTestCase):
     def test_realm_patterns(self) -> None:
         realm = get_realm("zulip")
         url_format_string = r"https://trac.example.com/ticket/%(id)s"
-        realm_filter = RealmFilter(
+        linkifier = RealmFilter(
             realm=realm, pattern=r"#(?P<id>[0-9]{2,8})", url_format_string=url_format_string
         )
-        realm_filter.save()
+        linkifier.save()
         self.assertEqual(
-            realm_filter.__str__(),
+            linkifier.__str__(),
             "<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>",
         )
 
@@ -1368,27 +1368,27 @@ class MarkdownTest(ZulipTestCase):
     def test_multiple_matching_realm_patterns(self) -> None:
         realm = get_realm("zulip")
         url_format_string = r"https://trac.example.com/ticket/%(id)s"
-        realm_filter_1 = RealmFilter(
+        linkifier_1 = RealmFilter(
             realm=realm,
             pattern=r"(?P<id>ABC\-[0-9]+)(?![A-Z0-9-])",
             url_format_string=url_format_string,
         )
-        realm_filter_1.save()
+        linkifier_1.save()
         self.assertEqual(
-            realm_filter_1.__str__(),
+            linkifier_1.__str__(),
             r"<RealmFilter(zulip): (?P<id>ABC\-[0-9]+)(?![A-Z0-9-])"
             " https://trac.example.com/ticket/%(id)s>",
         )
 
         url_format_string = r"https://other-trac.example.com/ticket/%(id)s"
-        realm_filter_2 = RealmFilter(
+        linkifier_2 = RealmFilter(
             realm=realm,
             pattern=r"(?P<id>[A-Z][A-Z0-9]*\-[0-9]+)(?![A-Z0-9-])",
             url_format_string=url_format_string,
         )
-        realm_filter_2.save()
+        linkifier_2.save()
         self.assertEqual(
-            realm_filter_2.__str__(),
+            linkifier_2.__str__(),
             r"<RealmFilter(zulip): (?P<id>[A-Z][A-Z0-9]*\-[0-9]+)(?![A-Z0-9-])"
             " https://other-trac.example.com/ticket/%(id)s>",
         )
@@ -1404,8 +1404,8 @@ class MarkdownTest(ZulipTestCase):
         converted = markdown_convert(content, message_realm=realm, message=msg)
         converted_topic = topic_links(realm.id, msg.topic_name())
 
-        # The second filter (which was saved later) was ignored as the content was marked AtomicString after first conversion.
-        # There was no easy way to support parsing both filters and not run into an infinite loop, hence the second filter is ignored.
+        # The second linkifier (which was saved later) was ignored as the content was marked AtomicString after first conversion.
+        # There was no easy way to support parsing both linkifiers and not run into an infinite loop, hence the second linkifier is ignored.
         self.assertEqual(
             converted,
             '<p>We should fix <a href="https://trac.example.com/ticket/ABC-123">ABC-123</a> or <a href="https://trac.example.com/ticket/16">trac ABC-123</a> today.</p>',
@@ -1422,10 +1422,10 @@ class MarkdownTest(ZulipTestCase):
     def test_maybe_update_markdown_engines(self) -> None:
         realm = get_realm("zulip")
         url_format_string = r"https://trac.example.com/ticket/%(id)s"
-        realm_filter = RealmFilter(
+        linkifier = RealmFilter(
             realm=realm, pattern=r"#(?P<id>[0-9]{2,8})", url_format_string=url_format_string
         )
-        realm_filter.save()
+        linkifier.save()
 
         import zerver.lib.markdown
 
@@ -1436,10 +1436,10 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(len(zulip_filters), 1)
         self.assertEqual(
             zulip_filters[0],
-            ("#(?P<id>[0-9]{2,8})", "https://trac.example.com/ticket/%(id)s", realm_filter.id),
+            ("#(?P<id>[0-9]{2,8})", "https://trac.example.com/ticket/%(id)s", linkifier.id),
         )
 
-    def test_flush_realm_filter(self) -> None:
+    def test_flush_linkifier(self) -> None:
         realm = get_realm("zulip")
 
         def flush() -> None:
@@ -2083,12 +2083,12 @@ class MarkdownTest(ZulipTestCase):
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         # Create a linkifier.
         url_format_string = r"https://trac.example.com/ticket/%(id)s"
-        realm_filter = RealmFilter(
+        linkifier = RealmFilter(
             realm=realm, pattern=r"#(?P<id>[0-9]{2,8})", url_format_string=url_format_string
         )
-        realm_filter.save()
+        linkifier.save()
         self.assertEqual(
-            realm_filter.__str__(),
+            linkifier.__str__(),
             "<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>",
         )
         # Create a user that potentially interferes with the pattern.
@@ -2167,12 +2167,12 @@ class MarkdownTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         # Create a linkifier.
         url_format_string = r"https://trac.example.com/ticket/%(id)s"
-        realm_filter = RealmFilter(
+        linkifier = RealmFilter(
             realm=realm, pattern=r"#(?P<id>[0-9]{2,8})", url_format_string=url_format_string
         )
-        realm_filter.save()
+        linkifier.save()
         self.assertEqual(
-            realm_filter.__str__(),
+            linkifier.__str__(),
             "<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>",
         )
         # Create a user-group that potentially interferes with the pattern.
@@ -2361,12 +2361,12 @@ class MarkdownTest(ZulipTestCase):
         # Create a linkifier.
         sender_user_profile = self.example_user("othello")
         url_format_string = r"https://trac.example.com/ticket/%(id)s"
-        realm_filter = RealmFilter(
+        linkifier = RealmFilter(
             realm=realm, pattern=r"#(?P<id>[0-9]{2,8})", url_format_string=url_format_string
         )
-        realm_filter.save()
+        linkifier.save()
         self.assertEqual(
-            realm_filter.__str__(),
+            linkifier.__str__(),
             "<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>",
         )
         # Create a topic link that potentially interferes with the pattern.
@@ -2430,12 +2430,12 @@ class MarkdownTest(ZulipTestCase):
         # Create a linkifier.
         sender_user_profile = self.example_user("othello")
         url_format_string = r"https://trac.example.com/ticket/%(id)s"
-        realm_filter = RealmFilter(
+        linkifier = RealmFilter(
             realm=realm, pattern=r"#(?P<id>[0-9]{2,8})", url_format_string=url_format_string
         )
-        realm_filter.save()
+        linkifier.save()
         self.assertEqual(
-            realm_filter.__str__(),
+            linkifier.__str__(),
             "<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>",
         )
         # Create a stream that potentially interferes with the pattern.
