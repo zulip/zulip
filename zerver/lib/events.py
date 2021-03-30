@@ -58,7 +58,7 @@ from zerver.models import (
     custom_profile_fields_for_realm,
     get_default_stream_groups,
     get_realm_domains,
-    realm_filters_for_realm,
+    linkifiers_for_realm,
 )
 from zerver.tornado.django_api import get_user_events, request_event_queue
 from zproject.backends import email_auth_enabled, password_auth_enabled
@@ -252,7 +252,7 @@ def fetch_initial_state_data(
         state["realm_emoji"] = realm.get_emoji()
 
     if want("realm_filters"):
-        state["realm_filters"] = realm_filters_for_realm(realm.id)
+        state["realm_filters"] = linkifiers_for_realm(realm.id)
 
     if want("realm_user_groups"):
         state["realm_user_groups"] = user_groups_in_realm_serialized(realm)

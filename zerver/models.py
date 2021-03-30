@@ -887,61 +887,61 @@ class RealmFilter(models.Model):
         return f"<RealmFilter({self.realm.string_id}): {self.pattern} {self.url_format_string}>"
 
 
-def get_realm_filters_cache_key(realm_id: int) -> str:
-    return f"{cache.KEY_PREFIX}:all_realm_filters:{realm_id}"
+def get_linkifiers_cache_key(realm_id: int) -> str:
+    return f"{cache.KEY_PREFIX}:all_linkifiers_for_realm:{realm_id}"
 
 
 # We have a per-process cache to avoid doing 1000 remote cache queries during page load
-per_request_realm_filters_cache: Dict[int, List[Tuple[str, str, int]]] = {}
+per_request_linkifiers_cache: Dict[int, List[Tuple[str, str, int]]] = {}
 
 
-def realm_in_local_realm_filters_cache(realm_id: int) -> bool:
-    return realm_id in per_request_realm_filters_cache
+def realm_in_local_linkifiers_cache(realm_id: int) -> bool:
+    return realm_id in per_request_linkifiers_cache
 
 
-def realm_filters_for_realm(realm_id: int) -> List[Tuple[str, str, int]]:
-    if not realm_in_local_realm_filters_cache(realm_id):
-        per_request_realm_filters_cache[realm_id] = realm_filters_for_realm_remote_cache(realm_id)
-    return per_request_realm_filters_cache[realm_id]
+def linkifiers_for_realm(realm_id: int) -> List[Tuple[str, str, int]]:
+    if not realm_in_local_linkifiers_cache(realm_id):
+        per_request_linkifiers_cache[realm_id] = linkifiers_for_realm_remote_cache(realm_id)
+    return per_request_linkifiers_cache[realm_id]
 
 
-@cache_with_key(get_realm_filters_cache_key, timeout=3600 * 24 * 7)
-def realm_filters_for_realm_remote_cache(realm_id: int) -> List[Tuple[str, str, int]]:
+@cache_with_key(get_linkifiers_cache_key, timeout=3600 * 24 * 7)
+def linkifiers_for_realm_remote_cache(realm_id: int) -> List[Tuple[str, str, int]]:
     filters = []
-    for realm_filter in RealmFilter.objects.filter(realm_id=realm_id):
-        filters.append((realm_filter.pattern, realm_filter.url_format_string, realm_filter.id))
+    for linkifier in RealmFilter.objects.filter(realm_id=realm_id):
+        filters.append((linkifier.pattern, linkifier.url_format_string, linkifier.id))
 
     return filters
 
 
-def all_realm_filters() -> Dict[int, List[Tuple[str, str, int]]]:
+def all_linkifiers_for_installation() -> Dict[int, List[Tuple[str, str, int]]]:
     filters: DefaultDict[int, List[Tuple[str, str, int]]] = defaultdict(list)
-    for realm_filter in RealmFilter.objects.all():
-        filters[realm_filter.realm_id].append(
-            (realm_filter.pattern, realm_filter.url_format_string, realm_filter.id)
+    for linkifier in RealmFilter.objects.all():
+        filters[linkifier.realm_id].append(
+            (linkifier.pattern, linkifier.url_format_string, linkifier.id)
         )
 
     return filters
 
 
-def flush_realm_filter(sender: Any, **kwargs: Any) -> None:
+def flush_linkifiers(sender: Any, **kwargs: Any) -> None:
     realm_id = kwargs["instance"].realm_id
-    cache_delete(get_realm_filters_cache_key(realm_id))
+    cache_delete(get_linkifiers_cache_key(realm_id))
     try:
-        per_request_realm_filters_cache.pop(realm_id)
+        per_request_linkifiers_cache.pop(realm_id)
     except KeyError:
         pass
 
 
-post_save.connect(flush_realm_filter, sender=RealmFilter)
-post_delete.connect(flush_realm_filter, sender=RealmFilter)
+post_save.connect(flush_linkifiers, sender=RealmFilter)
+post_delete.connect(flush_linkifiers, sender=RealmFilter)
 
 
 def flush_per_request_caches() -> None:
     global per_request_display_recipient_cache
     per_request_display_recipient_cache = {}
-    global per_request_realm_filters_cache
-    per_request_realm_filters_cache = {}
+    global per_request_linkifiers_cache
+    per_request_linkifiers_cache = {}
 
 
 # The Recipient table is used to map Messages to the set of users who

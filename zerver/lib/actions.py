@@ -232,8 +232,8 @@ from zerver.models import (
     get_user_by_id_in_realm_including_cross_realm,
     get_user_profile_by_id,
     is_cross_realm_bot_email,
+    linkifiers_for_realm,
     query_for_ids,
-    realm_filters_for_realm,
     validate_attachment_request,
 )
 from zerver.tornado.django_api import send_event
@@ -6492,8 +6492,8 @@ def do_mark_hotspot_as_read(user: UserProfile, hotspot: str) -> None:
     send_event(user.realm, event, [user.id])
 
 
-def notify_realm_filters(realm: Realm) -> None:
-    realm_filters = realm_filters_for_realm(realm.id)
+def notify_linkifiers(realm: Realm) -> None:
+    realm_filters = linkifiers_for_realm(realm.id)
     event = dict(type="realm_filters", realm_filters=realm_filters)
     send_event(realm, event, active_user_ids(realm.id))
 
@@ -6502,25 +6502,25 @@ def notify_realm_filters(realm: Realm) -> None:
 # RegExp syntax. In addition to JS-compatible syntax, the following features are available:
 #   * Named groups will be converted to numbered groups automatically
 #   * Inline-regex flags will be stripped, and where possible translated to RegExp-wide flags
-def do_add_realm_filter(realm: Realm, pattern: str, url_format_string: str) -> int:
+def do_add_linkifier(realm: Realm, pattern: str, url_format_string: str) -> int:
     pattern = pattern.strip()
     url_format_string = url_format_string.strip()
     linkifier = RealmFilter(realm=realm, pattern=pattern, url_format_string=url_format_string)
     linkifier.full_clean()
     linkifier.save()
-    notify_realm_filters(realm)
+    notify_linkifiers(realm)
 
     return linkifier.id
 
 
-def do_remove_realm_filter(
+def do_remove_linkifier(
     realm: Realm, pattern: Optional[str] = None, id: Optional[int] = None
 ) -> None:
     if pattern is not None:
         RealmFilter.objects.get(realm=realm, pattern=pattern).delete()
     else:
         RealmFilter.objects.get(realm=realm, pk=id).delete()
-    notify_realm_filters(realm)
+    notify_linkifiers(realm)
 
 
 def get_emails_from_user_ids(user_ids: Sequence[int]) -> Dict[int, str]:

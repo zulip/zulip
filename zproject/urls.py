@@ -119,7 +119,7 @@ from zerver.views.realm_domains import (
 from zerver.views.realm_emoji import delete_emoji, list_emoji, upload_emoji
 from zerver.views.realm_export import delete_realm_export, export_realm, get_realm_exports
 from zerver.views.realm_icon import delete_icon_backend, get_icon_backend, upload_icon
-from zerver.views.realm_linkifiers import create_filter, delete_filter, list_filters
+from zerver.views.realm_linkifiers import create_linkifier, delete_linkifier, list_linkifiers
 from zerver.views.realm_logo import delete_logo_backend, get_logo_backend, upload_logo
 from zerver.views.registration import (
     accounts_home,
@@ -266,8 +266,8 @@ v1_api_and_json_patterns = [
     # realm/logo -> zerver.views.realm_logo
     rest_path("realm/logo", POST=upload_logo, DELETE=delete_logo_backend, GET=get_logo_backend),
     # realm/filters -> zerver.views.realm_linkifiers
-    rest_path("realm/filters", GET=list_filters, POST=create_filter),
-    rest_path("realm/filters/<int:filter_id>", DELETE=delete_filter),
+    rest_path("realm/filters", GET=list_linkifiers, POST=create_linkifier),
+    rest_path("realm/filters/<int:filter_id>", DELETE=delete_linkifier),
     # realm/profile_fields -> zerver.views.custom_profile_fields
     rest_path(
         "realm/profile_fields",

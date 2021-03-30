@@ -55,13 +55,13 @@ from zerver.models import (
     UserGroup,
     UserMessage,
     UserProfile,
+    flush_linkifiers,
     flush_per_request_caches,
-    flush_realm_filter,
     get_client,
     get_realm,
     get_stream,
-    realm_filters_for_realm,
-    realm_in_local_realm_filters_cache,
+    linkifiers_for_realm,
+    realm_in_local_linkifiers_cache,
 )
 
 
@@ -1429,13 +1429,13 @@ class MarkdownTest(ZulipTestCase):
 
         import zerver.lib.markdown
 
-        zerver.lib.markdown.realm_filter_data = {}
+        zerver.lib.markdown.linkifier_data = {}
         maybe_update_markdown_engines(None, False)
-        all_filters = zerver.lib.markdown.realm_filter_data
-        zulip_filters = all_filters[realm.id]
-        self.assertEqual(len(zulip_filters), 1)
+        all_linkifiers = zerver.lib.markdown.linkifier_data
+        zulip_linkifiers = all_linkifiers[realm.id]
+        self.assertEqual(len(zulip_linkifiers), 1)
         self.assertEqual(
-            zulip_filters[0],
+            zulip_linkifiers[0],
             ("#(?P<id>[0-9]{2,8})", "https://trac.example.com/ticket/%(id)s", linkifier.id),
         )
 
@@ -1444,7 +1444,7 @@ class MarkdownTest(ZulipTestCase):
 
         def flush() -> None:
             """
-            flush_realm_filter is a post-save hook, so calling it
+            flush_linkifiers is a post-save hook, so calling it
             directly for testing is kind of awkward
             """
 
@@ -1453,30 +1453,28 @@ class MarkdownTest(ZulipTestCase):
 
             instance = Instance()
             instance.realm_id = realm.id
-            flush_realm_filter(sender=None, instance=instance)
+            flush_linkifiers(sender=None, instance=instance)
 
-        def save_new_realm_filter() -> None:
-            realm_filter = RealmFilter(
-                realm=realm, pattern=r"whatever", url_format_string="whatever"
-            )
-            realm_filter.save()
+        def save_new_linkifier() -> None:
+            linkifier = RealmFilter(realm=realm, pattern=r"whatever", url_format_string="whatever")
+            linkifier.save()
 
         # start fresh for our realm
         flush()
-        self.assertFalse(realm_in_local_realm_filters_cache(realm.id))
+        self.assertFalse(realm_in_local_linkifiers_cache(realm.id))
 
         # call this just for side effects of populating the cache
-        realm_filters_for_realm(realm.id)
-        self.assertTrue(realm_in_local_realm_filters_cache(realm.id))
+        linkifiers_for_realm(realm.id)
+        self.assertTrue(realm_in_local_linkifiers_cache(realm.id))
 
         # Saving a new RealmFilter should have the side effect of
         # flushing the cache.
-        save_new_realm_filter()
-        self.assertFalse(realm_in_local_realm_filters_cache(realm.id))
+        save_new_linkifier()
+        self.assertFalse(realm_in_local_linkifiers_cache(realm.id))
 
         # and flush it one more time, to make sure we don't get a KeyError
         flush()
-        self.assertFalse(realm_in_local_realm_filters_cache(realm.id))
+        self.assertFalse(realm_in_local_linkifiers_cache(realm.id))
 
     def test_realm_patterns_negative(self) -> None:
         realm = get_realm("zulip")

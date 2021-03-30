@@ -2,9 +2,9 @@ import sys
 from argparse import ArgumentParser
 from typing import Any
 
-from zerver.lib.actions import do_add_realm_filter, do_remove_realm_filter
+from zerver.lib.actions import do_add_linkifier, do_remove_linkifier
 from zerver.lib.management import CommandError, ZulipBaseCommand
-from zerver.models import all_realm_filters
+from zerver.models import all_linkifiers_for_installation
 
 
 class Command(ZulipBaseCommand):
@@ -41,7 +41,7 @@ Example: ./manage.py realm_filters --realm=zulip --op=show
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
         if options["op"] == "show":
-            print(f"{realm.string_id}: {all_realm_filters().get(realm.id, [])}")
+            print(f"{realm.string_id}: {all_linkifiers_for_installation().get(realm.id, [])}")
             sys.exit(0)
 
         pattern = options["pattern"]
@@ -54,10 +54,10 @@ Example: ./manage.py realm_filters --realm=zulip --op=show
             if not url_format_string:
                 self.print_help("./manage.py", "realm_filters")
                 raise CommandError
-            do_add_realm_filter(realm, pattern, url_format_string)
+            do_add_linkifier(realm, pattern, url_format_string)
             sys.exit(0)
         elif options["op"] == "remove":
-            do_remove_realm_filter(realm, pattern=pattern)
+            do_remove_linkifier(realm, pattern=pattern)
             sys.exit(0)
         else:
             self.print_help("./manage.py", "realm_filters")

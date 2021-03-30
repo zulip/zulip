@@ -24,9 +24,9 @@ from zerver.lib.actions import (
     check_send_typing_notification,
     do_add_alert_words,
     do_add_default_stream,
+    do_add_linkifier,
     do_add_reaction,
     do_add_realm_domain,
-    do_add_realm_filter,
     do_add_streams_to_default_stream_group,
     do_add_submessage,
     do_change_avatar_fields,
@@ -64,11 +64,11 @@ from zerver.lib.actions import (
     do_remove_alert_words,
     do_remove_default_stream,
     do_remove_default_stream_group,
+    do_remove_linkifier,
     do_remove_reaction,
     do_remove_realm_custom_profile_field,
     do_remove_realm_domain,
     do_remove_realm_emoji,
-    do_remove_realm_filter,
     do_remove_streams_from_default_stream_group,
     do_rename_stream,
     do_revoke_multi_use_invite,
@@ -1318,13 +1318,11 @@ class NormalActionsTest(BaseAction):
         regex = "#(?P<id>[123])"
         url = "https://realm.com/my_realm_filter/%(id)s"
 
-        events = self.verify_action(
-            lambda: do_add_realm_filter(self.user_profile.realm, regex, url)
-        )
+        events = self.verify_action(lambda: do_add_linkifier(self.user_profile.realm, regex, url))
         check_realm_filters("events[0]", events[0])
 
         events = self.verify_action(
-            lambda: do_remove_realm_filter(self.user_profile.realm, "#(?P<id>[123])")
+            lambda: do_remove_linkifier(self.user_profile.realm, "#(?P<id>[123])")
         )
         check_realm_filters("events[0]", events[0])
 
