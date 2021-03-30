@@ -119,7 +119,13 @@ export const DropdownListWidget = function ({
             // On opening a Bootstrap Dropdown, the parent element receives focus.
             // Here, we want our search input to have focus instead.
             e.preventDefault();
-            search_input.trigger("focus");
+            // This function gets called twice when focusing the
+            // dropdown, and only in the second call is the input
+            // field visible in the DOM; so the following visibility
+            // check ensures we wait for the second call to focus.
+            if (dropdown_list_body.is(":visible")) {
+                search_input.trigger("focus");
+            }
         });
 
         search_input.on("keydown", (e) => {
