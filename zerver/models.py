@@ -73,6 +73,7 @@ from zerver.lib.types import (
     ExtendedFieldElement,
     ExtendedValidator,
     FieldElement,
+    LinkifierDict,
     ProfileData,
     ProfileDataElementBase,
     RealmUserValidator,
@@ -892,33 +893,55 @@ def get_linkifiers_cache_key(realm_id: int) -> str:
 
 
 # We have a per-process cache to avoid doing 1000 remote cache queries during page load
-per_request_linkifiers_cache: Dict[int, List[Tuple[str, str, int]]] = {}
+per_request_linkifiers_cache: Dict[int, List[LinkifierDict]] = {}
 
 
 def realm_in_local_linkifiers_cache(realm_id: int) -> bool:
     return realm_id in per_request_linkifiers_cache
 
 
-def linkifiers_for_realm(realm_id: int) -> List[Tuple[str, str, int]]:
+def linkifiers_for_realm(realm_id: int) -> List[LinkifierDict]:
     if not realm_in_local_linkifiers_cache(realm_id):
         per_request_linkifiers_cache[realm_id] = linkifiers_for_realm_remote_cache(realm_id)
     return per_request_linkifiers_cache[realm_id]
 
 
+def realm_filters_for_realm(realm_id: int) -> List[Tuple[str, str, int]]:
+    """
+    Processes data from `linkifiers_for_realm` to return to older clients,
+    which use the `realm_filters` events.
+    """
+    linkifiers = linkifiers_for_realm(realm_id)
+    realm_filters: List[Tuple[str, str, int]] = []
+    for linkifier in linkifiers:
+        realm_filters.append((linkifier["pattern"], linkifier["url_format"], linkifier["id"]))
+    return realm_filters
+
+
 @cache_with_key(get_linkifiers_cache_key, timeout=3600 * 24 * 7)
-def linkifiers_for_realm_remote_cache(realm_id: int) -> List[Tuple[str, str, int]]:
+def linkifiers_for_realm_remote_cache(realm_id: int) -> List[LinkifierDict]:
     filters = []
     for linkifier in RealmFilter.objects.filter(realm_id=realm_id):
-        filters.append((linkifier.pattern, linkifier.url_format_string, linkifier.id))
+        filters.append(
+            LinkifierDict(
+                pattern=linkifier.pattern,
+                url_format=linkifier.url_format_string,
+                id=linkifier.id,
+            )
+        )
 
     return filters
 
 
-def all_linkifiers_for_installation() -> Dict[int, List[Tuple[str, str, int]]]:
-    filters: DefaultDict[int, List[Tuple[str, str, int]]] = defaultdict(list)
+def all_linkifiers_for_installation() -> Dict[int, List[LinkifierDict]]:
+    filters: DefaultDict[int, List[LinkifierDict]] = defaultdict(list)
     for linkifier in RealmFilter.objects.all():
         filters[linkifier.realm_id].append(
-            (linkifier.pattern, linkifier.url_format_string, linkifier.id)
+            LinkifierDict(
+                pattern=linkifier.pattern,
+                url_format=linkifier.url_format_string,
+                id=linkifier.id,
+            )
         )
 
     return filters

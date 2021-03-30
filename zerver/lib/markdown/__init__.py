@@ -63,6 +63,7 @@ from zerver.lib.tex import render_tex
 from zerver.lib.thumbnail import user_uploads_or_external
 from zerver.lib.timeout import TimeoutExpired, timeout
 from zerver.lib.timezone import common_timezones
+from zerver.lib.types import LinkifierDict
 from zerver.lib.url_encoding import encode_stream, hash_util_encode
 from zerver.lib.url_preview import preview as link_preview
 from zerver.models import (
@@ -2103,7 +2104,7 @@ class Markdown(markdown.Markdown):
 
     def __init__(
         self,
-        linkifiers: List[Tuple[str, str, int]],
+        linkifiers: List[LinkifierDict],
         linkifiers_key: int,
         email_gateway: bool,
     ) -> None:
@@ -2249,9 +2250,10 @@ class Markdown(markdown.Markdown):
         return reg
 
     def register_linkifiers(self, inlinePatterns: markdown.util.Registry) -> markdown.util.Registry:
-        for (pattern, format_string, id) in self.linkifiers:
+        for linkifier in self.linkifiers:
+            pattern = linkifier["pattern"]
             inlinePatterns.register(
-                LinkifierPattern(pattern, format_string, self),
+                LinkifierPattern(pattern, linkifier["url_format"], self),
                 f"linkifiers/{pattern}",
                 45,
             )
@@ -2302,7 +2304,7 @@ class Markdown(markdown.Markdown):
 
 
 md_engines: Dict[Tuple[int, bool], Markdown] = {}
-linkifier_data: Dict[int, List[Tuple[str, str, int]]] = {}
+linkifier_data: Dict[int, List[LinkifierDict]] = {}
 
 
 def make_md_engine(linkifiers_key: int, email_gateway: bool) -> None:
@@ -2331,8 +2333,8 @@ def topic_links(linkifiers_key: int, topic_name: str) -> List[Dict[str, str]]:
     linkifiers = linkifiers_for_realm(linkifiers_key)
 
     for linkifier in linkifiers:
-        raw_pattern = linkifier[0]
-        url_format_string = linkifier[1]
+        raw_pattern = linkifier["pattern"]
+        url_format_string = linkifier["url_format"]
         pattern = prepare_linkifier_pattern(raw_pattern)
         for m in re.finditer(pattern, topic_name):
             match_details = m.groupdict()

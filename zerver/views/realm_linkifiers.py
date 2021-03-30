@@ -6,12 +6,12 @@ from zerver.decorator import require_realm_admin
 from zerver.lib.actions import do_add_linkifier, do_remove_linkifier
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
-from zerver.models import RealmFilter, UserProfile, linkifiers_for_realm
+from zerver.models import RealmFilter, UserProfile, realm_filters_for_realm
 
 
 # Custom realm linkifiers
 def list_linkifiers(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-    filters = linkifiers_for_realm(user_profile.realm_id)
+    filters = realm_filters_for_realm(user_profile.realm_id)
     return json_success({"filters": filters})
 
 

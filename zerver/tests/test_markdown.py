@@ -45,6 +45,7 @@ from zerver.lib.message import render_markdown
 from zerver.lib.request import JsonableError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.tex import render_tex
+from zerver.lib.types import LinkifierDict
 from zerver.lib.user_groups import create_user_group
 from zerver.models import (
     MAX_MESSAGE_LENGTH,
@@ -1434,9 +1435,13 @@ class MarkdownTest(ZulipTestCase):
         all_linkifiers = zerver.lib.markdown.linkifier_data
         zulip_linkifiers = all_linkifiers[realm.id]
         self.assertEqual(len(zulip_linkifiers), 1)
-        self.assertEqual(
+        self.assertDictEqual(
             zulip_linkifiers[0],
-            ("#(?P<id>[0-9]{2,8})", "https://trac.example.com/ticket/%(id)s", linkifier.id),
+            LinkifierDict(
+                pattern="#(?P<id>[0-9]{2,8})",
+                url_format="https://trac.example.com/ticket/%(id)s",
+                id=linkifier.id,
+            ),
         )
 
     def test_flush_linkifier(self) -> None:
