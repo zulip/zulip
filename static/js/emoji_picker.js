@@ -11,6 +11,7 @@ import render_emoji_showcase from "../templates/emoji_showcase.hbs";
 import * as blueslip from "./blueslip";
 import * as compose_ui from "./compose_ui";
 import {i18n} from "./i18n";
+import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
@@ -253,7 +254,7 @@ function filter_emojis() {
 }
 
 function toggle_reaction(emoji_name, event) {
-    const message_id = current_msg_list.selected_id();
+    const message_id = message_lists.current.selected_id();
     const message = message_store.get(message_id);
     if (!message) {
         blueslip.error("reactions: Bad message id: " + message_id);
@@ -658,7 +659,7 @@ export function toggle_emoji_popover(element, id) {
     $(element).closest(".message_row").toggleClass("has_popover has_emoji_popover");
     const elt = $(element);
     if (id !== undefined) {
-        current_msg_list.select_id(id);
+        message_lists.current.select_id(id);
     }
 
     if (elt.data("popover") === undefined) {

@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
@@ -14,6 +14,7 @@ const event_fixtures = events.fixtures;
 const test_user = events.test_user;
 
 const compose_fade = mock_esm("../../static/js/compose_fade");
+const message_lists = mock_esm("../../static/js/message_lists");
 const narrow_state = mock_esm("../../static/js/narrow_state");
 const overlays = mock_esm("../../static/js/overlays");
 const settings_org = mock_esm("../../static/js/settings_org");
@@ -21,7 +22,7 @@ const settings_streams = mock_esm("../../static/js/settings_streams");
 const stream_events = mock_esm("../../static/js/stream_events");
 const stream_list = mock_esm("../../static/js/stream_list");
 const subs = mock_esm("../../static/js/subs");
-set_global("current_msg_list", {});
+message_lists.current = {};
 
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
@@ -213,7 +214,7 @@ test("stream delete (normal)", (override) => {
     narrow_state.is_for_stream_id = () => true;
 
     let bookend_updates = 0;
-    override(current_msg_list, "update_trailing_bookend", () => {
+    override(message_lists.current, "update_trailing_bookend", () => {
         bookend_updates += 1;
     });
 
@@ -254,7 +255,7 @@ test("stream delete (special streams)", (override) => {
     override(subs, "remove_stream", noop);
     override(settings_org, "sync_realm_settings", noop);
     override(settings_streams, "update_default_streams_table", noop);
-    override(current_msg_list, "update_trailing_bookend", noop);
+    override(message_lists.current, "update_trailing_bookend", noop);
     override(stream_list, "remove_sidebar_row", noop);
 
     dispatch(event);

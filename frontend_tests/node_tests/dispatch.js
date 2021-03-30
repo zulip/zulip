@@ -32,6 +32,7 @@ const markdown = mock_esm("../../static/js/markdown");
 const message_edit = mock_esm("../../static/js/message_edit");
 const message_events = mock_esm("../../static/js/message_events");
 const message_list = mock_esm("../../static/js/message_list");
+const message_lists = mock_esm("../../static/js/message_lists");
 const muting_ui = mock_esm("../../static/js/muting_ui");
 const night_mode = mock_esm("../../static/js/night_mode");
 const notifications = mock_esm("../../static/js/notifications");
@@ -65,8 +66,8 @@ mock_esm("../../static/js/compose");
 
 const electron_bridge = set_global("electron_bridge", {});
 
-set_global("current_msg_list", {});
-set_global("home_msg_list", {});
+message_lists.current = {};
+message_lists.home = {};
 
 // page_params is highly coupled to dispatching now
 
@@ -629,20 +630,20 @@ run_test("update_display_settings", (override) => {
     dispatch(event);
     assert_same(page_params.left_side_userlist, true);
 
-    // We alias message_list.narrowed to current_msg_list
+    // We alias message_list.narrowed to message_lists.current
     // to make sure we get line coverage on re-rendering
     // the current message list.  The actual code tests
     // that these two objects are equal.  It is possible
     // we want a better strategy for that, or at least
     // a helper.
-    message_list.narrowed = current_msg_list;
+    message_list.narrowed = message_lists.current;
 
     let called = false;
-    current_msg_list.rerender = () => {
+    message_lists.current.rerender = () => {
         called = true;
     };
 
-    override(home_msg_list, "rerender", noop);
+    override(message_lists.home, "rerender", noop);
     event = event_fixtures.update_display_settings__twenty_four_hour_time;
     page_params.twenty_four_hour_time = false;
     dispatch(event);

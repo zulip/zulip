@@ -3,6 +3,7 @@ import $ from "jquery";
 import * as blueslip from "./blueslip";
 import * as color_data from "./color_data";
 import * as message_list from "./message_list";
+import * as message_lists from "./message_lists";
 import * as message_util from "./message_util";
 import * as message_view_header from "./message_view_header";
 import * as narrow_state from "./narrow_state";
@@ -126,7 +127,7 @@ export function mark_subscribed(sub, subscribers, color) {
     message_view_header.maybe_rerender_title_area_for_stream(sub);
 
     if (narrow_state.is_for_stream_id(sub.stream_id)) {
-        current_msg_list.update_trailing_bookend();
+        message_lists.current.update_trailing_bookend();
     }
 
     // Update unread counts as the new stream in sidebar might
@@ -154,7 +155,7 @@ export function mark_unsubscribed(sub) {
     }
 
     if (narrow_state.is_for_stream_id(sub.stream_id)) {
-        current_msg_list.update_trailing_bookend();
+        message_lists.current.update_trailing_bookend();
     }
 
     stream_list.remove_sidebar_row(sub.stream_id);

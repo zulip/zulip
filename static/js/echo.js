@@ -7,6 +7,7 @@ import * as local_message from "./local_message";
 import * as markdown from "./markdown";
 import * as message_events from "./message_events";
 import * as message_list from "./message_list";
+import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as narrow_state from "./narrow_state";
 import * as notifications from "./notifications";
@@ -188,7 +189,7 @@ export function try_deliver_locally(message_request) {
         return undefined;
     }
 
-    if (!current_msg_list.data.fetch_status.has_found_newest()) {
+    if (!message_lists.current.data.fetch_status.has_found_newest()) {
         // If the current message list doesn't yet have the latest
         // messages before the one we just sent, local echo would make
         // it appear as though there were no messages between what we
@@ -282,8 +283,8 @@ export function edit_locally(message, request) {
     // reaching this code path must either have been sent by us or the
     // topic isn't being edited, so unread counts can't have changed.
 
-    home_msg_list.view.rerender_messages([message]);
-    if (current_msg_list === message_list.narrowed) {
+    message_lists.home.view.rerender_messages([message]);
+    if (message_lists.current === message_list.narrowed) {
         message_list.narrowed.view.rerender_messages([message]);
     }
     stream_list.update_streams_sidebar();
@@ -313,7 +314,7 @@ export function reify_message_id(local_id, server_id) {
 }
 
 export function update_message_lists({old_id, new_id}) {
-    for (const msg_list of [message_list.all, home_msg_list, message_list.narrowed]) {
+    for (const msg_list of [message_list.all, message_lists.home, message_list.narrowed]) {
         if (msg_list !== undefined) {
             msg_list.change_message_id(old_id, new_id);
 
@@ -380,8 +381,8 @@ export function process_from_server(messages) {
         // changes in either the rounded timestamp we display or the
         // message content, but in practice, there's no harm to just
         // doing it unconditionally.
-        home_msg_list.view.rerender_messages(msgs_to_rerender);
-        if (current_msg_list === message_list.narrowed) {
+        message_lists.home.view.rerender_messages(msgs_to_rerender);
+        if (message_lists.current === message_list.narrowed) {
             message_list.narrowed.view.rerender_messages(msgs_to_rerender);
         }
     }
@@ -402,7 +403,7 @@ export function message_send_error(message_id, error_response) {
 
 function abort_message(message) {
     // Remove in all lists in which it exists
-    for (const msg_list of [message_list.all, home_msg_list, current_msg_list]) {
+    for (const msg_list of [message_list.all, message_lists.home, message_lists.current]) {
         msg_list.remove_and_rerender([message.id]);
     }
 }

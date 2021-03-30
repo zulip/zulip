@@ -22,6 +22,7 @@ import {i18n} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_flags from "./message_flags";
+import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as muting_ui from "./muting_ui";
 import * as narrow from "./narrow";
@@ -69,7 +70,7 @@ export function initialize() {
             if (!id) {
                 return;
             }
-            current_msg_list.select_id(id);
+            message_lists.current.select_id(id);
             setTimeout(() => {
                 // The algorithm to trigger long tap is that first, we check
                 // whether the message is still touched after MS_DELAY ms and
@@ -168,7 +169,7 @@ export function initialize() {
             return;
         }
 
-        current_msg_list.select_id(id);
+        message_lists.current.select_id(id);
         compose_actions.respond_to_message({trigger: "message click"});
         e.stopPropagation();
         popovers.hide_all();
@@ -230,8 +231,8 @@ export function initialize() {
     $("body").on("click", ".message_edit_notice", (e) => {
         popovers.hide_all();
         const message_id = rows.id($(e.currentTarget).closest(".message_row"));
-        const row = current_msg_list.get_row(message_id);
-        const message = current_msg_list.get(rows.id(row));
+        const row = message_lists.current.get_row(message_id);
+        const message = message_lists.current.get(rows.id(row));
         const message_history_cancel_btn = $("#message-history-cancel");
 
         if (page_params.realm_allow_edit_history) {
@@ -303,8 +304,8 @@ export function initialize() {
     // MESSAGE EDITING
 
     $("body").on("click", ".edit_content_button", function (e) {
-        const row = current_msg_list.get_row(rows.id($(this).closest(".message_row")));
-        current_msg_list.select_id(rows.id(row));
+        const row = message_lists.current.get_row(rows.id($(this).closest(".message_row")));
+        message_lists.current.select_id(rows.id(row));
         message_edit.start(row);
         e.stopPropagation();
         popovers.hide_all();
@@ -499,8 +500,8 @@ export function initialize() {
         const group = rows.get_closest_group(narrow_link_elem);
         const msg_id = rows.id_for_recipient_row(group);
 
-        const nearest = current_msg_list.get(msg_id);
-        const selected = current_msg_list.selected_message();
+        const nearest = message_lists.current.get(msg_id);
+        const selected = message_lists.current.selected_message();
         if (util.same_recipient(nearest, selected)) {
             return selected.id;
         }

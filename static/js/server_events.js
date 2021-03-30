@@ -5,6 +5,7 @@ import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as echo from "./echo";
 import * as message_events from "./message_events";
+import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import {page_params} from "./page_params";
 import * as reload from "./reload";
@@ -135,8 +136,8 @@ function get_events_success(events) {
         }
     }
 
-    if (home_msg_list.selected_id() === -1 && !home_msg_list.empty()) {
-        home_msg_list.select_id(home_msg_list.first().id, {then_scroll: false});
+    if (message_lists.home.selected_id() === -1 && !message_lists.home.empty()) {
+        message_lists.home.select_id(message_lists.home.first().id, {then_scroll: false});
     }
 
     if (update_message_events.length !== 0) {

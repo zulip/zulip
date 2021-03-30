@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 /*
@@ -51,19 +51,20 @@ const {run_test} = require("../zjsunit/test");
 
 const channel = mock_esm("../../static/js/channel");
 const message_list = mock_esm("../../static/js/message_list");
+const message_lists = mock_esm("../../static/js/message_lists");
 const message_viewport = mock_esm("../../static/js/message_viewport");
 const notifications = mock_esm("../../static/js/notifications");
 const overlays = mock_esm("../../static/js/overlays");
 const unread_ui = mock_esm("../../static/js/unread_ui");
+
+message_lists.current = {};
+message_lists.home = {};
 
 const message_store = zrequire("message_store");
 const recent_topics = zrequire("recent_topics");
 const stream_data = zrequire("stream_data");
 const unread = zrequire("unread");
 const unread_ops = zrequire("unread_ops");
-
-const current_msg_list = set_global("current_msg_list", {});
-const home_msg_list = set_global("home_msg_list", {});
 
 const denmark_stream = {
     color: "blue",
@@ -104,14 +105,14 @@ run_test("unread_ops", (override) => {
     // Make us not be in a narrow (somewhat hackily).
     message_list.narrowed = undefined;
 
-    // Set current_msg_list containing messages that can be marked read
-    override(current_msg_list, "all_messages", () => test_messages);
+    // Set message_lists.current containing messages that can be marked read
+    override(message_lists.current, "all_messages", () => test_messages);
 
     // Ignore these interactions for now:
     message_list.all = {
         show_message_as_read() {},
     };
-    override(home_msg_list, "show_message_as_read", () => {});
+    override(message_lists.home, "show_message_as_read", () => {});
     override(notifications, "close_notification", () => {});
     override(unread_ui, "update_unread_counts", () => {});
 
@@ -129,7 +130,7 @@ run_test("unread_ops", (override) => {
     // Set up an override to point to the above var, so we can
     // toggle it easily from within the test (and avoid complicated
     // data setup).
-    override(current_msg_list, "can_mark_messages_read", () => can_mark_messages_read);
+    override(message_lists.current, "can_mark_messages_read", () => can_mark_messages_read);
 
     // First, test for a message list that cannot read messages.
     can_mark_messages_read = false;

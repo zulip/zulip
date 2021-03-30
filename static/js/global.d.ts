@@ -3,8 +3,6 @@
 // remove each declaration when the corresponding module is migrated
 // to TS.
 
-declare let current_msg_list: any;
-declare let home_msg_list: any;
 declare let zulip_test: any;
 
 interface JQuery {

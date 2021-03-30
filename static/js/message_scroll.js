@@ -5,6 +5,7 @@ import * as floating_recipient_bar from "./floating_recipient_bar";
 import * as hash_util from "./hash_util";
 import * as loading from "./loading";
 import * as message_fetch from "./message_fetch";
+import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as narrow_banner from "./narrow_banner";
 import * as narrow_state from "./narrow_state";
@@ -90,11 +91,14 @@ export function show_end_of_results_notice() {
 export function update_top_of_narrow_notices(msg_list) {
     // Assumes that the current state is all notices hidden (i.e. this
     // will not hide a notice that should not be there)
-    if (msg_list !== current_msg_list) {
+    if (msg_list !== message_lists.current) {
         return;
     }
 
-    if (msg_list.data.fetch_status.has_found_oldest() && current_msg_list !== home_msg_list) {
+    if (
+        msg_list.data.fetch_status.has_found_oldest() &&
+        message_lists.current !== message_lists.home
+    ) {
         const filter = narrow_state.filter();
         if (filter === undefined && recent_topics.is_visible()) {
             // user moved away from the narrow / filter to recent topics.
@@ -146,13 +150,13 @@ export function scroll_finished() {
 
     if (message_viewport.at_top()) {
         message_fetch.maybe_load_older_messages({
-            msg_list: current_msg_list,
+            msg_list: message_lists.current,
         });
     }
 
     if (message_viewport.at_bottom()) {
         message_fetch.maybe_load_newer_messages({
-            msg_list: current_msg_list,
+            msg_list: message_lists.current,
         });
     }
 

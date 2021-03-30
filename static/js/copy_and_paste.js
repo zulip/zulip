@@ -2,6 +2,7 @@ import $ from "jquery";
 import TurndownService from "turndown/lib/turndown.cjs";
 
 import * as compose_ui from "./compose_ui";
+import * as message_lists from "./message_lists";
 import {page_params} from "./page_params";
 import * as rows from "./rows";
 
@@ -83,7 +84,7 @@ function construct_copy_div(div, start_id, end_id) {
             last_recipient_row_id = recipient_row_id;
             should_include_start_recipient_header = true;
         }
-        const message = current_msg_list.get(rows.id(row));
+        const message = message_lists.current.get(rows.id(row));
         const message_firstp = $(message.content).slice(0, 1);
         message_firstp.prepend(message.sender_full_name + ": ");
         div.append(message_firstp);

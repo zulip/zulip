@@ -84,6 +84,7 @@ EXEMPT_FILES = {
     "static/js/message_list_data.js",
     "static/js/message_list.js",
     "static/js/message_list_view.js",
+    "static/js/message_lists.js",
     "static/js/message_live_update.js",
     "static/js/message_scroll.js",
     "static/js/message_util.js",

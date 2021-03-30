@@ -6,6 +6,7 @@ import * as compose_fade_helper from "./compose_fade_helper";
 import * as compose_fade_users from "./compose_fade_users";
 import * as compose_state from "./compose_state";
 import * as floating_recipient_bar from "./floating_recipient_bar";
+import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as people from "./people";
 import * as rows from "./rows";
@@ -45,7 +46,7 @@ export function set_focused_recipient(msg_type) {
 }
 
 function display_messages_normally() {
-    const table = rows.get_table(current_msg_list.table_name);
+    const table = rows.get_table(message_lists.current.table_name);
     table.find(".recipient_row").removeClass("message-fade");
 
     normal_display = true;
@@ -72,7 +73,7 @@ function fade_messages() {
     // Update the visible messages first, before the compose box opens
     for (i = 0; i < visible_groups.length; i += 1) {
         first_row = rows.first_message_in_group(visible_groups[i]);
-        first_message = current_msg_list.get(rows.id(first_row));
+        first_message = message_lists.current.get(rows.id(first_row));
         should_fade_group = compose_fade_helper.should_fade_message(first_message);
 
         change_fade_state($(visible_groups[i]), should_fade_group);
@@ -81,10 +82,12 @@ function fade_messages() {
     // Defer updating all message groups so that the compose box can open sooner
     setTimeout(
         (expected_msg_list, expected_recipient) => {
-            const all_groups = rows.get_table(current_msg_list.table_name).find(".recipient_row");
+            const all_groups = rows
+                .get_table(message_lists.current.table_name)
+                .find(".recipient_row");
 
             if (
-                current_msg_list !== expected_msg_list ||
+                message_lists.current !== expected_msg_list ||
                 !compose_state.composing() ||
                 compose_state.private_message_recipient() !== expected_recipient
             ) {
@@ -106,7 +109,7 @@ function fade_messages() {
             floating_recipient_bar.update();
         },
         0,
-        current_msg_list,
+        message_lists.current,
         compose_state.private_message_recipient(),
     );
 }

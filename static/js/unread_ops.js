@@ -1,6 +1,7 @@
 import * as channel from "./channel";
 import * as message_flags from "./message_flags";
 import * as message_list from "./message_list";
+import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
 import * as notifications from "./notifications";
@@ -31,7 +32,7 @@ export function mark_all_as_read() {
 }
 
 function process_newly_read_message(message, options) {
-    home_msg_list.show_message_as_read(message, options);
+    message_lists.home.show_message_as_read(message, options);
     message_list.all.show_message_as_read(message, options);
     if (message_list.narrowed) {
         message_list.narrowed.show_message_as_read(message, options);
@@ -56,7 +57,7 @@ export function process_read_messages_event(message_ids) {
     }
 
     for (const message_id of message_ids) {
-        if (current_msg_list === message_list.narrowed) {
+        if (message_lists.current === message_list.narrowed) {
             // I'm not sure this entirely makes sense for all server
             // notifications.
             unread.set_messages_read_in_narrow(true);
@@ -86,7 +87,7 @@ export function notify_server_messages_read(messages, options) {
     message_flags.send_read(messages);
 
     for (const message of messages) {
-        if (current_msg_list === message_list.narrowed) {
+        if (message_lists.current === message_list.narrowed) {
             unread.set_messages_read_in_narrow(true);
         }
 
@@ -108,13 +109,16 @@ export function process_visible() {
         return;
     }
 
-    if (message_viewport.bottom_message_visible() && current_msg_list.can_mark_messages_read()) {
+    if (
+        message_viewport.bottom_message_visible() &&
+        message_lists.current.can_mark_messages_read()
+    ) {
         mark_current_list_as_read();
     }
 }
 
 export function mark_current_list_as_read(options) {
-    notify_server_messages_read(current_msg_list.all_messages(), options);
+    notify_server_messages_read(message_lists.current.all_messages(), options);
 }
 
 export function mark_stream_as_read(stream_id, cont) {
