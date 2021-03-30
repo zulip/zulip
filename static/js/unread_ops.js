@@ -33,7 +33,6 @@ export function mark_all_as_read() {
 
 function process_newly_read_message(message, options) {
     message_lists.home.show_message_as_read(message, options);
-    message_list.all.show_message_as_read(message, options);
     if (message_list.narrowed) {
         message_list.narrowed.show_message_as_read(message, options);
     }

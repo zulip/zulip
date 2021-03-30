@@ -37,8 +37,8 @@ const topic9 = "topic-9";
 const topic10 = "topic-10";
 
 mock_cjs("jquery", $);
-const message_list = mock_esm("../../static/js/message_list", {
-    all: {
+const {all_messages_data} = mock_esm("../../static/js/all_messages_data", {
+    all_messages_data: {
         all_messages() {
             return messages;
         },
@@ -698,7 +698,7 @@ test("test_delete_messages", (override) => {
 
     // messages[0] was removed.
     let reduced_msgs = messages.slice(1);
-    override(message_list.all, "all_messages", () => reduced_msgs);
+    override(all_messages_data, "all_messages", () => reduced_msgs);
 
     let all_topics = rt.get();
     assert.equal(

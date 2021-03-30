@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as compose from "./compose";
@@ -416,10 +417,10 @@ function min_defined(a, b) {
 function load_local_messages(msg_data) {
     // This little helper loads messages into our narrow message
     // data and returns true unless it's empty.  We use this for
-    // cases when our local cache (message_list.all) has at least
+    // cases when our local cache (all_messages_data) has at least
     // one message the user will expect to see in the new narrow.
 
-    const in_msgs = message_list.all.all_messages();
+    const in_msgs = all_messages_data.all_messages();
     msg_data.add_messages(in_msgs);
 
     return !msg_data.empty();
@@ -525,8 +526,8 @@ export function maybe_add_local_messages(opts) {
         // Without unread messages or a target ID, we're narrowing to
         // the very latest message or first unread if matching the narrow allows.
 
-        if (!message_list.all.data.fetch_status.has_found_newest()) {
-            // If message_list.all is not caught up, then we cannot
+        if (!all_messages_data.fetch_status.has_found_newest()) {
+            // If all_messages_data is not caught up, then we cannot
             // populate the latest messages for the target narrow
             // correctly from there, so we must go to the server.
             return;
@@ -534,7 +535,7 @@ export function maybe_add_local_messages(opts) {
         if (!load_local_messages(msg_data)) {
             return;
         }
-        // Otherwise, we have matching messages, and message_list.all
+        // Otherwise, we have matching messages, and all_messages_data
         // is caught up, so the last message in our now-populated
         // msg_data object must be the last message matching the
         // narrow the server could give us, so we can render locally.
@@ -550,14 +551,15 @@ export function maybe_add_local_messages(opts) {
     id_info.final_select_id = id_info.target_id;
 
     // TODO: We could improve on this next condition by considering
-    // cases where `message_list.all.has_found_oldest(); which would
-    // come up with e.g. `near: 0` in a small organization.
+    // cases where
+    // `all_messages_data.fetch_status.has_found_oldest()`; which
+    // would come up with e.g. `near: 0` in a small organization.
     //
     // And similarly for `near: max_int` with has_found_newest.
     if (
-        message_list.all.empty() ||
-        id_info.target_id < message_list.all.first().id ||
-        id_info.target_id > message_list.all.last().id
+        all_messages_data.empty() ||
+        id_info.target_id < all_messages_data.first().id ||
+        id_info.target_id > all_messages_data.last().id
     ) {
         // If the target message is outside the range that we had
         // available for local population, we must go to the server.

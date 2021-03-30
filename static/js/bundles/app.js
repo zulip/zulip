@@ -11,7 +11,6 @@ import "flatpickr";
 
 // Import app JS
 import "../setup";
-import "../message_list";
 import "../reload";
 import "../hotkey";
 import "../notifications";

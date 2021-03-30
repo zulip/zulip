@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-const message_list = mock_esm("../../static/js/message_list");
+const all_messages_data = mock_esm("../../static/js/all_messages_data");
 
 const {Filter} = zrequire("../js/filter");
 const {MessageListData} = zrequire("../js/message_list_data");
@@ -38,11 +38,9 @@ function test_with(fixture) {
         final_select_id: undefined,
     };
 
-    message_list.all = {
-        data: {
-            fetch_status: {
-                has_found_newest: () => fixture.has_found_newest,
-            },
+    all_messages_data.all_messages_data = {
+        fetch_status: {
+            has_found_newest: () => fixture.has_found_newest,
         },
         empty: () => fixture.empty,
         all_messages: () => {
@@ -394,7 +392,7 @@ run_test("stream/topic not in all_messages", () => {
     // This is a bit of a corner case, but you could have a scenario
     // where you've gone way back in a topic (perhaps something that
     // has been muted a long time) and find an unread message that isn't
-    // actually in message_list.all.
+    // actually in all_messages_data.
     const fixture = {
         filter_terms: [
             {operator: "stream", operand: "one"},

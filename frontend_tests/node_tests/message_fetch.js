@@ -48,6 +48,7 @@ set_global("document", "document-stub");
 
 const message_fetch = zrequire("message_fetch");
 
+const {all_messages_data} = zrequire("all_messages_data");
 const {Filter} = zrequire("../js/filter");
 const message_list = zrequire("message_list");
 const people = zrequire("people");
@@ -76,16 +77,11 @@ function make_home_msg_list() {
     return list;
 }
 
-function make_all_list() {
-    return new message_list.MessageList({});
-}
-
 function reset_lists() {
     message_lists.home = make_home_msg_list();
     message_lists.current = message_lists.home;
-    message_list.__Rewire__("all", make_all_list());
+    all_messages_data.clear();
     stub_message_view(message_lists.home);
-    stub_message_view(message_list.all);
 }
 
 function config_fake_channel(conf) {
@@ -460,8 +456,7 @@ run_test("loading_newer", () => {
             empty_msg_list: true,
         });
 
-        message_list.all.append_to_view = () => {};
-        message_list.all.append(message_range(444, 445), false);
+        all_messages_data.append(message_range(444, 445), false);
 
         test_happy_path({
             msg_list,

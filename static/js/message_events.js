@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import * as alert_words from "./alert_words";
+import {all_messages_data} from "./all_messages_data";
 import * as channel from "./channel";
 import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
@@ -94,9 +95,9 @@ export function insert_new_messages(messages, sent_by_this_client) {
     unread.process_loaded_messages(messages);
     huddle_data.process_loaded_messages(messages);
 
-    // message_list.all is a data-only list that we use to populate
+    // all_messages_data is the data that we use to populate
     // other lists, so we always update this
-    message_util.add_new_messages(messages, message_list.all);
+    message_util.add_new_messages_data(messages, all_messages_data);
 
     let render_info;
 
@@ -422,7 +423,8 @@ export function update_messages(events) {
 }
 
 export function remove_messages(message_ids) {
-    for (const list of [message_list.all, message_lists.home, message_list.narrowed]) {
+    all_messages_data.remove(message_ids);
+    for (const list of [message_lists.home, message_list.narrowed]) {
         if (list === undefined) {
             continue;
         }

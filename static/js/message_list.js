@@ -414,7 +414,3 @@ export class MessageList {
         return this.data.get_last_message_sent_by_me();
     }
 }
-
-export const all = new MessageList({
-    excludes_muted_topics: false,
-});

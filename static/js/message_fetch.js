@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import {all_messages_data} from "./all_messages_data";
 import * as channel from "./channel";
 import {Filter} from "./filter";
 import * as huddle_data from "./huddle_data";
@@ -62,10 +63,10 @@ function process_result(data, opts) {
     message_util.do_unread_count_updates(messages);
 
     // If we're loading more messages into the home view, save them to
-    // the message_list.all as well, as the message_lists.home is reconstructed
-    // from message_list.all.
+    // the all_messages_data as well, as the message_lists.home is
+    // reconstructed from all_messages_data.
     if (opts.msg_list === message_lists.home) {
-        message_util.add_old_messages(messages, message_list.all);
+        all_messages_data.add_messages(messages);
     }
 
     if (messages.length !== 0) {
@@ -94,10 +95,8 @@ function get_messages_success(data, opts) {
         });
         if (opts.msg_list === message_lists.home) {
             // When we update message_lists.home, we need to also update
-            // the fetch_status data structure for message_list.all,
-            // which is never rendered (and just used for
-            // prepopulating narrowed views).
-            message_list.all.data.fetch_status.finish_older_batch({
+            // the fetch_status data structure for all_messages_data.
+            all_messages_data.fetch_status.finish_older_batch({
                 update_loading_indicator: false,
                 found_oldest: data.found_oldest,
                 history_limited: data.history_limited,
@@ -113,16 +112,11 @@ function get_messages_success(data, opts) {
         });
         if (opts.msg_list === message_lists.home) {
             // When we update message_lists.home, we need to also update
-            // the fetch_status data structure for message_list.all,
-            // which is never rendered (and just used for
-            // prepopulating narrowed views).
-            opts.fetch_again = message_list.all.data.fetch_status.finish_newer_batch(
-                data.messages,
-                {
-                    update_loading_indicator: false,
-                    found_newest: data.found_newest,
-                },
-            );
+            // the fetch_status data structure for all_messages_data.
+            opts.fetch_again = all_messages_data.fetch_status.finish_newer_batch(data.messages, {
+                update_loading_indicator: false,
+                found_newest: data.found_newest,
+            });
         }
     }
 
@@ -198,7 +192,7 @@ export function load_messages(opts) {
     // This block is a hack; structurally, we want to set
     //   data.narrow = opts.msg_list.data.filter.public_operators()
     //
-    // But support for the message_list.all sharing of data with
+    // But support for the all_messages_data sharing of data with
     // message_lists.home and the (hacky) page_params.narrow feature
     // requires a somewhat ugly bundle of conditionals.
     if (opts.msg_list === message_lists.home) {
@@ -224,7 +218,7 @@ export function load_messages(opts) {
             update_loading_indicator,
         });
         if (opts.msg_list === message_lists.home) {
-            message_list.all.data.fetch_status.start_older_batch({
+            all_messages_data.fetch_status.start_older_batch({
                 update_loading_indicator,
             });
         }
@@ -237,7 +231,7 @@ export function load_messages(opts) {
             update_loading_indicator,
         });
         if (opts.msg_list === message_lists.home) {
-            message_list.all.data.fetch_status.start_newer_batch({
+            all_messages_data.fetch_status.start_newer_batch({
                 update_loading_indicator,
             });
         }
@@ -295,11 +289,9 @@ export function load_messages_for_narrow(opts) {
 }
 
 export function get_backfill_anchor(msg_list) {
-    if (msg_list === message_lists.home) {
-        msg_list = message_list.all;
-    }
+    const oldest_msg =
+        msg_list === message_lists.home ? all_messages_data.first() : msg_list.first();
 
-    const oldest_msg = msg_list.first();
     if (oldest_msg) {
         return oldest_msg.id;
     }
@@ -310,11 +302,7 @@ export function get_backfill_anchor(msg_list) {
 }
 
 export function get_frontfill_anchor(msg_list) {
-    if (msg_list === message_lists.home) {
-        msg_list = message_list.all;
-    }
-
-    const last_msg = msg_list.last();
+    const last_msg = msg_list === message_lists.home ? all_messages_data.last() : msg_list.last();
 
     if (last_msg) {
         return last_msg.id;

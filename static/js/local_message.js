@@ -1,5 +1,5 @@
+import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
-import * as message_list from "./message_list";
 import {page_params} from "./page_params";
 
 function truncate_precision(float) {
@@ -12,8 +12,8 @@ export const get_next_id_float = (function () {
     return function () {
         const local_id_increment = 0.01;
         let latest = page_params.max_message_id;
-        if (message_list.all.last() !== undefined) {
-            latest = message_list.all.last().id;
+        if (all_messages_data.last() !== undefined) {
+            latest = all_messages_data.last().id;
         }
         latest = Math.max(0, latest);
         const local_id_float = truncate_precision(latest + local_id_increment);

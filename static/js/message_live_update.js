@@ -4,7 +4,7 @@ import * as message_store from "./message_store";
 import * as people from "./people";
 
 function rerender_messages_view() {
-    for (const list of [message_lists.home, message_list.narrowed, message_list.all]) {
+    for (const list of [message_lists.home, message_list.narrowed]) {
         if (list === undefined) {
             continue;
         }

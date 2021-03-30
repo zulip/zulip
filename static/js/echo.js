@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import * as alert_words from "./alert_words";
+import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
 import * as compose from "./compose";
 import * as local_message from "./local_message";
@@ -314,7 +315,10 @@ export function reify_message_id(local_id, server_id) {
 }
 
 export function update_message_lists({old_id, new_id}) {
-    for (const msg_list of [message_list.all, message_lists.home, message_list.narrowed]) {
+    if (all_messages_data !== undefined) {
+        all_messages_data.change_message_id(old_id, new_id);
+    }
+    for (const msg_list of [message_lists.home, message_list.narrowed]) {
         if (msg_list !== undefined) {
             msg_list.change_message_id(old_id, new_id);
 
@@ -403,7 +407,8 @@ export function message_send_error(message_id, error_response) {
 
 function abort_message(message) {
     // Remove in all lists in which it exists
-    for (const msg_list of [message_list.all, message_lists.home, message_lists.current]) {
+    all_messages_data.remove([message.id]);
+    for (const msg_list of [message_lists.home, message_lists.current]) {
         msg_list.remove_and_rerender([message.id]);
     }
 }

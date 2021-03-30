@@ -1,8 +1,8 @@
 import $ from "jquery";
 
+import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
 import * as color_data from "./color_data";
-import * as message_list from "./message_list";
 import * as message_lists from "./message_lists";
 import * as message_util from "./message_util";
 import * as message_view_header from "./message_view_header";
@@ -132,7 +132,7 @@ export function mark_subscribed(sub, subscribers, color) {
 
     // Update unread counts as the new stream in sidebar might
     // need its unread counts re-calculated
-    message_util.do_unread_count_updates(message_list.all.all_messages());
+    message_util.do_unread_count_updates(all_messages_data.all_messages());
 
     stream_list.add_sidebar_row(sub);
 }

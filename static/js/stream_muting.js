@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import * as message_list from "./message_list";
+import {all_messages_data} from "./all_messages_data";
 import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
 import * as message_util from "./message_util";
@@ -27,8 +27,8 @@ export function update_is_muted(sub, value) {
 
         message_lists.home.clear({clear_selected_id: false});
 
-        // Recreate the message_lists.home with the newly filtered message_list.all
-        message_util.add_old_messages(message_list.all.all_messages(), message_lists.home);
+        // Recreate the message_lists.home with the newly filtered all_messages_data
+        message_util.add_old_messages(all_messages_data.all_messages(), message_lists.home);
 
         // Ensure we're still at the same scroll position
         if (overlays.is_active()) {

@@ -8,7 +8,7 @@ const {run_test} = require("../zjsunit/test");
 const channel = mock_esm("../../static/js/channel");
 const message_util = mock_esm("../../static/js/message_util");
 
-const message_list = zrequire("message_list");
+const all_messages_data = zrequire("all_messages_data");
 const unread = zrequire("unread");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
@@ -128,21 +128,19 @@ test("is_complete_for_stream_id", () => {
     };
     stream_data.add_sub(sub);
 
-    const message_list_all = {
+    const all_messages_data_stub = {
         empty: () => false,
-        data: {
-            fetch_status: {
-                has_found_newest: () => true,
-            },
+        fetch_status: {
+            has_found_newest: () => true,
         },
         first: () => ({id: 5}),
     };
 
-    with_field(message_list, "all", message_list_all, () => {
+    with_field(all_messages_data, "all_messages_data", all_messages_data_stub, () => {
         assert.equal(stream_topic_history.is_complete_for_stream_id(sub.stream_id), true);
 
         // Now simulate a more recent message id.
-        message_list.all.first = () => ({id: sub.first_message_id + 1});
+        all_messages_data.all_messages_data.first = () => ({id: sub.first_message_id + 1});
 
         // Note that we'll return `true` here due to
         // fetched_stream_ids having the stream_id now.
@@ -164,7 +162,7 @@ test("server_history", () => {
     const stream_id = sub.stream_id;
     stream_data.add_sub(sub);
 
-    message_list.all.data.fetch_status.has_found_newest = () => false;
+    all_messages_data.all_messages_data.fetch_status.has_found_newest = () => false;
 
     assert.equal(stream_topic_history.is_complete_for_stream_id(stream_id), false);
 
@@ -355,12 +353,16 @@ test("all_topics_in_cache", (override) => {
 
     assert.equal(stream_topic_history.all_topics_in_cache(sub), false);
 
-    message_list.all.data.clear();
-    message_list.all.data.add_messages(messages);
+    all_messages_data.all_messages_data.clear();
+    all_messages_data.all_messages_data.add_messages(messages);
 
     let has_found_newest = false;
 
-    override(message_list.all.data.fetch_status, "has_found_newest", () => has_found_newest);
+    override(
+        all_messages_data.all_messages_data.fetch_status,
+        "has_found_newest",
+        () => has_found_newest,
+    );
 
     assert.equal(stream_topic_history.all_topics_in_cache(sub), false);
     has_found_newest = true;

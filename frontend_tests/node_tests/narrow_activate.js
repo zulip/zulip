@@ -11,6 +11,7 @@ mock_esm("../../static/js/resize", {
     resize_stream_filters_container: () => {},
 });
 
+const all_messages_data = mock_esm("../../static/js/all_messages_data");
 const channel = mock_esm("../../static/js/channel");
 const compose = mock_esm("../../static/js/compose");
 const compose_actions = mock_esm("../../static/js/compose_actions");
@@ -159,16 +160,14 @@ run_test("basics", () => {
     message_lists.current.selected_id = () => -1;
     message_lists.current.get_row = () => row;
 
-    message_list.all = {
+    all_messages_data.all_messages_data = {
         all_messages: () => messages,
         get: (msg_id) => {
             assert.equal(msg_id, selected_id);
             return selected_message;
         },
-        data: {
-            fetch_status: {
-                has_found_newest: () => true,
-            },
+        fetch_status: {
+            has_found_newest: () => true,
         },
         empty: () => false,
         first: () => ({id: 900}),

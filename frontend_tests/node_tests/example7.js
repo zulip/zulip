@@ -109,9 +109,6 @@ run_test("unread_ops", (override) => {
     override(message_lists.current, "all_messages", () => test_messages);
 
     // Ignore these interactions for now:
-    message_list.all = {
-        show_message_as_read() {},
-    };
     override(message_lists.home, "show_message_as_read", () => {});
     override(notifications, "close_notification", () => {});
     override(unread_ui, "update_unread_counts", () => {});

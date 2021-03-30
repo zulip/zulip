@@ -20,8 +20,8 @@ const subs = mock_esm("../../static/js/subs", {
     update_settings_for_subscribed: noop,
 });
 
-mock_esm("../../static/js/message_list", {
-    all: {
+mock_esm("../../static/js/all_messages_data", {
+    all_messages_data: {
         all_messages() {
             return ["msg"];
         },

@@ -52,7 +52,7 @@ export function reset_scrollbar(element_selector) {
 }
 
 function update_message_in_all_views(message_id, callback) {
-    for (const list of [message_list.all, message_lists.home, message_list.narrowed]) {
+    for (const list of [message_lists.home, message_list.narrowed]) {
         if (list === undefined) {
             continue;
         }
