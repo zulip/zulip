@@ -34,6 +34,7 @@ class StreamDict(TypedDict, total=False):
         - we use it to create a stream
         - we use it to specify a stream
 
+
     It's possible we want a smaller type to use
     for removing streams, but it would complicate
     how we write the types for list_to_stream.
@@ -189,26 +190,33 @@ def subscribed_to_stream(user_profile: UserProfile, stream_id: int) -> bool:
     ).exists()
 
 
-def access_stream_for_send_message(
-    sender: UserProfile, stream: Stream, forwarder_user_profile: Optional[UserProfile]
-) -> None:
-    # Our caller is responsible for making sure that `stream` actually
-    # matches the realm of the sender.
-
-    # Organization admins can send to any stream, irrespective of the stream_post_policy value.
+def check_stream_access_based_on_stream_post_policy(sender: UserProfile, stream: Stream) -> None:
     if sender.is_realm_admin or is_cross_realm_bot_email(sender.delivery_email):
-        pass
-    elif sender.is_bot and (sender.bot_owner is not None and sender.bot_owner.is_realm_admin):
         pass
     elif stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS:
         raise JsonableError(_("Only organization administrators can send to this stream."))
     elif stream.stream_post_policy != Stream.STREAM_POST_POLICY_EVERYONE and sender.is_guest:
         raise JsonableError(_("Guests cannot send to this stream."))
-    elif stream.stream_post_policy == Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS:
-        if sender.is_bot and (sender.bot_owner is None or sender.bot_owner.is_provisional_member):
-            raise JsonableError(_("New members cannot send to this stream."))
-        elif not sender.is_bot and sender.is_provisional_member:
-            raise JsonableError(_("New members cannot send to this stream."))
+    elif (
+        stream.stream_post_policy == Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS
+        and sender.is_provisional_member
+    ):
+        raise JsonableError(_("New members cannot send to this stream."))
+    return
+
+
+def access_stream_for_send_message(
+    sender: UserProfile, stream: Stream, forwarder_user_profile: Optional[UserProfile]
+) -> None:
+    # Our caller is responsible for making sure that `stream` actually
+    # matches the realm of the sender.
+    try:
+        check_stream_access_based_on_stream_post_policy(sender, stream)
+    except JsonableError as e:
+        if sender.is_bot and sender.bot_owner is not None:
+            check_stream_access_based_on_stream_post_policy(sender.bot_owner, stream)
+        else:
+            raise JsonableError(e.msg)
 
     if stream.is_web_public:
         # Even guest users can write to web-public streams.
