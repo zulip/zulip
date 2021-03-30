@@ -193,7 +193,15 @@ export function update_messages(events) {
             const current_filter = narrow_state.filter();
             const current_selected_id = message_lists.current.selected_id();
             const selection_changed_topic = event.message_ids.includes(current_selected_id);
-            const event_messages = event.message_ids.map((id) => message_store.get(id));
+            const event_messages = [];
+            for (const message_id of event.message_ids) {
+                // We don't need to concern ourselves updating data structures
+                // for messages we don't have stored locally.
+                const message = message_store.get(message_id);
+                if (message !== undefined) {
+                    event_messages.push(message);
+                }
+            }
             // The event.message_ids received from the server are not in sorted order.
             event_messages.sort((a, b) => a.id - b.id);
 
@@ -210,10 +218,6 @@ export function update_messages(events) {
             }
 
             for (const msg of event_messages) {
-                if (msg === undefined) {
-                    continue;
-                }
-
                 // Remove the recent topics entry for the old topics;
                 // must be called before we call set_message_topic.
                 //
