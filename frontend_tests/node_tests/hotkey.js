@@ -94,6 +94,7 @@ mock_esm("../../static/js/hotspots", {
 
 mock_esm("../../static/js/recent_topics", {
     is_visible: () => false,
+    is_in_focus: () => false,
 });
 
 message_lists.current = {
