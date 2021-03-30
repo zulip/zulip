@@ -1146,6 +1146,16 @@ def do_deactivate_user(
     if not user_profile.is_active:
         return
 
+    if _cascade:
+        # We need to deactivate bots before the target user, to ensure
+        # that a failure partway through this function cannot result
+        # in only the user being deactivated.
+        bot_profiles = UserProfile.objects.filter(
+            is_bot=True, is_active=True, bot_owner=user_profile
+        )
+        for profile in bot_profiles:
+            do_deactivate_user(profile, _cascade=False, acting_user=acting_user)
+
     with transaction.atomic():
         if user_profile.realm.is_zephyr_mirror_realm:  # nocoverage
             # For zephyr mirror users, we need to make them a mirror dummy
@@ -1199,13 +1209,6 @@ def do_deactivate_user(
             bot=dict(user_id=user_profile.id, full_name=user_profile.full_name),
         )
         send_event(user_profile.realm, event, bot_owner_user_ids(user_profile))
-
-    if _cascade:
-        bot_profiles = UserProfile.objects.filter(
-            is_bot=True, is_active=True, bot_owner=user_profile
-        )
-        for profile in bot_profiles:
-            do_deactivate_user(profile, _cascade=False, acting_user=acting_user)
 
 
 def do_deactivate_stream(
