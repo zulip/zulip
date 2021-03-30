@@ -36,7 +36,7 @@ jobs:
     # This docker image was created by a generated Dockerfile at:
     #   tools/ci/images/bionic/Dockerfile
     # Bionic ships with Python 3.6.
-    container: mepriyank/actions:bionic
+    container: amanagr/actions:bionic
     steps:
       - name: Add required permissions
         run: |
@@ -110,12 +110,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - docker_image: mepriyank/actions:bionic
+          - docker_image: amanagr/actions:bionic
             name: Bionic production install
             is_bionic: true
             os: bionic
 
-          - docker_image: mepriyank/actions:focal
+          - docker_image: amanagr/actions:focal
             name: Focal production install
             is_focal: true
             os: focal
