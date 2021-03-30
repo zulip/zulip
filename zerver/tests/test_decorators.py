@@ -131,11 +131,7 @@ class DecoratorTestCase(ZulipTestCase):
         ) -> int:
             return x + x
 
-        class Request:
-            GET: Dict[str, str] = {}
-            POST: Dict[str, str] = {}
-
-        request = Request()
+        request = HostRequestMock()
 
         request.POST = dict(bogus="5555")
         with self.assertRaises(RequestVariableMissingError):
