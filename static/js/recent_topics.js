@@ -7,6 +7,7 @@ import render_recent_topics_body from "../templates/recent_topics_table.hbs";
 import * as compose_actions from "./compose_actions";
 import * as drafts from "./drafts";
 import * as hash_util from "./hash_util";
+import * as hashchange from "./hashchange";
 import * as ListWidget from "./list_widget";
 import {localstorage} from "./localstorage";
 import * as message_store from "./message_store";
@@ -16,8 +17,10 @@ import * as muting from "./muting";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
+import * as overlays from "./overlays";
 import * as panels from "./panels";
 import * as people from "./people";
+import * as popovers from "./popovers";
 import * as recent_senders from "./recent_senders";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
@@ -66,6 +69,17 @@ const ls = localstorage();
 
 let filters = new Set();
 
+export function is_in_focus() {
+    // Check if user is focused on
+    // recent topics.
+    return (
+        hashchange.in_recent_topics_hash() &&
+        !popovers.any_active() &&
+        !overlays.is_active() &&
+        !$(".home-page-input").is(":focus")
+    );
+}
+
 export function clear_for_tests() {
     filters.clear();
     topics.clear();
@@ -109,8 +123,9 @@ function revive_current_focus() {
     // to the focused element, this function attempts to revive the
     // link and focus to the element prior to the rerender.
 
-    // Don't change focus if user is trying to type anywhere.
-    if ($(".home-page-input").is(":focus")) {
+    // We try to avoid setting focus when user
+    // is not focused on recent topics.
+    if (!is_in_focus()) {
         return false;
     }
 

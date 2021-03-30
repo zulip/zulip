@@ -530,14 +530,7 @@ export function process_hotkey(e, hotkey) {
         case "tab":
         case "shift_tab":
         case "open_recent_topics":
-            if (
-                hashchange.in_recent_topics_hash() &&
-                !popovers.any_active() &&
-                !overlays.is_active() &&
-                !$("#searchbox_form #search_query").is(":focus") &&
-                !$(".user-list-filter").is(":focus") &&
-                !$(".stream-list-filter").is(":focus")
-            ) {
+            if (recent_topics.is_in_focus()) {
                 return recent_topics.change_focused_element($(e.target), event_name);
             }
     }
