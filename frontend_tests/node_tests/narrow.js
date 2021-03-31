@@ -166,6 +166,11 @@ run_test("show_empty_narrow_message", () => {
     narrow_banner.show_empty_narrow_message();
     assert($("#empty_narrow_self_private_message").visible());
 
+    set_filter([["pm-with", me.email + "," + alice.email]]);
+    hide_all_empty_narrow_messages();
+    narrow_banner.show_empty_narrow_message();
+    assert($("#empty_narrow_multi_private_message").visible());
+
     set_filter([["group-pm-with", "alice@example.com"]]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
