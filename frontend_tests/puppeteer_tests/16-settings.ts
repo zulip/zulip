@@ -22,7 +22,7 @@ async function open_settings(page: Page): Promise<void> {
     await page.waitForSelector(menu_selector, {visible: true});
     await page.click(menu_selector);
 
-    const settings_selector = 'a[href="#settings"]';
+    const settings_selector = '.dropdown-menu a[href="#settings"]';
     await page.waitForSelector(settings_selector, {visible: true});
     await page.click(settings_selector);
 
