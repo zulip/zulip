@@ -466,7 +466,7 @@ export function quote_and_reply(opts) {
         const fence = fenced_code.get_unused_fence(message.raw_content);
         content += `${fence}quote\n${message.raw_content}\n${fence}`;
         compose_ui.replace_syntax("[Quoting…]", content, textarea);
-        autosize.update($("#compose-textarea"));
+        compose_ui.autosize_textarea($("#compose-textarea"));
     }
 
     if (message && message.raw_content) {

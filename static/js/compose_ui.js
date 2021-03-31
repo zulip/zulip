@@ -51,9 +51,7 @@ export function smart_insert(textarea, syntax) {
         textarea.caret(syntax);
     }
 
-    // This should just call exports.autosize_textarea, but it's a bit
-    // annoying for the unit tests, so we don't do that.
-    autosize.update(textarea);
+    autosize_textarea(textarea);
 }
 
 export function insert_syntax_and_focus(syntax, textarea = $("#compose-textarea")) {
