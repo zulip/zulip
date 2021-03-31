@@ -1,4 +1,3 @@
-import autosize from "autosize";
 import {formatISO} from "date-fns";
 import ConfirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
 import $ from "jquery";
@@ -176,7 +175,7 @@ export function handle_enter(textarea, e) {
         // Now add the newline, remembering to resize the
         // textarea if needed.
         textarea.caret("\n");
-        autosize.update(textarea);
+        compose_ui.autosize_textarea(textarea);
         e.preventDefault();
         return;
     }
