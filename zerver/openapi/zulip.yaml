@@ -2286,7 +2286,7 @@ paths:
                                   enum:
                                     - add
                                 group:
-                                  $ref: "#/components/schemas/UserGroup"
+                                  $ref: "#/components/schemas/UserGroupAdd"
                               example:
                                 {
                                   "type": "user_group",
@@ -7288,12 +7288,20 @@ paths:
                       realm_user_groups:
                         type: array
                         items:
-                          $ref: "#/components/schemas/UserGroup"
+                          $ref: "#/components/schemas/UserGroupGet"
                         description: |
                           Present if `realm_user_groups` is present in `fetch_event_types`.
 
                           An array of dictionaries where each dictionary describes a
                           [user group](/help/user-groups) in the Zulip organization.
+                      realm_non_active_user_groups:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/UserGroupGet"
+                        description: |
+                          Present if `realm_non_active_user_groups` is present in `fetch_event_types`.
+                          An array of dictionaries where each dictionary describes a
+                          non active [user group](/help/user-groups) in the Zulip organization.
                       realm_bots:
                         type: array
                         items:
@@ -10157,6 +10165,10 @@ paths:
                               type: string
                               description: |
                                 User group name.
+                            active:
+                              type: boolean
+                              description: |
+                                Whether group is active.
                         description: |
                           A list of `user_group` objects, which contain a `description`, a `name`,
                           their `id` and the list of members of the user group.
@@ -10171,12 +10183,14 @@ paths:
                               "id": 1,
                               "name": "hamletcharacters",
                               "members": [3, 4],
+                              "active": True,
                             },
                             {
                               "description": "Other users",
                               "id": 2,
                               "name": "other users",
                               "members": [1, 2],
+                              "active": True,
                             },
                           ],
                       }
@@ -10890,7 +10904,36 @@ components:
           type: boolean
           description: |
             Whether the export is pending or not.
-    UserGroup:
+    UserGroupGet:
+      type: object
+      additionalProperties: false
+      description: |
+        Object containing the user group's attributes.
+      properties:
+        name:
+          type: string
+          description: |
+            The name of the user group.
+        description:
+          type: string
+          description: |
+            The description of the user group.
+        members:
+          type: array
+          items:
+            type: integer
+          description: |
+            Array containing the id of the users who are
+            members of this user group.
+        id:
+          type: integer
+          description: |
+            The ID of the user group.
+        active:
+          type: boolean
+          description: |
+            Whether group is active.
+    UserGroupAdd:
       type: object
       additionalProperties: false
       description: |

@@ -1013,6 +1013,7 @@ def apply_event(
         pass
     elif event["type"] == "user_group":
         if event["op"] == "add":
+            event["group"]["active"] = True
             state["realm_user_groups"].append(event["group"])
             state["realm_user_groups"].sort(key=lambda group: group["id"])
         elif event["op"] == "update":
@@ -1031,9 +1032,9 @@ def apply_event(
                     user_group["members"] = list(members - set(event["user_ids"]))
                     user_group["members"].sort()
         elif event["op"] == "remove":
-            state["realm_user_groups"] = [
-                ug for ug in state["realm_user_groups"] if ug["id"] != event["group_id"]
-            ]
+            for user_group in state["realm_user_groups"]:
+                if user_group["id"] == event["group_id"]:
+                    user_group["active"] = False
         else:
             raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "user_status":
@@ -1221,3 +1222,12 @@ def post_process_state(
             handle_stream_notifications_compatibility(
                 user_profile, stream_dict, notification_settings_null
             )
+
+    if "realm_user_groups" in ret:
+        total_realm_user_groups = ret["realm_user_groups"].copy()
+        ret["realm_user_groups"] = [group for group in total_realm_user_groups if group["active"]]
+        ret["realm_non_active_user_groups"] = [
+            group for group in total_realm_user_groups if not group["active"]
+        ]
+        for group in total_realm_user_groups:
+            group.pop("active")

@@ -10,6 +10,11 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 59**
+
+* [`GET /user_groups`]: Added new `active` field to determine whether
+  the user group is active or not.
+
 **Feature level 58**
 
 * [`POST /register`](/api/register-queue): Added the new
