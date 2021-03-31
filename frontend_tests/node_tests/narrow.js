@@ -73,6 +73,7 @@ run_test("uris", () => {
 });
 
 run_test("show_empty_narrow_message", () => {
+    $("#left_bar_compose_reply_button_big").prop("disabled", false);
     narrow_state.reset_current_filter();
     narrow_banner.show_empty_narrow_message();
     assert.equal($(".empty_feed_notice").visible(), false);
@@ -81,6 +82,7 @@ run_test("show_empty_narrow_message", () => {
         $("#left_bar_compose_reply_button_big").attr("title"),
         "translated: There are no messages to reply to.",
     );
+    assert($("#left_bar_compose_reply_button_big").prop("disabled"));
 
     // for non-existent or private stream
     set_filter([["stream", "Foo"]]);
