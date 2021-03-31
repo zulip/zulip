@@ -202,6 +202,11 @@ run_test("show_empty_narrow_message", () => {
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert($("#empty_narrow_message").visible());
+
+    set_filter([["stream", ""]]);
+    hide_all_empty_narrow_messages();
+    narrow_banner.show_empty_narrow_message();
+    assert($("#nonsubbed_private_nonexistent_stream_narrow_message").visible());
 });
 
 run_test("hide_empty_narrow_message", () => {
