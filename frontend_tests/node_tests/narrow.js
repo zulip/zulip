@@ -203,6 +203,18 @@ run_test("show_empty_narrow_message", () => {
     narrow_banner.show_empty_narrow_message();
     assert($("#empty_narrow_message").visible());
 
+    const my_stream = {
+        name: "my stream",
+        stream_id: 103,
+    };
+    stream_data.add_sub(my_stream);
+    stream_data.subscribe_myself(my_stream);
+
+    set_filter([["stream", "my stream"]]);
+    hide_all_empty_narrow_messages();
+    narrow_banner.show_empty_narrow_message();
+    assert($("#empty_narrow_message").visible());
+
     set_filter([["stream", ""]]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
