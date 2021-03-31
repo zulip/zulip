@@ -670,6 +670,11 @@ def apply_event(
                         p["is_admin"] = is_administrator_role(person["role"])
                         p["is_owner"] = person["role"] == UserProfile.ROLE_REALM_OWNER
                         p["is_guest"] = person["role"] == UserProfile.ROLE_GUEST
+                        if p["is_bot"] and "bot_type" in person:
+                            # If p is bot then it is possible that it's role is updated
+                            # due to change in bot_type. So we need to address this case
+                            # and update the old state with changed type of the bot.
+                            p["bot_type"] = person["bot_type"]
                     if "custom_profile_field" in person:
                         custom_field_id = person["custom_profile_field"]["id"]
                         custom_field_new_value = person["custom_profile_field"]["value"]

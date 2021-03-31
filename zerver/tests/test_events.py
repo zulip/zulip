@@ -20,6 +20,7 @@ from zerver.lib.actions import (
     bulk_remove_subscriptions,
     check_add_realm_emoji,
     check_add_user_group,
+    check_change_bot_type,
     check_delete_user_group,
     check_send_typing_notification,
     do_add_alert_words,
@@ -1537,6 +1538,30 @@ class NormalActionsTest(BaseAction):
         events = self.verify_action(action, num_events=2)
         check_realm_bot_update("events[0]", events[0], "avatar_url")
         self.assertEqual(events[1]["type"], "realm_user")
+
+    def test_change_bot_type(self) -> None:
+        self.user_profile = self.example_user("iago")
+        bot = self.create_bot("test", bot_type=UserProfile.ADMINISTRATOR_BOT)
+        action = lambda: check_change_bot_type(
+            bot, UserProfile.DEFAULT_BOT, acting_user=self.user_profile
+        )
+        events = self.verify_action(action, num_events=2)
+        check_realm_bot_update("events[1]", events[1], "bot_type")
+
+    def test_change_bot_type_for_human_user(self) -> None:
+        self.user_profile = self.example_user("hamlet")
+        action = lambda: check_change_bot_type(
+            self.user_profile, UserProfile.DEFAULT_BOT, acting_user=self.user_profile
+        )
+        self.verify_action(action, num_events=0, state_change_expected=False)
+
+    def test_change_bot_type_with_same_bot_type(self) -> None:
+        self.user_profile = self.example_user("hamlet")
+        bot = self.create_bot("test", bot_type=UserProfile.DEFAULT_BOT)
+        action = lambda: check_change_bot_type(
+            bot, UserProfile.DEFAULT_BOT, acting_user=self.user_profile
+        )
+        self.verify_action(action, num_events=0, state_change_expected=False)
 
     def test_change_realm_icon_source(self) -> None:
         action = lambda: do_change_icon_source(

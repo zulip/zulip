@@ -613,6 +613,7 @@ bot_type_for_update = DictType(
     optional_keys=[
         ("api_key", str),
         ("avatar_url", str),
+        ("bot_type", int),
         ("default_all_public_streams", bool),
         ("default_events_register_stream", OptionalType(str)),
         ("default_sending_stream", OptionalType(str)),
@@ -1106,6 +1107,7 @@ realm_user_person_types = dict(
             ("user_id", int),
             ("role", EnumType(UserProfile.ROLE_TYPES)),
         ],
+        optional_keys=[("bot_type", EnumType(list(UserProfile.BOT_TYPES.keys())))],
     ),
     timezone=DictType(
         required_keys=[

@@ -10,6 +10,26 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 62**
+
+* The `realm_bot` update event can also contain updated `bot_type` now.
+  For zulip backend the recommended way to change the `bot_type` now is
+  using `check_change_bot_type` defined in `actions.py`. Although `PATCH
+  bots/<int:bot_id>` still does not support updating the bot type.
+
+* The `realm_user` update event can contain updated `bot_type` of the bot.
+  This could be one of:
+  - `1: Generic bot`
+  - `2: Incoming webhook`
+  - `3: Outgoing webhook`
+  - `4: Embedded bot`
+  - `5: Administrator bot`
+  This type will only be present in cases when bot's type is updated and
+  the update in `bot_type` affects administrative role of the bot.
+  **For Example:** If `bot_type` is changed from `ADMINISTRATOR_BOT` to
+  say `DEFAULT_BOT` then as this change affect the role of bot, so type
+  of the bot is sent along with the event.
+
 **Feature level 61**
 
 * Added support for inviting users as moderators to the invitation

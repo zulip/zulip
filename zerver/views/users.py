@@ -185,6 +185,19 @@ def update_user_backend(
             return json_error(
                 _("The owner permission cannot be removed from the only organization owner.")
             )
+        # If a user's admin/owner powers are revoked we need to make sure
+        # that all their administrator bots are demoted to default bot(generic bot).
+        possible_admin_bot_roles = [
+            UserProfile.ROLE_REALM_OWNER,
+            UserProfile.ROLE_REALM_ADMINISTRATOR,
+        ]
+        if target.role in possible_admin_bot_roles and role not in possible_admin_bot_roles:
+            bots = get_bots_by_owner(target)
+            for bot in bots:
+                if bot.bot_type == UserProfile.ADMINISTRATOR_BOT:  # nocoverage
+                    check_change_bot_type(  # nocoverage
+                        bot, UserProfile.DEFAULT_BOT, acting_user=user_profile
+                    )
         do_change_user_role(target, role, acting_user=user_profile)
 
     if full_name is not None and target.full_name != full_name and full_name.strip() != "":

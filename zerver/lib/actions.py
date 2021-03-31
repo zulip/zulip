@@ -3895,6 +3895,35 @@ def check_change_full_name(
     return new_full_name
 
 
+def check_change_bot_type(
+    user_profile: UserProfile, new_bot_type: int, *, acting_user: Optional[UserProfile]
+) -> None:
+    # user_profile here is the profile of bot.
+    # Note that in case when bot's type change requires changing bot's role
+    # then only we send `realm_user` event with updated role of bot user and
+    # it's new type. In all other cases we send only `realm_bot` event to
+    # avoid redundancy of sending similar events.
+    if not user_profile.is_bot:
+        return
+    if user_profile.bot_type == new_bot_type:
+        return
+    if user_profile.bot_type == UserProfile.ADMINISTRATOR_BOT:
+        do_change_user_role(
+            user_profile,
+            UserProfile.ROLE_MEMBER,
+            new_bot_type=new_bot_type,
+            acting_user=acting_user,
+        )
+    user_profile.bot_type = new_bot_type
+    user_profile.save(update_fields=["bot_type"])
+    payload = dict(user_id=user_profile.id, bot_type=user_profile.bot_type)
+    send_event(
+        user_profile.realm,
+        dict(type="realm_bot", op="update", bot=payload),
+        bot_owner_user_ids(user_profile),
+    )
+
+
 def check_change_bot_full_name(
     user_profile: UserProfile, full_name_raw: str, acting_user: UserProfile
 ) -> None:
@@ -4321,8 +4350,14 @@ def do_change_default_all_public_streams(
 
 
 def do_change_user_role(
-    user_profile: UserProfile, value: int, *, acting_user: Optional[UserProfile]
+    user_profile: UserProfile,
+    value: int,
+    *,
+    acting_user: Optional[UserProfile],
+    new_bot_type: Optional[int] = None,
 ) -> None:
+    # This function works for updating the role of both humans and bots,
+    # and the only difference is how we send events.
     old_value = user_profile.role
     user_profile.role = value
     user_profile.save(update_fields=["role"])
@@ -4340,9 +4375,19 @@ def do_change_user_role(
             }
         ).decode(),
     )
-    event = dict(
-        type="realm_user", op="update", person=dict(user_id=user_profile.id, role=user_profile.role)
-    )
+    if user_profile.is_bot and new_bot_type:
+        # For reasons that are mostly historical, whenever we have a bot and
+        # we update fields that apply to both human users and bot users, such as
+        # name/avatar/role, then we actually send two events.  Theoretically
+        # API writers may be only subscribing to "realm_bot" events, so we send
+        # that as a somewhat redundant event to the smaller audience of folks.
+        # Our main clients, such as the webapp, can probably just ignore the
+        # realm_bot events, depending on how their code is structured.
+        person = dict(user_id=user_profile.id, role=user_profile.role, bot_type=new_bot_type)
+    else:
+        person = dict(user_id=user_profile.id, role=user_profile.role)
+
+    event = dict(type="realm_user", op="update", person=person)
     send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
 
 
