@@ -103,7 +103,7 @@ export function initialize() {
     $("body").on("keydown", ".giphy-gif", ui_util.convert_enter_to_click);
     $("body").on("keydown", "#compose_giphy_logo", ui_util.convert_enter_to_click);
 
-    $("#compose_giphy_logo").on("click", (e) => {
+    $("body").on("click", "#compose_giphy_logo", (e) => {
         e.preventDefault();
         e.stopPropagation();
 
