@@ -110,6 +110,7 @@ def update_realm(
     ),
     default_twenty_four_hour_time: Optional[bool] = REQ(json_validator=check_bool, default=None),
     video_chat_provider: Optional[int] = REQ(json_validator=check_int, default=None),
+    giphy_rating: Optional[int] = REQ(json_validator=check_int, default=None),
     default_code_block_language: Optional[str] = REQ(default=None),
     digest_weekday: Optional[int] = REQ(
         json_validator=check_int_in(Realm.DIGEST_WEEKDAY_VALUES), default=None
@@ -130,6 +131,10 @@ def update_realm(
         p["id"] for p in Realm.VIDEO_CHAT_PROVIDERS.values()
     }:
         return json_error(_("Invalid video_chat_provider {}").format(video_chat_provider))
+    if giphy_rating is not None and giphy_rating not in {
+        p["id"] for p in Realm.GIPHY_RATING_OPTIONS.values()
+    }:
+        return json_error(_("Invalid giphy_rating {}").format(giphy_rating))
 
     message_retention_days: Optional[int] = None
     if message_retention_days_raw is not None:

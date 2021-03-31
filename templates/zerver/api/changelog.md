@@ -10,6 +10,12 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 55**
+
+* [`POST /register`](/api/register-queue): Added `realm_giphy_rating`
+  and `giphy_rating_options` fields.
+* `PATCH /realm`: Added `giphy_rating` parameter.
+
 **Feature level 54**
 
 * `GET /realm/filters` has been removed and replace with [`GET

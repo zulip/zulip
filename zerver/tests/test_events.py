@@ -1893,6 +1893,9 @@ class RealmPropertyActionTest(BaseAction):
             video_chat_provider=[
                 Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"],
             ],
+            giphy_rating=[
+                Realm.GIPHY_RATING_OPTIONS["disabled"]["id"],
+            ],
             default_code_block_language=["python", "javascript"],
             message_content_delete_limit_seconds=[1000, 1100, 1200],
             invite_to_realm_policy=[4, 3, 2, 1],

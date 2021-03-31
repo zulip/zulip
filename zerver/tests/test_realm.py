@@ -616,6 +616,7 @@ class RealmTest(ZulipTestCase):
             email_address_visibility=10,
             message_retention_days=10,
             video_chat_provider=10,
+            giphy_rating=10,
             waiting_period_threshold=-10,
             digest_weekday=10,
             user_group_edit_policy=10,
@@ -889,6 +890,10 @@ class RealmAPITest(ZulipTestCase):
                         Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"]
                     ).decode(),
                 ),
+            ],
+            giphy_rating=[
+                Realm.GIPHY_RATING_OPTIONS["y"]["id"],
+                Realm.GIPHY_RATING_OPTIONS["r"]["id"],
             ],
             message_content_delete_limit_seconds=[1000, 1100, 1200],
             invite_to_realm_policy=[

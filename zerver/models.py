@@ -451,6 +451,37 @@ class Realm(models.Model):
         default=VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"]
     )
 
+    GIPHY_RATING_OPTIONS = {
+        "disabled": {
+            "name": "GIPHY integration disabled",
+            "id": 0,
+        },
+        # Source: https://github.com/Giphy/giphy-js/blob/master/packages/fetch-api/README.md#shared-options
+        "y": {
+            "name": "Y - Very young audience",
+            "id": 1,
+        },
+        "g": {
+            "name": "G - General audience",
+            "id": 2,
+        },
+        "pg": {
+            "name": "PG - Parental guidence",
+            "id": 3,
+        },
+        "pg-13": {
+            "name": "PG13 - Parental guidence (under 13)",
+            "id": 4,
+        },
+        "r": {
+            "name": "R - Restricted",
+            "id": 5,
+        },
+    }
+
+    # maximum rating of the GIFs that will be retrieved from GIPHY
+    giphy_rating: int = models.PositiveSmallIntegerField(default=GIPHY_RATING_OPTIONS["g"]["id"])
+
     default_code_block_language: Optional[str] = models.TextField(null=True, default=None)
 
     # Define the types of the various automatically managed properties
@@ -468,6 +499,7 @@ class Realm(models.Model):
         disallow_disposable_email_addresses=bool,
         email_address_visibility=int,
         email_changes_disabled=bool,
+        giphy_rating=int,
         invite_required=bool,
         invite_to_realm_policy=int,
         inline_image_preview=bool,

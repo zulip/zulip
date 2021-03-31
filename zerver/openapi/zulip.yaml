@@ -3053,6 +3053,12 @@ paths:
                                       type: string
                                       description: |
                                         The description of the organization, used on login and registration pages.
+                                    realm_giphy_rating:
+                                      type: integer
+                                      description: |
+                                        Maximum rating of the GIFs that will be retrieved from GIPHY.
+
+                                        **Changes**: New in Zulip 4.0 (feature level 55).
                                     digest_emails_enabled:
                                       type: boolean
                                       description: |
@@ -7513,6 +7519,8 @@ paths:
                           Developers of clients should also read the
                           [GIPHY API TOS](https://support.giphy.com/hc/en-us/articles/360028134111-GIPHY-API-Terms-of-Service-)
                           before using this API key.
+
+                          **Changes**: Added in Zulip 4.0 (feature level 47).
                       enable_desktop_notifications:
                         type: boolean
                         description: |
@@ -8035,6 +8043,14 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           The configured video call provider for the organization.
+                      realm_giphy_rating:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The configured GIPHY rating for the organization.
+
+                          **Changes**: New in Zulip 4.0 (feature level 55).
                       realm_waiting_period_threshold:
                         type: integer
                         description: |
@@ -8406,6 +8422,31 @@ paths:
                           This Zulip server's configured minimum `zxcvbn` minimum guesses.
                           Necessary for password change UI to show whether the password
                           will be accepted.
+                      giphy_rating_options:
+                        type: object
+                        description: |
+                          Dictionary where each entry describes a valid rating
+                          that is configured on this server and could be selected by an
+                          organization administrator.
+
+                          Useful for administrative settings UI that allows changing the
+                          allowed rating of GIFs.
+                        additionalProperties:
+                          description: |
+                            `{rating_name}`: Dictionary containing the details of the
+                            rating with the name of the rating as
+                            the key.
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            name:
+                              type: string
+                              description: |
+                                The description of the rating option.
+                            id:
+                              type: integer
+                              description: |
+                                The ID of the rating option.
                       max_file_upload_size_mib:
                         type: integer
                         description: |
