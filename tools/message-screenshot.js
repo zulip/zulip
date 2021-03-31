@@ -26,7 +26,7 @@ if (options.messageId === undefined) {
     process.exit(1);
 }
 
-// TODO: Refactor to share code with frontend_tests/puppeteer_tests/00-realm-creation.js
+// TODO: Refactor to share code with frontend_tests/puppeteer_tests/01-realm-creation.js
 async function run() {
     const browser = await puppeteer.launch({
         args: [
