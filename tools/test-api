@@ -31,12 +31,16 @@ with test_server_running(
 ):
     # Zerver imports should happen after `django.setup()` is run
     # by the test_server_running decorator.
-    from zerver.lib.actions import do_create_user
+    from zerver.lib.actions import change_user_is_active, do_create_user, do_reactivate_user
     from zerver.lib.test_helpers import reset_emails_in_zulip_realm
     from zerver.lib.users import get_api_key
     from zerver.models import get_realm, get_user
     from zerver.openapi.javascript_examples import test_js_bindings
-    from zerver.openapi.python_examples import test_invalid_api_key, test_the_api
+    from zerver.openapi.python_examples import (
+        test_invalid_api_key,
+        test_the_api,
+        test_user_account_deactivated,
+    )
     from zerver.openapi.test_curl_examples import test_generated_curl_examples_for_success
 
     print("Running API tests...")
@@ -105,6 +109,18 @@ with test_server_running(
         site=site,
     )
     test_invalid_api_key(client)
+
+    # Test account deactivated error
+    # we deactivate user manually because do_deactivate_user removes user session
+    change_user_is_active(guest_user, False)
+    client = Client(
+        email=email,
+        api_key=api_key,
+        site=site,
+    )
+    test_user_account_deactivated(client)
+    # reactivate user to avoid any side-effects in other tests.
+    do_reactivate_user(guest_user, acting_user=None)
 
 
 print("API tests passed!")
