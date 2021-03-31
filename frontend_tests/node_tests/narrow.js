@@ -159,6 +159,13 @@ run_test("show_empty_narrow_message", () => {
     narrow_banner.show_empty_narrow_message();
     assert($("#empty_narrow_private_message").visible());
 
+    people.add_active_user(me);
+    people.initialize_current_user(me.user_id);
+    set_filter([["pm-with", me.email]]);
+    hide_all_empty_narrow_messages();
+    narrow_banner.show_empty_narrow_message();
+    assert($("#empty_narrow_self_private_message").visible());
+
     set_filter([["group-pm-with", "alice@example.com"]]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
