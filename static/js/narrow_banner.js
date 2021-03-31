@@ -109,17 +109,18 @@ function pick_empty_narrow_banner() {
         // For other multi-operator narrows, we just use the default banner
         return default_banner;
     } else if (first_operator === "is") {
-        if (first_operand === "starred") {
-            // You have no starred messages.
-            return $("#empty_star_narrow_message");
-        } else if (first_operand === "mentioned") {
-            return $("#empty_narrow_all_mentioned");
-        } else if (first_operand === "private") {
-            // You have no private messages.
-            return $("#empty_narrow_all_private_message");
-        } else if (first_operand === "unread") {
-            // You have no unread messages.
-            return $("#no_unread_narrow_message");
+        switch (first_operand) {
+            case "starred":
+                // You have no starred messages.
+                return $("#empty_star_narrow_message");
+            case "mentioned":
+                return $("#empty_narrow_all_mentioned");
+            case "private":
+                // You have no private messages.
+                return $("#empty_narrow_all_private_message");
+            case "unread":
+                // You have no unread messages.
+                return $("#no_unread_narrow_message");
         }
     } else if (first_operator === "stream" && !stream_data.is_subscribed(first_operand)) {
         // You are narrowed to a stream which does not exist or is a private stream
