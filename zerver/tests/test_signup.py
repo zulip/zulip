@@ -4810,6 +4810,28 @@ class DeactivateUserTest(ZulipTestCase):
         self.assert_json_success(result)
         do_change_user_role(user, UserProfile.ROLE_REALM_OWNER, acting_user=None)
 
+    def test_admin_bot_do_not_let_deactivate_final_realm_owner(self) -> None:
+        bot_info = {
+            "full_name": "The Bot of desdemona",
+            "short_name": "adminbot",
+            "bot_type": 5,
+        }
+        self.login("desdemona")
+        result = self.client_post("/json/bots", bot_info)
+        self.assert_json_success(result)
+        bot_email = "adminbot-bot@zulip.testserver"
+        bot_realm = get_realm("zulip")
+        profile = get_user(bot_email, bot_realm)
+        self.assertEqual(profile.bot_type, UserProfile.ADMINISTRATOR_BOT)
+        self.login("desdemona")
+        user = self.example_user("desdemona")
+        self.assertTrue(user.is_active)
+        result = self.client_delete("/json/users/me")
+        self.assert_json_error(result, "Cannot deactivate the only organization owner.")
+        user = self.example_user("desdemona")
+        self.assertTrue(user.is_active)
+        self.assertTrue(user.is_realm_admin)
+
     def test_do_not_deactivate_final_user(self) -> None:
         realm = get_realm("zulip")
         for user_profile in UserProfile.objects.filter(realm=realm).exclude(

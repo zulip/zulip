@@ -15,6 +15,7 @@ from zerver.lib.actions import (
     change_user_is_active,
     do_change_logo_source,
     do_change_plan_type,
+    do_change_user_role,
     do_create_user,
 )
 from zerver.lib.events import add_realm_logo_fields
@@ -681,6 +682,26 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(page_params["narrow_stream"], stream_name)
         self.assertEqual(page_params["narrow"], [dict(operator="stream", operand=stream_name)])
         self.assertEqual(page_params["max_message_id"], -1)
+
+    def test_admin_bot_option_for_admins_only(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.login("hamlet")
+        self.assertFalse(user_profile.is_realm_admin)
+        result = self._get_home_page()
+        page_params = self._get_page_params(result)
+        for bot_form_option in page_params["bot_types"]:
+            if bot_form_option["type_id"] == UserProfile.ADMINISTRATOR_BOT:
+                self.assertFalse(bot_form_option["allowed"])
+            else:
+                assert bot_form_option["allowed"]
+        do_change_user_role(
+            user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=user_profile
+        )
+        user_profile.save()
+        result = self._get_home_page()
+        page_params = self._get_page_params(result)
+        for bot_form_option in page_params["bot_types"]:
+            assert bot_form_option["allowed"]
 
     def test_invites_by_admins_only(self) -> None:
         user_profile = self.example_user("hamlet")

@@ -451,6 +451,12 @@ def add_bot_backend(
         default_all_public_streams=default_all_public_streams,
         acting_user=user_profile,
     )
+
+    if bot_type == UserProfile.ADMINISTRATOR_BOT and UserProfile.is_realm_admin:
+        do_change_user_role(
+            bot_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=user_profile
+        )
+
     if len(request.FILES) == 1:
         user_file = list(request.FILES.values())[0]
         upload_avatar_image(user_file, user_profile, bot_profile)
