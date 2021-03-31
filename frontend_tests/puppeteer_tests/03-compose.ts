@@ -227,7 +227,6 @@ async function compose_tests(page: Page): Promise<void> {
     await test_narrow_to_private_messages_with_cordelia(page);
     await test_send_multirecipient_pm_from_cordelia_pm_narrow(page);
     await test_markdown_preview(page);
-    await common.log_out(page);
 }
 
 common.run_test(compose_tests);

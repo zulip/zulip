@@ -80,7 +80,6 @@ async function edit_tests(page: Page): Promise<void> {
     await test_stream_message_edit(page);
     await test_edit_message_with_slash_me(page);
     await test_edit_private_message(page);
-    await common.log_out(page);
 }
 
 common.run_test(edit_tests);

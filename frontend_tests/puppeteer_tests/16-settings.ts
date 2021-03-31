@@ -362,7 +362,6 @@ async function settings_tests(page: Page): Promise<void> {
     await test_your_bots_section(page);
     await test_default_language_setting(page);
     await test_notifications_section(page);
-    await common.log_out(page);
 }
 
 common.run_test(settings_tests);

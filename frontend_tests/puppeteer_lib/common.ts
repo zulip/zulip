@@ -581,6 +581,7 @@ class CommonUtils {
 
         try {
             await test_function(page);
+            await this.log_out(page);
 
             if (page_errored) {
                 throw new Error("Page threw an error");

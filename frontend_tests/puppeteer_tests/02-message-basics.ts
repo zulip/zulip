@@ -458,8 +458,6 @@ async function message_basic_tests(page: Page): Promise<void> {
     await test_narrow_by_clicking_the_left_sidebar(page);
     await test_stream_search_filters_stream_list(page);
     await test_users_search(page);
-
-    await common.log_out(page);
 }
 
 common.run_test(message_basic_tests);

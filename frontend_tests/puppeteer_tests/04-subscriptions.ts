@@ -255,7 +255,6 @@ async function subscriptions_tests(page: Page): Promise<void> {
     await test_subscription_button_verona_stream(page);
     await test_stream_creation(page);
     await test_streams_search_feature(page);
-    await common.log_out(page);
 }
 
 common.run_test(subscriptions_tests);
