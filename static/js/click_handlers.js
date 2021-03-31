@@ -45,14 +45,6 @@ import * as unread_ops from "./unread_ops";
 import * as user_status_ui from "./user_status_ui";
 import * as util from "./util";
 
-function convert_enter_to_click(e) {
-    const key = e.which;
-    if (key === 13) {
-        // Enter
-        $(e.currentTarget).trigger("click");
-    }
-}
-
 export function initialize() {
     // MESSAGE CLICKING
 
@@ -426,7 +418,7 @@ export function initialize() {
 
     // RECENT TOPICS
 
-    $("body").on("keydown", ".on_hover_topic_mute", convert_enter_to_click);
+    $("body").on("keydown", ".on_hover_topic_mute", ui_util.convert_enter_to_click);
 
     $("body").on("click", "#recent_topics_table .on_hover_topic_unmute", (e) => {
         e.stopPropagation();
@@ -436,7 +428,7 @@ export function initialize() {
         muting_ui.unmute_topic(stream_id, topic);
     });
 
-    $("body").on("keydown", ".on_hover_topic_unmute", convert_enter_to_click);
+    $("body").on("keydown", ".on_hover_topic_unmute", ui_util.convert_enter_to_click);
 
     $("body").on("click", "#recent_topics_table .on_hover_topic_mute", (e) => {
         e.stopPropagation();
@@ -458,7 +450,7 @@ export function initialize() {
         unread_ops.mark_topic_as_read(stream_id, topic);
     });
 
-    $("body").on("keydown", ".on_hover_topic_read", convert_enter_to_click);
+    $("body").on("keydown", ".on_hover_topic_read", ui_util.convert_enter_to_click);
 
     $("body").on("click", ".btn-recent-filters", (e) => {
         e.stopPropagation();
@@ -658,7 +650,7 @@ export function initialize() {
     // COMPOSE
 
     // Allow inserting GIFs in compose box using enter keypress.
-    $("body").on("keydown", ".giphy-gif", convert_enter_to_click);
+    $("body").on("keydown", ".giphy-gif", ui_util.convert_enter_to_click);
 
     $("#compose_giphy_logo").on("click", (e) => {
         e.preventDefault();
@@ -698,7 +690,7 @@ export function initialize() {
         $("#giphy-search-query").trigger("focus");
     });
 
-    $("body").on("keydown", "#compose_giphy_logo", convert_enter_to_click);
+    $("body").on("keydown", "#compose_giphy_logo", ui_util.convert_enter_to_click);
 
     // NB: This just binds to current elements, and won't bind to elements
     // created after ready() is called.

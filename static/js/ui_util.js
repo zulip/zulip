@@ -30,3 +30,11 @@ export function blur_active_element() {
     // this blurs anything that may perhaps be actively focused on.
     document.activeElement.blur();
 }
+
+export function convert_enter_to_click(e) {
+    const key = e.which;
+    if (key === 13) {
+        // Enter
+        $(e.currentTarget).trigger("click");
+    }
+}
