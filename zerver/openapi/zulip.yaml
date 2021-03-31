@@ -9274,6 +9274,7 @@ paths:
               schema:
                 oneOf:
                   - $ref: "#/components/schemas/UserDeactivatedError"
+                  - $ref: "#/components/schemas/RealmDeactivatedError"
   /zulip-outgoing-webhook:
     post:
       operationId: zulip_outgoing_webhooks
@@ -10870,6 +10871,15 @@ components:
             {
               "code": "USER_DEACTIVATED",
               "msg": "Account is deactivated",
+              "result": "error",
+            }
+    RealmDeactivatedError:
+      allOf:
+        - $ref: "#/components/schemas/CodedError"
+        - example:
+            {
+              "code": "REALM_DEACTIVATED",
+              "msg": "This organization is deactivated",
               "result": "error",
             }
 
