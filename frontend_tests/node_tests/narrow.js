@@ -189,6 +189,14 @@ run_test("show_empty_narrow_message", () => {
     assert.equal(items.length, 2);
     assert.equal(items[0], " ");
     assert.equal(items[1].text(), "grail");
+
+    set_filter([
+        ["sender", "alice@example.com"],
+        ["stream", "Rome"],
+    ]);
+    hide_all_empty_narrow_messages();
+    narrow_banner.show_empty_narrow_message();
+    assert($("#empty_narrow_message").visible());
 });
 
 run_test("hide_empty_narrow_message", () => {
