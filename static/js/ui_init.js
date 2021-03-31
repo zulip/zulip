@@ -23,6 +23,7 @@ import * as echo from "./echo";
 import * as emoji_picker from "./emoji_picker";
 import * as emojisets from "./emojisets";
 import * as gear_menu from "./gear_menu";
+import * as giphy from "./giphy";
 import * as hashchange from "./hashchange";
 import * as hotspots from "./hotspots";
 import * as invite from "./invite";
@@ -521,6 +522,7 @@ export function initialize_everything() {
     tutorial.initialize();
     notifications.initialize();
     gear_menu.initialize();
+    giphy.initialize();
     presence.initialize(presence_params);
     settings_panel_menu.initialize();
     settings_sections.initialize();

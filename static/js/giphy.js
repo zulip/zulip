@@ -8,6 +8,7 @@ import render_giphy_picker_mobile from "../templates/giphy_picker_mobile.hbs";
 
 import * as compose_ui from "./compose_ui";
 import {page_params} from "./page_params";
+import * as ui_util from "./ui_util";
 
 const giphy_fetch = new GiphyFetch(page_params.giphy_api_key);
 let search_term = "";
@@ -27,7 +28,7 @@ function fetchGifs(offset) {
     return giphy_fetch.search(search_term, config);
 }
 
-export function renderGIPHYGrid(targetEl) {
+function renderGIPHYGrid(targetEl) {
     const render = () =>
         // See https://github.com/Giphy/giphy-js/blob/master/packages/components/README.md#grid
         // for detailed documentation.
@@ -86,7 +87,7 @@ $("#compose_box_giphy_grid").popover({
     template,
 });
 
-export function update_grid_with_search_term() {
+function update_grid_with_search_term() {
     const search_elem = $("#giphy-search-query");
     // GIPHY popover may have been hidden by the
     // time this function is called.
@@ -96,4 +97,47 @@ export function update_grid_with_search_term() {
     }
     // Return undefined to stop searching.
     return undefined;
+}
+
+export function initialize() {
+    $("body").on("keydown", ".giphy-gif", ui_util.convert_enter_to_click);
+    $("body").on("keydown", "#compose_giphy_logo", ui_util.convert_enter_to_click);
+
+    $("#compose_giphy_logo").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if ($("#giphy_grid_in_popover").length) {
+            $("#compose_box_giphy_grid").popover("hide");
+            return;
+        }
+        $("#compose_box_giphy_grid").popover("show");
+        let gifs_grid = renderGIPHYGrid($("#giphy_grid_in_popover .popover-content")[0]);
+
+        $("body").on(
+            "keyup",
+            "#giphy-search-query",
+            // Use debounce to create a 300ms interval between
+            // every search. This makes the UX of searching pleasant
+            // by allowing user to finish typing before search
+            // is executed.
+            _.debounce(() => {
+                // GIPHY popover may have been hidden by the
+                // time this function is called.
+                if (gifs_grid) {
+                    gifs_grid.remove();
+                    gifs_grid = update_grid_with_search_term();
+                }
+            }, 300),
+        );
+
+        $(document).one("compose_canceled.zulip compose_finished.zulip", () => {
+            $("#compose_box_giphy_grid").popover("hide");
+        });
+
+        // Focus on search box by default.
+        // This is specially helpful for users
+        // navigating via keybaord.
+        $("#giphy-search-query").trigger("focus");
+    });
 }

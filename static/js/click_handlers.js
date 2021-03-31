@@ -16,7 +16,6 @@ import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
 import * as emoji_picker from "./emoji_picker";
-import * as giphy from "./giphy";
 import * as hash_util from "./hash_util";
 import * as hotspots from "./hotspots";
 import {i18n} from "./i18n";
@@ -648,49 +647,6 @@ export function initialize() {
     });
 
     // COMPOSE
-
-    // Allow inserting GIFs in compose box using enter keypress.
-    $("body").on("keydown", ".giphy-gif", ui_util.convert_enter_to_click);
-
-    $("#compose_giphy_logo").on("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        if ($("#giphy_grid_in_popover").length) {
-            $("#compose_box_giphy_grid").popover("hide");
-            return;
-        }
-        $("#compose_box_giphy_grid").popover("show");
-        let gifs_grid = giphy.renderGIPHYGrid($("#giphy_grid_in_popover .popover-content")[0]);
-
-        $("body").on(
-            "keyup",
-            "#giphy-search-query",
-            // Use debounce to create a 300ms interval between
-            // every search. This makes the UX of searching pleasant
-            // by allowing user to finish typing before search
-            // is executed.
-            _.debounce(() => {
-                // GIPHY popover may have been hidden by the
-                // time this function is called.
-                if (gifs_grid) {
-                    gifs_grid.remove();
-                    gifs_grid = giphy.update_grid_with_search_term();
-                }
-            }, 300),
-        );
-
-        $(document).one("compose_canceled.zulip compose_finished.zulip", () => {
-            $("#compose_box_giphy_grid").popover("hide");
-        });
-
-        // Focus on search box by default.
-        // This is specially helpful for users
-        // navigating via keybaord.
-        $("#giphy-search-query").trigger("focus");
-    });
-
-    $("body").on("keydown", "#compose_giphy_logo", ui_util.convert_enter_to_click);
 
     // NB: This just binds to current elements, and won't bind to elements
     // created after ready() is called.
