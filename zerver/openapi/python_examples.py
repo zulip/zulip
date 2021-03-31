@@ -1233,6 +1233,15 @@ def test_user_account_deactivated(client: Client) -> None:
     validate_against_openapi_schema(result, "/rest-error-handling", "post", "403_0")
 
 
+def test_realm_deactivated(client: Client) -> None:
+    request = {
+        "content": "**foo**",
+    }
+    result = client.render_message(request)
+
+    validate_against_openapi_schema(result, "/rest-error-handling", "post", "403_1")
+
+
 def test_invalid_stream_error(client: Client) -> None:
     result = client.get_stream_id("nonexistent")
 

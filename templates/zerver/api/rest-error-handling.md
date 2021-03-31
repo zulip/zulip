@@ -42,3 +42,9 @@ for a query:
 A typical failed json response for when user's account is deactivated:
 
 {generate_code_example|/rest-error-handling:post|fixture(403_0)}
+
+## Realm deactivated
+
+A typical failed json response for when user's organization is deactivated:
+
+{generate_code_example|/rest-error-handling:post|fixture(403_1)}

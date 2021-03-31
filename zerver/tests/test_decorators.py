@@ -1066,7 +1066,9 @@ class DeactivatedRealmTest(ZulipTestCase):
                 "to": self.example_email("othello"),
             },
         )
-        self.assert_json_error_contains(result, "has been deactivated", status_code=400)
+        self.assert_json_error_contains(
+            result, "This organization has been deactivated", status_code=403
+        )
 
         result = self.api_post(
             self.example_user("hamlet"),
@@ -1078,7 +1080,9 @@ class DeactivatedRealmTest(ZulipTestCase):
                 "to": self.example_email("othello"),
             },
         )
-        self.assert_json_error_contains(result, "has been deactivated", status_code=401)
+        self.assert_json_error_contains(
+            result, "This organization has been deactivated", status_code=401
+        )
 
     def test_fetch_api_key_deactivated_realm(self) -> None:
         """
@@ -1094,7 +1098,9 @@ class DeactivatedRealmTest(ZulipTestCase):
         realm.deactivated = True
         realm.save()
         result = self.client_post("/json/fetch_api_key", {"password": test_password})
-        self.assert_json_error_contains(result, "has been deactivated", status_code=400)
+        self.assert_json_error_contains(
+            result, "This organization has been deactivated", status_code=403
+        )
 
     def test_webhook_deactivated_realm(self) -> None:
         """
@@ -1107,7 +1113,9 @@ class DeactivatedRealmTest(ZulipTestCase):
         url = f"/api/v1/external/jira?api_key={api_key}&stream=jira_custom"
         data = self.webhook_fixture_data("jira", "created_v2")
         result = self.client_post(url, data, content_type="application/json")
-        self.assert_json_error_contains(result, "has been deactivated", status_code=400)
+        self.assert_json_error_contains(
+            result, "This organization has been deactivated", status_code=403
+        )
 
 
 class LoginRequiredTest(ZulipTestCase):
@@ -1659,7 +1667,9 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
         user_profile.realm.deactivated = True
         user_profile.realm.save()
         self.assert_json_error_contains(
-            self._do_test(user_profile), "This organization has been deactivated"
+            self._do_test(user_profile),
+            "This organization has been deactivated",
+            status_code=403,
         )
         do_reactivate_realm(user_profile.realm)
 
