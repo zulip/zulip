@@ -348,6 +348,7 @@ function edit_message(row, raw_content) {
             stream_name: message.stream,
             notify_new_thread: notify_new_thread_default,
             notify_old_thread: notify_old_thread_default,
+            giphy_api_available: page_params.giphy_api_key !== "",
         }),
     );
 

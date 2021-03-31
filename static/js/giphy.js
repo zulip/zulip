@@ -7,11 +7,31 @@ import render_giphy_picker from "../templates/giphy_picker.hbs";
 import render_giphy_picker_mobile from "../templates/giphy_picker_mobile.hbs";
 
 import * as compose_ui from "./compose_ui";
+import {media_breakpoints} from "./css_variables";
 import {page_params} from "./page_params";
+import * as popovers from "./popovers";
 import * as ui_util from "./ui_util";
 
 const giphy_fetch = new GiphyFetch(page_params.giphy_api_key);
 let search_term = "";
+let active_popover_element;
+
+// Only used if popover called from edit message, otherwise it is `undefined`.
+let edit_message_id;
+
+export function is_popped_from_edit_messsage() {
+    return active_popover_element && edit_message_id !== undefined;
+}
+
+export function focus_current_edit_message() {
+    $(`#message_edit_content_${CSS.escape(edit_message_id)}`).trigger("focus");
+}
+
+// Approximate width and heigh of
+// giphy popover as computed by chrome
+// + 25px;
+const APPROX_HEIGHT = 350;
+const APPROX_WIDTH = 300;
 
 function fetchGifs(offset) {
     const config = {
@@ -43,8 +63,16 @@ function renderGIPHYGrid(targetEl) {
                 // GIF; nice in principle but too distracting.
                 hideAttribution: true,
                 onGifClick: (props) => {
-                    $("#compose_box_giphy_grid").popover("hide");
-                    compose_ui.insert_syntax_and_focus(`[](${props.images.downsized_medium.url})`);
+                    let textarea = $("#compose-textarea");
+                    if (edit_message_id !== undefined) {
+                        textarea = $(`#message_edit_content_${CSS.escape(edit_message_id)}`);
+                    }
+
+                    compose_ui.insert_syntax_and_focus(
+                        `[](${props.images.downsized_medium.url})`,
+                        textarea,
+                    );
+                    hide_giphy_popover();
                 },
                 onGifVisible: (gif, e) => {
                     // Set tabindex for all the GIFs that
@@ -72,21 +100,6 @@ function renderGIPHYGrid(targetEl) {
     };
 }
 
-let template = render_giphy_picker();
-
-if (window.innerWidth <= 768) {
-    // Show as modal in the center for small screens.
-    template = render_giphy_picker_mobile();
-}
-
-$("#compose_box_giphy_grid").popover({
-    animation: true,
-    placement: "top",
-    html: true,
-    trigger: "manual",
-    template,
-});
-
 function update_grid_with_search_term() {
     const search_elem = $("#giphy-search-query");
     // GIPHY popover may have been hidden by the
@@ -99,6 +112,45 @@ function update_grid_with_search_term() {
     return undefined;
 }
 
+export function hide_giphy_popover() {
+    // Returns `true` if the popover was open.
+    if (active_popover_element) {
+        active_popover_element.popover("hide");
+        active_popover_element = undefined;
+        edit_message_id = undefined;
+        return true;
+    }
+    return false;
+}
+
+function get_popover_content() {
+    if (window.innerWidth <= Number(media_breakpoints.md_min.slice(0, -2))) {
+        // Show as modal in the center for small screens.
+        return render_giphy_picker_mobile();
+    }
+    return render_giphy_picker();
+}
+
+function get_popover_placement() {
+    let placement = popovers.compute_placement(
+        active_popover_element,
+        APPROX_HEIGHT,
+        APPROX_WIDTH,
+        true,
+    );
+
+    if (placement === "viewport_center") {
+        // For legacy reasons `compute_placement` actually can
+        // return `viewport_center` which used to place popover in
+        // the center of the screen, but bootstrap doesn't actually
+        // support that and we already handle it on small screen sizes
+        // by placing it in center using `popover-flex`.
+        placement = "left";
+    }
+
+    return placement;
+}
+
 export function initialize() {
     $("body").on("keydown", ".giphy-gif", ui_util.convert_enter_to_click);
     $("body").on("keydown", ".compose_giphy_logo", ui_util.convert_enter_to_click);
@@ -107,11 +159,28 @@ export function initialize() {
         e.preventDefault();
         e.stopPropagation();
 
-        if ($("#giphy_grid_in_popover").length) {
-            $("#compose_box_giphy_grid").popover("hide");
+        if (active_popover_element && $.contains(active_popover_element.get()[0], e.target)) {
+            // Hide giphy popover if already active.
+            hide_giphy_popover();
             return;
         }
-        $("#compose_box_giphy_grid").popover("show");
+        popovers.hide_all();
+        const $elt = $(e.target);
+        // Store data-message-id value in global variable edit_message_id so that
+        // its value can be further used to correctly find the message textarea element.
+        // This will store `undefined` when called from compose box, by design.
+        edit_message_id = $elt.attr("data-message-id");
+
+        active_popover_element = $elt.closest("#compose_box_giphy_grid");
+        active_popover_element.popover({
+            animation: true,
+            placement: get_popover_placement(),
+            html: true,
+            trigger: "manual",
+            template: get_popover_content(),
+        });
+
+        active_popover_element.popover("show");
         let gifs_grid = renderGIPHYGrid($("#giphy_grid_in_popover .popover-content")[0]);
 
         $("body").on(
@@ -132,7 +201,7 @@ export function initialize() {
         );
 
         $(document).one("compose_canceled.zulip compose_finished.zulip", () => {
-            $("#compose_box_giphy_grid").popover("hide");
+            hide_giphy_popover();
         });
 
         // Focus on search box by default.
