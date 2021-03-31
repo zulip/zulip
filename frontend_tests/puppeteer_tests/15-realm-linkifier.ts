@@ -62,8 +62,6 @@ async function linkifier_test(page: Page): Promise<void> {
     await test_add_linkifier(page);
     await test_delete_linkifier(page);
     await test_invalid_linkifier_pattern(page);
-
-    await common.log_out(page);
 }
 
 common.run_test(linkifier_test);

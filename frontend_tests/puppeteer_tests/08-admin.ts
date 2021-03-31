@@ -396,7 +396,6 @@ async function admin_test(page: Page): Promise<void> {
     }
     await test_default_streams(page);
     await test_authentication_methods(page);
-    await common.log_out(page);
 }
 
 common.run_test(admin_test);

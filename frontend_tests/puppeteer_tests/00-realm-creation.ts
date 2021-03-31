@@ -68,7 +68,6 @@ async function realm_creation_tests(page: Page): Promise<void> {
 
     // Updating common.realm_url because we are redirecting to it when logging out.
     common.realm_url = page.url();
-    await common.log_out(page);
 }
 
 common.run_test(realm_creation_tests);

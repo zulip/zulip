@@ -100,8 +100,6 @@ async function navigation_tests(page: Page): Promise<void> {
     await page.waitForXPath(
         '//*[@id="message_view_header"]//*[@class="stream" and normalize-space()="Verona"]',
     );
-
-    await common.log_out(page);
 }
 
 common.run_test(navigation_tests);
