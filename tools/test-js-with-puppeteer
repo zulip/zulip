@@ -65,6 +65,7 @@ options = parser.parse_args()
 def run_tests(files: Iterable[str], external_host: str) -> None:
     test_dir = os.path.join(ZULIP_PATH, "frontend_tests/puppeteer_tests")
     test_files = find_js_test_files(test_dir, files)
+    total_tests = len(test_files)
 
     def run_tests(test_number: int = 0) -> Tuple[int, int]:
         ret = 1
@@ -80,8 +81,8 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
                 test_file,
             ]
             print(
-                "\n\n===================== {}\nRunning {}\n\n".format(
-                    test_name, " ".join(map(shlex.quote, cmd))
+                "\n\n===================== ({}/{}) {}\nRunning {}\n\n".format(
+                    current_test_num + 1, total_tests, test_name, " ".join(map(shlex.quote, cmd))
                 ),
                 flush=True,
             )
