@@ -19,7 +19,7 @@ jobs:
           # This docker image was created by a generated Dockerfile at:
           #   tools/ci/images/bionic/Dockerfile
           # Bionic ships with Python 3.6.
-          - docker_image: amanagr/actions:bionic
+          - docker_image: zulip/ci:bionic
             name: Ubuntu 18.04 Bionic (Python 3.6, backend + frontend)
             os: bionic
             is_bionic: true
@@ -28,7 +28,7 @@ jobs:
           # This docker image was created by a generated Dockerfile at:
           #   tools/ci/images/focal/Dockerfile
           # Focal ships with Python 3.8.2.
-          - docker_image: amanagr/actions:focal
+          - docker_image: zulip/ci:focal
             name: Ubuntu 20.04 Focal (Python 3.8, backend)
             os: focal
             is_focal: true
