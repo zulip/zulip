@@ -840,6 +840,21 @@ button#register_auth_button_gitlab {
         overflow-wrap: break-word;
     }
 
+    #email_address_visibility {
+        opacity: 0.5;
+        cursor: default;
+        padding-left: 3px;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+
+    .tooltip-inner {
+        min-width: 100px;
+        max-width: 200px;
+    }
+
     .help-text {
         width: 100%;
         max-width: none;

@@ -327,6 +327,15 @@ class Realm(models.Model):
         EMAIL_ADDRESS_VISIBILITY_NOBODY,
     ]
 
+    # Inform users on visibility of their email addresses to others
+    # during registration
+    EMAIL_ADDRESS_VISIBILITY_TEXTS = {
+        EMAIL_ADDRESS_VISIBILITY_EVERYONE: "All users will be able to see this email address",
+        ##EMAIL_ADDRESS_VISIBILITY_MEMBERS: "",
+        EMAIL_ADDRESS_VISIBILITY_ADMINS: "Only organization administrators will be able to see this email address.",
+        EMAIL_ADDRESS_VISIBILITY_NOBODY: "Users will not be able to see this email address.",
+    }
+
     # Threshold in days for new users to create streams, and potentially take
     # some other actions.
     waiting_period_threshold: int = models.PositiveIntegerField(default=0)

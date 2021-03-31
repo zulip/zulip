@@ -6,6 +6,8 @@ $(() => {
     // NB: this file is included on multiple pages.  In each context,
     // some of the jQuery selectors below will return empty lists.
 
+    $("#email_address_visibility").tooltip({placement: "right"});
+
     const password_field = $("#id_password, #id_new_password1");
     if (password_field.length > 0) {
         $.validator.addMethod(
