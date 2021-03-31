@@ -425,14 +425,32 @@ class Command(BaseCommand):
                     "Towns",
                     "Wall",
                 ]
+                non_ascii_names = [
+                    "Günter",
+                    "أحمد",
+                    "Magnús",
+                    "आशी",
+                    "イツキ",
+                    "语嫣",
+                    "அருண்",
+                    "Александр",
+                    "José",
+                ]
+                # to imitate emoji insertions in usernames
+                raw_emojis = ["😎", "😂", "🐱‍👤"]
 
             for i in range(num_boring_names, num_names):
                 fname = random.choice(fnames) + str(i)
                 full_name = fname
                 if random.random() < 0.7:
-                    if random.random() < 0.5:
+                    if random.random() < 0.3:
+                        full_name += " " + random.choice(non_ascii_names)
+                    else:
                         full_name += " " + random.choice(mnames)
-                    full_name += " " + random.choice(lnames)
+                    if random.random() < 0.1:
+                        full_name += " {} ".format(random.choice(raw_emojis))
+                    else:
+                        full_name += " " + random.choice(lnames)
                 email = fname.lower() + "@zulip.com"
                 names.append((full_name, email))
 
