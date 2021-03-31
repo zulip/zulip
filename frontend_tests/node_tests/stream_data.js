@@ -418,7 +418,7 @@ test("delete_sub", () => {
     assert(!stream_data.get_sub("Canada"));
     assert(!stream_data.get_sub_by_id(canada.stream_id));
 
-    blueslip.expect("warn", "Failed to delete stream 99999");
+    blueslip.expect("warn", "Failed to archive stream 99999");
     stream_data.delete_sub(99999);
 });
 

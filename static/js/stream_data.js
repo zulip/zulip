@@ -356,7 +356,7 @@ export function slug_to_name(slug) {
 export function delete_sub(stream_id) {
     const sub = subs_by_stream_id.get(stream_id);
     if (!sub) {
-        blueslip.warn("Failed to delete stream " + stream_id);
+        blueslip.warn("Failed to archive stream " + stream_id);
         return;
     }
     subs_by_stream_id.delete(stream_id);

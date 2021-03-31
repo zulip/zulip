@@ -8810,10 +8810,10 @@ paths:
                       }
   /streams/{stream_id}:
     delete:
-      operationId: delete_stream
+      operationId: archive_stream
       tags: ["streams"]
       description: |
-        [Delete the stream](/help/delete-a-stream) with the ID `stream_id`.
+        [Archive the stream](/help/archive-a-stream) with the ID `stream_id`.
 
         `DELETE {{ api_url }}/v1/streams/{stream_id}`
       parameters:

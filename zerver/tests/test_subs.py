@@ -1305,17 +1305,17 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(result[1][2].name, "new_stream3")
         self.assertEqual(result[1][2].message_retention_days, None)
 
-    def set_up_stream_for_deletion(
+    def set_up_stream_for_archiving(
         self, stream_name: str, invite_only: bool = False, subscribed: bool = True
     ) -> Stream:
         """
-        Create a stream for deletion by an administrator.
+        Create a stream for archiving by an administrator.
         """
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
         stream = self.make_stream(stream_name, invite_only=invite_only)
 
-        # For testing deleting streams you aren't on.
+        # For testing archiving streams you aren't on.
         if subscribed:
             self.subscribe(user_profile, stream_name)
 
@@ -1323,9 +1323,9 @@ class StreamAdminTest(ZulipTestCase):
 
         return stream
 
-    def delete_stream(self, stream: Stream) -> None:
+    def archive_stream(self, stream: Stream) -> None:
         """
-        Delete the stream and assess the result.
+        Archive the stream and assess the result.
         """
         active_name = stream.name
         realm = stream.realm
@@ -1402,28 +1402,28 @@ class StreamAdminTest(ZulipTestCase):
         When an administrator deletes a public stream, that stream is not
         visible to users at all anymore.
         """
-        stream = self.set_up_stream_for_deletion("newstream")
-        self.delete_stream(stream)
+        stream = self.set_up_stream_for_archiving("newstream")
+        self.archive_stream(stream)
 
     def test_delete_private_stream(self) -> None:
         """
         Administrators can delete private streams they are on.
         """
-        stream = self.set_up_stream_for_deletion("newstream", invite_only=True)
-        self.delete_stream(stream)
+        stream = self.set_up_stream_for_archiving("newstream", invite_only=True)
+        self.archive_stream(stream)
 
-    def test_delete_streams_youre_not_on(self) -> None:
+    def test_archive_streams_youre_not_on(self) -> None:
         """
         Administrators can delete public streams they aren't on, including
         private streams in their realm.
         """
-        pub_stream = self.set_up_stream_for_deletion("pubstream", subscribed=False)
-        self.delete_stream(pub_stream)
+        pub_stream = self.set_up_stream_for_archiving("pubstream", subscribed=False)
+        self.archive_stream(pub_stream)
 
-        priv_stream = self.set_up_stream_for_deletion(
+        priv_stream = self.set_up_stream_for_archiving(
             "privstream", subscribed=False, invite_only=True
         )
-        self.delete_stream(priv_stream)
+        self.archive_stream(priv_stream)
 
     def attempt_unsubscribe_of_principal(
         self,
@@ -4369,7 +4369,7 @@ class SubscriptionAPITest(ZulipTestCase):
             self.subscribe(non_admin_user, stream_name)
             self.subscribe(self.example_user("othello"), stream_name)
 
-        def delete_stream(stream_name: str) -> None:
+        def archive_stream(stream_name: str) -> None:
             stream_id = get_stream(stream_name, realm).id
             result = self.client_delete(f"/json/streams/{stream_id}")
             self.assert_json_success(result)
@@ -4379,7 +4379,7 @@ class SubscriptionAPITest(ZulipTestCase):
         non_admin_before_delete = gather_subscriptions_helper(non_admin_user)
 
         # Delete our stream
-        delete_stream("stream1")
+        archive_stream("stream1")
 
         # Get subs after delete
         admin_after_delete = gather_subscriptions_helper(admin_user)

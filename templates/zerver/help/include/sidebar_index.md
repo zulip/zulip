@@ -157,7 +157,7 @@
 
 ## Stream management
 * [Stream permissions](/help/stream-permissions)
-* [Delete or archive a stream](/help/delete-a-stream)
+* [Delete or archive a stream](/help/archive-a-stream)
 * [Delete a topic](/help/delete-a-topic)
 * [Set default streams for new users](/help/set-default-streams-for-new-users)
 * [Rename a stream](/help/rename-a-stream)

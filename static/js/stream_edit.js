@@ -688,7 +688,7 @@ export function change_stream_description(e) {
     });
 }
 
-export function delete_stream(stream_id, alert_element, stream_row) {
+export function archive_stream(stream_id, alert_element, stream_row) {
     channel.del({
         url: "/json/streams/" + stream_id,
         error(xhr) {
@@ -874,7 +874,7 @@ export function initialize() {
             return;
         }
         const row = $(".stream-row.active");
-        delete_stream(stream_id, $(".stream_change_property_info"), row);
+        archive_stream(stream_id, $(".stream_change_property_info"), row);
     });
 
     $("#subscriptions_table").on("click", ".stream-row", function (e) {

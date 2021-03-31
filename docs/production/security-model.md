@@ -139,7 +139,7 @@ strength allowed is controlled by two settings in
   and bots.
 
 * Owners and administrators have the ability to deactivate and
-  reactivate other human and bot users, delete streams, add/remove
+  reactivate other human and bot users, archive streams, add/remove
   administrator privileges, as well as change configuration for the
   organization.
 

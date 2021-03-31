@@ -424,19 +424,19 @@ def get_stream_id(client: Client) -> int:
 
 
 @openapi_test_function("/streams/{stream_id}:delete")
-def delete_stream(client: Client, stream_id: int) -> None:
+def archive_stream(client: Client, stream_id: int) -> None:
     result = client.add_subscriptions(
         streams=[
             {
-                "name": "stream to be deleted",
+                "name": "stream to be archived",
                 "description": "New stream for testing",
             },
         ],
     )
 
     # {code_example|start}
-    # Delete the stream named 'stream to be deleted'
-    stream_id = client.get_stream_id("stream to be deleted")["stream_id"]
+    # Archive the stream named 'stream to be archived'
+    stream_id = client.get_stream_id("stream to be archived")["stream_id"]
     result = client.delete_stream(stream_id)
     # {code_example|end}
     validate_against_openapi_schema(result, "/streams/{stream_id}", "delete", "200")
@@ -1368,7 +1368,7 @@ def test_streams(client: Client, nonadmin_client: Client) -> None:
     update_subscription_settings(client)
     update_notification_settings(client)
     get_stream_topics(client, 1)
-    delete_stream(client, stream_id)
+    archive_stream(client, stream_id)
 
     test_user_not_authorized_error(nonadmin_client)
     test_authorization_errors_fatal(client, nonadmin_client)

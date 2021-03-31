@@ -26,7 +26,7 @@
 * [Get stream ID](/api/get-stream-id)
 * [Create a stream](/api/create-stream)
 * [Update a stream](/api/update-stream)
-* [Delete a stream](/api/delete-stream)
+* [Archive a stream](/api/archive-stream)
 * [Get topics in a stream](/api/get-stream-topics)
 * [Topic muting](/api/mute-topic)
 
