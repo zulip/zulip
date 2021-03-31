@@ -33,6 +33,7 @@ from zerver.lib.exceptions import (
     OrganizationMemberRequired,
     OrganizationOwnerRequired,
     UnsupportedWebhookEventType,
+    UserDeactivatedError,
 )
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.rate_limiter import RateLimitedUser
@@ -270,7 +271,7 @@ def validate_account_and_subdomain(request: HttpRequest, user_profile: UserProfi
     if user_profile.realm.deactivated:
         raise JsonableError(_("This organization has been deactivated"))
     if not user_profile.is_active:
-        raise JsonableError(_("Account is deactivated"))
+        raise UserDeactivatedError()
 
     # Either the subdomain matches, or we're accessing Tornado from
     # and to localhost (aka spoofing a request as the user).

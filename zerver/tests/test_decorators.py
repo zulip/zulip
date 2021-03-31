@@ -1209,7 +1209,7 @@ class InactiveUserTest(ZulipTestCase):
                 "to": self.example_email("othello"),
             },
         )
-        self.assert_json_error_contains(result, "Account is deactivated", status_code=400)
+        self.assert_json_error_contains(result, "Account is deactivated", status_code=403)
 
         result = self.api_post(
             self.example_user("hamlet"),
@@ -1238,7 +1238,7 @@ class InactiveUserTest(ZulipTestCase):
         change_user_is_active(user_profile, False)
 
         result = self.client_post("/json/fetch_api_key", {"password": test_password})
-        self.assert_json_error_contains(result, "Account is deactivated", status_code=400)
+        self.assert_json_error_contains(result, "Account is deactivated", status_code=403)
 
     def test_login_deactivated_user(self) -> None:
         """
@@ -1304,7 +1304,7 @@ class InactiveUserTest(ZulipTestCase):
         url = f"/api/v1/external/jira?api_key={api_key}&stream=jira_custom"
         data = self.webhook_fixture_data("jira", "created_v2")
         result = self.client_post(url, data, content_type="application/json")
-        self.assert_json_error_contains(result, "Account is deactivated", status_code=400)
+        self.assert_json_error_contains(result, "Account is deactivated", status_code=403)
 
 
 class TestIncomingWebhookBot(ZulipTestCase):
@@ -1647,7 +1647,9 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
         self.login_user(user_profile)
         # we deactivate user manually because do_deactivate_user removes user session
         change_user_is_active(user_profile, False)
-        self.assert_json_error_contains(self._do_test(user_profile), "Account is deactivated")
+        self.assert_json_error_contains(
+            self._do_test(user_profile), "Account is deactivated", status_code=403
+        )
         do_reactivate_user(user_profile, acting_user=None)
 
     def test_authenticated_json_post_view_if_user_realm_is_deactivated(self) -> None:
