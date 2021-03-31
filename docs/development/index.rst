@@ -11,3 +11,4 @@ Development environment
    Using the development environment <using>
    Developing remotely <remote>
    Authentication in the development environment <authentication>
+   Testing the installer <test-install>
