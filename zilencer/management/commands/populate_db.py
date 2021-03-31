@@ -770,17 +770,44 @@ class Command(BaseCommand):
                     "sales": {"description": "For sales discussion"},
                 }
 
-                # Calculate the maximum number of digits in any extra stream's
-                # number, since a stream with name "Extra Stream 3" could show
-                # up after "Extra Stream 29". (Used later to pad numbers with
-                # 0s).
-                maximum_digits = len(str(options["extra_streams"] - 1))
+                extra_stream_names = [
+                    "802.11a",
+                    "Ad Hoc Network",
+                    "Augmented Reality",
+                    "Cycling",
+                    "DPI",
+                    "FAQ",
+                    "FiFo",
+                    "commits",
+                    "Control panel",
+                    "desktop",
+                    "компьютеры",
+                    "Data security",
+                    "desktop",
+                    "काम",
+                    "discussions",
+                    "Cloud storage",
+                    "GCI",
+                    "Vaporware",
+                    "Recent Trends",
+                    "issues",
+                    "live",
+                    "Health",
+                    "mobile",
+                    "空間",
+                    "provision",
+                    "hidrógeno",
+                    "HR",
+                    "アニメ",
+                ]
 
+                # Add stream names and stream descriptions
                 for i in range(options["extra_streams"]):
-                    # Pad the number with 0s based on `maximum_digits`.
-                    number_str = str(i).zfill(maximum_digits)
+                    extra_stream_name = random.choice(extra_stream_names) + " " + str(i)
 
-                    extra_stream_name = "Extra Stream " + number_str
+                    # to imitate emoji insertions in stream names
+                    if random.random() <= 0.15:
+                        extra_stream_name += random.choice(raw_emojis)
 
                     zulip_stream_dict[extra_stream_name] = {
                         "description": "Auto-generated extra stream.",
