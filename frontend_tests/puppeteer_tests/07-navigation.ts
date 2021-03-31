@@ -9,9 +9,13 @@ async function wait_for_tab(page: Page, tab: string): Promise<void> {
     await page.waitForSelector(tab_slector, {visible: true});
 }
 
-async function navigate_to(page: Page, click_target: string, tab: string): Promise<void> {
+async function navigate_using_left_sidebar(
+    page: Page,
+    click_target: string,
+    tab: string,
+): Promise<void> {
     console.log("Visiting #" + click_target);
-    await page.click(`a[href='#${CSS.escape(click_target)}']`);
+    await page.click(`#left-sidebar a[href='#${CSS.escape(click_target)}']`);
 
     await wait_for_tab(page, tab);
 }
@@ -80,7 +84,7 @@ async function navigation_tests(page: Page): Promise<void> {
     const verona_id = await page.evaluate(() => zulip_test.get_stream_id("Verona"));
     const verona_narrow = `narrow/stream/${verona_id}-Verona`;
 
-    await navigate_to(page, verona_narrow, "message_feed_container");
+    await navigate_using_left_sidebar(page, verona_narrow, "message_feed_container");
 
     // Hardcoded this instead of using `navigate_to`
     // as Puppeteer cannot click hidden elements.
@@ -88,11 +92,11 @@ async function navigation_tests(page: Page): Promise<void> {
     await wait_for_tab(page, "message_feed_container");
 
     await navigate_to_subscriptions(page);
-    await navigate_to(page, "all_messages", "message_feed_container");
+    await navigate_using_left_sidebar(page, "all_messages", "message_feed_container");
     await navigate_to_settings(page);
-    await navigate_to(page, "narrow/is/private", "message_feed_container");
+    await navigate_using_left_sidebar(page, "narrow/is/private", "message_feed_container");
     await navigate_to_subscriptions(page);
-    await navigate_to(page, verona_narrow, "message_feed_container");
+    await navigate_using_left_sidebar(page, verona_narrow, "message_feed_container");
 
     await test_reload_hash(page);
 
