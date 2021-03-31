@@ -191,6 +191,14 @@ run_test("show_empty_narrow_message", () => {
     assert.equal(items[1].text(), "grail");
 });
 
+run_test("hide_empty_narrow_message", () => {
+    $(".empty_feed_notice").show();
+    narrow_banner.hide_empty_narrow_message();
+    assert(!$(".empty_feed_notice").visible());
+    assert.equal($("#left_bar_compose_reply_button_big").attr("title"), "translated: Reply (r)");
+    assert(!$("#left_bar_compose_reply_button_big").prop("disabled"));
+});
+
 run_test("show_search_stopwords", () => {
     narrow_state.reset_current_filter();
     let items = [];
