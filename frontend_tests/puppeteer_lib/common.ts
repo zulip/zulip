@@ -252,7 +252,7 @@ class CommonUtils {
     async log_out(page: Page): Promise<void> {
         await page.goto(this.realm_url);
         const menu_selector = "#settings-dropdown";
-        const logout_selector = 'a[href="#logout"]';
+        const logout_selector = '.dropdown-menu a[href="#logout"]';
         console.log("Logging out");
         await page.waitForSelector(menu_selector, {visible: true});
         await page.click(menu_selector);
@@ -468,7 +468,7 @@ class CommonUtils {
         await page.waitForSelector(menu_selector, {visible: true});
         await page.click(menu_selector);
 
-        const organization_settings = 'a[href="#organization"]';
+        const organization_settings = '.dropdown-menu a[href="#organization"]';
         await page.click(organization_settings);
         await page.waitForSelector("#settings_overlay_container.show", {visible: true});
 

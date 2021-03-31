@@ -31,7 +31,7 @@ async function navigate_to_settings(page: Page): Promise<void> {
 
     await open_menu(page);
 
-    const settings_selector = "a[href^='#settings']";
+    const settings_selector = ".dropdown-menu a[href^='#settings']";
     await page.waitForSelector(settings_selector, {visible: true});
     await page.click(settings_selector);
 
@@ -47,7 +47,7 @@ async function navigate_to_subscriptions(page: Page): Promise<void> {
 
     await open_menu(page);
 
-    const manage_streams_selector = 'a[href^="#streams"]';
+    const manage_streams_selector = '.dropdown-menu a[href^="#streams"]';
     await page.waitForSelector(manage_streams_selector, {visible: true});
     await page.click(manage_streams_selector);
 
