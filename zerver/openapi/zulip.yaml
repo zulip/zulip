@@ -153,6 +153,7 @@ paths:
           schema:
             type: integer
           example: -1
+          required: true
         - name: dont_block
           in: query
           description: |
