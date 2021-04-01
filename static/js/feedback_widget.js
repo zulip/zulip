@@ -3,6 +3,7 @@ import $ from "jquery";
 import render_feedback_container from "../templates/feedback_container.hbs";
 
 import * as blueslip from "./blueslip";
+import * as loading from "./loading";
 
 /*
 
@@ -61,7 +62,12 @@ const animate = {
         if (meta.$container) {
             meta.$container.fadeIn(500).addClass("show");
             meta.opened = true;
-            setTimeout(animate.maybe_close, 100);
+
+            if (meta.hide_me_time !== null) {
+                setTimeout(animate.maybe_close, 100);
+            } else {
+                loading.make_indicator($(".feedback_loading_indicator"));
+            }
         }
     },
 };
@@ -91,7 +97,10 @@ function set_up_handlers() {
         meta.alert_hover_state = false;
         // add at least 2000ms but if more than that exists just keep the
         // current amount.
-        meta.hide_me_time = Math.max(meta.hide_me_time, Date.now() + 2000);
+
+        if (meta.hide_me_time !== null) {
+            meta.hide_me_time = Math.max(meta.hide_me_time, Date.now() + 2000);
+        }
     });
 
     meta.$container.on("click", ".exit-me", () => {
@@ -122,15 +131,19 @@ export function show(opts) {
 
     meta.$container = $("#feedback_container");
 
-    const html = render_feedback_container();
+    const html = render_feedback_container({
+        persistant: opts.persistant,
+    });
     meta.$container.html(html);
 
     set_up_handlers();
 
     meta.undo = opts.on_undo;
 
-    // add a four second delay before closing up.
-    meta.hide_me_time = Date.now() + 4000;
+    if (!opts.persistant) {
+        // add a four second delay before closing up.
+        meta.hide_me_time = Date.now() + 4000;
+    }
 
     meta.$container.find(".feedback_title").text(opts.title_text);
     meta.$container.find(".feedback_undo").text(opts.undo_button_text);
