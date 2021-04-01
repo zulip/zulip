@@ -832,13 +832,13 @@ test("predicate_edge_cases", () => {
     // invalid operator/operand combinations, but right now we just silently
     // return a function that accepts all messages.
     predicate = get_predicate([["in", "bogus"]]);
-    assert(predicate({}));
+    assert(!predicate({}));
 
     predicate = get_predicate([["bogus", 33]]);
     assert(predicate({}));
 
     predicate = get_predicate([["is", "bogus"]]);
-    assert(predicate({}));
+    assert(!predicate({}));
 
     // Exercise caching feature.
     const stream_id = 101;

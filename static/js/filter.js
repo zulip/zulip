@@ -89,7 +89,7 @@ function message_matches_search_term(message, operator, operand) {
             } else if (operand === "unread") {
                 return unread.message_unread(message);
             }
-            return true; // is:whatever returns true
+            return false; // is:whatever returns false
 
         case "in":
             if (operand === "home") {
@@ -97,7 +97,7 @@ function message_matches_search_term(message, operator, operand) {
             } else if (operand === "all") {
                 return true;
             }
-            return true; // in:whatever returns true
+            return false; // in:whatever returns false
 
         case "near":
             // this is all handled server side
