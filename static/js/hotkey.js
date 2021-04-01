@@ -651,7 +651,12 @@ export function process_hotkey(e, hotkey) {
         }
 
         if (
-            (event_name === "up_arrow" || event_name === "down_arrow") &&
+            (event_name === "up_arrow" ||
+                event_name === "down_arrow" ||
+                event_name === "page_up" ||
+                event_name === "page_down" ||
+                event_name === "home" ||
+                event_name === "end") &&
             compose_state.focus_in_empty_compose()
         ) {
             compose_actions.cancel();
