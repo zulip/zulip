@@ -670,7 +670,7 @@ class TestSupportEndpoint(ZulipTestCase):
                 self.assert_in_success_response(['<span class="label">invite</span>'], result)
                 self.assert_in_success_response(
                     [
-                        "<b>Expires in</b>: 1\xa0week, 3",
+                        "<b>Expires in</b>: 1\xa0week, 3\xa0days",
                         "<b>Status</b>: Link has never been clicked",
                     ],
                     result,
@@ -679,7 +679,10 @@ class TestSupportEndpoint(ZulipTestCase):
             else:
                 self.assert_not_in_success_response(['<span class="label">invite</span>'], result)
                 self.assert_in_success_response(
-                    ["<b>Expires in</b>: 1\xa0day", "<b>Status</b>: Link has never been clicked"],
+                    [
+                        "<b>Expires in</b>: 1\xa0day",
+                        "<b>Status</b>: Link has never been clicked",
+                    ],
                     result,
                 )
 
@@ -689,7 +692,7 @@ class TestSupportEndpoint(ZulipTestCase):
                     '<span class="label">preregistration user</span>\n',
                     '<span class="label">realm creation</span>\n',
                     "<b>Link</b>: http://testserver/accounts/do_confirm/",
-                    "<b>Expires in</b>: 1\xa0day<br>\n",
+                    "<b>Expires in</b>: 1\xa0day",
                 ],
                 result,
             )
@@ -699,7 +702,7 @@ class TestSupportEndpoint(ZulipTestCase):
                 [
                     '<span class="label">multiuse invite</span>\n',
                     "<b>Link</b>: http://zulip.testserver/join/",
-                    "<b>Expires in</b>: 1\xa0week, 3",
+                    "<b>Expires in</b>: 1\xa0week, 3\xa0days",
                 ],
                 result,
             )
@@ -789,41 +792,44 @@ class TestSupportEndpoint(ZulipTestCase):
         check_zulip_realm_query_result(result)
         check_lear_realm_query_result(result)
 
-        self.client_post("/accounts/home/", {"email": self.nonreg_email("test")})
-        self.login("iago")
-        result = self.client_get("/activity/support", {"q": self.nonreg_email("test")})
-        check_preregistration_user_query_result(result, self.nonreg_email("test"))
-        check_zulip_realm_query_result(result)
+        with mock.patch(
+            "analytics.views.timezone_now", return_value=timezone_now() - timedelta(minutes=50)
+        ):
+            self.client_post("/accounts/home/", {"email": self.nonreg_email("test")})
+            self.login("iago")
+            result = self.client_get("/activity/support", {"q": self.nonreg_email("test")})
+            check_preregistration_user_query_result(result, self.nonreg_email("test"))
+            check_zulip_realm_query_result(result)
 
-        stream_ids = [self.get_stream_id("Denmark")]
-        invitee_emails = [self.nonreg_email("test1")]
-        self.client_post(
-            "/json/invites",
-            {
-                "invitee_emails": invitee_emails,
-                "stream_ids": orjson.dumps(stream_ids).decode(),
-                "invite_as": PreregistrationUser.INVITE_AS["MEMBER"],
-            },
-        )
-        result = self.client_get("/activity/support", {"q": self.nonreg_email("test1")})
-        check_preregistration_user_query_result(result, self.nonreg_email("test1"), invite=True)
-        check_zulip_realm_query_result(result)
+            stream_ids = [self.get_stream_id("Denmark")]
+            invitee_emails = [self.nonreg_email("test1")]
+            self.client_post(
+                "/json/invites",
+                {
+                    "invitee_emails": invitee_emails,
+                    "stream_ids": orjson.dumps(stream_ids).decode(),
+                    "invite_as": PreregistrationUser.INVITE_AS["MEMBER"],
+                },
+            )
+            result = self.client_get("/activity/support", {"q": self.nonreg_email("test1")})
+            check_preregistration_user_query_result(result, self.nonreg_email("test1"), invite=True)
+            check_zulip_realm_query_result(result)
 
-        email = self.nonreg_email("alice")
-        self.client_post("/new/", {"email": email})
-        result = self.client_get("/activity/support", {"q": email})
-        check_realm_creation_query_result(result, email)
+            email = self.nonreg_email("alice")
+            self.client_post("/new/", {"email": email})
+            result = self.client_get("/activity/support", {"q": email})
+            check_realm_creation_query_result(result, email)
 
-        do_create_multiuse_invite_link(self.example_user("hamlet"), invited_as=1)
-        result = self.client_get("/activity/support", {"q": "zulip"})
-        check_multiuse_invite_link_query_result(result)
-        check_zulip_realm_query_result(result)
-        MultiuseInvite.objects.all().delete()
+            do_create_multiuse_invite_link(self.example_user("hamlet"), invited_as=1)
+            result = self.client_get("/activity/support", {"q": "zulip"})
+            check_multiuse_invite_link_query_result(result)
+            check_zulip_realm_query_result(result)
+            MultiuseInvite.objects.all().delete()
 
-        do_send_realm_reactivation_email(get_realm("zulip"))
-        result = self.client_get("/activity/support", {"q": "zulip"})
-        check_realm_reactivation_link_query_result(result)
-        check_zulip_realm_query_result(result)
+            do_send_realm_reactivation_email(get_realm("zulip"))
+            result = self.client_get("/activity/support", {"q": "zulip"})
+            check_realm_reactivation_link_query_result(result)
+            check_zulip_realm_query_result(result)
 
     @mock.patch("analytics.views.update_billing_method_of_current_plan")
     def test_change_billing_method(self, m: mock.Mock) -> None:

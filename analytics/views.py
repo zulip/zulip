@@ -1238,8 +1238,9 @@ def get_confirmations(
         else:
             link_status = ""
 
-        if timezone_now() < expiry_date:
-            expires_in = timesince(confirmation.date_sent, expiry_date)
+        now = timezone_now()
+        if now < expiry_date:
+            expires_in = timesince(now, expiry_date)
         else:
             expires_in = "Expired"
 
