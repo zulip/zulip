@@ -60,6 +60,7 @@ const submessage = mock_esm("../../static/js/submessage");
 const typing_events = mock_esm("../../static/js/typing_events");
 const ui = mock_esm("../../static/js/ui");
 const unread_ops = mock_esm("../../static/js/unread_ops");
+const unread_ui = mock_esm("../../static/js/unread_ui");
 const user_events = mock_esm("../../static/js/user_events");
 const user_groups = mock_esm("../../static/js/user_groups");
 mock_esm("../../static/js/compose");
@@ -775,6 +776,7 @@ run_test("update_global_notifications", (override) => {
 
 run_test("update_message (read)", (override) => {
     const event = event_fixtures.update_message_flags__read;
+    override(unread_ui, "hide_mark_all_read_loader", noop);
 
     const stub = make_stub();
     override(unread_ops, "process_read_messages_event", stub.f);

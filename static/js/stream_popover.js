@@ -384,7 +384,11 @@ export function register_click_handlers() {
         });
     });
 
-    $("#global_filters").on("click", ".all-messages-sidebar-menu-icon", build_all_messages_popover);
+    $("#global_filters").on(
+        "click",
+        ".all-messages-sidebar-menu-icon > i",
+        build_all_messages_popover,
+    );
 
     $("#global_filters").on(
         "click",

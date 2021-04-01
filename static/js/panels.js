@@ -109,7 +109,6 @@ export function initialize() {
     $(".accept-bankruptcy").on("click", function (e) {
         e.preventDefault();
         $(this).closest(".alert").hide();
-        $(".bankruptcy-loader").show();
         setTimeout(unread_ops.mark_all_as_read, 1000);
         resize_app();
     });

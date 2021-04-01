@@ -1,6 +1,8 @@
 import $ from "jquery";
 
 import * as activity from "./activity";
+import * as feedback_widget from "./feedback_widget";
+import {i18n} from "./i18n";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
@@ -87,6 +89,22 @@ export function should_display_bankruptcy_banner() {
     }
 
     return false;
+}
+
+export function show_mark_all_read_loader() {
+    $(".all-messages-sidebar-menu-icon > i").hide();
+    feedback_widget.show({
+        title_text: i18n.t("Please wait"),
+        populate(container) {
+            container.text(i18n.t("Marking all messages as read."));
+        },
+        persistant: true,
+    });
+}
+
+export function hide_mark_all_read_loader() {
+    feedback_widget.dismiss();
+    $(".all-messages-sidebar-menu-icon > i").show();
 }
 
 export function initialize() {

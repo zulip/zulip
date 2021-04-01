@@ -56,6 +56,7 @@ import * as submessage from "./submessage";
 import * as subs from "./subs";
 import * as typing_events from "./typing_events";
 import * as unread_ops from "./unread_ops";
+import * as unread_ui from "./unread_ui";
 import * as user_events from "./user_events";
 import * as user_groups from "./user_groups";
 import * as user_status from "./user_status";
@@ -651,6 +652,7 @@ export function dispatch_normal_event(event) {
                     break;
                 case "read":
                     unread_ops.process_read_messages_event(event.messages);
+                    unread_ui.hide_mark_all_read_loader();
                     break;
             }
             break;

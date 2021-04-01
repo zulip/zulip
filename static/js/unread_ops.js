@@ -11,6 +11,7 @@ import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
 
 export function mark_all_as_read() {
+    unread_ui.show_mark_all_read_loader();
     channel.post({
         url: "/json/mark_all_as_read",
         idempotent: true,
