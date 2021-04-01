@@ -1,8 +1,8 @@
 import "core-js/features/promise";
 import "core-js/features/symbol";
 import "css.escape";
+import "../webpack_public_path";
 import "../../../tools/debug-require";
-import "../page_params";
 import "../csrf";
 import "../blueslip";
 import "../../third/bootstrap/js/bootstrap";

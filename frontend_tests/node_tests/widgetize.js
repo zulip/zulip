@@ -4,11 +4,12 @@ const {strict: assert} = require("assert");
 
 const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
 
 mock_cjs("jquery", $);
 
-const events = [
+const sample_events = [
     {
         data: {
             option: "First option",
@@ -35,10 +36,12 @@ const events = [
     },
 ];
 
+let events;
 let widget_elem;
 let is_event_handled;
 let is_widget_activated;
-mock_esm("../../static/js/poll_widget", {
+
+const fake_poll_widget = {
     activate(data) {
         is_widget_activated = true;
         widget_elem = data.elem;
@@ -51,15 +54,28 @@ mock_esm("../../static/js/poll_widget", {
         };
         data.callback("test_data");
     },
-});
-set_global("document", "document-stub");
+};
 
+const message_lists = mock_esm("../../static/js/message_lists", {current: {}});
 const narrow_state = mock_esm("../../static/js/narrow_state");
-set_global("current_msg_list", {});
+mock_esm("../../static/js/poll_widget", fake_poll_widget);
+
+set_global("document", "document-stub");
 
 const widgetize = zrequire("widgetize");
 
-run_test("activate", (override) => {
+function test(label, f) {
+    run_test(label, (override) => {
+        events = [...sample_events];
+        widget_elem = undefined;
+        is_event_handled = false;
+        is_widget_activated = false;
+        widgetize.clear_for_testing();
+        f(override);
+    });
+}
+
+test("activate", (override) => {
     // Both widgetize.activate and widgetize.handle_event are tested
     // here to use the "caching" of widgets
     const row = $.create("<stub message row>");
@@ -168,11 +184,11 @@ run_test("activate", (override) => {
     assert(!is_event_handled);
 
     /* Test narrow change message update */
-    override(current_msg_list, "get", (idx) => {
+    override(message_lists.current, "get", (idx) => {
         assert.equal(idx, 2001);
         return {};
     });
-    override(current_msg_list, "get_row", (idx) => {
+    override(message_lists.current, "get_row", (idx) => {
         assert.equal(idx, 2001);
         return row;
     });

@@ -5,8 +5,10 @@ import render_admin_emoji_list from "../templates/admin_emoji_list.hbs";
 import render_settings_emoji_settings_tip from "../templates/settings/emoji_settings_tip.hbs";
 
 import * as channel from "./channel";
+import {i18n} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as ui from "./ui";
 import * as ui_report from "./ui_report";

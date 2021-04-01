@@ -139,9 +139,7 @@ const templatesPath = staticPath + "templates" + path.sep;
 exports.complain_about_unused_mocks = function () {
     for (const filename of module_mocks.keys()) {
         if (!used_module_mocks.has(filename)) {
-            throw new Error(
-                `You asked to mock ${filename} but we never saw it during compilation.`,
-            );
+            console.error(`You asked to mock ${filename} but we never saw it during compilation.`);
         }
     }
 };

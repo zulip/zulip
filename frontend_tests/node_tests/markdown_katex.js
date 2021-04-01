@@ -7,10 +7,9 @@
     There may be a better way.
 */
 
-const {set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-
-set_global("page_params", {});
+const blueslip = require("../zjsunit/zblueslip");
 
 const markdown_config = zrequire("markdown_config");
 

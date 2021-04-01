@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import * as hashchange from "./hashchange";
+import * as browser_history from "./browser_history";
 
 if (window.electron_bridge !== undefined) {
     window.electron_bridge.on_event("logout", () => {
@@ -8,10 +8,10 @@ if (window.electron_bridge !== undefined) {
     });
 
     window.electron_bridge.on_event("show-keyboard-shortcuts", () => {
-        hashchange.go_to_location("keyboard-shortcuts");
+        browser_history.go_to_location("keyboard-shortcuts");
     });
 
     window.electron_bridge.on_event("show-notification-settings", () => {
-        hashchange.go_to_location("settings/notifications");
+        browser_history.go_to_location("settings/notifications");
     });
 }

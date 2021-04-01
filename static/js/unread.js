@@ -1,8 +1,9 @@
 import {FoldDict} from "./fold_dict";
 import * as message_store from "./message_store";
 import * as muting from "./muting";
+import {page_params} from "./page_params";
 import * as people from "./people";
-import * as settings_notifications from "./settings_notifications";
+import * as settings_config from "./settings_config";
 import * as stream_data from "./stream_data";
 import * as util from "./util";
 
@@ -492,10 +493,10 @@ export function calculate_notifiable_count(res) {
 
     const only_show_notifiable =
         page_params.desktop_icon_count_display ===
-        settings_notifications.desktop_icon_count_display_values.notifiable.code;
+        settings_config.desktop_icon_count_display_values.notifiable.code;
     const no_notifications =
         page_params.desktop_icon_count_display ===
-        settings_notifications.desktop_icon_count_display_values.none.code;
+        settings_config.desktop_icon_count_display_values.none.code;
     if (only_show_notifiable) {
         // DESKTOP_ICON_COUNT_DISPLAY_NOTIFIABLE
         new_message_count = res.mentioned_message_count + res.private_message_count;

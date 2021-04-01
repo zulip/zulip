@@ -2,24 +2,24 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {unmock_module, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const {page_params} = require("../zjsunit/zpage_params");
 
 // We download our translations in `page_params` (which
 // are for the user's chosen language), so we simulate
 // that here for the tests.
-set_global("page_params", {
-    translation_data: {
-        "Quote and reply or forward": "French translation",
-        "Notification triggers": "Some French text",
-    },
-});
+page_params.translation_data = {
+    "Quote and reply or forward": "French translation",
+    "Notification triggers": "Some French text",
+};
 
 // All of our other tests stub out i18n activity;
 // here we do a quick sanity check on the engine itself.
 // We use `i18n.js` to initialize `i18next` and
 // to set `i18n` to `i18next` on the global namespace
 // for `templates.js`.
+unmock_module("../../static/js/i18n");
 zrequire("i18n");
 zrequire("templates");
 

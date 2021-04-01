@@ -36,3 +36,15 @@ A typical failed JSON response for when the user is not authorized
 for a query:
 
 {generate_code_example|/rest-error-handling:post|fixture(400_2)}
+
+## User account deactivated
+
+A typical failed json response for when user's account is deactivated:
+
+{generate_code_example|/rest-error-handling:post|fixture(403_0)}
+
+## Realm deactivated
+
+A typical failed json response for when user's organization is deactivated:
+
+{generate_code_example|/rest-error-handling:post|fixture(403_1)}

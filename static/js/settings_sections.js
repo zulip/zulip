@@ -1,5 +1,6 @@
 import * as alert_words_ui from "./alert_words_ui";
 import * as attachments_ui from "./attachments_ui";
+import * as blueslip from "./blueslip";
 import * as settings_account from "./settings_account";
 import * as settings_bots from "./settings_bots";
 import * as settings_display from "./settings_display";
@@ -56,7 +57,7 @@ export function initialize() {
     load_func_dict.set("org_users", settings_users.set_up_humans);
     load_func_dict.set("emoji-settings", settings_emoji.set_up);
     load_func_dict.set("default-streams-list", settings_streams.set_up);
-    load_func_dict.set("filter-settings", settings_linkifiers.set_up);
+    load_func_dict.set("linkifier-settings", settings_linkifiers.set_up);
     load_func_dict.set("invites-list-admin", settings_invites.set_up);
     load_func_dict.set("user-groups-admin", settings_user_groups.set_up);
     load_func_dict.set("profile-field-settings", settings_profile_fields.set_up);

@@ -93,6 +93,14 @@ class zulip::nginx {
     group  => 'adm',
     mode   => '0650',
   }
+  file { '/etc/logrotate.d/nginx':
+    ensure  => file,
+    require => Package[$zulip::common::nginx],
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    source  => 'puppet:///modules/zulip/logrotate/nginx',
+  }
 
   $certbot_auto_renew = zulipconf('certbot', 'auto_renew', '')
   if $certbot_auto_renew == 'yes' {

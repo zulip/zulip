@@ -8,7 +8,9 @@ import * as fenced_code from "../shared/js/fenced_code";
 import render_edit_content_button from "../templates/edit_content_button.hbs";
 
 import * as activity from "./activity";
+import * as alert_popup from "./alert_popup";
 import * as alert_words from "./alert_words";
+import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
 import * as click_handlers from "./click_handlers";
 import * as compose from "./compose";
@@ -29,6 +31,7 @@ import * as markdown from "./markdown";
 import * as markdown_config from "./markdown_config";
 import * as message_edit from "./message_edit";
 import * as message_fetch from "./message_fetch";
+import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
 import * as message_view_header from "./message_view_header";
 import * as message_viewport from "./message_viewport";
@@ -36,6 +39,7 @@ import * as muting from "./muting";
 import * as navigate from "./navigate";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as panels from "./panels";
 import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
@@ -54,7 +58,7 @@ import * as settings_sections from "./settings_sections";
 import * as settings_toggle from "./settings_toggle";
 import * as spoilers from "./spoilers";
 import * as starred_messages from "./starred_messages";
-import * as stream_color from "./stream_color";
+import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_list from "./stream_list";
@@ -65,7 +69,6 @@ import * as topic_zoom from "./topic_zoom";
 import * as tutorial from "./tutorial";
 import * as typing from "./typing";
 import * as ui from "./ui";
-import * as ui_util from "./ui_util";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
 import * as user_groups from "./user_groups";
@@ -94,14 +97,13 @@ function message_hover(message_row) {
     if (current_message_hover && rows.id(current_message_hover) === id) {
         return;
     }
-    // Don't allow on-hover editing for local-only messages
-    if (message_row.hasClass("local")) {
-        return;
-    }
-    const message = current_msg_list.get(rows.id(message_row));
+
+    const message = message_lists.current.get(rows.id(message_row));
     message_unhover();
     current_message_hover = message_row;
 
+    // Locally echoed messages have !is_topic_editable and thus go
+    // through this code path.
     if (!message_edit.is_topic_editable(message)) {
         // The actions and reactions icon hover logic is handled entirely by CSS
         return;
@@ -253,7 +255,7 @@ export function initialize_kitchen_sink_stuff() {
     });
 
     $("#stream_message_recipient_stream").on("blur", function () {
-        ui_util.decorate_stream_bar(this.value, $("#stream-message .message_header_stream"), true);
+        stream_bar.decorate(this.value, $("#stream-message .message_header_stream"), true);
     });
 
     $(window).on("blur", () => {
@@ -265,7 +267,7 @@ export function initialize_kitchen_sink_stuff() {
     });
 
     $(document).on("message_selected.zulip", (event) => {
-        if (current_msg_list !== event.msg_list) {
+        if (message_lists.current !== event.msg_list) {
             return;
         }
         if (event.id === -1) {
@@ -278,7 +280,7 @@ export function initialize_kitchen_sink_stuff() {
 
         if (event.then_scroll) {
             if (row.length === 0) {
-                const row_from_dom = current_msg_list.get_row(event.id);
+                const row_from_dom = message_lists.current.get_row(event.id);
                 const messages = event.msg_list.all_messages();
                 blueslip.debug("message_selected missing selected row", {
                     previously_selected_id: event.previously_selected_id,
@@ -290,7 +292,7 @@ export function initialize_kitchen_sink_stuff() {
                     selected_id_from_idx: messages[event.msg_list.selected_idx()].id,
                     msg_list_sorted: _.isEqual(
                         messages.map((message) => message.id),
-                        current_msg_list
+                        message_lists.current
                             .all_messages()
                             .map((message) => message.id)
                             .sort(),
@@ -299,7 +301,7 @@ export function initialize_kitchen_sink_stuff() {
                 });
             }
             if (event.target_scroll_offset !== undefined) {
-                current_msg_list.view.set_message_offset(event.target_scroll_offset);
+                message_lists.current.view.set_message_offset(event.target_scroll_offset);
             } else {
                 // Scroll to place the message within the current view;
                 // but if this is the initial placement of the pointer,
@@ -315,7 +317,7 @@ export function initialize_kitchen_sink_stuff() {
     $("#main_div").on("mouseenter", ".message_time", (e) => {
         const time_elem = $(e.target);
         const row = time_elem.closest(".message_row");
-        const message = current_msg_list.get(rows.id(row));
+        const message = message_lists.current.get(rows.id(row));
         timerender.set_full_datetime(message, time_elem);
     });
 
@@ -367,8 +369,8 @@ export function initialize_everything() {
         of them will consume data from the server
         in the form of `page_params`.
 
-        The global `page_params` var is basically
-        a massive dictionary with all the information
+        The `page_params` variable is basically a
+        massive dictionary with all the information
         that the client needs to run the app.  Here
         are some examples of what it includes:
 
@@ -474,6 +476,8 @@ export function initialize_everything() {
 
     const user_status_params = pop_fields("user_status");
 
+    message_lists.initialize();
+    alert_popup.initialize();
     alert_words.initialize(alert_words_params);
     emojisets.initialize();
     people.initialize(page_params.user_id, people_params);
@@ -481,7 +485,6 @@ export function initialize_everything() {
     message_viewport.initialize();
     initialize_kitchen_sink_stuff();
     echo.initialize();
-    stream_color.initialize();
     stream_edit.initialize();
     stream_data.initialize(stream_data_params);
     pm_conversations.recent.initialize(pm_conversations_params);
@@ -505,7 +508,7 @@ export function initialize_everything() {
     user_groups.initialize(user_groups_params);
     unread.initialize();
     bot_data.initialize(bot_params); // Must happen after people.initialize()
-    message_fetch.initialize();
+    message_fetch.initialize(server_events.home_view_loaded);
     message_scroll.initialize();
     emoji.initialize({
         realm_emoji: emoji_params.realm_emoji,

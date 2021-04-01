@@ -4,8 +4,4 @@ set -e
 set -x
 
 ZULIP_PATH=/home/github/zulip
-if [ "$CIRCLECI" = true ]; then
-    ZULIP_PATH=/home/circleci/zulip
-fi
-
 tar -xf /tmp/zulip-server-test.tar.gz -C "$ZULIP_PATH" --strip-components=1

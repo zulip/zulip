@@ -49,20 +49,6 @@ class Command(BaseCommand):
             "(use multiple ports to start multiple servers)",
         )
 
-        parser.add_argument(
-            "--nokeepalive",
-            action="store_true",
-            dest="no_keep_alive",
-            help="Tells Tornado to NOT keep alive http connections.",
-        )
-
-        parser.add_argument(
-            "--noxheaders",
-            action="store_false",
-            dest="xheaders",
-            help="Tells Tornado to NOT override remote IP with X-Real-IP.",
-        )
-
     def handle(self, addrport: str, **options: bool) -> None:
         interactive_debug_listen()
 
@@ -79,9 +65,6 @@ class Command(BaseCommand):
 
         if not addr:
             addr = "127.0.0.1"
-
-        xheaders = options.get("xheaders", True)
-        no_keep_alive = options.get("no_keep_alive", False)
 
         if settings.DEBUG:
             logging.basicConfig(
@@ -115,9 +98,7 @@ class Command(BaseCommand):
                     zulip_autoreload_start()
 
                 # start tornado web server in single-threaded mode
-                http_server = httpserver.HTTPServer(
-                    application, xheaders=xheaders, no_keep_alive=no_keep_alive
-                )
+                http_server = httpserver.HTTPServer(application, xheaders=True)
                 http_server.listen(port, address=addr)
 
                 from zerver.tornado.ioloop_logging import logging_data

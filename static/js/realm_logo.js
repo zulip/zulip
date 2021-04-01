@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import * as channel from "./channel";
+import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 import * as upload_widget from "./upload_widget";
 

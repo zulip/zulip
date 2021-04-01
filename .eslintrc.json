@@ -87,7 +87,7 @@
             }
         ],
         "radix": "error",
-        "spaced-comment": "off",
+        "spaced-comment": ["error", "always", {"markers": ["/"]}],
         "strict": "error",
         "unicorn/consistent-function-scoping": "off",
         "unicorn/explicit-length-check": "off",
@@ -105,33 +105,15 @@
     },
     "overrides": [
         {
-            "files": ["frontend_tests/node_tests/**"],
-            "globals": {
-                "blueslip": false,
-                "current_msg_list": false,
-                "home_msg_list": false,
-                "i18n": false,
-                "location": false
-            }
-        },
-        {
             "files": ["frontend_tests/puppeteer_lib/**", "frontend_tests/puppeteer_tests/**"],
             "globals": {
                 "$": false,
-                "current_msg_list": false,
-                "page_params": false,
                 "zulip_test": false
             }
         },
         {
             "files": ["static/js/**"],
             "globals": {
-                "blueslip": false,
-                "csrf_token": false,
-                "current_msg_list": true,
-                "home_msg_list": false,
-                "i18n": false,
-                "page_params": false,
                 "StripeCheckout": false,
                 "zxcvbn": false
             }
@@ -144,17 +126,20 @@
             },
             "rules": {
                 // Disable base rule to avoid conflict
+                "no-duplicate-imports": "off",
                 "no-unused-vars": "off",
                 "no-useless-constructor": "off",
 
                 "@typescript-eslint/array-type": "error",
                 "@typescript-eslint/await-thenable": "error",
                 "@typescript-eslint/consistent-type-assertions": "error",
+                "@typescript-eslint/consistent-type-imports": "error",
                 "@typescript-eslint/explicit-function-return-type": [
                     "error",
                     {"allowExpressions": true}
                 ],
                 "@typescript-eslint/member-ordering": "error",
+                "@typescript-eslint/no-duplicate-imports": "off",
                 "@typescript-eslint/no-explicit-any": "off",
                 "@typescript-eslint/no-extraneous-class": "error",
                 "@typescript-eslint/no-non-null-assertion": "off",
@@ -208,7 +193,6 @@
             "files": ["static/**"],
             "env": {
                 "browser": true,
-                "commonjs": true,
                 "node": false
             },
             "rules": {
@@ -222,7 +206,6 @@
             "files": ["static/shared/**"],
             "env": {
                 "browser": false,
-                "commonjs": false,
                 "shared-node-browser": true
             },
             "rules": {

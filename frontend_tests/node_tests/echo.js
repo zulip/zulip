@@ -4,12 +4,13 @@ const {strict: assert} = require("assert");
 
 const MockDate = require("mockdate");
 
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
+const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
+const {page_params} = require("../zjsunit/zpage_params");
 
-const local_message = mock_esm("../../static/js/local_message");
 const markdown = mock_esm("../../static/js/markdown");
-const page_params = set_global("page_params", {});
+const message_lists = mock_esm("../../static/js/message_lists");
 
 let disparities = [];
 let messages_to_rerender = [];
@@ -30,16 +31,16 @@ mock_esm("../../static/js/message_store", {
     update_booleans: () => {},
 });
 
-set_global("home_msg_list", {
+message_lists.home = {
     view: {
         rerender_messages: (msgs) => {
             messages_to_rerender = msgs;
         },
     },
-});
+};
 
 mock_esm("../../static/js/message_list");
-set_global("current_msg_list", "");
+message_lists.current = "";
 
 const echo = zrequire("echo");
 const people = zrequire("people");
@@ -170,6 +171,28 @@ run_test("build_display_recipient", () => {
     assert.equal(iago.id, 123);
 });
 
+run_test("update_message_lists", () => {
+    message_lists.home.view = {};
+
+    const stub = make_stub();
+    const view_stub = make_stub();
+
+    message_lists.home.change_message_id = stub.f;
+    message_lists.home.view.change_message_id = view_stub.f;
+
+    echo.update_message_lists({old_id: 401, new_id: 402});
+
+    assert.equal(stub.num_calls, 1);
+    const args = stub.get_args("old", "new");
+    assert.equal(args.old, 401);
+    assert.equal(args.new, 402);
+
+    assert.equal(view_stub.num_calls, 1);
+    const view_args = view_stub.get_args("old", "new");
+    assert.equal(view_args.old, 401);
+    assert.equal(view_args.new, 402);
+});
+
 run_test("insert_local_message streams", (override) => {
     const fake_now = 555;
     MockDate.set(new Date(fake_now * 1000));
@@ -188,7 +211,7 @@ run_test("insert_local_message streams", (override) => {
         add_topic_links_called = true;
     });
 
-    override(local_message, "insert_message", (message) => {
+    override(echo, "insert_message", (message) => {
         assert.equal(message.display_recipient, "general");
         assert.equal(message.timestamp, fake_now);
         assert.equal(message.sender_email, "iago@zulip.com");
@@ -232,7 +255,7 @@ run_test("insert_local_message PM", (override) => {
     let apply_markdown_called = false;
     let insert_message_called = false;
 
-    override(local_message, "insert_message", (message) => {
+    override(echo, "insert_message", (message) => {
         assert.equal(message.display_recipient.length, 3);
         insert_message_called = true;
     });

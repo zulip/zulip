@@ -1,13 +1,14 @@
 server {
     listen 80;
+    listen [::]:80;
     return 301 https://$host$request_uri;
 }
 
 server {
-    listen 443 http2;
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
     server_name zulip.org;
 
-    ssl on;
     ssl_certificate /etc/letsencrypt/live/zulip.org/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/zulip.org/privkey.pem;
 
@@ -22,10 +23,10 @@ server {
 }
 
 server {
-    listen 443 http2;
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
     server_name blog.zulip.org;
 
-    ssl on;
     ssl_certificate /etc/letsencrypt/live/zulip.org/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/zulip.org/privkey.pem;
 

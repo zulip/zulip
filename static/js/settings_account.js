@@ -6,13 +6,18 @@ import render_settings_custom_user_profile_field from "../templates/settings/cus
 import render_settings_dev_env_email_access from "../templates/settings/dev_env_email_access.hbs";
 
 import * as avatar from "./avatar";
+import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as common from "./common";
+import {csrf_token} from "./csrf";
+import {i18n} from "./i18n";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pill_typeahead from "./pill_typeahead";
 import * as popovers from "./popovers";
 import * as settings_bots from "./settings_bots";
+import * as settings_data from "./settings_data";
 import * as settings_ui from "./settings_ui";
 import * as setup from "./setup";
 import * as ui_report from "./ui_report";
@@ -41,28 +46,8 @@ export function update_full_name(new_full_name) {
     }
 }
 
-export function user_can_change_name() {
-    if (page_params.is_admin) {
-        return true;
-    }
-    if (page_params.realm_name_changes_disabled || page_params.server_name_changes_disabled) {
-        return false;
-    }
-    return true;
-}
-
-export function user_can_change_avatar() {
-    if (page_params.is_admin) {
-        return true;
-    }
-    if (page_params.realm_avatar_changes_disabled || page_params.server_avatar_changes_disabled) {
-        return false;
-    }
-    return true;
-}
-
 export function update_name_change_display() {
-    if (!user_can_change_name()) {
+    if (!settings_data.user_can_change_name()) {
         $("#full_name").prop("disabled", true);
         $(".change_name_tooltip").show();
     } else {
@@ -82,7 +67,7 @@ export function update_email_change_display() {
 }
 
 export function update_avatar_change_display() {
-    if (!user_can_change_avatar()) {
+    if (!settings_data.user_can_change_avatar()) {
         $("#user-avatar-upload-widget .image_upload_button").prop("disabled", true);
         $("#user-avatar-upload-widget .image-delete-button .button").prop("disabled", true);
     } else {
@@ -148,7 +133,7 @@ export function append_custom_profile_fields(element_id, user_id) {
     const all_field_template_types = new Map([
         [all_field_types.LONG_TEXT.id, "text"],
         [all_field_types.SHORT_TEXT.id, "text"],
-        [all_field_types.CHOICE.id, "choice"],
+        [all_field_types.SELECT.id, "select"],
         [all_field_types.USER.id, "user"],
         [all_field_types.DATE.id, "date"],
         [all_field_types.EXTERNAL_ACCOUNT.id, "text"],
@@ -157,13 +142,13 @@ export function append_custom_profile_fields(element_id, user_id) {
 
     for (const field of all_custom_fields) {
         let field_value = people.get_custom_profile_data(user_id, field.id);
-        const is_choice_field = field.type === all_field_types.CHOICE.id;
+        const is_select_field = field.type === all_field_types.SELECT.id;
         const field_choices = [];
 
         if (field_value === undefined || field_value === null) {
             field_value = {value: "", rendered_value: ""};
         }
-        if (is_choice_field) {
+        if (is_select_field) {
             const field_choice_dict = JSON.parse(field.field_data);
             for (const choice in field_choice_dict) {
                 if (choice) {
@@ -183,7 +168,7 @@ export function append_custom_profile_fields(element_id, user_id) {
             is_long_text_field: field.type === all_field_types.LONG_TEXT.id,
             is_user_field: field.type === all_field_types.USER.id,
             is_date_field: field.type === all_field_types.DATE.id,
-            is_choice_field,
+            is_select_field,
             field_choices,
         });
         $(element_id).append(html);
@@ -392,7 +377,7 @@ export function set_up() {
     $("#change_full_name").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        if (user_can_change_name()) {
+        if (settings_data.user_can_change_name()) {
             $("#change_full_name_modal").find("input[name='full_name']").val(page_params.full_name);
             overlays.open_modal("#change_full_name_modal");
         }
@@ -416,14 +401,6 @@ export function set_up() {
         .find("[data-dismiss=modal]")
         .on("click", () => {
             clear_password_change();
-        });
-
-    // If the modal is closed using the 'close' button or the 'Cancel' button
-    $(".modal")
-        .find("[data-dismiss=modal]")
-        .on("click", () => {
-            // Enable mouse events for the background on closing modal
-            $(".overlay.show").attr("style", null);
         });
 
     $("#change_password_button").on("click", (e) => {

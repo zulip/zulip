@@ -100,8 +100,6 @@ else:
 
 # This is overridden in test_settings.py for the test suites
 TEST_SUITE = False
-# The new user tutorial is enabled by default, but disabled for client tests.
-TUTORIAL_ENABLED = True
 # This is overridden in test_settings.py for the test suites
 PUPPETEER_TESTS = False
 # This is overridden in test_settings.py for the test suites
@@ -174,7 +172,7 @@ MIDDLEWARE = (
     # With the exception of it's dependencies,
     # our logging middleware should be the top middleware item.
     "zerver.middleware.TagRequests",
-    "zerver.middleware.SetRemoteAddrFromForwardedFor",
+    "zerver.middleware.SetRemoteAddrFromRealIpHeader",
     "zerver.middleware.RequestContext",
     "zerver.middleware.LogRequests",
     "zerver.middleware.JsonErrorHandler",
@@ -242,6 +240,9 @@ SILENCED_SYSTEM_CHECKS = [
     # backends support the username not being unique; and they do.
     # See: https://docs.djangoproject.com/en/2.2/topics/auth/customizing/#django.contrib.auth.models.CustomUser.USERNAME_FIELD
     "auth.W004",
+    # models.E034 limits index names to 30 characters for Oracle compatibility.
+    # We aren't using Oracle.
+    "models.E034",
 ]
 
 ########################################################################

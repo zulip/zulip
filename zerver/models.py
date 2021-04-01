@@ -62,7 +62,6 @@ from zerver.lib.cache import (
     realm_user_dict_fields,
     realm_user_dicts_cache_key,
     user_profile_by_api_key_cache_key,
-    user_profile_by_email_cache_key,
     user_profile_by_id_cache_key,
     user_profile_cache_key,
 )
@@ -88,7 +87,7 @@ from zerver.lib.validator import (
     check_long_string,
     check_short_string,
     check_url,
-    validate_choice_field,
+    validate_select_field,
 )
 
 MAX_TOPIC_NAME_LENGTH = 60
@@ -254,11 +253,13 @@ class Realm(models.Model):
     POLICY_MEMBERS_ONLY = 1
     POLICY_ADMINS_ONLY = 2
     POLICY_FULL_MEMBERS_ONLY = 3
+    POLICY_MODERATORS_ONLY = 4
 
     COMMON_POLICY_TYPES = [
         POLICY_MEMBERS_ONLY,
         POLICY_ADMINS_ONLY,
         POLICY_FULL_MEMBERS_ONLY,
+        POLICY_MODERATORS_ONLY,
     ]
 
     # Who in the organization is allowed to create streams.
@@ -553,29 +554,41 @@ class Realm(models.Model):
     def get_active_emoji(self) -> Dict[str, Dict[str, Iterable[str]]]:
         return get_active_realm_emoji_uncached(self)
 
-    def get_admin_users_and_bots(self) -> Sequence["UserProfile"]:
+    def get_admin_users_and_bots(
+        self, include_realm_owners: bool = True
+    ) -> Sequence["UserProfile"]:
         """Use this in contexts where we want administrative users as well as
         bots with administrator privileges, like send_event calls for
         notifications to all administrator users.
         """
+        if include_realm_owners:
+            roles = [UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_REALM_OWNER]
+        else:
+            roles = [UserProfile.ROLE_REALM_ADMINISTRATOR]
+
         # TODO: Change return type to QuerySet[UserProfile]
         return UserProfile.objects.filter(
             realm=self,
             is_active=True,
-            role__in=[UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_REALM_OWNER],
+            role__in=roles,
         )
 
-    def get_human_admin_users(self) -> QuerySet:
+    def get_human_admin_users(self, include_realm_owners: bool = True) -> QuerySet:
         """Use this in contexts where we want only human users with
         administrative privileges, like sending an email to all of a
         realm's administrators (bots don't have real email addresses).
         """
+        if include_realm_owners:
+            roles = [UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_REALM_OWNER]
+        else:
+            roles = [UserProfile.ROLE_REALM_ADMINISTRATOR]
+
         # TODO: Change return type to QuerySet[UserProfile]
         return UserProfile.objects.filter(
             realm=self,
             is_bot=False,
             is_active=True,
-            role__in=[UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_REALM_OWNER],
+            role__in=roles,
         )
 
     def get_human_billing_admin_users(self) -> Sequence["UserProfile"]:
@@ -1442,11 +1455,19 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         if policy_value == Realm.POLICY_ADMINS_ONLY:
             return False
 
+        if self.is_moderator:
+            return True
+
+        if policy_value == Realm.POLICY_MODERATORS_ONLY:
+            return False
+
         if self.is_guest:
             return False
 
         if policy_value == Realm.POLICY_MEMBERS_ONLY:
             return True
+
+        assert policy_value == Realm.POLICY_FULL_MEMBERS_ONLY
         return not self.is_provisional_member
 
     def can_create_streams(self) -> bool:
@@ -1682,6 +1703,7 @@ class Stream(models.Model):
     STREAM_POST_POLICY_EVERYONE = 1
     STREAM_POST_POLICY_ADMINS = 2
     STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS = 3
+    STREAM_POST_POLICY_MODERATORS = 4
     # TODO: Implement policy to restrict posting to a user group or admins.
 
     # Who in the organization has permission to send messages to this stream.
@@ -1690,6 +1712,7 @@ class Stream(models.Model):
         STREAM_POST_POLICY_EVERYONE,
         STREAM_POST_POLICY_ADMINS,
         STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS,
+        STREAM_POST_POLICY_MODERATORS,
     ]
 
     # The unique thing about Zephyr public streams is that we never list their
@@ -1812,6 +1835,11 @@ class Client(models.Model):
 
 
 get_client_cache: Dict[str, Client] = {}
+
+
+def clear_client_cache() -> None:  # nocoverage
+    global get_client_cache
+    get_client_cache = {}
 
 
 def get_client(name: str) -> Client:
@@ -2540,6 +2568,13 @@ class Subscription(models.Model):
     # notification settings, stream color, etc., if the user later
     # resubscribes.
     active: bool = models.BooleanField(default=True)
+    # This is a denormalization designed to improve the performance of
+    # bulk queries of Subscription objects, Whether the subscribed user
+    # is active tends to be a key condition in those queries.
+    # We intentionally don't specify a default value to promote thinking
+    # about this explicitly, as in some special cases, such as data import,
+    # we may be creating Subscription objects for a user that's deactivated.
+    is_user_active: bool = models.BooleanField()
 
     ROLE_STREAM_ADMINISTRATOR = 20
     ROLE_MEMBER = 50
@@ -2569,6 +2604,13 @@ class Subscription(models.Model):
 
     class Meta:
         unique_together = ("user_profile", "recipient")
+        indexes = [
+            models.Index(
+                fields=("recipient", "user_profile"),
+                name="zerver_subscription_recipient_id_user_profile_id_idx",
+                condition=Q(active=True, is_user_active=True),
+            ),
+        ]
 
     def __str__(self) -> str:
         return f"<Subscription: {self.user_profile} -> {self.recipient}>"
@@ -2609,9 +2651,8 @@ def get_user_profile_by_id(uid: int) -> UserProfile:
     return UserProfile.objects.select_related().get(id=uid)
 
 
-@cache_with_key(user_profile_by_email_cache_key, timeout=3600 * 24 * 7)
 def get_user_profile_by_email(email: str) -> UserProfile:
-    """This function is intended to be used by our unit tests and for
+    """This function is intended to be used for
     manual manage.py shell work; robust code must use get_user or
     get_user_by_delivery_email instead, because Zulip supports
     multiple users with a given (delivery) email address existing on a
@@ -2823,8 +2864,14 @@ def get_huddle_backend(huddle_hash: str, id_list: List[int]) -> Huddle:
             huddle.recipient = recipient
             huddle.save(update_fields=["recipient"])
             subs_to_create = [
-                Subscription(recipient=recipient, user_profile_id=user_profile_id)
-                for user_profile_id in id_list
+                Subscription(
+                    recipient=recipient,
+                    user_profile_id=user_profile_id,
+                    is_user_active=is_active,
+                )
+                for user_profile_id, is_active in UserProfile.objects.filter(id__in=id_list)
+                .distinct("id")
+                .values_list("id", "is_active")
             ]
             Subscription.objects.bulk_create(subs_to_create)
         return huddle
@@ -2993,7 +3040,7 @@ class DefaultStreamGroup(models.Model):
             name=self.name,
             id=self.id,
             description=self.description,
-            streams=[stream.to_dict() for stream in self.streams.all()],
+            streams=[stream.to_dict() for stream in self.streams.all().order_by("name")],
         )
 
 
@@ -3290,24 +3337,24 @@ class CustomProfileField(models.Model):
 
     SHORT_TEXT = 1
     LONG_TEXT = 2
-    CHOICE = 3
+    SELECT = 3
     DATE = 4
     URL = 5
     USER = 6
     EXTERNAL_ACCOUNT = 7
 
     # These are the fields whose validators require more than var_name
-    # and value argument. i.e. CHOICE require field_data, USER require
+    # and value argument. i.e. SELECT require field_data, USER require
     # realm as argument.
-    CHOICE_FIELD_TYPE_DATA: List[ExtendedFieldElement] = [
-        (CHOICE, ugettext_lazy("List of options"), validate_choice_field, str, "CHOICE"),
+    SELECT_FIELD_TYPE_DATA: List[ExtendedFieldElement] = [
+        (SELECT, ugettext_lazy("List of options"), validate_select_field, str, "SELECT"),
     ]
     USER_FIELD_TYPE_DATA: List[UserFieldElement] = [
         (USER, ugettext_lazy("Person picker"), check_valid_user_ids, ast.literal_eval, "USER"),
     ]
 
-    CHOICE_FIELD_VALIDATORS: Dict[int, ExtendedValidator] = {
-        item[0]: item[2] for item in CHOICE_FIELD_TYPE_DATA
+    SELECT_FIELD_VALIDATORS: Dict[int, ExtendedValidator] = {
+        item[0]: item[2] for item in SELECT_FIELD_TYPE_DATA
     }
     USER_FIELD_VALIDATORS: Dict[int, RealmUserValidator] = {
         item[0]: item[2] for item in USER_FIELD_TYPE_DATA
@@ -3328,7 +3375,7 @@ class CustomProfileField(models.Model):
         ),
     ]
 
-    ALL_FIELD_TYPES = [*FIELD_TYPE_DATA, *CHOICE_FIELD_TYPE_DATA, *USER_FIELD_TYPE_DATA]
+    ALL_FIELD_TYPES = [*FIELD_TYPE_DATA, *SELECT_FIELD_TYPE_DATA, *USER_FIELD_TYPE_DATA]
 
     FIELD_VALIDATORS: Dict[int, Validator[Union[int, str, List[int]]]] = {
         item[0]: item[2] for item in FIELD_TYPE_DATA
@@ -3347,7 +3394,7 @@ class CustomProfileField(models.Model):
     # type/name/hint.
     #
     # The format depends on the type.  Field types SHORT_TEXT, LONG_TEXT,
-    # DATE, URL, and USER leave this null.  Fields of type CHOICE store the
+    # DATE, URL, and USER leave this null.  Fields of type SELECT store the
     # choices' descriptions.
     #
     # Note: There is no performance overhead of using TextField in PostgreSQL.

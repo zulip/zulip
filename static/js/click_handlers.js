@@ -8,6 +8,8 @@ import render_buddy_list_tooltip from "../templates/buddy_list_tooltip.hbs";
 import render_buddy_list_tooltip_content from "../templates/buddy_list_tooltip_content.hbs";
 
 import * as activity from "./activity";
+import * as blueslip from "./blueslip";
+import * as browser_history from "./browser_history";
 import * as buddy_data from "./buddy_data";
 import * as channel from "./channel";
 import * as compose from "./compose";
@@ -15,16 +17,18 @@ import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
 import * as emoji_picker from "./emoji_picker";
 import * as hash_util from "./hash_util";
-import * as hashchange from "./hashchange";
 import * as hotspots from "./hotspots";
+import {i18n} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_flags from "./message_flags";
+import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as muting_ui from "./muting_ui";
 import * as narrow from "./narrow";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_topics from "./recent_topics";
@@ -66,7 +70,7 @@ export function initialize() {
             if (!id) {
                 return;
             }
-            current_msg_list.select_id(id);
+            message_lists.current.select_id(id);
             setTimeout(() => {
                 // The algorithm to trigger long tap is that first, we check
                 // whether the message is still touched after MS_DELAY ms and
@@ -165,7 +169,7 @@ export function initialize() {
             return;
         }
 
-        current_msg_list.select_id(id);
+        message_lists.current.select_id(id);
         compose_actions.respond_to_message({trigger: "message click"});
         e.stopPropagation();
         popovers.hide_all();
@@ -227,8 +231,8 @@ export function initialize() {
     $("body").on("click", ".message_edit_notice", (e) => {
         popovers.hide_all();
         const message_id = rows.id($(e.currentTarget).closest(".message_row"));
-        const row = current_msg_list.get_row(message_id);
-        const message = current_msg_list.get(rows.id(row));
+        const row = message_lists.current.get_row(message_id);
+        const message = message_lists.current.get(rows.id(row));
         const message_history_cancel_btn = $("#message-history-cancel");
 
         if (page_params.realm_allow_edit_history) {
@@ -281,7 +285,7 @@ export function initialize() {
         // so we re-encode the hash.
         const stream_id = Number.parseInt($(this).attr("data-stream-id"), 10);
         if (stream_id) {
-            hashchange.go_to_location(hash_util.by_stream_uri(stream_id));
+            browser_history.go_to_location(hash_util.by_stream_uri(stream_id));
             return;
         }
         window.location.href = $(this).attr("href");
@@ -297,26 +301,18 @@ export function initialize() {
         user_status_ui.update_button();
     });
 
-    // NOTIFICATION CLICK
-
-    $("body").on("click", ".notification", function () {
-        const payload = $(this).data("narrow");
-        ui_util.change_tab_to("#message_feed_container");
-        narrow.activate(payload.raw_operators, payload.opts_notif);
-    });
-
     // MESSAGE EDITING
 
     $("body").on("click", ".edit_content_button", function (e) {
-        const row = current_msg_list.get_row(rows.id($(this).closest(".message_row")));
-        current_msg_list.select_id(rows.id(row));
+        const row = message_lists.current.get_row(rows.id($(this).closest(".message_row")));
+        message_lists.current.select_id(rows.id(row));
         message_edit.start(row);
         e.stopPropagation();
         popovers.hide_all();
     });
     $("body").on("click", ".always_visible_topic_edit,.on_hover_topic_edit", function (e) {
         const recipient_row = $(this).closest(".recipient_row");
-        message_edit.start_topic_edit(recipient_row);
+        message_edit.start_inline_topic_edit(recipient_row);
         e.stopPropagation();
         popovers.hide_all();
     });
@@ -416,18 +412,24 @@ export function initialize() {
     });
 
     // MUTING
+    function mute_topic($elt) {
+        const stream_id = Number.parseInt($elt.attr("data-stream-id"), 10);
+        const topic = $elt.attr("data-topic-name");
+        muting_ui.mute_topic(stream_id, topic);
+    }
 
     $("body").on("click", ".on_hover_topic_mute", (e) => {
         e.stopPropagation();
-        const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id"), 10);
-        const topic = $(e.currentTarget).attr("data-topic-name");
-        muting_ui.mute_topic(stream_id, topic);
+        mute_topic($(e.target));
     });
+
+    // RECENT TOPICS
 
     $("body").on("keydown", ".on_hover_topic_mute", convert_enter_to_click);
 
-    $("body").on("click", ".on_hover_topic_unmute", (e) => {
+    $("body").on("click", "#recent_topics_table .on_hover_topic_unmute", (e) => {
         e.stopPropagation();
+        recent_topics.focus_clicked_element($(e.target), recent_topics.COLUMNS.mute);
         const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id"), 10);
         const topic = $(e.currentTarget).attr("data-topic-name");
         muting_ui.unmute_topic(stream_id, topic);
@@ -435,15 +437,21 @@ export function initialize() {
 
     $("body").on("keydown", ".on_hover_topic_unmute", convert_enter_to_click);
 
-    // RECENT TOPICS
+    $("body").on("click", "#recent_topics_table .on_hover_topic_mute", (e) => {
+        e.stopPropagation();
+        const $elt = $(e.target);
+        recent_topics.focus_clicked_element($elt, recent_topics.COLUMNS.mute);
+        mute_topic($elt);
+    });
 
     $("body").on("click", "#recent_topics_search", (e) => {
         e.stopPropagation();
-        recent_topics.change_focused_element(e, "click");
+        recent_topics.change_focused_element($(e.target), "click");
     });
 
-    $("body").on("click", ".on_hover_topic_read", (e) => {
+    $("body").on("click", "#recent_topics_table .on_hover_topic_read", (e) => {
         e.stopPropagation();
+        recent_topics.focus_clicked_element($(e.target), recent_topics.COLUMNS.read);
         const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id"), 10);
         const topic = $(e.currentTarget).attr("data-topic-name");
         unread_ops.mark_topic_as_read(stream_id, topic);
@@ -453,12 +461,20 @@ export function initialize() {
 
     $("body").on("click", ".btn-recent-filters", (e) => {
         e.stopPropagation();
+        recent_topics.change_focused_element($(e.target), "click");
         recent_topics.set_filter(e.currentTarget.dataset.filter);
         recent_topics.update_filters_view();
     });
 
+    $("body").on("click", "td.recent_topic_stream", (e) => {
+        e.stopPropagation();
+        recent_topics.focus_clicked_element($(e.target), recent_topics.COLUMNS.stream);
+        window.location.href = $(e.currentTarget).find("a").attr("href");
+    });
+
     $("body").on("click", "td.recent_topic_name", (e) => {
         e.stopPropagation();
+        recent_topics.focus_clicked_element($(e.target), recent_topics.COLUMNS.topic);
         window.location.href = $(e.currentTarget).find("a").attr("href");
     });
 
@@ -484,8 +500,8 @@ export function initialize() {
         const group = rows.get_closest_group(narrow_link_elem);
         const msg_id = rows.id_for_recipient_row(group);
 
-        const nearest = current_msg_list.get(msg_id);
-        const selected = current_msg_list.selected_message();
+        const nearest = message_lists.current.get(msg_id);
+        const selected = message_lists.current.selected_message();
         if (util.same_recipient(nearest, selected)) {
             return selected.id;
         }
@@ -630,25 +646,12 @@ export function initialize() {
         server_events.restart_get_events({dont_block: true});
     });
 
-    // this will hide the alerts that you click "x" on.
-    $("body").on("click", ".alert-box > div .exit", function () {
-        const $alert = $(this).closest(".alert-box > div");
-        $alert.addClass("fade-out");
-        setTimeout(() => {
-            $alert.removeClass("fade-out show");
-        }, 300);
-    });
-
     $("#settings_page").on("click", ".collapse-settings-btn", () => {
         settings_toggle.toggle_org_setting_collapse();
     });
 
     $(".organization-box").on("show.bs.modal", () => {
         popovers.hide_all();
-    });
-
-    $(".alert-box").on("click", ".stackframe .expand", function () {
-        $(this).parent().siblings(".code-context").toggle("fast");
     });
 
     // COMPOSE
@@ -695,7 +698,7 @@ export function initialize() {
 
     $("body").on("click", "[data-overlay-trigger]", function () {
         const target = $(this).attr("data-overlay-trigger");
-        hashchange.go_to_location(target);
+        browser_history.go_to_location(target);
     });
 
     function handle_compose_click(e) {
@@ -731,7 +734,7 @@ export function initialize() {
 
     $("#streams_inline_cog").on("click", (e) => {
         e.stopPropagation();
-        hashchange.go_to_location("streams/subscribed");
+        browser_history.go_to_location("streams/subscribed");
     });
 
     $("#streams_filter_icon").on("click", (e) => {
@@ -944,6 +947,11 @@ export function initialize() {
         e.stopPropagation();
     });
 
+    $("body").on("hidden.bs.modal", () => {
+        // Enable mouse events for the background as the modal closes.
+        overlays.enable_background_mouse_events();
+    });
+
     // MAIN CLICK HANDLER
 
     $(document).on("click", (e) => {
@@ -961,12 +969,6 @@ export function initialize() {
             ).has(e.target).length === 0
         ) {
             popovers.hide_all();
-        }
-
-        // If user clicks outside an active modal
-        if ($(".modal.in").has(e.target).length === 0) {
-            // Enable mouse events for the background as the modal closes
-            $(".overlay.show").attr("style", null);
         }
 
         if (compose_state.composing()) {

@@ -7,6 +7,7 @@ from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 
 from zerver.lib.actions import check_send_message, do_change_user_role, do_set_realm_property
+from zerver.lib.event_schema import check_restart_event
 from zerver.lib.events import fetch_initial_state_data, get_raw_user_data
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock, queries_captured, stub_event_queue_user_events
@@ -26,6 +27,7 @@ from zerver.tornado.event_queue import (
     clear_client_event_queues_for_testing,
     get_client_info_for_message_event,
     process_message_event,
+    send_restart_events,
 )
 from zerver.tornado.views import get_events
 from zerver.views.events_register import _default_all_public_streams, _default_narrow
@@ -390,7 +392,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
     # Admin users have access to all bots in the realm_bots field
     def test_realm_bots_admin(self) -> None:
         user_profile = self.example_user("hamlet")
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         self.assertTrue(user_profile.is_realm_admin)
         result = fetch_initial_state_data(user_profile)
         self.assertTrue(len(result["realm_bots"]) > 2)
@@ -407,7 +409,10 @@ class FetchInitialStateDataTest(ZulipTestCase):
         self.assertFalse(user_profile.is_realm_admin)
 
         do_set_realm_property(
-            user_profile.realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+            user_profile.realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            acting_user=None,
         )
         result = fetch_initial_state_data(user_profile)
 
@@ -415,7 +420,10 @@ class FetchInitialStateDataTest(ZulipTestCase):
             self.assertNotIn("delivery_email", value)
 
         do_set_realm_property(
-            user_profile.realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS
+            user_profile.realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            acting_user=None,
         )
         result = fetch_initial_state_data(user_profile)
 
@@ -427,14 +435,20 @@ class FetchInitialStateDataTest(ZulipTestCase):
         self.assertTrue(user_profile.is_realm_admin)
 
         do_set_realm_property(
-            user_profile.realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+            user_profile.realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            acting_user=None,
         )
         result = fetch_initial_state_data(user_profile)
         for key, value in result["raw_users"].items():
             self.assertNotIn("delivery_email", value)
 
         do_set_realm_property(
-            user_profile.realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS
+            user_profile.realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            acting_user=None,
         )
         result = fetch_initial_state_data(user_profile)
         for key, value in result["raw_users"].items():
@@ -782,6 +796,48 @@ class ClientDescriptorsTest(ZulipTestCase):
                     flags=[],
                 ),
             ],
+        )
+
+
+class RestartEventsTest(ZulipTestCase):
+    def test_restart(self) -> None:
+        hamlet = self.example_user("hamlet")
+        realm = hamlet.realm
+
+        clear_client_event_queues_for_testing()
+
+        queue_data = dict(
+            all_public_streams=False,
+            apply_markdown=True,
+            client_gravatar=True,
+            client_type_name="website",
+            event_types=None,
+            last_connection_time=time.time(),
+            queue_timeout=0,
+            realm_id=realm.id,
+            user_profile_id=hamlet.id,
+        )
+        client = allocate_client_descriptor(queue_data)
+
+        send_restart_events(immediate=True)
+
+        # For now we only verify that a virtual event
+        # gets added to the client's event_queue.  We
+        # may decide to write a deeper test in the future
+        # that exercises the finish_handler.
+        virtual_events = client.event_queue.virtual_events
+        self.assertEqual(len(virtual_events), 1)
+        restart_event = virtual_events["restart"]
+
+        check_restart_event("restart_event", restart_event)
+        self.assertEqual(
+            restart_event,
+            dict(
+                type="restart",
+                server_generation=settings.SERVER_GENERATION,
+                immediate=True,
+                id=0,
+            ),
         )
 
 

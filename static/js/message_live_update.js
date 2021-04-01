@@ -1,9 +1,10 @@
 import * as message_list from "./message_list";
+import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as people from "./people";
 
 function rerender_messages_view() {
-    for (const list of [home_msg_list, message_list.narrowed, message_list.all]) {
+    for (const list of [message_lists.home, message_list.narrowed]) {
         if (list === undefined) {
             continue;
         }

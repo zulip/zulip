@@ -67,8 +67,6 @@ async function test_custom_profile(page: Page): Promise<void> {
     await test_add_new_profile_field(page);
     await test_edit_profile_field(page);
     await test_delete_custom_profile_field(page);
-
-    await common.log_out(page);
 }
 
 common.run_test(test_custom_profile);

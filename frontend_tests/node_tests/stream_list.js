@@ -6,13 +6,12 @@ const {stub_templates} = require("../zjsunit/handlebars");
 const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 set_global("document", "document-stub");
 
-const page_params = set_global("page_params", {
-    is_admin: false,
-    realm_users: [],
-});
+page_params.is_admin = false;
+page_params.realm_users = [];
 
 const noop = () => {};
 
@@ -26,13 +25,10 @@ mock_esm("../../static/js/ui", {get_scroll_element: (element) => element});
 
 const {Filter} = zrequire("../js/filter");
 const stream_sort = zrequire("stream_sort");
-const stream_color = zrequire("stream_color");
 const unread = zrequire("unread");
 const stream_data = zrequire("stream_data");
 const scroll_util = zrequire("scroll_util");
 const stream_list = zrequire("stream_list");
-
-stream_color.initialize();
 
 const devel = {
     name: "devel",
@@ -132,9 +128,9 @@ test_ui("create_sidebar_row", (override) => {
     assert(topic_list_cleared);
 
     const expected_elems = [
-        devel_sidebar, //pinned
-        split, //separator
-        social_sidebar, //not pinned
+        devel_sidebar, // pinned
+        split, // separator
+        social_sidebar, // not pinned
     ];
 
     assert.deepEqual(appended_elems, expected_elems);

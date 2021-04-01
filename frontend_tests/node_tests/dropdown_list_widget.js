@@ -2,8 +2,10 @@
 
 const {strict: assert} = require("assert");
 
+const {i18n} = require("../zjsunit/i18n");
 const {mock_cjs, mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
@@ -53,6 +55,12 @@ run_test("basic_functions", () => {
     assert.equal($widget.text(), "translated: not set");
     assert.equal(widget.value(), "");
     assert.equal(updated_value, null);
+    assert(!reset_button.visible());
+
+    widget.update("four");
+    assert.equal($widget.text(), "translated: not set");
+    assert.equal(widget.value(), "four");
+    assert.equal(updated_value, "four");
     assert(!reset_button.visible());
 });
 

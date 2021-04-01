@@ -14,7 +14,10 @@ in an announcement stream to notify users that they need to update
 their clients.
 
 If you're using Zulip Cloud (E.g. `https://example.zulipchat.com`),
-you can request a change by emailing support@zulip.com.
+you can request a change by emailing support@zulip.com. Custom domains
+(i.e. those that do not have the form `example.zulipchat.com`) have a
+maintenance cost for our operational team and thus are only available
+for paid plans.
 
 ## Self-hosting
 

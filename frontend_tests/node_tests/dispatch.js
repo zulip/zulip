@@ -5,7 +5,9 @@ const {strict: assert} = require("assert");
 const {mock_cjs, mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
@@ -30,6 +32,7 @@ const markdown = mock_esm("../../static/js/markdown");
 const message_edit = mock_esm("../../static/js/message_edit");
 const message_events = mock_esm("../../static/js/message_events");
 const message_list = mock_esm("../../static/js/message_list");
+const message_lists = mock_esm("../../static/js/message_lists");
 const muting_ui = mock_esm("../../static/js/muting_ui");
 const night_mode = mock_esm("../../static/js/night_mode");
 const notifications = mock_esm("../../static/js/notifications");
@@ -63,21 +66,20 @@ mock_esm("../../static/js/compose");
 
 const electron_bridge = set_global("electron_bridge", {});
 
-set_global("current_msg_list", {});
-set_global("home_msg_list", {});
+message_lists.current = {};
+message_lists.home = {};
 
 // page_params is highly coupled to dispatching now
 
-const page_params = set_global("page_params", {
-    test_suite: false,
-    is_admin: true,
-    realm_description: "already set description",
-});
+page_params.test_suite = false;
+page_params.is_admin = true;
+page_params.realm_description = "already set description";
 
 // For data-oriented modules, just use them, don't stub them.
 const alert_words = zrequire("alert_words");
 const stream_topic_history = zrequire("stream_topic_history");
 const stream_list = zrequire("stream_list");
+const message_helper = zrequire("message_helper");
 const message_store = zrequire("message_store");
 const people = zrequire("people");
 const starred_messages = zrequire("starred_messages");
@@ -94,7 +96,7 @@ function dispatch(ev) {
 people.init();
 people.add_active_user(test_user);
 
-message_store.add_message_metadata(test_message);
+message_helper.process_new_message(test_message);
 
 const realm_emoji = {};
 const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
@@ -144,6 +146,17 @@ run_test("user groups", (override) => {
         assert_same(args.group, event.group);
     }
 
+    event = event_fixtures.user_group__remove;
+    {
+        const stub = make_stub();
+        override(user_groups, "get_user_group_from_id", stub.f);
+        override(user_groups, "remove", noop);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        const args = stub.get_args("group_id");
+        assert_same(args.group_id, event.group_id);
+    }
+
     event = event_fixtures.user_group__add_members;
     {
         const stub = make_stub();
@@ -180,7 +193,7 @@ run_test("user groups", (override) => {
 });
 
 run_test("custom profile fields", (override) => {
-    const event = event_fixtures.custom_profile_fields__update;
+    const event = event_fixtures.custom_profile_fields;
     override(settings_profile_fields, "populate_profile_fields", noop);
     override(settings_account, "add_custom_profile_fields_to_settings", noop);
     dispatch(event);
@@ -401,6 +414,7 @@ run_test("realm_bot add", (override) => {
     const bot_stub = make_stub();
     const admin_stub = make_stub();
     override(bot_data, "add", bot_stub.f);
+    override(settings_bots, "eventually_render_bots", () => {});
     override(settings_users, "update_bot_data", admin_stub.f);
     dispatch(event);
 
@@ -416,6 +430,7 @@ run_test("realm_bot remove", (override) => {
     const bot_stub = make_stub();
     const admin_stub = make_stub();
     override(bot_data, "deactivate", bot_stub.f);
+    override(settings_bots, "eventually_render_bots", () => {});
     override(settings_users, "update_bot_data", admin_stub.f);
     dispatch(event);
 
@@ -437,6 +452,7 @@ run_test("realm_bot update", (override) => {
     const bot_stub = make_stub();
     const admin_stub = make_stub();
     override(bot_data, "update", bot_stub.f);
+    override(settings_bots, "eventually_render_bots", () => {});
     override(settings_users, "update_bot_data", admin_stub.f);
 
     dispatch(event);
@@ -484,11 +500,11 @@ run_test("realm_emoji", (override) => {
     }
 });
 
-run_test("realm_filters", (override) => {
+run_test("linkifier", (override) => {
     const event = event_fixtures.realm_filters;
     page_params.realm_filters = [];
-    override(settings_linkifiers, "populate_filters", noop);
-    override(markdown, "update_realm_filter_rules", noop);
+    override(settings_linkifiers, "populate_linkifiers", noop);
+    override(markdown, "update_linkifier_rules", noop);
     dispatch(event);
     assert_same(page_params.realm_filters, event.realm_filters);
 });
@@ -500,10 +516,12 @@ run_test("realm_domains", (override) => {
     dispatch(event);
     assert_same(page_params.realm_domains, [event.realm_domain]);
 
+    override(settings_org, "populate_realm_domains", noop);
     event = event_fixtures.realm_domains__change;
     dispatch(event);
     assert_same(page_params.realm_domains, [event.realm_domain]);
 
+    override(settings_org, "populate_realm_domains", noop);
     event = event_fixtures.realm_domains__remove;
     dispatch(event);
     assert_same(page_params.realm_domains, []);
@@ -612,20 +630,20 @@ run_test("update_display_settings", (override) => {
     dispatch(event);
     assert_same(page_params.left_side_userlist, true);
 
-    // We alias message_list.narrowed to current_msg_list
+    // We alias message_list.narrowed to message_lists.current
     // to make sure we get line coverage on re-rendering
     // the current message list.  The actual code tests
     // that these two objects are equal.  It is possible
     // we want a better strategy for that, or at least
     // a helper.
-    message_list.narrowed = current_msg_list;
+    message_list.narrowed = message_lists.current;
 
     let called = false;
-    current_msg_list.rerender = () => {
+    message_lists.current.rerender = () => {
         called = true;
     };
 
-    override(home_msg_list, "rerender", noop);
+    override(message_lists.home, "rerender", noop);
     event = event_fixtures.update_display_settings__twenty_four_hour_time;
     page_params.twenty_four_hour_time = false;
     dispatch(event);
@@ -795,6 +813,15 @@ run_test("update_message (remove star)", (override) => {
     assert.equal(msg.starred, false);
 });
 
+run_test("update_message (wrong data)", (override) => {
+    override(starred_messages, "rerender_ui", noop);
+    const event = event_fixtures.update_message_flags__starred_add;
+    // message does not exist
+    event.messages = [0];
+    dispatch(event);
+    // update_starred_view never gets invoked, early return is successful
+});
+
 run_test("delete_message", (override) => {
     const event = event_fixtures.delete_message;
 
@@ -869,4 +896,34 @@ run_test("realm_export", (override) => {
     assert.equal(stub.num_calls, 1);
     const args = stub.get_args("exports");
     assert.equal(args.exports, event.exports);
+});
+
+run_test("server_event_dispatch_op_errors", (override) => {
+    blueslip.expect("error", "Unexpected event type subscription/other");
+    server_events_dispatch.dispatch_normal_event({type: "subscription", op: "other"});
+    blueslip.expect("error", "Unexpected event type reaction/other");
+    server_events_dispatch.dispatch_normal_event({type: "reaction", op: "other"});
+    blueslip.expect("error", "Unexpected event type realm/update_dict/other");
+    server_events_dispatch.dispatch_normal_event({
+        type: "realm",
+        op: "update_dict",
+        property: "other",
+    });
+    blueslip.expect("error", "Unexpected event type realm_bot/other");
+    server_events_dispatch.dispatch_normal_event({type: "realm_bot", op: "other"});
+    blueslip.expect("error", "Unexpected event type realm_domains/other");
+    server_events_dispatch.dispatch_normal_event({type: "realm_domains", op: "other"});
+    blueslip.expect("error", "Unexpected event type realm_user/other");
+    server_events_dispatch.dispatch_normal_event({type: "realm_user", op: "other"});
+    blueslip.expect("error", "Unexpected event type stream/other");
+    server_events_dispatch.dispatch_normal_event({type: "stream", op: "other"});
+    blueslip.expect("error", "Unexpected event type typing/other");
+    server_events_dispatch.dispatch_normal_event({
+        type: "typing",
+        sender: {user_id: 5},
+        op: "other",
+    });
+    override(settings_user_groups, "reload", noop);
+    blueslip.expect("error", "Unexpected event type user_group/other");
+    server_events_dispatch.dispatch_normal_event({type: "user_group", op: "other"});
 });

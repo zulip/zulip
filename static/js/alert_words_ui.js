@@ -4,6 +4,7 @@ import render_alert_word_settings_item from "../templates/settings/alert_word_se
 
 import * as alert_words from "./alert_words";
 import * as channel from "./channel";
+import {i18n} from "./i18n";
 
 export function render_alert_words_ui() {
     const words = alert_words.get_word_list();

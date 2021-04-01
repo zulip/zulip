@@ -54,12 +54,12 @@ all of this (would be a good project to add them to the
 [Puppeteer suite][testing-with-puppeteer]) and there's enough complexity
 that it's easy to accidentally break something.
 
-The main external API is below:
+The main external API lives in `static/js/browser_history.js`:
 
-* `hashchange.update_browser_history` is used to update the browser
+* `browser_history.update` is used to update the browser
   history, and it should be called when the app code is taking care
   of updating the UI directly
-* `hashchange.go_to_location` is used when you want the `hashchange`
+* `browser_history.go_to_location` is used when you want the `hashchange`
   module to actually dispatch building the next page
 
 Internally you have these functions:
@@ -86,8 +86,8 @@ reload itself:
   garbage-collected by the server, meaning the browser can no longer
   get real-time updates altogether.  In this case, the browser
   auto-reloads immediately in order to reconnect.  We have coded an
-  unsuspend trigger (based on some clever time logic) that ensures we
-  check immediately when a client unsuspends; grep for `unsuspend` to
+  unsuspend callback (based on some clever time logic) that ensures we
+  check immediately when a client unsuspends; grep for `watchdog` to
   see the code.
 * If a new version of the server has been deployed, we want to reload
   the browser so that it will start running the latest code.  However,

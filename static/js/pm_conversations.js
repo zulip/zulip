@@ -18,12 +18,6 @@ class RecentPrivateMessages {
     recent_message_ids = new FoldDict(); // key is user_ids_string
     recent_private_messages = [];
 
-    clear_for_testing() {
-        // Because we only export the singleton, we need this for tests.
-        this.recent_message_ids.clear();
-        this.recent_private_messages.length = 0;
-    }
-
     insert(user_ids, message_id) {
         if (user_ids.length === 0) {
             // The server sends [] for self-PMs.
@@ -81,4 +75,22 @@ class RecentPrivateMessages {
     }
 }
 
-export const recent = new RecentPrivateMessages();
+export let recent = new RecentPrivateMessages();
+
+export function process_message(message) {
+    const user_ids = people.pm_with_user_ids(message);
+    if (!user_ids) {
+        return;
+    }
+
+    for (const user_id of user_ids) {
+        set_partner(user_id);
+    }
+
+    recent.insert(user_ids, message.id);
+}
+
+export function clear_for_testing() {
+    recent = new RecentPrivateMessages();
+    partners.clear();
+}

@@ -4,6 +4,8 @@ import twitter_sheet from "emoji-datasource-twitter/img/twitter/sheets-256/64.pn
 
 import octopus_url from "../generated/emoji/images-google-64/1f419.png";
 
+import {page_params} from "./page_params";
+
 import google_blob_css from "!style-loader?injectType=lazyStyleTag!css-loader!../generated/emoji-styles/google-blob-sprite.css";
 import google_css from "!style-loader?injectType=lazyStyleTag!css-loader!../generated/emoji-styles/google-sprite.css";
 import twitter_css from "!style-loader?injectType=lazyStyleTag!css-loader!../generated/emoji-styles/twitter-sprite.css";

@@ -10,7 +10,14 @@ import {
 } from "date-fns";
 import $ from "jquery";
 
+import {i18n} from "./i18n";
+import {page_params} from "./page_params";
+
 let next_timerender_id = 0;
+
+export function clear_for_testing() {
+    next_timerender_id = 0;
+}
 
 // Given a Date object 'time', returns an object:
 // {
@@ -282,10 +289,7 @@ export const absolute_time = (function () {
         return str;
     };
 
-    return function (timestamp, today) {
-        if (typeof today === "undefined") {
-            today = new Date();
-        }
+    return function (timestamp, today = new Date()) {
         const date = new Date(timestamp);
         const is_older_year = today.getFullYear() - date.getFullYear() > 0;
         const H_24 = page_params.twenty_four_hour_time;

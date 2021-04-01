@@ -5,9 +5,12 @@ const {strict: assert} = require("assert");
 const _ = require("lodash");
 
 const {stub_templates} = require("../zjsunit/handlebars");
+const {i18n} = require("../zjsunit/i18n");
 const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
@@ -28,8 +31,6 @@ const user_groups = mock_esm("../../static/js/user_groups", {
     add: noop,
 });
 const ui_report = mock_esm("../../static/js/ui_report");
-
-const page_params = set_global("page_params", {});
 
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");
@@ -412,10 +413,7 @@ test_ui("with_external_user", (override) => {
 
     // Test the 'off' handlers on the pill-container
     const turned_off = {};
-    pill_container_stub.off = (event_name, sel) => {
-        if (sel === undefined) {
-            sel = "whole";
-        }
+    pill_container_stub.off = (event_name, sel = "whole") => {
         turned_off[event_name + "/" + sel] = true;
     };
 
@@ -574,15 +572,8 @@ test_ui("on_events", (override) => {
             const data = {
                 id: 1,
             };
-            let settings_user_groups_reload_called = false;
             assert.equal(opts.url, "/json/user_groups/1");
             assert.deepEqual(opts.data, data);
-
-            override(settings_user_groups, "reload", () => {
-                settings_user_groups_reload_called = true;
-            });
-            opts.success();
-            assert(settings_user_groups_reload_called);
 
             fake_this.text(i18n.t("fake-text"));
             opts.error();

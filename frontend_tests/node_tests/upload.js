@@ -2,9 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 set_global("document", {
     location: {},
@@ -12,10 +13,7 @@ set_global("document", {
 set_global("navigator", {
     userAgent: "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)",
 });
-const page_params = set_global("page_params", {
-    max_file_upload_size: 25,
-});
-set_global("csrf_token", "csrf_token");
+page_params.max_file_upload_size = 25;
 
 // Setting these up so that we can test that links to uploads within messages are
 // automatically converted to server relative links.
@@ -34,6 +32,8 @@ Uppy.Plugin = {
     },
 };
 mock_cjs("@uppy/core", Uppy);
+
+mock_esm("../../static/js/csrf", {csrf_token: "csrf_token"});
 
 const compose_ui = zrequire("compose_ui");
 const compose_actions = zrequire("compose_actions");
@@ -672,7 +672,7 @@ run_test("uppy_events", (override) => {
     override(upload, "show_error_message", (config, message) => {
         show_error_message_called = true;
         assert.equal(config.mode, "compose");
-        assert.equal(message, null);
+        assert.equal(message, undefined);
     });
     uppy_cancel_all_called = false;
     on_upload_error_callback(file, null, null);

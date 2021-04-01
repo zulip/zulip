@@ -4,6 +4,7 @@ from typing import Any, Dict
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import REQ, has_request_variables, webhook_view
+from zerver.lib.exceptions import UnsupportedWebhookEventType
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
@@ -57,14 +58,14 @@ def api_statuspage_webhook(
     payload: Dict[str, Any] = REQ(argument_type="body"),
 ) -> HttpResponse:
 
-    status = payload["page"]["status_indicator"]
-
-    if status == "none":
+    if "incident" in payload:
         topic = get_incident_topic(payload)
         body = get_incident_events_body(payload)
-    else:
+    elif "component" in payload:
         topic = get_component_topic(payload)
         body = get_components_update_body(payload)
+    else:
+        raise UnsupportedWebhookEventType("unknown-event")
 
     check_send_webhook_message(request, user_profile, topic, body)
     return json_success()

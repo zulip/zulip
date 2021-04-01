@@ -257,7 +257,7 @@ i18n.t('keyWithCount', {count: 100}); // output: '100 items'
 For further reading on plurals, read the [official] documentation.
 
 By default, all text is escaped by i18next. To unescape a text you can use
-double-underscores followed by a dash `__-` like this:
+double-underscores followed by a dash and space `__- ` like this:
 
 ```
 i18n.t('English text with a __- variable__', {'variable': 'Variable value'});

@@ -3,9 +3,12 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
+const {i18n} = require("../zjsunit/i18n");
 const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
@@ -14,15 +17,6 @@ let form_data;
 const _FormData = function () {
     return form_data;
 };
-
-const page_params = set_global("page_params", {
-    is_admin: false,
-    realm_domains: [
-        {domain: "example.com", allow_subdomains: true},
-        {domain: "example.org", allow_subdomains: false},
-    ],
-    realm_authentication_methods: {},
-});
 
 mock_cjs("jquery", $);
 const realm_icon = mock_esm("../../static/js/realm_icon");
@@ -38,6 +32,7 @@ stub_templates((name, data) => {
 const channel = mock_esm("../../static/js/channel");
 const overlays = mock_esm("../../static/js/overlays");
 
+mock_esm("../../static/js/csrf", {csrf_token: "token-stub"});
 mock_esm("../../static/js/list_widget", {
     create: () => ({init: noop}),
 });
@@ -55,7 +50,6 @@ mock_esm("../../static/js/ui_report", {
     },
 });
 
-set_global("csrf_token", "token-stub");
 set_global("FormData", _FormData);
 
 const settings_config = zrequire("settings_config");
@@ -65,7 +59,20 @@ const settings_account = zrequire("settings_account");
 const settings_org = zrequire("settings_org");
 const dropdown_list_widget = zrequire("dropdown_list_widget");
 
-run_test("unloaded", () => {
+function test(label, f) {
+    run_test(label, (override) => {
+        page_params.is_admin = false;
+        page_params.realm_domains = [
+            {domain: "example.com", allow_subdomains: true},
+            {domain: "example.org", allow_subdomains: false},
+        ];
+        page_params.realm_authentication_methods = {};
+        settings_org.reset();
+        f(override);
+    });
+}
+
+test("unloaded", () => {
     // This test mostly gets us line coverage, and makes
     // sure things don't explode before set_up is called.
 
@@ -90,7 +97,7 @@ function simulate_realm_domains_table() {
     };
 }
 
-function test_realms_domain_modal(add_realm_domain) {
+function test_realms_domain_modal(override, add_realm_domain) {
     const info = $(".realm_domains_info");
 
     $("#add-realm-domain-widget").set_find_results(
@@ -106,12 +113,12 @@ function test_realms_domain_modal(add_realm_domain) {
     let posted;
     let success_callback;
     let error_callback;
-    channel.post = (req) => {
+    override(channel, "post", (req) => {
         posted = true;
         assert.equal(req.url, "/json/realm/domains");
         success_callback = req.success;
         error_callback = req.error;
-    };
+    });
 
     add_realm_domain();
 
@@ -161,7 +168,7 @@ function createSaveButtons(subsection) {
     };
 }
 
-function test_submit_settings_form(submit_form) {
+function test_submit_settings_form(override, submit_form) {
     Object.assign(page_params, {
         realm_bot_creation_policy: settings_bots.bot_creation_policy_values.restricted.code,
         realm_email_address_visibility:
@@ -176,7 +183,7 @@ function test_submit_settings_form(submit_form) {
         realm_create_stream_policy: settings_config.create_stream_policy_values.by_members.code,
     });
 
-    set_global("setTimeout", (func) => func());
+    override(global, "setTimeout", (func) => func());
     const ev = {
         preventDefault: noop,
         stopPropagation: noop,
@@ -185,12 +192,12 @@ function test_submit_settings_form(submit_form) {
     let patched;
     let data;
     let success_callback;
-    channel.patch = (req) => {
+    override(channel, "patch", (req) => {
         patched = true;
         assert.equal(req.url, "/json/realm");
         data = req.data;
         success_callback = req.success;
-    };
+    });
 
     let subsection = "other-permissions";
     ev.currentTarget = `#org-submit-${CSS.escape(subsection)}`;
@@ -333,7 +340,7 @@ function test_change_save_button_state() {
     }
 }
 
-function test_upload_realm_icon(upload_realm_logo_or_icon) {
+function test_upload_realm_icon(override, upload_realm_logo_or_icon) {
     form_data = {
         append(field, val) {
             form_data[field] = val;
@@ -343,13 +350,13 @@ function test_upload_realm_icon(upload_realm_logo_or_icon) {
     const file_input = [{files: ["image1.png", "image2.png"]}];
 
     let posted;
-    channel.post = (req) => {
+    override(channel, "post", (req) => {
         posted = true;
         assert.equal(req.url, "/json/realm/icon");
         assert.equal(req.data.csrfmiddlewaretoken, "token-stub");
         assert.equal(req.data["file-0"], "image1.png");
         assert.equal(req.data["file-1"], "image2.png");
-    };
+    });
 
     upload_realm_logo_or_icon(file_input, null, true);
     assert(posted);
@@ -718,7 +725,7 @@ function test_discard_changes_button(discard_changes) {
     settings_org.__Rewire__("change_save_button_state", stubbed_function);
 }
 
-run_test("set_up", (override) => {
+test("set_up", (override) => {
     const verify_realm_domains = simulate_realm_domains_table();
     page_params.realm_available_video_chat_providers = {
         jitsi_meet: {
@@ -763,10 +770,6 @@ run_test("set_up", (override) => {
     const allow_topic_edit_label_parent = $.create("allow-topic-edit-label-parent");
     $("#id_realm_allow_community_topic_editing_label").set_parent(allow_topic_edit_label_parent);
 
-    channel.get = (opts) => {
-        assert.equal(opts.url, "/json/export/realm");
-    };
-
     // TEST set_up() here, but this mostly just allows us to
     // get access to the click handlers.
     override(settings_org, "maybe_disable_widgets", noop);
@@ -774,14 +777,15 @@ run_test("set_up", (override) => {
 
     verify_realm_domains();
 
-    test_realms_domain_modal(() => $("#submit-add-realm-domain").trigger("click"));
+    test_realms_domain_modal(override, () => $("#submit-add-realm-domain").trigger("click"));
     test_submit_settings_form(
+        override,
         $(".organization").get_on_handler(
             "click",
             ".subsection-header .subsection-changes-save .button",
         ),
     );
-    test_upload_realm_icon(upload_realm_logo_or_icon);
+    test_upload_realm_icon(override, upload_realm_logo_or_icon);
     test_change_allow_subdomains(
         $("#realm_domains_table").get_on_handler("change", ".allow-subdomains"),
     );
@@ -797,7 +801,7 @@ run_test("set_up", (override) => {
     );
 });
 
-run_test("test get_organization_settings_options", () => {
+test("test get_organization_settings_options", () => {
     const sorted_option_values = settings_org.get_organization_settings_options();
     const sorted_create_stream_policy_values = sorted_option_values.create_stream_policy_values;
     const expected_create_stream_policy_values = [
@@ -823,7 +827,7 @@ run_test("test get_organization_settings_options", () => {
     assert.deepEqual(sorted_create_stream_policy_values, expected_create_stream_policy_values);
 });
 
-run_test("test get_sorted_options_list", () => {
+test("test get_sorted_options_list", () => {
     const option_values_1 = {
         by_admins_only: {
             order: 3,
@@ -897,7 +901,7 @@ run_test("test get_sorted_options_list", () => {
     assert.deepEqual(settings_org.get_sorted_options_list(option_values_2), expected_option_values);
 });
 
-run_test("misc", () => {
+test("misc", () => {
     page_params.is_admin = false;
 
     const stub_notification_disable_parent = $.create("<stub notification_disable parent");

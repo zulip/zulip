@@ -68,7 +68,10 @@ whitespace_rules: List["Rule"] = [
     {
         "pattern": "\t",
         "strip": "\n",
-        "exclude": {"tools/ci/success-http-headers.template.txt"},
+        "exclude": {
+            "tools/ci/success-http-headers.template.txt",
+            "tools/ci/success-http-headers.template.debian.txt",
+        },
         "description": "Fix tab-based whitespace",
     },
 ]
@@ -117,10 +120,6 @@ js_rules = RuleList(
             "description": 'Avoid using "msgid" as a variable name; use "message_id" instead.',
         },
         {
-            "pattern": r".*blueslip.warning\(.*",
-            "description": "The module blueslip has no function warning, try using blueslip.warn",
-        },
-        {
             "pattern": r"i18n\.t\([^)]+[^,\{\)]$",
             "description": "i18n string should not be a multiline string",
         },
@@ -136,12 +135,6 @@ js_rules = RuleList(
         {
             "pattern": r"i18n\.t\(.+\).*\+",
             "description": "Do not concatenate i18n strings",
-            "exclude_line": {
-                (
-                    "static/js/narrow.js",
-                    'i18n.t("Some common words were excluded from your search.") +',
-                ),
-            },
         },
         {"pattern": r"\+.*i18n\.t\(.+\)", "description": "Do not concatenate i18n strings"},
         {

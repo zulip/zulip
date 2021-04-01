@@ -82,6 +82,17 @@ integration](../testing/continuous-integration.md):
   Integration (CI) services because small races are amplified in those
   environments; this often explains failures in CI that cannot be
   easily reproduced locally.
+* Does the test fail when you are typing (filling the form) on a modal
+  or other just-opened UI widget? Puppeteer starts typing after focusing on
+  the text field, sending keystrokes one after another. So, if
+  application code explicitly focuses the modal after it
+  appears/animates, this could cause the text field that Puppeteer is
+  trying to type into to lose focus, resulting in partially typed data.
+  The recommended fix for this is to wait until the modal is focused before
+  starting typing, like this:
+  ```JavaScript
+  await page.waitForFunction(":focus").attr("id") === modal_id);
+  ```
 
 These tools/features are often useful when debugging:
 

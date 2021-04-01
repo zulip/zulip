@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import {localstorage} from "./localstorage";
 import * as notifications from "./notifications";
+import {page_params} from "./page_params";
 import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
 import * as util from "./util";

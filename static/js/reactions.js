@@ -4,9 +4,13 @@ import _ from "lodash";
 import * as emoji from "../shared/js/emoji";
 import render_message_reaction from "../templates/message_reaction.hbs";
 
+import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as emoji_picker from "./emoji_picker";
+import {i18n} from "./i18n";
+import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
+import {page_params} from "./page_params";
 import * as people from "./people";
 
 export const view = {}; // function namespace
@@ -16,17 +20,17 @@ export function get_local_reaction_id(reaction_info) {
 }
 
 export function open_reactions_popover() {
-    const message = current_msg_list.selected_message();
+    const message = message_lists.current.selected_message();
     let target;
 
     // Use verbose style to ensure we test both sides of the condition.
     if (message.sent_by_me) {
-        target = $(current_msg_list.selected_row()).find(".actions_hover")[0];
+        target = $(message_lists.current.selected_row()).find(".actions_hover")[0];
     } else {
-        target = $(current_msg_list.selected_row()).find(".reaction_button")[0];
+        target = $(message_lists.current.selected_row()).find(".reaction_button")[0];
     }
 
-    emoji_picker.toggle_emoji_popover(target, current_msg_list.selected_id());
+    emoji_picker.toggle_emoji_popover(target, message_lists.current.selected_id());
     return true;
 }
 

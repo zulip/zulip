@@ -4,6 +4,7 @@ const {strict: assert} = require("assert");
 
 const autosize = require("autosize");
 
+const {i18n} = require("../zjsunit/i18n");
 const {mock_cjs, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");

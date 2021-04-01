@@ -1,14 +1,16 @@
 import _ from "lodash";
 
+import * as blueslip from "./blueslip";
 import {FetchStatus} from "./fetch_status";
 import {Filter} from "./filter";
 import * as muting from "./muting";
+import {page_params} from "./page_params";
 import * as unread from "./unread";
 import * as util from "./util";
 
 export class MessageListData {
-    constructor(opts) {
-        this.excludes_muted_topics = opts.excludes_muted_topics;
+    constructor({excludes_muted_topics, filter = new Filter()}) {
+        this.excludes_muted_topics = excludes_muted_topics;
         if (this.excludes_muted_topics) {
             this._all_items = [];
         }
@@ -16,11 +18,6 @@ export class MessageListData {
         this._hash = new Map();
         this._local_only = new Set();
         this._selected_id = -1;
-
-        let filter = opts.filter;
-        if (filter === undefined) {
-            filter = new Filter();
-        }
 
         this.filter = filter;
         this.fetch_status = new FetchStatus();

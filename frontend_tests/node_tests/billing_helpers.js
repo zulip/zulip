@@ -9,6 +9,7 @@ const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace
 const jQueryFactory = require("../zjsunit/real_jquery");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const template = fs.readFileSync("templates/corporate/upgrade.html", "utf-8");
 const dom = new JSDOM(template, {pretendToBeVisual: true});
@@ -16,7 +17,6 @@ const jquery = jQueryFactory(dom.window);
 
 mock_cjs("jquery", $);
 
-const page_params = set_global("page_params", {});
 const history = set_global("history", {});
 const loading = mock_esm("../../static/js/loading");
 set_global("document", {

@@ -8,7 +8,7 @@
     {% if pagename in ["production/postgresql", "production/video-calls"] and release.endswith('+git') %}
     {#
     # This page doesn't exist in the stable documentation yet.
-    # This temporary workaround prevents CircleCI failure and should be removed after the next release.
+    # This temporary workaround prevents test failures and should be removed after the next release.
     #}
     <div class="admonition warning">
         <p class="first admonition-title">Warning</p>

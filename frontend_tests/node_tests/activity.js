@@ -4,7 +4,9 @@ const {strict: assert} = require("assert");
 
 const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 mock_cjs("jquery", $);
 const window_stub = $.create("window-stub");
@@ -13,10 +15,8 @@ $(window).idle = () => {};
 
 let filter_key_handlers;
 
-const page_params = set_global("page_params", {
-    realm_users: [],
-    user_id: 999,
-});
+page_params.realm_users = [];
+page_params.user_id = 999;
 
 const _document = {
     hasFocus() {
@@ -50,11 +50,11 @@ mock_esm("../../static/js/resize", {
 mock_esm("../../static/js/scroll_util", {
     scroll_element_into_container: () => {},
 });
-mock_esm("../../static/js/server_events", {
-    check_for_unsuspend() {},
-});
 mock_esm("../../static/js/stream_popover", {
     show_streamlist_sidebar() {},
+});
+mock_esm("../../static/js/watchdog", {
+    check_for_unsuspend() {},
 });
 set_global("document", _document);
 

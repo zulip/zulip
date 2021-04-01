@@ -2,7 +2,9 @@ import $ from "jquery";
 
 import render_message_view_header from "../templates/message_view_header.hbs";
 
+import {i18n} from "./i18n";
 import * as narrow_state from "./narrow_state";
+import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as recent_topics from "./recent_topics";
 import * as rendered_markdown from "./rendered_markdown";
@@ -20,7 +22,7 @@ function make_message_view_header(filter) {
     const message_view_header = {};
     if (recent_topics.is_visible()) {
         return {
-            title: i18n.t("Recent topics (beta)"),
+            title: i18n.t("Recent topics"),
             icon: "clock-o",
         };
     }

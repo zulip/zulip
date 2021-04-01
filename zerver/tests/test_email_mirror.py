@@ -11,7 +11,12 @@ import orjson
 from django.conf import settings
 from django.http import HttpResponse
 
-from zerver.lib.actions import do_deactivate_realm, do_deactivate_user, ensure_stream
+from zerver.lib.actions import (
+    do_change_stream_post_policy,
+    do_deactivate_realm,
+    do_deactivate_user,
+    ensure_stream,
+)
 from zerver.lib.email_mirror import (
     ZulipEmailForwardError,
     create_missed_message_address,
@@ -37,6 +42,7 @@ from zerver.lib.test_helpers import mock_queue_publish, most_recent_message, mos
 from zerver.models import (
     MissedMessageEmailAddress,
     Recipient,
+    Stream,
     UserProfile,
     get_display_recipient,
     get_realm,
@@ -927,6 +933,47 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         self.assertEqual(message.recipient.type, Recipient.STREAM)
         self.assertEqual(message.recipient.id, usermessage.message.recipient.id)
 
+    def test_receive_email_response_for_auth_failures(self) -> None:
+        user_profile = self.example_user("hamlet")
+        self.subscribe(user_profile, "announce")
+        self.login("hamlet")
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "stream",
+                "topic": "test topic",
+                "content": "test_receive_email_response_for_auth_failures",
+                "client": "test suite",
+                "to": "announce",
+            },
+        )
+        self.assert_json_success(result)
+
+        stream = get_stream("announce", user_profile.realm)
+        do_change_stream_post_policy(stream, Stream.STREAM_POST_POLICY_ADMINS)
+
+        usermessage = most_recent_usermessage(user_profile)
+
+        mm_address = create_missed_message_address(user_profile, usermessage.message)
+
+        incoming_valid_message = EmailMessage()
+        incoming_valid_message.set_content("TestMissedMessageEmailMessages Body")
+
+        incoming_valid_message["Subject"] = "TestMissedMessageEmailMessages Subject"
+        incoming_valid_message["From"] = user_profile.delivery_email
+        incoming_valid_message["To"] = mm_address
+        incoming_valid_message["Reply-to"] = user_profile.delivery_email
+
+        process_message(incoming_valid_message)
+
+        message = most_recent_message(user_profile)
+
+        self.assertEqual(
+            message.content,
+            "Error sending message to stream announce via missed messages email reply:\nOnly organization administrators can send to this stream.",
+        )
+        self.assertEqual(message.sender, get_system_bot(settings.NOTIFICATION_BOT))
+
     def test_missed_stream_message_email_response_tracks_topic_change(self) -> None:
         self.subscribe(self.example_user("hamlet"), "Denmark")
         self.subscribe(self.example_user("othello"), "Denmark")
@@ -994,7 +1041,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
 
         mm_address = create_missed_message_address(user_profile, message)
 
-        do_deactivate_user(user_profile)
+        do_deactivate_user(user_profile, acting_user=None)
 
         incoming_valid_message = EmailMessage()
         incoming_valid_message.set_content("TestMissedMessageEmailMessages Body")

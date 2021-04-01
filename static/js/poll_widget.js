@@ -3,6 +3,7 @@ import $ from "jquery";
 import render_widgets_poll_widget from "../templates/widgets/poll_widget.hbs";
 import render_widgets_poll_widget_results from "../templates/widgets/poll_widget_results.hbs";
 
+import * as blueslip from "./blueslip";
 import * as people from "./people";
 
 export class PollData {
@@ -178,18 +179,13 @@ export class PollData {
     }
 }
 
-export function activate(opts) {
-    const elem = opts.elem;
-    const callback = opts.callback;
-
-    let question = "";
-    let options = [];
-    if (opts.extra_data) {
-        question = opts.extra_data.question || "";
-        options = opts.extra_data.options || [];
-    }
-
-    const is_my_poll = people.is_my_user_id(opts.message.sender_id);
+export function activate({
+    elem,
+    callback,
+    extra_data: {question = "", options = []} = {},
+    message,
+}) {
+    const is_my_poll = people.is_my_user_id(message.sender_id);
     const poll_data = new PollData(is_my_poll, question, options);
 
     function update_edit_controls() {

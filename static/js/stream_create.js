@@ -4,8 +4,11 @@ import render_announce_stream_docs from "../templates/announce_stream_docs.hbs";
 import render_new_stream_users from "../templates/new_stream_users.hbs";
 import render_subscription_invites_warning_modal from "../templates/subscription_invites_warning_modal.hbs";
 
+import * as blueslip from "./blueslip";
 import * as channel from "./channel";
+import {i18n} from "./i18n";
 import * as loading from "./loading";
+import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as stream_data from "./stream_data";

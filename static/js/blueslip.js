@@ -1,5 +1,3 @@
-"use strict";
-
 /* eslint-disable no-console */
 
 // System documented in https://zulip.readthedocs.io/en/latest/subsystems/logging.html
@@ -8,10 +6,11 @@
 // in order to be able to report exceptions that occur during their
 // execution.
 
-const $ = require("jquery");
+import $ from "jquery";
 
-const blueslip_stacktrace = require("./blueslip_stacktrace");
-const ui_report = require("./ui_report");
+import * as blueslip_stacktrace from "./blueslip_stacktrace";
+import {page_params} from "./page_params";
+import * as ui_report from "./ui_report";
 
 if (Error.stackTraceLimit !== undefined) {
     Error.stackTraceLimit = 100000;
@@ -70,20 +69,18 @@ for (const name of ["debug", "log", "info", "warn", "error"]) {
 
 const logger = new Logger();
 
-exports.get_log = function blueslip_get_log() {
+export function get_log() {
     return logger.get_log();
-};
+}
 
 const reported_errors = new Set();
 const last_report_attempt = new Map();
 
-function report_error(msg, stack, opts) {
-    opts = {show_ui_msg: false, ...opts};
-
-    if (stack === undefined) {
-        stack = "No stacktrace available";
-    }
-
+function report_error(
+    msg,
+    stack = "No stacktrace available",
+    {show_ui_msg = false, more_info} = {},
+) {
     if (page_params.debug_mode) {
         // In development, we display blueslip errors in the web UI,
         // to make them hard to miss.
@@ -116,8 +113,8 @@ function report_error(msg, stack, opts) {
         data: {
             message: msg,
             stacktrace: stack,
-            ui_message: opts.show_ui_msg,
-            more_info: JSON.stringify(opts.more_info),
+            ui_message: show_ui_msg,
+            more_info: JSON.stringify(more_info),
             href: window.location.href,
             user_agent: window.navigator.userAgent,
             log: logger.get_log().join("\n"),
@@ -125,7 +122,7 @@ function report_error(msg, stack, opts) {
         timeout: 3 * 1000,
         success() {
             reported_errors.add(key);
-            if (opts.show_ui_msg && ui_report !== undefined) {
+            if (show_ui_msg && ui_report !== undefined) {
                 // There are a few races here (and below in the error
                 // callback):
                 // 1) The ui_report module or something it requires might
@@ -155,7 +152,7 @@ function report_error(msg, stack, opts) {
             }
         },
         error() {
-            if (opts.show_ui_msg && ui_report !== undefined) {
+            if (show_ui_msg && ui_report !== undefined) {
                 ui_report.client_error(
                     "Oops.  It seems something has gone wrong. Please try reloading the page.",
                     $("#home-error"),
@@ -185,7 +182,7 @@ class BlueslipError extends Error {
     }
 }
 
-exports.exception_msg = function blueslip_exception_msg(ex) {
+export function exception_msg(ex) {
     let message = ex.message;
     if (ex.fileName !== undefined) {
         message += " at " + ex.fileName;
@@ -194,14 +191,14 @@ exports.exception_msg = function blueslip_exception_msg(ex) {
         }
     }
     return message;
-};
+}
 
 $(window).on("error", (event) => {
     const ex = event.originalEvent.error;
     if (!ex || ex instanceof BlueslipError) {
         return;
     }
-    const message = exports.exception_msg(ex);
+    const message = exception_msg(ex);
     report_error(message, ex.stack);
 });
 
@@ -213,33 +210,30 @@ function build_arg_list(msg, more_info) {
     return args;
 }
 
-exports.debug = function blueslip_debug(msg, more_info) {
+export function debug(msg, more_info) {
     const args = build_arg_list(msg, more_info);
     logger.debug(...args);
-};
+}
 
-exports.log = function blueslip_log(msg, more_info) {
+export function log(msg, more_info) {
     const args = build_arg_list(msg, more_info);
     logger.log(...args);
-};
+}
 
-exports.info = function blueslip_info(msg, more_info) {
+export function info(msg, more_info) {
     const args = build_arg_list(msg, more_info);
     logger.info(...args);
-};
+}
 
-exports.warn = function blueslip_warn(msg, more_info) {
+export function warn(msg, more_info) {
     const args = build_arg_list(msg, more_info);
     logger.warn(...args);
     if (page_params.debug_mode) {
         console.trace();
     }
-};
+}
 
-exports.error = function blueslip_error(msg, more_info, stack) {
-    if (stack === undefined) {
-        stack = new Error("dummy").stack;
-    }
+export function error(msg, more_info, stack = new Error("dummy").stack) {
     const args = build_arg_list(msg, more_info);
     logger.error(...args);
     report_error(msg, stack, {more_info});
@@ -250,24 +244,24 @@ exports.error = function blueslip_error(msg, more_info, stack) {
 
     // This function returns to its caller in production!  To raise a
     // fatal error even in production, use throw new Error(…) instead.
-};
+}
 
-exports.timings = new Map();
+export const timings = new Map();
 
-exports.measure_time = function (label, f) {
+export function measure_time(label, f) {
     const t1 = performance.now();
     const ret = f();
     const t2 = performance.now();
     const elapsed = t2 - t1;
-    exports.timings.set(label, elapsed);
+    timings.set(label, elapsed);
     return ret;
-};
+}
 
 // Produces an easy-to-read preview on an HTML element.  Currently
 // only used for including in error report emails; be sure to discuss
 // with other developers before using it in a user-facing context
 // because it is not XSS-safe.
-exports.preview_node = function (node) {
+export function preview_node(node) {
     if (node instanceof $) {
         node = node[0];
     }
@@ -286,6 +280,4 @@ exports.preview_node = function (node) {
         ">";
 
     return node_preview;
-};
-
-window.blueslip = exports;
+}

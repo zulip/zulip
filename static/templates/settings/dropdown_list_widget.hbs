@@ -1,23 +1,26 @@
 <div class="input-group dropdown-list-widget" id="{{widget_name}}_widget">
-    <label for="{{widget_name}}" id="{{widget_name}}_label" class="inline-block">
-        {{ label }}
-        <span class="{{widget_name}}_setting dropup actual-dropdown-menu prop-element" id="id_{{widget_name}}"
-          name="{{widget_name}}" aria-labelledby="{{widget_name}}_label">
-            <button class="button small rounded dropdown-toggle" data-toggle="dropdown">
-                <span id="{{widget_name}}_name"></span>
-                <i class="fa fa-pencil"></i>
-            </button>
-            <ul class="dropdown-menu modal-bg" role="menu">
-                <li class="dropdown-search" role="presentation">
-                    <input class="no-input-change-detection" type="text" role="menuitem" placeholder="{{list_placeholder}}" autofocus/>
-                </li>
-                <div class="dropdown-list-wrapper" data-simplebar>
-                    <span class="dropdown-list-body"></span>
-                </div>
-            </ul>
-        </span>
-    </label>
+    <span class="{{widget_name}}_setting dropup actual-dropdown-menu prop-element" id="id_{{widget_name}}" aria-labelledby="{{widget_name}}_label">
+        {{#if label}}
+        <label id="{{widget_name}}_label" class="inline-block">
+            {{ label }}
+        </label>
+        {{/if}}
+        <button class="button small rounded dropdown-toggle" data-toggle="dropdown">
+            <span id="{{widget_name}}_name"></span>
+            <i class="fa fa-pencil"></i>
+        </button>
+        <ul class="dropdown-menu modal-bg" role="menu">
+            <li class="dropdown-search" role="presentation">
+                <input class="no-input-change-detection" type="text" role="menuitem" placeholder="{{list_placeholder}}" autofocus/>
+            </li>
+            <div class="dropdown-list-wrapper" data-simplebar>
+                <span class="dropdown-list-body"></span>
+            </div>
+        </ul>
+    </span>
+    {{#if reset_button_text}}
     <button class="button small dropdown_list_reset_button">
         <a>{{reset_button_text}}</a>
     </button>
+    {{/if}}
 </div>

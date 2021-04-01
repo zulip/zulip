@@ -484,7 +484,7 @@ var inline = {
   stream: noop,
   tex: noop,
   timestamp: noop,
-  realm_filters: [],
+  linkifiers: [],
   text: /^[\s\S]+?(?=[\\<!\[_*`$]| {2,}\n|$)/
 };
 
@@ -550,7 +550,7 @@ inline.zulip = merge({}, inline.breaks, {
   stream: /^#\*\*([^\*]+)\*\*/,
   tex: /^(\$\$([^\n_$](\\\$|[^\n$])*)\$\$(?!\$))\B/,
   timestamp: /^<time:([^>]+)>/,
-  realm_filters: [],
+  linkifiers: [],
   text: replace(inline.breaks.text)
     ('|', '|(\ud83c[\udd00-\udfff]|\ud83d[\udc00-\ude4f]|' +
           '\ud83d[\ude80-\udeff]|\ud83e[\udd00-\uddff]|' +
@@ -560,6 +560,58 @@ inline.zulip = merge({}, inline.breaks, {
     ('^[', '^^\\${3,}|^^[')
     ()
 });
+
+function shorten_links(href) {
+  // This value must match what is used in the backend.
+  const COMMIT_ID_PREFIX_LENGTH = 12;
+  const url = new URL(href);
+  if (url.protocol === 'https:' && ['github.com'].includes(url.hostname)) {
+    // The following part of the code was necessary because unlike Python, str.split
+    // method in javascript does not return the remaining part of the string.
+    var parts = url.pathname.split('/').slice(1);
+    parts = parts.slice(0, 4)
+      .concat(parts.slice(4).join('/'))
+      .concat(Array(5).fill(''))
+      .slice(0, 5);
+
+    const organisation = parts[0]
+      , repository = parts[1]
+      , artifact = parts[2]
+      , value = parts[3]
+      , remaining_path = parts[4];
+
+    if (!organisation || !repository || !artifact || !value) {
+      return href;
+    }
+
+    const repo_short_text = organisation + '/' + repository;
+
+    if (remaining_path || url.hash) {
+      return href;
+    }
+
+    if (url.hostname === 'github.com') {
+      return shorten_github_links(href, artifact, repo_short_text,
+                                  value, COMMIT_ID_PREFIX_LENGTH);
+    }
+  }
+  return href;
+}
+
+/**
+ * Shorten GitHub Links
+ */
+
+function shorten_github_links(href, artifact, repo_short_text,
+                              value, commit_id_prefix_length) {
+  if (['pull', 'issues'].includes(artifact)) {
+    return repo_short_text + '#' + value;
+  }
+  if (artifact == 'commit') {
+    return repo_short_text + '@' + value.slice(0, commit_id_prefix_length);
+  }
+  return href;
+}
 
 /**
  * Inline Lexer & Compiler
@@ -645,12 +697,12 @@ InlineLexer.prototype.output = function(src) {
       continue;
     }
 
-    // realm_filters (Zulip)
+    // linkifier (Zulip)
     var self = this;
-    this.rules.realm_filters.forEach(function (realm_filter) {
-      var ret = self.inlineReplacement(realm_filter, src, function(regex, groups, match) {
+    this.rules.linkifiers.forEach(function (linkifier) {
+      var ret = self.inlineReplacement(linkifier, src, function(regex, groups, match) {
         // Insert the created URL
-        href = self.realm_filter(regex, groups, match);
+        href = self.linkifier(regex, groups, match);
         if (href !== undefined) {
           href = escape(href);
           return self.renderer.link(href, href, match);
@@ -682,8 +734,8 @@ InlineLexer.prototype.output = function(src) {
     // url (gfm)
     if (!this.inLink && (cap = this.rules.url.exec(src))) {
       src = src.substring(cap[0].length);
-      text = escape(cap[1]);
-      href = text;
+      href = escape(cap[1]);
+      text = shorten_links(href)
       out += this.renderer.link(href, null, text);
       continue;
     }
@@ -890,11 +942,11 @@ InlineLexer.prototype.timestamp = function (time) {
   return this.options.timestampHandler(time);
 };
 
-InlineLexer.prototype.realm_filter = function (filter, matches, orig) {
-  if (typeof this.options.realmFilterHandler !== 'function')
+InlineLexer.prototype.linkifier = function (linkifier, matches, orig) {
+  if (typeof this.options.linkifierHandler !== 'function')
     return;
 
-  return this.options.realmFilterHandler(filter, matches);
+  return this.options.linkifierHandler(linkifier, matches);
 };
 
 InlineLexer.prototype.usermention = function (username, orig, silent) {

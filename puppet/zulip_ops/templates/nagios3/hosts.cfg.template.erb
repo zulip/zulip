@@ -87,3 +87,13 @@ define host{
        hostgroups       all,not_pageable_servers, redis
        }
 <% end -%>
+
+<% @hosts_smokescreen.each do |host| -%>
+define host{
+       use              generic-host
+       host_name        <%= host %>
+       alias            <%= host %>
+       address          <%= host %>.<%= @default_host_domain %>
+       hostgroups       all,pageable_servers,smokescreen
+       }
+<% end -%>

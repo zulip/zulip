@@ -39,7 +39,7 @@ async function stream_name_error(page: Page): Promise<string> {
 }
 
 async function open_streams_modal(page: Page): Promise<void> {
-    const all_streams_selector = 'a[href="#streams/all"]';
+    const all_streams_selector = "#add-stream-link";
     await page.waitForSelector(all_streams_selector, {visible: true});
     await page.click(all_streams_selector);
 

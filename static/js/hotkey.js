@@ -3,6 +3,7 @@ import $ from "jquery";
 import * as emoji from "../shared/js/emoji";
 
 import * as activity from "./activity";
+import * as browser_history from "./browser_history";
 import * as common from "./common";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
@@ -19,11 +20,13 @@ import * as lightbox from "./lightbox";
 import * as list_util from "./list_util";
 import * as message_edit from "./message_edit";
 import * as message_flags from "./message_flags";
+import * as message_lists from "./message_lists";
 import * as message_view_header from "./message_view_header";
 import * as muting_ui from "./muting_ui";
 import * as narrow from "./narrow";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_topics from "./recent_topics";
@@ -35,7 +38,7 @@ import * as topic_zoom from "./topic_zoom";
 import * as ui from "./ui";
 
 function do_narrow_action(action) {
-    action(current_msg_list.selected_id(), {trigger: "hotkey"});
+    action(message_lists.current.selected_id(), {trigger: "hotkey"});
     return true;
 }
 
@@ -124,8 +127,8 @@ const keypress_mappings = {
     77: {name: "toggle_topic_mute", message_view_only: true}, // 'M'
     80: {name: "narrow_private", message_view_only: true}, // 'P'
     82: {name: "respond_to_author", message_view_only: true}, // 'R'
-    83: {name: "narrow_by_topic", message_view_only: true}, //'S'
-    86: {name: "view_selected_stream", message_view_only: false}, //'V'
+    83: {name: "narrow_by_topic", message_view_only: true}, // 'S'
+    86: {name: "view_selected_stream", message_view_only: false}, // 'V'
     97: {name: "all_messages", message_view_only: true}, // 'a'
     99: {name: "compose", message_view_only: true}, // 'c'
     100: {name: "open_drafts", message_view_only: true}, // 'd'
@@ -216,7 +219,10 @@ export function in_content_editable_widget(e) {
 
 // Returns true if we handled it, false if the browser should.
 export function process_escape_key(e) {
-    if (hashchange.in_recent_topics_hash() && recent_topics.change_focused_element(e, "escape")) {
+    if (
+        hashchange.in_recent_topics_hash() &&
+        recent_topics.change_focused_element($(e.target), "escape")
+    ) {
         // Recent topics uses escape to make focus from RT search / filters to topics table.
         // If focus already in table it returns false.
         return true;
@@ -311,6 +317,49 @@ export function process_escape_key(e) {
     return true;
 }
 
+function handle_popover_events(event_name) {
+    if (popovers.actions_popped()) {
+        popovers.actions_menu_handle_keyboard(event_name);
+        return true;
+    }
+
+    if (popovers.message_info_popped()) {
+        popovers.user_info_popover_for_message_handle_keyboard(event_name);
+        return true;
+    }
+
+    if (popovers.user_info_popped()) {
+        popovers.user_info_popover_handle_keyboard(event_name);
+        return true;
+    }
+
+    if (popovers.user_sidebar_popped()) {
+        popovers.user_sidebar_popover_handle_keyboard(event_name);
+        return true;
+    }
+
+    if (stream_popover.stream_popped()) {
+        stream_popover.stream_sidebar_menu_handle_keyboard(event_name);
+        return true;
+    }
+
+    if (stream_popover.topic_popped()) {
+        stream_popover.topic_sidebar_menu_handle_keyboard(event_name);
+        return true;
+    }
+
+    if (stream_popover.all_messages_popped()) {
+        stream_popover.all_messages_sidebar_menu_handle_keyboard(event_name);
+        return true;
+    }
+
+    if (stream_popover.starred_messages_popped()) {
+        stream_popover.starred_messages_sidebar_menu_handle_keyboard(event_name);
+        return true;
+    }
+    return false;
+}
+
 // Returns true if we handled it, false if the browser should.
 export function process_enter_key(e) {
     if ($(".dropdown.open").length && $(e.target).attr("role") === "menuitem") {
@@ -335,38 +384,7 @@ export function process_enter_key(e) {
         return false;
     }
 
-    if (popovers.actions_popped()) {
-        popovers.actions_menu_handle_keyboard("enter");
-        return true;
-    }
-
-    if (popovers.user_sidebar_popped()) {
-        popovers.user_sidebar_popover_handle_keyboard("enter");
-        return true;
-    }
-
-    if (popovers.user_info_popped()) {
-        popovers.user_info_popover_handle_keyboard("enter");
-        return true;
-    }
-
-    if (stream_popover.stream_popped()) {
-        stream_popover.stream_sidebar_menu_handle_keyboard("enter");
-        return true;
-    }
-
-    if (stream_popover.topic_popped()) {
-        stream_popover.topic_sidebar_menu_handle_keyboard("enter");
-        return true;
-    }
-
-    if (stream_popover.all_messages_popped()) {
-        stream_popover.all_messages_sidebar_menu_handle_keyboard("enter");
-        return true;
-    }
-
-    if (stream_popover.starred_messages_popped()) {
-        stream_popover.starred_messages_sidebar_menu_handle_keyboard("enter");
+    if (handle_popover_events("enter")) {
         return true;
     }
 
@@ -512,15 +530,8 @@ export function process_hotkey(e, hotkey) {
         case "tab":
         case "shift_tab":
         case "open_recent_topics":
-            if (
-                hashchange.in_recent_topics_hash() &&
-                !popovers.any_active() &&
-                !overlays.is_active() &&
-                !$("#searchbox_form #search_query").is(":focus") &&
-                !$(".user-list-filter").is(":focus") &&
-                !$(".stream-list-filter").is(":focus")
-            ) {
-                return recent_topics.change_focused_element(e, event_name);
+            if (recent_topics.is_in_focus()) {
+                return recent_topics.change_focused_element($(e.target), event_name);
             }
     }
 
@@ -612,46 +623,8 @@ export function process_hotkey(e, hotkey) {
         return true;
     }
 
-    if (menu_dropdown_hotkeys.has(event_name)) {
-        if (popovers.actions_popped()) {
-            popovers.actions_menu_handle_keyboard(event_name);
-            return true;
-        }
-
-        if (popovers.message_info_popped()) {
-            popovers.user_info_popover_for_message_handle_keyboard(event_name);
-            return true;
-        }
-
-        if (popovers.user_info_popped()) {
-            popovers.user_info_popover_handle_keyboard(event_name);
-            return true;
-        }
-
-        if (popovers.user_sidebar_popped()) {
-            popovers.user_sidebar_popover_handle_keyboard(event_name);
-            return true;
-        }
-
-        if (stream_popover.stream_popped()) {
-            stream_popover.stream_sidebar_menu_handle_keyboard(event_name);
-            return true;
-        }
-
-        if (stream_popover.topic_popped()) {
-            stream_popover.topic_sidebar_menu_handle_keyboard(event_name);
-            return true;
-        }
-
-        if (stream_popover.all_messages_popped()) {
-            stream_popover.all_messages_sidebar_menu_handle_keyboard(event_name);
-            return true;
-        }
-
-        if (stream_popover.starred_messages_popped()) {
-            stream_popover.starred_messages_sidebar_menu_handle_keyboard(event_name);
-            return true;
-        }
+    if (menu_dropdown_hotkeys.has(event_name) && handle_popover_events(event_name)) {
+        return true;
     }
 
     // The next two sections date back to 00445c84 and are Mac/Chrome-specific,
@@ -757,7 +730,7 @@ export function process_hotkey(e, hotkey) {
             gear_menu.open();
             return true;
         case "show_shortcuts": // Show keyboard shortcuts page
-            hashchange.go_to_location("keyboard-shortcuts");
+            browser_history.go_to_location("keyboard-shortcuts");
             return true;
         case "stream_cycle_backward":
             narrow.stream_cycle_backward();
@@ -772,10 +745,10 @@ export function process_hotkey(e, hotkey) {
             narrow.narrow_to_next_pm_string();
             return true;
         case "open_recent_topics":
-            hashchange.go_to_location("#recent_topics");
+            browser_history.go_to_location("#recent_topics");
             return true;
         case "all_messages":
-            hashchange.go_to_location("#all_messages");
+            browser_history.go_to_location("#all_messages");
             return true;
     }
 
@@ -813,7 +786,7 @@ export function process_hotkey(e, hotkey) {
             return true;
     }
 
-    if (current_msg_list.empty()) {
+    if (message_lists.current.empty()) {
         return false;
     }
 
@@ -846,7 +819,7 @@ export function process_hotkey(e, hotkey) {
             return true;
     }
 
-    const msg = current_msg_list.selected_message();
+    const msg = message_lists.current.selected_message();
     // Shortcuts that operate on a message
     switch (event_name) {
         case "message_actions":
@@ -891,7 +864,7 @@ export function process_hotkey(e, hotkey) {
             compose_actions.quote_and_reply({trigger: "hotkey"});
             return true;
         case "edit_message": {
-            const row = current_msg_list.get_row(msg.id);
+            const row = message_lists.current.get_row(msg.id);
             message_edit.start(row);
             return true;
         }

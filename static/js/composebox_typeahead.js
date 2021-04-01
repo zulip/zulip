@@ -1,4 +1,3 @@
-import autosize from "autosize";
 import {formatISO} from "date-fns";
 import ConfirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
 import $ from "jquery";
@@ -13,7 +12,9 @@ import * as compose from "./compose";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
+import {i18n} from "./i18n";
 import * as message_store from "./message_store";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as rows from "./rows";
 import * as settings_data from "./settings_data";
@@ -24,9 +25,9 @@ import * as typeahead_helper from "./typeahead_helper";
 import * as user_groups from "./user_groups";
 import * as user_pill from "./user_pill";
 
-//************************************
+// **********************************
 // AN IMPORTANT NOTE ABOUT TYPEAHEADS
-//************************************
+// **********************************
 // They do not do any HTML escaping, at all.
 // And your input to them is rendered as though it were HTML by
 // the default highlighter.
@@ -174,7 +175,7 @@ export function handle_enter(textarea, e) {
         // Now add the newline, remembering to resize the
         // textarea if needed.
         textarea.caret("\n");
-        autosize.update(textarea);
+        compose_ui.autosize_textarea(textarea);
         e.preventDefault();
         return;
     }

@@ -8,7 +8,7 @@ allows users to easily process hundreds or thousands of messages a day. With
 over 700 contributors merging over 500 commits a month, Zulip is also the
 largest and fastest growing open source group chat project.
 
-[![CircleCI branch](https://img.shields.io/circleci/project/github/zulip/zulip/master.svg)](https://circleci.com/gh/zulip/zulip/tree/master)
+[![GitHub Actions build status](https://github.com/zulip/zulip/actions/workflows/zulip-ci.yml/badge.svg?branch=master)](https://github.com/zulip/zulip/actions/workflows/zulip-ci.yml?query=branch%3Amaster)
 [![coverage status](https://img.shields.io/codecov/c/github/zulip/zulip/master.svg)](https://codecov.io/gh/zulip/zulip/branch/master)
 [![Mypy coverage](https://img.shields.io/badge/mypy-100%25-green.svg)][mypy-coverage]
 [![code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
@@ -17,6 +17,7 @@ largest and fastest growing open source group chat project.
 [![docs](https://readthedocs.org/projects/zulip/badge/?version=latest)](https://zulip.readthedocs.io/en/latest/)
 [![Zulip chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://chat.zulip.org)
 [![Twitter](https://img.shields.io/badge/twitter-@zulip-blue.svg?style=flat)](https://twitter.com/zulip)
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/zulip)](https://github.com/sponsors/zulip)
 
 [mypy-coverage]: https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/
 
@@ -44,7 +45,7 @@ You might be interested in:
   [give us feedback](https://zulip.readthedocs.io/en/latest/overview/contributing.html#user-feedback). We
   would love to hear from you, even if you're just trying the product out.
 
-* **Supporting Zulip**. Advocate for your organization to use Zulip, write a
+* **Supporting Zulip**. Advocate for your organization to use Zulip, become a [sponsor](https://github.com/sponsors/zulip), write a
   review in the mobile app stores, or
   [upvote Zulip](https://zulip.readthedocs.io/en/latest/overview/contributing.html#zulip-outreach) on
   product comparison sites.

@@ -3,9 +3,11 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
+const {i18n} = require("../zjsunit/i18n");
 const {mock_cjs, mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = function () {};
 
@@ -14,6 +16,9 @@ const rows = mock_esm("../../static/js/rows");
 const stream_data = mock_esm("../../static/js/stream_data");
 mock_esm("../../static/js/emoji_picker", {
     hide_emoji_popover: noop,
+});
+const message_lists = mock_esm("../../static/js/message_lists", {
+    current: {},
 });
 mock_esm("../../static/js/message_viewport", {
     height: () => 500,
@@ -26,12 +31,9 @@ mock_esm("../../static/js/stream_popover", {
     hide_streamlist_sidebar: noop,
 });
 
-set_global("current_msg_list", {});
-set_global("page_params", {
-    is_admin: false,
-    realm_email_address_visibility: 3,
-    custom_profile_fields: [],
-});
+page_params.is_admin = false;
+page_params.realm_email_address_visibility = 3;
+page_params.custom_profile_fields = [];
 
 const people = zrequire("people");
 const user_status = zrequire("user_status");
@@ -94,6 +96,7 @@ function make_image_stubber() {
 function test_ui(label, f) {
     run_test(label, (override) => {
         override(popovers, "clipboard_enable", noop);
+        popovers.clear_for_testing();
         popovers.register_click_handlers();
         f(override);
     });
@@ -118,12 +121,12 @@ test_ui("sender_hover", (override) => {
 
     rows.id = () => message.id;
 
-    current_msg_list.get = (msg_id) => {
+    message_lists.current.get = (msg_id) => {
         assert.equal(msg_id, message.id);
         return message;
     };
 
-    current_msg_list.select_id = (msg_id) => {
+    message_lists.current.select_id = (msg_id) => {
         assert.equal(msg_id, message.id);
     };
 
@@ -217,7 +220,7 @@ test_ui("actions_popover", (override) => {
         stream_id: 123,
     };
 
-    current_msg_list.get = (msg_id) => {
+    message_lists.current.get = (msg_id) => {
         assert.equal(msg_id, message.id);
         return message;
     };
@@ -242,7 +245,7 @@ test_ui("actions_popover", (override) => {
             case "actions_popover_content":
                 assert.equal(
                     opts.conversation_time_uri,
-                    "http://chat.zulip.org/#narrow/stream/Bracket.20%28.20stream/topic/Actions.20%281%29/near/999",
+                    "http://chat.zulip.org/#narrow/stream/Bracket.20.28.20stream/topic/Actions.20.281.29/near/999",
                 );
                 return "actions-content";
             default:

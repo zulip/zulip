@@ -1,6 +1,6 @@
 import os
 import re
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import sourcemap
 
@@ -14,7 +14,7 @@ class SourceMap:
         self._dirs = sourcemap_dirs
         self._indices: Dict[str, sourcemap.SourceMapDecoder] = {}
 
-    def _index_for(self, minified_src: str) -> sourcemap.SourceMapDecoder:
+    def _index_for(self, minified_src: str) -> Optional[sourcemap.SourceMapDecoder]:
         """Return the source map index for minified_src, loading it if not
         already loaded."""
 
@@ -39,7 +39,7 @@ class SourceMap:
                         self._indices[minified_src] = sourcemap.load(fp)
                         break
 
-        return self._indices[minified_src]
+        return self._indices.get(minified_src)
 
     def annotate_stacktrace(self, stacktrace: str) -> str:
         out: str = ""
@@ -50,6 +50,9 @@ class SourceMap:
                 # Get the appropriate source map for the minified file.
                 minified_src = match.groups()[0]
                 index = self._index_for(minified_src)
+                if index is None:
+                    out += "       [Unable to look up in source map]\n"
+                    continue
 
                 gen_line, gen_col = list(map(int, match.groups()[1:3]))
                 # The sourcemap lib is 0-based, so subtract 1 from line and col.

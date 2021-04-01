@@ -4,6 +4,7 @@ import * as common from "./common";
 import {Filter} from "./filter";
 import * as huddle_data from "./huddle_data";
 import * as narrow_state from "./narrow_state";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";

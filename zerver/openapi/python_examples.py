@@ -392,6 +392,23 @@ def get_profile(client: Client) -> None:
     validate_against_openapi_schema(result, "/users/me", "get", "200")
 
 
+@openapi_test_function("/users/me:delete")
+def deactivate_own_user(client: Client, owner_client: Client) -> None:
+    user_id = client.get_profile()["user_id"]
+
+    # {code_example|start}
+    # Deactivate the account of the current user/bot that requests.
+    result = client.call_endpoint(
+        url="/users/me",
+        method="DELETE",
+    )
+    # {code_example|end}
+
+    # Reactivate the account to avoid polluting other tests.
+    owner_client.reactivate_user_by_id(user_id)
+    validate_against_openapi_schema(result, "/users/me", "delete", "200")
+
+
 @openapi_test_function("/get_stream_id:get")
 def get_stream_id(client: Client) -> int:
 
@@ -1038,12 +1055,9 @@ def upload_file(client: Client) -> None:
     # {code_example|start}
     # Upload a file
     with open(path_to_file, "rb") as fp:
-        result = client.call_endpoint(
-            "user_uploads",
-            method="POST",
-            files=[fp],
-        )
+        result = client.upload_file(fp)
 
+    # Share the file by including it in a message.
     client.send_message(
         {
             "type": "stream",
@@ -1190,12 +1204,11 @@ def update_user_group_members(client: Client, user_group_id: int) -> None:
     ensure_users([8, 10, 11], ["cordelia", "hamlet", "iago"])
     # {code_example|start}
     request = {
-        "group_id": user_group_id,
         "delete": [8, 10],
         "add": [11],
     }
 
-    result = client.update_user_group_members(request)
+    result = client.update_user_group_members(user_group_id, request)
     # {code_example|end}
     validate_against_openapi_schema(result, "/user_groups/{group_id}/members", "post", "200")
 
@@ -1209,6 +1222,24 @@ def test_missing_request_argument(client: Client) -> None:
     result = client.render_message({})
 
     validate_against_openapi_schema(result, "/rest-error-handling", "post", "400_1")
+
+
+def test_user_account_deactivated(client: Client) -> None:
+    request = {
+        "content": "**foo**",
+    }
+    result = client.render_message(request)
+
+    validate_against_openapi_schema(result, "/rest-error-handling", "post", "403_0")
+
+
+def test_realm_deactivated(client: Client) -> None:
+    request = {
+        "content": "**foo**",
+    }
+    result = client.render_message(request)
+
+    validate_against_openapi_schema(result, "/rest-error-handling", "post", "403_1")
 
 
 def test_invalid_stream_error(client: Client) -> None:
@@ -1295,7 +1326,7 @@ def test_messages(client: Client, nonadmin_client: Client) -> None:
     test_delete_message_edit_permission_error(client, nonadmin_client)
 
 
-def test_users(client: Client) -> None:
+def test_users(client: Client, owner_client: Client) -> None:
 
     create_user(client)
     get_members(client)
@@ -1320,6 +1351,7 @@ def test_users(client: Client) -> None:
     get_alert_words(client)
     add_alert_words(client)
     remove_alert_words(client)
+    deactivate_own_user(client, owner_client)
 
 
 def test_streams(client: Client, nonadmin_client: Client) -> None:
@@ -1371,10 +1403,10 @@ def test_errors(client: Client) -> None:
     test_invalid_stream_error(client)
 
 
-def test_the_api(client: Client, nonadmin_client: Client) -> None:
+def test_the_api(client: Client, nonadmin_client: Client, owner_client: Client) -> None:
 
     get_user_agent(client)
-    test_users(client)
+    test_users(client, owner_client)
     test_streams(client, nonadmin_client)
     test_messages(client, nonadmin_client)
     test_queues(client)

@@ -26,7 +26,6 @@ from scripts.lib.zulip_tools import (
     WARNING,
     get_dev_uuid_var_path,
     os_families,
-    overwrite_symlink,
     parse_os_release,
     run_as_root,
 )
@@ -37,7 +36,7 @@ if TYPE_CHECKING:
 
 VAR_DIR_PATH = os.path.join(ZULIP_PATH, "var")
 
-CONTINUOUS_INTEGRATION = "GITHUB_ACTIONS" in os.environ or "CIRCLECI" in os.environ
+CONTINUOUS_INTEGRATION = "GITHUB_ACTIONS" in os.environ
 
 if not os.path.exists(os.path.join(ZULIP_PATH, ".git")):
     print(FAIL + "Error: No Zulip Git repository present!" + ENDC)
@@ -108,8 +107,8 @@ elif vendor == "ubuntu" and os_version == "20.10":  # groovy
     POSTGRESQL_VERSION = "13"
 elif vendor == "neon" and os_version == "20.04":  # KDE Neon
     POSTGRESQL_VERSION = "12"
-elif vendor == "fedora" and os_version == "29":
-    POSTGRESQL_VERSION = "10"
+elif vendor == "fedora" and os_version == "33":
+    POSTGRESQL_VERSION = "13"
 elif vendor == "rhel" and os_version.startswith("7."):
     POSTGRESQL_VERSION = "10"
 elif vendor == "centos" and os_version == "7":
@@ -135,18 +134,7 @@ COMMON_DEPENDENCIES = [
     "unzip",  # Needed for Slack import
     "crudini",  # Used for shell tooling w/ zulip.conf
     # Puppeteer dependencies from here
-    "gconf-service",
-    "libgconf-2-4",
-    "libgtk-3-0",
-    "libatk-bridge2.0-0",
-    "libx11-xcb1",
-    "libxcb-dri3-0",
-    "libgbm1",
-    "libxss1",
-    "fonts-freefont-ttf",
-    "libappindicator1",
     "xdg-utils",
-    "xvfb",
     # Puppeteer dependencies end here.
 ]
 
@@ -156,6 +144,19 @@ UBUNTU_COMMON_APT_DEPENDENCIES = [
     "hunspell-en-us",
     "puppet-lint",
     "default-jre-headless",  # Required by vnu-jar
+    # Puppeteer dependencies from here
+    "fonts-freefont-ttf",
+    "gconf-service",
+    "libappindicator1",
+    "libatk-bridge2.0-0",
+    "libgbm1",
+    "libgconf-2-4",
+    "libgtk-3-0",
+    "libx11-xcb1",
+    "libxcb-dri3-0",
+    "libxss1",
+    "xvfb",
+    # Puppeteer dependencies end here.
     *THUMBOR_VENV_DEPENDENCIES,
 ]
 
@@ -165,6 +166,17 @@ COMMON_YUM_DEPENDENCIES = [
     "hunspell-en-US",
     "rubygem-puppet-lint",
     "nmap-ncat",
+    "ccache",  # Required to build pgroonga from source.
+    # Puppeteer dependencies from here
+    "at-spi2-atk",
+    "GConf2",
+    "gtk3",
+    "libX11-xcb",
+    "libxcb",
+    "libXScrnSaver",
+    "mesa-libgbm",
+    "xorg-x11-server-Xvfb",
+    # Puppeteer dependencies end here.
     *YUM_THUMBOR_VENV_DEPENDENCIES,
 ]
 
@@ -323,13 +335,21 @@ def install_yum_deps(deps_to_install: List[str]) -> None:
     # Later steps will ensure PostgreSQL is started
 
     # Link in tsearch data files
-    overwrite_symlink(
-        "/usr/share/myspell/en_US.dic",
-        f"/usr/pgsql-{POSTGRESQL_VERSION}/share/tsearch_data/en_us.dict",
+    run_as_root(
+        [
+            "ln",
+            "-nsf",
+            "/usr/share/myspell/en_US.dic",
+            f"/usr/pgsql-{POSTGRESQL_VERSION}/share/tsearch_data/en_us.dict",
+        ]
     )
-    overwrite_symlink(
-        "/usr/share/myspell/en_US.aff",
-        f"/usr/pgsql-{POSTGRESQL_VERSION}/share/tsearch_data/en_us.affix",
+    run_as_root(
+        [
+            "ln",
+            "-nsf",
+            "/usr/share/myspell/en_US.aff",
+            f"/usr/pgsql-{POSTGRESQL_VERSION}/share/tsearch_data/en_us.affix",
+        ]
     )
 
 

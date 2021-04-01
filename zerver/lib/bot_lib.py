@@ -1,7 +1,7 @@
 import importlib
 import json
 import os
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Optional
 
 from django.utils.translation import ugettext as _
 
@@ -23,7 +23,7 @@ from zerver.models import UserProfile, get_active_user
 
 our_dir = os.path.dirname(os.path.abspath(__file__))
 
-from zulip_bots.lib import RateLimit
+from zulip_bots.lib import BotIdentity, RateLimit
 
 
 def get_bot_handler(service_name: str) -> Any:
@@ -79,6 +79,12 @@ class EmbeddedBotHandler:
         self.storage = StateHandler(user_profile)
         self.user_id = user_profile.id
 
+    def identity(self) -> BotIdentity:
+        return BotIdentity(self.full_name, self.email)
+
+    def react(self, message: Dict[str, Any], emoji_name: str) -> Dict[str, Any]:
+        return {}  # Not implemented
+
     def send_message(self, message: Dict[str, Any]) -> None:
         if not self._rate_limit.is_legal():
             self._rate_limit.show_error_and_exit()
@@ -108,7 +114,9 @@ class EmbeddedBotHandler:
                 self.user_profile.realm, self.user_profile, recipients, message["content"]
             )
 
-    def send_reply(self, message: Dict[str, Any], response: str) -> None:
+    def send_reply(
+        self, message: Dict[str, Any], response: str, widget_content: Optional[str] = None
+    ) -> None:
         if message["type"] == "private":
             self.send_message(
                 dict(
@@ -128,6 +136,9 @@ class EmbeddedBotHandler:
                     sender_email=message["sender_email"],
                 )
             )
+
+    def update_message(self, message: Dict[str, Any]) -> None:
+        pass  # Not implemented
 
     # The bot_name argument exists only to comply with ExternalBotHandler.get_config_info().
     def get_config_info(self, bot_name: str, optional: bool = False) -> Dict[str, str]:

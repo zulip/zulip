@@ -73,6 +73,7 @@ class RawUnreadMessagesResult(TypedDict):
     mentions: Set[int]
     muted_stream_ids: List[int]
     unmuted_stream_msgs: Set[int]
+    old_unreads_missing: bool
 
 
 class UnreadMessagesResult(TypedDict):
@@ -81,6 +82,7 @@ class UnreadMessagesResult(TypedDict):
     huddles: List[Dict[str, Any]]
     mentions: List[int]
     count: int
+    old_unreads_missing: bool
 
 
 @dataclass
@@ -981,6 +983,7 @@ def extract_unread_data_from_um_rows(
     unmuted_stream_msgs: Set[int] = set()
     huddle_dict: Dict[int, Any] = {}
     mentions: Set[int] = set()
+    total_unreads = 0
 
     raw_unread_messages: RawUnreadMessagesResult = dict(
         pm_dict=pm_dict,
@@ -989,6 +992,7 @@ def extract_unread_data_from_um_rows(
         unmuted_stream_msgs=unmuted_stream_msgs,
         huddle_dict=huddle_dict,
         mentions=mentions,
+        old_unreads_missing=False,
     )
 
     if user_profile is None:
@@ -1019,6 +1023,7 @@ def extract_unread_data_from_um_rows(
         return user_ids_string
 
     for row in rows:
+        total_unreads += 1
         message_id = row["message_id"]
         msg_type = row["message__recipient__type"]
         recipient_id = row["message__recipient_id"]
@@ -1071,6 +1076,11 @@ def extract_unread_data_from_um_rows(
             else:  # nocoverage # TODO: Test wildcard mentions in PMs.
                 mentions.add(message_id)
 
+    # Record whether the user had more than MAX_UNREAD_MESSAGES total
+    # unreads -- that's a state where Zulip's behavior will start to
+    # be erroneous, and clients should display a warning.
+    raw_unread_messages["old_unreads_missing"] = total_unreads == MAX_UNREAD_MESSAGES
+
     return raw_unread_messages
 
 
@@ -1115,6 +1125,7 @@ def aggregate_unread_data(raw_data: RawUnreadMessagesResult) -> UnreadMessagesRe
         huddles=huddle_objects,
         mentions=mentions,
         count=count,
+        old_unreads_missing=raw_data["old_unreads_missing"],
     )
 
     return result

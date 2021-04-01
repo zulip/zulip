@@ -1,8 +1,10 @@
 import Handlebars from "handlebars/runtime";
 import _ from "lodash";
 
+import {i18n} from "./i18n";
+import * as message_parser from "./message_parser";
 import * as message_store from "./message_store";
-import * as message_util from "./message_util";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
 import * as unread from "./unread";
@@ -68,11 +70,11 @@ function message_matches_search_term(message, operator, operand) {
     switch (operator) {
         case "has":
             if (operand === "image") {
-                return message_util.message_has_image(message);
+                return message_parser.message_has_image(message);
             } else if (operand === "link") {
-                return message_util.message_has_link(message);
+                return message_parser.message_has_link(message);
             } else if (operand === "attachment") {
-                return message_util.message_has_attachment(message);
+                return message_parser.message_has_attachment(message);
             }
             return false; // has:something_else returns false
         case "is":
@@ -202,17 +204,9 @@ export class Filter {
         return operator;
     }
 
-    static canonicalize_term(opts) {
-        let negated = opts.negated;
-        let operator = opts.operator;
-        let operand = opts.operand;
-
-        // Make negated be explicitly false for both clarity and
+    static canonicalize_term({negated = false, operator, operand}) {
+        // Make negated explicitly default to false for both clarity and
         // simplifying deepEqual checks in the tests.
-        if (!negated) {
-            negated = false;
-        }
-
         operator = Filter.canonicalize_operator(operator);
 
         switch (operator) {

@@ -2,10 +2,11 @@ import $ from "jquery";
 
 import marked from "../third/marked/lib/marked";
 
+import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as common from "./common";
 import * as feedback_widget from "./feedback_widget";
-import * as hashchange from "./hashchange";
+import {i18n} from "./i18n";
 import * as night_mode from "./night_mode";
 import * as scroll_bar from "./scroll_bar";
 
@@ -189,7 +190,7 @@ export function process(message_content) {
     }
 
     if (content === "/settings") {
-        hashchange.go_to_location("settings/your-account");
+        browser_history.go_to_location("settings/your-account");
         return true;
     }
 

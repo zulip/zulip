@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import * as blueslip from "./blueslip";
 import {LightboxCanvas} from "./lightbox_canvas";
 import * as message_store from "./message_store";
 import * as overlays from "./overlays";
@@ -11,6 +12,11 @@ let is_open = false;
 // the asset map is a map of all retrieved images and YouTube videos that are
 // memoized instead of being looked up multiple times.
 const asset_map = new Map();
+
+export function clear_for_testing() {
+    is_open = false;
+    asset_map.clear();
+}
 
 export function render_lightbox_list_images(preview_source) {
     if (!is_open) {

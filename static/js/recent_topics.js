@@ -7,6 +7,7 @@ import render_recent_topics_body from "../templates/recent_topics_table.hbs";
 import * as compose_actions from "./compose_actions";
 import * as drafts from "./drafts";
 import * as hash_util from "./hash_util";
+import * as hashchange from "./hashchange";
 import * as ListWidget from "./list_widget";
 import {localstorage} from "./localstorage";
 import * as message_store from "./message_store";
@@ -16,8 +17,10 @@ import * as muting from "./muting";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
+import * as overlays from "./overlays";
 import * as panels from "./panels";
 import * as people from "./people";
+import * as popovers from "./popovers";
 import * as recent_senders from "./recent_senders";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
@@ -47,6 +50,13 @@ let row_focus = 0;
 // Start focus on the topic column, so Down+Enter works to visit a topic.
 let col_focus = 1;
 
+export const COLUMNS = {
+    stream: 0,
+    topic: 1,
+    mute: 2,
+    read: 3,
+};
+
 // The number of selectable actions in a recent_topics.  Used to
 // implement wraparound of elements with the right/left keys.  Must be
 // increased when we add new actions, or rethought if we add optional
@@ -58,6 +68,17 @@ const ls_key = "recent_topic_filters";
 const ls = localstorage();
 
 let filters = new Set();
+
+export function is_in_focus() {
+    // Check if user is focused on
+    // recent topics.
+    return (
+        hashchange.in_recent_topics_hash() &&
+        !popovers.any_active() &&
+        !overlays.is_active() &&
+        !$(".home-page-input").is(":focus")
+    );
+}
 
 export function clear_for_tests() {
     filters.clear();
@@ -102,8 +123,9 @@ function revive_current_focus() {
     // to the focused element, this function attempts to revive the
     // link and focus to the element prior to the rerender.
 
-    // Don't change focus if user is trying to type anywhere.
-    if ($(".home-page-input").is(":focus")) {
+    // We try to avoid setting focus when user
+    // is not focused on recent topics.
+    if (!is_in_focus()) {
         return false;
     }
 
@@ -393,16 +415,17 @@ export function set_filter(filter) {
 function show_selected_filters() {
     // Add `btn-selected-filter` to the buttons to show
     // which filters are applied.
-    load_filters();
     if (filters.size === 0) {
         $("#recent_topics_filter_buttons")
             .find('[data-filter="all"]')
-            .addClass("btn-recent-selected");
+            .addClass("btn-recent-selected")
+            .attr("aria-checked", "true");
     } else {
         for (const filter of filters) {
             $("#recent_topics_filter_buttons")
                 .find(`[data-filter="${CSS.escape(filter)}"]`)
-                .addClass("btn-recent-selected");
+                .addClass("btn-recent-selected")
+                .attr("aria-checked", "true");
         }
     }
 }
@@ -446,6 +469,7 @@ export function complete_rerender() {
         return;
     }
     // Prepare header
+    load_filters();
     const rendered_body = render_recent_topics_body({
         filter_participated: filters.has("participated"),
         filter_unread: filters.has("unread"),
@@ -550,14 +574,19 @@ function is_focus_at_last_table_row() {
     return row_focus === topic_rows.length - 1;
 }
 
-export function change_focused_element(e, input_key) {
+export function focus_clicked_element($elt, col) {
+    current_focus_elem = "table";
+    col_focus = col;
+    row_focus = $elt.closest("tr").index();
+}
+
+export function change_focused_element($elt, input_key) {
     // Called from hotkeys.js; like all logic in that module,
     // returning true will cause the caller to do
     // preventDefault/stopPropagation; false will let the browser
     // handle the key.
-    const $elem = $(e.target);
 
-    if (e.target.id === "recent_topics_search") {
+    if ($elt.attr("id") === "recent_topics_search") {
         // Since the search box a text area, we want the browser to handle
         // Left/Right and selection within the widget; but if the user
         // arrows off the edges, we should move focus to the adjacent widgets..
@@ -616,24 +645,27 @@ export function change_focused_element(e, input_key) {
                 set_table_focus(row_focus, col_focus);
                 return true;
         }
-    } else if ($elem.hasClass("btn-recent-filters")) {
+    } else if ($elt.hasClass("btn-recent-filters")) {
         switch (input_key) {
+            case "click":
+                current_focus_elem = $elt;
+                return true;
             case "shift_tab":
             case "vim_left":
             case "left_arrow":
-                if (filter_buttons().first()[0] === $elem[0]) {
+                if (filter_buttons().first()[0] === $elt[0]) {
                     current_focus_elem = $("#recent_topics_search");
                 } else {
-                    current_focus_elem = $elem.prev();
+                    current_focus_elem = $elt.prev();
                 }
                 break;
             case "tab":
             case "vim_right":
             case "right_arrow":
-                if (filter_buttons().last()[0] === $elem[0]) {
+                if (filter_buttons().last()[0] === $elt[0]) {
                     current_focus_elem = $("#recent_topics_search");
                 } else {
-                    current_focus_elem = $elem.next();
+                    current_focus_elem = $elt.next();
                 }
                 break;
             case "vim_down":

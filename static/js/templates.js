@@ -1,5 +1,6 @@
 import Handlebars from "handlebars/runtime";
 
+import {i18n} from "./i18n";
 import * as util from "./util";
 
 // Below, we register Zulip-specific extensions to the handlebars API.
@@ -13,8 +14,6 @@ import * as util from "./util";
 // below. There's no need to, as they do not access the DOM.
 // Furthermore, waiting for DOM ready would introduce race conditions with
 // other DOM-ready callbacks that attempt to render templates.
-
-Handlebars.registerHelper("plural", (condition, one, other) => (condition === 1 ? one : other));
 
 Handlebars.registerHelper({
     eq(a, b) {

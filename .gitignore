@@ -34,7 +34,7 @@ package-lock.json
 
 /.dmypy.json
 
-# Dockerfiles generated for CircleCI
+# Dockerfiles generated for continuous integration
 /tools/ci/images
 
 # Generated i18n data

@@ -1,9 +1,12 @@
 import $ from "jquery";
 import SimpleBar from "simplebar/dist/simplebar";
 
+import * as blueslip from "./blueslip";
 import * as common from "./common";
+import {i18n} from "./i18n";
 import {localstorage} from "./localstorage";
 import * as message_list from "./message_list";
+import * as message_lists from "./message_lists";
 
 // What, if anything, obscures the home tab?
 
@@ -49,7 +52,7 @@ export function reset_scrollbar(element_selector) {
 }
 
 function update_message_in_all_views(message_id, callback) {
-    for (const list of [message_list.all, home_msg_list, message_list.narrowed]) {
+    for (const list of [message_lists.home, message_list.narrowed]) {
         if (list === undefined) {
             continue;
         }

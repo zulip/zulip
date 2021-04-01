@@ -1,5 +1,7 @@
 import $ from "jquery";
 
+import * as blueslip from "./blueslip";
+import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 // We don't need an andSelf() here because we already know
 // that our next element is *not* a message_row, so this
@@ -52,7 +54,7 @@ export function visible_range(start_id, end_id) {
 
     const rows = [];
 
-    let row = current_msg_list.get_row(start_id);
+    let row = message_lists.current.get_row(start_id);
     let msg_id = id(row);
 
     while (msg_id <= end_id) {

@@ -8,6 +8,7 @@ import render_compose_invite_users from "../templates/compose_invite_users.hbs";
 import render_compose_not_subscribed from "../templates/compose_not_subscribed.hbs";
 import render_compose_private_stream_alert from "../templates/compose_private_stream_alert.hbs";
 
+import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as common from "./common";
 import * as compose_actions from "./compose_actions";
@@ -17,9 +18,11 @@ import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as drafts from "./drafts";
 import * as echo from "./echo";
+import {i18n} from "./i18n";
 import * as loading from "./loading";
 import * as markdown from "./markdown";
 import * as notifications from "./notifications";
+import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as reminder from "./reminder";
@@ -333,11 +336,7 @@ export function send_message_success(local_id, message_id, locally_echoed) {
     echo.reify_message_id(local_id, message_id);
 }
 
-export function send_message(request) {
-    if (request === undefined) {
-        request = create_message_object();
-    }
-
+export function send_message(request = create_message_object()) {
     if (request.type === "private") {
         request.to = JSON.stringify(request.to);
     } else {

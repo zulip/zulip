@@ -1,6 +1,7 @@
+import * as blueslip from "./blueslip";
 import * as people from "./people";
 import * as reload_state from "./reload_state";
-import * as server_events from "./server_events";
+import * as watchdog from "./watchdog";
 
 // This module just manages data.  See activity.js for
 // the UI of our buddy list.
@@ -180,7 +181,7 @@ export function set_info(presences, server_timestamp) {
         // system are common in both situations.
         const person = people.get_by_user_id(user_id, true);
         if (person === undefined) {
-            if (!(server_events.suspect_offline || reload_state.is_in_progress())) {
+            if (!(watchdog.suspects_user_is_offline() || reload_state.is_in_progress())) {
                 // If we're online, and we get a user who we don't
                 // know about in the presence data, throw an error.
                 blueslip.error("Unknown user ID in presence data: " + user_id);

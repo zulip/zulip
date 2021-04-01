@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import * as hashchange from "./hashchange";
+import * as browser_history from "./browser_history";
 import * as keydown_util from "./keydown_util";
 import * as popovers from "./popovers";
 import * as settings from "./settings";
@@ -114,7 +114,7 @@ export class SettingsPanelMenu {
         this.curr_li.addClass("active");
 
         const settings_section_hash = "#" + this.hash_prefix + section;
-        hashchange.update_browser_history(settings_section_hash);
+        browser_history.update(settings_section_hash);
 
         $(".settings-section").removeClass("show");
 

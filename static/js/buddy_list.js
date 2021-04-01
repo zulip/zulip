@@ -3,6 +3,7 @@ import $ from "jquery";
 import render_user_presence_row from "../templates/user_presence_row.hbs";
 import render_user_presence_rows from "../templates/user_presence_rows.hbs";
 
+import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
 import * as message_viewport from "./message_viewport";
 import * as padded_widget from "./padded_widget";
@@ -54,7 +55,7 @@ class BuddyListConf {
     }
 }
 
-class BuddyList extends BuddyListConf {
+export class BuddyList extends BuddyListConf {
     keys = [];
 
     populate(opts) {

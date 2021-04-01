@@ -1,9 +1,12 @@
 import autosize from "autosize";
 import $ from "jquery";
 
+import * as blueslip from "./blueslip";
 import * as condense from "./condense";
+import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as navigate from "./navigate";
+import {page_params} from "./page_params";
 import * as panels from "./panels";
 import * as popovers from "./popovers";
 import * as ui from "./ui";
@@ -40,6 +43,7 @@ function get_new_heights() {
     const viewport_height = message_viewport.height();
     const top_navbar_height = $("#top_navbar").safeOuterHeight(true);
     const invite_user_link_height = $("#invite-user-link").safeOuterHeight(true) || 0;
+    const add_streams_link_height = $("#add-stream-link").safeOuterHeight(true) || 0;
 
     res.bottom_whitespace_height = viewport_height * 0.4;
 
@@ -51,7 +55,8 @@ function get_new_heights() {
         Number.parseInt($(".narrows_panel").css("marginTop"), 10) -
         Number.parseInt($(".narrows_panel").css("marginBottom"), 10) -
         $("#global_filters").safeOuterHeight(true) -
-        $("#streams_header").safeOuterHeight(true);
+        $("#streams_header").safeOuterHeight(true) -
+        add_streams_link_height;
 
     // Don't let us crush the stream sidebar completely out of view
     res.stream_filters_max_height = Math.max(80, res.stream_filters_max_height);
@@ -63,8 +68,7 @@ function get_new_heights() {
         Number.parseInt($("#right-sidebar").css("marginTop"), 10) -
         $("#userlist-header").safeOuterHeight(true) -
         $("#user_search_section").safeOuterHeight(true) -
-        invite_user_link_height -
-        $("#sidebar-keyboard-shortcuts").safeOuterHeight(true);
+        invite_user_link_height;
 
     res.buddy_list_wrapper_max_height = Math.max(80, usable_height);
 
@@ -240,7 +244,7 @@ export function handler() {
     // This function might run onReady (if we're in a narrow window),
     // but before we've loaded in the messages; in that case, don't
     // try to scroll to one.
-    if (current_msg_list.selected_id() !== -1) {
+    if (message_lists.current.selected_id() !== -1) {
         if (mobile) {
             popovers.set_suppress_scroll_hide();
         }

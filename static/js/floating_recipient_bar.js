@@ -1,5 +1,7 @@
 import $ from "jquery";
 
+import * as blueslip from "./blueslip";
+import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as rows from "./rows";
 import * as timerender from "./timerender";
@@ -237,7 +239,7 @@ export function candidate_recipient_bar() {
     // bars that is still above the fold.
 
     // Start with the pointer's current location.
-    const selected_row = current_msg_list.selected_row();
+    const selected_row = message_lists.current.selected_row();
 
     if (selected_row === undefined || selected_row.length === 0) {
         return undefined;

@@ -1,6 +1,7 @@
 "use strict";
 
-exports.t = function (str, context) {
+exports.i18n = {};
+exports.i18n.t = function (str, context) {
     // HAPPY PATH: most translations are a simple string:
     if (context === undefined) {
         return "translated: " + str;

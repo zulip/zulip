@@ -296,7 +296,7 @@ def main(options: argparse.Namespace) -> int:
             run(["tools/setup/postgresql-init-dev-db"])
             if options.skip_dev_db_build:
                 # We don't need to build the manual development
-                # database on CircleCI for running tests, so we can
+                # database on continuous integration for running tests, so we can
                 # just leave it as a template db and save a minute.
                 #
                 # Important: We don't write a digest as that would

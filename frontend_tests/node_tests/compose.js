@@ -6,9 +6,12 @@ const {JSDOM} = require("jsdom");
 const MockDate = require("mockdate");
 
 const {stub_templates} = require("../zjsunit/handlebars");
+const {i18n} = require("../zjsunit/i18n");
 const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 mock_cjs("jquery", $);
 
@@ -45,9 +48,7 @@ const _document = {
 set_global("document", _document);
 const channel = mock_esm("../../static/js/channel");
 const loading = mock_esm("../../static/js/loading");
-const local_message = mock_esm("../../static/js/local_message");
 const markdown = mock_esm("../../static/js/markdown");
-const page_params = set_global("page_params", {});
 const reminder = mock_esm("../../static/js/reminder", {
     is_deferred_delivery: noop,
 });
@@ -722,9 +723,9 @@ test_ui("send_message", (override) => {
         override(compose_state, "private_message_recipient", () => "alice@example.com");
 
         const server_message_id = 127;
-        local_message.insert_message = (message) => {
+        override(echo, "insert_message", (message) => {
             assert.equal(message.timestamp, fake_now);
-        };
+        });
 
         markdown.apply_markdown = () => {};
         markdown.add_topic_links = () => {};
@@ -1019,7 +1020,6 @@ test_ui("initialize", (override) => {
     $("#compose #attach_files").addClass("notdisplayed");
 
     set_global("document", "document-stub");
-    set_global("csrf_token", "fake-csrf-token");
 
     page_params.max_file_upload_size_mib = 512;
 

@@ -2,9 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
@@ -13,12 +14,10 @@ const channel = mock_esm("../../static/js/channel");
 const compose = mock_esm("../../static/js/compose", {
     finish: noop,
 });
-const message_store = mock_esm("../../static/js/message_store", {
+const message_user_ids = mock_esm("../../static/js/message_user_ids", {
     user_ids: () => [],
 });
 const stream_topic_history = mock_esm("../../static/js/stream_topic_history");
-
-const page_params = set_global("page_params", {});
 
 let autosize_called;
 
@@ -38,10 +37,6 @@ set_global("document", "document-stub");
 const emoji = zrequire("../shared/js/emoji");
 const typeahead = zrequire("../shared/js/typeahead");
 const compose_state = zrequire("compose_state");
-zrequire("user_status");
-zrequire("presence");
-zrequire("buddy_data");
-zrequire("pm_conversations");
 zrequire("templates");
 const typeahead_helper = zrequire("typeahead_helper");
 const people = zrequire("people");
@@ -263,20 +258,6 @@ const harry = {
     email: "harry@zulip.com",
 };
 
-people.add_active_user(alice);
-people.add_active_user(hamlet);
-people.add_active_user(othello);
-people.add_active_user(cordelia);
-people.add_active_user(lear);
-people.add_active_user(twin1);
-people.add_active_user(twin2);
-people.add_active_user(gael);
-people.add_active_user(hal);
-people.add_active_user(harry);
-people.add_active_user(deactivated_user);
-people.deactivate(deactivated_user);
-people.initialize_current_user(hamlet.user_id);
-
 const hamletcharacters = {
     name: "hamletcharacters",
     id: 1,
@@ -298,20 +279,43 @@ const call_center = {
     members: [],
 };
 
-user_groups.add(hamletcharacters);
-user_groups.add(backend);
-user_groups.add(call_center);
-
 const make_emoji = (emoji_dict) => ({
     emoji_name: emoji_dict.name,
     emoji_code: emoji_dict.emoji_code,
 });
 
-run_test("topics_seen_for", () => {
-    stream_topic_history.get_recent_topic_names = (stream_id) => {
+function test(label, f) {
+    run_test(label, (override) => {
+        people.init();
+        user_groups.init();
+
+        people.add_active_user(alice);
+        people.add_active_user(hamlet);
+        people.add_active_user(othello);
+        people.add_active_user(cordelia);
+        people.add_active_user(lear);
+        people.add_active_user(twin1);
+        people.add_active_user(twin2);
+        people.add_active_user(gael);
+        people.add_active_user(hal);
+        people.add_active_user(harry);
+        people.add_active_user(deactivated_user);
+        people.deactivate(deactivated_user);
+        people.initialize_current_user(hamlet.user_id);
+
+        user_groups.add(hamletcharacters);
+        user_groups.add(backend);
+        user_groups.add(call_center);
+
+        f(override);
+    });
+}
+
+test("topics_seen_for", (override) => {
+    override(stream_topic_history, "get_recent_topic_names", (stream_id) => {
         assert.equal(stream_id, denmark_stream.stream_id);
         return ["With Twisted Metal", "acceptance", "civil fears"];
-    };
+    });
 
     assert.deepEqual(ct.topics_seen_for("Denmark"), [
         "With Twisted Metal",
@@ -323,7 +327,7 @@ run_test("topics_seen_for", () => {
     assert.deepEqual(ct.topics_seen_for("non-existing-stream"), []);
 });
 
-run_test("content_typeahead_selected", () => {
+test("content_typeahead_selected", (override) => {
     const fake_this = {
         query: "",
         $element: {},
@@ -372,7 +376,7 @@ run_test("content_typeahead_selected", () => {
     // mention
     fake_this.completing = "mention";
 
-    compose.warn_if_mentioning_unsubscribed_user = () => {};
+    override(compose, "warn_if_mentioning_unsubscribed_user", () => {});
 
     fake_this.query = "@**Mark Tw";
     fake_this.token = "Mark Tw";
@@ -381,10 +385,10 @@ run_test("content_typeahead_selected", () => {
     assert.equal(actual_value, expected_value);
 
     let warned_for_mention = false;
-    compose.warn_if_mentioning_unsubscribed_user = (mentioned) => {
+    override(compose, "warn_if_mentioning_unsubscribed_user", (mentioned) => {
         assert.equal(mentioned, othello);
         warned_for_mention = true;
-    };
+    });
 
     fake_this.query = "@oth";
     fake_this.token = "oth";
@@ -413,13 +417,16 @@ run_test("content_typeahead_selected", () => {
 
     // silent mention
     fake_this.completing = "silent_mention";
-    compose.warn_if_mentioning_unsubscribed_user = () => {
-        throw new Error("unexpected call for silent mentions");
-    };
+    function unexpected_warn() {
+        throw new Error("unexpected warning about unsubscribed user");
+    }
 
     fake_this.query = "@_kin";
     fake_this.token = "kin";
-    actual_value = ct.content_typeahead_selected.call(fake_this, hamlet);
+    with_field(compose, "warn_if_mentioning_unsubscribed_user", unexpected_warn, () => {
+        actual_value = ct.content_typeahead_selected.call(fake_this, hamlet);
+    });
+
     expected_value = "@_**King Hamlet** ";
     assert.equal(actual_value, expected_value);
 
@@ -441,14 +448,11 @@ run_test("content_typeahead_selected", () => {
     expected_value = "@_**King Hamlet** ";
     assert.equal(actual_value, expected_value);
 
-    // user group mention
-    compose.warn_if_mentioning_unsubscribed_user = () => {
-        throw new Error("unexpected call for user groups");
-    };
-
     fake_this.query = "@back";
     fake_this.token = "back";
-    actual_value = ct.content_typeahead_selected.call(fake_this, backend);
+    with_field(compose, "warn_if_mentioning_unsubscribed_user", unexpected_warn, () => {
+        actual_value = ct.content_typeahead_selected.call(fake_this, backend);
+    });
     expected_value = "@*Backend* ";
     assert.equal(actual_value, expected_value);
 
@@ -467,10 +471,10 @@ run_test("content_typeahead_selected", () => {
     // stream
     fake_this.completing = "stream";
     let warned_for_stream_link = false;
-    compose.warn_if_private_stream_is_linked = (linked_stream) => {
+    override(compose, "warn_if_private_stream_is_linked", (linked_stream) => {
         assert.equal(linked_stream, sweden_stream);
         warned_for_stream_link = true;
-    };
+    });
 
     fake_this.query = "#swed";
     fake_this.token = "swed";
@@ -552,7 +556,7 @@ function sorted_names_from(subs) {
     return subs.map((sub) => sub.name).sort();
 }
 
-run_test("initialize", (override) => {
+test("initialize", (override) => {
     let expected_value;
 
     let stream_typeahead_called = false;
@@ -680,25 +684,6 @@ run_test("initialize", (override) => {
             call_center,
         ];
         assert.deepEqual(actual_value, expected_value);
-
-        // Even though the items passed to .highlighter() are the full
-        // objects of the users matching the query, it only returns the
-        // HTML string with the "User_name <email>" format, with the
-        // corresponding parts in bold.
-        options.query = "oth";
-        actual_value = options.highlighter(othello);
-        expected_value = `        <span class="user_circle_empty user_circle"></span>\n        <img class="typeahead-image" src="/avatar/${othello.user_id}&amp;s&#x3D;50" />\n<strong>Othello, the Moor of Venice</strong>`;
-        assert.equal(actual_value, expected_value);
-
-        options.query = "Lear";
-        actual_value = options.highlighter(cordelia);
-        expected_value = `        <span class="user_circle_empty user_circle"></span>\n        <img class="typeahead-image" src="/avatar/${cordelia.user_id}&amp;s&#x3D;50" />\n<strong>Cordelia Lear</strong>`;
-        assert.equal(actual_value, expected_value);
-
-        options.query = "othello@zulip.com, co";
-        actual_value = options.highlighter(cordelia);
-        expected_value = `        <span class="user_circle_empty user_circle"></span>\n        <img class="typeahead-image" src="/avatar/${cordelia.user_id}&amp;s&#x3D;50" />\n<strong>Cordelia Lear</strong>`;
-        assert.equal(actual_value, expected_value);
 
         function matcher(query, person) {
             query = typeahead.clean_query_lowercase(query);
@@ -863,7 +848,11 @@ run_test("initialize", (override) => {
         // content_highlighter.
         fake_this = {completing: "mention", token: "othello"};
         actual_value = options.highlighter.call(fake_this, othello);
-        expected_value = `        <span class="user_circle_empty user_circle"></span>\n        <img class="typeahead-image" src="/avatar/${othello.user_id}&amp;s&#x3D;50" />\n<strong>Othello, the Moor of Venice</strong>`;
+        expected_value =
+            `        <span class="user_circle_empty user_circle"></span>\n` +
+            `        <img class="typeahead-image" src="/avatar/${othello.user_id}&amp;s&#x3D;50" />\n` +
+            `<strong>Othello, the Moor of Venice</strong>&nbsp;&nbsp;\n` +
+            `<small class="autocomplete_secondary">othello@zulip.com</small>\n`;
         assert.equal(actual_value, expected_value);
 
         fake_this = {completing: "mention", token: "hamletcharacters"};
@@ -1033,9 +1022,9 @@ run_test("initialize", (override) => {
     page_params.enter_sends = false;
     event.metaKey = true;
     let compose_finish_called = false;
-    compose.finish = () => {
+    override(compose, "finish", () => {
         compose_finish_called = true;
-    };
+    });
 
     $("form#send_message_form").trigger(event);
     assert(compose_finish_called);
@@ -1087,13 +1076,13 @@ run_test("initialize", (override) => {
     $("#compose-send-button").fadeOut = noop;
     $("#compose-send-button").fadeIn = noop;
     let channel_post_called = false;
-    channel.post = (params) => {
+    override(channel, "post", (params) => {
         assert.equal(params.url, "/json/users/me/enter-sends");
         assert.equal(params.idempotent, true);
         assert.deepEqual(params.data, {enter_sends: page_params.enter_sends});
 
         channel_post_called = true;
-    };
+    });
     $("#enter_sends").is = () => false;
     $("#enter_sends").trigger("click");
 
@@ -1120,7 +1109,7 @@ run_test("initialize", (override) => {
     assert(compose_textarea_typeahead_called);
 });
 
-run_test("begins_typeahead", (override) => {
+test("begins_typeahead", (override) => {
     const begin_typehead_this = {
         options: {
             completions: {
@@ -1156,10 +1145,7 @@ run_test("begins_typeahead", (override) => {
         assert.deepEqual(values, reference);
     }
 
-    function assert_stream_list(input, rest) {
-        if (rest === undefined) {
-            rest = "";
-        }
+    function assert_stream_list(input, rest = "") {
         const values = get_values(input, rest);
         assert.deepEqual(sorted_names_from(values), ["Denmark", "Sweden", "The Netherlands"]);
     }
@@ -1333,7 +1319,7 @@ run_test("begins_typeahead", (override) => {
     }
 });
 
-run_test("tokenizing", () => {
+test("tokenizing", () => {
     assert.equal(ct.tokenize_compose_str("/m"), "/m");
     assert.equal(ct.tokenize_compose_str("1/3"), "");
     assert.equal(ct.tokenize_compose_str("foo bar"), "");
@@ -1355,7 +1341,7 @@ run_test("tokenizing", () => {
     assert.equal(ct.tokenize_compose_str("foo #streams@foo"), "#streams@foo");
 });
 
-run_test("content_highlighter", (override) => {
+test("content_highlighter", (override) => {
     let fake_this = {completing: "emoji"};
     const emoji = {emoji_name: "person shrugging", emoji_url: "¯\\_(ツ)_/¯"};
     let th_render_typeahead_item_called = false;
@@ -1422,7 +1408,7 @@ run_test("content_highlighter", (override) => {
     assert(th_render_slash_command_called);
 });
 
-run_test("filter_and_sort_mentions (normal)", () => {
+test("filter_and_sort_mentions (normal)", () => {
     const is_silent = false;
 
     const suggestions = ct.filter_and_sort_mentions(is_silent, "al");
@@ -1430,7 +1416,7 @@ run_test("filter_and_sort_mentions (normal)", () => {
     assert.deepEqual(suggestions, [mention_all, alice, hal, call_center]);
 });
 
-run_test("filter_and_sort_mentions (silent)", () => {
+test("filter_and_sort_mentions (silent)", () => {
     const is_silent = true;
 
     const suggestions = ct.filter_and_sort_mentions(is_silent, "al");
@@ -1438,7 +1424,7 @@ run_test("filter_and_sort_mentions (silent)", () => {
     assert.deepEqual(suggestions, [alice, hal]);
 });
 
-run_test("typeahead_results", () => {
+test("typeahead_results", () => {
     const stream_list = [denmark_stream, sweden_stream, netherland_stream];
 
     function compose_typeahead_results(completing, items, token) {
@@ -1514,10 +1500,8 @@ run_test("typeahead_results", () => {
     assert_stream_matches("city", [netherland_stream]);
 });
 
-run_test("message people", () => {
+test("message people", (override) => {
     let results;
-
-    ct.__Rewire__("max_num_items", 2);
 
     /*
         We will simulate that we talk to Hal and Harry,
@@ -1527,7 +1511,8 @@ run_test("message people", () => {
         the sorting step.
     */
 
-    message_store.user_ids = () => [hal.user_id, harry.user_id];
+    let user_ids = [hal.user_id, harry.user_id];
+    override(message_user_ids, "user_ids", () => user_ids);
 
     const opts = {
         want_broadcast: false,
@@ -1535,22 +1520,28 @@ run_test("message people", () => {
         filter_pills: false,
     };
 
-    results = ct.get_person_suggestions("Ha", opts);
+    function get_results(search_key) {
+        return with_field(ct, "max_num_items", 2, () =>
+            ct.get_person_suggestions(search_key, opts),
+        );
+    }
+
+    results = get_results("Ha");
     assert.deepEqual(results, [harry, hamletcharacters]);
 
     // Now let's exclude Hal.
-    message_store.user_ids = () => [hamlet.user_id, harry.user_id];
+    user_ids = [hamlet.user_id, harry.user_id];
 
-    results = ct.get_person_suggestions("Ha", opts);
+    results = get_results("Ha");
     assert.deepEqual(results, [harry, hamletcharacters]);
 
-    message_store.user_ids = () => [hamlet.user_id, harry.user_id, hal.user_id];
+    user_ids = [hamlet.user_id, harry.user_id, hal.user_id];
 
-    results = ct.get_person_suggestions("Ha", opts);
+    results = get_results("Ha");
     assert.deepEqual(results, [harry, hamletcharacters]);
 
     people.deactivate(harry);
-    results = ct.get_person_suggestions("Ha", opts);
+    results = get_results("Ha");
     // harry is excluded since it has been deactivated.
     assert.deepEqual(results, [hamletcharacters, hal]);
 });

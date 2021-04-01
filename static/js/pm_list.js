@@ -9,7 +9,6 @@ import * as pm_list_dom from "./pm_list_dom";
 import * as stream_popover from "./stream_popover";
 import * as ui from "./ui";
 import * as unread from "./unread";
-import * as unread_ui from "./unread_ui";
 import * as vdom from "./vdom";
 
 let prior_dom;
@@ -169,8 +168,4 @@ export function expand() {
 export function update_dom_with_unread_counts(counts) {
     update_private_messages();
     set_count(counts.private_message_count);
-    unread_ui.set_count_toggle_button(
-        $("#userlist-toggle-unreadcount"),
-        counts.private_message_count,
-    );
 }

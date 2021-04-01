@@ -2,7 +2,12 @@ import {strict as assert} from "assert";
 import "css.escape";
 import path from "path";
 
-import {Browser, ElementHandle, Page, launch} from "puppeteer";
+import ErrorStackParser from "error-stack-parser";
+import fetch from "node-fetch";
+import type {Browser, ConsoleMessage, ConsoleMessageLocation, ElementHandle, Page} from "puppeteer";
+import {launch} from "puppeteer";
+import StackFrame from "stackframe";
+import StackTraceGPS from "stacktrace-gps";
 
 import {test_credentials} from "../../var/puppeteer/test_credentials";
 
@@ -16,6 +21,8 @@ class CommonUtils {
     screenshot_id = 0;
     is_firefox = process.env.PUPPETEER_PRODUCT === "firefox";
     realm_url = "http://zulip.zulipdev.com:9981/";
+    gps = new StackTraceGPS({ajax: async (url) => (await fetch(url)).text()});
+
     pm_recipient = {
         async set(page: Page, recipient: string): Promise<void> {
             // Without using the delay option here there seems to be
@@ -245,7 +252,7 @@ class CommonUtils {
     async log_out(page: Page): Promise<void> {
         await page.goto(this.realm_url);
         const menu_selector = "#settings-dropdown";
-        const logout_selector = 'a[href="#logout"]';
+        const logout_selector = '.dropdown-menu a[href="#logout"]';
         console.log("Logging out");
         await page.waitForSelector(menu_selector, {visible: true});
         await page.click(menu_selector);
@@ -305,7 +312,7 @@ class CommonUtils {
                     - does it look to have been
                       re-rendered based on server info?
             */
-                const last_msg = current_msg_list.last();
+                const last_msg = zulip_test.current_msg_list.last();
                 if (last_msg === undefined) {
                     return false;
                 }
@@ -461,7 +468,7 @@ class CommonUtils {
         await page.waitForSelector(menu_selector, {visible: true});
         await page.click(menu_selector);
 
-        const organization_settings = 'a[href="#organization"]';
+        const organization_settings = '.dropdown-menu a[href="#organization"]';
         await page.click(organization_settings);
         await page.waitForSelector("#settings_overlay_container.show", {visible: true});
 
@@ -491,18 +498,104 @@ class CommonUtils {
         // a screenshot of it when the test fails.
         const browser = await this.ensure_browser();
         const page = await this.get_page();
+
+        // Used to keep console messages in order after async source mapping
+        let console_ready = Promise.resolve();
+
+        page.on("console", (message: ConsoleMessage) => {
+            const context = async ({
+                url,
+                lineNumber,
+                columnNumber,
+            }: ConsoleMessageLocation): Promise<string> => {
+                if (lineNumber === undefined || columnNumber === undefined) {
+                    return `${url}`;
+                }
+
+                let frame = new StackFrame({
+                    fileName: url,
+                    lineNumber: lineNumber + 1,
+                    columnNumber: columnNumber + 1,
+                });
+                try {
+                    frame = await this.gps.getMappedLocation(frame);
+                } catch {
+                    // Ignore source mapping errors
+                }
+                return `${frame.fileName}:${frame.lineNumber}:${frame.columnNumber}`;
+            };
+
+            const console_ready1 = console_ready;
+            console_ready = (async () => {
+                let output = `${await context(
+                    message.location(),
+                )}: ${message.type()}: ${message.text()}`;
+                if (message.type() === "trace") {
+                    for (const frame of message.stackTrace()) {
+                        output += `\n    at ${await context(frame)}`;
+                    }
+                }
+                await console_ready1;
+                console.log(output);
+            })();
+        });
+
+        let page_errored = false;
+        page.on("pageerror", (error: Error) => {
+            page_errored = true;
+
+            // Puppeteer gives us the stack as the message for some reason.
+            const error1 = new Error("dummy");
+            error1.stack = error.message;
+
+            const console_ready1 = console_ready;
+            console_ready = (async () => {
+                const frames = await Promise.all(
+                    ErrorStackParser.parse(error1).map(async (frame1) => {
+                        let frame = (frame1 as unknown) as StackFrame;
+                        try {
+                            frame = await this.gps.getMappedLocation(frame);
+                        } catch {
+                            // Ignore source mapping errors
+                        }
+                        return `\n    at ${frame.functionName} (${frame.fileName}:${frame.lineNumber}:${frame.columnNumber})`;
+                    }),
+                );
+                await console_ready1;
+                console.error("Page error:", error.message.split("\n", 1)[0] + frames.join(""));
+            })();
+
+            const console_ready2 = console_ready;
+            console_ready = (async () => {
+                try {
+                    // Take a screenshot, and increment the screenshot_id.
+                    await this.screenshot(page, `failure-${this.screenshot_id}`);
+                    this.screenshot_id += 1;
+                } finally {
+                    await console_ready2;
+                    console.log("Closing page to stop the test...");
+                    await page.close();
+                }
+            })();
+        });
+
         try {
             await test_function(page);
+            await this.log_out(page);
+
+            if (page_errored) {
+                throw new Error("Page threw an error");
+            }
         } catch (error: unknown) {
-            console.log(error);
+            if (!page_errored) {
+                // Take a screenshot, and increment the screenshot_id.
+                await this.screenshot(page, `failure-${this.screenshot_id}`);
+                this.screenshot_id += 1;
+            }
 
-            // Take a screenshot, and increment the screenshot_id.
-            await this.screenshot(page, `failure-${this.screenshot_id}`);
-            this.screenshot_id += 1;
-
-            await browser.close();
-            process.exit(1);
+            throw error;
         } finally {
+            await console_ready;
             await browser.close();
         }
     }

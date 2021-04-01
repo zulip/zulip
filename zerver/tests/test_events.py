@@ -52,6 +52,7 @@ from zerver.lib.actions import (
     do_create_default_stream_group,
     do_create_multiuse_invite_link,
     do_create_user,
+    do_deactivate_realm,
     do_deactivate_stream,
     do_deactivate_user,
     do_delete_messages,
@@ -64,6 +65,7 @@ from zerver.lib.actions import (
     do_remove_default_stream,
     do_remove_default_stream_group,
     do_remove_reaction,
+    do_remove_realm_custom_profile_field,
     do_remove_realm_domain,
     do_remove_realm_emoji,
     do_remove_realm_filter,
@@ -89,8 +91,8 @@ from zerver.lib.actions import (
     do_update_user_presence,
     do_update_user_status,
     lookup_default_stream_groups,
-    notify_realm_custom_profile_fields,
     remove_members_from_user_group,
+    try_add_realm_custom_profile_field,
     try_update_realm_custom_profile_field,
 )
 from zerver.lib.event_schema import (
@@ -114,6 +116,7 @@ from zerver.lib.event_schema import (
     check_realm_bot_delete,
     check_realm_bot_remove,
     check_realm_bot_update,
+    check_realm_deactivated,
     check_realm_domains_add,
     check_realm_domains_change,
     check_realm_domains_remove,
@@ -163,6 +166,7 @@ from zerver.lib.test_helpers import (
 from zerver.lib.topic import TOPIC_NAME
 from zerver.models import (
     Attachment,
+    CustomProfileField,
     Message,
     MultiuseInvite,
     PreregistrationUser,
@@ -692,22 +696,25 @@ class NormalActionsTest(BaseAction):
         check_typing_stop("events[0]", events[0])
 
     def test_custom_profile_fields_events(self) -> None:
+        realm = self.user_profile.realm
+
         events = self.verify_action(
-            lambda: notify_realm_custom_profile_fields(self.user_profile.realm, "add"),
-            state_change_expected=False,
+            lambda: try_add_realm_custom_profile_field(
+                realm=realm, name="Expertise", field_type=CustomProfileField.LONG_TEXT
+            )
         )
         check_custom_profile_fields("events[0]", events[0])
 
-        realm = self.user_profile.realm
         field = realm.customprofilefield_set.get(realm=realm, name="Biography")
         name = field.name
         hint = "Biography of the user"
-        try_update_realm_custom_profile_field(realm, field, name, hint=hint)
 
         events = self.verify_action(
-            lambda: notify_realm_custom_profile_fields(self.user_profile.realm, "add"),
-            state_change_expected=False,
+            lambda: try_update_realm_custom_profile_field(realm, field, name, hint=hint)
         )
+        check_custom_profile_fields("events[0]", events[0])
+
+        events = self.verify_action(lambda: do_remove_realm_custom_profile_field(realm, field))
         check_custom_profile_fields("events[0]", events[0])
 
     def test_custom_profile_field_data_events(self) -> None:
@@ -812,6 +819,7 @@ class NormalActionsTest(BaseAction):
             self.user_profile.realm,
             "email_address_visibility",
             Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            acting_user=None,
         )
 
         events = self.verify_action(lambda: self.register("test1@zulip.com", "test1"))
@@ -957,7 +965,7 @@ class NormalActionsTest(BaseAction):
         do_create_default_stream_group(self.user_profile.realm, "group1", "This is group1", streams)
         group = lookup_default_stream_groups(["group1"], self.user_profile.realm)[0]
 
-        do_change_user_role(self.user_profile, UserProfile.ROLE_GUEST)
+        do_change_user_role(self.user_profile, UserProfile.ROLE_GUEST, acting_user=None)
         venice_stream = get_stream("Venice", self.user_profile.realm)
         self.verify_action(
             lambda: do_add_streams_to_default_stream_group(
@@ -975,7 +983,7 @@ class NormalActionsTest(BaseAction):
         check_default_streams("events[0]", events[0])
 
     def test_default_streams_events_guest(self) -> None:
-        do_change_user_role(self.user_profile, UserProfile.ROLE_GUEST)
+        do_change_user_role(self.user_profile, UserProfile.ROLE_GUEST, acting_user=None)
         stream = get_stream("Scotland", self.user_profile.realm)
         self.verify_action(
             lambda: do_add_default_stream(stream), state_change_expected=False, num_events=0
@@ -1022,6 +1030,7 @@ class NormalActionsTest(BaseAction):
             self.user_profile.realm,
             "email_address_visibility",
             Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            acting_user=None,
         )
         # Important: We need to refresh from the database here so that
         # we don't have a stale UserProfile object with an old value
@@ -1059,7 +1068,7 @@ class NormalActionsTest(BaseAction):
             with fake_backends():
                 events = self.verify_action(
                     lambda: do_set_realm_authentication_methods(
-                        self.user_profile.realm, auth_method_dict
+                        self.user_profile.realm, auth_method_dict, acting_user=None
                     )
                 )
 
@@ -1131,6 +1140,7 @@ class NormalActionsTest(BaseAction):
                     allow_message_editing,
                     message_content_edit_limit_seconds,
                     False,
+                    acting_user=None,
                 )
             )
             check_realm_update_dict("events[0]", events[0])
@@ -1171,9 +1181,11 @@ class NormalActionsTest(BaseAction):
         # for email being passed into this next function.
         self.user_profile.refresh_from_db()
 
-        do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER)
+        do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
         for role in [UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_MEMBER]:
-            events = self.verify_action(lambda: do_change_user_role(self.user_profile, role))
+            events = self.verify_action(
+                lambda: do_change_user_role(self.user_profile, role, acting_user=None)
+            )
             check_realm_user_update("events[0]", events[0], "role")
             self.assertEqual(events[0]["person"]["role"], role)
 
@@ -1185,9 +1197,11 @@ class NormalActionsTest(BaseAction):
         # for email being passed into this next function.
         self.user_profile.refresh_from_db()
 
-        do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER)
+        do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
         for role in [UserProfile.ROLE_REALM_OWNER, UserProfile.ROLE_MEMBER]:
-            events = self.verify_action(lambda: do_change_user_role(self.user_profile, role))
+            events = self.verify_action(
+                lambda: do_change_user_role(self.user_profile, role, acting_user=None)
+            )
             check_realm_user_update("events[0]", events[0], "role")
             self.assertEqual(events[0]["person"]["role"], role)
 
@@ -1199,9 +1213,11 @@ class NormalActionsTest(BaseAction):
         # for email being passed into this next function.
         self.user_profile.refresh_from_db()
 
-        do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER)
+        do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
         for role in [UserProfile.ROLE_GUEST, UserProfile.ROLE_MEMBER]:
-            events = self.verify_action(lambda: do_change_user_role(self.user_profile, role))
+            events = self.verify_action(
+                lambda: do_change_user_role(self.user_profile, role, acting_user=None)
+            )
             check_realm_user_update("events[0]", events[0], "role")
             self.assertEqual(events[0]["person"]["role"], role)
 
@@ -1465,17 +1481,30 @@ class NormalActionsTest(BaseAction):
 
     def test_do_deactivate_user(self) -> None:
         bot = self.create_bot("test")
-        action = lambda: do_deactivate_user(bot)
+        action = lambda: do_deactivate_user(bot, acting_user=None)
         events = self.verify_action(action, num_events=2)
         check_realm_user_remove("events[0]", events[0])
         check_realm_bot_remove("events[1]", events[1])
 
     def test_do_reactivate_user(self) -> None:
         bot = self.create_bot("test")
-        do_deactivate_user(bot)
-        action = lambda: do_reactivate_user(bot)
+        do_deactivate_user(bot, acting_user=None)
+        action = lambda: do_reactivate_user(bot, acting_user=None)
         events = self.verify_action(action, num_events=2)
         check_realm_bot_add("events[1]", events[1])
+
+    def test_do_deactivate_realm(self) -> None:
+        realm = self.user_profile.realm
+        action = lambda: do_deactivate_realm(realm)
+
+        # We delete sessions of all active users when a realm is
+        # deactivated, and redirect them to a deactivated page in
+        # order to inform that realm/organization has been
+        # deactivated.  state_change_expected is False is kinda
+        # correct because were one to somehow compute page_params (as
+        # this test does), but that's not actually possible.
+        events = self.verify_action(action, state_change_expected=False)
+        check_realm_deactivated("events[0]", events[0])
 
     def test_do_mark_hotspot_as_read(self) -> None:
         self.user_profile.tutorial_status = UserProfile.TUTORIAL_WAITING
@@ -1683,7 +1712,9 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(events[0]["upload_space_used"], 0)
 
     def test_notify_realm_export(self) -> None:
-        do_change_user_role(self.user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        do_change_user_role(
+            self.user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None
+        )
         self.login_user(self.user_profile)
 
         with mock.patch(
@@ -1735,7 +1766,9 @@ class NormalActionsTest(BaseAction):
         )
 
     def test_notify_realm_export_on_failure(self) -> None:
-        do_change_user_role(self.user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        do_change_user_role(
+            self.user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None
+        )
         self.login_user(self.user_profile)
 
         with mock.patch(

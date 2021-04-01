@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import * as activity from "./activity";
 import * as notifications from "./notifications";
+import {page_params} from "./page_params";
 import * as pm_list from "./pm_list";
 import * as stream_list from "./stream_list";
 import * as top_left_corner from "./top_left_corner";
@@ -59,7 +60,10 @@ export function update_unread_counts() {
     const notifiable_unread_count = unread.calculate_notifiable_count(res);
     notifications.update_unread_counts(notifiable_unread_count, res.private_message_count);
 
+    // Set the unread counts that we show in the buttons that
+    // toggle open the sidebar menus when we have a thin window.
     set_count_toggle_button($("#streamlist-toggle-unreadcount"), res.home_unread_messages);
+    set_count_toggle_button($("#userlist-toggle-unreadcount"), res.private_message_count);
 }
 
 export function should_display_bankruptcy_banner() {

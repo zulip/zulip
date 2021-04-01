@@ -4,18 +4,20 @@ import $ from "jquery";
 
 import render_draft_table_body from "../templates/draft_table_body.hbs";
 
+import * as blueslip from "./blueslip";
+import * as browser_history from "./browser_history";
+import * as color_class from "./color_class";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
-import * as hashchange from "./hashchange";
+import {i18n} from "./i18n";
 import {localstorage} from "./localstorage";
 import * as markdown from "./markdown";
 import * as narrow from "./narrow";
 import * as overlays from "./overlays";
 import * as people from "./people";
-import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
 import * as util from "./util";
@@ -252,7 +254,7 @@ export function format_draft(draft) {
             is_stream: true,
             stream,
             stream_color: draft_stream_color,
-            dark_background: stream_color.get_color_class(draft_stream_color),
+            dark_background: color_class.get_css_class(draft_stream_color),
             topic: draft_topic,
             raw_content: draft.content,
             time_stamp,
@@ -461,7 +463,7 @@ function drafts_scroll(next_focus_draft_row) {
     const total_dist = dist_from_top + next_focus_draft_row[0].clientHeight;
     const dist_from_bottom = $(".drafts-container")[0].clientHeight - total_dist;
     if (dist_from_bottom < -4) {
-        //-4 is the min dist from the bottom that will require extra scrolling.
+        // -4 is the min dist from the bottom that will require extra scrolling.
         $(".drafts-list")[0].scrollTop += $(".drafts-list")[0].clientHeight / 2;
     }
 }
@@ -526,7 +528,7 @@ export function open_overlay() {
         name: "drafts",
         overlay: $("#draft_overlay"),
         on_close() {
-            hashchange.exit_overlay();
+            browser_history.exit_overlay();
         },
     });
 }

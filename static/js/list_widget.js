@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import * as blueslip from "./blueslip";
 import * as ui from "./ui";
 
 const DEFAULTS = {

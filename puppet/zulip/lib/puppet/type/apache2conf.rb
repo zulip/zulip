@@ -1,9 +1,9 @@
 Puppet::Type.newtype(:apache2conf) do
-    ensurable
-    newparam(:name) do
-       desc "The name of the conf to enable"
-       isnamevar
-    end
+  ensurable
+  newparam(:name) do
+    desc "The name of the conf to enable"
+    isnamevar
+  end
 end
 
 Puppet::Type.type(:apache2conf).provide(:apache2conf) do

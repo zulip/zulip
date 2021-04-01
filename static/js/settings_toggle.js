@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import * as components from "./components";
+import {i18n} from "./i18n";
 import * as settings_panel_menu from "./settings_panel_menu";
 
 let toggler;

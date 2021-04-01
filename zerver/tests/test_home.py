@@ -10,7 +10,12 @@ from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
 
 from corporate.models import Customer, CustomerPlan
-from zerver.lib.actions import do_change_logo_source, do_create_user
+from zerver.lib.actions import (
+    change_user_is_active,
+    do_change_logo_source,
+    do_change_plan_type,
+    do_create_user,
+)
 from zerver.lib.events import add_realm_logo_fields
 from zerver.lib.home import get_furthest_read_time
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
@@ -501,8 +506,7 @@ class HomeTest(ZulipTestCase):
         # Doing a full-stack deactivation would be expensive here,
         # and we really only need to flip the flag to get a valid
         # test.
-        user.is_active = False
-        user.save()
+        change_user_is_active(user, False)
         return user
 
     def test_signup_notifications_stream(self) -> None:
@@ -765,8 +769,7 @@ class HomeTest(ZulipTestCase):
 
         # Don't show plans to guest users
         self.login("polonius")
-        realm.plan_type = Realm.LIMITED
-        realm.save(update_fields=["plan_type"])
+        do_change_plan_type(realm, Realm.LIMITED)
         result_html = self._get_home_page().content.decode("utf-8")
         self.assertNotIn("Plans", result_html)
 
@@ -776,13 +779,11 @@ class HomeTest(ZulipTestCase):
         self.assertIn("Plans", result_html)
 
         # Show plans link to no one, including admins, if SELF_HOSTED or STANDARD
-        realm.plan_type = Realm.SELF_HOSTED
-        realm.save(update_fields=["plan_type"])
+        do_change_plan_type(realm, Realm.SELF_HOSTED)
         result_html = self._get_home_page().content.decode("utf-8")
         self.assertNotIn("Plans", result_html)
 
-        realm.plan_type = Realm.STANDARD
-        realm.save(update_fields=["plan_type"])
+        do_change_plan_type(realm, Realm.STANDARD)
         result_html = self._get_home_page().content.decode("utf-8")
         self.assertNotIn("Plans", result_html)
 

@@ -1,6 +1,8 @@
 import $ from "jquery";
 
+import * as blueslip from "./blueslip";
 import {media_breakpoints} from "./css_variables";
+import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
 import * as rows from "./rows";
 import * as util from "./util";
@@ -236,7 +238,7 @@ function _visible_divs(
 }
 
 export function visible_groups(require_fully_visible) {
-    const selected_row = current_msg_list.selected_row();
+    const selected_row = message_lists.current.selected_row();
     if (selected_row === undefined || selected_row.length === 0) {
         return [];
     }
@@ -252,10 +254,10 @@ export function visible_groups(require_fully_visible) {
 }
 
 export function visible_messages(require_fully_visible) {
-    const selected_row = current_msg_list.selected_row();
+    const selected_row = message_lists.current.selected_row();
 
     function row_to_id(row) {
-        return current_msg_list.get(rows.id($(row)));
+        return message_lists.current.get(rows.id($(row)));
     }
 
     // Being simplistic about this, the smallest message is 25 px high.
@@ -386,7 +388,7 @@ export function keep_pointer_in_view() {
     // users will occasionally do big mouse scrolls, so this gives them
     // a pointer reasonably close to the middle of the screen.
     let candidate;
-    let next_row = current_msg_list.selected_row();
+    let next_row = message_lists.current.selected_row();
 
     if (next_row.length === 0) {
         return;
@@ -445,7 +447,7 @@ export function keep_pointer_in_view() {
         adjust(message_is_far_enough_up, rows.prev_visible);
     }
 
-    current_msg_list.select_id(rows.id(next_row), {from_scroll: true});
+    message_lists.current.select_id(rows.id(next_row), {from_scroll: true});
 }
 
 export function initialize() {

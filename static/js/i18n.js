@@ -3,6 +3,8 @@
 
 import i18next from "i18next";
 
+import {page_params} from "./page_params";
+
 i18next.init({
     lng: "lang",
     resources: {
@@ -19,4 +21,4 @@ i18next.init({
     returnEmptyString: false, // Empty string is not a valid translation.
 });
 
-window.i18n = i18next;
+export const i18n = i18next;

@@ -3,7 +3,9 @@ import $ from "jquery";
 import render_admin_tab from "../templates/admin_tab.hbs";
 import render_settings_organization_settings_tip from "../templates/settings/organization_settings_tip.hbs";
 
+import {i18n} from "./i18n";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as settings from "./settings";
 import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";

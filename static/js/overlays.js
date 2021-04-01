@@ -1,6 +1,7 @@
 import $ from "jquery";
 
-import * as hashchange from "./hashchange";
+import * as blueslip from "./blueslip";
+import * as browser_history from "./browser_history";
 import * as popovers from "./popovers";
 
 let active_overlay;
@@ -198,8 +199,6 @@ export function close_modal(selector) {
 
     const elem = $(selector).expectOne();
     elem.modal("hide").attr("aria-hidden", true);
-    // Enable mouse events for the background as the modal closes.
-    enable_background_mouse_events();
 }
 
 export function close_active_modal() {
@@ -223,7 +222,7 @@ export function open_settings() {
         name: "settings",
         overlay: $("#settings_overlay_container"),
         on_close() {
-            hashchange.exit_overlay();
+            browser_history.exit_overlay();
         },
     });
 }

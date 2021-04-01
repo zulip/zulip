@@ -1,20 +1,20 @@
-# Add a custom linkification filter
+# Add a custom linkifier
 
 {!admin-only.md!}
 
 Linkifiers make it easy to refer to issues or tickets in third
 party issue trackers, like GitHub, Salesforce, Zendesk, and others.
-For instance, you can add a filter that automatically turns `#2468`
+For instance, you can add a linkifier that automatically turns `#2468`
 into a link to `https://github.com/zulip/zulip/issues/2468`.
 
 If the pattern appears in a message topic, Zulip adds a little button to the
 right of the topic that links to the appropriate URL.
 
-### Add a custom linkification filter
+### Add a custom linkifier
 
 {start_tabs}
 
-{settings_tab|filter-settings}
+{settings_tab|linkifier-settings}
 
 1. Under **Add a new linkifier**, enter a **Pattern** and
 **URL format string**.

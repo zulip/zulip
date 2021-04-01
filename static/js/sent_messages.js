@@ -1,3 +1,4 @@
+import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as server_events from "./server_events";
 

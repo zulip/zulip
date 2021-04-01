@@ -184,7 +184,6 @@ custom_profile_field_type = DictType(
 custom_profile_fields_event = event_dict_type(
     required_keys=[
         ("type", Equals("custom_profile_fields")),
-        ("op", Equals("add")),
         ("fields", ListType(custom_profile_field_type)),
     ]
 )
@@ -338,6 +337,13 @@ muted_topics_event = event_dict_type(
 )
 check_muted_topics = make_checker(muted_topics_event)
 
+_check_topic_links = DictType(
+    required_keys=[
+        ("text", str),
+        ("url", str),
+    ]
+)
+
 message_fields = [
     ("avatar_url", OptionalType(str)),
     ("client", str),
@@ -354,7 +360,7 @@ message_fields = [
     ("sender_id", int),
     ("stream_id", int),
     (TOPIC_NAME, str),
-    (TOPIC_LINKS, ListType(str)),
+    (TOPIC_LINKS, ListType(_check_topic_links)),
     ("submessages", ListType(dict)),
     ("timestamp", int),
     ("type", str),
@@ -458,6 +464,14 @@ reaction_remove_event = event_dict_type(
 )
 check_reaction_remove = make_checker(reaction_remove_event)
 
+realm_deactivated_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("realm")),
+        ("op", Equals("deactivated")),
+        ("realm_id", int),
+    ]
+)
+check_realm_deactivated = make_checker(realm_deactivated_event)
 
 bot_services_outgoing_type = DictType(
     required_keys=[
@@ -1079,6 +1093,11 @@ def check_realm_user_update(
     )
 
 
+restart_event = event_dict_type(
+    required_keys=[("type", Equals("restart")), ("server_generation", int), ("immediate", bool)]
+)
+check_restart_event = make_checker(restart_event)
+
 stream_create_event = event_dict_type(
     required_keys=[
         ("type", Equals("stream")),
@@ -1370,7 +1389,7 @@ update_message_topic_fields = [
     ),
     ("stream_id", int),
     ("stream_name", str),
-    (TOPIC_LINKS, ListType(str)),
+    (TOPIC_LINKS, ListType(_check_topic_links)),
     (TOPIC_NAME, str),
 ]
 

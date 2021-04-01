@@ -6,7 +6,7 @@
     },
     "page": {
         "id": "jb7j80lkgqvb",
-        "status_indicator": "none",
+        "status_indicator": "critical",
         "status_description": "All Systems Operational"
     },
     "incident": {

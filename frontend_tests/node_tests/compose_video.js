@@ -5,17 +5,16 @@ const {strict: assert} = require("assert");
 const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const events = require("./lib/events");
 
 mock_cjs("jquery", $);
 const channel = mock_esm("../../static/js/channel");
-const page_params = set_global("page_params", {});
 const upload = mock_esm("../../static/js/upload");
 mock_esm("../../static/js/resize", {
     watch_manual_resize() {},
 });
-set_global("csrf_token", "fake-csrf-token");
 set_global("document", {
     execCommand() {
         return false;

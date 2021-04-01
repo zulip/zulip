@@ -10,6 +10,26 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 46**
+
+* [`GET /messages`](/api/get-messages) and [`GET
+  /events`](/api/get-events): The `topic_links` field now contains a
+  list of dictionaries, rather than a list of strings.
+
+**Feature level 45**
+
+* [`GET /events`](/api/get-events): Removed useless `op` field from
+  `custom_profile_fields` events.  These events contain the full set
+  of configured `custom_profile_fields` for the organization
+  regardless of what triggered the change.
+
+**Feature level 44**
+
+* [`POST /register`](/api/register-queue): extended the `unread_msgs`
+  object to include `old_unreads_missing`, which indicates whether the
+  server truncated the `unread_msgs` due to excessive total unread
+  messages.
+
 **Feature level 43**
 
 * [`GET /users/{user_id_or_email}/presence`]: Added support for

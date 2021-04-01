@@ -2,13 +2,13 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 mock_cjs("jquery", $);
 const message_store = mock_esm("../../static/js/message_store");
-const page_params = set_global("page_params", {});
 
 const stream_data = zrequire("stream_data");
 const people = zrequire("people");
@@ -38,23 +38,36 @@ people.add_active_user(steve);
 people.initialize_current_user(me.user_id);
 
 function assert_same_operators(result, terms) {
-    terms = terms.map((term) => {
-        // If negated flag is undefined, we explicitly
-        // set it to false.
-        let negated = term.negated;
-        if (!negated) {
-            negated = false;
-        }
-        return {
-            negated,
-            operator: term.operator,
-            operand: term.operand,
-        };
-    });
+    // If negated flag is undefined, we explicitly
+    // set it to false.
+    terms = terms.map(({negated = false, operator, operand}) => ({negated, operator, operand}));
     assert.deepEqual(result, terms);
 }
 
-run_test("basics", () => {
+function get_predicate(operators) {
+    operators = operators.map((op) => ({
+        operator: op[0],
+        operand: op[1],
+    }));
+    return new Filter(operators).predicate();
+}
+
+function make_sub(name, stream_id) {
+    const sub = {
+        name,
+        stream_id,
+    };
+    stream_data.add_sub(sub);
+}
+
+function test(label, f) {
+    run_test(label, (override) => {
+        stream_data.clear_subscriptions();
+        f(override);
+    });
+}
+
+test("basics", () => {
     let operators = [
         {operator: "stream", operand: "foo"},
         {operator: "stream", operand: "exclude_stream", negated: true},
@@ -260,7 +273,7 @@ function assert_not_mark_read_when_searching(additional_operators_to_test) {
     assert(!filter.can_mark_messages_read());
 }
 
-run_test("can_mark_messages_read", () => {
+test("can_mark_messages_read", () => {
     assert_not_mark_read_with_has_operands();
     assert_not_mark_read_with_is_operands();
     assert_not_mark_read_when_searching();
@@ -363,7 +376,7 @@ run_test("can_mark_messages_read", () => {
     assert(!filter.calc_can_mark_messages_read_called);
 });
 
-run_test("show_first_unread", () => {
+test("show_first_unread", () => {
     let operators = [{operator: "is", operand: "any"}];
     let filter = new Filter(operators);
     assert(filter.allow_use_first_unread_when_narrowing());
@@ -382,7 +395,8 @@ run_test("show_first_unread", () => {
     assert(!filter.can_mark_messages_read());
     assert(filter.allow_use_first_unread_when_narrowing());
 });
-run_test("filter_with_new_params_topic", () => {
+
+test("filter_with_new_params_topic", () => {
     const operators = [
         {operator: "stream", operand: "foo"},
         {operator: "topic", operand: "old topic"},
@@ -402,7 +416,7 @@ run_test("filter_with_new_params_topic", () => {
     assert.deepEqual(new_filter.operands("topic"), ["new topic"]);
 });
 
-run_test("filter_with_new_params_stream", () => {
+test("filter_with_new_params_stream", () => {
     const operators = [
         {operator: "stream", operand: "foo"},
         {operator: "topic", operand: "old topic"},
@@ -422,7 +436,7 @@ run_test("filter_with_new_params_stream", () => {
     assert.deepEqual(new_filter.operands("topic"), ["old topic"]);
 });
 
-run_test("new_style_operators", () => {
+test("new_style_operators", () => {
     const term = {
         operator: "stream",
         operand: "foo",
@@ -434,7 +448,7 @@ run_test("new_style_operators", () => {
     assert(filter.can_bucket_by("stream"));
 });
 
-run_test("public_operators", () => {
+test("public_operators", () => {
     stream_data.clear_subscriptions();
     let operators = [
         {operator: "stream", operand: "some_stream"},
@@ -455,7 +469,7 @@ run_test("public_operators", () => {
     });
 });
 
-run_test("redundancies", () => {
+test("redundancies", () => {
     let terms;
     let filter;
 
@@ -474,7 +488,7 @@ run_test("redundancies", () => {
     assert(filter.can_bucket_by("is-private", "not-pm-with"));
 });
 
-run_test("canonicalization", () => {
+test("canonicalization", () => {
     assert.equal(Filter.canonicalize_operator("Is"), "is");
     assert.equal(Filter.canonicalize_operator("Stream"), "stream");
     assert.equal(Filter.canonicalize_operator("Subject"), "topic");
@@ -522,23 +536,7 @@ run_test("canonicalization", () => {
     assert.equal(term.operand, "link");
 });
 
-function get_predicate(operators) {
-    operators = operators.map((op) => ({
-        operator: op[0],
-        operand: op[1],
-    }));
-    return new Filter(operators).predicate();
-}
-
-function make_sub(name, stream_id) {
-    const sub = {
-        name,
-        stream_id,
-    };
-    stream_data.add_sub(sub);
-}
-
-run_test("predicate_basics", () => {
+test("predicate_basics", () => {
     // Predicates are functions that accept a message object with the message
     // attributes (not content), and return true if the message belongs in a
     // given narrow. If the narrow parameters include a search, the predicate
@@ -765,7 +763,7 @@ run_test("predicate_basics", () => {
     assert(!has_image(no_has_filter_matching_msg));
 });
 
-run_test("negated_predicates", () => {
+test("negated_predicates", () => {
     let predicate;
     let narrow;
 
@@ -817,13 +815,13 @@ function test_mit_exceptions() {
     assert(!predicate({type: "stream", stream: "foo", topic: "bar"}));
 }
 
-run_test("mit_exceptions", () => {
+test("mit_exceptions", () => {
     with_field(page_params, "realm_is_zephyr_mirror_realm", true, () => {
         test_mit_exceptions();
     });
 });
 
-run_test("predicate_edge_cases", () => {
+test("predicate_edge_cases", () => {
     let predicate;
     // The code supports undefined as an operator to Filter, which results
     // in a predicate that accepts any message.
@@ -855,7 +853,7 @@ run_test("predicate_edge_cases", () => {
     assert(predicate({type: "stream", stream_id, topic: "Mars"}));
 });
 
-run_test("parse", () => {
+test("parse", () => {
     let string;
     let operators;
 
@@ -966,7 +964,7 @@ run_test("parse", () => {
     _test();
 });
 
-run_test("unparse", () => {
+test("unparse", () => {
     let string;
     let operators;
 
@@ -1007,7 +1005,7 @@ run_test("unparse", () => {
     assert.deepEqual(Filter.unparse(operators), string);
 });
 
-run_test("describe", () => {
+test("describe", () => {
     let narrow;
     let string;
 
@@ -1119,7 +1117,7 @@ run_test("describe", () => {
     assert.equal(Filter.describe(narrow), string);
 });
 
-run_test("can_bucket_by", () => {
+test("can_bucket_by", () => {
     let terms = [{operator: "stream", operand: "My Stream"}];
     let filter = new Filter(terms);
     assert.equal(filter.can_bucket_by("stream"), true);
@@ -1188,7 +1186,7 @@ run_test("can_bucket_by", () => {
     assert.equal(filter.can_bucket_by("is-private"), false);
 });
 
-run_test("term_type", () => {
+test("term_type", () => {
     function assert_term_type(term, expected_term_type) {
         assert.equal(Filter.term_type(term), expected_term_type);
     }
@@ -1258,7 +1256,7 @@ run_test("term_type", () => {
     assert(!filter._build_sorted_term_types_called);
 });
 
-run_test("first_valid_id_from", (override) => {
+test("first_valid_id_from", (override) => {
     const terms = [{operator: "is", operand: "alerted"}];
 
     const filter = new Filter(terms);
@@ -1280,7 +1278,7 @@ run_test("first_valid_id_from", (override) => {
     assert.equal(filter.first_valid_id_from(msg_ids), 20);
 });
 
-run_test("update_email", () => {
+test("update_email", () => {
     const terms = [
         {operator: "pm-with", operand: "steve@foo.com"},
         {operator: "sender", operand: "steve@foo.com"},
@@ -1311,7 +1309,10 @@ function make_web_public_sub(name, stream_id) {
     stream_data.add_sub(sub);
 }
 
-run_test("navbar_helpers", () => {
+test("navbar_helpers", () => {
+    const stream_id = 43;
+    make_sub("Foo", stream_id);
+
     // make sure title has names separated with correct delimiters
     function properly_separated_names(names) {
         return names.join(", ");
@@ -1414,7 +1415,7 @@ run_test("navbar_helpers", () => {
             is_common_narrow: true,
             icon: "hashtag",
             title: "Foo",
-            redirect_url_with_search: "/#narrow/stream/42-Foo/topic/bar",
+            redirect_url_with_search: "/#narrow/stream/43-Foo/topic/bar",
         },
         {
             operator: streams_public,
@@ -1428,7 +1429,7 @@ run_test("navbar_helpers", () => {
             is_common_narrow: true,
             icon: "hashtag",
             title: "Foo",
-            redirect_url_with_search: "/#narrow/stream/42-Foo",
+            redirect_url_with_search: "/#narrow/stream/43-Foo",
         },
         {
             operator: non_existent_stream,
@@ -1556,7 +1557,7 @@ run_test("navbar_helpers", () => {
     assert.equal(filter.generate_redirect_url(), default_redirect.redirect_url);
 });
 
-run_test("error_cases", (override) => {
+test("error_cases", (override) => {
     // This test just gives us 100% line coverage on defensive code that
     // should not be reached unless we break other code.
     override(people, "pm_with_user_ids", () => {});

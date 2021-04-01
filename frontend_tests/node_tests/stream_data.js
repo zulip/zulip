@@ -4,17 +4,15 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-
-let page_params;
+const blueslip = require("../zjsunit/zblueslip");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const color_data = zrequire("color_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const people = zrequire("people");
-const stream_color = zrequire("stream_color");
 const stream_data = zrequire("stream_data");
-const message_list = zrequire("message_list");
 const settings_config = zrequire("settings_config");
 
 const me = {
@@ -30,11 +28,9 @@ function contains_sub(subs, sub) {
 
 function test(label, f) {
     run_test(label, (override) => {
-        page_params = set_global("page_params", {
-            is_admin: false,
-            realm_users: [],
-            is_guest: false,
-        });
+        page_params.is_admin = false;
+        page_params.realm_users = [];
+        page_params.is_guest = false;
         people.init();
         people.add_active_user(me);
         people.initialize_current_user(me.user_id);
@@ -98,7 +94,7 @@ test("basics", () => {
     assert(!stream_data.get_invite_only("unknown"));
 
     assert.equal(stream_data.get_color("social"), "red");
-    assert.equal(stream_data.get_color("unknown"), stream_color.default_color);
+    assert.equal(stream_data.get_color("unknown"), "#c2c2c2");
 
     assert.equal(stream_data.get_name("denMARK"), "Denmark");
     assert.equal(stream_data.get_name("unknown Stream"), "unknown Stream");
@@ -811,38 +807,4 @@ test("get_invite_stream_data", () => {
         default_stream: false,
     });
     assert.deepEqual(stream_data.get_invite_stream_data(), expected_list);
-});
-
-test("all_topics_in_cache", (override) => {
-    // Add a new stream with first_message_id set.
-    const general = {
-        name: "general",
-        stream_id: 21,
-        first_message_id: null,
-    };
-    const messages = [
-        {id: 1, stream_id: 21},
-        {id: 2, stream_id: 21},
-        {id: 3, stream_id: 21},
-    ];
-    const sub = stream_data.create_sub_from_server_data(general);
-
-    assert.equal(stream_data.all_topics_in_cache(sub), false);
-
-    message_list.all.data.clear();
-    message_list.all.data.add_messages(messages);
-
-    let has_found_newest = false;
-
-    override(message_list.all.data.fetch_status, "has_found_newest", () => has_found_newest);
-
-    assert.equal(stream_data.all_topics_in_cache(sub), false);
-    has_found_newest = true;
-    assert.equal(stream_data.all_topics_in_cache(sub), true);
-
-    sub.first_message_id = 0;
-    assert.equal(stream_data.all_topics_in_cache(sub), false);
-
-    sub.first_message_id = 2;
-    assert.equal(stream_data.all_topics_in_cache(sub), true);
 });

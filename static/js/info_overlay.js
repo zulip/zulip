@@ -2,9 +2,10 @@ import $ from "jquery";
 
 import render_markdown_help from "../templates/markdown_help.hbs";
 
+import * as browser_history from "./browser_history";
 import * as common from "./common";
 import * as components from "./components";
-import * as hashchange from "./hashchange";
+import {i18n} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as markdown from "./markdown";
 import * as overlays from "./overlays";
@@ -204,7 +205,7 @@ export function show(target) {
             name: "informationalOverlays",
             overlay,
             on_close() {
-                hashchange.exit_overlay();
+                browser_history.exit_overlay();
             },
         });
     }

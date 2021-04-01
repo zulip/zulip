@@ -6,7 +6,9 @@ const {stub_templates} = require("../zjsunit/handlebars");
 const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const alice_user_id = 5;
 
@@ -42,9 +44,10 @@ const channel = mock_esm("../../static/js/channel");
 const emoji_picker = mock_esm("../../static/js/emoji_picker", {
     hide_emoji_popover() {},
 });
+const message_lists = mock_esm("../../static/js/message_lists");
 const message_store = mock_esm("../../static/js/message_store");
 
-set_global("current_msg_list", {
+message_lists.current = {
     selected_message() {
         return {sent_by_me: true};
     },
@@ -54,11 +57,9 @@ set_global("current_msg_list", {
     selected_id() {
         return 42;
     },
-});
+};
 set_global("document", "document-stub");
-set_global("page_params", {
-    user_id: alice_user_id,
-});
+page_params.user_id = alice_user_id;
 
 const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
 const emoji = zrequire("../shared/js/emoji");
@@ -117,7 +118,7 @@ people.add_active_user(cali);
 people.add_active_user(alexus);
 
 run_test("open_reactions_popover (sent by me)", () => {
-    current_msg_list.selected_message = () => ({sent_by_me: true});
+    message_lists.current.selected_message = () => ({sent_by_me: true});
     $(".selected-row").set_find_results(".actions_hover", ["action-stub"]);
 
     let called = false;
@@ -132,7 +133,7 @@ run_test("open_reactions_popover (sent by me)", () => {
 });
 
 run_test("open_reactions_popover (not sent by me)", () => {
-    current_msg_list.selected_message = () => ({sent_by_me: false});
+    message_lists.current.selected_message = () => ({sent_by_me: false});
     $(".selected-row").set_find_results(".reaction_button", ["reaction-stub"]);
 
     let called = false;

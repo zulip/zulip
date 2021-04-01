@@ -70,7 +70,7 @@ from zerver.lib.cache import (
     flush_user_profile,
     to_dict_cache_key_id,
     user_profile_by_api_key_cache_key,
-    user_profile_by_email_cache_key,
+    user_profile_delivery_email_cache_key,
 )
 from zerver.lib.create_user import create_user, get_display_email_address
 from zerver.lib.email_mirror_helpers import encode_email_address, encode_email_address_helper
@@ -697,69 +697,68 @@ def do_create_user(
 
 
 def do_activate_user(user_profile: UserProfile, *, acting_user: Optional[UserProfile]) -> None:
-    user_profile.is_active = True
-    user_profile.is_mirror_dummy = False
-    user_profile.set_unusable_password()
-    user_profile.date_joined = timezone_now()
-    user_profile.tos_version = settings.TOS_VERSION
-    user_profile.save(
-        update_fields=["is_active", "date_joined", "password", "is_mirror_dummy", "tos_version"]
-    )
+    with transaction.atomic():
+        change_user_is_active(user_profile, True)
+        user_profile.is_mirror_dummy = False
+        user_profile.set_unusable_password()
+        user_profile.date_joined = timezone_now()
+        user_profile.tos_version = settings.TOS_VERSION
+        user_profile.save(
+            update_fields=["date_joined", "password", "is_mirror_dummy", "tos_version"]
+        )
 
-    event_time = user_profile.date_joined
-    RealmAuditLog.objects.create(
-        realm=user_profile.realm,
-        modified_user=user_profile,
-        acting_user=acting_user,
-        event_type=RealmAuditLog.USER_ACTIVATED,
-        event_time=event_time,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
-            }
-        ).decode(),
-    )
-    do_increment_logging_stat(
-        user_profile.realm,
-        COUNT_STATS["active_users_log:is_bot:day"],
-        user_profile.is_bot,
-        event_time,
-    )
-    if settings.BILLING_ENABLED:
-        update_license_ledger_if_needed(user_profile.realm, event_time)
+        event_time = user_profile.date_joined
+        RealmAuditLog.objects.create(
+            realm=user_profile.realm,
+            modified_user=user_profile,
+            acting_user=acting_user,
+            event_type=RealmAuditLog.USER_ACTIVATED,
+            event_time=event_time,
+            extra_data=orjson.dumps(
+                {
+                    RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
+                }
+            ).decode(),
+        )
+        do_increment_logging_stat(
+            user_profile.realm,
+            COUNT_STATS["active_users_log:is_bot:day"],
+            user_profile.is_bot,
+            event_time,
+        )
+        if settings.BILLING_ENABLED:
+            update_license_ledger_if_needed(user_profile.realm, event_time)
 
     notify_created_user(user_profile)
 
 
-def do_reactivate_user(
-    user_profile: UserProfile, acting_user: Optional[UserProfile] = None
-) -> None:
+def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserProfile]) -> None:
     # Unlike do_activate_user, this is meant for re-activating existing users,
     # so it doesn't reset their password, etc.
-    user_profile.is_active = True
-    user_profile.save(update_fields=["is_active"])
+    with transaction.atomic():
+        change_user_is_active(user_profile, True)
 
-    event_time = timezone_now()
-    RealmAuditLog.objects.create(
-        realm=user_profile.realm,
-        modified_user=user_profile,
-        acting_user=acting_user,
-        event_type=RealmAuditLog.USER_REACTIVATED,
-        event_time=event_time,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
-            }
-        ).decode(),
-    )
-    do_increment_logging_stat(
-        user_profile.realm,
-        COUNT_STATS["active_users_log:is_bot:day"],
-        user_profile.is_bot,
-        event_time,
-    )
-    if settings.BILLING_ENABLED:
-        update_license_ledger_if_needed(user_profile.realm, event_time)
+        event_time = timezone_now()
+        RealmAuditLog.objects.create(
+            realm=user_profile.realm,
+            modified_user=user_profile,
+            acting_user=acting_user,
+            event_type=RealmAuditLog.USER_REACTIVATED,
+            event_time=event_time,
+            extra_data=orjson.dumps(
+                {
+                    RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
+                }
+            ).decode(),
+        )
+        do_increment_logging_stat(
+            user_profile.realm,
+            COUNT_STATS["active_users_log:is_bot:day"],
+            user_profile.is_bot,
+            event_time,
+        )
+        if settings.BILLING_ENABLED:
+            update_license_ledger_if_needed(user_profile.realm, event_time)
 
     notify_created_user(user_profile)
 
@@ -772,7 +771,7 @@ def active_humans_in_realm(realm: Realm) -> Sequence[UserProfile]:
 
 
 def do_set_realm_property(
-    realm: Realm, name: str, value: Any, acting_user: Optional[UserProfile] = None
+    realm: Realm, name: str, value: Any, *, acting_user: Optional[UserProfile]
 ) -> None:
     """Takes in a realm object, the name of an attribute to update, the
     value to update and and the user who initiated the update.
@@ -829,7 +828,7 @@ def do_set_realm_property(
 
 
 def do_set_realm_authentication_methods(
-    realm: Realm, authentication_methods: Dict[str, bool], acting_user: Optional[UserProfile] = None
+    realm: Realm, authentication_methods: Dict[str, bool], *, acting_user: Optional[UserProfile]
 ) -> None:
     old_value = realm.authentication_methods_dict()
     for key, value in list(authentication_methods.items()):
@@ -864,7 +863,8 @@ def do_set_realm_message_editing(
     allow_message_editing: bool,
     message_content_edit_limit_seconds: int,
     allow_community_topic_editing: bool,
-    acting_user: Optional[UserProfile] = None,
+    *,
+    acting_user: Optional[UserProfile],
 ) -> None:
     old_values = dict(
         allow_message_editing=realm.allow_message_editing,
@@ -1013,6 +1013,12 @@ def do_deactivate_realm(realm: Realm, acting_user: Optional[UserProfile] = None)
         # notice when they try to log in.
         delete_user_sessions(user)
 
+    # This event will only ever be received by clients with an active
+    # longpoll connection, because by this point clients will be
+    # unable to authenticate again to their event queue (triggering an
+    # immediate reload into the page explaining the realm was
+    # deactivated). So the purpose of sending this is to flush all
+    # active longpoll connections for the realm.
     event = dict(type="realm", op="deactivated", realm_id=realm.id)
     send_event(realm, event, active_user_ids(realm.id))
 
@@ -1089,7 +1095,7 @@ def do_delete_user(user_profile: UserProfile) -> None:
     if user_profile.realm.is_zephyr_mirror_realm:
         raise AssertionError("Deleting zephyr mirror users is not supported")
 
-    do_deactivate_user(user_profile)
+    do_deactivate_user(user_profile, acting_user=None)
 
     subscribed_huddle_recipient_ids = set(
         Subscription.objects.filter(
@@ -1114,54 +1120,83 @@ def do_delete_user(user_profile: UserProfile) -> None:
         is_mirror_dummy=True,
     )
     subs_to_recreate = [
-        Subscription(user_profile=replacement_user, recipient=recipient)
+        Subscription(
+            user_profile=replacement_user,
+            recipient=recipient,
+            is_user_active=replacement_user.is_active,
+        )
         for recipient in Recipient.objects.filter(id__in=subscribed_huddle_recipient_ids)
     ]
     Subscription.objects.bulk_create(subs_to_recreate)
 
 
+def change_user_is_active(user_profile: UserProfile, value: bool) -> None:
+    """
+    Helper function for changing the .is_active field. Not meant as a standalone function
+    in production code as properly activating/deactivating users requires more steps.
+    This changes the is_active value and saves it, while ensuring
+    Subscription.is_user_active values are updated in the same db transaction.
+    """
+    with transaction.atomic(savepoint=False):
+        user_profile.is_active = value
+        user_profile.save(update_fields=["is_active"])
+        Subscription.objects.filter(user_profile=user_profile).update(is_user_active=value)
+
+
 def do_deactivate_user(
-    user_profile: UserProfile, acting_user: Optional[UserProfile] = None, _cascade: bool = True
+    user_profile: UserProfile, _cascade: bool = True, *, acting_user: Optional[UserProfile]
 ) -> None:
     if not user_profile.is_active:
         return
 
-    if user_profile.realm.is_zephyr_mirror_realm:  # nocoverage
-        # For zephyr mirror users, we need to make them a mirror dummy
-        # again; otherwise, other users won't get the correct behavior
-        # when trying to send messages to this person inside Zulip.
-        #
-        # Ideally, we need to also ensure their zephyr mirroring bot
-        # isn't running, but that's a separate issue.
-        user_profile.is_mirror_dummy = True
-    user_profile.is_active = False
-    user_profile.save(update_fields=["is_active"])
+    if _cascade:
+        # We need to deactivate bots before the target user, to ensure
+        # that a failure partway through this function cannot result
+        # in only the user being deactivated.
+        bot_profiles = UserProfile.objects.filter(
+            is_bot=True, is_active=True, bot_owner=user_profile
+        )
+        for profile in bot_profiles:
+            do_deactivate_user(profile, _cascade=False, acting_user=acting_user)
 
-    delete_user_sessions(user_profile)
-    clear_scheduled_emails([user_profile.id])
+    with transaction.atomic():
+        if user_profile.realm.is_zephyr_mirror_realm:  # nocoverage
+            # For zephyr mirror users, we need to make them a mirror dummy
+            # again; otherwise, other users won't get the correct behavior
+            # when trying to send messages to this person inside Zulip.
+            #
+            # Ideally, we need to also ensure their zephyr mirroring bot
+            # isn't running, but that's a separate issue.
+            user_profile.is_mirror_dummy = True
+            user_profile.save(update_fields=["is_mirror_dummy"])
 
-    event_time = timezone_now()
-    RealmAuditLog.objects.create(
-        realm=user_profile.realm,
-        modified_user=user_profile,
-        acting_user=acting_user,
-        event_type=RealmAuditLog.USER_DEACTIVATED,
-        event_time=event_time,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
-            }
-        ).decode(),
-    )
-    do_increment_logging_stat(
-        user_profile.realm,
-        COUNT_STATS["active_users_log:is_bot:day"],
-        user_profile.is_bot,
-        event_time,
-        increment=-1,
-    )
-    if settings.BILLING_ENABLED:
-        update_license_ledger_if_needed(user_profile.realm, event_time)
+        change_user_is_active(user_profile, False)
+
+        delete_user_sessions(user_profile)
+        clear_scheduled_emails([user_profile.id])
+
+        event_time = timezone_now()
+        RealmAuditLog.objects.create(
+            realm=user_profile.realm,
+            modified_user=user_profile,
+            acting_user=acting_user,
+            event_type=RealmAuditLog.USER_DEACTIVATED,
+            event_time=event_time,
+            extra_data=orjson.dumps(
+                {
+                    RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
+                }
+            ).decode(),
+        )
+        do_increment_logging_stat(
+            user_profile.realm,
+            COUNT_STATS["active_users_log:is_bot:day"],
+            user_profile.is_bot,
+            event_time,
+            increment=-1,
+        )
+        if settings.BILLING_ENABLED:
+            update_license_ledger_if_needed(user_profile.realm, event_time)
 
     event = dict(
         type="realm_user",
@@ -1177,13 +1212,6 @@ def do_deactivate_user(
             bot=dict(user_id=user_profile.id, full_name=user_profile.full_name),
         )
         send_event(user_profile.realm, event, bot_owner_user_ids(user_profile))
-
-    if _cascade:
-        bot_profiles = UserProfile.objects.filter(
-            is_bot=True, is_active=True, bot_owner=user_profile
-        )
-        for profile in bot_profiles:
-            do_deactivate_user(profile, acting_user=acting_user, _cascade=False)
 
 
 def do_deactivate_stream(
@@ -1348,7 +1376,8 @@ def compute_jabber_user_fullname(email: str) -> str:
 
 
 @cache_with_key(
-    lambda realm, email, f: user_profile_by_email_cache_key(email), timeout=3600 * 24 * 7
+    lambda realm, email, f: user_profile_delivery_email_cache_key(email, realm),
+    timeout=3600 * 24 * 7,
 )
 def create_mirror_user_if_needed(
     realm: Realm, email: str, email_to_fullname: Callable[[str], str]
@@ -3142,12 +3171,10 @@ def bulk_get_subscriber_user_ids(
             zerver_subscription.user_profile_id
         FROM
             zerver_subscription
-        INNER JOIN zerver_userprofile ON
-            zerver_userprofile.id = zerver_subscription.user_profile_id
         WHERE
             zerver_subscription.recipient_id in %(recipient_ids)s AND
             zerver_subscription.active AND
-            zerver_userprofile.is_active
+            zerver_subscription.is_user_active
         ORDER BY
             zerver_subscription.recipient_id,
             zerver_subscription.user_profile_id
@@ -3295,7 +3322,11 @@ def bulk_add_subscriptions(
             used_colors.add(color)
 
             sub = Subscription(
-                user_profile=user_profile, active=True, color=color, recipient_id=recipient_id
+                user_profile=user_profile,
+                is_user_active=user_profile.is_active,
+                active=True,
+                color=color,
+                recipient_id=recipient_id,
             )
             sub_info = SubInfo(user_profile, sub, stream)
             subs_to_add.append(sub_info)
@@ -4209,7 +4240,7 @@ def do_change_default_all_public_streams(
 
 
 def do_change_user_role(
-    user_profile: UserProfile, value: int, acting_user: Optional[UserProfile] = None
+    user_profile: UserProfile, value: int, *, acting_user: Optional[UserProfile]
 ) -> None:
     old_value = user_profile.role
     user_profile.role = value
@@ -4411,7 +4442,11 @@ def do_change_stream_message_retention_days(
 
 
 def do_create_realm(
-    string_id: str, name: str, emails_restricted_to_domains: Optional[bool] = None
+    string_id: str,
+    name: str,
+    *,
+    emails_restricted_to_domains: Optional[bool] = None,
+    date_created: Optional[datetime.datetime] = None,
 ) -> Realm:
     if Realm.objects.filter(string_id=string_id).exists():
         raise AssertionError(f"Realm {string_id} already exists!")
@@ -4422,6 +4457,11 @@ def do_create_realm(
     kwargs: Dict[str, Any] = {}
     if emails_restricted_to_domains is not None:
         kwargs["emails_restricted_to_domains"] = emails_restricted_to_domains
+    if date_created is not None:
+        # The date_created parameter is intended only for use by test
+        # suites that want to backdate the date of a realm's creation.
+        assert not settings.PRODUCTION
+        kwargs["date_created"] = date_created
     realm = Realm(string_id=string_id, name=name, **kwargs)
     realm.save()
 
@@ -5145,10 +5185,10 @@ def send_message_moved_breadcrumbs(
     user_profile: UserProfile,
     old_stream: Stream,
     old_topic: str,
+    old_thread_notification_string: Optional[str],
     new_stream: Stream,
     new_topic: Optional[str],
-    send_notification_to_old_thread: bool,
-    send_notification_to_new_thread: bool,
+    new_thread_notification_string: Optional[str],
 ) -> None:
     # Since moving content between streams is highly disruptive,
     # it's worth adding a couple tombstone messages showing what
@@ -5161,26 +5201,27 @@ def send_message_moved_breadcrumbs(
     user_mention = f"@_**{user_profile.full_name}|{user_profile.id}**"
     old_topic_link = f"#**{old_stream.name}>{old_topic}**"
     new_topic_link = f"#**{new_stream.name}>{new_topic}**"
-    if send_notification_to_new_thread:
+
+    if new_thread_notification_string is not None:
         with override_language(new_stream.realm.default_language):
             internal_send_stream_message(
                 sender,
                 new_stream,
                 new_topic,
-                _("This topic was moved here from {old_location} by {user}").format(
+                new_thread_notification_string.format(
                     old_location=old_topic_link,
                     user=user_mention,
                 ),
             )
 
-    if send_notification_to_old_thread:
+    if old_thread_notification_string is not None:
         with override_language(old_stream.realm.default_language):
             # Send a notification to the old stream that the topic was moved.
             internal_send_stream_message(
                 sender,
                 old_stream,
                 old_topic,
-                _("This topic was moved by {user} to {new_location}").format(
+                old_thread_notification_string.format(
                     user=user_mention,
                     new_location=new_topic_link,
                 ),
@@ -5640,14 +5681,24 @@ def do_update_message(
 
     if len(changed_messages) > 0 and new_stream is not None and stream_being_edited is not None:
         # Notify users that the topic was moved.
+        old_thread_notification_string = None
+        if send_notification_to_old_thread:
+            old_thread_notification_string = _("This topic was moved by {user} to {new_location}")
+
+        new_thread_notification_string = None
+        if send_notification_to_new_thread:
+            new_thread_notification_string = _(
+                "This topic was moved here from {old_location} by {user}"
+            )
+
         send_message_moved_breadcrumbs(
             user_profile,
             stream_being_edited,
             orig_topic_name,
+            old_thread_notification_string,
             new_stream,
             topic_name,
-            send_notification_to_old_thread,
-            send_notification_to_new_thread,
+            new_thread_notification_string,
         )
 
     return len(changed_messages)
@@ -6716,9 +6767,9 @@ def check_attachment_reference_change(message: Message) -> bool:
     return message.attachment_set.exists()
 
 
-def notify_realm_custom_profile_fields(realm: Realm, operation: str) -> None:
+def notify_realm_custom_profile_fields(realm: Realm) -> None:
     fields = custom_profile_fields_for_realm(realm.id)
-    event = dict(type="custom_profile_fields", op=operation, fields=[f.as_dict() for f in fields])
+    event = dict(type="custom_profile_fields", fields=[f.as_dict() for f in fields])
     send_event(realm, event, active_user_ids(realm.id))
 
 
@@ -6736,7 +6787,7 @@ def try_add_realm_default_custom_profile_field(
     field.save()
     field.order = field.id
     field.save(update_fields=["order"])
-    notify_realm_custom_profile_fields(realm, "add")
+    notify_realm_custom_profile_fields(realm)
     return field
 
 
@@ -6750,7 +6801,7 @@ def try_add_realm_custom_profile_field(
     field = CustomProfileField(realm=realm, name=name, field_type=field_type)
     field.hint = hint
     if (
-        field.field_type == CustomProfileField.CHOICE
+        field.field_type == CustomProfileField.SELECT
         or field.field_type == CustomProfileField.EXTERNAL_ACCOUNT
     ):
         field.field_data = orjson.dumps(field_data or {}).decode()
@@ -6758,7 +6809,7 @@ def try_add_realm_custom_profile_field(
     field.save()
     field.order = field.id
     field.save(update_fields=["order"])
-    notify_realm_custom_profile_fields(realm, "add")
+    notify_realm_custom_profile_fields(realm)
     return field
 
 
@@ -6768,7 +6819,7 @@ def do_remove_realm_custom_profile_field(realm: Realm, field: CustomProfileField
     associated with it in CustomProfileFieldValue model.
     """
     field.delete()
-    notify_realm_custom_profile_fields(realm, "delete")
+    notify_realm_custom_profile_fields(realm)
 
 
 def do_remove_realm_custom_profile_fields(realm: Realm) -> None:
@@ -6785,12 +6836,12 @@ def try_update_realm_custom_profile_field(
     field.name = name
     field.hint = hint
     if (
-        field.field_type == CustomProfileField.CHOICE
+        field.field_type == CustomProfileField.SELECT
         or field.field_type == CustomProfileField.EXTERNAL_ACCOUNT
     ):
         field.field_data = orjson.dumps(field_data or {}).decode()
     field.save()
-    notify_realm_custom_profile_fields(realm, "update")
+    notify_realm_custom_profile_fields(realm)
 
 
 def try_reorder_realm_custom_profile_fields(realm: Realm, order: List[int]) -> None:
@@ -6802,7 +6853,7 @@ def try_reorder_realm_custom_profile_fields(realm: Realm, order: List[int]) -> N
     for field in fields:
         field.order = order_mapping[field.id]
         field.save(update_fields=["order"])
-    notify_realm_custom_profile_fields(realm, "update")
+    notify_realm_custom_profile_fields(realm)
 
 
 def notify_user_update_custom_profile_data(

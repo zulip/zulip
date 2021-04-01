@@ -1639,7 +1639,10 @@ class GetOldMessagesTest(ZulipTestCase):
         self.login_user(hamlet)
 
         do_set_realm_property(
-            hamlet.realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+            hamlet.realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            acting_user=None,
         )
 
         self.send_personal_message(hamlet, self.example_user("iago"))
@@ -1654,7 +1657,10 @@ class GetOldMessagesTest(ZulipTestCase):
 
         # Now verify client_gravatar doesn't run with EMAIL_ADDRESS_VISIBILITY_ADMINS
         do_set_realm_property(
-            hamlet.realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS
+            hamlet.realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            acting_user=None,
         )
         result = self.get_and_check_messages(dict(client_gravatar=orjson.dumps(True).decode()))
         message = result["messages"][0]
@@ -1691,7 +1697,7 @@ class GetOldMessagesTest(ZulipTestCase):
             [self.example_user("iago"), self.example_user("aaron")],
         )
         aaron = self.example_user("aaron")
-        do_deactivate_user(aaron)
+        do_deactivate_user(aaron, acting_user=None)
         self.assertFalse(aaron.is_active)
 
         personals = [

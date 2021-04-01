@@ -2,16 +2,16 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 
-const message_store = mock_esm("../../static/js/message_store");
 mock_esm("../../static/js/muting", {
     is_topic_muted: () => false,
 });
-set_global("page_params", {});
 
 const {Filter} = zrequire("../js/filter");
+const message_store = zrequire("message_store");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const unread = zrequire("unread");
@@ -70,14 +70,8 @@ run_test("get_unread_ids", () => {
         display_recipient: [{id: alice.user_id}],
     };
 
-    message_store.get = (msg_id) => {
-        if (msg_id === stream_msg.id) {
-            return stream_msg;
-        } else if (msg_id === private_msg.id) {
-            return private_msg;
-        }
-        throw new Error("unexpected id");
-    };
+    message_store.update_message_cache(stream_msg);
+    message_store.update_message_cache(private_msg);
 
     stream_data.add_sub(sub);
 

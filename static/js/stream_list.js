@@ -4,6 +4,8 @@ import _ from "lodash";
 import render_stream_privacy from "../templates/stream_privacy.hbs";
 import render_stream_sidebar_row from "../templates/stream_sidebar_row.hbs";
 
+import * as blueslip from "./blueslip";
+import * as color_class from "./color_class";
 import * as hash_util from "./hash_util";
 import * as keydown_util from "./keydown_util";
 import {ListCursor} from "./list_cursor";
@@ -12,7 +14,6 @@ import * as narrow_state from "./narrow_state";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
 import * as scroll_util from "./scroll_util";
-import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as stream_popover from "./stream_popover";
 import * as stream_sort from "./stream_sort";
@@ -108,7 +109,9 @@ export function build_stream_list(force_rerender) {
     // which largely is a matter of arranging the individual rows in
     // the right order.
     const streams = stream_data.subscribed_stream_ids();
+    const parent = $("#stream_filters");
     if (streams.length === 0) {
+        parent.empty();
         return;
     }
 
@@ -120,7 +123,6 @@ export function build_stream_list(force_rerender) {
         return;
     }
 
-    const parent = $("#stream_filters");
     const elems = [];
 
     function add_sidebar_li(stream_id) {
@@ -252,7 +254,7 @@ function build_stream_sidebar_li(sub) {
         color: sub.color,
         pin_to_top: sub.pin_to_top,
     };
-    args.dark_background = stream_color.get_color_class(args.color);
+    args.dark_background = color_class.get_css_class(args.color);
     const list_item = $(render_stream_sidebar_row(args));
     return list_item;
 }
@@ -309,7 +311,7 @@ export function redraw_stream_privacy(sub) {
     }
 
     const div = li.find(".stream-privacy");
-    const dark_background = stream_color.get_color_class(sub.color);
+    const dark_background = color_class.get_css_class(sub.color);
 
     const args = {
         invite_only: sub.invite_only,

@@ -16,7 +16,7 @@ def environment(**options: Any) -> Environment:
     env = Environment(**options)
     env.globals.update(
         default_page_params={
-            "debug_mode": False,
+            "debug_mode": settings.DEBUG,
             "webpack_public_path": staticfiles_storage.url(
                 settings.WEBPACK_LOADER["DEFAULT"]["BUNDLE_DIR_NAME"],
             ),

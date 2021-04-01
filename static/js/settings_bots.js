@@ -1,5 +1,6 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
+import _ from "lodash";
 
 import render_bot_avatar_row from "../templates/bot_avatar_row.hbs";
 import render_edit_bot from "../templates/edit_bot.hbs";
@@ -9,11 +10,13 @@ import render_settings_edit_outgoing_webhook_service from "../templates/settings
 import * as avatar from "./avatar";
 import * as bot_data from "./bot_data";
 import * as channel from "./channel";
+import {csrf_token} from "./csrf";
 import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget";
+import {i18n} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as people from "./people";
-import * as typeahead_helper from "./typeahead_helper";
 
 export function hide_errors() {
     $("#bot_table_error").hide();
@@ -96,7 +99,7 @@ export function render_bot_desc(bot_description) {
     return ret;
 }
 
-export function render_bots() {
+function render_bots() {
     $("#active_bots_list").empty();
     $("#inactive_bots_list").empty();
 
@@ -138,6 +141,15 @@ export function render_bots() {
         $("#inactive_bots_list").show();
     }
 }
+
+// The reason we debounce this call is very wonky. I just moved it
+// from bot_data.js as part of breaking dependencies. Basically, it
+// allows the server response to win the race against events.
+// TODO: Organize the code so that we clear loading spinners and
+//       switch tabs within the UI when the event comes in.
+export const eventually_render_bots = _.debounce(() => {
+    render_bots();
+}, 50);
 
 export function generate_zuliprc_uri(bot_id) {
     const bot = bot_data.get(bot_id);
@@ -532,7 +544,6 @@ export function set_up() {
                         errors.hide();
                         edit_button.show();
                         avatar_widget.clear();
-                        typeahead_helper.clear_rendered_person(bot_id);
                         if (data.avatar_url) {
                             // Note that the avatar_url won't actually change on the backend
                             // when the user had a previous uploaded avatar.  Only the content

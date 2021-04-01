@@ -52,7 +52,7 @@ export function process_topic_edit(old_stream_id, old_topic, new_topic, new_stre
 
     // Re-processing every message in both the old and new topics is
     // expensive.  It also potentially loses data, because
-    // `message_list.all()` only has contiguous message history, not
+    // `all_messages_data` only has contiguous message history, not
     // the complete set of message IDs we've received to the
     // `message_store` from the server (E.g. from when we narrowed to
     // a stream).  But it's the most correct implementation we can

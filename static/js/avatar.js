@@ -1,11 +1,13 @@
 import $ from "jquery";
 
+import render_confirm_delete_user_avatar from "../templates/confirm_delete_user_avatar.hbs";
+
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
-import * as settings_account from "./settings_account";
+import {i18n} from "./i18n";
+import {page_params} from "./page_params";
+import * as settings_data from "./settings_data";
 import * as upload_widget from "./upload_widget";
-
-const render_confirm_delete_user_avatar = require("../templates/confirm_delete_user_avatar.hbs");
 
 export function build_bot_create_widget() {
     // We have to do strange gyrations with the file input to clear it,
@@ -89,7 +91,7 @@ export function build_user_avatar_widget(upload_function) {
         });
     });
 
-    if (settings_account.user_can_change_avatar()) {
+    if (settings_data.user_can_change_avatar()) {
         return upload_widget.build_direct_upload_widget(
             get_file_input,
             $("#user-avatar-upload-widget .image_file_input_error").expectOne(),

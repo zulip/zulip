@@ -8,7 +8,7 @@ async function navigate_to_user_list(page: Page): Promise<void> {
     const menu_selector = "#settings-dropdown";
     await page.waitForSelector(menu_selector, {visible: true});
     await page.click(menu_selector);
-    await page.click('a[href="#organization"]');
+    await page.click('.dropdown-menu a[href="#organization"]');
     await page.waitForSelector("#settings_overlay_container.show", {visible: true});
     await page.click("li[data-section='user-list-admin']");
 }
@@ -94,7 +94,6 @@ async function user_deactivation_test(page: Page): Promise<void> {
     await test_reactivate_user(page);
     await test_deactivated_users_section(page);
     await test_bot_deactivation_and_reactivation(page);
-    await common.log_out(page);
 }
 
 common.run_test(user_deactivation_test);

@@ -6,6 +6,7 @@ const _ = require("lodash");
 
 const {mock_cjs, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 
 set_global("setTimeout", (f, delay) => {
     assert.equal(delay, 0);
@@ -45,7 +46,14 @@ function test_with_mock_ajax(test_params) {
     check_ajax_options(ajax_options);
 }
 
-run_test("post", () => {
+function test(label, f) {
+    run_test(label, (override) => {
+        reload_state.clear_for_testing();
+        f(override);
+    });
+}
+
+test("post", () => {
     test_with_mock_ajax({
         run_code() {
             channel.post({});
@@ -62,7 +70,7 @@ run_test("post", () => {
     });
 });
 
-run_test("patch", () => {
+test("patch", () => {
     test_with_mock_ajax({
         run_code() {
             channel.patch({});
@@ -80,7 +88,7 @@ run_test("patch", () => {
     });
 });
 
-run_test("put", () => {
+test("put", () => {
     test_with_mock_ajax({
         run_code() {
             channel.put({});
@@ -97,7 +105,7 @@ run_test("put", () => {
     });
 });
 
-run_test("delete", () => {
+test("delete", () => {
     test_with_mock_ajax({
         run_code() {
             channel.del({});
@@ -114,7 +122,7 @@ run_test("delete", () => {
     });
 });
 
-run_test("get", () => {
+test("get", () => {
     test_with_mock_ajax({
         run_code() {
             channel.get({});
@@ -131,7 +139,7 @@ run_test("get", () => {
     });
 });
 
-run_test("normal_post", () => {
+test("normal_post", () => {
     const data = {
         s: "some_string",
         num: 7,
@@ -176,7 +184,7 @@ run_test("normal_post", () => {
     });
 });
 
-run_test("patch_with_form_data", () => {
+test("patch_with_form_data", () => {
     let appended;
 
     const data = {
@@ -207,7 +215,7 @@ run_test("patch_with_form_data", () => {
     });
 });
 
-run_test("reload_on_403_error", () => {
+test("reload_on_403_error", () => {
     test_with_mock_ajax({
         xhr: {
             status: 403,
@@ -230,7 +238,7 @@ run_test("reload_on_403_error", () => {
     });
 });
 
-run_test("unexpected_403_response", () => {
+test("unexpected_403_response", () => {
     test_with_mock_ajax({
         xhr: {
             status: 403,
@@ -248,7 +256,7 @@ run_test("unexpected_403_response", () => {
     });
 });
 
-run_test("retry", () => {
+test("retry", () => {
     test_with_mock_ajax({
         run_code() {
             channel.post({
@@ -272,7 +280,7 @@ run_test("retry", () => {
     });
 });
 
-run_test("too_many_pending", () => {
+test("too_many_pending", () => {
     channel.clear_for_tests();
     $.ajax = () => {
         const xhr = "stub";
@@ -290,7 +298,7 @@ run_test("too_many_pending", () => {
     channel.clear_for_tests();
 });
 
-run_test("xhr_error_message", () => {
+test("xhr_error_message", () => {
     let xhr = {
         status: "200",
         responseText: "does not matter",
@@ -304,4 +312,38 @@ run_test("xhr_error_message", () => {
     };
     msg = "some message";
     assert.equal(channel.xhr_error_message(msg, xhr), "some message: file not found");
+});
+
+test("while_reloading", () => {
+    reload_state.set_state_to_in_progress();
+
+    assert.equal(channel.get({ignore_reload: false}), undefined);
+
+    let orig_success_called = false;
+    let orig_error_called = false;
+
+    test_with_mock_ajax({
+        run_code() {
+            channel.del({
+                url: "/json/endpoint",
+                ignore_reload: true,
+                success() {
+                    orig_success_called = true;
+                },
+                error() {
+                    orig_error_called = true;
+                },
+            });
+        },
+
+        check_ajax_options(options) {
+            blueslip.expect("log", "Ignoring DELETE /json/endpoint response while reloading");
+            options.simulate_success();
+            assert(!orig_success_called);
+
+            blueslip.expect("log", "Ignoring DELETE /json/endpoint error response while reloading");
+            options.simulate_error();
+            assert(!orig_error_called);
+        },
+    });
 });

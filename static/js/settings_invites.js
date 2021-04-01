@@ -3,9 +3,12 @@ import $ from "jquery";
 import render_admin_invites_list from "../templates/admin_invites_list.hbs";
 import render_settings_revoke_invite_modal from "../templates/settings/revoke_invite_modal.hbs";
 
+import * as blueslip from "./blueslip";
 import * as channel from "./channel";
+import {i18n} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as timerender from "./timerender";
@@ -121,11 +124,8 @@ function do_revoke_invite() {
     });
 }
 
-export function set_up(initialize_event_handlers) {
+export function set_up(initialize_event_handlers = true) {
     meta.loaded = true;
-    if (typeof initialize_event_handlers === "undefined") {
-        initialize_event_handlers = true;
-    }
 
     // create loading indicators
     loading.make_indicator($("#admin_page_invites_loading_indicator"));

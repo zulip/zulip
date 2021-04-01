@@ -37,7 +37,6 @@ async function test_mention(page: Page): Promise<void> {
     await page.waitForSelector("#compose-send-status", {hidden: true});
 
     await common.check_messages_sent(page, "zhome", [["Verona > Test mention all", ["@all"]]]);
-    await common.log_out(page);
 }
 
 common.run_test(test_mention);

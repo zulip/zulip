@@ -6,6 +6,7 @@ import urllib
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
+from html import escape
 from typing import Any, Callable, Dict, List, Optional, Sequence, Set, Tuple, Type, Union
 from urllib.parse import urlencode
 
@@ -111,7 +112,6 @@ def render_stats(
         data_url_suffix=data_url_suffix,
         for_installation=for_installation,
         remote=remote,
-        debug_mode=False,
     )
 
     request_language = get_and_set_request_language(
@@ -149,7 +149,7 @@ def stats_for_realm(request: HttpRequest, realm_str: str) -> HttpResponse:
     try:
         realm = get_realm(realm_str)
     except Realm.DoesNotExist:
-        return HttpResponseNotFound(f"Realm {realm_str} does not exist")
+        return HttpResponseNotFound()
 
     return render_stats(
         request,
@@ -1559,25 +1559,25 @@ def format_date_for_activity_reports(date: Optional[datetime]) -> str:
 
 def user_activity_link(email: str) -> mark_safe:
     url = reverse(get_user_activity, kwargs=dict(email=email))
-    email_link = f'<a href="{url}">{email}</a>'
+    email_link = f'<a href="{escape(url)}">{escape(email)}</a>'
     return mark_safe(email_link)
 
 
 def realm_activity_link(realm_str: str) -> mark_safe:
     url = reverse(get_realm_activity, kwargs=dict(realm_str=realm_str))
-    realm_link = f'<a href="{url}">{realm_str}</a>'
+    realm_link = f'<a href="{escape(url)}">{escape(realm_str)}</a>'
     return mark_safe(realm_link)
 
 
 def realm_stats_link(realm_str: str) -> mark_safe:
     url = reverse(stats_for_realm, kwargs=dict(realm_str=realm_str))
-    stats_link = f'<a href="{url}"><i class="fa fa-pie-chart"></i>{realm_str}</a>'
+    stats_link = f'<a href="{escape(url)}"><i class="fa fa-pie-chart"></i>{escape(realm_str)}</a>'
     return mark_safe(stats_link)
 
 
 def remote_installation_stats_link(server_id: int, hostname: str) -> mark_safe:
     url = reverse(stats_for_remote_installation, kwargs=dict(remote_server_id=server_id))
-    stats_link = f'<a href="{url}"><i class="fa fa-pie-chart"></i>{hostname}</a>'
+    stats_link = f'<a href="{escape(url)}"><i class="fa fa-pie-chart"></i>{escape(hostname)}</a>'
     return mark_safe(stats_link)
 
 
@@ -1729,7 +1729,7 @@ def get_realm_activity(request: HttpRequest, realm_str: str) -> HttpResponse:
     try:
         admins = Realm.objects.get(string_id=realm_str).get_human_admin_users()
     except Realm.DoesNotExist:
-        return HttpResponseNotFound(f"Realm {realm_str} does not exist")
+        return HttpResponseNotFound()
 
     admin_emails = {admin.delivery_email for admin in admins}
 

@@ -3,7 +3,10 @@ import $ from "jquery";
 import * as channel from "./channel";
 import * as compose from "./compose";
 import * as hash_util from "./hash_util";
+import {i18n} from "./i18n";
+import * as message_lists from "./message_lists";
 import * as notifications from "./notifications";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as transmit from "./transmit";
 import * as util from "./util";
@@ -42,11 +45,7 @@ function patch_request_for_scheduling(request, message_content, deliver_at, deli
     return new_request;
 }
 
-export function schedule_message(request) {
-    if (request === undefined) {
-        request = compose.create_message_object();
-    }
-
+export function schedule_message(request = compose.create_message_object()) {
     const raw_message = request.content.split("\n");
     const command_line = raw_message[0];
     const message = raw_message.slice(1).join("\n");
@@ -119,15 +118,15 @@ export function do_set_reminder_for_message(message_id, timestamp) {
             });
     }
 
-    const message = current_msg_list.get(message_id);
+    const message = message_lists.current.get(message_id);
 
     if (!message.raw_content) {
-        const msg_list = current_msg_list;
+        const msg_list = message_lists.current;
         channel.get({
             url: "/json/messages/" + message.id,
             idempotent: true,
             success(data) {
-                if (current_msg_list === msg_list) {
+                if (message_lists.current === msg_list) {
                     message.raw_content = data.raw_content;
                     do_set_reminder_for_message(message_id, timestamp);
                 }

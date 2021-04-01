@@ -6,6 +6,8 @@ import render_confirm_delete_user from "../templates/confirm_delete_user.hbs";
 
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
+import {i18n} from "./i18n";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pill_typeahead from "./pill_typeahead";
 import * as ui_report from "./ui_report";
@@ -346,10 +348,6 @@ export function set_up() {
                 url: "/json/user_groups/" + group_id,
                 data: {
                     id: group_id,
-                },
-                success() {
-                    user_groups.remove(user_group);
-                    reload();
                 },
                 error() {
                     btn.text(i18n.t("Failed!"));

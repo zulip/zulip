@@ -124,7 +124,9 @@
                 <div class="user-role input-group grid">
                     <label for="user_role" class="inline-block title">{{t "Role" }}</label>
                     <span>
-                        {{#if page_params.is_admin}}
+                        {{#if page_params.is_owner}}
+                        {{t "Owner" }}
+                        {{else if page_params.is_admin}}
                         {{t "Administrator" }}
                         {{else if page_params.is_guest}}
                         {{t "Guest" }}
@@ -142,14 +144,6 @@
                     </div>
                 </form>
             </div>
-
-            <h3 class="inline-block" id="custom-field-header" {{#unless page_params.custom_profile_fields}}style="display: none"{{/unless}}>{{t "Profile" }}</h3>
-            <form class="form-horizontal custom-profile-fields-form grid"></form>
-            <button class="button rounded sea-green w-200 block" id="show_my_user_profile_modal">
-                {{t 'Preview profile' }}
-                <i class="fa fa-external-link" aria-hidden="true" title="{{t 'Preview profile' }}"></i>
-            </button>
-
         </div>
 
         <div class="inline-block user-avatar-section">
@@ -165,6 +159,13 @@
             </div>
         </div>
         <div class="clear-float"></div>
+
+        <h3 class="inline-block" id="custom-field-header" {{#unless page_params.custom_profile_fields}}style="display: none"{{/unless}}>{{t "Profile" }}</h3>
+        <form class="form-horizontal custom-profile-fields-form grid"></form>
+        <button class="button rounded sea-green w-200 block" id="show_my_user_profile_modal">
+            {{t 'Preview profile' }}
+            <i class="fa fa-external-link" aria-hidden="true" title="{{t 'Preview profile' }}"></i>
+        </button>
 
         <div id="deactivate_self_modal" class="modal modal-bg hide fade" tabindex="-1" role="dialog" aria-labelledby="deactivation_self_modal_label" aria-hidden="true">
             <div class="modal-header">

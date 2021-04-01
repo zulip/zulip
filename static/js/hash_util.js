@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import {i18n} from "./i18n";
 import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
@@ -22,11 +23,18 @@ export function get_hash_section(hash) {
     return parts[1] || "";
 }
 
+const hashReplacements = new Map([
+    ["%", "."],
+    ["(", ".28"],
+    [")", ".29"],
+    [".", ".2E"],
+]);
+
 // Some browsers zealously URI-decode the contents of
 // window.location.hash.  So we hide our URI-encoding
 // by replacing % with . (like MediaWiki).
 export function encodeHashComponent(str) {
-    return encodeURIComponent(str).replace(/\./g, "%2E").replace(/%/g, ".");
+    return encodeURIComponent(str).replace(/[%().]/g, (matched) => hashReplacements.get(matched));
 }
 
 export function encode_operand(operator, operand) {
@@ -201,4 +209,21 @@ export function parse_narrow(hash) {
         operators.push({negated, operator, operand});
     }
     return operators;
+}
+
+export function is_overlay_hash(hash) {
+    // Hash changes within this list are overlays and should not unnarrow (etc.)
+    const overlay_list = [
+        "streams",
+        "drafts",
+        "settings",
+        "organization",
+        "invite",
+        "keyboard-shortcuts",
+        "message-formatting",
+        "search-operators",
+    ];
+    const main_hash = get_hash_category(hash);
+
+    return overlay_list.includes(main_hash);
 }

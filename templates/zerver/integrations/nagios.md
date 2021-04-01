@@ -1,50 +1,50 @@
-{!create-stream.md!}
+1.  {!create-stream.md!}
 
-{!download-python-bindings.md!}
+1.  {!download-python-bindings.md!}
 
-Next, on your {{ settings_html|safe }}, create a bot for
-{{ integration_display_name }}.
+1.  Next, on your {{ settings_html|safe }}, create a bot for
+    {{ integration_display_name }}.
 
-Next, open `integrations/nagios/zuliprc.example` in your favorite
-editor, and change the following lines to specify the email address
-and API key for your Nagios bot, saving it to `/etc/nagios3/zuliprc`
-on your Nagios server:
+1.  Next, open `integrations/nagios/zuliprc.example` in your favorite
+    editor, and change the following lines to specify the email address
+    and API key for your Nagios bot, saving it to `/etc/nagios3/zuliprc`
+    on your Nagios server:
 
-```
-[api]
-email = NAGIOS_BOT_EMAIL_ADDRESS
-key = NAGIOS_BOT_API_KEY
-site = {{ api_url }}
-```
+    ```
+    [api]
+    email = NAGIOS_BOT_EMAIL_ADDRESS
+    key = NAGIOS_BOT_API_KEY
+    site = {{ api_url }}
+    ```
 
-Copy `integrations/nagios/zulip_nagios.cfg` to `/etc/nagios3/conf.d`
-on your Nagios server.
+1.  Copy `integrations/nagios/zulip_nagios.cfg` to `/etc/nagios3/conf.d`
+    on your Nagios server.
 
-Finally, add `zulip` to the `members` list for one or more of the
-contact groups in the `CONTACT GROUPS` section of
-`/etc/nagios3/conf.d/contacts.cfg`, doing something like:
+1.  Finally, add `zulip` to the `members` list for one or more of the
+    contact groups in the `CONTACT GROUPS` section of
+    `/etc/nagios3/conf.d/contacts.cfg`, doing something like:
 
-```
-define contactgroup {
-    contactgroup_name       admins
-    alias                   Nagios Administrators
-    members                 monitoring, zulip
-}
-```
+    ```
+    define contactgroup {
+        contactgroup_name       admins
+        alias                   Nagios Administrators
+        members                 monitoring, zulip
+    }
+    ```
 
-Once you’ve done that, reload your Nagios configuration using
-`/etc/init.d/nagios3 reload`.
+1.  Once you’ve done that, reload your Nagios configuration using
+    `/etc/init.d/nagios3 reload`.
 
-When your Nagios system makes an alert, you’ll see a message like the
-following, to the stream `nagios` (to change this, edit the arguments
-to `nagios-notify-zulip` in `/etc/nagios3/conf.d/zulip_nagios.cfg`)
-with a topic indicating the service with an issue.
+1.  When your Nagios system makes an alert, you’ll see a message like the
+    following, to the stream `nagios` (to change this, edit the arguments
+    to `nagios-notify-zulip` in `/etc/nagios3/conf.d/zulip_nagios.cfg`)
+    with a topic indicating the service with an issue.
 
 {!congrats.md!}
 
 ![Nagios bot message](/static/images/integrations/nagios/001.png)
 
-**Testing**
+### Testing
 
 If you have [external commands enabled in Nagios][1],
 you can generate a test notice from your Nagios instance by
@@ -54,7 +54,7 @@ on your Nagios instance.
 
 [1]: https://assets.nagios.com/downloads/nagioscore/docs/nagioscore/3/en/extcommands.html
 
-**Troubleshooting**
+### Troubleshooting
 
 You can confirm whether you’ve correctly configured Nagios to run the
 Zulip plugin by looking for `SERVICE NOTIFICATION` lines mentioning

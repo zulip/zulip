@@ -9,8 +9,8 @@ const $ = require("../zjsunit/zjquery");
 
 const noop = () => {};
 
-// Custom Data
-const messages = [];
+// We assign this in our test() wrapper.
+let messages;
 
 // sender1 == current user
 // sender2 == any other user
@@ -37,8 +37,8 @@ const topic9 = "topic-9";
 const topic10 = "topic-10";
 
 mock_cjs("jquery", $);
-const message_list = mock_esm("../../static/js/message_list", {
-    all: {
+const {all_messages_data} = mock_esm("../../static/js/all_messages_data", {
+    all_messages_data: {
         all_messages() {
             return messages;
         },
@@ -169,7 +169,8 @@ people.sender_info_with_small_avatar_urls_for_sender_ids = (ids) => ids;
 
 let id = 0;
 
-messages[0] = {
+const sample_messages = [];
+sample_messages[0] = {
     stream_id: stream1,
     stream: "stream1",
     id: (id += 1),
@@ -178,7 +179,7 @@ messages[0] = {
     type: "stream",
 };
 
-messages[1] = {
+sample_messages[1] = {
     stream_id: stream1,
     stream: "stream1",
     id: (id += 1),
@@ -187,7 +188,7 @@ messages[1] = {
     type: "stream",
 };
 
-messages[2] = {
+sample_messages[2] = {
     stream_id: stream1,
     stream: "stream1",
     id: (id += 1),
@@ -196,7 +197,7 @@ messages[2] = {
     type: "stream",
 };
 
-messages[3] = {
+sample_messages[3] = {
     stream_id: stream1,
     stream: "stream1",
     id: (id += 1),
@@ -205,7 +206,7 @@ messages[3] = {
     type: "stream",
 };
 
-messages[4] = {
+sample_messages[4] = {
     stream_id: stream1,
     stream: "stream1",
     id: (id += 1),
@@ -214,7 +215,7 @@ messages[4] = {
     type: "stream",
 };
 
-messages[5] = {
+sample_messages[5] = {
     stream_id: stream1,
     stream: "stream1",
     id: (id += 1),
@@ -223,7 +224,7 @@ messages[5] = {
     type: "stream",
 };
 
-messages[6] = {
+sample_messages[6] = {
     stream_id: stream1,
     stream: "stream1",
     id: (id += 1),
@@ -232,7 +233,7 @@ messages[6] = {
     type: "stream",
 };
 
-messages[7] = {
+sample_messages[7] = {
     stream_id: stream1,
     stream: "stream1",
     id: (id += 1),
@@ -241,7 +242,7 @@ messages[7] = {
     type: "stream",
 };
 
-messages[8] = {
+sample_messages[8] = {
     stream_id: stream1,
     stream: "stream1",
     id: (id += 1),
@@ -250,7 +251,7 @@ messages[8] = {
     type: "stream",
 };
 
-messages[9] = {
+sample_messages[9] = {
     stream_id: stream1,
     stream: "stream1",
     id: (id += 1),
@@ -260,7 +261,7 @@ messages[9] = {
 };
 
 // a message of stream4
-messages[10] = {
+sample_messages[10] = {
     stream_id: stream4,
     stream: "stream4",
     id: (id += 1),
@@ -325,7 +326,14 @@ function stub_out_filter_buttons() {
     }
 }
 
-run_test("test_recent_topics_show", () => {
+function test(label, f) {
+    run_test(label, (override) => {
+        messages = sample_messages.map((message) => ({...message}));
+        f(override);
+    });
+}
+
+test("test_recent_topics_show", () => {
     // Note: unread count and urls are fake,
     // since they are generated in external libraries
     // and are not to be tested here.
@@ -357,7 +365,7 @@ run_test("test_recent_topics_show", () => {
     assert.equal(rt.inplace_rerender("stream_unknown:topic_unknown"), false);
 });
 
-run_test("test_filter_all", (override) => {
+test("test_filter_all", (override) => {
     // Just tests inplace rerender of a message
     // in All topics filter.
     const expected = {
@@ -402,7 +410,7 @@ run_test("test_filter_all", (override) => {
     assert.equal(rt.inplace_rerender("1:topic-1"), true);
 });
 
-run_test("test_filter_unread", (override) => {
+test("test_filter_unread", (override) => {
     // Tests rerender of all topics when filter changes to "unread".
     const expected = {
         filter_participated: false,
@@ -469,7 +477,7 @@ run_test("test_filter_unread", (override) => {
     rt.set_filter("all");
 });
 
-run_test("test_filter_participated", (override) => {
+test("test_filter_participated", (override) => {
     // Tests rerender of all topics when filter changes to "unread".
     const expected = {
         filter_participated: true,
@@ -533,7 +541,7 @@ run_test("test_filter_participated", (override) => {
     rt.set_filter("all");
 });
 
-run_test("test_update_unread_count", () => {
+test("test_update_unread_count", () => {
     rt.clear_for_tests();
     stub_out_filter_buttons();
     rt.set_filter("all");
@@ -548,8 +556,10 @@ run_test("test_update_unread_count", () => {
 // template rendering is tested in test_recent_topics_launch.
 stub_templates(() => "<recent_topics table stub>");
 
-run_test("basic assertions", (override) => {
+test("basic assertions", (override) => {
     rt.clear_for_tests();
+    stub_templates(() => "<recent_topics table stub>");
+
     stub_out_filter_buttons();
     override(rt, "is_visible", () => true);
     rt.set_default_focus();
@@ -629,7 +639,9 @@ run_test("basic assertions", (override) => {
     assert.equal(rt.update_topic_is_muted(stream1, "topic-10"), false);
 });
 
-run_test("test_reify_local_echo_message", (override) => {
+test("test_reify_local_echo_message", (override) => {
+    stub_templates(() => "<recent_topics table stub>");
+
     rt.clear_for_tests();
     stub_out_filter_buttons();
     override(rt, "is_visible", () => true);
@@ -678,7 +690,7 @@ run_test("test_reify_local_echo_message", (override) => {
     );
 });
 
-run_test("test_delete_messages", (override) => {
+test("test_delete_messages", (override) => {
     rt.clear_for_tests();
     stub_out_filter_buttons();
     rt.set_filter("all");
@@ -686,7 +698,7 @@ run_test("test_delete_messages", (override) => {
 
     // messages[0] was removed.
     let reduced_msgs = messages.slice(1);
-    override(message_list.all, "all_messages", () => reduced_msgs);
+    override(all_messages_data, "all_messages", () => reduced_msgs);
 
     let all_topics = rt.get();
     assert.equal(
@@ -716,7 +728,7 @@ run_test("test_delete_messages", (override) => {
     rt.update_topics_of_deleted_message_ids([-1]);
 });
 
-run_test("test_topic_edit", () => {
+test("test_topic_edit", () => {
     // NOTE: This test should always run in the end as it modified the messages data.
     rt.clear_for_tests();
     stub_out_filter_buttons();
@@ -729,7 +741,7 @@ run_test("test_topic_edit", () => {
         "4:topic-10,1:topic-7,1:topic-6,1:topic-5,1:topic-4,1:topic-3,1:topic-2,1:topic-1",
     );
 
-    ////////////////// test change topic //////////////////
+    // ---------------- test change topic ----------------
     verify_topic_data(all_topics, stream1, topic6, messages[8].id, true);
     assert.equal(all_topics.get(get_topic_key(stream1, topic8)), undefined);
 
@@ -742,7 +754,7 @@ run_test("test_topic_edit", () => {
     verify_topic_data(all_topics, stream1, topic8, messages[8].id, true);
     assert.equal(all_topics.get(get_topic_key(stream1, topic6)), undefined);
 
-    ////////////////// test stream change //////////////////
+    // ---------------- test stream change ----------------
     verify_topic_data(all_topics, stream1, topic1, messages[0].id, true);
     assert.equal(all_topics.get(get_topic_key(stream2, topic1)), undefined);
 
@@ -753,7 +765,7 @@ run_test("test_topic_edit", () => {
     assert.equal(all_topics.get(get_topic_key(stream1, topic1)), undefined);
     verify_topic_data(all_topics, stream2, topic1, messages[0].id, true);
 
-    ////////////////// test stream & topic change //////////////////
+    // ---------------- test stream & topic change ----------------
     verify_topic_data(all_topics, stream2, topic1, messages[0].id, true);
     assert.equal(all_topics.get(get_topic_key(stream3, topic9)), undefined);
 
@@ -773,7 +785,7 @@ run_test("test_topic_edit", () => {
     assert.equal(rt.filters_should_hide_topic(all_topics.get("5:topic-8")), true);
 });
 
-run_test("test_search", () => {
+test("test_search", () => {
     rt.clear_for_tests();
     assert.equal(rt.topic_in_search_results("t", "general", "Recent Topic"), true);
     assert.equal(rt.topic_in_search_results("T", "general", "Recent Topic"), true);

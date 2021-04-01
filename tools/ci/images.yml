@@ -3,3 +3,6 @@ bionic:
 
 focal:
   base_image: buildpack-deps:focal-scm
+
+buster:
+  base_image: buildpack-deps:buster-scm

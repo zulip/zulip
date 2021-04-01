@@ -18,7 +18,7 @@ from zerver.models import DomainNotAllowedForRealmError, RealmDomain, UserProfil
 class RealmDomainTest(ZulipTestCase):
     def setUp(self) -> None:
         realm = get_realm("zulip")
-        do_set_realm_property(realm, "emails_restricted_to_domains", True)
+        do_set_realm_property(realm, "emails_restricted_to_domains", True, acting_user=None)
 
     def test_list_realm_domains(self) -> None:
         self.login("iago")
@@ -72,7 +72,9 @@ class RealmDomainTest(ZulipTestCase):
         mit_user_profile = self.mit_user("sipbtest")
         self.login_user(mit_user_profile)
 
-        do_change_user_role(mit_user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        do_change_user_role(
+            mit_user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None
+        )
 
         result = self.client_post(
             "/json/realm/domains", info=data, HTTP_HOST=mit_user_profile.realm.host

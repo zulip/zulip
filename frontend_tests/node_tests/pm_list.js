@@ -10,7 +10,6 @@ mock_cjs("jquery", $);
 const narrow_state = mock_esm("../../static/js/narrow_state");
 const pm_list_dom = mock_esm("../../static/js/pm_list_dom");
 const unread = mock_esm("../../static/js/unread");
-const unread_ui = mock_esm("../../static/js/unread_ui");
 const vdom = mock_esm("../../static/js/vdom", {
     render: () => "fake-dom-for-pm-list",
 });
@@ -56,7 +55,7 @@ people.initialize_current_user(me.user_id);
 
 function test(label, f) {
     run_test(label, (override) => {
-        pm_conversations.recent.clear_for_testing();
+        pm_conversations.clear_for_testing();
         pm_list.clear_for_testing();
         f(override);
     });
@@ -158,15 +157,8 @@ test("build_private_messages_list_bot", (override) => {
 
 test("update_dom_with_unread_counts", (override) => {
     let counts;
-    let toggle_button_set;
-    let expected_unread_count;
 
     override(narrow_state, "active", () => true);
-
-    override(unread_ui, "set_count_toggle_button", (elt, count) => {
-        toggle_button_set = true;
-        assert.equal(count, expected_unread_count);
-    });
 
     const total_value = $.create("total-value-stub");
     const total_count = $.create("total-count-stub");
@@ -178,21 +170,17 @@ test("update_dom_with_unread_counts", (override) => {
         private_message_count: 10,
     };
 
-    expected_unread_count = 10;
-
-    toggle_button_set = false;
     pm_list.update_dom_with_unread_counts(counts);
-    assert(toggle_button_set);
+    assert.equal(total_value.text(), "10");
+    assert(total_count.visible());
 
     counts = {
         private_message_count: 0,
     };
 
-    expected_unread_count = 0;
-
-    toggle_button_set = false;
     pm_list.update_dom_with_unread_counts(counts);
-    assert(toggle_button_set);
+    assert.equal(total_value.text(), "");
+    assert(!total_count.visible());
 });
 
 test("get_active_user_ids_string", (override) => {

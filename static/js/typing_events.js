@@ -3,6 +3,7 @@ import $ from "jquery";
 import render_typing_notifications from "../templates/typing_notifications.hbs";
 
 import * as narrow_state from "./narrow_state";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as typing_data from "./typing_data";
 

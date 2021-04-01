@@ -2,15 +2,17 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 mock_cjs("jquery", $);
 mock_esm("../../static/js/rtl", {
     get_direction: () => "ltr",
 });
-const page_params = set_global("page_params", {emojiset: "apple"});
+page_params.emojiset = "apple";
 
 const rm = zrequire("rendered_markdown");
 const people = zrequire("people");
@@ -178,7 +180,7 @@ run_test("timestamp", () => {
     rm.update_elements($content);
 
     // Final asserts
-    assert.equal($timestamp.text(), "Thu, Jan 1 1970, 12:00 AM");
+    assert.equal($timestamp.html(), '<i class="fa fa-clock-o"></i>\nThu, Jan 1 1970, 12:00 AM\n');
     assert.equal(
         $timestamp.attr("title"),
         "This time is in your timezone. Original text was 'never-been-set'.",
@@ -195,12 +197,15 @@ run_test("timestamp-twenty-four-hour-time", () => {
     // We will temporarily change the 24h setting for this test.
     with_field(page_params, "twenty_four_hour_time", true, () => {
         rm.update_elements($content);
-        assert.equal($timestamp.text(), "Wed, Jul 15 2020, 20:40");
+        assert.equal($timestamp.html(), '<i class="fa fa-clock-o"></i>\nWed, Jul 15 2020, 20:40\n');
     });
 
     with_field(page_params, "twenty_four_hour_time", false, () => {
         rm.update_elements($content);
-        assert.equal($timestamp.text(), "Wed, Jul 15 2020, 8:40 PM");
+        assert.equal(
+            $timestamp.html(),
+            '<i class="fa fa-clock-o"></i>\nWed, Jul 15 2020, 8:40 PM\n',
+        );
     });
 });
 

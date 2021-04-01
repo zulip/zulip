@@ -631,6 +631,14 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         ldap_disabled = bool(int(account_control_value) & LDAP_USER_ACCOUNT_CONTROL_DISABLED_MASK)
         return ldap_disabled
 
+    def is_account_realm_access_forbidden(self, ldap_user: _LDAPUser, realm: Realm) -> bool:
+        if "org_membership" not in settings.AUTH_LDAP_USER_ATTR_MAP:
+            return False
+
+        org_membership_attr = settings.AUTH_LDAP_USER_ATTR_MAP["org_membership"]
+        allowed_orgs: List[str] = ldap_user.attrs.get(org_membership_attr, [])
+        return not is_subdomain_in_allowed_subdomains_list(realm.subdomain, allowed_orgs)
+
     @classmethod
     def get_mapped_name(cls, ldap_user: _LDAPUser) -> str:
         """Constructs the user's Zulip full_name from the LDAP data"""
@@ -767,6 +775,9 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
 
         username = self.user_email_from_ldapuser(username, ldap_user)
 
+        if self.is_account_realm_access_forbidden(ldap_user, self._realm):
+            raise ZulipLDAPException("User not allowed to access realm")
+
         if "userAccountControl" in settings.AUTH_LDAP_USER_ATTR_MAP:  # nocoverage
             ldap_disabled = self.is_account_control_disabled_user(ldap_user)
             if ldap_disabled:
@@ -892,7 +903,7 @@ class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
                         "Deactivating user %s because they are disabled in LDAP.",
                         user.delivery_email,
                     )
-                    do_deactivate_user(user)
+                    do_deactivate_user(user, acting_user=None)
                 # Do an early return to avoid trying to sync additional data.
                 return (user, built)
             elif not user.is_active:
@@ -900,7 +911,7 @@ class ZulipLDAPUserPopulator(ZulipLDAPAuthBackendBase):
                     "Reactivating user %s because they are not disabled in LDAP.",
                     user.delivery_email,
                 )
-                do_reactivate_user(user)
+                do_reactivate_user(user, acting_user=None)
 
         self.sync_avatar_from_ldap(user, ldap_user)
         self.sync_full_name_from_ldap(user, ldap_user)
@@ -938,7 +949,7 @@ def sync_user_from_ldap(user_profile: UserProfile, logger: logging.Logger) -> bo
             if settings.LDAP_DEACTIVATE_NON_MATCHING_USERS is None
             else settings.LDAP_DEACTIVATE_NON_MATCHING_USERS
         ):
-            do_deactivate_user(user_profile)
+            do_deactivate_user(user_profile, acting_user=None)
             logger.info("Deactivated non-matching user: %s", user_profile.delivery_email)
             return True
         elif user_profile.is_active:

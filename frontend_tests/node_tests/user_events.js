@@ -2,9 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 mock_cjs("jquery", $);
 const message_live_update = mock_esm("../../static/js/message_live_update");
@@ -44,9 +46,7 @@ mock_esm("../../static/js/settings_users", {
     update_user_data() {},
 });
 
-const page_params = set_global("page_params", {
-    is_admin: true,
-});
+page_params.is_admin = true;
 
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");

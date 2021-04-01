@@ -1,14 +1,15 @@
+import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as rows from "./rows";
 import * as unread_ops from "./unread_ops";
 
 function go_to_row(msg_id) {
-    current_msg_list.select_id(msg_id, {then_scroll: true, from_scroll: true});
+    message_lists.current.select_id(msg_id, {then_scroll: true, from_scroll: true});
 }
 
 export function up() {
     message_viewport.set_last_movement_direction(-1);
-    const msg_id = current_msg_list.prev();
+    const msg_id = message_lists.current.prev();
     if (msg_id === undefined) {
         return;
     }
@@ -18,15 +19,15 @@ export function up() {
 export function down(with_centering) {
     message_viewport.set_last_movement_direction(1);
 
-    if (current_msg_list.is_at_end()) {
+    if (message_lists.current.is_at_end()) {
         if (with_centering) {
             // At the last message, scroll to the bottom so we have
             // lots of nice whitespace for new messages coming in.
-            const current_msg_table = rows.get_table(current_msg_list.table_name);
+            const current_msg_table = rows.get_table(message_lists.current.table_name);
             message_viewport.scrollTop(
                 current_msg_table.safeOuterHeight(true) - message_viewport.height() * 0.1,
             );
-            if (current_msg_list.can_mark_messages_read()) {
+            if (message_lists.current.can_mark_messages_read()) {
                 unread_ops.mark_current_list_as_read();
             }
         }
@@ -35,7 +36,7 @@ export function down(with_centering) {
     }
 
     // Normal path starts here.
-    const msg_id = current_msg_list.next();
+    const msg_id = message_lists.current.next();
     if (msg_id === undefined) {
         return;
     }
@@ -44,15 +45,15 @@ export function down(with_centering) {
 
 export function to_home() {
     message_viewport.set_last_movement_direction(-1);
-    const first_id = current_msg_list.first().id;
-    current_msg_list.select_id(first_id, {then_scroll: true, from_scroll: true});
+    const first_id = message_lists.current.first().id;
+    message_lists.current.select_id(first_id, {then_scroll: true, from_scroll: true});
 }
 
 export function to_end() {
-    const next_id = current_msg_list.last().id;
+    const next_id = message_lists.current.last().id;
     message_viewport.set_last_movement_direction(1);
-    current_msg_list.select_id(next_id, {then_scroll: true, from_scroll: true});
-    if (current_msg_list.can_mark_messages_read()) {
+    message_lists.current.select_id(next_id, {then_scroll: true, from_scroll: true});
+    if (message_lists.current.can_mark_messages_read()) {
         unread_ops.mark_current_list_as_read();
     }
 }
@@ -104,17 +105,17 @@ export function page_down_the_right_amount() {
 }
 
 export function page_up() {
-    if (message_viewport.at_top() && !current_msg_list.empty()) {
-        current_msg_list.select_id(current_msg_list.first().id, {then_scroll: false});
+    if (message_viewport.at_top() && !message_lists.current.empty()) {
+        message_lists.current.select_id(message_lists.current.first().id, {then_scroll: false});
     } else {
         page_up_the_right_amount();
     }
 }
 
 export function page_down() {
-    if (message_viewport.at_bottom() && !current_msg_list.empty()) {
-        current_msg_list.select_id(current_msg_list.last().id, {then_scroll: false});
-        if (current_msg_list.can_mark_messages_read()) {
+    if (message_viewport.at_bottom() && !message_lists.current.empty()) {
+        message_lists.current.select_id(message_lists.current.last().id, {then_scroll: false});
+        if (message_lists.current.can_mark_messages_read()) {
             unread_ops.mark_current_list_as_read();
         }
     } else {
@@ -123,7 +124,7 @@ export function page_down() {
 }
 
 export function scroll_to_selected() {
-    const selected_row = current_msg_list.selected_row();
+    const selected_row = message_lists.current.selected_row();
     if (selected_row && selected_row.length !== 0) {
         message_viewport.recenter_view(selected_row);
     }

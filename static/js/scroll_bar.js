@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import {media_breakpoints} from "./css_variables";
+import {page_params} from "./page_params";
 
 // A few of our width properties in Zulip depend on the width of the
 // browser scrollbar that is generated at the far right side of the
@@ -56,7 +57,7 @@ export function initialize() {
 
         $("#compose").css("left", "-" + sbWidth + "px");
         $(".compose-content").css({left: sbWidth + "px", "margin-right": 7 + sbWidth + "px"});
-        $("#keyboard-icon").css({right: sbWidth + 35 + "px"});
+        $("#keyboard-icon").css({"margin-right": sbWidth + "px"});
 
         $("head").append(
             "<style> @media (min-width: " +

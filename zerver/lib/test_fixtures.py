@@ -386,3 +386,49 @@ def remove_test_run_directories(expiry_time: int = 60 * 60) -> int:
             except FileNotFoundError:
                 pass
     return removed
+
+
+def reset_zulip_test_database() -> None:
+    """
+    This function is used to reset the zulip_test database fastest way possible,
+    i.e. First, it deletes the database and then clones it from zulip_test_template.
+    This function is used with puppeteer tests, so it can quickly reset the test
+    database after each run.
+    """
+    from zerver.lib.test_runner import destroy_test_databases
+
+    # Make sure default database is 'zulip_test'.
+    assert connections["default"].settings_dict["NAME"] == "zulip_test"
+
+    # Clearing all the active PSQL sessions with 'zulip_test'.
+    run(
+        [
+            "env",
+            "PGHOST=localhost",
+            "PGUSER=zulip_test",
+            "scripts/setup/terminate-psql-sessions",
+            "zulip_test",
+        ]
+    )
+
+    destroy_test_databases()
+    # Pointing default database to test database template, so we can instantly clone it.
+    settings.DATABASES["default"]["NAME"] = settings.BACKEND_DATABASE_TEMPLATE
+    connection = connections["default"]
+    clone_database_suffix = "clone"
+    connection.creation.clone_test_db(
+        suffix=clone_database_suffix,
+    )
+    settings_dict = connection.creation.get_test_db_clone_settings(clone_database_suffix)
+    # We manually rename the clone database to 'zulip_test' because when cloning it,
+    # its name is set to original database name + some suffix.
+    # Also, we need it to be 'zulip_test' so that our running server can recognize it.
+    with connection.cursor() as cursor:
+        cursor.execute("ALTER DATABASE zulip_test_template_clone RENAME TO zulip_test;")
+    settings_dict["NAME"] = "zulip_test"
+    # connection.settings_dict must be updated in place for changes to be
+    # reflected in django.db.connections. If the following line assigned
+    # connection.settings_dict = settings_dict, new threads would connect
+    # to the default database instead of the appropriate clone.
+    connection.settings_dict.update(settings_dict)
+    connection.close()

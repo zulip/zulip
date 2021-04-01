@@ -5,16 +5,21 @@ import render_subscription from "../templates/subscription.hbs";
 import render_subscription_settings from "../templates/subscription_settings.hbs";
 import render_subscription_table_body from "../templates/subscription_table_body.hbs";
 import render_subscriptions from "../templates/subscriptions.hbs";
+import render_unsubscribe_private_stream_modal from "../templates/unsubscribe_private_stream_modal.hbs";
 
+import * as blueslip from "./blueslip";
+import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as components from "./components";
 import * as compose_state from "./compose_state";
+import * as confirm_dialog from "./confirm_dialog";
 import * as hash_util from "./hash_util";
-import * as hashchange from "./hashchange";
+import {i18n} from "./i18n";
 import * as loading from "./loading";
 import * as message_live_update from "./message_live_update";
 import * as message_view_header from "./message_view_header";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as scroll_util from "./scroll_util";
 import * as search_util from "./search_util";
@@ -24,7 +29,6 @@ import * as stream_edit from "./stream_edit";
 import * as stream_list from "./stream_list";
 import * as stream_muting from "./stream_muting";
 import * as stream_ui_updates from "./stream_ui_updates";
-import * as typeahead_helper from "./typeahead_helper";
 import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 import * as util from "./util";
@@ -111,7 +115,7 @@ export function get_active_data() {
 }
 
 function get_hash_safe() {
-    if (typeof window !== "undefined" && typeof window.location.hash === "string") {
+    if (typeof window.location.hash === "string") {
         return window.location.hash.slice(1);
     }
 
@@ -192,9 +196,6 @@ export function update_stream_name(sub, new_name) {
 
     // Update the message feed.
     message_live_update.update_stream_name(stream_id, new_name);
-
-    // Clear rendered typeahead cache
-    typeahead_helper.clear_rendered_stream(stream_id);
 
     // Update compose_state if needed
     if (compose_state.stream_name() === old_name) {
@@ -444,13 +445,9 @@ export function render_left_panel_superset() {
 }
 
 // LeftPanelParams { input: String, subscribed_only: Boolean, sort_order: String }
-export function redraw_left_panel(left_panel_params) {
+export function redraw_left_panel(left_panel_params = get_left_panel_params()) {
     // We only get left_panel_params passed in from tests.  Real
     // code calls get_left_panel_params().
-    if (left_panel_params === undefined) {
-        left_panel_params = get_left_panel_params();
-    }
-
     show_active_stream_in_left_panel();
 
     function stream_id_for_row(row) {
@@ -744,7 +741,7 @@ export function launch(section) {
             name: "subscriptions",
             overlay: $("#subscription_overlay"),
             on_close() {
-                hashchange.exit_overlay();
+                browser_history.exit_overlay();
             },
         });
         change_state(section);
@@ -790,14 +787,9 @@ export function switch_rows(event) {
 
 export function keyboard_sub() {
     const active_data = get_active_data();
-    const stream_filter_tab = $(active_data.tabs[0]).text();
     const row_data = get_row_data(active_data.row);
     if (row_data) {
-        sub_or_unsub(row_data.object);
-        if (row_data.object.subscribed && stream_filter_tab === "Subscribed") {
-            active_data.row.addClass("notdisplayed");
-            active_data.row.removeClass("active");
-        }
+        sub_or_unsub(row_data.object, false);
     }
 }
 
@@ -818,7 +810,7 @@ export function view_stream() {
     if (row_data) {
         const stream_narrow_hash =
             "#narrow/stream/" + hash_util.encode_stream_name(row_data.object.name);
-        hashchange.go_to_location(stream_narrow_hash);
+        browser_history.go_to_location(stream_narrow_hash);
     }
 }
 
@@ -941,11 +933,44 @@ export function do_open_create_stream() {
 
 export function open_create_stream() {
     do_open_create_stream();
-    hashchange.update_browser_history("#streams/new");
+    browser_history.update("#streams/new");
 }
 
-export function sub_or_unsub(sub, stream_row) {
+export function unsubscribe_from_private_stream(sub, from_stream_popover) {
+    let modal_parent = $("#subscriptions_table");
+    const html_body = render_unsubscribe_private_stream_modal();
+
+    if (from_stream_popover) {
+        modal_parent = $(".left-sidebar-modal-holder");
+    }
+
+    function unsubscribe_from_stream() {
+        let stream_row;
+        if (overlays.streams_open()) {
+            stream_row = $(
+                "#subscriptions_table div.stream-row[data-stream-id='" + sub.stream_id + "']",
+            );
+        }
+
+        ajaxUnsubscribe(sub, stream_row);
+    }
+
+    confirm_dialog.launch({
+        parent: modal_parent,
+        html_heading: i18n.t("Unsubscribe from __stream_name__", {stream_name: sub.name}),
+        html_body,
+        html_yes_button: i18n.t("Yes, unsubscribe"),
+        on_click: unsubscribe_from_stream,
+    });
+}
+
+export function sub_or_unsub(sub, from_stream_popover, stream_row) {
     if (sub.subscribed) {
+        // TODO: This next line should allow guests to access web-public streams.
+        if (sub.invite_only || page_params.is_guest) {
+            unsubscribe_from_private_stream(sub, from_stream_popover);
+            return;
+        }
         ajaxUnsubscribe(sub, stream_row);
     } else {
         ajaxSubscribe(sub.name, sub.color, stream_row);

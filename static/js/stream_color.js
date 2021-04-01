@@ -1,74 +1,14 @@
 import $ from "jquery";
-import _ from "lodash";
 
-import * as colorspace from "./colorspace";
+import * as color_class from "./color_class";
+import {i18n} from "./i18n";
 import * as message_view_header from "./message_view_header";
 import * as subs from "./subs";
-
-export const default_color = "#c2c2c2";
-
-// Classes which could be returned by get_color_class.
-export const color_classes = "dark_background";
-
-let lightness_threshold;
-
-export function initialize() {
-    // sRGB color component for dark label text.
-    // 0x33 to match the color #333333 set by Bootstrap.
-    const label_color = 0x33;
-    const lightness = colorspace.luminance_to_lightness(colorspace.sRGB_to_linear(label_color));
-
-    // Compute midpoint lightness between that and white (100).
-    lightness_threshold = (lightness + 100) / 2;
-}
-
-// From a background color (in format "#fff" or "#ffffff")
-// pick a CSS class (or empty string) to determine the
-// text label color etc.
-//
-// It would be better to work with an actual data structure
-// rather than a hex string, but we have to deal with values
-// already saved on the server, etc.
-//
-// This gets called on every message, so cache the results.
-export const get_color_class = _.memoize((color) => {
-    let match;
-    let i;
-    const channel = [0, 0, 0];
-    let mult = 1;
-
-    match = /^#([\dA-Fa-f]{2})([\dA-Fa-f]{2})([\dA-Fa-f]{2})$/.exec(color);
-    if (!match) {
-        // 3-digit shorthand; Spectrum gives this e.g. for pure black.
-        // Multiply each digit by 16+1.
-        mult = 17;
-
-        match = /^#([\dA-Fa-f])([\dA-Fa-f])([\dA-Fa-f])$/.exec(color);
-        if (!match) {
-            // Can't understand color.
-            return "";
-        }
-    }
-
-    // CSS colors are specified in the sRGB color space.
-    // Convert to linear intensity values.
-    for (i = 0; i < 3; i += 1) {
-        channel[i] = colorspace.sRGB_to_linear(mult * Number.parseInt(match[i + 1], 16));
-    }
-
-    // Compute perceived lightness as CIE L*.
-    const lightness = colorspace.luminance_to_lightness(colorspace.rgb_luminance(channel));
-
-    // Determine if we're past the midpoint between the
-    // dark and light label lightness.
-    return lightness < lightness_threshold ? "dark_background" : "";
-});
 
 function update_table_stream_color(table, stream_name, color) {
     // This is ugly, but temporary, as the new design will make it
     // so that we only have color in the headers.
     const style = color;
-    const color_class = get_color_class(color);
 
     const stream_labels = $("#floating_recipient_bar").add(table).find(".stream_label");
 
@@ -89,8 +29,8 @@ function update_table_stream_color(table, stream_name, color) {
                     "inset 2px 0px 0px 0px " + style + ", -1px 0px 0px 0px " + style,
                 );
             $label.css({background: style, "border-left-color": style});
-            $label.removeClass(color_classes);
-            $label.addClass(color_class);
+            $label.removeClass("dark_background");
+            $label.addClass(color_class.get_css_class(color));
         }
     }
 }
@@ -129,8 +69,7 @@ export function set_colorpicker_color(colorpicker, color) {
     });
 }
 
-export function update_stream_color(sub, color, opts) {
-    opts = {update_historical: false, ...opts};
+export function update_stream_color(sub, color, {update_historical = false} = {}) {
     sub.color = color;
     const stream_id = sub.stream_id;
     // The swatch in the subscription row header.
@@ -153,7 +92,7 @@ export function update_stream_color(sub, color, opts) {
         )}'] .large-icon`,
     ).css("color", color);
 
-    if (opts.update_historical) {
+    if (update_historical) {
         update_historical_message_color(sub.name, color);
     }
     update_stream_sidebar_swatch_color(stream_id, color);

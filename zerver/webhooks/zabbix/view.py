@@ -14,7 +14,7 @@ MISCONFIGURED_PAYLOAD_ERROR_MESSAGE = """
 Hi there! Your bot {bot_name} just received a Zabbix payload that is missing
 some data that Zulip requires. This usually indicates a configuration issue
 in your Zabbix webhook settings. Please make sure that you set the
-**Default Message** option properly and provide all the required fields
+script correctly and provide all the required parameters
 when configuring the Zabbix webhook. Contact {support_email} if you
 need further help!
 """

@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import * as loading from "../loading";
+import {page_params} from "../page_params";
 
 export function create_ajax_request(
     url,

@@ -167,7 +167,7 @@ def build_page_params_for_home_page_load(
     two_fa_enabled = settings.TWO_FACTOR_AUTHENTICATION_ENABLED and user_profile is not None
 
     # Pass parameters to the client-side JavaScript code.
-    # These end up in a global JavaScript Object named 'page_params'.
+    # These end up in a JavaScript Object named 'page_params'.
     page_params = dict(
         # Server settings.
         debug_mode=settings.DEBUG,

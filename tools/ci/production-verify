@@ -12,6 +12,31 @@ NOREPLY_EMAIL_ADDRESS = 'noreply@circleci.example.com'
 ALLOWED_HOSTS = []
 EOF
 
+if [ -f /etc/os-release ]; then
+    os_info="$(
+        . /etc/os-release
+        printf '%s\n' "$VERSION_CODENAME"
+    )"
+    { read -r os_version_codename || true; } <<<"$os_info"
+fi
+
+check_header() {
+    sed -i -e 's|Length: [0-9]\+\( [(][0-9]\+[.][0-9]K[)]\)\?|Length: <Length>|' -e "s|{nginx_version_string}|$nginx_version|g" "$success_header_file"
+    if ! diff -ur /tmp/http-headers-processed "$success_header_file"; then
+        set +x
+        echo
+        echo "FAILURE: The HTTP Headers returned from loading the homepage on the server do not match the contents of tools/ci/success-http-headers.template.txt.  Typically, this means that the server threw a 500 when trying to load the homepage."
+        echo "Displaying the contents of the server's error log:"
+        echo
+        cat /var/log/zulip/errors.log
+        echo
+        echo "Displaying the contents of the main server log:"
+        echo
+        cat /var/log/zulip/server.log
+        exit 1
+    fi
+}
+
 echo
 echo "Now testing that the supervisord jobs are running properly"
 echo
@@ -42,23 +67,16 @@ echo
 wget https://localhost -O /tmp/index.html --no-check-certificate -S 2>/tmp/wget-output || true # || true so we see errors.log if this 500s
 grep -vi '\(Vary\|Content-Language\|expires\|issued by\|modified\|saved\|[.][.][.]\|Date\|[-][-]\)' /tmp/wget-output >/tmp/http-headers-processed
 
-nginx_version="$(nginx -v 2>&1 | awk '{print $3, $4}')"
+nginx_version="$(nginx -v 2>&1 | awk '{print $3, $4}' | xargs)"
 
 # Simplify the diff by getting replacing 4-5 digit length numbers with <Length>.
 sed -i 's|Length: [0-9]\+\( [(][0-9]\+[.][0-9]K[)]\)\?|Length: <Length>|' /tmp/http-headers-processed
-sed -i -e 's|Length: [0-9]\+\( [(][0-9]\+[.][0-9]K[)]\)\?|Length: <Length>|' -e "s|{nginx_version_string}|$nginx_version|g" /tmp/success-http-headers.template.txt
-if ! diff -ur /tmp/http-headers-processed /tmp/success-http-headers.template.txt; then
-    set +x
-    echo
-    echo "FAILURE: The HTTP Headers returned from loading the homepage on the server do not match the contents of tools/ci/success-http-headers.template.txt.  Typically, this means that the server threw a 500 when trying to load the homepage."
-    echo "Displaying the contents of the server's error log:"
-    echo
-    cat /var/log/zulip/errors.log
-    echo
-    echo "Displaying the contents of the main server log:"
-    echo
-    cat /var/log/zulip/server.log
-    exit 1
+if [ "$os_version_codename" = "buster" ]; then
+    success_header_file="/tmp/success-http-headers.template.debian.txt"
+    check_header
+else
+    success_header_file="/tmp/success-http-headers.template.txt"
+    check_header
 fi
 
 # Start the RabbitMQ queue worker related section

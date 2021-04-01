@@ -8,21 +8,25 @@ import render_recipient_row from "../templates/recipient_row.hbs";
 import render_single_message from "../templates/single_message.hbs";
 
 import * as activity from "./activity";
+import * as blueslip from "./blueslip";
+import * as color_class from "./color_class";
 import * as compose from "./compose";
 import * as compose_fade from "./compose_fade";
 import * as condense from "./condense";
 import * as hash_util from "./hash_util";
+import {i18n} from "./i18n";
 import * as message_edit from "./message_edit";
+import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_topics from "./recent_topics";
 import * as rendered_markdown from "./rendered_markdown";
 import * as rows from "./rows";
-import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as submessage from "./submessage";
 import * as timerender from "./timerender";
@@ -137,7 +141,7 @@ function populate_group_from_message_container(group, message_container) {
 
     if (group.is_stream) {
         group.background_color = stream_data.get_color(message_container.msg.stream);
-        group.color_class = stream_color.get_color_class(group.background_color);
+        group.color_class = color_class.get_css_class(group.background_color);
         group.invite_only = stream_data.get_invite_only(message_container.msg.stream);
         group.topic = message_container.msg.topic;
         group.match_topic = util.get_match_topic(message_container.msg);
@@ -230,6 +234,17 @@ export class MessageListView {
         }
     }
 
+    set_calculated_message_container_variables(message_container) {
+        set_timestr(message_container);
+
+        // Make sure the right thing happens if the message was edited to mention us.
+        message_container.contains_mention = message_container.msg.mentioned;
+
+        this._maybe_format_me_message(message_container);
+        // Once all other variables are updated
+        this._add_msg_edited_vars(message_container);
+    }
+
     add_subscription_marker(group, last_msg_container, first_msg_container) {
         if (last_msg_container === undefined) {
             return;
@@ -312,11 +327,11 @@ export class MessageListView {
                 message_container.subscribed = false;
                 message_container.unsubscribed = false;
 
-                // This home_msg_list condition can be removed
+                // This message_lists.home condition can be removed
                 // once we filter historical messages from the
                 // home view on the server side (which requires
                 // having an index on UserMessage.flags)
-                if (this.list !== home_msg_list) {
+                if (this.list !== message_lists.home) {
                     this.add_subscription_marker(current_group, prev, message_container);
                 }
 
@@ -332,8 +347,6 @@ export class MessageListView {
                     message_container.pm_with_url = message_container.msg.pm_with_url;
                 }
             }
-
-            set_timestr(message_container);
 
             message_container.include_sender = true;
             if (
@@ -355,10 +368,7 @@ export class MessageListView {
                 );
             }
 
-            message_container.contains_mention = message_container.msg.mentioned;
-            this._maybe_format_me_message(message_container);
-            // Once all other variables are updated
-            this._add_msg_edited_vars(message_container);
+            this.set_calculated_message_container_variables(message_container);
 
             prev = message_container;
         }
@@ -403,7 +413,7 @@ export class MessageListView {
             return true;
             // Add a subscription marker
         } else if (
-            this.list !== home_msg_list &&
+            this.list !== message_lists.home &&
             last_msg_container.msg.historical !== first_msg_container.msg.historical
         ) {
             second_group.bookend_top = true;
@@ -622,7 +632,7 @@ export class MessageListView {
         const restore_scroll_position = () => {
             if (
                 !recent_topics.is_visible() &&
-                list === current_msg_list &&
+                list === message_lists.current &&
                 orig_scrolltop_offset !== undefined
             ) {
                 list.view.set_message_offset(orig_scrolltop_offset);
@@ -780,7 +790,7 @@ export class MessageListView {
             }
         }
 
-        if (list === current_msg_list) {
+        if (list === message_lists.current) {
             // Update the fade.
 
             const get_element = (message_group) => {
@@ -795,7 +805,7 @@ export class MessageListView {
             compose_fade.update_rendered_message_groups(new_message_groups, get_element);
         }
 
-        if (list === current_msg_list && messages_are_new) {
+        if (list === message_lists.current && messages_are_new) {
             // First, in single-recipient narrows, potentially
             // auto-scroll to the latest message if it was sent by us.
             if (narrow_state.narrowed_by_reply()) {
@@ -1130,12 +1140,7 @@ export class MessageListView {
         const row = this.get_row(message_container.msg.id);
         const was_selected = this.list.selected_message() === message_container.msg;
 
-        // Re-render just this one message
-        this._maybe_format_me_message(message_container);
-        this._add_msg_edited_vars(message_container);
-
-        // Make sure the right thing happens if the message was edited to mention us.
-        message_container.contains_mention = message_container.msg.mentioned;
+        this.set_calculated_message_container_variables(message_container);
 
         const rendered_msg = $(this._get_message_template(message_container));
         if (message_content_edited) {

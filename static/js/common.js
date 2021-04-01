@@ -1,9 +1,6 @@
 import $ from "jquery";
 
-// This reloads the module in development rather than refreshing the page
-if (module.hot) {
-    module.hot.accept();
-}
+import {i18n} from "./i18n";
 
 export const status_classes = "alert-error alert-success alert-info alert-warning";
 

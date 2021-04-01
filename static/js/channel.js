@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import * as blueslip from "./blueslip";
 import * as reload_state from "./reload_state";
 
 const pending_requests = [];
@@ -44,7 +45,7 @@ function call(args, idempotent) {
 
         if (reload_state.is_in_progress()) {
             // If we're in the process of reloading the browser,
-            // there's no point in running the success handler,
+            // there's no point in running the error handler,
             // because all of our state is about to be discarded
             // anyway.
             blueslip.log(`Ignoring ${args.type} ${args.url} error response while reloading`);

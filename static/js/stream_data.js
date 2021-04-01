@@ -1,13 +1,16 @@
+import * as blueslip from "./blueslip";
 import * as color_data from "./color_data";
 import {FoldDict} from "./fold_dict";
 import * as hash_util from "./hash_util";
-import * as message_list from "./message_list";
+import {i18n} from "./i18n";
+import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
-import * as stream_color from "./stream_color";
 import * as stream_topic_history from "./stream_topic_history";
 import * as util from "./util";
+
+const DEFAULT_COLOR = "#c2c2c2";
 
 // Expose get_subscriber_count for our automated puppeteer tests.
 export const get_subscriber_count = peer_data.get_subscriber_count;
@@ -541,7 +544,7 @@ export function canonicalized_name(stream_name) {
 export function get_color(stream_name) {
     const sub = get_sub(stream_name);
     if (sub === undefined) {
-        return stream_color.default_color;
+        return DEFAULT_COLOR;
     }
     return sub.color;
 }
@@ -598,39 +601,6 @@ export function get_invite_only(stream_name) {
     return sub.invite_only;
 }
 
-export function all_topics_in_cache(sub) {
-    // Checks whether this browser's cache of contiguous messages
-    // (used to locally render narrows) in message_list.all has all
-    // messages from a given stream, and thus all historical topics
-    // for it.  Because message_list.all is a range, we just need to
-    // compare it to the range of history on the stream.
-
-    // If the cache isn't initialized, it's a clear false.
-    if (message_list.all === undefined || message_list.all.empty()) {
-        return false;
-    }
-
-    // If the cache doesn't have the latest messages, we can't be sure
-    // we have all topics.
-    if (!message_list.all.data.fetch_status.has_found_newest()) {
-        return false;
-    }
-
-    if (sub.first_message_id === null) {
-        // If the stream has no message history, we have it all
-        // vacuously.  This should be a very rare condition, since
-        // stream creation sends a message.
-        return true;
-    }
-
-    // Now, we can just compare the first cached message to the first
-    // message ID in the stream; if it's older, we're good, otherwise,
-    // we might be missing the oldest topics in this stream in our
-    // cache.
-    const first_cached_message = message_list.all.first();
-    return first_cached_message.id <= sub.first_message_id;
-}
-
 export function set_realm_default_streams(realm_default_streams) {
     default_stream_ids.clear();
 
@@ -678,7 +648,7 @@ export function maybe_get_stream_name(stream_id) {
 
 export function is_user_subscribed(stream_id, user_id) {
     const sub = get_sub_by_id(stream_id);
-    if (typeof sub === "undefined" || !sub.can_access_subscribers) {
+    if (sub === undefined || !sub.can_access_subscribers) {
         // If we don't know about the stream, or we ourselves cannot access subscriber list,
         // so we return undefined (treated as falsy if not explicitly handled).
         blueslip.warn(
@@ -686,7 +656,7 @@ export function is_user_subscribed(stream_id, user_id) {
         );
         return undefined;
     }
-    if (typeof user_id === "undefined") {
+    if (user_id === undefined) {
         blueslip.warn("Undefined user_id passed to function is_user_subscribed");
         return undefined;
     }

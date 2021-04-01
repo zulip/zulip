@@ -5,7 +5,9 @@ import render_topic_muted from "../templates/topic_muted.hbs";
 
 import * as channel from "./channel";
 import * as feedback_widget from "./feedback_widget";
+import {i18n} from "./i18n";
 import * as ListWidget from "./list_widget";
+import * as message_lists from "./message_lists";
 import * as muting from "./muting";
 import * as overlays from "./overlays";
 import * as recent_topics from "./recent_topics";
@@ -29,11 +31,11 @@ export function rerender_on_topic_update() {
     // re-doing a mute or unmute is a pretty recoverable thing.
 
     stream_list.update_streams_sidebar();
-    if (current_msg_list.excludes_muted_topics) {
-        current_msg_list.update_muting_and_rerender();
+    if (message_lists.current.excludes_muted_topics) {
+        message_lists.current.update_muting_and_rerender();
     }
-    if (current_msg_list !== home_msg_list) {
-        home_msg_list.update_muting_and_rerender();
+    if (message_lists.current !== message_lists.home) {
+        message_lists.home.update_muting_and_rerender();
     }
     if (overlays.settings_open() && settings_muting.loaded) {
         set_up_muted_topics_ui();

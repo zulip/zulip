@@ -111,12 +111,11 @@ exports.fixtures = {
         upload_space_used: 90000,
     },
 
-    custom_profile_fields__update: {
+    custom_profile_fields: {
         type: "custom_profile_fields",
-        op: "update",
         fields: [
-            {id: 1, name: "teams", type: 1},
-            {id: 2, name: "hobbies", type: 1},
+            {id: 1, name: "teams", type: 1, hint: "", field_data: "", order: 1},
+            {id: 2, name: "hobbies", type: 1, hint: "", field_data: "", order: 2},
         ],
     },
 
@@ -216,6 +215,7 @@ exports.fixtures = {
     realm__deactivated: {
         type: "realm",
         op: "deactivated",
+        realm_id: 2,
     },
 
     realm__update__bot_creation_policy: {
@@ -478,6 +478,7 @@ exports.fixtures = {
 
     restart: {
         type: "restart",
+        server_generation: 2,
         immediate: true,
     },
 
@@ -737,6 +738,12 @@ exports.fixtures = {
         op: "add_members",
         group_id: 1,
         user_ids: [2],
+    },
+
+    user_group__remove: {
+        type: "user_group",
+        op: "remove",
+        group_id: 1,
     },
 
     user_group__remove_members: {
