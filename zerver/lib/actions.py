@@ -2239,14 +2239,6 @@ def check_send_typing_notification(sender: UserProfile, user_ids: List[int], ope
     if len(user_ids) == 0:
         raise JsonableError(_("Missing parameter: 'to' (recipient)"))
 
-    """ The next chunk of code will go away when we upgrade old mobile
-    users away from versions of mobile that send emails.  For the
-    small number of very outdated mobile clients, we do double work
-    here in terms of fetching users, but this structure reduces lots
-    of other unnecessary duplicated code and will make it convenient
-    to mostly delete code when we desupport old versions of the
-    app."""
-
     if sender.id not in user_ids:
         user_ids.append(sender.id)
 
