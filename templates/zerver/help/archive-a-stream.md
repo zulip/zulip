@@ -28,7 +28,8 @@ than archiving them.
 {end_tabs}
 
 !!! warn ""
-    Archiving a stream is irreversible.
+    Archiving a stream is currently irreversible, but we plan to add support
+    for unarchiving streams in the future.
 
 ## Related articles
 
