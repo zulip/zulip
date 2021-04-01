@@ -47,6 +47,30 @@ const ray = {
     full_name: "Raymond",
 };
 
+function hide_all_empty_narrow_messages() {
+    const all_empty_narrow_messages = [
+        ".empty_feed_notice",
+        "#empty_narrow_message",
+        "#nonsubbed_private_nonexistent_stream_narrow_message",
+        "#nonsubbed_stream_narrow_message",
+        "#empty_star_narrow_message",
+        "#empty_narrow_all_mentioned",
+        "#empty_narrow_all_private_message",
+        "#no_unread_narrow_message",
+        "#non_existing_user",
+        "#non_existing_users",
+        "#empty_narrow_private_message",
+        "#empty_narrow_self_private_message",
+        "#empty_narrow_multi_private_message",
+        "#empty_narrow_group_private_message",
+        "#silent_user",
+        "#empty_search_narrow_message",
+    ];
+    for (const selector of all_empty_narrow_messages) {
+        $(selector).hide();
+    }
+}
+
 run_test("uris", () => {
     people.add_active_user(ray);
     people.add_active_user(alice);
@@ -75,6 +99,7 @@ run_test("uris", () => {
 run_test("show_empty_narrow_message", () => {
     $("#left_bar_compose_reply_button_big").prop("disabled", false);
     narrow_state.reset_current_filter();
+    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal($(".empty_feed_notice").visible(), false);
     assert($("#empty_narrow_message").visible());
@@ -86,6 +111,7 @@ run_test("show_empty_narrow_message", () => {
 
     // for non-existent or private stream
     set_filter([["stream", "Foo"]]);
+    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert($("#nonsubbed_private_nonexistent_stream_narrow_message").visible());
 
@@ -93,47 +119,58 @@ run_test("show_empty_narrow_message", () => {
     stream_data.add_sub({name: "ROME", stream_id: 99});
     stream_data.update_calculated_fields(stream_data.get_sub("ROME"));
     set_filter([["stream", "Rome"]]);
+    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert($("#nonsubbed_stream_narrow_message").visible());
 
     set_filter([["is", "starred"]]);
+    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert($("#empty_star_narrow_message").visible());
 
     set_filter([["is", "mentioned"]]);
+    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert($("#empty_narrow_all_mentioned").visible());
 
     set_filter([["is", "private"]]);
+    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert($("#empty_narrow_all_private_message").visible());
 
     set_filter([["is", "unread"]]);
+    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert($("#no_unread_narrow_message").visible());
 
     set_filter([["pm-with", ["Yo"]]]);
+    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert($("#non_existing_user").visible());
 
     people.add_active_user(alice);
     set_filter([["pm-with", ["alice@example.com", "Yo"]]]);
+    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert($("#non_existing_users").visible());
 
     set_filter([["pm-with", "alice@example.com"]]);
+    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert($("#empty_narrow_private_message").visible());
 
     set_filter([["group-pm-with", "alice@example.com"]]);
+    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert($("#empty_narrow_group_private_message").visible());
 
     set_filter([["sender", "ray@example.com"]]);
+    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert($("#silent_user").visible());
 
     set_filter([["sender", "sinwar@example.com"]]);
+    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert($("#non_existing_user").visible());
 
@@ -145,6 +182,7 @@ run_test("show_empty_narrow_message", () => {
     };
 
     set_filter([["search", "grail"]]);
+    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert($("#empty_search_narrow_message").visible());
 
@@ -166,6 +204,7 @@ run_test("show_search_stopwords", () => {
     };
 
     set_filter([["search", "what about grail"]]);
+    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert($("#empty_search_narrow_message").visible());
 
@@ -179,6 +218,7 @@ run_test("show_search_stopwords", () => {
         ["stream", "streamA"],
         ["search", "what about grail"],
     ]);
+    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert($("#empty_search_narrow_message").visible());
 
@@ -194,6 +234,7 @@ run_test("show_search_stopwords", () => {
         ["topic", "topicA"],
         ["search", "what about grail"],
     ]);
+    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert($("#empty_search_narrow_message").visible());
 
@@ -215,6 +256,7 @@ run_test("show_invalid_narrow_message", () => {
         ["stream", "streamA"],
         ["stream", "streamB"],
     ]);
+    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert($("#empty_search_narrow_message").visible());
     assert.equal(
@@ -226,6 +268,7 @@ run_test("show_invalid_narrow_message", () => {
         ["topic", "topicA"],
         ["topic", "topicB"],
     ]);
+    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert($("#empty_search_narrow_message").visible());
     assert.equal(
@@ -240,6 +283,7 @@ run_test("show_invalid_narrow_message", () => {
         ["sender", "alice@example.com"],
         ["sender", "ray@example.com"],
     ]);
+    hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert($("#empty_search_narrow_message").visible());
     assert.equal(
