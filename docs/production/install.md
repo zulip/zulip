@@ -163,11 +163,13 @@ the bottom of `/var/log/zulip/errors.log` for a traceback, and consult
 the [troubleshooting section](troubleshooting.md) for advice on
 how to debug.
 
-**Community.**
-If the tips above don't help, please visit
-[#production help](https://chat.zulip.org/#narrow/stream/31-production-help)
-in the [Zulip development community server](../contributing/chat-zulip-org.md) for
-realtime help or email zulip-help@googlegroups.com with the full
-traceback, and we'll try to help you out!  Please provide details like
-the full traceback from the bottom of `/var/log/zulip/errors.log` in
-your report.
+**Community.** If the tips above don't help, please visit [#production
+help][production-help] in the [Zulip development community
+server][chat-zulip-org] for realtime help, and we'll try to help you
+out!  Please provide details like the full traceback from the bottom
+of `/var/log/zulip/errors.log` in your report (ideally in a [code
+block][code-block]).
+
+[chat-zulip-org]: ../contributing/chat-zulip-org.md
+[production-help]: https://chat.zulip.org/#narrow/stream/31-production-help
+[code-block]: https://zulip.com/help/format-your-message-using-markdown#code
