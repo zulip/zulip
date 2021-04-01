@@ -2234,10 +2234,7 @@ def do_send_typing_notification(
 # check_send_typing_notification:
 # Checks the typing notification and sends it
 def check_send_typing_notification(sender: UserProfile, user_ids: List[int], operator: str) -> None:
-
     realm = sender.realm
-    if len(user_ids) == 0:
-        raise JsonableError(_("Missing parameter: 'to' (recipient)"))
 
     if sender.id not in user_ids:
         user_ids.append(sender.id)
