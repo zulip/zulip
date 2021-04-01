@@ -97,6 +97,8 @@ vendor = distro_info["ID"]
 os_version = distro_info["VERSION_ID"]
 if vendor == "debian" and os_version == "10":  # buster
     POSTGRESQL_VERSION = "11"
+elif vendor == "debian" and os_version == "11":  # bullseye
+    POSTGRESQL_VERSION = "13"
 elif vendor == "ubuntu" and os_version in ["18.04", "18.10"]:  # bionic, cosmic
     POSTGRESQL_VERSION = "10"
 elif vendor == "ubuntu" and os_version in ["19.04", "19.10"]:  # disco, eoan
@@ -197,8 +199,17 @@ if vendor == "debian" and os_version in [] or vendor == "ubuntu" and os_version 
         *VENV_DEPENDENCIES,
     ]
 elif "debian" in os_families():
+    DEBIAN_DEPENDECIES = UBUNTU_COMMON_APT_DEPENDENCIES
+    # The below condition is required since libappindicator is
+    # not available for bullseye (sid). "libgroonga1" is an
+    # additional depedency for postgresql-13-pgdg-pgroonga.
+    #
+    # See https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=895037
+    if distro_info["VERSION_CODENAME"] == "bullseye":
+        DEBIAN_DEPENDECIES.remove("libappindicator1")
+        DEBIAN_DEPENDECIES.append("libgroonga0")
     SYSTEM_DEPENDENCIES = [
-        *UBUNTU_COMMON_APT_DEPENDENCIES,
+        *DEBIAN_DEPENDECIES,
         f"postgresql-{POSTGRESQL_VERSION}",
         f"postgresql-{POSTGRESQL_VERSION}-pgdg-pgroonga",
         *VENV_DEPENDENCIES,
