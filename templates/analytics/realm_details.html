@@ -4,11 +4,21 @@
 <a target="_blank" rel="noopener noreferrer" href="/stats/realm/{{ realm.string_id }}/">stats</a> |
 <a target="_blank" rel="noopener noreferrer" href="/realm_activity/{{ realm.string_id }}/">activity</a><br>
 <b>Date created</b>: {{ realm.date_created|timesince }} ago<br>
+{% set owner_emails_string = get_realm_owner_emails_as_string(realm) %}
+<b>Owners</b>: {{ owner_emails_string }}
+{% if owner_emails_string %}
+<a title="Copy emails" class="copy-button" data-copytext="{{ owner_emails_string }}">
+    <i class="fa fa-copy"></i>
+</a>
+{% endif %}
+<br>
 {% set admin_emails_string = get_realm_admin_emails_as_string(realm) %}
 <b>Admins</b>: {{ admin_emails_string }}
+{% if admin_emails_string %}
 <a title="Copy emails" class="copy-button" data-copytext="{{ admin_emails_string }}">
     <i class="fa fa-copy"></i>
 </a>
+{% endif %}
 <form method="POST">
     <b>Status</b>:<br>
     {{ csrf_input }}

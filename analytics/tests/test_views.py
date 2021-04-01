@@ -596,9 +596,11 @@ class TestSupportEndpoint(ZulipTestCase):
             )
             self.assert_in_success_response(
                 [
-                    f"<b>Admins</b>: {self.example_email('desdemona')}, {self.example_email('iago')}\n",
-                    'class="copy-button" data-copytext="{}, {}"'.format(
-                        self.example_email("desdemona"), self.example_email("iago")
+                    f"<b>Admins</b>: {self.example_email('iago')}\n",
+                    f"<b>Owners</b>: {self.example_email('desdemona')}\n",
+                    'class="copy-button" data-copytext="{}">'.format(self.example_email("iago")),
+                    'class="copy-button" data-copytext="{}">'.format(
+                        self.example_email("desdemona")
                     ),
                 ],
                 result,

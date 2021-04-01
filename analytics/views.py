@@ -1429,13 +1429,21 @@ def support(request: HttpRequest) -> HttpResponse:
 
         context["confirmations"] = confirmations
 
-    def get_realm_admin_emails_as_string(realm: Realm) -> str:
+    def get_realm_owner_emails_as_string(realm: Realm) -> str:
         return ", ".join(
-            realm.get_human_admin_users()
+            realm.get_human_owner_users()
             .order_by("delivery_email")
             .values_list("delivery_email", flat=True)
         )
 
+    def get_realm_admin_emails_as_string(realm: Realm) -> str:
+        return ", ".join(
+            realm.get_human_admin_users(include_realm_owners=False)
+            .order_by("delivery_email")
+            .values_list("delivery_email", flat=True)
+        )
+
+    context["get_realm_owner_emails_as_string"] = get_realm_owner_emails_as_string
     context["get_realm_admin_emails_as_string"] = get_realm_admin_emails_as_string
     context["get_discount_for_realm"] = get_discount_for_realm
     context["realm_icon_url"] = realm_icon_url
