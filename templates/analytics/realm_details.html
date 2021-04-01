@@ -4,8 +4,8 @@
 <a target="_blank" rel="noopener noreferrer" href="/stats/realm/{{ realm.string_id }}/">stats</a> |
 <a target="_blank" rel="noopener noreferrer" href="/realm_activity/{{ realm.string_id }}/">activity</a><br>
 <b>Date created</b>: {{ realm.date_created|timesince }} ago<br>
-<b>Admins</b>: {{ realm_admin_emails(realm) }}
-<a title="Copy emails" class="copy-button" data-copytext="{{ realm_admin_emails(realm) }}">
+<b>Admins</b>: {{ get_realm_admin_emails_as_string(realm) }}
+<a title="Copy emails" class="copy-button" data-copytext="{{ get_realm_admin_emails_as_string(realm) }}">
     <i class="fa fa-copy"></i>
 </a>
 <form method="POST">
