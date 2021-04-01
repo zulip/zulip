@@ -9609,7 +9609,6 @@ components:
           properties:
             user_id: {}
             full_name: {}
-            bot_description: {}
             api_key: {}
             default_sending_stream: {}
             default_events_register_stream: {}
@@ -9628,11 +9627,6 @@ components:
           type: string
           description: |
             The full name of the bot.
-        bot_description:
-          type: string
-          nullable: true
-          description: |
-            The description of the bot.
         api_key:
           type: string
           description: |
@@ -9719,7 +9713,6 @@ components:
           properties:
             user_id: {}
             full_name: {}
-            bot_description: {}
             api_key: {}
             default_sending_stream: {}
             default_events_register_stream: {}
@@ -9731,11 +9724,11 @@ components:
               type: string
               description: |
                 The email of the bot.
-            bot_description: 
+            bot_description:
               type: string
               nullable: true
               description: |
-                Description name of the bot.
+                The description of the bot.
             bot_type:
               type: integer
               nullable: true

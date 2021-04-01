@@ -446,7 +446,11 @@ Output:
         return get_system_bot(settings.NOTIFICATION_BOT)
 
     def create_test_bot(
-        self, full_name: str, user_profile: UserProfile, bot_description: str = "Foo Bot", **extras: Any
+        self,
+        full_name: str,
+        user_profile: UserProfile,
+        bot_description: str = "Foo Bot",
+        **extras: Any,
     ) -> UserProfile:
         self.login_user(user_profile)
         bot_info = {

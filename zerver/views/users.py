@@ -381,7 +381,6 @@ def add_bot_backend(
     ),
     default_all_public_streams: Optional[bool] = REQ(validator=check_bool, default=None),
 ) -> HttpResponse:
-    # desc = check_short_name(desc_raw)
     full_name = check_full_name(full_name_raw)
     if bot_type != UserProfile.INCOMING_WEBHOOK_BOT:
         service_name = service_name or full_name

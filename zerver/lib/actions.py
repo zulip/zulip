@@ -3805,12 +3805,6 @@ def check_change_bot_full_name(
 ) -> None:
     new_full_name = check_full_name(full_name_raw)
 
-    if new_full_name == user_profile.full_name:
-        # Our web app will try to patch full_name even if the user didn't
-        # modify the name in the form.  We just silently ignore those
-        # situations.
-        return
-
     check_bot_name_available(
         realm_id=user_profile.realm_id,
         full_name=new_full_name,
@@ -3824,8 +3818,6 @@ def check_change_bot_full_name(
 def check_change_bot_description(
     user_profile: UserProfile, bot_description: str, acting_user: UserProfile
 ) -> None:
-    if bot_description == user_profile.bot_description:
-        return
     user_profile.bot_description = bot_description
     user_profile.save(update_fields=["bot_description"])
     payload = dict(user_id=user_profile.id, bot_description=user_profile.bot_description)

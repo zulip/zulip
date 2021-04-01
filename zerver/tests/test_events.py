@@ -1036,7 +1036,9 @@ class NormalActionsTest(BaseAction):
         # we don't have a stale UserProfile object with an old value
         # for email being passed into this next function.
         self.user_profile.refresh_from_db()
-        action = lambda: do_change_user_delivery_email(self.user_profile, new_email="newhamlet@zulip.com")
+        action = lambda: do_change_user_delivery_email(
+            self.user_profile, new_email="newhamlet@zulip.com"
+        )
         events = self.verify_action(action=action, num_events=2, client_gravatar=False)
 
         check_realm_user_update("events[0]", events[0], "delivery_email")

@@ -847,8 +847,6 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
     def test_patch_bot_full_name_in_use(self) -> None:
         self.login("hamlet")
 
-        original_name = "hambot"
-
         bot_info = {
             "bot_description": "The Bot of Hamlet",
             "full_name": "hambot",
@@ -862,7 +860,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         # It doesn't matter whether a name is taken by a human
         # or a bot, we can't use it.
-        already_taken_name = self.example_user("cordelia").full_name
+        already_taken_name = self.example_user("iago").full_name
 
         bot_info = {
             "full_name": already_taken_name,

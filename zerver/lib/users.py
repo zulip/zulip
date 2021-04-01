@@ -64,13 +64,6 @@ def check_bot_name_available(realm_id: int, full_name: str) -> None:
         raise JsonableError(_("Name is already in use!"))
 
 
-def check_short_name(short_name_raw: str) -> str:
-    short_name = short_name_raw.strip()
-    if len(short_name) == 0:
-        raise JsonableError(_("Bad name or username"))
-    return short_name
-
-
 def check_valid_bot_config(bot_type: int, service_name: str, config_data: Dict[str, str]) -> None:
     if bot_type == UserProfile.INCOMING_WEBHOOK_BOT:
         from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
