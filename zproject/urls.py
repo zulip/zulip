@@ -764,6 +764,11 @@ api_documentation_view = MarkdownDirectoryView.as_view(
     template_name="zerver/documentation_main.html", path_template="/zerver/api/%s.md"
 )
 urls += [
+    # Redirects due to us having moved the docs:
+    path(
+        "help/delete-a-stream", RedirectView.as_view(url="/help/archive-a-stream", permanent=True)
+    ),
+    path("api/delete-stream", RedirectView.as_view(url="/api/archive-stream", permanent=True)),
     path("help/", help_documentation_view),
     path("help/<path:article>", help_documentation_view),
     path("api/", api_documentation_view),
