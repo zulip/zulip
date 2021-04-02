@@ -1499,7 +1499,7 @@ class NormalActionsTest(BaseAction):
 
     def test_do_deactivate_realm(self) -> None:
         realm = self.user_profile.realm
-        action = lambda: do_deactivate_realm(realm)
+        action = lambda: do_deactivate_realm(realm, acting_user=None)
 
         # We delete sessions of all active users when a realm is
         # deactivated, and redirect them to a deactivated page in

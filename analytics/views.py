@@ -1312,7 +1312,7 @@ def support(request: HttpRequest) -> HttpResponse:
                     "success_message"
                 ] = f"Realm reactivation email sent to admins of {realm.string_id}."
             elif status == "deactivated":
-                do_deactivate_realm(realm, request.user)
+                do_deactivate_realm(realm, acting_user=request.user)
                 context["success_message"] = f"{realm.string_id} deactivated."
         elif request.POST.get("billing_method", None) is not None:
             billing_method = request.POST.get("billing_method")

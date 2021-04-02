@@ -2271,7 +2271,7 @@ class StripeTest(StripeTestCase):
         self.assertEqual(last_ledger_entry.licenses, 20)
         self.assertEqual(last_ledger_entry.licenses_at_next_renewal, 20)
 
-        do_deactivate_realm(get_realm("zulip"))
+        do_deactivate_realm(get_realm("zulip"), acting_user=None)
 
         plan.refresh_from_db()
         self.assertTrue(get_realm("zulip").deactivated)
@@ -2302,7 +2302,7 @@ class StripeTest(StripeTestCase):
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
             self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
 
-        do_deactivate_realm(get_realm("zulip"))
+        do_deactivate_realm(get_realm("zulip"), acting_user=None)
         self.assertTrue(get_realm("zulip").deactivated)
         do_reactivate_realm(get_realm("zulip"))
 

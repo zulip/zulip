@@ -204,7 +204,7 @@ class Command(ZulipBaseCommand):
 
         if options["deactivate_realm"]:
             print(f"\033[94mDeactivating realm\033[0m: {realm.string_id}")
-            do_deactivate_realm(realm)
+            do_deactivate_realm(realm, acting_user=None)
 
         def percent_callback(bytes_transferred: Any) -> None:
             sys.stdout.write(".")
