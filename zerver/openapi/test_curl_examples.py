@@ -16,10 +16,7 @@ from zulip import Client
 
 from zerver.models import get_realm
 from zerver.openapi import markdown_extension
-from zerver.openapi.curl_param_value_generators import (
-    CALLED_GENERATOR_FUNCTIONS,
-    REGISTERED_GENERATOR_FUNCTIONS,
-)
+from zerver.openapi.curl_param_value_generators import assert_all_helper_functions_called
 
 
 def test_generated_curl_examples_for_success(client: Client, owner_client: Client) -> None:
@@ -117,8 +114,4 @@ To learn more about the test itself, see zerver/openapi/test_curl_examples.py.
                     )
                     raise
 
-    if REGISTERED_GENERATOR_FUNCTIONS != CALLED_GENERATOR_FUNCTIONS:
-        raise Exception(
-            "Some registered generator functions were not called:\n"
-            " " + str(REGISTERED_GENERATOR_FUNCTIONS - CALLED_GENERATOR_FUNCTIONS)
-        )
+    assert_all_helper_functions_called()

@@ -55,6 +55,16 @@ def openapi_param_value_generator(
     return wrapper
 
 
+def assert_all_helper_functions_called() -> None:
+    """Throws an exception if any registered helpers were not called by tests"""
+    if REGISTERED_GENERATOR_FUNCTIONS == CALLED_GENERATOR_FUNCTIONS:
+        return
+
+    uncalled_functions = str(REGISTERED_GENERATOR_FUNCTIONS - CALLED_GENERATOR_FUNCTIONS)
+
+    raise Exception(f"Registered curl API generators were not called: {uncalled_functions}")
+
+
 def patch_openapi_example_values(
     entry: str,
     params: List[Dict[str, Any]],
