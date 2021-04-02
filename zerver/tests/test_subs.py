@@ -123,7 +123,7 @@ class TestCreateStreams(ZulipTestCase):
         # Test stream creation events.
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
-            ensure_stream(realm, "Public stream", invite_only=False)
+            ensure_stream(realm, "Public stream", invite_only=False, acting_user=None)
         self.assert_length(events, 1)
 
         self.assertEqual(events[0]["event"]["type"], "stream")
@@ -134,7 +134,7 @@ class TestCreateStreams(ZulipTestCase):
 
         events = []
         with tornado_redirected_to_list(events):
-            ensure_stream(realm, "Private stream", invite_only=True)
+            ensure_stream(realm, "Private stream", invite_only=True, acting_user=None)
         self.assert_length(events, 1)
 
         self.assertEqual(events[0]["event"]["type"], "stream")
@@ -272,7 +272,9 @@ class TestCreateStreams(ZulipTestCase):
         aaron = self.example_user("aaron")
 
         # Establish a stream for notifications.
-        announce_stream = ensure_stream(realm, "announce", False, "announcements here.")
+        announce_stream = ensure_stream(
+            realm, "announce", False, "announcements here.", acting_user=None
+        )
         realm.notifications_stream_id = announce_stream.id
         realm.save(update_fields=["notifications_stream_id"])
 
@@ -562,11 +564,11 @@ class StreamAdminTest(ZulipTestCase):
         realm = get_realm("zulip")
         streams_to_keep = []
         for stream_name in ["stream1", "stream2"]:
-            stream = ensure_stream(realm, stream_name)
+            stream = ensure_stream(realm, stream_name, acting_user=None)
             streams_to_keep.append(stream)
 
         streams_to_remove = []
-        stream = ensure_stream(realm, "stream3")
+        stream = ensure_stream(realm, "stream3", acting_user=None)
         streams_to_remove.append(stream)
 
         all_streams = streams_to_keep + streams_to_remove
@@ -1332,7 +1334,7 @@ class StreamAdminTest(ZulipTestCase):
         # Simulate that a stream by the same name has already been
         # deactivated, just to exercise our renaming logic:
         # Since we do not know the id of these simulated stream we prepend the name with a random hashed_stream_id
-        ensure_stream(realm, "DB32B77" + "!DEACTIVATED:" + active_name)
+        ensure_stream(realm, "DB32B77" + "!DEACTIVATED:" + active_name, acting_user=None)
 
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
@@ -1876,7 +1878,7 @@ class DefaultStreamTest(ZulipTestCase):
 
     def test_add_and_remove_default_stream(self) -> None:
         realm = get_realm("zulip")
-        stream = ensure_stream(realm, "Added Stream")
+        stream = ensure_stream(realm, "Added Stream", acting_user=None)
         orig_stream_names = self.get_default_stream_names(realm)
         do_add_default_stream(stream)
         new_stream_names = self.get_default_stream_names(realm)
@@ -1899,7 +1901,7 @@ class DefaultStreamTest(ZulipTestCase):
         self.login_user(user_profile)
 
         stream_name = "stream ADDED via api"
-        stream = ensure_stream(user_profile.realm, stream_name)
+        stream = ensure_stream(user_profile.realm, stream_name, acting_user=None)
         result = self.client_post("/json/default_streams", dict(stream_id=stream.id))
         self.assert_json_success(result)
         self.assertTrue(stream_name in self.get_default_stream_names(user_profile.realm))
@@ -1967,7 +1969,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
 
         streams = []
         for stream_name in ["stream1", "stream2", "stream3"]:
-            stream = ensure_stream(realm, stream_name)
+            stream = ensure_stream(realm, stream_name, acting_user=None)
             streams.append(stream)
 
         def get_streams(group: DefaultStreamGroup) -> List[Stream]:
@@ -1987,7 +1989,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
         new_stream_names = ["stream4", "stream5"]
         new_streams = []
         for new_stream_name in new_stream_names:
-            new_stream = ensure_stream(realm, new_stream_name)
+            new_stream = ensure_stream(realm, new_stream_name, acting_user=None)
             new_streams.append(new_stream)
             streams.append(new_stream)
 
@@ -2049,7 +2051,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
         self.assert_length(default_stream_groups, 0)
 
         for stream_name in stream_names:
-            stream = ensure_stream(realm, stream_name)
+            stream = ensure_stream(realm, stream_name, acting_user=None)
             streams.append(stream)
 
         result = self.client_post(
@@ -2083,7 +2085,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
         new_stream_names = ["stream4", "stream5"]
         new_streams = []
         for new_stream_name in new_stream_names:
-            new_stream = ensure_stream(realm, new_stream_name)
+            new_stream = ensure_stream(realm, new_stream_name, acting_user=None)
             new_streams.append(new_stream)
             streams.append(new_stream)
 
@@ -2242,7 +2244,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
         streams = []
 
         for stream_name in stream_names:
-            stream = ensure_stream(realm, stream_name)
+            stream = ensure_stream(realm, stream_name, acting_user=None)
             streams.append(stream)
 
         result = self.client_post(
@@ -3634,7 +3636,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         # Create a private stream with Hamlet subscribed
         stream_name = "private"
-        stream = ensure_stream(realm, stream_name, invite_only=True)
+        stream = ensure_stream(realm, stream_name, invite_only=True, acting_user=None)
 
         existing_user_profile = self.example_user("hamlet")
         bulk_add_subscriptions(realm, [stream], [existing_user_profile])
@@ -3673,7 +3675,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # Do not send stream creation event to realm admin users
         # even if realm admin is subscribed to stream cause realm admin already get
         # private stream creation event on stream creation.
-        new_stream = ensure_stream(realm, "private stream", invite_only=True)
+        new_stream = ensure_stream(realm, "private stream", invite_only=True, acting_user=None)
         events = []
         with tornado_redirected_to_list(events):
             bulk_add_subscriptions(realm, [new_stream], [self.example_user("iago")])
@@ -4310,9 +4312,9 @@ class SubscriptionAPITest(ZulipTestCase):
         realm = get_realm("zulip")
         user = self.example_user("iago")
         random_user = self.example_user("hamlet")
-        stream1 = ensure_stream(realm, "stream1", invite_only=False)
-        stream2 = ensure_stream(realm, "stream2", invite_only=False)
-        private = ensure_stream(realm, "private_stream", invite_only=True)
+        stream1 = ensure_stream(realm, "stream1", invite_only=False, acting_user=None)
+        stream2 = ensure_stream(realm, "stream2", invite_only=False, acting_user=None)
+        private = ensure_stream(realm, "private_stream", invite_only=True, acting_user=None)
 
         self.subscribe(user, "stream1")
         self.subscribe(user, "stream2")
@@ -5261,7 +5263,7 @@ class AccessStreamTest(ZulipTestCase):
 
         # Nobody can access a public stream in another realm
         mit_realm = get_realm("zephyr")
-        mit_stream = ensure_stream(mit_realm, "mit_stream", invite_only=False)
+        mit_stream = ensure_stream(mit_realm, "mit_stream", invite_only=False, acting_user=None)
         sipbtest = self.mit_user("sipbtest")
         with self.assertRaisesRegex(JsonableError, "Invalid stream id"):
             access_stream_by_id(hamlet, mit_stream.id)

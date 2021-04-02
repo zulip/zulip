@@ -401,7 +401,7 @@ class UserGroupAPITestCase(ZulipTestCase):
 
         content_with_group_mention = "hey @*support* can you help us with this?"
 
-        ensure_stream(realm, stream_name)
+        ensure_stream(realm, stream_name, acting_user=None)
 
         all_users = {cordelia, hamlet, othello, zoe}
         support_team = {hamlet, zoe}
