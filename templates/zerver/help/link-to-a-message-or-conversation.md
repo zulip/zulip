@@ -4,7 +4,7 @@ Share permanent links to messages, threads, and streams. The Zulip project
 uses this feature extensively to link to Zulip conversations from our
 issue tracker.
 
-## Link to a stream or topic (web only)
+## Link to a stream or topic
 
 {start_tabs}
 
@@ -16,7 +16,7 @@ issue tracker.
 
 !!! warn ""
     This works for all views, including searches.
-    All URLs in Zulip are permalinks.
+    All URLs in Zulip are designed to be shareable.
 
 ## Link to a specific message
 
@@ -24,9 +24,11 @@ issue tracker.
 
 {!message-actions-menu.md!}
 
-1. Click **Link to conversation**.
+1. Click **Copy link to message**.
 
 {end_tabs}
 
-The copied link will take you to the topic of the relevant message, scrolled
-down to that message.
+This will copy to your clipboard a permanent link to the message,
+displayed in its thread (i.e. topic view for messages in a stream).
+
+Viewing a thread via a message link will never mark messages as read.
