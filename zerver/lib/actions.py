@@ -1206,7 +1206,7 @@ def do_deactivate_user(
 
 
 def do_deactivate_stream(
-    stream: Stream, log: bool = True, acting_user: Optional[UserProfile] = None
+    stream: Stream, log: bool = True, *, acting_user: Optional[UserProfile]
 ) -> None:
     # We want to mark all messages in the to-be-deactivated stream as
     # read for all users; otherwise they will pollute queries like
