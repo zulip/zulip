@@ -1672,7 +1672,7 @@ class AutoLink(CompiledPattern):
     def shorten_github_links(
         self, artifact: str, repo_short_text: str, value: str
     ) -> Optional[str]:
-        if artifact in ["pull", "issues"]:
+        if artifact in ["pull", "issues"] and re.match(r"^[0-9]+$", value) is not None:
             return "{}#{}".format(repo_short_text, value)
         if artifact == "commit":
             return "{}@{}".format(repo_short_text, value[0 : self.COMMIT_ID_PREFIX_LENGTH])

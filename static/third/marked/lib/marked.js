@@ -604,7 +604,7 @@ function shorten_links(href) {
 
 function shorten_github_links(href, artifact, repo_short_text,
                               value, commit_id_prefix_length) {
-  if (['pull', 'issues'].includes(artifact)) {
+  if (['pull', 'issues'].includes(artifact) && /^[0-9]+$/.test(value)) {
     return repo_short_text + '#' + value;
   }
   if (artifact == 'commit') {

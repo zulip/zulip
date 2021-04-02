@@ -1047,6 +1047,11 @@
       "name": "auto_shorten_github_link",
       "input": "https://github.com",
       "expected_output": "<p><a href=\"https://github.com\">https://github.com</a></p>"
+    },
+    {
+      "name": "auto_shorten_github_issue_new",
+      "input": "Open issue in https://github.com/zulip/zulip/issues/new and not in https://github.com/zulip/zulip/issues/123new or https://github.com/zulip/zulip/issues/new456 or https://github.com/zulip/zulip/issues/created_by",
+      "expected_output": "<p>Open issue in <a href=\"https://github.com/zulip/zulip/issues/new\">https://github.com/zulip/zulip/issues/new</a> and not in <a href=\"https://github.com/zulip/zulip/issues/123new\">https://github.com/zulip/zulip/issues/123new</a> or <a href=\"https://github.com/zulip/zulip/issues/new456\">https://github.com/zulip/zulip/issues/new456</a> or <a href=\"https://github.com/zulip/zulip/issues/created_by\">https://github.com/zulip/zulip/issues/created_by</a></p>"
     }
   ],
   "linkify_tests": [
