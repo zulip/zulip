@@ -414,12 +414,6 @@ export function set_up() {
 
         channel.del({
             url: "/json/bots/" + encodeURIComponent(bot_id),
-            success() {
-                const row = $(e.currentTarget).closest("li");
-                row.hide("slow", () => {
-                    row.remove();
-                });
-            },
             error(xhr) {
                 bot_error(bot_id, xhr);
             },
