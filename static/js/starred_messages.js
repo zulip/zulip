@@ -39,12 +39,12 @@ export function get_starred_msg_ids() {
     return Array.from(starred_ids);
 }
 
-export function get_starred_message_ids_in_topic(stream_id, topic) {
+export function get_count_in_topic(stream_id, topic) {
     if (stream_id === undefined || topic === undefined) {
-        return [];
+        return 0;
     }
 
-    return Array.from(starred_ids).filter((id) => {
+    const messages = Array.from(starred_ids).filter((id) => {
         const message = message_store.get(id);
 
         if (message === undefined) {
@@ -52,8 +52,12 @@ export function get_starred_message_ids_in_topic(stream_id, topic) {
             // but the message itself hasn't been fetched from the server yet.
             // We ignore this message, since we can't check if it belongs to
             // the topic, but it could, meaning this implementation isn't
-            // completely correct. The right way to do this would be to ask the
-            // backend for starred IDs from the topic.
+            // completely correct.
+            // Since this function is used only when opening the topic popover,
+            // and not for actually unstarring messages, this discrepancy is
+            // probably acceptable. The worst it could manifest as is the topic
+            // popover not having the "Unstar all messages in topic" option, when
+            // it should have had.
             return false;
         }
 
@@ -63,6 +67,8 @@ export function get_starred_message_ids_in_topic(stream_id, topic) {
             message.topic.toLowerCase() === topic.toLowerCase()
         );
     });
+
+    return messages.length;
 }
 
 export function rerender_ui() {
