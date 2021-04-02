@@ -94,6 +94,10 @@ export function load_filters() {
     filters = new Set(ls.get(ls_key));
 }
 
+function is_table_focused() {
+    return current_focus_elem === "table";
+}
+
 export function set_default_focus() {
     // If at any point we are confused about the currently
     // focused element, we switch focus to search.
@@ -134,7 +138,7 @@ function revive_current_focus() {
         return false;
     }
 
-    if (current_focus_elem === "table") {
+    if (is_table_focused()) {
         set_table_focus(row_focus, col_focus);
         return true;
     }
@@ -639,7 +643,7 @@ export function change_focused_element($elt, input_key) {
                 current_focus_elem = $("#recent_topics_search");
                 return true;
             case "escape":
-                if (current_focus_elem === "table") {
+                if (is_table_focused()) {
                     return false;
                 }
                 set_table_focus(row_focus, col_focus);
@@ -673,13 +677,13 @@ export function change_focused_element($elt, input_key) {
                 set_table_focus(row_focus, col_focus);
                 return true;
             case "escape":
-                if (current_focus_elem === "table") {
+                if (is_table_focused()) {
                     return false;
                 }
                 set_table_focus(row_focus, col_focus);
                 return true;
         }
-    } else if (current_focus_elem === "table") {
+    } else if (is_table_focused()) {
         // For arrowing around the table of topics, we implement left/right
         // wraparound.  Going off the top or the bottom takes one
         // to the navigation at the top (see set_table_focus).
