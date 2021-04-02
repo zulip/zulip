@@ -138,7 +138,7 @@
     }
 
     .alert-word {
-        background-color: hsla(102, 85%, 57%, 0.5);
+        background-color: hsl(4, 100%, 84%);
     }
 
     /* Timestamps */

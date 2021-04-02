@@ -10,6 +10,10 @@ body.night-mode {
         color: inherit;
     }
 
+    .alert-word {
+        background-color: hsl(1, 58%, 26%);
+    }
+
     .app-main,
     .header-main,
     #message_view_header_underpadding,
