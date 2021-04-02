@@ -3865,6 +3865,7 @@ class SubscriptionAPITest(ZulipTestCase):
                         [user1, user2],
                         [stream1, stream2, stream3, private],
                         get_client("website"),
+                        acting_user=None,
                     )
 
         self.assert_length(query_count, 28)
@@ -3934,6 +3935,7 @@ class SubscriptionAPITest(ZulipTestCase):
                 users=[mit_user],
                 streams=streams,
                 acting_client=get_client("website"),
+                acting_user=None,
             )
 
         self.assert_length(events, 0)
