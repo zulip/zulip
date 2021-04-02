@@ -11,7 +11,6 @@ const ui = mock_esm("../../static/js/ui");
 mock_esm("../../static/js/starred_messages", {
     add: () => {},
     get_starred_msg_ids: () => [1, 2, 3, 4, 5],
-    get_starred_message_ids_in_topic: () => [2, 4, 5],
     remove: () => {},
 });
 
@@ -107,18 +106,40 @@ run_test("unstar_all", (override) => {
 
 run_test("unstar_all_in_topic", (override) => {
     // Way to capture posted info in every request
-    let posted_data;
-    override(channel, "post", (opts) => {
-        assert.equal(opts.url, "/json/messages/flags");
-        posted_data = opts.data;
+    let channel_post_opts;
+    let channel_get_opts;
+
+    override(channel, "get", (opts) => {
+        assert.equal(opts.url, "/json/messages");
+        channel_get_opts = opts;
+        opts.success({
+            messages: [{id: 2}, {id: 3}, {id: 5}],
+        });
     });
 
-    // we've set get_starred_message_ids_in_topic to return [2, 4, 5]
-    const expected_data = {messages: "[2,4,5]", flag: "starred", op: "remove"};
+    override(channel, "post", (opts) => {
+        assert.equal(opts.url, "/json/messages/flags");
+        channel_post_opts = opts;
+    });
 
     message_flags.unstar_all_messages_in_topic(20, "topic");
 
-    assert.deepEqual(posted_data, expected_data);
+    assert.deepEqual(channel_get_opts.data, {
+        anchor: "newest",
+        num_before: 1000,
+        num_after: 0,
+        narrow: JSON.stringify([
+            {operator: "stream", operand: 20},
+            {operator: "topic", operand: "topic"},
+            {operator: "is", operand: "starred"},
+        ]),
+    });
+
+    assert.deepEqual(channel_post_opts.data, {
+        messages: "[2,3,5]",
+        flag: "starred",
+        op: "remove",
+    });
 });
 
 run_test("read", (override) => {
