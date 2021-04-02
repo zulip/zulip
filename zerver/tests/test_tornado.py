@@ -117,6 +117,7 @@ class EventsTestCase(TornadoWebTestCase):
 
         self.io_loop.call_later(0.1, process_events)
         response = self.wait()
+        self.assertEqual(response.headers["Vary"], "Accept-Language, Cookie")
         data = orjson.loads(response.body)
         self.assertEqual(
             data["events"],
