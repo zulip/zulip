@@ -224,8 +224,18 @@ class Realm(models.Model):
     # See RealmDomain for the domains that apply for a given organization.
     emails_restricted_to_domains: bool = models.BooleanField(default=False)
 
+    INVITE_TO_REALM_MEMBERS_ONLY = 1
+    INVITE_TO_REALM_ADMINS_ONLY = 2
+    INVITE_TO_REALM_POLICY_TYPES = [
+        INVITE_TO_REALM_MEMBERS_ONLY,
+        INVITE_TO_REALM_ADMINS_ONLY,
+    ]
+
     invite_required: bool = models.BooleanField(default=True)
-    invite_by_admins_only: bool = models.BooleanField(default=False)
+    invite_to_realm_policy: int = models.PositiveSmallIntegerField(
+        default=INVITE_TO_REALM_MEMBERS_ONLY
+    )
+
     _max_invites: Optional[int] = models.IntegerField(null=True, db_column="max_invites")
     disallow_disposable_email_addresses: bool = models.BooleanField(default=True)
     authentication_methods: BitHandler = BitField(
@@ -466,7 +476,7 @@ class Realm(models.Model):
         email_address_visibility=int,
         email_changes_disabled=bool,
         invite_required=bool,
-        invite_by_admins_only=bool,
+        invite_to_realm_policy=int,
         inline_image_preview=bool,
         inline_url_embed_preview=bool,
         mandatory_topics=bool,

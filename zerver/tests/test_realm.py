@@ -551,6 +551,18 @@ class RealmTest(ZulipTestCase):
         result = self.client_patch("/json/realm", req)
         self.assert_json_error(result, "Invalid invite_to_stream_policy")
 
+    def test_change_invite_to_realm_policy(self) -> None:
+        # We need an admin user.
+        self.login("iago")
+        req = dict(invite_to_realm_policy=orjson.dumps(Realm.INVITE_TO_REALM_ADMINS_ONLY).decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+
+        invalid_value = 10
+        req = dict(invite_to_realm_policy=orjson.dumps(invalid_value).decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_error(result, "Invalid invite_to_realm_policy")
+
     def test_user_group_edit_policy(self) -> None:
         # We need an admin user.
         self.login("iago")
@@ -610,6 +622,7 @@ class RealmTest(ZulipTestCase):
             private_message_policy=10,
             message_content_delete_limit_seconds=-10,
             wildcard_mention_policy=10,
+            invite_to_realm_policy=10,
         )
 
         # We need an admin user.
@@ -874,6 +887,10 @@ class RealmAPITest(ZulipTestCase):
                 ),
             ],
             message_content_delete_limit_seconds=[1000, 1100, 1200],
+            invite_to_realm_policy=[
+                Realm.INVITE_TO_REALM_ADMINS_ONLY,
+                Realm.INVITE_TO_REALM_MEMBERS_ONLY,
+            ],
         )
 
         vals = test_values.get(name)

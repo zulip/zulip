@@ -10,6 +10,11 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 50**
+
+* [`POST /register`](/api/register-queue): Replaced `invite_by_admins_only`
+field with an integer field `invite_to_realm_policy`.
+
 **Feature level 49**
 
 * Added new [`POST /realm/playground`](/api/add-playground) and

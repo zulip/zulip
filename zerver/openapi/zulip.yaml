@@ -3017,12 +3017,17 @@ paths:
                                       type: boolean
                                       description: |
                                         Whether an invitation is required to join this organization.
-                                    invite_by_admins_only:
-                                      type: boolean
+                                    invite_to_realm_policy:
+                                      type: integer
                                       description: |
-                                        If true, only organization administrators can invite new users to join.
-                                        If false, any [Member](/help/roles-and-permissions) can invite new users
-                                        to join the organization.  [Help center article](/help/invite-new-users#change-who-can-send-invitations).
+                                        Policy for [who can invite new users](/help/invite-new-users#change-who-can-send-invitations)
+                                        to join the organization:
+
+                                        * 1 = Members only
+                                        * 2 = Administrators only
+
+                                        **Changes**: New in Zulip 4.0 (feature level 50) replacing the
+                                        previous `invite_by_admins_only` boolean.
                                     inline_image_preview:
                                       type: boolean
                                       description: |
@@ -7762,14 +7767,19 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           Whether an invitation is required to join this organization.
-                      realm_invite_by_admins_only:
-                        type: boolean
+                      realm_invite_to_realm_policy:
+                        type: integer
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          If true, only organization administrators can invite new users to join.
-                          If false, any [Member](/help/roles-and-permissions) can invite new users
-                          to join the organization.  [Help center article](/help/invite-new-users#change-who-can-send-invitations).
+                          Policy for [who can invite new users](/help/invite-new-users#change-who-can-send-invitations)
+                          to join the organization:
+
+                          * 1 = Members only
+                          * 2 = Administrators only
+
+                          **Changes**: New in Zulip 4.0 (feature level 50) replacing the
+                          previous `realm_invite_by_admins_only` boolean.
                       realm_inline_image_preview:
                         type: boolean
                         description: |

@@ -18,7 +18,7 @@ from zerver.lib.request import REQ, JsonableError, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.validator import check_int, check_list
-from zerver.models import MultiuseInvite, PreregistrationUser, Stream, UserProfile
+from zerver.models import MultiuseInvite, PreregistrationUser, Realm, Stream, UserProfile
 
 
 def check_if_owner_required(invited_as: int, user_profile: UserProfile) -> None:
@@ -39,7 +39,10 @@ def invite_users_backend(
     stream_ids: List[int] = REQ(validator=check_list(check_int)),
 ) -> HttpResponse:
 
-    if user_profile.realm.invite_by_admins_only and not user_profile.is_realm_admin:
+    if (
+        user_profile.realm.invite_to_realm_policy == Realm.INVITE_TO_REALM_ADMINS_ONLY
+        and not user_profile.is_realm_admin
+    ):
         raise OrganizationAdministratorRequired()
     if invite_as not in PreregistrationUser.INVITE_AS.values():
         return json_error(_("Must be invited as an valid type of user"))

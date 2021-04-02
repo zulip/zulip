@@ -1234,10 +1234,10 @@ class InviteUserTest(InviteUserBase):
 
     def test_require_realm_admin(self) -> None:
         """
-        The invite_by_admins_only realm setting works properly.
+        The invite_to_realm_policy realm setting works properly.
         """
         realm = get_realm("zulip")
-        realm.invite_by_admins_only = True
+        realm.invite_to_realm_policy = Realm.INVITE_TO_REALM_ADMINS_ONLY
         realm.save()
 
         self.login("hamlet")
@@ -2433,8 +2433,8 @@ class MultiuseInviteTest(ZulipTestCase):
     def test_only_admin_can_create_multiuse_link_api_call(self) -> None:
         self.login("iago")
         # Only admins should be able to create multiuse invites even if
-        # invite_by_admins_only is set to False.
-        self.realm.invite_by_admins_only = False
+        # invite_to_realm_policy is set to Realm.INVITE_TO_REALM_MEMBERS_ONLY.
+        self.realm.invite_to_realm_policy = Realm.INVITE_TO_REALM_MEMBERS_ONLY
         self.realm.save()
 
         result = self.client_post("/json/invites/multiuse")
