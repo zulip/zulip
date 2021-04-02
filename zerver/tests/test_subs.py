@@ -3610,7 +3610,7 @@ class SubscriptionAPITest(ZulipTestCase):
         realm3 = user_profile.realm
         stream = get_stream("multi_user_stream", realm)
         with tornado_redirected_to_list(events):
-            bulk_add_subscriptions(realm, [stream], [user_profile])
+            bulk_add_subscriptions(realm, [stream], [user_profile], acting_user=None)
 
         self.assert_length(events, 2)
         add_event, add_peer_event = events
@@ -3639,14 +3639,14 @@ class SubscriptionAPITest(ZulipTestCase):
         stream = ensure_stream(realm, stream_name, invite_only=True, acting_user=None)
 
         existing_user_profile = self.example_user("hamlet")
-        bulk_add_subscriptions(realm, [stream], [existing_user_profile])
+        bulk_add_subscriptions(realm, [stream], [existing_user_profile], acting_user=None)
 
         # Now subscribe Cordelia to the stream, capturing events
         user_profile = self.example_user("cordelia")
 
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
-            bulk_add_subscriptions(realm, [stream], [user_profile])
+            bulk_add_subscriptions(realm, [stream], [user_profile], acting_user=None)
 
         self.assert_length(events, 3)
         create_event, add_event, add_peer_event = events
@@ -3678,7 +3678,9 @@ class SubscriptionAPITest(ZulipTestCase):
         new_stream = ensure_stream(realm, "private stream", invite_only=True, acting_user=None)
         events = []
         with tornado_redirected_to_list(events):
-            bulk_add_subscriptions(realm, [new_stream], [self.example_user("iago")])
+            bulk_add_subscriptions(
+                realm, [new_stream], [self.example_user("iago")], acting_user=None
+            )
 
         # Note that since iago is an admin, he won't get a stream/create
         # event here.
