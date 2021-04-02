@@ -1570,7 +1570,7 @@ class NormalActionsTest(BaseAction):
         stream = get_stream("test_stream", self.user_profile.realm)
 
         action = lambda: bulk_remove_subscriptions(
-            [self.example_user("othello")], [stream], get_client("website")
+            [self.example_user("othello")], [stream], get_client("website"), acting_user=None
         )
         events = self.verify_action(action)
         check_subscription_peer_remove("events[0]", events[0])
@@ -1968,7 +1968,7 @@ class SubscribeActionTest(BaseAction):
         # Now remove the first user, to test the normal unsubscribe flow and
         # 'peer_remove' event for subscribed streams.
         action = lambda: bulk_remove_subscriptions(
-            [self.example_user("othello")], [stream], get_client("website")
+            [self.example_user("othello")], [stream], get_client("website"), acting_user=None
         )
         events = self.verify_action(
             action,
@@ -1979,7 +1979,7 @@ class SubscribeActionTest(BaseAction):
 
         # Now remove the user himself, to test the 'remove' event flow
         action = lambda: bulk_remove_subscriptions(
-            [self.example_user("hamlet")], [stream], get_client("website")
+            [self.example_user("hamlet")], [stream], get_client("website"), acting_user=None
         )
         events = self.verify_action(
             action, include_subscribers=include_subscribers, include_streams=False, num_events=2
@@ -2003,7 +2003,7 @@ class SubscribeActionTest(BaseAction):
 
         # Remove the user to test 'peer_remove' event flow for unsubscribed stream.
         action = lambda: bulk_remove_subscriptions(
-            [self.example_user("iago")], [stream], get_client("website")
+            [self.example_user("iago")], [stream], get_client("website"), acting_user=None
         )
         events = self.verify_action(
             action,

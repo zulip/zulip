@@ -3557,7 +3557,8 @@ def bulk_remove_subscriptions(
     users: Iterable[UserProfile],
     streams: Iterable[Stream],
     acting_client: Client,
-    acting_user: Optional[UserProfile] = None,
+    *,
+    acting_user: Optional[UserProfile],
 ) -> SubAndRemovedT:
 
     users = list(users)
