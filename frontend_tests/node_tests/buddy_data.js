@@ -345,13 +345,16 @@ test("title_data", () => {
         first_line: "Human Myself",
         second_line: "out to lunch",
         third_line: "translated: Active now",
+        show_you: true,
     };
+    page_params.user_id = me.user_id;
     assert.deepEqual(buddy_data.get_title_data(me.user_id, is_group), expected_data);
 
     expected_data = {
         first_line: "Old User",
         second_line: "translated: Last active: translated: More than 2 weeks ago",
         third_line: "",
+        show_you: false,
     };
     assert.deepEqual(buddy_data.get_title_data(old_user.user_id, is_group), expected_data);
 });

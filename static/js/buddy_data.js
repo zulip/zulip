@@ -250,6 +250,7 @@ export function get_title_data(user_ids_string, is_group) {
     // a single, human, user.
     const active_status = presence.get_status(user_id);
     const last_seen = user_last_seen_time_status(user_id);
+    const is_my_user = people.is_my_user_id(user_id);
 
     // Users has a status.
     if (user_status.get_status_text(user_id)) {
@@ -257,6 +258,7 @@ export function get_title_data(user_ids_string, is_group) {
             first_line: person.full_name,
             second_line: user_status.get_status_text(user_id),
             third_line: get_last_seen(active_status, last_seen),
+            show_you: is_my_user,
         };
     }
 
@@ -265,6 +267,7 @@ export function get_title_data(user_ids_string, is_group) {
         first_line: person.full_name,
         second_line: get_last_seen(active_status, last_seen),
         third_line: "",
+        show_you: is_my_user,
     };
 }
 
