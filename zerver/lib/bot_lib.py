@@ -8,6 +8,7 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 
 from zerver.lib.actions import (
+    check_update_message,
     do_add_reaction,
     internal_send_huddle_message,
     internal_send_private_message,
@@ -23,7 +24,7 @@ from zerver.lib.bot_storage import (
 from zerver.lib.emoji import emoji_name_to_emoji_code
 from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.topic import get_topic_from_message_info
-from zerver.lib.validator import check_dict, check_string_or_int
+from zerver.lib.validator import check_bool, check_dict, check_string, check_string_or_int
 from zerver.models import Message, UserProfile, get_active_user
 
 our_dir = os.path.dirname(os.path.abspath(__file__))
@@ -167,8 +168,37 @@ class EmbeddedBotHandler:
             )
         return {"id": result["id"]}
 
-    def update_message(self, message: Dict[str, Any]) -> None:
-        pass  # Not implemented
+    def update_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
+        if not self._rate_limit.is_legal():
+            self._rate_limit.show_error_and_exit()
+
+        # update_message receives "message_id" instead of "id" for the message to be updated.
+        # This can be confused with react which uses "id" as the key.
+        try:
+            check_dict(
+                required_keys=[("message_id", check_string_or_int)],
+                optional_keys=[
+                    ("topic", check_string),
+                    ("propagate_mode", check_string),
+                    ("send_notification_to_old_thread", check_bool),
+                    ("send_notification_to_new_thread", check_bool),
+                    ("content", check_string),
+                ],
+            )("message", message)
+        except ValidationError as error:
+            raise EmbeddedBotValueError(error.message)
+
+        check_update_message(
+            user_profile=self.user_profile,
+            message_id=int(message["message_id"]),
+            stream_id=None,
+            topic_name=message.get("topic", None),
+            propagate_mode=message.get("propagate_mode", "change_one"),
+            send_notification_to_old_thread=message.get("send_notification_to_old_thread", False),
+            send_notification_to_new_thread=message.get("send_notification_to_new_thread", False),
+            content=message.get("content", None),
+        )
+        return {"msg": "", "result": "success"}
 
     # The bot_name argument exists only to comply with ExternalBotHandler.get_config_info().
     def get_config_info(self, bot_name: str, optional: bool = False) -> Dict[str, str]:

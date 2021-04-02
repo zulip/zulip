@@ -6,6 +6,7 @@ from zerver.lib.bot_lib import EmbeddedBotHandler, EmbeddedBotQuitException, Emb
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
+    Message,
     Reaction,
     UserProfile,
     get_display_recipient,
@@ -26,6 +27,13 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
             bot_type=UserProfile.EMBEDDED_BOT,
             service_name="helloworld",
             config_data=orjson.dumps({"foo": "bar"}).decode(),
+        )
+        self.incrementor_bot_profile = self.create_test_bot(
+            "incrementor",
+            self.user_profile,
+            full_name="Incrementor Bot",
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name="incrementor",
         )
         self.mock_bot_handler = EmbeddedBotHandler(self.bot_profile)
 
@@ -92,7 +100,7 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
         assert self.mock_bot_handler is not None
         with self.assertRaises(EmbeddedBotValueError) as err:
             self.mock_bot_handler.react({"content": "test"}, "wave")
-        self.assertEqual(str(err.exception), 'id key is missing from message')
+        self.assertEqual(str(err.exception), "id key is missing from message")
 
     def test_embedded_bot_react_does_not_exist(self) -> None:
         assert self.mock_bot_handler is not None
@@ -102,13 +110,66 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
         last_message.delete()
         with self.assertRaises(EmbeddedBotValueError) as err:
             self.mock_bot_handler.react({"id": message_id}, "wave")
-        self.assertEqual(str(err.exception), 'Message with the given ID does not exist')
+        self.assertEqual(str(err.exception), "Message with the given ID does not exist")
 
     def test_embedded_bot_react_invalid_emoji(self) -> None:
         assert self.mock_bot_handler is not None
         with self.assertRaises(JsonableError) as err:
             self.mock_bot_handler.react({"id": 1}, "invalid_emoji")
         self.assertEqual(str(err.exception), "Emoji 'invalid_emoji' does not exist")
+
+    def test_embedded_bot_update_message(self) -> None:
+        assert self.incrementor_bot_profile is not None
+        bot_reply_id = None
+        for i in range(0, 5):
+            self.send_stream_message(
+                self.user_profile,
+                "Denmark",
+                content=f"@**{self.incrementor_bot_profile.full_name}** foo",
+                topic_name="bar",
+            )
+            if bot_reply_id is None:
+                bot_reply_id = self.get_last_message().id
+
+        self.assertEqual(Message.objects.filter(id=bot_reply_id)[0].content, "5")
+
+    def test_embedded_bot_update_message_without_message_id(self) -> None:
+        assert self.mock_bot_handler is not None
+        with self.assertRaises(EmbeddedBotValueError) as err:
+            # "message_id" expected, but only "id" is given.
+            self.mock_bot_handler.update_message({"id": "2", "content": "test"})
+        self.assertEqual(str(err.exception), "message_id key is missing from message")
+
+    def test_embedded_bot_update_message_with_jsonable_error(self) -> None:
+        assert self.bot_profile is not None
+        assert self.mock_bot_handler is not None
+        self.send_stream_message(
+            self.user_profile,
+            "Denmark",
+            content=f"@**{self.bot_profile.full_name}** foo",
+            topic_name="bar",
+        )
+        user_message = self.get_second_to_last_message()
+        with self.assertRaises(JsonableError) as err:
+            self.mock_bot_handler.update_message({"message_id": user_message.id, "content": "test"})
+        self.assertEqual(str(err.exception), "You don't have permission to edit this message")
+
+    def test_embedded_bot_update_message_with_invalid_message_data(self) -> None:
+        assert self.mock_bot_handler is not None
+        with self.assertRaises(EmbeddedBotValueError):
+            self.mock_bot_handler.update_message({"message_id": 1, "topic": 123})
+        with self.assertRaises(EmbeddedBotValueError):
+            self.mock_bot_handler.update_message(
+                {"message_id": 1, "send_notification_to_old_thread": "invalid_bool"}
+            )
+        with self.assertRaises(EmbeddedBotValueError):
+            self.mock_bot_handler.update_message(
+                {"message_id": 1, "send_notification_to_new_thread": "invalid_bool"}
+            )
+        with self.assertRaises(EmbeddedBotValueError):
+            self.mock_bot_handler.update_message({"message_id": 1, "propagate_mode": 123})
+        with self.assertRaises(EmbeddedBotValueError):
+            self.mock_bot_handler.update_message({"message_id": 1, "content": 123})
 
     def test_message_to_embedded_bot_with_initialize(self) -> None:
         assert self.bot_profile is not None
