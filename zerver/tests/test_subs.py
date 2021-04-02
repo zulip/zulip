@@ -4577,27 +4577,11 @@ class GetStreamsTest(ZulipTestCase):
         result = self.api_get(normal_user, url, data)
         self.assertEqual(result.status_code, 400)
 
-        # Even realm admin users can't see all
-        # active streams (without additional privileges).
+        # Realm admin users can see all active streams.
         admin_user = self.example_user("iago")
         self.assertTrue(admin_user.is_realm_admin)
+
         result = self.api_get(admin_user, url, data)
-        self.assertEqual(result.status_code, 400)
-
-        """
-        HAPPY PATH:
-
-            We can get all active streams ONLY if we are
-            an API "super user".  We typically create
-            api-super-user accounts for things like
-            Zephyr/Jabber mirror API users, but here
-            we just "knight" Hamlet for testing expediency.
-        """
-        super_user = self.example_user("hamlet")
-        super_user.can_forge_sender = True
-        super_user.save()
-
-        result = self.api_get(super_user, url, data)
         self.assert_json_success(result)
         json = result.json()
 
