@@ -6585,7 +6585,7 @@ def do_get_streams(
 ) -> List[Dict[str, Any]]:
     # This function is only used by API clients now.
 
-    if include_all_active and not user_profile.can_forge_sender:
+    if include_all_active and not user_profile.is_realm_admin:
         raise JsonableError(_("User not authorized for this query"))
 
     include_public = include_public and user_profile.can_access_public_streams()
