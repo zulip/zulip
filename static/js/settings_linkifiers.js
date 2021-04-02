@@ -142,7 +142,9 @@ export function build_page() {
                         ui_report.error(i18n.t("Failed"), xhr, pattern_status);
                     }
                     if (errors.url_format_string !== undefined) {
-                        xhr.responseText = JSON.stringify({msg: errors.url_format_string});
+                        xhr.responseText = JSON.stringify({
+                            msg: errors.url_format_string[0] + " " + errors.url_format_string[1],
+                        });
                         ui_report.error(i18n.t("Failed"), xhr, format_status);
                     }
                     if (errors.__all__ !== undefined) {
