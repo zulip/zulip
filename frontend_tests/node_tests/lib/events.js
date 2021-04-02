@@ -349,11 +349,12 @@ exports.fixtures = {
         type: "realm_bot",
         op: "add",
         bot: {
+            full_name: "the",
             email: "the-bot@example.com",
             user_id: 42,
             avatar_url: "/some/path/to/avatar",
             api_key: "SOME_KEY",
-            full_name: "The Bot",
+            bot_description: "The Bot",
             bot_type: 1,
             default_all_public_streams: true,
             default_events_register_stream: "whatever",
@@ -377,7 +378,7 @@ exports.fixtures = {
         op: "remove",
         bot: {
             user_id: 42,
-            full_name: "The Bot",
+            full_name: "the",
         },
     },
 
@@ -386,7 +387,7 @@ exports.fixtures = {
         op: "update",
         bot: {
             user_id: 4321,
-            full_name: "The Bot Has A New Name",
+            full_name: "thenew",
         },
     },
 

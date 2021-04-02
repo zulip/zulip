@@ -103,15 +103,15 @@ async function test_get_api_key(page: Page): Promise<void> {
 
 async function test_webhook_bot_creation(page: Page): Promise<void> {
     await common.fill_form(page, "#create_bot_form", {
-        bot_name: "Bot 1",
-        bot_short_name: "1",
+        bot_description: "Bot 1",
+        bot_name: "number1",
         bot_type: OUTGOING_WEBHOOK_BOT_TYPE,
         payload_url: "http://hostname.example.com/bots/followup",
     });
 
     await page.click("#create_bot_button");
 
-    const bot_email = "1-bot@zulip.testserver";
+    const bot_email = "number1-bot@zulip.testserver";
     const download_zuliprc_selector = `.download_bot_zuliprc[data-email="${CSS.escape(
         bot_email,
     )}"]`;
@@ -132,14 +132,14 @@ async function test_normal_bot_creation(page: Page): Promise<void> {
     await page.waitForSelector("#create_bot_button", {visible: true});
 
     await common.fill_form(page, "#create_bot_form", {
-        bot_name: "Bot 2",
-        bot_short_name: "2",
+        bot_description: "Bot 2",
+        bot_name: "number2",
         bot_type: GENERIC_BOT_TYPE,
     });
 
     await page.click("#create_bot_button");
 
-    const bot_email = "2-bot@zulip.testserver";
+    const bot_email = "number2-bot@zulip.testserver";
     const download_zuliprc_selector = `.download_bot_zuliprc[data-email="${CSS.escape(
         bot_email,
     )}"]`;
@@ -162,7 +162,7 @@ async function test_botserverrc(page: Page): Promise<void> {
 }
 
 async function test_edit_bot_form(page: Page): Promise<void> {
-    const bot1_email = "1-bot@zulip.testserver";
+    const bot1_email = "number1-bot@zulip.testserver";
     const bot1_edit_btn = `.open_edit_bot_form[data-email="${CSS.escape(bot1_email)}"]`;
     await page.click(bot1_edit_btn);
 
