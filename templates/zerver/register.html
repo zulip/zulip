@@ -101,12 +101,12 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 <div class="input-box no-validation">
                     <input type='hidden' name='key' value='{{ key }}' />
                     <input type='hidden' name='timezone' id='timezone'/>
-                    <label for="id_email" class="inline-block label-title">{{ _('Email') }}</label>
-                    <div class="email-visibility-text">
-                        {{ EMAIL_ADDRESS_VISIBILITY }}
-                    </div>
                     <div class="input-box">
                         <input id="id_email" type="text" value="{{ email }}" disabled />
+                        <label for="id_email" class="inline-block label-title">{{ _('Email') }}</label>
+                    </div>
+                    <div class="help-text">
+                        {{ EMAIL_ADDRESS_VISIBILITY }}
                     </div>
                 </div>
 
