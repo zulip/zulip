@@ -108,65 +108,74 @@ function pick_empty_narrow_banner() {
         }
         // For other multi-operator narrows, we just use the default banner
         return default_banner;
-    } else if (first_operator === "is") {
-        if (first_operand === "starred") {
-            // You have no starred messages.
-            return $("#empty_star_narrow_message");
-        } else if (first_operand === "mentioned") {
-            return $("#empty_narrow_all_mentioned");
-        } else if (first_operand === "private") {
-            // You have no private messages.
-            return $("#empty_narrow_all_private_message");
-        } else if (first_operand === "unread") {
-            // You have no unread messages.
-            return $("#no_unread_narrow_message");
-        }
-    } else if (first_operator === "stream" && !stream_data.is_subscribed(first_operand)) {
-        // You are narrowed to a stream which does not exist or is a private stream
-        // in which you were never subscribed.
-
-        function should_display_subscription_button() {
-            const stream_name = narrow_state.stream();
-
-            if (!stream_name) {
-                return false;
+    }
+    switch (first_operator) {
+        case "is":
+            switch (first_operand) {
+                case "starred":
+                    // You have no starred messages.
+                    return $("#empty_star_narrow_message");
+                case "mentioned":
+                    return $("#empty_narrow_all_mentioned");
+                case "private":
+                    // You have no private messages.
+                    return $("#empty_narrow_all_private_message");
+                case "unread":
+                    // You have no unread messages.
+                    return $("#no_unread_narrow_message");
             }
+            // fallthrough to default case if no match is found
+            break;
+        case "stream":
+            if (!stream_data.is_subscribed(first_operand)) {
+                // You are narrowed to a stream which does not exist or is a private stream
+                // in which you were never subscribed.
 
-            const stream_sub = stream_data.get_sub(first_operand);
-            return stream_sub && stream_sub.should_display_subscription_button;
-        }
+                function should_display_subscription_button() {
+                    const stream_name = narrow_state.stream();
 
-        if (should_display_subscription_button()) {
-            return $("#nonsubbed_stream_narrow_message");
-        }
+                    if (!stream_name) {
+                        return false;
+                    }
 
-        return $("#nonsubbed_private_nonexistent_stream_narrow_message");
-    } else if (first_operator === "search") {
-        // You are narrowed to empty search results.
-        show_search_query();
-        return $("#empty_search_narrow_message");
-    } else if (first_operator === "pm-with") {
-        if (!people.is_valid_bulk_emails_for_compose(first_operand.split(","))) {
+                    const stream_sub = stream_data.get_sub(first_operand);
+                    return stream_sub && stream_sub.should_display_subscription_button;
+                }
+
+                if (should_display_subscription_button()) {
+                    return $("#nonsubbed_stream_narrow_message");
+                }
+
+                return $("#nonsubbed_private_nonexistent_stream_narrow_message");
+            }
+            // else fallthrough to default case
+            break;
+        case "search":
+            // You are narrowed to empty search results.
+            show_search_query();
+            return $("#empty_search_narrow_message");
+        case "pm-with":
+            if (!people.is_valid_bulk_emails_for_compose(first_operand.split(","))) {
+                if (!first_operand.includes(",")) {
+                    return $("#non_existing_user");
+                }
+                return $("#non_existing_users");
+            }
             if (!first_operand.includes(",")) {
-                return $("#non_existing_user");
+                // You have no private messages with this person
+                if (people.is_current_user(first_operand)) {
+                    return $("#empty_narrow_self_private_message");
+                }
+                return $("#empty_narrow_private_message");
             }
-            return $("#non_existing_users");
-        }
-        if (!first_operand.includes(",")) {
-            // You have no private messages with this person
-            if (people.is_current_user(first_operand)) {
-                return $("#empty_narrow_self_private_message");
+            return $("#empty_narrow_multi_private_message");
+        case "sender":
+            if (people.get_by_email(first_operand)) {
+                return $("#silent_user");
             }
-            return $("#empty_narrow_private_message");
-        }
-        return $("#empty_narrow_multi_private_message");
-    } else if (first_operator === "sender") {
-        if (people.get_by_email(first_operand)) {
-            return $("#silent_user");
-        }
-        return $("#non_existing_user");
-    } else if (first_operator === "group-pm-with") {
-        return $("#empty_narrow_group_private_message");
+            return $("#non_existing_user");
+        case "group-pm-with":
+            return $("#empty_narrow_group_private_message");
     }
     return default_banner;
 }

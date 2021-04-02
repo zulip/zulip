@@ -39,10 +39,11 @@ function build_emoticon_translations() {
         { regex: /(\:\/)/g, replacement_text: ':confused:' },
         { regex: /(<3)/g, replacement_text: ':heart:' },
         { regex: /(\:\()/g, replacement_text: ':frown:' },
-        { regex: /(\:\|)/g, replacement_text: ':expressionless:' }
+        { regex: /(\:\|)/g, replacement_text: ':expressionless:' },
+        ....
     ]
 
-        We build up this list of ~6 emoticon translations
+        We build up this list of ~12 emoticon translations
         even if page_params.translate_emoticons is false, since
         that setting can be flipped via live update events.
         On the other hand, we assume that emoticon_conversions

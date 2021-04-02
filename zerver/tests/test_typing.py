@@ -29,7 +29,7 @@ class TypingValidateOperatorTest(ZulipTestCase):
             op="foo",
         )
         result = self.api_post(sender, "/api/v1/typing", params)
-        self.assert_json_error(result, "Invalid 'op' value (should be start or stop)")
+        self.assert_json_error(result, "Invalid op")
 
 
 class TypingValidateUsersTest(ZulipTestCase):
