@@ -2541,6 +2541,8 @@ def check_send_message(
     local_id: Optional[str] = None,
     sender_queue_id: Optional[str] = None,
     widget_content: Optional[str] = None,
+    *,
+    skip_stream_access_check: bool = False,
 ) -> int:
 
     addressee = Addressee.legacy_build(sender, message_type_name, message_to, topic_name)
@@ -2557,6 +2559,7 @@ def check_send_message(
             local_id,
             sender_queue_id,
             widget_content,
+            skip_stream_access_check=skip_stream_access_check,
         )
     except ZephyrMessageAlreadySentException as e:
         return e.message_id
@@ -2754,6 +2757,8 @@ def check_message(
     sender_queue_id: Optional[str] = None,
     widget_content: Optional[str] = None,
     email_gateway: bool = False,
+    *,
+    skip_stream_access_check: bool = False,
 ) -> SendMessageRequest:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -2796,10 +2801,16 @@ def check_message(
             type=Recipient.STREAM,
         )
 
-        if sender.bot_type != sender.OUTGOING_WEBHOOK_BOT:
+        if not skip_stream_access_check:
             access_stream_for_send_message(
                 sender=sender, stream=stream, forwarder_user_profile=forwarder_user_profile
             )
+        else:
+            # Defensive assertion - the only currently supported use case
+            # for this option is for outgoing webhook bots and since this
+            # is security-sensitive code, it's beneficial to ensure nothing
+            # else can sneak past the access check.
+            assert sender.bot_type == sender.OUTGOING_WEBHOOK_BOT
 
     elif addressee.is_private():
         user_profiles = addressee.user_profiles()
