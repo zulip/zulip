@@ -590,6 +590,7 @@ function shorten_links(href) {
       return href;
     }
     
+    // Return orginal url when value is a string
     if(type(value)==str){
       return href;
     }
