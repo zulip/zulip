@@ -958,7 +958,7 @@ class ScrubRealmTest(ZulipTestCase):
         self.assertNotEqual(CustomProfileField.objects.filter(realm=zulip).count(), 0)
 
         with self.assertLogs(level="WARNING"):
-            do_scrub_realm(zulip)
+            do_scrub_realm(zulip, acting_user=None)
 
         self.assertEqual(Message.objects.filter(sender__in=[iago, othello]).count(), 0)
         self.assertEqual(Message.objects.filter(sender__in=[cordelia, king]).count(), 10)
