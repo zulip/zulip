@@ -1,6 +1,5 @@
 import ClipboardJS from "clipboard";
 import $ from "jquery";
-import _ from "lodash";
 
 import render_bot_avatar_row from "../templates/bot_avatar_row.hbs";
 import render_edit_bot from "../templates/edit_bot.hbs";
@@ -17,6 +16,9 @@ import * as loading from "./loading";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
+
+let isAdd = false;
+let image_version = 0;
 
 export function hide_errors() {
     $("#bot_table_error").hide();
@@ -126,15 +128,6 @@ function render_bots() {
     }
 }
 
-// The reason we debounce this call is very wonky. I just moved it
-// from bot_data.js as part of breaking dependencies. Basically, it
-// allows the server response to win the race against events.
-// TODO: Organize the code so that we clear loading spinners and
-//       switch tabs within the UI when the event comes in.
-export const eventually_render_bots = _.debounce(() => {
-    render_bots();
-}, 50);
-
 export function generate_zuliprc_uri(bot_id) {
     const bot = bot_data.get(bot_id);
     const data = generate_zuliprc_content(bot);
@@ -236,6 +229,64 @@ export function update_bot_permissions_ui() {
     }
 }
 
+function add_event_success() {
+    const GENERIC_BOT_TYPE = "1";
+    const GENERIC_INTERFACE = "1";
+    const create_avatar_widget = avatar.build_bot_create_widget();
+    const service_name = $("#select_service_name :selected").val();
+    const spinner = $(".create_bot_spinner");
+    loading.destroy_indicator(spinner);
+    hide_errors();
+    $("#create_bot_name").val("");
+    $("#create_bot_short_name").val("");
+    $("#create_payload_url").val("");
+    $("#payload_url_inputbox").hide();
+    $("#config_inputbox").hide();
+    $(`[name*='${CSS.escape(service_name)}'] input`).each(function () {
+        $(this).val("");
+    });
+    $("#create_bot_type").val(GENERIC_BOT_TYPE);
+    $("#select_service_name").val("converter"); // TODO: Later we can change this to hello bot or similar
+    $("#service_name_list").hide();
+    $("#create_bot_button").show();
+    $("#create_interface_type").val(GENERIC_INTERFACE);
+    create_avatar_widget.clear();
+    $("#bots_lists_navbar .add-a-new-bot-tab").removeClass("active");
+    $("#bots_lists_navbar .active-bots-tab").addClass("active");
+    isAdd = false;
+}
+
+function edit_event_success(data) {
+    const form = $("#settings_page .edit_bot_form");
+    const spinner = form.find(".edit_bot_spinner");
+    const errors = form.find(".bot_edit_errors");
+    const avatar_widget = avatar.build_bot_edit_widget($("#settings_page"));
+    const li = $(data.bot_id).closest("li");
+    const image = li.find(".image");
+    loading.destroy_indicator(spinner);
+    errors.hide();
+    const edit_button = form.find(".edit_bot_button");
+    edit_button.show();
+    avatar_widget.clear();
+    if (data.avatar_url) {
+        // Note that the avatar_url won't actually change on the backend
+        // when the user had a previous uploaded avatar.  Only the content
+        // changes, so we version it to get an uncached copy.
+        image_version += 1;
+        image.find("img").attr("src", data.avatar_url + "&v=" + image_version.toString());
+    }
+    overlays.close_modal("#edit_bot_modal");
+}
+
+export function bot_event_handler(bot_data = null) {
+    if (isAdd) {
+        add_event_success();
+    } else if (bot_data) {
+        edit_event_success(bot_data);
+    }
+    render_bots();
+}
+
 export function set_up() {
     $("#payload_url_inputbox").hide();
     $("#create_payload_url").val("");
@@ -245,6 +296,7 @@ export function set_up() {
     $("#select_service_name").val(selected_embedded_bot); // TODO: Use 'select a bot'.
     $("#config_inputbox").children().hide();
     $(`[name*='${CSS.escape(selected_embedded_bot)}']`).show();
+    isAdd = false;
 
     $("#download_botserverrc").on("click", function () {
         const OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
@@ -273,12 +325,9 @@ export function set_up() {
         "Please only use characters that are valid in an email address",
     );
 
-    const create_avatar_widget = avatar.build_bot_create_widget();
     const OUTGOING_WEBHOOK_BOT_TYPE = "3";
-    const GENERIC_BOT_TYPE = "1";
-    const EMBEDDED_BOT_TYPE = "4";
 
-    const GENERIC_INTERFACE = "1";
+    const EMBEDDED_BOT_TYPE = "4";
 
     $("#create_bot_form").validate({
         errorClass: "text-error",
@@ -318,6 +367,7 @@ export function set_up() {
             )) {
                 formData.append("file-" + i, file);
             }
+            isAdd = true;
             loading.make_indicator(spinner, {text: i18n.t("Creating bot")});
             channel.post({
                 url: "/json/bots",
@@ -325,25 +375,6 @@ export function set_up() {
                 cache: false,
                 processData: false,
                 contentType: false,
-                success() {
-                    hide_errors();
-                    $("#create_bot_name").val("");
-                    $("#create_bot_short_name").val("");
-                    $("#create_payload_url").val("");
-                    $("#payload_url_inputbox").hide();
-                    $("#config_inputbox").hide();
-                    $(`[name*='${CSS.escape(service_name)}'] input`).each(function () {
-                        $(this).val("");
-                    });
-                    $("#create_bot_type").val(GENERIC_BOT_TYPE);
-                    $("#select_service_name").val("converter"); // TODO: Later we can change this to hello bot or similar
-                    $("#service_name_list").hide();
-                    $("#create_bot_button").show();
-                    $("#create_interface_type").val(GENERIC_INTERFACE);
-                    create_avatar_widget.clear();
-                    $("#bots_lists_navbar .add-a-new-bot-tab").removeClass("active");
-                    $("#bots_lists_navbar .active-bots-tab").addClass("active");
-                },
                 error(xhr) {
                     $("#bot_table_error").text(JSON.parse(xhr.responseText).msg).show();
                 },
@@ -425,8 +456,6 @@ export function set_up() {
         });
     });
 
-    let image_version = 0;
-
     $("#active_bots_list").on("click", "button.open_edit_bot_form", (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -449,7 +478,6 @@ export function set_up() {
         );
         const avatar_widget = avatar.build_bot_edit_widget($("#settings_page"));
         const form = $("#settings_page .edit_bot_form");
-        const image = li.find(".image");
         const errors = form.find(".bot_edit_errors");
 
         const opts = {
@@ -522,22 +550,6 @@ export function set_up() {
                     cache: false,
                     processData: false,
                     contentType: false,
-                    success(data) {
-                        loading.destroy_indicator(spinner);
-                        errors.hide();
-                        edit_button.show();
-                        avatar_widget.clear();
-                        if (data.avatar_url) {
-                            // Note that the avatar_url won't actually change on the backend
-                            // when the user had a previous uploaded avatar.  Only the content
-                            // changes, so we version it to get an uncached copy.
-                            image_version += 1;
-                            image
-                                .find("img")
-                                .attr("src", data.avatar_url + "&v=" + image_version.toString());
-                        }
-                        overlays.close_modal("#edit_bot_modal");
-                    },
                     error(xhr) {
                         loading.destroy_indicator(spinner);
                         edit_button.show();

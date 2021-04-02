@@ -414,7 +414,7 @@ run_test("realm_bot add", (override) => {
     const bot_stub = make_stub();
     const admin_stub = make_stub();
     override(bot_data, "add", bot_stub.f);
-    override(settings_bots, "eventually_render_bots", () => {});
+    override(settings_bots, "bot_event_handler", () => {});
     override(settings_users, "update_bot_data", admin_stub.f);
     dispatch(event);
 
@@ -430,7 +430,7 @@ run_test("realm_bot remove", (override) => {
     const bot_stub = make_stub();
     const admin_stub = make_stub();
     override(bot_data, "deactivate", bot_stub.f);
-    override(settings_bots, "eventually_render_bots", () => {});
+    override(settings_bots, "bot_event_handler", () => {});
     override(settings_users, "update_bot_data", admin_stub.f);
     dispatch(event);
 
@@ -451,17 +451,22 @@ run_test("realm_bot update", (override) => {
     const event = event_fixtures.realm_bot__update;
     const bot_stub = make_stub();
     const admin_stub = make_stub();
+    const bot_data_stub = make_stub();
     override(bot_data, "update", bot_stub.f);
-    override(settings_bots, "eventually_render_bots", () => {});
+    override(settings_bots, "bot_event_handler", () => {});
+    override(bot_data, "get", bot_data_stub.f);
     override(settings_users, "update_bot_data", admin_stub.f);
 
     dispatch(event);
 
     assert.equal(bot_stub.num_calls, 1);
     assert.equal(admin_stub.num_calls, 1);
+    assert.equal(bot_data_stub.num_calls, 1);
     let args = bot_stub.get_args("user_id", "bot");
     assert_same(args.user_id, event.bot.user_id);
     assert_same(args.bot, event.bot);
+    args = bot_data_stub.get_args("user_id");
+    assert_same(args.user_id, event.bot.user_id);
 
     args = admin_stub.get_args("update_user_id", "update_bot_data");
     assert_same(args.update_user_id, event.bot.user_id);

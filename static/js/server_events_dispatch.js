@@ -301,13 +301,13 @@ export function dispatch_normal_event(event) {
             switch (event.op) {
                 case "add":
                     bot_data.add(event.bot);
-                    settings_bots.eventually_render_bots();
+                    settings_bots.bot_event_handler();
                     settings_users.update_bot_data(event.bot.user_id);
                     break;
                 case "remove":
                     bot_data.deactivate(event.bot.user_id);
                     event.bot.is_active = false;
-                    settings_bots.eventually_render_bots();
+                    settings_bots.bot_event_handler();
                     settings_users.update_bot_data(event.bot.user_id);
                     break;
                 case "delete":
@@ -315,7 +315,7 @@ export function dispatch_normal_event(event) {
                     break;
                 case "update":
                     bot_data.update(event.bot.user_id, event.bot);
-                    settings_bots.eventually_render_bots();
+                    settings_bots.bot_event_handler(bot_data.get(event.bot.user_id));
                     settings_users.update_bot_data(event.bot.user_id);
                     break;
                 default:
