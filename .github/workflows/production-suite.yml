@@ -127,6 +127,11 @@ jobs:
             is_buster: true
             os: buster
 
+          - docker_image: zulip/ci:bullseye
+            name: Bullseye production install
+            is_bullseye: true
+            os: bullseye
+
     name: ${{ matrix.name  }}
     container: ${{ matrix.docker_image }}
     runs-on: ubuntu-latest
