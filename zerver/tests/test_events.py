@@ -2045,7 +2045,9 @@ class SubscribeActionTest(BaseAction):
         stream.save()
 
         user_profile = self.example_user("hamlet")
-        action = lambda: bulk_add_subscriptions(user_profile.realm, [stream], [user_profile])
+        action = lambda: bulk_add_subscriptions(
+            user_profile.realm, [stream], [user_profile], acting_user=None
+        )
         events = self.verify_action(action, include_subscribers=include_subscribers, num_events=2)
         check_stream_create("events[0]", events[0])
         check_subscription_add("events[1]", events[1])

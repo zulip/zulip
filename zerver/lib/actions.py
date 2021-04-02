@@ -481,7 +481,11 @@ def process_new_human_user(
                 streams.append(stream)
 
     bulk_add_subscriptions(
-        realm, streams, [user_profile], acting_user=acting_user, from_user_creation=True
+        realm,
+        streams,
+        [user_profile],
+        from_user_creation=True,
+        acting_user=acting_user,
     )
 
     add_new_user_history(user_profile, streams)
@@ -3239,8 +3243,9 @@ def bulk_add_subscriptions(
     streams: Iterable[Stream],
     users: Iterable[UserProfile],
     color_map: Mapping[str, str] = {},
-    acting_user: Optional[UserProfile] = None,
     from_user_creation: bool = False,
+    *,
+    acting_user: Optional[UserProfile],
 ) -> SubT:
     users = list(users)
 
