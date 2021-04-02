@@ -755,9 +755,15 @@ class Command(BaseCommand):
                 # suite fast, don't add these users and subscriptions
                 # when running populate_db for the test suite
 
+                # to imitate emoji insertions in stream names
+                raw_emojis = ["😎", "😂", "🐱‍👤"]
+
                 zulip_stream_dict: Dict[str, Dict[str, Any]] = {
                     "devel": {"description": "For developing"},
-                    "all": {"description": "For **everything**"},
+                    # ビデオゲーム - VideoGames (japanese)
+                    "ビデオゲーム": {
+                        "description": "Share your favorite video games!  {}".format(raw_emojis[2])
+                    },
                     "announce": {
                         "description": "For announcements",
                         "stream_post_policy": Stream.STREAM_POST_POLICY_ADMINS,
@@ -767,7 +773,9 @@ class Command(BaseCommand):
                     "social": {"description": "For socializing"},
                     "test": {"description": "For testing `code`"},
                     "errors": {"description": "For errors"},
-                    "sales": {"description": "For sales discussion"},
+                    # 조리법 - Recipes (Korean) , Пельмени - Dumplings (Russian)
+                    "조리법 "
+                    + raw_emojis[0]: {"description": "Everything cooking, from pasta to Пельмени"},
                 }
 
                 extra_stream_names = [
