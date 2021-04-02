@@ -75,7 +75,7 @@ class TestEncodeDecode(ZulipTestCase):
     def test_encode_decode(self) -> None:
         realm = get_realm("zulip")
         stream_name = "dev. help"
-        stream = ensure_stream(realm, stream_name)
+        stream = ensure_stream(realm, stream_name, acting_user=None)
         email_address = encode_email_address(stream)
         self.assertEqual(email_address, f"dev-help.{stream.email_token}@testserver")
 
@@ -134,7 +134,7 @@ class TestEncodeDecode(ZulipTestCase):
     def test_encode_decode_nonlatin_alphabet_stream_name(self) -> None:
         realm = get_realm("zulip")
         stream_name = "Тестовы some ascii letters"
-        stream = ensure_stream(realm, stream_name)
+        stream = ensure_stream(realm, stream_name, acting_user=None)
         email_address = encode_email_address(stream)
 
         msg_string = get_email_gateway_message_string_from_address(email_address)
@@ -149,7 +149,7 @@ class TestEncodeDecode(ZulipTestCase):
         self.assertEqual(token, stream.email_token)
 
         asciiable_stream_name = "ąężć"
-        stream = ensure_stream(realm, asciiable_stream_name)
+        stream = ensure_stream(realm, asciiable_stream_name, acting_user=None)
         email_address = encode_email_address(stream)
         self.assertTrue(email_address.startswith("aezc."))
 

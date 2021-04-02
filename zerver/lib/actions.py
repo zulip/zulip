@@ -2258,7 +2258,8 @@ def ensure_stream(
     stream_name: str,
     invite_only: bool = False,
     stream_description: str = "",
-    acting_user: Optional[UserProfile] = None,
+    *,
+    acting_user: Optional[UserProfile],
 ) -> Stream:
     return create_stream_if_needed(
         realm,
