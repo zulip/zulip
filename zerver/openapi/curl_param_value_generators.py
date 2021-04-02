@@ -20,11 +20,15 @@ from zerver.lib.actions import (
 from zerver.lib.events import do_events_register
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Client, Message, UserGroup, UserPresence, get_realm
+from zerver.lib.users import get_api_key
+from zerver.models import Client, Message, UserGroup, UserPresence, get_realm, get_user
 
 GENERATOR_FUNCTIONS: Dict[str, Callable[[], Dict[str, object]]] = {}
 REGISTERED_GENERATOR_FUNCTIONS: Set[str] = set()
 CALLED_GENERATOR_FUNCTIONS: Set[str] = set()
+# This is a List rather than just a string in order to make it easier
+# to write to it from another module.
+AUTHENTICATION_LINE: List[str] = [""]
 
 helpers = ZulipTestCase()
 
@@ -310,3 +314,22 @@ def deactivate_user() -> Dict[str, object]:
         acting_user=None,
     )
     return {"user_id": user_profile.id}
+
+
+@openapi_param_value_generator(["/users/me:delete"])
+def deactivate_own_user() -> Dict[str, object]:
+    test_user_email = "delete-test@zulip.com"
+    deactivate_test_user = do_create_user(
+        test_user_email,
+        "secret",
+        get_realm("zulip"),
+        "Mr. Delete",
+        role=200,
+        acting_user=None,
+    )
+    realm = get_realm("zulip")
+    test_user = get_user(test_user_email, realm)
+    test_user_api_key = get_api_key(test_user)
+    # change authentication line to allow test_client to delete itself.
+    AUTHENTICATION_LINE[0] = f"{deactivate_test_user.email}:{test_user_api_key}"
+    return {}

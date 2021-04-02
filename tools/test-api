@@ -106,7 +106,7 @@ with test_server_running(
     )
 
     test_the_api(client, nonadmin_client, owner_client)
-    test_generated_curl_examples_for_success(client, owner_client)
+    test_generated_curl_examples_for_success(client)
     test_js_bindings(client)
 
     # Test error payloads
