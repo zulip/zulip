@@ -2107,7 +2107,9 @@ def check_send_message(sender: UserProfile, client: Client, message_type_name: s
                        forwarder_user_profile: Optional[UserProfile]=None,
                        local_id: Optional[str]=None,
                        sender_queue_id: Optional[str]=None,
-                       widget_content: Optional[str]=None) -> int:
+                       widget_content: Optional[str]=None,
+                       *,
+                       skip_stream_access_check: bool=False) -> int:
 
     addressee = Addressee.legacy_build(
         sender,
@@ -2118,7 +2120,7 @@ def check_send_message(sender: UserProfile, client: Client, message_type_name: s
     message = check_message(sender, client, addressee,
                             message_content, realm, forged, forged_timestamp,
                             forwarder_user_profile, local_id, sender_queue_id,
-                            widget_content)
+                            widget_content, skip_stream_access_check=skip_stream_access_check)
     return do_send_messages([message])[0]
 
 def check_schedule_message(sender: UserProfile, client: Client,
@@ -2278,7 +2280,9 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
                   forwarder_user_profile: Optional[UserProfile]=None,
                   local_id: Optional[str]=None,
                   sender_queue_id: Optional[str]=None,
-                  widget_content: Optional[str]=None) -> Dict[str, Any]:
+                  widget_content: Optional[str]=None,
+                  *,
+                  skip_stream_access_check: bool=False) -> Dict[str, Any]:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
     for high-level documentation on this subsystem.
@@ -2315,11 +2319,16 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
 
         # This will raise JsonableError if there are problems.
 
-        if sender.bot_type != sender.OUTGOING_WEBHOOK_BOT:
+        if not skip_stream_access_check:
             access_stream_for_send_message(
-                sender=sender,
-                stream=stream,
-                forwarder_user_profile=forwarder_user_profile)
+                sender=sender, stream=stream, forwarder_user_profile=forwarder_user_profile
+            )
+        else:
+            # Defensive assertion - the only currently supported use case
+            # for this option is for outgoing webhook bots and since this
+            # is security-sensitive code, it's beneficial to ensure nothing
+            # else can sneak past the access check.
+            assert sender.bot_type == sender.OUTGOING_WEBHOOK_BOT
 
     elif addressee.is_private():
         user_profiles = addressee.user_profiles()

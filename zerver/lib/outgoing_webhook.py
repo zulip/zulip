@@ -167,6 +167,10 @@ def send_response_message(bot_id: int, message_info: Dict[str, Any], response_da
 
     response_data is what the bot wants to send back and has these fields:
         content - raw markdown content for Zulip to render
+
+    WARNING: This function sends messages bypassing the stream access check
+    for the bot - so use with caution to not call this in codepaths
+    that might let someone send arbitrary messages to any stream through this.
     """
 
     message_type = message_info['type']
@@ -201,6 +205,7 @@ def send_response_message(bot_id: int, message_info: Dict[str, Any], response_da
         message_content=content,
         widget_content=widget_content,
         realm=realm,
+        skip_stream_access_check=True,
     )
 
 def fail_with_message(event: Dict[str, Any], failure_message: str) -> None:
