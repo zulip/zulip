@@ -114,10 +114,10 @@ def update_message_backend(
     content: Optional[str] = REQ(default=None),
 ) -> HttpResponse:
     if not user_profile.realm.allow_message_editing:
-        return json_error(_("Your organization has turned off message editing"))
+        raise JsonableError(_("Your organization has turned off message editing"))
 
     if propagate_mode != "change_one" and topic_name is None and stream_id is None:
-        return json_error(_("Invalid propagate_mode without topic edit"))
+        raise JsonableError(_("Invalid propagate_mode without topic edit"))
 
     message, ignored_user_message = access_message(user_profile, message_id)
     is_no_topic_msg = message.topic_name() == "(no topic)"
@@ -165,7 +165,7 @@ def update_message_backend(
             raise JsonableError(_("The time limit for editing this message has passed"))
 
     if topic_name is None and content is None and stream_id is None:
-        return json_error(_("Nothing to change"))
+        raise JsonableError(_("Nothing to change"))
     if topic_name is not None:
         topic_name = topic_name.strip()
         if topic_name == "":
