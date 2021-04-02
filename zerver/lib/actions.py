@@ -939,10 +939,7 @@ def do_set_realm_notifications_stream(
 
 
 def do_set_realm_signup_notifications_stream(
-    realm: Realm,
-    stream: Optional[Stream],
-    stream_id: int,
-    acting_user: Optional[UserProfile] = None,
+    realm: Realm, stream: Optional[Stream], stream_id: int, *, acting_user: Optional[UserProfile]
 ) -> None:
     old_value = realm.signup_notifications_stream_id
     realm.signup_notifications_stream = stream
