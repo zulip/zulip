@@ -376,10 +376,8 @@ export function set_up() {
                 processData: false,
                 contentType: false,
                 error(xhr) {
-                    $("#bot_table_error").text(JSON.parse(xhr.responseText).msg).show();
-                },
-                complete() {
                     loading.destroy_indicator(spinner);
+                    $("#bot_table_error").text(JSON.parse(xhr.responseText).msg).show();
                 },
             });
         },
