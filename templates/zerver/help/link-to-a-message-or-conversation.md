@@ -1,8 +1,8 @@
 # Link to a message or conversation
 
-Share permanent links to messages, threads, and streams. The Zulip project
-uses this feature extensively to link to Zulip conversations from our
-issue tracker.
+Share permanent links to messages, threads, and streams.  With Zulip,
+it's easy to to link to specific (parts of) conversations from issue
+trackers, documentation, or other external tools.
 
 ## Link to a stream or topic
 
@@ -32,3 +32,6 @@ This will copy to your clipboard a permanent link to the message,
 displayed in its thread (i.e. topic view for messages in a stream).
 
 Viewing a thread via a message link will never mark messages as read.
+
+Zulip uses the same permanent link syntax when [quoting a
+message](/help/quote-and-reply).
