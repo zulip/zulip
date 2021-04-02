@@ -768,8 +768,6 @@ input[type="checkbox"] {
         border-radius: 4px;
         box-sizing: border-box;
 
-        overflow: auto;
-
         .details {
             display: inline-block;
             width: calc(100% - 75px);
@@ -810,6 +808,13 @@ input[type="checkbox"] {
     }
 
     .description {
+        height: 60px;
+        width: 80%;
+        margin: 7px;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+        box-shadow: 0 0 4px hsla(0, 0%, 0%, 0.5);
+
         p {
             margin: 0;
         }

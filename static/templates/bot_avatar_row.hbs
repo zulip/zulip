@@ -1,8 +1,11 @@
-<li class="bot-information-box white-box">
+<li class="bot-information-box white-box" data-simplebar data-simplebar-auto-hide="false">
     <div class="image overflow-hidden">
         <img src="{{avatar_url}}" class="avatar" />
         <div class="details">
             <div class="name">{{name}}</div>
+            <div class="description" data-simplebar data-simplebar-auto-hide="true">
+                <div class="value rendered_markdown">{{rendered_markdown bot_description}}</div>
+            </div>
             {{#if is_active}}
             <div class="edit-bot-buttons">
                 <button type="submit" class="btn open_edit_bot_form" data-sidebar-form="edit-bot" title="{{t 'Edit bot' }}" data-email="{{email}}">
@@ -25,10 +28,6 @@
         <div class="type">
             <div class="field">{{t "Bot type" }}</div>
             <div class="value">{{type}}</div>
-        </div>
-        <div class="description">
-            <div class="field">{{t "Bot description" }}</div>
-            <div class="value rendered_markdown">{{rendered_markdown bot_description}}</div>
         </div>
         {{#if is_active}}
         <div class="api_key">
