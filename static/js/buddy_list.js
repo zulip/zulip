@@ -275,6 +275,7 @@ export class BuddyList extends BuddyListConf {
             this.container.append(`<div > ${_('User not found')} </div>`);
             return;
         }
+        
         while (this.render_count < this.keys.length) {
             const padding_height = $(this.padding_sel).height();
             const bottom_offset = elem.scrollHeight - elem.scrollTop - padding_height;
