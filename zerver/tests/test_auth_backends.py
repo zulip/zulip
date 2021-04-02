@@ -182,7 +182,7 @@ class AuthBackendTest(ZulipTestCase):
         self.assertEqual(user_profile, result)
 
         # Verify auth fails with a deactivated realm
-        do_deactivate_realm(user_profile.realm)
+        do_deactivate_realm(user_profile.realm, acting_user=None)
         self.assertIsNone(backend.authenticate(**good_kwargs))
 
         # Verify auth works again after reactivating the realm
@@ -3821,7 +3821,7 @@ class FetchAPIKeyTest(ZulipTestCase):
         self.assert_json_error_contains(result, "Your account has been disabled", 403)
 
     def test_deactivated_realm(self) -> None:
-        do_deactivate_realm(self.user_profile.realm)
+        do_deactivate_realm(self.user_profile.realm, acting_user=None)
         result = self.client_post(
             "/api/v1/fetch_api_key",
             dict(username=self.email, password=initial_password(self.email)),
@@ -3859,7 +3859,7 @@ class DevFetchAPIKeyTest(ZulipTestCase):
         self.assert_json_error_contains(result, "Your account has been disabled", 403)
 
     def test_deactivated_realm(self) -> None:
-        do_deactivate_realm(self.user_profile.realm)
+        do_deactivate_realm(self.user_profile.realm, acting_user=None)
         result = self.client_post("/api/v1/dev_fetch_api_key", dict(username=self.email))
         self.assert_json_error_contains(result, "This organization has been deactivated", 403)
 
@@ -5073,7 +5073,7 @@ class TestLDAP(ZulipLDAPTestCase):
         with self.settings(AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
             backend = self.backend
             email = "nonexisting@zulip.com"
-            do_deactivate_realm(backend._realm)
+            do_deactivate_realm(backend._realm, acting_user=None)
             with self.assertRaisesRegex(Exception, "Realm has been deactivated"):
                 backend.get_or_build_user(email, _LDAPUser())
 

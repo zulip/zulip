@@ -968,7 +968,7 @@ def do_set_realm_signup_notifications_stream(
     send_event(realm, event, active_user_ids(realm.id))
 
 
-def do_deactivate_realm(realm: Realm, acting_user: Optional[UserProfile] = None) -> None:
+def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
     """
     Deactivate this realm. Do NOT deactivate the users -- we need to be able to
     tell the difference between users that were intentionally deactivated,
@@ -1048,7 +1048,7 @@ def do_change_realm_subdomain(realm: Realm, new_subdomain: str) -> None:
     # it's deactivated redirect to new_subdomain so that we can tell the users that
     # the realm has been moved to a new subdomain.
     placeholder_realm = do_create_realm(old_subdomain, "placeholder-realm")
-    do_deactivate_realm(placeholder_realm)
+    do_deactivate_realm(placeholder_realm, acting_user=None)
     do_add_deactivated_redirect(placeholder_realm, realm.uri)
 
 

@@ -305,9 +305,10 @@ class TestRealmAuditLog(ZulipTestCase):
 
     def test_realm_activation(self) -> None:
         realm = get_realm("zulip")
-        do_deactivate_realm(realm)
+        user = self.example_user("desdemona")
+        do_deactivate_realm(realm, acting_user=user)
         log_entry = RealmAuditLog.objects.get(
-            realm=realm, event_type=RealmAuditLog.REALM_DEACTIVATED
+            realm=realm, event_type=RealmAuditLog.REALM_DEACTIVATED, acting_user=user
         )
         extra_data = orjson.loads(log_entry.extra_data)
         self.check_role_count_schema(extra_data[RealmAuditLog.ROLE_COUNT])
