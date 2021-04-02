@@ -23,6 +23,7 @@ class zulip::profile::base {
         /^8\.[0-9]*$/  => 'jessie',
         /^9\.[0-9]*$/  => 'stretch',
         /^10\.[0-9]*$/ => 'buster',
+        /^11\.[0-9]*$/ => 'bullseye',
         # Ubuntu releases
         '12.04' => 'precise',
         '14.04' => 'trusty',
