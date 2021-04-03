@@ -13,8 +13,7 @@ set_global("location", {
     origin: "http://zulip.zulipdev.com",
 });
 
-page_params.realm_users = [];
-page_params.realm_filters = [
+const example_realm_filters = [
     ["#(?P<id>[0-9]{2,8})", "https://trac.example.com/ticket/%(id)s"],
     ["ZBUG_(?P<id>[0-9]{2,8})", "https://trac2.zulip.net/ticket/%(id)s"],
     [
@@ -180,11 +179,12 @@ stream_data.add_sub(edgecase_stream_2);
 // streamTopicHandler and it would be parsed as edgecase_stream_2.
 stream_data.add_sub(amp_stream);
 
-markdown.initialize(page_params.realm_filters, markdown_config.get_helpers());
+markdown.initialize(example_realm_filters, markdown_config.get_helpers());
 
 function test(label, f) {
     run_test(label, (override) => {
-        markdown.update_linkifier_rules(page_params.realm_filters);
+        page_params.realm_users = [];
+        markdown.update_linkifier_rules(example_realm_filters);
         f(override);
     });
 }

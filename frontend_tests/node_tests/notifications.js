@@ -14,11 +14,6 @@ set_global("document", {
         return true;
     },
 });
-page_params.is_admin = false;
-page_params.realm_users = [];
-page_params.enable_desktop_notifications = true;
-page_params.enable_sounds = true;
-page_params.wildcard_mentions_notify = true;
 const _navigator = {
     userAgent: "Mozilla/5.0 AppleWebKit/537.36 Chrome/64.0.3282.167 Safari/537.36",
 };
@@ -57,7 +52,18 @@ stream_data.add_sub(muted);
 
 muting.add_muted_topic(general.stream_id, "muted topic");
 
-run_test("message_is_notifiable", () => {
+function test(label, f) {
+    run_test(label, (override) => {
+        page_params.is_admin = false;
+        page_params.realm_users = [];
+        page_params.enable_desktop_notifications = true;
+        page_params.enable_sounds = true;
+        page_params.wildcard_mentions_notify = true;
+        f(override);
+    });
+}
+
+test("message_is_notifiable", () => {
     // A notification is sent if both message_is_notifiable(message)
     // and the appropriate should_send_*_notification function return
     // true.
@@ -254,7 +260,7 @@ run_test("message_is_notifiable", () => {
     assert.equal(notifications.message_is_notifiable(message), true);
 });
 
-run_test("basic_notifications", (override) => {
+test("basic_notifications", (override) => {
     override(ui, "replace_emoji_with_text", () => {});
 
     let n; // Object for storing all notification data for assertions.

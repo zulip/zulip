@@ -31,10 +31,6 @@ mock_esm("../../static/js/stream_popover", {
     hide_streamlist_sidebar: noop,
 });
 
-page_params.is_admin = false;
-page_params.realm_email_address_visibility = 3;
-page_params.custom_profile_fields = [];
-
 const people = zrequire("people");
 const user_status = zrequire("user_status");
 const message_edit = zrequire("message_edit");
@@ -95,6 +91,9 @@ function make_image_stubber() {
 
 function test_ui(label, f) {
     run_test(label, (override) => {
+        page_params.is_admin = false;
+        page_params.realm_email_address_visibility = 3;
+        page_params.custom_profile_fields = [];
         override(popovers, "clipboard_enable", noop);
         popovers.clear_for_testing();
         popovers.register_click_handlers();

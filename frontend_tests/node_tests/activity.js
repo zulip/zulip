@@ -15,9 +15,6 @@ $(window).idle = () => {};
 
 let filter_key_handlers;
 
-page_params.realm_users = [];
-page_params.user_id = 999;
-
 const _document = {
     hasFocus() {
         return true;
@@ -138,6 +135,9 @@ run_test("reload_defaults", () => {
 });
 
 run_test("get_status", () => {
+    page_params.realm_users = [];
+    page_params.user_id = 999;
+
     assert.equal(presence.get_status(page_params.user_id), "active");
     assert.equal(presence.get_status(alice.user_id), "inactive");
     assert.equal(presence.get_status(fred.user_id), "active");
@@ -559,6 +559,8 @@ test_ui("clear_search", () => {
 });
 
 test_ui("escape_search", () => {
+    page_params.realm_presence_disabled = true;
+
     activity.set_cursor_and_filter();
 
     $(".user-list-filter").val("somevalue");
@@ -582,6 +584,8 @@ test_ui("initiate_search", () => {
 });
 
 test_ui("toggle_filter_display", () => {
+    page_params.realm_presence_disabled = true;
+
     activity.set_cursor_and_filter();
 
     activity.user_filter.toggle_filter_displayed();

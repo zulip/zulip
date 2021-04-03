@@ -277,6 +277,8 @@ run_test("reaction", (override) => {
 });
 
 run_test("realm settings", (override) => {
+    page_params.is_admin = true;
+
     override(settings_org, "sync_realm_settings", noop);
     override(settings_bots, "update_bot_permissions_ui", noop);
     override(notifications, "redraw_title", noop);

@@ -311,7 +311,7 @@ test_ui("get_invalid_recipient_emails", (override) => {
         full_name: "Welcome Bot",
     };
 
-    page_params.user_id = 30;
+    page_params.user_id = me.user_id;
 
     const params = {};
     params.realm_users = [];
@@ -325,6 +325,8 @@ test_ui("get_invalid_recipient_emails", (override) => {
 });
 
 test_ui("test_wildcard_mention_allowed", () => {
+    page_params.user_id = me.user_id;
+
     page_params.realm_wildcard_mention_policy =
         settings_config.wildcard_mention_policy_values.by_everyone.code;
     page_params.is_guest = true;
@@ -371,6 +373,7 @@ test_ui("validate_stream_message", (override) => {
     // primarily used to get coverage over functions called from validate()
     // we are separating it up in different test. Though their relative position
     // of execution should not be changed.
+    page_params.user_id = me.user_id;
     page_params.realm_mandatory_topics = false;
     const sub = {
         stream_id: 101,
@@ -719,7 +722,7 @@ test_ui("send_message", (override) => {
         stub_state = initialize_state_stub_dict();
         compose_state.topic("");
         compose_state.set_message_type("private");
-        page_params.user_id = 101;
+        page_params.user_id = new_user.user_id;
         override(compose_state, "private_message_recipient", () => "alice@example.com");
 
         const server_message_id = 127;
@@ -738,7 +741,7 @@ test_ui("send_message", (override) => {
             const single_msg = {
                 type: "private",
                 content: "[foobar](/user_uploads/123456)",
-                sender_id: 101,
+                sender_id: new_user.user_id,
                 queue_id: undefined,
                 stream: "",
                 topic: "",
@@ -847,6 +850,8 @@ test_ui("send_message", (override) => {
 });
 
 test_ui("enter_with_preview_open", (override) => {
+    page_params.user_id = new_user.user_id;
+
     // Test sending a message with content.
     compose_state.set_message_type("stream");
     $("#compose-textarea").val("message me");

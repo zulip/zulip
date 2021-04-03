@@ -7,8 +7,6 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
-page_params.stop_words = ["what", "about"];
-
 mock_cjs("jquery", $);
 const stream_topic_history = mock_esm("../../static/js/stream_topic_history");
 
@@ -97,6 +95,8 @@ run_test("uris", () => {
 });
 
 run_test("show_empty_narrow_message", () => {
+    page_params.stop_words = [];
+
     $("#left_bar_compose_reply_button_big").prop("disabled", false);
     narrow_state.reset_current_filter();
     hide_all_empty_narrow_messages();
@@ -242,6 +242,8 @@ run_test("hide_empty_narrow_message", () => {
 });
 
 run_test("show_search_stopwords", () => {
+    page_params.stop_words = ["what", "about"];
+
     narrow_state.reset_current_filter();
     let items = [];
 

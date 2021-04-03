@@ -7,13 +7,8 @@ const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {page_params} = require("../zjsunit/zpage_params");
 
-page_params.realm_is_zephyr_mirror_realm = false;
-
 const settings_config = zrequire("settings_config");
 const pm_conversations = zrequire("pm_conversations");
-
-page_params.realm_email_address_visibility =
-    settings_config.email_address_visibility_values.admins_only.code;
 
 const recent_senders = zrequire("recent_senders");
 const peer_data = zrequire("peer_data");
@@ -109,6 +104,10 @@ function test(label, f) {
         peer_data.clear_for_testing();
         people.clear_recipient_counts_for_testing();
         page_params.is_admin = false;
+        page_params.realm_is_zephyr_mirror_realm = false;
+        page_params.realm_email_address_visibility =
+            settings_config.email_address_visibility_values.admins_only.code;
+
         f(override);
     });
 }

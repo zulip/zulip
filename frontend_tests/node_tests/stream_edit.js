@@ -57,7 +57,6 @@ const me = {
     full_name: "me",
 };
 
-page_params.user_id = me.user_id;
 const persons = [jill, mark, fred, me];
 for (const person of persons) {
     people.add_active_user(person);
@@ -86,6 +85,7 @@ for (const sub of subs) {
 
 function test_ui(label, f) {
     run_test(label, (override) => {
+        page_params.user_id = me.user_id;
         stream_edit.initialize();
         f(override);
     });
