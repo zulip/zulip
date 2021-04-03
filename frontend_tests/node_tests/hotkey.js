@@ -77,17 +77,6 @@ const search = mock_esm("../../static/js/search");
 const stream_list = mock_esm("../../static/js/stream_list");
 const subs = mock_esm("../../static/js/subs");
 
-mock_esm("../../static/js/hashchange", {
-    in_recent_topics_hash: () => false,
-});
-
-mock_esm("../../static/js/stream_popover", {
-    stream_popped: () => false,
-    topic_popped: () => false,
-    all_messages_popped: () => false,
-    starred_messages_popped: () => false,
-});
-
 mock_esm("../../static/js/hotspots", {
     is_open: () => false,
 });
@@ -95,6 +84,13 @@ mock_esm("../../static/js/hotspots", {
 mock_esm("../../static/js/recent_topics", {
     is_visible: () => false,
     is_in_focus: () => false,
+});
+
+mock_esm("../../static/js/stream_popover", {
+    stream_popped: () => false,
+    topic_popped: () => false,
+    all_messages_popped: () => false,
+    starred_messages_popped: () => false,
 });
 
 message_lists.current = {
