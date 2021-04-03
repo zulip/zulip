@@ -1,6 +1,6 @@
 body {
     background-color: hsl(0, 0%, 98%);
-    font-family: "Source Sans 3", Helvetica, Arial, sans-serif;
+    font-family: "Source Sans 3", sans-serif;
     line-height: 150%;
     height: 100%;
     font-weight: 300;
@@ -274,7 +274,7 @@ html {
 }
 
 .title {
-    font-family: Helvetica;
+    font-family: Helvetica, sans-serif;
     font-size: 100px;
     font-weight: bold;
     margin-top: 50px;
@@ -1299,7 +1299,7 @@ input.new-organization-button {
     min-height: calc(100vh - 290px);
     height: 100%;
     background-color: hsl(163, 42%, 85%);
-    font-family: "Source Sans 3", Helvetica, Arial, sans-serif;
+    font-family: "Source Sans 3", sans-serif;
 }
 
 .error_page .container {
