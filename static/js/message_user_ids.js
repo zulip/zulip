@@ -13,6 +13,10 @@
 */
 const user_set = new Set();
 
+export function clear_for_testing() {
+    user_set.clear();
+}
+
 export function user_ids() {
     return Array.from(user_set);
 }
