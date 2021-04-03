@@ -20,10 +20,7 @@ const SHORT_TEXT_NAME = "Short Text";
 const SELECT_NAME = "Select";
 const EXTERNAL_ACCOUNT_NAME = "External account";
 
-page_params.custom_profile_fields = {};
-page_params.realm_default_external_accounts = JSON.stringify({});
-
-page_params.custom_profile_field_types = {
+const custom_profile_field_types = {
     SHORT_TEXT: {
         id: SHORT_TEXT_ID,
         name: SHORT_TEXT_NAME,
@@ -37,6 +34,8 @@ page_params.custom_profile_field_types = {
         name: EXTERNAL_ACCOUNT_NAME,
     },
 };
+
+page_params.custom_profile_field_types = custom_profile_field_types;
 
 mock_esm("sortablejs", {Sortable: {create: () => {}}});
 
@@ -78,6 +77,9 @@ function test_populate(opts) {
 }
 
 run_test("populate_profile_fields", () => {
+    page_params.custom_profile_fields = {};
+    page_params.realm_default_external_accounts = JSON.stringify({});
+
     const fields_data = [
         {
             type: SHORT_TEXT_ID,

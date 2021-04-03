@@ -19,17 +19,17 @@ const StripeCheckout = set_global("StripeCheckout", {
     configure: noop,
 });
 
-page_params.annual_price = 8000;
-page_params.monthly_price = 800;
-page_params.seat_count = 8;
-page_params.percent_off = 20;
-
 mock_cjs("jquery", $);
 
 const helpers = zrequire("../js/billing/helpers");
 zrequire("../js/billing/upgrade");
 
 run_test("initialize", (override) => {
+    page_params.annual_price = 8000;
+    page_params.monthly_price = 800;
+    page_params.seat_count = 8;
+    page_params.percent_off = 20;
+
     let token_func;
     override(helpers, "set_tab", (page_name) => {
         assert.equal(page_name, "upgrade");
