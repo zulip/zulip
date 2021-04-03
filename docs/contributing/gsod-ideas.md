@@ -56,7 +56,7 @@ We also recommend reviewing
 [the official GSoD guide](https://developers.google.com/season-of-docs/docs/tech-writer-guide),
 and keeping your eye on
 [the GSoD timeline](https://developers.google.com/season-of-docs/docs/timeline). The
-application deadline is June 28, 2019.
+application deadline is May 17, 2021.
 
 [Our guide for having a great summer with Zulip](../contributing/summer-with-zulip.md)
 is focused on what one should know once doing a GSoC project with
