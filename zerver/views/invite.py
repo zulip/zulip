@@ -13,7 +13,7 @@ from zerver.lib.actions import (
     do_revoke_multi_use_invite,
     do_revoke_user_invite,
 )
-from zerver.lib.exceptions import OrganizationAdministratorRequired, OrganizationOwnerRequired
+from zerver.lib.exceptions import OrganizationOwnerRequired
 from zerver.lib.request import REQ, JsonableError, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_id
@@ -39,11 +39,16 @@ def invite_users_backend(
     stream_ids: List[int] = REQ(validator=check_list(check_int)),
 ) -> HttpResponse:
 
-    if (
-        user_profile.realm.invite_to_realm_policy == Realm.INVITE_TO_REALM_ADMINS_ONLY
-        and not user_profile.is_realm_admin
-    ):
-        raise OrganizationAdministratorRequired()
+    if not user_profile.can_invite_others_to_realm():
+        if user_profile.realm.invite_to_realm_policy == Realm.POLICY_ADMINS_ONLY:
+            return json_error(_("Only administrators can invite others to this organization."))
+        if user_profile.realm.invite_to_realm_policy == Realm.POLICY_MODERATORS_ONLY:
+            return json_error(
+                _("Only administrators and moderators can invite others to this organization.")
+            )
+        if user_profile.realm.invite_to_realm_policy == Realm.POLICY_FULL_MEMBERS_ONLY:
+            return json_error(_("Your account is too new to invite others to this organization."))
+        # Guest case will be handled by require_member_or_admin decorator.
     if invite_as not in PreregistrationUser.INVITE_AS.values():
         return json_error(_("Must be invited as an valid type of user"))
     check_if_owner_required(invite_as, user_profile)

@@ -554,7 +554,7 @@ class RealmTest(ZulipTestCase):
     def test_change_invite_to_realm_policy(self) -> None:
         # We need an admin user.
         self.login("iago")
-        req = dict(invite_to_realm_policy=orjson.dumps(Realm.INVITE_TO_REALM_ADMINS_ONLY).decode())
+        req = dict(invite_to_realm_policy=orjson.dumps(Realm.POLICY_ADMINS_ONLY).decode())
         result = self.client_patch("/json/realm", req)
         self.assert_json_success(result)
 
@@ -888,8 +888,10 @@ class RealmAPITest(ZulipTestCase):
             ],
             message_content_delete_limit_seconds=[1000, 1100, 1200],
             invite_to_realm_policy=[
-                Realm.INVITE_TO_REALM_ADMINS_ONLY,
-                Realm.INVITE_TO_REALM_MEMBERS_ONLY,
+                Realm.POLICY_ADMINS_ONLY,
+                Realm.POLICY_MEMBERS_ONLY,
+                Realm.POLICY_FULL_MEMBERS_ONLY,
+                Realm.POLICY_MODERATORS_ONLY,
             ],
         )
 

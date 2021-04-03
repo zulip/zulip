@@ -47,7 +47,7 @@ def update_realm(
     disallow_disposable_email_addresses: Optional[bool] = REQ(validator=check_bool, default=None),
     invite_required: Optional[bool] = REQ(validator=check_bool, default=None),
     invite_to_realm_policy: Optional[int] = REQ(
-        validator=check_int_in(Realm.INVITE_TO_REALM_POLICY_TYPES), default=None
+        validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
     ),
     name_changes_disabled: Optional[bool] = REQ(validator=check_bool, default=None),
     email_changes_disabled: Optional[bool] = REQ(validator=check_bool, default=None),

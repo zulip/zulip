@@ -1240,24 +1240,94 @@ class InviteUserTest(InviteUserBase):
 
         self.check_has_permission_policies(othello, "invite_to_realm_policy", validation_func)
 
-    def test_require_realm_admin(self) -> None:
+    def test_invite_others_to_realm_setting(self) -> None:
         """
         The invite_to_realm_policy realm setting works properly.
         """
         realm = get_realm("zulip")
-        realm.invite_to_realm_policy = Realm.INVITE_TO_REALM_ADMINS_ONLY
-        realm.save()
+        do_set_realm_property(
+            realm, "invite_to_realm_policy", Realm.POLICY_ADMINS_ONLY, acting_user=None
+        )
 
-        self.login("hamlet")
+        self.login("shiva")
         email = "alice-test@zulip.com"
         email2 = "bob-test@zulip.com"
         invitee = f"Alice Test <{email}>, {email2}"
         self.assert_json_error(
-            self.invite(invitee, ["Denmark"]), "Must be an organization administrator"
+            self.invite(invitee, ["Denmark"]),
+            "Only administrators can invite others to this organization.",
         )
 
         # Now verify an administrator can do it
         self.login("iago")
+        self.assert_json_success(self.invite(invitee, ["Denmark"]))
+        self.assertTrue(find_key_by_email(email))
+        self.assertTrue(find_key_by_email(email2))
+
+        self.check_sent_emails([email, email2])
+
+        from django.core import mail
+
+        mail.outbox = []
+
+        do_set_realm_property(
+            realm, "invite_to_realm_policy", Realm.POLICY_MODERATORS_ONLY, acting_user=None
+        )
+        self.login("hamlet")
+        email = "carol-test@zulip.com"
+        email2 = "earl-test@zulip.com"
+        invitee = f"Carol Test <{email}>, {email2}"
+        self.assert_json_error(
+            self.invite(invitee, ["Denmark"]),
+            "Only administrators and moderators can invite others to this organization.",
+        )
+
+        self.login("shiva")
+        self.assert_json_success(self.invite(invitee, ["Denmark"]))
+        self.assertTrue(find_key_by_email(email))
+        self.assertTrue(find_key_by_email(email2))
+        self.check_sent_emails([email, email2])
+
+        mail.outbox = []
+
+        do_set_realm_property(
+            realm, "invite_to_realm_policy", Realm.POLICY_MEMBERS_ONLY, acting_user=None
+        )
+
+        self.login("polonius")
+        email = "dave-test@zulip.com"
+        email2 = "mark-test@zulip.com"
+        invitee = f"Dave Test <{email}>, {email2}"
+        self.assert_json_error(self.invite(invitee, ["Denmark"]), "Not allowed for guest users")
+
+        self.login("hamlet")
+        self.assert_json_success(self.invite(invitee, ["Denmark"]))
+        self.assertTrue(find_key_by_email(email))
+        self.assertTrue(find_key_by_email(email2))
+        self.check_sent_emails([email, email2])
+
+        mail.outbox = []
+
+        do_set_realm_property(
+            realm, "invite_to_realm_policy", Realm.POLICY_FULL_MEMBERS_ONLY, acting_user=None
+        )
+        do_set_realm_property(realm, "waiting_period_threshold", 1000, acting_user=None)
+
+        hamlet = self.example_user("hamlet")
+        hamlet.date_joined = timezone_now() - datetime.timedelta(
+            days=(realm.waiting_period_threshold - 1)
+        )
+
+        email = "issac-test@zulip.com"
+        email2 = "steven-test@zulip.com"
+        invitee = f"Issac Test <{email}>, {email2}"
+        self.assert_json_error(
+            self.invite(invitee, ["Denmark"]),
+            "Your account is too new to invite others to this organization.",
+        )
+
+        do_set_realm_property(realm, "waiting_period_threshold", 0, acting_user=None)
+
         self.assert_json_success(self.invite(invitee, ["Denmark"]))
         self.assertTrue(find_key_by_email(email))
         self.assertTrue(find_key_by_email(email2))
@@ -2441,8 +2511,8 @@ class MultiuseInviteTest(ZulipTestCase):
     def test_only_admin_can_create_multiuse_link_api_call(self) -> None:
         self.login("iago")
         # Only admins should be able to create multiuse invites even if
-        # invite_to_realm_policy is set to Realm.INVITE_TO_REALM_MEMBERS_ONLY.
-        self.realm.invite_to_realm_policy = Realm.INVITE_TO_REALM_MEMBERS_ONLY
+        # invite_to_realm_policy is set to Realm.POLICY_MEMBERS_ONLY.
+        self.realm.invite_to_realm_policy = Realm.POLICY_MEMBERS_ONLY
         self.realm.save()
 
         result = self.client_post("/json/invites/multiuse")

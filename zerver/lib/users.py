@@ -346,13 +346,7 @@ def compute_show_invites_and_add_streams(user_profile: Optional[UserProfile]) ->
     if user_profile.is_guest:
         return False, False
 
-    if user_profile.is_realm_admin:
-        return True, True
-
-    if user_profile.realm.invite_to_realm_policy == Realm.INVITE_TO_REALM_ADMINS_ONLY:
-        return False, True
-
-    return True, True
+    return user_profile.can_invite_others_to_realm(), True
 
 
 def format_user_row(

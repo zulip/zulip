@@ -670,7 +670,7 @@ class HomeTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
 
         realm = user_profile.realm
-        realm.invite_to_realm_policy = Realm.INVITE_TO_REALM_ADMINS_ONLY
+        realm.invite_to_realm_policy = Realm.POLICY_ADMINS_ONLY
         realm.save()
 
         self.login_user(user_profile)
@@ -689,14 +689,12 @@ class HomeTest(ZulipTestCase):
         user_profile = self.example_user("polonius")
 
         realm = user_profile.realm
-        realm.invite_to_realm_policy = Realm.INVITE_TO_REALM_MEMBERS_ONLY
+        realm.invite_to_realm_policy = Realm.POLICY_MEMBERS_ONLY
         realm.save()
 
         self.login_user(user_profile)
         self.assertFalse(user_profile.is_realm_admin)
-        self.assertEqual(
-            get_realm("zulip").invite_to_realm_policy, Realm.INVITE_TO_REALM_MEMBERS_ONLY
-        )
+        self.assertEqual(get_realm("zulip").invite_to_realm_policy, Realm.POLICY_MEMBERS_ONLY)
         result = self._get_home_page()
         html = result.content.decode("utf-8")
         self.assertNotIn("Invite more users", html)
@@ -1080,7 +1078,7 @@ class HomeTest(ZulipTestCase):
         user = self.example_user("iago")
 
         realm = user.realm
-        realm.invite_to_realm_policy = Realm.INVITE_TO_REALM_ADMINS_ONLY
+        realm.invite_to_realm_policy = Realm.POLICY_ADMINS_ONLY
         realm.save()
 
         show_invites, show_add_streams = compute_show_invites_and_add_streams(user)
@@ -1091,7 +1089,7 @@ class HomeTest(ZulipTestCase):
         user = self.example_user("hamlet")
 
         realm = user.realm
-        realm.invite_to_realm_policy = Realm.INVITE_TO_REALM_ADMINS_ONLY
+        realm.invite_to_realm_policy = Realm.POLICY_ADMINS_ONLY
         realm.save()
 
         show_invites, show_add_streams = compute_show_invites_and_add_streams(user)

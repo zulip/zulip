@@ -224,17 +224,7 @@ class Realm(models.Model):
     # See RealmDomain for the domains that apply for a given organization.
     emails_restricted_to_domains: bool = models.BooleanField(default=False)
 
-    INVITE_TO_REALM_MEMBERS_ONLY = 1
-    INVITE_TO_REALM_ADMINS_ONLY = 2
-    INVITE_TO_REALM_POLICY_TYPES = [
-        INVITE_TO_REALM_MEMBERS_ONLY,
-        INVITE_TO_REALM_ADMINS_ONLY,
-    ]
-
     invite_required: bool = models.BooleanField(default=True)
-    invite_to_realm_policy: int = models.PositiveSmallIntegerField(
-        default=INVITE_TO_REALM_MEMBERS_ONLY
-    )
 
     _max_invites: Optional[int] = models.IntegerField(null=True, db_column="max_invites")
     disallow_disposable_email_addresses: bool = models.BooleanField(default=True)
@@ -275,6 +265,9 @@ class Realm(models.Model):
 
     # Who in the organization is allowed to create streams.
     create_stream_policy: int = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
+
+    # Who in the organization is allowed to invite other users to organization.
+    invite_to_realm_policy: int = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
 
     # Who in the organization is allowed to invite other users to streams.
     invite_to_stream_policy: int = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
