@@ -2,6 +2,7 @@ import datetime
 import hashlib
 import logging
 import os
+import smtplib
 from email.headerregistry import Address
 from email.parser import Parser
 from email.policy import default
@@ -246,9 +247,14 @@ def send_email(
 
     if connection is None:
         connection = get_connection()
-    # This will call .open() for us, which is a no-op if it's already open;
-    # it will only call .close() if it was not open to begin with
-    if connection.send_messages([mail]) == 0:
+
+    try:
+        # This will call .open() for us, which is a no-op if it's already open;
+        # it will only call .close() if it was not open to begin with
+        if connection.send_messages([mail]) == 0:
+            logger.error("Error sending %s email to %s", template, mail.to)
+            raise EmailNotDeliveredException
+    except smtplib.SMTPException:
         logger.error("Error sending %s email to %s", template, mail.to)
         raise EmailNotDeliveredException
 
