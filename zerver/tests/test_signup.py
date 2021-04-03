@@ -1232,6 +1232,14 @@ class InviteUserTest(InviteUserBase):
         self.assertTrue(find_key_by_email(email2))
         self.check_sent_emails([email, email2], custom_from_name="Hamlet")
 
+    def test_can_invite_others_to_realm(self) -> None:
+        othello = self.example_user("othello")
+
+        def validation_func() -> bool:
+            return othello.can_invite_others_to_realm()
+
+        self.check_has_permission_policies(othello, "invite_to_realm_policy", validation_func)
+
     def test_require_realm_admin(self) -> None:
         """
         The invite_to_realm_policy realm setting works properly.

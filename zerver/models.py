@@ -1522,7 +1522,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return False
 
     def has_permission(self, policy_name: str) -> bool:
-        if policy_name not in ["create_stream_policy", "invite_to_stream_policy"]:
+        if policy_name not in [
+            "create_stream_policy",
+            "invite_to_stream_policy",
+            "invite_to_realm_policy",
+        ]:
             raise AssertionError("Invalid policy")
 
         if self.is_realm_admin:
@@ -1552,6 +1556,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     def can_subscribe_other_users(self) -> bool:
         return self.has_permission("invite_to_stream_policy")
+
+    def can_invite_others_to_realm(self) -> bool:
+        return self.has_permission("invite_to_realm_policy")
 
     def can_access_public_streams(self) -> bool:
         return not (self.is_guest or self.realm.is_zephyr_mirror_realm)
