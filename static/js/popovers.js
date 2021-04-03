@@ -1,5 +1,5 @@
 import ClipboardJS from "clipboard";
-import {parseISO, formatISO, add, set} from "date-fns";
+import {add, formatISO, parseISO, set} from "date-fns";
 import ConfirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
 import $ from "jquery";
 
