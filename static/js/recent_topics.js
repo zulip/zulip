@@ -536,6 +536,10 @@ export function show() {
     message_view_header.render_title_area();
 
     complete_rerender();
+    // once recent topic search input box and results are rendered , if input is not empty highlight contents of searchbox.
+    if ($("#recent_topics_search").val() !== "") {
+        $("#recent_topics_search").select();
+    }
 }
 
 function filter_buttons() {
