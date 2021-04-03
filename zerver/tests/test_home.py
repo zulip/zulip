@@ -50,6 +50,7 @@ class HomeTest(ZulipTestCase):
         "avatar_url_medium",
         "bot_types",
         "can_create_streams",
+        "can_invite_others_to_realm",
         "can_subscribe_other_users",
         "color_scheme",
         "cross_realm_bots",

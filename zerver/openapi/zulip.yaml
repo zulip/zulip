@@ -8366,6 +8366,15 @@ paths:
 
                           Whether the current user is allowed to subscribe other users to streams with
                           the organization's [streams policy](/help/configure-who-can-invite-to-streams).
+                      can_invite_others_to_realm:
+                        type: boolean
+                        description: |
+                          Present if `realm_user` is present in `fetch_event_types`.
+
+                          Whether the current user [is allowed to invite others]
+                          (/help/invite-new-users#change-who-can-send-invitations) to the organization.
+
+                          **Changes**: New in Zulip 4.0 (feature level 51).
                       is_admin:
                         type: boolean
                         description: |

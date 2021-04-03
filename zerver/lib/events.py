@@ -315,6 +315,7 @@ def fetch_initial_state_data(
 
         state["can_create_streams"] = settings_user.can_create_streams()
         state["can_subscribe_other_users"] = settings_user.can_subscribe_other_users()
+        state["can_invite_others_to_realm"] = settings_user.can_invite_others_to_realm()
         state["is_admin"] = settings_user.is_realm_admin
         state["is_owner"] = settings_user.is_realm_owner
         state["is_guest"] = settings_user.is_guest
@@ -593,6 +594,7 @@ def apply_event(
                     # Recompute properties based on is_admin/is_guest
                     state["can_create_streams"] = user_profile.can_create_streams()
                     state["can_subscribe_other_users"] = user_profile.can_subscribe_other_users()
+                    state["can_invite_others_to_realm"] = user_profile.can_invite_others_to_realm()
 
                     # TODO: Probably rather than writing the perfect
                     # live-update code for the case of racing with the
@@ -751,6 +753,7 @@ def apply_event(
             policy_permission_dict = {
                 "create_stream_policy": "can_create_streams",
                 "invite_to_stream_policy": "can_subscribe_other_users",
+                "invite_to_realm_policy": "can_invite_others_to_realm",
             }
 
             # Tricky interaction: Whether we can create streams and can subscribe other users

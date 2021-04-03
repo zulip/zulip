@@ -10,6 +10,11 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 51**
+
+* [`POST /register`](/api/register-queue): Added a new boolean field
+`can_invite_others_to_realm`.
+
 **Feature level 50**
 
 * [`POST /register`](/api/register-queue): Replaced `invite_by_admins_only`
