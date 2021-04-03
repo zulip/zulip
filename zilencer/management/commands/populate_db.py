@@ -809,6 +809,18 @@ class Command(BaseCommand):
                     "アニメ",
                 ]
 
+                stream_description_urls = [
+                    ("Read the docs", "https://zulip.readthedocs.io/en/latest/"),
+                    ("Browser", "https://duckduckgo.com/"),
+                    ("Open Source", "https://opensource.org/"),
+                    ("Zulip Repo", "https://github.com/zulip/zulip"),
+                    ("Programmer", "https://en.wikipedia.org/wiki/Programmer"),
+                    ("CERN", "https://home.cern/"),
+                    ("Bicycling", "https://www.bicycling.com/training/"),
+                    ("Nvidia", "https://www.nvidia.com/"),
+                    ("Richard Feynman", "https://www.britannica.com/biography/Richard-Feynman"),
+                ]
+
                 # Add stream names and stream descriptions
                 for i in range(options["extra_streams"]):
                     extra_stream_name = random.choice(extra_stream_names) + " " + str(i)
@@ -820,6 +832,14 @@ class Command(BaseCommand):
                     zulip_stream_dict[extra_stream_name] = {
                         "description": "Auto-generated extra stream.",
                     }
+
+                for stream_name in zulip_stream_dict.keys():
+                    # Add Urls to stream descriptions.
+                    if random.random() <= 0.10:
+                        hyperlink, url = random.choice(stream_description_urls)
+                        zulip_stream_dict[stream_name]["description"] += str(
+                            " [{0}]({1})".format(hyperlink, url)
+                        )
 
                 bulk_create_streams(zulip_realm, zulip_stream_dict)
                 # Now that we've created the notifications stream, configure it properly.
