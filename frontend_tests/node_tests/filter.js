@@ -1010,25 +1010,25 @@ test("describe", () => {
     let string;
 
     narrow = [{operator: "streams", operand: "public"}];
-    string = "streams public";
+    string = "translated: translated: streams public";
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [{operator: "streams", operand: "public", negated: true}];
-    string = "exclude streams public";
+    string = "translated: translated: exclude streams public";
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
         {operator: "stream", operand: "devel"},
         {operator: "is", operand: "starred"},
     ];
-    string = "stream devel, starred messages";
+    string = "translated: translated: stream devel, starred messages";
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
         {operator: "stream", operand: "river"},
         {operator: "is", operand: "unread"},
     ];
-    string = "stream river, unread messages";
+    string = "translated: translated: stream river, unread messages";
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
@@ -1042,15 +1042,15 @@ test("describe", () => {
         {operator: "is", operand: "private"},
         {operator: "search", operand: "lunch"},
     ];
-    string = "private messages, search for lunch";
+    string = "private messages, translated: translated: search for lunch";
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [{operator: "id", operand: 99}];
-    string = "message ID 99";
+    string = "translated: translated: message ID 99";
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [{operator: "in", operand: "home"}];
-    string = "messages in home";
+    string = "translated: translated: messages in home";
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [{operator: "is", operand: "mentioned"}];
@@ -1074,46 +1074,48 @@ test("describe", () => {
         {operator: "stream", operand: "devel"},
         {operator: "topic", operand: "JS", negated: true},
     ];
-    string = "stream devel, exclude topic JS";
+    string = "translated: translated: stream devel, translated: translated: exclude topic JS";
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
         {operator: "is", operand: "private"},
         {operator: "search", operand: "lunch", negated: true},
     ];
-    string = "private messages, exclude lunch";
+    string = "private messages, translated: translated: exclude lunch";
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
         {operator: "stream", operand: "devel"},
         {operator: "is", operand: "starred", negated: true},
     ];
-    string = "stream devel, exclude starred messages";
+    string = "translated: translated: stream devel, exclude starred messages";
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
         {operator: "stream", operand: "devel"},
         {operator: "has", operand: "image", negated: true},
     ];
-    string = "stream devel, exclude messages with one or more image";
+    string =
+        "translated: translated: stream devel, translated: translated: exclude messages with one or more image";
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
         {operator: "has", operand: "abc", negated: true},
         {operator: "stream", operand: "devel"},
     ];
-    string = "invalid abc operand for has operator, stream devel";
+    string = "invalid abc operand for has operator, translated: translated: stream devel";
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
         {operator: "has", operand: "image", negated: true},
         {operator: "stream", operand: "devel"},
     ];
-    string = "exclude messages with one or more image, stream devel";
+    string =
+        "translated: translated: exclude messages with one or more image, translated: translated: stream devel";
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [];
-    string = "all messages";
+    string = "translated: all messages";
     assert.equal(Filter.describe(narrow), string);
 });
 

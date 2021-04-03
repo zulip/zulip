@@ -867,44 +867,50 @@ export class Filter {
         operator = Filter.canonicalize_operator(operator);
 
         if (operator === "search") {
-            return negated ? "exclude" : "search for";
+            return negated ? i18n.t("exclude") : i18n.t("search for");
         }
 
-        const verb = negated ? "exclude " : "";
-
+        // Most of the changes for explicitly writing exclude is to avoid as much concatenations
+        // as possible so as to mark these efficiently for translation.
         switch (operator) {
             case "stream":
-                return verb + "stream";
+                return negated ? i18n.t("exclude stream") : i18n.t("stream");
             case "streams":
-                return verb + "streams";
+                return negated ? i18n.t("exclude streams") : i18n.t("streams");
             case "near":
-                return verb + "messages around";
+                return negated ? i18n.t("exclude messages around") : i18n.t("messages around");
 
             // Note: We hack around using this in "describe" below.
             case "has":
-                return verb + "messages with one or more";
+                return negated
+                    ? i18n.t("exclude messages with one or more")
+                    : i18n.t("messages with one or more");
 
             case "id":
-                return verb + "message ID";
+                return negated ? i18n.t("exclude message ID") : i18n.t("message ID");
 
             case "topic":
-                return verb + "topic";
+                return negated ? i18n.t("exclude topic") : i18n.t("topic");
 
             case "sender":
-                return verb + "sent by";
+                return negated ? i18n.t("exclude sent by") : i18n.t("sent by");
 
             case "pm-with":
-                return verb + "private messages with";
+                return negated
+                    ? i18n.t("exclude private messages with")
+                    : i18n.t("private messages with");
 
             case "in":
-                return verb + "messages in";
+                return negated ? i18n.t("exclude messages in") : i18n.t("messages in");
 
             // Note: We hack around using this in "describe" below.
             case "is":
-                return verb + "messages that are";
+                return negated ? i18n.t("exclude messages that are") : i18n.t("messages that are");
 
             case "group-pm-with":
-                return verb + "group private messages including";
+                return negated
+                    ? i18n.t("exclude group private messages including")
+                    : i18n.t("group private messages including");
         }
         return "";
     }
@@ -924,7 +930,7 @@ export class Filter {
     // Convert a list of operators to a human-readable description.
     static describe_unescaped(operators) {
         if (operators.length === 0) {
-            return "all messages";
+            return i18n.t("all messages");
         }
 
         let parts = [];
@@ -967,7 +973,10 @@ export class Filter {
                 elem.negated,
             );
             if (prefix_for_operator !== "") {
-                return prefix_for_operator + " " + operand;
+                return i18n.t("__prefix__ __operand__", {
+                    prefix: prefix_for_operator,
+                    operand,
+                });
             }
             return "unknown operator";
         });
