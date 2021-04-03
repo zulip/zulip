@@ -8,7 +8,6 @@ import functools
 import logging
 import os
 import signal
-import smtplib
 import socket
 import tempfile
 import time
@@ -182,7 +181,6 @@ def retry_send_email_failures(
         try:
             func(worker, data)
         except (
-            smtplib.SMTPServerDisconnected,
             socket.gaierror,
             socket.timeout,
             EmailNotDeliveredException,

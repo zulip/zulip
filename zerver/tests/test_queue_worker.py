@@ -1,6 +1,5 @@
 import base64
 import os
-import smtplib
 import time
 from collections import defaultdict
 from inspect import isabstract
@@ -16,7 +15,7 @@ from zerver.lib.email_mirror_helpers import encode_email_address
 from zerver.lib.queue import MAX_REQUEST_RETRIES
 from zerver.lib.rate_limiter import RateLimiterLockingException
 from zerver.lib.remote_server import PushNotificationBouncerRetryLaterError
-from zerver.lib.send_email import FromAddress
+from zerver.lib.send_email import EmailNotDeliveredException, FromAddress
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import mock_queue_publish, simulated_queue_client
 from zerver.models import PreregistrationUser, UserActivity, get_client, get_realm, get_stream
@@ -421,14 +420,14 @@ class WorkerTest(ZulipTestCase):
             worker = queue_processors.EmailSendingWorker()
             worker.setup()
             with patch(
-                "zerver.lib.send_email.build_email", side_effect=smtplib.SMTPServerDisconnected
+                "zerver.lib.send_email.build_email", side_effect=EmailNotDeliveredException
             ), mock_queue_publish(
                 "zerver.lib.queue.queue_json_publish", side_effect=fake_publish
             ), self.assertLogs(
                 level="ERROR"
             ) as m:
                 worker.start()
-                self.assertIn("failed due to exception SMTPServerDisconnected", m.output[0])
+                self.assertIn("failed due to exception EmailNotDeliveredException", m.output[0])
 
         self.assertEqual(data["failed_tries"], 1 + MAX_REQUEST_RETRIES)
 

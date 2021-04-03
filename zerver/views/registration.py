@@ -1,5 +1,4 @@
 import logging
-import smtplib
 import urllib
 from typing import Dict, List, Optional
 from urllib.parse import urlencode
@@ -48,7 +47,7 @@ from zerver.lib.actions import (
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.onboarding import send_initial_realm_messages, setup_realm_internal_bots
 from zerver.lib.pysa import mark_sanitized
-from zerver.lib.send_email import FromAddress, send_email
+from zerver.lib.send_email import EmailNotDeliveredException, FromAddress, send_email
 from zerver.lib.sessions import get_expirable_session_var
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.url_encoding import add_query_to_redirect_url
@@ -584,8 +583,8 @@ def create_realm(request: HttpRequest, creation_key: Optional[str] = None) -> Ht
 
             try:
                 send_confirm_registration_email(email, activation_url, request.LANGUAGE_CODE)
-            except smtplib.SMTPException as e:
-                logging.error("Error in create_realm: %s", str(e))
+            except EmailNotDeliveredException:
+                logging.error("Error in create_realm")
                 return HttpResponseRedirect("/config-error/smtp")
 
             if key_record is not None:
@@ -639,8 +638,8 @@ def accounts_home(
                 send_confirm_registration_email(
                     email, activation_url, request.LANGUAGE_CODE, realm=realm
                 )
-            except smtplib.SMTPException as e:
-                logging.error("Error in accounts_home: %s", str(e))
+            except EmailNotDeliveredException:
+                logging.error("Error in accounts_home")
                 return HttpResponseRedirect("/config-error/smtp")
 
             return HttpResponseRedirect(reverse("signup_send_confirm", kwargs={"email": email}))
