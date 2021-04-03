@@ -366,7 +366,7 @@ export function set_up() {
             parent: modal_parent,
             html_heading: i18n.t("Delete user group"),
             html_body,
-            html_yes_button: i18n.t("Delete"),
+            html_yes_button: i18n.t("Confirm"),
             on_click: delete_user_group,
         });
     });

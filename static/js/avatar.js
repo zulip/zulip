@@ -86,7 +86,7 @@ export function build_user_avatar_widget(upload_function) {
             parent: modal_parent,
             html_heading: i18n.t("Delete profile picture"),
             html_body,
-            html_yes_button: i18n.t("Delete"),
+            html_yes_button: i18n.t("Confirm"),
             on_click: delete_user_avatar,
         });
     });

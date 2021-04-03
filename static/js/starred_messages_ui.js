@@ -15,7 +15,7 @@ export function confirm_unstar_all_messages() {
         parent: modal_parent,
         html_heading: i18n.t("Unstar all messages"),
         html_body,
-        html_yes_button: i18n.t("Unstar messages"),
+        html_yes_button: i18n.t("Confirm"),
         on_click: message_flags.unstar_all_messages,
     });
 }
@@ -34,7 +34,7 @@ export function confirm_unstar_all_messages_in_topic(stream_id, topic) {
         parent: modal_parent,
         html_heading: i18n.t("Unstar messages in topic"),
         html_body,
-        html_yes_button: i18n.t("Unstar messages"),
+        html_yes_button: i18n.t("Confirm"),
         on_click,
     });
 }
