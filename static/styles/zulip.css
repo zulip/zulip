@@ -66,7 +66,7 @@ a {
 
 code,
 pre {
-    font-family: Menlo, Consolas, "Courier New", monospace;
+    font-family: "Source Code Pro", monospace;
 }
 
 .no-select {
@@ -2118,12 +2118,12 @@ div.floating_recipient {
 }
 
 .operator_value {
-    font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+    font-family: "Source Code Pro", monospace;
     color: hsl(353, 70%, 65%);
 }
 
 .operator {
-    font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+    font-family: "Source Code Pro", monospace;
 }
 
 #loading_older_messages_indicator,

@@ -84,7 +84,7 @@ $category-text: hsl(219, 23%, 33%);
         max-width: 100%;
         overflow: auto;
 
-        font-family: Monaco, Menlo, Consolas, "Courier New", Courier, monospace;
+        font-family: "Source Code Pro", monospace;
         font-size: 0.85em;
     }
 

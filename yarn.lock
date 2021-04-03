@@ -11623,6 +11623,11 @@ sorttable@^1.0.2:
   resolved "https://registry.yarnpkg.com/sorttable/-/sorttable-1.0.2.tgz#da67e34d32f6198bc12942b183b7a0f7c650f1a4"
   integrity sha512-dY6xMviQb4+zeZ11MSOqYfgXbv3pA6q4y35/lqVRulAXhR36MYvYjxTSWbctwiVWaRk0ufY10gNwFrcdrXPeWA==
 
+source-code-pro@^2.30.2:
+  version "2.30.2"
+  resolved "https://registry.yarnpkg.com/source-code-pro/-/source-code-pro-2.30.2.tgz#1577e4bc93d2399d271d00f8426a8cd1b7f86da2"
+  integrity sha512-KctdxE5xBzf9wjYjTO9JWEQ1F2tdAR+yloz1rUmP5n0p6wEXB33B0myGTz49K6I3/EQpnJ9zot10r9ThQ+GARg==
+
 source-list-map@^2.0.0:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/source-list-map/-/source-list-map-2.0.1.tgz#3993bd873bfc48479cca9ea3a547835c7c154b34"

@@ -99,7 +99,7 @@
 }
 
 .stream-email {
-    font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+    font-family: "Source Code Pro", monospace;
     padding: 5px;
     font-size: 0.9em;
     background-color: hsl(0, 0%, 98%);
