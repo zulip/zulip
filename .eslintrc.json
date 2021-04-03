@@ -87,6 +87,7 @@
             }
         ],
         "radix": "error",
+        "sort-imports": ["error", {"ignoreDeclarationSort": true}],
         "spaced-comment": ["error", "always", {"markers": ["/"]}],
         "strict": "error",
         "unicorn/consistent-function-scoping": "off",

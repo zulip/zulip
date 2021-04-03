@@ -1,6 +1,6 @@
 import {
-    differenceInMinutes,
     differenceInCalendarDays,
+    differenceInMinutes,
     format,
     formatISO,
     isEqual,
