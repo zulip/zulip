@@ -8,6 +8,7 @@ const bot_fields = [
     "api_key",
     "avatar_url",
     "bot_type",
+    "bot_description",
     "default_all_public_streams",
     "default_events_register_stream",
     "default_sending_stream",

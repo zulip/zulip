@@ -512,7 +512,9 @@ export function set_up() {
 
                 const formData = new FormData();
                 formData.append("csrfmiddlewaretoken", csrf_token);
-                formData.append("full_name", full_name);
+                if (form.find(".edit_bot_name").val() !== bot.full_name) {
+                    formData.append("full_name", full_name);
+                }
                 formData.append("bot_description", bot_description);
                 formData.append("bot_owner_id", bot_owner_id);
 
