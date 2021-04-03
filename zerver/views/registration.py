@@ -472,10 +472,12 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         },
     )
 
+
 # help text sentences regarding email address visibility
 vis_all = "All users will be able to see this email address."
 vis_admins = "Only organization administrators will be able to see this email address."
 vis_none = "Users will not be able to see this email address."
+
 
 def get_email_address_visibility(realm: Optional[Realm]) -> str:
     # print(str(realm.email_address_visibility))
