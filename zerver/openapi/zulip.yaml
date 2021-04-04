@@ -9220,6 +9220,15 @@ paths:
         [the typing notification docs](https://zulip.readthedocs.io/en/latest/subsystems/typing-indicators.html)
         for additional design details on Zulip's typing notifications protocol.
       parameters:
+        - name: type
+          in: query
+          description: |
+            Type of the message being composed.
+          schema:
+            type: string
+            enum:
+              - private
+            default: private
         - name: op
           in: query
           description: |
