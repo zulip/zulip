@@ -146,7 +146,7 @@ export function sort_for_stream_settings(stream_ids, order) {
 
     function weekly_traffic(stream_id) {
         const sub = stream_data.get_sub_by_id(stream_id);
-        if (sub && sub.is_old_stream) {
+        if (sub && sub.stream_weekly_traffic !== null) {
             return sub.stream_weekly_traffic;
         }
         // don't intersperse new streams with zero-traffic existing streams
