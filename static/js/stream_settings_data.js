@@ -52,8 +52,7 @@ export function update_calculated_fields(sub) {
     sub.can_change_name_description = page_params.is_admin;
 
     sub.should_display_subscription_button = stream_data.can_toggle_subscription(sub);
-    sub.should_display_preview_button =
-        sub.subscribed || !sub.invite_only || sub.previously_subscribed;
+    sub.should_display_preview_button = stream_data.can_preview(sub);
     sub.can_change_stream_permissions =
         page_params.is_admin && (!sub.invite_only || sub.subscribed);
     // User can add other users to stream if stream is public or user is subscribed to stream.
