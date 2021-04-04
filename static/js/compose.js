@@ -661,7 +661,7 @@ export function validation_error(error_type, stream_name) {
         case "not-subscribed": {
             const sub = stream_data.get_sub(stream_name);
             const new_row = render_compose_not_subscribed({
-                should_display_sub_button: sub.should_display_subscription_button,
+                should_display_sub_button: stream_data.can_toggle_subscription(sub),
             });
             compose_not_subscribed_error(new_row, $("#stream_message_recipient_stream"));
             return false;

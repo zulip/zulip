@@ -500,6 +500,13 @@ export function is_notifications_stream_muted() {
     return is_muted(page_params.realm_notifications_stream_id);
 }
 
+export function can_toggle_subscription(sub) {
+    // If stream is public then any user can subscribe. If stream is private then only
+    // subscribed users can unsubscribe.
+    // Guest users can't subscribe themselves to any stream.
+    return sub.subscribed || (!page_params.is_guest && !sub.invite_only);
+}
+
 export function is_subscribed(stream_name) {
     const sub = get_sub(stream_name);
     return sub !== undefined && sub.subscribed;

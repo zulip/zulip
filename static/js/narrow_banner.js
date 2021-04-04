@@ -131,7 +131,7 @@ function pick_empty_narrow_banner() {
                 // You are narrowed to a stream which does not exist or is a private stream
                 // in which you were never subscribed.
 
-                function should_display_subscription_button() {
+                function can_toggle_narrowed_stream() {
                     const stream_name = narrow_state.stream();
 
                     if (!stream_name) {
@@ -139,10 +139,10 @@ function pick_empty_narrow_banner() {
                     }
 
                     const stream_sub = stream_data.get_sub(first_operand);
-                    return stream_sub && stream_sub.should_display_subscription_button;
+                    return stream_sub && stream_data.can_toggle_subscription(stream_sub);
                 }
 
-                if (should_display_subscription_button()) {
+                if (can_toggle_narrowed_stream()) {
                     return $("#nonsubbed_stream_narrow_message");
                 }
 

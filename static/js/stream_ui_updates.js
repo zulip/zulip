@@ -58,7 +58,7 @@ export function update_settings_button_for_sub(sub) {
     } else {
         settings_button.text(i18n.t("Subscribe")).addClass("unsubscribed");
     }
-    if (sub.should_display_subscription_button) {
+    if (stream_data.can_toggle_subscription(sub)) {
         settings_button.prop("disabled", false);
         settings_button.popover("destroy");
         settings_button.css("pointer-events", "");
