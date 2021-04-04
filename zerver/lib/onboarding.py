@@ -3,6 +3,7 @@ from typing import Dict, List
 from django.conf import settings
 from django.db.models import Count
 from django.utils.translation import gettext as _
+from django.utils.translation import override as override_language
 
 from zerver.lib.actions import (
     create_users,
@@ -69,32 +70,35 @@ def send_initial_pms(user: UserProfile) -> None:
             + "\n"
         ).format(help_url=help_url)
 
-    content = (
-        _("Hello, and welcome to Zulip!") + "\n"
-        "\n"
-        + _("This is a private message from me, Welcome Bot.")
-        + " "
-        + _("Here are some tips to get you started:")
-        + "\n"
-        "* " + _("Download our [Desktop and mobile apps]({apps_url})") + "\n"
-        "* "
-        + _("Customize your account and notifications on your [Settings page]({settings_url})")
-        + "\n"
-        "* " + _("Type `?` to check out Zulip's keyboard shortcuts") + "\n"
-        "{organization_setup_text}"
-        "\n" + _("The most important shortcut is `r` to reply.") + "\n"
-        "\n"
-        + _("Practice sending a few messages by replying to this conversation.")
-        + " "
-        + _(
-            "If you're not into keyboards, that's okay too; "
-            "clicking anywhere on this message will also do the trick!"
+    with override_language(user.default_language):
+        content = (
+            _("Hello, and welcome to Zulip!") + "\n"
+            "\n"
+            + _("This is a private message from me, Welcome Bot.")
+            + " "
+            + _("Here are some tips to get you started:")
+            + "\n"
+            "* " + _("Download our [Desktop and mobile apps]({apps_url})") + "\n"
+            "* "
+            + _("Customize your account and notifications on your [Settings page]({settings_url})")
+            + "\n"
+            "* " + _("Type `?` to check out Zulip's keyboard shortcuts") + "\n"
+            "{organization_setup_text}"
+            "\n" + _("The most important shortcut is `r` to reply.") + "\n"
+            "\n"
+            + _("Practice sending a few messages by replying to this conversation.")
+            + " "
+            + _(
+                "If you're not into keyboards, that's okay too; "
+                "clicking anywhere on this message will also do the trick!"
+            )
         )
-    )
 
-    content = content.format(
-        apps_url="/apps", settings_url="#settings", organization_setup_text=organization_setup_text
-    )
+        content = content.format(
+            apps_url="/apps",
+            settings_url="#settings",
+            organization_setup_text=organization_setup_text,
+        )
 
     internal_send_private_message(get_system_bot(settings.WELCOME_BOT), user, content)
 
