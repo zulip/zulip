@@ -421,7 +421,13 @@ export function stream_settings(sub) {
             is_notification_setting: is_notification_setting(setting),
         };
         if (is_notification_setting(setting)) {
-            ret.is_checked = sub[setting + "_display"] && !check_realm_setting[setting];
+            // This block ensures we correctly display to users the
+            // current state of stream-level notification settings
+            // with a value of `null`, which inherit the user's global
+            // notification settings for streams.
+            ret.is_checked =
+                stream_data.receives_notifications(sub.stream_id, setting) &&
+                !check_realm_setting[setting];
             ret.is_disabled = ret.is_disabled || sub.is_muted;
             return ret;
         }

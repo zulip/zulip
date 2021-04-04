@@ -570,6 +570,9 @@ test("notifications", () => {
     ];
 
     assert.deepEqual(unmatched_streams, expected_streams);
+
+    // Get line coverage on defensive code with bogus stream_id.
+    assert(!stream_data.receives_notifications(999999));
 });
 
 const tony = {
