@@ -3,6 +3,7 @@ import json
 import os
 from typing import Any, Callable, Dict, Optional
 
+from django.conf import settings
 from django.utils.translation import ugettext as _
 
 from zerver.lib.actions import (
@@ -41,7 +42,7 @@ def get_bot_handler(service_name: str) -> Any:
 
 
 class StateHandler:
-    storage_size_limit: int = 10000000  # TODO: Store this in the server configuration model.
+    storage_size_limit: int = settings.USER_STATE_SIZE_LIMIT
 
     def __init__(self, user_profile: UserProfile) -> None:
         self.user_profile = user_profile
