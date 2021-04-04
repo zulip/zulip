@@ -229,7 +229,7 @@ export function process_notification(notification) {
         content = message.sender_full_name + content.slice(3);
     }
 
-    if (message.type === "private" || message.type === "test-notification") {
+    if (message.type === "private") {
         if (
             page_params.pm_content_in_desktop_notifications !== undefined &&
             !page_params.pm_content_in_desktop_notifications
@@ -311,9 +311,7 @@ export function process_notification(notification) {
             // unavailable for them.
             notification_object.addEventListener("click", () => {
                 notification_object.close();
-                if (message.type !== "test-notification") {
-                    narrow.by_topic(message.id, {trigger: "notification"});
-                }
+                narrow.by_topic(message.id, {trigger: "notification"});
                 window.focus();
             });
             notification_object.addEventListener("close", () => {
@@ -369,11 +367,6 @@ export function message_is_notifiable(message) {
 }
 
 export function should_send_desktop_notification(message) {
-    // Always notify for testing notifications.
-    if (message.type === "test-notification") {
-        return true;
-    }
-
     // For streams, send if desktop notifications are enabled for all
     // message on this stream.
     if (
@@ -431,7 +424,7 @@ export function should_send_audible_notification(message) {
 
     // And then we need to check if the message is a PM, mention,
     // wildcard mention with wildcard_mentions_notify, or alert.
-    if (message.type === "private" || message.type === "test-notification") {
+    if (message.type === "private") {
         return true;
     }
 
@@ -486,20 +479,6 @@ export function received_messages(messages) {
             $("#notification-sound-audio")[0].play();
         }
     }
-}
-
-export function send_test_notification(content) {
-    received_messages([
-        {
-            id: Math.random(),
-            type: "test-notification",
-            sender_email: "notification-bot@zulip.com",
-            sender_full_name: "Notification Bot",
-            display_reply_to: "Notification Bot",
-            content,
-            unread: true,
-        },
-    ]);
 }
 
 // Note that this returns values that are not HTML-escaped, for use in

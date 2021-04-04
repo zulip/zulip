@@ -3,8 +3,6 @@ import $ from "jquery";
 import render_stream_specific_notification_row from "../templates/settings/stream_specific_notification_row.hbs";
 
 import * as channel from "./channel";
-import {i18n} from "./i18n";
-import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 import * as settings_org from "./settings_org";
@@ -84,12 +82,6 @@ export function set_up() {
     });
 
     update_desktop_icon_count_display();
-
-    $("#send_test_notification").on("click", () => {
-        notifications.send_test_notification(
-            i18n.t("This is what a Zulip notification looks like."),
-        );
-    });
 
     $("#play_notification_sound").on("click", () => {
         $("#notification-sound-audio")[0].play();
