@@ -121,6 +121,7 @@ def create_user(
     tos_version: Optional[str] = None,
     timezone: str = "",
     avatar_source: str = UserProfile.AVATAR_FROM_GRAVATAR,
+    default_language: Optional[str] = None,
     is_mirror_dummy: bool = False,
     default_sending_stream: Optional[Stream] = None,
     default_events_register_stream: Optional[Stream] = None,
@@ -145,6 +146,10 @@ def create_user(
     user_profile.timezone = timezone
     user_profile.default_sending_stream = default_sending_stream
     user_profile.default_events_register_stream = default_events_register_stream
+    user_profile.default_language = (
+        default_language if default_language is not None else realm.default_language
+    )
+
     if role is not None:
         user_profile.role = role
     # Allow the ORM default to be used if not provided
