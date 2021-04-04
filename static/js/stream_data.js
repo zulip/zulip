@@ -515,6 +515,11 @@ export function can_change_permissions(sub) {
     return page_params.is_admin && (!sub.invite_only || sub.subscribed);
 }
 
+export function can_view_subscribers(sub) {
+    // Guest users can't access subscribers of any(public or private) non-subscribed streams.
+    return page_params.is_admin || sub.subscribed || (!page_params.is_guest && !sub.invite_only);
+}
+
 export function is_subscribed(stream_name) {
     const sub = get_sub(stream_name);
     return sub !== undefined && sub.subscribed;
@@ -592,7 +597,7 @@ export function maybe_get_stream_name(stream_id) {
 
 export function is_user_subscribed(stream_id, user_id) {
     const sub = get_sub_by_id(stream_id);
-    if (sub === undefined || !sub.can_access_subscribers) {
+    if (sub === undefined || !can_view_subscribers(sub)) {
         // If we don't know about the stream, or we ourselves cannot access subscriber list,
         // so we return undefined (treated as falsy if not explicitly handled).
         blueslip.warn(

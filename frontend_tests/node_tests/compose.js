@@ -1149,7 +1149,6 @@ test_ui("needs_subscribe_warning", () => {
     const sub = {
         stream_id: 110,
         name: "stream",
-        can_access_subscribers: true,
     };
 
     stream_data.add_sub(sub);

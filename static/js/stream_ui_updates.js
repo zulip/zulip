@@ -151,7 +151,7 @@ export function update_subscribers_list(sub) {
         return;
     }
 
-    if (!sub.can_access_subscribers) {
+    if (!stream_data.can_view_subscribers(sub)) {
         $(".subscriber_list_settings_container").hide();
     } else {
         const subscribers = peer_data.get_subscribers(sub.stream_id);

@@ -59,7 +59,6 @@ run_test("set_focused_recipient", () => {
         stream_id: 101,
         name: "social",
         subscribed: true,
-        can_access_subscribers: true,
     };
 
     compose_fade.set_focused_recipient("stream");

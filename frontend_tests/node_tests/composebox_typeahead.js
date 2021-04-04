@@ -172,7 +172,6 @@ const sweden_stream = {
     description: "Cold, mountains and home decor.",
     stream_id: 1,
     subscribed: true,
-    can_access_subscribers: true,
 };
 const denmark_stream = {
     name: "Denmark",
