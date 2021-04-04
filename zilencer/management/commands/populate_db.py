@@ -821,6 +821,14 @@ class Command(BaseCommand):
                     ("Richard Feynman", "https://www.britannica.com/biography/Richard-Feynman"),
                 ]
 
+                MARKDOWNS = [
+                    "**",
+                    "~~",
+                    "***~~",
+                    "`",
+                    "``",
+                ]
+
                 # Add stream names and stream descriptions
                 for i in range(options["extra_streams"]):
                     extra_stream_name = random.choice(extra_stream_names) + " " + str(i)
@@ -834,6 +842,18 @@ class Command(BaseCommand):
                     }
 
                 for stream_name in zulip_stream_dict.keys():
+
+                    # Add Markdowns to Stream descriptions
+                    if random.random() <= 0.20:
+                        markdown = random.choice(MARKDOWNS)
+                        words_in_description = zulip_stream_dict[stream_name]["description"].split()
+                        random_word = random.choice(words_in_description)
+                        zulip_stream_dict[stream_name]["description"] = zulip_stream_dict[
+                            stream_name
+                        ]["description"].replace(
+                            random_word, str(markdown + random_word + markdown[::-1])
+                        )
+
                     # Add Urls to stream descriptions.
                     if random.random() <= 0.10:
                         hyperlink, url = random.choice(stream_description_urls)
