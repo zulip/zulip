@@ -79,7 +79,7 @@ const testers = {
 
 const groups = [admins, testers];
 for (const group of groups) {
-    user_groups.add(group);
+    user_groups.add_in_realm(group);
 }
 
 const denmark = {

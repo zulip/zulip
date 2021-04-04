@@ -301,9 +301,9 @@ function test(label, f) {
         people.deactivate(deactivated_user);
         people.initialize_current_user(hamlet.user_id);
 
-        user_groups.add(hamletcharacters);
-        user_groups.add(backend);
-        user_groups.add(call_center);
+        user_groups.add_in_realm(hamletcharacters);
+        user_groups.add_in_realm(backend);
+        user_groups.add_in_realm(call_center);
 
         f(override);
     });
