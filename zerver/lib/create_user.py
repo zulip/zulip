@@ -84,6 +84,7 @@ def create_user_profile(
     is_mirror_dummy: bool,
     tos_version: Optional[str],
     timezone: Optional[str],
+    default_language: str = "en",
     tutorial_status: str = UserProfile.TUTORIAL_WAITING,
     enter_sends: bool = False,
     force_id: Optional[int] = None,
@@ -116,7 +117,7 @@ def create_user_profile(
         tutorial_status=tutorial_status,
         enter_sends=enter_sends,
         onboarding_steps=orjson.dumps([]).decode(),
-        default_language=realm.default_language,
+        default_language=default_language,
         delivery_email=email,
         **extra_kwargs,
     )
@@ -143,6 +144,7 @@ def create_user(
     timezone: str = "",
     avatar_source: str = UserProfile.AVATAR_FROM_GRAVATAR,
     is_mirror_dummy: bool = False,
+    default_language: str = "en",
     default_sending_stream: Optional[Stream] = None,
     default_events_register_stream: Optional[Stream] = None,
     default_all_public_streams: Optional[bool] = None,
@@ -162,6 +164,7 @@ def create_user(
         is_mirror_dummy,
         tos_version,
         timezone,
+        default_language,
         force_id=force_id,
         force_date_joined=force_date_joined,
     )
