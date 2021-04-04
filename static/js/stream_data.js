@@ -6,7 +6,6 @@ import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
-import * as stream_settings_data from "./stream_settings_data";
 import * as stream_topic_history from "./stream_topic_history";
 import * as util from "./util";
 
@@ -684,8 +683,6 @@ export function create_sub_from_server_data(attrs) {
         sub.color = color_data.pick_color();
     }
 
-    // TODO: Let stream settings code add these fields.
-    stream_settings_data.update_calculated_fields(sub);
     clean_up_description(sub);
 
     stream_info.set(sub.name, sub);
