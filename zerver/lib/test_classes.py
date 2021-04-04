@@ -636,6 +636,7 @@ Output:
             "from_confirmation": from_confirmation,
             "default_stream_group": default_stream_groups,
             "source_realm_id": source_realm_id,
+            "default_language": "en",
         }
         if realm_in_root_domain is not None:
             payload["realm_in_root_domain"] = realm_in_root_domain

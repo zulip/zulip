@@ -42,7 +42,10 @@ from zerver.lib.actions import (
     do_change_password,
     do_create_realm,
     do_create_user,
+    do_set_realm_default_language,
     do_set_user_display_setting,
+    get_realm_default_language,
+    get_user_default_language,
     lookup_default_stream_groups,
 )
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
@@ -301,6 +304,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             realm_name = form.cleaned_data["realm_name"]
             realm = do_create_realm(string_id, realm_name)
             setup_realm_internal_bots(realm)
+            do_set_realm_default_language(realm, get_realm_default_language(request))
         assert realm is not None
 
         full_name = form.cleaned_data["full_name"]
@@ -401,6 +405,9 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             do_change_password(user_profile, password)
             do_change_full_name(user_profile, full_name, user_profile)
             do_set_user_display_setting(user_profile, "timezone", timezone)
+            do_set_user_display_setting(
+                user_profile, "default_language", get_user_default_language(request, realm)
+            )
             # TODO: When we clean up the `do_activate_user` code path,
             # make it respect invited_as_admin / is_realm_admin.
 
@@ -415,6 +422,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                 tos_version=settings.TOS_VERSION,
                 timezone=timezone,
                 default_stream_groups=default_stream_groups,
+                default_language=get_user_default_language(request, realm),
                 source_profile=source_profile,
                 realm_creation=realm_creation,
                 acting_user=None,

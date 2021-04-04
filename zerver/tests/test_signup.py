@@ -2995,6 +2995,33 @@ class RealmCreationTest(ZulipTestCase):
         # The remaining PreregistrationUser should have been used up:
         self.assertEqual(PreregistrationUser.objects.filter(email=email, status=0).count(), 0)
 
+    def test_set_default_lanugage_using_browser_locale_during_realm_creation(self) -> None:
+        password = "test"
+        string_id = "zuliptest"
+        email = "user1@test.com"
+        realm_name = "Test"
+
+        result = self.client_post("/new/", {"email": email})
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(f"/accounts/new/send_confirm/{email}"))
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url)
+        self.assertEqual(result.status_code, 200)
+
+        result = self.submit_reg_form_for_user(
+            email,
+            password,
+            realm_subdomain=string_id,
+            realm_name=realm_name,
+            HTTP_ACCEPT_LANGUAGE="fr,en,hi",
+        )
+
+        realm = get_realm(string_id)
+        user = get_user_by_delivery_email(email, realm)
+
+        self.assertEqual(realm.default_language, "fr")
+        self.assertEqual(user.default_language, "fr")
+
     @override_settings(OPEN_REALM_CREATION=True)
     def test_mailinator_signup(self) -> None:
         result = self.client_post("/new/", {"email": "hi@mailinator.com"})
@@ -3211,8 +3238,7 @@ class UserSignUpTest(InviteUserBase):
 
     def test_user_default_language_and_timezone(self) -> None:
         """
-        Check if the default language of new user is the default language
-        of the realm.
+        Check if the default language of new user is set using the browser locale
         """
         email = self.nonreg_email("newguy")
         password = "newpassword"
@@ -3232,11 +3258,14 @@ class UserSignUpTest(InviteUserBase):
         self.assertEqual(result.status_code, 200)
 
         # Pick a password and agree to the ToS.
-        result = self.submit_reg_form_for_user(email, password, timezone=timezone)
+        result = self.submit_reg_form_for_user(
+            email, password, timezone=timezone, HTTP_ACCEPT_LANGUAGE="fr,en"
+        )
         self.assertEqual(result.status_code, 302)
 
         user_profile = self.nonreg_user("newguy")
-        self.assertEqual(user_profile.default_language, realm.default_language)
+        self.assertNotEqual(user_profile.default_language, realm.default_language)
+        self.assertEqual(user_profile.default_language, "fr")
         self.assertEqual(user_profile.timezone, timezone)
         from django.core.mail import outbox
 
