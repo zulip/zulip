@@ -507,6 +507,10 @@ export function can_toggle_subscription(sub) {
     return sub.subscribed || (!page_params.is_guest && !sub.invite_only);
 }
 
+export function can_preview(sub) {
+    return sub.subscribed || !sub.invite_only || sub.previously_subscribed;
+}
+
 export function is_subscribed(stream_name) {
     const sub = get_sub(stream_name);
     return sub !== undefined && sub.subscribed;
