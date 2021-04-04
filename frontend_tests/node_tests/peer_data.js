@@ -16,7 +16,6 @@ const {page_params} = require("../zjsunit/zpage_params");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
-const stream_settings_data = zrequire("stream_settings_data");
 
 page_params.is_admin = false;
 page_params.realm_users = [];
@@ -114,7 +113,6 @@ test("subscribers", () => {
     ]);
 
     peer_data.set_subscribers(stream_id, [me.user_id, fred.user_id, george.user_id]);
-    stream_settings_data.update_calculated_fields(sub);
     assert(stream_data.is_user_subscribed(stream_id, me.user_id));
     assert(stream_data.is_user_subscribed(stream_id, fred.user_id));
     assert(stream_data.is_user_subscribed(stream_id, george.user_id));
@@ -182,7 +180,6 @@ test("subscribers", () => {
 
     // Verify that we noop and don't crash when unsubscribed.
     sub.subscribed = false;
-    stream_settings_data.update_calculated_fields(sub);
     peer_data.add_subscriber(stream_id, brutus.user_id);
     assert.equal(stream_data.is_user_subscribed(stream_id, brutus.user_id), true);
     peer_data.remove_subscriber(stream_id, brutus.user_id);
@@ -196,7 +193,6 @@ test("subscribers", () => {
         2,
     );
     sub.invite_only = true;
-    stream_settings_data.update_calculated_fields(sub);
     assert.equal(stream_data.is_user_subscribed(stream_id, brutus.user_id), undefined);
     peer_data.remove_subscriber(stream_id, brutus.user_id);
     assert.equal(stream_data.is_user_subscribed(stream_id, brutus.user_id), undefined);

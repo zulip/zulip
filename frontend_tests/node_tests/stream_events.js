@@ -402,8 +402,6 @@ test("remove_deactivated_user_from_all_streams", () => {
     const subs_stub = make_stub();
     subs.update_subscribers_ui = subs_stub.f;
 
-    dev_help.can_access_subscribers = true;
-
     // assert starting state
     assert(!stream_data.is_user_subscribed(dev_help.stream_id, george.user_id));
 
