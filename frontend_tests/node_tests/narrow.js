@@ -16,7 +16,6 @@ const narrow_banner = zrequire("narrow_banner");
 const narrow_state = zrequire("narrow_state");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
-const stream_settings_data = zrequire("stream_settings_data");
 const {Filter} = zrequire("../js/filter");
 const narrow = zrequire("narrow");
 
@@ -118,7 +117,6 @@ run_test("show_empty_narrow_message", () => {
 
     // for non sub public stream
     stream_data.add_sub({name: "ROME", stream_id: 99});
-    stream_settings_data.update_calculated_fields(stream_data.get_sub("ROME"));
     set_filter([["stream", "Rome"]]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();

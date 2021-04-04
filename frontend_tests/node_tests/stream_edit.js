@@ -67,7 +67,6 @@ const denmark = {
     name: "Denmark",
     subscribed: true,
     render_subscribers: true,
-    should_display_subscription_button: true,
 };
 peer_data.set_subscribers(denmark.stream_id, [me.user_id, mark.user_id]);
 

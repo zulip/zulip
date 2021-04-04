@@ -353,7 +353,7 @@ function show_subscription_settings(sub) {
     if (!sub.render_subscribers) {
         return;
     }
-    if (!sub.should_display_subscription_button) {
+    if (!stream_data.can_toggle_subscription(sub)) {
         stream_ui_updates.initialize_cant_subscribe_popover(sub);
     }
     // fetch subscriber list from memory.
