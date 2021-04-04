@@ -1970,14 +1970,7 @@ def do_send_messages(
             queue_json_publish("embed_links", event_data)
 
         if send_request.message.recipient.type == Recipient.PERSONAL:
-            welcome_bot_id = get_system_bot(settings.WELCOME_BOT).id
-            if (
-                welcome_bot_id in send_request.active_user_ids
-                and welcome_bot_id != send_request.message.sender_id
-            ):
-                from zerver.lib.onboarding import send_welcome_bot_response
-
-                send_welcome_bot_response(send_request)
+            send_bot_response(send_request)
 
         for queue_name, events in send_request.message.service_queue_events.items():
             for event in events:
@@ -1991,6 +1984,41 @@ def do_send_messages(
                 )
 
     return [send_request.message.id for send_request in send_message_requests]
+
+
+def send_bot_response(send_request: SendMessageRequest) -> None:
+    welcome_bot_id = get_system_bot(settings.WELCOME_BOT).id
+    if (
+        welcome_bot_id in send_request.active_user_ids
+        and welcome_bot_id != send_request.message.sender_id
+    ):
+        from zerver.lib.onboarding import send_welcome_bot_response
+
+        send_welcome_bot_response(send_request)
+
+    # Used in the test notifications code path.
+    notification_bot = get_system_bot(settings.NOTIFICATION_BOT)
+    if (
+        notification_bot.id in send_request.active_user_ids
+        and notification_bot.id != send_request.message.sender_id
+        and send_request.message.content.startswith(":smile:")
+    ):
+        content = (
+            _("Hi, you should have received a notification along with this message.")
+            + " :smile: :wave:\n\n"
+            + _(
+                "Update your notification preferences from the [Notifications page]({notifications_url})."
+            )
+            + "\n"
+            + _(
+                "Or customize notifications for each individual stream from the [stream settings page]({streams_urls})."
+            )
+        )
+        content = content.format(
+            notifications_url="#settings/notifications", streams_urls="#streams/subscribed"
+        )
+
+        internal_send_private_message(notification_bot, send_request.message.sender, content)
 
 
 class UserMessageLite:

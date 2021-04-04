@@ -820,7 +820,7 @@ class QueryCountTest(ZulipTestCase):
                     )
 
         self.assert_length(queries, 68)
-        self.assert_length(cache_tries, 20)
+        self.assert_length(cache_tries, 22)
         self.assert_length(events, 7)
 
         peer_add_events = [event for event in events if event["event"].get("op") == "peer_add"]

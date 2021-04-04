@@ -3,6 +3,9 @@ import $ from "jquery";
 import render_stream_specific_notification_row from "../templates/settings/stream_specific_notification_row.hbs";
 
 import * as channel from "./channel";
+import * as compose from "./compose";
+import * as feedback_widget from "./feedback_widget";
+import {i18n} from "./i18n";
 import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 import * as settings_org from "./settings_org";
@@ -64,6 +67,30 @@ export function set_enable_digest_emails_visibility() {
     }
 }
 
+function setting_enabled(setting_name) {
+    const enabled = settings_org.get_input_element_value("#" + setting_name);
+    if (enabled) {
+        return true;
+    }
+
+    feedback_widget.show({
+        populate(container) {
+            container.text(
+                i18n.t(
+                    `To send a test notification you need to enable the ${setting_name} setting.`,
+                ),
+            );
+        },
+        on_undo() {
+            $("#" + setting_name).click();
+        },
+        title_text: i18n.t("Alert"),
+        undo_button_text: i18n.t("Enable"),
+    });
+
+    return false;
+}
+
 export function set_up() {
     $("#notification-settings").on("change", "input, select", function (e) {
         e.preventDefault();
@@ -82,6 +109,25 @@ export function set_up() {
     });
 
     update_desktop_icon_count_display();
+
+    $(".send_test_notification").on("click", (e) => {
+        let check_settings = [];
+        if ($(e.target).hasClass("desktop")) {
+            check_settings = ["enable_desktop_notifications"];
+        } else if ($(e.target).hasClass("mobile")) {
+            check_settings = [
+                "enable_online_push_notifications",
+                "enable_offline_push_notifications",
+            ];
+        }
+
+        for (const setting_name of check_settings) {
+            if (!setting_enabled(setting_name)) {
+                return;
+            }
+        }
+        compose.send_test_notification_message();
+    });
 
     $("#play_notification_sound").on("click", () => {
         $("#notification-sound-audio")[0].play();
