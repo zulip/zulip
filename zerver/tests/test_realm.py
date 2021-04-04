@@ -851,6 +851,7 @@ class RealmAPITest(ZulipTestCase):
                 Realm.POLICY_ADMINS_ONLY,
                 Realm.POLICY_MEMBERS_ONLY,
                 Realm.POLICY_FULL_MEMBERS_ONLY,
+                Realm.POLICY_MODERATORS_ONLY,
             ],
             user_group_edit_policy=[
                 Realm.USER_GROUP_EDIT_POLICY_ADMINS,
@@ -864,6 +865,7 @@ class RealmAPITest(ZulipTestCase):
                 Realm.POLICY_ADMINS_ONLY,
                 Realm.POLICY_MEMBERS_ONLY,
                 Realm.POLICY_FULL_MEMBERS_ONLY,
+                Realm.POLICY_MODERATORS_ONLY,
             ],
             wildcard_mention_policy=[
                 Realm.WILDCARD_MENTION_POLICY_EVERYONE,
