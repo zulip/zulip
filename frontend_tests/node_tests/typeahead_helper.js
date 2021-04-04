@@ -305,9 +305,6 @@ function get_typeahead_result(query, current_stream, current_topic) {
 }
 
 test("sort_recipients", () => {
-    const dev_sub = stream_data.get_sub("Dev");
-    const linux_sub = stream_data.get_sub("Linux");
-
     // Typeahead for recipientbox [query, "", undefined]
     assert.deepEqual(get_typeahead_result("b", ""), [
         "b_user_1@zulip.net",
@@ -336,9 +333,6 @@ test("sort_recipients", () => {
     peer_data.add_subscriber(1, people.get_user_id(subscriber_email_1));
     peer_data.add_subscriber(1, people.get_user_id(subscriber_email_2));
     peer_data.add_subscriber(1, people.get_user_id(subscriber_email_3));
-
-    stream_data.update_calculated_fields(dev_sub);
-    stream_data.update_calculated_fields(linux_sub);
 
     // For splitting based on whether a PM was sent
     pm_conversations.set_partner(5);

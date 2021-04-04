@@ -28,6 +28,7 @@ import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_list from "./stream_list";
 import * as stream_muting from "./stream_muting";
+import * as stream_settings_data from "./stream_settings_data";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as ui from "./ui";
 import * as ui_report from "./ui_report";
@@ -64,7 +65,7 @@ export function update_left_panel_row(sub) {
     }
 
     blueslip.debug(`Updating row in left panel of stream settings for: ${sub.name}`);
-    const setting_sub = stream_data.get_sub_for_settings(sub);
+    const setting_sub = stream_settings_data.get_sub_for_settings(sub);
     const html = render_subscription(setting_sub);
     const new_row = $(html);
 
@@ -223,7 +224,7 @@ export function update_stream_description(sub, description, rendered_description
 
 export function update_stream_privacy(sub, values) {
     stream_data.update_stream_privacy(sub, values);
-    stream_data.update_calculated_fields(sub);
+    stream_settings_data.update_calculated_fields(sub);
 
     // Update UI elements
     update_left_panel_row(sub);
@@ -239,7 +240,7 @@ export function update_stream_privacy(sub, values) {
 
 export function update_stream_post_policy(sub, new_value) {
     stream_data.update_stream_post_policy(sub, new_value);
-    stream_data.update_calculated_fields(sub);
+    stream_settings_data.update_calculated_fields(sub);
 
     stream_ui_updates.update_stream_subscription_type_text(sub);
 }
@@ -272,7 +273,7 @@ export function add_sub_to_table(sub) {
         return;
     }
 
-    const setting_sub = stream_data.get_sub_for_settings(sub);
+    const setting_sub = stream_settings_data.get_sub_for_settings(sub);
     const html = render_subscription(setting_sub);
     const new_row = $(html);
     add_tooltip_to_left_panel_row(new_row);
@@ -421,8 +422,8 @@ function get_stream_id_buckets(stream_ids, left_panel_params) {
         }
     }
 
-    stream_data.sort_for_stream_settings(buckets.name, left_panel_params.sort_order);
-    stream_data.sort_for_stream_settings(buckets.desc, left_panel_params.sort_order);
+    stream_settings_data.sort_for_stream_settings(buckets.name, left_panel_params.sort_order);
+    stream_settings_data.sort_for_stream_settings(buckets.desc, left_panel_params.sort_order);
 
     return buckets;
 }
@@ -432,7 +433,7 @@ export function render_left_panel_superset() {
     // allowed to know about and put them in the DOM, then we do
     // a second pass where we filter/sort them.
     const html = blueslip.measure_time("render left panel", () => {
-        const sub_rows = stream_data.get_updated_unsorted_subs();
+        const sub_rows = stream_settings_data.get_updated_unsorted_subs();
 
         const template_data = {
             subscriptions: sub_rows,

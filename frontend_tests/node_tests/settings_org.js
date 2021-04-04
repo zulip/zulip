@@ -55,6 +55,7 @@ set_global("FormData", _FormData);
 const settings_config = zrequire("settings_config");
 const settings_bots = zrequire("settings_bots");
 const stream_data = zrequire("stream_data");
+const stream_settings_data = zrequire("stream_settings_data");
 const settings_account = zrequire("settings_account");
 const settings_org = zrequire("settings_org");
 const dropdown_list_widget = zrequire("dropdown_list_widget");
@@ -901,7 +902,7 @@ test("test get_sorted_options_list", () => {
     assert.deepEqual(settings_org.get_sorted_options_list(option_values_2), expected_option_values);
 });
 
-test("misc", () => {
+test("misc", (override) => {
     page_params.is_admin = false;
 
     const stub_notification_disable_parent = $.create("<stub notification_disable parent");
@@ -972,7 +973,7 @@ test("misc", () => {
     settings_account.update_email_change_display();
     assert(!$("#change_email .button").prop("disabled"));
 
-    stream_data.__Rewire__("get_streams_for_settings_page", () => [
+    override(stream_settings_data, "get_streams_for_settings_page", () => [
         {name: "some_stream", stream_id: 75},
         {name: "some_stream", stream_id: 42},
     ]);

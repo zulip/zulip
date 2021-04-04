@@ -27,6 +27,7 @@ import * as settings_ui from "./settings_ui";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as stream_pill from "./stream_pill";
+import * as stream_settings_data from "./stream_settings_data";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as subs from "./subs";
 import * as ui from "./ui";
@@ -434,7 +435,7 @@ export function show_settings_for(node) {
     const stream_id = get_stream_id(node);
     const sub = stream_data.get_sub_by_id(stream_id);
 
-    stream_data.update_calculated_fields(sub);
+    stream_settings_data.update_calculated_fields(sub);
     const html = render_subscription_settings({
         sub,
         settings: stream_settings(sub),

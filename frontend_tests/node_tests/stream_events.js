@@ -46,6 +46,7 @@ const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const stream_events = zrequire("stream_events");
+const stream_settings_data = zrequire("stream_settings_data");
 
 const george = {
     email: "george@zulip.com",
@@ -266,7 +267,7 @@ test("marked_subscribed (normal)", (override) => {
     const sub = {...frontend};
     stream_data.add_sub(sub);
     override(stream_data, "subscribe_myself", noop);
-    override(stream_data, "update_calculated_fields", noop);
+    override(stream_settings_data, "update_calculated_fields", noop);
 
     override(stream_color, "update_stream_color", noop);
 
@@ -303,7 +304,7 @@ test("marked_subscribed (normal)", (override) => {
 
 test("marked_subscribed (color)", (override) => {
     override(stream_data, "subscribe_myself", noop);
-    override(stream_data, "update_calculated_fields", noop);
+    override(stream_settings_data, "update_calculated_fields", noop);
     override(message_util, "do_unread_count_updates", noop);
     override(stream_list, "add_sidebar_row", noop);
 
@@ -334,7 +335,7 @@ test("marked_subscribed (color)", (override) => {
 test("marked_subscribed (emails)", (override) => {
     const sub = {...frontend};
     stream_data.add_sub(sub);
-    override(stream_data, "update_calculated_fields", noop);
+    override(stream_settings_data, "update_calculated_fields", noop);
     override(stream_color, "update_stream_color", noop);
 
     // Test assigning subscriber emails
@@ -357,7 +358,7 @@ test("marked_subscribed (emails)", (override) => {
 });
 
 test("mark_unsubscribed (update_settings_for_unsubscribed)", (override) => {
-    override(stream_data, "update_calculated_fields", noop);
+    override(stream_settings_data, "update_calculated_fields", noop);
 
     // Test unsubscribe
     const sub = {...dev_help};
@@ -378,7 +379,7 @@ test("mark_unsubscribed (render_title_area)", (override) => {
     const sub = {...frontend, subscribed: true};
     stream_data.add_sub(sub);
 
-    override(stream_data, "update_calculated_fields", noop);
+    override(stream_settings_data, "update_calculated_fields", noop);
 
     // Test update bookend and remove done event
     narrow_to_frontend();

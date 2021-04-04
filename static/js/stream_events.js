@@ -15,6 +15,7 @@ import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_muting from "./stream_muting";
+import * as stream_settings_data from "./stream_settings_data";
 import * as subs from "./subs";
 
 // In theory, this function should apply the account-level defaults,
@@ -117,7 +118,7 @@ export function mark_subscribed(sub, subscribers, color) {
     if (subscribers) {
         peer_data.set_subscribers(sub.stream_id, subscribers);
     }
-    stream_data.update_calculated_fields(sub);
+    stream_settings_data.update_calculated_fields(sub);
 
     if (overlays.streams_open()) {
         subs.update_settings_for_subscribed(sub);
@@ -143,7 +144,7 @@ export function mark_unsubscribed(sub) {
         return;
     } else if (sub.subscribed) {
         stream_data.unsubscribe_myself(sub);
-        stream_data.update_calculated_fields(sub);
+        stream_settings_data.update_calculated_fields(sub);
         if (overlays.streams_open()) {
             subs.update_settings_for_unsubscribed(sub);
         }
