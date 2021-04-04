@@ -36,6 +36,7 @@ export const get_helpers = () => ({
 
     // user groups
     get_user_group_from_name: user_groups.get_user_group_from_name,
+    get_active_user_group_from_name: user_groups.get_active_user_group_from_name,
     is_member_of_user_group: user_groups.is_member_of,
 
     // stream hashes
