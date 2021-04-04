@@ -1880,7 +1880,7 @@ class UserGroupMentionPattern(markdown.inlinepatterns.InlineProcessor):
 
         if self.md.zulip_message and db_data is not None:
             name = extract_user_group(match)
-            user_group = db_data["mention_data"].get_user_group(name)
+            user_group = db_data["mention_data"].get_active_user_group(name)
             if user_group:
                 self.md.zulip_message.mentions_user_group_ids.add(user_group.id)
                 name = user_group.name
@@ -2457,7 +2457,7 @@ class MentionData:
 
     def init_user_group_data(self, realm_id: int, content: str) -> None:
         user_group_names = possible_user_group_mentions(content)
-        self.user_group_name_info = get_user_group_name_info(realm_id, user_group_names)
+        self.user_group_name_info = get_active_user_group_name_info(realm_id, user_group_names)
         self.user_group_members: Dict[int, List[int]] = defaultdict(list)
         group_ids = [group.id for group in self.user_group_name_info.values()]
 
@@ -2490,18 +2490,20 @@ class MentionData:
         """
         return set(self.user_id_info.keys())
 
-    def get_user_group(self, name: str) -> Optional[UserGroup]:
+    def get_active_user_group(self, name: str) -> Optional[UserGroup]:
         return self.user_group_name_info.get(name.lower(), None)
 
     def get_group_members(self, user_group_id: int) -> List[int]:
         return self.user_group_members.get(user_group_id, [])
 
 
-def get_user_group_name_info(realm_id: int, user_group_names: Set[str]) -> Dict[str, UserGroup]:
+def get_active_user_group_name_info(
+    realm_id: int, user_group_names: Set[str]
+) -> Dict[str, UserGroup]:
     if not user_group_names:
         return {}
 
-    rows = UserGroup.objects.filter(realm_id=realm_id, name__in=user_group_names)
+    rows = UserGroup.objects.filter(realm_id=realm_id, name__in=user_group_names, active=True)
     dct = {row.name.lower(): row for row in rows}
     return dct
 
