@@ -79,10 +79,10 @@ DEFAULT_EMOJIS = [
     ("+1", "1f44d"),
     ("smiley", "1f603"),
     ("eyes", "1f440"),
-    ("crying_cat_face", "1f63f"),
-    ("arrow_up", "2b06"),
-    ("confetti_ball", "1f38a"),
-    ("hundred_points", "1f4af"),
+    ("money", "1f4b0"),
+    ("high_five", "1f590"),
+    ("construction_worker", "1f477"),
+    ("ok_signal", "1f646"),
 ]
 
 
@@ -853,6 +853,22 @@ class Command(BaseCommand):
                         ]["description"].replace(
                             random_word, str(markdown + random_word + markdown[::-1])
                         )
+
+                    # Add Emojis to the stream descriptions
+                    if random.random() <= 0.20:
+
+                        if random.random() <= 50:
+                            # Add Emojis supported by zulip.
+                            emoji_name, emoji_code = random.choice(DEFAULT_EMOJIS)
+                            zulip_stream_dict[stream_name]["description"] += str(
+                                " :{}: ".format(emoji_name)
+                            )
+
+                        else:
+                            # Add general Emojis.
+                            zulip_stream_dict[stream_name]["description"] += random.choice(
+                                raw_emojis
+                            )
 
                     # Add Urls to stream descriptions.
                     if random.random() <= 0.10:
