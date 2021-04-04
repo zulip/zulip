@@ -44,6 +44,7 @@ from zerver.forms import (
 )
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.exceptions import RateLimited
+from zerver.lib.i18n import get_default_language_for_new_user
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.send_email import EmailNotDeliveredException, FromAddress, send_email
@@ -432,6 +433,12 @@ def accounts_register(
             do_change_password(user_profile, password)
             do_change_full_name(user_profile, full_name, user_profile)
             do_change_user_setting(user_profile, "timezone", timezone, acting_user=user_profile)
+            do_change_user_setting(
+                user_profile,
+                "default_language",
+                get_default_language_for_new_user(request, realm),
+                acting_user=None,
+            )
             # TODO: When we clean up the `do_activate_mirror_dummy_user` code path,
             # make it respect invited_as_admin / is_realm_admin.
 
@@ -445,6 +452,7 @@ def accounts_register(
                 role=role,
                 tos_version=settings.TERMS_OF_SERVICE_VERSION,
                 timezone=timezone,
+                default_language=get_default_language_for_new_user(request, realm),
                 default_stream_groups=default_stream_groups,
                 source_profile=source_profile,
                 realm_creation=realm_creation,
