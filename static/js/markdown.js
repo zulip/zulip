@@ -183,7 +183,7 @@ export function apply_markdown(message) {
             return `${str}${_.escape(actual_full_name)}</span>`;
         },
         groupMentionHandler(name) {
-            const group = helpers.get_user_group_from_name(name);
+            const group = helpers.get_active_user_group_from_name(name);
             if (group !== undefined) {
                 if (helpers.is_member_of_user_group(group.id, helpers.my_user_id())) {
                     message.mentioned = true;

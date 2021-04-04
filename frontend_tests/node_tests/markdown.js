@@ -139,10 +139,10 @@ const amp_group = {
     members: [],
 };
 
-user_groups.add(hamletcharacters);
-user_groups.add(backend);
-user_groups.add(edgecase_group);
-user_groups.add(amp_group);
+user_groups.add_in_realm(hamletcharacters);
+user_groups.add_in_realm(backend);
+user_groups.add_in_realm(edgecase_group);
+user_groups.add_in_realm(amp_group);
 
 const denmark = {
     subscribed: false,
