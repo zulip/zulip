@@ -1,7 +1,6 @@
 /* common CSS for all image upload widget's */
 .image_upload_widget {
     position: relative;
-    border-radius: 5px;
 
     transition: all 0.3s ease;
 
@@ -11,6 +10,7 @@
     }
 
     .image-upload-background {
+        border-radius: 5px;
         content: "";
         background-color: hsl(0, 0%, 0%);
         height: 100%;
@@ -107,7 +107,7 @@
     .inline-block {
         margin: 5px 20px 0 0;
         vertical-align: top;
-        border-radius: 4px;
+        border-radius: 5px;
     }
 }
 
@@ -121,7 +121,6 @@
 /* CSS related to settings page user avatar upload widget only */
 #user-avatar-upload-widget {
     .image_upload_button {
-        border-radius: 5px;
         z-index: 99;
     }
 
