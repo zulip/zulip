@@ -13,6 +13,7 @@ const color_data = zrequire("color_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
+const stream_settings_data = zrequire("stream_settings_data");
 const settings_config = zrequire("settings_config");
 
 const me = {
@@ -253,7 +254,7 @@ test("admin_options", () => {
     // non-admins can't do anything
     page_params.is_admin = false;
     let sub = make_sub();
-    stream_data.update_calculated_fields(sub);
+    stream_settings_data.update_calculated_fields(sub);
     assert(!sub.is_realm_admin);
     assert(!sub.can_change_stream_permissions);
 
@@ -265,7 +266,7 @@ test("admin_options", () => {
 
     // admins can make public streams become private
     sub = make_sub();
-    stream_data.update_calculated_fields(sub);
+    stream_settings_data.update_calculated_fields(sub);
     assert(sub.is_realm_admin);
     assert(sub.can_change_stream_permissions);
 
@@ -274,14 +275,14 @@ test("admin_options", () => {
     sub = make_sub();
     sub.invite_only = true;
     sub.subscribed = false;
-    stream_data.update_calculated_fields(sub);
+    stream_settings_data.update_calculated_fields(sub);
     assert(sub.is_realm_admin);
     assert(!sub.can_change_stream_permissions);
 
     sub = make_sub();
     sub.invite_only = true;
     sub.subscribed = true;
-    stream_data.update_calculated_fields(sub);
+    stream_settings_data.update_calculated_fields(sub);
     assert(sub.is_realm_admin);
     assert(sub.can_change_stream_permissions);
 });
@@ -317,7 +318,7 @@ test("stream_settings", () => {
     stream_data.add_sub(amber);
     stream_data.add_sub(blue);
 
-    let sub_rows = stream_data.get_streams_for_settings_page();
+    let sub_rows = stream_settings_data.get_streams_for_settings_page();
     assert.equal(sub_rows[0].color, "blue");
     assert.equal(sub_rows[1].color, "amber");
     assert.equal(sub_rows[2].color, "cinnamon");
@@ -344,17 +345,17 @@ test("stream_settings", () => {
     });
     stream_data.update_stream_post_policy(sub, 1);
     stream_data.update_message_retention_setting(sub, -1);
-    stream_data.update_calculated_fields(sub);
+    stream_settings_data.update_calculated_fields(sub);
     assert.equal(sub.invite_only, false);
     assert.equal(sub.history_public_to_subscribers, false);
     assert.equal(sub.stream_post_policy, stream_data.stream_post_policy_values.everyone.code);
     assert.equal(sub.message_retention_days, -1);
 
     // For guest user only retrieve subscribed streams
-    sub_rows = stream_data.get_updated_unsorted_subs();
+    sub_rows = stream_settings_data.get_updated_unsorted_subs();
     assert.equal(sub_rows.length, 3);
     page_params.is_guest = true;
-    sub_rows = stream_data.get_updated_unsorted_subs();
+    sub_rows = stream_settings_data.get_updated_unsorted_subs();
     assert.equal(sub_rows[0].name, "c");
     assert.equal(sub_rows[1].name, "a");
     assert.equal(sub_rows.length, 2);
@@ -542,7 +543,7 @@ test("notifications", () => {
     antarctica.push_notifications = null;
     antarctica.wildcard_mentions_notify = null;
 
-    const unmatched_streams = stream_data.get_unmatched_streams_for_notification_settings();
+    const unmatched_streams = stream_settings_data.get_unmatched_streams_for_notification_settings();
     const expected_streams = [
         {
             desktop_notifications: true,
@@ -765,7 +766,7 @@ test("edge_cases", () => {
     const bad_stream_ids = [555555, 99999];
 
     // just make sure we don't explode
-    stream_data.sort_for_stream_settings(bad_stream_ids);
+    stream_settings_data.sort_for_stream_settings(bad_stream_ids);
 });
 
 test("get_invite_stream_data", () => {

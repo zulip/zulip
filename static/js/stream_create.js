@@ -12,6 +12,7 @@ import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
+import * as stream_settings_data from "./stream_settings_data";
 import * as subs from "./subs";
 import * as ui_report from "./ui_report";
 
@@ -271,7 +272,7 @@ export function show_new_stream_modal() {
         all_users.unshift(people.get_by_user_id(page_params.user_id));
         return render_new_stream_users({
             users: all_users,
-            streams: stream_data.get_streams_for_settings_page(),
+            streams: stream_settings_data.get_streams_for_settings_page(),
             is_admin: page_params.is_admin,
         });
     });

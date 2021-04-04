@@ -406,7 +406,6 @@ export function dispatch_normal_event(event) {
 
                     for (const stream of event.streams) {
                         const sub = stream_data.get_sub_by_id(stream.stream_id);
-                        stream_data.update_calculated_fields(sub);
                         if (overlays.streams_open()) {
                             subs.add_sub_to_table(sub);
                         }

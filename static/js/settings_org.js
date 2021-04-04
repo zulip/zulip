@@ -17,7 +17,7 @@ import * as realm_logo from "./realm_logo";
 import * as settings_config from "./settings_config";
 import * as settings_notifications from "./settings_notifications";
 import * as settings_ui from "./settings_ui";
-import * as stream_data from "./stream_data";
+import * as stream_settings_data from "./stream_settings_data";
 import * as ui_report from "./ui_report";
 
 export let parse_time_limit;
@@ -613,7 +613,7 @@ export function save_discard_widget_status_handler(subsection) {
 }
 
 export function init_dropdown_widgets() {
-    const streams = stream_data.get_streams_for_settings_page();
+    const streams = stream_settings_data.get_streams_for_settings_page();
     const notification_stream_options = {
         data: streams.map((x) => ({
             name: x.name,

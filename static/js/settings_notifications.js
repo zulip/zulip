@@ -9,8 +9,8 @@ import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 import * as settings_org from "./settings_org";
 import * as settings_ui from "./settings_ui";
-import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
+import * as stream_settings_data from "./stream_settings_data";
 import * as unread_ui from "./unread_ui";
 
 function rerender_ui() {
@@ -20,7 +20,7 @@ function rerender_ui() {
         return;
     }
 
-    const unmatched_streams = stream_data.get_unmatched_streams_for_notification_settings();
+    const unmatched_streams = stream_settings_data.get_unmatched_streams_for_notification_settings();
 
     unmatched_streams_table.find(".stream-row").remove();
 

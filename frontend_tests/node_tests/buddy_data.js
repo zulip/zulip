@@ -16,6 +16,7 @@ const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const presence = zrequire("presence");
 const stream_data = zrequire("stream_data");
+const stream_settings_data = zrequire("stream_settings_data");
 const user_status = zrequire("user_status");
 const buddy_data = zrequire("buddy_data");
 
@@ -179,7 +180,7 @@ test("compose fade interactions (streams)", () => {
     };
     stream_data.add_sub(sub);
     stream_data.subscribe_myself(sub);
-    stream_data.update_calculated_fields(sub);
+    stream_settings_data.update_calculated_fields(sub);
 
     people.add_active_user(fred);
 
@@ -225,7 +226,7 @@ test("compose fade interactions (missing topic)", () => {
     };
     stream_data.add_sub(sub);
     stream_data.subscribe_myself(sub);
-    stream_data.update_calculated_fields(sub);
+    stream_settings_data.update_calculated_fields(sub);
 
     people.add_active_user(fred);
 
