@@ -1,11 +1,18 @@
 {{! Contents of the "user group info" popup }}
 <div class="group-info">
+    {{#if is_group_active}}
     <div class="group-name"> {{group_name}} </div>
     <div class="group-description">
         {{group_description}}
     </div>
+    {{else}}
+    <div class="group-description">
+        This user group has been deleted
+    </div>
+    {{/if}}
 </div>
 <hr />
+{{#if is_group_active}}
 <ul class="nav nav-list member-list" data-simplebar data-simplebar-auto-hide="false">
     {{#each members}}
     <li>
@@ -20,6 +27,7 @@
     </li>
     {{/each}}
 </ul>
+{{/if}}
 <hr />
 <ul class="nav nav-list manage-group">
     <li>

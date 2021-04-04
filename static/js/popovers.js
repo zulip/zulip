@@ -497,11 +497,13 @@ function show_user_group_info_popover(element, group, message) {
     }
     message_lists.current.select_id(message.id);
     const elt = $(element);
+    const is_group_active = user_groups.is_active_user_group(group);
     if (elt.data("popover") === undefined) {
         const args = {
             group_name: group.name,
             group_description: group.description,
             members: sort_group_members(fetch_group_members(Array.from(group.members))),
+            is_group_active,
         };
         elt.popover({
             placement: calculate_info_popover_placement(popover_size, elt),
