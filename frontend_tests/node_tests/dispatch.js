@@ -142,7 +142,7 @@ run_test("user groups", (override) => {
     override(settings_user_groups, "reload", noop);
     {
         const stub = make_stub();
-        override(user_groups, "add", stub.f);
+        override(user_groups, "add_in_realm", stub.f);
         dispatch(event);
         assert.equal(stub.num_calls, 1);
         const args = stub.get_args("group");

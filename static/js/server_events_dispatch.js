@@ -682,7 +682,7 @@ export function dispatch_normal_event(event) {
         case "user_group":
             switch (event.op) {
                 case "add":
-                    user_groups.add(event.group);
+                    user_groups.add_in_realm(event.group);
                     break;
                 case "remove":
                     user_groups.remove(user_groups.get_user_group_from_id(event.group_id));
