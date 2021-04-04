@@ -511,6 +511,10 @@ export function can_preview(sub) {
     return sub.subscribed || !sub.invite_only || sub.previously_subscribed;
 }
 
+export function can_change_permissions(sub) {
+    return page_params.is_admin && (!sub.invite_only || sub.subscribed);
+}
+
 export function is_subscribed(stream_name) {
     const sub = get_sub(stream_name);
     return sub !== undefined && sub.subscribed;
