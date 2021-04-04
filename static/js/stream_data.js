@@ -631,6 +631,12 @@ export function create_streams(streams) {
     }
 }
 
+export function clean_up_description(sub) {
+    if (sub.rendered_description !== undefined) {
+        sub.rendered_description = sub.rendered_description.replace("<p>", "").replace("</p>", "");
+    }
+}
+
 export function create_sub_from_server_data(attrs) {
     if (!attrs.stream_id) {
         // fail fast
@@ -680,6 +686,7 @@ export function create_sub_from_server_data(attrs) {
 
     // TODO: Let stream settings code add these fields.
     stream_settings_data.update_calculated_fields(sub);
+    clean_up_description(sub);
 
     stream_info.set(sub.name, sub);
     subs_by_stream_id.set(sub.stream_id, sub);

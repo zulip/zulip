@@ -209,7 +209,8 @@ export function update_stream_name(sub, new_name) {
 
 export function update_stream_description(sub, description, rendered_description) {
     sub.description = description;
-    sub.rendered_description = rendered_description.replace("<p>", "").replace("</p>", "");
+    sub.rendered_description = rendered_description;
+    stream_data.clean_up_description(sub);
 
     // Update stream row
     const sub_row = row_for_stream_id(sub.stream_id);
