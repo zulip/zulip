@@ -2,7 +2,6 @@
 .image_upload_widget {
     position: relative;
     border-radius: 5px;
-    box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
 
     transition: all 0.3s ease;
 
@@ -112,12 +111,23 @@
     }
 }
 
+#user-avatar-upload-widget,
+#realm-icon-upload-widget {
+    .image_file_input_error {
+        width: 200px;
+    }
+}
+
 /* CSS related to settings page user avatar upload widget only */
 #user-avatar-upload-widget {
     .image_upload_button {
         border-radius: 5px;
-        box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
         z-index: 99;
+    }
+
+    .image-upload-background {
+        width: 200px;
+        height: 200px;
     }
 
     .image-delete-button {

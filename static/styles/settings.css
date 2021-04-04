@@ -104,10 +104,6 @@ h3 .fa-question-circle-o {
         margin-top: 20px;
         box-shadow: none;
     }
-
-    .inline-block {
-        box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
-    }
 }
 
 #change_email_modal {
