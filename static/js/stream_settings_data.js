@@ -59,11 +59,6 @@ export function update_calculated_fields(sub) {
 
     sub.preview_url = hash_util.by_stream_uri(sub.stream_id);
     sub.is_old_stream = sub.stream_weekly_traffic !== null;
-
-    // Apply the defaults for our notification settings for rendering.
-    for (const setting of settings_config.stream_specific_notification_settings) {
-        sub[setting + "_display"] = stream_data.receives_notifications(sub.stream_id, setting);
-    }
 }
 
 export function get_unmatched_streams_for_notification_settings() {
