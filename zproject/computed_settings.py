@@ -32,6 +32,7 @@ from .configured_settings import (
     DEBUG,
     DEBUG_ERROR_REPORTING,
     EMAIL_BACKEND,
+    EMAIL_GATEWAY_BOT,
     EMAIL_HOST,
     ERROR_REPORTING,
     EXTERNAL_HOST,
@@ -43,6 +44,7 @@ from .configured_settings import (
     LOCAL_UPLOADS_DIR,
     MEMCACHED_LOCATION,
     MEMCACHED_USERNAME,
+    NOTIFICATION_BOT,
     REALM_HOSTS,
     REGISTER_LINK_DISABLED,
     REMOTE_POSTGRES_HOST,
@@ -61,6 +63,7 @@ from .configured_settings import (
     STATSD_HOST,
     TORNADO_PORTS,
     USING_PGROONGA,
+    WELCOME_BOT,
     ZULIP_ADMINISTRATOR,
 )
 
@@ -1160,9 +1163,9 @@ if PRODUCTION:
 PROFILE_ALL_REQUESTS = False
 
 CROSS_REALM_BOT_EMAILS = {
-    "notification-bot@zulip.com",
-    "welcome-bot@zulip.com",
-    "emailgateway@zulip.com",
+    NOTIFICATION_BOT,
+    WELCOME_BOT,
+    EMAIL_GATEWAY_BOT,
 }
 
 THUMBOR_KEY = get_secret("thumbor_key")
