@@ -185,13 +185,24 @@
 /* CSS related to settings page realm icon upload widget only */
 #realm-icon-upload-widget {
     width: 100px;
-    height: 100px;
     border-radius: 5px;
-    box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
 
     .image-delete-text {
         top: 40px;
         right: 18px;
+    }
+
+    .image-upload-background {
+        width: 100px;
+        height: 100px;
+    }
+
+    .image-block {
+        border-radius: 5px;
+        box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
+        width: 100px;
+        height: 100px;
+        top: 0;
     }
 
     .image-upload-text {
