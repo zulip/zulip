@@ -160,6 +160,19 @@
     }
 }
 
+.user-avatar-section {
+    float: right;
+
+    .avatar-controls {
+        margin-top: 20px;
+        box-shadow: none;
+    }
+
+    .inline-block {
+        margin: 5px 30px 0 0;
+    }
+}
+
 #user-avatar-source {
     font-size: 1em;
     z-index: 99;
