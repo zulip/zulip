@@ -453,7 +453,7 @@ export function initialize_everything() {
         "realm_default_streams",
     );
 
-    const user_groups_params = pop_fields("realm_user_groups");
+    const user_groups_params = pop_fields("realm_user_groups", "realm_non_active_user_groups");
 
     const user_status_params = pop_fields("user_status");
 
