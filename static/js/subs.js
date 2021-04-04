@@ -225,7 +225,6 @@ export function update_stream_description(sub, description, rendered_description
 
 export function update_stream_privacy(sub, values) {
     stream_data.update_stream_privacy(sub, values);
-    stream_settings_data.update_calculated_fields(sub);
 
     // Update UI elements
     update_left_panel_row(sub);
@@ -241,8 +240,6 @@ export function update_stream_privacy(sub, values) {
 
 export function update_stream_post_policy(sub, new_value) {
     stream_data.update_stream_post_policy(sub, new_value);
-    stream_settings_data.update_calculated_fields(sub);
-
     stream_ui_updates.update_stream_subscription_type_text(sub);
 }
 

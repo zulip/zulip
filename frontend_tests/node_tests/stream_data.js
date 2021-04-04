@@ -251,12 +251,19 @@ test("admin_options", () => {
         return sub;
     }
 
+    function is_realm_admin(sub) {
+        return stream_settings_data.get_sub_for_settings(sub).is_realm_admin;
+    }
+
+    function can_change_stream_permissions(sub) {
+        return stream_settings_data.get_sub_for_settings(sub).can_change_stream_permissions;
+    }
+
     // non-admins can't do anything
     page_params.is_admin = false;
     let sub = make_sub();
-    stream_settings_data.update_calculated_fields(sub);
-    assert(!sub.is_realm_admin);
-    assert(!sub.can_change_stream_permissions);
+    assert(!is_realm_admin(sub));
+    assert(!can_change_stream_permissions(sub));
 
     // just a sanity check that we leave "normal" fields alone
     assert.equal(sub.color, "blue");
@@ -266,25 +273,22 @@ test("admin_options", () => {
 
     // admins can make public streams become private
     sub = make_sub();
-    stream_settings_data.update_calculated_fields(sub);
-    assert(sub.is_realm_admin);
-    assert(sub.can_change_stream_permissions);
+    assert(is_realm_admin(sub));
+    assert(can_change_stream_permissions(sub));
 
     // admins can only make private streams become public
     // if they are subscribed
     sub = make_sub();
     sub.invite_only = true;
     sub.subscribed = false;
-    stream_settings_data.update_calculated_fields(sub);
-    assert(sub.is_realm_admin);
-    assert(!sub.can_change_stream_permissions);
+    assert(is_realm_admin(sub));
+    assert(!can_change_stream_permissions(sub));
 
     sub = make_sub();
     sub.invite_only = true;
     sub.subscribed = true;
-    stream_settings_data.update_calculated_fields(sub);
-    assert(sub.is_realm_admin);
-    assert(sub.can_change_stream_permissions);
+    assert(is_realm_admin(sub));
+    assert(can_change_stream_permissions(sub));
 });
 
 test("stream_settings", () => {
@@ -345,7 +349,6 @@ test("stream_settings", () => {
     });
     stream_data.update_stream_post_policy(sub, 1);
     stream_data.update_message_retention_setting(sub, -1);
-    stream_settings_data.update_calculated_fields(sub);
     assert.equal(sub.invite_only, false);
     assert.equal(sub.history_public_to_subscribers, false);
     assert.equal(sub.stream_post_policy, stream_data.stream_post_policy_values.everyone.code);

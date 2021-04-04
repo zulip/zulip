@@ -6,14 +6,10 @@ import * as stream_data from "./stream_data";
 import * as util from "./util";
 
 export function get_sub_for_settings(sub) {
-    // Since we make a copy of the sub here, it may eventually
-    // make sense to get the other calculated fields here as
-    // well, instead of using update_calculated_fields everywhere.
-    const sub_count = peer_data.get_subscriber_count(sub.stream_id);
-    return {
-        ...sub,
-        subscriber_count: sub_count,
-    };
+    const settings_sub = {...sub};
+    add_settings_fields(settings_sub);
+    settings_sub.subscriber_count = peer_data.get_subscriber_count(sub.stream_id);
+    return settings_sub;
 }
 
 function get_subs_for_settings(subs) {
@@ -25,15 +21,7 @@ function get_subs_for_settings(subs) {
 }
 
 export function get_updated_unsorted_subs() {
-    // This function is expensive in terms of calculating
-    // some values (particularly stream counts) but avoids
-    // prematurely sorting subs.
     let all_subs = stream_data.get_unsorted_subs();
-
-    // Add in admin options and stream counts.
-    for (const sub of all_subs) {
-        update_calculated_fields(sub);
-    }
 
     // We don't display unsubscribed streams to guest users.
     if (page_params.is_guest) {
@@ -43,7 +31,7 @@ export function get_updated_unsorted_subs() {
     return get_subs_for_settings(all_subs);
 }
 
-export function update_calculated_fields(sub) {
+export function add_settings_fields(sub) {
     // Note that we don't calculate subscriber counts here.
 
     sub.is_realm_admin = page_params.is_admin;
@@ -114,11 +102,6 @@ export function get_streams_for_settings_page() {
     subscribed_rows.sort(by_name);
     unsubscribed_rows.sort(by_name);
     const all_subs = unsubscribed_rows.concat(subscribed_rows);
-
-    // Add in admin options and stream counts.
-    for (const sub of all_subs) {
-        update_calculated_fields(sub);
-    }
 
     return get_subs_for_settings(all_subs);
 }

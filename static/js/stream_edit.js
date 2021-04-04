@@ -439,10 +439,10 @@ export function stream_settings(sub) {
 
 export function show_settings_for(node) {
     const stream_id = get_stream_id(node);
-    const sub = stream_data.get_sub_by_id(stream_id);
+    const slim_sub = stream_data.get_sub_by_id(stream_id);
+    stream_data.clean_up_description(slim_sub);
+    const sub = stream_settings_data.get_sub_for_settings(slim_sub);
 
-    stream_settings_data.update_calculated_fields(sub);
-    stream_data.clean_up_description(sub);
     const html = render_subscription_settings({
         sub,
         settings: stream_settings(sub),
