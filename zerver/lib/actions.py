@@ -1053,6 +1053,10 @@ def do_change_realm_subdomain(
     do_deactivate_realm(placeholder_realm, acting_user=None)
     do_add_deactivated_redirect(placeholder_realm, realm.uri)
 
+def do_set_realm_default_language(realm: Realm, default_language: str) -> None:
+    realm.default_language = default_language
+    realm.save(update_fields=["default_language"])
+
 
 def do_add_deactivated_redirect(realm: Realm, redirect_url: str) -> None:
     realm.deactivated_redirect = redirect_url
