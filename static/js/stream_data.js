@@ -520,6 +520,11 @@ export function can_view_subscribers(sub) {
     return page_params.is_admin || sub.subscribed || (!page_params.is_guest && !sub.invite_only);
 }
 
+export function can_subscribe_others(sub) {
+    // User can add other users to stream if stream is public or user is subscribed to stream.
+    return !page_params.is_guest && (!sub.invite_only || sub.subscribed);
+}
+
 export function is_subscribed(stream_name) {
     const sub = get_sub(stream_name);
     return sub !== undefined && sub.subscribed;
