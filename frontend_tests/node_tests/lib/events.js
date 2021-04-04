@@ -288,6 +288,13 @@ exports.fixtures = {
         value: false,
     },
 
+    realm__update__invite_to_realm_policy: {
+        type: "realm",
+        op: "update",
+        property: "invite_to_realm_policy",
+        value: 2,
+    },
+
     realm__update__invite_to_stream_policy: {
         type: "realm",
         op: "update",

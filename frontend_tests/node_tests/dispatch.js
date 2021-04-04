@@ -348,6 +348,9 @@ run_test("realm settings", (override) => {
     event = event_fixtures.realm__update__invite_required;
     test_realm_boolean(event, "realm_invite_required");
 
+    event = event_fixtures.realm__update__invite_to_realm_policy;
+    test_realm_integer(event, "realm_invite_to_realm_policy");
+
     event = event_fixtures.realm__update__name;
 
     test_electron_dispatch(event, (key, val) => {

@@ -226,6 +226,11 @@ export function dispatch_normal_event(event) {
                             page_params.can_invite_to_stream =
                                 page_params.is_admin ||
                                 page_params.realm_invite_to_stream_policy === 1;
+                        } else if (event.property === "invite_to_realm_policy") {
+                            // TODO: Add waiting period threshold logic here.
+                            page_params.can_invite_others_to_realm =
+                                page_params.is_admin ||
+                                page_params.realm_invite_to_realm_policy === 1;
                         }
 
                         if (event.property === "name" && window.electron_bridge !== undefined) {
