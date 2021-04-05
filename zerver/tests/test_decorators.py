@@ -677,6 +677,24 @@ class OAuthTest(ZulipTestCase):
         result = json.loads(result.content.decode("utf-8"))
         self.assertEqual(result["msg"], "oauth failed")
 
+    def test_oauth_fails_for_incoming_webhooks(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.start_oauth_code_flow()
+        self.login_user(hamlet)
+
+        hamlet.bot_type = UserProfile.INCOMING_WEBHOOK_BOT
+        hamlet.save(update_fields=["bot_type"])
+
+        code = self.authorize_the_web_app()
+        access_token = self.get_access_token(code=code)
+        access_token = access_token
+
+        # Now use the access token to verify the login
+        result = self.client_get("/api/v1/users/me", {}, HTTP_BEARER=access_token)
+        # assert that hamlet has logged in!
+        result = json.loads(result.content.decode("utf-8"))
+        self.assertEqual(result["msg"], "This API is not available to incoming webhook bots.")
+
 
 class RateLimitTestCase(ZulipTestCase):
     def errors_disallowed(self) -> Any:
