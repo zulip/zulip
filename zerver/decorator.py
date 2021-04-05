@@ -675,8 +675,6 @@ def authenticated_rest_api_view(
                     role, api_key = base64.b64decode(credentials).decode("utf-8").split(":")
                 except ValueError:
                     return json_unauthorized(_("Invalid authorization header for basic auth"))
-                except KeyError:
-                    return json_unauthorized(_("Missing authorization header for basic auth"))
 
                 # Now we try to do authentication or die
                 try:
