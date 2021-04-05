@@ -759,7 +759,7 @@ export function process_hotkey(e, hotkey) {
         return false;
     }
 
-    // Compose box hotkeys
+    // Shortcuts that are useful with an empty message feed, like opening compose.
     switch (event_name) {
         case "compose": // 'c': compose
             compose_actions.start("stream", {trigger: "compose_hotkey"});
@@ -781,16 +781,14 @@ export function process_hotkey(e, hotkey) {
         case "star_deprecated":
             ui.maybe_show_deprecation_notice("*");
             return true;
-        case "copy_with_c":
-            copy_and_paste.copy_handler();
-            return true;
     }
 
     if (message_lists.current.empty()) {
         return false;
     }
 
-    // Navigation shortcuts
+    // Shortcuts for navigation and other applications that require a
+    // nonempty message feed but do not depend on the selected message.
     switch (event_name) {
         case "down_arrow":
         case "vim_down":
@@ -816,6 +814,9 @@ export function process_hotkey(e, hotkey) {
         case "vim_page_down":
         case "spacebar":
             navigate.page_down();
+            return true;
+        case "copy_with_c":
+            copy_and_paste.copy_handler();
             return true;
     }
 
