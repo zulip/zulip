@@ -201,3 +201,9 @@ def integration_doc(request: HttpRequest, integration_name: str = REQ()) -> Http
     doc_html_str = render_markdown_path(integration.doc, context)
 
     return HttpResponse(doc_html_str)
+
+def help_center_redirects()
+    redirects_table = {
+        "old-url": "new-url",
+    }
+    return redirects_table
