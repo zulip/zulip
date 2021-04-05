@@ -648,8 +648,12 @@ class NormalActionsTest(BaseAction):
         streams = []
         for stream_name in ["Denmark", "Scotland"]:
             streams.append(get_stream(stream_name, self.user_profile.realm))
+
+        invite_expires_in_days = 2
         events = self.verify_action(
-            lambda: do_invite_users(self.user_profile, ["foo@zulip.com"], streams, False),
+            lambda: do_invite_users(
+                self.user_profile, ["foo@zulip.com"], streams, invite_expires_in_days
+            ),
             state_change_expected=False,
         )
         check_invites_changed("events[0]", events[0])
@@ -660,9 +664,13 @@ class NormalActionsTest(BaseAction):
         for stream_name in ["Denmark", "Verona"]:
             streams.append(get_stream(stream_name, self.user_profile.realm))
 
+        invite_expires_in_days = 2
         events = self.verify_action(
             lambda: do_create_multiuse_invite_link(
-                self.user_profile, PreregistrationUser.INVITE_AS["MEMBER"], streams
+                self.user_profile,
+                PreregistrationUser.INVITE_AS["MEMBER"],
+                invite_expires_in_days,
+                streams,
             ),
             state_change_expected=False,
         )
@@ -673,7 +681,9 @@ class NormalActionsTest(BaseAction):
         streams = []
         for stream_name in ["Denmark", "Verona"]:
             streams.append(get_stream(stream_name, self.user_profile.realm))
-        do_invite_users(self.user_profile, ["foo@zulip.com"], streams)
+
+        invite_expires_in_days = 2
+        do_invite_users(self.user_profile, ["foo@zulip.com"], streams, invite_expires_in_days)
         prereg_users = PreregistrationUser.objects.filter(
             referred_by__realm=self.user_profile.realm
         )
@@ -688,8 +698,13 @@ class NormalActionsTest(BaseAction):
         streams = []
         for stream_name in ["Denmark", "Verona"]:
             streams.append(get_stream(stream_name, self.user_profile.realm))
+
+        invite_expires_in_days = 2
         do_create_multiuse_invite_link(
-            self.user_profile, PreregistrationUser.INVITE_AS["MEMBER"], streams
+            self.user_profile,
+            PreregistrationUser.INVITE_AS["MEMBER"],
+            invite_expires_in_days,
+            streams,
         )
 
         multiuse_object = MultiuseInvite.objects.get()
@@ -707,7 +722,8 @@ class NormalActionsTest(BaseAction):
         for stream_name in ["Denmark", "Scotland"]:
             streams.append(get_stream(stream_name, self.user_profile.realm))
 
-        do_invite_users(self.user_profile, ["foo@zulip.com"], streams)
+        invite_expires_in_days = 2
+        do_invite_users(self.user_profile, ["foo@zulip.com"], streams, invite_expires_in_days)
         prereg_user = PreregistrationUser.objects.get(email="foo@zulip.com")
 
         events = self.verify_action(

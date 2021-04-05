@@ -1470,7 +1470,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         realm = get_realm("zulip")
 
         iago = self.example_user("iago")
-        do_invite_users(iago, [email], [])
+        do_invite_users(iago, [email], [], invite_expires_in_days=2)
 
         account_data_dict = self.get_account_data_dict(email=email, name=name)
         result = self.social_auth_test(
@@ -1761,11 +1761,15 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         email = self.nonreg_email("alice")
         name = "Alice Jones"
 
-        do_invite_users(iago, [email], [], invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"])
-        expired_date = timezone_now() - datetime.timedelta(
-            days=settings.INVITATION_LINK_VALIDITY_DAYS + 1
+        invite_expires_in_days = 2
+        do_invite_users(
+            iago,
+            [email],
+            [],
+            invite_expires_in_days,
+            invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"],
         )
-        PreregistrationUser.objects.filter(email=email).update(invited_at=expired_date)
+        now = timezone_now() + datetime.timedelta(days=invite_expires_in_days + 1)
 
         subdomain = "zulip"
         realm = get_realm("zulip")
@@ -1773,9 +1777,10 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         result = self.social_auth_test(
             account_data_dict, expect_choose_email_screen=True, subdomain=subdomain, is_signup=True
         )
-        self.stage_two_of_registration(
-            result, realm, subdomain, email, name, name, self.BACKEND_CLASS.full_name_validated
-        )
+        with mock.patch("zerver.models.timezone_now", return_value=now):
+            self.stage_two_of_registration(
+                result, realm, subdomain, email, name, name, self.BACKEND_CLASS.full_name_validated
+            )
 
         # The invitation is expired, so the user should be created as normal member only.
         created_user = get_user_by_delivery_email(email, realm)
@@ -6304,12 +6309,13 @@ class TestMaybeSendToRegistration(ZulipTestCase):
         email = self.example_email("hamlet")
         user = PreregistrationUser(email=email)
         user.save()
+        create_confirmation_link(user, Confirmation.USER_REGISTRATION)
 
         with mock.patch("zerver.views.auth.HomepageForm", return_value=Form()):
             self.assertEqual(PreregistrationUser.objects.all().count(), 1)
             result = maybe_send_to_registration(request, email, is_signup=True)
             self.assertEqual(result.status_code, 302)
-            confirmation = Confirmation.objects.all().first()
+            confirmation = Confirmation.objects.all().last()
             assert confirmation is not None
             confirmation_key = confirmation.confirmation_key
             self.assertIn("do_confirm/" + confirmation_key, result.url)

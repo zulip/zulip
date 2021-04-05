@@ -774,10 +774,12 @@ class QueryCountTest(ZulipTestCase):
         ]
         streams = [get_stream(stream_name, realm) for stream_name in stream_names]
 
+        invite_expires_in_days = 4
         do_invite_users(
             user_profile=self.example_user("hamlet"),
             invitee_emails=["fred@zulip.com"],
             streams=streams,
+            invite_expires_in_days=invite_expires_in_days,
         )
 
         prereg_user = PreregistrationUser.objects.get(email="fred@zulip.com")

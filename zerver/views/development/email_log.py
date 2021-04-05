@@ -67,6 +67,7 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
     registered_email = "hamlet@zulip.com"
     unregistered_email_1 = "new-person@zulip.com"
     unregistered_email_2 = "new-person-2@zulip.com"
+    invite_expires_in_days = settings.INVITATION_LINK_VALIDITY_DAYS
     realm = get_realm("zulip")
     other_realm = Realm.objects.exclude(string_id="zulip").first()
     user = get_user_by_delivery_email(registered_email, realm)
@@ -109,7 +110,11 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
     stream = get_realm_stream("Denmark", user.realm.id)
     result = client.post(
         "/json/invites",
-        {"invitee_emails": unregistered_email_2, "stream_ids": orjson.dumps([stream.id]).decode()},
+        {
+            "invitee_emails": unregistered_email_2,
+            "invite_expires_in_days": invite_expires_in_days,
+            "stream_ids": orjson.dumps([stream.id]).decode(),
+        },
         **host_kwargs,
     )
     assert result.status_code == 200

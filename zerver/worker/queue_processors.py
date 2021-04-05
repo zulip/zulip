@@ -430,8 +430,9 @@ class LoopQueueProcessingWorker(QueueProcessingWorker):
 @assign_queue("invites")
 class ConfirmationEmailWorker(QueueProcessingWorker):
     def consume(self, data: Mapping[str, Any]) -> None:
+        invite_expires_in_days = data["invite_expires_in_days"]
         invitee = filter_to_valid_prereg_users(
-            PreregistrationUser.objects.filter(id=data["prereg_id"])
+            PreregistrationUser.objects.filter(id=data["prereg_id"]), invite_expires_in_days
         ).first()
         if invitee is None:
             # The invitation could have been revoked
@@ -445,10 +446,13 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
             email_language = data["email_language"]
         else:
             email_language = referrer.realm.default_language
-        activate_url = do_send_confirmation_email(invitee, referrer, email_language)
+
+        activate_url = do_send_confirmation_email(
+            invitee, referrer, email_language, invite_expires_in_days
+        )
 
         # queue invitation reminder
-        if settings.INVITATION_LINK_VALIDITY_DAYS >= 4:
+        if invite_expires_in_days >= 4:
             context = common_context(referrer)
             context.update(
                 activate_url=activate_url,
@@ -463,7 +467,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
                 from_address=FromAddress.tokenized_no_reply_placeholder,
                 language=email_language,
                 context=context,
-                delay=datetime.timedelta(days=settings.INVITATION_LINK_VALIDITY_DAYS - 2),
+                delay=datetime.timedelta(days=invite_expires_in_days - 2),
             )
 
 
