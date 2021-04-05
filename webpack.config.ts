@@ -148,6 +148,7 @@ export default (_env: unknown, argv: {mode?: string}): webpack.Configuration[] =
                                     "and",
                                     "or",
                                     "not",
+                                    "let",
                                     "t",
                                     "tr",
                                     "rendered_markdown",
