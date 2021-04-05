@@ -663,6 +663,20 @@ class OAuthTest(ZulipTestCase):
         self.assertEqual(hamlet.email, result["email"])
         self.assertEqual(result["result"], "success")
 
+    def test_oauth_fails_on_invalid_access_token(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.start_oauth_code_flow()
+        self.login_user(hamlet)
+
+        code = self.authorize_the_web_app()
+        access_token = self.get_access_token(code=code)
+        access_token = access_token + "somejunk"
+        # Now use the access token to verify the login
+        result = self.client_get("/api/v1/users/me", {}, HTTP_BEARER=access_token)
+        # assert that hamlet has logged in!
+        result = json.loads(result.content.decode("utf-8"))
+        self.assertEqual(result["msg"], "oauth failed")
+
 
 class RateLimitTestCase(ZulipTestCase):
     def errors_disallowed(self) -> Any:
