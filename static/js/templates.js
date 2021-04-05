@@ -48,6 +48,26 @@ Handlebars.registerHelper({
     not(a) {
         return !a || Handlebars.Utils.isEmpty(a);
     },
+    ["let"](options) {
+        // Defines locally scoped variables.
+        // Example usage:
+        //     {{#let name1="value1"}}
+        //         {{#*inline "name2"}}
+        //         value2
+        //         {{/inline}}
+        //         Now {{name1}} and {{name2}} are in scope.
+        //     {{/let}}
+        return options.fn({
+            ...this,
+            ...options.hash,
+            ...Object.fromEntries(
+                Object.entries(options.fn.partials ?? {}).map(([name, value]) => [
+                    name,
+                    new Handlebars.SafeString(value(this)),
+                ]),
+            ),
+        });
+    },
 });
 
 // Note that this i18n caching strategy does not allow us to support

@@ -28,6 +28,21 @@ run_test("or", () => {
     assert.equal(html, "\n<p>last or</p>\n<p>true or</p>\n");
 });
 
+run_test("let", () => {
+    const html = require("./templates/let.hbs")({
+        outer_var: "hello",
+    });
+    assert.equal(
+        html,
+        `\
+    outer_var = hello
+    keyword_var = &lt;b&gt;escaped&lt;/b&gt;
+    block_var =     <b>unescaped</b> with hello
+
+`,
+    );
+});
+
 run_test("rendered_markdown", () => {
     const html = require("./templates/rendered_markdown.hbs")();
     const expected_html =
