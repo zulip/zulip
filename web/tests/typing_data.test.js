@@ -20,49 +20,57 @@ test("basics", () => {
     // The typing_data needs to be robust with lists of
     // user ids being in arbitrary sorting order. So all
     // the apparent randomness in these tests has a purpose.
-    typing_data.add_typist([5, 10, 15], 15);
+    typing_data.add_typist(typing_data.get_direct_message_conversation_key([5, 10, 15]), 15);
     assert.deepEqual(typing_data.get_group_typists([15, 10, 5]), [15]);
 
     // test that you can add twice
-    typing_data.add_typist([5, 10, 15], 15);
+    typing_data.add_typist(typing_data.get_direct_message_conversation_key([5, 10, 15]), 15);
 
     // add another id to our first group
-    typing_data.add_typist([5, 10, 15], 10);
+    typing_data.add_typist(typing_data.get_direct_message_conversation_key([5, 10, 15]), 10);
     assert.deepEqual(typing_data.get_group_typists([10, 15, 5]), [10, 15]);
 
     // start adding to a new group
-    typing_data.add_typist([7, 15], 7);
-    typing_data.add_typist([7, 15], 15);
+    typing_data.add_typist(typing_data.get_direct_message_conversation_key([7, 15]), 7);
+    typing_data.add_typist(typing_data.get_direct_message_conversation_key([7, 15]), 15);
 
     // test get_all_direct_message_typists
     assert.deepEqual(typing_data.get_all_direct_message_typists(), [7, 10, 15]);
 
     // test basic removal
-    assert.ok(typing_data.remove_typist([15, 7], 7));
+    assert.ok(
+        typing_data.remove_typist(typing_data.get_direct_message_conversation_key([15, 7]), 7),
+    );
     assert.deepEqual(typing_data.get_group_typists([7, 15]), [15]);
 
     // test removing an id that is not there
-    assert.ok(!typing_data.remove_typist([15, 7], 7));
+    assert.ok(
+        !typing_data.remove_typist(typing_data.get_direct_message_conversation_key([15, 7]), 7),
+    );
     assert.deepEqual(typing_data.get_group_typists([7, 15]), [15]);
     assert.deepEqual(typing_data.get_all_direct_message_typists(), [10, 15]);
 
     // remove user from one group, but "15" will still be among
     // "all typists"
-    assert.ok(typing_data.remove_typist([15, 7], 15));
+    assert.ok(
+        typing_data.remove_typist(typing_data.get_direct_message_conversation_key([15, 7]), 15),
+    );
     assert.deepEqual(typing_data.get_all_direct_message_typists(), [10, 15]);
 
     // now remove from the other group
-    assert.ok(typing_data.remove_typist([5, 15, 10], 15));
+    assert.ok(
+        typing_data.remove_typist(typing_data.get_direct_message_conversation_key([5, 15, 10]), 15),
+    );
     assert.deepEqual(typing_data.get_all_direct_message_typists(), [10]);
 
     // test duplicate ids in a groups
-    typing_data.add_typist([20, 40, 20], 20);
+    typing_data.add_typist(typing_data.get_direct_message_conversation_key([20, 40, 20]), 20);
     assert.deepEqual(typing_data.get_group_typists([20, 40]), [20]);
 });
 
 test("muted_typists_excluded", () => {
-    typing_data.add_typist([5, 10, 15], 5);
-    typing_data.add_typist([5, 10, 15], 10);
+    typing_data.add_typist(typing_data.get_direct_message_conversation_key([5, 10, 15]), 5);
+    typing_data.add_typist(typing_data.get_direct_message_conversation_key([5, 10, 15]), 10);
 
     // Nobody is muted.
     assert.deepEqual(typing_data.get_group_typists([5, 10, 15]), [5, 10]);
@@ -102,12 +110,18 @@ test("timers", () => {
 
     function kickstart() {
         reset_events();
-        typing_data.kickstart_inbound_timer(stub_group, stub_delay, stub_f);
+        typing_data.kickstart_inbound_timer(
+            typing_data.get_direct_message_conversation_key(stub_group),
+            stub_delay,
+            stub_f,
+        );
     }
 
     function clear() {
         reset_events();
-        typing_data.clear_inbound_timer(stub_group);
+        typing_data.clear_inbound_timer(
+            typing_data.get_direct_message_conversation_key(stub_group),
+        );
     }
 
     set_global("setTimeout", set_timeout);
