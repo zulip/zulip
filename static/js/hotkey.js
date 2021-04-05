@@ -756,7 +756,7 @@ export function process_hotkey(e, hotkey) {
     // open. These involve compose box hotkeys and hotkeys that can only
     // be done performed on a message.
     if (recent_topics.is_visible()) {
-        return true;
+        return false;
     }
 
     // Compose box hotkeys
