@@ -32,6 +32,14 @@ $(() => {
         "#id_password",
         "#id_password ~ .password_visibility_toggle",
     );
+    common.setup_password_visibility_toggle(
+        "#id_new_password1",
+        "#id_new_password1 ~ .password_visibility_toggle",
+    );
+    common.setup_password_visibility_toggle(
+        "#id_new_password2",
+        "#id_new_password2 ~ .password_visibility_toggle",
+    );
 
     function highlight(class_to_add) {
         // Set a class on the enclosing control group.
