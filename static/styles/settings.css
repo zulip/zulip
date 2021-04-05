@@ -934,6 +934,29 @@ input[type="checkbox"] {
     }
 }
 
+#api_key_form,
+#change_password_modal {
+    .password-div {
+        position: relative;
+
+        input[type="text"] {
+            margin-bottom: 10px;
+        }
+
+        .password_visibility_toggle {
+            position: absolute;
+            left: 190px;
+            top: 28px;
+            width: 14px;
+            opacity: 0.6;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+    }
+}
+
 .emojiset_choices {
     width: 250px;
     padding: 0 10px;

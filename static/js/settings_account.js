@@ -322,6 +322,10 @@ export function set_up() {
         $(".account-settings-form").append(render_settings_api_key_modal());
         $("#api_key_value").text("");
         $("#show_api_key").hide();
+        common.setup_password_visibility_toggle(
+            "#get_api_key_password",
+            "#get_api_key_password + .password_visibility_toggle",
+        );
 
         if (page_params.realm_password_auth_enabled === false) {
             // Skip the password prompt step, since the user doesn't have one.
@@ -360,6 +364,13 @@ export function set_up() {
             const data = settings_bots.generate_zuliprc_content(bot_object);
             $(this).attr("href", settings_bots.encode_zuliprc_as_uri(data));
         });
+
+        $("#api_key_modal [data-dismiss=modal]").on("click", () => {
+            common.reset_password_toggle_icons(
+                "#get_api_key_password",
+                "#get_api_key_password + .password_visibility_toggle",
+            );
+        });
     });
 
     $("#api_key_button").on("click", (e) => {
@@ -372,6 +383,14 @@ export function set_up() {
     function clear_password_change() {
         // Clear the password boxes so that passwords don't linger in the DOM
         // for an XSS attacker to find.
+        common.reset_password_toggle_icons(
+            "#old_password",
+            "#old_password + .password_visibility_toggle",
+        );
+        common.reset_password_toggle_icons(
+            "#new_password",
+            "#new_password + .password_visibility_toggle",
+        );
         $("#old_password, #new_password").val("");
         common.password_quality("", $("#pw_strength .bar"), $("#new_password"));
     }

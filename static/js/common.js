@@ -151,6 +151,11 @@ function toggle_password_visibility(password_field_id, password_selector) {
     }
 }
 
+export function reset_password_toggle_icons(password_field, password_selector) {
+    $(password_field).attr("type", "password");
+    $(password_selector).removeClass("fa-eye").addClass("fa-eye-slash");
+}
+
 export function setup_password_visibility_toggle(password_field_id, password_selector) {
     $(password_selector).on("click", (e) => {
         e.preventDefault();
