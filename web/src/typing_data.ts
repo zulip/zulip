@@ -11,13 +11,12 @@ export function clear_for_testing(): void {
     inbound_timer_dict.clear();
 }
 
-function get_key(group: number[]): string {
+export function get_direct_message_conversation_key(group: number[]): string {
     const ids = util.sorted_ids(group);
     return ids.join(",");
 }
 
-export function add_typist(group: number[], typist: number): void {
-    const key = get_key(group);
+export function add_typist(key: string, typist: number): void {
     const current = typist_dct.get(key) ?? [];
     if (!current.includes(typist)) {
         current.push(typist);
@@ -25,8 +24,7 @@ export function add_typist(group: number[], typist: number): void {
     typist_dct.set(key, util.sorted_ids(current));
 }
 
-export function remove_typist(group: number[], typist: number): boolean {
-    const key = get_key(group);
+export function remove_typist(key: string, typist: number): boolean {
     let current = typist_dct.get(key) ?? [];
 
     if (!current.includes(typist)) {
@@ -40,7 +38,7 @@ export function remove_typist(group: number[], typist: number): boolean {
 }
 
 export function get_group_typists(group: number[]): number[] {
-    const key = get_key(group);
+    const key = get_direct_message_conversation_key(group);
     const user_ids = typist_dct.get(key) ?? [];
     return muted_users.filter_muted_user_ids(user_ids);
 }
@@ -53,8 +51,7 @@ export function get_all_direct_message_typists(): number[] {
 
 // The next functions aren't pure data, but it is easy
 // enough to mock the setTimeout/clearTimeout functions.
-export function clear_inbound_timer(group: number[]): void {
-    const key = get_key(group);
+export function clear_inbound_timer(key: string): void {
     const timer = inbound_timer_dict.get(key);
     if (timer) {
         clearTimeout(timer);
@@ -62,13 +59,8 @@ export function clear_inbound_timer(group: number[]): void {
     }
 }
 
-export function kickstart_inbound_timer(
-    group: number[],
-    delay: number,
-    callback: () => void,
-): void {
-    const key = get_key(group);
-    clear_inbound_timer(group);
+export function kickstart_inbound_timer(key: string, delay: number, callback: () => void): void {
+    clear_inbound_timer(key);
     const timer = setTimeout(callback, delay);
     inbound_timer_dict.set(key, timer);
 }
