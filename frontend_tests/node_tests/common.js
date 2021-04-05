@@ -157,4 +157,9 @@ run_test("show password", () => {
 
     handler(ev);
     check_assertion("password", "fa-eye-slash", "fa-eye");
+
+    handler(ev);
+
+    common.reset_password_toggle_icons("#id_password", password_selector);
+    check_assertion("password", "fa-eye-slash", "fa-eye");
 });
