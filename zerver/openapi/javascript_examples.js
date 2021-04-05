@@ -63,6 +63,12 @@ const examples_handler = function () {
         await generate_validation_data(client, examples.update_message);
         await generate_validation_data(client, examples.get_events);
         await generate_validation_data(client, examples.get_streams);
+        await generate_validation_data(client, examples.delete_message);
+        await generate_validation_data(client, examples.add_reaction);
+        await generate_validation_data(client, examples.remove_reaction);
+        await generate_validation_data(client, examples.get_message_history);
+        await generate_validation_data(client, examples.get_server_settings);
+        await generate_validation_data(client, examples.get_realm_filters);
 
         console.log(JSON.stringify(response_data));
         return;
@@ -370,6 +376,119 @@ add_example("get_streams", "/streams:get", 200, async (client, console) => {
     // {code_example|start}
     // Get all streams that the user has access to
     console.log(await client.streams.retrieve());
+    // {code_example|end}
+});
+
+add_example("delete_message", "/messages/{message_id}:delete", 200, async (client, console) => {
+    const request = {
+        to: "Denmark",
+        type: "stream",
+        topic: "Castle",
+        content: "I come not, friends, to steal away your hearts.",
+    };
+    const result = await client.messages.send(request);
+    const message_id = result.id;
+    // {code_example|start}
+    // Delete the message with ID "message_id"
+    const params = {
+        message_id,
+    };
+
+    console.log(await client.messages.deleteById(params));
+    // {code_example|end}
+});
+
+add_example(
+    "add_reaction",
+    "/messages/{message_id}/reactions:post",
+    200,
+    async (client, console) => {
+        const request = {
+            to: "Denmark",
+            type: "stream",
+            topic: "Castle",
+            content: "I come not, friends, to steal away your hearts.",
+        };
+        const result = await client.messages.send(request);
+        const message_id = result.id;
+        // {code_example|start}
+        // Add an emoji reaction
+        const params = {
+            message_id,
+            emoji_name: "octopus",
+        };
+
+        console.log(await client.reactions.add(params));
+        // {code_example|end}
+    },
+);
+
+add_example(
+    "remove_reaction",
+    "/messages/{message_id}/reactions:delete",
+    200,
+    async (client, console) => {
+        const request = {
+            to: "Denmark",
+            type: "stream",
+            topic: "Castle",
+            content: "I come not, friends, to steal away your hearts.",
+        };
+        const result = await client.messages.send(request);
+        const message_id = result.id;
+        const testParams = {
+            message_id,
+            emoji_name: "octopus",
+        };
+
+        await client.reactions.add(testParams);
+        // {code_example|start}
+        // Remove an emoji reaction
+        const params = {
+            message_id,
+            emoji_name: "octopus",
+        };
+
+        console.log(await client.reactions.remove(params));
+        // {code_example|end}
+    },
+);
+
+add_example(
+    "get_message_history",
+    "/messages/{message_id}/history:get",
+    200,
+    async (client, console) => {
+        const request = {
+            to: "Denmark",
+            type: "stream",
+            topic: "Castle",
+            content: "I come not, friends, to steal away your hearts.",
+        };
+        const result = await client.messages.send(request);
+        const message_id = result.id;
+        // {code_example|start}
+        // Get the edit history for message with ID "message_id"
+        const params = {
+            message_id,
+        };
+
+        console.log(await client.messages.getHistoryById(params));
+        // {code_example|end}
+    },
+);
+
+add_example("get_server_settings", "/server_settings:get", 200, async (client, console) => {
+    // {code_example|start}
+    // Fetch the settings for this server
+    console.log(await client.server.settings());
+    // {code_example|end}
+});
+
+add_example("get_realm_filters", "/realm/filters:get", 200, async (client, console) => {
+    // {code_example|start}
+    // Fetch all the filters in this organization
+    console.log(await client.filters.retrieve());
     // {code_example|end}
 });
 

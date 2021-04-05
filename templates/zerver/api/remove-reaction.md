@@ -9,6 +9,12 @@
 
 {generate_code_example(python)|/messages/{message_id}/reactions:delete|example}
 
+{tab|js}
+
+More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
+
+{generate_code_example(javascript)|/messages/{message_id}/reactions:delete|example}
+
 {tab|curl}
 
 {generate_code_example(curl, exclude=["emoji_code", "reaction_type"])|/messages/{message_id}/reactions:delete|example}

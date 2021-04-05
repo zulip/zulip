@@ -9,6 +9,12 @@
 
 {generate_code_example(python)|/realm/filters:get|example}
 
+{tab|js}
+
+More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
+
+{generate_code_example(javascript)|/realm/filters:get|example}
+
 {tab|curl}
 
 {generate_code_example(curl)|/realm/filters:get|example}

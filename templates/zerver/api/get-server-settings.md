@@ -9,6 +9,12 @@
 
 {generate_code_example(python)|/server_settings:get|example}
 
+{tab|js}
+
+More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
+
+{generate_code_example(javascript)|/server_settings:get|example}
+
 {tab|curl}
 
 {generate_code_example(curl)|/server_settings:get|example}
