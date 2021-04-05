@@ -18,12 +18,10 @@ server release.
 You also need to set the following secrets in your GitHub repository to make the action
 work correctly. These secrets are passed as environment variables to the GitHub action.
 
-* `DIGITALOCEAN_API_KEY` - DigitalOcean API KEY used for creating droplets, snapshots etc.
-* `ZULIP_ORGANIZATION_URL` - The URL of the Zulip organization where the message containing
-  droplet/image details should be sent.
-* `ZULIP_BOT_API_KEY` - The API key of the Zulip Bot used for sending messages.
-* `ZULIP_STREAM_TO_SEND_BOT_MESSAGES` - The stream to which the messages should be sent.
-* `ZULIP_BOT_EMAIL` - The email of the Zulip bot.
+* `ONE_CLICK_ACTION_DIGITALOCEAN_API_KEY` - DigitalOcean API key used for creating droplets, snapshots etc.
+* `ONE_CLICK_ACTION_ZULIP_BOT_API_KEY` - The API key of the Zulip bot used for sending messages.
+* `ONE_CLICK_ACTION_ZULIP_BOT_EMAIL` - The email of the Zulip bot.
+* `ONE_CLICK_ACTION_STREAM` - The stream to which the messages should be sent.
 
 Also pass the following as environment variables in `.github/workflows/update-oneclick-apps.yml`.
 *  `PYTHON_DIGITALOCEAN_REQUEST_TIMEOUT_SEC` -  This configures the maximum number of seconds

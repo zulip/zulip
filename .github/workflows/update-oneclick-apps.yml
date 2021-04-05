@@ -9,11 +9,11 @@ jobs:
       - uses: actions/checkout@v2
       - name: Update DigitalOcean one click app
         env:
-          DIGITALOCEAN_API_KEY: ${{ secrets.DIGITALOCEAN_API_KEY }}
-          ZULIP_API_KEY: ${{ secrets.ZULIP_BOT_API_KEY }}
-          ZULIP_EMAIL: ${{ secrets.ZULIP_BOT_EMAIL }}
-          ZULIP_SITE: ${{ secrets.ZULIP_ORGANIZATION_URL }}
-          ZULIP_STREAM_TO_SEND_BOT_MESSAGES: ${{ secrets.ZULIP_STREAM_TO_SEND_BOT_MESSAGES }}
+          DIGITALOCEAN_API_KEY: ${{ secrets.ONE_CLICK_ACTION_DIGITALOCEAN_API_KEY }}
+          ZULIP_SITE: https://chat.zulip.org
+          ZULIP_API_KEY: ${{ secrets.ONE_CLICK_ACTION_ZULIP_BOT_API_KEY }}
+          ZULIP_EMAIL: ${{ secrets.ONE_CLICK_ACTION_ZULIP_BOT_EMAIL }}
+          ONE_CLICK_ACTION_STREAM: ${{ secrets.ONE_CLICK_ACTION_STREAM }}
           PYTHON_DIGITALOCEAN_REQUEST_TIMEOUT_SEC: 30
           RELEASE_VERSION: ${{ github.event.release.tag_name }}
         run: |
