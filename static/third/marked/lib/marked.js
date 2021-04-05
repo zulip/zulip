@@ -589,11 +589,6 @@ function shorten_links(href) {
     if (remaining_path || url.hash) {
       return href;
     }
-    
-    // Return orginal url when value is a string
-    if(type(value)==str){
-      return href;
-    }
 
     if (url.hostname === 'github.com') {
       return shorten_github_links(href, artifact, repo_short_text,
