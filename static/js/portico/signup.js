@@ -25,6 +25,10 @@ $(() => {
     }
 
     common.setup_password_visibility_toggle(
+        "#ldap-password",
+        "#ldap-password ~ .password_visibility_toggle",
+    );
+    common.setup_password_visibility_toggle(
         "#id_password",
         "#id_password ~ .password_visibility_toggle",
     );
