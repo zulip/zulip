@@ -73,9 +73,10 @@ export function hide_notification(event) {
     const recipients = event.recipients.map((user) => user.user_id);
     recipients.sort();
 
-    typing_data.clear_inbound_timer(recipients);
+    const pms_typing_key = typing_data.get_pms_key(recipients);
+    typing_data.clear_inbound_timer(pms_typing_key);
 
-    const removed = typing_data.remove_typist(recipients, event.sender.user_id);
+    const removed = typing_data.remove_typist(pms_typing_key, event.sender.user_id);
 
     if (removed) {
         render_notifications_for_narrow();
@@ -89,11 +90,12 @@ export function display_notification(event) {
     const sender_id = event.sender.user_id;
     event.sender.name = people.get_by_user_id(sender_id).full_name;
 
-    typing_data.add_typist(recipients, sender_id);
+    const pms_typing_key = typing_data.get_pms_key(recipients);
+    typing_data.add_typist(pms_typing_key, sender_id);
 
     render_notifications_for_narrow();
 
-    typing_data.kickstart_inbound_timer(recipients, TYPING_STARTED_EXPIRY_PERIOD, () => {
+    typing_data.kickstart_inbound_timer(pms_typing_key, TYPING_STARTED_EXPIRY_PERIOD, () => {
         hide_notification(event);
     });
 }

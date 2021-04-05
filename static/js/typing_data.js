@@ -15,13 +15,12 @@ function to_int(s) {
     return Number.parseInt(s, 10);
 }
 
-function get_key(group) {
+export function get_pms_key(group) {
     const ids = util.sorted_ids(group);
     return ids.join(",");
 }
 
-export function add_typist(group, typist) {
-    const key = get_key(group);
+export function add_typist(key, typist) {
     const current = typist_dct.get(key) || [];
     typist = to_int(typist);
     if (!current.includes(typist)) {
@@ -30,8 +29,7 @@ export function add_typist(group, typist) {
     typist_dct.set(key, util.sorted_ids(current));
 }
 
-export function remove_typist(group, typist) {
-    const key = get_key(group);
+export function remove_typist(key, typist) {
     let current = typist_dct.get(key) || [];
 
     typist = to_int(typist);
@@ -46,7 +44,7 @@ export function remove_typist(group, typist) {
 }
 
 export function get_group_typists(group) {
-    const key = get_key(group);
+    const key = get_pms_key(group);
     const user_ids = typist_dct.get(key) || [];
     return muted_users.filter_muted_user_ids(user_ids);
 }
@@ -59,8 +57,7 @@ export function get_all_pms_typists() {
 
 // The next functions aren't pure data, but it is easy
 // enough to mock the setTimeout/clearTimeout functions.
-export function clear_inbound_timer(group) {
-    const key = get_key(group);
+export function clear_inbound_timer(key) {
     const timer = inbound_timer_dict.get(key);
     if (timer) {
         clearTimeout(timer);
@@ -68,9 +65,8 @@ export function clear_inbound_timer(group) {
     }
 }
 
-export function kickstart_inbound_timer(group, delay, callback) {
-    const key = get_key(group);
-    clear_inbound_timer(group);
+export function kickstart_inbound_timer(key, delay, callback) {
+    clear_inbound_timer(key);
     const timer = setTimeout(callback, delay);
     inbound_timer_dict.set(key, timer);
 }
