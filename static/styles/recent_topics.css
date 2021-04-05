@@ -61,17 +61,21 @@
             padding-right: 3px;
         }
 
-        .table_fix_head {
+        table {
+            /* To keep border properties to the thead th. */
+            border-collapse: separate;
+        }
+
+        .table_fix_head .table {
+            margin-bottom: 0 !important;
+        }
+
+        .table_body {
             padding: 0 !important;
             /* 100px = space occupied by `recent_topics_filter_buttons`( ~49px)
                      + give user some extra space at the bottom so that last
                        topic row is clearly visible. */
-            max-height: calc(100vh - 100px);
-        }
-
-        .table_fix_head table {
-            /* To keep border properties to the thead th. */
-            border-collapse: separate;
+            max-height: calc(100vh - 140px);
         }
 
         #recent_topics_filter_buttons {
@@ -264,16 +268,6 @@
 
         .recent_topic_timestamp {
             width: 15%;
-        }
-
-        thead .last_msg_time_header {
-            /* The responsive table of bootstrap
-               somehow ignores the width of ::after
-               element. This ensures it is always visible.
-               20px = space occupied by ::after (icon) +
-               some extra padding.
-            */
-            padding-right: 20px;
         }
 
         @media (width < $md_min) {

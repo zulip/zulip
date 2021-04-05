@@ -468,6 +468,48 @@ function topic_sort(a, b) {
     return -1;
 }
 
+// As simplebar vertical scrollbar goes too high in the table
+// (vertical scrollbar can reach the header of the table),
+// we separate the table into two tables:
+//  1. One consists of the only recent topics table header
+//  2. One consists of only recent topics table body
+//     (comprised of a list of recent topics)
+//
+// However, there will be column width misalignment between
+// table header and table body. In order to prevent such issue,
+// we set each header column width according to respective table
+// body column's width.
+//
+// For instance, $(".recent_topic_stream_header")'s width is set
+// to be same as $(".recent_topic_stream")'s width during recent
+// topic content rendering
+
+function adjust_recent_topics_table_header_width() {
+    const recent_topic_stream_width = $("#recent_topics_main_table .recent_topic_stream").width();
+    const recent_topic_name_width = $("#recent_topics_main_table .recent_topic_name").width();
+    const recent_topic_users_width = $("#recent_topics_main_table .recent_topic_users").width();
+    const recent_topic_timestamp_width = $(
+        "#recent_topics_main_table .recent_topic_timestamp",
+    ).width();
+
+    $("#recent_topics_main_table .recent_topic_stream_header").css(
+        "width",
+        `${recent_topic_stream_width}px`,
+    );
+    $("#recent_topics_main_table .recent_topic_name_header").css(
+        "width",
+        `${recent_topic_name_width}px`,
+    );
+    $("#recent_topics_main_table .participants_header").css(
+        "width",
+        `${recent_topic_users_width}px`,
+    );
+    $("#recent_topics_main_table .last_msg_time_header").css(
+        "width",
+        `${recent_topic_timestamp_width}px`,
+    );
+}
+
 export function complete_rerender() {
     if (!is_visible()) {
         return;
@@ -506,9 +548,11 @@ export function complete_rerender() {
             topic_sort,
         },
         html_selector: get_topic_row,
-        simplebar_container: $("#recent_topics_table .table_fix_head"),
+        simplebar_container: $("#recent_topics_table .table_body"),
         callback_after_render: revive_current_focus,
     });
+    // Initialize header's width
+    adjust_recent_topics_table_header_width();
 }
 
 export function is_visible() {
@@ -748,3 +792,6 @@ export function change_focused_element($elt, input_key) {
 
     return false;
 }
+
+// Always readjust recent topics table's header whenever window size changes
+$(window).on("resize", adjust_recent_topics_table_header_width);
