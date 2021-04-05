@@ -89,7 +89,7 @@ export function query_matches_person(query, person) {
     return typeahead.query_matches_source_attrs(query, person, ["full_name", email_attr], " ");
 }
 
-function query_matches_name_description(query, user_group_or_stream) {
+export function query_matches_name_description(query, user_group_or_stream) {
     return typeahead.query_matches_source_attrs(
         query,
         user_group_or_stream,
