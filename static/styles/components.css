@@ -120,3 +120,18 @@ i.zulip-icon.bot {
      */
     font-size: 12px;
 }
+
+.password-div {
+    position: relative;
+
+    .password_visibility_toggle {
+        position: absolute;
+        right: 10px;
+        top: 42px;
+        opacity: 0.6;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+}

@@ -24,6 +24,11 @@ $(() => {
         });
     }
 
+    common.setup_password_visibility_toggle(
+        "#id_password",
+        "#id_password ~ .password_visibility_toggle",
+    );
+
     function highlight(class_to_add) {
         // Set a class on the enclosing control group.
         return function (element) {

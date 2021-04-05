@@ -134,3 +134,27 @@ export function adjust_mac_shortcuts(key_elem_class, require_cmd_style) {
         $(this).text(key_text);
     });
 }
+
+// See https://zulip.readthedocs.io/en/latest/development/authentication.html#password-form-implementation
+// for design details on this feature.
+//
+// This toggle code would probably be cleaner as 2 functions.
+function toggle_password_visibility(password_field_id, password_selector) {
+    const password_field = $(password_field_id);
+
+    if (password_field.attr("type") === "password") {
+        password_field.attr("type", "text");
+        $(password_selector).removeClass("fa-eye-slash").addClass("fa-eye");
+    } else {
+        password_field.attr("type", "password");
+        $(password_selector).removeClass("fa-eye").addClass("fa-eye-slash");
+    }
+}
+
+export function setup_password_visibility_toggle(password_field_id, password_selector) {
+    $(password_selector).on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        toggle_password_visibility(password_field_id, password_selector);
+    });
+}

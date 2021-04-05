@@ -221,4 +221,14 @@ to test 2FA in development, make sure that you login using a
 password.  You can get the passwords for the default test users using
 `./manage.py print_initial_password`.
 
+## Password form implementation
+
+By default, Zulip uses `autocomplete=off` for password fields where we
+enter the current password, and `autocomplete="new-password"` for
+password fields where we create a new account or change the existing
+password.  This prevents the browser from auto-filling the existing
+password.
+
+Visit <https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete> for more details.
+
 [0]: https://github.com/Bouke/django-two-factor-auth

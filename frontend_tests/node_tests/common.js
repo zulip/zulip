@@ -128,3 +128,33 @@ run_test("adjust_mac_shortcuts mac", (override) => {
         assert.equal(test_item.stub.text(), test_item.mac_key);
     }
 });
+
+run_test("show password", () => {
+    const password_selector = ".password_visibility_toggle";
+
+    function set_attribute(type) {
+        $("#id_password").attr("type", type);
+    }
+
+    function check_assertion(type, present_class, absent_class) {
+        assert.equal($("#id_password").attr("type"), type);
+        assert($(password_selector).hasClass(present_class));
+        assert(!$(password_selector).hasClass(absent_class));
+    }
+
+    const ev = {
+        preventDefault: () => {},
+        stopPropagation: () => {},
+    };
+
+    set_attribute("password");
+    common.setup_password_visibility_toggle("#id_password", password_selector);
+
+    const handler = $(password_selector).get_on_handler("click");
+
+    handler(ev);
+    check_assertion("text", "fa-eye", "fa-eye-slash");
+
+    handler(ev);
+    check_assertion("password", "fa-eye-slash", "fa-eye");
+});
