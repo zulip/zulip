@@ -1247,6 +1247,11 @@ test("begins_typeahead", (override) => {
     assert_typeahead_equals("abc/po", false);
     assert_typeahead_equals("hello /poll", false);
     assert_typeahead_equals("\n/pol", false);
+    assert_typeahead_equals("/status", composebox_typeahead.slash_commands);
+    assert_typeahead_equals(" /stat", false);
+    assert_typeahead_equals("abc/sta", false);
+    assert_typeahead_equals("hello /status", false);
+    assert_typeahead_equals("\n/stat", false);
     assert_typeahead_equals("/todo", composebox_typeahead.slash_commands);
     assert_typeahead_equals("my /todo", false);
     assert_typeahead_equals("\n/to", false);
