@@ -1928,6 +1928,15 @@ def do_send_messages(
                about changing the next line.
         """
         user_ids = send_request.active_user_ids | set(user_flags.keys())
+        sender_id = send_request.message.sender_id
+
+        # We make sure the sender is listed first in the `users` list;
+        # this results in the sender receiving the message first if
+        # there are thousands of recipients, decreasing perceived latency.
+        if sender_id in user_ids:
+            user_list = [sender_id] + list(user_ids - {sender_id})
+        else:
+            user_list = list(user_ids)
 
         users = [
             dict(
@@ -1938,7 +1947,7 @@ def do_send_messages(
                 stream_email_notify=(user_id in send_request.stream_email_user_ids),
                 wildcard_mention_notify=(user_id in send_request.wildcard_mention_user_ids),
             )
-            for user_id in user_ids
+            for user_id in user_list
         ]
 
         if send_request.message.is_stream_message():
