@@ -357,7 +357,7 @@ def get_reference_by_id(payload: Dict[str, Any], ref_id: int) -> Dict[str, Any]:
     return ref
 
 
-def get_story_create_github_entity_body(payload: Dict[str, Any], entity: str) -> str:
+def get_story_create_github_entity_body(payload: Dict[str, Any], entity: str) -> Optional[str]:
     primary_action = get_action_with_primary_id(payload)
 
     story: Dict[str, Any] = {}
@@ -373,6 +373,9 @@ def get_story_create_github_entity_body(payload: Dict[str, Any], entity: str) ->
                     new_state=get_reference_by_id(payload, new_state_id)["name"],
                 )
                 break
+
+    if not story:
+        return None
 
     kwargs = {
         "name_template": STORY_NAME_TEMPLATE.format(**story),

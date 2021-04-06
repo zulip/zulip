@@ -1,0 +1,16 @@
+{
+    "actions": [
+        {
+            "action": "create",
+            "entity_type": "branch",
+            "id": 500000029,
+            "name": "branch-name",
+            "url": "https://gitlab.com/user/repo/tree/branch-name"
+        }
+    ],
+    "changed_at": "2020-02-02T15:55:30.384Z",
+    "id": "80683c2a-b991-2546-7329-e3441051e2acb",
+    "member_id": "1b0f6452-5078-1a4d-a31c-28cc8937192d",
+    "primary_id": 500000029,
+    "version": "v1"
+}

@@ -216,6 +216,15 @@ class ClubhouseWebhookTest(WebhookTestCase):
         )
 
     @patch("zerver.lib.webhooks.common.check_send_webhook_message")
+    def test_create_gitlab_branch_no_story(
+        self, check_send_webhook_message_mock: MagicMock
+    ) -> None:
+        payload = self.get_body("create_gitlab_branch_no_story")
+        result = self.client_post(self.url, payload, content_type="application/json")
+        self.assertFalse(check_send_webhook_message_mock.called)
+        self.assert_json_success(result)
+
+    @patch("zerver.lib.webhooks.common.check_send_webhook_message")
     def test_empty_post_request_body_ignore(
         self, check_send_webhook_message_mock: MagicMock
     ) -> None:
