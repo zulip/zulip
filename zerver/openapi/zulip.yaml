@@ -9302,6 +9302,10 @@ paths:
                     type: string
                     description: |
                       Email of the bot user.
+                  bot_full_name:
+                    type: string
+                    description: |
+                      The full name of the bot user.
                   data:
                     type: string
                     description: |
@@ -9376,6 +9380,7 @@ paths:
                         "sender_realm_str": "zulip",
                       },
                     "bot_email": "outgoing-bot@localhost",
+                    "bot_full_name": "Outgoing webhook test",
                   }
 
   /calls/bigbluebutton/create:
