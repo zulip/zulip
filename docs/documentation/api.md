@@ -20,7 +20,7 @@ once you notice one error in API documentation, you no longer trust it
 to be correct, which ends up wasting the time of its users.
 
 Since it's very difficult to not make little mistakes when writing any
-code of untested code, the only good solution to this is a way to test
+untested code, the only good solution to this is a way to test
 the documentation.  We found dozens of errors in the process of adding
 the validation Zulip has today.
 
