@@ -246,7 +246,7 @@ function build_topic_popover(opts) {
         topic_name,
         can_mute_topic,
         can_unmute_topic,
-        is_realm_admin: page_params.is_realm_admin,
+        is_realm_admin: page_params.is_admin,
         color: sub.color,
         has_starred_messages,
     });
