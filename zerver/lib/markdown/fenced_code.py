@@ -166,7 +166,7 @@ class FencedCodeExtension(Extension):
 
 
 class BaseHandler:
-    def handle_line(self, line: str) -> None:
+    def handle_line(self, line: str) -> bool:
         raise NotImplementedError()
 
     def done(self) -> None:
@@ -228,10 +228,11 @@ class OuterHandler(BaseHandler):
         self.run_content_validators = run_content_validators
         self.default_language = default_language
 
-    def handle_line(self, line: str) -> None:
+    def handle_line(self, line: str) -> bool:
         check_for_new_fence(
             self.processor, self.output, line, self.run_content_validators, self.default_language
         )
+        return False
 
     def done(self) -> None:
         self.processor.pop()
@@ -250,10 +251,19 @@ class InnerHandler(BaseHandler):
         self.fence = fence
         self.lines: List[str] = []
         self.default_language = default_language
+        self.need_to_handle_unclosed_fence = False
 
-    def handle_line(self, line: str) -> None:
+    def handle_line(self, line: str) -> bool:
+        rstrip_line = line.rstrip()
+        line_length = len(rstrip_line)
+        line_has_only_fence = line_length >= 3 and (
+            rstrip_line.count("`") == line_length or rstrip_line.count("~") == line_length
+        )
         if line.rstrip() == self.fence:
             self.done()
+        elif not self.need_to_handle_unclosed_fence and line_has_only_fence:
+            self.need_to_handle_unclosed_fence = True
+            return self.need_to_handle_unclosed_fence
         else:
             if isinstance(self, CodeHandler):
                 self.lines.append(line.rstrip())
@@ -263,6 +273,8 @@ class InnerHandler(BaseHandler):
                 check_for_new_fence(
                     self.processor, self.lines, line, default_language=self.default_language
                 )
+        self.need_to_handle_unclosed_fence = False
+        return self.need_to_handle_unclosed_fence
 
     def process_lines(self, text: str) -> None:
         processed_lines = text.split("\n")
@@ -289,6 +301,7 @@ class CodeHandler(InnerHandler):
         self.run_content_validators = run_content_validators
 
     def done(self) -> None:
+        self.processor.pop_next_handler(self)
         text = "\n".join(self.lines)
         # run content validators (if any)
         if self.run_content_validators:
@@ -310,6 +323,7 @@ class QuoteHandler(InnerHandler):
         super().__init__(processor, output, fence, default_language)
 
     def done(self) -> None:
+        self.processor.pop_next_handler(self)
         text = "\n".join(self.lines)
         text = self.processor.format_quote(text)
         super().process_lines(text)
@@ -323,6 +337,7 @@ class SpoilerHandler(InnerHandler):
         self.spoiler_header = spoiler_header
 
     def done(self) -> None:
+        self.processor.pop_next_handler(self)
         if len(self.lines) == 0:
             # No content, do nothing
             return
@@ -339,6 +354,7 @@ class TexHandler(InnerHandler):
         super().__init__(processor, output, fence)
 
     def done(self) -> None:
+        self.processor.pop_next_handler(self)
         text = "\n".join(self.lines)
         text = self.processor.format_tex(text)
         text = self.processor.placeholder(text)
@@ -359,6 +375,20 @@ class FencedBlockPreprocessor(Preprocessor):
     def pop(self) -> None:
         self.handlers.pop()
 
+    def handle_line(self, line: str, current_handler: int) -> None:
+        # This check for the case when the fence doesn't match with any open fence.
+        if current_handler < -1 and abs(current_handler) == len(self.handlers):
+            self.handle_line(line, -1)
+        # if there need_to_handle_unclosed_fence then we pass the line to next handler.
+        elif self.handlers[current_handler].handle_line(line):
+            self.handle_line(line, current_handler - 1)
+
+    # if the handler is not the last handler then we first pop handler next to it.
+    def pop_next_handler(self, handler: BaseHandler) -> None:
+        handler_index = self.handlers.index(handler) + 1
+        if handler_index != len(self.handlers):
+            self.handlers[handler_index].done()
+
     def run(self, lines: Iterable[str]) -> List[str]:
         """ Match and store Fenced Code Blocks in the HtmlStash. """
 
@@ -376,7 +406,8 @@ class FencedBlockPreprocessor(Preprocessor):
         self.push(handler)
 
         for line in lines:
-            self.handlers[-1].handle_line(line)
+            current_handler = -1
+            self.handle_line(line, current_handler)
 
         while self.handlers:
             self.handlers[-1].done()

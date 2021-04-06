@@ -140,6 +140,49 @@
       "text_content": "Before:\n\nOne.\nTwo.\n\n> Lists should work after a quote\n\nAfter:\n\nOne.\nTwo.\n"
     },
     {
+      "name": "backtick_unclosed_in_backtick",
+      "input": "````quote\n```\ncode\n````",
+      "expected_output": "<blockquote>\n<p><div class=\"codehilite\"><pre><span></span><code>code\n</code></pre></div><br>\n</p>\n</blockquote>",
+      "marked_expected_output": "<blockquote>\n<div class=\"codehilite\"><pre><span></span><code>code\n````\n</code></pre></div>\n</blockquote>"
+    },
+    {
+      "name": "more_backtick_inside",
+      "input": "```quote\n````\ncode\n```",
+      "expected_output": "<blockquote>\n<p><div class=\"codehilite\"><pre><span></span><code>code\n</code></pre></div><br>\n</p>\n</blockquote>",
+      "marked_expected_output": "<blockquote>\n<div class=\"codehilite\"><pre><span></span><code>code\n```\n</code></pre></div>\n</blockquote>"
+    },
+    {
+      "name": "i'm_outside",
+      "input": "```quote\n````quote\nhello\n```\noutside both quotes",
+      "expected_output": "<blockquote>\n<blockquote>\n<p>hello<br>\n</p>\n</blockquote>\n</blockquote>\n<p>outside both quotes</p>",
+      "marked_expected_output": "<blockquote>\n<blockquote>\n<p>hello</p>\n<div class=\"codehilite\"><pre><span></span><code>outside both quotes\n</code></pre></div>\n</blockquote>\n</blockquote>"
+    },
+    {
+      "name": "inside_outside",
+      "input": "```quote\n````quote\nhello\n`````\ninside as a code block\n```\nOutside both quotes",
+      "expected_output": "<blockquote>\n<blockquote>\n<p>hello</p>\n<div class=\"codehilite\"><pre><span></span><code>inside as a code block\n</code></pre></div>\n</blockquote>\n</blockquote>\n<p>Outside both quotes</p>",
+      "marked_expected_output": "<blockquote>\n<blockquote>\n<p>hello</p>\n<div class=\"codehilite\"><pre><span></span><code>inside as a code block\n```\nOutside both quotes\n</code></pre></div>\n</blockquote>\n</blockquote>"
+    },
+
+    {
+      "name": "tilde_unclosed_in_backtick",
+      "input": "```quote\n~~~\ncode\n```",
+      "expected_output": "<blockquote>\n<p><div class=\"codehilite\"><pre><span></span><code>code\n</code></pre></div><br>\n</p>\n</blockquote>",
+      "marked_expected_output": "<blockquote>\n<div class=\"codehilite\"><pre><span></span><code>code\n```\n</code></pre></div>\n</blockquote>"
+    },
+    {
+      "name": "too_many_quotes",
+      "input": "````````quote\n```````quote\nquoteHandler1\n``````quote\nquoteHandler2\n`````quote\nquoteHandler3\n````quote\nquoteHandler4\n```quote\nquoteHandler5\n````````\ntest",
+      "expected_output": "<blockquote>\n<blockquote>\n<p>quoteHandler1</p>\n<blockquote>\n<p>quoteHandler2</p>\n<blockquote>\n<p>quoteHandler3</p>\n<blockquote>\n<p>quoteHandler4</p>\n<blockquote>\n<p>quoteHandler5<br>\n</p>\n</blockquote>\n</blockquote>\n</blockquote>\n</blockquote>\n</blockquote>\n</blockquote>\n<p>test</p>",
+      "marked_expected_output": "<blockquote>\n<blockquote>\n<p>quoteHandler1</p>\n<blockquote>\n<p>quoteHandler2</p>\n<blockquote>\n<p>quoteHandler3</p>\n<blockquote>\n<p>quoteHandler4</p>\n<blockquote>\n<p>quoteHandler5</p>\n<div class=\"codehilite\"><pre><span></span><code>test\n</code></pre></div>\n</blockquote>\n</blockquote>\n</blockquote>\n</blockquote>\n</blockquote>\n</blockquote>"
+    },
+    {
+      "name": "what_Alice_said?",
+      "input": "Bob said:\n``` quote\n\nAlice said:\n~~~ quote\nsomething Alice said\n```\n\nthanks",
+      "expected_output": "<p>Bob said:</p>\n<blockquote>\n<p>Alice said:</p>\n<blockquote>\n<p>something Alice said<br>\n</p>\n</blockquote>\n</blockquote>\n<p>thanks</p>",
+      "marked_expected_output": "<p>Bob said:</p>\n<blockquote>\n<p>Alice said:</p>\n<blockquote>\n<p>something Alice said</p>\n<div class=\"codehilite\"><pre><span></span><code>thanks\n</code></pre></div>\n</blockquote>\n</blockquote>"
+    },
+    {
       "name": "dangerous_block",
       "input": "xxxxxx xxxxx xxxxxxxx xxxx. x xxxx xxxxxxxxxx:\n\n```\"xxxx xxxx\\xxxxx\\xxxxxx\"```\n\nxxx xxxx xxxxx:```xx.xxxxxxx(x'^xxxx$', xx.xxxxxxxxx)```\n\nxxxxxxx'x xxxx xxxxxxxxxx ```'xxxx'```, xxxxx xxxxxxxxx xxxxx ^ xxx $ xxxxxx xxxxx xxxxxxxxxxxx xxx xxxx xx x xxxx xx xxxx xx xxx xxxxx xxxxxx?",
       "expected_output": "<p>xxxxxx xxxxx xxxxxxxx xxxx. x xxxx xxxxxxxxxx:</p>\n<p><code>\"xxxx xxxx\\xxxxx\\xxxxxx\"</code></p>\n<p>xxx xxxx xxxxx:<code>xx.xxxxxxx(x'^xxxx$', xx.xxxxxxxxx)</code></p>\n<p>xxxxxxx'x xxxx xxxxxxxxxx <code>'xxxx'</code>, xxxxx xxxxxxxxx xxxxx ^ xxx $ xxxxxx xxxxx xxxxxxxxxxxx xxx xxxx xx x xxxx xx xxxx xx xxx xxxxx xxxxxx?</p>",

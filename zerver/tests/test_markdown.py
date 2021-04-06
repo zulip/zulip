@@ -125,6 +125,135 @@ class FencedBlockPreprocessorTest(ZulipTestCase):
         lines = processor.run(markdown_input)
         self.assertEqual(lines, expected)
 
+    def test_bob_and_alice(self) -> None:
+        processor = FencedBlockPreprocessor(Markdown())
+
+        markdown_input = [
+            "Bob said:",
+            "``` quote",
+            "Alice said:",
+            "~~~ quote",
+            "something Alice said",
+            "```",
+            "thanks",
+            "",
+            "",
+        ]
+        expected = [
+            "Bob said:",
+            "",
+            "> Alice said:",
+            "> ",
+            "> > something Alice said",
+            "> ",
+            "",
+            "thanks",
+            "",
+            "",
+        ]
+        lines = processor.run(markdown_input)
+        self.assertEqual(lines, expected)
+
+    def test_too_many_quotes(self) -> None:
+        processor = FencedBlockPreprocessor(Markdown())
+
+        markdown_input = [
+            "````````quote",
+            "```````quote",
+            "quoteHandler1",
+            "``````quote",
+            "quoteHandler2",
+            "`````quote",
+            "quoteHandler3",
+            "````quote",
+            "quoteHandler4",
+            "```quote",
+            "quoteHandler5",
+            "````````",
+            "test",
+            "",
+            "",
+        ]
+        expected = [
+            "",
+            "> ",
+            "> > quoteHandler1",
+            "> > ",
+            "> > > quoteHandler2",
+            "> > > ",
+            "> > > > quoteHandler3",
+            "> > > > ",
+            "> > > > > quoteHandler4",
+            "> > > > > ",
+            "> > > > > > quoteHandler5",
+            "> > > > > ",
+            "> > > > ",
+            "> > > ",
+            "> > ",
+            "> ",
+            "",
+            "test",
+            "",
+            "",
+        ]
+        lines = processor.run(markdown_input)
+        self.assertEqual(lines, expected)
+
+    def test_inside_outside(self) -> None:
+        processor = SimulatedFencedBlockPreprocessor(Markdown())
+
+        markdown_input = [
+            "```quote",
+            "````quote",
+            "hello",
+            "`````",
+            "inside as a code block",
+            "```",
+            "Outside both quotes",
+            "",
+            "",
+        ]
+        expected = [
+            "",
+            "> ",
+            "> > hello",
+            "> > ",
+            "> > **:inside as a code block**",
+            "> > ",
+            "> ",
+            "",
+            "Outside both quotes",
+            "",
+            "",
+        ]
+        lines = processor.run(markdown_input)
+        self.assertEqual(lines, expected)
+
+    def test_only_outside(self) -> None:
+        processor = FencedBlockPreprocessor(Markdown())
+
+        markdown_input = [
+            "```quote",
+            "````quote",
+            "hello",
+            "```",
+            "outside both quotes",
+            "",
+            "",
+        ]
+        expected = [
+            "",
+            "> ",
+            "> > hello",
+            "> ",
+            "",
+            "outside both quotes",
+            "",
+            "",
+        ]
+        lines = processor.run(markdown_input)
+        self.assertEqual(lines, expected)
+
     def test_serial_code(self) -> None:
         processor = SimulatedFencedBlockPreprocessor(Markdown())
 
