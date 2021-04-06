@@ -63,6 +63,13 @@ function display_image(payload) {
         img.src = payload.source;
 
         $("#lightbox_overlay .image-preview").html(img).show();
+
+        $(img).on("load", () => {
+            $("#lightbox_overlay .image-preview").css(
+                "background-image",
+                "url(" + $("#lightbox_overlay .image-preview").attr("src") + ")",
+            );
+        });
     }
 
     $(".image-description .title").text(payload.title || "N/A");
