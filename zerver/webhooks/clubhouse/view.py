@@ -69,13 +69,13 @@ def get_action_with_primary_id(payload: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def get_event(payload: Dict[str, Any]) -> Optional[str]:
-    action = get_action_with_primary_id(payload)
-    event = "{}_{}".format(action["entity_type"], action["action"])
+    primary_action = get_action_with_primary_id(payload)
+    event = "{}_{}".format(primary_action["entity_type"], primary_action["action"])
 
     if event in IGNORED_EVENTS:
         return None
 
-    changes = action.get("changes")
+    changes = primary_action.get("changes")
     if changes is not None:
         if changes.get("description") is not None:
             event = "{}_{}".format(event, "description")
@@ -113,23 +113,23 @@ def get_topic_function_based_on_type(payload: Dict[str, Any]) -> Any:
 
 
 def get_delete_body(payload: Dict[str, Any]) -> str:
-    action = get_action_with_primary_id(payload)
-    return DELETE_TEMPLATE.format(**action)
+    primary_action = get_action_with_primary_id(payload)
+    return DELETE_TEMPLATE.format(**primary_action)
 
 
 def get_story_create_body(payload: Dict[str, Any]) -> str:
-    action = get_action_with_primary_id(payload)
+    primary_action = get_action_with_primary_id(payload)
 
-    if action.get("epic_id") is None:
+    if primary_action.get("epic_id") is None:
         message = "New story [{name}]({app_url}) of type **{story_type}** was created."
-        kwargs = action
+        kwargs = primary_action
     else:
         message = "New story [{name}]({app_url}) was created and added to the epic **{epic_name}**."
         kwargs = {
-            "name": action["name"],
-            "app_url": action["app_url"],
+            "name": primary_action["name"],
+            "app_url": primary_action["app_url"],
         }
-        epic_id = action["epic_id"]
+        epic_id = primary_action["epic_id"]
         refs = payload["references"]
         for ref in refs:
             if ref["id"] == epic_id:
@@ -139,9 +139,9 @@ def get_story_create_body(payload: Dict[str, Any]) -> str:
 
 
 def get_epic_create_body(payload: Dict[str, Any]) -> str:
-    action = get_action_with_primary_id(payload)
+    primary_action = get_action_with_primary_id(payload)
     message = "New epic **{name}**({state}) was created."
-    return message.format(**action)
+    return message.format(**primary_action)
 
 
 def get_comment_added_body(payload: Dict[str, Any], entity: str) -> str:
@@ -161,16 +161,16 @@ def get_comment_added_body(payload: Dict[str, Any], entity: str) -> str:
 
 
 def get_update_description_body(payload: Dict[str, Any], entity: str) -> str:
-    action = get_action_with_primary_id(payload)
-    desc = action["changes"]["description"]
+    primary_action = get_action_with_primary_id(payload)
+    desc = primary_action["changes"]["description"]
 
     kwargs = {
         "entity": entity,
         "new": desc["new"],
         "old": desc["old"],
         "name_template": get_name_template(entity).format(
-            name=action["name"],
-            app_url=action.get("app_url"),
+            name=primary_action["name"],
+            app_url=primary_action.get("app_url"),
         ),
     }
 
@@ -185,21 +185,21 @@ def get_update_description_body(payload: Dict[str, Any], entity: str) -> str:
 
 
 def get_epic_update_state_body(payload: Dict[str, Any]) -> str:
-    action = get_action_with_primary_id(payload)
-    state = action["changes"]["state"]
+    primary_action = get_action_with_primary_id(payload)
+    state = primary_action["changes"]["state"]
     kwargs = {
         "entity": "epic",
         "new": state["new"],
         "old": state["old"],
-        "name_template": EPIC_NAME_TEMPLATE.format(name=action["name"]),
+        "name_template": EPIC_NAME_TEMPLATE.format(name=primary_action["name"]),
     }
 
     return STATE_CHANGED_TEMPLATE.format(**kwargs)
 
 
 def get_story_update_state_body(payload: Dict[str, Any]) -> str:
-    action = get_action_with_primary_id(payload)
-    workflow_state_id = action["changes"]["workflow_state_id"]
+    primary_action = get_action_with_primary_id(payload)
+    workflow_state_id = primary_action["changes"]["workflow_state_id"]
     references = payload["references"]
 
     state = {}
@@ -214,8 +214,8 @@ def get_story_update_state_body(payload: Dict[str, Any]) -> str:
         "new": state["new"],
         "old": state["old"],
         "name_template": STORY_NAME_TEMPLATE.format(
-            name=action["name"],
-            app_url=action.get("app_url"),
+            name=primary_action["name"],
+            app_url=primary_action.get("app_url"),
         ),
     }
 
@@ -223,15 +223,15 @@ def get_story_update_state_body(payload: Dict[str, Any]) -> str:
 
 
 def get_update_name_body(payload: Dict[str, Any], entity: str) -> str:
-    action = get_action_with_primary_id(payload)
-    name = action["changes"]["name"]
+    primary_action = get_action_with_primary_id(payload)
+    name = primary_action["changes"]["name"]
     kwargs = {
         "entity": entity,
         "new": name["new"],
         "old": name["old"],
         "name_template": get_name_template(entity).format(
-            name=action["name"],
-            app_url=action.get("app_url"),
+            name=primary_action["name"],
+            app_url=primary_action.get("app_url"),
         ),
     }
 
@@ -277,13 +277,13 @@ def get_story_task_body(payload: Dict[str, Any], event: str) -> str:
 
 
 def get_story_task_completed_body(payload: Dict[str, Any]) -> Optional[str]:
-    action = get_action_with_primary_id(payload)
+    primary_action = get_action_with_primary_id(payload)
 
     kwargs = {
-        "task_description": action["description"],
+        "task_description": primary_action["description"],
     }
 
-    story_id = action["story_id"]
+    story_id = primary_action["story_id"]
     for ref in payload["references"]:
         if ref["id"] == story_id:
             kwargs["name_template"] = STORY_NAME_TEMPLATE.format(
@@ -291,24 +291,24 @@ def get_story_task_completed_body(payload: Dict[str, Any]) -> Optional[str]:
                 app_url=ref["app_url"],
             )
 
-    if action["changes"]["complete"]["new"]:
+    if primary_action["changes"]["complete"]["new"]:
         return STORY_TASK_COMPLETED_TEMPLATE.format(**kwargs)
     else:
         return None
 
 
 def get_story_update_epic_body(payload: Dict[str, Any]) -> str:
-    action = get_action_with_primary_id(payload)
+    primary_action = get_action_with_primary_id(payload)
 
     kwargs = {
         "story_name_template": STORY_NAME_TEMPLATE.format(
-            name=action["name"],
-            app_url=action["app_url"],
+            name=primary_action["name"],
+            app_url=primary_action["app_url"],
         ),
     }
 
-    new_id = action["changes"]["epic_id"].get("new")
-    old_id = action["changes"]["epic_id"].get("old")
+    new_id = primary_action["changes"]["epic_id"].get("new")
+    old_id = primary_action["changes"]["epic_id"].get("old")
 
     for ref in payload["references"]:
         if ref["id"] == new_id:
@@ -330,16 +330,16 @@ def get_story_update_epic_body(payload: Dict[str, Any]) -> str:
 
 
 def get_story_update_estimate_body(payload: Dict[str, Any]) -> str:
-    action = get_action_with_primary_id(payload)
+    primary_action = get_action_with_primary_id(payload)
 
     kwargs = {
         "story_name_template": STORY_NAME_TEMPLATE.format(
-            name=action["name"],
-            app_url=action["app_url"],
+            name=primary_action["name"],
+            app_url=primary_action["app_url"],
         ),
     }
 
-    new = action["changes"]["estimate"].get("new")
+    new = primary_action["changes"]["estimate"].get("new")
     if new:
         kwargs["estimate"] = f"{new} points"
     else:
@@ -358,7 +358,7 @@ def get_reference_by_id(payload: Dict[str, Any], ref_id: int) -> Dict[str, Any]:
 
 
 def get_story_create_github_entity_body(payload: Dict[str, Any], entity: str) -> str:
-    action = get_action_with_primary_id(payload)
+    primary_action = get_action_with_primary_id(payload)
 
     story: Dict[str, Any] = {}
     for a in payload["actions"]:
@@ -372,8 +372,10 @@ def get_story_create_github_entity_body(payload: Dict[str, Any], entity: str) ->
 
     kwargs = {
         "name_template": STORY_NAME_TEMPLATE.format(**story),
-        "name": action.get("number") if entity == "pull-request" else action.get("name"),
-        "url": action["url"],
+        "name": primary_action.get("number")
+        if entity == "pull-request"
+        else primary_action.get("name"),
+        "url": primary_action["url"],
         "new": new_state,
         "old": old_state,
     }
@@ -385,15 +387,15 @@ def get_story_create_github_entity_body(payload: Dict[str, Any], entity: str) ->
 
 
 def get_story_update_attachment_body(payload: Dict[str, Any]) -> Optional[str]:
-    action = get_action_with_primary_id(payload)
+    primary_action = get_action_with_primary_id(payload)
 
     kwargs = {
         "name_template": STORY_NAME_TEMPLATE.format(
-            name=action["name"],
-            app_url=action["app_url"],
+            name=primary_action["name"],
+            app_url=primary_action["app_url"],
         ),
     }
-    file_ids_added = action["changes"]["file_ids"].get("adds")
+    file_ids_added = primary_action["changes"]["file_ids"].get("adds")
 
     # If this is a payload for when an attachment is removed, ignore it
     if not file_ids_added:
@@ -411,15 +413,15 @@ def get_story_update_attachment_body(payload: Dict[str, Any]) -> Optional[str]:
 
 
 def get_story_label_body(payload: Dict[str, Any]) -> Optional[str]:
-    action = get_action_with_primary_id(payload)
+    primary_action = get_action_with_primary_id(payload)
 
     kwargs = {
         "name_template": STORY_NAME_TEMPLATE.format(
-            name=action["name"],
-            app_url=action["app_url"],
+            name=primary_action["name"],
+            app_url=primary_action["app_url"],
         ),
     }
-    label_ids_added = action["changes"]["label_ids"].get("adds")
+    label_ids_added = primary_action["changes"]["label_ids"].get("adds")
 
     # If this is a payload for when a label is removed, ignore it
     if not label_ids_added:
@@ -443,16 +445,16 @@ def get_story_label_body(payload: Dict[str, Any]) -> Optional[str]:
 
 
 def get_story_update_project_body(payload: Dict[str, Any]) -> str:
-    action = get_action_with_primary_id(payload)
+    primary_action = get_action_with_primary_id(payload)
     kwargs = {
         "name_template": STORY_NAME_TEMPLATE.format(
-            name=action["name"],
-            app_url=action["app_url"],
+            name=primary_action["name"],
+            app_url=primary_action["app_url"],
         ),
     }
 
-    new_project_id = action["changes"]["project_id"]["new"]
-    old_project_id = action["changes"]["project_id"]["old"]
+    new_project_id = primary_action["changes"]["project_id"]["new"]
+    old_project_id = primary_action["changes"]["project_id"]["old"]
     for ref in payload["references"]:
         if ref["id"] == new_project_id:
             kwargs.update(new=ref["name"])
@@ -463,25 +465,25 @@ def get_story_update_project_body(payload: Dict[str, Any]) -> str:
 
 
 def get_story_update_type_body(payload: Dict[str, Any]) -> str:
-    action = get_action_with_primary_id(payload)
+    primary_action = get_action_with_primary_id(payload)
     kwargs = {
         "name_template": STORY_NAME_TEMPLATE.format(
-            name=action["name"],
-            app_url=action["app_url"],
+            name=primary_action["name"],
+            app_url=primary_action["app_url"],
         ),
-        "new_type": action["changes"]["story_type"]["new"],
-        "old_type": action["changes"]["story_type"]["old"],
+        "new_type": primary_action["changes"]["story_type"]["new"],
+        "old_type": primary_action["changes"]["story_type"]["old"],
     }
 
     return STORY_UPDATE_TYPE_TEMPLATE.format(**kwargs)
 
 
 def get_story_update_owner_body(payload: Dict[str, Any]) -> str:
-    action = get_action_with_primary_id(payload)
+    primary_action = get_action_with_primary_id(payload)
     kwargs = {
         "name_template": STORY_NAME_TEMPLATE.format(
-            name=action["name"],
-            app_url=action["app_url"],
+            name=primary_action["name"],
+            app_url=primary_action["app_url"],
         ),
     }
 
@@ -489,10 +491,10 @@ def get_story_update_owner_body(payload: Dict[str, Any]) -> str:
 
 
 def get_entity_name(payload: Dict[str, Any], entity: Optional[str] = None) -> Optional[str]:
-    action = get_action_with_primary_id(payload)
-    name = action.get("name")
+    primary_action = get_action_with_primary_id(payload)
+    name = primary_action.get("name")
 
-    if name is None or action["entity_type"] == "branch":
+    if name is None or primary_action["entity_type"] == "branch":
         for action in payload["actions"]:
             if action["entity_type"] == entity:
                 name = action["name"]
