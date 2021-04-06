@@ -153,6 +153,7 @@ paths:
           schema:
             type: integer
           example: -1
+          required: true
         - name: dont_block
           in: query
           description: |
@@ -164,6 +165,7 @@ paths:
             type: boolean
             default: false
           example: true
+          required: true
       responses:
         "200":
           description: Success.
