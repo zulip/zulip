@@ -3316,54 +3316,11 @@ class SubscriptionAPITest(ZulipTestCase):
 
     def test_can_create_streams(self) -> None:
         othello = self.example_user("othello")
-        do_change_user_role(othello, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
-        self.assertTrue(othello.can_create_streams())
 
-        do_change_user_role(othello, UserProfile.ROLE_MODERATOR, acting_user=None)
-        do_set_realm_property(
-            othello.realm, "create_stream_policy", Realm.POLICY_ADMINS_ONLY, acting_user=None
-        )
-        self.assertFalse(othello.can_create_streams())
+        def validation_func() -> bool:
+            return othello.can_create_streams()
 
-        do_set_realm_property(
-            othello.realm, "create_stream_policy", Realm.POLICY_MODERATORS_ONLY, acting_user=None
-        )
-        self.assertTrue(othello.can_create_streams())
-
-        do_change_user_role(othello, UserProfile.ROLE_MEMBER, acting_user=None)
-        # Make sure that we are checking the permission with a full member,
-        # as full member is the user just below moderator in the role hierarchy.
-        self.assertFalse(othello.is_provisional_member)
-        self.assertFalse(othello.can_create_streams())
-
-        do_set_realm_property(
-            othello.realm, "create_stream_policy", Realm.POLICY_MEMBERS_ONLY, acting_user=None
-        )
-        do_change_user_role(othello, UserProfile.ROLE_GUEST, acting_user=None)
-        self.assertFalse(othello.can_create_streams())
-
-        do_change_user_role(othello, UserProfile.ROLE_MEMBER, acting_user=None)
-        self.assertTrue(othello.can_create_streams())
-
-        do_set_realm_property(othello.realm, "waiting_period_threshold", 1000, acting_user=None)
-        do_set_realm_property(
-            othello.realm, "create_stream_policy", Realm.POLICY_FULL_MEMBERS_ONLY, acting_user=None
-        )
-        othello.date_joined = timezone_now() - timedelta(
-            days=(othello.realm.waiting_period_threshold - 1)
-        )
-        self.assertFalse(othello.can_create_streams())
-
-        # Ensure that the new moderators can also create streams because moderator
-        # being above the full member in role hierarchy.
-        do_change_user_role(othello, UserProfile.ROLE_MODERATOR, acting_user=None)
-        self.assertTrue(othello.can_create_streams())
-
-        do_change_user_role(othello, UserProfile.ROLE_MEMBER, acting_user=None)
-        othello.date_joined = timezone_now() - timedelta(
-            days=(othello.realm.waiting_period_threshold + 1)
-        )
-        self.assertTrue(othello.can_create_streams())
+        self.check_has_permission_policies(othello, "create_stream_policy", validation_func)
 
     def test_user_settings_for_subscribing_other_users(self) -> None:
         """
@@ -3465,57 +3422,11 @@ class SubscriptionAPITest(ZulipTestCase):
         enough.
         """
         othello = self.example_user("othello")
-        do_change_user_role(othello, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
-        self.assertTrue(othello.can_subscribe_other_users())
 
-        do_set_realm_property(
-            othello.realm, "invite_to_stream_policy", Realm.POLICY_ADMINS_ONLY, acting_user=None
-        )
-        do_change_user_role(othello, UserProfile.ROLE_MODERATOR, acting_user=None)
-        self.assertFalse(othello.can_subscribe_other_users())
+        def validation_func() -> bool:
+            return othello.can_subscribe_other_users()
 
-        do_set_realm_property(
-            othello.realm, "invite_to_stream_policy", Realm.POLICY_MODERATORS_ONLY, acting_user=None
-        )
-        self.assertTrue(othello.can_subscribe_other_users())
-
-        do_change_user_role(othello, UserProfile.ROLE_MEMBER, acting_user=None)
-        # Make sure that we are checking the permission with a full member,
-        # as full member is the user just below admin in the role hierarchy.
-        self.assertFalse(othello.is_provisional_member)
-        self.assertFalse(othello.can_subscribe_other_users())
-
-        do_set_realm_property(
-            othello.realm, "invite_to_stream_policy", Realm.POLICY_MEMBERS_ONLY, acting_user=None
-        )
-        do_change_user_role(othello, UserProfile.ROLE_GUEST, acting_user=None)
-        self.assertFalse(othello.can_subscribe_other_users())
-
-        do_change_user_role(othello, UserProfile.ROLE_MEMBER, acting_user=None)
-        self.assertTrue(othello.can_subscribe_other_users())
-
-        do_set_realm_property(othello.realm, "waiting_period_threshold", 1000, acting_user=None)
-        do_set_realm_property(
-            othello.realm,
-            "invite_to_stream_policy",
-            Realm.POLICY_FULL_MEMBERS_ONLY,
-            acting_user=None,
-        )
-        othello.date_joined = timezone_now() - timedelta(
-            days=(othello.realm.waiting_period_threshold - 1)
-        )
-        self.assertFalse(othello.can_subscribe_other_users())
-
-        # Ensure that the new moderators can also create streams because moderator
-        # being above the full member in role hierarchy.
-        do_change_user_role(othello, UserProfile.ROLE_MODERATOR, acting_user=None)
-        self.assertTrue(othello.can_subscribe_other_users())
-
-        do_change_user_role(othello, UserProfile.ROLE_MEMBER, acting_user=None)
-        othello.date_joined = timezone_now() - timedelta(
-            days=(othello.realm.waiting_period_threshold + 1)
-        )
-        self.assertTrue(othello.can_subscribe_other_users())
+        self.check_has_permission_policies(othello, "invite_to_stream_policy", validation_func)
 
     def test_subscriptions_add_invalid_stream(self) -> None:
         """

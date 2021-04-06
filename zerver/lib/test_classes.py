@@ -6,7 +6,20 @@ import subprocess
 import tempfile
 import urllib
 from contextlib import contextmanager
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Set, Tuple, Union
+from datetime import timedelta
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    Union,
+)
 from unittest import TestResult, mock
 
 import lxml.html
@@ -24,6 +37,7 @@ from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
 from django.test.testcases import SerializeMixin
 from django.urls import resolve
 from django.utils import translation
+from django.utils.timezone import now as timezone_now
 from fakeldap import MockLDAP
 from two_factor.models import PhoneDevice
 
@@ -33,6 +47,8 @@ from zerver.lib.actions import (
     bulk_remove_subscriptions,
     check_send_message,
     check_send_stream_message,
+    do_change_user_role,
+    do_set_realm_property,
     gather_subscriptions,
 )
 from zerver.lib.cache import bounce_key_prefix_for_testing
@@ -1179,6 +1195,60 @@ Output:
         """
         # See email_display_from, above.
         return email_message.from_email
+
+    def check_has_permission_policies(
+        self, user_profile: UserProfile, policy: str, validation_func: Callable[[], bool]
+    ) -> None:
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        self.assertTrue(validation_func())
+
+        do_change_user_role(user_profile, UserProfile.ROLE_MODERATOR, acting_user=None)
+        do_set_realm_property(
+            user_profile.realm, policy, Realm.POLICY_ADMINS_ONLY, acting_user=None
+        )
+        self.assertFalse(validation_func())
+
+        do_set_realm_property(
+            user_profile.realm, policy, Realm.POLICY_MODERATORS_ONLY, acting_user=None
+        )
+        self.assertTrue(validation_func())
+
+        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
+        # Make sure that we are checking the permission with a full member,
+        # as full member is the user just below moderator in the role hierarchy.
+        self.assertFalse(user_profile.is_provisional_member)
+        self.assertFalse(validation_func())
+
+        do_set_realm_property(
+            user_profile.realm, policy, Realm.POLICY_MEMBERS_ONLY, acting_user=None
+        )
+        do_change_user_role(user_profile, UserProfile.ROLE_GUEST, acting_user=None)
+        self.assertFalse(validation_func())
+
+        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
+        self.assertTrue(validation_func())
+
+        do_set_realm_property(
+            user_profile.realm, "waiting_period_threshold", 1000, acting_user=None
+        )
+        do_set_realm_property(
+            user_profile.realm, policy, Realm.POLICY_FULL_MEMBERS_ONLY, acting_user=None
+        )
+        user_profile.date_joined = timezone_now() - timedelta(
+            days=(user_profile.realm.waiting_period_threshold - 1)
+        )
+        self.assertFalse(validation_func())
+
+        # Ensure that the new moderators can also create streams because moderator
+        # being above the full member in role hierarchy.
+        do_change_user_role(user_profile, UserProfile.ROLE_MODERATOR, acting_user=None)
+        self.assertTrue(validation_func())
+
+        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
+        user_profile.date_joined = timezone_now() - timedelta(
+            days=(user_profile.realm.waiting_period_threshold + 1)
+        )
+        self.assertTrue(validation_func())
 
 
 class WebhookTestCase(ZulipTestCase):
