@@ -266,11 +266,11 @@ def get_story_task_body(payload: Dict[str, Any], event: str) -> str:
         "event": event,
     }
 
-    for a in payload["actions"]:
-        if a["entity_type"] == "story":
+    for action in payload["actions"]:
+        if action["entity_type"] == "story":
             kwargs["name_template"] = STORY_NAME_TEMPLATE.format(
-                name=a["name"],
-                app_url=a["app_url"],
+                name=action["name"],
+                app_url=action["app_url"],
             )
 
     return STORY_TASK_TEMPLATE.format(**kwargs)
@@ -361,9 +361,12 @@ def get_story_create_github_entity_body(payload: Dict[str, Any], entity: str) ->
     primary_action = get_action_with_primary_id(payload)
 
     story: Dict[str, Any] = {}
-    for a in payload["actions"]:
-        if a["entity_type"] == "story" and a["changes"].get("workflow_state_id") is not None:
-            story = a
+    for action in payload["actions"]:
+        if (
+            action["entity_type"] == "story"
+            and action["changes"].get("workflow_state_id") is not None
+        ):
+            story = action
 
     new_state_id = story["changes"]["workflow_state_id"]["new"]
     old_state_id = story["changes"]["workflow_state_id"]["old"]
