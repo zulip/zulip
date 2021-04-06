@@ -401,7 +401,9 @@ def fetch_initial_state_data(
             # it uses data from state["subscriptions"] and other
             # places.
             if user_profile is not None:
-                state["streams"] = do_get_streams(user_profile)
+                state["streams"] = do_get_streams(
+                    user_profile, include_all_active=user_profile.is_realm_admin
+                )
             else:
                 # TODO: This line isn't used by the webapp because it
                 # gets these data via the `subscriptions` key; it will
@@ -602,7 +604,9 @@ def apply_event(
                         state["never_subscribed"] = sub_info.never_subscribed
 
                     if "streams" in state:
-                        state["streams"] = do_get_streams(user_profile)
+                        state["streams"] = do_get_streams(
+                            user_profile, include_all_active=user_profile.is_realm_admin
+                        )
 
                 for field in ["delivery_email", "email", "full_name"]:
                     if field in person and field in state:
