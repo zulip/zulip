@@ -5,21 +5,20 @@ Zulip's various [authentication
 methods](../production/authentication-methods.md) for testing in a
 development environment.
 
-Because many of these authentication methods involve a complex
-interaction between Zulip, an external service, and the user's
-browser, and particularly because browsers can (rightly!) be picky
-about the identity of sites you interact with, the preferred way to
-set them up in a development environment is provide the secret keys
-for these authentication methods in your development so that you can
-go through the real flow.
+Many of these authentication methods involve a complex interaction
+between Zulip, an external service, and the user's browser. Because
+browsers can (rightly!) be picky about the identity of sites you
+interact with, the preferred way to set up authentication methods in a
+development environment is provide secret keys so that you can go
+through the real flow.
 
 The steps to do this are a variation of the steps discussed in the
 production docs and `docs/prod_settings_template.py`.  The main
 differences here are driven by the fact that `dev_settings.py` is in
 Git, so it can be inconvenient to put secrets there.  As a result, in
-the development environmentm, we allow providing those values in the
+the development environment, we allow providing secret keys in the
 untracked file `zproject/dev-secrets.conf`, using the standard
-lower-case naming convention for that file.
+lower-case naming convention in that file.
 
 Below, we document the procedure for each of the major authentication
 methods supported by Zulip.
@@ -39,14 +38,15 @@ details worth understanding:
 * There's a management command, `manage.py print_initial_password
   username@example.com`, that prints out **default** passwords for the
   development environment users.  Note that if you change a user's
-  password in the development environment, those passwords won't
+  password in the development environment, those passwords will no longer
   work.  It also prints out the user's **current** API key.
 
 ### Google
 
-* Visit [the Google developer console](https://console.developers.google.com)
-  and navigate to "APIs & services" > "Credentials". Create a "Project" which will correspond
-  to your dev environment.
+* Visit [the Google developer
+console](https://console.developers.google.com) and navigate to "APIs
+& services" > "Credentials". Create a "Project", which will correspond
+to your dev environment.
 
 * Navigate to "APIs & services" > "Library", and find the "Identity
   Toolkit API".  Choose "Enable".
