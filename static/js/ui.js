@@ -36,7 +36,18 @@ export function get_scroll_element(element_selector) {
     } else if ("simplebar" in element.dataset) {
         // The SimpleBar mutation observer hasn’t processed this element yet.
         // Create the SimpleBar early in case we need to add event listeners.
-        return $(new SimpleBar(element).getScrollElement());
+        const new_sb = new SimpleBar(element);
+        // If element has a fixed-header table, we need to readjust the
+        // vertical scrollbar in order to avoid overlapped scrollbar on
+        // table header. Thus, we initialize the simplebar-vertical track
+        // just below the table's header and at top of the table's body.
+        if ($(element).hasClass("table_fix_head")) {
+            const table_header_height = $(element).find("table thead").height();
+            $(element)
+                .find(".simplebar-track.simplebar-vertical")
+                .css({top: `${table_header_height}px`});
+        }
+        return $(new_sb.getScrollElement());
     }
     return element_selector;
 }
