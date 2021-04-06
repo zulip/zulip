@@ -6485,15 +6485,7 @@ paths:
             default: false
           example: true
         - $ref: "#/components/parameters/Event_types"
-        - name: all_public_streams
-          in: query
-          description: |
-            Set to `True` if you would like to receive events that occur within all
-            public streams.
-          schema:
-            type: boolean
-            default: false
-          example: true
+        - $ref: "#/components/parameters/AllPublicStreams"
         - $ref: "#/components/parameters/IncludeSubscribers"
         - name: client_capabilities
           in: query
@@ -9254,8 +9246,9 @@ paths:
       description: |
         (Ignored)
       parameters:
-        - $ref: "#/components/parameters/Narrow"
         - $ref: "#/components/parameters/Event_types"
+        - $ref: "#/components/parameters/Narrow"
+        - $ref: "#/components/parameters/AllPublicStreams"
       security:
         - basicAuth: []
       responses:
@@ -10957,6 +10950,17 @@ components:
             default: []
           example: [["stream", "Denmark"]]
       required: false
+    AllPublicStreams:
+      name: all_public_streams
+      in: query
+      description: |
+        Whether you would like to request message events from all public
+        streams.  Useful for workflow bots that you'd like to see all new messages
+        sent to public streams.  (You can also subscribe the user to private streams).
+      schema:
+        type: boolean
+        default: false
+      example: true
     UserGroupId:
       name: user_group_id
       in: path
