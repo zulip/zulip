@@ -37,6 +37,11 @@ class Command(ZulipBaseCommand):
         parser.add_argument(
             "--admins-only", help="Send only to organization administrators", action="store_true"
         )
+        parser.add_argument(
+            "--dry-run",
+            action="store_true",
+            help="Prints emails of the recipients and text of the email.",
+        )
 
         self.add_user_list_args(
             parser,
@@ -60,3 +65,8 @@ class Command(ZulipBaseCommand):
                 raise error
 
         send_custom_email(users, options)
+
+        if options["dry_run"]:
+            print("Would send the above email to:")
+            for user in users:
+                print(f"  {user.email}")

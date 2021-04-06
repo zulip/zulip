@@ -213,6 +213,7 @@ def send_email(
     context: Dict[str, Any] = {},
     realm: Optional[Realm] = None,
     connection: Optional[BaseEmailBackend] = None,
+    dry_run: bool = False,
 ) -> None:
     mail = build_email(
         template_prefix,
@@ -227,6 +228,10 @@ def send_email(
     )
     template = template_prefix.split("/")[-1]
     logger.info("Sending %s email to %s", template, mail.to)
+
+    if dry_run:
+        print(mail.message().get_payload()[0])
+        return
 
     if connection is None:
         connection = get_connection()
@@ -469,4 +474,8 @@ def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None
                 options.get("from_name"), parsed_email_template.get("from"), "from_name"
             ),
             context=context,
+            dry_run=options["dry_run"],
         )
+
+        if options["dry_run"]:
+            break
