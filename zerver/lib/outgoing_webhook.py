@@ -69,6 +69,7 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
             "data": event["command"],
             "message": message_dict,
             "bot_email": self.user_profile.email,
+            "bot_full_name": self.user_profile.full_name,
             "token": self.token,
             "trigger": event["trigger"],
         }
