@@ -282,6 +282,25 @@ export function create_message_object() {
     return message;
 }
 
+export function send_test_notification_message() {
+    const notification_bot = "notification-bot@zulip.com";
+    const notification_bot_id = page_params.zulip_user_bots[notification_bot];
+    const message_object = {
+        type: "private",
+        content: i18n.t("__emoji__ Hey, notification bot send me a message!", {
+            emoji: ":smile:",
+        }),
+        private_message_recipient: notification_bot,
+        sender_id: page_params.user_id,
+        queue_id: page_params.queue_id,
+        reply_to: notification_bot,
+        to: [notification_bot_id],
+        to_user_ids: notification_bot_id,
+    };
+
+    send_message(message_object);
+}
+
 export function compose_error(error_text, bad_input) {
     $("#compose-send-status")
         .removeClass(common.status_classes)

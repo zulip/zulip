@@ -16,7 +16,7 @@ from zerver.lib.i18n import (
     get_language_name,
     get_language_translation_data,
 )
-from zerver.models import Message, Realm, Stream, UserProfile
+from zerver.models import Message, Realm, Stream, UserProfile, get_system_bot
 from zerver.views.message_flags import get_latest_update_message_flag_activity
 
 
@@ -99,6 +99,10 @@ def get_user_permission_info(user_profile: Optional[UserProfile]) -> UserPermiss
             is_realm_owner=False,
             show_webathena=False,
         )
+
+
+def get_zulip_user_bots() -> Dict[str, int]:
+    return {email: get_system_bot(email).id for email in settings.CROSS_REALM_BOT_EMAILS}
 
 
 def build_page_params_for_home_page_load(
@@ -190,6 +194,7 @@ def build_page_params_for_home_page_load(
         furthest_read_time=furthest_read_time,
         has_mobile_devices=has_mobile_devices,
         bot_types=get_bot_types(user_profile),
+        zulip_user_bots=get_zulip_user_bots(),
         two_fa_enabled=two_fa_enabled,
         # Adding two_fa_enabled as condition saves us 3 queries when
         # 2FA is not enabled.
