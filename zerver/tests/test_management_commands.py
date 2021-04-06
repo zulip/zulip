@@ -569,3 +569,29 @@ class TestExport(ZulipTestCase):
                 call("\033[94mExporting realm\033[0m: zulip"),
             ],
         )
+
+
+class TestSendCustomEmail(ZulipTestCase):
+    COMMAND_NAME = "send_custom_email"
+
+    def test_custom_email_with_dry_run(self) -> None:
+        path = "templates/zerver/tests/markdown/test_nested_code_blocks.md"
+        user = self.example_user("hamlet")
+
+        with patch("builtins.print") as mock_print:
+            call_command(
+                self.COMMAND_NAME,
+                "-r=zulip",
+                f"--path={path}",
+                f"-u={user.delivery_email}",
+                "--subject=Test email",
+                "--from-name=zulip@testserver.com",
+                "--dry-run",
+            )
+            self.assertEqual(
+                mock_print.mock_calls[1:],
+                [
+                    call("Following are the recipients of the email"),
+                    call("user10@zulip.testserver"),
+                ],
+            )

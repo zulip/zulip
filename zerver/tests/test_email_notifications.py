@@ -38,6 +38,7 @@ class TestCustomEmails(ZulipTestCase):
                 "reply_to": reply_to,
                 "subject": email_subject,
                 "from_name": from_name,
+                "dry_run": False,
             },
         )
         self.assertEqual(len(mail.outbox), 1)
@@ -56,6 +57,7 @@ class TestCustomEmails(ZulipTestCase):
             [hamlet],
             {
                 "markdown_template_path": markdown_template_path,
+                "dry_run": False,
             },
         )
         self.assertEqual(len(mail.outbox), 1)
@@ -79,6 +81,7 @@ class TestCustomEmails(ZulipTestCase):
             {
                 "markdown_template_path": markdown_template_path,
                 "from_name": from_name,
+                "dry_run": False,
             },
         )
 
@@ -89,6 +92,7 @@ class TestCustomEmails(ZulipTestCase):
             {
                 "markdown_template_path": markdown_template_path,
                 "subject": email_subject,
+                "dry_run": False,
             },
         )
 
@@ -109,6 +113,7 @@ class TestCustomEmails(ZulipTestCase):
             {
                 "markdown_template_path": markdown_template_path,
                 "subject": email_subject,
+                "dry_run": False,
             },
         )
 
@@ -119,6 +124,7 @@ class TestCustomEmails(ZulipTestCase):
             {
                 "markdown_template_path": markdown_template_path,
                 "from_name": from_name,
+                "dry_run": False,
             },
         )
 
@@ -136,10 +142,30 @@ class TestCustomEmails(ZulipTestCase):
             {
                 "markdown_template_path": markdown_template_path,
                 "admins_only": True,
+                "dry_run": False,
             },
         )
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn(admin_user.delivery_email, mail.outbox[0].to[0])
+
+    def test_send_custom_email_dry_run(self) -> None:
+        hamlet = self.example_user("hamlet")
+        email_subject = "subject_test"
+        reply_to = "reply_to_test"
+        from_name = "from_name_test"
+        markdown_template_path = "templates/zerver/tests/markdown/test_nested_code_blocks.md"
+        with patch("builtins.print") as _:
+            send_custom_email(
+                [hamlet],
+                {
+                    "markdown_template_path": markdown_template_path,
+                    "reply_to": reply_to,
+                    "subject": email_subject,
+                    "from_name": from_name,
+                    "dry_run": True,
+                },
+            )
+            self.assertEqual(len(mail.outbox), 0)
 
 
 class TestFollowupEmails(ZulipTestCase):
