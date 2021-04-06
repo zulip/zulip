@@ -201,6 +201,14 @@ class ClubhouseWebhookTest(WebhookTestCase):
             expected_message,
         )
 
+    def test_story_update_with_no_workflow_state_change_add_github_pull_request(self) -> None:
+        expected_message = "New GitHub PR [#10](https://github.com/eeshangarg/Scheduler/pull/10) opened for story [Testing pull requests with Story](https://app.clubhouse.io/zulip/story/28)."
+        self.check_webhook(
+            "story_update_with_no_workflow_state_change_add_github_pull_request",
+            "Testing pull requests with Story",
+            expected_message,
+        )
+
     def test_story_update_add_github_branch(self) -> None:
         expected_message = "New GitHub branch [eeshangarg/ch27/testing-pull-requests-with-story](https://github.com/eeshangarg/scheduler/tree/eeshangarg/ch27/testing-pull-requests-with-story) associated with story [Testing pull requests with Story](https://app.clubhouse.io/zulip/story/27) (Unscheduled -> In Development)."
         self.check_webhook(

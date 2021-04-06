@@ -53,10 +53,10 @@ STORY_UPDATE_TYPE_TEMPLATE = (
 DELETE_TEMPLATE = "The {entity_type} **{name}** was deleted."
 STORY_UPDATE_OWNER_TEMPLATE = "New owner added to the story {name_template}."
 STORY_GITHUB_PR_TEMPLATE = (
-    "New GitHub PR [#{name}]({url}) opened for story {name_template} ({old} -> {new})."
+    "New GitHub PR [#{name}]({url}) opened for story {name_template}{state_change}."
 )
 STORY_GITHUB_BRANCH_TEMPLATE = (
-    "New GitHub branch [{name}]({url}) associated with story {name_template} ({old} -> {new})."
+    "New GitHub branch [{name}]({url}) associated with story {name_template}{state_change}."
 )
 
 
@@ -361,17 +361,18 @@ def get_story_create_github_entity_body(payload: Dict[str, Any], entity: str) ->
     primary_action = get_action_with_primary_id(payload)
 
     story: Dict[str, Any] = {}
+    state_change = ""
     for action in payload["actions"]:
-        if (
-            action["entity_type"] == "story"
-            and action["changes"].get("workflow_state_id") is not None
-        ):
+        if action["entity_type"] == "story":
             story = action
-
-    new_state_id = story["changes"]["workflow_state_id"]["new"]
-    old_state_id = story["changes"]["workflow_state_id"]["old"]
-    new_state = get_reference_by_id(payload, new_state_id)["name"]
-    old_state = get_reference_by_id(payload, old_state_id)["name"]
+            if story.get("changes") and story["changes"].get("workflow_state_id"):
+                new_state_id = story["changes"]["workflow_state_id"]["new"]
+                old_state_id = story["changes"]["workflow_state_id"]["old"]
+                state_change = " ({old_state} -> {new_state})".format(
+                    old_state=get_reference_by_id(payload, old_state_id)["name"],
+                    new_state=get_reference_by_id(payload, new_state_id)["name"],
+                )
+                break
 
     kwargs = {
         "name_template": STORY_NAME_TEMPLATE.format(**story),
@@ -379,8 +380,7 @@ def get_story_create_github_entity_body(payload: Dict[str, Any], entity: str) ->
         if entity == "pull-request"
         else primary_action.get("name"),
         "url": primary_action["url"],
-        "new": new_state,
-        "old": old_state,
+        "state_change": state_change,
     }
 
     template = (
