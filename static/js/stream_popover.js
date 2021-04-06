@@ -477,7 +477,11 @@ export function register_stream_handlers() {
         const sub = stream_popover_sub(e);
         hide_stream_popover();
 
-        compose_actions.start("stream", {trigger: "popover new topic button", stream: sub.name});
+        compose_actions.start("stream", {
+            trigger: "popover new topic button",
+            stream: sub.name,
+            topic: "",
+        });
         e.preventDefault();
         e.stopPropagation();
     });
