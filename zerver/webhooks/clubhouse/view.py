@@ -31,7 +31,7 @@ NAME_CHANGED_TEMPLATE = (
     "``` quote\n{old}\n```\nto\n``` quote\n{new}\n```"
 )
 ARCHIVED_TEMPLATE = "The {entity} {name_template} was {action}."
-STORY_TASK_TEMPLATE = "Task **{task_description}** was {action} the story {name_template}."
+STORY_TASK_TEMPLATE = "Task **{task_description}** was {event} the story {name_template}."
 STORY_TASK_COMPLETED_TEMPLATE = (
     "Task **{task_description}** ({name_template}) was completed. :tada:"
 )
@@ -258,12 +258,12 @@ def get_update_archived_body(payload: Dict[str, Any], entity: str) -> str:
     return ARCHIVED_TEMPLATE.format(**kwargs)
 
 
-def get_story_task_body(payload: Dict[str, Any], action: str) -> str:
+def get_story_task_body(payload: Dict[str, Any], event: str) -> str:
     primary_action = get_action_with_primary_id(payload)
 
     kwargs = {
         "task_description": primary_action["description"],
-        "action": action,
+        "event": event,
     }
 
     for a in payload["actions"]:
@@ -519,8 +519,8 @@ EVENT_BODY_FUNCTION_MAPPER: Dict[str, Callable[[Dict[str, Any]], Optional[str]]]
     "branch_create": partial(get_story_create_github_entity_body, entity="branch"),
     "story_delete": get_delete_body,
     "epic_delete": get_delete_body,
-    "story-task_create": partial(get_story_task_body, action="added to"),
-    "story-task_delete": partial(get_story_task_body, action="removed from"),
+    "story-task_create": partial(get_story_task_body, event="added to"),
+    "story-task_delete": partial(get_story_task_body, event="removed from"),
     "story-task_update_complete": get_story_task_completed_body,
     "story_update_epic": get_story_update_epic_body,
     "story_update_estimate": get_story_update_estimate_body,
