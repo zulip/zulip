@@ -67,11 +67,33 @@ class StreamNameError {
         $("#stream_name_error").show();
     }
 
+    report_invalid_stream_name() {
+        $("#stream_name_error").text(i18n.t("A stream name should not any contain '*' character"));
+        $("#stream_name_error").show();
+    }
+
+    is_valid_stream_name(stream_name) {
+        if (stream_name.includes("*")) {
+            return false;
+        }
+
+        return true;
+    }
+
     select() {
         $("#create_stream_name").trigger("focus").trigger("select");
     }
 
     pre_validate(stream_name) {
+        // Failure in referencing a stream name. #17921
+        // we check for valid stream name meaning stream_name should not contain
+        // * character if it is present we report invalid stream name
+        // this is done so that when referencing the stream in a message
+        // it doesnt mangle the stream link because of *
+        if (stream_name && !this.is_valid_stream_name(stream_name)) {
+            this.report_invalid_stream_name();
+            return;
+        }
         // Don't worry about empty strings...we just want to call this
         // to warn users early before they start doing too much work
         // after they make the effort to type in a stream name.  (The
@@ -91,6 +113,11 @@ class StreamNameError {
         if (!stream_name) {
             this.report_empty_stream();
             this.select();
+            return false;
+        }
+
+        if (stream_name && !this.is_valid_stream_name(stream_name)) {
+            this.report_invalid_stream_name();
             return false;
         }
 
