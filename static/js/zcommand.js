@@ -9,6 +9,8 @@ import * as feedback_widget from "./feedback_widget";
 import {i18n} from "./i18n";
 import * as night_mode from "./night_mode";
 import * as scroll_bar from "./scroll_bar";
+import * as user_status from "./user_status";
+import * as user_status_ui from "./user_status_ui";
 
 /*
 
@@ -148,6 +150,25 @@ export function enter_fixed_mode() {
     });
 }
 
+export function add_new_status(new_status_text) {
+    user_status.server_update({
+        status_text: new_status_text,
+        success() {
+            feedback_widget.show({
+                populate(container) {
+                    const rendered_msg = marked("Sucessfully updated status message.");
+                    container.html(rendered_msg);
+                },
+                on_undo() {
+                    user_status_ui.open_overlay();
+                },
+                title_text: i18n.t("Status update"),
+                undo_button_text: i18n.t("View"),
+            });
+        },
+    });
+}
+
 export function process(message_content) {
     const content = message_content.trim();
 
@@ -191,6 +212,12 @@ export function process(message_content) {
 
     if (content === "/settings") {
         browser_history.go_to_location("settings/your-account");
+        return true;
+    }
+
+    if (content.startsWith("/status ")) {
+        const status_text = content.slice("/status ".length, content.length);
+        add_new_status(status_text);
         return true;
     }
 
