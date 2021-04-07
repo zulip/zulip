@@ -13,12 +13,13 @@ development environment is provide secret keys so that you can go
 through the real flow.
 
 The steps to do this are a variation of the steps discussed in the
-production docs and `docs/prod_settings_template.py`.  The main
-differences here are driven by the fact that `dev_settings.py` is in
-Git, so it can be inconvenient to put secrets there.  As a result, in
-the development environment, we allow providing secret keys in the
-untracked file `zproject/dev-secrets.conf`, using the standard
-lower-case naming convention in that file.
+production documentation, including the comments in
+`zproject/prod_settings_template.py`.  The differences here are driven
+by the fact that `dev_settings.py` is in Git, so it is inconvenient
+for local [settings configuration](../subsystems/settings.md).  As a
+result, in the development environment, we allow setting certain
+settings in the untracked file `zproject/dev-secrets.conf` (which is
+also serves as `/etc/zulip/zulip-secrets.conf`).
 
 Below, we document the procedure for each of the major authentication
 methods supported by Zulip.
