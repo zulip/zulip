@@ -1,7 +1,5 @@
 import datetime
-from typing import Dict, List, Optional
-
-from django.utils.timezone import now as timezone_now
+from typing import Dict, List
 
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import MutedUser, UserProfile
@@ -22,12 +20,8 @@ def get_user_mutes(user_profile: UserProfile) -> List[Dict[str, int]]:
 
 
 def add_user_mute(
-    user_profile: UserProfile,
-    muted_user: UserProfile,
-    date_muted: Optional[datetime.datetime] = None,
+    user_profile: UserProfile, muted_user: UserProfile, date_muted: datetime.datetime
 ) -> None:
-    if date_muted is None:
-        date_muted = timezone_now()
     MutedUser.objects.create(
         user_profile=user_profile,
         muted_user=muted_user,

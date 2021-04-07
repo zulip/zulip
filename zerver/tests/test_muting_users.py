@@ -3,7 +3,7 @@ from unittest import mock
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.user_mutes import add_user_mute, get_user_mutes, user_is_muted
+from zerver.lib.user_mutes import get_user_mutes, user_is_muted
 
 
 class MutedUsersTests(ZulipTestCase):
@@ -16,8 +16,10 @@ class MutedUsersTests(ZulipTestCase):
         self.assertEqual(muted_users, [])
         mute_time = datetime(2021, 1, 1, tzinfo=timezone.utc)
 
-        with mock.patch("zerver.lib.user_mutes.timezone_now", return_value=mute_time):
-            add_user_mute(user_profile=hamlet, muted_user=cordelia)
+        with mock.patch("zerver.views.muting.timezone_now", return_value=mute_time):
+            url = "/api/v1/users/me/muted_users/{}".format(cordelia.id)
+            result = self.api_post(hamlet, url)
+            self.assert_json_success(result)
 
         muted_users = get_user_mutes(hamlet)
         self.assertEqual(len(muted_users), 1)
@@ -62,10 +64,9 @@ class MutedUsersTests(ZulipTestCase):
         self.login_user(hamlet)
         cordelia = self.example_user("cordelia")
 
-        add_user_mute(
-            user_profile=hamlet,
-            muted_user=cordelia,
-        )
+        url = "/api/v1/users/me/muted_users/{}".format(cordelia.id)
+        result = self.api_post(hamlet, url)
+        self.assert_json_success(result)
 
         url = "/api/v1/users/me/muted_users/{}".format(cordelia.id)
         result = self.api_post(hamlet, url)
@@ -106,7 +107,9 @@ class MutedUsersTests(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         mute_time = datetime(2021, 1, 1, tzinfo=timezone.utc)
 
-        add_user_mute(user_profile=hamlet, muted_user=cordelia, date_muted=mute_time)
+        url = "/api/v1/users/me/muted_users/{}".format(cordelia.id)
+        result = self.api_post(hamlet, url)
+        self.assert_json_success(result)
 
         url = "/api/v1/users/me/muted_users/{}".format(cordelia.id)
         result = self.api_delete(hamlet, url)
