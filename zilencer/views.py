@@ -68,7 +68,7 @@ def register_remote_server(
         str_validator=check_string_fixed_length(RemoteZulipServer.API_KEY_LENGTH)
     ),
     hostname: str = REQ(str_validator=check_capped_string(RemoteZulipServer.HOSTNAME_MAX_LENGTH)),
-    contact_email: str = REQ(str_validator=check_string),
+    contact_email: str = REQ(),
     new_org_key: Optional[str] = REQ(
         str_validator=check_string_fixed_length(RemoteZulipServer.API_KEY_LENGTH), default=None
     ),

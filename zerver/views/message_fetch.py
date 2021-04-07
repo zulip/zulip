@@ -922,7 +922,7 @@ def parse_anchor_value(anchor_val: Optional[str], use_first_unread_anchor: bool)
 def get_messages_backend(
     request: HttpRequest,
     maybe_user_profile: Union[UserProfile, AnonymousUser],
-    anchor_val: Optional[str] = REQ("anchor", str_validator=check_string, default=None),
+    anchor_val: Optional[str] = REQ("anchor", default=None),
     num_before: int = REQ(converter=to_non_negative_int),
     num_after: int = REQ(converter=to_non_negative_int),
     narrow: OptionalNarrowListT = REQ("narrow", converter=narrow_parameter, default=None),
