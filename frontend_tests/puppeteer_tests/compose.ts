@@ -169,7 +169,7 @@ async function test_markdown_preview_buttons_visibility(page: Page): Promise<voi
     await page.waitForSelector(markdown_preview_button, {hidden: true});
     await page.waitForSelector(markdown_preview_hide_button, {visible: true});
 
-    // verify if write button works.
+    // verify if hide button works.
     await page.click(markdown_preview_hide_button);
     await page.waitForSelector(markdown_preview_button, {visible: true});
     await page.waitForSelector(markdown_preview_hide_button, {hidden: true});
