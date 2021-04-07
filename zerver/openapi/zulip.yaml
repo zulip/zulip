@@ -9091,7 +9091,7 @@ paths:
             * "all_messages" - All messages view
           schema:
             type: string
-          example: all_messages
+          example: '"all_messages"'
         - name: left_side_userlist
           in: query
           description: |
@@ -9113,7 +9113,7 @@ paths:
             * "text" - Plain text
           schema:
             type: string
-          example: google
+          example: '"google"'
         - name: demote_inactive_streams
           in: query
           description: |
