@@ -31,8 +31,6 @@ location /static/webpack-bundles/ {
 location /json/events {
     proxy_pass $tornado_server;
     include /etc/nginx/zulip-include/proxy_longpolling;
-
-    proxy_set_header X-Real-IP       $remote_addr;
 }
 
 # Send longpoll requests to Tornado
@@ -45,8 +43,6 @@ location /api/v1/events {
 
     proxy_pass $tornado_server;
     include /etc/nginx/zulip-include/proxy_longpolling;
-
-    proxy_set_header X-Real-IP       $remote_addr;
 }
 
 # Send everything else to Django via uWSGI
