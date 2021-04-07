@@ -2418,6 +2418,8 @@ paths:
                               description: |
                                 Event sent to all users in a Zulip organization when the
                                 set of configured playgrounds for the organization has changed.
+
+                                **Changes**: New in Zulip 4.0 (feature level 49).
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -6610,6 +6612,8 @@ paths:
         in a code block using playgrounds which supports that language.
 
         `POST {{ api_url }}/v1/realm/playgrounds`
+
+        **Changes**: New in Zulip 4.0 (feature level 49).
       parameters:
         - name: name
           in: query
@@ -6664,6 +6668,8 @@ paths:
         custom playgrounds
 
         `DELETE {{ api_url }}/v1/realm/playgrounds/{playground_id}`
+
+        **Changes**: New in Zulip 4.0 (feature level 49).
       parameters:
         - name: playground_id
           in: path
@@ -6978,6 +6984,8 @@ paths:
 
                           An array of dictionaries where each dictionary describes a playground entry
                           in this Zulip organization.
+
+                          **Changes**: New in Zulip 4.0 (feature level 49).
                       realm_user_groups:
                         type: array
                         items:
@@ -10168,6 +10176,8 @@ components:
             open a code block in, to differentiate between multiple
             configured playground options for a given pygments
             language.
+
+            **Changes**: New in Zulip 4.0 (feature level 49).
         pygments_language:
           type: string
           description: |
