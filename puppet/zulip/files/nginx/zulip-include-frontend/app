@@ -54,14 +54,18 @@ location / {
 # web, and thus need API headers added.  We can't easily collapse
 # these blocks with the /api block, because regular expressions take
 # priority over paths in nginx's order-of-operations, and we don't
-# want to override the tornado configuration for /api/v1/events.  The
-# last is handled via uploads-route.
+# want to override the tornado configuration for /api/v1/events.
 location /thumbnail {
     include /etc/nginx/zulip-include/api_headers;
 
     include uwsgi_params;
 }
 location /avatar {
+    include /etc/nginx/zulip-include/api_headers;
+
+    include uwsgi_params;
+}
+location /user_uploads {
     include /etc/nginx/zulip-include/api_headers;
 
     include uwsgi_params;
@@ -74,5 +78,4 @@ location /api/ {
     include uwsgi_params;
 }
 
-include /etc/nginx/zulip-include/uploads.route;
 include /etc/nginx/zulip-include/app.d/*.conf;
