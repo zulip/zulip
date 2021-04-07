@@ -6,5 +6,4 @@ location /user_uploads {
     include /etc/nginx/zulip-include/api_headers;
 
     include uwsgi_params;
-    uwsgi_pass django;
 }
