@@ -1255,7 +1255,7 @@ class InviteUserTest(InviteUserBase):
         invitee = f"Alice Test <{email}>, {email2}"
         self.assert_json_error(
             self.invite(invitee, ["Denmark"]),
-            "Only administrators can invite others to this organization.",
+            "Insufficient permission",
         )
 
         # Now verify an administrator can do it
@@ -1279,7 +1279,7 @@ class InviteUserTest(InviteUserBase):
         invitee = f"Carol Test <{email}>, {email2}"
         self.assert_json_error(
             self.invite(invitee, ["Denmark"]),
-            "Only administrators and moderators can invite others to this organization.",
+            "Insufficient permission",
         )
 
         self.login("shiva")
@@ -1323,7 +1323,7 @@ class InviteUserTest(InviteUserBase):
         invitee = f"Issac Test <{email}>, {email2}"
         self.assert_json_error(
             self.invite(invitee, ["Denmark"]),
-            "Your account is too new to invite others to this organization.",
+            "Insufficient permission",
         )
 
         do_set_realm_property(realm, "waiting_period_threshold", 0, acting_user=None)
