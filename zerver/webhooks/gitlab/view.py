@@ -398,7 +398,7 @@ def api_gitlab_webhook(
     user_profile: UserProfile,
     payload: Dict[str, Any] = REQ(argument_type="body"),
     branches: Optional[str] = REQ(default=None),
-    use_merge_request_title: bool = REQ(default=True, validator=check_bool),
+    use_merge_request_title: bool = REQ(default=True, json_validator=check_bool),
     user_specified_topic: Optional[str] = REQ("topic", default=None),
 ) -> HttpResponse:
     event = get_event(request, payload, branches)

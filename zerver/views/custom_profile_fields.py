@@ -102,7 +102,7 @@ def create_realm_custom_profile_field(
     name: str = REQ(default="", converter=lambda x: x.strip()),
     hint: str = REQ(default=""),
     field_data: ProfileFieldData = REQ(default={}, converter=orjson.loads),
-    field_type: int = REQ(validator=check_int),
+    field_type: int = REQ(json_validator=check_int),
 ) -> HttpResponse:
     validate_custom_profile_field(name, hint, field_type, field_data)
     try:
@@ -173,7 +173,7 @@ def update_realm_custom_profile_field(
 def reorder_realm_custom_profile_fields(
     request: HttpRequest,
     user_profile: UserProfile,
-    order: List[int] = REQ(validator=check_list(check_int)),
+    order: List[int] = REQ(json_validator=check_list(check_int)),
 ) -> HttpResponse:
     try_reorder_realm_custom_profile_fields(user_profile.realm, order)
     return json_success()
@@ -184,7 +184,7 @@ def reorder_realm_custom_profile_fields(
 def remove_user_custom_profile_data(
     request: HttpRequest,
     user_profile: UserProfile,
-    data: List[int] = REQ(validator=check_list(check_int)),
+    data: List[int] = REQ(json_validator=check_list(check_int)),
 ) -> HttpResponse:
     for field_id in data:
         check_remove_custom_profile_field_value(user_profile, field_id)
@@ -197,7 +197,7 @@ def update_user_custom_profile_data(
     request: HttpRequest,
     user_profile: UserProfile,
     data: List[Dict[str, Union[int, str, List[int]]]] = REQ(
-        validator=check_list(
+        json_validator=check_list(
             check_dict_only(
                 [
                     ("id", check_int),

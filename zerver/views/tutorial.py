@@ -10,7 +10,7 @@ from zerver.models import UserProfile
 @human_users_only
 @has_request_variables
 def set_tutorial_status(
-    request: HttpRequest, user_profile: UserProfile, status: str = REQ(validator=check_string)
+    request: HttpRequest, user_profile: UserProfile, status: str = REQ(json_validator=check_string)
 ) -> HttpResponse:
     if status == "started":
         user_profile.tutorial_status = UserProfile.TUTORIAL_STARTED

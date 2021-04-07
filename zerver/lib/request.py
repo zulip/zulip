@@ -83,7 +83,7 @@ class _REQ(Generic[ResultT]):
         *,
         converter: Optional[Callable[[str], ResultT]] = None,
         default: Union[_NotSpecified, ResultT, None] = NotSpecified,
-        validator: Optional[Validator[ResultT]] = None,
+        json_validator: Optional[Validator[ResultT]] = None,
         str_validator: Optional[Validator[ResultT]] = None,
         argument_type: Optional[str] = None,
         intentionally_undocumented: bool = False,
@@ -102,11 +102,12 @@ class _REQ(Generic[ResultT]):
         default: a value to be used for the argument if the parameter
         is missing in the request
 
-        validator: similar to converter, but takes an already parsed JSON
-        data structure.  If specified, we will parse the JSON request
-        variable value before passing to the function
+        json_validator: similar to converter, but takes an already
+        parsed JSON data structure.  If specified, we will parse the
+        JSON request variable value before passing to the function
 
-        str_validator: Like validator, but doesn't parse JSON first.
+        str_validator: Like json_validator, but doesn't parse JSON
+        first.
 
         argument_type: pass 'body' to extract the parsed JSON
         corresponding to the request body
@@ -115,12 +116,13 @@ class _REQ(Generic[ResultT]):
 
         path_only: Used for parameters included in the URL that we still want
         to validate via REQ's hooks.
+
         """
 
         self.post_var_name = whence
         self.func_var_name: Optional[str] = None
         self.converter = converter
-        self.validator = validator
+        self.json_validator = json_validator
         self.str_validator = str_validator
         self.default = default
         self.argument_type = argument_type
@@ -130,11 +132,11 @@ class _REQ(Generic[ResultT]):
         self.path_only = path_only
 
         assert converter is None or (
-            validator is None and str_validator is None
-        ), "converter and validator are mutually exclusive"
+            json_validator is None and str_validator is None
+        ), "converter and json_validator are mutually exclusive"
         assert (
-            validator is None or str_validator is None
-        ), "validator and str_validator are mutually exclusive"
+            json_validator is None or str_validator is None
+        ), "json_validator and str_validator are mutually exclusive"
 
 
 # This factory function ensures that mypy can correctly analyze REQ.
@@ -163,13 +165,13 @@ def REQ(
     ...
 
 
-# Overload 2: validator
+# Overload 2: json_validator
 @overload
 def REQ(
     whence: Optional[str] = ...,
     *,
     default: ResultT = ...,
-    validator: Validator[ResultT],
+    json_validator: Validator[ResultT],
     intentionally_undocumented: bool = ...,
     documentation_pending: bool = ...,
     aliases: Sequence[str] = ...,
@@ -178,7 +180,7 @@ def REQ(
     ...
 
 
-# Overload 3: no converter/validator, default: str or unspecified, argument_type=None
+# Overload 3: no converter/json_validator, default: str or unspecified, argument_type=None
 @overload
 def REQ(
     whence: Optional[str] = ...,
@@ -229,7 +231,7 @@ def REQ(
     *,
     converter: Optional[Callable[[str], ResultT]] = None,
     default: Union[_REQ._NotSpecified, ResultT] = _REQ.NotSpecified,
-    validator: Optional[Validator[ResultT]] = None,
+    json_validator: Optional[Validator[ResultT]] = None,
     str_validator: Optional[Validator[ResultT]] = None,
     argument_type: Optional[str] = None,
     intentionally_undocumented: bool = False,
@@ -243,7 +245,7 @@ def REQ(
             whence,
             converter=converter,
             default=default,
-            validator=validator,
+            json_validator=json_validator,
             str_validator=str_validator,
             argument_type=argument_type,
             intentionally_undocumented=intentionally_undocumented,
@@ -364,19 +366,19 @@ def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
                 except Exception:
                     raise RequestVariableConversionError(post_var_name, val)
 
-            # Validators are like converters, but they don't handle JSON parsing; we do.
-            if param.validator is not None and not default_assigned:
+            # json_validator is like converter, but doesn't handle JSON parsing; we do.
+            if param.json_validator is not None and not default_assigned:
                 try:
                     val = orjson.loads(val)
                 except orjson.JSONDecodeError:
                     raise JsonableError(_('Argument "{}" is not valid JSON.').format(post_var_name))
 
                 try:
-                    val = param.validator(post_var_name, val)
+                    val = param.json_validator(post_var_name, val)
                 except ValidationError as error:
                     raise JsonableError(error.message)
 
-            # str_validators is like validator, but for direct strings (no JSON parsing).
+            # str_validators is like json_validator, but for direct strings (no JSON parsing).
             if param.str_validator is not None and not default_assigned:
                 try:
                     val = param.str_validator(post_var_name, val)

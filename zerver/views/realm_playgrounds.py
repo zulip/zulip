@@ -39,8 +39,8 @@ def add_realm_playground(
     request: HttpRequest,
     user_profile: UserProfile,
     name: str = REQ(),
-    url_prefix: str = REQ(validator=check_url),
-    pygments_language: str = REQ(validator=check_pygments_language),
+    url_prefix: str = REQ(json_validator=check_url),
+    pygments_language: str = REQ(json_validator=check_pygments_language),
 ) -> HttpResponse:
     try:
         playground_id = do_add_realm_playground(

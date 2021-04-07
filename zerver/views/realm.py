@@ -41,70 +41,74 @@ from zerver.models import Realm, UserProfile
 def update_realm(
     request: HttpRequest,
     user_profile: UserProfile,
-    name: Optional[str] = REQ(validator=check_string, default=None),
-    description: Optional[str] = REQ(validator=check_string, default=None),
-    emails_restricted_to_domains: Optional[bool] = REQ(validator=check_bool, default=None),
-    disallow_disposable_email_addresses: Optional[bool] = REQ(validator=check_bool, default=None),
-    invite_required: Optional[bool] = REQ(validator=check_bool, default=None),
-    invite_to_realm_policy: Optional[int] = REQ(
-        validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
+    name: Optional[str] = REQ(json_validator=check_string, default=None),
+    description: Optional[str] = REQ(json_validator=check_string, default=None),
+    emails_restricted_to_domains: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    disallow_disposable_email_addresses: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
     ),
-    name_changes_disabled: Optional[bool] = REQ(validator=check_bool, default=None),
-    email_changes_disabled: Optional[bool] = REQ(validator=check_bool, default=None),
-    avatar_changes_disabled: Optional[bool] = REQ(validator=check_bool, default=None),
-    inline_image_preview: Optional[bool] = REQ(validator=check_bool, default=None),
-    inline_url_embed_preview: Optional[bool] = REQ(validator=check_bool, default=None),
-    add_emoji_by_admins_only: Optional[bool] = REQ(validator=check_bool, default=None),
-    allow_message_deleting: Optional[bool] = REQ(validator=check_bool, default=None),
+    invite_required: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    invite_to_realm_policy: Optional[int] = REQ(
+        json_validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
+    ),
+    name_changes_disabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    email_changes_disabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    avatar_changes_disabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    inline_image_preview: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    inline_url_embed_preview: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    add_emoji_by_admins_only: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    allow_message_deleting: Optional[bool] = REQ(json_validator=check_bool, default=None),
     message_content_delete_limit_seconds: Optional[int] = REQ(
         converter=to_non_negative_int, default=None
     ),
-    allow_message_editing: Optional[bool] = REQ(validator=check_bool, default=None),
-    allow_community_topic_editing: Optional[bool] = REQ(validator=check_bool, default=None),
-    mandatory_topics: Optional[bool] = REQ(validator=check_bool, default=None),
+    allow_message_editing: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    allow_community_topic_editing: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    mandatory_topics: Optional[bool] = REQ(json_validator=check_bool, default=None),
     message_content_edit_limit_seconds: Optional[int] = REQ(
         converter=to_non_negative_int, default=None
     ),
-    allow_edit_history: Optional[bool] = REQ(validator=check_bool, default=None),
-    default_language: Optional[str] = REQ(validator=check_string, default=None),
+    allow_edit_history: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    default_language: Optional[str] = REQ(json_validator=check_string, default=None),
     waiting_period_threshold: Optional[int] = REQ(converter=to_non_negative_int, default=None),
-    authentication_methods: Optional[Dict[str, Any]] = REQ(validator=check_dict([]), default=None),
-    notifications_stream_id: Optional[int] = REQ(validator=check_int, default=None),
-    signup_notifications_stream_id: Optional[int] = REQ(validator=check_int, default=None),
-    message_retention_days_raw: Optional[Union[int, str]] = REQ(
-        "message_retention_days", validator=check_string_or_int, default=None
+    authentication_methods: Optional[Dict[str, Any]] = REQ(
+        json_validator=check_dict([]), default=None
     ),
-    send_welcome_emails: Optional[bool] = REQ(validator=check_bool, default=None),
-    digest_emails_enabled: Optional[bool] = REQ(validator=check_bool, default=None),
+    notifications_stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
+    signup_notifications_stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
+    message_retention_days_raw: Optional[Union[int, str]] = REQ(
+        "message_retention_days", json_validator=check_string_or_int, default=None
+    ),
+    send_welcome_emails: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    digest_emails_enabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
     message_content_allowed_in_email_notifications: Optional[bool] = REQ(
-        validator=check_bool, default=None
+        json_validator=check_bool, default=None
     ),
     bot_creation_policy: Optional[int] = REQ(
-        validator=check_int_in(Realm.BOT_CREATION_POLICY_TYPES), default=None
+        json_validator=check_int_in(Realm.BOT_CREATION_POLICY_TYPES), default=None
     ),
     create_stream_policy: Optional[int] = REQ(
-        validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
+        json_validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
     ),
     invite_to_stream_policy: Optional[int] = REQ(
-        validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
+        json_validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
     ),
     user_group_edit_policy: Optional[int] = REQ(
-        validator=check_int_in(Realm.USER_GROUP_EDIT_POLICY_TYPES), default=None
+        json_validator=check_int_in(Realm.USER_GROUP_EDIT_POLICY_TYPES), default=None
     ),
     private_message_policy: Optional[int] = REQ(
-        validator=check_int_in(Realm.PRIVATE_MESSAGE_POLICY_TYPES), default=None
+        json_validator=check_int_in(Realm.PRIVATE_MESSAGE_POLICY_TYPES), default=None
     ),
     wildcard_mention_policy: Optional[int] = REQ(
-        validator=check_int_in(Realm.WILDCARD_MENTION_POLICY_TYPES), default=None
+        json_validator=check_int_in(Realm.WILDCARD_MENTION_POLICY_TYPES), default=None
     ),
     email_address_visibility: Optional[int] = REQ(
-        validator=check_int_in(Realm.EMAIL_ADDRESS_VISIBILITY_TYPES), default=None
+        json_validator=check_int_in(Realm.EMAIL_ADDRESS_VISIBILITY_TYPES), default=None
     ),
-    default_twenty_four_hour_time: Optional[bool] = REQ(validator=check_bool, default=None),
-    video_chat_provider: Optional[int] = REQ(validator=check_int, default=None),
-    default_code_block_language: Optional[str] = REQ(validator=check_string, default=None),
+    default_twenty_four_hour_time: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    video_chat_provider: Optional[int] = REQ(json_validator=check_int, default=None),
+    default_code_block_language: Optional[str] = REQ(json_validator=check_string, default=None),
     digest_weekday: Optional[int] = REQ(
-        validator=check_int_in(Realm.DIGEST_WEEKDAY_VALUES), default=None
+        json_validator=check_int_in(Realm.DIGEST_WEEKDAY_VALUES), default=None
     ),
 ) -> HttpResponse:
     realm = user_profile.realm

@@ -33,7 +33,7 @@ def add_user_group(
     request: HttpRequest,
     user_profile: UserProfile,
     name: str = REQ(),
-    members: Sequence[int] = REQ(validator=check_list(check_int), default=[]),
+    members: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
     description: str = REQ(),
 ) -> HttpResponse:
     user_profiles = user_ids_to_users(members, user_profile.realm)
@@ -53,7 +53,7 @@ def get_user_group(request: HttpRequest, user_profile: UserProfile) -> HttpRespo
 def edit_user_group(
     request: HttpRequest,
     user_profile: UserProfile,
-    user_group_id: int = REQ(validator=check_int, path_only=True),
+    user_group_id: int = REQ(json_validator=check_int, path_only=True),
     name: str = REQ(default=""),
     description: str = REQ(default=""),
 ) -> HttpResponse:
@@ -76,7 +76,7 @@ def edit_user_group(
 def delete_user_group(
     request: HttpRequest,
     user_profile: UserProfile,
-    user_group_id: int = REQ(validator=check_int, path_only=True),
+    user_group_id: int = REQ(json_validator=check_int, path_only=True),
 ) -> HttpResponse:
 
     check_delete_user_group(user_group_id, user_profile)
@@ -88,9 +88,9 @@ def delete_user_group(
 def update_user_group_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    user_group_id: int = REQ(validator=check_int, path_only=True),
-    delete: Sequence[int] = REQ(validator=check_list(check_int), default=[]),
-    add: Sequence[int] = REQ(validator=check_list(check_int), default=[]),
+    user_group_id: int = REQ(json_validator=check_int, path_only=True),
+    delete: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
+    add: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
 ) -> HttpResponse:
     if not add and not delete:
         return json_error(_('Nothing to do. Specify at least one of "add" or "delete".'))

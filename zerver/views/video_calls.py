@@ -91,7 +91,7 @@ def register_zoom_user(request: HttpRequest) -> HttpResponse:
 def complete_zoom_user(
     request: HttpRequest,
     state: Dict[str, str] = REQ(
-        validator=check_dict([("realm", check_string)], value_validator=check_string)
+        json_validator=check_dict([("realm", check_string)], value_validator=check_string)
     ),
 ) -> HttpResponse:
     if get_subdomain(request) != state["realm"]:
@@ -105,7 +105,7 @@ def complete_zoom_user_in_realm(
     request: HttpRequest,
     code: str = REQ(),
     state: Dict[str, str] = REQ(
-        validator=check_dict([("sid", check_string)], value_validator=check_string)
+        json_validator=check_dict([("sid", check_string)], value_validator=check_string)
     ),
 ) -> HttpResponse:
     if not constant_time_compare(state["sid"], get_zoom_sid(request)):
@@ -207,9 +207,9 @@ def get_bigbluebutton_url(request: HttpRequest, user_profile: UserProfile) -> Ht
 @has_request_variables
 def join_bigbluebutton(
     request: HttpRequest,
-    meeting_id: str = REQ(validator=check_string),
-    password: str = REQ(validator=check_string),
-    checksum: str = REQ(validator=check_string),
+    meeting_id: str = REQ(json_validator=check_string),
+    password: str = REQ(json_validator=check_string),
+    checksum: str = REQ(json_validator=check_string),
 ) -> HttpResponse:
     if settings.BIG_BLUE_BUTTON_URL is None or settings.BIG_BLUE_BUTTON_SECRET is None:
         return json_error(_("Big Blue Button is not configured."))

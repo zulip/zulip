@@ -927,10 +927,10 @@ def get_messages_backend(
     num_after: int = REQ(converter=to_non_negative_int),
     narrow: OptionalNarrowListT = REQ("narrow", converter=narrow_parameter, default=None),
     use_first_unread_anchor_val: bool = REQ(
-        "use_first_unread_anchor", validator=check_bool, default=False
+        "use_first_unread_anchor", json_validator=check_bool, default=False
     ),
-    client_gravatar: bool = REQ(validator=check_bool, default=False),
-    apply_markdown: bool = REQ(validator=check_bool, default=True),
+    client_gravatar: bool = REQ(json_validator=check_bool, default=False),
+    apply_markdown: bool = REQ(json_validator=check_bool, default=True),
 ) -> HttpResponse:
     anchor = parse_anchor_value(anchor_val, use_first_unread_anchor_val)
     if num_before + num_after > MAX_MESSAGES_PER_FETCH:
@@ -1300,7 +1300,7 @@ def post_process_limited_query(
 def messages_in_narrow_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    msg_ids: List[int] = REQ(validator=check_list(check_int)),
+    msg_ids: List[int] = REQ(json_validator=check_list(check_int)),
     narrow: OptionalNarrowListT = REQ(converter=narrow_parameter),
 ) -> HttpResponse:
 

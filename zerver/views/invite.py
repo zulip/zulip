@@ -35,8 +35,8 @@ def invite_users_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     invitee_emails_raw: str = REQ("invitee_emails"),
-    invite_as: int = REQ(validator=check_int, default=PreregistrationUser.INVITE_AS["MEMBER"]),
-    stream_ids: List[int] = REQ(validator=check_list(check_int)),
+    invite_as: int = REQ(json_validator=check_int, default=PreregistrationUser.INVITE_AS["MEMBER"]),
+    stream_ids: List[int] = REQ(json_validator=check_list(check_int)),
 ) -> HttpResponse:
 
     if not user_profile.can_invite_others_to_realm():
@@ -167,8 +167,8 @@ def resend_user_invite_email(
 def generate_multiuse_invite_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    invite_as: int = REQ(validator=check_int, default=PreregistrationUser.INVITE_AS["MEMBER"]),
-    stream_ids: Sequence[int] = REQ(validator=check_list(check_int), default=[]),
+    invite_as: int = REQ(json_validator=check_int, default=PreregistrationUser.INVITE_AS["MEMBER"]),
+    stream_ids: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
 ) -> HttpResponse:
     check_if_owner_required(invite_as, user_profile)
 

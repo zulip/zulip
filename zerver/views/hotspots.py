@@ -13,7 +13,7 @@ from zerver.models import UserProfile
 @human_users_only
 @has_request_variables
 def mark_hotspot_as_read(
-    request: HttpRequest, user: UserProfile, hotspot: str = REQ(validator=check_string)
+    request: HttpRequest, user: UserProfile, hotspot: str = REQ(json_validator=check_string)
 ) -> HttpResponse:
     if hotspot not in ALL_HOTSPOTS:
         return json_error(_("Unknown hotspot: {}").format(hotspot))

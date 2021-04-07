@@ -96,7 +96,9 @@ def fetch_drafts(request: HttpRequest, user_profile: UserProfile) -> HttpRespons
 def create_drafts(
     request: HttpRequest,
     user_profile: UserProfile,
-    draft_dicts: List[Dict[str, Any]] = REQ("drafts", validator=check_list(draft_dict_validator)),
+    draft_dicts: List[Dict[str, Any]] = REQ(
+        "drafts", json_validator=check_list(draft_dict_validator)
+    ),
 ) -> HttpResponse:
     draft_objects = []
     for draft_dict in draft_dicts:
@@ -121,7 +123,7 @@ def edit_draft(
     request: HttpRequest,
     user_profile: UserProfile,
     draft_id: int,
-    draft_dict: Dict[str, Any] = REQ("draft", validator=draft_dict_validator),
+    draft_dict: Dict[str, Any] = REQ("draft", json_validator=draft_dict_validator),
 ) -> HttpResponse:
     try:
         draft_object = Draft.objects.get(id=draft_id, user_profile=user_profile)

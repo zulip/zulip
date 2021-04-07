@@ -64,7 +64,7 @@ def unmute_topic(
 def update_muted_topic(
     request: HttpRequest,
     user_profile: UserProfile,
-    stream_id: Optional[int] = REQ(validator=check_int, default=None),
+    stream_id: Optional[int] = REQ(json_validator=check_int, default=None),
     stream: Optional[str] = REQ(default=None),
     topic: str = REQ(),
     op: str = REQ(),
