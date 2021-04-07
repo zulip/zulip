@@ -1761,7 +1761,7 @@ class StreamAdminTest(ZulipTestCase):
         # Cannot create stream because not an admin.
         stream_name = ["admins_only"]
         result = self.common_subscribe_to_streams(user_profile, stream_name, allow_fail=True)
-        self.assert_json_error(result, "Only administrators can create streams.")
+        self.assert_json_error(result, "Insufficient permission")
 
         # Make current user an admin.
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
@@ -1789,7 +1789,7 @@ class StreamAdminTest(ZulipTestCase):
         # period.
         stream_name = ["waiting_period"]
         result = self.common_subscribe_to_streams(user_profile, stream_name, allow_fail=True)
-        self.assert_json_error(result, "Your account is too new to create streams.")
+        self.assert_json_error(result, "Insufficient permission")
 
         # Make user account 11 days old..
         user_profile.date_joined = timezone_now() - timedelta(days=11)
@@ -3239,7 +3239,7 @@ class SubscriptionAPITest(ZulipTestCase):
         )
         with mock.patch("zerver.models.UserProfile.can_create_streams", return_value=False):
             result = self.common_subscribe_to_streams(self.test_user, ["stream1"], allow_fail=True)
-            self.assert_json_error(result, "Only administrators can create streams.")
+            self.assert_json_error(result, "Insufficient permission")
 
         with mock.patch("zerver.models.UserProfile.can_create_streams", return_value=True):
             self.common_subscribe_to_streams(self.test_user, ["stream2"])
@@ -3261,7 +3261,7 @@ class SubscriptionAPITest(ZulipTestCase):
             ["new_stream1"],
             allow_fail=True,
         )
-        self.assert_json_error(result, "Only administrators can create streams.")
+        self.assert_json_error(result, "Insufficient permission")
 
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         self.common_subscribe_to_streams(user_profile, ["new_stream1"])
@@ -3278,7 +3278,7 @@ class SubscriptionAPITest(ZulipTestCase):
             ["new_stream2"],
             allow_fail=True,
         )
-        self.assert_json_error(result, "Only administrators and moderators can create streams.")
+        self.assert_json_error(result, "Insufficient permission")
 
         do_change_user_role(user_profile, UserProfile.ROLE_MODERATOR, acting_user=None)
         self.common_subscribe_to_streams(user_profile, ["new_stream2"])
@@ -3309,7 +3309,7 @@ class SubscriptionAPITest(ZulipTestCase):
             ["new_stream4"],
             allow_fail=True,
         )
-        self.assert_json_error(result, "Your account is too new to create streams.")
+        self.assert_json_error(result, "Insufficient permission")
 
         do_set_realm_property(realm, "waiting_period_threshold", 0, acting_user=None)
         self.common_subscribe_to_streams(user_profile, ["new_stream3"])
@@ -3711,7 +3711,7 @@ class SubscriptionAPITest(ZulipTestCase):
             }
         ]
 
-        with self.assertRaisesRegex(JsonableError, "Not allowed for guest users"):
+        with self.assertRaisesRegex(JsonableError, "Insufficient permission"):
             list_to_streams(streams_raw, guest_user)
 
         stream = self.make_stream("private_stream", invite_only=True)
