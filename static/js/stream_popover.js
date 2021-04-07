@@ -14,7 +14,6 @@ import * as hash_util from "./hash_util";
 import * as message_edit from "./message_edit";
 import * as muting from "./muting";
 import * as muting_ui from "./muting_ui";
-import * as narrow from "./narrow";
 import {page_params} from "./page_params";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
@@ -507,42 +506,7 @@ export function register_stream_handlers() {
     });
 }
 
-function topic_popover_sub(e) {
-    const stream_id = topic_popover_stream_id(e);
-    if (!stream_id) {
-        blueslip.error("cannot find stream id");
-        return undefined;
-    }
-
-    const sub = stream_data.get_sub_by_id(stream_id);
-    if (!sub) {
-        blueslip.error("Unknown stream: " + stream_id);
-        return undefined;
-    }
-    return sub;
-}
-
 export function register_topic_handlers() {
-    // Narrow to topic
-    $("body").on("click", ".narrow_to_topic", (e) => {
-        hide_topic_popover();
-
-        const sub = topic_popover_sub(e);
-        if (!sub) {
-            return;
-        }
-
-        const topic = $(e.currentTarget).attr("data-topic-name");
-
-        const operators = [
-            {operator: "stream", operand: sub.name},
-            {operator: "topic", operand: topic},
-        ];
-        narrow.activate(operators, {trigger: "sidebar"});
-
-        e.stopPropagation();
-    });
-
     // Mute the topic
     $("body").on("click", ".sidebar-popover-mute-topic", (e) => {
         const stream_id = topic_popover_stream_id(e);
