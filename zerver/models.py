@@ -1751,6 +1751,10 @@ class Stream(models.Model):
     description: str = models.CharField(max_length=MAX_DESCRIPTION_LENGTH, default="")
     rendered_description: str = models.TextField(default="")
 
+    # Default color of a stream that would be used if a user has not picked
+    # a personal color for his stream(subscription).
+    default_color: Optional[str] = models.CharField(max_length=10, default=None, null=True)
+
     # Foreign key to the Recipient object for STREAM type messages to this stream.
     recipient = models.ForeignKey(Recipient, null=True, on_delete=models.SET_NULL)
 
