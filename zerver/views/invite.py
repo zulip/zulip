@@ -49,6 +49,7 @@ def invite_users_backend(
         if user_profile.realm.invite_to_realm_policy == Realm.POLICY_FULL_MEMBERS_ONLY:
             return json_error(_("Your account is too new to invite others to this organization."))
         # Guest case will be handled by require_member_or_admin decorator.
+        raise AssertionError("Unexpected policy validation failure")
     if invite_as not in PreregistrationUser.INVITE_AS.values():
         return json_error(_("Must be invited as an valid type of user"))
     check_if_owner_required(invite_as, user_profile)
