@@ -795,7 +795,8 @@ export function build_page() {
             }
         } else if (subsection === "other_settings") {
             const code_block_language_value = default_code_language_widget.value();
-            data.default_code_block_language = JSON.stringify(code_block_language_value);
+            // No need to JSON-encode, since this value is already a string.
+            data.default_code_block_language = code_block_language_value;
         } else if (subsection === "other_permissions") {
             const add_emoji_permission = $("#id_realm_add_emoji_by_admins_only").val();
 
@@ -866,7 +867,7 @@ export function build_page() {
                 const input_value = get_input_element_value(input_elem);
                 if (input_value !== undefined) {
                     const property_name = input_elem.attr("id").replace("id_realm_", "");
-                    data[property_name] = JSON.stringify(input_value);
+                    data[property_name] = input_value;
                 }
             }
         }

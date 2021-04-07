@@ -1,6 +1,6 @@
 import datetime
 import re
-from typing import Any, Dict, List, Mapping
+from typing import Any, Dict, List, Mapping, Union
 from unittest import mock
 
 import orjson
@@ -103,7 +103,7 @@ class RealmTest(ZulipTestCase):
     def test_update_realm_description(self) -> None:
         self.login("iago")
         new_description = "zulip dev group"
-        data = dict(description=orjson.dumps(new_description).decode())
+        data = dict(description=new_description)
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             result = self.client_patch("/json/realm", data)
@@ -124,25 +124,25 @@ class RealmTest(ZulipTestCase):
 
     def test_realm_description_length(self) -> None:
         new_description = "A" * 1001
-        data = dict(description=orjson.dumps(new_description).decode())
+        data = dict(description=new_description)
 
         # create an admin user
         self.login("iago")
 
         result = self.client_patch("/json/realm", data)
-        self.assert_json_error(result, "Organization description is too long.")
+        self.assert_json_error(result, "description is too long (limit: 1000 characters)")
         realm = get_realm("zulip")
         self.assertNotEqual(realm.description, new_description)
 
     def test_realm_name_length(self) -> None:
         new_name = "A" * (Realm.MAX_REALM_NAME_LENGTH + 1)
-        data = dict(name=orjson.dumps(new_name).decode())
+        data = dict(name=new_name)
 
         # create an admin user
         self.login("iago")
 
         result = self.client_patch("/json/realm", data)
-        self.assert_json_error(result, "Organization name is too long.")
+        self.assert_json_error(result, "name is too long (limit: 40 characters)")
         realm = get_realm("zulip")
         self.assertNotEqual(realm.name, new_name)
 
@@ -151,7 +151,7 @@ class RealmTest(ZulipTestCase):
 
         self.login("othello")
 
-        req = dict(name=orjson.dumps(new_name).decode())
+        req = dict(name=new_name)
         result = self.client_patch("/json/realm", req)
         self.assert_json_error(result, "Must be an organization administrator")
 
@@ -419,7 +419,7 @@ class RealmTest(ZulipTestCase):
         # we need an admin user.
         self.login("iago")
 
-        req = dict(default_language=orjson.dumps(new_lang).decode())
+        req = dict(default_language=new_lang)
         result = self.client_patch("/json/realm", req)
         self.assert_json_success(result)
         realm = get_realm("zulip")
@@ -429,7 +429,7 @@ class RealmTest(ZulipTestCase):
         # as the default realm language, correct validation error is
         # raised and the invalid language is not saved in db
         invalid_lang = "invalid_lang"
-        req = dict(default_language=orjson.dumps(invalid_lang).decode())
+        req = dict(default_language=invalid_lang)
         result = self.client_patch("/json/realm", req)
         self.assert_json_error(result, f"Invalid language '{invalid_lang}'")
         realm = get_realm("zulip")
@@ -820,8 +820,10 @@ class RealmAPITest(ZulipTestCase):
         setattr(realm, attr, value)
         realm.save(update_fields=[attr])
 
-    def update_with_api(self, name: str, value: int) -> Realm:
-        result = self.client_patch("/json/realm", {name: orjson.dumps(value).decode()})
+    def update_with_api(self, name: str, value: Union[int, str]) -> Realm:
+        if not isinstance(value, str):
+            value = orjson.dumps(value).decode()
+        result = self.client_patch("/json/realm", {name: value})
         self.assert_json_success(result)
         return get_realm("zulip")  # refresh data
 
