@@ -9229,6 +9229,7 @@ paths:
             enum:
               - private
             default: private
+          example: private
         - name: op
           in: query
           description: |
