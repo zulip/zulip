@@ -184,6 +184,7 @@ def clear_supported_auth_backends_cache() -> None:
 
 class Realm(models.Model):
     MAX_REALM_NAME_LENGTH = 40
+    MAX_REALM_DESCRIPTION_LENGTH = 1000
     MAX_REALM_SUBDOMAIN_LENGTH = 40
     MAX_REALM_REDIRECT_URL_LENGTH = 128
 

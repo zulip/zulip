@@ -26,10 +26,10 @@ from zerver.lib.retention import parse_message_retention_days
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.validator import (
     check_bool,
+    check_capped_string,
     check_dict,
     check_int,
     check_int_in,
-    check_string,
     check_string_or_int,
     to_non_negative_int,
 )
@@ -41,8 +41,12 @@ from zerver.models import Realm, UserProfile
 def update_realm(
     request: HttpRequest,
     user_profile: UserProfile,
-    name: Optional[str] = REQ(json_validator=check_string, default=None),
-    description: Optional[str] = REQ(json_validator=check_string, default=None),
+    name: Optional[str] = REQ(
+        str_validator=check_capped_string(Realm.MAX_REALM_NAME_LENGTH), default=None
+    ),
+    description: Optional[str] = REQ(
+        str_validator=check_capped_string(Realm.MAX_REALM_DESCRIPTION_LENGTH), default=None
+    ),
     emails_restricted_to_domains: Optional[bool] = REQ(json_validator=check_bool, default=None),
     disallow_disposable_email_addresses: Optional[bool] = REQ(
         json_validator=check_bool, default=None
@@ -68,7 +72,7 @@ def update_realm(
         converter=to_non_negative_int, default=None
     ),
     allow_edit_history: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    default_language: Optional[str] = REQ(json_validator=check_string, default=None),
+    default_language: Optional[str] = REQ(default=None),
     waiting_period_threshold: Optional[int] = REQ(converter=to_non_negative_int, default=None),
     authentication_methods: Optional[Dict[str, Any]] = REQ(
         json_validator=check_dict([]), default=None
@@ -106,7 +110,7 @@ def update_realm(
     ),
     default_twenty_four_hour_time: Optional[bool] = REQ(json_validator=check_bool, default=None),
     video_chat_provider: Optional[int] = REQ(json_validator=check_int, default=None),
-    default_code_block_language: Optional[str] = REQ(json_validator=check_string, default=None),
+    default_code_block_language: Optional[str] = REQ(default=None),
     digest_weekday: Optional[int] = REQ(
         json_validator=check_int_in(Realm.DIGEST_WEEKDAY_VALUES), default=None
     ),
@@ -117,10 +121,6 @@ def update_realm(
     # the entire request can succeed or fail atomically.
     if default_language is not None and default_language not in get_available_language_codes():
         raise JsonableError(_("Invalid language '{}'").format(default_language))
-    if description is not None and len(description) > 1000:
-        return json_error(_("Organization description is too long."))
-    if name is not None and len(name) > Realm.MAX_REALM_NAME_LENGTH:
-        return json_error(_("Organization name is too long."))
     if authentication_methods is not None:
         if not user_profile.is_realm_owner:
             raise OrganizationOwnerRequired()
