@@ -775,7 +775,7 @@ on a dark background, and don't change the dark labels dark either. */
         }
 
         .close:hover {
-            opacity: 1.0;
+            opacity: 1;
         }
     }
 
