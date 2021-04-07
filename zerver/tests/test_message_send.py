@@ -119,7 +119,7 @@ class MessagePOSTTest(ZulipTestCase):
     def test_message_to_stream_with_nonexistent_id(self) -> None:
         cordelia = self.example_user("cordelia")
         bot = self.create_test_bot(
-            short_name="whatever",
+            full_name="whatever",
             user_profile=cordelia,
         )
         result = self.api_post(
@@ -178,7 +178,7 @@ class MessagePOSTTest(ZulipTestCase):
         # Admins and their owned bots can send to STREAM_POST_POLICY_ADMINS streams
         self._send_and_verify_message(admin_profile, stream_name)
         admin_owned_bot = self.create_test_bot(
-            short_name="whatever1",
+            bot_description="whatever1",
             full_name="whatever1",
             user_profile=admin_profile,
         )
@@ -194,7 +194,7 @@ class MessagePOSTTest(ZulipTestCase):
             "Only organization administrators can send to this stream.",
         )
         non_admin_owned_bot = self.create_test_bot(
-            short_name="whatever2",
+            bot_description="whatever2",
             full_name="whatever2",
             user_profile=non_admin_profile,
         )
@@ -355,7 +355,7 @@ class MessagePOSTTest(ZulipTestCase):
         # even if the admin is a new user
         self._send_and_verify_message(admin_profile, stream_name)
         admin_owned_bot = self.create_test_bot(
-            short_name="whatever1",
+            bot_description="whatever1",
             full_name="whatever1",
             user_profile=admin_profile,
         )
@@ -375,7 +375,7 @@ class MessagePOSTTest(ZulipTestCase):
             non_admin_profile, stream_name, "New members cannot send to this stream."
         )
         non_admin_owned_bot = self.create_test_bot(
-            short_name="whatever2",
+            bot_description="whatever2",
             full_name="whatever2",
             user_profile=non_admin_profile,
         )
@@ -417,7 +417,7 @@ class MessagePOSTTest(ZulipTestCase):
         # streams, even if the moderator is a new user
         self._send_and_verify_message(moderator_profile, stream_name)
         moderator_owned_bot = self.create_test_bot(
-            short_name="whatever3",
+            bot_description="whatever3",
             full_name="whatever3",
             user_profile=moderator_profile,
         )
@@ -1088,8 +1088,8 @@ class MessagePOSTTest(ZulipTestCase):
         reset_emails_in_zulip_realm()
         self.login("hamlet")
         bot_info = {
-            "full_name": "IRC bot",
-            "short_name": "irc",
+            "bot_description": "IRC bot",
+            "full_name": "irc",
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
@@ -1201,7 +1201,7 @@ class MessagePOSTTest(ZulipTestCase):
     def test_bot_can_send_to_owner_stream(self) -> None:
         cordelia = self.example_user("cordelia")
         bot = self.create_test_bot(
-            short_name="whatever",
+            full_name="whatever",
             user_profile=cordelia,
         )
 
@@ -2496,7 +2496,7 @@ class CheckMessageTest(ZulipTestCase):
         # This just test some defensive code.
         cordelia = self.example_user("cordelia")
         test_bot = self.create_test_bot(
-            short_name="test",
+            full_name="test",
             user_profile=cordelia,
         )
         content = "whatever"

@@ -1133,6 +1133,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         "self", null=True, on_delete=models.SET_NULL
     )
 
+    # Description field for the Bot
+    # Will contain information/notes about the bot's functionality
+    bot_description: Optional[str] = models.TextField(default="", null=True)
+
     # Each role has a superset of the permissions of the next higher
     # numbered role.  When adding new roles, leave enough space for
     # future roles to be inserted between currently adjacent

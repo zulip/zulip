@@ -132,6 +132,7 @@ class APIReturnValuesTablePreprocessor(Preprocessor):
                     if "properties" in element:
                         ans += self.render_table(element["properties"], spacing + 8)
                 continue
+            # print(return_value,":",return_values[return_value])
             description = return_values[return_value]["description"]
             data_type = generate_data_type(return_values[return_value])
             check_deprecated_consistency(return_values[return_value], description)

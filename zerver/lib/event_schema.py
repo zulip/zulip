@@ -524,6 +524,7 @@ bot_type = DictType(
         ("user_id", int),
         ("api_key", str),
         ("avatar_url", str),
+        ("bot_description", str),
         ("bot_type", int),
         ("default_all_public_streams", bool),
         ("default_events_register_stream", OptionalType(str)),
@@ -613,6 +614,7 @@ bot_type_for_update = DictType(
     optional_keys=[
         ("api_key", str),
         ("avatar_url", str),
+        ("bot_description", str),
         ("default_all_public_streams", bool),
         ("default_events_register_stream", OptionalType(str)),
         ("default_sending_stream", OptionalType(str)),

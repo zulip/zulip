@@ -557,6 +557,7 @@ bot_dict_fields: List[str] = [
     "default_sending_stream__name",
     "email",
     "full_name",
+    "bot_description",
     "id",
     "is_active",
     "realm_id",

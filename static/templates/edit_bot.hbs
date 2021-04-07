@@ -25,6 +25,11 @@
             </div>
             <div id="service_data">
             </div>
+            <div class="custom_user_field">
+                <label for="bot_description">{{t "Description" }}</label>
+                <textarea id="edit_bot_description" name="bot_description" maxlength="500" class="edit_bot_description">{{bot.bot_description}}</textarea>
+                <div><label for="edit_bot_description" generated="true" class="text-error"></label></div>
+            </div>
             <div class="avatar-section">
                 <label for="bot_avatar_file_input">Avatar</label>
                 <input type="file" name="bot_avatar_file_input" class="notvisible edit_bot_avatar_file_input" value="{{t 'Upload profile picture' }}" />

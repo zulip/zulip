@@ -94,7 +94,7 @@ class TestServiceBotBasics(ZulipTestCase):
         cordelia = self.example_user("cordelia")
 
         red_herring_bot = self.create_test_bot(
-            short_name="whatever",
+            full_name="whatever",
             user_profile=cordelia,
         )
 
@@ -143,7 +143,7 @@ class TestServiceBotBasics(ZulipTestCase):
         cordelia = self.example_user("cordelia")
 
         bot = self.create_test_bot(
-            short_name="whatever",
+            full_name="whatever",
             user_profile=cordelia,
         )
         wrong_bot_type = UserProfile.INCOMING_WEBHOOK_BOT
@@ -352,7 +352,8 @@ class TestServiceBotConfigHandler(ZulipTestCase):
         self.bot_profile = self.create_test_bot(
             "embedded",
             self.user_profile,
-            full_name="Embedded bot",
+            email="embedded-bot@zulip.testserver",
+            bot_description="Embedded bot",
             bot_type=UserProfile.EMBEDDED_BOT,
             service_name="helloworld",
         )

@@ -8,6 +8,7 @@ from django.utils.translation import ugettext as _
 from zerver.decorator import require_member_or_admin, require_realm_admin
 from zerver.forms import PASSWORD_TOO_WEAK_ERROR, CreateUserForm
 from zerver.lib.actions import (
+    check_change_bot_description,
     check_change_bot_full_name,
     check_change_full_name,
     check_remove_custom_profile_field_value,
@@ -44,7 +45,6 @@ from zerver.lib.users import (
     check_bot_creation_policy,
     check_bot_name_available,
     check_full_name,
-    check_short_name,
     check_valid_bot_config,
     check_valid_bot_type,
     check_valid_interface_type,
@@ -260,6 +260,7 @@ def patch_bot_backend(
     user_profile: UserProfile,
     bot_id: int,
     full_name: Optional[str] = REQ(default=None),
+    bot_description: Optional[str] = REQ(default=None),
     bot_owner_id: Optional[int] = REQ(validator=check_int, default=None),
     config_data: Optional[Dict[str, str]] = REQ(
         default=None, validator=check_dict(value_validator=check_string)
@@ -274,6 +275,8 @@ def patch_bot_backend(
 
     if full_name is not None:
         check_change_bot_full_name(bot, full_name, user_profile)
+    if bot_description is not None:
+        check_change_bot_description(bot, bot_description, user_profile)
     if bot_owner_id is not None:
         try:
             owner = get_user_profile_by_id_in_realm(bot_owner_id, user_profile.realm)
@@ -325,6 +328,8 @@ def patch_bot_backend(
 
     json_result = dict(
         full_name=bot.full_name,
+        bot_description=bot.bot_description,
+        email=bot.email,
         avatar_url=avatar_url(bot),
         service_interface=service_interface,
         service_payload_url=service_payload_url,
@@ -362,7 +367,7 @@ def add_bot_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     full_name_raw: str = REQ("full_name"),
-    short_name_raw: str = REQ("short_name"),
+    bot_description: Optional[str] = REQ("bot_description"),
     bot_type: int = REQ(validator=check_int, default=UserProfile.DEFAULT_BOT),
     payload_url: str = REQ(validator=check_url, default=""),
     service_name: Optional[str] = REQ(default=None),
@@ -376,11 +381,10 @@ def add_bot_backend(
     ),
     default_all_public_streams: Optional[bool] = REQ(validator=check_bool, default=None),
 ) -> HttpResponse:
-    short_name = check_short_name(short_name_raw)
-    if bot_type != UserProfile.INCOMING_WEBHOOK_BOT:
-        service_name = service_name or short_name
-    short_name += "-bot"
     full_name = check_full_name(full_name_raw)
+    if bot_type != UserProfile.INCOMING_WEBHOOK_BOT:
+        service_name = service_name or full_name
+    short_name = full_name + "-bot"
     try:
         email = f"{short_name}@{user_profile.realm.get_bot_domain()}"
     except InvalidFakeEmailDomain:
@@ -445,6 +449,7 @@ def add_bot_backend(
         full_name=full_name,
         bot_type=bot_type,
         bot_owner=user_profile,
+        bot_description=bot_description,
         avatar_source=avatar_source,
         default_sending_stream=default_sending_stream,
         default_events_register_stream=default_events_register_stream,
@@ -506,6 +511,7 @@ def get_bots_backend(request: HttpRequest, user_profile: UserProfile) -> HttpRes
 
         return dict(
             username=bot_profile.email,
+            bot_description=bot_profile.bot_description,
             full_name=bot_profile.full_name,
             api_key=api_key,
             avatar_url=avatar_url(bot_profile),

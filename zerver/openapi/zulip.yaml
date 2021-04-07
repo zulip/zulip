@@ -2674,7 +2674,8 @@ paths:
                                     {
                                       "email": "test-bot@zulip.testserver",
                                       "user_id": 36,
-                                      "full_name": "Foo Bot",
+                                      "full_name": "test",
+                                      "bot_description": "Test Bot",
                                       "bot_type": 1,
                                       "is_active": true,
                                       "api_key": "6hc6MC9mpNFvoo0gSOWnZEq4aJEn8UNK",
@@ -4784,7 +4785,7 @@ paths:
                               "bot_owner_id": 11,
                               "is_guest": false,
                               "date_joined": "2019-10-20T12:52:17.862053+00:00",
-                              "full_name": "Iago's Bot",
+                              "full_name": "iago",
                               "email": "iago-bot@zulipdev.com",
                               "is_active": true,
                               "avatar_url": "https://secure.gravatar.com/avatar/7328586831cdbb1627649bd857b1ee8c?d=identicon&version=1",
@@ -9889,6 +9890,7 @@ components:
           properties:
             user_id: {}
             full_name: {}
+            bot_description: {}
             api_key: {}
             default_sending_stream: {}
             default_events_register_stream: {}
@@ -9907,6 +9909,11 @@ components:
           type: string
           description: |
             The full name of the bot.
+        bot_description:
+          type: string
+          nullable: true
+          description: |
+            The description of the bot.
         api_key:
           type: string
           description: |
@@ -10004,6 +10011,11 @@ components:
               type: string
               description: |
                 The email of the bot.
+            bot_description:
+              type: string
+              nullable: true
+              description: |
+                The description of the bot.
             bot_type:
               type: integer
               nullable: true
@@ -10866,7 +10878,7 @@ components:
         full_name:
           type: string
           description: |
-            Full name of the user or bot, used for all display purposes.
+            Full name of the user or bot, used for all display purposes and generating email in case of bot.
         is_admin:
           type: boolean
           description: |

@@ -220,7 +220,8 @@ td .button {
         display: block;
     }
 
-    form {
+    form,
+    p {
         margin: 0;
     }
 
@@ -767,8 +768,6 @@ input[type="checkbox"] {
         border-radius: 4px;
         box-sizing: border-box;
 
-        overflow: auto;
-
         .details {
             display: inline-block;
             width: calc(100% - 75px);
@@ -806,6 +805,19 @@ input[type="checkbox"] {
 
     .bot_info {
         padding: 10px;
+    }
+
+    .description {
+        height: 60px;
+        width: 80%;
+        margin: 7px;
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+        box-shadow: 0 0 4px hsla(0, 0%, 0%, 0.5);
+
+        p {
+            margin: 0;
+        }
     }
 
     .field {
@@ -1404,7 +1416,7 @@ input[type="checkbox"] {
 
         textarea {
             width: 320px;
-            height: 80px;
+            height: 100px;
         }
 
         &:hover .remove_date {
@@ -1866,6 +1878,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     }
     #settings_page .custom_user_field textarea {
         width: calc(100% - 25px);
+        height: 100px;
     }
 }
 

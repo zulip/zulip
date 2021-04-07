@@ -470,7 +470,7 @@ INTERNAL_BOTS = [
     {
         "var_name": "NOTIFICATION_BOT",
         "email_template": "notification-bot@%s",
-        "name": "Notification Bot",
+        "name": "notification",
     },
     {
         "var_name": "EMAIL_GATEWAY_BOT",

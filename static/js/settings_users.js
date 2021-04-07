@@ -224,6 +224,7 @@ function bot_info(bot_user_id) {
 
     // It's always safe to show the fake email addresses for bot users
     info.display_email = bot_user.email;
+    info.bot_description = bot_user.bot_description;
 
     return info;
 }
@@ -285,7 +286,7 @@ section.bots.create_table = () => {
                 }
                 return (
                     item.full_name.toLowerCase().includes(value) ||
-                    item.display_email.toLowerCase().includes(value)
+                    item.bot_description.toLowerCase().includes(value)
                 );
             },
             onupdate: reset_scrollbar($bots_table),

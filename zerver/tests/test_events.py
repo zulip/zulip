@@ -1052,8 +1052,10 @@ class NormalActionsTest(BaseAction):
         # we don't have a stale UserProfile object with an old value
         # for email being passed into this next function.
         self.user_profile.refresh_from_db()
-        action = lambda: do_change_user_delivery_email(self.user_profile, "newhamlet@zulip.com")
-        events = self.verify_action(action, num_events=2, client_gravatar=False)
+        action = lambda: do_change_user_delivery_email(
+            self.user_profile, new_email="newhamlet@zulip.com"
+        )
+        events = self.verify_action(action=action, num_events=2, client_gravatar=False)
 
         check_realm_user_update("events[0]", events[0], "delivery_email")
         check_realm_user_update("events[1]", events[1], "avatar_fields")
@@ -1388,7 +1390,7 @@ class NormalActionsTest(BaseAction):
 
         action = lambda: self.create_bot(
             "test_outgoing_webhook",
-            full_name="Outgoing Webhook Bot",
+            bot_description="Outgoing Webhook Bot",
             payload_url=orjson.dumps("https://foo.bar.com").decode(),
             interface_type=Service.GENERIC,
             bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
@@ -1400,7 +1402,7 @@ class NormalActionsTest(BaseAction):
 
         action = lambda: self.create_bot(
             "test_embedded",
-            full_name="Embedded Bot",
+            bot_description="Embedded Bot",
             service_name="helloworld",
             config_data=orjson.dumps({"foo": "bar"}).decode(),
             bot_type=UserProfile.EMBEDDED_BOT,
@@ -1410,7 +1412,7 @@ class NormalActionsTest(BaseAction):
 
     def test_change_bot_full_name(self) -> None:
         bot = self.create_bot("test")
-        action = lambda: do_change_full_name(bot, "New Bot Name", self.user_profile)
+        action = lambda: do_change_full_name(bot, "new-bot-name", self.user_profile)
         events = self.verify_action(action, num_events=2)
         check_realm_bot_update("events[1]", events[1], "full_name")
 
@@ -1489,7 +1491,7 @@ class NormalActionsTest(BaseAction):
 
         self.user_profile = self.example_user("aaron")
         owner = self.example_user("hamlet")
-        bot = self.create_bot("test1", full_name="Test1 Testerson")
+        bot = self.create_bot("test1", bot_description="Test1 Testerson")
         action = lambda: do_change_bot_owner(bot, owner, self.user_profile)
         events = self.verify_action(action, num_events=2)
         check_realm_bot_delete("events[0]", events[0])
@@ -1497,7 +1499,7 @@ class NormalActionsTest(BaseAction):
 
         previous_owner = self.example_user("aaron")
         self.user_profile = self.example_user("hamlet")
-        bot = self.create_test_bot("test2", previous_owner, full_name="Test2 Testerson")
+        bot = self.create_test_bot("test2", previous_owner, bot_description="Test2 Testerson")
         action = lambda: do_change_bot_owner(bot, self.user_profile, previous_owner)
         events = self.verify_action(action, num_events=2)
         check_realm_bot_add("events[0]", events[0])
@@ -1508,7 +1510,7 @@ class NormalActionsTest(BaseAction):
         bot = self.create_test_bot(
             "test",
             self.user_profile,
-            full_name="Test Bot",
+            bot_description="Test Bot",
             bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
             payload_url=orjson.dumps("http://hostname.domain2.com").decode(),
             interface_type=Service.GENERIC,
@@ -1574,7 +1576,7 @@ class NormalActionsTest(BaseAction):
             fields = dict(
                 sender_email="notification-bot@zulip.com",
                 display_recipient=new_name,
-                sender_full_name="Notification Bot",
+                sender_full_name="notification",
                 is_me_message=False,
                 type="stream",
                 client="Internal",
