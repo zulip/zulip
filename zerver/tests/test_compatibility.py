@@ -1,5 +1,6 @@
 from unittest import mock
 
+from zerver.context_processors import get_zulip_version_details_to_show
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.views.compatibility import find_mobile_os, is_outdated_desktop_app, version_lt
 
@@ -66,6 +67,17 @@ class VersionTest(ZulipTestCase):
         for expected_, user_agent in self.mobile_os_data:
             expected = None if expected_ == "None" else expected_
             self.assertEqual(find_mobile_os(user_agent), expected, msg=user_agent)
+
+    versions = {
+        "4.0-dev+git": ("Zulip 4.0-dev", "Zulip latest from git"),
+        "4.0+stable": ("Zulip 4.0", "Zulip stable"),
+        "4.0": ("Zulip 4.0", "Zulip"),
+    }
+
+    def test_zulip_version_name(self) -> None:
+        for key, expected in self.versions.items():
+            version_details = get_zulip_version_details_to_show(key)
+            self.assertEqual(version_details, expected)
 
 
 class CompatibilityTest(ZulipTestCase):

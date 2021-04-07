@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 from urllib.parse import urljoin
 
 from django.conf import settings
@@ -41,6 +41,16 @@ def common_context(user: UserProfile) -> Dict[str, Any]:
         "external_host": settings.EXTERNAL_HOST,
         "user_name": user.full_name,
     }
+
+
+def get_zulip_version_details_to_show(zulip_version: str) -> Tuple[str, str]:
+    if zulip_version.endswith("+git"):
+        return ("Zulip " + zulip_version[:-4], "Zulip latest from git")
+
+    if zulip_version.endswith("+stable"):
+        return ("Zulip " + zulip_version[:-7], "Zulip stable")
+
+    return ("Zulip " + zulip_version, "Zulip")
 
 
 def get_realm_from_request(request: HttpRequest) -> Optional[Realm]:
@@ -129,6 +139,8 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
     # get the same result.
     platform = get_client_name(request)
 
+    ZULIP_VERSION_NAME, ZULIP_VERSION_SHOW = get_zulip_version_details_to_show(ZULIP_VERSION)
+
     context = {
         "root_domain_landing_page": settings.ROOT_DOMAIN_LANDING_PAGE,
         "custom_logo_url": settings.CUSTOM_LOGO_URL,
@@ -154,6 +166,8 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         "password_min_length": settings.PASSWORD_MIN_LENGTH,
         "password_min_guesses": settings.PASSWORD_MIN_GUESSES,
         "zulip_version": ZULIP_VERSION,
+        "zulip_version_name": ZULIP_VERSION_NAME,
+        "zulip_version_show": ZULIP_VERSION_SHOW,
         "user_is_authenticated": user_is_authenticated,
         "settings_path": settings_path,
         "secrets_path": secrets_path,
