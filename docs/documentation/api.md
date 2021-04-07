@@ -279,6 +279,12 @@ above.
    make sure that copy-pasting the code in your examples works, and
    post an example of the output in the pull request.
 
+1. Document the new API in `templates/zerver/api/changelog.md` and
+   bump the `API_FEATURE_LEVEL` in `version.py`. Also, make sure to
+   add a `**Changes**` entry in the description of the new API/event
+   in `zerver/openapi/zulip.yaml`, which mentions the API feature level
+   at which they were added.
+
 [javascript-examples]: https://github.com/zulip/zulip-js/tree/master/examples
 
 ## Why a custom system?
