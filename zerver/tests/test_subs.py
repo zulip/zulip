@@ -1838,9 +1838,7 @@ class StreamAdminTest(ZulipTestCase):
             {"principals": orjson.dumps([cordelia_user_id]).decode()},
             allow_fail=True,
         )
-        self.assert_json_error(
-            result, "Your account is too new to modify other users' subscriptions."
-        )
+        self.assert_json_error(result, "Insufficient permission")
 
         # Anyone can invite users..
         do_set_realm_property(hamlet_user.realm, "waiting_period_threshold", 0, acting_user=None)
@@ -3344,7 +3342,7 @@ class SubscriptionAPITest(ZulipTestCase):
             {"principals": orjson.dumps([invitee_user_id]).decode()},
             allow_fail=True,
         )
-        self.assert_json_error(result, "Only administrators can modify other users' subscriptions.")
+        self.assert_json_error(result, "Insufficient permission")
 
         do_change_user_role(self.test_user, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         self.common_subscribe_to_streams(
@@ -3364,9 +3362,7 @@ class SubscriptionAPITest(ZulipTestCase):
             {"principals": orjson.dumps([invitee_user_id]).decode()},
             allow_fail=True,
         )
-        self.assert_json_error(
-            result, "Only administrators and moderators can modify other users' subscriptions."
-        )
+        self.assert_json_error(result, "Insufficient permission")
 
         do_change_user_role(self.test_user, UserProfile.ROLE_MODERATOR, acting_user=None)
         self.common_subscribe_to_streams(
@@ -3407,9 +3403,7 @@ class SubscriptionAPITest(ZulipTestCase):
             {"principals": orjson.dumps([invitee_user_id]).decode()},
             allow_fail=True,
         )
-        self.assert_json_error(
-            result, "Your account is too new to modify other users' subscriptions."
-        )
+        self.assert_json_error(result, "Insufficient permission")
 
         do_set_realm_property(realm, "waiting_period_threshold", 0, acting_user=None)
         self.common_subscribe_to_streams(
