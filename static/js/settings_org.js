@@ -778,11 +778,10 @@ export function build_page() {
                 ).seconds;
             }
         } else if (subsection === "notifications") {
-            data.notifications_stream_id = JSON.stringify(
-                Number.parseInt(notifications_stream_widget.value(), 10),
-            );
-            data.signup_notifications_stream_id = JSON.stringify(
-                Number.parseInt(signup_notifications_stream_widget.value(), 10),
+            data.notifications_stream_id = Number.parseInt(notifications_stream_widget.value(), 10);
+            data.signup_notifications_stream_id = Number.parseInt(
+                signup_notifications_stream_widget.value(),
+                10,
             );
         } else if (subsection === "message_retention") {
             const message_retention_setting_value = $("#id_realm_message_retention_setting").val();
