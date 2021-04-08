@@ -5342,13 +5342,13 @@ def do_update_embedded_data(
 
     event["message_ids"] = update_to_dict_cache(changed_messages)
 
-    def user_info(um: UserMessage) -> Dict[str, Any]:
-        return {
-            "id": um.user_profile_id,
-            "flags": um.flags_list(),
-        }
+    users = do_get_event_receivers(
+        message,
+        lambda um: {"id": um.user_profile_id, "flags": um.flags_list()},
+        lambda sub: {"id": sub, "flags": []},
+    )
 
-    send_event(user_profile.realm, event, list(map(user_info, ums)))
+    send_event(user_profile.realm, event, users)
 
 
 class DeleteMessagesEvent(TypedDict, total=False):

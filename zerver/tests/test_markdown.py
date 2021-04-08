@@ -2,7 +2,7 @@ import copy
 import os
 import re
 from textwrap import dedent
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Set, Tuple
 from unittest import mock
 
 import orjson
@@ -13,10 +13,13 @@ from markdown import Markdown
 from zerver.lib.actions import (
     change_user_is_active,
     do_add_alert_words,
+    do_change_stream_invite_only,
+    do_change_stream_web_public,
     do_create_realm,
     do_remove_realm_emoji,
     do_set_realm_property,
     do_set_user_display_setting,
+    do_update_embedded_data,
 )
 from zerver.lib.alert_words import get_alert_word_automaton
 from zerver.lib.create_user import create_user
@@ -44,6 +47,7 @@ from zerver.lib.mention import possible_mentions, possible_user_group_mentions
 from zerver.lib.message import render_markdown
 from zerver.lib.request import JsonableError
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import tornado_redirected_to_list
 from zerver.lib.tex import render_tex
 from zerver.lib.types import LinkifierDict
 from zerver.lib.user_groups import create_user_group
@@ -277,6 +281,51 @@ class MarkdownMiscTest(ZulipTestCase):
         content = "@**King Hamlet** @**Cordelia lear** @**all**"
         mention_data = MentionData(realm.id, content)
         self.assertTrue(mention_data.message_has_wildcards())
+
+    def test_update_embedded_data_event_receivers(self) -> None:
+        def test_update_message_event(
+            sender: UserProfile, message: Message, exp_receivers: Set[int]
+        ) -> None:
+            events: List[Mapping[str, Any]] = []
+            with tornado_redirected_to_list(events):
+                do_update_embedded_data(sender, message, None, None)
+            self.assert_length(events, 1)
+            event = events[0]["event"]
+            self.assertEqual(event["type"], "update_message")
+            self.assertEqual(exp_receivers, {usr["id"] for usr in events[0]["users"]})
+
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        polonius = self.example_user("polonius")
+
+        # Test `invite_only` streams with `!history_public_to_subscribers` and `!is_web_public`
+        stream = self.make_stream(
+            "test_update_data_stream", invite_only=True, history_public_to_subscribers=False
+        )
+        self.subscribe(iago, stream.name)
+        message_before_id = self.send_stream_message(
+            iago, "test_update_data_stream", "before subscription"
+        )
+        message_before = Message.objects.get(id=message_before_id)
+        self.subscribe(hamlet, stream.name)
+        self.subscribe(polonius, stream.name)
+        message_after_id = self.send_stream_message(
+            iago, "test_update_data_stream", "after subscription"
+        )
+        message_after = Message.objects.get(id=message_after_id)
+
+        # Hamlet and Polonius joined after the message was sent, and
+        # so only Iago should receive the event.
+        test_update_message_event(iago, message_before, {iago.id})
+        test_update_message_event(iago, message_after, {iago.id, hamlet.id, polonius.id})
+
+        # Make stream history public to subscribers
+        do_change_stream_invite_only(stream, False, history_public_to_subscribers=True)
+        test_update_message_event(iago, message_before, {iago.id, hamlet.id})
+
+        # Make stream web_public as well.
+        do_change_stream_web_public(stream, True)
+        test_update_message_event(iago, message_before, {iago.id, hamlet.id, polonius.id})
 
     def test_invalid_katex_path(self) -> None:
         with self.settings(DEPLOY_ROOT="/nonexistent"):
