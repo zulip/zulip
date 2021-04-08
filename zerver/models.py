@@ -1554,6 +1554,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             "create_stream_policy",
             "invite_to_stream_policy",
             "invite_to_realm_policy",
+            "move_messages_between_streams_policy",
         ]:
             raise AssertionError("Invalid policy")
 
@@ -1587,6 +1588,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     def can_invite_others_to_realm(self) -> bool:
         return self.has_permission("invite_to_realm_policy")
+
+    def can_move_messages_between_streams(self) -> bool:
+        return self.has_permission("move_messages_between_streams_policy")
 
     def can_access_public_streams(self) -> bool:
         return not (self.is_guest or self.realm.is_zephyr_mirror_realm)

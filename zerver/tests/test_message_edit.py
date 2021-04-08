@@ -1539,6 +1539,13 @@ class EditMessageTest(ZulipTestCase):
             to_invite_only=False,
         )
 
+    def test_can_move_messages_between_streams(self) -> None:
+        def validation_func(user_profile: UserProfile) -> bool:
+            user_profile.refresh_from_db()
+            return user_profile.can_move_messages_between_streams()
+
+        self.check_has_permission_policies("move_messages_between_streams_policy", validation_func)
+
 
 class DeleteMessageTest(ZulipTestCase):
     def test_delete_message_invalid_request_format(self) -> None:
