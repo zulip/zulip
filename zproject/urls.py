@@ -24,7 +24,6 @@ from zerver.views.auth import (
     api_dev_fetch_api_key,
     api_dev_list_users,
     api_fetch_api_key,
-    api_fetch_google_client_id,
     api_get_server_settings,
     dev_direct_login,
     json_fetch_api_key,
@@ -723,8 +722,6 @@ v1_api_mobile_patterns = [
     path("dev_fetch_api_key", api_dev_fetch_api_key),
     # This is for fetching the emails of the admins and the users.
     path("dev_list_users", api_dev_list_users),
-    # Used to present the GOOGLE_CLIENT_ID to mobile apps
-    path("fetch_google_client_id", api_fetch_google_client_id),
 ]
 urls += [
     path("api/v1/", include(v1_api_mobile_patterns)),
