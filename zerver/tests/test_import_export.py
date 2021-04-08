@@ -15,6 +15,7 @@ from zerver.lib.actions import (
     do_change_plan_type,
     do_create_user,
     do_deactivate_user,
+    do_mute_user,
     do_update_user_presence,
 )
 from zerver.lib.avatar_hash import user_avatar_path
@@ -43,6 +44,7 @@ from zerver.models import (
     Huddle,
     Message,
     MutedTopic,
+    MutedUser,
     Reaction,
     Realm,
     RealmAuditLog,
@@ -810,6 +812,14 @@ class ImportExportTest(ZulipTestCase):
             topic_name="Verona2",
         )
 
+        # data to test import of muted users
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        do_mute_user(hamlet, cordelia)
+        do_mute_user(cordelia, hamlet)
+        do_mute_user(cordelia, othello)
+
         do_update_user_presence(
             sample_user, get_client("website"), timezone_now(), UserPresence.ACTIVE
         )
@@ -992,6 +1002,16 @@ class ImportExportTest(ZulipTestCase):
             return topic_names
 
         assert_realm_values(get_muted_topics)
+
+        def get_muted_users(r: Realm) -> Set[Tuple[int, int]]:
+            mute_objects = MutedUser.objects.all()
+            muter_mutee_pairs = {
+                (mute_object.user_profile.id, mute_object.muted_user.id)
+                for mute_object in mute_objects
+            }
+            return muter_mutee_pairs
+
+        assert_realm_values(get_muted_users)
 
         # test usergroups
         assert_realm_values(
