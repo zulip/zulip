@@ -1093,11 +1093,13 @@ class NormalActionsTest(BaseAction):
     def test_change_pin_stream(self) -> None:
         stream = get_stream("Denmark", self.user_profile.realm)
         sub = get_subscription(stream.name, self.user_profile)
-        do_change_subscription_property(self.user_profile, sub, stream, "pin_to_top", False)
+        do_change_subscription_property(
+            self.user_profile, sub, stream, "pin_to_top", False, acting_user=None
+        )
         for pinned in (True, False):
             events = self.verify_action(
                 lambda: do_change_subscription_property(
-                    self.user_profile, sub, stream, "pin_to_top", pinned
+                    self.user_profile, sub, stream, "pin_to_top", pinned, acting_user=None
                 )
             )
             check_subscription_update(
@@ -1116,7 +1118,7 @@ class NormalActionsTest(BaseAction):
             for value in (True, False):
                 events = self.verify_action(
                     lambda: do_change_subscription_property(
-                        self.user_profile, sub, stream, setting_name, value
+                        self.user_profile, sub, stream, setting_name, value, acting_user=None
                     ),
                     notification_settings_null=True,
                 )
@@ -1130,7 +1132,7 @@ class NormalActionsTest(BaseAction):
             for value in (True, False):
                 events = self.verify_action(
                     lambda: do_change_subscription_property(
-                        self.user_profile, sub, stream, setting_name, value
+                        self.user_profile, sub, stream, setting_name, value, acting_user=None
                     )
                 )
                 check_subscription_update(
