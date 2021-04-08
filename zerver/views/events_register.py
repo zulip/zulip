@@ -1,10 +1,11 @@
 from typing import Dict, Iterable, Optional, Sequence
 
 from django.http import HttpRequest, HttpResponse
+from django.utils.translation import ugettext as _
 
 from zerver.lib.events import do_events_register
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.response import json_success
+from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_bool, check_dict, check_list, check_string
 from zerver.models import Stream, UserProfile
 
@@ -67,6 +68,9 @@ def events_register_backend(
     ),
     queue_lifespan_secs: int = REQ(converter=int, default=0, documentation_pending=True),
 ) -> HttpResponse:
+    if all_public_streams and not user_profile.can_access_public_streams():
+        return json_error(_("User not authorized for this query"))
+
     all_public_streams = _default_all_public_streams(user_profile, all_public_streams)
     narrow = _default_narrow(user_profile, narrow)
 

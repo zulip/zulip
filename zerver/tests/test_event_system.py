@@ -132,6 +132,35 @@ class EventsEndpointTest(ZulipTestCase):
         self.assertEqual(result_dict["realm_emoji"], [])
         self.assertEqual(result_dict["queue_id"], "15:13")
 
+    def test_events_register_endpoint_all_public_streams_access(self) -> None:
+        guest_user = self.example_user("polonius")
+        normal_user = self.example_user("hamlet")
+        self.assertEqual(guest_user.role, UserProfile.ROLE_GUEST)
+        self.assertEqual(normal_user.role, UserProfile.ROLE_MEMBER)
+
+        with mock.patch("zerver.views.events_register.do_events_register", return_value={}):
+            result = self.api_post(normal_user, "/json/register", dict(all_public_streams="true"))
+        self.assert_json_success(result)
+
+        with mock.patch("zerver.views.events_register.do_events_register", return_value={}):
+            result = self.api_post(guest_user, "/json/register", dict(all_public_streams="true"))
+        self.assert_json_error(result, "User not authorized for this query")
+
+    def test_events_get_events_endpoint_guest_cant_use_all_public_streams_param(self) -> None:
+        """
+        This test is meant to execute the very beginning of the codepath
+        to ensure guest users are immediately disallowed to use the
+        all_public_streams param. Deeper testing is hard (and not necessary for this case)
+        due to the codepath expecting AsyncDjangoHandler to be attached to the request,
+        which doesn't happen in our test setup.
+        """
+
+        guest_user = self.example_user("polonius")
+        self.assertEqual(guest_user.role, UserProfile.ROLE_GUEST)
+
+        result = self.api_get(guest_user, "/api/v1/events", dict(all_public_streams="true"))
+        self.assert_json_error(result, "User not authorized for this query")
+
     def test_tornado_endpoint(self) -> None:
 
         # This test is mostly intended to get minimal coverage on
