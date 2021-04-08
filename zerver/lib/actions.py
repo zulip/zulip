@@ -4196,7 +4196,7 @@ def do_change_default_events_register_stream(
 
 
 def do_change_default_all_public_streams(
-    user_profile: UserProfile, value: bool, acting_user: Optional[UserProfile] = None
+    user_profile: UserProfile, value: bool, *, acting_user: Optional[UserProfile]
 ) -> None:
     old_value = user_profile.default_all_public_streams
     user_profile.default_all_public_streams = value
