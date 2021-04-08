@@ -563,6 +563,20 @@ class RealmTest(ZulipTestCase):
         result = self.client_patch("/json/realm", req)
         self.assert_json_error(result, "Invalid invite_to_realm_policy")
 
+    def test_change_move_messages_between_streams_policy(self) -> None:
+        # We need an admin user.
+        self.login("iago")
+        req = dict(
+            move_messages_between_streams_policy=orjson.dumps(Realm.POLICY_ADMINS_ONLY).decode()
+        )
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+
+        invalid_value = 10
+        req = dict(move_messages_between_streams_policy=orjson.dumps(invalid_value).decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_error(result, "Invalid move_messages_between_streams_policy")
+
     def test_user_group_edit_policy(self) -> None:
         # We need an admin user.
         self.login("iago")
@@ -624,6 +638,7 @@ class RealmTest(ZulipTestCase):
             message_content_delete_limit_seconds=-10,
             wildcard_mention_policy=10,
             invite_to_realm_policy=10,
+            move_messages_between_streams_policy=10,
         )
 
         # We need an admin user.
@@ -897,6 +912,12 @@ class RealmAPITest(ZulipTestCase):
             ],
             message_content_delete_limit_seconds=[1000, 1100, 1200],
             invite_to_realm_policy=[
+                Realm.POLICY_ADMINS_ONLY,
+                Realm.POLICY_MEMBERS_ONLY,
+                Realm.POLICY_FULL_MEMBERS_ONLY,
+                Realm.POLICY_MODERATORS_ONLY,
+            ],
+            move_messages_between_streams_policy=[
                 Realm.POLICY_ADMINS_ONLY,
                 Realm.POLICY_MEMBERS_ONLY,
                 Realm.POLICY_FULL_MEMBERS_ONLY,

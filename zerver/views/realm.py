@@ -96,6 +96,9 @@ def update_realm(
     invite_to_stream_policy: Optional[int] = REQ(
         json_validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
     ),
+    move_messages_between_streams_policy: Optional[int] = REQ(
+        json_validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
+    ),
     user_group_edit_policy: Optional[int] = REQ(
         json_validator=check_int_in(Realm.USER_GROUP_EDIT_POLICY_TYPES), default=None
     ),

@@ -10,6 +10,12 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 56**
+
+* [`POST /register`](/api/register-queue): Added a new setting
+  `move_messages_between_streams_policy` for controlling who can
+  move messages between streams.
+
 **Feature level 55**
 
 * [`POST /register`](/api/register-queue): Added `realm_giphy_rating`

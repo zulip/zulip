@@ -272,6 +272,11 @@ class Realm(models.Model):
     # Who in the organization is allowed to invite other users to streams.
     invite_to_stream_policy: int = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
 
+    # Who in the organization is allowed to move messages between streams.
+    move_messages_between_streams_policy: int = models.PositiveSmallIntegerField(
+        default=POLICY_ADMINS_ONLY
+    )
+
     USER_GROUP_EDIT_POLICY_MEMBERS = 1
     USER_GROUP_EDIT_POLICY_ADMINS = 2
     user_group_edit_policy: int = models.PositiveSmallIntegerField(
@@ -492,6 +497,7 @@ class Realm(models.Model):
         bot_creation_policy=int,
         create_stream_policy=int,
         invite_to_stream_policy=int,
+        move_messages_between_streams_policy=int,
         default_language=str,
         default_twenty_four_hour_time=bool,
         description=str,
