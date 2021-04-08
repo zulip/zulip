@@ -355,7 +355,9 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             properties: Dict[str, bool],
         ) -> None:
             for property_name, value in properties.items():
-                do_change_subscription_property(user_profile, sub, stream, property_name, value)
+                do_change_subscription_property(
+                    user_profile, sub, stream, property_name, value, acting_user=None
+                )
 
         def allocate_event_queue() -> ClientDescriptor:
             result = self.tornado_call(

@@ -3704,7 +3704,8 @@ def do_change_subscription_property(
     stream: Stream,
     property_name: str,
     value: Any,
-    acting_user: Optional[UserProfile] = None,
+    *,
+    acting_user: Optional[UserProfile],
 ) -> None:
     database_property_name = property_name
     event_property_name = property_name
