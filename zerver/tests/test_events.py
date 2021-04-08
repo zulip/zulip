@@ -1462,11 +1462,11 @@ class NormalActionsTest(BaseAction):
         bot = self.create_bot("test")
         stream = get_stream("Rome", bot.realm)
 
-        action = lambda: do_change_default_sending_stream(bot, stream)
+        action = lambda: do_change_default_sending_stream(bot, stream, acting_user=None)
         events = self.verify_action(action)
         check_realm_bot_update("events[0]", events[0], "default_sending_stream")
 
-        action = lambda: do_change_default_sending_stream(bot, None)
+        action = lambda: do_change_default_sending_stream(bot, None, acting_user=None)
         events = self.verify_action(action)
         check_realm_bot_update("events[0]", events[0], "default_sending_stream")
 
