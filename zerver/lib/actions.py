@@ -3051,7 +3051,7 @@ def internal_send_huddle_message(
     return message_ids[0]
 
 
-def pick_color(user_profile: UserProfile, used_colors: Set[str]) -> str:
+def pick_color(user_profile: UserProfile, used_colors: Set[Optional[str]]) -> str:
     # These colors are shared with the palette in subs.js.
     available_colors = [s for s in STREAM_ASSIGNMENT_COLORS if s not in used_colors]
 
@@ -5894,10 +5894,24 @@ def build_stream_dict_for_sub(
         elif field_name == "date_created":
             result["date_created"] = datetime_to_timestamp(stream[field_name])
             continue
+
+        # Assigning the stream-level color to subscription color
+        # if Stream-level color is not None and User's personal color choice
+        # (Subscription color) is None, so that clients (web/mobile/terminal)
+        # that are just doing display don't need to know about the internals
+        # of how default colors are implemented. and can follow the current flow.
+
+        elif field_name == "default_color":
+            if stream["default_color"] and sub["color"] is None:  # nocoverage
+                result["color"] = stream["default_color"]
         result[field_name] = stream[field_name]
 
     # Copy Subscription.API_FIELDS.
     for field_name in Subscription.API_FIELDS:
+        # if color is already present in result,
+        # it means that default_color was assigned to it
+        if result.get(field_name, None):  # nocoverage
+            continue
         result[field_name] = sub[field_name]
 
     # Backwards-compatibility for clients that haven't been
@@ -5936,6 +5950,14 @@ def build_stream_dict_for_never_sub(
         elif field_name == "date_created":
             result["date_created"] = datetime_to_timestamp(stream[field_name])
             continue
+
+        # Assigning the stream-level color to `color` field
+        # This make sures that the Never subscribed streams are displayed in the
+        # stream-level color before user subscription.
+        elif field_name == "default_color":
+            if stream["default_color"]:  # nocoverage
+                result["color"] = stream["default_color"]
+
         result[field_name] = stream[field_name]
 
     result["stream_weekly_traffic"] = get_average_weekly_stream_traffic(

@@ -62,12 +62,13 @@ basic_stream_fields = [
     ("stream_id", int),
     ("stream_post_policy", int),
     ("date_created", int),
+    ("default_color", OptionalType(str)),
 ]
 
 subscription_fields: Sequence[Tuple[str, object]] = [
     *basic_stream_fields,
     ("audible_notifications", OptionalType(bool)),
-    ("color", str),
+    ("color", OptionalType(str)),
     ("desktop_notifications", OptionalType(bool)),
     ("email_address", str),
     ("email_notifications", OptionalType(bool)),

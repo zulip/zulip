@@ -490,6 +490,7 @@ paths:
                                         "name": "test_stream",
                                         "stream_id": 9,
                                         "description": "",
+                                        "default_color": null,
                                         "rendered_description": "",
                                         "invite_only": false,
                                         "is_web_public": false,
@@ -953,6 +954,7 @@ paths:
                                       {
                                         "name": "private",
                                         "stream_id": 12,
+                                        "default_color": null,
                                         "description": "",
                                         "rendered_description": "",
                                         "invite_only": true,
@@ -998,6 +1000,7 @@ paths:
                                       {
                                         "name": "private",
                                         "stream_id": 12,
+                                        "default_color": null,
                                         "description": "",
                                         "rendered_description": "",
                                         "invite_only": true,
@@ -7256,6 +7259,14 @@ paths:
                                 stream_id: {}
                                 name: {}
                                 description: {}
+                                color:
+                                  type: string
+                                  nullable: true
+                                  description: |
+                                    Never subscribed streams have no colors assigned yet
+                                    so we inherit the `default_color` of stream here and
+                                    if default_color of stream is None the current process
+                                    of random color assignment is followed.
                                 date_created: {}
                                 invite_only: {}
                                 rendered_description: {}
@@ -9422,6 +9433,7 @@ paths:
                                 stream_id: {}
                                 name: {}
                                 description: {}
+                                default_color: {}
                                 date_created: {}
                                 invite_only: {}
                                 rendered_description: {}
@@ -10195,6 +10207,7 @@ components:
             stream_id: {}
             name: {}
             description: {}
+            default_color: {}
             date_created: {}
             invite_only: {}
             rendered_description: {}
@@ -10224,6 +10237,14 @@ components:
             The short description of the stream in text/markdown format,
             intended to be used to prepopulate UI for editing a stream's
             description.
+        default_color:
+          type: string
+          nullable: true
+          description: |
+            The default color of a stream.
+
+            A null value means the user's personal color of a stream would be inherited
+            from the respective subscription.
         date_created:
           type: integer
           description: |
@@ -10682,6 +10703,14 @@ components:
             The short description of a stream in text/markdown format,
             intended to be used to prepopulate UI for editing a stream's
             description.
+        default_color:
+          type: string
+          nullable: true
+          description: |
+            The default color of a stream.
+
+            A null value means the user's personal color of a stream would be inherited
+            from the respective subscription.
         rendered_description:
           type: string
           description: |
