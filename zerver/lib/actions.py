@@ -4512,7 +4512,8 @@ def do_change_notification_settings(
     user_profile: UserProfile,
     name: str,
     value: Union[bool, int, str],
-    acting_user: Optional[UserProfile] = None,
+    *,
+    acting_user: Optional[UserProfile],
 ) -> None:
     """Takes in a UserProfile object, the name of a global notification
     preference to update, and the value to update to
