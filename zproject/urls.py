@@ -129,7 +129,6 @@ from zerver.views.registration import (
     check_prereg_key_and_redirect,
     create_realm,
     find_account,
-    generate_204,
     realm_redirect,
 )
 from zerver.views.report import (
@@ -248,8 +247,6 @@ if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
 v1_api_and_json_patterns = [
     # realm-level calls
     rest_path("realm", PATCH=update_realm),
-    # Returns a 204, used by desktop app to verify connectivity status
-    path("generate_204", generate_204),
     path("realm/subdomain/<subdomain>", check_subdomain_available),
     # realm/domains -> zerver.views.realm_domains
     rest_path("realm/domains", GET=list_realm_domains, POST=create_realm_domain),
