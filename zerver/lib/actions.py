@@ -4010,7 +4010,7 @@ def do_delete_avatar_image(user: UserProfile, *, acting_user: Optional[UserProfi
 
 
 def do_change_icon_source(
-    realm: Realm, icon_source: str, acting_user: Optional[UserProfile] = None
+    realm: Realm, icon_source: str, *, acting_user: Optional[UserProfile]
 ) -> None:
     realm.icon_source = icon_source
     realm.icon_version += 1
