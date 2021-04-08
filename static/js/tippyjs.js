@@ -45,6 +45,7 @@ export function initialize() {
     // message reaction tooltip showing who reacted.
     delegate("body", {
         target: ".message_reaction",
+        placement: "bottom",
         onShow(instance) {
             const elem = $(instance.reference);
             const local_id = elem.attr("data-reaction-id");
