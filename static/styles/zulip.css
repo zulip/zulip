@@ -2358,6 +2358,12 @@ div.topic_edit_spinner .loading_indicator_spinner {
 }
 
 #move_topic_modal {
+    /* Ensure that the dropdown can overflow the modal. */
+    overflow: visible;
+    .modal-body {
+        overflow: visible;
+    }
+
     .stream_header_colorblock {
         margin-bottom: 20px;
     }
