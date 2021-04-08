@@ -4004,7 +4004,7 @@ def do_change_avatar_fields(
         notify_avatar_url_change(user_profile)
 
 
-def do_delete_avatar_image(user: UserProfile, acting_user: Optional[UserProfile] = None) -> None:
+def do_delete_avatar_image(user: UserProfile, *, acting_user: Optional[UserProfile]) -> None:
     do_change_avatar_fields(user, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=acting_user)
     delete_avatar_image(user)
 
