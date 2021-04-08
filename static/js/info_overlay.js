@@ -220,12 +220,25 @@ export function show(target) {
             overlay,
             on_close() {
                 browser_history.exit_overlay();
+                bringFocus();
             },
         });
     }
 
     if (target) {
         toggler.goto(target);
+    }
+}
+export function bringFocus() {
+    // Check if compose box is open. If yes transfer focus there else, if
+    // There is edit_text_area open, transfer focus there only when markdown
+    // Help overlay was closed.
+    if ($("#message-formatting").css("display") !== "none") {
+        if ($(".message_edit_content")[0]) {
+            $(`.message_edit_content`).trigger("focus");
+        } else if ($(".new_message_textarea")[0]) {
+            $(`.new_message_textarea`).trigger("focus");
+        }
     }
 }
 export function maybe_show_keyboard_shortcuts() {

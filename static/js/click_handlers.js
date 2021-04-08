@@ -360,12 +360,13 @@ export function initialize() {
     $("body").on("click", ".message_edit_form .undo_markdown_preview", (e) => {
         e.preventDefault();
         const row = rows.get_closest_row(e.target);
-        row.find(".message_edit_content").show();
+        const $msg_edit_content = row.find(".message_edit_content");
+        $msg_edit_content.show();
         row.find(".undo_markdown_preview").hide();
         row.find(".preview_message_area").hide();
         row.find(".preview_content").empty();
         row.find(".markdown_preview").show();
-        row.find("#message_edit_content").trigger("focus");
+        $msg_edit_content.trigger("focus");
     });
 
     // TOPIC MUTING
