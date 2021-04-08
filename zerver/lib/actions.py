@@ -3984,7 +3984,8 @@ def do_change_avatar_fields(
     user_profile: UserProfile,
     avatar_source: str,
     skip_notify: bool = False,
-    acting_user: Optional[UserProfile] = None,
+    *,
+    acting_user: Optional[UserProfile],
 ) -> None:
     user_profile.avatar_source = avatar_source
     user_profile.avatar_version += 1
