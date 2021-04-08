@@ -16,7 +16,7 @@ from zerver.lib.streams import (
     check_for_exactly_one_stream_arg,
 )
 from zerver.lib.topic_mutes import topic_is_muted
-from zerver.lib.user_mutes import user_is_muted
+from zerver.lib.user_mutes import get_mute_object
 from zerver.lib.users import access_user_by_id
 from zerver.lib.validator import check_int
 from zerver.models import UserProfile
@@ -96,7 +96,7 @@ def mute_user(request: HttpRequest, user_profile: UserProfile, muted_user_id: in
     muted_user = access_user_by_id(user_profile, muted_user_id, allow_bots=False, for_admin=False)
     date_muted = timezone_now()
 
-    if user_is_muted(user_profile, muted_user):
+    if get_mute_object(user_profile, muted_user) is not None:
         return json_error(_("User already muted"))
 
     do_mute_user(user_profile, muted_user, date_muted)
@@ -107,9 +107,10 @@ def unmute_user(
     request: HttpRequest, user_profile: UserProfile, muted_user_id: int
 ) -> HttpResponse:
     muted_user = access_user_by_id(user_profile, muted_user_id, allow_bots=False, for_admin=False)
+    mute_object = get_mute_object(user_profile, muted_user)
 
-    if not user_is_muted(user_profile, muted_user):
+    if mute_object is None:
         return json_error(_("User is not muted"))
 
-    do_unmute_user(user_profile, muted_user)
+    do_unmute_user(mute_object)
     return json_success()

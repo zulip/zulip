@@ -167,7 +167,7 @@ from zerver.lib.upload import (
     upload_emoji_image,
 )
 from zerver.lib.user_groups import access_user_group_by_id, create_user_group
-from zerver.lib.user_mutes import add_user_mute, get_user_mutes, remove_user_mute
+from zerver.lib.user_mutes import add_user_mute, get_user_mutes
 from zerver.lib.user_status import update_user_status
 from zerver.lib.users import (
     check_bot_name_available,
@@ -190,6 +190,7 @@ from zerver.models import (
     EmailChangeStatus,
     Message,
     MultiuseInvite,
+    MutedUser,
     PreregistrationUser,
     Reaction,
     Realm,
@@ -6510,8 +6511,9 @@ def do_mute_user(
     send_event(user_profile.realm, event, [user_profile.id])
 
 
-def do_unmute_user(user_profile: UserProfile, muted_user: UserProfile) -> None:
-    remove_user_mute(user_profile, muted_user)
+def do_unmute_user(mute_object: MutedUser) -> None:
+    user_profile = mute_object.user_profile
+    mute_object.delete()
     event = dict(type="muted_users", muted_users=get_user_mutes(user_profile))
     send_event(user_profile.realm, event, [user_profile.id])
 

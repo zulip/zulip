@@ -1,5 +1,5 @@
 import datetime
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import MutedUser, UserProfile
@@ -29,9 +29,8 @@ def add_user_mute(
     )
 
 
-def remove_user_mute(user_profile: UserProfile, muted_user: UserProfile) -> None:
-    MutedUser.objects.get(user_profile=user_profile, muted_user=muted_user).delete()
-
-
-def user_is_muted(user_profile: UserProfile, muted_user: UserProfile) -> bool:
-    return MutedUser.objects.filter(user_profile=user_profile, muted_user=muted_user).exists()
+def get_mute_object(user_profile: UserProfile, muted_user: UserProfile) -> Optional[MutedUser]:
+    try:
+        return MutedUser.objects.get(user_profile=user_profile, muted_user=muted_user)
+    except MutedUser.DoesNotExist:
+        return None
