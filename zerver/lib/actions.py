@@ -19,6 +19,7 @@ from typing import (
     Sequence,
     Set,
     Tuple,
+    TypeVar,
     Union,
 )
 
@@ -2105,6 +2106,39 @@ def bulk_insert_ums(ums: List[UserMessageLite]) -> None:
         execute_values(cursor.cursor, query, vals)
 
 
+# Recipients for events, using only these set of users are
+# everyone who got the original message, plus subscribers of
+# streams with the access to stream's full history.
+
+# This means events using only this set of subscribers won't live-update
+# in preview narrows for a stream the user isn't yet subscribed to;
+# this is the right performance tradeoff to avoid sending event to public
+# stream messages to all users.
+
+# Refer to:
+# https://chat.zulip.org/#narrow/stream/92-learning/topic/mypy.20typing.20with.20.60map.60
+# For the discussion behind using a TypeVar
+Int_Dict = TypeVar("Int_Dict", int, Dict[str, Any])
+
+
+def do_get_event_receivers(
+    message: Message,
+    um_filter: Callable[[UserMessage], Int_Dict],
+    sub_filter: Callable[[int], Int_Dict],
+) -> List[Int_Dict]:
+
+    ums = UserMessage.objects.filter(message=message.id)
+    um_ids = {um.user_profile_id for um in ums}
+    subs = set()
+    if message.recipient.type == Recipient.STREAM:
+        stream_id = message.recipient.type_id
+        stream = Stream.objects.get(id=stream_id)
+        # We exclude users from subscriber list who are already in user message
+        subs = subscriber_ids_with_stream_history_access(stream) - um_ids
+
+    return list(map(um_filter, ums)) + list(map(sub_filter, subs))
+
+
 def do_add_submessage(
     realm: Realm,
     sender_id: int,
@@ -2128,9 +2162,13 @@ def do_add_submessage(
         sender_id=sender_id,
         content=content,
     )
-    ums = UserMessage.objects.filter(message_id=message_id)
-    target_user_ids = [um.user_profile_id for um in ums]
-
+    user_profile = UserProfile.objects.get(id=sender_id)
+    message: Message = access_message(user_profile, message_id)[0]
+    target_user_ids = do_get_event_receivers(
+        message,
+        lambda um: um.user_profile_id,
+        lambda sub: sub,
+    )
     send_event(realm, event, target_user_ids)
 
 

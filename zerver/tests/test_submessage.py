@@ -1,8 +1,10 @@
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Mapping, Set
 from unittest import mock
 
+from zerver.lib.actions import do_change_stream_invite_only, do_change_stream_web_public
 from zerver.lib.message import MessageDict
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import tornado_redirected_to_list
 from zerver.models import Message, SubMessage
 
 
@@ -68,6 +70,49 @@ class TestBasics(ZulipTestCase):
         rows = msg_rows[0]["submessages"]
         rows.sort(key=lambda r: r["id"])
         self.assertEqual(rows, expected_data)
+
+    def test_event_receivers(self) -> None:
+        def test_add_submessage_event(message_id: int, exp_receivers: Set[int]) -> None:
+            payload = dict(
+                message_id=message_id,
+                msg_type="whatever",
+                content='{"sample": "JSON"}',
+            )
+
+            events: List[Mapping[str, Any]] = []
+            with tornado_redirected_to_list(events):
+                result = self.client_post("/json/submessage", payload)
+
+            self.assert_json_success(result)
+            self.assert_length(events, 1)
+            event = events[0]["event"]
+            self.assertEqual(event["type"], "submessage")
+            self.assertEqual(exp_receivers, {usr for usr in events[0]["users"]})
+
+        iago = self.example_user("iago")
+        hamlet = self.example_user("hamlet")
+        polonius = self.example_user("polonius")
+
+        # Test `invite_only` streams with `!history_public_to_subscribers` and `!is_web_public`
+        stream = self.make_stream(
+            "test_submessage_stream", invite_only=True, history_public_to_subscribers=False
+        )
+        self.subscribe(iago, stream.name)
+        message_id = self.send_stream_message(iago, "test_submessage_stream", "before subscription")
+        self.subscribe(hamlet, stream.name)
+        self.subscribe(polonius, stream.name)
+        self.login_user(iago)
+        # Hamlet and Polonius joined after the message was sent, and
+        # so only Iago should receive the event.
+        test_add_submessage_event(message_id, {iago.id})
+
+        # Make stream history public to subscribers
+        do_change_stream_invite_only(stream, False, history_public_to_subscribers=True)
+        test_add_submessage_event(message_id, {iago.id, hamlet.id})
+
+        # Make stream web_public as well.
+        do_change_stream_web_public(stream, True)
+        test_add_submessage_event(message_id, {iago.id, hamlet.id, polonius.id})
 
     def test_endpoint_errors(self) -> None:
         cordelia = self.example_user("cordelia")
