@@ -1281,7 +1281,9 @@ class NormalActionsTest(BaseAction):
         notification_setting = "notification_sound"
 
         events = self.verify_action(
-            lambda: do_change_notification_settings(self.user_profile, notification_setting, "ding")
+            lambda: do_change_notification_settings(
+                self.user_profile, notification_setting, "ding", acting_user=self.user_profile
+            )
         )
         check_update_global_notifications("events[0]", events[0], "ding")
 

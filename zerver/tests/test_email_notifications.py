@@ -672,7 +672,10 @@ class TestMissedMessages(ZulipTestCase):
     def test_message_content_disabled_in_missed_message_notifications(self) -> None:
         # Test when user disabled message content in email notifications.
         do_change_notification_settings(
-            self.example_user("hamlet"), "message_content_in_email_notifications", False
+            self.example_user("hamlet"),
+            "message_content_in_email_notifications",
+            False,
+            acting_user=None,
         )
         self._extra_context_in_missed_stream_messages_mention(False, show_message_content=False)
         mail.outbox = []
@@ -781,12 +784,16 @@ class TestMissedMessages(ZulipTestCase):
         realm.save(update_fields=["message_content_allowed_in_email_notifications"])
 
         # Emails have missed message content when message content is enabled by the user
-        do_change_notification_settings(user, "message_content_in_email_notifications", True)
+        do_change_notification_settings(
+            user, "message_content_in_email_notifications", True, acting_user=None
+        )
         mail.outbox = []
         self._extra_context_in_personal_missed_stream_messages(False, show_message_content=True)
 
         # Emails don't have missed message content when message content is disabled by the user
-        do_change_notification_settings(user, "message_content_in_email_notifications", False)
+        do_change_notification_settings(
+            user, "message_content_in_email_notifications", False, acting_user=None
+        )
         mail.outbox = []
         self._extra_context_in_personal_missed_stream_messages(
             False, show_message_content=False, message_content_disabled_by_user=True
@@ -798,13 +805,17 @@ class TestMissedMessages(ZulipTestCase):
         realm.message_content_allowed_in_email_notifications = False
         realm.save(update_fields=["message_content_allowed_in_email_notifications"])
 
-        do_change_notification_settings(user, "message_content_in_email_notifications", True)
+        do_change_notification_settings(
+            user, "message_content_in_email_notifications", True, acting_user=None
+        )
         mail.outbox = []
         self._extra_context_in_personal_missed_stream_messages(
             False, show_message_content=False, message_content_disabled_by_realm=True
         )
 
-        do_change_notification_settings(user, "message_content_in_email_notifications", False)
+        do_change_notification_settings(
+            user, "message_content_in_email_notifications", False, acting_user=None
+        )
         mail.outbox = []
         self._extra_context_in_personal_missed_stream_messages(
             False,
