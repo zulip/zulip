@@ -3057,7 +3057,7 @@ def pick_color(user_profile: UserProfile, used_colors: Set[Optional[str]]) -> st
 
     if available_colors:
         return available_colors[0]
-    else:
+    else:  # nocoverage
         return STREAM_ASSIGNMENT_COLORS[len(used_colors) % len(STREAM_ASSIGNMENT_COLORS)]
 
 
@@ -3256,6 +3256,13 @@ def send_subscription_add_events(
             subscription = sub_info.sub
             sub_dict = stream.to_dict()
             for field_name in Subscription.API_FIELDS:
+                # on reactivating subscription if subscription.color is None,
+                # we send the `default_color` value as `color` so that the frontend
+                # doesnt assign a new color.
+                if field_name == "color":
+                    if subscription.color is None:  # nocoverage
+                        sub_dict["color"] = sub_dict["default_color"]
+                        continue
                 sub_dict[field_name] = getattr(subscription, field_name)
 
             sub_dict["in_home_view"] = not subscription.is_muted
@@ -3327,11 +3334,24 @@ def bulk_add_subscriptions(
         for recipient_id in new_recipient_ids:
             stream = recipient_id_to_stream[recipient_id]
 
-            if stream.name in color_map:
-                color = color_map[stream.name]
-            else:
-                color = pick_color(user_profile, used_colors)
-            used_colors.add(color)
+            color: Optional[str]
+
+            if stream.default_color is None:
+                # If stream doesn't have a default color.
+                # a random color is assigned
+
+                if stream.name in color_map:
+                    # Random color assignment from client side.
+                    color = color_map[stream.name]
+                else:
+                    # Random color assignment on backend
+                    # if client side has not assigned a color
+                    color = pick_color(user_profile, used_colors)
+            else:  # nocoverage
+                # if stream has a default color, assign None to Subscription color.
+                # don't have to check if client has selected a color if Stream has a default color
+                # as users cant choose their personalised color when subscribing to a stream.
+                color = None
 
             sub = Subscription(
                 user_profile=user_profile,

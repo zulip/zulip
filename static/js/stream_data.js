@@ -681,7 +681,12 @@ export function create_sub_from_server_data(attrs) {
     };
 
     peer_data.set_subscribers(sub.stream_id, subscriber_user_ids);
-
+    /*
+    if stream has a default_color, we send the same value as color in sub.
+    so that the client doesn't assign a new color.
+    else if a default_color is not set. a random color is chosen.
+    console.log("sub color for",sub.name,sub.color);
+    */
     if (!sub.color) {
         sub.color = color_data.pick_color();
     }
