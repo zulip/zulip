@@ -79,6 +79,9 @@ def get_events_backend(request: HttpRequest, user_profile: UserProfile,
                        bulk_message_deletion: bool=REQ(default=False, validator=check_bool,
                                                        intentionally_undocumented=True)
                        ) -> HttpResponse:
+    if all_public_streams and not user_profile.can_access_public_streams():
+        return json_error(_("User not authorized for this query"))
+
     # Extract the Tornado handler from the request
     handler: AsyncDjangoHandler = request._tornado_handler
 
