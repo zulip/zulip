@@ -4038,7 +4038,7 @@ def do_change_icon_source(
 
 
 def do_change_logo_source(
-    realm: Realm, logo_source: str, night: bool, acting_user: Optional[UserProfile] = None
+    realm: Realm, logo_source: str, night: bool, *, acting_user: Optional[UserProfile]
 ) -> None:
     if not night:
         realm.logo_source = logo_source
