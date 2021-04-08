@@ -4155,7 +4155,7 @@ def do_change_default_sending_stream(
 
 
 def do_change_default_events_register_stream(
-    user_profile: UserProfile, stream: Optional[Stream], acting_user: Optional[UserProfile] = None
+    user_profile: UserProfile, stream: Optional[Stream], *, acting_user: Optional[UserProfile]
 ) -> None:
     old_value = user_profile.default_events_register_stream_id
     user_profile.default_events_register_stream = stream
