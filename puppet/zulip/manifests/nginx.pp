@@ -29,15 +29,16 @@ class zulip::nginx {
     notify  => Service['nginx'],
   }
 
-  # Configuration for how uploaded files are served.  The default is
-  # to serve uploaded files using using the `nginx` `internal`
-  # feature via django-sendfile2, which basically does an internal
-  # redirect and returns the file content from nginx in an
-  # HttpResponse that would otherwise have been a redirect.
+  # Configuration for how uploaded files and profile pictures are
+  # served.  The default is to serve uploads using using the `nginx`
+  # `internal` feature via django-sendfile2, which basically does an
+  # internal redirect and returns the file content from nginx in an
+  # HttpResponse that would otherwise have been a redirect.  Profile
+  # pictures are served directly off disk.
   #
   # For installations using S3 to serve uploaded files, we want Django
-  # to handle the /serve_uploads route, so that it can do authentication
-  # and serve a redirect.
+  # to handle the /serve_uploads and /user_avatars routes, so that it
+  # can serve a redirect (after doing authentication, for uploads).
   $no_serve_uploads = zulipconf('application_server', 'no_serve_uploads', '')
   if $no_serve_uploads == '' {
     file { '/etc/nginx/zulip-include/app.d/uploads-internal.conf':
