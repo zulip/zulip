@@ -2212,13 +2212,11 @@ def notify_reaction_update(
     # "historical" UserMessage row for any user who reacts to message,
     # subscribing them to future notifications, even if they are not
     # subscribed to the stream.
-    user_ids = set(
-        UserMessage.objects.filter(message=message.id).values_list("user_profile_id", flat=True)
+    user_ids = do_get_event_receivers(
+        message,
+        lambda um: um.user_profile_id,
+        lambda sub: sub,
     )
-    if message.recipient.type == Recipient.STREAM:
-        stream_id = message.recipient.type_id
-        stream = Stream.objects.get(id=stream_id)
-        user_ids |= subscriber_ids_with_stream_history_access(stream)
 
     send_event(user_profile.realm, event, list(user_ids))
 
