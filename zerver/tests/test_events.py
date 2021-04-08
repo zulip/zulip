@@ -1454,7 +1454,7 @@ class NormalActionsTest(BaseAction):
 
     def test_change_bot_default_all_public_streams(self) -> None:
         bot = self.create_bot("test")
-        action = lambda: do_change_default_all_public_streams(bot, True)
+        action = lambda: do_change_default_all_public_streams(bot, True, acting_user=None)
         events = self.verify_action(action)
         check_realm_bot_update("events[0]", events[0], "default_all_public_streams")
 
