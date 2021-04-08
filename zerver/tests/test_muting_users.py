@@ -3,7 +3,7 @@ from unittest import mock
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.lib.user_mutes import get_user_mutes, user_is_muted
+from zerver.lib.user_mutes import get_mute_object, get_user_mutes
 
 
 class MutedUsersTests(ZulipTestCase):
@@ -90,7 +90,7 @@ class MutedUsersTests(ZulipTestCase):
             },
             get_user_mutes(hamlet),
         )
-        self.assertTrue(user_is_muted(hamlet, cordelia))
+        self.assertIsNotNone(get_mute_object(hamlet, cordelia))
 
     def test_remove_muted_user_unmute_before_muting(self) -> None:
         hamlet = self.example_user("hamlet")
@@ -122,4 +122,4 @@ class MutedUsersTests(ZulipTestCase):
             },
             get_user_mutes(hamlet),
         )
-        self.assertFalse(user_is_muted(hamlet, cordelia))
+        self.assertIsNone(get_mute_object(hamlet, cordelia))

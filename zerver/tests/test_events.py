@@ -170,6 +170,7 @@ from zerver.lib.test_helpers import (
     stdout_suppressed,
 )
 from zerver.lib.topic import TOPIC_NAME
+from zerver.lib.user_mutes import get_mute_object
 from zerver.models import (
     Attachment,
     CustomProfileField,
@@ -1013,7 +1014,14 @@ class NormalActionsTest(BaseAction):
         events = self.verify_action(lambda: do_mute_user(self.user_profile, muted_user))
         check_muted_users("events[0]", events[0])
 
-        events = self.verify_action(lambda: do_unmute_user(self.user_profile, muted_user))
+        mute_object = get_mute_object(self.user_profile, muted_user)
+        assert mute_object is not None
+        # This is a hack to silence mypy errors which result from it not taking
+        # into account type restrictions for nested functions (here, `lambda`).
+        # https://github.com/python/mypy/commit/8780d45507ab1efba33568744967674cce7184d1
+        mute_object2 = mute_object
+
+        events = self.verify_action(lambda: do_unmute_user(mute_object2))
         check_muted_users("events[0]", events[0])
 
     def test_change_avatar_fields(self) -> None:
