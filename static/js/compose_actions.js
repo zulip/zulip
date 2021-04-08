@@ -459,7 +459,7 @@ export function quote_and_reply(opts) {
         //     ```quote
         //     message content
         //     ```
-        let content = i18n.t("__username__ [said](__- link_to_message__):", {
+        let content = i18n.t("__- username__ [said](__- link_to_message__):", {
             username: `@_**${message.sender_full_name}|${message.sender_id}**`,
             link_to_message: `${hash_util.by_conversation_and_time_uri(message)}`,
         });
