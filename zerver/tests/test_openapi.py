@@ -224,6 +224,14 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/users/me/presence",
         "/users/me/alert_words",
         "/users/me/status",
+        # These are a priority to document but don't match our normal URL schemes
+        # and thus may be complicated to document with our current tooling.
+        # (No /api/v1/ or /json prefix).
+        "/avatar/{email_or_id}",
+        ## This one is in zulip.yaml, but not the actual docs.
+        # "/api/v1/user_uploads/{realm_id_str}/{filename}",
+        ## And this one isn't, and isn't really representable
+        # "/user_uploads/{realm_id_str}/{filename}",
         #### These realm administration settings are valuable to document:
         # Delete a file uploaded by current user.
         "/attachments/{attachment_id}",
@@ -246,12 +254,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         # users/me/subscriptions/properties; probably should just be a
         # section of the same page.
         "/users/me/subscriptions/{stream_id}",
-        # Real-time-events endpoint
-        "/real-time",
-        # Rest error handling endpoint
-        "/rest-error-handling",
-        # Zulip outgoing webhook payload
-        "/zulip-outgoing-webhook",
         #### Mobile-app only endpoints; important for mobile developers.
         # Mobile interface for fetching API keys
         "/fetch_api_key",
@@ -292,6 +294,14 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/fetch_google_client_id",
         # API for video calls we're planning to remove/replace.
         "/calls/zoom/create",
+        #### The following are fake endpoints that live in our zulip.yaml
+        #### for tooling convenience reasons, and should eventually be moved.
+        # Real-time-events endpoint
+        "/real-time",
+        # Rest error handling endpoint
+        "/rest-error-handling",
+        # Zulip outgoing webhook payload
+        "/zulip-outgoing-webhook",
     }
 
     # Endpoints where the documentation is currently failing our
