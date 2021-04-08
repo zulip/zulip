@@ -10,6 +10,14 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 64**
+
+* [`GET /events`](/api/get-events): Added new `Administrators only` policy
+  to `private_message_policy` field returned in the event when
+  realm configuration has changed.
+* [`POST /register`](/api/register-queue): Added new `Administrators only`
+  policy to `realm_private_message_policy` field in the response.
+
 **Feature level 63**
 
 * `PATCH /settings/notifications`: Removed unnecessary JSON-encoding of string

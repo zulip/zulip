@@ -1977,7 +1977,7 @@ class RealmPropertyActionTest(BaseAction):
             waiting_period_threshold=[10, 20],
             create_stream_policy=[4, 3, 2, 1],
             invite_to_stream_policy=[4, 3, 2, 1],
-            private_message_policy=[2, 1],
+            private_message_policy=[3, 2, 1],
             user_group_edit_policy=[1, 2],
             wildcard_mention_policy=[7, 6, 5, 4, 3, 2, 1],
             email_address_visibility=[Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS],

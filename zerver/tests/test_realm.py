@@ -878,6 +878,7 @@ class RealmAPITest(ZulipTestCase):
             private_message_policy=[
                 Realm.PRIVATE_MESSAGE_POLICY_UNLIMITED,
                 Realm.PRIVATE_MESSAGE_POLICY_DISABLED,
+                Realm.PRIVATE_MESSAGE_POLICY_ADMIN_ONLY,
             ],
             invite_to_stream_policy=[
                 Realm.POLICY_ADMINS_ONLY,

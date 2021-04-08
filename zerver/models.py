@@ -288,12 +288,14 @@ class Realm(models.Model):
 
     PRIVATE_MESSAGE_POLICY_UNLIMITED = 1
     PRIVATE_MESSAGE_POLICY_DISABLED = 2
+    PRIVATE_MESSAGE_POLICY_ADMIN_ONLY = 3
     private_message_policy: int = models.PositiveSmallIntegerField(
         default=PRIVATE_MESSAGE_POLICY_UNLIMITED
     )
     PRIVATE_MESSAGE_POLICY_TYPES = [
         PRIVATE_MESSAGE_POLICY_UNLIMITED,
         PRIVATE_MESSAGE_POLICY_DISABLED,
+        PRIVATE_MESSAGE_POLICY_ADMIN_ONLY,
     ]
 
     # Global policy for who is allowed to use wildcard mentions in

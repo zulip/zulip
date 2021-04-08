@@ -3406,6 +3406,7 @@ paths:
 
                                         * 1 = Everyone
                                         * 2 = Nobody
+                                        * 3 = Administrators only
                                     user_group_edit_policy:
                                       type: integer
                                       description: |
@@ -8419,6 +8420,7 @@ paths:
 
                           * 1 = Everyone
                           * 2 = Nobody
+                          * 3 = Administrators only
                       realm_user_group_edit_policy:
                         type: integer
                         description: |
