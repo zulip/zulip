@@ -867,11 +867,6 @@ class HomeTest(ZulipTestCase):
             compute_navbar_logo_url(page_params), "/static/images/logo/zulip-org-logo.svg?version=0"
         )
 
-    def test_generate_204(self) -> None:
-        self.login("hamlet")
-        result = self.client_get("/api/v1/generate_204")
-        self.assertEqual(result.status_code, 204)
-
     def test_furthest_read_time(self) -> None:
         msg_id = self.send_test_message("hello!", sender_name="iago")
 

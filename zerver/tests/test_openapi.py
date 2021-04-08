@@ -288,8 +288,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/realm/deactivate",
         "/realm/subdomain/{subdomain}",
         #### Other low value endpoints
-        # Used for dead desktop app to test connectivity.  To delete.
-        "/generate_204",
         # Used for failed approach with dead Android app.
         "/fetch_google_client_id",
         # API for video calls we're planning to remove/replace.
