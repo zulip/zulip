@@ -6590,7 +6590,7 @@ def do_change_realm_domain(realm_domain: RealmDomain, allow_subdomains: bool) ->
 
 
 def do_remove_realm_domain(
-    realm_domain: RealmDomain, acting_user: Optional[UserProfile] = None
+    realm_domain: RealmDomain, *, acting_user: Optional[UserProfile]
 ) -> None:
     realm = realm_domain.realm
     domain = realm_domain.domain

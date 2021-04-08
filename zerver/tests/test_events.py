@@ -1362,7 +1362,7 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(events[0]["realm_domain"]["domain"], "zulip.org")
         self.assertEqual(events[0]["realm_domain"]["allow_subdomains"], True)
 
-        events = self.verify_action(lambda: do_remove_realm_domain(test_domain))
+        events = self.verify_action(lambda: do_remove_realm_domain(test_domain, acting_user=None))
 
         check_realm_domains_remove("events[0]", events[0])
         self.assertEqual(events[0]["domain"], "zulip.org")
