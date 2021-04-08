@@ -1432,7 +1432,9 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(events[1]["type"], "realm_user")
 
     def test_change_realm_icon_source(self) -> None:
-        action = lambda: do_change_icon_source(self.user_profile.realm, Realm.ICON_UPLOADED)
+        action = lambda: do_change_icon_source(
+            self.user_profile.realm, Realm.ICON_UPLOADED, acting_user=None
+        )
         events = self.verify_action(action, state_change_expected=True)
         check_realm_update_dict("events[0]", events[0])
 
