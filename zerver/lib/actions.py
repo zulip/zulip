@@ -2802,7 +2802,7 @@ def check_update_message(
     if stream_id is not None:
         if not message.is_stream_message():
             raise JsonableError(_("Message must be a stream message"))
-        if not user_profile.is_realm_admin:
+        if not user_profile.can_move_messages_between_streams():
             raise JsonableError(_("You don't have permission to move this message"))
         try:
             access_stream_by_id(user_profile, message.recipient.type_id)
