@@ -243,9 +243,6 @@ SYSTEM_BOT_REALM = "zulipinternal"
 # than a separate app.
 EXTRA_INSTALLED_APPS = ["analytics"]
 
-# Default GOOGLE_CLIENT_ID to the value needed for Android auth to work
-GOOGLE_CLIENT_ID = "835904834568-77mtr5mtmpgspj9b051del9i9r5t4g4n.apps.googleusercontent.com"
-
 # Used to construct URLs to point to the Zulip server.  Since we
 # only support HTTPS in production, this is just for development.
 EXTERNAL_URI_SCHEME = "https://"

@@ -287,10 +287,7 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/realm/logo",
         "/realm/deactivate",
         "/realm/subdomain/{subdomain}",
-        #### Other low value endpoints
-        # Used for failed approach with dead Android app.
-        "/fetch_google_client_id",
-        # API for video calls we're planning to remove/replace.
+        # API for Zoom video calls.  Unclear if this can support other apps.
         "/calls/zoom/create",
         #### The following are fake endpoints that live in our zulip.yaml
         #### for tooling convenience reasons, and should eventually be moved.

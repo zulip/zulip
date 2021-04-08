@@ -134,7 +134,7 @@ want those settings.
 ### Testing non-default settings
 
 You can write tests for settings using e.g. `with
-self.settings(GOOGLE_CLIENT_ID=None)`.  However, this only works for
+self.settings(TERMS_OF_SERVICE=None)`.  However, this only works for
 settings which are checked at runtime, not settings which are only
 accessed in initialization of Django (or Zulip) internals
 (e.g. `DATABASES`).  See the [Django docs on overriding settings in
