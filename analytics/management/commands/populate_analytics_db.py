@@ -83,9 +83,9 @@ class Command(BaseCommand):
                 "Shylock",
                 realm,
                 full_name="Shylock",
-                role=UserProfile.ROLE_REALM_ADMINISTRATOR,
+                role=UserProfile.ROLE_REALM_OWNER,
             )
-        do_change_user_role(shylock, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        do_change_user_role(shylock, UserProfile.ROLE_REALM_OWNER, acting_user=None)
         stream = Stream.objects.create(name="all", realm=realm, date_created=installation_time)
         recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
         stream.recipient = recipient
