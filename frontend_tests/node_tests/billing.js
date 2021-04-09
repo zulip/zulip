@@ -86,11 +86,10 @@ run_test("initialize", (override) => {
     });
 
     create_ajax_request_called = false;
-    function plan_change_ajax(url, form_name, stripe_token, numeric_inputs) {
+    function plan_change_ajax(url, form_name, stripe_token) {
         assert.equal(url, "/json/billing/plan/change");
         assert.equal(form_name, "planchange");
         assert.equal(stripe_token, undefined);
-        assert.deepEqual(numeric_inputs, ["status"]);
         create_ajax_request_called = true;
     }
 
