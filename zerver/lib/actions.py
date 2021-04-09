@@ -2502,19 +2502,24 @@ def check_send_stream_message(
     stream_name: str,
     topic: str,
     body: str,
+    is_editable_for_all: bool = False,
     realm: Optional[Realm] = None,
 ) -> int:
     addressee = Addressee.for_stream_name(stream_name, topic)
-    message = check_message(sender, client, addressee, body, realm)
+    message = check_message(sender, client, addressee, body, is_editable_for_all, realm)
 
     return do_send_messages([message])[0]
 
 
 def check_send_private_message(
-    sender: UserProfile, client: Client, receiving_user: UserProfile, body: str
+    sender: UserProfile,
+    client: Client,
+    receiving_user: UserProfile,
+    body: str,
+    is_editable_for_all: bool = False,
 ) -> int:
     addressee = Addressee.for_user_profile(receiving_user)
-    message = check_message(sender, client, addressee, body)
+    message = check_message(sender, client, addressee, body, is_editable_for_all)
 
     return do_send_messages([message])[0]
 
@@ -2528,6 +2533,7 @@ def check_send_message(
     message_to: Union[Sequence[int], Sequence[str]],
     topic_name: Optional[str],
     message_content: str,
+    is_editable_for_all: bool = False,
     realm: Optional[Realm] = None,
     forged: bool = False,
     forged_timestamp: Optional[float] = None,
@@ -2544,6 +2550,7 @@ def check_send_message(
             client,
             addressee,
             message_content,
+            is_editable_for_all,
             realm,
             forged,
             forged_timestamp,
@@ -2566,6 +2573,7 @@ def check_schedule_message(
     message_content: str,
     delivery_type: str,
     deliver_at: datetime.datetime,
+    is_editable_for_all: bool = False,
     realm: Optional[Realm] = None,
     forwarder_user_profile: Optional[UserProfile] = None,
 ) -> int:
@@ -2576,6 +2584,7 @@ def check_schedule_message(
         client,
         addressee,
         message_content,
+        is_editable_for_all,
         realm=realm,
         forwarder_user_profile=forwarder_user_profile,
     )
@@ -2740,6 +2749,7 @@ def check_message(
     client: Client,
     addressee: Addressee,
     message_content_raw: str,
+    message_is_editable_for_all: bool = False,
     realm: Optional[Realm] = None,
     forged: bool = False,
     forged_timestamp: Optional[float] = None,
@@ -2825,6 +2835,7 @@ def check_message(
     message = Message()
     message.sender = sender
     message.content = message_content
+    message.is_editable_for_all = message_is_editable_for_all
     message.recipient = recipient
     if addressee.is_stream():
         message.set_topic_name(topic_name)
@@ -2881,6 +2892,7 @@ def _internal_prep_message(
     sender: UserProfile,
     addressee: Addressee,
     content: str,
+    is_editable_for_all: bool = False,
     email_gateway: bool = False,
 ) -> Optional[SendMessageRequest]:
     """
@@ -2909,6 +2921,7 @@ def _internal_prep_message(
             get_client("Internal"),
             addressee,
             content,
+            is_editable_for_all,
             realm=realm,
             email_gateway=email_gateway,
         )

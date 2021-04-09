@@ -22,6 +22,7 @@ from zerver.lib.message import render_markdown
 from zerver.lib.response import json_error, json_success
 from zerver.lib.timestamp import convert_to_UTC
 from zerver.lib.topic import REQ_topic
+from zerver.lib.validator import check_bool
 from zerver.lib.zcommand import process_zcommands
 from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import (
@@ -187,6 +188,9 @@ def send_message_backend(
     forged_str: Optional[str] = REQ("forged", default=None, documentation_pending=True),
     topic_name: Optional[str] = REQ_topic(),
     message_content: str = REQ("content"),
+    is_editable_for_all: bool = REQ(
+        "is_editable_for_all", default=False, json_validator=check_bool, documentation_pending=True
+    ),
     widget_content: Optional[str] = REQ(default=None, documentation_pending=True),
     realm_str: Optional[str] = REQ("realm_str", default=None, documentation_pending=True),
     local_id: Optional[str] = REQ(default=None),
@@ -304,6 +308,7 @@ def send_message_backend(
         message_to,
         topic_name,
         message_content,
+        is_editable_for_all,
         forged=forged,
         forged_timestamp=request.POST.get("time"),
         forwarder_user_profile=user_profile,

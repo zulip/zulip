@@ -9908,6 +9908,7 @@ paths:
                           content_type: {}
                           display_recipient: {}
                           id: {}
+                          is_editable_for_all: {}
                           is_me_message: {}
                           reactions: {}
                           recipient_id: {}
@@ -9948,6 +9949,7 @@ paths:
                         "display_recipient": "Verona",
                         "type": "stream",
                         "id": 112,
+                        "is_editable_for_all": false,
                         "is_me_message": false,
                         "reactions": [],
                         "sender_realm_str": "zulip",
@@ -10871,6 +10873,7 @@ components:
             content_type: {}
             display_recipient: {}
             id: {}
+            is_editable_for_all: {}
             is_me_message: {}
             reactions: {}
             recipient_id: {}
@@ -10945,6 +10948,10 @@ components:
           description: |
             The unique message ID.  Messages should always be
             displayed sorted by ID.
+        is_editable_for_all:
+          type: boolean
+          description: |
+            Whether the message is editable for all
         is_me_message:
           type: boolean
           description: |
@@ -11046,6 +11053,7 @@ components:
             content_type: {}
             display_recipient: {}
             id: {}
+            is_editable_for_all: {}
             is_me_message: {}
             reactions: {}
             recipient_id: {}

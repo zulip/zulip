@@ -199,7 +199,47 @@ class EditMessageTest(ZulipTestCase):
                 "content": "content after edit",
             },
         )
-        self.assert_json_error(result, "You don't have permission to edit this message")
+        self.assert_json_error(result, "You don't have enough permission to edit this message")
+
+    def test_edit_message_editable_for_all(self) -> None:
+        self.login("hamlet")
+        msg_id = self.send_stream_message(
+            self.example_user("iago"),
+            "Scotland",
+            topic_name="editing",
+            content="before edit",
+            is_editable_for_all=True,
+        )
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "message_id": msg_id,
+                "content": "content after edit",
+            },
+        )
+        self.assert_json_success(result)
+
+    def test_edit_topic_and_message_editable_for_all(self) -> None:
+        self.login("iago")
+        msg_id = self.send_stream_message(
+            self.example_user("hamlet"),
+            "Scotland",
+            topic_name="editing",
+            content="before edit",
+            is_editable_for_all=True,
+        )
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "message_id": msg_id,
+                "content": "after edit",
+                "topic": "change topic",
+            },
+        )
+        self.assert_json_success(result)
+        content = Message.objects.filter(id=msg_id).values_list("content", flat=True)[0]
+        self.assertEqual(content, "after edit")
+        self.check_topic(msg_id, topic_name="change topic")
 
     def test_edit_message_no_changes(self) -> None:
         self.login("hamlet")

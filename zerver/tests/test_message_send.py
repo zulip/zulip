@@ -501,6 +501,44 @@ class MessagePOSTTest(ZulipTestCase):
             result, "Stream '&amp;&lt;&quot;&#x27;&gt;&lt;non-existent&gt;' does not exist"
         )
 
+    def test_message_editable_for_all_to_stream(self) -> None:
+        """
+        Sending an editable for all message to stream.
+        """
+        self.login("hamlet")
+
+        # `is_editable_for_all` = True
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "stream",
+                "to": "Verona",
+                "client": "test suite",
+                "content": "Test message",
+                "topic": "Test topic",
+                "is_editable_for_all": "true",
+            },
+        )
+        self.assert_json_success(result)
+        sent_message = self.get_last_message()
+        self.assertEqual(sent_message.is_editable_for_all, True)
+
+        # `is_editable_for_all` = False
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "stream",
+                "to": "Verona",
+                "client": "test suite",
+                "content": "Test message",
+                "topic": "Test topic",
+                "is_editable_for_all": "false",
+            },
+        )
+        self.assert_json_success(result)
+        sent_message = self.get_last_message()
+        self.assertEqual(sent_message.is_editable_for_all, False)
+
     def test_personal_message(self) -> None:
         """
         Sending a personal message to a valid username is successful.
@@ -552,6 +590,43 @@ class MessagePOSTTest(ZulipTestCase):
         recipient_id = list(recent_conversations.keys())[0]
         self.assertEqual(set(recent_conversation["user_ids"]), set())
         self.assertEqual(recent_conversation["max_message_id"], self_message_id)
+
+    def test_personal_message_editable_for_all(self) -> None:
+        """
+        Sending a personal message to a valid user ID is successful.
+        """
+        self.login("hamlet")
+        # `is_editable_for_all` = True
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "private",
+                "content": "Test message 1",
+                "client": "test suite",
+                "to": orjson.dumps(
+                    [self.example_user("othello").id, self.example_user("cordelia").id]
+                ).decode(),
+                "is_editable_for_all": "true",
+            },
+        )
+        self.assert_json_success(result)
+        msg = self.get_last_message()
+        self.assertEqual(msg.is_editable_for_all, True)
+
+        # `is_editable_for_all` = False
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "private",
+                "content": "Test message 1",
+                "client": "test suite",
+                "to": self.example_user("othello").email,
+                "is_editable_for_all": "false",
+            },
+        )
+        self.assert_json_success(result)
+        msg = self.get_last_message()
+        self.assertEqual(msg.is_editable_for_all, False)
 
     def test_personal_message_by_id(self) -> None:
         """

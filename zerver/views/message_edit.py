@@ -125,19 +125,20 @@ def update_message_backend(
     # You only have permission to edit a message if:
     # you change this value also change those two parameters in message_edit.js.
     # 1. You sent it, OR:
-    # 2. This is a topic-only edit for a (no topic) message, OR:
-    # 3. This is a topic-only edit and you are an admin, OR:
-    # 4. This is a topic-only edit and your realm allows users to edit topics.
+    # 2. This has a topic edit for a (no topic) message, OR:
+    # 3. This has a topic edit and you are an admin, OR:
+    # 4. This has a topic edit and your realm allows users to edit topics, OR:
+    # 6. This has a content edit and the message is editable for all.
     if message.sender == user_profile:
         pass
-    elif (content is None) and (
+    elif (topic_name is not None) and not (
         is_no_topic_msg
         or user_profile.is_realm_admin
         or user_profile.realm.allow_community_topic_editing
     ):
-        pass
-    else:
         raise JsonableError(_("You don't have permission to edit this message"))
+    elif content is not None and message.is_editable_for_all is False:
+        raise JsonableError(_("You don't have enough permission to edit this message"))
 
     # If there is a change to the content, check that it hasn't been too long
     # Allow an extra 20 seconds since we potentially allow editing 15 seconds
@@ -145,7 +146,11 @@ def update_message_backend(
     # from (min_seconds_to_edit + seconds_left_buffer) in message_edit.js; if
     # you change this value also change those two parameters in message_edit.js.
     edit_limit_buffer = 20
-    if content is not None and user_profile.realm.message_content_edit_limit_seconds > 0:
+    if (
+        content is not None
+        and user_profile.realm.message_content_edit_limit_seconds > 0
+        and message.is_editable_for_all is False
+    ):
         deadline_seconds = user_profile.realm.message_content_edit_limit_seconds + edit_limit_buffer
         if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
             raise JsonableError(_("The time limit for editing this message has passed"))

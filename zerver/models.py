@@ -2087,6 +2087,8 @@ class AbstractMessage(models.Model):
     has_image: bool = models.BooleanField(default=False, db_index=True)
     has_link: bool = models.BooleanField(default=False, db_index=True)
 
+    is_editable_for_all: bool = models.BooleanField(default=False, db_index=True)
+
     class Meta:
         abstract = True
 

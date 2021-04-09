@@ -366,6 +366,7 @@ message_fields = [
     ("content_type", Equals("text/html")),
     ("display_recipient", str),
     ("id", int),
+    ("is_editable_for_all", bool),
     ("is_me_message", bool),
     ("reactions", ListType(dict)),
     ("recipient_id", int),

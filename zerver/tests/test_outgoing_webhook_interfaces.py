@@ -78,6 +78,7 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
             "content_type": "text/x-markdown",
             "display_recipient": "Denmark",
             "id": message.id,
+            "is_editable_for_all": False,
             "is_me_message": False,
             "reactions": [],
             "recipient_id": message.recipient_id,

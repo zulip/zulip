@@ -371,6 +371,7 @@ class MessageDict:
                 "last_edit_time": message.last_edit_time,
                 "edit_history": message.edit_history,
                 "content": message.content,
+                "is_editable_for_all": message.is_editable_for_all,
                 "rendered_content": message.rendered_content,
                 "rendered_content_version": message.rendered_content_version,
                 "recipient_id": message.recipient.id,
@@ -398,6 +399,7 @@ class MessageDict:
             "last_edit_time",
             "edit_history",
             "content",
+            "is_editable_for_all",
             "rendered_content",
             "rendered_content_version",
             "recipient_id",
@@ -421,6 +423,7 @@ class MessageDict:
             last_edit_time=row["last_edit_time"],
             edit_history=row["edit_history"],
             content=row["content"],
+            is_editable_for_all=row["is_editable_for_all"],
             topic_name=row[DB_TOPIC_NAME],
             date_sent=row["date_sent"],
             rendered_content=row["rendered_content"],
@@ -442,6 +445,7 @@ class MessageDict:
         last_edit_time: Optional[datetime.datetime],
         edit_history: Optional[str],
         content: str,
+        is_editable_for_all: bool,
         topic_name: str,
         date_sent: datetime.datetime,
         rendered_content: Optional[str],
@@ -513,7 +517,7 @@ class MessageDict:
             obj["is_me_message"] = Message.is_status_message(content, rendered_content)
         else:
             obj["is_me_message"] = False
-
+        obj["is_editable_for_all"] = is_editable_for_all
         obj["reactions"] = [
             ReactionDict.build_dict_from_raw_db_row(reaction) for reaction in reactions
         ]

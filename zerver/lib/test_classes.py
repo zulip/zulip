@@ -781,6 +781,7 @@ Output:
         topic_name: str = "test",
         recipient_realm: Optional[Realm] = None,
         sending_client_name: str = "test suite",
+        is_editable_for_all: bool = False,
     ) -> int:
         (sending_client, _) = Client.objects.get_or_create(name=sending_client_name)
 
@@ -790,6 +791,7 @@ Output:
             stream_name=stream_name,
             topic=topic_name,
             body=content,
+            is_editable_for_all=is_editable_for_all,
             realm=recipient_realm,
         )
 
