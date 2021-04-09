@@ -4,24 +4,11 @@ import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as resize from "./resize";
 import * as unread_ui from "./unread_ui";
-
-export function update_count_in_dom(unread_count_elem, count) {
-    const count_span = unread_count_elem.find(".count");
-    const value_span = count_span.find(".value");
-
-    if (count === 0) {
-        count_span.hide();
-        value_span.text("");
-        return;
-    }
-
-    count_span.show();
-    value_span.text(count);
-}
+import * as ui_util from "./ui_util";
 
 export function update_starred_count(count) {
     const starred_li = $(".top_left_starred_messages");
-    update_count_in_dom(starred_li, count);
+    ui_util.update_unread_count_in_dom(starred_li, count);
 }
 
 export function update_dom_with_unread_counts(counts) {
@@ -31,8 +18,8 @@ export function update_dom_with_unread_counts(counts) {
     const mentioned_li = $(".top_left_mentions");
     const home_li = $(".top_left_all_messages");
 
-    update_count_in_dom(mentioned_li, counts.mentioned_message_count);
-    update_count_in_dom(home_li, counts.home_unread_messages);
+    ui_util.update_unread_count_in_dom(mentioned_li, counts.mentioned_message_count);
+    ui_util.update_unread_count_in_dom(home_li, counts.home_unread_messages);
 
     unread_ui.animate_mention_changes(mentioned_li, counts.mentioned_message_count);
 }

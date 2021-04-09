@@ -38,3 +38,19 @@ export function convert_enter_to_click(e) {
         $(e.currentTarget).trigger("click");
     }
 }
+
+export function update_unread_count_in_dom(unread_count_elem, count) {
+    // This function is used to update unread count in top left corner
+    // elements.
+    const count_span = unread_count_elem.find(".count");
+    const value_span = count_span.find(".value");
+
+    if (count === 0) {
+        count_span.hide();
+        value_span.text("");
+        return;
+    }
+
+    count_span.show();
+    value_span.text(count);
+}

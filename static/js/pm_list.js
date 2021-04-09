@@ -10,6 +10,7 @@ import * as stream_popover from "./stream_popover";
 import * as ui from "./ui";
 import * as unread from "./unread";
 import * as vdom from "./vdom";
+import * as ui_util from "./ui_util";
 
 let prior_dom;
 let private_messages_open = false;
@@ -26,20 +27,8 @@ function get_filter_li() {
     return $(".top_left_private_messages");
 }
 
-function update_count_in_dom(count_span, value_span, count) {
-    if (count === 0) {
-        count_span.hide();
-        value_span.text("");
-    } else {
-        count_span.show();
-        value_span.text(count);
-    }
-}
-
 function set_count(count) {
-    const count_span = get_filter_li().find(".count");
-    const value_span = count_span.find(".value");
-    update_count_in_dom(count_span, value_span, count);
+    ui_util.update_unread_count_in_dom(get_filter_li(), count);
 }
 
 function remove_expanded_private_messages() {
