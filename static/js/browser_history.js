@@ -2,10 +2,11 @@ import * as blueslip from "./blueslip";
 import * as hash_util from "./hash_util";
 import * as ui_util from "./ui_util";
 
-const state = {
+export const state = {
     is_internal_change: false,
     hash_before_overlay: null,
     old_hash: window.location.hash,
+    changing_hash: false,
 };
 
 export function clear_for_testing() {
