@@ -422,8 +422,6 @@ class StripeTestCase(ZulipTestCase):
         for key in del_args:
             if key in params:
                 del params[key]
-        for key, value in params.items():
-            params[key] = orjson.dumps(value).decode()
         return self.client_post("/json/billing/upgrade", params, **host_args)
 
     # Upgrade without talking to Stripe
@@ -1287,18 +1285,29 @@ class StripeTest(StripeTestCase):
     def test_check_upgrade_parameters(self) -> None:
         # Tests all the error paths except 'not enough licenses'
         def check_error(
-            error_description: str, upgrade_params: Mapping[str, Any], del_args: Sequence[str] = []
+            error_message: str,
+            error_description: str,
+            upgrade_params: Mapping[str, Any],
+            del_args: Sequence[str] = [],
         ) -> None:
             response = self.upgrade(talk_to_stripe=False, del_args=del_args, **upgrade_params)
-            self.assert_json_error_contains(response, "Something went wrong. Please contact")
-            self.assertEqual(orjson.loads(response.content)["error_description"], error_description)
+            self.assert_json_error_contains(response, error_message)
+            if error_description:
+                self.assertEqual(
+                    orjson.loads(response.content)["error_description"], error_description
+                )
 
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
-        check_error("unknown billing_modality", {"billing_modality": "invalid"})
-        check_error("unknown schedule", {"schedule": "invalid"})
-        check_error("unknown license_management", {"license_management": "invalid"})
-        check_error("autopay with no card", {}, del_args=["stripe_token"])
+        check_error("Invalid billing_modality", "", {"billing_modality": "invalid"})
+        check_error("Invalid schedule", "", {"schedule": "invalid"})
+        check_error("Invalid license_management", "", {"license_management": "invalid"})
+        check_error(
+            "Something went wrong. Please contact",
+            "autopay with no card",
+            {},
+            del_args=["stripe_token"],
+        )
 
     def test_upgrade_license_counts(self) -> None:
         def check_min_licenses_error(
@@ -1401,11 +1410,9 @@ class StripeTest(StripeTestCase):
         self.login_user(user)
 
         data = {
-            "organization-type": orjson.dumps("Open-source").decode(),
-            "website": orjson.dumps("https://infinispan.org/").decode(),
-            "description": orjson.dumps(
-                "Infinispan is a distributed in-memory key/value data store with optional schema."
-            ).decode(),
+            "organization-type": "Open-source",
+            "website": "https://infinispan.org/",
+            "description": "Infinispan is a distributed in-memory key/value data store with optional schema.",
         }
         response = self.client_post("/json/billing/sponsorship", data)
         self.assert_json_success(response)

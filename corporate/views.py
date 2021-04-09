@@ -46,7 +46,7 @@ from zerver.decorator import (
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.send_email import FromAddress, send_email
-from zerver.lib.validator import check_int, check_string
+from zerver.lib.validator import check_int, check_string_in
 from zerver.models import UserProfile, get_realm
 
 billing_logger = logging.getLogger("corporate.stripe")
@@ -71,12 +71,9 @@ def check_upgrade_parameters(
     has_stripe_token: bool,
     seat_count: int,
 ) -> None:
-    if billing_modality not in VALID_BILLING_MODALITY_VALUES:
-        raise BillingError("unknown billing_modality")
-    if schedule not in VALID_BILLING_SCHEDULE_VALUES:
-        raise BillingError("unknown schedule")
-    if license_management not in VALID_LICENSE_MANAGEMENT_VALUES:
-        raise BillingError("unknown license_management")
+    assert billing_modality in VALID_BILLING_MODALITY_VALUES
+    assert schedule in VALID_BILLING_SCHEDULE_VALUES
+    assert license_management in VALID_LICENSE_MANAGEMENT_VALUES
 
     if billing_modality == "charge_automatically":
         if not has_stripe_token:
@@ -127,14 +124,17 @@ def payment_method_string(stripe_customer: stripe.Customer) -> str:
 def upgrade(
     request: HttpRequest,
     user: UserProfile,
-    billing_modality: str = REQ(json_validator=check_string),
-    schedule: str = REQ(json_validator=check_string),
-    license_management: Optional[str] = REQ(json_validator=check_string, default=None),
+    billing_modality: str = REQ(str_validator=check_string_in(VALID_BILLING_MODALITY_VALUES)),
+    schedule: str = REQ(str_validator=check_string_in(VALID_BILLING_SCHEDULE_VALUES)),
+    signed_seat_count: str = REQ(),
+    salt: str = REQ(),
+    license_management: Optional[str] = REQ(
+        default=None, str_validator=check_string_in(VALID_LICENSE_MANAGEMENT_VALUES)
+    ),
     licenses: Optional[int] = REQ(json_validator=check_int, default=None),
-    stripe_token: Optional[str] = REQ(json_validator=check_string, default=None),
-    signed_seat_count: str = REQ(json_validator=check_string),
-    salt: str = REQ(json_validator=check_string),
+    stripe_token: Optional[str] = REQ(default=None),
 ) -> HttpResponse:
+
     try:
         seat_count = unsign_seat_count(signed_seat_count, salt)
         if billing_modality == "charge_automatically" and license_management == "automatic":
@@ -236,9 +236,9 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
 def sponsorship(
     request: HttpRequest,
     user: UserProfile,
-    organization_type: str = REQ("organization-type", json_validator=check_string),
-    website: str = REQ("website", json_validator=check_string),
-    description: str = REQ("description", json_validator=check_string),
+    organization_type: str = REQ("organization-type"),
+    website: str = REQ(),
+    description: str = REQ(),
 ) -> HttpResponse:
     realm = user.realm
 
@@ -388,7 +388,7 @@ def change_plan_status(
 def replace_payment_source(
     request: HttpRequest,
     user: UserProfile,
-    stripe_token: str = REQ("stripe_token", json_validator=check_string),
+    stripe_token: str = REQ(),
 ) -> HttpResponse:
     try:
         do_replace_payment_source(user, stripe_token, pay_invoices=True)
