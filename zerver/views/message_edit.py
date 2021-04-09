@@ -20,7 +20,7 @@ from zerver.lib.markdown import MentionData
 from zerver.lib.message import access_message, truncate_body
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.response import json_error, json_success
-from zerver.lib.streams import get_stream_by_id
+from zerver.lib.streams import access_stream_by_id, get_stream_by_id
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import LEGACY_PREV_TOPIC, REQ_topic
 from zerver.lib.validator import check_bool, check_string_in, to_non_negative_int
@@ -197,7 +197,7 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
             raise JsonableError(_("Cannot change message content while changing stream"))
 
         old_stream = get_stream_by_id(message.recipient.type_id)
-        new_stream = get_stream_by_id(stream_id)
+        new_stream = access_stream_by_id(user_profile, stream_id, require_active=True)[0]
 
         if not (old_stream.is_public() and new_stream.is_public()):
             # We'll likely decide to relax this condition in the
