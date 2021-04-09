@@ -135,6 +135,7 @@ export default (_env: unknown, argv: {mode?: string}): webpack.Configuration[] =
                         {
                             loader: "handlebars-loader",
                             options: {
+                                ignoreHelpers: true,
                                 // Tell webpack not to explicitly require these.
                                 knownHelpers: [
                                     "if",
