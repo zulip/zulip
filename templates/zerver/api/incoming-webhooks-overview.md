@@ -36,10 +36,11 @@ process.
 * Set up the
   [Zulip development environment](https://zulip.readthedocs.io/en/latest/development/overview.html).
 
-* Use <https://webhook.site/> or a similar site to capture an example
+* Use [Zulip's JSON integration](/integrations/doc/json),
+  <https://webhook.site/>, or a similar site to capture an example
   webhook payload from the third-party service. Create a
-  `zerver/webhooks/<mywebhook>/fixtures/` directory, and add the captured
-  payload as a test fixture.
+  `zerver/webhooks/<mywebhook>/fixtures/` directory, and add the
+  captured payload as a test fixture.
 
 * Create an `Integration` object, and add it to `WEBHOOK_INTEGRATIONS` in
   `zerver/lib/integrations.py`. Search for `webhook` in that file to find an

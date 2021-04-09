@@ -13,9 +13,10 @@ integration.
 The first step in creating an incoming webhook is to examine the data that the
 service you want to integrate will be sending to Zulip.
 
-Use <https://webhook.site/> or a similar tool to capture
-webhook payload(s) from the service you are integrating. Examining this
-data allows you to do two things:
+* Use [Zulip's JSON integration](/integrations/doc/json),
+<https://webhook.site/>, or a similar tool to capture webhook
+payload(s) from the service you are integrating. Examining this data
+allows you to do two things:
 
 1. Determine how you will need to structure your webhook code, including what
    message types your integration should support and how.
