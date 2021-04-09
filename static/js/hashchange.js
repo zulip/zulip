@@ -289,7 +289,9 @@ function hashchanged(from_reload, e) {
     }
 
     if (hash_util.is_overlay_hash(window.location.hash)) {
+        browser_history.state.changing_hash = true;
         do_hashchange_overlay(old_hash);
+        browser_history.state.changing_hash = false;
         return undefined;
     }
 
