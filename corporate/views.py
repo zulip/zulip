@@ -51,6 +51,8 @@ from zerver.models import UserProfile, get_realm
 
 billing_logger = logging.getLogger("corporate.stripe")
 
+VALID_LICENSE_MANAGEMENT_VALUES = ["automatic", "manual"]
+
 
 def unsign_seat_count(signed_seat_count: str, salt: str) -> int:
     try:
@@ -71,7 +73,7 @@ def check_upgrade_parameters(
         raise BillingError("unknown billing_modality")
     if schedule not in ["annual", "monthly"]:
         raise BillingError("unknown schedule")
-    if license_management not in ["automatic", "manual"]:
+    if license_management not in VALID_LICENSE_MANAGEMENT_VALUES:
         raise BillingError("unknown license_management")
 
     if billing_modality == "charge_automatically":
