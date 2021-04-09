@@ -1,5 +1,6 @@
 import $ from "jquery";
 import _ from "lodash";
+import tippy from "tippy.js";
 
 import render_subscription from "../templates/subscription.hbs";
 import render_subscription_settings from "../templates/subscription_settings.hbs";
@@ -564,19 +565,19 @@ export function setup_page(callback) {
         const sort_toggler = components.toggle({
             values: [
                 {
-                    label_html: `<i class="fa fa-sort-alpha-asc" title="${i18n.t(
+                    label_html: `<i class="fa fa-sort-alpha-asc tippy-bottom tippy-zulip-tooltip" data-tippy-content="${i18n.t(
                         "Sort by name",
                     )}"></i>`,
                     key: "by-stream-name",
                 },
                 {
-                    label_html: `<i class="fa fa-user-o" title="${i18n.t(
+                    label_html: `<i class="fa fa-user-o tippy-bottom tippy-zulip-tooltip" data-tippy-content="${i18n.t(
                         "Sort by number of subscribers",
                     )}"></i>`,
                     key: "by-subscriber-count",
                 },
                 {
-                    label_html: `<i class="fa fa-bar-chart" title="${i18n.t(
+                    label_html: `<i class="fa fa-bar-chart tippy-bottom tippy-zulip-tooltip" data-tippy-content="${i18n.t(
                         "Sort by estimated weekly traffic",
                     )}"></i>`,
                     key: "by-weekly-traffic",
@@ -588,6 +589,11 @@ export function setup_page(callback) {
             },
         });
         $("#subscriptions_table .search-container").prepend(sort_toggler.get());
+
+        // place subs tooltips at bottom
+        tippy(".tippy-bottom", {
+            placement: "bottom",
+        });
 
         // Reset our internal state to reflect that we're initially in
         // the "Subscribed" tab if we're reopening "Manage streams".
