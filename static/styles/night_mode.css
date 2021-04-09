@@ -165,6 +165,7 @@ on a dark background, and don't change the dark labels dark either. */
         color: hsl(236, 33%, 90%);
     }
 
+    .recent_topics_container .unread_count,
     .topic-list-item .unread_count,
     .expanded_private_message .unread_count {
         background-color: hsla(105, 2%, 50%, 0.5);
@@ -412,11 +413,6 @@ on a dark background, and don't change the dark labels dark either. */
     .emoji-info-popover .emoji-popover .emoji-popover-category-tabs,
     .emoji-info-popover .emoji-popover .emoji-popover-top {
         background-color: hsla(0, 0%, 0%, 0.2);
-    }
-
-    .recent_topic_unread_count {
-        background-color: hsl(0, 0%, 15%) !important;
-        color: hsl(0, 0%, 100%);
     }
 
     .recent_avatars_others {
