@@ -51,6 +51,7 @@ from zerver.models import UserProfile, get_realm
 
 billing_logger = logging.getLogger("corporate.stripe")
 
+VALID_BILLING_MODALITY_VALUES = ["send_invoice", "charge_automatically"]
 VALID_LICENSE_MANAGEMENT_VALUES = ["automatic", "manual"]
 
 
@@ -69,7 +70,7 @@ def check_upgrade_parameters(
     has_stripe_token: bool,
     seat_count: int,
 ) -> None:
-    if billing_modality not in ["send_invoice", "charge_automatically"]:
+    if billing_modality not in VALID_BILLING_MODALITY_VALUES:
         raise BillingError("unknown billing_modality")
     if schedule not in ["annual", "monthly"]:
         raise BillingError("unknown schedule")
