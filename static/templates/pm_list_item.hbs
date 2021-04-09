@@ -16,9 +16,9 @@
         <a href='{{url}}' class="conversation-partners">
             {{recipients}}
         </a>
-        <div class="private_message_count {{#if is_zero}}zero_count{{/if}}">
-            <div class="value">{{unread}}</div>
-        </div>
+        <span class="unread_count {{#if is_zero}}zero_count{{/if}}">
+            {{unread}}
+        </span>
     </span>
 </li>
 
