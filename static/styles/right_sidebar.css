@@ -126,24 +126,12 @@
     align-items: flex-start;
     justify-content: space-between;
 
-    .count {
-        float: right;
-        padding: 0 4px;
-        background-color: hsl(105, 2%, 50%);
-        color: hsl(0, 0%, 100%);
-        font-size: 12px;
-        line-height: 14px;
-        height: 15px;
-        font-weight: normal;
-        letter-spacing: 0.6px;
-        position: relative;
-        top: 3px;
-        border-radius: 4px;
-        margin-left: 5px;
+    .unread_count {
         display: none;
+        margin-top: 2.5px;
     }
 
-    &.user-with-count .count {
+    &.user-with-count .unread_count {
         display: block;
     }
 }
