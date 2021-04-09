@@ -48,6 +48,7 @@ from zerver.context_processors import common_context
 from zerver.decorator import do_two_factor_login
 from zerver.forms import HomepageForm, check_subdomain_available
 from zerver.lib.email_notifications import enqueue_welcome_emails, followup_day2_email_delay
+from zerver.lib.i18n import get_default_language_for_new_user
 from zerver.lib.initial_password import initial_password
 from zerver.lib.mobile_auth_otp import (
     ascii_to_hex,
@@ -70,6 +71,7 @@ from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.subdomains import is_root_domain_available
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
+    HostRequestMock,
     avatar_disk_path,
     cache_tries_captured,
     find_key_by_email,
@@ -5550,6 +5552,19 @@ class UserSignUpTest(InviteUserBase):
             days=settings.DEMO_ORG_DEADLINE_DAYS
         )
         self.assertEqual(realm.demo_organization_scheduled_deletion_date, expected_deletion_date)
+
+    def test_get_default_language_for_new_user(self) -> None:
+        realm = get_realm("zulip")
+        req = HostRequestMock()
+        req.META["HTTP_ACCEPT_LANGUAGE"] = "de,en"
+        self.assertEqual(get_default_language_for_new_user(req, realm), "de")
+
+        do_set_realm_property(realm, "default_language", "hi", acting_user=None)
+        realm.refresh_from_db()
+        self.assertEqual(get_default_language_for_new_user(req, realm), "de")
+
+        req.META["HTTP_ACCEPT_LANGUAGE"] = ""
+        self.assertEqual(get_default_language_for_new_user(req, realm), "hi")
 
 
 class DeactivateUserTest(ZulipTestCase):
