@@ -12,6 +12,7 @@ from django.utils import translation
 from django.utils.translation.trans_real import parse_accept_lang_header
 
 from zerver.lib.request import RequestNotes
+from zerver.models import Realm
 
 
 @lru_cache(None)
@@ -82,3 +83,10 @@ def get_browser_language_code(request: HttpRequest) -> Optional[str]:
         if accept_lang in available_language_codes:
             return accept_lang
     return None
+
+
+def get_default_language_for_new_user(request: HttpRequest, realm: Realm) -> str:
+    browser_language_code = get_browser_language_code(request)
+    if browser_language_code is not None:
+        return browser_language_code
+    return realm.default_language
