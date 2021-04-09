@@ -55,7 +55,7 @@ export function update(new_hash) {
 }
 
 export function exit_overlay() {
-    if (hash_util.is_overlay_hash(window.location.hash)) {
+    if (hash_util.is_overlay_hash(window.location.hash) && !state.changing_hash) {
         ui_util.blur_active_element();
         const new_hash = state.hash_before_overlay || "#";
         update(new_hash);
