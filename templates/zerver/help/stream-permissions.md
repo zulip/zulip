@@ -68,7 +68,7 @@ administrator can access private stream messages:
 
 &#10004; Always
 
-&#9726; &nbsp; If subscribed to the stream
+&#9726; If subscribed to the stream
 
 &#10038; [Configurable](/help/stream-sending-policy).  Owners,
 Administrators, and Members can, by default, post to any public
@@ -96,7 +96,7 @@ subscribed.
 
 &#10004; Always
 
-&#9726; &nbsp; If subscribed to the stream
+&#9726; If subscribed to the stream
 
 &#10038; [Configurable](/help/stream-sending-policy), but at minimum
 must be subscribed to the stream.
