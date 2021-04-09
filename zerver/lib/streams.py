@@ -333,7 +333,8 @@ def access_stream_common(
 
     # First, we don't allow any access to streams in other realms.
     if stream.realm_id != user_profile.realm_id:
-        raise JsonableError(error)
+        # Callers should verify this on their own, so this functions as defensive code.
+        raise AssertionError("user_profile and stream realms don't match")
 
     try:
         sub = Subscription.objects.get(
@@ -372,9 +373,12 @@ def access_stream_by_id(
     require_active: bool = True,
     allow_realm_admin: bool = False,
 ) -> Tuple[Stream, Optional[Subscription]]:
-    stream = get_stream_by_id(stream_id)
-
     error = _("Invalid stream id")
+    try:
+        stream = get_stream_by_id_in_realm(stream_id, user_profile.realm)
+    except Stream.DoesNotExist:
+        raise JsonableError(error)
+
     sub = access_stream_common(
         user_profile,
         stream,
@@ -400,15 +404,6 @@ def get_web_public_streams_queryset(realm: Realm) -> "QuerySet[Stream]":
         history_public_to_subscribers=True,
         is_web_public=True,
     )
-
-
-def get_stream_by_id(stream_id: int) -> Stream:
-    error = _("Invalid stream id")
-    try:
-        stream = Stream.objects.get(id=stream_id)
-    except Stream.DoesNotExist:
-        raise JsonableError(error)
-    return stream
 
 
 def check_stream_name_available(realm: Realm, name: str) -> None:
