@@ -165,7 +165,7 @@ on a dark background, and don't change the dark labels dark either. */
         color: hsl(236, 33%, 90%);
     }
 
-    .topic-unread-count,
+    .topic-list-item .unread_count,
     .private_message_count {
         background-color: hsla(105, 2%, 50%, 0.5);
     }

@@ -289,7 +289,6 @@ li.top_left_recent_topics {
     font-size: 13px;
 }
 
-.topic-unread-count,
 .private_message_count {
     float: right;
     padding: 0 4px;
@@ -312,7 +311,6 @@ li.top_left_recent_topics {
 }
 
 /* These are true "unread" counts. */
-.topic-unread-count,
 .private_message_count {
     background-color: hsl(105, 2%, 50%);
     color: hsl(0, 0%, 100%);
