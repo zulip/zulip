@@ -199,6 +199,19 @@ async function test_streams_with_duplicate_names_cannot_be_created(page: Page): 
     await page.click(cancel_button_selector);
 }
 
+async function test_streams_with_name_containing_asterisk_character(page: Page): Promise<void> {
+    await page.click("#add_new_subscription .create_stream_button");
+    await page.waitForSelector("form#stream_creation_form", {visible: true});
+    await common.fill_form(page, "form#stream_creation_form", {stream_name: "ab*cd"});
+    await page.click("form#stream_creation_form button.button.sea-green");
+    assert.strictEqual(
+        await stream_name_error(page),
+        "A stream name should not any contain '*' character",
+    );
+    const cancel_button_selector = "form#stream_creation_form button.button.white";
+    await page.click(cancel_button_selector);
+}
+
 async function test_stream_creation(page: Page): Promise<void> {
     const cordelia_checkbox = await user_checkbox(page, "cordelia");
     const othello_checkbox = await user_checkbox(page, "othello");
@@ -217,6 +230,7 @@ async function test_stream_creation(page: Page): Promise<void> {
     await create_stream(page);
     await test_streams_with_empty_names_cannot_be_created(page);
     await test_streams_with_duplicate_names_cannot_be_created(page);
+    await test_streams_with_name_containing_asterisk_character(page);
 }
 
 async function test_streams_search_feature(page: Page): Promise<void> {
