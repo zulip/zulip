@@ -11,16 +11,16 @@
     accessing some combination of data from recent_senders
     and pm_conversations for better accuracy.
 */
-const user_set = new Set();
+const user_set = new Set<number>();
 
-export function clear_for_testing() {
+export function clear_for_testing(): void {
     user_set.clear();
 }
 
-export function user_ids() {
+export function user_ids(): number[] {
     return Array.from(user_set);
 }
 
-export function add_user_id(user_id) {
+export function add_user_id(user_id: number): void {
     user_set.add(user_id);
 }
