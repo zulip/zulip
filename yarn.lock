@@ -11764,9 +11764,9 @@ source-map@^0.5.0, source-map@^0.5.6, source-map@^0.5.7:
   resolved "https://registry.yarnpkg.com/source-map/-/source-map-0.5.7.tgz#8a039d2d1021d22d1ea14c80d8ea468ba2ef3fcc"
   integrity sha1-igOdLRAh0i0eoUyA2OpGi6LvP8w=
 
-source-map@^0.6.0, source-map@^0.6.1, "source-map@https://github.com/benthemonkey/source-map.git#d95423f77edef6cbb9e21d2d6014c7de85ae220a", source-map@~0.6.0, source-map@~0.6.1:
+source-map@^0.6.0, source-map@^0.6.1, "source-map@https://codeload.github.com/benthemonkey/source-map/tar.gz/d95423f77edef6cbb9e21d2d6014c7de85ae220a", source-map@~0.6.0, source-map@~0.6.1:
   version "0.6.1"
-  resolved "https://github.com/benthemonkey/source-map.git#d95423f77edef6cbb9e21d2d6014c7de85ae220a"
+  resolved "https://codeload.github.com/benthemonkey/source-map/tar.gz/d95423f77edef6cbb9e21d2d6014c7de85ae220a#e545acc18a90e6bc2308fcf8126de26793c8e0af"
 
 source-map@^0.7.3, source-map@~0.7.2:
   version "0.7.3"
