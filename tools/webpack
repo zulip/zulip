@@ -52,7 +52,8 @@ def build_for_dev_server(host: str, port: str, minify: bool, disable_host_check:
             if fields[1] == cwd:
                 inotify_broken = fields[2] in ["nfs", "vboxsf", "prl_fs"]
     if inotify_broken:
-        webpack_args.append("--watch-poll=1000")
+        os.environ["CHOKIDAR_USEPOLLING"] = "1"
+        os.environ["CHOKIDAR_INTERVAL"] = "1000"
 
     # TODO: This process should also fall back to periodic polling if
     # inotify_broken.
