@@ -9,9 +9,7 @@
                     </span>
                     {#- squash whitespace -#}
                     <span>{{ _('All messages') }}</span>
-                    <span class="count">
-                        <span class="value"></span>
-                    </span>
+                    <span class="unread_count"></span>
                 </a>
                 <span class="arrow all-messages-sidebar-menu-icon"><i class="zulip-icon ellipsis-v-solid" aria-hidden="true"></i></span>
             </li>
@@ -23,9 +21,7 @@
                         </span>
                         {#- squash whitespace -#}
                         <span>{{ _('Private messages') }}</span>
-                        <span class="count">
-                            <span class="value"></span>
-                        </span>
+                        <span class="unread_count"></span>
                     </a>
                 </div>
                 <div id="private-container" class="scrolling_list" data-simplebar>
@@ -38,9 +34,7 @@
                     </span>
                     {#- squash whitespace -#}
                     <span>{{ _('Mentions') }}</span>
-                    <span class="count">
-                        <span class="value"></span>
-                    </span>
+                    <span class="unread_count"></span>
                 </a>
             </li>
             <li class="top_left_starred_messages top_left_row">
@@ -50,9 +44,7 @@
                     </span>
                     {#- squash whitespace -#}
                     <span>{{ _('Starred messages') }}</span>
-                    <span class="count">
-                        <span class="value"></span>
-                    </span>
+                    <span class="unread_count"></span>
                 </a>
                 <span class="arrow starred-messages-sidebar-menu-icon"><i class="zulip-icon ellipsis-v-solid" aria-hidden="true"></i></span>
             </li>

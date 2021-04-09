@@ -49,13 +49,11 @@ const social = {
 let num_unread_for_stream;
 
 function create_devel_sidebar_row() {
-    const devel_value = $.create("devel-value");
     const devel_count = $.create("devel-count");
 
     const sidebar_row = $("<devel sidebar row>");
 
-    sidebar_row.set_find_results(".count", devel_count);
-    devel_count.set_find_results(".value", devel_value);
+    sidebar_row.set_find_results(".unread_count", devel_count);
     devel_count.set_parent(sidebar_row);
 
     stub_templates((template_name, data) => {
@@ -66,16 +64,14 @@ function create_devel_sidebar_row() {
 
     num_unread_for_stream = 42;
     stream_list.create_sidebar_row(devel);
-    assert.equal(devel_value.text(), "42");
+    assert.equal(devel_count.text(), "42");
 }
 
 function create_social_sidebar_row() {
-    const social_value = $.create("social-value");
     const social_count = $.create("social-count");
     const sidebar_row = $("<social sidebar row>");
 
-    sidebar_row.set_find_results(".count", social_count);
-    social_count.set_find_results(".value", social_value);
+    sidebar_row.set_find_results(".unread_count", social_count);
     social_count.set_parent(sidebar_row);
 
     stub_templates((template_name, data) => {
@@ -86,7 +82,7 @@ function create_social_sidebar_row() {
 
     num_unread_for_stream = 99;
     stream_list.create_sidebar_row(social);
-    assert.equal(social_value.text(), "99");
+    assert.equal(social_count.text(), "99");
 }
 
 function test_ui(label, f) {
@@ -587,17 +583,15 @@ test_ui("separators_only_pinned", () => {
 });
 
 test_ui("update_count_in_dom", () => {
-    function make_elem(elem, count_selector, value_selector) {
+    function make_elem(elem, count_selector) {
         const count = $(count_selector);
-        const value = $(value_selector);
-        elem.set_find_results(".count", count);
-        count.set_find_results(".value", value);
+        elem.set_find_results(".unread_count", count);
         count.set_parent(elem);
 
         return elem;
     }
 
-    const stream_li = make_elem($("<stream li>"), "<stream-count>", "<stream-value>");
+    const stream_li = make_elem($("<stream li>"), "<stream-count>");
 
     $("<stream li>").length = 0;
     stream_li.addClass("subscription_block");
@@ -628,7 +622,7 @@ test_ui("update_count_in_dom", () => {
     stream_count.set(stream_id, 99);
 
     stream_list.update_dom_with_unread_counts(counts);
-    assert.equal($("<stream-value>").text(), "99");
+    assert.equal($("<stream-count>").text(), "99");
     assert(stream_li.hasClass("stream-with-count"));
 });
 

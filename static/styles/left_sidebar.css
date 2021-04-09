@@ -233,7 +233,7 @@ li.active-sub-filter {
         text-align: center;
     }
 
-    .count {
+    .top_left_row .unread_count {
         margin-right: 20px;
         margin-top: 2px;
         display: none;
@@ -289,14 +289,6 @@ li.top_left_recent_topics {
     font-size: 13px;
 }
 
-/* We are mostly consistent in how we style
-   unread counts, except for starred messages.
-   This is the common section.
-*/
-.top_left_all_messages .count,
-.top_left_private_messages .count,
-.top_left_starred_messages .count,
-.top_left_mentions .count,
 #stream_filters .count,
 .topic-unread-count,
 .private_message_count {
@@ -321,9 +313,6 @@ li.top_left_recent_topics {
 }
 
 /* These are true "unread" counts. */
-.top_left_all_messages .count,
-.top_left_private_messages .count,
-.top_left_mentions .count,
 #stream_filters .count,
 .topic-unread-count,
 .private_message_count {

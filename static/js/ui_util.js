@@ -42,15 +42,14 @@ export function convert_enter_to_click(e) {
 export function update_unread_count_in_dom(unread_count_elem, count) {
     // This function is used to update unread count in top left corner
     // elements.
-    const count_span = unread_count_elem.find(".count");
-    const value_span = count_span.find(".value");
+    const unread_count_span = unread_count_elem.find(".unread_count");
 
     if (count === 0) {
-        count_span.hide();
-        value_span.text("");
+        unread_count_span.hide();
+        unread_count_span.text("");
         return;
     }
 
-    count_span.show();
-    value_span.text(count);
+    unread_count_span.show();
+    unread_count_span.text(count);
 }

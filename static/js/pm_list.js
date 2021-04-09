@@ -8,9 +8,9 @@ import * as pm_conversations from "./pm_conversations";
 import * as pm_list_dom from "./pm_list_dom";
 import * as stream_popover from "./stream_popover";
 import * as ui from "./ui";
+import * as ui_util from "./ui_util";
 import * as unread from "./unread";
 import * as vdom from "./vdom";
-import * as ui_util from "./ui_util";
 
 let prior_dom;
 let private_messages_open = false;

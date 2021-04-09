@@ -3,8 +3,8 @@ import $ from "jquery";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as resize from "./resize";
-import * as unread_ui from "./unread_ui";
 import * as ui_util from "./ui_util";
+import * as unread_ui from "./unread_ui";
 
 export function update_starred_count(count) {
     const starred_li = $(".top_left_starred_messages");
