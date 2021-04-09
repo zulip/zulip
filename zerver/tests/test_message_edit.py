@@ -17,7 +17,7 @@ from zerver.lib.message import MessageDict, has_message_access, messages_for_ids
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import cache_tries_captured, queries_captured
 from zerver.lib.topic import LEGACY_PREV_TOPIC, TOPIC_NAME
-from zerver.models import Message, Stream, UserMessage, UserProfile
+from zerver.models import Message, Stream, UserMessage, UserProfile, get_realm
 
 
 class EditMessageTest(ZulipTestCase):
@@ -1084,6 +1084,48 @@ class EditMessageTest(ZulipTestCase):
             f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**",
         )
 
+    def test_move_message_realm_admin_cant_move_to_another_realm(self) -> None:
+        user_profile = self.example_user("iago")
+        self.assertEqual(user_profile.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        self.login("iago")
+
+        lear_realm = get_realm("lear")
+        new_stream = self.make_stream("new", lear_realm)
+
+        msg_id = self.send_stream_message(user_profile, "Verona", topic_name="test123")
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "message_id": msg_id,
+                "stream_id": new_stream.id,
+                "propagate_mode": "change_all",
+            },
+        )
+
+        self.assert_json_error(result, "Invalid stream id")
+
+    def test_move_message_realm_admin_cant_move_to_private_stream_without_subscription(
+        self,
+    ) -> None:
+        user_profile = self.example_user("iago")
+        self.assertEqual(user_profile.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        self.login("iago")
+
+        new_stream = self.make_stream("new", invite_only=True)
+        msg_id = self.send_stream_message(user_profile, "Verona", topic_name="test123")
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "message_id": msg_id,
+                "stream_id": new_stream.id,
+                "propagate_mode": "change_all",
+            },
+        )
+
+        self.assert_json_error(result, "Invalid stream id")
+
     def test_move_message_to_stream_change_later(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test"
@@ -1173,7 +1215,7 @@ class EditMessageTest(ZulipTestCase):
                     "topic": "new topic",
                 },
             )
-        self.assertEqual(len(queries), 48)
+        self.assertEqual(len(queries), 49)
         self.assertEqual(len(cache_tries), 13)
 
         messages = get_topic_messages(user_profile, old_stream, "test")
