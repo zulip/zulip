@@ -18,6 +18,7 @@ from zerver.decorator import (
     authenticated_rest_api_view,
     authenticated_uploads_api_view,
     cachify,
+    get_browser_locale,
     internal_notify_view,
     is_local_addr,
     rate_limit,
@@ -124,6 +125,20 @@ class DecoratorTestCase(ZulipTestCase):
             "HTTP_USER_AGENT"
         ] = "Mozilla/5.0 (Linux; Android 8.0.0; SM-G930F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Mobile Safari/537.36"
         self.assertEqual(parse_client(req), ("Mozilla", None))
+
+    def test_get_browser_locale(self) -> None:
+        req = HostRequestMock()
+        req.META["HTTP_ACCEPT_LANGUAGE"] = "fr,en,de"
+        self.assertEqual(get_browser_locale(req), "fr")
+
+        req.META["HTTP_ACCEPT_LANGUAGE"] = "en-us"
+        self.assertEqual(get_browser_locale(req), "en-us")
+
+        req.META["HTTP_ACCEPT_LANGUAGE"] = "en-us,fr,zh-cn"
+        self.assertEqual(get_browser_locale(req), "en-us")
+
+        req.META["HTTP_ACCEPT_LANGUAGE"] = ""
+        self.assertIsNone(get_browser_locale(req))
 
     def test_REQ_aliases(self) -> None:
         @has_request_variables

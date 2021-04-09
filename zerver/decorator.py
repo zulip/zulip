@@ -164,6 +164,13 @@ def require_billing_access(func: ViewFuncT) -> ViewFuncT:
     return cast(ViewFuncT, wrapper)  # https://github.com/python/mypy/issues/1927
 
 
+def get_browser_locale(request: HttpRequest) -> Optional[str]:
+    browser_locale = request.META.get("HTTP_ACCEPT_LANGUAGE")
+    if not browser_locale:
+        return None
+    return browser_locale.split(",")[0]
+
+
 def process_client(
     request: HttpRequest,
     user_profile: UserProfile,
