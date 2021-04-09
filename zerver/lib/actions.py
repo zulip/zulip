@@ -32,6 +32,7 @@ from django.core.files import File
 from django.db import IntegrityError, connection, transaction
 from django.db.models import Count, Exists, F, OuterRef, Q, Sum
 from django.db.models.query import QuerySet
+from django.http import HttpRequest
 from django.utils.html import escape
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
@@ -49,7 +50,7 @@ from confirmation.models import (
     create_confirmation_link,
     generate_key,
 )
-from zerver.decorator import statsd_increment
+from zerver.decorator import get_browser_locale, statsd_increment
 from zerver.lib import retention as retention
 from zerver.lib.addressee import Addressee
 from zerver.lib.alert_words import (
@@ -95,7 +96,7 @@ from zerver.lib.exceptions import (
 from zerver.lib.export import get_realm_exports_serialized
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.hotspots import get_next_hotspots
-from zerver.lib.i18n import get_language_name
+from zerver.lib.i18n import get_available_language_locales, get_language_name
 from zerver.lib.markdown import MentionData, topic_links
 from zerver.lib.markdown import version as markdown_version
 from zerver.lib.message import (
@@ -758,6 +759,20 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserP
 
 def active_humans_in_realm(realm: Realm) -> Sequence[UserProfile]:
     return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False)
+
+
+def get_user_default_language(request: HttpRequest, realm: Realm) -> str:
+    browser_locale = get_browser_locale(request)
+    if browser_locale is not None and browser_locale in get_available_language_locales():
+        return browser_locale
+    return realm.default_language
+
+
+def get_realm_default_language(request: HttpRequest) -> str:
+    browser_locale = get_browser_locale(request)
+    if browser_locale is None:
+        return "en"
+    return browser_locale
 
 
 def do_set_realm_property(

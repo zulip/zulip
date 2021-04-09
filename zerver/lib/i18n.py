@@ -76,6 +76,12 @@ def get_available_language_codes() -> List[str]:
     return codes
 
 
+def get_available_language_locales() -> List[str]:
+    language_list = get_language_list()
+    locales = [language["locale"] for language in language_list]
+    return locales
+
+
 def get_language_translation_data(language: str) -> Dict[str, str]:
     if language == "en":
         return {}

@@ -45,9 +45,12 @@ from zerver.lib.actions import (
     do_deactivate_user,
     do_get_user_invites,
     do_invite_users,
+    do_set_realm_default_language,
     do_set_realm_property,
     get_default_streams_for_realm,
+    get_realm_default_language,
     get_stream,
+    get_user_default_language,
 )
 from zerver.lib.email_notifications import enqueue_welcome_emails, followup_day2_email_delay
 from zerver.lib.initial_password import initial_password
@@ -67,6 +70,7 @@ from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.subdomains import is_root_domain_available
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
+    HostRequestMock,
     avatar_disk_path,
     cache_tries_captured,
     find_key_by_email,
@@ -3156,6 +3160,14 @@ class RealmCreationTest(ZulipTestCase):
             check_subdomain_available("stream")
         check_subdomain_available("stream", allow_reserved_subdomain=True)
 
+    def test_get_realm_default_language(self) -> None:
+        req = HostRequestMock()
+        req.META["HTTP_ACCEPT_LANGUAGE"] = "de,fr"
+        self.assertEqual(get_realm_default_language(req), "de")
+
+        req.META["HTTP_ACCEPT_LANGUAGE"] = ""
+        self.assertEqual(get_realm_default_language(req), "en")
+
 
 class UserSignUpTest(InviteUserBase):
     def _assert_redirected_to(self, result: HttpResponse, url: str) -> None:
@@ -4778,6 +4790,17 @@ class UserSignUpTest(InviteUserBase):
 
         user_profile = UserProfile.objects.all().order_by("id").last()
         self.assert_logged_in_user_id(user_profile.id)
+
+    def test_get_user_default_language(self) -> None:
+        realm = get_realm("zulip")
+        req = HostRequestMock()
+        req.META["HTTP_ACCEPT_LANGUAGE"] = "de,en"
+        self.assertEqual(get_user_default_language(req, realm), "de")
+
+        do_set_realm_default_language(realm, "hi")
+        realm.refresh_from_db()
+        req.META["HTTP_ACCEPT_LANGUAGE"] = ""
+        self.assertEqual(get_user_default_language(req, realm), "hi")
 
 
 class DeactivateUserTest(ZulipTestCase):
