@@ -984,7 +984,7 @@ class EditMessageTest(ZulipTestCase):
                 'propagate_mode': 'change_all',
                 'topic': 'new topic',
             })
-        self.assertEqual(len(queries), 53)
+        self.assertEqual(len(queries), 55)
 
         messages = get_topic_messages(user_profile, old_stream, "test")
         self.assertEqual(len(messages), 1)
