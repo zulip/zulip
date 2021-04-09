@@ -20,6 +20,7 @@ import * as stream_sort from "./stream_sort";
 import * as topic_list from "./topic_list";
 import * as topic_zoom from "./topic_zoom";
 import * as ui from "./ui";
+import * as ui_util from "./ui_util";
 import * as unread from "./unread";
 
 export let stream_cursor;
@@ -27,24 +28,19 @@ export let stream_cursor;
 let has_scrolled = false;
 
 export function update_count_in_dom(unread_count_elem, count) {
-    const count_span = unread_count_elem.find(".count");
-    const value_span = count_span.find(".value");
+    ui_util.update_unread_count_in_dom(unread_count_elem, count);
 
+    const count_span = unread_count_elem.find(".unread_count");
     if (count === 0) {
-        count_span.hide();
         if (count_span.parent().hasClass("subscription_block")) {
             count_span.parent(".subscription_block").removeClass("stream-with-count");
         }
-        value_span.text("");
         return;
     }
-
-    count_span.show();
 
     if (count_span.parent().hasClass("subscription_block")) {
         count_span.parent(".subscription_block").addClass("stream-with-count");
     }
-    value_span.text(count);
 }
 
 class StreamSidebar {
