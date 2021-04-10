@@ -1,9 +1,12 @@
 from datetime import datetime, timezone
 from unittest import mock
 
+import orjson
+
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.user_mutes import get_mute_object, get_user_mutes
+from zerver.models import RealmAuditLog
 
 
 class MutedUsersTests(ZulipTestCase):
@@ -92,6 +95,22 @@ class MutedUsersTests(ZulipTestCase):
         )
         self.assertIsNotNone(get_mute_object(hamlet, cordelia))
 
+        audit_log_entries = list(
+            RealmAuditLog.objects.filter(acting_user=hamlet, modified_user=hamlet).values_list(
+                "event_type", "event_time", "extra_data"
+            )
+        )
+        self.assertEqual(len(audit_log_entries), 1)
+        audit_log_entry = audit_log_entries[0]
+        self.assertEqual(
+            audit_log_entry,
+            (
+                RealmAuditLog.USER_MUTED,
+                mute_time,
+                orjson.dumps({"muted_user_id": cordelia.id}).decode(),
+            ),
+        )
+
     def test_remove_muted_user_unmute_before_muting(self) -> None:
         hamlet = self.example_user("hamlet")
         self.login_user(hamlet)
@@ -107,12 +126,15 @@ class MutedUsersTests(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         mute_time = datetime(2021, 1, 1, tzinfo=timezone.utc)
 
-        url = "/api/v1/users/me/muted_users/{}".format(cordelia.id)
-        result = self.api_post(hamlet, url)
-        self.assert_json_success(result)
+        with mock.patch("zerver.views.muting.timezone_now", return_value=mute_time):
+            url = "/api/v1/users/me/muted_users/{}".format(cordelia.id)
+            result = self.api_post(hamlet, url)
+            self.assert_json_success(result)
 
-        url = "/api/v1/users/me/muted_users/{}".format(cordelia.id)
-        result = self.api_delete(hamlet, url)
+        with mock.patch("zerver.lib.actions.timezone_now", return_value=mute_time):
+            # To test that `RealmAuditLog` entry has correct `event_time`.
+            url = "/api/v1/users/me/muted_users/{}".format(cordelia.id)
+            result = self.api_delete(hamlet, url)
 
         self.assert_json_success(result)
         self.assertNotIn(
@@ -123,3 +145,19 @@ class MutedUsersTests(ZulipTestCase):
             get_user_mutes(hamlet),
         )
         self.assertIsNone(get_mute_object(hamlet, cordelia))
+
+        audit_log_entries = list(
+            RealmAuditLog.objects.filter(acting_user=hamlet, modified_user=hamlet)
+            .values_list("event_type", "event_time", "extra_data")
+            .order_by("id")
+        )
+        self.assertEqual(len(audit_log_entries), 2)
+        audit_log_entry = audit_log_entries[1]
+        self.assertEqual(
+            audit_log_entry,
+            (
+                RealmAuditLog.USER_UNMUTED,
+                mute_time,
+                orjson.dumps({"unmuted_user_id": cordelia.id}).decode(),
+            ),
+        )

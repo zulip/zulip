@@ -6513,12 +6513,31 @@ def do_mute_user(
     event = dict(type="muted_users", muted_users=get_user_mutes(user_profile))
     send_event(user_profile.realm, event, [user_profile.id])
 
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm,
+        acting_user=user_profile,
+        modified_user=user_profile,
+        event_type=RealmAuditLog.USER_MUTED,
+        event_time=date_muted,
+        extra_data=orjson.dumps({"muted_user_id": muted_user.id}).decode(),
+    )
+
 
 def do_unmute_user(mute_object: MutedUser) -> None:
     user_profile = mute_object.user_profile
+    muted_user = mute_object.muted_user
     mute_object.delete()
     event = dict(type="muted_users", muted_users=get_user_mutes(user_profile))
     send_event(user_profile.realm, event, [user_profile.id])
+
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm,
+        acting_user=user_profile,
+        modified_user=user_profile,
+        event_type=RealmAuditLog.USER_UNMUTED,
+        event_time=timezone_now(),
+        extra_data=orjson.dumps({"unmuted_user_id": muted_user.id}).decode(),
+    )
 
 
 def do_mark_hotspot_as_read(user: UserProfile, hotspot: str) -> None:
