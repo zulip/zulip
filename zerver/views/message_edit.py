@@ -206,6 +206,8 @@ def update_message_backend(
     number_changed = 0
 
     if stream_id is not None:
+        if not message.is_stream_message():
+            raise JsonableError(_("Message must be a stream message"))
         if not user_profile.is_realm_admin:
             raise JsonableError(_("You don't have permission to move this message"))
         try:
