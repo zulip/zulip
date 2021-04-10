@@ -551,19 +551,13 @@ export function initialize() {
     }
 
     // BUDDY LIST TOOLTIPS
-    $("#user_presences").on(
-        "mouseenter",
-        ".user-presence-link, .user_sidebar_entry .user_circle, .user_sidebar_entry .selectable_sidebar_block",
-        (e) => {
-            e.stopPropagation();
-            const elem = $(e.currentTarget)
-                .closest(".user_sidebar_entry")
-                .find(".user-presence-link");
-            const user_id_string = elem.attr("data-user-id");
-            const title_data = buddy_data.get_title_data(user_id_string, false);
-            do_render_buddy_list_tooltip(elem.parent(), title_data);
-        },
-    );
+    $("#user_presences").on("mouseenter", ".selectable_sidebar_block", (e) => {
+        e.stopPropagation();
+        const elem = $(e.currentTarget).closest(".user_sidebar_entry").find(".user-presence-link");
+        const user_id_string = elem.attr("data-user-id");
+        const title_data = buddy_data.get_title_data(user_id_string, false);
+        do_render_buddy_list_tooltip(elem.parent(), title_data);
+    });
 
     // PM LIST TOOLTIPS
     $("body").on("mouseenter", "#pm_user_status", (e) => {
