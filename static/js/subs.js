@@ -627,8 +627,8 @@ export function setup_page(callback) {
         const template_data = {
             can_create_streams: page_params.can_create_streams,
             hide_all_streams: !should_list_all_streams(),
-            max_name_length: page_params.stream_name_max_length,
-            max_description_length: page_params.stream_description_max_length,
+            max_name_length: page_params.max_stream_name_length,
+            max_description_length: page_params.max_stream_description_length,
             is_owner: page_params.is_owner,
             stream_privacy_policy_values: stream_data.stream_privacy_policy_values,
             stream_post_policy_values: stream_data.stream_post_policy_values,

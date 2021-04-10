@@ -10,6 +10,13 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 53**
+
+* [`POST /register`](/api/register-queue): Added `max_topic_length`
+  and renamed `max_stream_name_length` and
+  `max_stream_description_length` to allow clients to transparently
+  support these values changing in a future server version.
+
 **Feature level 52**
 
 * `PATCH /realm`: Removed unnecessary JSON-encoding of string

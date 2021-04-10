@@ -6885,6 +6885,41 @@ paths:
                           **Deprecated**: This field may be removed in future versions as it no
                           longer has a clear purpose.  Clients wishing to fetch the latest messages
                           should pass `anchor="latest"` to `GET /messages`.
+                      max_stream_name_length:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The maximum allowed length for a stream name.  Clients should use
+                          these properties rather than hardcoding field sizes, as they may
+                          change in a future Zulip release.
+
+                          **Changes**: New in Zulip 4.0 (feature level 53).  Previously,
+                          this required `stream` in `fetch_event_types`, was called
+                          `stream_name_max_length`, and always had value 60.
+                      max_stream_description_length:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The maximum allowed length for a stream description.  Clients should use
+                          these properties rather than hardcoding field sizes, as they may
+                          change in a future Zulip release.
+
+                          **Changes**: New in Zulip 4.0 (feature level 53).  Previously,
+                          this required `stream` in `fetch_event_types`, was called
+                          `stream_description_max_length`, and always had value 1024.
+                      max_topic_length:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The maximum allowed length for a topic.  Clients should use
+                          these properties rather than hardcoding field sizes, as they may
+                          change in a future Zulip release.
+
+                          **Changes**: New in Zulip 4.0 (feature level 53).  Previously,
+                          this always had value 60.
                       muted_topics:
                         type: array
                         description: |
@@ -7303,22 +7338,6 @@ paths:
 
                           For organization administrators, this will include all private streams
                           in the organization.
-                      stream_name_max_length:
-                        type: integer
-                        description: |
-                          Present if `stream` is present in `fetch_event_types`.
-
-                          The maximum allowed length for a stream name.  Clients should use
-                          these properties rather than hardcoding field sizes, as they may
-                          change in a future Zulip release.
-                      stream_description_max_length:
-                        type: integer
-                        description: |
-                          Present if `stream` is present in `fetch_event_types`.
-
-                          The maximum allowed length for a stream description.  Clients should use
-                          these properties rather than hardcoding field sizes, as they may
-                          change in a future Zulip release.
                       realm_default_streams:
                         type: array
                         items:

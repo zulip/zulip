@@ -49,6 +49,7 @@ from zerver.lib.user_mutes import get_user_mutes
 from zerver.lib.user_status import get_user_info_dict
 from zerver.lib.users import get_cross_realm_dicts, get_raw_user_data, is_administrator_role
 from zerver.models import (
+    MAX_TOPIC_NAME_LENGTH,
     Client,
     CustomProfileField,
     Message,
@@ -250,6 +251,10 @@ def fetch_initial_state_data(
         else:
             state["realm_signup_notifications_stream_id"] = -1
 
+        state["max_stream_name_length"] = Stream.MAX_NAME_LENGTH
+        state["max_stream_description_length"] = Stream.MAX_DESCRIPTION_LENGTH
+        state["max_topic_length"] = MAX_TOPIC_NAME_LENGTH
+
     if want("realm_domains"):
         state["realm_domains"] = get_realm_domains(realm)
 
@@ -415,8 +420,6 @@ def fetch_initial_state_data(
                 # be used when the mobile apps support logged-out
                 # access.
                 state["streams"] = get_web_public_streams(realm)  # nocoverage
-        state["stream_name_max_length"] = Stream.MAX_NAME_LENGTH
-        state["stream_description_max_length"] = Stream.MAX_DESCRIPTION_LENGTH
     if want("default_streams"):
         if settings_user.is_guest:
             # Guest users and logged-out users don't have access to
