@@ -529,6 +529,7 @@ export function initialize() {
 
     function do_render_buddy_list_tooltip(elem, title_data) {
         let placement = "left";
+        let observer;
         if (window.innerWidth < media_breakpoints_num.md) {
             // On small devices display tooltips based on available space.
             // This will default to "bottom" placement for this tooltip.
@@ -546,6 +547,32 @@ export function initialize() {
             showOnCreate: true,
             onHidden: (instance) => {
                 instance.destroy();
+                observer.disconnect();
+            },
+            onShow: (instance) => {
+                // For both buddy list and top left corner pm list, `target_node`
+                // is their parent `ul` element. We cannot use MutationObserver
+                // directly on the reference element because it will be removed
+                // and we need to attach it on an element which will remain in the
+                // DOM which is their parent `ul`.
+                const target_node = $(instance.reference).parents("ul").get(0);
+                // We only need to know if any of the `li` elements were removed.
+                const config = {attributes: false, childList: true, subtree: false};
+                const callback = function (mutationsList) {
+                    for (const mutation of mutationsList) {
+                        // Hide instance if reference is in the removed node list.
+                        if (
+                            Array.prototype.includes.call(
+                                mutation.removedNodes,
+                                instance.reference.parentElement,
+                            )
+                        ) {
+                            instance.hide();
+                        }
+                    }
+                };
+                observer = new MutationObserver(callback);
+                observer.observe(target_node, config);
             },
         });
     }
