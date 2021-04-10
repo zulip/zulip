@@ -169,7 +169,6 @@ class Command(makemessages.Command):
             for match in regex.findall(data):
                 match = match.strip()
                 match = " ".join(line.strip() for line in match.splitlines())
-                match = match.replace("\n", "\\n")
                 translation_strings.append(match)
 
         return translation_strings
@@ -247,7 +246,6 @@ class Command(makemessages.Command):
         """
         new_strings = {}  # Dict[str, str]
         for k in translation_strings:
-            k = k.replace("\\n", "\n")
             if locale == "en":
                 # For English language, translation is equal to the key.
                 new_strings[k] = old_strings.get(k, k)
