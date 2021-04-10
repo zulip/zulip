@@ -5,18 +5,21 @@
 <a class="sub_count no-style tippy-zulip-tooltip" data-tippy-content="{{sub_count_tooltip_text}}" href="{{stream_settings_link}}">
     <i class="fa fa-user-o"></i>{{formatted_sub_count}}
 </a>
-<span class="narrow_description rendered_markdown">
+<span class="narrow_description rendered_markdown ">
     {{#if rendered_narrow_description}}
     {{rendered_markdown rendered_narrow_description}}
     {{else}}
     {{t "(no description)"}}
     {{/if}}
 </span>
-<span class="extended_description rendered_markdown" data-toggle="tooltip">
+<span class="extended_description_down rendered_markdown" data-toggle="tooltip">
     <i class="fa fa-angle-down"></i>
 </span>
+<span class="extended_description_up rendered_markdown" data-toggle="tooltip">
+    <i class="fa fa-angle-up"></i>
+</span>
 {{else}}
-<span class="full-width">
+<span>
     {{> navbar_icon_and_title }}
 </span>
 {{/if}}

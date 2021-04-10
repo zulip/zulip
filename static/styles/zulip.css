@@ -1720,7 +1720,10 @@ div.focused_table {
         }
     }
 
-    .extended_description {
+    .extended_description_up {
+        display: none;
+    }
+    .extended_description_down {
         display: none;
     }
 
@@ -1737,11 +1740,12 @@ div.focused_table {
         }
     }
 
-    /* The very last element in the navbar is the search icon, the second
-       last element is either the narrow description (for stream narrows) or
-       the "title" (for other narrows). The flex-grow property ensures these
-       elements take up the entirety of the white space. */
-    > .full-width {
+    /* The very last element in the navbar is the search icon, the few
+       last elements are either the narrow description (for stream narrows) or
+       the "title" (for other narrows) along with arrow icons. The flex-grow
+       property ensures these elements take up the entirety of the white space.
+       */
+    > :nth-last-child(4) {
         flex-grow: 1;
 
         /* We extend the clickable area for the search_closed icon over the
@@ -1755,6 +1759,7 @@ div.focused_table {
     }
 }
 
+/* For extended description. */
 .extended_narrow_description {
     padding: 5px;
     position: absolute;
@@ -1769,6 +1774,11 @@ div.focused_table {
         margin-left: 40px;
         width: calc(100% - 133px);
     }
+}
+/* For extended description data */
+.extended_description_data {
+    border: 2px solid hsl(0, 0%, 80%);
+    padding: 10px;
 }
 
 #searchbox,
