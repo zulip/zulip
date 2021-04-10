@@ -269,7 +269,11 @@ export class BuddyList extends BuddyListConf {
 
         // Add a fudge factor.
         height += 10;
-
+        if (this.keys.length === 0) {
+            this.container = $(this.container_sel);
+            this.container.append(`${_('No matching users')} `);
+            return;
+        }
         while (this.render_count < this.keys.length) {
             const padding_height = $(this.padding_sel).height();
             const bottom_offset = elem.scrollHeight - elem.scrollTop - padding_height;
