@@ -208,6 +208,14 @@ def update_message_backend(
     if stream_id is not None:
         if not user_profile.is_realm_admin:
             raise JsonableError(_("You don't have permission to move this message"))
+        try:
+            access_stream_by_id(user_profile, message.recipient.type_id)
+        except JsonableError:
+            raise JsonableError(
+                _(
+                    "You don't have permission to move this message due to missing access to its stream"
+                )
+            )
         if content is not None:
             raise JsonableError(_("Cannot change message content while changing stream"))
 

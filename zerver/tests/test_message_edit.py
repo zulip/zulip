@@ -17,7 +17,7 @@ from zerver.lib.message import MessageDict, has_message_access, messages_for_ids
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import cache_tries_captured, queries_captured
 from zerver.lib.topic import LEGACY_PREV_TOPIC, TOPIC_NAME
-from zerver.models import Message, Stream, UserMessage, UserProfile, get_realm
+from zerver.models import Message, Stream, UserMessage, UserProfile, get_realm, get_stream
 
 
 class EditMessageTest(ZulipTestCase):
@@ -1126,6 +1126,34 @@ class EditMessageTest(ZulipTestCase):
 
         self.assert_json_error(result, "Invalid stream id")
 
+    def test_move_message_realm_admin_cant_move_from_private_stream_without_subscription(
+        self,
+    ) -> None:
+        user_profile = self.example_user("iago")
+        self.assertEqual(user_profile.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        self.login("iago")
+
+        self.make_stream("privatestream", invite_only=True)
+        self.subscribe(user_profile, "privatestream")
+        msg_id = self.send_stream_message(user_profile, "privatestream", topic_name="test123")
+        self.unsubscribe(user_profile, "privatestream")
+
+        verona = get_stream("Verona", user_profile.realm)
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "message_id": msg_id,
+                "stream_id": verona.id,
+                "propagate_mode": "change_all",
+            },
+        )
+
+        self.assert_json_error(
+            result,
+            "You don't have permission to move this message due to missing access to its stream",
+        )
+
     def test_move_message_to_stream_change_later(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test"
@@ -1215,7 +1243,7 @@ class EditMessageTest(ZulipTestCase):
                     "topic": "new topic",
                 },
             )
-        self.assertEqual(len(queries), 48)
+        self.assertEqual(len(queries), 50)
         self.assertEqual(len(cache_tries), 13)
 
         messages = get_topic_messages(user_profile, old_stream, "test")
