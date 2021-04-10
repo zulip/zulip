@@ -53,5 +53,8 @@ export function initialize() {
             const title = reactions.get_reaction_title_data(message_id, local_id);
             instance.setContent(title);
         },
+        // Insert directly into the `.message_reaction` element so
+        // that when the reaction is hidden, tooltip hides as well.
+        appendTo: (reference) => reference,
     });
 }
