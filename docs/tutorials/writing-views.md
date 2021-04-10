@@ -291,7 +291,7 @@ channel.patch({
     data: data,
     success: function (response_data) {
         if (response_data.name !== undefined) {
-            ui_report.success(i18n.t("Name changed!"), name_status);
+            ui_report.success($t({defaultMessage: "Name changed!"}), name_status);
         }
         ...
 ```

@@ -277,8 +277,6 @@ function in those scenarios, add it to `zulip_test`.  This is also
 [Jinja2]: http://jinja.pocoo.org/
 [Handlebars]: https://handlebarsjs.com/
 [trans]: http://jinja.pocoo.org/docs/dev/templates/#i18n
-[i18next]: https://www.i18next.com
-[official]: https://www.i18next.com/plurals.html
 [jconditionals]: http://jinja.pocoo.org/docs/2.9/templates/#list-of-control-structures
 [hconditionals]: https://handlebarsjs.com/guide/#block_helpers.html
 [translation]: ../translating/translating.md

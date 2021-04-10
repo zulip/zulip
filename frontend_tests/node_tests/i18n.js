@@ -20,9 +20,8 @@ page_params.translation_data = {
 
 // All of our other tests stub out i18n activity;
 // here we do a quick sanity check on the engine itself.
-// We use `i18n.js` to initialize `i18next` and
-// to set `i18n` to `i18next` on the global namespace
-// for `templates.js`.
+// `i18n.js` initializes FormatJS and is imported by
+// `templates.js`.
 unmock_module("../../static/js/i18n");
 const {$t, $t_html} = zrequire("i18n");
 zrequire("templates");
