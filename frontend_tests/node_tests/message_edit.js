@@ -48,6 +48,7 @@ run_test("get_editability", () => {
     // user, and that were successfully sent (i.e. no failed_request or local_id)
     let message = {
         sent_by_me: true,
+        type: "stream",
     };
 
     page_params.realm_allow_message_editing = false;
@@ -86,6 +87,9 @@ run_test("get_editability", () => {
     assert.equal(get_editability(message), editability_types.TOPIC_ONLY);
 
     // Test `message_edit.is_topic_editable()`
+    message.type = "private";
+    assert.equal(message_edit.is_topic_editable(message), false);
+    message.type = "stream";
     assert.equal(message_edit.is_topic_editable(message), true);
 
     message.sent_by_me = true;

@@ -106,7 +106,7 @@ function message_hover(message_row) {
 
     // Locally echoed messages have !is_topic_editable and thus go
     // through this code path.
-    if (!message_edit.is_topic_editable(message)) {
+    if (!message_edit.is_topic_editable(message) && message.type === "stream") {
         // The actions and reactions icon hover logic is handled entirely by CSS
         return;
     }

@@ -51,6 +51,10 @@ export const editability_types = {
 };
 
 export function is_topic_editable(message, edit_limit_seconds_buffer = 0) {
+    if (message.type !== "stream") {
+        return false;
+    }
+
     if (!page_params.realm_allow_message_editing) {
         // If message editing is disabled, so is topic editing.
         return false;
@@ -81,7 +85,7 @@ export function get_editability(message, edit_limit_seconds_buffer = 0) {
     if (!message) {
         return editability_types.NO;
     }
-    if (!is_topic_editable(message, edit_limit_seconds_buffer)) {
+    if (!is_topic_editable(message, edit_limit_seconds_buffer) && message.type === "stream") {
         return editability_types.NO;
     }
     if (message.failed_request) {
