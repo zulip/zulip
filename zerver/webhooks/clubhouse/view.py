@@ -30,13 +30,13 @@ NAME_CHANGED_TEMPLATE = (
     "The name of the {entity} {name_template} was changed from:\n"
     "``` quote\n{old}\n```\nto\n``` quote\n{new}\n```"
 )
-ARCHIVED_TEMPLATE = "The {entity} {name_template} was {action}."
-STORY_TASK_TEMPLATE = "Task **{task_description}** was {action} the story {name_template}."
+ARCHIVED_TEMPLATE = "The {entity} {name_template} was {operation}."
+STORY_TASK_TEMPLATE = "Task **{task_description}** was {operation} the story {name_template}."
 STORY_TASK_COMPLETED_TEMPLATE = (
     "Task **{task_description}** ({name_template}) was completed. :tada:"
 )
 STORY_ADDED_REMOVED_EPIC_TEMPLATE = (
-    "The story {story_name_template} was {action} the epic {epic_name_template}."
+    "The story {story_name_template} was {operation} the epic {epic_name_template}."
 )
 STORY_EPIC_CHANGED_TEMPLATE = "The story {story_name_template} was moved from {old_epic_name_template} to {new_epic_name_template}."
 STORY_ESTIMATE_TEMPLATE = "The estimate for the story {story_name_template} was set to {estimate}."
@@ -68,8 +68,7 @@ def get_action_with_primary_id(payload: Dict[str, Any]) -> Dict[str, Any]:
     return action_with_primary_id
 
 
-def get_event(payload: Dict[str, Any]) -> Optional[str]:
-    action = get_action_with_primary_id(payload)
+def get_event(payload: Dict[str, Any], action: Dict[str, Any]) -> Optional[str]:
     event = "{}_{}".format(action["entity_type"], action["action"])
 
     if event in IGNORED_EVENTS:
@@ -107,19 +106,16 @@ def get_event(payload: Dict[str, Any]) -> Optional[str]:
     return event
 
 
-def get_topic_function_based_on_type(payload: Dict[str, Any]) -> Any:
-    entity_type = get_action_with_primary_id(payload)["entity_type"]
+def get_topic_function_based_on_type(payload: Dict[str, Any], action: Dict[str, Any]) -> Any:
+    entity_type = action["entity_type"]
     return EVENT_TOPIC_FUNCTION_MAPPER.get(entity_type)
 
 
-def get_delete_body(payload: Dict[str, Any]) -> str:
-    action = get_action_with_primary_id(payload)
+def get_delete_body(payload: Dict[str, Any], action: Dict[str, Any]) -> str:
     return DELETE_TEMPLATE.format(**action)
 
 
-def get_story_create_body(payload: Dict[str, Any]) -> str:
-    action = get_action_with_primary_id(payload)
-
+def get_story_create_body(payload: Dict[str, Any], action: Dict[str, Any]) -> str:
     if action.get("epic_id") is None:
         message = "New story [{name}]({app_url}) of type **{story_type}** was created."
         kwargs = action
@@ -138,13 +134,12 @@ def get_story_create_body(payload: Dict[str, Any]) -> str:
     return message.format(**kwargs)
 
 
-def get_epic_create_body(payload: Dict[str, Any]) -> str:
-    action = get_action_with_primary_id(payload)
+def get_epic_create_body(payload: Dict[str, Any], action: Dict[str, Any]) -> str:
     message = "New epic **{name}**({state}) was created."
     return message.format(**action)
 
 
-def get_comment_added_body(payload: Dict[str, Any], entity: str) -> str:
+def get_comment_added_body(payload: Dict[str, Any], action: Dict[str, Any], entity: str) -> str:
     actions = payload["actions"]
     kwargs = {"entity": entity}
     for action in actions:
@@ -160,8 +155,9 @@ def get_comment_added_body(payload: Dict[str, Any], entity: str) -> str:
     return COMMENT_ADDED_TEMPLATE.format(**kwargs)
 
 
-def get_update_description_body(payload: Dict[str, Any], entity: str) -> str:
-    action = get_action_with_primary_id(payload)
+def get_update_description_body(
+    payload: Dict[str, Any], action: Dict[str, Any], entity: str
+) -> str:
     desc = action["changes"]["description"]
 
     kwargs = {
@@ -184,8 +180,7 @@ def get_update_description_body(payload: Dict[str, Any], entity: str) -> str:
     return body
 
 
-def get_epic_update_state_body(payload: Dict[str, Any]) -> str:
-    action = get_action_with_primary_id(payload)
+def get_epic_update_state_body(payload: Dict[str, Any], action: Dict[str, Any]) -> str:
     state = action["changes"]["state"]
     kwargs = {
         "entity": "epic",
@@ -197,8 +192,7 @@ def get_epic_update_state_body(payload: Dict[str, Any]) -> str:
     return STATE_CHANGED_TEMPLATE.format(**kwargs)
 
 
-def get_story_update_state_body(payload: Dict[str, Any]) -> str:
-    action = get_action_with_primary_id(payload)
+def get_story_update_state_body(payload: Dict[str, Any], action: Dict[str, Any]) -> str:
     workflow_state_id = action["changes"]["workflow_state_id"]
     references = payload["references"]
 
@@ -222,8 +216,7 @@ def get_story_update_state_body(payload: Dict[str, Any]) -> str:
     return STATE_CHANGED_TEMPLATE.format(**kwargs)
 
 
-def get_update_name_body(payload: Dict[str, Any], entity: str) -> str:
-    action = get_action_with_primary_id(payload)
+def get_update_name_body(payload: Dict[str, Any], action: Dict[str, Any], entity: str) -> str:
     name = action["changes"]["name"]
     kwargs = {
         "entity": entity,
@@ -238,32 +231,29 @@ def get_update_name_body(payload: Dict[str, Any], entity: str) -> str:
     return NAME_CHANGED_TEMPLATE.format(**kwargs)
 
 
-def get_update_archived_body(payload: Dict[str, Any], entity: str) -> str:
-    primary_action = get_action_with_primary_id(payload)
-    archived = primary_action["changes"]["archived"]
+def get_update_archived_body(payload: Dict[str, Any], action: Dict[str, Any], entity: str) -> str:
+    archived = action["changes"]["archived"]
     if archived["new"]:
-        action = "archived"
+        operation = "archived"
     else:
-        action = "unarchived"
+        operation = "unarchived"
 
     kwargs = {
         "entity": entity,
         "name_template": get_name_template(entity).format(
-            name=primary_action["name"],
-            app_url=primary_action.get("app_url"),
+            name=action["name"],
+            app_url=action.get("app_url"),
         ),
-        "action": action,
+        "operation": operation,
     }
 
     return ARCHIVED_TEMPLATE.format(**kwargs)
 
 
-def get_story_task_body(payload: Dict[str, Any], action: str) -> str:
-    primary_action = get_action_with_primary_id(payload)
-
+def get_story_task_body(payload: Dict[str, Any], action: Dict[str, Any], operation: str) -> str:
     kwargs = {
-        "task_description": primary_action["description"],
-        "action": action,
+        "task_description": action["description"],
+        "operation": operation,
     }
 
     for a in payload["actions"]:
@@ -276,9 +266,7 @@ def get_story_task_body(payload: Dict[str, Any], action: str) -> str:
     return STORY_TASK_TEMPLATE.format(**kwargs)
 
 
-def get_story_task_completed_body(payload: Dict[str, Any]) -> Optional[str]:
-    action = get_action_with_primary_id(payload)
-
+def get_story_task_completed_body(payload: Dict[str, Any], action: Dict[str, Any]) -> Optional[str]:
     kwargs = {
         "task_description": action["description"],
     }
@@ -297,9 +285,7 @@ def get_story_task_completed_body(payload: Dict[str, Any]) -> Optional[str]:
         return None
 
 
-def get_story_update_epic_body(payload: Dict[str, Any]) -> str:
-    action = get_action_with_primary_id(payload)
-
+def get_story_update_epic_body(payload: Dict[str, Any], action: Dict[str, Any]) -> str:
     kwargs = {
         "story_name_template": STORY_NAME_TEMPLATE.format(
             name=action["name"],
@@ -321,17 +307,15 @@ def get_story_update_epic_body(payload: Dict[str, Any]) -> str:
         return STORY_EPIC_CHANGED_TEMPLATE.format(**kwargs)
     elif new_id:
         kwargs["epic_name_template"] = kwargs["new_epic_name_template"]
-        kwargs["action"] = "added to"
+        kwargs["operation"] = "added to"
     else:
         kwargs["epic_name_template"] = kwargs["old_epic_name_template"]
-        kwargs["action"] = "removed from"
+        kwargs["operation"] = "removed from"
 
     return STORY_ADDED_REMOVED_EPIC_TEMPLATE.format(**kwargs)
 
 
-def get_story_update_estimate_body(payload: Dict[str, Any]) -> str:
-    action = get_action_with_primary_id(payload)
-
+def get_story_update_estimate_body(payload: Dict[str, Any], action: Dict[str, Any]) -> str:
     kwargs = {
         "story_name_template": STORY_NAME_TEMPLATE.format(
             name=action["name"],
@@ -357,9 +341,9 @@ def get_reference_by_id(payload: Dict[str, Any], ref_id: int) -> Dict[str, Any]:
     return ref
 
 
-def get_story_create_github_entity_body(payload: Dict[str, Any], entity: str) -> str:
-    action = get_action_with_primary_id(payload)
-
+def get_story_create_github_entity_body(
+    payload: Dict[str, Any], action: Dict[str, Any], entity: str
+) -> str:
     story: Dict[str, Any] = {}
     for a in payload["actions"]:
         if a["entity_type"] == "story" and a["changes"].get("workflow_state_id") is not None:
@@ -384,9 +368,9 @@ def get_story_create_github_entity_body(payload: Dict[str, Any], entity: str) ->
     return template.format(**kwargs)
 
 
-def get_story_update_attachment_body(payload: Dict[str, Any]) -> Optional[str]:
-    action = get_action_with_primary_id(payload)
-
+def get_story_update_attachment_body(
+    payload: Dict[str, Any], action: Dict[str, Any]
+) -> Optional[str]:
     kwargs = {
         "name_template": STORY_NAME_TEMPLATE.format(
             name=action["name"],
@@ -410,9 +394,7 @@ def get_story_update_attachment_body(payload: Dict[str, Any]) -> Optional[str]:
     return FILE_ATTACHMENT_TEMPLATE.format(**kwargs)
 
 
-def get_story_label_body(payload: Dict[str, Any]) -> Optional[str]:
-    action = get_action_with_primary_id(payload)
-
+def get_story_label_body(payload: Dict[str, Any], action: Dict[str, Any]) -> Optional[str]:
     kwargs = {
         "name_template": STORY_NAME_TEMPLATE.format(
             name=action["name"],
@@ -442,8 +424,7 @@ def get_story_label_body(payload: Dict[str, Any]) -> Optional[str]:
     return STORY_LABEL_TEMPLATE.format(**kwargs)
 
 
-def get_story_update_project_body(payload: Dict[str, Any]) -> str:
-    action = get_action_with_primary_id(payload)
+def get_story_update_project_body(payload: Dict[str, Any], action: Dict[str, Any]) -> str:
     kwargs = {
         "name_template": STORY_NAME_TEMPLATE.format(
             name=action["name"],
@@ -462,8 +443,7 @@ def get_story_update_project_body(payload: Dict[str, Any]) -> str:
     return STORY_UPDATE_PROJECT_TEMPLATE.format(**kwargs)
 
 
-def get_story_update_type_body(payload: Dict[str, Any]) -> str:
-    action = get_action_with_primary_id(payload)
+def get_story_update_type_body(payload: Dict[str, Any], action: Dict[str, Any]) -> str:
     kwargs = {
         "name_template": STORY_NAME_TEMPLATE.format(
             name=action["name"],
@@ -476,8 +456,7 @@ def get_story_update_type_body(payload: Dict[str, Any]) -> str:
     return STORY_UPDATE_TYPE_TEMPLATE.format(**kwargs)
 
 
-def get_story_update_owner_body(payload: Dict[str, Any]) -> str:
-    action = get_action_with_primary_id(payload)
+def get_story_update_owner_body(payload: Dict[str, Any], action: Dict[str, Any]) -> str:
     kwargs = {
         "name_template": STORY_NAME_TEMPLATE.format(
             name=action["name"],
@@ -488,8 +467,9 @@ def get_story_update_owner_body(payload: Dict[str, Any]) -> str:
     return STORY_UPDATE_OWNER_TEMPLATE.format(**kwargs)
 
 
-def get_entity_name(payload: Dict[str, Any], entity: Optional[str] = None) -> Optional[str]:
-    action = get_action_with_primary_id(payload)
+def get_entity_name(
+    payload: Dict[str, Any], action: Dict[str, Any], entity: Optional[str] = None
+) -> Optional[str]:
     name = action.get("name")
 
     if name is None or action["entity_type"] == "branch":
@@ -511,16 +491,17 @@ def get_name_template(entity: str) -> str:
     return EPIC_NAME_TEMPLATE
 
 
-EVENT_BODY_FUNCTION_MAPPER: Dict[str, Callable[[Dict[str, Any]], Optional[str]]] = {
+EVENT_BODY_FUNCTION_MAPPER: Dict[str, Callable[[Dict[str, Any], Dict[str, Any]], Optional[str]]] = {
     "story_update_archived": partial(get_update_archived_body, entity="story"),
     "epic_update_archived": partial(get_update_archived_body, entity="epic"),
     "story_create": get_story_create_body,
     "pull-request_create": partial(get_story_create_github_entity_body, entity="pull-request"),
+    #TODO: "pull-request_comment": partial(get_story_add_github_entity_body, entity="pull-request"),
     "branch_create": partial(get_story_create_github_entity_body, entity="branch"),
     "story_delete": get_delete_body,
     "epic_delete": get_delete_body,
-    "story-task_create": partial(get_story_task_body, action="added to"),
-    "story-task_delete": partial(get_story_task_body, action="removed from"),
+    "story-task_create": partial(get_story_task_body, operation="added to"),
+    "story-task_delete": partial(get_story_task_body, operation="removed from"),
     "story-task_update_complete": get_story_task_completed_body,
     "story_update_epic": get_story_update_epic_body,
     "story_update_estimate": get_story_update_estimate_body,
@@ -554,6 +535,9 @@ IGNORED_EVENTS = {
     "story-comment_update",
 }
 
+MULTIPLE_ACTIONS_EVENTS = {
+    "pull-request_create"
+}
 
 @webhook_view("ClubHouse")
 @has_request_variables
@@ -570,16 +554,18 @@ def api_clubhouse_webhook(
     if payload is None:
         return json_success()
 
-    event = get_event(payload)
+    action = get_action_with_primary_id(payload)
+
+    event = get_event(payload, action)
     if event is None:
         return json_success()
 
     body_func = EVENT_BODY_FUNCTION_MAPPER.get(event)
-    topic_func = get_topic_function_based_on_type(payload)
+    topic_func = get_topic_function_based_on_type(payload, action)
     if body_func is None or topic_func is None:
         raise UnsupportedWebhookEventType(event)
-    topic = topic_func(payload)
-    body = body_func(payload)
+    topic = topic_func(payload, action)
+    body = body_func(payload, action)
 
     if topic and body:
         check_send_webhook_message(request, user_profile, topic, body)
