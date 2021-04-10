@@ -52,7 +52,7 @@ strip_whitespace_left = re.compile(
 )
 
 regexes = [
-    r"{{#tr .*?}}([\s\S]*?){{/tr}}",  # '.' doesn't match '\n' by default
+    r"{{#tr .*?}}([\s\S]*?)(?:{{/tr}}|{{#\*inline )",  # '.' doesn't match '\n' by default
     r'{{\s*t "(.*?)"\W*}}',
     r"{{\s*t '(.*?)'\W*}}",
     r'\(t "(.*?)"\)',
