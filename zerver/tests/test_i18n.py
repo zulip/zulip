@@ -166,10 +166,6 @@ class FrontendRegexTestCase(ZulipTestCase):
             ('{{t "english text" }}, "extra"}}', "english text"),
             ("{{t 'english text' }}, 'extra'}}", "english text"),
             ("{{> template var=(t 'english text') }}, 'extra'}}", "english text"),
-            ('i18n.t("english text"), "extra",)', "english text"),
-            ('i18n.t("english text", context), "extra",)', "english text"),
-            ("i18n.t('english text'), 'extra',)", "english text"),
-            ("i18n.t('english text', context), 'extra',)", "english text"),
         ]
 
         for input_text, expected in data:
