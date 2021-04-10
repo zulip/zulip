@@ -121,7 +121,7 @@ class ClubhouseWebhookTest(WebhookTestCase):
         expected_message = "Task **A new task for this story** ([Add cool feature!](https://app.clubhouse.io/zulip/story/11)) was completed. :tada:"
         self.check_webhook("story_task_complete", "Add cool feature!", expected_message)
 
-    @patch("zerver.lib.webhooks.common.check_send_webhook_message")
+    @patch("zerver.webhooks.clubhouse.view.check_send_webhook_message")
     def test_story_task_incomplete_ignore(self, check_send_webhook_message_mock: MagicMock) -> None:
         payload = self.get_body("story_task_not_complete")
         result = self.client_post(self.url, payload, content_type="application/json")
@@ -159,7 +159,7 @@ class ClubhouseWebhookTest(WebhookTestCase):
         expected_message = "A file attachment `zuliprc` was added to the story [Add cool feature!](https://app.clubhouse.io/zulip/story/11)."
         self.check_webhook("story_update_add_attachment", "Add cool feature!", expected_message)
 
-    @patch("zerver.lib.webhooks.common.check_send_webhook_message")
+    @patch("zerver.webhooks.clubhouse.view.check_send_webhook_message")
     def test_story_file_attachment_removed_ignore(
         self, check_send_webhook_message_mock: MagicMock
     ) -> None:
@@ -178,7 +178,7 @@ class ClubhouseWebhookTest(WebhookTestCase):
             "story_update_add_label_name_in_action", "An emotional story!", expected_message
         )
 
-    @patch("zerver.lib.webhooks.common.check_send_webhook_message")
+    @patch("zerver.webhooks.clubhouse.view.check_send_webhook_message")
     def test_story_label_removed_ignore(self, check_send_webhook_message_mock: MagicMock) -> None:
         payload = self.get_body("story_update_remove_label")
         result = self.client_post(self.url, payload, content_type="application/json")
@@ -207,7 +207,7 @@ class ClubhouseWebhookTest(WebhookTestCase):
             "story_update_add_github_branch", "Testing pull requests with Story", expected_message
         )
 
-    @patch("zerver.lib.webhooks.common.check_send_webhook_message")
+    @patch("zerver.webhooks.clubhouse.view.check_send_webhook_message")
     def test_empty_post_request_body_ignore(
         self, check_send_webhook_message_mock: MagicMock
     ) -> None:
@@ -216,7 +216,7 @@ class ClubhouseWebhookTest(WebhookTestCase):
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
 
-    @patch("zerver.lib.webhooks.common.check_send_webhook_message")
+    @patch("zerver.webhooks.clubhouse.view.check_send_webhook_message")
     def test_story_comment_updated_ignore(self, check_send_webhook_message_mock: MagicMock) -> None:
         payload = self.get_body("story_comment_updated")
         result = self.client_post(self.url, payload, content_type="application/json")
