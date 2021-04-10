@@ -36,6 +36,7 @@ import itertools
 import json
 import os
 import re
+import subprocess
 from argparse import ArgumentParser
 from typing import Any, Dict, Iterable, Iterator, List, Mapping
 
@@ -201,6 +202,19 @@ class Command(makemessages.Command):
                     data = reader.read()
                     data = self.ignore_javascript_comments(data)
                     translation_strings.extend(self.extract_strings(data))
+
+        extracted = subprocess.check_output(
+            [
+                "node_modules/.bin/formatjs",
+                "extract",
+                "--additional-function-names=$t,$t_html",
+                "--format=simple",
+                "--ignore=**/*.d.ts",
+                "static/js/**/*.js",
+                "static/js/**/*.ts",
+            ]
+        )
+        translation_strings.extend(json.loads(extracted).values())
 
         return list(set(translation_strings))
 
