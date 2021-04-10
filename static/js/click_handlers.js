@@ -574,6 +574,7 @@ export function initialize() {
                 observer = new MutationObserver(callback);
                 observer.observe(target_node, config);
             },
+            appendTo: () => document.body,
         });
     }
 

@@ -26,6 +26,10 @@ tippy.setDefaultProps({
     // devices.
     touch: ["hold", 750],
 
+    // This has the side effect of some properties of parent applying to
+    // tooltips.
+    appendTo: "parent",
+
     // html content is not supported by default
     // enable it by passing data-tippy-allowHtml="true"
     // in the tag or a parameter.

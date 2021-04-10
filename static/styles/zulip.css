@@ -829,6 +829,12 @@ td.pointer {
         }
     }
 
+    /* Tooltips should not follow the width restrictions of their parent element. */
+    [data-tippy-root] {
+        width: max-content;
+        word-wrap: unset;
+    }
+
     > .reaction_button {
         display: inline-block;
         position: relative;
