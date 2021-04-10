@@ -1,5 +1,6 @@
 import $ from "jquery";
 import _ from "lodash";
+import tippy from "tippy.js";
 
 import render_stream_privacy from "../templates/stream_privacy.hbs";
 import render_stream_sidebar_row from "../templates/stream_sidebar_row.hbs";
@@ -502,6 +503,15 @@ export function initialize() {
     // when new messages come in, but it's fairly quick.
     build_stream_list();
     set_event_handlers();
+    // build tippy tooltips for stream name
+    build_stream_tippy_tooltip();
+}
+
+function build_stream_tippy_tooltip() {
+    tippy(".stream-name", {
+        placement: "bottom",
+        delay: 500,
+    });
 }
 
 export function set_event_handlers() {
