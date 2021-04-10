@@ -17,7 +17,7 @@ from zerver.lib.message import MessageDict, has_message_access, messages_for_ids
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import queries_captured
 from zerver.lib.topic import LEGACY_PREV_TOPIC, TOPIC_NAME
-from zerver.models import Message, Stream, UserMessage, UserProfile, get_realm
+from zerver.models import Message, Stream, UserMessage, UserProfile, get_realm, get_stream
 
 
 class EditMessageTest(ZulipTestCase):
@@ -916,6 +916,29 @@ class EditMessageTest(ZulipTestCase):
         )
 
         self.assert_json_error(result, "Invalid stream id")
+
+    def test_move_message_cant_move_private_message(
+        self,
+    ) -> None:
+        user_profile = self.example_user("iago")
+        self.assertEqual(user_profile.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        self.login("iago")
+
+        hamlet = self.example_user("hamlet")
+        msg_id = self.send_personal_message(user_profile, hamlet)
+
+        verona = get_stream("Verona", user_profile.realm)
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "message_id": msg_id,
+                "stream_id": verona.id,
+                "propagate_mode": "change_all",
+            },
+        )
+
+        self.assert_json_error(result, "Message must be a stream message")
 
     def test_move_message_to_stream_change_later(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
