@@ -2,7 +2,6 @@
 // https://zulip.readthedocs.io/en/latest/translating/internationalization.html
 
 import {createIntl, createIntlCache} from "@formatjs/intl";
-import i18next from "i18next";
 import _ from "lodash";
 
 import {page_params} from "./page_params";
@@ -37,21 +36,3 @@ export function $t_html(descriptor, values) {
         ),
     });
 }
-
-i18next.init({
-    lng: "lang",
-    resources: {
-        lang: {
-            translation: page_params.translation_data,
-        },
-    },
-    nsSeparator: false,
-    keySeparator: false,
-    interpolation: {
-        prefix: "__",
-        suffix: "__",
-    },
-    returnEmptyString: false, // Empty string is not a valid translation.
-});
-
-export const i18n = i18next;
