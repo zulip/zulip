@@ -107,8 +107,7 @@ export function show_failed_message_success(message_id) {
 
 export function get_hotkey_deprecation_notice(originalHotkey, replacementHotkey) {
     return i18n.t(
-        'We\'ve replaced the "__originalHotkey__" hotkey with "__replacementHotkey__" ' +
-            "to make this common shortcut easier to trigger.",
+        'We\'ve replaced the "__originalHotkey__" hotkey with "__replacementHotkey__" to make this common shortcut easier to trigger.',
         {originalHotkey, replacementHotkey},
     );
 }

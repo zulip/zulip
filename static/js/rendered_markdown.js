@@ -214,7 +214,9 @@ export const update_elements = (content) => {
                 const view_in_playground_button = $(view_code_in_playground());
                 $pre.prepend(view_in_playground_button);
                 if (playground_info.length === 1) {
-                    title = i18n.t(`View in ${playground_info[0].name}`);
+                    title = i18n.t("View in __playground_name__", {
+                        playground_name: playground_info[0].name,
+                    });
                 } else {
                     view_in_playground_button.attr("aria-haspopup", "true");
                 }
