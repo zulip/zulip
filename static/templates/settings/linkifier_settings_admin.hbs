@@ -36,7 +36,8 @@
         </ul>
         <p>
             {{#tr this}}
-            More details are available <a href="/help/add-a-custom-linkifier" target="_blank" rel="noopener noreferrer">in the Help Center article</a>.
+                More details are available <z-link>in the Help Center article</z-link>.
+                {{#*inline "z-link"}}<a href="/help/add-a-custom-linkifier" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
             {{/tr}}
         </p>
 

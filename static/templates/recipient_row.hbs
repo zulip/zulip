@@ -6,7 +6,7 @@
             <a class="message_label_clickable narrows_by_recipient stream_label {{color_class}}"
                 style="background: {{background_color}}; border-left-color: {{background_color}};"
                 href="{{stream_url}}"
-                title="{{#tr this}}Narrow to stream &quot;__display_recipient__&quot;{{/tr}}">
+                title="{{#tr this}}Narrow to stream &quot;{display_recipient}&quot;{{/tr}}">
                 {{! invite only lock }}
                 {{#if invite_only}}
                 <i class="fa fa-lock invite-stream-icon" title="{{t 'This is a private stream' }}" aria-label="{{t 'This is a private stream' }}"></i>
@@ -21,7 +21,7 @@
                 {{! topic link }}
                 <a class="message_label_clickable narrows_by_topic"
                     href="{{topic_url}}"
-                    title="{{#tr this}}Narrow to stream &quot;__display_recipient__&quot;, topic &quot;__topic__&quot;{{/tr}}">
+                    title="{{#tr this}}Narrow to stream &quot;{display_recipient}&quot;, topic &quot;{topic}&quot;{{/tr}}">
                     {{#if use_match_properties}}
                     {{{match_topic}}}
                     {{else}}
@@ -62,8 +62,8 @@
         <div class="message-header-contents">
             <a class="message_label_clickable narrows_by_recipient stream_label"
                 href="{{pm_with_url}}"
-                title="{{#tr this}}Narrow to your private messages with __display_reply_to__{{/tr}}">
-                {{#tr this}}You and __display_reply_to__{{/tr}}
+                title="{{#tr this}}Narrow to your private messages with {display_reply_to}{{/tr}}">
+                {{#tr this}}You and {display_reply_to}{{/tr}}
             </a>
 
             <span class="recipient_row_date {{#if group_date_divider_html}}{{else}}hide-date{{/if}}">{{{date}}}</span>
