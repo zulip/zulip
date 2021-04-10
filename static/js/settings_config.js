@@ -91,7 +91,7 @@ export const email_address_visibility_values = {
     // // Backend support for this configuration is not available yet.
     // admins_and_members: {
     //     code: 2,
-    //     description: i18n.t("Members and admins"),
+    //     description: $t({defaultMessage: "Members and admins"}),
     // },
     admins_only: {
         code: 3,
@@ -176,13 +176,13 @@ export const wildcard_mention_policy_values = {
     by_stream_admins_only: {
         order: 4,
         code: 4,
-        //  description: i18n.t("Organization and stream admins"),
+        //  description: $t({defaultMessage: "Organization and stream admins"}),
         description: $t({defaultMessage: "Admins only"}),
     },
     // by_admins_only: {
     //     order: 5,
     //     code: 5,
-    //     description: i18n.t("Admins only"),
+    //     description: $t({defaultMessage: "Admins only"}),
     // },
     nobody: {
         order: 6,
