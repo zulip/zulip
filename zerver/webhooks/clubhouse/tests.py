@@ -1,5 +1,5 @@
 import json
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, call, patch
 
 from zerver.lib.test_classes import WebhookTestCase
 
@@ -200,6 +200,84 @@ class ClubhouseWebhookTest(WebhookTestCase):
             "Testing pull requests with Story",
             expected_message,
         )
+
+    def test_story_update_add_github_pull_request_without_workflow_state(self) -> None:
+        expected_message = "New GitHub PR [#10](https://github.com/eeshangarg/Scheduler/pull/10) opened for story [Testing pull requests with Story](https://app.clubhouse.io/zulip/story/28)."
+        self.check_webhook(
+            "story_update_add_github_pull_request_without_workflow_state",
+            "Testing pull requests with Story",
+            expected_message,
+        )
+
+    @patch("zerver.webhooks.clubhouse.view.check_send_webhook_message")
+    def test_story_update_add_github_multiple_pull_requests(
+        self, check_send_webhook_message_mock: MagicMock
+    ) -> None:
+        payload = self.get_body("story_update_add_github_multiple_pull_requests")
+        self.client_post(self.url, payload, content_type="application/json")
+        expected_message = "New GitHub PR [#2](https://github.com/PIG208/test-clubhouse/pull/2) opened for story [{name}]({url}) (Unscheduled -> In Development)."
+        request, user_profile = (
+            check_send_webhook_message_mock.call_args_list[0][0][0],
+            check_send_webhook_message_mock.call_args_list[0][0][1],
+        )
+        expected_list = [
+            call(
+                request,
+                user_profile,
+                "Story1",
+                expected_message.format(
+                    name="Story1", url="https://app.clubhouse.io/pig208/story/17"
+                ),
+            ),
+            call(
+                request,
+                user_profile,
+                "Story2",
+                expected_message.format(
+                    name="Story2", url="https://app.clubhouse.io/pig208/story/18"
+                ),
+            ),
+        ]
+        self.assertEqual(check_send_webhook_message_mock.call_args_list, expected_list)
+
+    def test_story_update_add_github_pull_request_with_comment(self) -> None:
+        expected_message = "Existing GitHub PR [#2](https://github.com/PIG208/test-clubhouse/pull/2) associated with story [asd2](https://app.clubhouse.io/pig208/story/15)."
+        self.check_webhook(
+            "story_update_add_github_pull_request_with_comment",
+            "asd2",
+            expected_message,
+        )
+
+    @patch("zerver.webhooks.clubhouse.view.check_send_webhook_message")
+    def test_story_update_add_github_multiple_pull_requests_with_comment(
+        self, check_send_webhook_message_mock: MagicMock
+    ) -> None:
+        payload = self.get_body("story_update_add_github_multiple_pull_requests_with_comment")
+        self.client_post(self.url, payload, content_type="application/json")
+        expected_message = "Existing GitHub PR [#1](https://github.com/PIG208/test-clubhouse/pull/1) associated with story [{name}]({url}) (Unscheduled -> In Development)."
+        request, user_profile = (
+            check_send_webhook_message_mock.call_args_list[0][0][0],
+            check_send_webhook_message_mock.call_args_list[0][0][1],
+        )
+        expected_list = [
+            call(
+                request,
+                user_profile,
+                "new1",
+                expected_message.format(
+                    name="new1", url="https://app.clubhouse.io/pig208/story/26"
+                ),
+            ),
+            call(
+                request,
+                user_profile,
+                "new2",
+                expected_message.format(
+                    name="new2", url="https://app.clubhouse.io/pig208/story/27"
+                ),
+            ),
+        ]
+        self.assertEqual(check_send_webhook_message_mock.call_args_list, expected_list)
 
     def test_story_update_add_github_branch(self) -> None:
         expected_message = "New GitHub branch [eeshangarg/ch27/testing-pull-requests-with-story](https://github.com/eeshangarg/scheduler/tree/eeshangarg/ch27/testing-pull-requests-with-story) associated with story [Testing pull requests with Story](https://app.clubhouse.io/zulip/story/27) (Unscheduled -> In Development)."
