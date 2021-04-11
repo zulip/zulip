@@ -33,6 +33,15 @@ body.night-mode {
         opacity: 0.4;
     }
 
+    .compose_giphy_logo {
+        filter: invert(85%) sepia(4%) saturate(1223%) hue-rotate(190deg)
+            brightness(114%) contrast(99%); /* #ecf7ff */
+        &:hover {
+            filter: invert(68%) sepia(35%) saturate(626%) hue-rotate(160deg)
+                brightness(96%) contrast(94%); /* #64bfed */
+        }
+    }
+
     .message_embed .data-container::after {
         background: linear-gradient(0deg, hsl(212, 28%, 18%), transparent 100%);
     }
