@@ -454,8 +454,9 @@ ul {
 }
 
 #giphy_grid_in_popover {
-    /* 300px of GIPHY grid + 15px scroll bar width */
-    width: 315px;
+    /* 300px of GIPHY grid + 5px is the extra gutter space
+     * between gif columns. */
+    width: 305px;
     border: 0;
     padding: 0;
 

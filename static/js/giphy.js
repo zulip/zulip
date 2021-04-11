@@ -112,7 +112,7 @@ function update_grid_with_search_term() {
     if (search_elem.length) {
         search_term = search_elem[0].value;
         gifs_grid.remove();
-        gifs_grid = renderGIPHYGrid($("#giphy_grid_in_popover .popover-content")[0]);
+        gifs_grid = renderGIPHYGrid($("#giphy_grid_in_popover .giphy-content")[0]);
         return;
     }
 
@@ -123,7 +123,13 @@ function update_grid_with_search_term() {
 export function hide_giphy_popover() {
     // Returns `true` if the popover was open.
     if (active_popover_element) {
-        active_popover_element.popover("hide");
+        // We need to destroy the popover because when
+        // we hide it, bootstrap popover
+        // library removes `giphy-content` element
+        // as part of cleaning up everthing inside
+        // `popover-content`, so we need to reinitialize
+        // the popover by destroying it.
+        active_popover_element.popover("destroy");
         active_popover_element = undefined;
         edit_message_id = undefined;
         return true;
@@ -195,7 +201,15 @@ export function initialize() {
         });
 
         active_popover_element.popover("show");
-        gifs_grid = renderGIPHYGrid($("#giphy_grid_in_popover .popover-content")[0]);
+        // Allow simplebar to render, then fetch and
+        // render GIFs. otherwise simplebar replaces
+        // the `.gipihy-content` element when trying
+        // to wrap it and hence, our jquery refernce
+        // to `.giphy-content` is lost. Thus, no GIF
+        // is rendered.
+        setTimeout(() => {
+            gifs_grid = renderGIPHYGrid($("#giphy_grid_in_popover .giphy-content")[0]);
+        }, 0);
 
         $("body").on(
             "keyup",
