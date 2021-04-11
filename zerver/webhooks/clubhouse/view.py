@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Any, Callable, Dict, Generator, Optional
+from typing import Any, Callable, Dict, Generator, List, Optional
 
 from django.http import HttpRequest, HttpResponse
 
@@ -43,7 +43,9 @@ STORY_ESTIMATE_TEMPLATE = "The estimate for the story {story_name_template} was 
 FILE_ATTACHMENT_TEMPLATE = (
     "A {type} attachment `{file_name}` was added to the story {name_template}."
 )
-STORY_LABEL_TEMPLATE = "The label **{label_name}** was added to the story {name_template}."
+LABEL_TEMPLATE = "**{name}**"
+STORY_LABEL_TEMPLATE = "The label {labels} was added to the story {name_template}."
+STORY_LABEL_PLURAL_TEMPLATE = "The labels {labels} were added to the story {name_template}."
 STORY_UPDATE_PROJECT_TEMPLATE = (
     "The story {name_template} was moved from the **{old}** project to **{new}**."
 )
@@ -410,6 +412,26 @@ def get_story_update_attachment_body(
     return FILE_ATTACHMENT_TEMPLATE.format(**kwargs)
 
 
+def get_story_joined_label_list(
+    payload: Dict[str, Any], action: Dict[str, Any], label_ids_added: List[int]
+) -> str:
+    labels = []
+
+    for label_id in label_ids_added:
+        label_name = ""
+
+        for action in payload["actions"]:
+            if action.get("id") == label_id:
+                label_name = action.get("name", "")
+
+        if label_name == "":
+            label_name = get_reference_by_id(payload, label_id).get("name", "")
+
+        labels.append(LABEL_TEMPLATE.format(name=label_name))
+
+    return ", ".join(labels)
+
+
 def get_story_label_body(payload: Dict[str, Any], action: Dict[str, Any]) -> Optional[str]:
     kwargs = {
         "name_template": STORY_NAME_TEMPLATE.format(
@@ -419,25 +441,17 @@ def get_story_label_body(payload: Dict[str, Any], action: Dict[str, Any]) -> Opt
     }
     label_ids_added = action["changes"]["label_ids"].get("adds")
 
-    # If this is a payload for when a label is removed, ignore it
+    # If this is a payload for when no label is added, ignore it
     if not label_ids_added:
         return None
 
-    label_id = label_ids_added[0]
+    kwargs.update(labels=get_story_joined_label_list(payload, action, label_ids_added))
 
-    label_name = ""
-    for action in payload["actions"]:
-        if action["id"] == label_id:
-            label_name = action.get("name", "")
-
-    if not label_name:
-        for reference in payload["references"]:
-            if reference["id"] == label_id:
-                label_name = reference.get("name", "")
-
-    kwargs.update(label_name=label_name)
-
-    return STORY_LABEL_TEMPLATE.format(**kwargs)
+    return (
+        STORY_LABEL_TEMPLATE.format(**kwargs)
+        if len(label_ids_added) == 1
+        else STORY_LABEL_PLURAL_TEMPLATE.format(**kwargs)
+    )
 
 
 def get_story_update_project_body(payload: Dict[str, Any], action: Dict[str, Any]) -> str:
