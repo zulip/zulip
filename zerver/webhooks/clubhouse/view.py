@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Dict, Generator, Optional
 
 from django.http import HttpRequest, HttpResponse
 
@@ -52,12 +52,12 @@ STORY_UPDATE_TYPE_TEMPLATE = (
 )
 DELETE_TEMPLATE = "The {entity_type} **{name}** was deleted."
 STORY_UPDATE_OWNER_TEMPLATE = "New owner added to the story {name_template}."
+TRAILING_WORKFLOW_STATE_CHANGE_TEMPLATE = " ({old} -> {new})"
 STORY_GITHUB_PR_TEMPLATE = (
-    "New GitHub PR [#{name}]({url}) opened for story {name_template} ({old} -> {new})."
+    "New GitHub PR [#{name}]({url}) opened for story {name_template}{workflow_state_template}."
 )
-STORY_GITHUB_BRANCH_TEMPLATE = (
-    "New GitHub branch [{name}]({url}) associated with story {name_template} ({old} -> {new})."
-)
+STORY_GITHUB_COMMENT_PR_TEMPLATE = "Existing GitHub PR [#{name}]({url}) associated with story {name_template}{workflow_state_template}."
+STORY_GITHUB_BRANCH_TEMPLATE = "New GitHub branch [{name}]({url}) associated with story {name_template}{workflow_state_template}."
 
 
 def get_action_with_primary_id(payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -341,30 +341,46 @@ def get_reference_by_id(payload: Dict[str, Any], ref_id: int) -> Dict[str, Any]:
     return ref
 
 
+def get_secondary_actions_with_param(
+    payload: Dict[str, Any], entity: str, changed_attr: str
+) -> Generator[Dict[str, Any], None, None]:
+    # This function is a generator for secondary actions that have the required changed attributes,
+    # i.e.: "story" that has "pull-request_ids" changed.
+    for action in payload["actions"]:
+        if action["entity_type"] == entity and action["changes"].get(changed_attr) is not None:
+            yield action
+
+
 def get_story_create_github_entity_body(
     payload: Dict[str, Any], action: Dict[str, Any], entity: str
 ) -> str:
-    story: Dict[str, Any] = {}
-    for a in payload["actions"]:
-        if a["entity_type"] == "story" and a["changes"].get("workflow_state_id") is not None:
-            story = a
-
-    new_state_id = story["changes"]["workflow_state_id"]["new"]
-    old_state_id = story["changes"]["workflow_state_id"]["old"]
-    new_state = get_reference_by_id(payload, new_state_id)["name"]
-    old_state = get_reference_by_id(payload, old_state_id)["name"]
+    pull_request_action: Dict[str, Any] = get_action_with_primary_id(payload)
 
     kwargs = {
-        "name_template": STORY_NAME_TEMPLATE.format(**story),
-        "name": action.get("number") if entity == "pull-request" else action.get("name"),
-        "url": action["url"],
-        "new": new_state,
-        "old": old_state,
+        "name_template": STORY_NAME_TEMPLATE.format(**action),
+        "name": pull_request_action.get("number")
+        if entity == "pull-request" or entity == "pull-request-comment"
+        else pull_request_action.get("name"),
+        "url": pull_request_action["url"],
+        "workflow_state_template": "",
     }
 
-    template = (
-        STORY_GITHUB_PR_TEMPLATE if entity == "pull-request" else STORY_GITHUB_BRANCH_TEMPLATE
-    )
+    # Sometimes the workflow state of the story will not be changed when linking to a PR.
+    if action["changes"].get("workflow_state_id") is not None:
+        new_state_id = action["changes"]["workflow_state_id"]["new"]
+        old_state_id = action["changes"]["workflow_state_id"]["old"]
+        new_state = get_reference_by_id(payload, new_state_id)["name"]
+        old_state = get_reference_by_id(payload, old_state_id)["name"]
+        kwargs["workflow_state_template"] = TRAILING_WORKFLOW_STATE_CHANGE_TEMPLATE.format(
+            new=new_state, old=old_state
+        )
+
+    if entity == "pull-request":
+        template = STORY_GITHUB_PR_TEMPLATE
+    elif entity == "pull-request-comment":
+        template = STORY_GITHUB_COMMENT_PR_TEMPLATE
+    else:
+        template = STORY_GITHUB_BRANCH_TEMPLATE
     return template.format(**kwargs)
 
 
@@ -515,6 +531,9 @@ EVENT_BODY_FUNCTION_MAPPER: Dict[str, Callable[[Dict[str, Any], Dict[str, Any]],
     "epic_update_archived": partial(get_update_archived_body, entity="epic"),
     "story_create": get_story_create_body,
     "pull-request_create": partial(get_story_create_github_entity_body, entity="pull-request"),
+    "pull-request_comment": partial(
+        get_story_create_github_entity_body, entity="pull-request-comment"
+    ),
     "branch_create": partial(get_story_create_github_entity_body, entity="branch"),
     "story_delete": get_delete_body,
     "epic_delete": get_delete_body,
@@ -553,6 +572,21 @@ IGNORED_EVENTS = {
     "story-comment_update",
 }
 
+EVENTS_SECONDARY_ACTIONS_FUNCTION_MAPPER: Dict[
+    str, Callable[[Dict[str, Any]], Generator[Dict[str, Any], None, None]]
+] = {
+    "pull-request_create": partial(
+        get_secondary_actions_with_param, entity="story", changed_attr="pull_request_ids"
+    ),
+    "branch_create": partial(
+        get_secondary_actions_with_param, entity="story", changed_attr="branch_ids"
+    ),
+    "pull-request_comment": partial(
+        get_secondary_actions_with_param, entity="story", changed_attr="pull_request_ids"
+    ),
+}
+
+
 @webhook_view("ClubHouse")
 @has_request_variables
 def api_clubhouse_webhook(
@@ -579,6 +613,11 @@ def api_clubhouse_webhook(
         if event is None:
             continue
 
-        send_stream_messages_for_actions(request, user_profile, payload, primary_action, event)
+        if event in EVENTS_SECONDARY_ACTIONS_FUNCTION_MAPPER:
+            sec_actions_func = EVENTS_SECONDARY_ACTIONS_FUNCTION_MAPPER[event]
+            for sec_action in sec_actions_func(payload):
+                send_stream_messages_for_actions(request, user_profile, payload, sec_action, event)
+        else:
+            send_stream_messages_for_actions(request, user_profile, payload, primary_action, event)
 
     return json_success()
