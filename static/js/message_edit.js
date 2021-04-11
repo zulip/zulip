@@ -295,6 +295,12 @@ function timer_text(seconds_left) {
     return i18n.t("__seconds__ sec to edit", {seconds: seconds.toString()});
 }
 
+function create_copy_to_clipboard_handler(source, message_id) {
+    new ClipboardJS(source, {
+        target: () => document.querySelector(`#message_edit_content_${CSS.escape(message_id)}`),
+    });
+}
+
 function edit_message(row, raw_content) {
     row.find(".message_reactions").hide();
     condense.hide_message_expander(row);
@@ -378,7 +384,7 @@ function edit_message(row, raw_content) {
     if (editability === editability_types.NO) {
         message_edit_content.attr("readonly", "readonly");
         message_edit_topic.attr("readonly", "readonly");
-        new ClipboardJS(copy_message[0]);
+        create_copy_to_clipboard_handler(copy_message[0], message.id);
     } else if (editability === editability_types.NO_LONGER) {
         // You can currently only reach this state in non-streams. If that
         // changes (e.g. if we stop allowing topics to be modified forever
@@ -386,12 +392,12 @@ function edit_message(row, raw_content) {
         // row.find('input.message_edit_topic') as well.
         message_edit_content.attr("readonly", "readonly");
         message_edit_countdown_timer.text(i18n.t("View source"));
-        new ClipboardJS(copy_message[0]);
+        create_copy_to_clipboard_handler(copy_message[0], message.id);
     } else if (editability === editability_types.TOPIC_ONLY) {
         message_edit_content.attr("readonly", "readonly");
         // Hint why you can edit the topic but not the message content
         message_edit_countdown_timer.text(i18n.t("Topic editing only"));
-        new ClipboardJS(copy_message[0]);
+        create_copy_to_clipboard_handler(copy_message[0], message.id);
     } else if (editability === editability_types.FULL) {
         copy_message.remove();
         const edit_id = `#message_edit_content_${CSS.escape(rows.id(row))}`;
