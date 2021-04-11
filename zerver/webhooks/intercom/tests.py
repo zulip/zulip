@@ -93,7 +93,7 @@ Contact signed up:
         )
 
     def test_conversation_admin_opened(self) -> None:
-        expected_topic = "Lead: Cordelia Lear"
+        expected_topic = "Lead: Cordelia, Lear's daughter"
         expected_message = "Eeshan Garg opened the conversation."
         self.check_webhook(
             "conversation_admin_opened",
@@ -103,7 +103,7 @@ Contact signed up:
 
     def test_conversation_admin_closed(self) -> None:
         expected_topic = "Lead: Eeshan Garg"
-        expected_message = "Cordelia Lear closed the conversation."
+        expected_message = "Cordelia, Lear's daughter closed the conversation."
         self.check_webhook(
             "conversation_admin_closed",
             expected_topic,
@@ -112,7 +112,7 @@ Contact signed up:
 
     def test_conversation_admin_snoozed(self) -> None:
         expected_topic = "Lead: Eeshan Garg"
-        expected_message = "Cordelia Lear snoozed the conversation."
+        expected_message = "Cordelia, Lear's daughter snoozed the conversation."
         self.check_webhook(
             "conversation_admin_snoozed",
             expected_topic,
@@ -121,7 +121,7 @@ Contact signed up:
 
     def test_conversation_admin_unsnoozed(self) -> None:
         expected_topic = "Lead: Eeshan Garg"
-        expected_message = "Cordelia Lear unsnoozed the conversation."
+        expected_message = "Cordelia, Lear's daughter unsnoozed the conversation."
         self.check_webhook(
             "conversation_admin_unsnoozed",
             expected_topic,
@@ -131,7 +131,7 @@ Contact signed up:
     def test_conversation_admin_replied(self) -> None:
         expected_topic = "Lead: Eeshan Garg"
         expected_message = """
-Cordelia Lear replied to the conversation:
+Cordelia, Lear's daughter replied to the conversation:
 
 ``` quote
 Hey Eeshan! How can I help?
@@ -146,7 +146,7 @@ Hey Eeshan! How can I help?
     def test_conversation_admin_noted(self) -> None:
         expected_topic = "Lead: Eeshan Garg"
         expected_message = """
-Cordelia Lear added a note to the conversation:
+Cordelia, Lear's daughter added a note to the conversation:
 
 ``` quote
 Talk to Tim about this user's query.
@@ -161,7 +161,7 @@ Talk to Tim about this user's query.
     def test_conversation_admin_single_created(self) -> None:
         expected_topic = "Lead: Eeshan Garg"
         expected_message = """
-Cordelia Lear initiated a conversation:
+Cordelia, Lear's daughter initiated a conversation:
 
 ``` quote
 Hi Eeshan, What's up

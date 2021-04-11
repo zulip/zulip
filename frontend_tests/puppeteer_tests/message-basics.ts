@@ -14,11 +14,11 @@ async function expect_home(page: Page): Promise<void> {
         ["Verona > test", ["verona test a", "verona test b"]],
         ["Verona > other topic", ["verona other topic c"]],
         ["Denmark > test", ["denmark message"]],
-        ["You and Cordelia Lear, King Hamlet", ["group pm a", "group pm b"]],
-        ["You and Cordelia Lear", ["pm c"]],
+        ["You and Cordelia, Lear's daughter, King Hamlet", ["group pm a", "group pm b"]],
+        ["You and Cordelia, Lear's daughter", ["pm c"]],
         ["Verona > test", ["verona test d"]],
-        ["You and Cordelia Lear, King Hamlet", ["group pm d"]],
-        ["You and Cordelia Lear", ["pm e"]],
+        ["You and Cordelia, Lear's daughter, King Hamlet", ["group pm d"]],
+        ["You and Cordelia, Lear's daughter", ["pm e"]],
     ]);
 }
 
@@ -62,14 +62,22 @@ async function expect_test_topic(page: Page): Promise<void> {
 async function expect_huddle(page: Page): Promise<void> {
     await page.waitForSelector("#zfilt", {visible: true});
     await common.check_messages_sent(page, "zfilt", [
-        ["You and Cordelia Lear, King Hamlet", ["group pm a", "group pm b", "group pm d"]],
+        [
+            "You and Cordelia, Lear's daughter, King Hamlet",
+            ["group pm a", "group pm b", "group pm d"],
+        ],
     ]);
-    assert.strictEqual(await page.title(), "Cordelia Lear, King Hamlet - Zulip Dev - Zulip");
+    assert.strictEqual(
+        await page.title(),
+        "Cordelia, Lear's daughter, King Hamlet - Zulip Dev - Zulip",
+    );
 }
 
 async function expect_cordelia_private_narrow(page: Page): Promise<void> {
     await page.waitForSelector("#zfilt", {visible: true});
-    await common.check_messages_sent(page, "zfilt", [["You and Cordelia Lear", ["pm c", "pm e"]]]);
+    await common.check_messages_sent(page, "zfilt", [
+        ["You and Cordelia, Lear's daughter", ["pm c", "pm e"]],
+    ]);
 }
 
 async function un_narrow(page: Page): Promise<void> {
@@ -108,9 +116,9 @@ async function test_navigations_from_home(page: Page): Promise<void> {
 
     console.log("Narrowing by clicking group personal header");
     await page.evaluate(() =>
-        $('*[title="Narrow to your private messages with Cordelia Lear, King Hamlet"]').trigger(
-            "click",
-        ),
+        $(
+            '*[title="Narrow to your private messages with Cordelia, Lear\'s daughter, King Hamlet"]',
+        ).trigger("click"),
     );
     await expect_huddle(page);
 
@@ -118,7 +126,9 @@ async function test_navigations_from_home(page: Page): Promise<void> {
     await expect_home(page);
 
     await page.evaluate(() =>
-        $('*[title="Narrow to your private messages with Cordelia Lear, King Hamlet"]').click(),
+        $(
+            '*[title="Narrow to your private messages with Cordelia, Lear\'s daughter, King Hamlet"]',
+        ).click(),
     );
     await un_narrow_by_clicking_org_icon(page);
     await expect_recent_topics(page);
@@ -190,7 +200,7 @@ async function search_tests(page: Page): Promise<void> {
         "Cordelia",
         "Private",
         expect_cordelia_private_narrow,
-        "Cordelia Lear - Zulip Dev - Zulip",
+        "Cordelia, Lear's daughter - Zulip Dev - Zulip",
     );
 
     await search_and_check(
@@ -249,10 +259,10 @@ async function search_tests(page: Page): Promise<void> {
 async function expect_all_pm(page: Page): Promise<void> {
     await page.waitForSelector("#zfilt", {visible: true});
     await common.check_messages_sent(page, "zfilt", [
-        ["You and Cordelia Lear, King Hamlet", ["group pm a", "group pm b"]],
-        ["You and Cordelia Lear", ["pm c"]],
-        ["You and Cordelia Lear, King Hamlet", ["group pm d"]],
-        ["You and Cordelia Lear", ["pm e"]],
+        ["You and Cordelia, Lear's daughter, King Hamlet", ["group pm a", "group pm b"]],
+        ["You and Cordelia, Lear's daughter", ["pm c"]],
+        ["You and Cordelia, Lear's daughter, King Hamlet", ["group pm d"]],
+        ["You and Cordelia, Lear's daughter", ["pm e"]],
     ]);
     assert.strictEqual(
         await common.get_text_from_selector(page, "#left_bar_compose_stream_button_big"),
@@ -391,7 +401,7 @@ async function test_users_search(page: Page): Promise<void> {
     }
 
     await assert_in_list(page, "Desdemona");
-    await assert_in_list(page, "Cordelia Lear");
+    await assert_in_list(page, "Cordelia, Lear's daughter");
     await assert_in_list(page, "King Hamlet");
     await assert_in_list(page, "aaron");
 
@@ -399,7 +409,7 @@ async function test_users_search(page: Page): Promise<void> {
     await page.click("#user_filter_icon");
     await page.waitForSelector("#user_presences .highlighted_user", {visible: true});
     await assert_selected(page, "Desdemona");
-    await assert_not_selected(page, "Cordelia Lear");
+    await assert_not_selected(page, "Cordelia, Lear's daughter");
     await assert_not_selected(page, "King Hamlet");
     await assert_not_selected(page, "aaron");
 
@@ -407,7 +417,7 @@ async function test_users_search(page: Page): Promise<void> {
     // go down 2, up 3, then down 3
     //       Desdemona
     //       aaron
-    //       Cordelia Lear
+    //       Cordelia, Lear's daughter
     //       Iago
     await arrow(page, "Down");
     await arrow(page, "Down");
@@ -426,7 +436,7 @@ async function test_users_search(page: Page): Promise<void> {
     await assert_not_selected(page, "aaron");
     await assert_not_selected(page, "Desdemona");
 
-    // arrow up and press Enter. We should be taken to pms with Cordelia Lear
+    // arrow up and press Enter. We should be taken to pms with Cordelia, Lear's daughter
     await arrow(page, "Up");
     await page.keyboard.press("Enter");
     await expect_cordelia_private_narrow(page);

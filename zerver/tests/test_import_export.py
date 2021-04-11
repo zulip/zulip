@@ -949,7 +949,7 @@ class ImportExportTest(ZulipTestCase):
 
         assert_realm_values(get_realm_audit_log_event_type)
 
-        cordelia_full_name = "Cordelia Lear"
+        cordelia_full_name = "Cordelia, Lear's daughter"
         hamlet_full_name = "King Hamlet"
         othello_full_name = "Othello, the Moor of Venice"
 

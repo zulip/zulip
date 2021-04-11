@@ -112,13 +112,13 @@ async function test_open_close_compose_box(page: Page): Promise<void> {
 
 async function test_narrow_to_private_messages_with_cordelia(page: Page): Promise<void> {
     const you_and_cordelia_selector =
-        '*[title="Narrow to your private messages with Cordelia Lear"]';
+        '*[title="Narrow to your private messages with Cordelia, Lear\'s daughter"]';
     // For some unknown reason page.click() isn't working here.
     await page.evaluate(
         (selector: string) => document.querySelector<HTMLElement>(selector)!.click(),
         you_and_cordelia_selector,
     );
-    const cordelia_user_id = await common.get_user_id_from_name(page, "Cordelia Lear");
+    const cordelia_user_id = await common.get_user_id_from_name(page, "Cordelia, Lear's daughter");
     const pm_list_selector = `li[data-user-ids-string="${cordelia_user_id}"].expanded_private_message.active-sub-filter`;
     await page.waitForSelector(pm_list_selector, {visible: true});
     await close_compose_box(page);

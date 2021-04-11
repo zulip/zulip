@@ -104,7 +104,7 @@ async function test_previously_created_drafts_rendered(page: Page): Promise<void
             page,
             ".draft-row .message_header_private_message .stream_label",
         ),
-        "You and Cordelia Lear, King Hamlet",
+        "You and Cordelia, Lear's daughter, King Hamlet",
     );
     assert.strictEqual(
         await common.get_text_from_selector(
@@ -183,7 +183,7 @@ async function test_restore_private_message_draft(page: Page): Promise<void> {
     await common.pm_recipient.expect(page, `${cordelia_internal_email},${hamlet_internal_email}`);
     assert.strictEqual(
         await common.get_text_from_selector(page, "title"),
-        "Cordelia Lear, King Hamlet - Zulip Dev - Zulip",
+        "Cordelia, Lear's daughter, King Hamlet - Zulip Dev - Zulip",
         "Didn't narrow to the private messages with cordelia and hamlet",
     );
     await page.click("#compose_close");
@@ -230,7 +230,7 @@ async function test_save_draft_by_reloading(page: Page): Promise<void> {
             page,
             ".draft-row .message_header_private_message .stream_label",
         ),
-        "You and Cordelia Lear",
+        "You and Cordelia, Lear's daughter",
     );
     assert.strictEqual(
         await common.get_text_from_selector(

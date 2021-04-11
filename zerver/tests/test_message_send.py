@@ -1642,7 +1642,7 @@ class StreamMessagesTest(ZulipTestCase):
         ).delete()
 
         def mention_cordelia() -> Set[int]:
-            content = "test @**Cordelia Lear** rules"
+            content = "test @**Cordelia, Lear's daughter** rules"
 
             user_ids = self._send_stream_message(
                 user=hamlet,
