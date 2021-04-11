@@ -290,6 +290,95 @@ class ClubhouseWebhookTest(WebhookTestCase):
         )
 
     @patch("zerver.webhooks.clubhouse.view.check_send_webhook_message")
+    def test_story_update_batch(self, check_send_webhook_message_mock: MagicMock) -> None:
+        payload = self.get_body("story_update_everything_at_once")
+        self.client_post(self.url, payload, content_type="application/json")
+        expected_message = "The story [{name}]({url}) was moved from Epic **epic** to **testeipc**, Project **Product Development** to **test2**, and changed from type **feature** to **bug**, and added with the new label **low priority** (In Development -> Ready for Review)."
+        request, user_profile = (
+            check_send_webhook_message_mock.call_args_list[0][0][0],
+            check_send_webhook_message_mock.call_args_list[0][0][1],
+        )
+        expected_list = [
+            call(
+                request,
+                user_profile,
+                "asd4",
+                expected_message.format(
+                    name="asd4", url="https://app.clubhouse.io/pig208/story/17"
+                ),
+            ),
+            call(
+                request,
+                user_profile,
+                "new1",
+                expected_message.format(
+                    name="new1", url="https://app.clubhouse.io/pig208/story/26"
+                ),
+            ),
+            call(
+                request,
+                user_profile,
+                "new2",
+                expected_message.format(
+                    name="new2", url="https://app.clubhouse.io/pig208/story/27"
+                ),
+            ),
+        ]
+        self.assertEqual(check_send_webhook_message_mock.call_args_list, expected_list)
+
+    @patch("zerver.webhooks.clubhouse.view.check_send_webhook_message")
+    def test_story_update_batch_each_with_one_change(
+        self, check_send_webhook_message_mock: MagicMock
+    ) -> None:
+        payload = self.get_body("story_update_multiple_at_once")
+        self.client_post(self.url, payload, content_type="application/json")
+        expected_messages = [
+            (
+                "asd4",
+                "The type of the story [asd4](https://app.clubhouse.io/pig208/story/17) was changed from **feature** to **bug**.",
+            ),
+            (
+                "new1",
+                "The story [new1](https://app.clubhouse.io/pig208/story/26) was moved from **epic** to **testeipc**.",
+            ),
+            (
+                "new2",
+                "The label **low priority** was added to the story [new2](https://app.clubhouse.io/pig208/story/27).",
+            ),
+            (
+                "new3",
+                "State of the story [new3](https://app.clubhouse.io/pig208/story/28) was changed from **In Development** to **Ready for Review**.",
+            ),
+            (
+                "new4",
+                "The story [new4](https://app.clubhouse.io/pig208/story/29) was moved from the **Product Development** project to **test2**.",
+            ),
+        ]
+        request, user_profile = (
+            check_send_webhook_message_mock.call_args_list[0][0][0],
+            check_send_webhook_message_mock.call_args_list[0][0][1],
+        )
+        expected_list = [
+            call(
+                request,
+                user_profile,
+                expected_message[0],
+                expected_message[1],
+            )
+            for expected_message in expected_messages
+        ]
+        self.assertEqual(check_send_webhook_message_mock.call_args_list, expected_list)
+
+    @patch("zerver.webhooks.clubhouse.view.check_send_webhook_message")
+    def test_story_update_batch_not_supported_ignore(
+        self, check_send_webhook_message_mock: MagicMock
+    ) -> None:
+        payload = self.get_body("story_update_multiple_not_supported")
+        result = self.client_post(self.url, payload, content_type="application/json")
+        self.assertFalse(check_send_webhook_message_mock.called)
+        self.assert_json_success(result)
+
+    @patch("zerver.webhooks.clubhouse.view.check_send_webhook_message")
     def test_empty_post_request_body_ignore(
         self, check_send_webhook_message_mock: MagicMock
     ) -> None:

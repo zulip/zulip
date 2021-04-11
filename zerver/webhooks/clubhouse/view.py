@@ -60,6 +60,10 @@ STORY_GITHUB_PR_TEMPLATE = (
 )
 STORY_GITHUB_COMMENT_PR_TEMPLATE = "Existing GitHub PR [#{name}]({url}) associated with story {name_template}{workflow_state_template}."
 STORY_GITHUB_BRANCH_TEMPLATE = "New GitHub branch [{name}]({url}) associated with story {name_template}{workflow_state_template}."
+STORY_UPDATE_BATCH_TEMPLATE = "The story {name_template} {templates}{workflow_state_template}."
+STORY_UPDATE_BATCH_CHANGED_TEMPLATE = "{operation} from {sub_templates}"
+STORY_UPDATE_BATCH_CHANGED_SUB_TEMPLATE = "{entity_type} **{old}** to **{new}**"
+STORY_UPDATE_BATCH_ADD_REMOVE_TEMPLATE = "{operation} with {entity}"
 
 
 def get_action_with_primary_id(payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -72,6 +76,10 @@ def get_action_with_primary_id(payload: Dict[str, Any]) -> Dict[str, Any]:
 
 def get_event(payload: Dict[str, Any], action: Dict[str, Any]) -> Optional[str]:
     event = "{}_{}".format(action["entity_type"], action["action"])
+
+    # We only consider the change to be a batch update only if there are multiple stories (thus there is no primary_id)
+    if event == "story_update" and payload.get("primary_id") is None:
+        return "{}_{}".format(event, "batch")
 
     if event in IGNORED_EVENTS:
         return None
@@ -497,6 +505,101 @@ def get_story_update_owner_body(payload: Dict[str, Any], action: Dict[str, Any])
     return STORY_UPDATE_OWNER_TEMPLATE.format(**kwargs)
 
 
+def get_story_update_batch_body(payload: Dict[str, Any], action: Dict[str, Any]) -> Optional[str]:
+    # When the user selects one or more stories with the checkbox, they can perform
+    # a batch update on multiple stories while changing multiple attribtues at the
+    # same time.
+    changes = action["changes"]
+    kwargs = {
+        "name_template": STORY_NAME_TEMPLATE.format(
+            name=action["name"],
+            app_url=action["app_url"],
+        ),
+        "workflow_state_template": "",
+    }
+
+    templates = []
+    last_change = "other"
+
+    move_sub_templates = []
+    if "epic_id" in changes:
+        last_change = "epic"
+        move_sub_templates.append(
+            STORY_UPDATE_BATCH_CHANGED_SUB_TEMPLATE.format(
+                entity_type="Epic",
+                old=get_reference_by_id(payload, changes["epic_id"].get("old")).get("name"),
+                new=get_reference_by_id(payload, changes["epic_id"].get("new")).get("name"),
+            )
+        )
+    if "project_id" in changes:
+        last_change = "project"
+        move_sub_templates.append(
+            STORY_UPDATE_BATCH_CHANGED_SUB_TEMPLATE.format(
+                entity_type="Project",
+                old=get_reference_by_id(payload, changes["project_id"].get("old")).get("name"),
+                new=get_reference_by_id(payload, changes["project_id"].get("new")).get("name"),
+            )
+        )
+    if len(move_sub_templates) > 0:
+        templates.append(
+            STORY_UPDATE_BATCH_CHANGED_TEMPLATE.format(
+                operation="was moved",
+                sub_templates=", ".join(move_sub_templates),
+            )
+        )
+
+    if "story_type" in changes:
+        last_change = "type"
+        templates.append(
+            STORY_UPDATE_BATCH_CHANGED_TEMPLATE.format(
+                operation="{} changed".format("was" if len(templates) == 0 else "and"),
+                sub_templates=STORY_UPDATE_BATCH_CHANGED_SUB_TEMPLATE.format(
+                    entity_type="type",
+                    old=changes["story_type"].get("old"),
+                    new=changes["story_type"].get("new"),
+                ),
+            )
+        )
+
+    if "label_ids" in changes:
+        last_change = "label"
+        labels = get_story_joined_label_list(payload, action, changes["label_ids"].get("adds"))
+        templates.append(
+            STORY_UPDATE_BATCH_ADD_REMOVE_TEMPLATE.format(
+                operation="{} added".format("was" if len(templates) == 0 else "and"),
+                entity="the new label{plural} {labels}".format(
+                    plural="s" if len(changes["label_ids"]) > 1 else "", labels=labels
+                ),
+            )
+        )
+
+    if "workflow_state_id" in changes:
+        last_change = "state"
+        kwargs.update(
+            workflow_state_template=TRAILING_WORKFLOW_STATE_CHANGE_TEMPLATE.format(
+                old=get_reference_by_id(payload, changes["workflow_state_id"].get("old")).get(
+                    "name"
+                ),
+                new=get_reference_by_id(payload, changes["workflow_state_id"].get("new")).get(
+                    "name"
+                ),
+            )
+        )
+
+    # Use the default template for state change if it is the only one change.
+    if len(templates) <= 1 or (len(templates) == 0 and last_change == "state"):
+        event: str = "{}_{}".format("story_update", last_change)
+        alternative_body_func = EVENT_BODY_FUNCTION_MAPPER.get(event)
+        # If last_change is not one of "epic", "project", "type", "label" and "state"
+        # we should ignore the action as there is no way for us to render the changes.
+        if alternative_body_func is None:
+            return None
+        return alternative_body_func(payload, action)
+
+    kwargs.update(templates=", ".join(templates))
+    return STORY_UPDATE_BATCH_TEMPLATE.format(**kwargs)
+
+
 def get_entity_name(
     payload: Dict[str, Any], action: Dict[str, Any], entity: Optional[str] = None
 ) -> Optional[str]:
@@ -570,6 +673,7 @@ EVENT_BODY_FUNCTION_MAPPER: Dict[str, Callable[[Dict[str, Any], Dict[str, Any]],
     "story_update_state": get_story_update_state_body,
     "epic_update_name": partial(get_update_name_body, entity="epic"),
     "story_update_name": partial(get_update_name_body, entity="story"),
+    "story_update_batch": get_story_update_batch_body,
 }
 
 EVENT_TOPIC_FUNCTION_MAPPER = {
