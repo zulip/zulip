@@ -130,7 +130,7 @@
     .message-control-link {
         position: relative;
         margin-right: 5px;
-        top: 2px;
+        top: 3px;
     }
 }
 
@@ -400,8 +400,10 @@ input.recipient_box {
 }
 
 #compose_box_giphy_grid img {
+    position: relative;
+    top: -3px;
     width: auto;
-    height: 14px;
+    height: 21px;
     vertical-align: top;
 }
 
@@ -410,9 +412,9 @@ a.compose_control_button {
     opacity: 0.4;
     color: inherit;
     text-decoration: none;
-    font-size: 14px;
-    width: 14px;
-    height: 14px;
+    font-size: 15px;
+    width: auto;
+    height: 15px;
     margin-right: 8px;
     padding-top: 5px;
     text-align: center;

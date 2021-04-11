@@ -2514,7 +2514,12 @@ div.topic_edit_spinner .loading_indicator_spinner {
         margin-top: 0;
 
         .message-control-link {
-            margin-right: 5px;
+            position: relative;
+            top: -1px;
+        }
+
+        .compose_giphy_logo {
+            top: -2px;
         }
     }
 
