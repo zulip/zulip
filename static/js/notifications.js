@@ -347,6 +347,7 @@ export function message_is_notifiable(message) {
         return false;
     }
 
+    //TODO: 1
     // @-<username> mentions take precedence over muted-ness. Note
     // that @all mentions are still suppressed by muting.
     if (message.mentioned_me_directly) {

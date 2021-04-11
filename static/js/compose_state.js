@@ -1,4 +1,3 @@
-import $ from "jquery";
 
 import * as compose_pm_pill from "./compose_pm_pill";
 
@@ -46,10 +45,13 @@ export function focus_in_empty_compose() {
 }
 
 export function private_message_recipient(value) {
+
     if (typeof value === "string") {
         compose_pm_pill.set_from_emails(value);
+
         return undefined;
     }
+
     return compose_pm_pill.get_emails();
 }
 

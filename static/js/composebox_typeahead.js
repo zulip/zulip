@@ -832,6 +832,7 @@ export function content_typeahead_selected(item, event) {
                 );
                 beginning += mention_text + " ";
                 if (!is_silent) {
+                    compose.warn_if_mentioned_private_one_on_one(item);
                     compose.warn_if_mentioning_unsubscribed_user(item);
                 }
             }
