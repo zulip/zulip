@@ -456,6 +456,8 @@ ul {
 #giphy_grid_in_popover {
     /* 300px of GIPHY grid + 15px scroll bar width */
     width: 315px;
+    border: 0;
+    padding: 0;
 
     .giphy-gif {
         cursor: pointer;
@@ -475,16 +477,20 @@ ul {
         input {
             flex-grow: 1;
             margin: 5px;
+            border-radius: 3px;
         }
     }
 
     .popover-content {
         overflow: auto;
         height: 200px;
+        margin: 2px;
     }
 
     .popover-footer {
         text-align: center;
+        background-color: hsl(0, 0%, 0%);
+        border-radius: 0 0 6px 6px;
 
         img {
             width: 120px;
