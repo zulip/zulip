@@ -1,11 +1,11 @@
 # Zulip overview
 
-Zulip is a powerful, open-source group chat application that combines the 
-immediacy of real-time chat with the productivity benefits of threaded 
+Zulip is a powerful, open-source group chat application that combines the
+immediacy of real-time chat with the productivity benefits of threaded
 conversations. Zulip is used by open source projects, Fortune 500 companies,
-large standards bodies, and others who need a real-time chat system that 
-allows users to easily process hundreds or thousands of messages a day. With 
-over 700 contributors merging over 500 commits a month, Zulip is also the 
+large standards bodies, and others who need a real-time chat system that
+allows users to easily process hundreds or thousands of messages a day. With
+over 700 contributors merging over 500 commits a month, Zulip is also the
 largest and fastest-growing open-source group chat project.
 
 [![GitHub Actions build status](https://github.com/zulip/zulip/actions/workflows/zulip-ci.yml/badge.svg?branch=master)](https://github.com/zulip/zulip/actions/workflows/zulip-ci.yml?query=branch%3Amaster)
