@@ -580,6 +580,26 @@ def get_deploy_options(config_file: configparser.RawConfigParser) -> List[str]:
     return get_config(config_file, "deployment", "deploy_options", "").strip().split()
 
 
+def run_psql_as_postgres(
+    sql_query: str,
+) -> None:
+    subcmd = " ".join(
+        map(
+            shlex.quote,
+            [
+                "psql",
+                "-v",
+                "ON_ERROR_STOP=1",
+                # TODO: Stop hardcoding the database name.
+                "zulip",
+                "-c",
+                sql_query,
+            ],
+        )
+    )
+    subprocess.check_call(["su", "postgres", "-c", subcmd])
+
+
 def get_tornado_ports(config_file: configparser.RawConfigParser) -> List[int]:
     ports = []
     if config_file.has_section("tornado_sharding"):
