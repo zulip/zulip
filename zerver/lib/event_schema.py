@@ -1013,6 +1013,7 @@ realm_user_type = DictType(
         ("is_owner", bool),
         ("is_bot", bool),
         ("is_guest", bool),
+        ("role", EnumType(UserProfile.ROLE_TYPES)),
         ("is_active", bool),
         ("profile_data", StringDictType(dict)),
         ("timezone", str),

@@ -12,6 +12,14 @@ below features are supported.
 
 **Feature level 59**
 
+* [`GET /users`](/api/get-users), [`GET /users/{user_id}`](/api/get-user),
+  [`GET /users/{email}`](/api/get-user-by-email) and
+  [`GET /users/me`](/api/get-own-user): Added `role` field to returned
+  user objects.
+* [`GET /events`](/api/get-events): Added `role` field to
+  user objects sent in `realm_user` events.
+* [`POST /register`](/api/register-queue): Added `role` field
+  in the user objects returned in the `realm_users` field.
 * [`GET /events`](/api/get-events): Added new `zulip_version` and
   `zulip_feature_level` fields to the `restart` event.
 

@@ -374,6 +374,7 @@ def format_user_row(
         is_admin=is_admin,
         is_owner=is_owner,
         is_guest=is_guest,
+        role=row["role"],
         is_bot=is_bot,
         full_name=row["full_name"],
         timezone=canonicalize_timezone(row["timezone"]),

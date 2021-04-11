@@ -814,6 +814,7 @@ paths:
                                       "is_admin": false,
                                       "is_owner": false,
                                       "is_guest": false,
+                                      "role": 400,
                                       "is_bot": false,
                                       "full_name": "full name",
                                       "timezone": "",
@@ -5036,6 +5037,7 @@ paths:
                               "email": "AARON@zulip.com",
                               "is_admin": false,
                               "is_owner": false,
+                              "role": 400,
                               "avatar_url": "https://secure.gravatar.com/avatar/818c212b9f8830dfef491b3f7da99a14?d=identicon&version=1",
                               "bot_type": null,
                               "timezone": "",
@@ -5079,6 +5081,7 @@ paths:
                               "timezone": "",
                               "is_admin": false,
                               "is_owner": false,
+                              "role": 400,
                               "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                               "is_active": true,
                               "email": "hamlet@zulip.com",
@@ -5093,6 +5096,7 @@ paths:
                               "avatar_url": "https://secure.gravatar.com/avatar/7328586831cdbb1627649bd857b1ee8c?d=identicon&version=1",
                               "is_admin": false,
                               "is_owner": false,
+                              "role": 400,
                               "user_id": 23,
                               "bot_type": 1,
                               "timezone": "",
@@ -5337,6 +5341,25 @@ paths:
 
                           **Changes**: New in Zulip 3.0 (feature level 8).
                         example: false
+                      role:
+                        type: integer
+                        enum:
+                          - 100
+                          - 200
+                          - 300
+                          - 400
+                          - 600
+                        description: |
+                          [Organization-level role](/help/roles-and-permissions)) of the user.
+                          Poosible values are:
+
+                          * Organization owner => 100
+                          * Organization administrator => 200
+                          * Organization moderator => 300
+                          * Member => 400
+                          * Guest => 600
+
+                          **Changes**: New in Zulip 4.0 (feature level 59).
                       is_guest:
                         type: boolean
                         description: |
@@ -5405,6 +5428,7 @@ paths:
                         "full_name": "Iago",
                         "is_admin": true,
                         "is_owner": false,
+                        "role": 200,
                         "is_guest": false,
                         "is_bot": false,
                         "is_active": true,
@@ -6612,6 +6636,7 @@ paths:
                             "timezone": "",
                             "is_admin": false,
                             "is_owner": false,
+                            "role": 400,
                             "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                             "is_active": true,
                             "email": "hamlet@zulip.com",
@@ -6686,6 +6711,7 @@ paths:
                             "timezone": "",
                             "is_admin": false,
                             "is_owner": false,
+                            "role": 400,
                             "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                             "is_active": true,
                             "email": "hamlet@zulip.com",
@@ -8969,6 +8995,7 @@ paths:
                                 full_name: {}
                                 is_admin: {}
                                 is_owner: {}
+                                role: {}
                                 bot_type: {}
                                 user_id: {}
                                 bot_owner_id: {}
@@ -11635,6 +11662,7 @@ components:
             full_name: {}
             is_admin: {}
             is_owner: {}
+            role: {}
             bot_type: {}
             user_id: {}
             bot_owner_id: {}
@@ -11692,6 +11720,25 @@ components:
             If true, is_admin will also be true.
 
             **Changes**: New in Zulip 3.0 (feature level 8).
+        role:
+          type: integer
+          enum:
+            - 100
+            - 200
+            - 300
+            - 400
+            - 600
+          description: |
+            [Organization-level role](/help/roles-and-permissions)) of the user.
+            Poosible values are:
+
+            * Organization owner => 100
+            * Organization administrator => 200
+            * Organization moderator => 300
+            * Member => 400
+            * Guest => 600
+
+            **Changes**: New in Zulip 4.0 (feature level 59).
         bot_type:
           type: integer
           nullable: true
