@@ -4698,7 +4698,6 @@ class TestLoginPage(ZulipTestCase):
 
     def test_email_visibility_setting_text(self) -> None:
         # EMAIL_ADDRESS_VISIBIILITY_ADMINS
-        user = self.example_user("desdemona")
         realm = get_realm("zulip")
         do_set_realm_property(
             realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
