@@ -1,4 +1,4 @@
-export function get_search_terms(input) {
+export function get_search_terms(input: string): string[] {
     const search_terms = input
         .toLowerCase()
         .split(",")
@@ -6,7 +6,7 @@ export function get_search_terms(input) {
     return search_terms;
 }
 
-export function vanilla_match(opts) {
+export function vanilla_match(opts: {val: string; search_terms: string[]}): boolean {
     /*
         This is a pretty vanilla search criteria
         where we see if any of our search terms
