@@ -491,12 +491,30 @@ def get_name_template(entity: str) -> str:
     return EPIC_NAME_TEMPLATE
 
 
+def send_stream_messages_for_actions(
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Any],
+    action: Dict[str, Any],
+    event: str,
+) -> None:
+    body_func = EVENT_BODY_FUNCTION_MAPPER.get(event)
+    topic_func = get_topic_function_based_on_type(payload, action)
+    if body_func is None or topic_func is None:
+        raise UnsupportedWebhookEventType(event)
+
+    topic = topic_func(payload, action)
+    body = body_func(payload, action)
+
+    if topic and body:
+        check_send_webhook_message(request, user_profile, topic, body)
+
+
 EVENT_BODY_FUNCTION_MAPPER: Dict[str, Callable[[Dict[str, Any], Dict[str, Any]], Optional[str]]] = {
     "story_update_archived": partial(get_update_archived_body, entity="story"),
     "epic_update_archived": partial(get_update_archived_body, entity="epic"),
     "story_create": get_story_create_body,
     "pull-request_create": partial(get_story_create_github_entity_body, entity="pull-request"),
-    #TODO: "pull-request_comment": partial(get_story_add_github_entity_body, entity="pull-request"),
     "branch_create": partial(get_story_create_github_entity_body, entity="branch"),
     "story_delete": get_delete_body,
     "epic_delete": get_delete_body,
@@ -535,10 +553,6 @@ IGNORED_EVENTS = {
     "story-comment_update",
 }
 
-MULTIPLE_ACTIONS_EVENTS = {
-    "pull-request_create"
-}
-
 @webhook_view("ClubHouse")
 @has_request_variables
 def api_clubhouse_webhook(
@@ -554,20 +568,17 @@ def api_clubhouse_webhook(
     if payload is None:
         return json_success()
 
-    action = get_action_with_primary_id(payload)
+    if payload.get("primary_id") is not None:
+        action = get_action_with_primary_id(payload)
+        primary_actions = [action]
+    else:
+        primary_actions = payload["actions"]
 
-    event = get_event(payload, action)
-    if event is None:
-        return json_success()
+    for primary_action in primary_actions:
+        event = get_event(payload, primary_action)
+        if event is None:
+            continue
 
-    body_func = EVENT_BODY_FUNCTION_MAPPER.get(event)
-    topic_func = get_topic_function_based_on_type(payload, action)
-    if body_func is None or topic_func is None:
-        raise UnsupportedWebhookEventType(event)
-    topic = topic_func(payload, action)
-    body = body_func(payload, action)
-
-    if topic and body:
-        check_send_webhook_message(request, user_profile, topic, body)
+        send_stream_messages_for_actions(request, user_profile, payload, primary_action, event)
 
     return json_success()
