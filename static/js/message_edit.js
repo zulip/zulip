@@ -48,6 +48,7 @@ export const editability_types = {
     // you are an admin.
     TOPIC_ONLY: 3,
     FULL: 4,
+    CONTENT_ONLY: 5,
 };
 
 export function is_topic_editable(message, edit_limit_seconds_buffer = 0) {
@@ -81,7 +82,9 @@ export function get_editability(message, edit_limit_seconds_buffer = 0) {
     if (!message) {
         return editability_types.NO;
     }
-    if (!is_topic_editable(message, edit_limit_seconds_buffer)) {
+    const topic_edit_allowed =
+        is_topic_editable(message, edit_limit_seconds_buffer) && message.type === "stream";
+    if (!topic_edit_allowed && message.type === "stream" && !message.is_editable_for_all) {
         return editability_types.NO;
     }
     if (message.failed_request) {
@@ -122,9 +125,14 @@ export function get_editability(message, edit_limit_seconds_buffer = 0) {
     }
 
     // time's up!
-    if (message.type === "stream") {
+    if (topic_edit_allowed && message.is_editable_for_all === true) {
+        return editability_types.FULL;
+    } else if (topic_edit_allowed) {
         return editability_types.TOPIC_ONLY;
+    } else if (message.is_editable_for_all === true) {
+        return editability_types.CONTENT_ONLY;
     }
+
     return editability_types.NO_LONGER;
 }
 
@@ -314,7 +322,9 @@ function edit_message(row, raw_content) {
     const seconds_left_buffer = 5;
     const editability = get_editability(message, seconds_left_buffer);
     const is_editable =
-        editability === editability_types.TOPIC_ONLY || editability === editability_types.FULL;
+        editability === editability_types.TOPIC_ONLY ||
+        editability === editability_types.CONTENT_ONLY ||
+        editability === editability_types.FULL;
     const max_file_upload_size = page_params.max_file_upload_size_mib;
     let file_upload_enabled = false;
 
@@ -392,7 +402,13 @@ function edit_message(row, raw_content) {
         // Hint why you can edit the topic but not the message content
         message_edit_countdown_timer.text(i18n.t("Topic editing only"));
         new ClipboardJS(copy_message[0]);
-    } else if (editability === editability_types.FULL) {
+    } else if (
+        editability === editability_types.FULL ||
+        editability === editability_types.CONTENT_ONLY
+    ) {
+        if (editability === editability_types.CONTENT_ONLY) {
+            message_edit_topic.attr("readonly", "readonly");
+        }
         copy_message.remove();
         const edit_id = `#message_edit_content_${CSS.escape(rows.id(row))}`;
         const listeners = resize.watch_manual_resize(edit_id);

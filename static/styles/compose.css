@@ -82,9 +82,14 @@
         }
     }
 
+    .message-utilities {
+        display: flex;
+        flex-direction: row;
+    }
+
     .right_part {
         padding: 0;
-        display: flex;
+        display: inline-block;
         align-items: center;
         width: 100%;
 
@@ -93,6 +98,83 @@
             -webkit-text-stroke: 0.05em;
             position: relative;
             margin: 0 5px;
+        }
+    }
+
+    #editable-message-toggle {
+        margin-right: 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        .tooltip-message {
+            display: none;
+            position: absolute;
+            width: 150px;
+            top: -85px;
+            right: -10px;
+            padding: 5px;
+            background: hsl(0, 0%, 30%);
+            color: hsl(0, 0%, 100%);
+            border-radius: 5px;
+            text-align: justify;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 22px;
+
+            input {
+                opacity: 0;
+                width: 0;
+                height: 0;
+            }
+
+            .slider {
+                position: absolute;
+                cursor: pointer;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                border-radius: 50px;
+                background-color: hsl(0, 0%, 80%);
+                transition: 0.4s;
+            }
+
+            .slider::before {
+                position: absolute;
+                content: "";
+                height: 18px;
+                width: 18px;
+                left: 2px;
+                bottom: 2px;
+                border-radius: 50px;
+                background-color: hsl(0, 0%, 100%);
+                transition: 0.4s;
+            }
+
+            input:checked + .slider {
+                background-color: hsl(170, 46%, 54%);
+            }
+
+            input:focus + .slider {
+                box-shadow: 0 0 1px hsl(170, 46%, 54%);
+            }
+
+            input:checked + .slider::before {
+                transform: translateX(18px);
+                transform: translateX(18px);
+                transform: translateX(18px);
+            }
+        }
+    }
+
+    #editable-message-toggle:hover {
+        .tooltip-message {
+            display: block;
         }
     }
 
@@ -385,6 +467,7 @@ input.recipient_box {
 #stream-message,
 #private-message {
     display: flex;
+    width: 100%;
 }
 
 #private-message {
@@ -519,7 +602,7 @@ a#undo_markdown_preview {
 
 @media (width < $mm_min) {
     #stream_message_recipient_topic.recipient_box {
-        width: calc(100% - 175px);
+        width: calc(100% - 40px);
         min-width: 95px;
     }
 

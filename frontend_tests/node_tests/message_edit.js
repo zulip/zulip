@@ -56,6 +56,7 @@ run_test("get_editability", () => {
     page_params.realm_allow_message_editing = true;
     // Limit of 0 means no time limit on editing messages
     page_params.realm_message_content_edit_limit_seconds = 0;
+    message.type = "stream";
     assert.equal(get_editability(message), editability_types.FULL);
 
     page_params.realm_message_content_edit_limit_seconds = 10;
@@ -72,6 +73,33 @@ run_test("get_editability", () => {
     assert.equal(get_editability(message, 45), editability_types.NO_LONGER);
     // If we don't pass a second argument, treat it as 0
     assert.equal(get_editability(message), editability_types.NO_LONGER);
+
+    // Checks For messages editable for all
+    message.is_editable_for_all = true;
+    message.sent_by_me = false;
+    page_params.realm_message_content_edit_limit_seconds = 0;
+    page_params.realm_community_topic_editing_limit_seconds = 259200;
+    // in streams
+    message.type = "stream";
+    // we dont allow message editing if realm doesn't allow it
+    page_params.realm_allow_message_editing = false;
+    assert.equal(get_editability(message), editability_types.NO);
+    page_params.realm_allow_message_editing = true;
+    // If community topic editiing not allowed message is CONTENT_ONLY edit
+    page_params.realm_allow_community_topic_editing = false;
+    assert.equal(get_editability(message, 45), editability_types.CONTENT_ONLY);
+    page_params.realm_allow_community_topic_editing = true;
+    // There is no topic only for these type of messages, as topic only
+    // as well as editable for all means FULL
+    assert.equal(get_editability(message, 45), editability_types.FULL);
+    // in private
+    message.type = "private";
+    // Private messages with content editable is content only edit
+    assert.equal(get_editability(message, 45), editability_types.CONTENT_ONLY);
+    // Private messages with content editable is content only edit
+    message.sent_by_me = true;
+    // But private messages by sender before timer is FULL edit
+    assert.equal(get_editability(message, 55), editability_types.FULL);
 
     message = {
         sent_by_me: false,

@@ -60,27 +60,36 @@
                 <form id="send_message_form" action="/json/messages" method="post">
                     {{ csrf_input }}
                     <div class="compose_table">
-                        <div id="stream-message">
-                            <div class="stream-selection-header-colorblock message_header_stream left_part"></div>
-                            <div class="right_part">
-                                <span id="compose-lock-icon">
-                                    <i class="fa fa-lock" title="{{ _('This is a private stream') }}" aria-hidden="true"></i>
-                                </span>
-                                <input type="text" class="recipient_box" name="stream_message_recipient_stream" id="stream_message_recipient_stream" maxlength="30" value="" placeholder="{{ _('Stream') }}" autocomplete="off" tabindex="0" aria-label="{{ _('Stream') }}" />
-                                <i class="fa fa-angle-right" aria-hidden="true"></i>
-                                <input type="text" class="recipient_box" name="stream_message_recipient_topic" id="stream_message_recipient_topic" maxlength="60" value="" placeholder="{{ _('Topic') }}" autocomplete="off" tabindex="0" aria-label="{{ _('Topic') }}" />
+                        <div class="message-utilities">
+                            <div id="stream-message">
+                                <div class="stream-selection-header-colorblock message_header_stream left_part"></div>
+                                <div class="right_part">
+                                    <span id="compose-lock-icon">
+                                        <i class="fa fa-lock" title="{{ _('This is a private stream') }}" aria-hidden="true"></i>
+                                    </span>
+                                    <input type="text" class="recipient_box" name="stream_message_recipient_stream" id="stream_message_recipient_stream" maxlength="30" value="" placeholder="{{ _('Stream') }}" autocomplete="off" tabindex="0" aria-label="{{ _('Stream') }}" />
+                                    <i class="fa fa-angle-right" aria-hidden="true"></i>
+                                    <input type="text" class="recipient_box" name="stream_message_recipient_topic" id="stream_message_recipient_topic" maxlength="60" value="" placeholder="{{ _('Topic') }}" autocomplete="off" tabindex="0" aria-label="{{ _('Topic') }}" />
+                                </div>
                             </div>
-                        </div>
-                        <div id="private-message">
-                            <div class="to_text">
-                                <span>{{ _('To') }}:</span>
-                            </div>
-                            <div class="right_part">
-                                <div class="pm_recipient">
-                                    <div class="pill-container" data-before="{{ _('You and') }}">
-                                        <div class="input" contenteditable="true" id="private_message_recipient" data-no-recipients-text="{{ _('Add one or more users') }}" data-some-recipients-text="{{ _('Add another user...') }}"></div>
+                            <div id="private-message">
+                                <div class="to_text">
+                                    <span>{{ _('To') }}:</span>
+                                </div>
+                                <div class="right_part">
+                                    <div class="pm_recipient">
+                                        <div class="pill-container" data-before="{{ _('You and') }}">
+                                            <div class="input" contenteditable="true" id="private_message_recipient" data-no-recipients-text="{{ _('Add one or more users') }}" data-some-recipients-text="{{ _('Add another user...') }}"></div>
+                                        </div>
                                     </div>
                                 </div>
+                            </div>
+                            <div id="editable-message-toggle">
+                                <p class="tooltip-message">Switching this button on will make the message editable to all recipients</p>
+                                <label class="switch">
+                                    <input type="checkbox">
+                                    <span class="slider"></span>
+                                </label>
                             </div>
                         </div>
                         <div>

@@ -234,11 +234,13 @@ export function create_message_object() {
     }
 
     const content = make_uploads_relative(compose_state.message_content());
+    const is_editable_for_all = compose_state.is_editable();
 
     // Changes here must also be kept in sync with echo.try_deliver_locally
     const message = {
         type: compose_state.get_message_type(),
         content,
+        is_editable_for_all,
         sender_id: page_params.user_id,
         queue_id: page_params.queue_id,
         stream: "",
@@ -326,6 +328,7 @@ export function clear_compose_box() {
     $("#compose-send-status").hide(0);
     $("#compose-send-button").prop("disabled", false);
     $("#sending-indicator").hide();
+    $("#editable-message-toggle input").prop("checked", false);
 }
 
 export function send_message_success(local_id, message_id, locally_echoed) {

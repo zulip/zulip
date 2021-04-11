@@ -106,14 +106,16 @@ function message_hover(message_row) {
 
     // Locally echoed messages have !is_topic_editable and thus go
     // through this code path.
-    if (!message_edit.is_topic_editable(message)) {
+    if (!message_edit.is_topic_editable(message) && message.is_sent_by_me) {
         // The actions and reactions icon hover logic is handled entirely by CSS
         return;
     }
 
     // But the message edit hover icon is determined by whether the message is still editable
+    const message_editability = message_edit.get_editability(message);
     const is_message_editable =
-        message_edit.get_editability(message) === message_edit.editability_types.FULL;
+        message_editability === message_edit.editability_types.FULL ||
+        message_editability === message_edit.editability_types.CONTENT_ONLY;
     const args = {
         is_editable: is_message_editable && !message.status_message,
         msg_id: id,

@@ -56,3 +56,7 @@ export function private_message_recipient(value) {
 export function has_message_content() {
     return message_content() !== "";
 }
+
+export function is_editable() {
+    return $("#editable-message-toggle input").is(":checked");
+}

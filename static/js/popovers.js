@@ -526,7 +526,10 @@ export function toggle_actions_popover(element, id) {
         const editability = message_edit.get_editability(message);
         let use_edit_icon;
         let editability_menu_item;
-        if (editability === message_edit.editability_types.FULL) {
+        if (
+            editability === message_edit.editability_types.FULL ||
+            editability === message_edit.editability_types.CONTENT_ONLY
+        ) {
             use_edit_icon = true;
             editability_menu_item = i18n.t("Edit");
         } else if (editability === message_edit.editability_types.TOPIC_ONLY) {

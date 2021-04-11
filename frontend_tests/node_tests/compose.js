@@ -722,6 +722,7 @@ test_ui("send_message", (override) => {
         stub_state = initialize_state_stub_dict();
         compose_state.topic("");
         compose_state.set_message_type("private");
+        compose_state.is_editable = () => false;
         page_params.user_id = new_user.user_id;
         override(compose_state, "private_message_recipient", () => "alice@example.com");
 
@@ -741,6 +742,7 @@ test_ui("send_message", (override) => {
             const single_msg = {
                 type: "private",
                 content: "[foobar](/user_uploads/123456)",
+                is_editable_for_all: false,
                 sender_id: new_user.user_id,
                 queue_id: undefined,
                 stream: "",

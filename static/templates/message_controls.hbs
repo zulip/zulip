@@ -1,9 +1,9 @@
 <div class="message_controls{{#status_message}} sender-status-controls{{/status_message}} no-select">
-    {{#if msg/sent_by_me}}
+    {{#if (or msg/sent_by_me msg/is_editable_for_all)}}
     <div class="edit_content"></div>
     {{/if}}
 
-    {{#unless msg/sent_by_me}}
+    {{#unless (or msg/sent_by_me msg/is_editable_for_all)}}
     <div class="reaction_button tippy-zulip-tooltip" data-tippy-content="{{t 'Add emoji reaction' }}">
         <i class="fa fa-smile-o" aria-label="{{#tr this}}Add emoji reaction{{/tr}} (:)" role="button" aria-haspopup="true" tabindex="0"></i>
     </div>

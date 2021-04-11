@@ -283,6 +283,9 @@ function make_new_elem(selector, opts) {
             if (arg === ":focus") {
                 return self.is_focused();
             }
+            if (arg === ":checked") {
+                return self.prop("checked");
+            }
             return self;
         },
         is_focused() {
