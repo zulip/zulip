@@ -699,7 +699,15 @@ form#add_new_subscription {
 
     .sub-info-box {
         width: calc(100% - 90px);
-
+        .top-bar {
+            .all-stream-info {
+                display: inline-flex;
+                flex-wrap: wrap;
+            }
+            .all-stream-info > div {
+                margin-left: 4px;
+            }
+        }
         .top-bar,
         .bottom-bar {
             display: flex;

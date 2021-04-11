@@ -478,6 +478,8 @@ function stream_is_muted_changed(e) {
     sub_settings.find(".mute-note").toggleClass("hide-mute-note", !sub.is_muted);
     notification_checkboxes.toggleClass("muted-sub", sub.is_muted);
     notification_checkboxes.find("input[type='checkbox']").prop("disabled", sub.is_muted);
+    // Update left_panel.
+    subs.update_left_panel_row(sub);
 }
 
 export function stream_setting_changed(e, from_notification_settings) {
@@ -894,5 +896,18 @@ export function initialize() {
     $("#subscriptions_table").on("change", ".stream_message_retention_setting", (e) => {
         const dropdown_value = e.target.value;
         change_stream_message_retention_days_block_display_property(dropdown_value);
+    });
+
+    // Handle unmute icon on stream_row.
+    $("#subscriptions_table").on("click", ".unmute_stream", (e) => {
+        const sub = get_sub_for_target(e.target);
+        subs.set_muted(sub, !sub.is_muted);
+        subs.update_left_panel_row(sub);
+    });
+    // Handle unpin icon on stream row.
+    $("#subscriptions_table").on("click", ".unpin_stream", (e) => {
+        const sub = get_sub_for_target(e.target);
+        set_stream_property(sub, "pin_to_top", !sub.pin_to_top);
+        $(".unpin_stream").hide();
     });
 }

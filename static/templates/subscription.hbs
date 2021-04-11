@@ -11,7 +11,11 @@
     {{> subscription_setting_icon }}
     <div class="sub-info-box">
         <div class="top-bar">
-            <div class="stream-name">{{name}}</div>
+            <div class="all-stream-info">
+                <div class="stream-name">{{name}}</div>
+                <div>{{#if is_muted}}<i class="fa fa-bell-slash on_hover_stream_mute unmute_stream tippy-zulip-tooltip" data-tippy-content="{{t 'Click to unmute' }}"></i>{{/if}}</div>
+                <div>{{#if pin_to_top}}<i class="fa fa-thumb-tack on_hover_thumb_tack unpin_stream tippy-zulip-tooltip" data-tippy-content="{{t 'Click to unpin' }}"></i>{{/if}}</div>
+            </div>
             <div class="subscriber-count tippy-zulip-tooltip" data-tippy-content="{{t 'Subscriber count' }}">
                 {{> subscription_count}}
             </div>
