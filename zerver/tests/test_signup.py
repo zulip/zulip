@@ -99,6 +99,7 @@ from zerver.models import (
 from zerver.views.auth import redirect_and_log_into_subdomain, start_two_factor_auth
 from zerver.views.development.registration import confirmation_key
 from zerver.views.invite import get_invitee_emails_set
+from zerver.views.registration import get_email_address_visibility
 from zproject.backends import ExternalAuthDataDict, ExternalAuthResult
 
 
@@ -4695,6 +4696,28 @@ class TestLoginPage(ZulipTestCase):
             response,
         )
 
+    def test_email_visibility_setting_text(self) -> None:
+        # EMAIL_ADDRESS_VISIBIILITY_ADMINS
+        realm = get_realm("zulip")
+        do_set_realm_property(realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
+        actual = get_email_address_visibility(realm)
+        expected = "Only organization administrators will be able to see this email address."
+        self.assertEqual(actual, expected)
+
+        # EMAIL_ADDRESS_VISIBIILITY_EVERYONE
+        realm = get_realm("zulip")
+        do_set_realm_property(realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE)
+        actual = get_email_address_visibility(realm)
+        expected = "All users will be able to see this email address."
+        self.assertEqual(actual, expected)
+
+        # EMAIL_ADDRESS_VISIBIILITY_EVERYONE
+        realm = get_realm("zulip")
+        do_set_realm_property(realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_NOBODY)
+        actual = get_email_address_visibility(realm)
+        expected = "Users will not be able to see this email address."
+        self.assertEqual(actual, expected)
+      
 
 class TestFindMyTeam(ZulipTestCase):
     def test_template(self) -> None:
