@@ -473,11 +473,25 @@ ul {
     .search-box {
         display: flex;
         position: sticky;
+        padding: 2px;
 
         input {
             flex-grow: 1;
             margin: 5px;
             border-radius: 3px;
+        }
+
+        .clear_search_button {
+            position: absolute;
+            top: 5px;
+            right: 3px;
+            font-size: 16px;
+
+            &:focus {
+                .fa-remove {
+                    outline: 2px solid hsl(215, 47%, 50%);
+                }
+            }
         }
     }
 

@@ -14,6 +14,7 @@ import * as ui_util from "./ui_util";
 
 const giphy_fetch = new GiphyFetch(page_params.giphy_api_key);
 let search_term = "";
+let gifs_grid;
 let active_popover_element;
 
 // Only used if popover called from edit message, otherwise it is `undefined`.
@@ -101,15 +102,22 @@ function renderGIPHYGrid(targetEl) {
 }
 
 function update_grid_with_search_term() {
+    if (!gifs_grid) {
+        return;
+    }
+
     const search_elem = $("#giphy-search-query");
     // GIPHY popover may have been hidden by the
     // time this function is called.
     if (search_elem.length) {
         search_term = search_elem[0].value;
-        return renderGIPHYGrid($("#giphy_grid_in_popover .popover-content")[0]);
+        gifs_grid.remove();
+        gifs_grid = renderGIPHYGrid($("#giphy_grid_in_popover .popover-content")[0]);
+        return;
     }
-    // Return undefined to stop searching.
-    return undefined;
+
+    // Set to undefined to stop searching.
+    gifs_grid = undefined;
 }
 
 export function hide_giphy_popover() {
@@ -155,6 +163,12 @@ export function initialize() {
     $("body").on("keydown", ".giphy-gif", ui_util.convert_enter_to_click);
     $("body").on("keydown", ".compose_giphy_logo", ui_util.convert_enter_to_click);
 
+    $("body").on("click", "#giphy_search_clear", (e) => {
+        e.stopPropagation();
+        $("#giphy-search-query").val("");
+        update_grid_with_search_term();
+    });
+
     $("body").on("click", ".compose_giphy_logo", (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -181,7 +195,7 @@ export function initialize() {
         });
 
         active_popover_element.popover("show");
-        let gifs_grid = renderGIPHYGrid($("#giphy_grid_in_popover .popover-content")[0]);
+        gifs_grid = renderGIPHYGrid($("#giphy_grid_in_popover .popover-content")[0]);
 
         $("body").on(
             "keyup",
@@ -190,14 +204,7 @@ export function initialize() {
             // every search. This makes the UX of searching pleasant
             // by allowing user to finish typing before search
             // is executed.
-            _.debounce(() => {
-                // GIPHY popover may have been hidden by the
-                // time this function is called.
-                if (gifs_grid) {
-                    gifs_grid.remove();
-                    gifs_grid = update_grid_with_search_term();
-                }
-            }, 300),
+            _.debounce(update_grid_with_search_term, 300),
         );
 
         $(document).one("compose_canceled.zulip compose_finished.zulip", () => {
