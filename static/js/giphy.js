@@ -7,7 +7,7 @@ import render_giphy_picker from "../templates/giphy_picker.hbs";
 import render_giphy_picker_mobile from "../templates/giphy_picker_mobile.hbs";
 
 import * as compose_ui from "./compose_ui";
-import {media_breakpoints} from "./css_variables";
+import {media_breakpoints_num} from "./css_variables";
 import {page_params} from "./page_params";
 import * as popovers from "./popovers";
 import * as ui_util from "./ui_util";
@@ -124,7 +124,7 @@ export function hide_giphy_popover() {
 }
 
 function get_popover_content() {
-    if (window.innerWidth <= Number(media_breakpoints.md_min.slice(0, -2))) {
+    if (window.innerWidth <= media_breakpoints_num.md) {
         // Show as modal in the center for small screens.
         return render_giphy_picker_mobile();
     }
