@@ -452,7 +452,7 @@ class TestMissedMessages(ZulipTestCase):
             self.example_user("othello"), "Denmark", "@**King Hamlet**"
         )
         verify_body_include = [
-            "Cordelia Lear: 0 1 2 Othello, the Moor of Venice: @**King Hamlet** -- ",
+            "Cordelia, Lear's daughter: 0 1 2 Othello, the Moor of Venice: @**King Hamlet** -- ",
             "You are receiving this because you were mentioned in Zulip Dev.",
         ]
         email_subject = "#Denmark > test"
@@ -583,7 +583,9 @@ class TestMissedMessages(ZulipTestCase):
         )
 
         verify_body_include = ["Othello, the Moor of Venice: Group personal message! -- Reply"]
-        email_subject = "Group PMs with Cordelia Lear, Iago, and Othello, the Moor of Venice"
+        email_subject = (
+            "Group PMs with Cordelia, Lear's daughter, Iago, and Othello, the Moor of Venice"
+        )
         self._test_cases(msg_id, verify_body_include, email_subject, send_as_user)
 
     def _extra_context_in_huddle_missed_stream_messages_many_others(
@@ -601,7 +603,7 @@ class TestMissedMessages(ZulipTestCase):
         )
 
         verify_body_include = ["Othello, the Moor of Venice: Group personal message! -- Reply"]
-        email_subject = "Group PMs with Cordelia Lear, Iago, and 2 others"
+        email_subject = "Group PMs with Cordelia, Lear's daughter, Iago, and 2 others"
         self._test_cases(msg_id, verify_body_include, email_subject, send_as_user)
 
     def _deleted_message_in_missed_stream_messages(self, send_as_user: bool) -> None:

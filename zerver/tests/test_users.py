@@ -1221,8 +1221,8 @@ class UserProfileTest(ZulipTestCase):
         self.assertEqual(len(events), 0)
 
         # We verify that cordelia and iago match, but hamlet has the defaults.
-        self.assertEqual(iago.full_name, "Cordelia Lear")
-        self.assertEqual(cordelia.full_name, "Cordelia Lear")
+        self.assertEqual(iago.full_name, "Cordelia, Lear's daughter")
+        self.assertEqual(cordelia.full_name, "Cordelia, Lear's daughter")
         self.assertEqual(hamlet.full_name, "King Hamlet")
 
         self.assertEqual(iago.default_language, "de")

@@ -40,7 +40,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
         self._assert_update_does_not_notify_anybody(
             message_id=message_id,
-            content="now we mention @**Cordelia Lear**",
+            content="now we mention @**Cordelia, Lear's daughter**",
         )
 
     def _login_and_send_original_stream_message(
@@ -177,7 +177,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
     def test_updates_with_stream_mention(self) -> None:
         original_content = "no mention"
-        updated_content = "now we mention @**Cordelia Lear**"
+        updated_content = "now we mention @**Cordelia, Lear's daughter**"
         notification_message_data = self._send_and_update_message(original_content, updated_content)
 
         message_id = notification_message_data["message_id"]
@@ -217,8 +217,8 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         self.assertEqual(email_event["trigger"], "mentioned")
 
     def test_second_mention_is_ignored(self) -> None:
-        original_content = "hello @**Cordelia Lear**"
-        updated_content = "re-mention @**Cordelia Lear**"
+        original_content = "hello @**Cordelia, Lear's daughter**"
+        updated_content = "re-mention @**Cordelia, Lear's daughter**"
         self._send_and_update_message(original_content, updated_content, expect_short_circuit=True)
 
     def _turn_on_stream_push_for_cordelia(self) -> None:
@@ -305,7 +305,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         # Simulate Cordelia is FULLY present, not just in term of
         # browser activity, but also in terms of her client descriptors.
         original_content = "no mention"
-        updated_content = "newly mention @**Cordelia Lear**"
+        updated_content = "newly mention @**Cordelia, Lear's daughter**"
         notification_message_data = self._send_and_update_message(
             original_content,
             updated_content,
@@ -385,7 +385,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         # but they don't have UserPresence rows, so we will still
         # send offline notifications.
         original_content = "no mention"
-        updated_content = "now we mention @**Cordelia Lear**"
+        updated_content = "now we mention @**Cordelia, Lear's daughter**"
         notification_message_data = self._send_and_update_message(
             original_content,
             updated_content,
@@ -453,7 +453,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         # If there was a previous wildcard mention delivered to the
         # user (because wildcard_mention_notify=True), we don't notify
         original_content = "Mention @**all**"
-        updated_content = "now we mention @**Cordelia Lear**"
+        updated_content = "now we mention @**Cordelia, Lear's daughter**"
         self._send_and_update_message(
             original_content, updated_content, expect_short_circuit=True, connected_to_zulip=True
         )
@@ -470,7 +470,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         cordelia.save()
 
         original_content = "Mention @**all**"
-        updated_content = "now we mention @**Cordelia Lear**"
+        updated_content = "now we mention @**Cordelia, Lear's daughter**"
         self._send_and_update_message(
             original_content, updated_content, expect_short_circuit=True, connected_to_zulip=True
         )
@@ -481,7 +481,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         # Simulate Cordelia is FULLY present, not just in term of
         # browser activity, but also in terms of her client descriptors.
         original_content = "no mention"
-        updated_content = "now we mention @**Cordelia Lear**"
+        updated_content = "now we mention @**Cordelia, Lear's daughter**"
         notification_message_data = self._send_and_update_message(
             original_content,
             updated_content,

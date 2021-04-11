@@ -213,7 +213,7 @@ const othello = {
 const cordelia = {
     email: "cordelia@zulip.com",
     user_id: 102,
-    full_name: "Cordelia Lear",
+    full_name: "Cordelia, Lear's daughter",
 };
 const deactivated_user = {
     email: "other@zulip.com",
@@ -763,7 +763,7 @@ test("initialize", (override) => {
         // Adds a `no break-space` at the end. This should fail
         // if there wasn't any logic replacing `no break-space`
         // with normal space.
-        query = "cordelia" + String.fromCharCode(160);
+        query = "cordelia, lear's" + String.fromCharCode(160);
         assert.equal(matcher(query, cordelia), true);
         assert.equal(matcher(query, othello), false);
 
@@ -783,7 +783,7 @@ test("initialize", (override) => {
 
         options.query = "othello@zulip.com, cor";
         actual_value = options.updater(cordelia, event);
-        assert.equal(appended_name, "Cordelia Lear");
+        assert.equal(appended_name, "Cordelia, Lear's daughter");
 
         const click_event = {type: "click", target: "#doesnotmatter"};
         options.query = "othello";
@@ -1468,8 +1468,8 @@ test("typeahead_results", () => {
     assert_emoji_matches("notaemoji", []);
     // Autocomplete user mentions by user name.
     assert_mentions_matches("cordelia", [cordelia]);
-    assert_mentions_matches("cordelia le", [cordelia]);
-    assert_mentions_matches("cordelia le ", []);
+    assert_mentions_matches("cordelia, le", [cordelia]);
+    assert_mentions_matches("cordelia, le ", []);
     assert_mentions_matches("King ", [hamlet, lear]);
     assert_mentions_matches("King H", [hamlet]);
     assert_mentions_matches("King L", [lear]);

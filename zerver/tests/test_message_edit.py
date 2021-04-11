@@ -439,7 +439,9 @@ class EditMessageTest(ZulipTestCase):
         self.subscribe(hamlet, "Scotland")
         self.subscribe(cordelia, "Scotland")
 
-        msg_id = self.send_stream_message(hamlet, "Scotland", content="@**Cordelia Lear**")
+        msg_id = self.send_stream_message(
+            hamlet, "Scotland", content="@**Cordelia, Lear's daughter**"
+        )
 
         user_info = get_user_info_for_message_updates(msg_id)
         message_user_ids = user_info["message_user_ids"]

@@ -58,7 +58,7 @@ emoji.initialize(emoji_params);
 fenced_code.initialize(pygments_data);
 
 const cordelia = {
-    full_name: "Cordelia Lear",
+    full_name: "Cordelia, Lear's daughter",
     user_id: 101,
     email: "cordelia@zulip.com",
 };
@@ -266,7 +266,7 @@ test("message_flags", () => {
     assert(!message.mentioned);
     assert(!message.mentioned_me_directly);
 
-    message = {raw_content: "@**Cordelia Lear**"};
+    message = {raw_content: "@**Cordelia, Lear's daughter**"};
     markdown.apply_markdown(message);
     assert(message.mentioned);
     assert(message.mentioned_me_directly);
@@ -326,9 +326,9 @@ test("marked", () => {
             expected: "<blockquote>\n<p>quote this for me</p>\n</blockquote>\n<p>thanks</p>",
         },
         {
-            input: "This is a @**CordeLIA Lear** mention",
+            input: "This is a @**CordeLIA, Lear's daughter** mention",
             expected:
-                '<p>This is a <span class="user-mention" data-user-id="101">@Cordelia Lear</span> mention</p>',
+                '<p>This is a <span class="user-mention" data-user-id="101">@Cordelia, Lear&#39;s daughter</span> mention</p>',
         },
         {
             input: "These @ @**** are not mentions",
@@ -387,15 +387,15 @@ test("marked", () => {
                 '<p><span aria-label="poop" class="emoji emoji-1f4a9" role="img" title="poop">:poop:</span></p>',
         },
         {
-            input: "Silent mention: @_**Cordelia Lear**",
+            input: "Silent mention: @_**Cordelia, Lear's daughter**",
             expected:
-                '<p>Silent mention: <span class="user-mention silent" data-user-id="101">Cordelia Lear</span></p>',
+                '<p>Silent mention: <span class="user-mention silent" data-user-id="101">Cordelia, Lear&#39;s daughter</span></p>',
         },
         {
             input:
-                "> Mention in quote: @**Cordelia Lear**\n\nMention outside quote: @**Cordelia Lear**",
+                "> Mention in quote: @**Cordelia, Lear's daughter**\n\nMention outside quote: @**Cordelia, Lear's daughter**",
             expected:
-                '<blockquote>\n<p>Mention in quote: <span class="user-mention silent" data-user-id="101">Cordelia Lear</span></p>\n</blockquote>\n<p>Mention outside quote: <span class="user-mention" data-user-id="101">@Cordelia Lear</span></p>',
+                '<blockquote>\n<p>Mention in quote: <span class="user-mention silent" data-user-id="101">Cordelia, Lear&#39;s daughter</span></p>\n</blockquote>\n<p>Mention outside quote: <span class="user-mention" data-user-id="101">@Cordelia, Lear&#39;s daughter</span></p>',
         },
         // Test only those linkifiers which don't return True for
         // `contains_backend_only_syntax()`. Those which return True
@@ -422,9 +422,9 @@ test("marked", () => {
                 '<p>T<br>\n<a class="stream" data-stream-id="1" href="/#narrow/stream/1-Denmark">#Denmark</a></p>',
         },
         {
-            input: "T\n@**Cordelia Lear**",
+            input: "T\n@**Cordelia, Lear's daughter**",
             expected:
-                '<p>T<br>\n<span class="user-mention" data-user-id="101">@Cordelia Lear</span></p>',
+                '<p>T<br>\n<span class="user-mention" data-user-id="101">@Cordelia, Lear&#39;s daughter</span></p>',
         },
         {
             input: "@**Mark Twin|104** and @**Mark Twin|105** are out to confuse you.",
@@ -433,8 +433,8 @@ test("marked", () => {
         },
         {input: "@**Invalid User|1234**", expected: "<p>@**Invalid User|1234**</p>"},
         {
-            input: "@**Cordelia LeAR|103** has a wrong user_id.",
-            expected: "<p>@**Cordelia LeAR|103** has a wrong user_id.</p>",
+            input: "@**Cordelia, Lear's daughter|103** has a wrong user_id.",
+            expected: "<p>@**Cordelia, Lear&#39;s daughter|103** has a wrong user_id.</p>",
         },
         {
             input: "@**Brother of Bobby|123** is really the full name.",
@@ -642,7 +642,7 @@ test("message_flags", () => {
 
     assert.equal(message.is_me_message, true);
 
-    input = "testing this @**all** @**Cordelia Lear**";
+    input = "testing this @**all** @**Cordelia, Lear's daughter**";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
 
