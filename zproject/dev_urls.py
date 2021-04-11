@@ -18,6 +18,7 @@ from zerver.views.development.integrations import (
     get_fixtures,
     send_all_webhook_fixture_messages,
 )
+from zerver.views.development.markdown import markdown_panel
 from zerver.views.development.registration import (
     confirmation_key,
     register_development_realm,
@@ -74,6 +75,7 @@ urls = [
     path("devtools/integrations/<integration_name>/fixtures", get_fixtures),
     path("config-error/<error_category_name>", config_error, name="config_error"),
     path("config-error/remoteuser/<error_category_name>", config_error),
+    path("devtools/markdown", markdown_panel),
     # Special endpoint to remove all the server-side caches.
     path("flush_caches", remove_caches),
 ]
