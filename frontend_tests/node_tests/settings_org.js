@@ -247,11 +247,11 @@ function test_submit_settings_form(override, submit_form) {
     assert(patched);
 
     let expected_value = {
-        bot_creation_policy: "1",
-        invite_to_stream_policy: "1",
-        email_address_visibility: "1",
+        bot_creation_policy: 1,
+        invite_to_stream_policy: 1,
+        email_address_visibility: 1,
         add_emoji_by_admins_only: false,
-        create_stream_policy: "2",
+        create_stream_policy: 2,
     };
     assert.deepEqual(data, expected_value);
 
@@ -281,7 +281,7 @@ function test_submit_settings_form(override, submit_form) {
     assert(patched);
 
     expected_value = {
-        default_language: '"en"',
+        default_language: "en",
         default_twenty_four_hour_time: "true",
     };
     assert.deepEqual(data, expected_value);

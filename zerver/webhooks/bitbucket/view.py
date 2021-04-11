@@ -16,7 +16,7 @@ from zerver.models import UserProfile
 def api_bitbucket_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Mapping[str, Any] = REQ(validator=check_dict([])),
+    payload: Mapping[str, Any] = REQ(json_validator=check_dict([])),
     branches: Optional[str] = REQ(default=None),
 ) -> HttpResponse:
     repository = payload["repository"]

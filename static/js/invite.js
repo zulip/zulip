@@ -50,7 +50,9 @@ function beforeSend() {
     // aren't in the right domain, etc.)
     //
     // OR, you could just let the server do it. Probably my temptation.
-    $("#submit-invitation").button("loading");
+    const loading_text = $("#submit-invitation").data("loading-text");
+    $("#submit-invitation").text(loading_text);
+    $("#submit-invitation").prop("disabled", true);
     return true;
 }
 

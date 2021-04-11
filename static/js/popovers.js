@@ -23,6 +23,7 @@ import * as compose_ui from "./compose_ui";
 import * as condense from "./condense";
 import * as emoji_picker from "./emoji_picker";
 import * as feature_flags from "./feature_flags";
+import * as giphy from "./giphy";
 import * as hash_util from "./hash_util";
 import {i18n} from "./i18n";
 import * as message_edit from "./message_edit";
@@ -1347,6 +1348,7 @@ export function hide_all_except_sidebars() {
     hide_actions_popover();
     hide_message_info_popover();
     emoji_picker.hide_emoji_popover();
+    giphy.hide_giphy_popover();
     stream_popover.hide_stream_popover();
     stream_popover.hide_topic_popover();
     stream_popover.hide_all_messages_popover();

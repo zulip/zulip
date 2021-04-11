@@ -11,7 +11,7 @@ import * as message_lists from "./message_lists";
 import * as muting from "./muting";
 import * as overlays from "./overlays";
 import * as recent_topics from "./recent_topics";
-import * as settings_muting from "./settings_muting";
+import * as settings_muted_topics from "./settings_muted_topics";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
@@ -31,13 +31,12 @@ export function rerender_on_topic_update() {
     // re-doing a mute or unmute is a pretty recoverable thing.
 
     stream_list.update_streams_sidebar();
-    if (message_lists.current.excludes_muted_topics) {
-        message_lists.current.update_muting_and_rerender();
-    }
+    recent_topics.complete_rerender();
+    message_lists.current.update_topic_muting_and_rerender();
     if (message_lists.current !== message_lists.home) {
-        message_lists.home.update_muting_and_rerender();
+        message_lists.home.update_topic_muting_and_rerender();
     }
-    if (overlays.settings_open() && settings_muting.loaded) {
+    if (overlays.settings_open() && settings_muted_topics.loaded) {
         set_up_muted_topics_ui();
     }
 }
@@ -157,4 +156,8 @@ export function toggle_topic_mute(message) {
     } else if (message.type === "stream") {
         mute_topic(stream_id, topic);
     }
+}
+
+export function handle_user_updates(muted_user_ids) {
+    muting.set_muted_users(muted_user_ids);
 }

@@ -379,12 +379,11 @@ export class MessageList {
         }
     }
 
-    update_muting_and_rerender() {
-        if (!this.excludes_muted_topics) {
-            return;
+    update_topic_muting_and_rerender() {
+        if (this.excludes_muted_topics) {
+            this.data.update_items_for_muting();
+            this.rerender();
         }
-        this.data.update_items_for_muting();
-        this.rerender();
     }
 
     all_messages() {

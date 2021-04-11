@@ -25,4 +25,15 @@ module.exports = {
         mm_min: mm + "px",
         ms_min: ms + "px",
     },
+
+    media_breakpoints_num: {
+        xs,
+        sm,
+        md,
+        lg,
+        xl,
+        ml,
+        mm,
+        ms,
+    },
 };

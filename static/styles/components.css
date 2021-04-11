@@ -111,3 +111,12 @@ i.zulip-icon.bot {
     vertical-align: top;
     padding: 0 2px;
 }
+
+.tippy-content {
+    /* This actually sets the
+     * default font size of only
+     * tooltips; popovers should define
+     * font-size of their own.
+     */
+    font-size: 12px;
+}

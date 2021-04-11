@@ -98,7 +98,7 @@ def check_send_webhook_fixture_message(
     request: HttpRequest,
     url: str = REQ(),
     body: str = REQ(),
-    is_json: bool = REQ(validator=check_bool),
+    is_json: bool = REQ(json_validator=check_bool),
     custom_headers: str = REQ(),
 ) -> HttpResponse:
     try:

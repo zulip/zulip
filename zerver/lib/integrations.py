@@ -470,6 +470,14 @@ INTEGRATIONS: Dict[str, Integration] = {
     "errbot": Integration(
         "errbot", "errbot", ["meta-integration", "bots"], doc="zerver/integrations/errbot.md"
     ),
+    "giphy": Integration(
+        "giphy",
+        "giphy",
+        display_name="GIPHY",
+        categories=["misc"],
+        doc="zerver/integrations/giphy.md",
+        logo="images/GIPHY_big_logo.png",
+    ),
     "git": Integration(
         "git", "git", ["version-control"], stream_name="commits", doc="zerver/integrations/git.md"
     ),

@@ -18,13 +18,13 @@ import * as recent_topics from "./recent_topics";
 import * as search from "./search";
 import * as settings from "./settings";
 import * as settings_panel_menu from "./settings_panel_menu";
+import * as settings_toggle from "./settings_toggle";
 import * as subs from "./subs";
 import * as top_left_corner from "./top_left_corner";
 import * as ui_util from "./ui_util";
 
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
 // or locally: docs/subsystems/hashchange-system.md
-let changing_hash = false;
 
 function get_full_url(hash) {
     const location = window.location;
@@ -69,7 +69,7 @@ export function in_recent_topics_hash() {
 }
 
 export function changehash(newhash) {
-    if (changing_hash) {
+    if (browser_history.state.changing_hash) {
         return;
     }
     maybe_hide_recent_topics();
@@ -78,7 +78,7 @@ export function changehash(newhash) {
 }
 
 export function save_narrow(operators) {
-    if (changing_hash) {
+    if (browser_history.state.changing_hash) {
         return;
     }
     const new_hash = hash_util.operators_to_hash(operators);
@@ -211,6 +211,19 @@ function do_hashchange_overlay(old_hash) {
         return;
     }
 
+    // This is a special case when user clicks on a URL that makes the overlay switch
+    // from org settings to user settings or user edits the URL to switch between them.
+    const settings_hashes = new Set(["settings", "organization"]);
+    // Ensure that we are just switching between user and org settings and the settings
+    // overlay is open.
+    const is_hashchange_internal =
+        settings_hashes.has(base) && settings_hashes.has(old_base) && overlays.settings_open();
+    if (is_hashchange_internal) {
+        settings_toggle.highlight_toggle(base);
+        settings_panel_menu.normal_settings.activate_section_or_default(section);
+        return;
+    }
+
     // It's not super likely that an overlay is already open,
     // but you can jump from /settings to /streams by using
     // the browser's history menu or hand-editing the URL or
@@ -276,15 +289,17 @@ function hashchanged(from_reload, e) {
     }
 
     if (hash_util.is_overlay_hash(window.location.hash)) {
+        browser_history.state.changing_hash = true;
         do_hashchange_overlay(old_hash);
+        browser_history.state.changing_hash = false;
         return undefined;
     }
 
     // We are changing to a "main screen" view.
     overlays.close_for_hash_change();
-    changing_hash = true;
+    browser_history.state.changing_hash = true;
     const ret = do_hashchange_normal(from_reload);
-    changing_hash = false;
+    browser_history.state.changing_hash = false;
     return ret;
 }
 

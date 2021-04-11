@@ -5,6 +5,14 @@ import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
 
 const muted_topics = new Map();
+const muted_users = new Map();
+
+function get_time_from_date_muted(date_muted) {
+    if (date_muted === undefined) {
+        return Date.now();
+    }
+    return date_muted * 1000;
+}
 
 export function add_muted_topic(stream_id, topic, date_muted) {
     let sub_dict = muted_topics.get(stream_id);
@@ -12,12 +20,7 @@ export function add_muted_topic(stream_id, topic, date_muted) {
         sub_dict = new FoldDict();
         muted_topics.set(stream_id, sub_dict);
     }
-    let time;
-    if (date_muted === undefined) {
-        time = Date.now();
-    } else {
-        time = date_muted * 1000;
-    }
+    const time = get_time_from_date_muted(date_muted);
     sub_dict.set(topic, time);
 }
 
@@ -74,6 +77,51 @@ export function set_muted_topics(tuples) {
     }
 }
 
+export function add_muted_user(user_id, date_muted) {
+    const time = get_time_from_date_muted(date_muted);
+    if (user_id) {
+        muted_users.set(user_id, time);
+    }
+}
+
+export function remove_muted_user(user_id) {
+    if (user_id) {
+        muted_users.delete(user_id);
+    }
+}
+
+export function is_user_muted(user_id) {
+    if (user_id === undefined) {
+        return false;
+    }
+
+    return muted_users.has(user_id);
+}
+
+export function get_muted_users() {
+    const users = [];
+    for (const [id, date_muted] of muted_users) {
+        const date_muted_str = timerender.render_now(new Date(date_muted)).time_str;
+        users.push({
+            id,
+            date_muted,
+            date_muted_str,
+        });
+    }
+    return users;
+}
+
+export function set_muted_users(list) {
+    muted_users.clear();
+
+    for (const user of list) {
+        if (user !== undefined && user.id !== undefined) {
+            add_muted_user(user.id, user.timestamp);
+        }
+    }
+}
+
 export function initialize() {
     set_muted_topics(page_params.muted_topics);
+    set_muted_users(page_params.muted_users);
 }

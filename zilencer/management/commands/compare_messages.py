@@ -6,8 +6,8 @@ from django.core.management.base import BaseCommand, CommandParser
 
 class Command(BaseCommand):
     help = """
-    Render messages to a file.
-    Usage: ./manage.py render_messages <destination> <--amount>
+    Compare rendered messages from files.
+    Usage: ./manage.py compare_messages <dump1> <dump2>
     """
 
     def add_arguments(self, parser: CommandParser) -> None:

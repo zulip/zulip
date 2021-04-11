@@ -26,8 +26,13 @@
         {% endif %}
 
         {% block webpack %}
-        {{ render_entrypoint(entrypoint, 'css', attrs='nonce="%s"' % (csp_nonce,) if csp_nonce else '') }}
-        {{ render_entrypoint(entrypoint, 'js', attrs='defer nonce="%s"' % (csp_nonce,) if csp_nonce else 'defer') }}
+            {% for filename in webpack_entry(entrypoint) -%}
+                {% if filename.endswith(".css") -%}
+                    <link href="{{ filename }}" rel="stylesheet" {% if csp_nonce %}nonce="{{ csp_nonce }}"{% endif %} />
+                {% elif filename.endswith(".js") -%}
+                    <script src="{{ filename }}" defer {% if csp_nonce %}nonce="{{ csp_nonce }}"{% endif %}></script>
+                {% endif -%}
+            {% endfor %}
         {% endblock %}
 
         {% block customhead %}

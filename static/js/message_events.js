@@ -401,11 +401,11 @@ export function update_messages(events) {
     // propagated edits to be updated (since the topic edits can have
     // changed the correct grouping of messages).
     if (topic_edited || stream_changed) {
-        message_lists.home.update_muting_and_rerender();
+        message_lists.home.update_topic_muting_and_rerender();
         // However, we don't need to rerender message_list.narrowed if
         // we just changed the narrow earlier in this function.
         if (!changed_narrow && message_lists.current === message_list.narrowed) {
-            message_list.narrowed.update_muting_and_rerender();
+            message_list.narrowed.update_topic_muting_and_rerender();
         }
     } else {
         // If the content of the message was edited, we do a special animation.

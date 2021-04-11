@@ -24,9 +24,10 @@ from zerver.lib.actions import (
     check_send_typing_notification,
     do_add_alert_words,
     do_add_default_stream,
+    do_add_linkifier,
     do_add_reaction,
     do_add_realm_domain,
-    do_add_realm_filter,
+    do_add_realm_playground,
     do_add_streams_to_default_stream_group,
     do_add_submessage,
     do_change_avatar_fields,
@@ -59,16 +60,18 @@ from zerver.lib.actions import (
     do_invite_users,
     do_mark_hotspot_as_read,
     do_mute_topic,
+    do_mute_user,
     do_reactivate_user,
     do_regenerate_api_key,
     do_remove_alert_words,
     do_remove_default_stream,
     do_remove_default_stream_group,
+    do_remove_linkifier,
     do_remove_reaction,
     do_remove_realm_custom_profile_field,
     do_remove_realm_domain,
     do_remove_realm_emoji,
-    do_remove_realm_filter,
+    do_remove_realm_playground,
     do_remove_streams_from_default_stream_group,
     do_rename_stream,
     do_revoke_multi_use_invite,
@@ -81,6 +84,7 @@ from zerver.lib.actions import (
     do_set_user_display_setting,
     do_set_zoom_token,
     do_unmute_topic,
+    do_unmute_user,
     do_update_embedded_data,
     do_update_message,
     do_update_message_flags,
@@ -109,6 +113,7 @@ from zerver.lib.event_schema import (
     check_invites_changed,
     check_message,
     check_muted_topics,
+    check_muted_users,
     check_presence,
     check_reaction_add,
     check_reaction_remove,
@@ -123,6 +128,7 @@ from zerver.lib.event_schema import (
     check_realm_emoji_update,
     check_realm_export,
     check_realm_filters,
+    check_realm_playgrounds,
     check_realm_update,
     check_realm_update_dict,
     check_realm_user_add,
@@ -164,6 +170,7 @@ from zerver.lib.test_helpers import (
     stdout_suppressed,
 )
 from zerver.lib.topic import TOPIC_NAME
+from zerver.lib.user_mutes import get_mute_object
 from zerver.models import (
     Attachment,
     CustomProfileField,
@@ -173,6 +180,7 @@ from zerver.models import (
     Realm,
     RealmAuditLog,
     RealmDomain,
+    RealmPlayground,
     Service,
     Stream,
     UserGroup,
@@ -188,6 +196,7 @@ from zerver.tornado.event_queue import (
     allocate_client_descriptor,
     clear_client_event_queues_for_testing,
 )
+from zerver.views.realm_playgrounds import access_playground_by_id
 
 
 class BaseAction(ZulipTestCase):
@@ -1000,6 +1009,21 @@ class NormalActionsTest(BaseAction):
         events = self.verify_action(lambda: do_unmute_topic(self.user_profile, stream, "topic"))
         check_muted_topics("events[0]", events[0])
 
+    def test_muted_users_events(self) -> None:
+        muted_user = self.example_user("othello")
+        events = self.verify_action(lambda: do_mute_user(self.user_profile, muted_user))
+        check_muted_users("events[0]", events[0])
+
+        mute_object = get_mute_object(self.user_profile, muted_user)
+        assert mute_object is not None
+        # This is a hack to silence mypy errors which result from it not taking
+        # into account type restrictions for nested functions (here, `lambda`).
+        # https://github.com/python/mypy/commit/8780d45507ab1efba33568744967674cce7184d1
+        mute_object2 = mute_object
+
+        events = self.verify_action(lambda: do_unmute_user(mute_object2))
+        check_muted_users("events[0]", events[0])
+
     def test_change_avatar_fields(self) -> None:
         events = self.verify_action(
             lambda: do_change_avatar_fields(
@@ -1077,11 +1101,13 @@ class NormalActionsTest(BaseAction):
     def test_change_pin_stream(self) -> None:
         stream = get_stream("Denmark", self.user_profile.realm)
         sub = get_subscription(stream.name, self.user_profile)
-        do_change_subscription_property(self.user_profile, sub, stream, "pin_to_top", False)
+        do_change_subscription_property(
+            self.user_profile, sub, stream, "pin_to_top", False, acting_user=None
+        )
         for pinned in (True, False):
             events = self.verify_action(
                 lambda: do_change_subscription_property(
-                    self.user_profile, sub, stream, "pin_to_top", pinned
+                    self.user_profile, sub, stream, "pin_to_top", pinned, acting_user=None
                 )
             )
             check_subscription_update(
@@ -1100,7 +1126,7 @@ class NormalActionsTest(BaseAction):
             for value in (True, False):
                 events = self.verify_action(
                     lambda: do_change_subscription_property(
-                        self.user_profile, sub, stream, setting_name, value
+                        self.user_profile, sub, stream, setting_name, value, acting_user=None
                     ),
                     notification_settings_null=True,
                 )
@@ -1114,7 +1140,7 @@ class NormalActionsTest(BaseAction):
             for value in (True, False):
                 events = self.verify_action(
                     lambda: do_change_subscription_property(
-                        self.user_profile, sub, stream, setting_name, value
+                        self.user_profile, sub, stream, setting_name, value, acting_user=None
                     )
                 )
                 check_subscription_update(
@@ -1263,7 +1289,9 @@ class NormalActionsTest(BaseAction):
         notification_setting = "notification_sound"
 
         events = self.verify_action(
-            lambda: do_change_notification_settings(self.user_profile, notification_setting, "ding")
+            lambda: do_change_notification_settings(
+                self.user_profile, notification_setting, "ding", acting_user=self.user_profile
+            )
         )
         check_update_global_notifications("events[0]", events[0], "ding")
 
@@ -1318,13 +1346,11 @@ class NormalActionsTest(BaseAction):
         regex = "#(?P<id>[123])"
         url = "https://realm.com/my_realm_filter/%(id)s"
 
-        events = self.verify_action(
-            lambda: do_add_realm_filter(self.user_profile.realm, regex, url)
-        )
+        events = self.verify_action(lambda: do_add_linkifier(self.user_profile.realm, regex, url))
         check_realm_filters("events[0]", events[0])
 
         events = self.verify_action(
-            lambda: do_remove_realm_filter(self.user_profile.realm, "#(?P<id>[123])")
+            lambda: do_remove_linkifier(self.user_profile.realm, "#(?P<id>[123])")
         )
         check_realm_filters("events[0]", events[0])
 
@@ -1344,10 +1370,28 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(events[0]["realm_domain"]["domain"], "zulip.org")
         self.assertEqual(events[0]["realm_domain"]["allow_subdomains"], True)
 
-        events = self.verify_action(lambda: do_remove_realm_domain(test_domain))
+        events = self.verify_action(lambda: do_remove_realm_domain(test_domain, acting_user=None))
 
         check_realm_domains_remove("events[0]", events[0])
         self.assertEqual(events[0]["domain"], "zulip.org")
+
+    def test_realm_playground_events(self) -> None:
+        playground_info = dict(
+            name="Python playground",
+            pygments_language="Python",
+            url_prefix="https://python.example.com",
+        )
+        events = self.verify_action(
+            lambda: do_add_realm_playground(self.user_profile.realm, **playground_info)
+        )
+        check_realm_playgrounds("events[0]", events[0])
+
+        last_id = RealmPlayground.objects.last().id
+        realm_playground = access_playground_by_id(self.user_profile.realm, last_id)
+        events = self.verify_action(
+            lambda: do_remove_realm_playground(self.user_profile.realm, realm_playground)
+        )
+        check_realm_playgrounds("events[0]", events[0])
 
     def test_create_bot(self) -> None:
         action = lambda: self.create_bot("test")
@@ -1398,7 +1442,9 @@ class NormalActionsTest(BaseAction):
         self.assertEqual(events[1]["type"], "realm_user")
 
     def test_change_realm_icon_source(self) -> None:
-        action = lambda: do_change_icon_source(self.user_profile.realm, Realm.ICON_UPLOADED)
+        action = lambda: do_change_icon_source(
+            self.user_profile.realm, Realm.ICON_UPLOADED, acting_user=None
+        )
         events = self.verify_action(action, state_change_expected=True)
         check_realm_update_dict("events[0]", events[0])
 
@@ -1418,7 +1464,7 @@ class NormalActionsTest(BaseAction):
 
     def test_change_bot_default_all_public_streams(self) -> None:
         bot = self.create_bot("test")
-        action = lambda: do_change_default_all_public_streams(bot, True)
+        action = lambda: do_change_default_all_public_streams(bot, True, acting_user=None)
         events = self.verify_action(action)
         check_realm_bot_update("events[0]", events[0], "default_all_public_streams")
 
@@ -1426,11 +1472,11 @@ class NormalActionsTest(BaseAction):
         bot = self.create_bot("test")
         stream = get_stream("Rome", bot.realm)
 
-        action = lambda: do_change_default_sending_stream(bot, stream)
+        action = lambda: do_change_default_sending_stream(bot, stream, acting_user=None)
         events = self.verify_action(action)
         check_realm_bot_update("events[0]", events[0], "default_sending_stream")
 
-        action = lambda: do_change_default_sending_stream(bot, None)
+        action = lambda: do_change_default_sending_stream(bot, None, acting_user=None)
         events = self.verify_action(action)
         check_realm_bot_update("events[0]", events[0], "default_sending_stream")
 
@@ -1438,11 +1484,11 @@ class NormalActionsTest(BaseAction):
         bot = self.create_bot("test")
         stream = get_stream("Rome", bot.realm)
 
-        action = lambda: do_change_default_events_register_stream(bot, stream)
+        action = lambda: do_change_default_events_register_stream(bot, stream, acting_user=None)
         events = self.verify_action(action)
         check_realm_bot_update("events[0]", events[0], "default_events_register_stream")
 
-        action = lambda: do_change_default_events_register_stream(bot, None)
+        action = lambda: do_change_default_events_register_stream(bot, None, acting_user=None)
         events = self.verify_action(action)
         check_realm_bot_update("events[0]", events[0], "default_events_register_stream")
 
@@ -1828,8 +1874,8 @@ class RealmPropertyActionTest(BaseAction):
             message_retention_days=[10, 20],
             name=["Zulip", "New Name"],
             waiting_period_threshold=[10, 20],
-            create_stream_policy=[3, 2, 1],
-            invite_to_stream_policy=[3, 2, 1],
+            create_stream_policy=[4, 3, 2, 1],
+            invite_to_stream_policy=[4, 3, 2, 1],
             private_message_policy=[2, 1],
             user_group_edit_policy=[1, 2],
             wildcard_mention_policy=[6, 5, 4, 3, 2, 1],
@@ -1840,6 +1886,7 @@ class RealmPropertyActionTest(BaseAction):
             ],
             default_code_block_language=["python", "javascript"],
             message_content_delete_limit_seconds=[1000, 1100, 1200],
+            invite_to_realm_policy=[4, 3, 2, 1],
         )
 
         vals = test_values.get(name)

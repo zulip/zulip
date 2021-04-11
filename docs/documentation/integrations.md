@@ -28,7 +28,7 @@ Usually, this involves a few steps:
   `static/images/integrations/logos/<name>.svg`, where `<name>` is the
   name of the integration, all in lower case; you can usually find them in the
   product branding or press page. Make sure to optimize the SVG graphic by
-  running `svgo -f path-to-file`.
+  running `yarn run svgo -f path-to-file`.
 
   If you cannot find a SVG graphic of the logo, please find and include a PNG
   image of the logo instead.

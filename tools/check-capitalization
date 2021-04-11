@@ -68,7 +68,10 @@ if __name__ == "__main__":
         docs_url = (
             "https://zulip.readthedocs.io/en/latest/translating/translating.html#capitalization"
         )
-        print(WARNING + "See " + docs_url + ENDC)
+        print()
+        print(WARNING + "You can usually find strings using `git grep 'String to find'`" + ENDC)
+        print(WARNING + "See also " + docs_url + ENDC)
+        print()
         print(FAIL + "Failed!" + ENDC)
         sys.exit(1)
     else:

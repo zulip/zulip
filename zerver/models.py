@@ -73,6 +73,7 @@ from zerver.lib.types import (
     ExtendedFieldElement,
     ExtendedValidator,
     FieldElement,
+    LinkifierDict,
     ProfileData,
     ProfileDataElementBase,
     RealmUserValidator,
@@ -183,6 +184,7 @@ def clear_supported_auth_backends_cache() -> None:
 
 class Realm(models.Model):
     MAX_REALM_NAME_LENGTH = 40
+    MAX_REALM_DESCRIPTION_LENGTH = 1000
     MAX_REALM_SUBDOMAIN_LENGTH = 40
     MAX_REALM_REDIRECT_URL_LENGTH = 128
 
@@ -224,7 +226,7 @@ class Realm(models.Model):
     emails_restricted_to_domains: bool = models.BooleanField(default=False)
 
     invite_required: bool = models.BooleanField(default=True)
-    invite_by_admins_only: bool = models.BooleanField(default=False)
+
     _max_invites: Optional[int] = models.IntegerField(null=True, db_column="max_invites")
     disallow_disposable_email_addresses: bool = models.BooleanField(default=True)
     authentication_methods: BitHandler = BitField(
@@ -264,6 +266,9 @@ class Realm(models.Model):
 
     # Who in the organization is allowed to create streams.
     create_stream_policy: int = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
+
+    # Who in the organization is allowed to invite other users to organization.
+    invite_to_realm_policy: int = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
 
     # Who in the organization is allowed to invite other users to streams.
     invite_to_stream_policy: int = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
@@ -465,7 +470,7 @@ class Realm(models.Model):
         email_address_visibility=int,
         email_changes_disabled=bool,
         invite_required=bool,
-        invite_by_admins_only=bool,
+        invite_to_realm_policy=int,
         inline_image_preview=bool,
         inline_url_embed_preview=bool,
         mandatory_topics=bool,
@@ -849,7 +854,7 @@ post_delete.connect(flush_realm_emoji, sender=RealmEmoji)
 
 def filter_pattern_validator(value: str) -> None:
     regex = re.compile(r"^(?:(?:[\w\-#_= /:]*|[+]|[!])(\(\?P<\w+>.+\)))+$")
-    error_msg = _("Invalid filter pattern.  Valid characters are {}.").format(
+    error_msg = _("Invalid linkifier pattern.  Valid characters are {}.").format(
         "[ a-zA-Z_#=/:+!-]",
     )
 
@@ -887,61 +892,131 @@ class RealmFilter(models.Model):
         return f"<RealmFilter({self.realm.string_id}): {self.pattern} {self.url_format_string}>"
 
 
-def get_realm_filters_cache_key(realm_id: int) -> str:
-    return f"{cache.KEY_PREFIX}:all_realm_filters:{realm_id}"
+def get_linkifiers_cache_key(realm_id: int) -> str:
+    return f"{cache.KEY_PREFIX}:all_linkifiers_for_realm:{realm_id}"
 
 
 # We have a per-process cache to avoid doing 1000 remote cache queries during page load
-per_request_realm_filters_cache: Dict[int, List[Tuple[str, str, int]]] = {}
+per_request_linkifiers_cache: Dict[int, List[LinkifierDict]] = {}
 
 
-def realm_in_local_realm_filters_cache(realm_id: int) -> bool:
-    return realm_id in per_request_realm_filters_cache
+def realm_in_local_linkifiers_cache(realm_id: int) -> bool:
+    return realm_id in per_request_linkifiers_cache
+
+
+def linkifiers_for_realm(realm_id: int) -> List[LinkifierDict]:
+    if not realm_in_local_linkifiers_cache(realm_id):
+        per_request_linkifiers_cache[realm_id] = linkifiers_for_realm_remote_cache(realm_id)
+    return per_request_linkifiers_cache[realm_id]
 
 
 def realm_filters_for_realm(realm_id: int) -> List[Tuple[str, str, int]]:
-    if not realm_in_local_realm_filters_cache(realm_id):
-        per_request_realm_filters_cache[realm_id] = realm_filters_for_realm_remote_cache(realm_id)
-    return per_request_realm_filters_cache[realm_id]
+    """
+    Processes data from `linkifiers_for_realm` to return to older clients,
+    which use the `realm_filters` events.
+    """
+    linkifiers = linkifiers_for_realm(realm_id)
+    realm_filters: List[Tuple[str, str, int]] = []
+    for linkifier in linkifiers:
+        realm_filters.append((linkifier["pattern"], linkifier["url_format"], linkifier["id"]))
+    return realm_filters
 
 
-@cache_with_key(get_realm_filters_cache_key, timeout=3600 * 24 * 7)
-def realm_filters_for_realm_remote_cache(realm_id: int) -> List[Tuple[str, str, int]]:
+@cache_with_key(get_linkifiers_cache_key, timeout=3600 * 24 * 7)
+def linkifiers_for_realm_remote_cache(realm_id: int) -> List[LinkifierDict]:
     filters = []
-    for realm_filter in RealmFilter.objects.filter(realm_id=realm_id):
-        filters.append((realm_filter.pattern, realm_filter.url_format_string, realm_filter.id))
-
-    return filters
-
-
-def all_realm_filters() -> Dict[int, List[Tuple[str, str, int]]]:
-    filters: DefaultDict[int, List[Tuple[str, str, int]]] = defaultdict(list)
-    for realm_filter in RealmFilter.objects.all():
-        filters[realm_filter.realm_id].append(
-            (realm_filter.pattern, realm_filter.url_format_string, realm_filter.id)
+    for linkifier in RealmFilter.objects.filter(realm_id=realm_id):
+        filters.append(
+            LinkifierDict(
+                pattern=linkifier.pattern,
+                url_format=linkifier.url_format_string,
+                id=linkifier.id,
+            )
         )
 
     return filters
 
 
-def flush_realm_filter(sender: Any, **kwargs: Any) -> None:
+def all_linkifiers_for_installation() -> Dict[int, List[LinkifierDict]]:
+    filters: DefaultDict[int, List[LinkifierDict]] = defaultdict(list)
+    for linkifier in RealmFilter.objects.all():
+        filters[linkifier.realm_id].append(
+            LinkifierDict(
+                pattern=linkifier.pattern,
+                url_format=linkifier.url_format_string,
+                id=linkifier.id,
+            )
+        )
+
+    return filters
+
+
+def flush_linkifiers(sender: Any, **kwargs: Any) -> None:
     realm_id = kwargs["instance"].realm_id
-    cache_delete(get_realm_filters_cache_key(realm_id))
+    cache_delete(get_linkifiers_cache_key(realm_id))
     try:
-        per_request_realm_filters_cache.pop(realm_id)
+        per_request_linkifiers_cache.pop(realm_id)
     except KeyError:
         pass
 
 
-post_save.connect(flush_realm_filter, sender=RealmFilter)
-post_delete.connect(flush_realm_filter, sender=RealmFilter)
+post_save.connect(flush_linkifiers, sender=RealmFilter)
+post_delete.connect(flush_linkifiers, sender=RealmFilter)
 
 
 def flush_per_request_caches() -> None:
     global per_request_display_recipient_cache
     per_request_display_recipient_cache = {}
-    global per_request_realm_filters_cache
-    per_request_realm_filters_cache = {}
+    global per_request_linkifiers_cache
+    per_request_linkifiers_cache = {}
+
+
+class RealmPlayground(models.Model):
+    """Server side storage model to store playground information needed by our
+    'view code in playground' feature in code blocks.
+    """
+
+    MAX_PYGMENTS_LANGUAGE_LENGTH = 40
+
+    realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
+    url_prefix: str = models.TextField(validators=[URLValidator()])
+
+    # User-visible display name used when configuring playgrounds in the settings page and
+    # when displaying them in the playground links popover.
+    name: str = models.TextField(db_index=True)
+
+    # This stores the pygments lexer subclass names and not the aliases themselves.
+    pygments_language: str = models.CharField(
+        db_index=True,
+        max_length=MAX_PYGMENTS_LANGUAGE_LENGTH,
+        # We validate to see if this conforms to the character set allowed for a
+        # language in the code block.
+        validators=[
+            RegexValidator(
+                regex=r"^[ a-zA-Z0-9_+-./#]*$", message=_("Invalid characters in pygments language")
+            )
+        ],
+    )
+
+    class Meta:
+        unique_together = (("realm", "name"),)
+
+    def __str__(self) -> str:
+        return f"<RealmPlayground({self.realm.string_id}): {self.pygments_language} {self.name}>"
+
+
+def get_realm_playgrounds(realm: Realm) -> List[Dict[str, Union[int, str]]]:
+    playgrounds: List[Dict[str, Union[int, str]]] = []
+    for playground in RealmPlayground.objects.filter(realm=realm).all():
+        playgrounds.append(
+            dict(
+                id=playground.id,
+                name=playground.name,
+                pygments_language=playground.pygments_language,
+                url_prefix=playground.url_prefix,
+            )
+        )
+    return playgrounds
 
 
 # The Recipient table is used to map Messages to the set of users who
@@ -1441,7 +1516,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return False
 
     def has_permission(self, policy_name: str) -> bool:
-        if policy_name not in ["create_stream_policy", "invite_to_stream_policy"]:
+        if policy_name not in [
+            "create_stream_policy",
+            "invite_to_stream_policy",
+            "invite_to_realm_policy",
+        ]:
             raise AssertionError("Invalid policy")
 
         if self.is_realm_admin:
@@ -1471,6 +1550,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     def can_subscribe_other_users(self) -> bool:
         return self.has_permission("invite_to_stream_policy")
+
+    def can_invite_others_to_realm(self) -> bool:
+        return self.has_permission("invite_to_realm_policy")
 
     def can_access_public_streams(self) -> bool:
         return not (self.is_guest or self.realm.is_zephyr_mirror_realm)
@@ -1820,6 +1902,18 @@ class MutedTopic(models.Model):
 
     def __str__(self) -> str:
         return f"<MutedTopic: ({self.user_profile.email}, {self.stream.name}, {self.topic_name}, {self.date_muted})>"
+
+
+class MutedUser(models.Model):
+    user_profile = models.ForeignKey(UserProfile, related_name="+", on_delete=CASCADE)
+    muted_user = models.ForeignKey(UserProfile, related_name="+", on_delete=CASCADE)
+    date_muted: datetime.datetime = models.DateTimeField(default=timezone_now)
+
+    class Meta:
+        unique_together = ("user_profile", "muted_user")
+
+    def __str__(self) -> str:
+        return f"<MutedUser: {self.user_profile.email} -> {self.muted_user.email}>"
 
 
 class Client(models.Model):

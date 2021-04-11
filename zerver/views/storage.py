@@ -19,7 +19,7 @@ from zerver.models import UserProfile
 def update_storage(
     request: HttpRequest,
     user_profile: UserProfile,
-    storage: Dict[str, str] = REQ(validator=check_dict([], value_validator=check_string)),
+    storage: Dict[str, str] = REQ(json_validator=check_dict([], value_validator=check_string)),
 ) -> HttpResponse:
     try:
         set_bot_storage(user_profile, list(storage.items()))
@@ -32,7 +32,7 @@ def update_storage(
 def get_storage(
     request: HttpRequest,
     user_profile: UserProfile,
-    keys: Optional[List[str]] = REQ(validator=check_list(check_string), default=None),
+    keys: Optional[List[str]] = REQ(json_validator=check_list(check_string), default=None),
 ) -> HttpResponse:
     keys = keys or get_keys_in_bot_storage(user_profile)
     try:
@@ -46,7 +46,7 @@ def get_storage(
 def remove_storage(
     request: HttpRequest,
     user_profile: UserProfile,
-    keys: Optional[List[str]] = REQ(validator=check_list(check_string), default=None),
+    keys: Optional[List[str]] = REQ(json_validator=check_list(check_string), default=None),
 ) -> HttpResponse:
     keys = keys or get_keys_in_bot_storage(user_profile)
     try:

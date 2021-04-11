@@ -337,6 +337,21 @@ muted_topics_event = event_dict_type(
 )
 check_muted_topics = make_checker(muted_topics_event)
 
+muted_user_type = DictType(
+    required_keys=[
+        ("id", int),
+        ("timestamp", int),
+    ]
+)
+
+muted_users_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("muted_users")),
+        ("muted_users", ListType(muted_user_type)),
+    ]
+)
+check_muted_users = make_checker(muted_users_event)
+
 _check_topic_links = DictType(
     required_keys=[
         ("text", str),
@@ -664,6 +679,24 @@ realm_domains_remove_event = event_dict_type(
     ]
 )
 check_realm_domains_remove = make_checker(realm_domains_remove_event)
+
+realm_playground_type = DictType(
+    required_keys=[("id", int), ("name", str), ("pygments_language", str), ("url_prefix", str)]
+)
+
+realm_playgrounds_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("realm_playgrounds")),
+        ("realm_playgrounds", ListType(realm_playground_type)),
+    ]
+)
+_check_realm_playgrounds = make_checker(realm_playgrounds_event)
+
+
+def check_realm_playgrounds(var_name: str, event: Dict[str, object]) -> None:
+    _check_realm_playgrounds(var_name, event)
+    assert isinstance(event["realm_playgrounds"], list)
+
 
 realm_emoji_type = DictType(
     required_keys=[

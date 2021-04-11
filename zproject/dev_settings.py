@@ -23,6 +23,7 @@ external_host_env = os.getenv("EXTERNAL_HOST")
 if external_host_env is None:
     if IS_DEV_DROPLET:
         # For our droplets, we use the hostname (eg github_username.zulipdev.org) by default.
+        # Note that this code is duplicated in run-dev.py.
         EXTERNAL_HOST = os.uname()[1].lower() + ":9991"
     else:
         # For local development environments, we use localhost by

@@ -380,6 +380,33 @@ def remove_realm_filter(client: Client) -> None:
     validate_against_openapi_schema(result, "/realm/filters/{filter_id}", "delete", "200")
 
 
+@openapi_test_function("/realm/playgrounds:post")
+def add_realm_playground(client: Client) -> None:
+
+    # {code_example|start}
+    # Add a realm playground for Python
+    request = {
+        "name": "Python playground",
+        "pygments_language": json.dumps("Python"),
+        "url_prefix": json.dumps("https://python.example.com"),
+    }
+    result = client.call_endpoint(url="/realm/playgrounds", method="POST", request=request)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/realm/playgrounds", "post", "200")
+
+
+@openapi_test_function("/realm/playgrounds/{playground_id}:delete")
+def remove_realm_playground(client: Client) -> None:
+
+    # {code_example|start}
+    # Remove the playground with ID 1
+    result = client.call_endpoint(url="/realm/playgrounds/1", method="DELETE")
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/realm/playgrounds/{playground_id}", "delete", "200")
+
+
 @openapi_test_function("/users/me:get")
 def get_profile(client: Client) -> None:
 
@@ -599,6 +626,32 @@ def toggle_mute_topic(client: Client) -> None:
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/users/me/subscriptions/muted_topics", "patch", "200")
+
+
+@openapi_test_function("/users/me/muted_users/{muted_user_id}:post")
+def add_user_mute(client: Client) -> None:
+    ensure_users([10], ["hamlet"])
+    # {code_example|start}
+    # Mute user with ID 10
+    muted_user_id = 10
+    result = client.call_endpoint(url=f"/users/me/muted_users/{muted_user_id}", method="POST")
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/users/me/muted_users/{muted_user_id}", "post", "200")
+
+
+@openapi_test_function("/users/me/muted_users/{muted_user_id}:delete")
+def remove_user_mute(client: Client) -> None:
+    ensure_users([10], ["hamlet"])
+    # {code_example|start}
+    # Unmute user with ID 10
+    muted_user_id = 10
+    result = client.call_endpoint(url=f"/users/me/muted_users/{muted_user_id}", method="DELETE")
+    # {code_example|end}
+
+    validate_against_openapi_schema(
+        result, "/users/me/muted_users/{muted_user_id}", "delete", "200"
+    )
 
 
 @openapi_test_function("/mark_all_as_read:post")
@@ -1048,6 +1101,22 @@ def update_notification_settings(client: Client) -> None:
     validate_against_openapi_schema(result, "/settings/notifications", "patch", "200")
 
 
+@openapi_test_function("/settings/display:patch")
+def update_display_settings(client: Client) -> None:
+
+    # {code_example|start}
+    # Show user list on left sidebar in narrow windows.
+    # Change emoji set used for display to Google modern.
+    request = {
+        "left_side_userlist": True,
+        "emojiset": '"google"',
+    }
+    result = client.call_endpoint("settings/display", method="PATCH", request=request)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/settings/display", "patch", "200")
+
+
 @openapi_test_function("/user_uploads:post")
 def upload_file(client: Client) -> None:
     path_to_file = os.path.join(ZULIP_DIR, "zerver", "tests", "images", "img.jpg")
@@ -1338,6 +1407,7 @@ def test_users(client: Client, owner_client: Client) -> None:
     get_subscription_status(client)
     get_profile(client)
     update_notification_settings(client)
+    update_display_settings(client)
     upload_file(client)
     get_attachments(client)
     set_typing_status(client)
@@ -1352,6 +1422,8 @@ def test_users(client: Client, owner_client: Client) -> None:
     add_alert_words(client)
     remove_alert_words(client)
     deactivate_own_user(client, owner_client)
+    add_user_mute(client)
+    remove_user_mute(client)
 
 
 def test_streams(client: Client, nonadmin_client: Client) -> None:
@@ -1389,8 +1461,10 @@ def test_server_organizations(client: Client) -> None:
 
     get_realm_filters(client)
     add_realm_filter(client)
+    add_realm_playground(client)
     get_server_settings(client)
     remove_realm_filter(client)
+    remove_realm_playground(client)
     get_realm_emoji(client)
     upload_custom_emoji(client)
     get_realm_profile_fields(client)

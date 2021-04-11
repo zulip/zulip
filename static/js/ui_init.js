@@ -23,6 +23,7 @@ import * as echo from "./echo";
 import * as emoji_picker from "./emoji_picker";
 import * as emojisets from "./emojisets";
 import * as gear_menu from "./gear_menu";
+import * as giphy from "./giphy";
 import * as hashchange from "./hashchange";
 import * as hotspots from "./hotspots";
 import * as invite from "./invite";
@@ -64,6 +65,7 @@ import * as stream_edit from "./stream_edit";
 import * as stream_list from "./stream_list";
 import * as subs from "./subs";
 import * as timerender from "./timerender";
+import * as tippyjs from "./tippyjs";
 import * as topic_list from "./topic_list";
 import * as topic_zoom from "./topic_zoom";
 import * as tutorial from "./tutorial";
@@ -321,22 +323,6 @@ export function initialize_kitchen_sink_stuff() {
         timerender.set_full_datetime(message, time_elem);
     });
 
-    $("#streams_header h4").tooltip({placement: "right", animation: false});
-
-    $('#streams_header i[data-toggle="tooltip"]').tooltip({placement: "left", animation: false});
-
-    $("#userlist-header #userlist-title").tooltip({placement: "right", animation: false});
-
-    $("#userlist-header #user_filter_icon").tooltip({placement: "left", animation: false});
-
-    $('.message_failed i[data-toggle="tooltip"]').tooltip();
-
-    $('.copy_message[data-toggle="tooltip"]').tooltip();
-
-    // We disable animations here because they can cause the tooltip
-    // to change shape while fading away in weird way.
-    $("#keyboard-icon").tooltip({placement: "left", animation: false});
-
     $("body").on("mouseover", ".message_edit_content", function () {
         $(this).closest(".message_row").find(".copy_message").show();
     });
@@ -347,11 +333,6 @@ export function initialize_kitchen_sink_stuff() {
 
     $("body").on("mouseenter", ".copy_message", function () {
         $(this).show();
-        $(this).tooltip("show");
-    });
-
-    $("body").on("mouseleave", ".copy_message", function () {
-        $(this).tooltip("hide");
     });
 
     if (!page_params.realm_allow_message_editing) {
@@ -476,6 +457,7 @@ export function initialize_everything() {
 
     const user_status_params = pop_fields("user_status");
 
+    tippyjs.initialize();
     message_lists.initialize();
     alert_popup.initialize();
     alert_words.initialize(alert_words_params);
@@ -521,6 +503,7 @@ export function initialize_everything() {
     tutorial.initialize();
     notifications.initialize();
     gear_menu.initialize();
+    giphy.initialize();
     presence.initialize(presence_params);
     settings_panel_menu.initialize();
     settings_sections.initialize();

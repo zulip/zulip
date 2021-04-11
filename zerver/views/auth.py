@@ -1057,13 +1057,6 @@ def json_fetch_api_key(
     return json_success({"api_key": api_key, "email": user_profile.delivery_email})
 
 
-@csrf_exempt
-def api_fetch_google_client_id(request: HttpRequest) -> HttpResponse:
-    if not settings.GOOGLE_CLIENT_ID:
-        return json_error(_("GOOGLE_CLIENT_ID is not configured"), status=400)
-    return json_success({"google_client_id": settings.GOOGLE_CLIENT_ID})
-
-
 @require_post
 def logout_then_login(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     return django_logout_then_login(request, kwargs)

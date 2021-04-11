@@ -366,7 +366,14 @@ def shutdown_handler(*args: Any, **kwargs: Any) -> None:
 
 
 def print_listeners() -> None:
-    external_host = os.getenv("EXTERNAL_HOST", f"localhost:{proxy_port}")
+    # Since we can't import settings from here, we duplicate some
+    # EXTERNAL_HOST logic from dev_settings.py.
+    IS_DEV_DROPLET = pwd.getpwuid(os.getuid()).pw_name == "zulipdev"
+    if IS_DEV_DROPLET:
+        default_hostname = os.uname()[1].lower()
+    else:
+        default_hostname = "localhost"
+    external_host = os.getenv("EXTERNAL_HOST", f"{default_hostname}:{proxy_port}")
     print(f"\nStarting Zulip on:\n\n\t{CYAN}http://{external_host}/{ENDC}\n\nInternal ports:")
     ports = [
         (proxy_port, "Development server proxy (connect here)"),

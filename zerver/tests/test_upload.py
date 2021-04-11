@@ -1331,7 +1331,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
     def test_get_gravatar_icon(self) -> None:
         self.login("hamlet")
         realm = get_realm("zulip")
-        do_change_icon_source(realm, Realm.ICON_FROM_GRAVATAR)
+        do_change_icon_source(realm, Realm.ICON_FROM_GRAVATAR, acting_user=None)
         with self.settings(ENABLE_GRAVATAR=True):
             response = self.client_get("/json/realm/icon", {"foo": "bar"})
             redirect_url = response["Location"]
@@ -1346,7 +1346,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         self.login("hamlet")
 
         realm = get_realm("zulip")
-        do_change_icon_source(realm, Realm.ICON_UPLOADED)
+        do_change_icon_source(realm, Realm.ICON_UPLOADED, acting_user=None)
         response = self.client_get("/json/realm/icon", {"foo": "bar"})
         redirect_url = response["Location"]
         self.assertTrue(redirect_url.endswith(realm_icon_url(realm) + "&foo=bar"))
@@ -1392,7 +1392,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         """
         self.login("iago")
         realm = get_realm("zulip")
-        do_change_icon_source(realm, Realm.ICON_UPLOADED)
+        do_change_icon_source(realm, Realm.ICON_UPLOADED, acting_user=None)
 
         result = self.client_delete("/json/realm/icon")
 

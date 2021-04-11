@@ -390,6 +390,7 @@ def build_realm(
         zerver_reaction=[],
         zerver_realmemoji=[],
         zerver_realmfilter=[],
+        zerver_realmplayground=[],
     )
     return realm
 

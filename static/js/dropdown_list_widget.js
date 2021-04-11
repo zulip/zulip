@@ -11,6 +11,7 @@ export const DropdownListWidget = function ({
     default_text,
     render_text = (item_name) => item_name,
     null_value = null,
+    include_current_item = true,
     value,
     on_update = () => {},
 }) {
@@ -86,8 +87,14 @@ export const DropdownListWidget = function ({
         ).expectOne();
         const search_input = $(`#${CSS.escape(container_id)} .dropdown-search > input[type=text]`);
         const dropdown_toggle = $(`#${CSS.escape(container_id)} .dropdown-toggle`);
+        const get_data = (data) => {
+            if (include_current_item) {
+                return data;
+            }
+            return data.filter((x) => x.value !== value.toString());
+        };
 
-        ListWidget.create(dropdown_list_body, data, {
+        ListWidget.create(dropdown_list_body, get_data(data), {
             name: `${CSS.escape(widget_name)}_list`,
             modifier(item) {
                 return render_dropdown_list({item});

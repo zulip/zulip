@@ -50,7 +50,7 @@ async function test_invalid_linkifier_pattern(page: Page): Promise<void> {
     await page.waitForSelector("div#admin-linkifier-pattern-status", {visible: true});
     assert.strictEqual(
         await common.get_text_from_selector(page, "div#admin-linkifier-pattern-status"),
-        "Failed: Invalid filter pattern.  Valid characters are [ a-zA-Z_#=/:+!-].",
+        "Failed: Invalid linkifier pattern.  Valid characters are [ a-zA-Z_#=/:+!-].",
     );
 }
 

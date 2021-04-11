@@ -1,5 +1,6 @@
 import $ from "jquery";
 import _ from "lodash";
+import tippy from "tippy.js";
 
 import render_subscription from "../templates/subscription.hbs";
 import render_subscription_settings from "../templates/subscription_settings.hbs";
@@ -78,8 +79,6 @@ export function update_left_panel_row(sub) {
     if (row.hasClass("active")) {
         new_row.addClass("active");
     }
-
-    add_tooltip_to_left_panel_row(new_row);
 
     row.replaceWith(new_row);
 }
@@ -274,7 +273,6 @@ export function add_sub_to_table(sub) {
     const setting_sub = stream_settings_data.get_sub_for_settings(sub);
     const html = render_subscription(setting_sub);
     const new_row = $(html);
-    add_tooltip_to_left_panel_row(new_row);
 
     if (stream_create.get_name() === sub.name) {
         ui.get_content_element($(".streams-list")).prepend(new_row);
@@ -339,13 +337,6 @@ export function show_active_stream_in_left_panel() {
         const sub_row = row_for_stream_id(selected_row);
         sub_row.addClass("active");
     }
-}
-
-export function add_tooltip_to_left_panel_row(row) {
-    row.find('.sub-info-box [class$="-bar"] [class$="-count"]').tooltip({
-        placement: "left",
-        animation: false,
-    });
 }
 
 export function update_settings_for_unsubscribed(sub) {
@@ -496,10 +487,6 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()) {
     }
     maybe_reset_right_panel();
 
-    for (const row of $("#subscriptions_table .stream-row")) {
-        add_tooltip_to_left_panel_row($(row));
-    }
-
     // return this for test convenience
     return [...buckets.name, ...buckets.desc];
 }
@@ -578,19 +565,19 @@ export function setup_page(callback) {
         const sort_toggler = components.toggle({
             values: [
                 {
-                    label_html: `<i class="fa fa-sort-alpha-asc" title="${i18n.t(
+                    label_html: `<i class="fa fa-sort-alpha-asc tippy-bottom tippy-zulip-tooltip" data-tippy-content="${i18n.t(
                         "Sort by name",
                     )}"></i>`,
                     key: "by-stream-name",
                 },
                 {
-                    label_html: `<i class="fa fa-user-o" title="${i18n.t(
+                    label_html: `<i class="fa fa-user-o tippy-bottom tippy-zulip-tooltip" data-tippy-content="${i18n.t(
                         "Sort by number of subscribers",
                     )}"></i>`,
                     key: "by-subscriber-count",
                 },
                 {
-                    label_html: `<i class="fa fa-bar-chart" title="${i18n.t(
+                    label_html: `<i class="fa fa-bar-chart tippy-bottom tippy-zulip-tooltip" data-tippy-content="${i18n.t(
                         "Sort by estimated weekly traffic",
                     )}"></i>`,
                     key: "by-weekly-traffic",
@@ -602,6 +589,11 @@ export function setup_page(callback) {
             },
         });
         $("#subscriptions_table .search-container").prepend(sort_toggler.get());
+
+        // place subs tooltips at bottom
+        tippy(".tippy-bottom", {
+            placement: "bottom",
+        });
 
         // Reset our internal state to reflect that we're initially in
         // the "Subscribed" tab if we're reopening "Manage streams".
@@ -635,8 +627,8 @@ export function setup_page(callback) {
         const template_data = {
             can_create_streams: page_params.can_create_streams,
             hide_all_streams: !should_list_all_streams(),
-            max_name_length: page_params.stream_name_max_length,
-            max_description_length: page_params.stream_description_max_length,
+            max_name_length: page_params.max_stream_name_length,
+            max_description_length: page_params.max_stream_description_length,
             is_owner: page_params.is_owner,
             stream_privacy_policy_values: stream_data.stream_privacy_policy_values,
             stream_post_policy_values: stream_data.stream_post_policy_values,
@@ -645,6 +637,8 @@ export function setup_page(callback) {
                 stream_edit.get_display_text_for_realm_message_retention_setting,
             upgrade_text_for_wide_organization_logo:
                 page_params.upgrade_text_for_wide_organization_logo,
+            disable_message_retention_setting:
+                !page_params.zulip_plan_is_not_limited || !page_params.is_owner,
         };
 
         const rendered = render_subscription_table_body(template_data);
@@ -741,6 +735,7 @@ export function launch(section) {
             overlay: $("#subscription_overlay"),
             on_close() {
                 browser_history.exit_overlay();
+                $(".colorpicker").spectrum("destroy");
             },
         });
         change_state(section);

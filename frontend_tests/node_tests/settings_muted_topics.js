@@ -9,7 +9,7 @@ const $ = require("../zjsunit/zjquery");
 mock_cjs("jquery", $);
 const muting_ui = mock_esm("../../static/js/muting_ui");
 
-const settings_muting = zrequire("settings_muting");
+const settings_muted_topics = zrequire("settings_muted_topics");
 const stream_data = zrequire("stream_data");
 const muting = zrequire("muting");
 
@@ -38,11 +38,11 @@ run_test("settings", () => {
         set_up_topic_ui_called = true;
     };
 
-    settings_muting.reset();
-    assert.equal(settings_muting.loaded, false);
+    settings_muted_topics.reset();
+    assert.equal(settings_muted_topics.loaded, false);
 
-    settings_muting.set_up();
-    assert.equal(settings_muting.loaded, true);
+    settings_muted_topics.set_up();
+    assert.equal(settings_muted_topics.loaded, true);
 
     const topic_click_handler = $("body").get_on_handler("click", ".settings-unmute-topic");
     assert.equal(typeof topic_click_handler, "function");

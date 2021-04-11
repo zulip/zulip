@@ -167,6 +167,20 @@ exports.fixtures = {
         ],
     },
 
+    muted_users: {
+        type: "muted_users",
+        muted_users: [
+            {
+                id: 5,
+                timestamp: fake_then,
+            },
+            {
+                id: 23,
+                timestamp: fake_now,
+            },
+        ],
+    },
+
     presence: {
         type: "presence",
         email: "alice@example.com",
@@ -272,6 +286,13 @@ exports.fixtures = {
         op: "update",
         property: "invite_required",
         value: false,
+    },
+
+    realm__update__invite_to_realm_policy: {
+        type: "realm",
+        op: "update",
+        property: "invite_to_realm_policy",
+        value: 2,
     },
 
     realm__update__invite_to_stream_policy: {

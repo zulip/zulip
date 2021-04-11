@@ -44,12 +44,15 @@
 * [Set "typing" status](/api/set-typing-status)
 * [Get user presence](/api/get-user-presence)
 * [Get attachments](/api/get-attachments)
+* [Update display settings](/api/update-display-settings)
 * [Update notification settings](/api/update-notification-settings)
 * [Get user groups](/api/get-user-groups)
 * [Create a user group](/api/create-user-group)
 * [Update a user group](/api/update-user-group)
 * [Delete a user group](/api/remove-user-group)
 * [Update user group members](/api/update-user-group-members)
+* [Mute a user](/api/mute-user)
+* [Unmute a user](/api/unmute-user)
 
 #### Server & organizations
 
@@ -57,6 +60,8 @@
 * [Get linkifiers](/api/get-linkifiers)
 * [Add a linkifier](/api/add-linkifier)
 * [Remove a linkifier](/api/remove-linkifier)
+* [Add a playground](/api/add-playground)
+* [Remove a playground](/api/remove-playground)
 * [Get all custom emoji](/api/get-custom-emoji)
 * [Upload custom emoji](/api/upload-custom-emoji)
 * [Get all custom profile fields](/api/get-custom-profile-fields)

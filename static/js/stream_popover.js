@@ -10,11 +10,11 @@ import render_topic_sidebar_actions from "../templates/topic_sidebar_actions.hbs
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as channel from "./channel";
+import * as compose_actions from "./compose_actions";
 import * as hash_util from "./hash_util";
 import * as message_edit from "./message_edit";
 import * as muting from "./muting";
 import * as muting_ui from "./muting_ui";
-import * as narrow from "./narrow";
 import {page_params} from "./page_params";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
@@ -245,7 +245,7 @@ function build_topic_popover(opts) {
         topic_name,
         can_mute_topic,
         can_unmute_topic,
-        is_realm_admin: page_params.is_realm_admin,
+        is_realm_admin: page_params.is_admin,
         color: sub.color,
         has_starred_messages,
     });
@@ -471,6 +471,20 @@ export function register_stream_handlers() {
         e.stopPropagation();
     });
 
+    // New topic in stream menu
+    $("body").on("click", ".popover_new_topic_button", (e) => {
+        const sub = stream_popover_sub(e);
+        hide_stream_popover();
+
+        compose_actions.start("stream", {
+            trigger: "popover new topic button",
+            stream: sub.name,
+            topic: "",
+        });
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
     // Unsubscribe
     $("body").on("click", ".popover_sub_unsub_button", function (e) {
         $(this).toggleClass("unsub");
@@ -507,42 +521,7 @@ export function register_stream_handlers() {
     });
 }
 
-function topic_popover_sub(e) {
-    const stream_id = topic_popover_stream_id(e);
-    if (!stream_id) {
-        blueslip.error("cannot find stream id");
-        return undefined;
-    }
-
-    const sub = stream_data.get_sub_by_id(stream_id);
-    if (!sub) {
-        blueslip.error("Unknown stream: " + stream_id);
-        return undefined;
-    }
-    return sub;
-}
-
 export function register_topic_handlers() {
-    // Narrow to topic
-    $("body").on("click", ".narrow_to_topic", (e) => {
-        hide_topic_popover();
-
-        const sub = topic_popover_sub(e);
-        if (!sub) {
-            return;
-        }
-
-        const topic = $(e.currentTarget).attr("data-topic-name");
-
-        const operators = [
-            {operator: "stream", operand: sub.name},
-            {operator: "topic", operand: topic},
-        ];
-        narrow.activate(operators, {trigger: "sidebar"});
-
-        e.stopPropagation();
-    });
-
     // Mute the topic
     $("body").on("click", ".sidebar-popover-mute-topic", (e) => {
         const stream_id = topic_popover_stream_id(e);

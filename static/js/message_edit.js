@@ -348,6 +348,7 @@ function edit_message(row, raw_content) {
             stream_name: message.stream,
             notify_new_thread: notify_new_thread_default,
             notify_old_thread: notify_old_thread_default,
+            giphy_api_available: page_params.giphy_api_key !== "",
         }),
     );
 
@@ -414,13 +415,6 @@ function edit_message(row, raw_content) {
         page_params.realm_message_content_edit_limit_seconds > 0
     ) {
         row.find(".message-edit-timer-control-group").show();
-        row.find("#message_edit_tooltip").tooltip({
-            animation: false,
-            placement: "left",
-            template:
-                '<div class="tooltip" role="tooltip"><div class="tooltip-arrow"></div>' +
-                '<div class="tooltip-inner message-edit-tooltip-inner"></div></div>',
-        });
     }
 
     // add timer

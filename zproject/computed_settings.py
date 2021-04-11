@@ -210,7 +210,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.staticfiles",
     "confirmation",
-    "webpack_loader",
     "zerver",
     "social_django",
     # 2FA related apps.
@@ -576,16 +575,11 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 STATICFILES_DIRS = ["static/"]
 
 if DEBUG:
-    WEBPACK_STATS_FILE = os.path.join("var", "webpack-stats-dev.json")
+    WEBPACK_BUNDLES = "../webpack/"
+    WEBPACK_STATS_FILE = os.path.join(DEPLOY_ROOT, "var", "webpack-stats-dev.json")
 else:
-    WEBPACK_STATS_FILE = "webpack-stats-production.json"
-WEBPACK_LOADER = {
-    "DEFAULT": {
-        "CACHE": not DEBUG,
-        "BUNDLE_DIR_NAME": "../webpack/" if DEBUG else "webpack-bundles/",
-        "STATS_FILE": os.path.join(DEPLOY_ROOT, WEBPACK_STATS_FILE),
-    },
-}
+    WEBPACK_BUNDLES = "webpack-bundles/"
+    WEBPACK_STATS_FILE = os.path.join(DEPLOY_ROOT, "webpack-stats-production.json")
 
 ########################################################################
 # TEMPLATES SETTINGS
@@ -607,7 +601,6 @@ base_template_engine_settings: Dict[str, Any] = {
         "extensions": [
             "jinja2.ext.i18n",
             "jinja2.ext.autoescape",
-            "webpack_loader.contrib.jinja2ext.WebpackExtension",
         ],
         "context_processors": [
             "zerver.context_processors.zulip_default_context",

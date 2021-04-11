@@ -133,6 +133,10 @@ export function dispatch_normal_event(event) {
             muting_ui.handle_topic_updates(event.muted_topics);
             break;
 
+        case "muted_users":
+            muting_ui.handle_user_updates(event.muted_users);
+            break;
+
         case "presence":
             activity.update_presence_info(event.user_id, event.presence, event.server_timestamp);
             break;
@@ -188,7 +192,7 @@ export function dispatch_normal_event(event) {
                 disallow_disposable_email_addresses: noop,
                 inline_image_preview: noop,
                 inline_url_embed_preview: noop,
-                invite_by_admins_only: noop,
+                invite_to_realm_policy: noop,
                 invite_required: noop,
                 mandatory_topics: noop,
                 message_content_edit_limit_seconds: noop,
@@ -222,6 +226,11 @@ export function dispatch_normal_event(event) {
                             page_params.can_invite_to_stream =
                                 page_params.is_admin ||
                                 page_params.realm_invite_to_stream_policy === 1;
+                        } else if (event.property === "invite_to_realm_policy") {
+                            // TODO: Add waiting period threshold logic here.
+                            page_params.can_invite_others_to_realm =
+                                page_params.is_admin ||
+                                page_params.realm_invite_to_realm_policy === 1;
                         }
 
                         if (event.property === "name" && window.electron_bridge !== undefined) {

@@ -157,6 +157,9 @@ IGNORED_PHRASES = [
     r"your-organization-url",
     # Used in invite modal
     r"or",
+    # Used in GIPHY popover.
+    r"GIFs",
+    r"GIPHY",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the

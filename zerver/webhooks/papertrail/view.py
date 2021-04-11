@@ -24,7 +24,7 @@ def api_papertrail_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
     payload: Dict[str, Any] = REQ(
-        validator=check_dict(
+        json_validator=check_dict(
             [
                 ("events", check_list(check_dict([]))),
                 (

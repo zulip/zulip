@@ -10,6 +10,55 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 53**
+
+* [`POST /register`](/api/register-queue): Added `max_topic_length`
+  and renamed `max_stream_name_length` and
+  `max_stream_description_length` to allow clients to transparently
+  support these values changing in a future server version.
+
+**Feature level 52**
+
+* `PATCH /realm`: Removed unnecessary JSON-encoding of string
+  parameters `name`, `description`, `default_language`, and
+  `default_code_block_language`.
+
+**Feature level 51**
+
+* [`POST /register`](/api/register-queue): Added a new boolean field
+`can_invite_others_to_realm`.
+
+**Feature level 50**
+
+* [`POST /register`](/api/register-queue): Replaced `invite_by_admins_only`
+field with an integer field `invite_to_realm_policy`.
+
+**Feature level 49**
+
+* Added new [`POST /realm/playground`](/api/add-playground) and
+  [`DELETE /realm/playground/{playground_id}`](/api/remove-playground)
+  endpoints for realm playgrounds.
+* [`GET /events`](/api/get-events): A new `realm_playgrounds` events
+  is sent when changes are made to a set of configured playgrounds for
+  an organization.
+* [`POST /register`](/api/register-queue): Added a new `realm_playgrounds`
+  field, which is required to fetch the set of configured playgrounds for
+  an organization.
+
+**Feature level 48**
+
+* [`POST /users/me/muted_users/{muted_user_id}`](/api/mute-user),
+  [`DELETE /users/me/muted_users/{muted_user_id}`](/api/unmute-user):
+  New endpoints added to mute/unmute users.
+* [`GET /events`](/api/get-events): Added new event type `muted_users`
+  which will be sent to a user when the set of users muted by them has
+  changed.
+
+**Feature level 47**
+
+* [`POST /register`](/api/register-queue): Added a new `giphy_api_key`
+  field, which is required to fetch GIFs using the GIPHY API.
+
 **Feature level 46**
 
 * [`GET /messages`](/api/get-messages) and [`GET

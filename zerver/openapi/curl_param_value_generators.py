@@ -5,15 +5,16 @@
 # based on Zulip's OpenAPI definitions, as well as test setup and
 # fetching of appropriate parameter values to use when running the
 # cURL examples as part of the tools/test-api test suite.
-
+import json
 from functools import wraps
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import (
+    do_add_linkifier,
     do_add_reaction,
-    do_add_realm_filter,
+    do_add_realm_playground,
     do_create_user,
     update_user_presence,
 )
@@ -253,7 +254,7 @@ def get_temp_user_group_id() -> Dict[str, object]:
 
 @openapi_param_value_generator(["/realm/filters/{filter_id}:delete"])
 def remove_realm_filters() -> Dict[str, object]:
-    filter_id = do_add_realm_filter(
+    filter_id = do_add_linkifier(
         get_realm("zulip"), "#(?P<id>[0-9]{2,8})", "https://github.com/zulip/zulip/pull/%(id)s"
     )
     return {
@@ -265,6 +266,28 @@ def remove_realm_filters() -> Dict[str, object]:
 def upload_custom_emoji() -> Dict[str, object]:
     return {
         "filename": "zerver/tests/images/animated_img.gif",
+    }
+
+
+@openapi_param_value_generator(["/realm/playgrounds:post"])
+def add_realm_playground() -> Dict[str, object]:
+    return {
+        "name": "Python2 playground",
+        "pygments_language": json.dumps("Python2"),
+        "url_prefix": json.dumps("https://python2.example.com"),
+    }
+
+
+@openapi_param_value_generator(["/realm/playgrounds/{playground_id}:delete"])
+def remove_realm_playground() -> Dict[str, object]:
+    playground_info = dict(
+        name="Python playground",
+        pygments_language="Python",
+        url_prefix="https://python.example.com",
+    )
+    playground_id = do_add_realm_playground(get_realm("zulip"), **playground_info)
+    return {
+        "playground_id": playground_id,
     }
 
 

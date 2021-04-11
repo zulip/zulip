@@ -124,7 +124,14 @@ class APIArgumentsTablePreprocessor(Preprocessor):
             # (path, querystring, form data...).  We should document this detail.
             example = ""
             if "example" in argument:
-                example = argument["example"]
+                # We use this style without explicit JSON encoding for
+                # integers, strings, and booleans.
+                # * For booleans, JSON encoding correctly corrects for Python's
+                #   str(True)="True" not matching the encoding of "true".
+                # * For strings, doing so nicely results in strings being quoted
+                #   in the documentation, improving readability.
+                # * For integers, it is a noop, since json.dumps(3) == str(3) == "3".
+                example = json.dumps(argument["example"])
             else:
                 example = json.dumps(argument["content"]["application/json"]["example"])
 

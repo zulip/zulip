@@ -87,10 +87,18 @@ In a production environment, we have:
 In a development environment, we have `zproject/settings.py`, and
 additionally:
 
-* `zproject/dev_settings.py` has the settings for the Zulip development
-  environment; it mostly just imports `prod_settings_template.py`.
+* `zproject/dev_settings.py` has the custom settings for the Zulip development
+  environment; these are set after importing `prod_settings_template.py`.
 
-* `zproject/dev-secrets.conf` replaces `/etc/zulip/zulip-secrets.conf`.
+* `zproject/dev-secrets.conf` replaces
+  `/etc/zulip/zulip-secrets.conf`, and is not tracked by Git.  This
+  allows you to configure your development environment to support
+  features like [authentication
+  options](../development/authentication.md) that require secrets to
+  work.  It is also used to set certain settings that in production
+  belong in `/etc/zulip/settings.py`, e.g. `SOCIAL_AUTH_GITHUB_KEY`.
+  You can see a full list with `git grep development_only=True`, or
+  add additional settings of this form if needed.
 
 * `zproject/test_settings.py` imports everything from
   `zproject/settings.py` and `zproject/test_extra_settings.py`.
@@ -126,7 +134,7 @@ want those settings.
 ### Testing non-default settings
 
 You can write tests for settings using e.g. `with
-self.settings(GOOGLE_CLIENT_ID=None)`.  However, this only works for
+self.settings(TERMS_OF_SERVICE=None)`.  However, this only works for
 settings which are checked at runtime, not settings which are only
 accessed in initialization of Django (or Zulip) internals
 (e.g. `DATABASES`).  See the [Django docs on overriding settings in

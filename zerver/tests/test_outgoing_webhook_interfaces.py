@@ -18,10 +18,10 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        bot_user = get_user("outgoing-webhook@zulip.com", get_realm("zulip"))
+        self.bot_user = get_user("outgoing-webhook@zulip.com", get_realm("zulip"))
         service_class = get_service_interface_class("whatever")  # GenericOutgoingWebhookService
         self.handler = service_class(
-            service_name="test-service", token="abcdef", user_profile=bot_user
+            service_name="test-service", token="abcdef", user_profile=self.bot_user
         )
 
     def test_process_success_response(self) -> None:
@@ -113,6 +113,7 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
             request_data = session.post.call_args[1]["json"]
 
         validate_against_openapi_schema(request_data, "/zulip-outgoing-webhook", "post", "200")
+        self.assertEqual(request_data["bot_full_name"], self.bot_user.full_name)
         self.assertEqual(request_data["data"], "@**test**")
         self.assertEqual(request_data["token"], "abcdef")
         self.assertEqual(request_data["message"], expected_message_data)

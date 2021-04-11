@@ -1,10 +1,10 @@
 import $ from "jquery";
 import _ from "lodash";
+import tippy from "tippy.js";
 import WinChan from "winchan";
 
 // You won't find every click handler here, but it's a good place to start!
 
-import render_buddy_list_tooltip from "../templates/buddy_list_tooltip.hbs";
 import render_buddy_list_tooltip_content from "../templates/buddy_list_tooltip_content.hbs";
 
 import * as activity from "./activity";
@@ -15,6 +15,7 @@ import * as channel from "./channel";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
+import {media_breakpoints_num} from "./css_variables";
 import * as emoji_picker from "./emoji_picker";
 import * as hash_util from "./hash_util";
 import * as hotspots from "./hotspots";
@@ -43,14 +44,6 @@ import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import * as user_status_ui from "./user_status_ui";
 import * as util from "./util";
-
-function convert_enter_to_click(e) {
-    const key = e.which;
-    if (key === 13) {
-        // Enter
-        $(e.currentTarget).trigger("click");
-    }
-}
 
 export function initialize() {
     // MESSAGE CLICKING
@@ -136,6 +129,13 @@ export function initialize() {
 
         // For spoilers, allow clicking either the header or elements within it
         if (target.is(".spoiler-header") || target.parents(".spoiler-header").length > 0) {
+            return true;
+        }
+
+        // Ideally, this should be done via ClipboardJS, but it does't support
+        // feature of stopPropagation once clicked.
+        // See https://github.com/zenorocha/clipboard.js/pull/475
+        if (target.is(".copy_codeblock") || target.parents(".copy_codeblock").length > 0) {
             return true;
         }
 
@@ -241,42 +241,6 @@ export function initialize() {
         }
         e.stopPropagation();
         e.preventDefault();
-    });
-
-    // TOOLTIP FOR MESSAGE REACTIONS
-
-    $("#main_div").on("mouseenter", ".message_reaction", (e) => {
-        e.stopPropagation();
-        const elem = $(e.currentTarget);
-        const local_id = elem.attr("data-reaction-id");
-        const message_id = rows.get_message_id(e.currentTarget);
-        const title = reactions.get_reaction_title_data(message_id, local_id);
-
-        elem.tooltip({
-            title,
-            trigger: "hover",
-            placement: "bottom",
-            animation: false,
-        });
-        elem.tooltip("show");
-        $(".tooltip, .tooltip-inner").css({
-            "margin-left": "15px",
-            "max-width": $(window).width() * 0.6,
-        });
-        // Remove the arrow from the tooltip.
-        $(".tooltip-arrow").remove();
-    });
-
-    $("#main_div").on("mouseleave", ".message_reaction", (e) => {
-        e.stopPropagation();
-        $(e.currentTarget).tooltip("destroy");
-    });
-
-    // DESTROY PERSISTING TOOLTIPS ON HOVER
-
-    $("body").on("mouseenter", ".tooltip", (e) => {
-        e.stopPropagation();
-        $(e.currentTarget).remove();
     });
 
     $("#main_div").on("click", "a.stream", function (e) {
@@ -418,14 +382,14 @@ export function initialize() {
         muting_ui.mute_topic(stream_id, topic);
     }
 
-    $("body").on("click", ".on_hover_topic_mute", (e) => {
+    $("body").on("click", ".message_header .on_hover_topic_mute", (e) => {
         e.stopPropagation();
         mute_topic($(e.target));
     });
 
     // RECENT TOPICS
 
-    $("body").on("keydown", ".on_hover_topic_mute", convert_enter_to_click);
+    $("body").on("keydown", ".on_hover_topic_mute", ui_util.convert_enter_to_click);
 
     $("body").on("click", "#recent_topics_table .on_hover_topic_unmute", (e) => {
         e.stopPropagation();
@@ -435,7 +399,7 @@ export function initialize() {
         muting_ui.unmute_topic(stream_id, topic);
     });
 
-    $("body").on("keydown", ".on_hover_topic_unmute", convert_enter_to_click);
+    $("body").on("keydown", ".on_hover_topic_unmute", ui_util.convert_enter_to_click);
 
     $("body").on("click", "#recent_topics_table .on_hover_topic_mute", (e) => {
         e.stopPropagation();
@@ -457,7 +421,7 @@ export function initialize() {
         unread_ops.mark_topic_as_read(stream_id, topic);
     });
 
-    $("body").on("keydown", ".on_hover_topic_read", convert_enter_to_click);
+    $("body").on("keydown", ".on_hover_topic_read", ui_util.convert_enter_to_click);
 
     $("body").on("click", ".btn-recent-filters", (e) => {
         e.stopPropagation();
@@ -564,18 +528,26 @@ export function initialize() {
         });
 
     function do_render_buddy_list_tooltip(elem, title_data) {
-        elem.tooltip({
-            template: render_buddy_list_tooltip(),
-            title: render_buddy_list_tooltip_content(title_data),
-            html: true,
-            trigger: "hover",
-            placement: "bottom",
-            animation: false,
+        let placement = "left";
+        if (window.innerWidth < media_breakpoints_num.md) {
+            // On small devices display tooltips based on available space.
+            // This will default to "bottom" placement for this tooltip.
+            placement = "auto";
+        }
+        tippy(elem[0], {
+            // Quickly display and hide right sidebar tooltips
+            // so that they don't stick and overlap with
+            // each other.
+            delay: 0,
+            content: render_buddy_list_tooltip_content(title_data),
+            arrow: true,
+            placement,
+            allowHTML: true,
+            showOnCreate: true,
+            onHidden: (instance) => {
+                instance.destroy();
+            },
         });
-        elem.tooltip("show");
-
-        $(".tooltip").css("left", elem.pageX + "px");
-        $(".tooltip").css("top", elem.pageY + "px");
     }
 
     // BUDDY LIST TOOLTIPS
@@ -589,25 +561,12 @@ export function initialize() {
                 .find(".user-presence-link");
             const user_id_string = elem.attr("data-user-id");
             const title_data = buddy_data.get_title_data(user_id_string, false);
-            do_render_buddy_list_tooltip(elem, title_data);
-        },
-    );
-
-    $("#user_presences").on(
-        "mouseleave click",
-        ".user-presence-link, .user_sidebar_entry .user_circle, .user_sidebar_entry .selectable_sidebar_block",
-        (e) => {
-            e.stopPropagation();
-            const elem = $(e.currentTarget)
-                .closest(".user_sidebar_entry")
-                .find(".user-presence-link");
-            $(elem).tooltip("destroy");
+            do_render_buddy_list_tooltip(elem.parent(), title_data);
         },
     );
 
     // PM LIST TOOLTIPS
     $("body").on("mouseenter", "#pm_user_status", (e) => {
-        $(".tooltip").remove();
         e.stopPropagation();
         const elem = $(e.currentTarget);
         const user_ids_string = elem.attr("data-user-ids-string");
@@ -616,11 +575,6 @@ export function initialize() {
 
         const title_data = buddy_data.get_title_data(user_ids_string, is_group);
         do_render_buddy_list_tooltip(elem, title_data);
-    });
-
-    $("body").on("mouseleave", "#pm_user_status", (e) => {
-        e.stopPropagation();
-        $(e.currentTarget).tooltip("destroy");
     });
 
     // MISC
@@ -703,7 +657,7 @@ export function initialize() {
 
     function handle_compose_click(e) {
         // Emoji clicks should be handled by their own click handler in emoji_picker.js
-        if ($(e.target).is("#emoji_map, img.emoji, .drag")) {
+        if ($(e.target).is("#emoji_map, img.emoji, .drag, .compose_giphy_logo")) {
             return;
         }
 
@@ -973,7 +927,9 @@ export function initialize() {
 
         if (compose_state.composing()) {
             if ($(e.target).closest("a").length > 0) {
-                // Refocus compose message text box if link is clicked
+                // Refocus compose message text box if one clicks an external
+                // link/url to view something else while composing a message
+                // See issue #4331 for more details
                 $("#compose-textarea").trigger("focus");
                 return;
             } else if (

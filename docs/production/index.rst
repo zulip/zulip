@@ -22,3 +22,4 @@ Zulip in production
    deployment
    email-gateway
    video-calls
+   giphy-gif-integration

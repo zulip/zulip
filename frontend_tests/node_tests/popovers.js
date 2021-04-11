@@ -17,6 +17,9 @@ const stream_data = mock_esm("../../static/js/stream_data");
 mock_esm("../../static/js/emoji_picker", {
     hide_emoji_popover: noop,
 });
+mock_esm("../../static/js/giphy", {
+    hide_giphy_popover: noop,
+});
 const message_lists = mock_esm("../../static/js/message_lists", {
     current: {},
 });

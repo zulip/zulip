@@ -663,10 +663,6 @@ def accounts_home_from_multiuse_invite(request: HttpRequest, confirmation_key: s
     )
 
 
-def generate_204(request: HttpRequest) -> HttpResponse:
-    return HttpResponse(content=None, status=204)
-
-
 def find_account(request: HttpRequest) -> HttpResponse:
     from zerver.context_processors import common_context
 

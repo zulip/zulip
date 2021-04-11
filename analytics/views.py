@@ -736,19 +736,19 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     cursor.close()
 
     # Fetch all the realm administrator users
-    realm_admins: Dict[str, List[str]] = defaultdict(list)
+    realm_owners: Dict[str, List[str]] = defaultdict(list)
     for up in UserProfile.objects.select_related("realm").filter(
-        role=UserProfile.ROLE_REALM_ADMINISTRATOR,
+        role=UserProfile.ROLE_REALM_OWNER,
         is_active=True,
     ):
-        realm_admins[up.realm.string_id].append(up.delivery_email)
+        realm_owners[up.realm.string_id].append(up.delivery_email)
 
     for row in rows:
         row["date_created_day"] = row["date_created"].strftime("%Y-%m-%d")
         row["plan_type_string"] = get_plan_name(row["plan_type"])
         row["age_days"] = int((now - row["date_created"]).total_seconds() / 86400)
         row["is_new"] = row["age_days"] < 12 * 7
-        row["realm_admin_email"] = ", ".join(realm_admins[row["string_id"]])
+        row["realm_owner_emails"] = ", ".join(realm_owners[row["string_id"]])
 
     # get messages sent per day
     counts = get_realm_day_counts()
@@ -810,7 +810,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
         amount=total_amount,
         stats_link="",
         date_created_day="",
-        realm_admin_email="",
+        realm_owner_emails="",
         dau_count=total_dau_count,
         user_profile_count=total_user_profile_count,
         bot_count=total_bot_count,

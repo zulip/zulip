@@ -2,13 +2,12 @@
 
 import path from "path";
 
-import CleanCss from "clean-css";
+import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
-import OptimizeCssAssetsPlugin from "optimize-css-assets-webpack-plugin";
 import TerserPlugin from "terser-webpack-plugin";
 import webpack from "webpack";
-import BundleTracker from "webpack4-bundle-tracker";
+import BundleTracker from "webpack-bundle-tracker";
 
 import DebugRequirePlugin from "./tools/debug-require-webpack-plugin";
 import assets from "./tools/webpack.assets.json";
@@ -136,6 +135,7 @@ export default (_env: unknown, argv: {mode?: string}): webpack.Configuration[] =
                         {
                             loader: "handlebars-loader",
                             options: {
+                                ignoreHelpers: true,
                                 // Tell webpack not to explicitly require these.
                                 knownHelpers: [
                                     "if",
@@ -148,6 +148,7 @@ export default (_env: unknown, argv: {mode?: string}): webpack.Configuration[] =
                                     "and",
                                     "or",
                                     "not",
+                                    "let",
                                     "t",
                                     "tr",
                                     "rendered_markdown",
@@ -186,39 +187,23 @@ export default (_env: unknown, argv: {mode?: string}): webpack.Configuration[] =
         devtool: production ? "source-map" : "cheap-module-source-map",
         optimization: {
             minimizer: [
-                // Based on a comment in NMFR/optimize-css-assets-webpack-plugin#10.
-                // Can be simplified when NMFR/optimize-css-assets-webpack-plugin#87
-                // is fixed.
-                new OptimizeCssAssetsPlugin({
-                    cssProcessor: {
-                        async process(css, options: any) {
-                            const filename = path.basename(options.to);
-                            const result = await new CleanCss(options).minify({
-                                [filename]: {
-                                    styles: css,
-                                    sourceMap: options.map.prev,
-                                },
-                            });
-                            for (const warning of result.warnings) {
-                                console.warn(warning);
-                            }
-                            return {
-                                css: result.styles + `\n/*# sourceMappingURL=${filename}.map */`,
-                                map: result.sourceMap,
-                            };
-                        },
-                    },
-                    cssProcessorOptions: {
-                        map: {},
-                        returnPromise: true,
-                        sourceMap: true,
-                        sourceMapInlineSources: true,
+                new CssMinimizerPlugin({
+                    sourceMap: true,
+                    minify: (data: Record<string, string>, sourceMap) => {
+                        // css-minimizer-webpack-plugin needs this require
+                        // inside the function.
+                        // eslint-disable-next-line @typescript-eslint/consistent-type-imports, @typescript-eslint/no-var-requires
+                        const CleanCSS: typeof import("clean-css") = require("clean-css");
+                        const [[filename, styles]] = Object.entries(data);
+                        const out = new CleanCSS({sourceMap: true}).minify({
+                            [filename]: {styles, sourceMap},
+                        });
+                        return {css: out.styles, map: out.sourceMap, warnings: out.warnings};
                     },
                 }),
                 new TerserPlugin({
                     cache: true,
                     parallel: true,
-                    sourceMap: true,
                 }),
             ],
             splitChunks: {
@@ -242,8 +227,13 @@ export default (_env: unknown, argv: {mode?: string}): webpack.Configuration[] =
             new DebugRequirePlugin(),
             new BundleTracker({
                 filename: production
-                    ? "webpack-stats-production.json"
-                    : "var/webpack-stats-dev.json",
+                    ? "../../webpack-stats-production.json"
+                    : "../../var/webpack-stats-dev.json",
+                relativePath: true,
+                // Respecify many defaults until https://github.com/django-webpack/webpack-bundle-tracker/pull/55 is merged
+                path: path.resolve(__dirname, "static/webpack-bundles"),
+                integrity: false,
+                integrityHashes: [],
             }),
             ...(production
                 ? []

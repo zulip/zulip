@@ -50,6 +50,7 @@ class HomeTest(ZulipTestCase):
         "avatar_url_medium",
         "bot_types",
         "can_create_streams",
+        "can_invite_others_to_realm",
         "can_subscribe_other_users",
         "color_scheme",
         "cross_realm_bots",
@@ -83,6 +84,7 @@ class HomeTest(ZulipTestCase):
         "fluid_layout_width",
         "full_name",
         "furthest_read_time",
+        "giphy_api_key",
         "has_mobile_devices",
         "has_zoom_token",
         "high_contrast_mode",
@@ -104,8 +106,12 @@ class HomeTest(ZulipTestCase):
         "max_icon_file_size",
         "max_logo_file_size",
         "max_message_id",
+        "max_stream_description_length",
+        "max_stream_name_length",
+        "max_topic_length",
         "message_content_in_email_notifications",
         "muted_topics",
+        "muted_users",
         "narrow",
         "narrow_stream",
         "needs_tutorial",
@@ -156,8 +162,8 @@ class HomeTest(ZulipTestCase):
         "realm_incoming_webhook_bots",
         "realm_inline_image_preview",
         "realm_inline_url_embed_preview",
-        "realm_invite_by_admins_only",
         "realm_invite_required",
+        "realm_invite_to_realm_policy",
         "realm_invite_to_stream_policy",
         "realm_is_zephyr_mirror_realm",
         "realm_logo_source",
@@ -176,6 +182,7 @@ class HomeTest(ZulipTestCase):
         "realm_notifications_stream_id",
         "realm_password_auth_enabled",
         "realm_plan_type",
+        "realm_playgrounds",
         "realm_presence_disabled",
         "realm_private_message_policy",
         "realm_push_notifications_enabled",
@@ -202,8 +209,6 @@ class HomeTest(ZulipTestCase):
         "starred_message_counts",
         "starred_messages",
         "stop_words",
-        "stream_description_max_length",
-        "stream_name_max_length",
         "subscriptions",
         "test_suite",
         "timezone",
@@ -260,7 +265,7 @@ class HomeTest(ZulipTestCase):
             set(result["Cache-Control"].split(", ")), {"must-revalidate", "no-store", "no-cache"}
         )
 
-        self.assert_length(queries, 39)
+        self.assert_length(queries, 41)
         self.assert_length(cache_mock.call_args_list, 5)
 
         html = result.content.decode("utf-8")
@@ -340,7 +345,7 @@ class HomeTest(ZulipTestCase):
                 result = self._get_home_page()
                 self.check_rendered_logged_in_app(result)
                 self.assert_length(cache_mock.call_args_list, 6)
-            self.assert_length(queries, 36)
+            self.assert_length(queries, 38)
 
     def test_num_queries_with_streams(self) -> None:
         main_user = self.example_user("hamlet")
@@ -371,7 +376,7 @@ class HomeTest(ZulipTestCase):
         with queries_captured() as queries2:
             result = self._get_home_page()
 
-        self.assert_length(queries2, 34)
+        self.assert_length(queries2, 36)
 
         # Do a sanity check that our new streams were in the payload.
         html = result.content.decode("utf-8")
@@ -667,7 +672,7 @@ class HomeTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
 
         realm = user_profile.realm
-        realm.invite_by_admins_only = True
+        realm.invite_to_realm_policy = Realm.POLICY_ADMINS_ONLY
         realm.save()
 
         self.login_user(user_profile)
@@ -686,12 +691,12 @@ class HomeTest(ZulipTestCase):
         user_profile = self.example_user("polonius")
 
         realm = user_profile.realm
-        realm.invite_by_admins_only = False
+        realm.invite_to_realm_policy = Realm.POLICY_MEMBERS_ONLY
         realm.save()
 
         self.login_user(user_profile)
         self.assertFalse(user_profile.is_realm_admin)
-        self.assertFalse(get_realm("zulip").invite_by_admins_only)
+        self.assertEqual(get_realm("zulip").invite_to_realm_policy, Realm.POLICY_MEMBERS_ONLY)
         result = self._get_home_page()
         html = result.content.decode("utf-8")
         self.assertNotIn("Invite more users", html)
@@ -862,11 +867,6 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(
             compute_navbar_logo_url(page_params), "/static/images/logo/zulip-org-logo.svg?version=0"
         )
-
-    def test_generate_204(self) -> None:
-        self.login("hamlet")
-        result = self.client_get("/api/v1/generate_204")
-        self.assertEqual(result.status_code, 204)
 
     def test_furthest_read_time(self) -> None:
         msg_id = self.send_test_message("hello!", sender_name="iago")
@@ -1075,7 +1075,7 @@ class HomeTest(ZulipTestCase):
         user = self.example_user("iago")
 
         realm = user.realm
-        realm.invite_by_admins_only = True
+        realm.invite_to_realm_policy = Realm.POLICY_ADMINS_ONLY
         realm.save()
 
         show_invites, show_add_streams = compute_show_invites_and_add_streams(user)
@@ -1086,7 +1086,7 @@ class HomeTest(ZulipTestCase):
         user = self.example_user("hamlet")
 
         realm = user.realm
-        realm.invite_by_admins_only = True
+        realm.invite_to_realm_policy = Realm.POLICY_ADMINS_ONLY
         realm.save()
 
         show_invites, show_add_streams = compute_show_invites_and_add_streams(user)

@@ -14,7 +14,7 @@ from zerver.models import UserProfile
 def process_submessage(
     request: HttpRequest,
     user_profile: UserProfile,
-    message_id: int = REQ(validator=check_int),
+    message_id: int = REQ(json_validator=check_int),
     msg_type: str = REQ(),
     content: str = REQ(),
 ) -> HttpResponse:

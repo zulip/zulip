@@ -167,6 +167,7 @@ from zerver.lib.upload import (
     upload_emoji_image,
 )
 from zerver.lib.user_groups import access_user_group_by_id, create_user_group
+from zerver.lib.user_mutes import add_user_mute, get_user_mutes
 from zerver.lib.user_status import update_user_status
 from zerver.lib.users import (
     check_bot_name_available,
@@ -189,6 +190,7 @@ from zerver.models import (
     EmailChangeStatus,
     Message,
     MultiuseInvite,
+    MutedUser,
     PreregistrationUser,
     Reaction,
     Realm,
@@ -196,6 +198,7 @@ from zerver.models import (
     RealmDomain,
     RealmEmoji,
     RealmFilter,
+    RealmPlayground,
     Recipient,
     ScheduledEmail,
     ScheduledMessage,
@@ -224,6 +227,7 @@ from zerver.models import (
     get_huddle_recipient,
     get_huddle_user_ids,
     get_old_unclaimed_attachments,
+    get_realm_playgrounds,
     get_stream,
     get_stream_by_id_in_realm,
     get_stream_cache_key,
@@ -1925,6 +1929,15 @@ def do_send_messages(
                about changing the next line.
         """
         user_ids = send_request.active_user_ids | set(user_flags.keys())
+        sender_id = send_request.message.sender_id
+
+        # We make sure the sender is listed first in the `users` list;
+        # this results in the sender receiving the message first if
+        # there are thousands of recipients, decreasing perceived latency.
+        if sender_id in user_ids:
+            user_list = [sender_id] + list(user_ids - {sender_id})
+        else:
+            user_list = list(user_ids)
 
         users = [
             dict(
@@ -1935,7 +1948,7 @@ def do_send_messages(
                 stream_email_notify=(user_id in send_request.stream_email_user_ids),
                 wildcard_mention_notify=(user_id in send_request.wildcard_mention_user_ids),
             )
-            for user_id in user_ids
+            for user_id in user_list
         ]
 
         if send_request.message.is_stream_message():
@@ -3692,7 +3705,8 @@ def do_change_subscription_property(
     stream: Stream,
     property_name: str,
     value: Any,
-    acting_user: Optional[UserProfile] = None,
+    *,
+    acting_user: Optional[UserProfile],
 ) -> None:
     database_property_name = property_name
     event_property_name = property_name
@@ -3971,7 +3985,8 @@ def do_change_avatar_fields(
     user_profile: UserProfile,
     avatar_source: str,
     skip_notify: bool = False,
-    acting_user: Optional[UserProfile] = None,
+    *,
+    acting_user: Optional[UserProfile],
 ) -> None:
     user_profile.avatar_source = avatar_source
     user_profile.avatar_version += 1
@@ -3990,13 +4005,13 @@ def do_change_avatar_fields(
         notify_avatar_url_change(user_profile)
 
 
-def do_delete_avatar_image(user: UserProfile, acting_user: Optional[UserProfile] = None) -> None:
+def do_delete_avatar_image(user: UserProfile, *, acting_user: Optional[UserProfile]) -> None:
     do_change_avatar_fields(user, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=acting_user)
     delete_avatar_image(user)
 
 
 def do_change_icon_source(
-    realm: Realm, icon_source: str, acting_user: Optional[UserProfile] = None
+    realm: Realm, icon_source: str, *, acting_user: Optional[UserProfile]
 ) -> None:
     realm.icon_source = icon_source
     realm.icon_version += 1
@@ -4024,7 +4039,7 @@ def do_change_icon_source(
 
 
 def do_change_logo_source(
-    realm: Realm, logo_source: str, night: bool, acting_user: Optional[UserProfile] = None
+    realm: Realm, logo_source: str, night: bool, *, acting_user: Optional[UserProfile]
 ) -> None:
     if not night:
         realm.logo_source = logo_source
@@ -4100,7 +4115,7 @@ def do_change_plan_type(
 
 
 def do_change_default_sending_stream(
-    user_profile: UserProfile, stream: Optional[Stream], acting_user: Optional[UserProfile] = None
+    user_profile: UserProfile, stream: Optional[Stream], *, acting_user: Optional[UserProfile]
 ) -> None:
     old_value = user_profile.default_sending_stream_id
     user_profile.default_sending_stream = stream
@@ -4141,7 +4156,7 @@ def do_change_default_sending_stream(
 
 
 def do_change_default_events_register_stream(
-    user_profile: UserProfile, stream: Optional[Stream], acting_user: Optional[UserProfile] = None
+    user_profile: UserProfile, stream: Optional[Stream], *, acting_user: Optional[UserProfile]
 ) -> None:
     old_value = user_profile.default_events_register_stream_id
     user_profile.default_events_register_stream = stream
@@ -4182,7 +4197,7 @@ def do_change_default_events_register_stream(
 
 
 def do_change_default_all_public_streams(
-    user_profile: UserProfile, value: bool, acting_user: Optional[UserProfile] = None
+    user_profile: UserProfile, value: bool, *, acting_user: Optional[UserProfile]
 ) -> None:
     old_value = user_profile.default_all_public_streams
     user_profile.default_all_public_streams = value
@@ -4498,7 +4513,8 @@ def do_change_notification_settings(
     user_profile: UserProfile,
     name: str,
     value: Union[bool, int, str],
-    acting_user: Optional[UserProfile] = None,
+    *,
+    acting_user: Optional[UserProfile],
 ) -> None:
     """Takes in a UserProfile object, the name of a global notification
     preference to update, and the value to update to
@@ -6486,13 +6502,32 @@ def do_unmute_topic(user_profile: UserProfile, stream: Stream, topic: str) -> No
     send_event(user_profile.realm, event, [user_profile.id])
 
 
+def do_mute_user(
+    user_profile: UserProfile,
+    muted_user: UserProfile,
+    date_muted: Optional[datetime.datetime] = None,
+) -> None:
+    if date_muted is None:
+        date_muted = timezone_now()
+    add_user_mute(user_profile, muted_user, date_muted)
+    event = dict(type="muted_users", muted_users=get_user_mutes(user_profile))
+    send_event(user_profile.realm, event, [user_profile.id])
+
+
+def do_unmute_user(mute_object: MutedUser) -> None:
+    user_profile = mute_object.user_profile
+    mute_object.delete()
+    event = dict(type="muted_users", muted_users=get_user_mutes(user_profile))
+    send_event(user_profile.realm, event, [user_profile.id])
+
+
 def do_mark_hotspot_as_read(user: UserProfile, hotspot: str) -> None:
     UserHotspot.objects.get_or_create(user=user, hotspot=hotspot)
     event = dict(type="hotspots", hotspots=get_next_hotspots(user))
     send_event(user.realm, event, [user.id])
 
 
-def notify_realm_filters(realm: Realm) -> None:
+def notify_linkifiers(realm: Realm) -> None:
     realm_filters = realm_filters_for_realm(realm.id)
     event = dict(type="realm_filters", realm_filters=realm_filters)
     send_event(realm, event, active_user_ids(realm.id))
@@ -6502,25 +6537,25 @@ def notify_realm_filters(realm: Realm) -> None:
 # RegExp syntax. In addition to JS-compatible syntax, the following features are available:
 #   * Named groups will be converted to numbered groups automatically
 #   * Inline-regex flags will be stripped, and where possible translated to RegExp-wide flags
-def do_add_realm_filter(realm: Realm, pattern: str, url_format_string: str) -> int:
+def do_add_linkifier(realm: Realm, pattern: str, url_format_string: str) -> int:
     pattern = pattern.strip()
     url_format_string = url_format_string.strip()
-    realm_filter = RealmFilter(realm=realm, pattern=pattern, url_format_string=url_format_string)
-    realm_filter.full_clean()
-    realm_filter.save()
-    notify_realm_filters(realm)
+    linkifier = RealmFilter(realm=realm, pattern=pattern, url_format_string=url_format_string)
+    linkifier.full_clean()
+    linkifier.save()
+    notify_linkifiers(realm)
 
-    return realm_filter.id
+    return linkifier.id
 
 
-def do_remove_realm_filter(
+def do_remove_linkifier(
     realm: Realm, pattern: Optional[str] = None, id: Optional[int] = None
 ) -> None:
     if pattern is not None:
         RealmFilter.objects.get(realm=realm, pattern=pattern).delete()
     else:
         RealmFilter.objects.get(realm=realm, pk=id).delete()
-    notify_realm_filters(realm)
+    notify_linkifiers(realm)
 
 
 def get_emails_from_user_ids(user_ids: Sequence[int]) -> Dict[int, str]:
@@ -6557,7 +6592,7 @@ def do_change_realm_domain(realm_domain: RealmDomain, allow_subdomains: bool) ->
 
 
 def do_remove_realm_domain(
-    realm_domain: RealmDomain, acting_user: Optional[UserProfile] = None
+    realm_domain: RealmDomain, *, acting_user: Optional[UserProfile]
 ) -> None:
     realm = realm_domain.realm
     domain = realm_domain.domain
@@ -6570,6 +6605,27 @@ def do_remove_realm_domain(
         do_set_realm_property(realm, "emails_restricted_to_domains", False, acting_user=acting_user)
     event = dict(type="realm_domains", op="remove", domain=domain)
     send_event(realm, event, active_user_ids(realm.id))
+
+
+def notify_realm_playgrounds(realm: Realm) -> None:
+    event = dict(type="realm_playgrounds", realm_playgrounds=get_realm_playgrounds(realm))
+    send_event(realm, event, active_user_ids(realm.id))
+
+
+def do_add_realm_playground(realm: Realm, **kwargs: Any) -> int:
+    realm_playground = RealmPlayground(realm=realm, **kwargs)
+    # We expect full_clean to always pass since a thorough input validation
+    # is performed in the view (using check_url, check_pygments_language, etc)
+    # before calling this function.
+    realm_playground.full_clean()
+    realm_playground.save()
+    notify_realm_playgrounds(realm)
+    return realm_playground.id
+
+
+def do_remove_realm_playground(realm: Realm, realm_playground: RealmPlayground) -> None:
+    realm_playground.delete()
+    notify_realm_playgrounds(realm)
 
 
 def get_occupied_streams(realm: Realm) -> QuerySet:

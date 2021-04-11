@@ -1697,6 +1697,50 @@ paths:
                                   "id": 0,
                                 }
                             - type: object
+                              description: |
+                                Event sent to a user's clients when that user's set of
+                                configured muted users have changed.
+
+                                **Changes**: New in Zulip 4.0 (feature level 48).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - muted_users
+                                muted_users:
+                                  type: array
+                                  description: |
+                                    A list of dictionaries where each dictionary describes
+                                    a muted user.
+                                  items:
+                                    type: object
+                                    additionalProperties: false
+                                    description: |
+                                      Object containing the user id and timestamp of a muted user.
+                                    properties:
+                                      id:
+                                        type: integer
+                                        description: |
+                                          The ID of the muted user.
+                                      timestamp:
+                                        type: integer
+                                        description: |
+                                          An integer UNIX timestamp representing when the user was muted.
+                              additionalProperties: false
+                              example:
+                                {
+                                  "type": "muted_users",
+                                  "muted_users":
+                                    [
+                                      {"id": 1, "timestamp": 1594825442},
+                                      {"id": 22, "timestamp": 1654865392},
+                                    ],
+                                  "id": 0,
+                                }
+                            - type: object
                               additionalProperties: false
                               description: |
                                 Event sent when the set of onboarding "hotspots" to show for
@@ -2372,6 +2416,42 @@ paths:
                             - type: object
                               additionalProperties: false
                               description: |
+                                Event sent to all users in a Zulip organization when the
+                                set of configured playgrounds for the organization has changed.
+
+                                **Changes**: New in Zulip 4.0 (feature level 49).
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_playgrounds
+                                realm_playgrounds:
+                                  type: array
+                                  description: |
+                                    An array of dictionaries where each dictionary contains
+                                    data about a single playground entry.
+                                  items:
+                                    $ref: "#/components/schemas/RealmPlayground"
+                              example:
+                                {
+                                  "type": "realm_playgrounds",
+                                  "realm_playgrounds":
+                                    [
+                                      {
+                                        "id": 1,
+                                        "name": "Python playground",
+                                        "pygments_language": "Python",
+                                        "url_prefix": "https://python.example.com",
+                                      },
+                                    ],
+                                  "id": 0,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
                                 Event sent to all users in a Zulip organization when
                                 a [custom emoji](/help/add-custom-emoji) has been updated,
                                 typically when a new emoji has been added or an old one
@@ -2939,12 +3019,19 @@ paths:
                                       type: boolean
                                       description: |
                                         Whether an invitation is required to join this organization.
-                                    invite_by_admins_only:
-                                      type: boolean
+                                    invite_to_realm_policy:
+                                      type: integer
                                       description: |
-                                        If true, only organization administrators can invite new users to join.
-                                        If false, any [Member](/help/roles-and-permissions) can invite new users
-                                        to join the organization.  [Help center article](/help/invite-new-users#change-who-can-send-invitations).
+                                        Policy for [who can invite new users](/help/invite-new-users#change-who-can-send-invitations)
+                                        to join the organization:
+
+                                        * 1 = Members only
+                                        * 2 = Administrators only
+                                        * 3 = Full members only
+                                        * 4 = Moderators only
+
+                                        **Changes**: New in Zulip 4.0 (feature level 50) replacing the
+                                        previous `invite_by_admins_only` boolean.
                                     inline_image_preview:
                                       type: boolean
                                       description: |
@@ -5590,6 +5677,77 @@ paths:
                       - $ref: "#/components/schemas/JsonError"
                       - example:
                           {"msg": "Topic is not muted", "result": "error"}
+  /users/me/muted_users/{muted_user_id}:
+    post:
+      operationId: mute_user
+      tags: ["users"]
+      description: |
+        This endpoint mutes a user.  Messages sent by users you've muted will
+        be automatically marked as read and hidden.
+
+        `POST {{ api_url }}/v1/users/me/muted_users/{muted_user_id}`
+
+        **Changes**: New in Zulip 4.0 (feature level 48).
+      parameters:
+        - $ref: "#/components/parameters/MutedUserId"
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - example: {"msg": "", "result": "success"}
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/JsonError"
+                      - example: {"msg": "Cannot mute self", "result": "error"}
+                  - allOf:
+                      - $ref: "#/components/schemas/JsonError"
+                      - example: {"msg": "No such user", "result": "error"}
+                  - allOf:
+                      - $ref: "#/components/schemas/JsonError"
+                      - example:
+                          {"msg": "User already muted", "result": "error"}
+    delete:
+      operationId: unmute_user
+      tags: ["users"]
+      description: |
+        This endpoint unmutes a user.
+
+        `DELETE {{ api_url }}/v1/users/me/muted_users/{muted_user_id}`
+
+        **Changes**: New in Zulip 4.0 (feature level 48).
+      parameters:
+        - $ref: "#/components/parameters/MutedUserId"
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - example: {"msg": "", "result": "success"}
+        "400":
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - allOf:
+                      - $ref: "#/components/schemas/JsonError"
+                      - example: {"msg": "No such user", "result": "error"}
+                  - allOf:
+                      - $ref: "#/components/schemas/JsonError"
+                      - example: {"msg": "User is not muted", "result": "error"}
+
   /users/{user_id}/subscriptions/{stream_id}:
     get:
       operationId: get_subscription_status
@@ -6452,6 +6610,89 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/JsonSuccess"
+  /realm/playgrounds:
+    post:
+      operationId: add_realm_playground
+      tags: ["server_and_organizations"]
+      description: |
+        Configure realm playgrounds options to run code snippets occuring
+        in a code block using playgrounds which supports that language.
+
+        `POST {{ api_url }}/v1/realm/playgrounds`
+
+        **Changes**: New in Zulip 4.0 (feature level 49).
+      parameters:
+        - name: name
+          in: query
+          description: |
+            The user-visible display name of the playground which can be
+            used to pick the target playground, especially when multiple
+            playground options exist for that programming language.
+          schema:
+            type: string
+          example: "Python playground"
+          required: true
+        - name: pygments_language
+          in: query
+          description: |
+            The name of the Pygments language lexer for that
+            programming language.
+          schema:
+            type: string
+          example: "Python"
+          required: true
+        - name: url_prefix
+          in: query
+          description: |
+            The url prefix for the playground.
+          schema:
+            type: string
+          example: https://python.example.com
+          required: true
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      id:
+                        type: integer
+                        description: |
+                          The numeric ID assigned to this playground.
+                    example: {"id": 1, "result": "success", "msg": ""}
+  /realm/playgrounds/{playground_id}:
+    delete:
+      operationId: remove_realm_playground
+      tags: ["server_and_organizations"]
+      description: |
+        Remove realm playground options to run code snippets in
+        custom playgrounds
+
+        `DELETE {{ api_url }}/v1/realm/playgrounds/{playground_id}`
+
+        **Changes**: New in Zulip 4.0 (feature level 49).
+      parameters:
+        - name: playground_id
+          in: path
+          description: |
+            The ID of the playground that you want to remove.
+          schema:
+            type: integer
+          example: 1
+          required: true
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonSuccess"
   /register:
     post:
       operationId: register_queue
@@ -6485,15 +6726,7 @@ paths:
             default: false
           example: true
         - $ref: "#/components/parameters/Event_types"
-        - name: all_public_streams
-          in: query
-          description: |
-            Set to `True` if you would like to receive events that occur within all
-            public streams.
-          schema:
-            type: boolean
-            default: false
-          example: true
+        - $ref: "#/components/parameters/AllPublicStreams"
         - $ref: "#/components/parameters/IncludeSubscribers"
         - name: client_capabilities
           in: query
@@ -6652,6 +6885,41 @@ paths:
                           **Deprecated**: This field may be removed in future versions as it no
                           longer has a clear purpose.  Clients wishing to fetch the latest messages
                           should pass `anchor="latest"` to `GET /messages`.
+                      max_stream_name_length:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The maximum allowed length for a stream name.  Clients should use
+                          these properties rather than hardcoding field sizes, as they may
+                          change in a future Zulip release.
+
+                          **Changes**: New in Zulip 4.0 (feature level 53).  Previously,
+                          this required `stream` in `fetch_event_types`, was called
+                          `stream_name_max_length`, and always had value 60.
+                      max_stream_description_length:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The maximum allowed length for a stream description.  Clients should use
+                          these properties rather than hardcoding field sizes, as they may
+                          change in a future Zulip release.
+
+                          **Changes**: New in Zulip 4.0 (feature level 53).  Previously,
+                          this required `stream` in `fetch_event_types`, was called
+                          `stream_description_max_length`, and always had value 1024.
+                      max_topic_length:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The maximum allowed length for a topic.  Clients should use
+                          these properties rather than hardcoding field sizes, as they may
+                          change in a future Zulip release.
+
+                          **Changes**: New in Zulip 4.0 (feature level 53).  Previously,
+                          this always had value 60.
                       muted_topics:
                         type: array
                         description: |
@@ -6668,6 +6936,29 @@ paths:
                             oneOf:
                               - type: string
                               - type: integer
+                      muted_users:
+                        type: array
+                        description: |
+                          Present if `muted_users` is present in `fetch_event_types`.
+
+                          A list of dictionaries where each dictionary describes
+                          a muted user.
+
+                          **Changes**: New in Zulip 4.0 (feature level 48).
+                        items:
+                          type: object
+                          additionalProperties: false
+                          description: |
+                            Object containing the user id and timestamp of a muted user.
+                          properties:
+                            id:
+                              type: integer
+                              description: |
+                                The ID of the muted user.
+                            timestamp:
+                              type: integer
+                              description: |
+                                An integer UNIX timestamp representing when the user was muted.
                       presences:
                         type: object
                         description: |
@@ -6726,6 +7017,17 @@ paths:
                           The second element is the URL with which the
                           pattern matching string should be linkified with and the third element
                           is the id of the realm filter.
+                      realm_playgrounds:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/RealmPlayground"
+                        description: |
+                          Present if `realm_playgrounds` is present in `fetch_event_types`.
+
+                          An array of dictionaries where each dictionary describes a playground entry
+                          in this Zulip organization.
+
+                          **Changes**: New in Zulip 4.0 (feature level 49).
                       realm_user_groups:
                         type: array
                         items:
@@ -7036,22 +7338,6 @@ paths:
 
                           For organization administrators, this will include all private streams
                           in the organization.
-                      stream_name_max_length:
-                        type: integer
-                        description: |
-                          Present if `stream` is present in `fetch_event_types`.
-
-                          The maximum allowed length for a stream name.  Clients should use
-                          these properties rather than hardcoding field sizes, as they may
-                          change in a future Zulip release.
-                      stream_description_max_length:
-                        type: integer
-                        description: |
-                          Present if `stream` is present in `fetch_event_types`.
-
-                          The maximum allowed length for a stream description.  Clients should use
-                          these properties rather than hardcoding field sizes, as they may
-                          change in a future Zulip release.
                       realm_default_streams:
                         type: array
                         items:
@@ -7115,6 +7401,19 @@ paths:
                           A boolean which signifies whether the user has a zoom token and has thus completed
                           OAuth flow for the [Zoom integration](/help/start-a-call).  Clients need
                           to know whether initiating Zoom OAuth is required before creating a Zoom call.
+                      giphy_api_key:
+                        type: string
+                        description: |
+                          Present if `giphy` is present in `fetch_event_types`.
+
+                          GIPHY's client-side SDKs needs this API key to use the GIPHY API.
+                          GIPHY API keys are not secret (their main purpose appears to be
+                          allowing GIPHY to block a problematic app).  Please don't use our API
+                          key for an app unrelated to Zulip.
+
+                          Developers of clients should also read the
+                          [GIPHY API TOS](https://support.giphy.com/hc/en-us/articles/360028134111-GIPHY-API-Terms-of-Service-)
+                          before using this API key.
                       enable_desktop_notifications:
                         type: boolean
                         description: |
@@ -7275,18 +7574,27 @@ paths:
                           Present if `update_display_settings` is present in `fetch_event_types`.
 
                           The color scheme selected by the user.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       default_language:
                         type: string
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`.
 
                           The default language chosen by the user.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       demote_inactive_streams:
                         type: integer
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`.
 
                           Whether the user has chosen to demote inactive streams.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       dense_mode:
                         type: boolean
                         description: |
@@ -7294,18 +7602,27 @@ paths:
 
                           Whether the user has switched on dense mode.  Dense mode is an experimental
                           feature that is only available in development environments.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       emojiset:
                         type: string
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`.
 
                           The name of the emojiset that the user has chosen.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       fluid_layout_width:
                         type: boolean
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`.
 
                           Whether the user has chosen for the layout width to be fluid.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       default_view:
                         type: string
                         description: |
@@ -7315,12 +7632,18 @@ paths:
                           as the URL suffix after `#` to be rendered when Zulip loads.
 
                           Currently supported values are `all_messages` and `recent_topics`.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       high_contrast_mode:
                         type: boolean
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`.
 
                           Whether has switched on high contrast mode.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       left_side_userlist:
                         type: boolean
                         description: |
@@ -7329,6 +7652,9 @@ paths:
                           Whether the user has chosen for the userlist to be displayed
                           on the left side of the screen (for desktop app and webapp) in narrow
                           windows.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       starred_message_counts:
                         type: boolean
                         description: |
@@ -7336,6 +7662,9 @@ paths:
 
                           Whether the user has chosen the number of starred messages to
                           be displayed similar to unread counts.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       timezone:
                         type: string
                         description: |
@@ -7343,6 +7672,9 @@ paths:
 
                           The timezone configured for the user.  This is used primarily to display
                           the user's timezone to other users.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       translate_emoticons:
                         type: boolean
                         description: |
@@ -7350,6 +7682,9 @@ paths:
 
                           Whether the user has chosen for emoticons to be translated into emoji
                           in the Zulip compose box.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       twenty_four_hour_time:
                         type: boolean
                         description: |
@@ -7357,6 +7692,9 @@ paths:
 
                           Whether the user has chosen a twenty four hour time display (true)
                           or a twelve hour one (false).
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       emojiset_choices:
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`.
@@ -7366,6 +7704,9 @@ paths:
 
                           Only relevant to clients with configuration UI for choosing an emojiset;
                           the currently selected emojiset is available in the `emojiset` key.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                         type: array
                         items:
                           type: object
@@ -7497,14 +7838,21 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           Whether an invitation is required to join this organization.
-                      realm_invite_by_admins_only:
-                        type: boolean
+                      realm_invite_to_realm_policy:
+                        type: integer
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          If true, only organization administrators can invite new users to join.
-                          If false, any [Member](/help/roles-and-permissions) can invite new users
-                          to join the organization.  [Help center article](/help/invite-new-users#change-who-can-send-invitations).
+                          Policy for [who can invite new users](/help/invite-new-users#change-who-can-send-invitations)
+                          to join the organization:
+
+                          * 1 = Members only
+                          * 2 = Administrators only
+                          * 3 = Full members only
+                          * 4 = Moderators only
+
+                          **Changes**: New in Zulip 4.0 (feature level 50) replacing the
+                          previous `realm_invite_by_admins_only` boolean.
                       realm_inline_image_preview:
                         type: boolean
                         description: |
@@ -8087,6 +8435,15 @@ paths:
 
                           Whether the current user is allowed to subscribe other users to streams with
                           the organization's [streams policy](/help/configure-who-can-invite-to-streams).
+                      can_invite_others_to_realm:
+                        type: boolean
+                        description: |
+                          Present if `realm_user` is present in `fetch_event_types`.
+
+                          Whether the current user [is allowed to invite others]
+                          (/help/invite-new-users#change-who-can-send-invitations) to the organization.
+
+                          **Changes**: New in Zulip 4.0 (feature level 51).
                       is_admin:
                         type: boolean
                         description: |
@@ -8653,6 +9010,236 @@ paths:
                         "msg": "",
                         "result": "success",
                       }
+  /settings/display:
+    patch:
+      operationId: update_display_settings
+      tags: ["users"]
+      description: |
+        This endpoint is used to edit the current user's user interface settings.
+
+        `PATCH {{ api_url }}/v1/settings/display`
+      parameters:
+        - name: twenty_four_hour_time
+          in: query
+          description: |
+            Whether time should be [displayed in 24-hour notation](/help/change-the-time-format).
+          schema:
+            type: boolean
+          example: true
+        - name: dense_mode
+          in: query
+          description: |
+            This setting has no effect at present.  It is reserved for use in controlling
+            the default font size in Zulip.
+          schema:
+            type: boolean
+          example: true
+        - name: starred_message_counts
+          in: query
+          description: |
+            Whether clients should display the [number of starred
+            messages](/help/star-a-message#display-the-number-of-starred-messages).
+          schema:
+            type: boolean
+          example: true
+        - name: fluid_layout_width
+          in: query
+          description: |
+            Whether to use the [maximum available screen width](/help/enable-full-width-display)
+            for the webapp's center panel (message feed, recent topics) on wide screens.
+          schema:
+            type: boolean
+          example: true
+        - name: high_contrast_mode
+          in: query
+          description: |
+            This setting is reserved for use to control variations in Zulip's design
+            to help visually impaired users.
+          schema:
+            type: boolean
+          example: true
+        - name: color_scheme
+          in: query
+          description: |
+            Controls which [color theme](/help/night-mode) to use.
+
+            * 1 - Automatic
+            * 2 - Night mode
+            * 3 - Day mode
+
+            Automatic detection is implementing using the standard `prefers-color-scheme`
+            media query.
+          content:
+            application/json:
+              schema:
+                type: integer
+                enum:
+                  - 1
+                  - 2
+                  - 3
+              example: 1
+        - name: translate_emoticons
+          in: query
+          description: |
+            Whether to [translate emoticons to emoji](/help/enable-emoticon-translations)
+            in messages the user sends.
+          schema:
+            type: boolean
+          example: true
+        - name: default_language
+          in: query
+          description: |
+            What [default language](/help/change-your-language) to use for the account.
+
+            This controls both the Zulip UI as well as email notifications sent to the user.
+
+            The value needs to be a standard language code that the Zulip server has
+            translation data for; for example, `"en"` for English` or `"de"` for German.
+          content:
+            application/json:
+              schema:
+                type: string
+              example: "en"
+        - name: default_view
+          in: query
+          description: |
+            The [default view](/help/change-default-view) used when opening a new
+            Zulip webapp window or hitting the `Esc` keyboard shortcut repeatedly.
+
+            * "recent_topics" - Recent topics view
+            * "all_messages" - All messages view
+          schema:
+            type: string
+          example: '"all_messages"'
+        - name: left_side_userlist
+          in: query
+          description: |
+            Whether the users list on left sidebar in narrow windows.
+
+            This feature is not heavily used and is likely to be reworked.
+          schema:
+            type: boolean
+          example: true
+        - name: emojiset
+          in: query
+          description: |
+            The user's configured [emoji set](/help/emoji-and-emoticons#use-emoticons),
+            used to display emoji to the user everything they appear in the UI.
+
+            * "google" - Google modern
+            * "google-blob" - Google classic
+            * "twitter" - Twitter
+            * "text" - Plain text
+          schema:
+            type: string
+          example: '"google"'
+        - name: demote_inactive_streams
+          in: query
+          description: |
+            Whether to [demote inactive streams](/help/manage-inactive-streams) in the left sidebar.
+
+            * 1 - Automatic
+            * 2 - Always
+            * 3 - Never
+          content:
+            application/json:
+              schema:
+                type: integer
+                enum:
+                  - 1
+                  - 2
+                  - 3
+              example: 1
+        - name: timezone
+          in: query
+          description: |
+            The user's [configured timezone](/help/change-your-timezone).
+
+            Timezone values supported by the server are served at
+            [/static/generated/timezones.json](/static/generated/timezones.json).
+          content:
+            application/json:
+              schema:
+                type: string
+              example: "Asia/Kolkata"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      twenty_four_hour_time:
+                        type: boolean
+                        description: |
+                          The setting for `twenty_four_hour_time`, if it was changed in this request.
+                      dense_mode:
+                        type: boolean
+                        description: |
+                          The setting for `dense_mode`, if it was changed in this request.
+                          This setting is however reserved for future, and can not be
+                          modified in production environment.
+                      starred_message_counts:
+                        type: boolean
+                        description: |
+                          The setting for `starred_message_counts`, if it was changed
+                          in this request.
+                      fluid_layout_width:
+                        type: boolean
+                        description: |
+                          The setting for `fluid_layout_width`, if it was changed
+                          in this request.
+                      high_contrast_mode:
+                        type: boolean
+                        description: |
+                          The setting for `high_contrast_mode`, if it was changed in
+                          this request.
+                          This setting is however reserved for future, and can not be
+                          modified in production environment.
+                      color_scheme:
+                        type: integer
+                        description: |
+                          The numerical key corresponding to new `color_scheme` if it was changed in this request.
+                      translate_emoticons:
+                        type: boolean
+                        description: |
+                          The setting for `translate_emoticons`, if it was changed in this request.
+                      default_language:
+                        type: string
+                        description: |
+                          The language code corresponding to new `default_language` if it was changed in this request.
+                      default_view:
+                        type: string
+                        description: |
+                          The new setting for `default_view`, if it was changed in this request.
+                      left_side_userlist:
+                        type: boolean
+                        description: |
+                          The setting for `left_side_userlist`, if it was changed in this request.
+                      emojiset:
+                        type: string
+                        description: |
+                          The string identifier corresponding to new `emojiset` if it was changed in this request.
+                      demote_inactive_streams:
+                        type: integer
+                        description: |
+                          The numerical key corresponding to new `demote_inactive_streams` setting if it was changed in this request.
+                      timezone:
+                        type: string
+                        description: |
+                          The setting for `timezone`, if it was changed in this request.
+                    example:
+                      {
+                        "emojiset": "google",
+                        "left_side_userlist": true,
+                        "msg": "",
+                        "result": "success",
+                      }
   /streams:
     get:
       operationId: get_streams
@@ -8955,6 +9542,16 @@ paths:
         [the typing notification docs](https://zulip.readthedocs.io/en/latest/subsystems/typing-indicators.html)
         for additional design details on Zulip's typing notifications protocol.
       parameters:
+        - name: type
+          in: query
+          description: |
+            Type of the message being composed.
+          schema:
+            type: string
+            enum:
+              - private
+            default: private
+          example: private
         - name: op
           in: query
           description: |
@@ -9241,8 +9838,9 @@ paths:
       description: |
         (Ignored)
       parameters:
-        - $ref: "#/components/parameters/Narrow"
         - $ref: "#/components/parameters/Event_types"
+        - $ref: "#/components/parameters/Narrow"
+        - $ref: "#/components/parameters/AllPublicStreams"
       security:
         - basicAuth: []
       responses:
@@ -9296,6 +9894,10 @@ paths:
                     type: string
                     description: |
                       Email of the bot user.
+                  bot_full_name:
+                    type: string
+                    description: |
+                      The full name of the bot user.
                   data:
                     type: string
                     description: |
@@ -9370,6 +9972,7 @@ paths:
                         "sender_realm_str": "zulip",
                       },
                     "bot_email": "outgoing-bot@localhost",
+                    "bot_full_name": "Outgoing webhook test",
                   }
 
   /calls/bigbluebutton/create:
@@ -9869,6 +10472,35 @@ components:
           type: boolean
           description: |
             Whether subdomains are allowed for this domain.
+    RealmPlayground:
+      type: object
+      additionalProperties: false
+      description: |
+        Object containing details about a realm playground.
+      properties:
+        id:
+          type: integer
+          description: |
+            The unique ID for the realm playground.
+        name:
+          type: string
+          description: |
+            The user-visible display name of the playground.  Clients
+            should display this in UI for picking which playground to
+            open a code block in, to differentiate between multiple
+            configured playground options for a given pygments
+            language.
+
+            **Changes**: New in Zulip 4.0 (feature level 49).
+        pygments_language:
+          type: string
+          description: |
+            The name of the Pygments language lexer for that
+            programming language.
+        url_prefix:
+          type: string
+          description: |
+            The url prefix for the playground.
     RealmExport:
       type: object
       additionalProperties: false
@@ -10944,6 +11576,17 @@ components:
             default: []
           example: [["stream", "Denmark"]]
       required: false
+    AllPublicStreams:
+      name: all_public_streams
+      in: query
+      description: |
+        Whether you would like to request message events from all public
+        streams.  Useful for workflow bots that you'd like to see all new messages
+        sent to public streams.  (You can also subscribe the user to private streams).
+      schema:
+        type: boolean
+        default: false
+      example: true
     UserGroupId:
       name: user_group_id
       in: path
@@ -11036,6 +11679,15 @@ components:
       schema:
         type: integer
       example: 12
+      required: true
+    MutedUserId:
+      name: muted_user_id
+      in: path
+      description: |
+        The ID of the user to mute/un-mute.
+      schema:
+        type: integer
+      example: 10
       required: true
     StreamPostPolicy:
       name: stream_post_policy
