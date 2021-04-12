@@ -2025,7 +2025,7 @@ class PersonalMessageSendTest(ZulipTestCase):
             receiver=self.example_user("othello"),
         )
 
-    def test_private_message_policy(self) -> None:
+    def test_private_message_policy_disabled(self) -> None:
         """
         Tests that PRIVATE_MESSAGE_POLICY_DISABLED works correctly.
         """
