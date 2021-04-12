@@ -150,6 +150,11 @@ export const private_message_policy_values = {
         code: 2,
         description: $t({defaultMessage: "Private messages disabled"}),
     },
+    to_admin_only: {
+        order: 3,
+        code: 3,
+        description: $t({defaultMessage: "Admins only"}),
+    },
 };
 
 export const wildcard_mention_policy_values = {
