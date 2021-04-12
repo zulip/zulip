@@ -186,12 +186,45 @@ async function test_edit_bot_form(page: Page): Promise<void> {
     await page.waitForFunction(() => $(".overlay.show").attr("style") === undefined);
 }
 
+async function test_invalid_edit_bot_form(page: Page): Promise<void> {
+    const bot1_email = "1-bot@zulip.testserver";
+    const bot1_edit_btn = `.open_edit_bot_form[data-email="${CSS.escape(bot1_email)}"]`;
+    await page.click(bot1_edit_btn);
+
+    const edit_form_selector = `.edit_bot_form[data-email="${CSS.escape(bot1_email)}"]`;
+    await page.waitForSelector(edit_form_selector, {visible: true});
+    const name_field_selector = edit_form_selector + " [name=bot_name]";
+    assert(common.get_text_from_selector(page, name_field_selector), "Bot one");
+
+    await common.fill_form(page, edit_form_selector, {bot_name: "Bot 2"});
+    const save_btn_selector = edit_form_selector + " .edit_bot_button";
+    await page.click(save_btn_selector);
+
+    // The form should not get closed on saving. Errors should be visible on the form.
+    await page.waitForSelector("#edit_bot_modal", {visible: true});
+    await page.waitForSelector(".bot_edit_errors", {visible: true});
+    assert.strictEqual(
+        await common.get_text_from_selector(page, "div.bot_edit_errors"),
+        "Name is already in use!",
+    );
+    await page.click("button.cancel_bot_button");
+    await page.waitForSelector("#edit_bot_modal", {hidden: true});
+
+    await page.waitForXPath(
+        `//*[@class="btn open_edit_bot_form" and @data-email="${bot1_email}"]/ancestor::*[@class="details"]/*[@class="name" and text()="Bot one"]`,
+    );
+
+    // Ensure that the mouse events are enabled for the background for further tests.
+    await page.waitForFunction(() => $(".overlay.show").attr("style") === undefined);
+}
+
 async function test_your_bots_section(page: Page): Promise<void> {
     await page.click('[data-section="your-bots"]');
     await test_webhook_bot_creation(page);
     await test_normal_bot_creation(page);
     await test_botserverrc(page);
     await test_edit_bot_form(page);
+    await test_invalid_edit_bot_form(page);
 }
 
 const alert_word_status_selector = "#alert_word_status";
