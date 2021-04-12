@@ -4699,10 +4699,12 @@ class TestLoginPage(ZulipTestCase):
     def test_email_visibility_setting_text(self) -> None:
         # EMAIL_ADDRESS_VISIBIILITY_ADMINS
         realm = get_realm("zulip")
+        # user = self.example_user("hamlet")
         do_set_realm_property(
             realm,
             "email_address_visibility",
             Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            # Optional[user],
         )
         actual = get_email_address_visibility(realm)
         expected = "Only organization administrators will be able to see this email address."
