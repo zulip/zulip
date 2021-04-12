@@ -2,7 +2,7 @@ import autosize from "autosize";
 import $ from "jquery";
 
 import * as blueslip from "./blueslip";
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import {MessageListData} from "./message_list_data";
 import {MessageListView} from "./message_list_view";
 import * as narrow_banner from "./narrow_banner";
@@ -232,19 +232,22 @@ export class MessageList {
     }
 
     subscribed_bookend_content(stream_name) {
-        return i18n.t("You subscribed to stream __stream__", {stream: stream_name});
+        return $t({defaultMessage: "You subscribed to stream {stream}"}, {stream: stream_name});
     }
 
     unsubscribed_bookend_content(stream_name) {
-        return i18n.t("You unsubscribed from stream __stream__", {stream: stream_name});
+        return $t({defaultMessage: "You unsubscribed from stream {stream}"}, {stream: stream_name});
     }
 
     not_subscribed_bookend_content(stream_name) {
-        return i18n.t("You are not subscribed to stream __stream__", {stream: stream_name});
+        return $t(
+            {defaultMessage: "You are not subscribed to stream {stream}"},
+            {stream: stream_name},
+        );
     }
 
     deactivated_bookend_content() {
-        return i18n.t("This stream has been deactivated");
+        return $t({defaultMessage: "This stream has been deactivated"});
     }
 
     // Maintains a trailing bookend element explaining any changes in
