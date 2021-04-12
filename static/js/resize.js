@@ -42,8 +42,12 @@ function get_new_heights() {
     const res = {};
     const viewport_height = message_viewport.height();
     const top_navbar_height = $("#top_navbar").safeOuterHeight(true);
+    const navbar_alerts_height = $("#panels").safeOuterHeight(true) || 0;
     const invite_user_link_height = $("#invite-user-link").safeOuterHeight(true) || 0;
-    const add_streams_link_height = $("#add-stream-link").safeOuterHeight(true) || 0;
+
+    // Change add_stream_link height by adding navbar_alerts height
+    const add_streams_link_height =
+        ($("#add-stream-link").safeOuterHeight(true) || 0) + navbar_alerts_height;
 
     res.bottom_whitespace_height = viewport_height * 0.4;
 
