@@ -825,6 +825,10 @@ input[type="checkbox"] {
     font-weight: 400;
 }
 
+.bot_edit_errors {
+    margin: 20px 20px 0 20px;
+}
+
 #bots_lists_navbar .active a {
     background-color: hsl(0, 0%, 98%);
 }
