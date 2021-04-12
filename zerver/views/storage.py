@@ -34,7 +34,8 @@ def get_storage(
     user_profile: UserProfile,
     keys: Optional[List[str]] = REQ(json_validator=check_list(check_string), default=None),
 ) -> HttpResponse:
-    keys = keys or get_keys_in_bot_storage(user_profile)
+    if keys is None:
+        keys = get_keys_in_bot_storage(user_profile)
     try:
         storage = {key: get_bot_storage(user_profile, key) for key in keys}
     except StateError as e:
@@ -48,7 +49,8 @@ def remove_storage(
     user_profile: UserProfile,
     keys: Optional[List[str]] = REQ(json_validator=check_list(check_string), default=None),
 ) -> HttpResponse:
-    keys = keys or get_keys_in_bot_storage(user_profile)
+    if keys is None:
+        keys = get_keys_in_bot_storage(user_profile)
     try:
         remove_bot_storage(user_profile, keys)
     except StateError as e:
