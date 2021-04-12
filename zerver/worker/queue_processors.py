@@ -27,6 +27,7 @@ from typing import (
     Mapping,
     MutableSequence,
     Optional,
+    Sequence,
     Set,
     Tuple,
     Type,
@@ -913,10 +914,10 @@ class TestWorker(QueueProcessingWorker):
 class NoopWorker(QueueProcessingWorker):
     """Used to profile the queue processing framework, in zilencer's queue_rate."""
 
-    def __init__(self, max_consume: int = 1000, slow_queries: Optional[List[int]] = None) -> None:
+    def __init__(self, max_consume: int = 1000, slow_queries: Sequence[int] = []) -> None:
         self.consumed = 0
         self.max_consume = max_consume
-        self.slow_queries: Set[int] = set(slow_queries or [])
+        self.slow_queries: Set[int] = set(slow_queries)
 
     def consume(self, event: Mapping[str, Any]) -> None:
         self.consumed += 1
@@ -934,10 +935,10 @@ class BatchNoopWorker(LoopQueueProcessingWorker):
 
     batch_size = 500
 
-    def __init__(self, max_consume: int = 1000, slow_queries: Optional[List[int]] = None) -> None:
+    def __init__(self, max_consume: int = 1000, slow_queries: Sequence[int] = []) -> None:
         self.consumed = 0
         self.max_consume = max_consume
-        self.slow_queries: Set[int] = set(slow_queries or [])
+        self.slow_queries: Set[int] = set(slow_queries)
 
     def consume_batch(self, events: List[Dict[str, Any]]) -> None:
         event_numbers = set(range(self.consumed + 1, self.consumed + 1 + len(events)))
