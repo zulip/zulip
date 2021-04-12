@@ -11,7 +11,7 @@ from zerver.lib.outgoing_webhook import get_service_interface_class, process_suc
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import TOPIC_NAME
-from zerver.models import SLACK_INTERFACE, Message, get_realm, get_stream, get_user
+from zerver.models import SLACK_INTERFACE, Message, UserProfile, get_realm, get_stream, get_user
 from zerver.openapi.openapi import validate_against_openapi_schema
 
 
@@ -54,6 +54,38 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
                 service_handler=service_handler,
                 response=response,
             )
+
+    def test_process_success_response_with_reactions(self) -> None:
+        event = dict(
+            user_profile_id=99,
+            message=dict(id=103, type="private"),
+        )
+        service_handler = self.handler
+
+        response = mock.Mock(spec=requests.Response)
+        response.status_code = 200
+        response.text = json.dumps(dict(content="test", reactions=[dict(emoji_name="wave")]))
+
+        with mock.patch("zerver.lib.outgoing_webhook.send_response_message") as mock_message:
+            with mock.patch("zerver.lib.outgoing_webhook.add_response_reaction") as mock_reaction:
+                process_success_response(
+                    event=event,
+                    service_handler=service_handler,
+                    response=response,
+                )
+            self.assertTrue(mock_reaction.called)
+        self.assertTrue(mock_message.called)
+
+        response.text = json.dumps(dict(reactions=[dict(emoji_code="test")]))
+        with mock.patch(
+            "zerver.lib.outgoing_webhook.get_user_profile_by_id",
+            return_value=mock.Mock(spec=UserProfile),
+        ):
+            with self.assertRaises(JsonableError) as m:
+                process_success_response(
+                    event=event, service_handler=service_handler, response=response
+                )
+            self.assertEqual(m.exception.msg, "Emoji name is missing")
 
     def test_make_request(self) -> None:
         othello = self.example_user("othello")

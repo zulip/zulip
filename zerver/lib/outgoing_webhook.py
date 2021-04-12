@@ -10,7 +10,7 @@ from django.utils.translation import gettext as _
 from requests import Response
 
 from version import ZULIP_VERSION
-from zerver.lib.actions import check_send_message
+from zerver.lib.actions import check_add_reaction, check_send_message
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import MessageDict
 from zerver.lib.outgoing_http import OutgoingSession
@@ -96,6 +96,12 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
             success_data = dict(content=content)
             if "widget_content" in response_json:
                 success_data["widget_content"] = response_json["widget_content"]
+            if "reactions" in response_json:
+                success_data["reactions"] = response_json["reactions"]
+            return success_data
+
+        if "reactions" in response_json:
+            success_data = dict(reactions=response_json["reactions"])
             return success_data
 
         return None
@@ -227,6 +233,39 @@ def send_response_message(
     )
 
 
+def add_response_reaction(
+    bot_id: int, message_info: Dict[str, Any], reaction_data: Dict[str, Any]
+) -> None:
+    """
+    This function is similar to send_response_reaction, but it adds reaction instead.
+
+    bot_id is the user_id of the bot sending the response
+
+    message_info contains information that identifies the message to add the reaction to.
+    This parameter should have at least the following fields:
+        id - the id of the message to add the reaction
+
+    reaction_data contains the information about the reaction, and can have the following fields:
+        emoji_name - the name of the emoji
+        emoji_code - optional, see check_add_reaction
+        reaction_type - optional, can be "unicode_emoji", "realm_emoji", or "zulip_extra_emoji"
+    """
+    bot_user = get_user_profile_by_id(bot_id)
+    message_id = message_info["id"]
+    emoji_name = reaction_data.get("emoji_name")
+
+    if emoji_name is not None:
+        check_add_reaction(
+            user_profile=bot_user,
+            message_id=message_id,
+            emoji_name=emoji_name,
+            emoji_code=reaction_data.get("emoji_code"),
+            reaction_type=reaction_data.get("reaction_type"),
+        )
+    else:
+        raise JsonableError(_("Emoji name is missing"))
+
+
 def fail_with_message(event: Dict[str, Any], failure_message: str) -> None:
     bot_id = event["user_profile_id"]
     message_info = event["message"]
@@ -329,15 +368,18 @@ def process_success_response(
         return
 
     content = success_data.get("content")
-
-    if content is None or content.strip() == "":
-        return
-
-    widget_content = success_data.get("widget_content")
+    reactions = success_data.get("reactions")
     bot_id = event["user_profile_id"]
     message_info = event["message"]
-    response_data = dict(content=content, widget_content=widget_content)
-    send_response_message(bot_id=bot_id, message_info=message_info, response_data=response_data)
+
+    if content is not None and content.strip() != "":
+        widget_content = success_data.get("widget_content")
+        response_data = dict(content=content, widget_content=widget_content)
+        send_response_message(bot_id=bot_id, message_info=message_info, response_data=response_data)
+
+    if reactions is not None and isinstance(reactions, list):
+        for reaction in reactions:
+            add_response_reaction(bot_id=bot_id, message_info=message_info, reaction_data=reaction)
 
 
 def do_rest_call(

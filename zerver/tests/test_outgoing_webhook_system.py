@@ -16,7 +16,14 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.url_encoding import near_message_url
 from zerver.lib.users import add_service
-from zerver.models import Recipient, Service, UserProfile, get_display_recipient, get_realm
+from zerver.models import (
+    Reaction,
+    Recipient,
+    Service,
+    UserProfile,
+    get_display_recipient,
+    get_realm,
+)
 
 
 class ResponseMock:
@@ -542,3 +549,144 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         # by the response_not_required option.
         last_message = self.get_last_message()
         self.assertEqual(last_message.id, stream_message_id)
+
+    @responses.activate
+    def test_stream_message_to_outgoing_webhook_bot_reply_with_reactions(self) -> None:
+        bot_owner = self.example_user("othello")
+        bot = self.create_outgoing_bot(bot_owner)
+
+        responses.add(
+            responses.POST,
+            "https://bot.example.com/",
+            json={
+                "content": "Hidley ho, I'm a webhook responding with reactions!",
+                "reactions": [{"emoji_name": "wave"}],
+            },
+        )
+
+        with self.assertLogs(level="INFO") as logs:
+            self.send_stream_message(
+                bot_owner, "Denmark", content=f"@**{bot.full_name}** foo", topic_name="bar"
+            )
+
+        self.assert_length(responses.calls, 1)
+
+        self.assert_length(logs.output, 1)
+        self.assertIn(f"Outgoing webhook request from {bot.id}@zulip took ", logs.output[0])
+
+        # Redo the checks for stream messages to make sure that reactions actually work with messages
+        last_message = self.get_last_message()
+        self.assertEqual(
+            last_message.content, "Hidley ho, I'm a webhook responding with reactions!"
+        )
+        self.assertEqual(last_message.sender_id, bot.id)
+        self.assertEqual(last_message.topic_name(), "bar")
+        display_recipient = get_display_recipient(last_message.recipient)
+        self.assertEqual(display_recipient, "Denmark")
+
+        second_to_last_message = self.get_second_to_last_message()
+        self.assertTrue(
+            Reaction.objects.filter(message=second_to_last_message, emoji_name="wave").exists()
+        )
+
+    @responses.activate
+    def test_stream_message_to_outgoing_webhook_bot_only_add_reactions(self) -> None:
+        bot_owner = self.example_user("othello")
+        bot = self.create_outgoing_bot(bot_owner)
+
+        responses.add(
+            responses.POST,
+            "https://bot.example.com/",
+            json={
+                "reactions": [{"emoji_name": "wave"}],
+            },
+        )
+
+        with self.assertLogs(level="INFO") as logs:
+            self.send_stream_message(
+                bot_owner, "Denmark", content=f"@**{bot.full_name}** foo", topic_name="bar"
+            )
+
+        self.assert_length(responses.calls, 1)
+
+        self.assert_length(logs.output, 1)
+        self.assertIn(f"Outgoing webhook request from {bot.id}@zulip took ", logs.output[0])
+
+        last_message = self.get_last_message()
+        self.assertTrue(Reaction.objects.filter(message=last_message, emoji_name="wave").exists())
+
+    @responses.activate
+    def test_stream_message_to_outgoing_webhook_bot_multiple_reactions(self) -> None:
+        bot_owner = self.example_user("othello")
+        bot = self.create_outgoing_bot(bot_owner)
+
+        responses.add(
+            responses.POST,
+            "https://bot.example.com/",
+            json={
+                "reactions": [{"emoji_name": "wave"}, {"emoji_name": "smile"}],
+            },
+        )
+
+        with self.assertLogs(level="INFO") as logs:
+            self.send_stream_message(
+                bot_owner, "Denmark", content=f"@**{bot.full_name}** foo", topic_name="bar"
+            )
+
+        self.assert_length(responses.calls, 1)
+
+        self.assert_length(logs.output, 1)
+        self.assertIn(f"Outgoing webhook request from {bot.id}@zulip took ", logs.output[0])
+
+        last_message = self.get_last_message()
+        self.assertTrue(Reaction.objects.filter(message=last_message, emoji_name="wave").exists())
+        self.assertTrue(Reaction.objects.filter(message=last_message, emoji_name="smile").exists())
+
+    @responses.activate
+    def test_pm_to_outgoing_webhook_bot_reply_with_reactions(self) -> None:
+        bot_owner = self.example_user("othello")
+        bot = self.create_outgoing_bot(bot_owner)
+
+        responses.add(
+            responses.POST,
+            "https://bot.example.com/",
+            json={
+                "content": "asd",
+                "reactions": [{"emoji_name": "wave"}],
+            },
+        )
+
+        with self.assertLogs(level="INFO") as logs:
+            self.send_personal_message(bot_owner, bot, content="foo")
+
+        self.assert_length(responses.calls, 1)
+        self.assert_length(logs.output, 1)
+        self.assertIn(f"Outgoing webhook request from {bot.id}@zulip took ", logs.output[0])
+
+        second_to_last_message = self.get_second_to_last_message()
+        self.assertTrue(
+            Reaction.objects.filter(message=second_to_last_message, emoji_name="wave").exists()
+        )
+
+    @responses.activate
+    def test_pm_to_outgoing_webhook_bot_only_add_reactions(self) -> None:
+        bot_owner = self.example_user("othello")
+        bot = self.create_outgoing_bot(bot_owner)
+
+        responses.add(
+            responses.POST,
+            "https://bot.example.com/",
+            json={
+                "reactions": [{"emoji_name": "wave"}],
+            },
+        )
+
+        with self.assertLogs(level="INFO") as logs:
+            self.send_personal_message(bot_owner, bot, content="foo")
+
+        self.assert_length(responses.calls, 1)
+        self.assert_length(logs.output, 1)
+        self.assertIn(f"Outgoing webhook request from {bot.id}@zulip took ", logs.output[0])
+
+        last_message = self.get_last_message()
+        self.assertTrue(Reaction.objects.filter(message=last_message, emoji_name="wave").exists())
