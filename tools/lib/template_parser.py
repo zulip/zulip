@@ -320,6 +320,7 @@ def is_special_html_tag(s: str, tag: str) -> bool:
 
 
 OPTIONAL_CLOSING_TAGS = [
+    "br",
     "circle",
     "img",
     "input",

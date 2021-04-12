@@ -4,7 +4,7 @@ import _ from "lodash";
 import * as channel from "./channel";
 import * as compose from "./compose";
 import * as hash_util from "./hash_util";
-import {i18n} from "./i18n";
+import {$t_html, i18n} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
@@ -66,15 +66,22 @@ export function schedule_message(request = compose.create_message_object()) {
         $("#compose-textarea").prop("disabled", false);
         if (command_line.slice(command.length, command.length + 1) !== " ") {
             compose.compose_error(
-                i18n.t(
-                    "Invalid slash command. Check if you are missing a space after the command.",
-                ),
+                $t_html({
+                    defaultMessage:
+                        "Invalid slash command. Check if you are missing a space after the command.",
+                }),
                 $("#compose-textarea"),
             );
         } else if (deliver_at.trim() === "") {
-            compose.compose_error(i18n.t("Please specify a date or time"), $("#compose-textarea"));
+            compose.compose_error(
+                $t_html({defaultMessage: "Please specify a date or time"}),
+                $("#compose-textarea"),
+            );
         } else {
-            compose.compose_error(i18n.t("Your reminder note is empty!"), $("#compose-textarea"));
+            compose.compose_error(
+                $t_html({defaultMessage: "Your reminder note is empty!"}),
+                $("#compose-textarea"),
+            );
         }
         return;
     }
