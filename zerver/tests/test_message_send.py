@@ -2025,6 +2025,12 @@ class PersonalMessageSendTest(ZulipTestCase):
             receiver=self.example_user("othello"),
         )
 
+    def can_send_pm_to_bot(self, user_profile: UserProfile) -> None:
+        bot_profile = self.create_test_bot("testbot", user_profile)
+        self.send_personal_message(user_profile, get_system_bot(settings.NOTIFICATION_BOT))
+        self.send_personal_message(user_profile, bot_profile)
+        self.send_personal_message(bot_profile, user_profile)
+
     def test_private_message_policy_disabled(self) -> None:
         """
         Tests that PRIVATE_MESSAGE_POLICY_DISABLED works correctly.
@@ -2040,10 +2046,7 @@ class PersonalMessageSendTest(ZulipTestCase):
         with self.assertRaises(JsonableError):
             self.send_personal_message(user_profile, self.example_user("cordelia"))
 
-        bot_profile = self.create_test_bot("testbot", user_profile)
-        self.send_personal_message(user_profile, get_system_bot(settings.NOTIFICATION_BOT))
-        self.send_personal_message(user_profile, bot_profile)
-        self.send_personal_message(bot_profile, user_profile)
+        self.can_send_pm_to_bot(user_profile)
 
     def test_non_ascii_personal(self) -> None:
         """
