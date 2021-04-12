@@ -28,6 +28,14 @@ A typical successful JSON response may look like:
 {generate_code_example|/users/me/muted_users/{muted_user_id}:post|fixture(200)}
 
 
-An example JSON response for when a user is already muted:
+An example JSON response for when the user is yourself:
 
-{generate_code_example|/users/me/muted_users/{muted_user_id}:post|fixture(400)}
+{generate_code_example|/users/me/muted_users/{muted_user_id}:post|fixture(400_0)}
+
+An example JSON response for when the user is nonexistent or inaccessible:
+
+{generate_code_example|/users/me/muted_users/{muted_user_id}:post|fixture(400_1)}
+
+An example JSON response for when the user is already muted:
+
+{generate_code_example|/users/me/muted_users/{muted_user_id}:post|fixture(400_2)}
