@@ -542,7 +542,6 @@ export function set_up() {
                         loading.destroy_indicator(spinner);
                         edit_button.show();
                         errors.text(JSON.parse(xhr.responseText).msg).show();
-                        overlays.close_modal("#edit_bot_modal");
                     },
                 });
             },
