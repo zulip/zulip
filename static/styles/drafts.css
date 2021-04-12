@@ -115,7 +115,8 @@
                 right: 0;
             }
 
-            .restore-draft {
+            .restore-draft,
+            .edit-draft {
                 cursor: pointer;
                 margin-right: 5px;
                 color: hsl(170, 48%, 54%);

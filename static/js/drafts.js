@@ -364,7 +364,7 @@ export function launch() {
     }
 
     function setup_event_handlers() {
-        $(".restore-draft").on("click", function (e) {
+        $(".restore-draft, .edit-draft").on("click", function (e) {
             if (document.getSelection().type === "Range") {
                 return;
             }
