@@ -2048,6 +2048,63 @@ class PersonalMessageSendTest(ZulipTestCase):
 
         self.can_send_pm_to_bot(user_profile)
 
+    def test_private_message_policy_admin_only(self) -> None:
+        """
+        Tests that PRIVATE_MESSAGE_POLICY_ADMIN_ONLY works correctly.
+        """
+        test_user_dict = {
+            "admin_user": self.example_user("iago"),
+            "non_admin_user": self.example_user("hamlet"),
+            "other_user": self.example_user("othello"),
+        }
+        self.login_user(test_user_dict["non_admin_user"])
+
+        do_set_realm_property(
+            test_user_dict["non_admin_user"].realm,
+            "private_message_policy",
+            Realm.PRIVATE_MESSAGE_POLICY_ADMIN_ONLY,
+            acting_user=None,
+        )
+        self.can_send_pm_to_bot(test_user_dict["non_admin_user"])
+
+        for user in test_user_dict.values():
+            do_set_realm_property(
+                user.realm,
+                "private_message_policy",
+                Realm.PRIVATE_MESSAGE_POLICY_ADMIN_ONLY,
+                acting_user=None,
+            )
+            with self.assertRaisesRegex(
+                JsonableError,
+                "Sending private messages is disabled for guests in this organization.",
+            ):
+                self.send_personal_message(self.example_user("polonius"), user)
+
+            with self.assertRaisesRegex(
+                JsonableError,
+                "Sending private messages to guests is disabled in this organization.",
+            ):
+                self.send_personal_message(user, self.example_user("polonius"))
+
+            self.send_personal_message(test_user_dict["admin_user"], user)
+            self.send_personal_message(user, test_user_dict["admin_user"])
+
+            if not user.is_realm_admin:
+                with self.assertRaisesRegex(
+                    JsonableError,
+                    "Members can send private messages to administrators only.",
+                ):
+                    self.send_personal_message(user, test_user_dict["non_admin_user"])
+
+        self.send_huddle_message(test_user_dict["admin_user"], list(test_user_dict.values()))
+
+        with self.assertRaisesRegex(
+            JsonableError, "Group private messages are disabled for members in this organization."
+        ):
+            self.send_huddle_message(
+                test_user_dict["non_admin_user"], list(test_user_dict.values())
+            )
+
     def test_non_ascii_personal(self) -> None:
         """
         Sending a PM containing non-ASCII characters succeeds.

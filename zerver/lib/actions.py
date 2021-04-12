@@ -2808,14 +2808,41 @@ def validate_stream_id_with_pm_notification(
 def check_private_message_policy(
     realm: Realm, sender: UserProfile, user_profiles: Sequence[UserProfile]
 ) -> None:
+
+    if sender.is_bot or (len(user_profiles) == 1 and user_profiles[0].is_bot):
+        # We allow PMs only between users and bots, to avoid
+        # breaking the tutorial as well as automated
+        # notifications from system bots to users.
+        return
+
     if realm.private_message_policy == Realm.PRIVATE_MESSAGE_POLICY_DISABLED:
-        if sender.is_bot or (len(user_profiles) == 1 and user_profiles[0].is_bot):
-            # We allow PMs only between users and bots, to avoid
-            # breaking the tutorial as well as automated
-            # notifications from system bots to users.
+        raise JsonableError(_("Private messages are disabled in this organization."))
+
+    elif realm.private_message_policy == Realm.PRIVATE_MESSAGE_POLICY_ADMIN_ONLY:
+        # We don't allow PMs involving guests.
+        for user_profile in user_profiles:
+            if user_profile.is_guest:
+                raise JsonableError(
+                    _("Sending private messages to guests is disabled in this organization.")
+                )
+        if sender.is_guest:
+            raise JsonableError(
+                _("Sending private messages is disabled for guests in this organization.")
+            )
+
+        if sender.is_realm_admin:
+            # No other restrictions for Admins.
             return
 
-        raise JsonableError(_("Private messages are disabled in this organization."))
+        # No group PMs for members.
+        if len(user_profiles) > 1:
+            raise JsonableError(
+                _("Group private messages are disabled for members in this organization.")
+            )
+
+        # Members can PM only Admins
+        if not (user_profiles[0].is_realm_admin):
+            raise JsonableError(_("Members can send private messages to administrators only."))
 
 
 # check_message:
