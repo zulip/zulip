@@ -795,6 +795,53 @@ function validate_private_message() {
             return false;
         }
     }
+    if (page_params.realm_private_message_policy === 3) {
+        // Frontend check for for PRIVATE_MESSAGE_POLICY_ADMIN_ONLY
+        const user_ids = compose_pm_pill.get_user_ids();
+        if (user_ids.length !== 1 || !people.get_by_user_id(user_ids[0]).is_bot) {
+            if (page_params.is_guest) {
+                compose_error(
+                    $t_html({
+                        defaultMessage:
+                            "Sending private messages is disabled for guests in this organization.",
+                    }),
+                    $("#private_message_recipient"),
+                );
+                return false;
+            }
+            for (const user_id of user_ids) {
+                if (people.get_by_user_id(user_id).is_guest) {
+                    compose_error(
+                        $t_html({
+                            defaultMessage:
+                                "Sending private messages to guests is disabled in this organization.",
+                        }),
+                        $("#private_message_recipient"),
+                    );
+                    return false;
+                }
+            }
+            if (!page_params.is_admin && user_ids.length > 1) {
+                compose_error(
+                    $t_html({
+                        defaultMessage:
+                            "Group private messages are disabled for members in this organization.",
+                    }),
+                    $("#private_message_recipient"),
+                );
+                return false;
+            }
+            if (!page_params.is_admin && !people.get_by_user_id(user_ids[0]).is_admin) {
+                compose_error(
+                    $t_html({
+                        defaultMessage: "Members can send private messages to administrators only.",
+                    }),
+                    $("#private_message_recipient"),
+                );
+                return false;
+            }
+        }
+    }
 
     if (compose_state.private_message_recipient().length === 0) {
         compose_error(
