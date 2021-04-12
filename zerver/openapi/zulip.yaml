@@ -6920,6 +6920,17 @@ paths:
 
                           **Changes**: New in Zulip 4.0 (feature level 53).  Previously,
                           this always had value 60.
+                      max_message_length:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The maximum allowed length for a message.  Clients should use
+                          these properties rather than hardcoding field sizes, as they may
+                          change in a future Zulip release.
+
+                          **Changes**: New in Zulip 4.0 (feature level 53).  Previously,
+                          this always had value 10000.
                       muted_topics:
                         type: array
                         description: |
