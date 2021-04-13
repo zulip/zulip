@@ -47,7 +47,6 @@ from zerver.lib.actions import (
     bulk_remove_subscriptions,
     check_send_message,
     check_send_stream_message,
-    do_change_user_role,
     do_set_realm_property,
     gather_subscriptions,
 )
@@ -1197,58 +1196,54 @@ Output:
         return email_message.from_email
 
     def check_has_permission_policies(
-        self, user_profile: UserProfile, policy: str, validation_func: Callable[[], bool]
+        self, policy: str, validation_func: Callable[[UserProfile], bool]
     ) -> None:
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
-        self.assertTrue(validation_func())
 
-        do_change_user_role(user_profile, UserProfile.ROLE_MODERATOR, acting_user=None)
-        do_set_realm_property(
-            user_profile.realm, policy, Realm.POLICY_ADMINS_ONLY, acting_user=None
+        realm = get_realm("zulip")
+        admin_user = self.example_user("iago")
+        moderator_user = self.example_user("shiva")
+        member_user = self.example_user("hamlet")
+        new_member_user = self.example_user("othello")
+        guest_user = self.example_user("polonius")
+
+        do_set_realm_property(realm, "waiting_period_threshold", 1000, acting_user=None)
+        new_member_user.date_joined = timezone_now() - timedelta(
+            days=(realm.waiting_period_threshold - 1)
         )
-        self.assertFalse(validation_func())
+        new_member_user.save()
 
-        do_set_realm_property(
-            user_profile.realm, policy, Realm.POLICY_MODERATORS_ONLY, acting_user=None
+        member_user.date_joined = timezone_now() - timedelta(
+            days=(realm.waiting_period_threshold + 1)
         )
-        self.assertTrue(validation_func())
+        member_user.save()
 
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
-        # Make sure that we are checking the permission with a full member,
-        # as full member is the user just below moderator in the role hierarchy.
-        self.assertFalse(user_profile.is_provisional_member)
-        self.assertFalse(validation_func())
+        do_set_realm_property(realm, policy, Realm.POLICY_ADMINS_ONLY, acting_user=None)
+        self.assertTrue(validation_func(admin_user))
+        self.assertFalse(validation_func(moderator_user))
+        self.assertFalse(validation_func(member_user))
+        self.assertFalse(validation_func(new_member_user))
+        self.assertFalse(validation_func(guest_user))
 
-        do_set_realm_property(
-            user_profile.realm, policy, Realm.POLICY_MEMBERS_ONLY, acting_user=None
-        )
-        do_change_user_role(user_profile, UserProfile.ROLE_GUEST, acting_user=None)
-        self.assertFalse(validation_func())
+        do_set_realm_property(realm, policy, Realm.POLICY_MODERATORS_ONLY, acting_user=None)
+        self.assertTrue(validation_func(admin_user))
+        self.assertTrue(validation_func(moderator_user))
+        self.assertFalse(validation_func(member_user))
+        self.assertFalse(validation_func(new_member_user))
+        self.assertFalse(validation_func(guest_user))
 
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
-        self.assertTrue(validation_func())
+        do_set_realm_property(realm, policy, Realm.POLICY_FULL_MEMBERS_ONLY, acting_user=None)
+        self.assertTrue(validation_func(admin_user))
+        self.assertTrue(validation_func(moderator_user))
+        self.assertTrue(validation_func(member_user))
+        self.assertFalse(validation_func(new_member_user))
+        self.assertFalse(validation_func(guest_user))
 
-        do_set_realm_property(
-            user_profile.realm, "waiting_period_threshold", 1000, acting_user=None
-        )
-        do_set_realm_property(
-            user_profile.realm, policy, Realm.POLICY_FULL_MEMBERS_ONLY, acting_user=None
-        )
-        user_profile.date_joined = timezone_now() - timedelta(
-            days=(user_profile.realm.waiting_period_threshold - 1)
-        )
-        self.assertFalse(validation_func())
-
-        # Ensure that the new moderators can also create streams because moderator
-        # being above the full member in role hierarchy.
-        do_change_user_role(user_profile, UserProfile.ROLE_MODERATOR, acting_user=None)
-        self.assertTrue(validation_func())
-
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
-        user_profile.date_joined = timezone_now() - timedelta(
-            days=(user_profile.realm.waiting_period_threshold + 1)
-        )
-        self.assertTrue(validation_func())
+        do_set_realm_property(realm, policy, Realm.POLICY_MEMBERS_ONLY, acting_user=None)
+        self.assertTrue(validation_func(admin_user))
+        self.assertTrue(validation_func(moderator_user))
+        self.assertTrue(validation_func(member_user))
+        self.assertTrue(validation_func(new_member_user))
+        self.assertFalse(validation_func(guest_user))
 
 
 class WebhookTestCase(ZulipTestCase):

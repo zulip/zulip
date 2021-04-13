@@ -3352,12 +3352,11 @@ class SubscriptionAPITest(ZulipTestCase):
         self.common_subscribe_to_streams(user_profile, ["new_stream3"])
 
     def test_can_create_streams(self) -> None:
-        othello = self.example_user("othello")
+        def validation_func(user_profile: UserProfile) -> bool:
+            user_profile.refresh_from_db()
+            return user_profile.can_create_streams()
 
-        def validation_func() -> bool:
-            return othello.can_create_streams()
-
-        self.check_has_permission_policies(othello, "create_stream_policy", validation_func)
+        self.check_has_permission_policies("create_stream_policy", validation_func)
 
     def test_user_settings_for_subscribing_other_users(self) -> None:
         """
@@ -3454,12 +3453,12 @@ class SubscriptionAPITest(ZulipTestCase):
         You can't subscribe other people to streams if you are a guest or your account is not old
         enough.
         """
-        othello = self.example_user("othello")
 
-        def validation_func() -> bool:
-            return othello.can_subscribe_other_users()
+        def validation_func(user_profile: UserProfile) -> bool:
+            user_profile.refresh_from_db()
+            return user_profile.can_subscribe_other_users()
 
-        self.check_has_permission_policies(othello, "invite_to_stream_policy", validation_func)
+        self.check_has_permission_policies("invite_to_stream_policy", validation_func)
 
     def test_subscriptions_add_invalid_stream(self) -> None:
         """
