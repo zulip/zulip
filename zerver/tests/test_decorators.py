@@ -560,14 +560,11 @@ class RateLimitTestCase(ZulipTestCase):
 
     def test_internal_local_clients_skip_rate_limiting(self) -> None:
         class Client:
-            name = "internal"
+            name = "internal"  
 
-        class Request:
-            client = Client()
-            META = {"REMOTE_ADDR": "127.0.0.1"}
-            user = AnonymousUser()
-
-        req = Request()
+        req = HostRequestMock(user_profile=AnonymousUser())
+        req.META = {"REMOTE_ADDR": "127.0.0.1"}
+        req.client = Client()
 
         def f(req: Any) -> str:
             return "some value"
