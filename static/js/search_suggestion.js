@@ -646,7 +646,7 @@ export function get_search_result(base_query, query) {
         if (!people.reply_to_to_user_ids_string(person_op.operand)) {
             last = {
                 operator: person_op.operator,
-                operand: person_op.operand + " " + last.operand,
+                operand: person_op.operand,
                 negated: person_op.negated,
             };
             if (page_params.search_pills_enabled) {

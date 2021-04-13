@@ -811,7 +811,7 @@ test("people_suggestions", (override) => {
 
     query = "sender:ted sm";
     let base_query = "";
-    expected = ["sender:ted+sm", "sender:ted@zulip.com"];
+    expected = ["sender:ted", "sender:ted@zulip.com"];
     suggestions = get_suggestions(base_query, query);
     assert.deepEqual(suggestions.strings, expected);
 
@@ -823,7 +823,7 @@ test("people_suggestions", (override) => {
 
     query = "sender:ted@tulip.com new";
     base_query = "";
-    expected = ["sender:ted@tulip.com+new"];
+    expected = ["sender:ted@tulip.com"];
     suggestions = get_suggestions(base_query, query);
     assert.deepEqual(suggestions.strings, expected);
 
