@@ -1,3 +1,4 @@
+import Handlebars from "handlebars/runtime";
 import $ from "jquery";
 
 import timezones from "../generated/timezones.json";
@@ -5,7 +6,7 @@ import render_settings_tab from "../templates/settings_tab.hbs";
 
 import * as admin from "./admin";
 import * as blueslip from "./blueslip";
-import {i18n} from "./i18n";
+import {$t_html, i18n} from "./i18n";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -66,8 +67,10 @@ function setup_settings_label() {
         left_side_userlist: i18n.t("Show user list on left sidebar in narrow windows"),
         starred_message_counts: i18n.t("Show counts for starred messages"),
         twenty_four_hour_time: i18n.t("Time format"),
-        translate_emoticons: i18n.t(
-            "Convert emoticons before sending (<code>:)</code> becomes 😃)",
+        translate_emoticons: new Handlebars.SafeString(
+            $t_html({
+                defaultMessage: "Convert emoticons before sending (<code>:)</code> becomes 😃)",
+            }),
         ),
     };
 }
