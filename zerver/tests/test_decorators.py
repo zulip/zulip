@@ -223,11 +223,7 @@ class DecoratorTestCase(ZulipTestCase):
         ) -> str:
             return value[1:-1]
 
-        class Request:
-            GET: Dict[str, str] = {}
-            POST: Dict[str, str] = {}
-
-        request = Request()
+        request = HostRequestMock()
 
         with self.assertRaises(RequestVariableMissingError):
             get_middle_characters(request)
