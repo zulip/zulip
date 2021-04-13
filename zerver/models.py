@@ -3,13 +3,11 @@ import datetime
 import re
 import secrets
 import time
-from collections import defaultdict
 from datetime import timedelta
 from typing import (
     AbstractSet,
     Any,
     Callable,
-    DefaultDict,
     Dict,
     Iterable,
     List,
@@ -928,20 +926,6 @@ def linkifiers_for_realm_remote_cache(realm_id: int) -> List[LinkifierDict]:
     filters = []
     for linkifier in RealmFilter.objects.filter(realm_id=realm_id):
         filters.append(
-            LinkifierDict(
-                pattern=linkifier.pattern,
-                url_format=linkifier.url_format_string,
-                id=linkifier.id,
-            )
-        )
-
-    return filters
-
-
-def all_linkifiers_for_installation() -> Dict[int, List[LinkifierDict]]:
-    filters: DefaultDict[int, List[LinkifierDict]] = defaultdict(list)
-    for linkifier in RealmFilter.objects.all():
-        filters[linkifier.realm_id].append(
             LinkifierDict(
                 pattern=linkifier.pattern,
                 url_format=linkifier.url_format_string,
