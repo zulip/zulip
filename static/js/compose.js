@@ -379,7 +379,7 @@ export function send_message(request = create_message_object()) {
         // If we're not local echo'ing messages, or if this message was not
         // locally echoed, show error in compose box
         if (!locally_echoed) {
-            compose_error(_.escape(response), $("#compose-textarea"));
+            compose_error(response, $("#compose-textarea"));
             return;
         }
 
@@ -1170,7 +1170,7 @@ export function initialize() {
 
         function failure(error_msg) {
             clear_invites();
-            compose_error(_.escape(error_msg), $("#compose-textarea"));
+            compose_error(error_msg, $("#compose-textarea"));
             $(event.target).prop("disabled", true);
         }
 
