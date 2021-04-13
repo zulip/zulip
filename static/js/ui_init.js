@@ -45,6 +45,7 @@ import * as panels from "./panels";
 import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
 import * as presence from "./presence";
+import * as realm_playground from "./realm_playground";
 import * as recent_topics from "./recent_topics";
 import * as reload from "./reload";
 import * as resize from "./resize";
@@ -497,6 +498,7 @@ export function initialize_everything() {
         emoji_codes: generated_emoji_codes,
     });
     markdown.initialize(page_params.realm_linkifiers, markdown_config.get_helpers());
+    realm_playground.initialize(page_params.realm_playgrounds);
     compose.initialize();
     composebox_typeahead.initialize(); // Must happen after compose.initialize()
     search.initialize();

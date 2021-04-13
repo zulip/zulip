@@ -10,8 +10,8 @@ import * as blueslip from "./blueslip";
 import {$t, $t_html} from "./i18n";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as realm_playground from "./realm_playground";
 import * as rtl from "./rtl";
-import * as settings_config from "./settings_config";
 import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
 import * as user_groups from "./user_groups";
@@ -205,7 +205,7 @@ export const update_elements = (content) => {
         const $pre = $codehilite.find("pre");
         const fenced_code_lang = $codehilite.data("code-language");
         if (fenced_code_lang !== undefined) {
-            const playground_info = settings_config.get_playground_info_for_languages(
+            const playground_info = realm_playground.get_playground_info_for_languages(
                 fenced_code_lang,
             );
             if (playground_info !== undefined) {

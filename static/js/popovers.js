@@ -37,11 +37,11 @@ import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as realm_playground from "./realm_playground";
 import * as reminder from "./reminder";
 import * as resize from "./resize";
 import * as rows from "./rows";
 import * as settings_account from "./settings_account";
-import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_profile_fields from "./settings_profile_fields";
 import * as stream_popover from "./stream_popover";
@@ -932,7 +932,7 @@ export function register_click_handlers() {
         const view_in_playground_button = $(this);
         const codehilite_div = $(this).closest(".codehilite");
         e.stopPropagation();
-        const playground_info = settings_config.get_playground_info_for_languages(
+        const playground_info = realm_playground.get_playground_info_for_languages(
             codehilite_div.data("code-language"),
         );
         // We do the code extraction here and set the target href combining the url_prefix

@@ -31,6 +31,7 @@ import * as people from "./people";
 import * as reactions from "./reactions";
 import * as realm_icon from "./realm_icon";
 import * as realm_logo from "./realm_logo";
+import * as realm_playground from "./realm_playground";
 import * as reload from "./reload";
 import * as scroll_bar from "./scroll_bar";
 import * as settings_account from "./settings_account";
@@ -347,6 +348,11 @@ export function dispatch_normal_event(event) {
             page_params.realm_linkifiers = event.realm_linkifiers;
             markdown.update_linkifier_rules(page_params.realm_linkifiers);
             settings_linkifiers.populate_linkifiers(page_params.realm_linkifiers);
+            break;
+
+        case "realm_playgrounds":
+            page_params.realm_playgrounds = event.realm_playgrounds;
+            realm_playground.update_playgrounds(page_params.realm_playgrounds);
             break;
 
         case "realm_domains":
