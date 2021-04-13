@@ -75,7 +75,7 @@ Zulip has around 10 HTML documentation pages under `templates/zerver`
 for specific major topics, like the features list, client apps,
 integrations, hotkeys, API bindings, etc.  These documents often have
 somewhat complex HTML and JavaScript, without a great deal of common
-pattern between them other than inheriting from the `portico.html`
+patterns between them other than inheriting from the `portico.html`
 template.  We generally avoid adding new pages to this collection
 unless there's a good reason, but we don't intend to migrate them,
 either, since this system gives us the flexibility to express these
