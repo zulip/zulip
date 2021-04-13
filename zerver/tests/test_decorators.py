@@ -197,11 +197,7 @@ class DecoratorTestCase(ZulipTestCase):
         ) -> int:
             return sum(numbers)
 
-        class Request:
-            GET: Dict[str, str] = {}
-            POST: Dict[str, str] = {}
-
-        request = Request()
+        request = HostRequestMock()
 
         with self.assertRaises(RequestVariableMissingError):
             get_total(request)
