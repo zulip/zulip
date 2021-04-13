@@ -4,7 +4,7 @@ from typing import Any
 
 from zerver.lib.actions import do_add_linkifier, do_remove_linkifier
 from zerver.lib.management import CommandError, ZulipBaseCommand
-from zerver.models import all_linkifiers_for_installation
+from zerver.models import linkifiers_for_realm
 
 
 class Command(ZulipBaseCommand):
@@ -41,7 +41,7 @@ Example: ./manage.py realm_filters --realm=zulip --op=show
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
         if options["op"] == "show":
-            print(f"{realm.string_id}: {all_linkifiers_for_installation().get(realm.id, [])}")
+            print(f"{realm.string_id}: {linkifiers_for_realm(realm.id)}")
             sys.exit(0)
 
         pattern = options["pattern"]
