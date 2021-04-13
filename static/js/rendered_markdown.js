@@ -7,7 +7,7 @@ import render_markdown_timestamp from "../templates/markdown_timestamp.hbs";
 import view_code_in_playground from "../templates/view_code_in_playground.hbs";
 
 import * as blueslip from "./blueslip";
-import {i18n} from "./i18n";
+import {$t_html, i18n} from "./i18n";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as rtl from "./rtl";
@@ -187,7 +187,7 @@ export const update_elements = (content) => {
         // If a spoiler block has no header content, it should have a default header.
         // We do this client side to allow for i18n by the client.
         if ($(this).html().trim().length === 0) {
-            $(this).append(`<p>${i18n.t("Spoiler")}</p>`);
+            $(this).append(`<p>${$t_html({defaultMessage: "Spoiler"})}</p>`);
         }
 
         // Add the expand/collapse button to spoiler blocks
