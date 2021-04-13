@@ -140,8 +140,6 @@ js_rules = RuleList(
             "pattern": "[\"']json/",
             "description": "Relative URL for JSON route not supported by i18n",
         },
-        # This rule is constructed with + to avoid triggering on itself
-        {"pattern": "^[ ]*//[A-Za-z0-9]", "description": "Missing space after // in comment"},
         {
             "pattern": r"""[.]text\(["'][a-zA-Z]""",
             "description": "Strings passed to $().text should be wrapped in $t() for internationalization",
