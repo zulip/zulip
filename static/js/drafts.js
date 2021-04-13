@@ -187,7 +187,7 @@ export function restore_draft(draft_id) {
     const compose_args = restore_message(draft);
 
     if (compose_args.type === "stream") {
-        if (draft.stream !== "") {
+        if (draft.stream !== "" && draft.topic !== "") {
             narrow.activate(
                 [
                     {operator: "stream", operand: compose_args.stream},
