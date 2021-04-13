@@ -954,9 +954,12 @@ export function unsubscribe_from_private_stream(sub, from_stream_popover) {
 
     confirm_dialog.launch({
         parent: modal_parent,
-        html_heading: i18n.t("Unsubscribe from __stream_name__", {stream_name: sub.name}),
+        html_heading: $t_html(
+            {defaultMessage: "Unsubscribe from {stream_name}"},
+            {stream_name: sub.name},
+        ),
         html_body,
-        html_yes_button: i18n.t("Yes, unsubscribe"),
+        html_yes_button: $t_html({defaultMessage: "Yes, unsubscribe"}),
         on_click: unsubscribe_from_stream,
     });
 }
