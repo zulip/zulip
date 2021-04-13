@@ -581,12 +581,9 @@ class RateLimitTestCase(ZulipTestCase):
         class Client:
             name = "internal"
 
-        class Request:
-            client = Client()
-            META = {"REMOTE_ADDR": "3.3.3.3"}
-            user = AnonymousUser()
-
-        req = Request()
+        req = HostRequestMock(user_profile=AnonymousUser())
+        req.META = {"REMOTE_ADDR": "3.3.3.3"}
+        req.client = Client()
 
         def f(req: Any) -> str:
             return "some value"
