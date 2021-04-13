@@ -208,10 +208,6 @@ export function restore_draft(draft_id) {
     overlays.close_overlay("drafts");
     compose_fade.clear_compose();
     compose.clear_preview_area();
-
-    if (draft.type === "stream" && draft.stream === "") {
-        compose_args.topic = "";
-    }
     compose_actions.start(compose_args.type, compose_args);
     compose_ui.autosize_textarea($("#compose-textarea"));
     $("#compose-textarea").data("draft-id", draft_id);
