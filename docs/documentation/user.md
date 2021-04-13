@@ -75,7 +75,7 @@ documentation. It's worth remembering that for most articles, almost 100% of
 the users of the feature will never read the article. Instructions for
 filling out forms, interacting with UI widgets (e.g. typeaheads),
 interacting with modals, etc. should never go in user documentation.
-In such cases you may be able to fix the problem by adding text in-app,
+In such cases, you may be able to fix the problem by adding text in-app,
 where the user will see it as they are interacting with the feature.
 
 ### User interface
@@ -113,7 +113,7 @@ documentation.
 ### Images
 
 Images and screenshots should be included in user documentation only
-if it will help guide the user in how to do something (e.g. if the
+if they will help guide the user in how to do something (e.g. if the
 image will make it much clearer which element on the page the user
 should interact with).  For instance, an image of an element should
 not be included if the element the user needs to interact with is the
