@@ -367,9 +367,9 @@ export function set_up() {
 
         confirm_dialog.launch({
             parent: modal_parent,
-            html_heading: i18n.t("Delete user group"),
+            html_heading: $t_html({defaultMessage: "Delete user group"}),
             html_body,
-            html_yes_button: i18n.t("Confirm"),
+            html_yes_button: $t_html({defaultMessage: "Confirm"}),
             on_click: delete_user_group,
         });
     });
