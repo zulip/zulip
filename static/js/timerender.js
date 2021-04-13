@@ -9,6 +9,7 @@ import {
     startOfToday,
 } from "date-fns";
 import $ from "jquery";
+import _ from "lodash";
 
 import {i18n} from "./i18n";
 import {page_params} from "./page_params";
@@ -134,15 +135,15 @@ function render_date_span(elem, rendered_time, rendered_time_above) {
     if (rendered_time_above !== undefined) {
         const pieces = [
             '<i class="date-direction fa fa-caret-up"></i>',
-            rendered_time_above.time_str,
+            _.escape(rendered_time_above.time_str),
             '<hr class="date-line">',
             '<i class="date-direction fa fa-caret-down"></i>',
-            rendered_time.time_str,
+            _.escape(rendered_time.time_str),
         ];
         elem.append(pieces);
         return elem;
     }
-    elem.append(rendered_time.time_str);
+    elem.append(_.escape(rendered_time.time_str));
     return elem.attr("title", rendered_time.formal_time_str);
 }
 
