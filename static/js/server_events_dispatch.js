@@ -146,7 +146,7 @@ export function dispatch_normal_event(event) {
                 save_pointer: true,
                 save_narrow: true,
                 save_compose: true,
-                message: "The application has been updated; reloading!",
+                message_html: "The application has been updated; reloading!",
             };
             if (event.immediate) {
                 reload_options.immediate = true;

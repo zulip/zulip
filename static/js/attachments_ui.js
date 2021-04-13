@@ -4,7 +4,7 @@ import render_settings_upload_space_stats from "../templates/settings/upload_spa
 import render_uploaded_files_list from "../templates/uploaded_files_list.hbs";
 
 import * as channel from "./channel";
-import {i18n} from "./i18n";
+import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
@@ -55,10 +55,10 @@ function delete_attachments(attachment) {
         url: "/json/attachments/" + attachment,
         idempotent: true,
         error(xhr) {
-            ui_report.error(i18n.t("Failed"), xhr, status);
+            ui_report.error($t_html({defaultMessage: "Failed"}), xhr, status);
         },
         success() {
-            ui_report.success(i18n.t("Attachment deleted"), status);
+            ui_report.success($t_html({defaultMessage: "Attachment deleted"}), status);
         },
     });
 }
@@ -162,7 +162,7 @@ export function set_up_attachments() {
         },
         error(xhr) {
             loading.destroy_indicator($("#attachments_loading_indicator"));
-            ui_report.error(i18n.t("Failed"), xhr, status);
+            ui_report.error($t_html({defaultMessage: "Failed"}), xhr, status);
         },
     });
 }

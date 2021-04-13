@@ -10,7 +10,7 @@ import render_settings_dev_env_email_access from "../templates/settings/dev_env_
 import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as common from "./common";
-import {i18n} from "./i18n";
+import {$t_html, i18n} from "./i18n";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as stream_data from "./stream_data";
@@ -68,7 +68,10 @@ function submit_invitation_form() {
         data,
         beforeSend,
         success() {
-            ui_report.success(i18n.t("User(s) invited successfully."), invite_status);
+            ui_report.success(
+                $t_html({defaultMessage: "User(s) invited successfully."}),
+                invite_status,
+            );
             invitee_emails_group.removeClass("warning");
             invitee_emails.val("");
 

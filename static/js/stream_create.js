@@ -6,7 +6,7 @@ import render_subscription_invites_warning_modal from "../templates/subscription
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
-import {i18n} from "./i18n";
+import {$t_html, i18n} from "./i18n";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
@@ -156,7 +156,7 @@ function create_stream() {
     // and paste over a description with newline characters in it. Prevent that.
     if (description.includes("\n")) {
         ui_report.client_error(
-            i18n.t("The stream description cannot contain newline characters."),
+            $t_html({defaultMessage: "The stream description cannot contain newline characters."}),
             $(".stream_create_info"),
         );
         return undefined;
@@ -218,7 +218,10 @@ function create_stream() {
         success() {
             $("#create_stream_name").val("");
             $("#create_stream_description").val("");
-            ui_report.success(i18n.t("Stream successfully created!"), $(".stream_create_info"));
+            ui_report.success(
+                $t_html({defaultMessage: "Stream successfully created!"}),
+                $(".stream_create_info"),
+            );
             loading.destroy_indicator($("#stream_creating_indicator"));
             // The rest of the work is done via the subscribe event we will get
         },
@@ -237,7 +240,11 @@ function create_stream() {
                 stream_name_error.trigger("select");
             }
 
-            ui_report.error(i18n.t("Error creating stream"), xhr, $(".stream_create_info"));
+            ui_report.error(
+                $t_html({defaultMessage: "Error creating stream"}),
+                xhr,
+                $(".stream_create_info"),
+            );
             loading.destroy_indicator($("#stream_creating_indicator"));
         },
     });

@@ -1271,7 +1271,7 @@ export function initialize() {
                             }
                             if (status !== "abort") {
                                 ui_report.generic_embed_error(
-                                    i18n.t("Failed to create video call."),
+                                    $t_html({defaultMessage: "Failed to create video call."}),
                                 );
                             }
                         },

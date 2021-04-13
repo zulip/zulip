@@ -10,7 +10,7 @@ import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as common from "./common";
 import {csrf_token} from "./csrf";
-import {$t_html, i18n} from "./i18n";
+import {$t_html} from "./i18n";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -89,8 +89,8 @@ function display_avatar_upload_started() {
     $("#user-avatar-upload-widget .image-delete-button").hide();
 }
 
-function settings_change_error(message, xhr) {
-    ui_report.error(message, xhr, $("#account-settings-status").expectOne());
+function settings_change_error(message_html, xhr) {
+    ui_report.error(message_html, xhr, $("#account-settings-status").expectOne());
 }
 
 function update_custom_profile_field(field, method) {
@@ -308,7 +308,11 @@ export function set_up() {
                     $("#show_api_key").show();
                 },
                 error(xhr) {
-                    ui_report.error(i18n.t("Error"), xhr, $("#api_key_status").expectOne());
+                    ui_report.error(
+                        $t_html({defaultMessage: "Error"}),
+                        xhr,
+                        $("#api_key_status").expectOne(),
+                    );
                     $("#show_api_key").hide();
                     $("#api_key_modal").show();
                 },
@@ -428,7 +432,7 @@ export function set_up() {
                 );
                 return;
             } else if (!password_ok) {
-                settings_change_error(i18n.t("New password is too weak"));
+                settings_change_error($t_html({defaultMessage: "New password is too weak"}));
                 return;
             }
         }
@@ -504,9 +508,10 @@ export function set_up() {
                 overlays.close_modal("#change_email_modal");
             },
             error_msg_element: change_email_error,
-            success_msg: i18n
-                .t("Check your email (%s) to confirm the new address.")
-                .replace("%s", data.email),
+            success_msg_html: $t_html(
+                {defaultMessage: "Check your email ({email}) to confirm the new address."},
+                {email: data.email},
+            ),
         };
         settings_ui.do_settings_change(
             channel.patch,

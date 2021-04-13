@@ -8,7 +8,7 @@ import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import {csrf_token} from "./csrf";
 import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget";
-import {i18n} from "./i18n";
+import {$t_html, i18n} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -734,7 +734,7 @@ export function build_page() {
             error(xhr) {
                 change_save_button_state(save_btn_container, "failed");
                 save_button.hide();
-                ui_report.error(i18n.t("Save failed"), xhr, failed_alert_elem);
+                ui_report.error($t_html({defaultMessage: "Save failed"}), xhr, failed_alert_elem);
             },
         });
     };
@@ -966,11 +966,14 @@ export function build_page() {
         channel.del({
             url,
             success() {
-                ui_report.success(i18n.t("Deleted successfully!"), realm_domains_info);
+                ui_report.success(
+                    $t_html({defaultMessage: "Deleted successfully!"}),
+                    realm_domains_info,
+                );
                 fade_status_element(realm_domains_info);
             },
             error(xhr) {
-                ui_report.error(i18n.t("Failed"), xhr, realm_domains_info);
+                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, realm_domains_info);
                 fade_status_element(realm_domains_info);
             },
         });
@@ -995,11 +998,14 @@ export function build_page() {
                     "checked",
                     false,
                 );
-                ui_report.success(i18n.t("Added successfully!"), realm_domains_info);
+                ui_report.success(
+                    $t_html({defaultMessage: "Added successfully!"}),
+                    realm_domains_info,
+                );
                 fade_status_element(realm_domains_info);
             },
             error(xhr) {
-                ui_report.error(i18n.t("Failed"), xhr, realm_domains_info);
+                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, realm_domains_info);
                 fade_status_element(realm_domains_info);
             },
         });
@@ -1021,23 +1027,28 @@ export function build_page() {
             success() {
                 if (allow_subdomains) {
                     ui_report.success(
-                        i18n.t("Update successful: Subdomains allowed for __domain__", {
-                            domain,
-                        }),
+                        $t_html(
+                            {defaultMessage: "Update successful: Subdomains allowed for {domain}"},
+                            {domain},
+                        ),
                         realm_domains_info,
                     );
                 } else {
                     ui_report.success(
-                        i18n.t("Update successful: Subdomains no longer allowed for __domain__", {
-                            domain,
-                        }),
+                        $t_html(
+                            {
+                                defaultMessage:
+                                    "Update successful: Subdomains no longer allowed for {domain}",
+                            },
+                            {domain},
+                        ),
                         realm_domains_info,
                     );
                 }
                 fade_status_element(realm_domains_info);
             },
             error(xhr) {
-                ui_report.error(i18n.t("Failed"), xhr, realm_domains_info);
+                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, realm_domains_info);
                 fade_status_element(realm_domains_info);
             },
         });
@@ -1120,7 +1131,7 @@ export function build_page() {
             url: "/json/realm/deactivate",
             error(xhr) {
                 ui_report.error(
-                    i18n.t("Failed"),
+                    $t_html({defaultMessage: "Failed"}),
                     xhr,
                     $("#admin-realm-deactivation-status").expectOne(),
                 );

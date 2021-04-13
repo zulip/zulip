@@ -3,7 +3,7 @@ import $ from "jquery";
 import render_admin_linkifier_list from "../templates/admin_linkifier_list.hbs";
 
 import * as channel from "./channel";
-import {i18n} from "./i18n";
+import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
 import * as ui from "./ui";
@@ -135,22 +135,25 @@ export function build_page() {
                     $("#linkifier_format_string").val("");
                     add_linkifier_button.prop("disabled", false);
                     linkifier.id = data.id;
-                    ui_report.success(i18n.t("Custom linkifier added!"), linkifier_status);
+                    ui_report.success(
+                        $t_html({defaultMessage: "Custom linkifier added!"}),
+                        linkifier_status,
+                    );
                 },
                 error(xhr) {
                     const errors = JSON.parse(xhr.responseText).errors;
                     add_linkifier_button.prop("disabled", false);
                     if (errors.pattern !== undefined) {
                         xhr.responseText = JSON.stringify({msg: errors.pattern});
-                        ui_report.error(i18n.t("Failed"), xhr, pattern_status);
+                        ui_report.error($t_html({defaultMessage: "Failed"}), xhr, pattern_status);
                     }
                     if (errors.url_format_string !== undefined) {
                         xhr.responseText = JSON.stringify({msg: errors.url_format_string});
-                        ui_report.error(i18n.t("Failed"), xhr, format_status);
+                        ui_report.error($t_html({defaultMessage: "Failed"}), xhr, format_status);
                     }
                     if (errors.__all__ !== undefined) {
                         xhr.responseText = JSON.stringify({msg: errors.__all__});
-                        ui_report.error(i18n.t("Failed"), xhr, linkifier_status);
+                        ui_report.error($t_html({defaultMessage: "Failed"}), xhr, linkifier_status);
                     }
                 },
             });
