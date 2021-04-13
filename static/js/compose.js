@@ -955,7 +955,7 @@ export function render_and_show_preview(preview_spinner, preview_content_box, co
     }
 
     if (content.length === 0) {
-        show_preview(i18n.t("Nothing to preview"));
+        show_preview($t_html({defaultMessage: "Nothing to preview"}));
     } else {
         if (markdown.contains_backend_only_syntax(content)) {
             const spinner = preview_spinner.expectOne();
@@ -988,7 +988,7 @@ export function render_and_show_preview(preview_spinner, preview_content_box, co
                 if (markdown.contains_backend_only_syntax(content)) {
                     loading.destroy_indicator(preview_spinner);
                 }
-                show_preview(i18n.t("Failed to generate preview"));
+                show_preview($t_html({defaultMessage: "Failed to generate preview"}));
             },
         });
     }

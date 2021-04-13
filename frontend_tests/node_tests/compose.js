@@ -1558,7 +1558,10 @@ test_ui("on_events", (override) => {
 
         function test_post_error(error_callback) {
             error_callback();
-            assert.equal($("#preview_content").html(), "translated: Failed to generate preview");
+            assert.equal(
+                $("#preview_content").html(),
+                "translated HTML: Failed to generate preview",
+            );
         }
 
         function mock_channel_post(msg) {
@@ -1598,7 +1601,7 @@ test_ui("on_events", (override) => {
 
         handler(event);
 
-        assert.equal($("#preview_content").html(), "translated: Nothing to preview");
+        assert.equal($("#preview_content").html(), "translated HTML: Nothing to preview");
         assert_visibilities();
 
         let make_indicator_called = false;
