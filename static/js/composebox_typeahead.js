@@ -831,8 +831,8 @@ export function content_typeahead_selected(item, event) {
                     is_silent,
                 );
                 beginning += mention_text + " ";
+                compose.warn_if_mentioned_private_one_on_one(item);
                 if (!is_silent) {
-                    compose.warn_if_mentioned_private_one_on_one(item);
                     compose.warn_if_mentioning_unsubscribed_user(item);
                 }
             }
