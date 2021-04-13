@@ -7,7 +7,7 @@ import * as alert_words from "./alert_words";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as favicon from "./favicon";
-import {i18n} from "./i18n";
+import {$t, i18n} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as muting from "./muting";
@@ -509,14 +509,18 @@ function get_message_header(message) {
         return message.stream + " > " + message.topic;
     }
     if (message.display_recipient.length > 2) {
-        return i18n.t("group private messages with __- recipient__", {
-            recipient: message.display_reply_to,
-        });
+        return $t(
+            {defaultMessage: "group private messages with {recipient}"},
+            {recipient: message.display_reply_to},
+        );
     }
     if (people.is_current_user(message.reply_to)) {
         return i18n.t("private messages with yourself");
     }
-    return i18n.t("private messages with __- recipient__", {recipient: message.display_reply_to});
+    return $t(
+        {defaultMessage: "private messages with {recipient}"},
+        {recipient: message.display_reply_to},
+    );
 }
 
 export function get_local_notify_mix_reason(message) {
