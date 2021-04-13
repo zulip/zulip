@@ -10,7 +10,7 @@ import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as common from "./common";
 import {csrf_token} from "./csrf";
-import {i18n} from "./i18n";
+import {$t_html, i18n} from "./i18n";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -576,11 +576,18 @@ export function set_up() {
                     window.location.href = "/login/";
                 },
                 error(xhr) {
-                    const error_last_owner = i18n.t(
-                        "Error: Cannot deactivate the only organization owner.",
-                    );
-                    const error_last_user = i18n.t(
-                        'Error: Cannot deactivate the only user. You can deactivate the whole organization though in your <a target="_blank" href="/#organization/organization-profile">Organization profile settings</a>.',
+                    const error_last_owner = $t_html({
+                        defaultMessage: "Error: Cannot deactivate the only organization owner.",
+                    });
+                    const error_last_user = $t_html(
+                        {
+                            defaultMessage:
+                                "Error: Cannot deactivate the only user. You can deactivate the whole organization though in your <z-link>organization profile settings</z-link>.",
+                        },
+                        {
+                            "z-link": (content_html) =>
+                                `<a target="_blank" href="/#organization/organization-profile">${content_html}</a>`,
+                        },
                     );
                     let rendered_error_msg;
                     if (xhr.responseJSON.code === "CANNOT_DEACTIVATE_LAST_USER") {
