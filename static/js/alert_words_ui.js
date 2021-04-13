@@ -4,7 +4,7 @@ import render_alert_word_settings_item from "../templates/settings/alert_word_se
 
 import * as alert_words from "./alert_words";
 import * as channel from "./channel";
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 
 export function render_alert_words_ui() {
     const words = alert_words.get_word_list();
@@ -38,10 +38,10 @@ function update_alert_word_status(status_text, is_error) {
 function add_alert_word(alert_word) {
     alert_word = alert_word.trim();
     if (alert_word === "") {
-        update_alert_word_status(i18n.t("Alert word can't be empty!"), true);
+        update_alert_word_status($t({defaultMessage: "Alert word can't be empty!"}), true);
         return;
     } else if (alert_words.has_alert_word(alert_word)) {
-        update_alert_word_status(i18n.t("Alert word already exists!"), true);
+        update_alert_word_status($t({defaultMessage: "Alert word already exists!"}), true);
         return;
     }
 
@@ -51,14 +51,15 @@ function add_alert_word(alert_word) {
         url: "/json/users/me/alert_words",
         data: {alert_words: JSON.stringify(words_to_be_added)},
         success() {
-            const message = i18n.t('Alert word "__word__" added successfully!', {
-                word: words_to_be_added[0],
-            });
+            const message = $t(
+                {defaultMessage: 'Alert word "{word}" added successfully!'},
+                {word: words_to_be_added[0]},
+            );
             update_alert_word_status(message, false);
             $("#create_alert_word_name").val("");
         },
         error() {
-            update_alert_word_status(i18n.t("Error adding alert word!"), true);
+            update_alert_word_status($t({defaultMessage: "Error adding alert word!"}), true);
         },
     });
 }
@@ -69,10 +70,13 @@ function remove_alert_word(alert_word) {
         url: "/json/users/me/alert_words",
         data: {alert_words: JSON.stringify(words_to_be_removed)},
         success() {
-            update_alert_word_status(i18n.t("Alert word removed successfully!"), false);
+            update_alert_word_status(
+                $t({defaultMessage: "Alert word removed successfully!"}),
+                false,
+            );
         },
         error() {
-            update_alert_word_status(i18n.t("Error removing alert word!"), true);
+            update_alert_word_status($t({defaultMessage: "Error removing alert word!"}), true);
         },
     });
 }

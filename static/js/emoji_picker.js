@@ -10,7 +10,7 @@ import render_emoji_showcase from "../templates/emoji_showcase.hbs";
 
 import * as blueslip from "./blueslip";
 import * as compose_ui from "./compose_ui";
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as popovers from "./popovers";
@@ -631,7 +631,7 @@ export function build_emoji_popover(elt, id) {
         trigger: "manual",
     });
     elt.popover("show");
-    elt.prop("title", i18n.t("Add emoji reaction (:)"));
+    elt.prop("title", $t({defaultMessage: "Add emoji reaction (:)"}));
 
     const popover = elt.data("popover").$tip;
     popover.find(".emoji-popover-filter").trigger("focus");

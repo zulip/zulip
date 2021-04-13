@@ -12,7 +12,7 @@ import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import * as hash_util from "./hash_util";
-import {$t_html, i18n} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as input_pill from "./input_pill";
 import * as ListWidget from "./list_widget";
 import * as narrow_state from "./narrow_state";
@@ -101,7 +101,7 @@ export function get_retention_policy_text_for_subscription_type(sub) {
 
     // Forever for this stream, overriding the organization default
     if (sub.message_retention_days === settings_config.retain_message_forever) {
-        return i18n.t("Messages in this stream will be retained forever.");
+        return $t({defaultMessage: "Messages in this stream will be retained forever."});
     }
 
     // If we are deleting messages, even if it's the organization
@@ -110,8 +110,11 @@ export function get_retention_policy_text_for_subscription_type(sub) {
         message_retention_days = page_params.realm_message_retention_days;
     }
 
-    return i18n.t(
-        "Messages in this stream will be automatically deleted after __retention_days__ days.",
+    return $t(
+        {
+            defaultMessage:
+                "Messages in this stream will be automatically deleted after {retention_days} days.",
+        },
         {retention_days: message_retention_days},
     );
 }
@@ -119,11 +122,12 @@ export function get_retention_policy_text_for_subscription_type(sub) {
 export function get_display_text_for_realm_message_retention_setting() {
     const realm_message_retention_days = page_params.realm_message_retention_days;
     if (realm_message_retention_days === settings_config.retain_message_forever) {
-        return i18n.t("(forever)");
+        return $t({defaultMessage: "(forever)"});
     }
-    return i18n.t("(__message_retention_days__ days)", {
-        message_retention_days: realm_message_retention_days,
-    });
+    return $t(
+        {defaultMessage: "({message_retention_days} days)"},
+        {message_retention_days: realm_message_retention_days},
+    );
 }
 
 function change_stream_message_retention_days_block_display_property(value) {
@@ -248,7 +252,7 @@ function submit_add_subscriber_form(e) {
     }
     if (user_ids.size === 0) {
         stream_subscription_info_elem
-            .text(i18n.t("No user to subscribe."))
+            .text($t({defaultMessage: "No user to subscribe."}))
             .addClass("text-error")
             .removeClass("text-success");
         return;
@@ -607,7 +611,7 @@ function change_stream_privacy(e) {
         },
         error(xhr) {
             ui_report.error($t_html({defaultMessage: "Failed"}), xhr, stream_privacy_status);
-            $("#change-stream-privacy-button").text(i18n.t("Try again"));
+            $("#change-stream-privacy-button").text($t({defaultMessage: "Try again"}));
         },
     });
 }
@@ -808,17 +812,21 @@ export function initialize() {
             if (data.removed.length > 0) {
                 // Remove the user from the subscriber list.
                 list_entry.remove();
-                stream_subscription_info_elem.text(i18n.t("Unsubscribed successfully!"));
+                stream_subscription_info_elem.text(
+                    $t({defaultMessage: "Unsubscribed successfully!"}),
+                );
                 // The rest of the work is done via the subscription -> remove event we will get
             } else {
-                stream_subscription_info_elem.text(i18n.t("User is already not subscribed."));
+                stream_subscription_info_elem.text(
+                    $t({defaultMessage: "User is already not subscribed."}),
+                );
             }
             stream_subscription_info_elem.addClass("text-success").removeClass("text-error");
         }
 
         function removal_failure() {
             stream_subscription_info_elem
-                .text(i18n.t("Error removing user from this stream."))
+                .text($t({defaultMessage: "Error removing user from this stream."}))
                 .addClass("text-error")
                 .removeClass("text-success");
         }

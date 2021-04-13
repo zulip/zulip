@@ -17,7 +17,7 @@ import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as drafts from "./drafts";
 import * as echo from "./echo";
-import {$t_html, i18n} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as markdown from "./markdown";
 import * as notifications from "./notifications";
@@ -178,18 +178,18 @@ function update_conversation_button(btn_text, title) {
 }
 
 export function update_closed_compose_buttons_for_private() {
-    const text_stream = i18n.t("New stream message");
+    const text_stream = $t({defaultMessage: "New stream message"});
     const title_stream = text_stream + " (c)";
-    const text_conversation = i18n.t("New private message");
+    const text_conversation = $t({defaultMessage: "New private message"});
     const title_conversation = text_conversation + " (x)";
     update_stream_button(text_stream, title_stream);
     update_conversation_button(text_conversation, title_conversation);
 }
 
 export function update_closed_compose_buttons_for_stream() {
-    const text_stream = i18n.t("New topic");
+    const text_stream = $t({defaultMessage: "New topic"});
     const title_stream = text_stream + " (c)";
-    const text_conversation = i18n.t("New private message");
+    const text_conversation = $t({defaultMessage: "New private message"});
     const title_conversation = text_conversation + " (x)";
     update_stream_button(text_stream, title_stream);
     update_conversation_button(text_conversation, title_conversation);
@@ -222,7 +222,7 @@ export function abort_video_callbacks(edit_message_id = "") {
 }
 
 export function empty_topic_placeholder() {
-    return i18n.t("(no topic)");
+    return $t({defaultMessage: "(no topic)"});
 }
 
 export function create_message_object() {
@@ -801,9 +801,9 @@ export function validate() {
     $("#compose-send-button").prop("disabled", true).trigger("blur");
     const message_content = compose_state.message_content();
     if (reminder.is_deferred_delivery(message_content)) {
-        show_sending_indicator(i18n.t("Scheduling..."));
+        show_sending_indicator($t({defaultMessage: "Scheduling..."}));
     } else {
-        show_sending_indicator(i18n.t("Sending..."));
+        show_sending_indicator($t({defaultMessage: "Sending..."}));
     }
 
     if (/^\s*$/.test(message_content)) {
@@ -930,7 +930,7 @@ export function needs_subscribe_warning(user_id, stream_id) {
 }
 
 function insert_video_call_url(url, target_textarea) {
-    const link_text = i18n.t("Click to join video call");
+    const link_text = $t({defaultMessage: "Click to join video call"});
     compose_ui.insert_syntax_and_focus(`[${link_text}](${url})`, target_textarea);
 }
 

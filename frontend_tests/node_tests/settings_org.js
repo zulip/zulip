@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {i18n} = require("../zjsunit/i18n");
+const {$t} = require("../zjsunit/i18n");
 const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
@@ -813,19 +813,19 @@ test("test get_organization_settings_options", () => {
             key: "by_admins_only",
             order: 1,
             code: 2,
-            description: i18n.t("Admins"),
+            description: $t({defaultMessage: "Admins"}),
         },
         {
             key: "by_full_members",
             order: 2,
             code: 3,
-            description: i18n.t("Admins and full members"),
+            description: $t({defaultMessage: "Admins and full members"}),
         },
         {
             key: "by_members",
             order: 3,
             code: 1,
-            description: i18n.t("Admins and members"),
+            description: $t({defaultMessage: "Admins and members"}),
         },
     ];
     assert.deepEqual(sorted_create_stream_policy_values, expected_create_stream_policy_values);
@@ -836,17 +836,17 @@ test("test get_sorted_options_list", () => {
         by_admins_only: {
             order: 3,
             code: 2,
-            description: i18n.t("Admins"),
+            description: $t({defaultMessage: "Admins"}),
         },
         by_members: {
             order: 2,
             code: 1,
-            description: i18n.t("Admins and members"),
+            description: $t({defaultMessage: "Admins and members"}),
         },
         by_full_members: {
             order: 1,
             code: 3,
-            description: i18n.t("Admins and full members"),
+            description: $t({defaultMessage: "Admins and full members"}),
         },
     };
     let expected_option_values = [
@@ -854,19 +854,19 @@ test("test get_sorted_options_list", () => {
             key: "by_full_members",
             order: 1,
             code: 3,
-            description: i18n.t("Admins and full members"),
+            description: $t({defaultMessage: "Admins and full members"}),
         },
         {
             key: "by_members",
             order: 2,
             code: 1,
-            description: i18n.t("Admins and members"),
+            description: $t({defaultMessage: "Admins and members"}),
         },
         {
             key: "by_admins_only",
             order: 3,
             code: 2,
-            description: i18n.t("Admins"),
+            description: $t({defaultMessage: "Admins"}),
         },
     ];
     assert.deepEqual(settings_org.get_sorted_options_list(option_values_1), expected_option_values);
@@ -874,32 +874,32 @@ test("test get_sorted_options_list", () => {
     const option_values_2 = {
         by_admins_only: {
             code: 1,
-            description: i18n.t("Admins"),
+            description: $t({defaultMessage: "Admins"}),
         },
         by_members: {
             code: 2,
-            description: i18n.t("Admins and members"),
+            description: $t({defaultMessage: "Admins and members"}),
         },
         by_full_members: {
             code: 3,
-            description: i18n.t("Admins and full members"),
+            description: $t({defaultMessage: "Admins and full members"}),
         },
     };
     expected_option_values = [
         {
             key: "by_admins_only",
             code: 1,
-            description: i18n.t("Admins"),
+            description: $t({defaultMessage: "Admins"}),
         },
         {
             key: "by_full_members",
             code: 3,
-            description: i18n.t("Admins and full members"),
+            description: $t({defaultMessage: "Admins and full members"}),
         },
         {
             key: "by_members",
             code: 2,
-            description: i18n.t("Admins and members"),
+            description: $t({defaultMessage: "Admins and members"}),
         },
     ];
     assert.deepEqual(settings_org.get_sorted_options_list(option_values_2), expected_option_values);

@@ -6,7 +6,7 @@ import render_subscription_invites_warning_modal from "../templates/subscription
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
-import {$t_html, i18n} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
@@ -33,16 +33,17 @@ export function get_name() {
 class StreamSubscriptionError {
     report_no_subs_to_stream() {
         $("#stream_subscription_error").text(
-            i18n.t("You cannot create a stream with no subscribers!"),
+            $t({defaultMessage: "You cannot create a stream with no subscribers!"}),
         );
         $("#stream_subscription_error").show();
     }
 
     cant_create_stream_without_susbscribing() {
         $("#stream_subscription_error").text(
-            i18n.t(
-                "You must be an organization administrator to create a stream without subscribing.",
-            ),
+            $t({
+                defaultMessage:
+                    "You must be an organization administrator to create a stream without subscribing.",
+            }),
         );
         $("#stream_subscription_error").show();
     }
@@ -55,7 +56,9 @@ const stream_subscription_error = new StreamSubscriptionError();
 
 class StreamNameError {
     report_already_exists() {
-        $("#stream_name_error").text(i18n.t("A stream with this name already exists"));
+        $("#stream_name_error").text(
+            $t({defaultMessage: "A stream with this name already exists"}),
+        );
         $("#stream_name_error").show();
     }
 
@@ -64,7 +67,7 @@ class StreamNameError {
     }
 
     report_empty_stream() {
-        $("#stream_name_error").text(i18n.t("A stream needs to have a name"));
+        $("#stream_name_error").text($t({defaultMessage: "A stream needs to have a name"}));
         $("#stream_name_error").show();
     }
 
@@ -209,7 +212,9 @@ function create_stream() {
     const user_ids = get_principals();
     data.principals = JSON.stringify(user_ids);
 
-    loading.make_indicator($("#stream_creating_indicator"), {text: i18n.t("Creating stream...")});
+    loading.make_indicator($("#stream_creating_indicator"), {
+        text: $t({defaultMessage: "Creating stream..."}),
+    });
 
     // Subscribe yourself and possible other people to a new stream.
     return channel.post({

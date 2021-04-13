@@ -6,7 +6,7 @@ const {parseISO} = require("date-fns");
 const _ = require("lodash");
 const MockDate = require("mockdate");
 
-const {i18n} = require("../zjsunit/i18n");
+const {$t} = require("../zjsunit/i18n");
 const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
@@ -427,11 +427,11 @@ test_people("user_type", () => {
     people.add_active_user(guest);
     people.add_active_user(realm_owner);
     people.add_active_user(bot_botson);
-    assert.equal(people.get_user_type(me.user_id), i18n.t("Member"));
-    assert.equal(people.get_user_type(realm_admin.user_id), i18n.t("Administrator"));
-    assert.equal(people.get_user_type(guest.user_id), i18n.t("Guest"));
-    assert.equal(people.get_user_type(realm_owner.user_id), i18n.t("Owner"));
-    assert.equal(people.get_user_type(bot_botson.user_id), i18n.t("Bot"));
+    assert.equal(people.get_user_type(me.user_id), $t({defaultMessage: "Member"}));
+    assert.equal(people.get_user_type(realm_admin.user_id), $t({defaultMessage: "Administrator"}));
+    assert.equal(people.get_user_type(guest.user_id), $t({defaultMessage: "Guest"}));
+    assert.equal(people.get_user_type(realm_owner.user_id), $t({defaultMessage: "Owner"}));
+    assert.equal(people.get_user_type(bot_botson.user_id), $t({defaultMessage: "Bot"}));
 });
 
 test_people("updates", () => {

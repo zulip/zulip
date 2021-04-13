@@ -1,7 +1,7 @@
 import $ from "jquery";
 
 import * as color_class from "./color_class";
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import * as message_view_header from "./message_view_header";
 import * as subs from "./subs";
 
@@ -122,7 +122,7 @@ export const sidebar_popover_colorpicker_options_full = {
     showInput: true,
     flat: true,
     cancelText: "",
-    chooseText: i18n.t("Confirm"),
+    chooseText: $t({defaultMessage: "Confirm"}),
     palette: stream_color_palette,
     change: picker_do_change_color,
 };

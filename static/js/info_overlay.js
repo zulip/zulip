@@ -5,7 +5,7 @@ import render_markdown_help from "../templates/markdown_help.hbs";
 import * as browser_history from "./browser_history";
 import * as common from "./common";
 import * as components from "./components";
-import {$t_html, i18n} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as markdown from "./markdown";
 import * as overlays from "./overlays";
@@ -169,9 +169,9 @@ export function set_up_toggler() {
         selected: 0,
         child_wants_focus: true,
         values: [
-            {label: i18n.t("Keyboard shortcuts"), key: "keyboard-shortcuts"},
-            {label: i18n.t("Message formatting"), key: "message-formatting"},
-            {label: i18n.t("Search operators"), key: "search-operators"},
+            {label: $t({defaultMessage: "Keyboard shortcuts"}), key: "keyboard-shortcuts"},
+            {label: $t({defaultMessage: "Message formatting"}), key: "message-formatting"},
+            {label: $t({defaultMessage: "Search operators"}), key: "search-operators"},
         ],
         callback(name, key) {
             $(".overlay-modal").hide();

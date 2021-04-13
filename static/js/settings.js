@@ -6,7 +6,7 @@ import render_settings_tab from "../templates/settings_tab.hbs";
 
 import * as admin from "./admin";
 import * as blueslip from "./blueslip";
-import {$t_html, i18n} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -41,32 +41,38 @@ $("body").ready(() => {
 function setup_settings_label() {
     settings_label = {
         // settings_notification
-        enable_online_push_notifications: i18n.t(
-            "Send mobile notifications even if I'm online (useful for testing)",
-        ),
-        pm_content_in_desktop_notifications: i18n.t(
-            "Include content of private messages in desktop notifications",
-        ),
-        desktop_icon_count_display: i18n.t(
-            "Unread count summary (appears in desktop sidebar and browser tab)",
-        ),
-        enable_digest_emails: i18n.t("Send digest emails when I'm away"),
-        enable_login_emails: i18n.t("Send email notifications for new logins to my account"),
-        message_content_in_email_notifications: i18n.t(
-            "Include message content in missed message emails",
-        ),
-        realm_name_in_notifications: i18n.t(
-            "Include organization name in subject of missed message emails",
-        ),
-        presence_enabled: i18n.t("Display my availability to other users when online"),
+        enable_online_push_notifications: $t({
+            defaultMessage: "Send mobile notifications even if I'm online (useful for testing)",
+        }),
+        pm_content_in_desktop_notifications: $t({
+            defaultMessage: "Include content of private messages in desktop notifications",
+        }),
+        desktop_icon_count_display: $t({
+            defaultMessage: "Unread count summary (appears in desktop sidebar and browser tab)",
+        }),
+        enable_digest_emails: $t({defaultMessage: "Send digest emails when I'm away"}),
+        enable_login_emails: $t({
+            defaultMessage: "Send email notifications for new logins to my account",
+        }),
+        message_content_in_email_notifications: $t({
+            defaultMessage: "Include message content in missed message emails",
+        }),
+        realm_name_in_notifications: $t({
+            defaultMessage: "Include organization name in subject of missed message emails",
+        }),
+        presence_enabled: $t({
+            defaultMessage: "Display my availability to other users when online",
+        }),
 
         // display settings
-        dense_mode: i18n.t("Dense mode"),
-        fluid_layout_width: i18n.t("Use full width on wide screens"),
-        high_contrast_mode: i18n.t("High contrast mode"),
-        left_side_userlist: i18n.t("Show user list on left sidebar in narrow windows"),
-        starred_message_counts: i18n.t("Show counts for starred messages"),
-        twenty_four_hour_time: i18n.t("Time format"),
+        dense_mode: $t({defaultMessage: "Dense mode"}),
+        fluid_layout_width: $t({defaultMessage: "Use full width on wide screens"}),
+        high_contrast_mode: $t({defaultMessage: "High contrast mode"}),
+        left_side_userlist: $t({
+            defaultMessage: "Show user list on left sidebar in narrow windows",
+        }),
+        starred_message_counts: $t({defaultMessage: "Show counts for starred messages"}),
+        twenty_four_hour_time: $t({defaultMessage: "Time format"}),
         translate_emoticons: new Handlebars.SafeString(
             $t_html({
                 defaultMessage: "Convert emoticons before sending (<code>:)</code> becomes 😃)",

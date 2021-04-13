@@ -7,7 +7,7 @@ import render_markdown_timestamp from "../templates/markdown_timestamp.hbs";
 import view_code_in_playground from "../templates/view_code_in_playground.hbs";
 
 import * as blueslip from "./blueslip";
-import {$t_html, i18n} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as rtl from "./rtl";
@@ -179,7 +179,10 @@ export const update_elements = (content) => {
 
     content.find("span.timestamp-error").each(function () {
         const time_str = $(this).text().replace("Invalid time format: ", "");
-        const text = i18n.t("Invalid time format: __timestamp__", {timestamp: time_str});
+        const text = $t(
+            {defaultMessage: "Invalid time format: {timestamp}"},
+            {timestamp: time_str},
+        );
         $(this).text(text);
     });
 
@@ -210,13 +213,14 @@ export const update_elements = (content) => {
                 // offer to view the code in that playground.  When
                 // there are multiple playgrounds, we display a
                 // popover listing the options.
-                let title = i18n.t("View in playground");
+                let title = $t({defaultMessage: "View in playground"});
                 const view_in_playground_button = $(view_code_in_playground());
                 $pre.prepend(view_in_playground_button);
                 if (playground_info.length === 1) {
-                    title = i18n.t("View in __playground_name__", {
-                        playground_name: playground_info[0].name,
-                    });
+                    title = $t(
+                        {defaultMessage: "View in {playground_name}"},
+                        {playground_name: playground_info[0].name},
+                    );
                 } else {
                     view_in_playground_button.attr("aria-haspopup", "true");
                 }

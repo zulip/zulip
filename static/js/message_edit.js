@@ -11,7 +11,7 @@ import * as compose_actions from "./compose_actions";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
 import * as echo from "./echo";
-import {$t_html, i18n} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as markdown from "./markdown";
 import * as message_lists from "./message_lists";
@@ -288,11 +288,14 @@ function timer_text(seconds_left) {
     const minutes = Math.floor(seconds_left / 60);
     const seconds = seconds_left % 60;
     if (minutes >= 1) {
-        return i18n.t("__minutes__ min to edit", {minutes: minutes.toString()});
+        return $t({defaultMessage: "{minutes} min to edit"}, {minutes: minutes.toString()});
     } else if (seconds_left >= 10) {
-        return i18n.t("__seconds__ sec to edit", {seconds: (seconds - (seconds % 5)).toString()});
+        return $t(
+            {defaultMessage: "{seconds} sec to edit"},
+            {seconds: (seconds - (seconds % 5)).toString()},
+        );
     }
-    return i18n.t("__seconds__ sec to edit", {seconds: seconds.toString()});
+    return $t({defaultMessage: "{seconds} sec to edit"}, {seconds: seconds.toString()});
 }
 
 function create_copy_to_clipboard_handler(source, message_id) {
@@ -391,12 +394,12 @@ function edit_message(row, raw_content) {
         // in streams), then we'll need to disable
         // row.find('input.message_edit_topic') as well.
         message_edit_content.attr("readonly", "readonly");
-        message_edit_countdown_timer.text(i18n.t("View source"));
+        message_edit_countdown_timer.text($t({defaultMessage: "View source"}));
         create_copy_to_clipboard_handler(copy_message[0], message.id);
     } else if (editability === editability_types.TOPIC_ONLY) {
         message_edit_content.attr("readonly", "readonly");
         // Hint why you can edit the topic but not the message content
-        message_edit_countdown_timer.text(i18n.t("Topic editing only"));
+        message_edit_countdown_timer.text($t({defaultMessage: "Topic editing only"}));
         create_copy_to_clipboard_handler(copy_message[0], message.id);
     } else if (editability === editability_types.FULL) {
         copy_message.remove();
@@ -459,7 +462,7 @@ function edit_message(row, raw_content) {
                 // the half-finished edit around so that they can copy-paste it, but we don't want
                 // people to think "Save" will save the half-finished edit.
                 message_edit_save.addClass("disabled");
-                message_edit_countdown_timer.text(i18n.t("Time's up!"));
+                message_edit_countdown_timer.text($t({defaultMessage: "Time's up!"}));
             } else {
                 message_edit_countdown_timer.text(timer_text(seconds_left));
             }
@@ -656,7 +659,10 @@ export function save_inline_topic_edit(row) {
             loading.destroy_indicator(spinner);
             if (msg_list === message_lists.current) {
                 message_id = rows.id_for_recipient_row(row);
-                const message = channel.xhr_error_message(i18n.t("Error saving edit"), xhr);
+                const message = channel.xhr_error_message(
+                    $t({defaultMessage: "Error saving edit"}),
+                    xhr,
+                );
                 row.find(".edit_error").text(message).css("display", "inline-block");
             }
         },
@@ -819,7 +825,10 @@ export function save_message_row_edit(row) {
                 }
 
                 hide_message_edit_spinner(row);
-                const message = channel.xhr_error_message(i18n.t("Error saving edit"), xhr);
+                const message = channel.xhr_error_message(
+                    $t({defaultMessage: "Error saving edit"}),
+                    xhr,
+                );
                 row.find(".edit_error").text(message).show();
             }
         },
@@ -957,7 +966,7 @@ export function move_topic_containing_message_to_stream(
     if (currently_topic_editing_messages.includes(message_id)) {
         hide_topic_move_spinner();
         $("#topic_stream_edit_form_error .error-msg").text(
-            i18n.t("A Topic Move already in progress."),
+            $t({defaultMessage: "A Topic Move already in progress."}),
         );
         $("#topic_stream_edit_form_error").show();
         return;

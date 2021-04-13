@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import {$t_html, i18n} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as ui_report from "./ui_report";
 
@@ -14,7 +14,7 @@ export function display_checkmark($elem) {
 export const strings = {
     success_html: $t_html({defaultMessage: "Saved"}),
     failure_html: $t_html({defaultMessage: "Save failed"}),
-    saving: i18n.t("Saving"),
+    saving: $t({defaultMessage: "Saving"}),
 };
 
 // Generic function for informing users about changes to the settings

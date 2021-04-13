@@ -3,7 +3,7 @@ import $ from "jquery";
 import render_stream_specific_notification_row from "../templates/settings/stream_specific_notification_row.hbs";
 
 import * as channel from "./channel";
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
@@ -87,7 +87,7 @@ export function set_up() {
 
     $("#send_test_notification").on("click", () => {
         notifications.send_test_notification(
-            i18n.t("This is what a Zulip notification looks like."),
+            $t({defaultMessage: "This is what a Zulip notification looks like."}),
         );
     });
 
