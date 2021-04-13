@@ -10,13 +10,13 @@ import {i18n} from "./i18n";
    cls- class that we want to add/remove to/from the status_box
 */
 
-export function message(response, status_box, cls = "alert", remove_after = false) {
+export function message(response_html, status_box, cls = "alert", remove_after = false) {
     // Note we use html() below, since we can rely on our callers escaping HTML
-    // via i18n.t when interpolating data.
+    // via $t_html when interpolating data.
     status_box
         .removeClass(common.status_classes)
         .addClass(cls)
-        .html(response)
+        .html(response_html)
         .stop(true)
         .fadeTo(0, 1);
     if (remove_after) {
@@ -27,35 +27,35 @@ export function message(response, status_box, cls = "alert", remove_after = fals
     status_box.addClass("show");
 }
 
-export function error(response, xhr, status_box, remove_after) {
+export function error(response_html, xhr, status_box, remove_after) {
     if (xhr && xhr.status.toString().charAt(0) === "4") {
         // Only display the error response for 4XX, where we've crafted
         // a nice response.
-        const server_response = _.escape(JSON.parse(xhr.responseText).msg);
-        if (response) {
-            response += ": " + server_response;
+        const server_response_html = _.escape(JSON.parse(xhr.responseText).msg);
+        if (response_html) {
+            response_html += ": " + server_response_html;
         } else {
-            response = server_response;
+            response_html = server_response_html;
         }
     }
 
-    message(response, status_box, "alert-error", remove_after);
+    message(response_html, status_box, "alert-error", remove_after);
 }
 
-export function client_error(response, status_box, remove_after) {
-    message(response, status_box, "alert-error", remove_after);
+export function client_error(response_html, status_box, remove_after) {
+    message(response_html, status_box, "alert-error", remove_after);
 }
 
-export function success(response, status_box, remove_after) {
-    message(response, status_box, "alert-success", remove_after);
+export function success(response_html, status_box, remove_after) {
+    message(response_html, status_box, "alert-success", remove_after);
 }
 
-export function generic_embed_error(error) {
+export function generic_embed_error(error_html) {
     const $alert = $("<div class='alert home-error-bar'></div>");
     const $exit = "<div class='exit'></div>";
 
     $(".alert-box").append(
-        $alert.html($exit + "<div class='content'>" + error + "</div>").addClass("show"),
+        $alert.html($exit + "<div class='content'>" + error_html + "</div>").addClass("show"),
     );
 }
 

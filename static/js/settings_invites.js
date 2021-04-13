@@ -5,7 +5,7 @@ import render_settings_revoke_invite_modal from "../templates/settings/revoke_in
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
-import {i18n} from "./i18n";
+import {$t_html, i18n} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
@@ -25,7 +25,11 @@ export function reset() {
 
 function failed_listing_invites(xhr) {
     loading.destroy_indicator($("#admin_page_invites_loading_indicator"));
-    ui_report.error(i18n.t("Error listing invites"), xhr, $("#invites-field-status"));
+    ui_report.error(
+        $t_html({defaultMessage: "Error listing invites"}),
+        xhr,
+        $("#invites-field-status"),
+    );
 }
 
 function add_invited_as_text(invites) {
@@ -102,7 +106,9 @@ function do_revoke_invite() {
     if (modal_invite_id !== meta.invite_id || modal_is_multiuse !== meta.is_multiuse) {
         blueslip.error("Invite revoking canceled due to non-matching fields.");
         ui_report.client_error(
-            i18n.t("Resending encountered an error. Please reload and try again."),
+            $t_html({
+                defaultMessage: "Resending encountered an error. Please reload and try again.",
+            }),
             $("#home-error"),
         );
     }
@@ -201,7 +207,9 @@ export function on_load_success(invites_data, initialize_event_handlers) {
         if (modal_invite_id !== meta.invite_id) {
             blueslip.error("Invite resending canceled due to non-matching fields.");
             ui_report.client_error(
-                i18n.t("Resending encountered an error. Please reload and try again."),
+                $t_html({
+                    defaultMessage: "Resending encountered an error. Please reload and try again.",
+                }),
                 $("#home-error"),
             );
         }

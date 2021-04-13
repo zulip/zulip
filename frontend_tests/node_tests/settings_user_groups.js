@@ -530,7 +530,7 @@ test_ui("on_events", (override) => {
                 $("#admin-user-group-status").show();
                 $("form.admin-user-group-form input[type='text']").val("fake-content");
                 ui_report.success = (text, ele) => {
-                    assert.equal(text, "translated: User group added!");
+                    assert.equal(text, "translated HTML: User group added!");
                     assert.equal(ele, $("#admin-user-group-status"));
                 };
 
@@ -546,7 +546,7 @@ test_ui("on_events", (override) => {
                     const xhr = {
                         responseText: '{"msg":"fake-msg"}',
                     };
-                    assert.equal(error_msg, "translated: Failed");
+                    assert.equal(error_msg, "translated HTML: Failed");
                     assert.deepEqual(error_obj, xhr);
                     assert.equal(ele, $("#admin-user-group-status"));
                 };
@@ -765,7 +765,7 @@ test_ui("on_events", (override) => {
                     const xhr = {
                         responseText: '{"msg":"fake-msg"}',
                     };
-                    assert.equal(error_msg, "translated: Failed");
+                    assert.equal(error_msg, "translated HTML: Failed");
                     assert.deepEqual(error_obj, xhr);
                     assert.equal(ele, user_group_error);
                 };

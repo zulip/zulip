@@ -6,7 +6,7 @@ import render_confirm_delete_user from "../templates/confirm_delete_user.hbs";
 
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
-import {i18n} from "./i18n";
+import {$t_html, i18n} from "./i18n";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pill_typeahead from "./pill_typeahead";
@@ -208,7 +208,7 @@ export function populate_user_groups() {
                 error(xhr) {
                     const errors = JSON.parse(xhr.responseText).msg;
                     xhr.responseText = JSON.stringify({msg: errors});
-                    ui_report.error(i18n.t("Failed"), xhr, user_group_status);
+                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, user_group_status);
                     update_cancel_button();
                     $(`#user-groups #${CSS.escape(data.id)} .name`).text(group_data.name);
                     $(`#user-groups #${CSS.escape(data.id)} .description`).text(
@@ -323,14 +323,17 @@ export function set_up() {
                 data: group,
                 success() {
                     user_group_status.hide();
-                    ui_report.success(i18n.t("User group added!"), user_group_status);
+                    ui_report.success(
+                        $t_html({defaultMessage: "User group added!"}),
+                        user_group_status,
+                    );
                     $("form.admin-user-group-form input[type='text']").val("");
                 },
                 error(xhr) {
                     user_group_status.hide();
                     const errors = JSON.parse(xhr.responseText).msg;
                     xhr.responseText = JSON.stringify({msg: errors});
-                    ui_report.error(i18n.t("Failed"), xhr, user_group_status);
+                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, user_group_status);
                 },
             });
         });

@@ -15,7 +15,7 @@ import * as components from "./components";
 import * as compose_state from "./compose_state";
 import * as confirm_dialog from "./confirm_dialog";
 import * as hash_util from "./hash_util";
-import {i18n} from "./i18n";
+import {$t_html, i18n} from "./i18n";
 import * as loading from "./loading";
 import * as message_live_update from "./message_live_update";
 import * as message_view_header from "./message_view_header";
@@ -857,7 +857,10 @@ function ajaxSubscribe(stream, color, stream_row) {
                 // Display the canonical stream capitalization.
                 true_stream_name = res.already_subscribed[people.my_current_email()][0];
                 ui_report.success(
-                    i18n.t("Already subscribed to __stream__", {stream: true_stream_name}),
+                    $t_html(
+                        {defaultMessage: "Already subscribed to {stream}"},
+                        {stream: true_stream_name},
+                    ),
                     $(".stream_change_property_info"),
                 );
             }
@@ -872,7 +875,7 @@ function ajaxSubscribe(stream, color, stream_row) {
                 hide_subscribe_toggle_spinner(stream_row);
             }
             ui_report.error(
-                i18n.t("Error adding subscription"),
+                $t_html({defaultMessage: "Error adding subscription"}),
                 xhr,
                 $(".stream_change_property_info"),
             );
@@ -901,7 +904,7 @@ function ajaxUnsubscribe(sub, stream_row) {
                 hide_subscribe_toggle_spinner(stream_row);
             }
             ui_report.error(
-                i18n.t("Error removing subscription"),
+                $t_html({defaultMessage: "Error removing subscription"}),
                 xhr,
                 $(".stream_change_property_info"),
             );

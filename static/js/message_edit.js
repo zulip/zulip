@@ -11,7 +11,7 @@ import * as compose_actions from "./compose_actions";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
 import * as echo from "./echo";
-import {i18n} from "./i18n";
+import {$t_html, i18n} from "./i18n";
 import * as loading from "./loading";
 import * as markdown from "./markdown";
 import * as message_lists from "./message_lists";
@@ -910,7 +910,7 @@ export function delete_message(msg_id) {
                     );
                     hide_delete_btn_show_spinner(false);
                     ui_report.error(
-                        i18n.t("Error deleting message"),
+                        $t_html({defaultMessage: "Error deleting message"}),
                         xhr,
                         $("#delete-message-error"),
                     );
@@ -983,7 +983,12 @@ export function move_topic_containing_message_to_stream(
         },
         error(xhr) {
             reset_modal_ui();
-            ui_report.error(i18n.t("Error moving the topic"), xhr, $("#home-error"), 4000);
+            ui_report.error(
+                $t_html({defaultMessage: "Error moving the topic"}),
+                xhr,
+                $("#home-error"),
+                4000,
+            );
         },
     });
 }

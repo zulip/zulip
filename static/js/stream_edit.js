@@ -12,7 +12,7 @@ import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import * as hash_util from "./hash_util";
-import {i18n} from "./i18n";
+import {$t_html, i18n} from "./i18n";
 import * as input_pill from "./input_pill";
 import * as ListWidget from "./list_widget";
 import * as narrow_state from "./narrow_state";
@@ -606,7 +606,7 @@ function change_stream_privacy(e) {
             // The rest will be done by update stream event we will get.
         },
         error(xhr) {
-            ui_report.error(i18n.t("Failed"), xhr, stream_privacy_status);
+            ui_report.error($t_html({defaultMessage: "Failed"}), xhr, stream_privacy_status);
             $("#change-stream-privacy-button").text(i18n.t("Try again"));
         },
     });
@@ -633,13 +633,17 @@ export function change_stream_name(e) {
         success() {
             new_name_box.val("");
             ui_report.success(
-                i18n.t("The stream has been renamed!"),
+                $t_html({defaultMessage: "The stream has been renamed!"}),
                 $(".stream_change_property_info"),
             );
         },
         error(xhr) {
             new_name_box.text(old_name);
-            ui_report.error(i18n.t("Error"), xhr, $(".stream_change_property_info"));
+            ui_report.error(
+                $t_html({defaultMessage: "Error"}),
+                xhr,
+                $(".stream_change_property_info"),
+            );
         },
     });
 }
@@ -683,7 +687,7 @@ export function change_stream_description(e) {
         success() {
             // The event from the server will update the rest of the UI
             ui_report.success(
-                i18n.t("The stream description has been updated!"),
+                $t_html({defaultMessage: "The stream description has been updated!"}),
                 $(".stream_change_property_info"),
             );
         },
@@ -691,7 +695,11 @@ export function change_stream_description(e) {
             sub_settings
                 .find(".stream-description-editable")
                 .html(util.clean_user_content_links(sub.rendered_description));
-            ui_report.error(i18n.t("Error"), xhr, $(".stream_change_property_info"));
+            ui_report.error(
+                $t_html({defaultMessage: "Error"}),
+                xhr,
+                $(".stream_change_property_info"),
+            );
         },
     });
 }
@@ -700,7 +708,7 @@ export function archive_stream(stream_id, alert_element, stream_row) {
     channel.del({
         url: "/json/streams/" + stream_id,
         error(xhr) {
-            ui_report.error(i18n.t("Failed"), xhr, alert_element);
+            ui_report.error($t_html({defaultMessage: "Failed"}), xhr, alert_element);
         },
         success() {
             stream_row.remove();
@@ -861,7 +869,10 @@ export function initialize() {
 
         const stream_id = get_stream_id(e.target);
         if (!stream_id) {
-            ui_report.client_error(i18n.t("Invalid stream id"), $(".stream_change_property_info"));
+            ui_report.client_error(
+                $t_html({defaultMessage: "Invalid stream id"}),
+                $(".stream_change_property_info"),
+            );
             return;
         }
         const stream_name = stream_data.maybe_get_stream_name(stream_id);
@@ -878,7 +889,10 @@ export function initialize() {
         const stream_id = $(e.target).data("stream-id");
         overlays.close_modal("#deactivation_stream_modal");
         if (!stream_id) {
-            ui_report.client_error(i18n.t("Invalid stream id"), $(".stream_change_property_info"));
+            ui_report.client_error(
+                $t_html({defaultMessage: "Invalid stream id"}),
+                $(".stream_change_property_info"),
+            );
             return;
         }
         const row = $(".stream-row.active");
