@@ -4,7 +4,7 @@ import render_widgets_todo_widget from "../templates/widgets/todo_widget.hbs";
 import render_widgets_todo_widget_tasks from "../templates/widgets/todo_widget_tasks.hbs";
 
 import * as blueslip from "./blueslip";
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 
 export class TaskData {
     task_map = new Map();
@@ -149,7 +149,7 @@ export function activate(opts) {
 
             const task_exists = task_data.name_in_use(task);
             if (task_exists) {
-                elem.find(".widget-error").text(i18n.t("Task already exists"));
+                elem.find(".widget-error").text($t({defaultMessage: "Task already exists"}));
                 return;
             }
 

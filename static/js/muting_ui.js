@@ -5,7 +5,7 @@ import render_topic_muted from "../templates/topic_muted.hbs";
 
 import * as channel from "./channel";
 import * as feedback_widget from "./feedback_widget";
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as message_lists from "./message_lists";
 import * as muting from "./muting";
@@ -128,8 +128,8 @@ export function mute_topic(stream_id, topic) {
         on_undo() {
             unmute_topic(stream_id, topic);
         },
-        title_text: i18n.t("Topic muted"),
-        undo_button_text: i18n.t("Unmute"),
+        title_text: $t({defaultMessage: "Topic muted"}),
+        undo_button_text: $t({defaultMessage: "Unmute"}),
     });
     recent_topics.update_topic_is_muted(stream_id, topic);
 }

@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {i18n} = require("../zjsunit/i18n");
+const {$t} = require("../zjsunit/i18n");
 const {mock_cjs, mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -162,7 +162,7 @@ test_ui("sender_hover", (override) => {
                     user_email: "alice@example.com",
                     user_id: 42,
                     user_time: undefined,
-                    user_type: i18n.t("Member"),
+                    user_type: $t({defaultMessage: "Member"}),
                     user_circle_class: "user_circle_empty",
                     user_last_seen_time_status: "translated: More than 2 weeks ago",
                     pm_with_uri: "#narrow/pm-with/42-alice",

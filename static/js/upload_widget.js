@@ -1,4 +1,4 @@
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 
 const default_max_file_size = 5;
 
@@ -76,21 +76,22 @@ export function build_widget(
             const file = e.target.files[0];
             if (file.size > max_file_upload_size * 1024 * 1024) {
                 input_error.text(
-                    i18n.t("File size must be < __max_file_size__Mb.", {
-                        max_file_size: max_file_upload_size,
-                    }),
+                    $t(
+                        {defaultMessage: "File size must be < {max_file_size}Mb."},
+                        {max_file_size: max_file_upload_size},
+                    ),
                 );
                 input_error.show();
                 clear();
             } else if (!is_image_format(file)) {
-                input_error.text(i18n.t("File type is not supported."));
+                input_error.text($t({defaultMessage: "File type is not supported."}));
                 input_error.show();
                 clear();
             } else {
                 accept(file);
             }
         } else {
-            input_error.text(i18n.t("Please just upload one file."));
+            input_error.text($t({defaultMessage: "Please just upload one file."}));
         }
     });
 
@@ -164,21 +165,22 @@ export function build_direct_upload_widget(
             const file = e.target.files[0];
             if (file.size > max_file_upload_size * 1024 * 1024) {
                 input_error.text(
-                    i18n.t("File size must be < __max_file_size__Mb.", {
-                        max_file_size: max_file_upload_size,
-                    }),
+                    $t(
+                        {defaultMessage: "File size must be < {max_file_size}Mb."},
+                        {max_file_size: max_file_upload_size},
+                    ),
                 );
                 input_error.show();
                 clear();
             } else if (!is_image_format(file)) {
-                input_error.text(i18n.t("File type is not supported."));
+                input_error.text($t({defaultMessage: "File type is not supported."}));
                 input_error.show();
                 clear();
             } else {
                 accept();
             }
         } else {
-            input_error.text(i18n.t("Please just upload one file."));
+            input_error.text($t({defaultMessage: "Please just upload one file."}));
         }
     });
 

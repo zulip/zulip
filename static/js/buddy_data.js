@@ -1,7 +1,7 @@
 import * as blueslip from "./blueslip";
 import * as compose_fade_users from "./compose_fade_users";
 import * as hash_util from "./hash_util";
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as presence from "./presence";
@@ -54,14 +54,14 @@ export function status_description(user_id) {
 
     switch (status) {
         case "active":
-            return i18n.t("Active");
+            return $t({defaultMessage: "Active"});
         case "idle":
-            return i18n.t("Idle");
+            return $t({defaultMessage: "Idle"});
         case "away_them":
         case "away_me":
-            return i18n.t("Unavailable");
+            return $t({defaultMessage: "Unavailable"});
         default:
-            return i18n.t("Offline");
+            return $t({defaultMessage: "Offline"});
     }
 }
 
@@ -154,21 +154,21 @@ export function get_my_user_status(user_id) {
     }
 
     if (user_status.is_away(user_id)) {
-        return i18n.t("(unavailable)");
+        return $t({defaultMessage: "(unavailable)"});
     }
 
-    return i18n.t("(you)");
+    return $t({defaultMessage: "(you)"});
 }
 
 export function user_last_seen_time_status(user_id) {
     const status = presence.get_status(user_id);
     if (status === "active") {
-        return i18n.t("Active now");
+        return $t({defaultMessage: "Active now"});
     }
 
     if (page_params.realm_is_zephyr_mirror_realm) {
         // We don't send presence data to clients in Zephyr mirroring realms
-        return i18n.t("Unknown");
+        return $t({defaultMessage: "Unknown"});
     }
 
     // There are situations where the client has incomplete presence
@@ -179,7 +179,7 @@ export function user_last_seen_time_status(user_id) {
     // We give the somewhat vague status of "Unknown" for these users.
     const last_active_date = presence.last_active_date(user_id);
     if (last_active_date === undefined) {
-        return i18n.t("More than 2 weeks ago");
+        return $t({defaultMessage: "More than 2 weeks ago"});
     }
     return timerender.last_seen_status_from_date(last_active_date);
 }
@@ -207,7 +207,7 @@ function get_last_seen(active_status, last_seen) {
         return last_seen;
     }
 
-    const last_seen_text = i18n.t("Last active: __- last_seen__", {last_seen});
+    const last_seen_text = $t({defaultMessage: "Last active: {last_seen}"}, {last_seen});
     return last_seen_text;
 }
 
@@ -229,7 +229,10 @@ export function get_title_data(user_ids_string, is_group) {
         const bot_owner = people.get_bot_owner_user(person);
 
         if (bot_owner) {
-            const bot_owner_name = i18n.t("Owner: __name__", {name: bot_owner.full_name});
+            const bot_owner_name = $t(
+                {defaultMessage: "Owner: {name}"},
+                {name: bot_owner.full_name},
+            );
 
             return {
                 first_line: person.full_name,

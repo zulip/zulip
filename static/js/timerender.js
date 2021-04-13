@@ -11,7 +11,7 @@ import {
 import $ from "jquery";
 import _ from "lodash";
 
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import {page_params} from "./page_params";
 
 let next_timerender_id = 0;
@@ -45,10 +45,10 @@ export function render_now(time, today = new Date()) {
     const days_old = differenceInCalendarDays(today, time);
 
     if (days_old === 0) {
-        time_str = i18n.t("Today");
+        time_str = $t({defaultMessage: "Today"});
         needs_update = true;
     } else if (days_old === 1) {
-        time_str = i18n.t("Yesterday");
+        time_str = $t({defaultMessage: "Yesterday"});
         needs_update = true;
     } else if (time.getFullYear() !== today.getFullYear()) {
         // For long running servers, searching backlog can get ambiguous
@@ -72,10 +72,10 @@ export function render_now(time, today = new Date()) {
 export function last_seen_status_from_date(last_active_date, current_date = new Date()) {
     const minutes = differenceInMinutes(current_date, last_active_date);
     if (minutes <= 2) {
-        return i18n.t("Just now");
+        return $t({defaultMessage: "Just now"});
     }
     if (minutes < 60) {
-        return i18n.t("__minutes__ minutes ago", {minutes});
+        return $t({defaultMessage: "{minutes} minutes ago"}, {minutes});
     }
 
     const days_old = differenceInCalendarDays(current_date, last_active_date);
@@ -83,30 +83,32 @@ export function last_seen_status_from_date(last_active_date, current_date = new 
 
     if (days_old === 0) {
         if (hours === 1) {
-            return i18n.t("An hour ago");
+            return $t({defaultMessage: "An hour ago"});
         }
-        return i18n.t("__hours__ hours ago", {hours});
+        return $t({defaultMessage: "{hours} hours ago"}, {hours});
     }
 
     if (days_old === 1) {
-        return i18n.t("Yesterday");
+        return $t({defaultMessage: "Yesterday"});
     }
 
     if (days_old < 90) {
-        return i18n.t("__days_old__ days ago", {days_old});
+        return $t({defaultMessage: "{days_old} days ago"}, {days_old});
     } else if (
         days_old > 90 &&
         days_old < 365 &&
         last_active_date.getFullYear() === current_date.getFullYear()
     ) {
         // Online more than 90 days ago, in the same year
-        return i18n.t("__last_active_date__", {
-            last_active_date: format(last_active_date, "MMM\u00A0dd"),
-        });
+        return $t(
+            {defaultMessage: "{last_active_date}"},
+            {last_active_date: format(last_active_date, "MMM\u00A0dd")},
+        );
     }
-    return i18n.t("__last_active_date__", {
-        last_active_date: format(last_active_date, "MMM\u00A0dd,\u00A0yyyy"),
-    });
+    return $t(
+        {defaultMessage: "{last_active_date}"},
+        {last_active_date: format(last_active_date, "MMM\u00A0dd,\u00A0yyyy")},
+    );
 }
 
 // List of the dates that need to be updated when the day changes.

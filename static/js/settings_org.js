@@ -8,7 +8,7 @@ import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import {csrf_token} from "./csrf";
 import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget";
-import {$t_html, i18n} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -328,9 +328,9 @@ export function populate_realm_domains(realm_domains) {
     );
     let domains = domains_list.join(", ");
     if (domains.length === 0) {
-        domains = i18n.t("None");
+        domains = $t({defaultMessage: "None"});
     }
-    $("#allowed_domains_label").text(i18n.t("Allowed domains: __domains__", {domains}));
+    $("#allowed_domains_label").text($t({defaultMessage: "Allowed domains: {domains}"}, {domains}));
 
     const realm_domains_table_body = $("#realm_domains_table tbody").expectOne();
     realm_domains_table_body.find("tr").remove();
@@ -493,28 +493,28 @@ export function change_save_button_state($element, state) {
     let data_status;
     let is_show;
     if (state === "unsaved") {
-        button_text = i18n.t("Save changes");
+        button_text = $t({defaultMessage: "Save changes"});
         data_status = "unsaved";
         is_show = true;
 
         $element.find(".discard-button").show();
     } else if (state === "saved") {
-        button_text = i18n.t("Save changes");
+        button_text = $t({defaultMessage: "Save changes"});
         data_status = "";
         is_show = false;
     } else if (state === "saving") {
-        button_text = i18n.t("Saving");
+        button_text = $t({defaultMessage: "Saving"});
         data_status = "saving";
         is_show = true;
 
         $element.find(".discard-button").hide();
         $saveBtn.addClass("saving");
     } else if (state === "failed") {
-        button_text = i18n.t("Save changes");
+        button_text = $t({defaultMessage: "Save changes"});
         data_status = "failed";
         is_show = true;
     } else if (state === "succeeded") {
-        button_text = i18n.t("Saved");
+        button_text = $t({defaultMessage: "Saved"});
         data_status = "saved";
         is_show = false;
     }
@@ -628,7 +628,7 @@ export function init_dropdown_widgets() {
         on_update: () => {
             save_discard_widget_status_handler($("#org-notifications"));
         },
-        default_text: i18n.t("Disabled"),
+        default_text: $t({defaultMessage: "Disabled"}),
         render_text: (x) => `#${x}`,
         null_value: -1,
     };
@@ -652,7 +652,7 @@ export function init_dropdown_widgets() {
         on_update: () => {
             save_discard_widget_status_handler($("#org-other-settings"));
         },
-        default_text: i18n.t("No language set"),
+        default_text: $t({defaultMessage: "No language set"}),
     });
 }
 

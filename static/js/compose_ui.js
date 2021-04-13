@@ -1,7 +1,7 @@
 import autosize from "autosize";
 import $ from "jquery";
 
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import * as people from "./people";
 import * as user_status from "./user_status";
 
@@ -88,12 +88,12 @@ export function compute_placeholder_text(opts) {
     // placeholder field in a way that does HTML escaping.
     if (opts.message_type === "stream") {
         if (opts.topic) {
-            return i18n.t("Message #__- stream_name__ > __- topic_name__", {
-                stream_name: opts.stream,
-                topic_name: opts.topic,
-            });
+            return $t(
+                {defaultMessage: "Message #{stream_name} > {topic_name}"},
+                {stream_name: opts.stream, topic_name: opts.topic},
+            );
         } else if (opts.stream) {
-            return i18n.t("Message #__- stream_name__", {stream_name: opts.stream});
+            return $t({defaultMessage: "Message #{stream_name}"}, {stream_name: opts.stream});
         }
     }
 
@@ -112,13 +112,13 @@ export function compute_placeholder_text(opts) {
             const user = people.get_by_email(recipient_list[0]);
             const status = user_status.get_status_text(user.user_id);
             if (status) {
-                return i18n.t("Message __- recipient_name__ (__- recipient_status__)", {
-                    recipient_name: recipient_names,
-                    recipient_status: status,
-                });
+                return $t(
+                    {defaultMessage: "Message {recipient_name} ({recipient_status})"},
+                    {recipient_name: recipient_names, recipient_status: status},
+                );
             }
         }
-        return i18n.t("Message __- recipient_names__", {recipient_names});
+        return $t({defaultMessage: "Message {recipient_names}"}, {recipient_names});
     }
-    return i18n.t("Compose your message here");
+    return $t({defaultMessage: "Compose your message here"});
 }

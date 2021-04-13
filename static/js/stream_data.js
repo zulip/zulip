@@ -1,7 +1,7 @@
 import * as blueslip from "./blueslip";
 import * as color_data from "./color_data";
 import {FoldDict} from "./fold_dict";
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
@@ -104,39 +104,42 @@ const default_stream_ids = new Set();
 export const stream_privacy_policy_values = {
     public: {
         code: "public",
-        name: i18n.t("Public"),
-        description: i18n.t(
-            "Anyone can join; anyone can view complete message history without joining",
-        ),
+        name: $t({defaultMessage: "Public"}),
+        description: $t({
+            defaultMessage:
+                "Anyone can join; anyone can view complete message history without joining",
+        }),
     },
     private_with_public_history: {
         code: "invite-only-public-history",
-        name: i18n.t("Private, shared history"),
-        description: i18n.t(
-            "Must be invited by a member; new members can view complete message history; hidden from non-administrator users",
-        ),
+        name: $t({defaultMessage: "Private, shared history"}),
+        description: $t({
+            defaultMessage:
+                "Must be invited by a member; new members can view complete message history; hidden from non-administrator users",
+        }),
     },
     private: {
         code: "invite-only",
-        name: i18n.t("Private, protected history"),
-        description: i18n.t(
-            "Must be invited by a member; new members can only see messages sent after they join; hidden from non-administrator users",
-        ),
+        name: $t({defaultMessage: "Private, protected history"}),
+        description: $t({
+            defaultMessage:
+                "Must be invited by a member; new members can only see messages sent after they join; hidden from non-administrator users",
+        }),
     },
 };
 
 export const stream_post_policy_values = {
     everyone: {
         code: 1,
-        description: i18n.t("All stream members can post"),
+        description: $t({defaultMessage: "All stream members can post"}),
     },
     admins: {
         code: 2,
-        description: i18n.t("Only organization administrators can post"),
+        description: $t({defaultMessage: "Only organization administrators can post"}),
     },
     non_new_members: {
         code: 3,
-        description: i18n.t("Only organization full members can post"),
+        description: $t({defaultMessage: "Only organization full members can post"}),
     },
 };
 

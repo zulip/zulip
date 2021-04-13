@@ -4,7 +4,7 @@ import _ from "lodash";
 import * as channel from "./channel";
 import * as compose from "./compose";
 import * as hash_util from "./hash_util";
-import {$t_html, i18n} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
@@ -117,7 +117,7 @@ export function do_set_reminder_for_message(message_id, timestamp) {
     const row = $(`[zid='${CSS.escape(message_id)}']`);
     function error() {
         row.find(".alert-msg")
-            .text(i18n.t("Reminder not set!"))
+            .text($t({defaultMessage: "Reminder not set!"}))
             .css("display", "block")
             .css("color", "#b94a48")
             .delay(1000)
@@ -163,7 +163,7 @@ export function do_set_reminder_for_message(message_id, timestamp) {
 
     function success() {
         row.find(".alert-msg")
-            .text(i18n.t("Reminder set!"))
+            .text($t({defaultMessage: "Reminder set!"}))
             .css("display", "block")
             .delay(1000)
             .fadeOut(300);

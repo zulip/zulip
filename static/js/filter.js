@@ -1,7 +1,7 @@
 import Handlebars from "handlebars/runtime";
 import _ from "lodash";
 
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import * as message_parser from "./message_parser";
 import * as message_store from "./message_store";
 import {page_params} from "./page_params";
@@ -592,29 +592,29 @@ export class Filter {
             (term_types.length === 2 && _.isEqual(term_types, ["stream", "topic"]))
         ) {
             if (!this._sub) {
-                return i18n.t("Unknown stream");
+                return $t({defaultMessage: "Unknown stream"});
             }
             return this._sub.name;
         }
         if (term_types.length === 1 || (term_types.length === 2 && term_types[1] === "search")) {
             switch (term_types[0]) {
                 case "in-home":
-                    return i18n.t("All messages");
+                    return $t({defaultMessage: "All messages"});
                 case "in-all":
-                    return i18n.t("All messages including muted streams");
+                    return $t({defaultMessage: "All messages including muted streams"});
                 case "streams-public":
-                    return i18n.t("Public stream messages in organization");
+                    return $t({defaultMessage: "Public stream messages in organization"});
                 case "stream":
                     if (!this._sub) {
-                        return i18n.t("Unknown stream");
+                        return $t({defaultMessage: "Unknown stream"});
                     }
                     return this._sub.name;
                 case "is-starred":
-                    return i18n.t("Starred messages");
+                    return $t({defaultMessage: "Starred messages"});
                 case "is-mentioned":
-                    return i18n.t("Mentions");
+                    return $t({defaultMessage: "Mentions"});
                 case "is-private":
-                    return i18n.t("Private messages");
+                    return $t({defaultMessage: "Private messages"});
                 case "pm-with": {
                     const emails = this.operands("pm-with")[0].split(",");
                     const names = emails.map((email) => {

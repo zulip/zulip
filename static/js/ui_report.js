@@ -2,7 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 
 import * as common from "./common";
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 
 /* Arguments used in the report_* functions are,
    response- response that we want to display
@@ -65,7 +65,7 @@ export function generic_row_button_error(xhr, btn) {
             $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg),
         );
     } else {
-        btn.text(i18n.t("Failed!"));
+        btn.text($t({defaultMessage: "Failed!"}));
     }
 }
 

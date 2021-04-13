@@ -6,7 +6,7 @@ const {JSDOM} = require("jsdom");
 const MockDate = require("mockdate");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {$t_html, i18n} = require("../zjsunit/i18n");
+const {$t, $t_html} = require("../zjsunit/i18n");
 const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
@@ -1725,12 +1725,24 @@ test_ui("narrow_button_titles", () => {
     util.is_mobile = () => false;
 
     compose.update_closed_compose_buttons_for_private();
-    assert.equal($("#left_bar_compose_stream_button_big").text(), i18n.t("New stream message"));
-    assert.equal($("#left_bar_compose_private_button_big").text(), i18n.t("New private message"));
+    assert.equal(
+        $("#left_bar_compose_stream_button_big").text(),
+        $t({defaultMessage: "New stream message"}),
+    );
+    assert.equal(
+        $("#left_bar_compose_private_button_big").text(),
+        $t({defaultMessage: "New private message"}),
+    );
 
     compose.update_closed_compose_buttons_for_stream();
-    assert.equal($("#left_bar_compose_stream_button_big").text(), i18n.t("New topic"));
-    assert.equal($("#left_bar_compose_private_button_big").text(), i18n.t("New private message"));
+    assert.equal(
+        $("#left_bar_compose_stream_button_big").text(),
+        $t({defaultMessage: "New topic"}),
+    );
+    assert.equal(
+        $("#left_bar_compose_private_button_big").text(),
+        $t({defaultMessage: "New private message"}),
+    );
 });
 
 MockDate.reset();

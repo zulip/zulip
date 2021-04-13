@@ -15,7 +15,7 @@ import * as components from "./components";
 import * as compose_state from "./compose_state";
 import * as confirm_dialog from "./confirm_dialog";
 import * as hash_util from "./hash_util";
-import {$t_html, i18n} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as message_live_update from "./message_live_update";
 import * as message_view_header from "./message_view_header";
@@ -565,20 +565,20 @@ export function setup_page(callback) {
         const sort_toggler = components.toggle({
             values: [
                 {
-                    label_html: `<i class="fa fa-sort-alpha-asc tippy-bottom tippy-zulip-tooltip" data-tippy-content="${i18n.t(
-                        "Sort by name",
+                    label_html: `<i class="fa fa-sort-alpha-asc tippy-bottom tippy-zulip-tooltip" data-tippy-content="${$t(
+                        {defaultMessage: "Sort by name"},
                     )}"></i>`,
                     key: "by-stream-name",
                 },
                 {
-                    label_html: `<i class="fa fa-user-o tippy-bottom tippy-zulip-tooltip" data-tippy-content="${i18n.t(
-                        "Sort by number of subscribers",
+                    label_html: `<i class="fa fa-user-o tippy-bottom tippy-zulip-tooltip" data-tippy-content="${$t(
+                        {defaultMessage: "Sort by number of subscribers"},
                     )}"></i>`,
                     key: "by-subscriber-count",
                 },
                 {
-                    label_html: `<i class="fa fa-bar-chart tippy-bottom tippy-zulip-tooltip" data-tippy-content="${i18n.t(
-                        "Sort by estimated weekly traffic",
+                    label_html: `<i class="fa fa-bar-chart tippy-bottom tippy-zulip-tooltip" data-tippy-content="${$t(
+                        {defaultMessage: "Sort by estimated weekly traffic"},
                     )}"></i>`,
                     key: "by-weekly-traffic",
                 },
@@ -601,8 +601,8 @@ export function setup_page(callback) {
         toggler = components.toggle({
             child_wants_focus: true,
             values: [
-                {label: i18n.t("Subscribed"), key: "subscribed"},
-                {label: i18n.t("All streams"), key: "all-streams"},
+                {label: $t({defaultMessage: "Subscribed"}), key: "subscribed"},
+                {label: $t({defaultMessage: "All streams"}), key: "all-streams"},
             ],
             callback(value, key) {
                 switch_stream_tab(key);
@@ -668,7 +668,7 @@ export function setup_page(callback) {
     populate_and_fill();
 
     if (!should_list_all_streams()) {
-        $(".create_stream_button").val(i18n.t("Subscribe"));
+        $(".create_stream_button").val($t({defaultMessage: "Subscribe"}));
     }
 }
 

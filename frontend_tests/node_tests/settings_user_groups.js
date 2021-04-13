@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const _ = require("lodash");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {i18n} = require("../zjsunit/i18n");
+const {$t} = require("../zjsunit/i18n");
 const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
@@ -575,7 +575,7 @@ test_ui("on_events", (override) => {
             assert.equal(opts.url, "/json/user_groups/1");
             assert.deepEqual(opts.data, data);
 
-            fake_this.text(i18n.t("fake-text"));
+            fake_this.text($t({defaultMessage: "fake-text"}));
             opts.error();
             assert.equal(fake_this.text(), "translated: Failed!");
         };
@@ -668,8 +668,8 @@ test_ui("on_events", (override) => {
         const handler_desc = $(user_group_selector).get_on_handler("input", ".description");
         const sib_des = $(description_selector);
         const sib_name = $(name_selector);
-        sib_name.text(i18n.t("mobile"));
-        sib_des.text(i18n.t("All mobile members"));
+        sib_name.text($t({defaultMessage: "mobile"}));
+        sib_des.text($t({defaultMessage: "All mobile members"}));
 
         const group_data = {
             name: "translated: mobile",
@@ -715,8 +715,8 @@ test_ui("on_events", (override) => {
         const handler_desc = $(user_group_selector).get_on_handler("blur", ".description");
         const sib_des = $(description_selector);
         const sib_name = $(name_selector);
-        sib_name.text(i18n.t("mobile"));
-        sib_des.text(i18n.t("All mobile members"));
+        sib_name.text($t({defaultMessage: "mobile"}));
+        sib_des.text($t({defaultMessage: "All mobile members"}));
 
         const group_data = {members: new Set([2, 31])};
         user_groups.get_user_group_from_id = () => group_data;

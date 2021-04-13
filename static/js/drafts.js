@@ -12,7 +12,7 @@ import * as compose_actions from "./compose_actions";
 import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import {localstorage} from "./localstorage";
 import * as markdown from "./markdown";
 import * as narrow from "./narrow";
@@ -24,7 +24,7 @@ import * as util from "./util";
 
 function set_count(count) {
     const draft_count = count.toString();
-    const text = i18n.t("Drafts (__draft_count__)", {draft_count});
+    const text = $t({defaultMessage: "Drafts ({draft_count})"}, {draft_count});
     $(".compose_drafts_button").text(text);
 }
 
@@ -234,7 +234,7 @@ export function format_draft(draft) {
     let formatted;
     const time = new Date(draft.updatedAt);
     let time_stamp = timerender.render_now(time).time_str;
-    if (time_stamp === i18n.t("Today")) {
+    if (time_stamp === $t({defaultMessage: "Today"})) {
         time_stamp = timerender.stringify_time(time);
     }
     if (draft.type === "stream") {

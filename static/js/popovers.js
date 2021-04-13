@@ -25,7 +25,7 @@ import * as emoji_picker from "./emoji_picker";
 import * as feature_flags from "./feature_flags";
 import * as giphy from "./giphy";
 import * as hash_util from "./hash_util";
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_lists from "./message_lists";
@@ -110,7 +110,7 @@ function copy_email_handler(e) {
     const email_textnode = email_el[0].childNodes[2];
 
     email_el.addClass("email_copied");
-    email_textnode.nodeValue = i18n.t("Email copied");
+    email_textnode.nodeValue = $t({defaultMessage: "Email copied"});
 
     setTimeout(() => {
         email_el.removeClass("email_copied");
@@ -528,13 +528,13 @@ export function toggle_actions_popover(element, id) {
         let editability_menu_item;
         if (editability === message_edit.editability_types.FULL) {
             use_edit_icon = true;
-            editability_menu_item = i18n.t("Edit");
+            editability_menu_item = $t({defaultMessage: "Edit"});
         } else if (editability === message_edit.editability_types.TOPIC_ONLY) {
             use_edit_icon = false;
-            editability_menu_item = i18n.t("View source / Edit topic");
+            editability_menu_item = $t({defaultMessage: "View source / Edit topic"});
         } else {
             use_edit_icon = false;
-            editability_menu_item = i18n.t("View source");
+            editability_menu_item = $t({defaultMessage: "View source"});
         }
         const topic = message.topic;
         const can_mute_topic =
@@ -1278,7 +1278,7 @@ export function register_click_handlers() {
         const message_id = $(this).attr("data-message-id");
         const row = $(`[zid='${CSS.escape(message_id)}']`);
         row.find(".alert-msg")
-            .text(i18n.t("Copied!"))
+            .text($t({defaultMessage: "Copied!"}))
             .css("display", "block")
             .delay(1000)
             .fadeOut(300);

@@ -6,7 +6,7 @@ import * as typeahead from "../shared/js/typeahead";
 
 import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import * as message_user_ids from "./message_user_ids";
 import * as reload_state from "./reload_state";
 import * as settings_data from "./settings_data";
@@ -266,15 +266,15 @@ export function get_user_type(user_id) {
     const user_profile = get_by_user_id(user_id);
 
     if (user_profile.is_owner) {
-        return i18n.t("Owner");
+        return $t({defaultMessage: "Owner"});
     } else if (user_profile.is_admin) {
-        return i18n.t("Administrator");
+        return $t({defaultMessage: "Administrator"});
     } else if (user_profile.is_guest) {
-        return i18n.t("Guest");
+        return $t({defaultMessage: "Guest"});
     } else if (user_profile.is_bot) {
-        return i18n.t("Bot");
+        return $t({defaultMessage: "Bot"});
     }
-    return i18n.t("Member");
+    return $t({defaultMessage: "Member"});
 }
 
 export function emails_strings_to_user_ids_string(emails_string) {

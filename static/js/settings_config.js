@@ -1,4 +1,4 @@
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import {page_params} from "./page_params";
 
 /*
@@ -18,52 +18,52 @@ import {page_params} from "./page_params";
 export const demote_inactive_streams_values = {
     automatic: {
         code: 1,
-        description: i18n.t("Automatic"),
+        description: $t({defaultMessage: "Automatic"}),
     },
     always: {
         code: 2,
-        description: i18n.t("Always"),
+        description: $t({defaultMessage: "Always"}),
     },
     never: {
         code: 3,
-        description: i18n.t("Never"),
+        description: $t({defaultMessage: "Never"}),
     },
 };
 
 export const default_view_values = {
     recent_topics: {
         code: "recent_topics",
-        description: i18n.t("Recent topics"),
+        description: $t({defaultMessage: "Recent topics"}),
     },
     all_messages: {
         code: "all_messages",
-        description: i18n.t("All messages"),
+        description: $t({defaultMessage: "All messages"}),
     },
 };
 
 export const color_scheme_values = {
     automatic: {
         code: 1,
-        description: i18n.t("Automatic"),
+        description: $t({defaultMessage: "Automatic"}),
     },
     night: {
         code: 2,
-        description: i18n.t("Night mode"),
+        description: $t({defaultMessage: "Night mode"}),
     },
     day: {
         code: 3,
-        description: i18n.t("Day mode"),
+        description: $t({defaultMessage: "Day mode"}),
     },
 };
 
 export const twenty_four_hour_time_values = {
     twenty_four_hour_clock: {
         value: true,
-        description: i18n.t("24-hour clock (17:00)"),
+        description: $t({defaultMessage: "24-hour clock (17:00)"}),
     },
     twelve_hour_clock: {
         value: false,
-        description: i18n.t("12-hour clock (5:00 PM)"),
+        description: $t({defaultMessage: "12-hour clock (5:00 PM)"}),
     },
 };
 
@@ -86,7 +86,7 @@ export const get_all_display_settings = () => ({
 export const email_address_visibility_values = {
     everyone: {
         code: 1,
-        description: i18n.t("Admins, members, and guests"),
+        description: $t({defaultMessage: "Admins, members, and guests"}),
     },
     // // Backend support for this configuration is not available yet.
     // admins_and_members: {
@@ -95,11 +95,11 @@ export const email_address_visibility_values = {
     // },
     admins_only: {
         code: 3,
-        description: i18n.t("Admins only"),
+        description: $t({defaultMessage: "Admins only"}),
     },
     nobody: {
         code: 4,
-        description: i18n.t("Nobody"),
+        description: $t({defaultMessage: "Nobody"}),
     },
 };
 
@@ -107,17 +107,17 @@ export const create_stream_policy_values = {
     by_admins_only: {
         order: 1,
         code: 2,
-        description: i18n.t("Admins"),
+        description: $t({defaultMessage: "Admins"}),
     },
     by_full_members: {
         order: 2,
         code: 3,
-        description: i18n.t("Admins and full members"),
+        description: $t({defaultMessage: "Admins and full members"}),
     },
     by_members: {
         order: 3,
         code: 1,
-        description: i18n.t("Admins and members"),
+        description: $t({defaultMessage: "Admins and members"}),
     },
 };
 
@@ -132,12 +132,12 @@ export const user_group_edit_policy_values = {
     by_admins_only: {
         order: 1,
         code: 2,
-        description: i18n.t("Admins"),
+        description: $t({defaultMessage: "Admins"}),
     },
     by_members: {
         order: 2,
         code: 1,
-        description: i18n.t("Admins and members"),
+        description: $t({defaultMessage: "Admins and members"}),
     },
 };
 
@@ -145,12 +145,12 @@ export const private_message_policy_values = {
     by_anyone: {
         order: 1,
         code: 1,
-        description: i18n.t("Admins, members, and guests"),
+        description: $t({defaultMessage: "Admins, members, and guests"}),
     },
     disabled: {
         order: 2,
         code: 2,
-        description: i18n.t("Private messages disabled"),
+        description: $t({defaultMessage: "Private messages disabled"}),
     },
 };
 
@@ -158,17 +158,17 @@ export const wildcard_mention_policy_values = {
     by_everyone: {
         order: 1,
         code: 1,
-        description: i18n.t("Admins, members and guests"),
+        description: $t({defaultMessage: "Admins, members and guests"}),
     },
     by_members: {
         order: 2,
         code: 2,
-        description: i18n.t("Admins and members"),
+        description: $t({defaultMessage: "Admins and members"}),
     },
     by_full_members: {
         order: 3,
         code: 3,
-        description: i18n.t("Admins and full members"),
+        description: $t({defaultMessage: "Admins and full members"}),
     },
     // Until we add stream administrators, we mislabel this choice
     // (which we intend to be the long-term default) as "Admins only"
@@ -177,7 +177,7 @@ export const wildcard_mention_policy_values = {
         order: 4,
         code: 4,
         //  description: i18n.t("Organization and stream admins"),
-        description: i18n.t("Admins only"),
+        description: $t({defaultMessage: "Admins only"}),
     },
     // by_admins_only: {
     //     order: 5,
@@ -187,7 +187,7 @@ export const wildcard_mention_policy_values = {
     nobody: {
         order: 6,
         code: 6,
-        description: i18n.t("Nobody"),
+        description: $t({defaultMessage: "Nobody"}),
     },
 };
 
@@ -195,55 +195,70 @@ const time_limit_dropdown_values = new Map([
     [
         "any_time",
         {
-            text: i18n.t("Any time"),
+            text: $t({defaultMessage: "Any time"}),
             seconds: 0,
         },
     ],
     [
         "never",
         {
-            text: i18n.t("Never"),
+            text: $t({defaultMessage: "Never"}),
         },
     ],
     [
         "upto_two_min",
         {
-            text: i18n.t("Up to __time_limit__ after posting", {time_limit: i18n.t("2 minutes")}),
+            text: $t(
+                {defaultMessage: "Up to {time_limit} after posting"},
+                {time_limit: $t({defaultMessage: "2 minutes"})},
+            ),
             seconds: 2 * 60,
         },
     ],
     [
         "upto_ten_min",
         {
-            text: i18n.t("Up to __time_limit__ after posting", {time_limit: i18n.t("10 minutes")}),
+            text: $t(
+                {defaultMessage: "Up to {time_limit} after posting"},
+                {time_limit: $t({defaultMessage: "10 minutes"})},
+            ),
             seconds: 10 * 60,
         },
     ],
     [
         "upto_one_hour",
         {
-            text: i18n.t("Up to __time_limit__ after posting", {time_limit: i18n.t("1 hour")}),
+            text: $t(
+                {defaultMessage: "Up to {time_limit} after posting"},
+                {time_limit: $t({defaultMessage: "1 hour"})},
+            ),
             seconds: 60 * 60,
         },
     ],
     [
         "upto_one_day",
         {
-            text: i18n.t("Up to __time_limit__ after posting", {time_limit: i18n.t("1 day")}),
+            text: $t(
+                {defaultMessage: "Up to {time_limit} after posting"},
+                {time_limit: $t({defaultMessage: "1 day"})},
+            ),
             seconds: 24 * 60 * 60,
         },
     ],
     [
         "upto_one_week",
         {
-            text: i18n.t("Up to __time_limit__ after posting", {time_limit: i18n.t("1 week")}),
+            text: $t(
+                {defaultMessage: "Up to {time_limit} after posting"},
+                {time_limit: $t({defaultMessage: "1 week"})},
+            ),
             seconds: 7 * 24 * 60 * 60,
         },
     ],
     [
         "custom_limit",
         {
-            text: i18n.t("Up to N minutes after posting"),
+            text: $t({defaultMessage: "Up to N minutes after posting"}),
         },
     ],
 ]);
@@ -254,19 +269,19 @@ export const retain_message_forever = -1;
 export const user_role_values = {
     guest: {
         code: 600,
-        description: i18n.t("Guest"),
+        description: $t({defaultMessage: "Guest"}),
     },
     member: {
         code: 400,
-        description: i18n.t("Member"),
+        description: $t({defaultMessage: "Member"}),
     },
     admin: {
         code: 200,
-        description: i18n.t("Administrator"),
+        description: $t({defaultMessage: "Administrator"}),
     },
     owner: {
         code: 100,
-        description: i18n.t("Owner"),
+        description: $t({defaultMessage: "Owner"}),
     },
 };
 
@@ -288,13 +303,13 @@ export const general_notifications_table_labels = {
         "all_mentions",
     ],
     stream: {
-        is_muted: i18n.t("Mute stream"),
-        desktop_notifications: i18n.t("Visual desktop notifications"),
-        audible_notifications: i18n.t("Audible desktop notifications"),
-        push_notifications: i18n.t("Mobile notifications"),
-        email_notifications: i18n.t("Email notifications"),
-        pin_to_top: i18n.t("Pin stream to top of left sidebar"),
-        wildcard_mentions_notify: i18n.t("Notifications for @all/@everyone mentions"),
+        is_muted: $t({defaultMessage: "Mute stream"}),
+        desktop_notifications: $t({defaultMessage: "Visual desktop notifications"}),
+        audible_notifications: $t({defaultMessage: "Audible desktop notifications"}),
+        push_notifications: $t({defaultMessage: "Mobile notifications"}),
+        email_notifications: $t({defaultMessage: "Email notifications"}),
+        pin_to_top: $t({defaultMessage: "Pin stream to top of left sidebar"}),
+        wildcard_mentions_notify: $t({defaultMessage: "Notifications for @all/@everyone mentions"}),
     },
 };
 
@@ -372,11 +387,11 @@ export function get_notifications_table_row_data(notify_settings) {
 export const all_notifications = () => ({
     general_settings: [
         {
-            label: i18n.t("Streams"),
+            label: $t({defaultMessage: "Streams"}),
             notification_settings: get_notifications_table_row_data(stream_notification_settings),
         },
         {
-            label: i18n.t("PMs, mentions, and alerts"),
+            label: $t({defaultMessage: "PMs, mentions, and alerts"}),
             notification_settings: get_notifications_table_row_data(
                 pm_mention_notification_settings,
             ),
@@ -446,14 +461,14 @@ export const get_playground_info_for_languages = (lang) => map_language_to_playg
 export const desktop_icon_count_display_values = {
     messages: {
         code: 1,
-        description: i18n.t("All unreads"),
+        description: $t({defaultMessage: "All unreads"}),
     },
     notifiable: {
         code: 2,
-        description: i18n.t("Private messages and mentions"),
+        description: $t({defaultMessage: "Private messages and mentions"}),
     },
     none: {
         code: 3,
-        description: i18n.t("None"),
+        description: $t({defaultMessage: "None"}),
     },
 };

@@ -4,7 +4,7 @@ import Plotly from "plotly.js/lib/core";
 import PlotlyPie from "plotly.js/lib/pie";
 import tippy from "tippy.js";
 
-import {$t_html, i18n} from "../i18n";
+import {$t, $t_html} from "../i18n";
 import {page_params} from "../page_params";
 
 Plotly.register([PlotlyBar, PlotlyPie]);
@@ -42,18 +42,18 @@ function floor_to_local_week(date) {
 
 function format_date(date, include_hour) {
     const months = [
-        i18n.t("January"),
-        i18n.t("February"),
-        i18n.t("March"),
-        i18n.t("April"),
-        i18n.t("May"),
-        i18n.t("June"),
-        i18n.t("July"),
-        i18n.t("August"),
-        i18n.t("September"),
-        i18n.t("October"),
-        i18n.t("November"),
-        i18n.t("December"),
+        $t({defaultMessage: "January"}),
+        $t({defaultMessage: "February"}),
+        $t({defaultMessage: "March"}),
+        $t({defaultMessage: "April"}),
+        $t({defaultMessage: "May"}),
+        $t({defaultMessage: "June"}),
+        $t({defaultMessage: "July"}),
+        $t({defaultMessage: "August"}),
+        $t({defaultMessage: "September"}),
+        $t({defaultMessage: "October"}),
+        $t({defaultMessage: "November"}),
+        $t({defaultMessage: "December"}),
     ];
     const month_str = months[date.getMonth()];
     const year = date.getFullYear();
@@ -111,20 +111,20 @@ function populate_messages_sent_over_time(data) {
         return {
             human: {
                 // 5062a0
-                name: i18n.t("Humans"),
+                name: $t({defaultMessage: "Humans"}),
                 y: values.human,
                 marker: {color: "#5f6ea0"},
                 ...common,
             },
             bot: {
                 // a09b5f bbb56e
-                name: i18n.t("Bots"),
+                name: $t({defaultMessage: "Bots"}),
                 y: values.bot,
                 marker: {color: "#b7b867"},
                 ...common,
             },
             me: {
-                name: i18n.t("Me"),
+                name: $t({defaultMessage: "Me"}),
                 y: values.me,
                 marker: {color: "#be6d68"},
                 ...common,
@@ -159,7 +159,7 @@ function populate_messages_sent_over_time(data) {
             buttons: [
                 {stepmode: "backward", ...button1},
                 {stepmode: "backward", ...button2},
-                {step: "all", label: i18n.t("All time")},
+                {step: "all", label: $t({defaultMessage: "All time"})},
             ],
         };
     }
@@ -168,14 +168,14 @@ function populate_messages_sent_over_time(data) {
     const daily_rangeselector = make_rangeselector(
         0.68,
         -0.62,
-        {count: 10, label: i18n.t("Last 10 days"), step: "day"},
-        {count: 30, label: i18n.t("Last 30 days"), step: "day"},
+        {count: 10, label: $t({defaultMessage: "Last 10 days"}), step: "day"},
+        {count: 30, label: $t({defaultMessage: "Last 30 days"}), step: "day"},
     );
     const weekly_rangeselector = make_rangeselector(
         0.656,
         -0.62,
-        {count: 2, label: i18n.t("Last 2 months"), step: "month"},
-        {count: 6, label: i18n.t("Last 6 months"), step: "month"},
+        {count: 2, label: $t({defaultMessage: "Last 2 months"}), step: "month"},
+        {count: 6, label: $t({defaultMessage: "Last 6 months"}), step: "month"},
     );
 
     function add_hover_handler() {
@@ -273,7 +273,7 @@ function populate_messages_sent_over_time(data) {
 
     info = aggregate_data("week");
     date_formatter = function (date) {
-        return i18n.t("Week of __date__", {date: format_date(date, false)});
+        return $t({defaultMessage: "Week of {date}"}, {date: format_date(date, false)});
     };
     const last_week_is_partial = info.last_value_is_partial;
     const weekly_traces = make_traces(info.dates, info.values, "bar", date_formatter);
@@ -702,9 +702,19 @@ function populate_number_of_users(data) {
                 x: 0.64,
                 y: -0.79,
                 buttons: [
-                    {count: 2, label: i18n.t("Last 2 months"), step: "month", stepmode: "backward"},
-                    {count: 6, label: i18n.t("Last 6 months"), step: "month", stepmode: "backward"},
-                    {step: "all", label: i18n.t("All time")},
+                    {
+                        count: 2,
+                        label: $t({defaultMessage: "Last 2 months"}),
+                        step: "month",
+                        stepmode: "backward",
+                    },
+                    {
+                        count: 6,
+                        label: $t({defaultMessage: "Last 6 months"}),
+                        step: "month",
+                        stepmode: "backward",
+                    },
+                    {step: "all", label: $t({defaultMessage: "All time"})},
                 ],
             },
         },
@@ -721,7 +731,7 @@ function populate_number_of_users(data) {
             x: end_dates,
             y: values,
             type,
-            name: i18n.t("Active users"),
+            name: $t({defaultMessage: "Active users"}),
             hoverinfo: "none",
             text,
             visible: true,
@@ -801,13 +811,13 @@ function populate_messages_read_over_time(data) {
         const common = {x: dates, type, hoverinfo: "none", text};
         return {
             everyone: {
-                name: i18n.t("Everyone"),
+                name: $t({defaultMessage: "Everyone"}),
                 y: values.everyone,
                 marker: {color: "#5f6ea0"},
                 ...common,
             },
             me: {
-                name: i18n.t("Me"),
+                name: $t({defaultMessage: "Me"}),
                 y: values.me,
                 marker: {color: "#be6d68"},
                 ...common,
@@ -842,7 +852,7 @@ function populate_messages_read_over_time(data) {
             buttons: [
                 {stepmode: "backward", ...button1},
                 {stepmode: "backward", ...button2},
-                {step: "all", label: i18n.t("All time")},
+                {step: "all", label: $t({defaultMessage: "All time"})},
             ],
         };
     }
@@ -851,14 +861,14 @@ function populate_messages_read_over_time(data) {
     const daily_rangeselector = make_rangeselector(
         0.68,
         -0.62,
-        {count: 10, label: i18n.t("Last 10 days"), step: "day"},
-        {count: 30, label: i18n.t("Last 30 days"), step: "day"},
+        {count: 10, label: $t({defaultMessage: "Last 10 days"}), step: "day"},
+        {count: 30, label: $t({defaultMessage: "Last 30 days"}), step: "day"},
     );
     const weekly_rangeselector = make_rangeselector(
         0.656,
         -0.62,
-        {count: 2, label: i18n.t("Last 2 months"), step: "month"},
-        {count: 6, label: i18n.t("Last 6 months"), step: "month"},
+        {count: 2, label: $t({defaultMessage: "Last 2 months"}), step: "month"},
+        {count: 6, label: $t({defaultMessage: "Last 6 months"}), step: "month"},
     );
 
     function add_hover_handler() {
@@ -949,7 +959,7 @@ function populate_messages_read_over_time(data) {
 
     info = aggregate_data("week");
     date_formatter = function (date) {
-        return i18n.t("Week of __date__", {date: format_date(date, false)});
+        return $t({defaultMessage: "Week of {date}"}, {date: format_date(date, false)});
     };
     const last_week_is_partial = info.last_value_is_partial;
     const weekly_traces = make_traces(info.dates, info.values, "bar", date_formatter);

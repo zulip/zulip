@@ -14,7 +14,7 @@ import * as compose from "./compose";
 import * as compose_fade from "./compose_fade";
 import * as condense from "./condense";
 import * as hash_util from "./hash_util";
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
@@ -615,9 +615,9 @@ export class MessageListView {
         // for rendering.
         const message_containers = messages.map((message) => {
             if (message.starred) {
-                message.starred_status = i18n.t("Unstar");
+                message.starred_status = $t({defaultMessage: "Unstar"});
             } else {
-                message.starred_status = i18n.t("Star");
+                message.starred_status = $t({defaultMessage: "Star"});
             }
 
             return {msg: message};

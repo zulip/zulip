@@ -12,7 +12,7 @@ import * as bot_data from "./bot_data";
 import * as channel from "./channel";
 import {csrf_token} from "./csrf";
 import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget";
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -184,15 +184,17 @@ export function generate_botserverrc_content(email, api_key, token) {
 export const bot_creation_policy_values = {
     admins_only: {
         code: 3,
-        description: i18n.t("Admins"),
+        description: $t({defaultMessage: "Admins"}),
     },
     everyone: {
         code: 1,
-        description: i18n.t("Admins and members"),
+        description: $t({defaultMessage: "Admins and members"}),
     },
     restricted: {
         code: 2,
-        description: i18n.t("Admins and members, but only admins can add generic bots"),
+        description: $t({
+            defaultMessage: "Admins and members, but only admins can add generic bots",
+        }),
     },
 };
 
@@ -213,11 +215,13 @@ export function update_bot_settings_tip() {
     const current_permission = page_params.realm_bot_creation_policy;
     let tip_text;
     if (current_permission === permission_type.admins_only.code) {
-        tip_text = i18n.t("Only organization administrators can add bots to this organization");
+        tip_text = $t({
+            defaultMessage: "Only organization administrators can add bots to this organization",
+        });
     } else if (current_permission === permission_type.restricted.code) {
-        tip_text = i18n.t("Only organization administrators can add generic bots");
+        tip_text = $t({defaultMessage: "Only organization administrators can add generic bots"});
     } else {
-        tip_text = i18n.t("Anyone in this organization can add bots");
+        tip_text = $t({defaultMessage: "Anyone in this organization can add bots"});
     }
     $(".bot-settings-tip").text(tip_text);
 }
@@ -318,7 +322,7 @@ export function set_up() {
             )) {
                 formData.append("file-" + i, file);
             }
-            loading.make_indicator(spinner, {text: i18n.t("Creating bot")});
+            loading.make_indicator(spinner, {text: $t({defaultMessage: "Creating bot"})});
             channel.post({
                 url: "/json/bots",
                 data: formData,
@@ -455,7 +459,7 @@ export function set_up() {
         const opts = {
             widget_name: "bot_owner",
             data: users_list,
-            default_text: i18n.t("No owner"),
+            default_text: $t({defaultMessage: "No owner"}),
             value: bot.owner_id,
         };
         const owner_widget = dropdown_list_widget(opts);

@@ -12,7 +12,7 @@ import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as drafts from "./drafts";
 import * as hash_util from "./hash_util";
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as narrow_state from "./narrow_state";
@@ -459,10 +459,13 @@ export function quote_and_reply(opts) {
         //     ```quote
         //     message content
         //     ```
-        let content = i18n.t("__- username__ [said](__- link_to_message__):", {
-            username: `@_**${message.sender_full_name}|${message.sender_id}**`,
-            link_to_message: `${hash_util.by_conversation_and_time_uri(message)}`,
-        });
+        let content = $t(
+            {defaultMessage: "{username} [said]({link_to_message}):"},
+            {
+                username: `@_**${message.sender_full_name}|${message.sender_id}**`,
+                link_to_message: `${hash_util.by_conversation_and_time_uri(message)}`,
+            },
+        );
         content += "\n";
         const fence = fenced_code.get_unused_fence(message.raw_content);
         content += `${fence}quote\n${message.raw_content}\n${fence}`;
