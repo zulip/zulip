@@ -4,7 +4,7 @@ import Plotly from "plotly.js/lib/core";
 import PlotlyPie from "plotly.js/lib/pie";
 import tippy from "tippy.js";
 
-import {i18n} from "../i18n";
+import {$t_html, i18n} from "../i18n";
 import {page_params} from "../page_params";
 
 Plotly.register([PlotlyBar, PlotlyPie]);
@@ -610,9 +610,10 @@ function populate_messages_sent_by_message_type(data) {
                     colors: ["#68537c", "#be6d68", "#b3b348"],
                 },
             },
-            total_str: i18n.t("<b>Total messages</b>: __total_messages__", {
-                total_messages: total_string,
-            }),
+            total_html: $t_html(
+                {defaultMessage: "<b>Total messages</b>: {total_messages}"},
+                {total_messages: total_string},
+            ),
         };
     }
 
@@ -660,7 +661,7 @@ function populate_messages_sent_by_message_type(data) {
             layout,
             {displayModeBar: false},
         );
-        totaldiv.innerHTML = plot_data[user_button][time_button].total_str;
+        totaldiv.innerHTML = plot_data[user_button][time_button].total_html;
     }
 
     draw_plot();
