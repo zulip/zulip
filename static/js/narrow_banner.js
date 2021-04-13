@@ -1,4 +1,5 @@
 import $ from "jquery";
+import _ from "lodash";
 
 import {i18n} from "./i18n";
 import * as narrow_state from "./narrow_state";
@@ -55,7 +56,7 @@ function show_search_query() {
 
     if (query_contains_stop_words) {
         const preamble = i18n.t("Some common words were excluded from your search.");
-        search_string_display.html(preamble + "<br/>" + search_string_display.html());
+        search_string_display.html(_.escape(preamble) + "<br/>" + search_string_display.html());
     }
 }
 
