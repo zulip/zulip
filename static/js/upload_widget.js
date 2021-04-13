@@ -77,7 +77,7 @@ export function build_widget(
             if (file.size > max_file_upload_size * 1024 * 1024) {
                 input_error.text(
                     $t(
-                        {defaultMessage: "File size must be < {max_file_size}Mb."},
+                        {defaultMessage: "File size must be at most {max_file_size} MiB."},
                         {max_file_size: max_file_upload_size},
                     ),
                 );
@@ -166,7 +166,7 @@ export function build_direct_upload_widget(
             if (file.size > max_file_upload_size * 1024 * 1024) {
                 input_error.text(
                     $t(
-                        {defaultMessage: "File size must be < {max_file_size}Mb."},
+                        {defaultMessage: "File size must be at most {max_file_size} MiB."},
                         {max_file_size: max_file_upload_size},
                     ),
                 );
