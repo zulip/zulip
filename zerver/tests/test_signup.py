@@ -4607,7 +4607,11 @@ class UserSignUpTest(InviteUserBase):
         self.assertEqual(result.status_code, 302)
         self.assert_logged_in_user_id(user_profile.id)
 
-    def test_registration_of_active_mirror_dummy_user(self) -> None:
+    @patch(
+        "DNS.dnslookup",
+        return_value=[["sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh"]],
+    )
+    def test_registration_of_active_mirror_dummy_user(self, ignored: Any) -> None:
         """
         Trying to activate an already-active mirror dummy user should
         raise an AssertionError.
