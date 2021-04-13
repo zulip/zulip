@@ -28,7 +28,7 @@ Usually, this involves a few steps:
   `static/images/integrations/logos/<name>.svg`, where `<name>` is the
   name of the integration, all in lower case; you can usually find them in the
   product branding or press page. Make sure to optimize the SVG graphic by
-  running `svgo -f path-to-file`.
+  running `yarn run svgo -f path-to-file`.
 
   If you cannot find an SVG graphic of the logo, please find and include a PNG
   image of the logo instead.
@@ -45,12 +45,11 @@ Usually, this involves a few steps:
   the screenshot using `tools/generate-integration-docs-screenshot`:
 
   ```sh
-  ./tools/generate-integration-docs-screenshot \
-      zerver/webhooks/pingdom/fixtures/imap_down_to_up.json
+  ./tools/generate-integration-docs-screenshot --integration integrationname
   ```
 
   If you have trouble using this tool, you can also manually generate the
-  screenshot using `send_webhook_fixture_message`. When generating the
+  screenshot using `manage.py send_webhook_fixture_message`. When generating the
   screenshot of a sample message using this method, give your test bot a nice
   name like "GitHub Bot", use the project's logo as the bot's avatar, and take
   the screenshot showing the stream/topic bar for the message, not just the
