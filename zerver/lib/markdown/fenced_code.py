@@ -82,7 +82,7 @@ import lxml.html
 from django.utils.html import escape
 from markdown import Markdown
 from markdown.extensions import Extension
-from markdown.extensions.codehilite import CodeHilite, CodeHiliteExtension
+from markdown.extensions.codehilite import CodeHilite, CodeHiliteExtension, parse_hl_lines
 from markdown.preprocessors import Preprocessor
 from pygments.lexers import get_lexer_by_name
 from pygments.util import ClassNotFound
@@ -108,6 +108,9 @@ FENCE_RE = re.compile(
         \\}?
     ) # language, like ".py" or "{javascript}"
     [ ]* # spaces
+    (
+        hl_lines=(?P<quot>"|')(?P<hl_lines>[0-9 ]*)(?P=quot)
+    )? # hl_lines to emphasize certain lines of code
     (
         \\{?\\.?
         (?P<header>
@@ -179,6 +182,7 @@ def generic_handler(
     fence: str,
     lang: str,
     header: str,
+    hl_lines_str: Optional[str] = None,
     run_content_validators: bool = False,
     default_language: Optional[str] = None,
 ) -> BaseHandler:
@@ -190,7 +194,7 @@ def generic_handler(
     elif lang == "spoiler":
         return SpoilerHandler(processor, output, fence, header)
     else:
-        return CodeHandler(processor, output, fence, lang, run_content_validators)
+        return CodeHandler(processor, output, fence, lang, hl_lines_str, run_content_validators)
 
 
 def check_for_new_fence(
@@ -205,10 +209,20 @@ def check_for_new_fence(
         fence = m.group("fence")
         lang = m.group("lang")
         header = m.group("header")
+        # Here 'hl_lines' is input of string
+        # containing a list of integers with spaces.
+        hl_lines_str = m.group("hl_lines")
         if not lang and default_language:
             lang = default_language
         handler = generic_handler(
-            processor, output, fence, lang, header, run_content_validators, default_language
+            processor,
+            output,
+            fence,
+            lang,
+            header,
+            hl_lines_str,
+            run_content_validators,
+            default_language,
         )
         processor.push(handler)
     else:
@@ -244,12 +258,16 @@ class CodeHandler(BaseHandler):
         output: MutableSequence[str],
         fence: str,
         lang: str,
+        hl_lines_str: Optional[str] = None,
         run_content_validators: bool = False,
     ) -> None:
         self.processor = processor
         self.output = output
         self.fence = fence
         self.lang = lang
+        # Here the return value for the input string (containing integers
+        # with spaces), from parse_hl_lines function, is a list of integers.
+        self.hl_lines = parse_hl_lines(hl_lines_str)
         self.lines: List[str] = []
         self.run_content_validators = run_content_validators
 
@@ -267,7 +285,7 @@ class CodeHandler(BaseHandler):
             validator = CODE_VALIDATORS.get(self.lang, lambda text: None)
             validator(self.lines)
 
-        text = self.processor.format_code(self.lang, text)
+        text = self.processor.format_code(self.lang, self.hl_lines, text)
         text = self.processor.placeholder(text)
         processed_lines = text.split("\n")
         self.output.append("")
@@ -407,7 +425,7 @@ class FencedBlockPreprocessor(Preprocessor):
             output.append("")
         return output
 
-    def format_code(self, lang: str, text: str) -> str:
+    def format_code(self, lang: str, hl_lines: List[int], text: str) -> str:
         if lang:
             langclass = LANG_TAG.format(lang)
         else:
@@ -433,6 +451,7 @@ class FencedBlockPreprocessor(Preprocessor):
                 style=self.codehilite_conf["pygments_style"][0],
                 use_pygments=self.codehilite_conf["use_pygments"][0],
                 lang=(lang or None),
+                hl_lines=hl_lines,
                 noclasses=self.codehilite_conf["noclasses"][0],
             )
 

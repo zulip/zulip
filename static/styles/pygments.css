@@ -2,6 +2,7 @@
     background-color: hsl(0, 0%, 100%);
 }
 .codehilite .hll {
+    display: block;
     background-color: hsl(60, 100%, 90%);
 }
 .codehilite {

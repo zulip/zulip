@@ -565,7 +565,8 @@ on a dark background, and don't change the dark labels dark either. */
         }
 
         .codehilite .hll {
-            background-color: hsl(0, 0%, 13%);
+            display: block;
+            background-color: hsl(216, 8%, 24%);
         }
 
         .codehilite .err {
