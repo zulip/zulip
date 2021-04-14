@@ -94,14 +94,14 @@
                                 <button type="submit" id="compose-send-button" class="button small send_message" title="{{t 'Send' }} (Ctrl + Enter)">{{t 'Send' }}</button>
                                 <input type="file" id="file_input" class="notvisible pull-left" multiple />
                                 {{#if file_upload_enabled }}
-                                <a role="button" class="message-control-button fa fa-paperclip notdisplayed" aria-label="{{t 'Attach files' }}" id="attach_files" tabindex=0 title="{{t 'Attach files' }}"></a>
+                                <a role="button" class="compose_control_button fa fa-paperclip notdisplayed" aria-label="{{t 'Attach files' }}" id="attach_files" tabindex=0 title="{{t 'Attach files' }}"></a>
                                 {{/if}}
-                                <a role="button" id="markdown_preview" class="message-control-button fa fa-eye" aria-label="{{t 'Preview' }}" tabindex=0 title="{{t 'Preview' }}"></a>
-                                <a role="button" id="undo_markdown_preview" class="message-control-button fa fa-edit" aria-label="{{t 'Write' }}" tabindex=0 style="display:none;" title="{{t 'Write' }}"></a>
-                                <a role="button" class="message-control-button fa fa-video-camera video_link" aria-label="{{t 'Add video call' }}" tabindex=0 title="{{t 'Add video call' }}"></a>
-                                <a role="button" class="message-control-button fa fa-smile-o" aria-label="{{t 'Add emoji' }}" id="emoji_map" tabindex=0 title="{{t 'Add emoji' }}"></a>
+                                <a role="button" id="markdown_preview" class="compose_control_button fa fa-eye" aria-label="{{t 'Preview' }}" tabindex=0 title="{{t 'Preview' }}"></a>
+                                <a role="button" id="undo_markdown_preview" class="compose_control_button fa fa-edit" aria-label="{{t 'Write' }}" tabindex=0 style="display:none;" title="{{t 'Write' }}"></a>
+                                <a role="button" class="compose_control_button fa fa-video-camera video_link" aria-label="{{t 'Add video call' }}" tabindex=0 title="{{t 'Add video call' }}"></a>
+                                <a role="button" class="compose_control_button fa fa-smile-o" aria-label="{{t 'Add emoji' }}" id="emoji_map" tabindex=0 title="{{t 'Add emoji' }}"></a>
                                 {{#if giphy_api_available }}
-                                <a role="button" class="message-control-button" aria-label="{{t 'Add GIF' }}" id="compose_box_giphy_grid" title="{{t 'Add GIF' }}">
+                                <a role="button" class="compose_control_button" aria-label="{{t 'Add GIF' }}" id="compose_box_giphy_grid" title="{{t 'Add GIF' }}">
                                     <img class="compose_giphy_logo" tabindex=0 src="/static/images/GIPHY_logo.png">
                                 </a>
                                 {{/if}}
