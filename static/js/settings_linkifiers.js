@@ -1,11 +1,14 @@
 import $ from "jquery";
 
+import render_admin_linkifier_edit_form from "../templates/settings/admin_linkifier_edit_form.hbs";
 import render_admin_linkifier_list from "../templates/settings/admin_linkifier_list.hbs";
 
 import * as channel from "./channel";
 import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
+import * as overlays from "./overlays";
 import {page_params} from "./page_params";
+import * as settings_ui from "./settings_ui";
 import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 
@@ -38,6 +41,22 @@ function sort_pattern(a, b) {
 
 function sort_url(a, b) {
     return compare_values(a.url_format, b.url_format);
+}
+
+function open_linkifier_edit_form(linkifier_id) {
+    const linkifiers_list = page_params.realm_linkifiers;
+    const linkifier = linkifiers_list.find((linkifier) => linkifier.id === linkifier_id);
+    const edit_form_html = render_admin_linkifier_edit_form({
+        linkifier_id,
+        pattern: linkifier.pattern,
+        url_format_string: linkifier.url_format,
+    });
+    const $edit_form_div = $(edit_form_html);
+    const modal_container = $("#linkifier-edit-form-modal-container");
+    modal_container.empty().append($edit_form_div);
+    overlays.open_modal("#linkifier-edit-form-modal");
+
+    return $edit_form_div;
 }
 
 function handle_linkifier_api_error(xhr, pattern_status, format_status, linkifier_status) {
@@ -124,6 +143,58 @@ export function build_page() {
                 const row = btn.parents("tr");
                 row.remove();
             },
+        });
+    });
+
+    $(".admin_linkifiers_table").on("click", ".edit", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const btn = $(this);
+        const linkifier_id = Number.parseInt(btn.attr("data-linkifier-id"), 10);
+        const modal = open_linkifier_edit_form(linkifier_id);
+
+        modal.find(".submit-linkifier-info-change").on("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const change_linkifier_button = $(".submit-linkifier-info-change");
+            change_linkifier_button.prop("disabled", true);
+
+            const url = "/json/realm/filters/" + encodeURIComponent(linkifier_id);
+            const pattern = modal.find("#edit-linkifier-pattern").val().trim();
+            const url_format_string = modal.find("#edit-linkifier-url-format-string").val().trim();
+            const data = {pattern, url_format_string};
+            const pattern_status = modal.find("#edit-linkifier-pattern-status").expectOne();
+            const format_status = modal.find("#edit-linkifier-format-status").expectOne();
+            const linkifier_status = modal.find(".edit-linkifier-status").expectOne();
+            const opts = {
+                success_continuation() {
+                    change_linkifier_button.prop("disabled", false);
+                    overlays.close_modal("#linkifier-edit-form-modal");
+                },
+                error_continuation(xhr) {
+                    change_linkifier_button.prop("disabled", false);
+                    const response_text = JSON.parse(xhr.responseText);
+                    if (response_text.errors !== undefined) {
+                        handle_linkifier_api_error(
+                            xhr,
+                            pattern_status,
+                            format_status,
+                            linkifier_status,
+                        );
+                    } else {
+                        // This must be `Linkifier not found` error.
+                        ui_report.error($t_html({defaultMessage: "Failed"}), xhr, linkifier_status);
+                    }
+                },
+            };
+            settings_ui.do_settings_change(
+                channel.patch,
+                url,
+                data,
+                $("#linkifier-field-status"),
+                opts,
+            );
         });
     });
 

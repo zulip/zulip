@@ -1927,3 +1927,15 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
         max-height: unset;
     }
 }
+
+.linkifier-edit-form {
+    #edit-linkifier-pattern,
+    #edit-linkifier-url-format-string {
+        width: 400px;
+    }
+
+    #edit-linkifier-pattern-status,
+    #edit-linkifier-format-status {
+        margin-top: 10px;
+    }
+}
