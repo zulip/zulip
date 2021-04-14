@@ -46,7 +46,7 @@ from zerver.decorator import (
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.send_email import FromAddress, send_email
-from zerver.lib.validator import check_int, check_int_in, check_string_in
+from zerver.lib.validator import check_int_in, check_string_in, to_positive_or_allowed_int
 from zerver.models import UserProfile, get_realm
 
 billing_logger = logging.getLogger("corporate.stripe")
@@ -131,7 +131,7 @@ def upgrade(
     license_management: Optional[str] = REQ(
         default=None, str_validator=check_string_in(VALID_LICENSE_MANAGEMENT_VALUES)
     ),
-    licenses: Optional[int] = REQ(json_validator=check_int, default=None),
+    licenses: Optional[int] = REQ(converter=to_positive_or_allowed_int(), default=None),
     stripe_token: Optional[str] = REQ(default=None),
 ) -> HttpResponse:
 
