@@ -25,6 +25,10 @@
                         <button type="submit" class="new-organization-button register-button">{{ _("Create organization") }}</button>
                     </div>
                 </form>
+                <div class="bottom-text">
+                    Already have an organization?
+                    <a href="/accounts/go">Log in to your organization</a>.
+                </div>
             </div>
             <div class="alert alert-error email-frontend-error"></div>
             {% if form.email.errors %}
