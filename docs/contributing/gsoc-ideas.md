@@ -565,6 +565,18 @@ Experts: Aman Agrawal, Neil Pilgrim.
   required**: Python 3 development skills, good communication and
   project management skills, good at reading code and testing.
 
+### Archive tool
+
+Code: [zulip-archive](https://github.com/zulip/zulip-archive)
+Experts: Rein Zustand, Steve Howell
+
+- Work on zulip-archive, which provides a Google-indexable read-only
+  archive of Zulip conversations.  The issue tracker for the project
+  has a great set of introductory/small projects; the overall goal is
+  to make the project super convenient to use for our OSS communities.
+  **Skills useful**: Python 3, reading feedback from users, CSS,
+  GitHub Actions.
+
 ## Circulating proposals (March to April)
 
 If you're applying to GSoC, we'd like for you to publicly post a few

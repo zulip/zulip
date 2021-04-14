@@ -6,24 +6,24 @@ import render_move_topic_to_stream from "../templates/move_topic_to_stream.hbs";
 import render_starred_messages_sidebar_actions from "../templates/starred_messages_sidebar_actions.hbs";
 import render_stream_sidebar_actions from "../templates/stream_sidebar_actions.hbs";
 import render_topic_sidebar_actions from "../templates/topic_sidebar_actions.hbs";
-import render_unstar_messages_modal from "../templates/unstar_messages_modal.hbs";
 
 import * as blueslip from "./blueslip";
+import * as browser_history from "./browser_history";
 import * as channel from "./channel";
+import * as compose_actions from "./compose_actions";
 import * as hash_util from "./hash_util";
-import * as hashchange from "./hashchange";
 import * as message_edit from "./message_edit";
-import * as message_flags from "./message_flags";
 import * as muting from "./muting";
 import * as muting_ui from "./muting_ui";
-import * as narrow from "./narrow";
+import {page_params} from "./page_params";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
 import * as starred_messages from "./starred_messages";
+import * as starred_messages_ui from "./starred_messages_ui";
+import * as stream_bar from "./stream_bar";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as subs from "./subs";
-import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
 
 // We handle stream popovers and topic popovers in this
@@ -236,6 +236,8 @@ function build_topic_popover(opts) {
     const is_muted = muting.is_topic_muted(sub.stream_id, topic_name);
     const can_mute_topic = !is_muted;
     const can_unmute_topic = is_muted;
+    const has_starred_messages =
+        starred_messages.get_starred_message_ids_in_topic(sub.stream_id, topic_name).length > 0;
 
     const content = render_topic_sidebar_actions({
         stream_name: sub.name,
@@ -243,8 +245,9 @@ function build_topic_popover(opts) {
         topic_name,
         can_mute_topic,
         can_unmute_topic,
-        is_realm_admin: sub.is_realm_admin,
+        is_realm_admin: page_params.is_admin,
         color: sub.color,
+        has_starred_messages,
     });
 
     $(elt).popover({
@@ -269,7 +272,7 @@ function build_all_messages_popover(e) {
     }
 
     popovers.hide_all();
-    exports.show_streamlist_sidebar();
+    show_streamlist_sidebar();
 
     const content = render_all_messages_sidebar_actions();
 
@@ -295,7 +298,7 @@ function build_starred_messages_popover(e) {
     }
 
     popovers.hide_all();
-    exports.show_streamlist_sidebar();
+    show_streamlist_sidebar();
 
     const show_unstar_all_button = starred_messages.get_count() > 0;
     const content = render_starred_messages_sidebar_actions({
@@ -343,10 +346,10 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
     const stream_header_colorblock = $(".topic_stream_edit_header").find(
         ".stream_header_colorblock",
     );
-    ui_util.decorate_stream_bar(current_stream_name, stream_header_colorblock, false);
+    stream_bar.decorate(current_stream_name, stream_header_colorblock, false);
     $("#select_stream_id").on("change", function () {
         const stream_name = stream_data.maybe_get_stream_name(Number.parseInt(this.value, 10));
-        ui_util.decorate_stream_bar(stream_name, stream_header_colorblock, false);
+        stream_bar.decorate(stream_name, stream_header_colorblock, false);
     });
 
     $("#move_topic_modal").modal("show");
@@ -400,7 +403,7 @@ export function register_stream_handlers() {
         hide_stream_popover();
 
         const stream_edit_hash = hash_util.stream_edit_uri(sub);
-        hashchange.go_to_location(stream_edit_hash);
+        browser_history.go_to_location(stream_edit_hash);
     });
 
     // Pin/unpin
@@ -431,15 +434,20 @@ export function register_stream_handlers() {
         hide_starred_messages_popover();
         e.preventDefault();
         e.stopPropagation();
-        $(".left-sidebar-modal-holder").empty();
-        $(".left-sidebar-modal-holder").html(render_unstar_messages_modal());
-        $("#unstar-messages-modal").modal("show");
+        starred_messages_ui.confirm_unstar_all_messages();
     });
 
-    $("body").on("click", "#do_unstar_messages_button", (e) => {
-        $("#unstar-messages-modal").modal("hide");
-        message_flags.unstar_all_messages();
+    // Unstar all messages in topic
+    $("body").on("click", ".sidebar-popover-unstar-all-in-topic", (e) => {
+        e.preventDefault();
         e.stopPropagation();
+        const topic_name = $(".sidebar-popover-unstar-all-in-topic").attr("data-topic-name");
+        const stream_id = $(".sidebar-popover-unstar-all-in-topic").attr("data-stream-id");
+        hide_topic_popover();
+        starred_messages_ui.confirm_unstar_all_messages_in_topic(
+            Number.parseInt(stream_id, 10),
+            topic_name,
+        );
     });
 
     // Toggle displaying starred message count
@@ -463,13 +471,27 @@ export function register_stream_handlers() {
         e.stopPropagation();
     });
 
+    // New topic in stream menu
+    $("body").on("click", ".popover_new_topic_button", (e) => {
+        const sub = stream_popover_sub(e);
+        hide_stream_popover();
+
+        compose_actions.start("stream", {
+            trigger: "popover new topic button",
+            stream: sub.name,
+            topic: "",
+        });
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
     // Unsubscribe
     $("body").on("click", ".popover_sub_unsub_button", function (e) {
         $(this).toggleClass("unsub");
         $(this).closest(".popover").fadeOut(500).delay(500).remove();
 
         const sub = stream_popover_sub(e);
-        subs.sub_or_unsub(sub);
+        subs.sub_or_unsub(sub, true);
         e.preventDefault();
         e.stopPropagation();
     });
@@ -499,42 +521,7 @@ export function register_stream_handlers() {
     });
 }
 
-function topic_popover_sub(e) {
-    const stream_id = topic_popover_stream_id(e);
-    if (!stream_id) {
-        blueslip.error("cannot find stream id");
-        return undefined;
-    }
-
-    const sub = stream_data.get_sub_by_id(stream_id);
-    if (!sub) {
-        blueslip.error("Unknown stream: " + stream_id);
-        return undefined;
-    }
-    return sub;
-}
-
 export function register_topic_handlers() {
-    // Narrow to topic
-    $("body").on("click", ".narrow_to_topic", (e) => {
-        hide_topic_popover();
-
-        const sub = topic_popover_sub(e);
-        if (!sub) {
-            return;
-        }
-
-        const topic = $(e.currentTarget).attr("data-topic-name");
-
-        const operators = [
-            {operator: "stream", operand: sub.name},
-            {operator: "topic", operand: topic},
-        ];
-        narrow.activate(operators, {trigger: "sidebar"});
-
-        e.stopPropagation();
-    });
-
     // Mute the topic
     $("body").on("click", ".sidebar-popover-mute-topic", (e) => {
         const stream_id = topic_popover_stream_id(e);

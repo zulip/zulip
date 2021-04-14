@@ -5,10 +5,13 @@ import shlex
 import subprocess
 import sys
 
+import requests
+
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 from scripts.lib.zulip_tools import ENDC, FAIL, OKGREEN
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from zerver.lib.test_fixtures import reset_zulip_test_database
 
 # Request the special webpack setup for frontend integration tests,
 # where webpack assets are compiled up front rather than running in
@@ -25,10 +28,10 @@ os.environ.pop("https_proxy", "")
 
 usage = """test-js-with-puppeteer [options]
     test-js-with-puppeteer # Run all test files
-    test-js-with-puppeteer 09-navigation.js # Run a single test file
-    test-js-with-puppeteer 09 # Run a single test file 09-navigation.js
-    test-js-with-puppeteer 01-login.js 03-narrow.js # Run a few test files
-    test-js-with-puppeteer 01 03 # Run a few test files, 01-login.js and 03-narrow.js here"""
+    test-js-with-puppeteer navigation.ts # Run a single test file
+    test-js-with-puppeteer navi # Run a single test file navigation.ts
+    test-js-with-puppeteer login.ts compose.ts # Run a few test files
+    test-js-with-puppeteer login compose # Run a few test files, login.ts and compose.ts here"""
 
 sys.path.insert(0, ZULIP_PATH)
 
@@ -62,6 +65,7 @@ options = parser.parse_args()
 def run_tests(files: Iterable[str], external_host: str) -> None:
     test_dir = os.path.join(ZULIP_PATH, "frontend_tests/puppeteer_tests")
     test_files = find_js_test_files(test_dir, files)
+    total_tests = len(test_files)
 
     def run_tests(test_number: int = 0) -> Tuple[int, int]:
         ret = 1
@@ -77,12 +81,19 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
                 test_file,
             ]
             print(
-                "\n\n===================== {}\nRunning {}\n\n".format(
-                    test_name, " ".join(map(shlex.quote, cmd))
+                "\n\n===================== ({}/{}) {}\nRunning {}\n\n".format(
+                    current_test_num + 1, total_tests, test_name, " ".join(map(shlex.quote, cmd))
                 ),
                 flush=True,
             )
             ret = subprocess.call(cmd)
+
+            # Resetting test environment.
+            reset_zulip_test_database()
+            # We are calling to /flush_caches to remove all the server-side caches.
+            response = requests.post("http://zulip.zulipdev.com:9981/flush_caches")
+            assert response.status_code == 200
+
             if ret != 0:
                 return ret, current_test_num
             current_test_num += 1

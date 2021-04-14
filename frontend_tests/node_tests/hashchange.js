@@ -36,6 +36,7 @@ mock_esm("../../static/js/top_left_corner", {
 });
 set_global("favicon", {});
 
+const browser_history = zrequire("browser_history");
 const people = zrequire("people");
 const hash_util = zrequire("hash_util");
 const hashchange = zrequire("hashchange");
@@ -173,7 +174,7 @@ run_test("hash_interactions", (override) => {
 
     window.location.hash = "#all_messages";
 
-    hashchange.clear_for_testing();
+    browser_history.clear_for_testing();
     hashchange.initialize();
     helper.assert_events([
         [overlays, "close_for_hash_change"],
@@ -275,15 +276,10 @@ run_test("hash_interactions", (override) => {
         [admin, "launch"],
     ]);
 
-    let called_back;
-
     helper.clear_events();
-    hashchange.exit_overlay(() => {
-        called_back = true;
-    });
+    browser_history.exit_overlay();
 
     helper.assert_events([[ui_util, "blur_active_element"]]);
-    assert(called_back);
 });
 
 run_test("save_narrow", (override) => {

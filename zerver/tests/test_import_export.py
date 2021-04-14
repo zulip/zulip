@@ -14,6 +14,8 @@ from zerver.lib.actions import (
     do_change_logo_source,
     do_change_plan_type,
     do_create_user,
+    do_deactivate_user,
+    do_mute_user,
     do_update_user_presence,
 )
 from zerver.lib.avatar_hash import user_avatar_path
@@ -42,6 +44,7 @@ from zerver.models import (
     Huddle,
     Message,
     MutedTopic,
+    MutedUser,
     Reaction,
     Realm,
     RealmAuditLog,
@@ -207,7 +210,7 @@ class ImportExportTest(ZulipTestCase):
         consent_message_id: Optional[int] = None,
     ) -> Dict[str, Any]:
         output_dir = self._make_output_dir()
-        with patch("logging.info"), patch("zerver.lib.export.create_soft_link"):
+        with patch("zerver.lib.export.create_soft_link"), self.assertLogs(level="INFO"):
             do_export_realm(
                 realm=realm,
                 output_dir=output_dir,
@@ -283,7 +286,7 @@ class ImportExportTest(ZulipTestCase):
 
         with get_test_image_file("img.png") as img_file:
             upload.upload_backend.upload_realm_icon_image(img_file, user_profile)
-            do_change_icon_source(realm, Realm.ICON_UPLOADED)
+            do_change_icon_source(realm, Realm.ICON_UPLOADED, acting_user=None)
 
         with get_test_image_file("img.png") as img_file:
             upload.upload_backend.upload_realm_logo_image(img_file, user_profile, night=False)
@@ -729,7 +732,7 @@ class ImportExportTest(ZulipTestCase):
         output_dir = self._make_output_dir()
         cordelia = self.example_user("cordelia")
 
-        with patch("logging.info"):
+        with self.assertLogs(level="INFO"):
             do_export_user(cordelia, output_dir)
 
         def read_file(fn: str) -> Any:
@@ -766,6 +769,9 @@ class ImportExportTest(ZulipTestCase):
 
         original_realm = Realm.objects.get(string_id="zulip")
         RealmEmoji.objects.get(realm=original_realm).delete()
+
+        # Deactivate a user to ensure such a case is covered.
+        do_deactivate_user(self.example_user("aaron"), acting_user=None)
         # data to test import of huddles
         huddle = [
             self.example_user("hamlet"),
@@ -806,6 +812,14 @@ class ImportExportTest(ZulipTestCase):
             topic_name="Verona2",
         )
 
+        # data to test import of muted users
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        do_mute_user(hamlet, cordelia)
+        do_mute_user(cordelia, hamlet)
+        do_mute_user(cordelia, othello)
+
         do_update_user_presence(
             sample_user, get_client("website"), timezone_now(), UserPresence.ACTIVE
         )
@@ -827,9 +841,8 @@ class ImportExportTest(ZulipTestCase):
 
         self._export_realm(original_realm)
 
-        with patch("logging.info"):
-            with self.settings(BILLING_ENABLED=False):
-                do_import_realm(os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip")
+        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
+            do_import_realm(os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip")
 
         # sanity checks
 
@@ -936,7 +949,7 @@ class ImportExportTest(ZulipTestCase):
 
         assert_realm_values(get_realm_audit_log_event_type)
 
-        cordelia_full_name = "Cordelia Lear"
+        cordelia_full_name = "Cordelia, Lear's daughter"
         hamlet_full_name = "King Hamlet"
         othello_full_name = "Othello, the Moor of Venice"
 
@@ -989,6 +1002,16 @@ class ImportExportTest(ZulipTestCase):
             return topic_names
 
         assert_realm_values(get_muted_topics)
+
+        def get_muted_users(r: Realm) -> Set[Tuple[int, int]]:
+            mute_objects = MutedUser.objects.all()
+            muter_mutee_pairs = {
+                (mute_object.user_profile.id, mute_object.muted_user.id)
+                for mute_object in mute_objects
+            }
+            return muter_mutee_pairs
+
+        assert_realm_values(get_muted_users)
 
         # test usergroups
         assert_realm_values(
@@ -1124,15 +1147,26 @@ class ImportExportTest(ZulipTestCase):
                 Recipient.objects.get(type=Recipient.HUDDLE, type_id=huddle_object.id).id,
             )
 
+        for user_profile in UserProfile.objects.filter(realm=imported_realm):
+            # Check that all Subscriptions have the correct is_user_active set.
+            self.assertEqual(
+                Subscription.objects.filter(
+                    user_profile=user_profile, is_user_active=user_profile.is_active
+                ).count(),
+                Subscription.objects.filter(user_profile=user_profile).count(),
+            )
+        # Verify that we've actually tested something meaningful instead of a blind import
+        # with is_user_active=True used for everything.
+        self.assertTrue(Subscription.objects.filter(is_user_active=False).exists())
+
     def test_import_files_from_local(self) -> None:
         realm = Realm.objects.get(string_id="zulip")
         self._setup_export_files(realm)
 
         self._export_realm(realm)
 
-        with self.settings(BILLING_ENABLED=False):
-            with patch("logging.info"):
-                do_import_realm(os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip")
+        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
+            do_import_realm(os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip")
         imported_realm = Realm.objects.get(string_id="test-zulip")
 
         # Test attachments
@@ -1193,9 +1227,9 @@ class ImportExportTest(ZulipTestCase):
         self._setup_export_files(realm)
 
         self._export_realm(realm)
-        with self.settings(BILLING_ENABLED=False):
-            with patch("logging.info"):
-                do_import_realm(os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip")
+        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
+            do_import_realm(os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip")
+
         imported_realm = Realm.objects.get(string_id="test-zulip")
         with get_test_image_file("img.png") as f:
             test_image_data = f.read()
@@ -1273,35 +1307,34 @@ class ImportExportTest(ZulipTestCase):
 
     def test_plan_type(self) -> None:
         realm = get_realm("zulip")
-        do_change_plan_type(realm, Realm.LIMITED)
+        do_change_plan_type(realm, Realm.LIMITED, acting_user=None)
 
         self._setup_export_files(realm)
         self._export_realm(realm)
 
-        with patch("logging.info"):
-            with self.settings(BILLING_ENABLED=True):
-                realm = do_import_realm(
-                    os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip-1"
-                )
-                self.assertEqual(realm.plan_type, Realm.LIMITED)
-                self.assertEqual(realm.max_invites, 100)
-                self.assertEqual(realm.upload_quota_gb, 5)
-                self.assertEqual(realm.message_visibility_limit, 10000)
-                self.assertTrue(
-                    RealmAuditLog.objects.filter(
-                        realm=realm, event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED
-                    ).exists()
-                )
-            with self.settings(BILLING_ENABLED=False):
-                realm = do_import_realm(
-                    os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip-2"
-                )
-                self.assertEqual(realm.plan_type, Realm.SELF_HOSTED)
-                self.assertEqual(realm.max_invites, 100)
-                self.assertEqual(realm.upload_quota_gb, None)
-                self.assertEqual(realm.message_visibility_limit, None)
-                self.assertTrue(
-                    RealmAuditLog.objects.filter(
-                        realm=realm, event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED
-                    ).exists()
-                )
+        with self.settings(BILLING_ENABLED=True), self.assertLogs(level="INFO"):
+            realm = do_import_realm(
+                os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip-1"
+            )
+            self.assertEqual(realm.plan_type, Realm.LIMITED)
+            self.assertEqual(realm.max_invites, 100)
+            self.assertEqual(realm.upload_quota_gb, 5)
+            self.assertEqual(realm.message_visibility_limit, 10000)
+            self.assertTrue(
+                RealmAuditLog.objects.filter(
+                    realm=realm, event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED
+                ).exists()
+            )
+        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
+            realm = do_import_realm(
+                os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip-2"
+            )
+            self.assertEqual(realm.plan_type, Realm.SELF_HOSTED)
+            self.assertEqual(realm.max_invites, 100)
+            self.assertEqual(realm.upload_quota_gb, None)
+            self.assertEqual(realm.message_visibility_limit, None)
+            self.assertTrue(
+                RealmAuditLog.objects.filter(
+                    realm=realm, event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED
+                ).exists()
+            )

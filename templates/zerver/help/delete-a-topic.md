@@ -16,7 +16,7 @@ better idea, or just leaving the topic as is. Deleting a topic can confuse
 users who come to the topic later via an email notification.
 
 Note that deleting a topic also deletes every message with that topic,
-whereas [deleting a stream](/help/delete-a-stream) does not.
+whereas [archiving a stream](/help/archive-a-stream) does not.
 
 ### Delete a topic
 
@@ -26,17 +26,18 @@ whereas [deleting a stream](/help/delete-a-stream) does not.
 
 1. Click the ellipsis (<i class="zulip-icon ellipsis-v-solid"></i>).
 
-1. Click **Delete all messages in `<topic>`**.
+1. Click **Delete topic**.
 
-1. Click **Delete messages**.
+1. Click **Delete topic** in the confirmation dialog.
 
 {end_tabs}
 
-Note that deleting the last message with a particular topic also deletes
-that topic.
+Note that deleting all of the individual messages within a particular
+topic also deletes that topic. Structurally, topics are simply an
+attribute of messages in Zulip.
 
 ## Related articles
 
 * [Edit or delete a message](/help/edit-or-delete-a-message)
-* [Delete a stream](/help/delete-a-stream)
+* [Archive a stream](/help/archive-a-stream)
 * [Message retention policy](/help/message-retention-policy)

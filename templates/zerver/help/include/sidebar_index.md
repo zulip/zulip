@@ -37,6 +37,7 @@
 * [Mention a user or group](/help/mention-a-user-or-group)
 * [Edit or delete a message](/help/edit-or-delete-a-message)
 * [Message a stream by email](/help/message-a-stream-by-email)
+* [Add GIFs in your message](/help/animated-gifs-from-giphy)
 
 ## Reading messages
 * [Reading strategies](/help/reading-strategies)
@@ -85,6 +86,7 @@
 ## Tools & customization
 * [Bots and integrations](/help/bots-and-integrations)
 * [Add a bot or integration](/help/add-a-bot-or-integration)
+* [Request an integration](/help/request-an-integration)
 * [Create a poll](/help/create-a-poll)
 * [Night mode](/help/night-mode)
 * [Enable emoticon translations](/help/enable-emoticon-translations)
@@ -157,7 +159,7 @@
 
 ## Stream management
 * [Stream permissions](/help/stream-permissions)
-* [Delete or archive a stream](/help/delete-a-stream)
+* [Delete or archive a stream](/help/archive-a-stream)
 * [Delete a topic](/help/delete-a-topic)
 * [Set default streams for new users](/help/set-default-streams-for-new-users)
 * [Rename a stream](/help/rename-a-stream)

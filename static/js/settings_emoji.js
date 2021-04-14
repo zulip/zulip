@@ -5,8 +5,10 @@ import render_admin_emoji_list from "../templates/admin_emoji_list.hbs";
 import render_settings_emoji_settings_tip from "../templates/settings/emoji_settings_tip.hbs";
 
 import * as channel from "./channel";
+import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as ui from "./ui";
 import * as ui_report from "./ui_report";
@@ -189,7 +191,10 @@ export function set_up() {
             }
 
             if (emoji.name.trim() === "") {
-                ui_report.client_error(i18n.t("Failed: Emoji name is required."), emoji_status);
+                ui_report.client_error(
+                    $t_html({defaultMessage: "Failed: Emoji name is required."}),
+                    emoji_status,
+                );
                 return;
             }
             $("#admin_emoji_submit").prop("disabled", true);
@@ -205,7 +210,10 @@ export function set_up() {
                 contentType: false,
                 success() {
                     $("#admin-emoji-status").hide();
-                    ui_report.success(i18n.t("Custom emoji added!"), emoji_status);
+                    ui_report.success(
+                        $t_html({defaultMessage: "Custom emoji added!"}),
+                        emoji_status,
+                    );
                     $("form.admin-emoji-form input[type='text']").val("");
                     $("#admin_emoji_submit").prop("disabled", false);
                     emoji_widget.clear();
@@ -214,7 +222,7 @@ export function set_up() {
                     $("#admin-emoji-status").hide();
                     const errors = JSON.parse(xhr.responseText).msg;
                     xhr.responseText = JSON.stringify({msg: errors});
-                    ui_report.error(i18n.t("Failed"), xhr, emoji_status);
+                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, emoji_status);
                     $("#admin_emoji_submit").prop("disabled", false);
                 },
             });

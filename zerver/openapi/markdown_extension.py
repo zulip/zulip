@@ -208,6 +208,7 @@ def get_openapi_param_example_value_as_string(
         # union type.  But for this logic's purpose, it's good enough
         # to just check the first parameter.
         param_type = param["schema"]["oneOf"][0]["type"]
+
     if param_type in ["object", "array"]:
         example_value = param.get("example", None)
         if not example_value:
@@ -225,7 +226,9 @@ cURL example."""
     else:
         example_value = param.get("example", DEFAULT_EXAMPLE[param_type])
         if isinstance(example_value, bool):
-            example_value = str(example_value).lower()
+            # Booleans are effectively JSON-encoded, in that we pass
+            # true/false, not the Python str(True) = "True"
+            jsonify = True
         if jsonify:
             example_value = json.dumps(example_value)
         if curl_argument:

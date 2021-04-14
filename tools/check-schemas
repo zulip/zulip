@@ -184,9 +184,8 @@ def validate_openapi_against_event_schema() -> None:
 
     for sub_node in node:
         name = sub_node["properties"]["type"]["enum"][0]
-        for key in ["op", "operation"]:
-            if key in sub_node["properties"]:
-                name += "_" + sub_node["properties"][key]["enum"][0]
+        if "op" in sub_node["properties"]:
+            name += "_" + sub_node["properties"]["op"]["enum"][0]
 
         name += "_event"
 

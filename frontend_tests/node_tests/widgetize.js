@@ -56,10 +56,10 @@ const fake_poll_widget = {
     },
 };
 
+const message_lists = mock_esm("../../static/js/message_lists", {current: {}});
 const narrow_state = mock_esm("../../static/js/narrow_state");
 mock_esm("../../static/js/poll_widget", fake_poll_widget);
 
-const current_msg_list = set_global("current_msg_list", {});
 set_global("document", "document-stub");
 
 const widgetize = zrequire("widgetize");
@@ -184,11 +184,11 @@ test("activate", (override) => {
     assert(!is_event_handled);
 
     /* Test narrow change message update */
-    override(current_msg_list, "get", (idx) => {
+    override(message_lists.current, "get", (idx) => {
         assert.equal(idx, 2001);
         return {};
     });
-    override(current_msg_list, "get_row", (idx) => {
+    override(message_lists.current, "get_row", (idx) => {
         assert.equal(idx, 2001);
         return row;
     });

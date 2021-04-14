@@ -1,7 +1,7 @@
 import $ from "jquery";
 
 import * as blueslip from "./blueslip";
-import * as hashchange from "./hashchange";
+import * as browser_history from "./browser_history";
 import * as popovers from "./popovers";
 
 let active_overlay;
@@ -44,20 +44,20 @@ export function drafts_open() {
 
 // To address bugs where mouse might apply to the streams/settings
 // overlays underneath an open modal within those settings UI, we add
-// this inline style to '.overlay.show', overriding the
+// this inline style to 'div.overlay.show', overriding the
 // "pointer-events: all" style in app_components.css.
 //
 // This is kinda hacky; it only works for modals within overlays, and
 // we need to make sure it gets re-enabled when the modal closes.
 export function disable_background_mouse_events() {
-    $(".overlay.show").attr("style", "pointer-events: none");
+    $("div.overlay.show").attr("style", "pointer-events: none");
 }
 
 // This removes only the inline-style of the element that
 // was added in disable_background_mouse_events and
 // enables the background mouse events.
 export function enable_background_mouse_events() {
-    $(".overlay.show").attr("style", null);
+    $("div.overlay.show").attr("style", null);
 }
 
 export function active_modal() {
@@ -199,8 +199,6 @@ export function close_modal(selector) {
 
     const elem = $(selector).expectOne();
     elem.modal("hide").attr("aria-hidden", true);
-    // Enable mouse events for the background as the modal closes.
-    enable_background_mouse_events();
 }
 
 export function close_active_modal() {
@@ -213,7 +211,7 @@ export function close_active_modal() {
 }
 
 export function close_for_hash_change() {
-    $(".overlay.show").removeClass("show");
+    $("div.overlay.show").removeClass("show");
     if (active_overlay) {
         close_handler();
     }
@@ -224,20 +222,20 @@ export function open_settings() {
         name: "settings",
         overlay: $("#settings_overlay_container"),
         on_close() {
-            hashchange.exit_overlay();
+            browser_history.exit_overlay();
         },
     });
 }
 
 export function initialize() {
-    $("body").on("click", ".overlay, .overlay .exit", (e) => {
+    $("body").on("click", "div.overlay, div.overlay .exit", (e) => {
         let $target = $(e.target);
 
-        // if the target is not the .overlay element, search up the node tree
+        // if the target is not the div.overlay element, search up the node tree
         // until it is found.
         if ($target.is(".exit, .exit-sign, .overlay-content, .exit span")) {
             $target = $target.closest("[data-overlay]");
-        } else if (!$target.is(".overlay")) {
+        } else if (!$target.is("div.overlay")) {
             // not a valid click target then.
             return;
         }

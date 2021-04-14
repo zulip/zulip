@@ -11,6 +11,7 @@ from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import (
+    change_user_is_active,
     create_users,
     do_change_can_create_users,
     do_change_user_role,
@@ -108,31 +109,35 @@ class PermissionTest(ZulipTestCase):
 
     def test_get_admin_users(self) -> None:
         user_profile = self.example_user("hamlet")
-        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER)
+        do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
         self.assertFalse(user_profile.is_realm_owner)
         admin_users = user_profile.realm.get_human_admin_users()
         self.assertFalse(user_profile in admin_users)
         admin_users = user_profile.realm.get_admin_users_and_bots()
         self.assertFalse(user_profile in admin_users)
 
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         self.assertFalse(user_profile.is_realm_owner)
         admin_users = user_profile.realm.get_human_admin_users()
         self.assertTrue(user_profile in admin_users)
         admin_users = user_profile.realm.get_admin_users_and_bots()
         self.assertTrue(user_profile in admin_users)
 
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER)
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_OWNER, acting_user=None)
         self.assertTrue(user_profile.is_realm_owner)
         admin_users = user_profile.realm.get_human_admin_users()
         self.assertTrue(user_profile in admin_users)
+        admin_users = user_profile.realm.get_human_admin_users(include_realm_owners=False)
+        self.assertFalse(user_profile in admin_users)
         admin_users = user_profile.realm.get_admin_users_and_bots()
         self.assertTrue(user_profile in admin_users)
+        admin_users = user_profile.realm.get_admin_users_and_bots(include_realm_owners=False)
+        self.assertFalse(user_profile in admin_users)
 
     def test_updating_non_existent_user(self) -> None:
         self.login("hamlet")
         admin = self.example_user("hamlet")
-        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
 
         invalid_user_id = 1000
         result = self.client_patch(f"/json/users/{invalid_user_id}", {})
@@ -146,7 +151,7 @@ class PermissionTest(ZulipTestCase):
         iago = self.example_user("iago")
         realm = iago.realm
 
-        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER)
+        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER, acting_user=None)
 
         result = self.client_get("/json/users")
         self.assert_json_success(result)
@@ -196,7 +201,7 @@ class PermissionTest(ZulipTestCase):
             result, "The owner permission cannot be removed from the only organization owner."
         )
 
-        do_change_user_role(iago, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        do_change_user_role(iago, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         self.login("iago")
         with tornado_redirected_to_list([]):
             result = self.client_patch(f"/json/users/{desdemona.id}", req)
@@ -278,7 +283,10 @@ class PermissionTest(ZulipTestCase):
         # Now, switch email address visibility, check client_gravatar
         # is automatically disabled for the user.
         do_set_realm_property(
-            user.realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS
+            user.realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            acting_user=None,
         )
         result = self.client_get("/json/users", {"client_gravatar": "true"})
         self.assert_json_success(result)
@@ -398,7 +406,7 @@ class PermissionTest(ZulipTestCase):
 
         # Can only access deactivated users if allow_deactivated is passed
         hamlet = self.example_user("hamlet")
-        do_deactivate_user(hamlet)
+        do_deactivate_user(hamlet, acting_user=None)
         with self.assertRaises(JsonableError):
             access_user_by_id(iago, hamlet.id, for_admin=False)
         with self.assertRaises(JsonableError):
@@ -415,186 +423,88 @@ class PermissionTest(ZulipTestCase):
             self.example_user("cordelia"), self.example_user("aaron").id, for_admin=False
         )
 
-    def test_change_regular_member_to_guest(self) -> None:
-        iago = self.example_user("iago")
-        self.login_user(iago)
+    def check_property_for_role(self, user_profile: UserProfile, role: int) -> bool:
+        if role == UserProfile.ROLE_REALM_ADMINISTRATOR:
+            return (
+                user_profile.is_realm_admin
+                and not user_profile.is_guest
+                and not user_profile.is_realm_owner
+            )
+        elif role == UserProfile.ROLE_REALM_OWNER:
+            return (
+                user_profile.is_realm_owner
+                and user_profile.is_realm_admin
+                and not user_profile.is_guest
+            )
 
-        hamlet = self.example_user("hamlet")
-        self.assertFalse(hamlet.is_guest)
+        if role == UserProfile.ROLE_MEMBER:
+            return (
+                not user_profile.is_guest
+                and not user_profile.is_realm_admin
+                and not user_profile.is_realm_owner
+            )
 
-        req = dict(role=orjson.dumps(UserProfile.ROLE_GUEST).decode())
+        assert role == UserProfile.ROLE_GUEST
+        return (
+            user_profile.is_guest
+            and not user_profile.is_realm_admin
+            and not user_profile.is_realm_owner
+        )
+
+    def check_user_role_change(
+        self,
+        user_email: str,
+        new_role: int,
+    ) -> None:
+        self.login("desdemona")
+
+        user_profile = self.example_user(user_email)
+        old_role = user_profile.role
+
+        self.assertTrue(self.check_property_for_role(user_profile, old_role))
+
+        req = dict(role=orjson.dumps(new_role).decode())
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
-            result = self.client_patch(f"/json/users/{hamlet.id}", req)
+            result = self.client_patch(f"/json/users/{user_profile.id}", req)
         self.assert_json_success(result)
 
-        hamlet = self.example_user("hamlet")
-        self.assertTrue(hamlet.is_guest)
-        self.assertFalse(hamlet.can_access_all_realm_members())
+        user_profile = self.example_user(user_email)
+        self.assertTrue(self.check_property_for_role(user_profile, new_role))
+
         person = events[0]["event"]["person"]
-        self.assertEqual(person["user_id"], hamlet.id)
-        self.assertTrue(person["role"], UserProfile.ROLE_GUEST)
+        self.assertEqual(person["user_id"], user_profile.id)
+        self.assertTrue(person["role"], new_role)
+
+    def test_change_regular_member_to_guest(self) -> None:
+        self.check_user_role_change("hamlet", UserProfile.ROLE_GUEST)
 
     def test_change_guest_to_regular_member(self) -> None:
-        iago = self.example_user("iago")
-        self.login_user(iago)
-
-        polonius = self.example_user("polonius")
-        self.assertTrue(polonius.is_guest)
-        req = dict(role=orjson.dumps(UserProfile.ROLE_MEMBER).decode())
-        events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
-            result = self.client_patch(f"/json/users/{polonius.id}", req)
-        self.assert_json_success(result)
-
-        polonius = self.example_user("polonius")
-        self.assertFalse(polonius.is_guest)
-        person = events[0]["event"]["person"]
-        self.assertEqual(person["user_id"], polonius.id)
-        self.assertEqual(person["role"], UserProfile.ROLE_MEMBER)
+        self.check_user_role_change("polonius", UserProfile.ROLE_MEMBER)
 
     def test_change_admin_to_guest(self) -> None:
-        iago = self.example_user("iago")
-        self.login_user(iago)
-        hamlet = self.example_user("hamlet")
-        do_change_user_role(hamlet, UserProfile.ROLE_REALM_ADMINISTRATOR)
-        self.assertFalse(hamlet.is_guest)
-        self.assertTrue(hamlet.is_realm_admin)
-
-        # Test changing a user from admin to guest and revoking admin status
-        hamlet = self.example_user("hamlet")
-        self.assertFalse(hamlet.is_guest)
-        req = dict(role=orjson.dumps(UserProfile.ROLE_GUEST).decode())
-        events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
-            result = self.client_patch(f"/json/users/{hamlet.id}", req)
-        self.assert_json_success(result)
-
-        hamlet = self.example_user("hamlet")
-        self.assertTrue(hamlet.is_guest)
-        self.assertFalse(hamlet.is_realm_admin)
-
-        person = events[0]["event"]["person"]
-        self.assertEqual(person["user_id"], hamlet.id)
-        self.assertEqual(person["role"], UserProfile.ROLE_GUEST)
+        self.check_user_role_change("iago", UserProfile.ROLE_GUEST)
 
     def test_change_guest_to_admin(self) -> None:
-        iago = self.example_user("iago")
-        self.login_user(iago)
-        polonius = self.example_user("polonius")
-        self.assertTrue(polonius.is_guest)
-        self.assertFalse(polonius.is_realm_admin)
-
-        # Test changing a user from guest to admin and revoking guest status
-        polonius = self.example_user("polonius")
-        self.assertFalse(polonius.is_realm_admin)
-        req = dict(role=orjson.dumps(UserProfile.ROLE_REALM_ADMINISTRATOR).decode())
-        events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
-            result = self.client_patch(f"/json/users/{polonius.id}", req)
-        self.assert_json_success(result)
-
-        polonius = self.example_user("polonius")
-        self.assertFalse(polonius.is_guest)
-        self.assertTrue(polonius.is_realm_admin)
-
-        person = events[0]["event"]["person"]
-        self.assertEqual(person["user_id"], polonius.id)
-        self.assertEqual(person["role"], UserProfile.ROLE_REALM_ADMINISTRATOR)
+        self.check_user_role_change("polonius", UserProfile.ROLE_REALM_ADMINISTRATOR)
 
     def test_change_owner_to_guest(self) -> None:
         self.login("desdemona")
         iago = self.example_user("iago")
-        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER)
-        self.assertFalse(iago.is_guest)
-        self.assertTrue(iago.is_realm_owner)
-
-        # Test changing a user from owner to guest and revoking owner status
-        iago = self.example_user("iago")
-        self.assertFalse(iago.is_guest)
-        req = dict(role=UserProfile.ROLE_GUEST)
-        events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
-            result = self.client_patch(f"/json/users/{iago.id}", req)
-        self.assert_json_success(result)
-
-        iago = self.example_user("iago")
-        self.assertTrue(iago.is_guest)
-        self.assertFalse(iago.is_realm_owner)
-
-        person = events[0]["event"]["person"]
-        self.assertEqual(person["user_id"], iago.id)
-        self.assertEqual(person["role"], UserProfile.ROLE_GUEST)
+        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+        self.check_user_role_change("iago", UserProfile.ROLE_GUEST)
 
     def test_change_guest_to_owner(self) -> None:
-        desdemona = self.example_user("desdemona")
-        self.login_user(desdemona)
-        polonius = self.example_user("polonius")
-        self.assertTrue(polonius.is_guest)
-        self.assertFalse(polonius.is_realm_owner)
-
-        # Test changing a user from guest to admin and revoking guest status
-        polonius = self.example_user("polonius")
-        self.assertFalse(polonius.is_realm_owner)
-        req = dict(role=UserProfile.ROLE_REALM_OWNER)
-        events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
-            result = self.client_patch(f"/json/users/{polonius.id}", req)
-        self.assert_json_success(result)
-
-        polonius = self.example_user("polonius")
-        self.assertFalse(polonius.is_guest)
-        self.assertTrue(polonius.is_realm_owner)
-
-        person = events[0]["event"]["person"]
-        self.assertEqual(person["user_id"], polonius.id)
-        self.assertEqual(person["role"], UserProfile.ROLE_REALM_OWNER)
+        self.check_user_role_change("polonius", UserProfile.ROLE_REALM_OWNER)
 
     def test_change_admin_to_owner(self) -> None:
-        desdemona = self.example_user("desdemona")
-        self.login_user(desdemona)
-        iago = self.example_user("iago")
-        self.assertTrue(iago.is_realm_admin)
-        self.assertFalse(iago.is_realm_owner)
-
-        # Test changing a user from admin to owner and revoking admin status
-        iago = self.example_user("iago")
-        self.assertFalse(iago.is_realm_owner)
-        req = dict(role=UserProfile.ROLE_REALM_OWNER)
-        events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
-            result = self.client_patch(f"/json/users/{iago.id}", req)
-        self.assert_json_success(result)
-
-        iago = self.example_user("iago")
-        self.assertTrue(iago.is_realm_owner)
-
-        person = events[0]["event"]["person"]
-        self.assertEqual(person["user_id"], iago.id)
-        self.assertEqual(person["role"], UserProfile.ROLE_REALM_OWNER)
+        self.check_user_role_change("iago", UserProfile.ROLE_REALM_OWNER)
 
     def test_change_owner_to_admin(self) -> None:
-        desdemona = self.example_user("desdemona")
-        self.login_user(desdemona)
+        self.login("desdemona")
         iago = self.example_user("iago")
-        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER)
-        self.assertTrue(iago.is_realm_owner)
-
-        # Test changing a user from admin to owner and revoking admin status
-        iago = self.example_user("iago")
-        self.assertTrue(iago.is_realm_owner)
-        req = dict(role=UserProfile.ROLE_REALM_ADMINISTRATOR)
-        events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
-            result = self.client_patch(f"/json/users/{iago.id}", req)
-        self.assert_json_success(result)
-
-        iago = self.example_user("iago")
-        self.assertFalse(iago.is_realm_owner)
-
-        person = events[0]["event"]["person"]
-        self.assertEqual(person["user_id"], iago.id)
-        self.assertEqual(person["role"], UserProfile.ROLE_REALM_ADMINISTRATOR)
+        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+        self.check_user_role_change("iago", UserProfile.ROLE_REALM_ADMINISTRATOR)
 
     def test_admin_user_can_change_profile_data(self) -> None:
         realm = get_realm("zulip")
@@ -811,8 +721,8 @@ class QueryCountTest(ZulipTestCase):
                         acting_user=None,
                     )
 
-        self.assert_length(queries, 68)
-        self.assert_length(cache_tries, 20)
+        self.assert_length(queries, 70)
+        self.assert_length(cache_tries, 22)
         self.assert_length(events, 7)
 
         peer_add_events = [event for event in events if event["event"].get("op") == "peer_add"]
@@ -881,7 +791,7 @@ class AdminCreateUserTest(ZulipTestCase):
         admin = self.example_user("hamlet")
         realm = admin.realm
         self.login_user(admin)
-        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         valid_params = dict(
             email="romeo@zulip.net",
             password="xxxx",
@@ -894,11 +804,11 @@ class AdminCreateUserTest(ZulipTestCase):
 
         do_change_can_create_users(admin, True)
         # can_create_users is insufficient without being a realm administrator:
-        do_change_user_role(admin, UserProfile.ROLE_MEMBER)
+        do_change_user_role(admin, UserProfile.ROLE_MEMBER, acting_user=None)
         result = self.client_post("/json/users", valid_params)
         self.assert_json_error(result, "Must be an organization administrator")
 
-        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
 
         result = self.client_post("/json/users", {})
         self.assert_json_error(result, "Missing 'email' argument")
@@ -942,7 +852,7 @@ class AdminCreateUserTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Bad name or username")
 
-        do_set_realm_property(realm, "emails_restricted_to_domains", True)
+        do_set_realm_property(realm, "emails_restricted_to_domains", True, acting_user=None)
         result = self.client_post(
             "/json/users",
             dict(
@@ -1043,8 +953,7 @@ class UserProfileTest(ZulipTestCase):
             check_valid_user_ids(get_realm("zephyr").id, [hamlet.id])
 
         # User is not active
-        hamlet.is_active = False
-        hamlet.save()
+        change_user_is_active(hamlet, False)
         with self.assertRaisesRegex(ValidationError, rf"User with ID {hamlet.id} is deactivated"):
             check_valid_user_ids(realm.id, [hamlet.id])
         check_valid_user_ids(realm.id, [hamlet.id], allow_deactivated=True)
@@ -1151,7 +1060,7 @@ class UserProfileTest(ZulipTestCase):
 
         # We verify that get_accounts_for_email don't return deactivated users accounts
         user = self.example_user("hamlet")
-        do_deactivate_user(user)
+        do_deactivate_user(user, acting_user=None)
         email = self.example_email("hamlet")
         accounts = get_accounts_for_email(email)
         with self.assertRaises(AssertionError):
@@ -1214,8 +1123,8 @@ class UserProfileTest(ZulipTestCase):
         self.assertEqual(len(events), 0)
 
         # We verify that cordelia and iago match, but hamlet has the defaults.
-        self.assertEqual(iago.full_name, "Cordelia Lear")
-        self.assertEqual(cordelia.full_name, "Cordelia Lear")
+        self.assertEqual(iago.full_name, "Cordelia, Lear's daughter")
+        self.assertEqual(cordelia.full_name, "Cordelia, Lear's daughter")
         self.assertEqual(hamlet.full_name, "King Hamlet")
 
         self.assertEqual(iago.default_language, "de")
@@ -1319,14 +1228,30 @@ class UserProfileTest(ZulipTestCase):
 class ActivateTest(ZulipTestCase):
     def test_basics(self) -> None:
         user = self.example_user("hamlet")
-        do_deactivate_user(user)
+        do_deactivate_user(user, acting_user=None)
         self.assertFalse(user.is_active)
-        do_reactivate_user(user)
+        do_reactivate_user(user, acting_user=None)
         self.assertTrue(user.is_active)
+
+    def test_subscriptions_is_user_active(self) -> None:
+        user = self.example_user("hamlet")
+        do_deactivate_user(user, acting_user=None)
+        self.assertFalse(user.is_active)
+        self.assertTrue(Subscription.objects.filter(user_profile=user).exists())
+        self.assertFalse(
+            Subscription.objects.filter(user_profile=user, is_user_active=True).exists()
+        )
+
+        do_reactivate_user(user, acting_user=None)
+        self.assertTrue(user.is_active)
+        self.assertTrue(Subscription.objects.filter(user_profile=user).exists())
+        self.assertFalse(
+            Subscription.objects.filter(user_profile=user, is_user_active=False).exists()
+        )
 
     def test_api(self) -> None:
         admin = self.example_user("othello")
-        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        do_change_user_role(admin, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         self.login("othello")
 
         user = self.example_user("hamlet")
@@ -1351,7 +1276,7 @@ class ActivateTest(ZulipTestCase):
 
         iago = self.example_user("iago")
         desdemona = self.example_user("desdemona")
-        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER)
+        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER, acting_user=None)
 
         # Cannot deactivate a user with the bot api
         result = self.client_delete("/json/bots/{}".format(self.example_user("hamlet").id))
@@ -1378,7 +1303,7 @@ class ActivateTest(ZulipTestCase):
 
     def test_api_with_insufficient_permissions(self) -> None:
         non_admin = self.example_user("othello")
-        do_change_user_role(non_admin, UserProfile.ROLE_MEMBER)
+        do_change_user_role(non_admin, UserProfile.ROLE_MEMBER, acting_user=None)
         self.login("othello")
 
         # Cannot deactivate a user with the users api
@@ -1400,7 +1325,7 @@ class ActivateTest(ZulipTestCase):
             delay=datetime.timedelta(hours=1),
         )
         self.assertEqual(ScheduledEmail.objects.count(), 1)
-        do_deactivate_user(user)
+        do_deactivate_user(user, acting_user=None)
         self.assertEqual(ScheduledEmail.objects.count(), 0)
 
     def test_send_future_email_with_multiple_recipients(self) -> None:

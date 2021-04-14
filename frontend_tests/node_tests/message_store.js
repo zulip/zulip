@@ -3,9 +3,9 @@
 const {strict: assert} = require("assert");
 
 const {mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
-const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
@@ -18,16 +18,15 @@ mock_esm("../../static/js/recent_senders", {
 });
 
 set_global("document", "document-stub");
-set_global("home_msg_list", {});
-set_global("page_params", {
-    realm_allow_message_editing: true,
-    is_admin: true,
-});
+page_params.realm_allow_message_editing = true;
+page_params.is_admin = true;
 
 const util = zrequire("util");
 const people = zrequire("people");
 const pm_conversations = zrequire("pm_conversations");
+const message_helper = zrequire("message_helper");
 const message_store = zrequire("message_store");
+const message_user_ids = zrequire("message_user_ids");
 
 const denmark = {
     subscribed: false,
@@ -91,11 +90,12 @@ function convert_recipients(people) {
 function test(label, f) {
     run_test(label, (override) => {
         message_store.clear_for_testing();
+        message_user_ids.clear_for_testing();
         f(override);
     });
 }
 
-test("add_message_metadata", () => {
+test("process_new_message", () => {
     let message = {
         sender_email: "me@example.com",
         sender_id: me.user_id,
@@ -106,9 +106,9 @@ test("add_message_metadata", () => {
         id: 2067,
     };
     message_store.set_message_booleans(message);
-    message_store.add_message_metadata(message);
+    message_helper.process_new_message(message);
 
-    assert.deepEqual(message_store.user_ids().sort(), [me.user_id, bob.user_id, cindy.user_id]);
+    assert.deepEqual(message_user_ids.user_ids().sort(), [me.user_id, bob.user_id, cindy.user_id]);
 
     assert.equal(message.is_private, true);
     assert.equal(message.reply_to, "bob@example.com,cindy@example.com");
@@ -130,7 +130,7 @@ test("add_message_metadata", () => {
         match_subject: "topic foo",
         match_content: "bar content",
     };
-    message = message_store.add_message_metadata(message);
+    message = message_helper.process_new_message(message);
 
     assert.equal(message.reply_to, "bob@example.com,cindy@example.com");
     assert.equal(message.to_user_ids, "103,104");
@@ -149,13 +149,13 @@ test("add_message_metadata", () => {
     };
 
     message_store.set_message_booleans(message);
-    message_store.add_message_metadata(message);
+    message_helper.process_new_message(message);
     assert.deepEqual(message.stream, message.display_recipient);
     assert.equal(message.reply_to, "denise@example.com");
     assert.deepEqual(message.flags, undefined);
     assert.equal(message.alerted, false);
 
-    assert.deepEqual(message_store.user_ids().sort(), [
+    assert.deepEqual(message_user_ids.user_ids().sort(), [
         me.user_id,
         bob.user_id,
         cindy.user_id,
@@ -232,9 +232,20 @@ test("errors", () => {
         "set_partner",
         () => assert(false),
         () => {
-            message_store.process_message_for_recent_private_messages(message);
+            pm_conversations.process_message(message);
         },
     );
+});
+
+test("reify_message_id", () => {
+    const message = {type: "private", id: 500};
+
+    message_store.update_message_cache(message);
+    assert.equal(message_store.get_cached_message(500), message);
+
+    message_store.reify_message_id({old_id: 500, new_id: 501});
+    assert.equal(message_store.get_cached_message(500), undefined);
+    assert.equal(message_store.get_cached_message(501), message);
 });
 
 test("update_booleans", () => {
@@ -297,7 +308,7 @@ test("update_property", () => {
     };
     for (const message of [message1, message2]) {
         message_store.set_message_booleans(message);
-        message_store.add_message_metadata(message);
+        message_helper.process_new_message(message);
     }
 
     assert.equal(message1.sender_full_name, alice.full_name);
@@ -321,44 +332,6 @@ test("update_property", () => {
     assert.equal(message1.display_recipient, "Prod");
     assert.equal(message2.stream, denmark.name);
     assert.equal(message2.display_recipient, denmark.name);
-});
-
-test("message_id_change", () => {
-    const message = {
-        sender_email: "me@example.com",
-        sender_id: me.user_id,
-        type: "private",
-        display_recipient: convert_recipients([me, bob, cindy]),
-        flags: ["has_alert_word"],
-        id: 401,
-    };
-    message_store.add_message_metadata(message);
-
-    const opts = {
-        old_id: 401,
-        new_id: 402,
-    };
-
-    {
-        const stub = make_stub();
-        home_msg_list.change_message_id = stub.f;
-        message_store.reify_message_id(opts);
-        assert.equal(stub.num_calls, 1);
-        const msg_id = stub.get_args("old", "new");
-        assert.equal(msg_id.old, 401);
-        assert.equal(msg_id.new, 402);
-    }
-
-    home_msg_list.view = {};
-    {
-        const stub = make_stub();
-        home_msg_list.view.change_message_id = stub.f;
-        message_store.reify_message_id(opts);
-        assert.equal(stub.num_calls, 1);
-        const msg_id = stub.get_args("old", "new");
-        assert.equal(msg_id.old, 401);
-        assert.equal(msg_id.new, 402);
-    }
 });
 
 test("errors", () => {

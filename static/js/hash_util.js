@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import {$t_html} from "./i18n";
 import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
@@ -77,7 +78,12 @@ export function decodeHashComponent(str) {
         // TODO: Show possible valid URLs to the user.
         return decodeURIComponent(str.replace(/\./g, "%"));
     } catch {
-        ui_report.error(i18n.t("Invalid URL"), undefined, $("#home-error"), 2000);
+        ui_report.error(
+            $t_html({defaultMessage: "Invalid URL"}),
+            undefined,
+            $("#home-error"),
+            2000,
+        );
         return "";
     }
 }
@@ -208,4 +214,21 @@ export function parse_narrow(hash) {
         operators.push({negated, operator, operand});
     }
     return operators;
+}
+
+export function is_overlay_hash(hash) {
+    // Hash changes within this list are overlays and should not unnarrow (etc.)
+    const overlay_list = [
+        "streams",
+        "drafts",
+        "settings",
+        "organization",
+        "invite",
+        "keyboard-shortcuts",
+        "message-formatting",
+        "search-operators",
+    ];
+    const main_hash = get_hash_category(hash);
+
+    return overlay_list.includes(main_hash);
 }

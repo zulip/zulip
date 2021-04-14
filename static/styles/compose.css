@@ -398,6 +398,12 @@ input.recipient_box {
     display: inline-block;
 }
 
+#compose_box_giphy_grid img {
+    width: auto;
+    height: 14px;
+    vertical-align: top;
+}
+
 a.message-control-button {
     display: block;
     opacity: 0.4;

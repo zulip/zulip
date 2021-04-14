@@ -10,6 +10,91 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 55**
+
+* [`POST /register`](/api/register-queue): Added `realm_giphy_rating`
+  and `giphy_rating_options` fields.
+* `PATCH /realm`: Added `giphy_rating` parameter.
+
+**Feature level 54**
+
+* `GET /realm/filters` has been removed and replace with [`GET
+  /realm/linkifiers`](/api/get-linkifiers) which returns the data in a
+  cleaner dictionary format.
+* [`GET /events`](/api/get-events): Introduced new event type
+  `realm_linkifiers`.  The previous `realm_filters` event type is
+  still supported for backwards compatibility, but will be removed in
+  a future release.
+* [`POST /register`](/api/register-queue): The response now supports a
+  `realm_linkifiers` event type, containing the same data as the
+  legacy `realm_filters` key, with a more extensible object
+  format. The previous `realm_filters` event type is still supported
+  for backwards compatibility, but will be removed in a future
+  release. The legacy `realm_filters` key is deprecated but remains
+  available for backwards compatibility.
+
+**Feature level 53**
+
+* [`POST /register`](/api/register-queue): Added `max_topic_length`
+  and `max_message_length`, and renamed `max_stream_name_length` and
+  `max_stream_description_length` to allow clients to transparently
+  support these values changing in a future server version.
+
+**Feature level 52**
+
+* `PATCH /realm`: Removed unnecessary JSON-encoding of string
+  parameters `name`, `description`, `default_language`, and
+  `default_code_block_language`.
+
+**Feature level 51**
+
+* [`POST /register`](/api/register-queue): Added a new boolean field
+`can_invite_others_to_realm`.
+
+**Feature level 50**
+
+* [`POST /register`](/api/register-queue): Replaced `invite_by_admins_only`
+field with an integer field `invite_to_realm_policy`.
+
+**Feature level 49**
+
+* Added new [`POST /realm/playground`](/api/add-playground) and
+  [`DELETE /realm/playground/{playground_id}`](/api/remove-playground)
+  endpoints for realm playgrounds.
+* [`GET /events`](/api/get-events): A new `realm_playgrounds` events
+  is sent when changes are made to a set of configured playgrounds for
+  an organization.
+* [`POST /register`](/api/register-queue): Added a new `realm_playgrounds`
+  field, which is required to fetch the set of configured playgrounds for
+  an organization.
+
+**Feature level 48**
+
+* [`POST /users/me/muted_users/{muted_user_id}`](/api/mute-user),
+  [`DELETE /users/me/muted_users/{muted_user_id}`](/api/unmute-user):
+  New endpoints added to mute/unmute users.
+* [`GET /events`](/api/get-events): Added new event type `muted_users`
+  which will be sent to a user when the set of users muted by them has
+  changed.
+
+**Feature level 47**
+
+* [`POST /register`](/api/register-queue): Added a new `giphy_api_key`
+  field, which is required to fetch GIFs using the GIPHY API.
+
+**Feature level 46**
+
+* [`GET /messages`](/api/get-messages) and [`GET
+  /events`](/api/get-events): The `topic_links` field now contains a
+  list of dictionaries, rather than a list of strings.
+
+**Feature level 45**
+
+* [`GET /events`](/api/get-events): Removed useless `op` field from
+  `custom_profile_fields` events.  These events contain the full set
+  of configured `custom_profile_fields` for the organization
+  regardless of what triggered the change.
+
 **Feature level 44**
 
 * [`POST /register`](/api/register-queue): extended the `unread_msgs`

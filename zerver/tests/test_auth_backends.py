@@ -35,6 +35,7 @@ from social_django.strategy import DjangoStrategy
 
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.lib.actions import (
+    change_user_is_active,
     do_create_realm,
     do_create_user,
     do_deactivate_realm,
@@ -162,7 +163,7 @@ class AuthBackendTest(ZulipTestCase):
         self.assertEqual(user_profile, result)
 
         # Verify auth fails with a deactivated user
-        do_deactivate_user(user_profile)
+        do_deactivate_user(user_profile, acting_user=None)
         result = backend.authenticate(**good_kwargs)
         if isinstance(backend, SocialAuthMixin):
             # Returns a redirect to login page with an error.
@@ -176,12 +177,12 @@ class AuthBackendTest(ZulipTestCase):
             self.assertIsNone(result)
 
         # Reactivate the user and verify auth works again
-        do_reactivate_user(user_profile)
+        do_reactivate_user(user_profile, acting_user=None)
         result = backend.authenticate(**good_kwargs)
         self.assertEqual(user_profile, result)
 
         # Verify auth fails with a deactivated realm
-        do_deactivate_realm(user_profile.realm)
+        do_deactivate_realm(user_profile.realm, acting_user=None)
         self.assertIsNone(backend.authenticate(**good_kwargs))
 
         # Verify auth works again after reactivating the realm
@@ -1067,7 +1068,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
 
     def test_social_auth_deactivated_user(self) -> None:
         user_profile = self.example_user("hamlet")
-        do_deactivate_user(user_profile)
+        do_deactivate_user(user_profile, acting_user=None)
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
         # We expect to go through the "choose email" screen here,
         # because there won't be an existing user account we can
@@ -1459,7 +1460,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         stream_names = ["new_stream_1", "new_stream_2"]
         streams = []
         for stream_name in set(stream_names):
-            stream = ensure_stream(realm, stream_name)
+            stream = ensure_stream(realm, stream_name, acting_user=None)
             streams.append(stream)
 
         referrer = self.example_user("hamlet")
@@ -1515,7 +1516,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
     def test_social_auth_registration_without_is_signup_closed_realm(self) -> None:
         """If the user doesn't exist yet in closed realm, give an error"""
         realm = get_realm("zulip")
-        do_set_realm_property(realm, "emails_restricted_to_domains", True)
+        do_set_realm_property(realm, "emails_restricted_to_domains", True, acting_user=None)
         email = "nonexisting@phantom.com"
         name = "Full Name"
         account_data_dict = self.get_account_data_dict(email=email, name=name)
@@ -3627,7 +3628,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
         stream_names = ["new_stream_1", "new_stream_2"]
         streams = []
         for stream_name in set(stream_names):
-            stream = ensure_stream(realm, stream_name)
+            stream = ensure_stream(realm, stream_name, acting_user=None)
             streams.append(stream)
 
         # Without the invite link, we can't create an account due to invite_required
@@ -3812,7 +3813,7 @@ class FetchAPIKeyTest(ZulipTestCase):
         self.assert_json_success(result)
 
     def test_inactive_user(self) -> None:
-        do_deactivate_user(self.user_profile)
+        do_deactivate_user(self.user_profile, acting_user=None)
         result = self.client_post(
             "/api/v1/fetch_api_key",
             dict(username=self.email, password=initial_password(self.email)),
@@ -3820,7 +3821,7 @@ class FetchAPIKeyTest(ZulipTestCase):
         self.assert_json_error_contains(result, "Your account has been disabled", 403)
 
     def test_deactivated_realm(self) -> None:
-        do_deactivate_realm(self.user_profile.realm)
+        do_deactivate_realm(self.user_profile.realm, acting_user=None)
         result = self.client_post(
             "/api/v1/fetch_api_key",
             dict(username=self.email, password=initial_password(self.email)),
@@ -3853,12 +3854,12 @@ class DevFetchAPIKeyTest(ZulipTestCase):
         self.assert_json_error_contains(result, "This user is not registered.", 403)
 
     def test_inactive_user(self) -> None:
-        do_deactivate_user(self.user_profile)
+        do_deactivate_user(self.user_profile, acting_user=None)
         result = self.client_post("/api/v1/dev_fetch_api_key", dict(username=self.email))
         self.assert_json_error_contains(result, "Your account has been disabled", 403)
 
     def test_deactivated_realm(self) -> None:
-        do_deactivate_realm(self.user_profile.realm)
+        do_deactivate_realm(self.user_profile.realm, acting_user=None)
         result = self.client_post("/api/v1/dev_fetch_api_key", dict(username=self.email))
         self.assert_json_error_contains(result, "This organization has been deactivated", 403)
 
@@ -5072,7 +5073,7 @@ class TestLDAP(ZulipLDAPTestCase):
         with self.settings(AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
             backend = self.backend
             email = "nonexisting@zulip.com"
-            do_deactivate_realm(backend._realm)
+            do_deactivate_realm(backend._realm, acting_user=None)
             with self.assertRaisesRegex(Exception, "Realm has been deactivated"):
                 backend.get_or_build_user(email, _LDAPUser())
 
@@ -5181,7 +5182,7 @@ class TestLDAP(ZulipLDAPTestCase):
     @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",))
     def test_login_failure_due_to_deactivated_user(self) -> None:
         user_profile = self.example_user("hamlet")
-        do_deactivate_user(user_profile)
+        do_deactivate_user(user_profile, acting_user=None)
         with self.settings(LDAP_APPEND_DOMAIN="zulip.com"):
             user_profile = self.backend.authenticate(
                 request=mock.MagicMock(),
@@ -5292,7 +5293,10 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         hamlet = self.example_user("hamlet")
         realm = get_realm("zulip")
         do_set_realm_property(
-            realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS
+            realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            acting_user=None,
         )
         hamlet.refresh_from_db()
 
@@ -5361,7 +5365,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
         )
 
     def test_reactivate_user(self) -> None:
-        do_deactivate_user(self.example_user("hamlet"))
+        do_deactivate_user(self.example_user("hamlet"), acting_user=None)
 
         with self.settings(
             AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn", "userAccountControl": "userAccountControl"}
@@ -5408,7 +5412,7 @@ class TestZulipLDAPUserPopulator(ZulipLDAPTestCase):
             )
             self.assertFalse(result)
 
-            do_deactivate_user(othello)
+            do_deactivate_user(othello, acting_user=None)
             mock_logger = mock.MagicMock()
             result = sync_user_from_ldap(othello, mock_logger)
             # In this case the logger shouldn't be used.
@@ -5855,7 +5859,7 @@ class EmailValidatorTestCase(ZulipTestCase):
         cordelia = self.example_user("cordelia")
 
         realm = inviter.realm
-        do_set_realm_property(realm, "emails_restricted_to_domains", True)
+        do_set_realm_property(realm, "emails_restricted_to_domains", True, acting_user=None)
         inviter.realm.refresh_from_db()
         error = validate_email_is_valid(
             "fred+5555@zulip.com",
@@ -5869,8 +5873,7 @@ class EmailValidatorTestCase(ZulipTestCase):
         self.assertEqual(False, is_deactivated)
         self.assertEqual(error, "Already has an account.")
 
-        cordelia.is_active = False
-        cordelia.save()
+        change_user_is_active(cordelia, False)
 
         errors = get_existing_user_errors(realm, {cordelia_email})
         error, is_deactivated = errors[cordelia_email]

@@ -1,4 +1,4 @@
-# Message retention policy (beta)
+# Message retention policy
 
 {!owner-only.md!}
 
@@ -69,4 +69,4 @@ more details on precisely how message deletion works in Zulip.
 
 * [Edit or delete a message](/help/edit-or-delete-a-message)
 * [Delete a topic](/help/delete-a-topic)
-* [Delete a stream](/help/delete-a-stream)
+* [Archive a stream](/help/archive-a-stream)

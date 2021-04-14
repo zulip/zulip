@@ -23,26 +23,20 @@ Zulip development server, but provides an isolated environment that is
 easy to install, update, and uninstall. It has been well-tested and
 performs well.
 
-## Advanced setup (non-Vagrant)
+## Advanced setup
 
 Zulip also supports a wide range of ways to install the Zulip
 development environment:
 
-* On popular Linux platforms, you can **[install directly][install-direct]**.
-* On **other Linux/UNIX** distributions, you'll need to follow slightly different
-  instructions to **[install manually][install-generic]**.
-
-Unfortunately, the only supported method to install on Windows is the [Vagrant
-method][install-vagrant].
+* On Linux platforms, you can **[install directly][install-direct]**.
+* On Windows, you can **[install directly][install-via-wsl]** via WSL 2.
 
 ## Slow internet connections
 
 If you have a very slow network connection, however, you may want to
 avoid using Vagrant (which involves downloading an Ubuntu virtual
-machine or Linux container) and either
-[install directly][install-direct] (recommended), or use
-[the manual install process][install-generic] instead.  These options
-only support Linux.
+machine or Linux container) and [install directly][install-direct] on
+a Linux system.
 
 An alternative option if you have poor network connectivity is to rent
 a cloud server and install the Zulip development environment for
@@ -80,7 +74,6 @@ machine, take a look at our tips for
 
 [dev-remote]: remote.md
 [install-direct]: ../development/setup-advanced.html#installing-directly-on-ubuntu-debian-centos-or-fedora
-[install-generic]: ../development/setup-advanced.html#installing-manually-on-unix
 [install-vagrant]: ../development/setup-vagrant.md
 [self-install-remote]: #installing-remotely
 [self-slow-internet]: #slow-internet-connections
@@ -88,3 +81,4 @@ machine, take a look at our tips for
 [using-dev-env]: using.md
 [testing]: ../testing/testing.md
 [ci]: ../git/cloning.html#step-3-configure-continuous-integration-for-your-fork
+[install-via-wsl]: ../development/setup-advanced.html#installing-directly-on-windows-10-with-wsl-2

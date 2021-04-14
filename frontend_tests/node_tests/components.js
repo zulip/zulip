@@ -4,6 +4,7 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
+const {$t} = require("../zjsunit/i18n");
 const {mock_cjs, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
@@ -180,9 +181,9 @@ run_test("basics", () => {
     widget = components.toggle({
         selected: 0,
         values: [
-            {label: i18n.t("Keyboard shortcuts"), key: "keyboard-shortcuts"},
-            {label: i18n.t("Message formatting"), key: "message-formatting"},
-            {label: i18n.t("Search operators"), key: "search-operators"},
+            {label: $t({defaultMessage: "Keyboard shortcuts"}), key: "keyboard-shortcuts"},
+            {label: $t({defaultMessage: "Message formatting"}), key: "message-formatting"},
+            {label: $t({defaultMessage: "Search operators"}), key: "search-operators"},
         ],
         html_class: "stream_sorter_toggle",
         callback(name, key) {

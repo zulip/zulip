@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import * as message_flags from "./message_flags";
+import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as rows from "./rows";
 
@@ -43,7 +44,7 @@ function uncondense_row(row) {
 export function uncollapse(row) {
     // Uncollapse a message, restoring the condensed message [More] or
     // [Condense] link if necessary.
-    const message = current_msg_list.get(rows.id(row));
+    const message = message_lists.current.get(rows.id(row));
     message.collapsed = false;
     message_flags.save_uncollapsed(message);
 
@@ -69,7 +70,7 @@ export function uncollapse(row) {
     };
 
     // We also need to collapse this message in the home view
-    const home_row = home_msg_list.get_row(rows.id(row));
+    const home_row = message_lists.home.get_row(rows.id(row));
 
     process_row(row);
     process_row(home_row);
@@ -78,7 +79,7 @@ export function uncollapse(row) {
 export function collapse(row) {
     // Collapse a message, hiding the condensed message [More] or
     // [Condense] link if necessary.
-    const message = current_msg_list.get(rows.id(row));
+    const message = message_lists.current.get(rows.id(row));
     message.collapsed = true;
 
     if (message.locally_echoed) {
@@ -97,7 +98,7 @@ export function collapse(row) {
     };
 
     // We also need to collapse this message in the home view
-    const home_row = home_msg_list.get_row(rows.id(row));
+    const home_row = message_lists.home.get_row(rows.id(row));
 
     process_row(row);
     process_row(home_row);
@@ -119,7 +120,7 @@ export function toggle_collapse(message) {
     // * If the message is fully visible, either because it's too short to
     //   condense or because it's already uncondensed, collapse it
 
-    const row = current_msg_list.get_row(message.id);
+    const row = message_lists.current.get_row(message.id);
     if (!row) {
         return;
     }
@@ -208,7 +209,7 @@ export function condense_and_collapse(elems) {
             continue;
         }
 
-        const message = current_msg_list.get(message_id);
+        const message = message_lists.current.get(message_id);
         if (message === undefined) {
             continue;
         }
@@ -256,7 +257,7 @@ export function initialize() {
         // Expanding a message can mean either uncollapsing or
         // uncondensing it.
         const row = $(this).closest(".message_row");
-        const message = current_msg_list.get(rows.id(row));
+        const message = message_lists.current.get(rows.id(row));
         const content = row.find(".message_content");
         if (message.collapsed) {
             // Uncollapse.
@@ -274,7 +275,7 @@ export function initialize() {
 
     $("#message_feed_container").on("click", ".message_condenser", function (e) {
         const row = $(this).closest(".message_row");
-        current_msg_list.get(rows.id(row)).condensed = true;
+        message_lists.current.get(rows.id(row)).condensed = true;
         condense_row(row);
         e.stopPropagation();
         e.preventDefault();

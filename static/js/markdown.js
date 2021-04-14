@@ -89,7 +89,7 @@ export function contains_backend_only_syntax(content) {
     // then don't render it locally. It is workaround for the fact that
     // javascript regex doesn't support lookbehind.
     const false_linkifier_match = linkifier_list.find((re) => {
-        const pattern = /[^\s"'(,:<]/.source + re[0].source + /(?!\w)/.source;
+        const pattern = /[^\s"'(,:<]/.source + re.pattern.source + /(?!\w)/.source;
         const regex = new RegExp(pattern);
         return regex.test(content);
     });
@@ -109,7 +109,7 @@ export function apply_markdown(message) {
             let full_name;
             let user_id;
 
-            const id_regex = /(.+)\|(\d+)$/g; // For @**user|id** syntax
+            const id_regex = /^(.+)?\|(\d+)$/; // For @**user|id** and @**|id** syntax
             const match = id_regex.exec(mention);
 
             if (match) {
@@ -131,9 +131,20 @@ export function apply_markdown(message) {
                 full_name = match[1];
                 user_id = Number.parseInt(match[2], 10);
 
-                if (!helpers.is_valid_full_name_and_user_id(full_name, user_id)) {
-                    user_id = undefined;
-                    full_name = undefined;
+                if (full_name === undefined) {
+                    // For @**|id** syntax
+                    if (!helpers.is_valid_user_id(user_id)) {
+                        // silently ignore invalid user id.
+                        user_id = undefined;
+                    } else {
+                        full_name = helpers.get_actual_name_from_user_id(user_id);
+                    }
+                } else {
+                    // For @**user|id** syntax
+                    if (!helpers.is_valid_full_name_and_user_id(full_name, user_id)) {
+                        user_id = undefined;
+                        full_name = undefined;
+                    }
                 }
             }
 
@@ -211,11 +222,11 @@ export function add_topic_links(message) {
         return;
     }
     const topic = message.topic;
-    let links = [];
+    const links = [];
 
     for (const linkifier of linkifier_list) {
-        const pattern = linkifier[0];
-        const url = linkifier[1];
+        const pattern = linkifier.pattern;
+        const url = linkifier.url_format;
         let match;
         while ((match = pattern.exec(topic)) !== null) {
             let link_url = url;
@@ -228,17 +239,24 @@ export function add_topic_links(message) {
                 link_url = link_url.replace(back_ref, matched_group);
                 i += 1;
             }
-            links.push(link_url);
+            // We store the starting index as well, to sort the order of occurence of the links
+            // in the topic, similar to the logic implemeted in zerver/lib/markdown/__init__.py
+            links.push({url: link_url, text: match[0], index: topic.indexOf(match[0])});
         }
     }
 
     // Also make raw URLs navigable
     const url_re = /\b(https?:\/\/[^\s<]+[^\s"'),.:;<\]])/g; // Slightly modified from third/marked.js
-    const match = topic.match(url_re);
-    if (match) {
-        links = links.concat(match);
+    const matches = topic.match(url_re);
+    if (matches) {
+        for (const match of matches) {
+            links.push({url: match, text: match, index: topic.indexOf(match)});
+        }
     }
-
+    links.sort((a, b) => a.index - b.index);
+    for (const match of links) {
+        delete match.index;
+    }
     message.topic_links = links;
 }
 
@@ -433,15 +451,18 @@ export function update_linkifier_rules(linkifiers) {
 
     const marked_rules = [];
 
-    for (const [pattern, url] of linkifiers) {
-        const [regex, final_url] = python_to_js_linkifier(pattern, url);
+    for (const linkifier of linkifiers) {
+        const [regex, final_url] = python_to_js_linkifier(linkifier.pattern, linkifier.url_format);
         if (!regex) {
             // Skip any linkifiers that could not be converted
             continue;
         }
 
         linkifier_map.set(regex, final_url);
-        linkifier_list.push([regex, final_url]);
+        linkifier_list.push({
+            pattern: regex,
+            url_format: final_url,
+        });
         marked_rules.push(regex);
     }
 

@@ -606,7 +606,7 @@ def process_initial_upgrade(
 
     from zerver.lib.actions import do_change_plan_type
 
-    do_change_plan_type(realm, Realm.STANDARD)
+    do_change_plan_type(realm, Realm.STANDARD, acting_user=user)
 
 
 def update_license_ledger_for_automanaged_plan(
@@ -736,29 +736,62 @@ def invoice_plans_as_needed(event_time: datetime = timezone_now()) -> None:
         invoice_plan(plan, event_time)
 
 
-def attach_discount_to_realm(realm: Realm, discount: Decimal) -> None:
-    Customer.objects.update_or_create(realm=realm, defaults={"default_discount": discount})
+def attach_discount_to_realm(
+    realm: Realm, discount: Decimal, *, acting_user: Optional[UserProfile]
+) -> None:
+    customer = get_customer_by_realm(realm)
+    old_discount: Optional[Decimal] = None
+    if customer is not None:
+        old_discount = customer.default_discount
+        customer.default_discount = discount
+        customer.save(update_fields=["default_discount"])
+    else:
+        Customer.objects.create(realm=realm, default_discount=discount)
     plan = get_current_plan_by_realm(realm)
     if plan is not None:
         plan.price_per_license = get_price_per_license(plan.tier, plan.billing_schedule, discount)
         plan.discount = discount
         plan.save(update_fields=["price_per_license", "discount"])
+    RealmAuditLog.objects.create(
+        realm=realm,
+        acting_user=acting_user,
+        event_type=RealmAuditLog.REALM_DISCOUNT_CHANGED,
+        event_time=timezone_now(),
+        extra_data={"old_discount": old_discount, "new_discount": discount},
+    )
 
 
-def update_sponsorship_status(realm: Realm, sponsorship_pending: bool) -> None:
+def update_sponsorship_status(
+    realm: Realm, sponsorship_pending: bool, *, acting_user: Optional[UserProfile]
+) -> None:
     customer, _ = Customer.objects.get_or_create(realm=realm)
     customer.sponsorship_pending = sponsorship_pending
     customer.save(update_fields=["sponsorship_pending"])
+    RealmAuditLog.objects.create(
+        realm=realm,
+        acting_user=acting_user,
+        event_type=RealmAuditLog.REALM_SPONSORSHIP_PENDING_STATUS_CHANGED,
+        event_time=timezone_now(),
+        extra_data={
+            "sponsorship_pending": sponsorship_pending,
+        },
+    )
 
 
-def approve_sponsorship(realm: Realm) -> None:
+def approve_sponsorship(realm: Realm, *, acting_user: Optional[UserProfile]) -> None:
     from zerver.lib.actions import do_change_plan_type, internal_send_private_message
 
-    do_change_plan_type(realm, Realm.STANDARD_FREE)
+    do_change_plan_type(realm, Realm.STANDARD_FREE, acting_user=acting_user)
     customer = get_customer_by_realm(realm)
     if customer is not None and customer.sponsorship_pending:
         customer.sponsorship_pending = False
         customer.save(update_fields=["sponsorship_pending"])
+        RealmAuditLog.objects.create(
+            realm=realm,
+            acting_user=acting_user,
+            event_type=RealmAuditLog.REALM_SPONSORSHIP_APPROVED,
+            event_time=timezone_now(),
+        )
     notification_bot = get_system_bot(settings.NOTIFICATION_BOT)
     for billing_admin in realm.get_human_billing_admin_users():
         with override_language(billing_admin.default_language):
@@ -793,7 +826,7 @@ def do_change_plan_status(plan: CustomerPlan, status: int) -> None:
 def process_downgrade(plan: CustomerPlan) -> None:
     from zerver.lib.actions import do_change_plan_type
 
-    do_change_plan_type(plan.customer.realm, Realm.LIMITED)
+    do_change_plan_type(plan.customer.realm, Realm.LIMITED, acting_user=None)
     plan.status = CustomerPlan.ENDED
     plan.save(update_fields=["status"])
 
@@ -846,8 +879,19 @@ def void_all_open_invoices(realm: Realm) -> int:
     return voided_invoices_count
 
 
-def update_billing_method_of_current_plan(realm: Realm, charge_automatically: bool) -> None:
+def update_billing_method_of_current_plan(
+    realm: Realm, charge_automatically: bool, *, acting_user: Optional[UserProfile]
+) -> None:
     plan = get_current_plan_by_realm(realm)
     if plan is not None:
         plan.charge_automatically = charge_automatically
         plan.save(update_fields=["charge_automatically"])
+        RealmAuditLog.objects.create(
+            realm=realm,
+            acting_user=acting_user,
+            event_type=RealmAuditLog.REALM_BILLING_METHOD_CHANGED,
+            event_time=timezone_now(),
+            extra_data={
+                "charge_automatically": charge_automatically,
+            },
+        )

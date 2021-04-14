@@ -100,8 +100,6 @@ else:
 
 # This is overridden in test_settings.py for the test suites
 TEST_SUITE = False
-# The new user tutorial is enabled by default, but disabled for client tests.
-TUTORIAL_ENABLED = True
 # This is overridden in test_settings.py for the test suites
 PUPPETEER_TESTS = False
 # This is overridden in test_settings.py for the test suites
@@ -174,7 +172,7 @@ MIDDLEWARE = (
     # With the exception of it's dependencies,
     # our logging middleware should be the top middleware item.
     "zerver.middleware.TagRequests",
-    "zerver.middleware.SetRemoteAddrFromForwardedFor",
+    "zerver.middleware.SetRemoteAddrFromRealIpHeader",
     "zerver.middleware.RequestContext",
     "zerver.middleware.LogRequests",
     "zerver.middleware.JsonErrorHandler",
@@ -212,7 +210,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.staticfiles",
     "confirmation",
-    "webpack_loader",
     "zerver",
     "social_django",
     # 2FA related apps.
@@ -242,6 +239,9 @@ SILENCED_SYSTEM_CHECKS = [
     # backends support the username not being unique; and they do.
     # See: https://docs.djangoproject.com/en/2.2/topics/auth/customizing/#django.contrib.auth.models.CustomUser.USERNAME_FIELD
     "auth.W004",
+    # models.E034 limits index names to 30 characters for Oracle compatibility.
+    # We aren't using Oracle.
+    "models.E034",
 ]
 
 ########################################################################
@@ -575,16 +575,11 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 STATICFILES_DIRS = ["static/"]
 
 if DEBUG:
-    WEBPACK_STATS_FILE = os.path.join("var", "webpack-stats-dev.json")
+    WEBPACK_BUNDLES = "../webpack/"
+    WEBPACK_STATS_FILE = os.path.join(DEPLOY_ROOT, "var", "webpack-stats-dev.json")
 else:
-    WEBPACK_STATS_FILE = "webpack-stats-production.json"
-WEBPACK_LOADER = {
-    "DEFAULT": {
-        "CACHE": not DEBUG,
-        "BUNDLE_DIR_NAME": "../webpack/" if DEBUG else "webpack-bundles/",
-        "STATS_FILE": os.path.join(DEPLOY_ROOT, WEBPACK_STATS_FILE),
-    },
-}
+    WEBPACK_BUNDLES = "webpack-bundles/"
+    WEBPACK_STATS_FILE = os.path.join(DEPLOY_ROOT, "webpack-stats-production.json")
 
 ########################################################################
 # TEMPLATES SETTINGS
@@ -606,7 +601,6 @@ base_template_engine_settings: Dict[str, Any] = {
         "extensions": [
             "jinja2.ext.i18n",
             "jinja2.ext.autoescape",
-            "webpack_loader.contrib.jinja2ext.WebpackExtension",
         ],
         "context_processors": [
             "zerver.context_processors.zulip_default_context",

@@ -23,8 +23,8 @@ function make_stream_message({stream_id, topic, sender_id}) {
     return message;
 }
 
-const message_list = mock_esm("../../static/js/message_list", {
-    all: {
+const {all_messages_data} = mock_esm("../../static/js/all_messages_data", {
+    all_messages_data: {
         all_messages() {
             return Array.from(messages.values());
         },
@@ -210,7 +210,7 @@ test("process_message_for_senders", (override) => {
 
     const reduced_msgs = [message3, message4, message7, message8];
 
-    override(message_list.all, "all_messages", () => reduced_msgs);
+    override(all_messages_data, "all_messages", () => reduced_msgs);
     assert.equal(rs.get_topic_recent_senders(stream1, topic1).toString(), "2,1");
     // delete message1 and message5 sent by sender1
     rs.update_topics_of_deleted_message_ids([message1.id, message5.id]);

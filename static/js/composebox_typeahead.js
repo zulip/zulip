@@ -1,4 +1,3 @@
-import autosize from "autosize";
 import {formatISO} from "date-fns";
 import ConfirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
 import $ from "jquery";
@@ -13,7 +12,9 @@ import * as compose from "./compose";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
+import {$t} from "./i18n";
 import * as message_store from "./message_store";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as rows from "./rows";
 import * as settings_data from "./settings_data";
@@ -24,9 +25,9 @@ import * as typeahead_helper from "./typeahead_helper";
 import * as user_groups from "./user_groups";
 import * as user_pill from "./user_pill";
 
-//************************************
+// **********************************
 // AN IMPORTANT NOTE ABOUT TYPEAHEADS
-//************************************
+// **********************************
 // They do not do any HTML escaping, at all.
 // And your input to them is rendered as though it were HTML by
 // the default highlighter.
@@ -174,7 +175,7 @@ export function handle_enter(textarea, e) {
         // Now add the newline, remembering to resize the
         // textarea if needed.
         textarea.caret("\n");
-        autosize.update(textarea);
+        compose_ui.autosize_textarea(textarea);
         e.preventDefault();
         return;
     }
@@ -325,9 +326,10 @@ export function tokenize_compose_str(s) {
 
 export function broadcast_mentions() {
     return ["all", "everyone", "stream"].map((mention, idx) => ({
-        special_item_text: i18n.t("__wildcard_mention_token__ (Notify stream)", {
-            wildcard_mention_token: mention,
-        }),
+        special_item_text: $t(
+            {defaultMessage: "{wildcard_mention_token} (Notify stream)"},
+            {wildcard_mention_token: mention},
+        ),
 
         email: mention,
 
@@ -372,43 +374,43 @@ function should_show_custom_query(query, items) {
 
 export const slash_commands = [
     {
-        text: i18n.t("/dark (Toggle night mode)"),
+        text: $t({defaultMessage: "/dark (Toggle night mode)"}),
         name: "dark",
     },
     {
-        text: i18n.t("/day (Toggle day mode)"),
+        text: $t({defaultMessage: "/day (Toggle day mode)"}),
         name: "day",
     },
     {
-        text: i18n.t("/fixed-width (Toggle fixed width mode)"),
+        text: $t({defaultMessage: "/fixed-width (Toggle fixed width mode)"}),
         name: "fixed-width",
     },
     {
-        text: i18n.t("/fluid-width (Toggle fluid width mode)"),
+        text: $t({defaultMessage: "/fluid-width (Toggle fluid width mode)"}),
         name: "fluid-width",
     },
     {
-        text: i18n.t("/light (Toggle day mode)"),
+        text: $t({defaultMessage: "/light (Toggle day mode)"}),
         name: "light",
     },
     {
-        text: i18n.t("/me is excited (Display action text)"),
+        text: $t({defaultMessage: "/me is excited (Display action text)"}),
         name: "me",
     },
     {
-        text: i18n.t("/night (Toggle night mode)"),
+        text: $t({defaultMessage: "/night (Toggle night mode)"}),
         name: "night",
     },
     {
-        text: i18n.t("/poll Where should we go to lunch today? (Create a poll)"),
+        text: $t({defaultMessage: "/poll Where should we go to lunch today? (Create a poll)"}),
         name: "poll",
     },
     {
-        text: i18n.t("/settings (Load settings menu)"),
+        text: $t({defaultMessage: "/settings (Load settings menu)"}),
         name: "settings",
     },
     {
-        text: i18n.t("/todo (Create a todo list)"),
+        text: $t({defaultMessage: "/todo (Create a todo list)"}),
         name: "todo",
     },
 ];
@@ -722,7 +724,7 @@ export function get_candidates(query) {
         const time_jump_regex = /<time(:([^>]*?)>?)?$/;
         if (time_jump_regex.test(split[0])) {
             this.completing = "time_jump";
-            return [i18n.t("Mention a timezone-aware time")];
+            return [$t({defaultMessage: "Mention a timezone-aware time"})];
         }
     }
     return false;
@@ -992,16 +994,17 @@ function get_header_html() {
     let tip_text = "";
     switch (this.completing) {
         case "stream":
-            tip_text = i18n.t("Press > for list of topics");
+            tip_text = $t({defaultMessage: "Press > for list of topics"});
             break;
         case "silent_mention":
-            tip_text = i18n.t("User will not be notified");
+            tip_text = $t({defaultMessage: "User will not be notified"});
             break;
         case "syntax":
             if (page_params.realm_default_code_block_language !== null) {
-                tip_text = i18n.t("Default is __language__. Use 'text' to disable highlighting.", {
-                    language: page_params.realm_default_code_block_language,
-                });
+                tip_text = $t(
+                    {defaultMessage: "Default is {language}. Use 'text' to disable highlighting."},
+                    {language: page_params.realm_default_code_block_language},
+                );
                 break;
             }
             return false;

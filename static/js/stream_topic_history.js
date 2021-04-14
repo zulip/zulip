@@ -1,3 +1,4 @@
+import {all_messages_data} from "./all_messages_data";
 import * as channel from "./channel";
 import {FoldDict} from "./fold_dict";
 import * as message_util from "./message_util";
@@ -7,20 +8,46 @@ import * as unread from "./unread";
 const stream_dict = new Map(); // stream_id -> PerStreamHistory object
 const fetched_stream_ids = new Set();
 
+export function all_topics_in_cache(sub) {
+    // Checks whether this browser's cache of contiguous messages
+    // (used to locally render narrows) in all_messages_data has all
+    // messages from a given stream, and thus all historical topics
+    // for it.  Because all_messages_data is a range, we just need to
+    // compare it to the range of history on the stream.
+
+    // If the cache isn't initialized, it's a clear false.
+    if (all_messages_data === undefined || all_messages_data.empty()) {
+        return false;
+    }
+
+    // If the cache doesn't have the latest messages, we can't be sure
+    // we have all topics.
+    if (!all_messages_data.fetch_status.has_found_newest()) {
+        return false;
+    }
+
+    if (sub.first_message_id === null) {
+        // If the stream has no message history, we have it all
+        // vacuously.  This should be a very rare condition, since
+        // stream creation sends a message.
+        return true;
+    }
+
+    // Now, we can just compare the first cached message to the first
+    // message ID in the stream; if it's older, we're good, otherwise,
+    // we might be missing the oldest topics in this stream in our
+    // cache.
+    const first_cached_message = all_messages_data.first();
+    return first_cached_message.id <= sub.first_message_id;
+}
+
 export function is_complete_for_stream_id(stream_id) {
     if (fetched_stream_ids.has(stream_id)) {
         return true;
     }
 
-    /*
-        TODO: We should possibly move all_topics_in_cache
-        from stream_data to here, since the function
-        mostly looks at message_list.all and has little
-        to do with typical stream_data stuff.  (We just
-        need sub.first_message_id.)
-    */
     const sub = stream_data.get_sub_by_id(stream_id);
-    const in_cache = stream_data.all_topics_in_cache(sub);
+    const in_cache = all_topics_in_cache(sub);
 
     if (in_cache) {
         /*
@@ -94,17 +121,14 @@ export class PerStreamHistory {
         }
     }
 
-    add_or_update(opts) {
-        const topic_name = opts.topic_name;
-        let message_id = opts.message_id || 0;
-
+    add_or_update({topic_name, message_id = 0}) {
         message_id = Number.parseInt(message_id, 10);
         this.update_stream_max_message_id(message_id);
 
         const existing = this.topics.get(topic_name);
 
         if (!existing) {
-            this.topics.set(opts.topic_name, {
+            this.topics.set(topic_name, {
                 message_id,
                 pretty_name: topic_name,
                 historical: false,

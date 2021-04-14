@@ -3,30 +3,27 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 stub_templates(() => "<stub>");
 
-const page_params = set_global("page_params", {});
 mock_cjs("jquery", $);
 const typeahead_helper = mock_esm("../../static/js/typeahead_helper");
 const ui = mock_esm("../../static/js/ui", {
     get_scroll_element: noop,
 });
 
+mock_esm("../../static/js/browser_history", {update: noop});
 mock_esm("../../static/js/hash_util", {
     stream_edit_uri: noop,
     by_stream_uri: noop,
 });
-mock_esm("../../static/js/hashchange", {update_browser_history: noop});
 mock_esm("../../static/js/list_widget", {
     create: () => ({init: noop}),
-});
-mock_esm("../../static/js/settings_notifications", {
-    get_notifications_table_row_data: noop,
 });
 mock_esm("../../static/js/stream_color", {
     set_colorpicker_color: noop,
@@ -60,7 +57,6 @@ const me = {
     full_name: "me",
 };
 
-page_params.user_id = me.user_id;
 const persons = [jill, mark, fred, me];
 for (const person of persons) {
     people.add_active_user(person);
@@ -71,7 +67,6 @@ const denmark = {
     name: "Denmark",
     subscribed: true,
     render_subscribers: true,
-    should_display_subscription_button: true,
 };
 peer_data.set_subscribers(denmark.stream_id, [me.user_id, mark.user_id]);
 
@@ -89,6 +84,7 @@ for (const sub of subs) {
 
 function test_ui(label, f) {
     run_test(label, (override) => {
+        page_params.user_id = me.user_id;
         stream_edit.initialize();
         f(override);
     });

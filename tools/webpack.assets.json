@@ -106,7 +106,8 @@
     "stats": [
         "./static/js/bundles/portico",
         "./static/styles/portico/stats.css",
-        "./static/js/stats/stats"
+        "./static/js/stats/stats",
+        "tippy.js/dist/tippy.css"
     ],
     "app": ["./static/js/bundles/app"],
     "digest": ["./static/js/bundles/portico"]

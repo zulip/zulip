@@ -192,5 +192,7 @@ def create_user(
     user_profile.recipient = recipient
     user_profile.save(update_fields=["recipient"])
 
-    Subscription.objects.create(user_profile=user_profile, recipient=recipient)
+    Subscription.objects.create(
+        user_profile=user_profile, recipient=recipient, is_user_active=user_profile.is_active
+    )
     return user_profile

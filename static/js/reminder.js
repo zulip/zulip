@@ -1,9 +1,13 @@
 import $ from "jquery";
+import _ from "lodash";
 
 import * as channel from "./channel";
 import * as compose from "./compose";
 import * as hash_util from "./hash_util";
+import {$t, $t_html} from "./i18n";
+import * as message_lists from "./message_lists";
 import * as notifications from "./notifications";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as transmit from "./transmit";
 import * as util from "./util";
@@ -42,11 +46,7 @@ function patch_request_for_scheduling(request, message_content, deliver_at, deli
     return new_request;
 }
 
-export function schedule_message(request) {
-    if (request === undefined) {
-        request = compose.create_message_object();
-    }
-
+export function schedule_message(request = compose.create_message_object()) {
     const raw_message = request.content.split("\n");
     const command_line = raw_message[0];
     const message = raw_message.slice(1).join("\n");
@@ -66,15 +66,22 @@ export function schedule_message(request) {
         $("#compose-textarea").prop("disabled", false);
         if (command_line.slice(command.length, command.length + 1) !== " ") {
             compose.compose_error(
-                i18n.t(
-                    "Invalid slash command. Check if you are missing a space after the command.",
-                ),
+                $t_html({
+                    defaultMessage:
+                        "Invalid slash command. Check if you are missing a space after the command.",
+                }),
                 $("#compose-textarea"),
             );
         } else if (deliver_at.trim() === "") {
-            compose.compose_error(i18n.t("Please specify a date or time"), $("#compose-textarea"));
+            compose.compose_error(
+                $t_html({defaultMessage: "Please specify a date or time"}),
+                $("#compose-textarea"),
+            );
         } else {
-            compose.compose_error(i18n.t("Your reminder note is empty!"), $("#compose-textarea"));
+            compose.compose_error(
+                $t_html({defaultMessage: "Your reminder note is empty!"}),
+                $("#compose-textarea"),
+            );
         }
         return;
     }
@@ -97,7 +104,7 @@ export function schedule_message(request) {
     };
     const error = function (response) {
         $("#compose-textarea").prop("disabled", false);
-        compose.compose_error(response, $("#compose-textarea"));
+        compose.compose_error(_.escape(response), $("#compose-textarea"));
     };
     /* We are adding a disable on compose under this block because we
     want slash commands to be blocking in nature. */
@@ -110,7 +117,7 @@ export function do_set_reminder_for_message(message_id, timestamp) {
     const row = $(`[zid='${CSS.escape(message_id)}']`);
     function error() {
         row.find(".alert-msg")
-            .text(i18n.t("Reminder not set!"))
+            .text($t({defaultMessage: "Reminder not set!"}))
             .css("display", "block")
             .css("color", "#b94a48")
             .delay(1000)
@@ -119,15 +126,15 @@ export function do_set_reminder_for_message(message_id, timestamp) {
             });
     }
 
-    const message = current_msg_list.get(message_id);
+    const message = message_lists.current.get(message_id);
 
     if (!message.raw_content) {
-        const msg_list = current_msg_list;
+        const msg_list = message_lists.current;
         channel.get({
             url: "/json/messages/" + message.id,
             idempotent: true,
             success(data) {
-                if (current_msg_list === msg_list) {
+                if (message_lists.current === msg_list) {
                     message.raw_content = data.raw_content;
                     do_set_reminder_for_message(message_id, timestamp);
                 }
@@ -156,7 +163,7 @@ export function do_set_reminder_for_message(message_id, timestamp) {
 
     function success() {
         row.find(".alert-msg")
-            .text(i18n.t("Reminder set!"))
+            .text($t({defaultMessage: "Reminder set!"}))
             .css("display", "block")
             .delay(1000)
             .fadeOut(300);

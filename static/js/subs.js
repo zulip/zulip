@@ -1,21 +1,26 @@
 import $ from "jquery";
 import _ from "lodash";
+import tippy from "tippy.js";
 
 import render_subscription from "../templates/subscription.hbs";
 import render_subscription_settings from "../templates/subscription_settings.hbs";
 import render_subscription_table_body from "../templates/subscription_table_body.hbs";
 import render_subscriptions from "../templates/subscriptions.hbs";
+import render_unsubscribe_private_stream_modal from "../templates/unsubscribe_private_stream_modal.hbs";
 
 import * as blueslip from "./blueslip";
+import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as components from "./components";
 import * as compose_state from "./compose_state";
+import * as confirm_dialog from "./confirm_dialog";
 import * as hash_util from "./hash_util";
-import * as hashchange from "./hashchange";
+import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as message_live_update from "./message_live_update";
 import * as message_view_header from "./message_view_header";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as scroll_util from "./scroll_util";
 import * as search_util from "./search_util";
@@ -24,8 +29,8 @@ import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_list from "./stream_list";
 import * as stream_muting from "./stream_muting";
+import * as stream_settings_data from "./stream_settings_data";
 import * as stream_ui_updates from "./stream_ui_updates";
-import * as typeahead_helper from "./typeahead_helper";
 import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 import * as util from "./util";
@@ -61,7 +66,7 @@ export function update_left_panel_row(sub) {
     }
 
     blueslip.debug(`Updating row in left panel of stream settings for: ${sub.name}`);
-    const setting_sub = stream_data.get_sub_for_settings(sub);
+    const setting_sub = stream_settings_data.get_sub_for_settings(sub);
     const html = render_subscription(setting_sub);
     const new_row = $(html);
 
@@ -74,8 +79,6 @@ export function update_left_panel_row(sub) {
     if (row.hasClass("active")) {
         new_row.addClass("active");
     }
-
-    add_tooltip_to_left_panel_row(new_row);
 
     row.replaceWith(new_row);
 }
@@ -112,7 +115,7 @@ export function get_active_data() {
 }
 
 function get_hash_safe() {
-    if (typeof window !== "undefined" && typeof window.location.hash === "string") {
+    if (typeof window.location.hash === "string") {
         return window.location.hash.slice(1);
     }
 
@@ -194,9 +197,6 @@ export function update_stream_name(sub, new_name) {
     // Update the message feed.
     message_live_update.update_stream_name(stream_id, new_name);
 
-    // Clear rendered typeahead cache
-    typeahead_helper.clear_rendered_stream(stream_id);
-
     // Update compose_state if needed
     if (compose_state.stream_name() === old_name) {
         compose_state.stream_name(new_name);
@@ -208,7 +208,8 @@ export function update_stream_name(sub, new_name) {
 
 export function update_stream_description(sub, description, rendered_description) {
     sub.description = description;
-    sub.rendered_description = rendered_description.replace("<p>", "").replace("</p>", "");
+    sub.rendered_description = rendered_description;
+    stream_data.clean_up_description(sub);
 
     // Update stream row
     const sub_row = row_for_stream_id(sub.stream_id);
@@ -223,7 +224,6 @@ export function update_stream_description(sub, description, rendered_description
 
 export function update_stream_privacy(sub, values) {
     stream_data.update_stream_privacy(sub, values);
-    stream_data.update_calculated_fields(sub);
 
     // Update UI elements
     update_left_panel_row(sub);
@@ -239,8 +239,6 @@ export function update_stream_privacy(sub, values) {
 
 export function update_stream_post_policy(sub, new_value) {
     stream_data.update_stream_post_policy(sub, new_value);
-    stream_data.update_calculated_fields(sub);
-
     stream_ui_updates.update_stream_subscription_type_text(sub);
 }
 
@@ -272,10 +270,9 @@ export function add_sub_to_table(sub) {
         return;
     }
 
-    const setting_sub = stream_data.get_sub_for_settings(sub);
+    const setting_sub = stream_settings_data.get_sub_for_settings(sub);
     const html = render_subscription(setting_sub);
     const new_row = $(html);
-    add_tooltip_to_left_panel_row(new_row);
 
     if (stream_create.get_name() === sub.name) {
         ui.get_content_element($(".streams-list")).prepend(new_row);
@@ -342,13 +339,6 @@ export function show_active_stream_in_left_panel() {
     }
 }
 
-export function add_tooltip_to_left_panel_row(row) {
-    row.find('.sub-info-box [class$="-bar"] [class$="-count"]').tooltip({
-        placement: "left",
-        animation: false,
-    });
-}
-
 export function update_settings_for_unsubscribed(sub) {
     update_left_panel_row(sub);
     stream_ui_updates.update_subscribers_list(sub);
@@ -359,7 +349,7 @@ export function update_settings_for_unsubscribed(sub) {
     stream_data.update_stream_email_address(sub, "");
     // If user unsubscribed from private stream then user cannot subscribe to
     // stream without invitation and cannot add subscribers to stream.
-    if (!sub.should_display_subscription_button) {
+    if (!stream_data.can_toggle_subscription(sub)) {
         stream_ui_updates.update_add_subscriptions_elements(sub);
     }
     if (page_params.is_guest) {
@@ -421,8 +411,8 @@ function get_stream_id_buckets(stream_ids, left_panel_params) {
         }
     }
 
-    stream_data.sort_for_stream_settings(buckets.name, left_panel_params.sort_order);
-    stream_data.sort_for_stream_settings(buckets.desc, left_panel_params.sort_order);
+    stream_settings_data.sort_for_stream_settings(buckets.name, left_panel_params.sort_order);
+    stream_settings_data.sort_for_stream_settings(buckets.desc, left_panel_params.sort_order);
 
     return buckets;
 }
@@ -432,7 +422,7 @@ export function render_left_panel_superset() {
     // allowed to know about and put them in the DOM, then we do
     // a second pass where we filter/sort them.
     const html = blueslip.measure_time("render left panel", () => {
-        const sub_rows = stream_data.get_updated_unsorted_subs();
+        const sub_rows = stream_settings_data.get_updated_unsorted_subs();
 
         const template_data = {
             subscriptions: sub_rows,
@@ -445,13 +435,9 @@ export function render_left_panel_superset() {
 }
 
 // LeftPanelParams { input: String, subscribed_only: Boolean, sort_order: String }
-export function redraw_left_panel(left_panel_params) {
+export function redraw_left_panel(left_panel_params = get_left_panel_params()) {
     // We only get left_panel_params passed in from tests.  Real
     // code calls get_left_panel_params().
-    if (left_panel_params === undefined) {
-        left_panel_params = get_left_panel_params();
-    }
-
     show_active_stream_in_left_panel();
 
     function stream_id_for_row(row) {
@@ -500,10 +486,6 @@ export function redraw_left_panel(left_panel_params) {
         );
     }
     maybe_reset_right_panel();
-
-    for (const row of $("#subscriptions_table .stream-row")) {
-        add_tooltip_to_left_panel_row($(row));
-    }
 
     // return this for test convenience
     return [...buckets.name, ...buckets.desc];
@@ -583,20 +565,20 @@ export function setup_page(callback) {
         const sort_toggler = components.toggle({
             values: [
                 {
-                    label_html: `<i class="fa fa-sort-alpha-asc" title="${i18n.t(
-                        "Sort by name",
+                    label_html: `<i class="fa fa-sort-alpha-asc tippy-bottom tippy-zulip-tooltip" data-tippy-content="${$t(
+                        {defaultMessage: "Sort by name"},
                     )}"></i>`,
                     key: "by-stream-name",
                 },
                 {
-                    label_html: `<i class="fa fa-user-o" title="${i18n.t(
-                        "Sort by number of subscribers",
+                    label_html: `<i class="fa fa-user-o tippy-bottom tippy-zulip-tooltip" data-tippy-content="${$t(
+                        {defaultMessage: "Sort by number of subscribers"},
                     )}"></i>`,
                     key: "by-subscriber-count",
                 },
                 {
-                    label_html: `<i class="fa fa-bar-chart" title="${i18n.t(
-                        "Sort by estimated weekly traffic",
+                    label_html: `<i class="fa fa-bar-chart tippy-bottom tippy-zulip-tooltip" data-tippy-content="${$t(
+                        {defaultMessage: "Sort by estimated weekly traffic"},
                     )}"></i>`,
                     key: "by-weekly-traffic",
                 },
@@ -608,14 +590,19 @@ export function setup_page(callback) {
         });
         $("#subscriptions_table .search-container").prepend(sort_toggler.get());
 
+        // place subs tooltips at bottom
+        tippy(".tippy-bottom", {
+            placement: "bottom",
+        });
+
         // Reset our internal state to reflect that we're initially in
         // the "Subscribed" tab if we're reopening "Manage streams".
         subscribed_only = true;
         toggler = components.toggle({
             child_wants_focus: true,
             values: [
-                {label: i18n.t("Subscribed"), key: "subscribed"},
-                {label: i18n.t("All streams"), key: "all-streams"},
+                {label: $t({defaultMessage: "Subscribed"}), key: "subscribed"},
+                {label: $t({defaultMessage: "All streams"}), key: "all-streams"},
             ],
             callback(value, key) {
                 switch_stream_tab(key);
@@ -640,8 +627,8 @@ export function setup_page(callback) {
         const template_data = {
             can_create_streams: page_params.can_create_streams,
             hide_all_streams: !should_list_all_streams(),
-            max_name_length: page_params.stream_name_max_length,
-            max_description_length: page_params.stream_description_max_length,
+            max_name_length: page_params.max_stream_name_length,
+            max_description_length: page_params.max_stream_description_length,
             is_owner: page_params.is_owner,
             stream_privacy_policy_values: stream_data.stream_privacy_policy_values,
             stream_post_policy_values: stream_data.stream_post_policy_values,
@@ -650,6 +637,8 @@ export function setup_page(callback) {
                 stream_edit.get_display_text_for_realm_message_retention_setting,
             upgrade_text_for_wide_organization_logo:
                 page_params.upgrade_text_for_wide_organization_logo,
+            disable_message_retention_setting:
+                !page_params.zulip_plan_is_not_limited || !page_params.is_owner,
         };
 
         const rendered = render_subscription_table_body(template_data);
@@ -679,7 +668,7 @@ export function setup_page(callback) {
     populate_and_fill();
 
     if (!should_list_all_streams()) {
-        $(".create_stream_button").val(i18n.t("Subscribe"));
+        $(".create_stream_button").val($t({defaultMessage: "Subscribe"}));
     }
 }
 
@@ -745,7 +734,8 @@ export function launch(section) {
             name: "subscriptions",
             overlay: $("#subscription_overlay"),
             on_close() {
-                hashchange.exit_overlay();
+                browser_history.exit_overlay();
+                $(".colorpicker").spectrum("destroy");
             },
         });
         change_state(section);
@@ -791,14 +781,9 @@ export function switch_rows(event) {
 
 export function keyboard_sub() {
     const active_data = get_active_data();
-    const stream_filter_tab = $(active_data.tabs[0]).text();
     const row_data = get_row_data(active_data.row);
     if (row_data) {
-        sub_or_unsub(row_data.object);
-        if (row_data.object.subscribed && stream_filter_tab === "Subscribed") {
-            active_data.row.addClass("notdisplayed");
-            active_data.row.removeClass("active");
-        }
+        sub_or_unsub(row_data.object, false);
     }
 }
 
@@ -819,7 +804,7 @@ export function view_stream() {
     if (row_data) {
         const stream_narrow_hash =
             "#narrow/stream/" + hash_util.encode_stream_name(row_data.object.name);
-        hashchange.go_to_location(stream_narrow_hash);
+        browser_history.go_to_location(stream_narrow_hash);
     }
 }
 
@@ -872,7 +857,10 @@ function ajaxSubscribe(stream, color, stream_row) {
                 // Display the canonical stream capitalization.
                 true_stream_name = res.already_subscribed[people.my_current_email()][0];
                 ui_report.success(
-                    i18n.t("Already subscribed to __stream__", {stream: true_stream_name}),
+                    $t_html(
+                        {defaultMessage: "Already subscribed to {stream}"},
+                        {stream: true_stream_name},
+                    ),
                     $(".stream_change_property_info"),
                 );
             }
@@ -887,7 +875,7 @@ function ajaxSubscribe(stream, color, stream_row) {
                 hide_subscribe_toggle_spinner(stream_row);
             }
             ui_report.error(
-                i18n.t("Error adding subscription"),
+                $t_html({defaultMessage: "Error adding subscription"}),
                 xhr,
                 $(".stream_change_property_info"),
             );
@@ -916,7 +904,7 @@ function ajaxUnsubscribe(sub, stream_row) {
                 hide_subscribe_toggle_spinner(stream_row);
             }
             ui_report.error(
-                i18n.t("Error removing subscription"),
+                $t_html({defaultMessage: "Error removing subscription"}),
                 xhr,
                 $(".stream_change_property_info"),
             );
@@ -942,11 +930,47 @@ export function do_open_create_stream() {
 
 export function open_create_stream() {
     do_open_create_stream();
-    hashchange.update_browser_history("#streams/new");
+    browser_history.update("#streams/new");
 }
 
-export function sub_or_unsub(sub, stream_row) {
+export function unsubscribe_from_private_stream(sub, from_stream_popover) {
+    let modal_parent = $("#subscriptions_table");
+    const html_body = render_unsubscribe_private_stream_modal();
+
+    if (from_stream_popover) {
+        modal_parent = $(".left-sidebar-modal-holder");
+    }
+
+    function unsubscribe_from_stream() {
+        let stream_row;
+        if (overlays.streams_open()) {
+            stream_row = $(
+                "#subscriptions_table div.stream-row[data-stream-id='" + sub.stream_id + "']",
+            );
+        }
+
+        ajaxUnsubscribe(sub, stream_row);
+    }
+
+    confirm_dialog.launch({
+        parent: modal_parent,
+        html_heading: $t_html(
+            {defaultMessage: "Unsubscribe from {stream_name}"},
+            {stream_name: sub.name},
+        ),
+        html_body,
+        html_yes_button: $t_html({defaultMessage: "Yes, unsubscribe"}),
+        on_click: unsubscribe_from_stream,
+    });
+}
+
+export function sub_or_unsub(sub, from_stream_popover, stream_row) {
     if (sub.subscribed) {
+        // TODO: This next line should allow guests to access web-public streams.
+        if (sub.invite_only || page_params.is_guest) {
+            unsubscribe_from_private_stream(sub, from_stream_popover);
+            return;
+        }
         ajaxUnsubscribe(sub, stream_row);
     } else {
         ajaxSubscribe(sub.name, sub.color, stream_row);

@@ -2,13 +2,19 @@ import $ from "jquery";
 
 import * as blueslip from "./blueslip";
 import * as loading from "./loading";
+import {page_params} from "./page_params";
 import * as util from "./util";
 
 // Miscellaneous early setup.
 export let password_change_in_progress = false;
+export let password_changes = 0;
+const xhr_password_changes = new WeakMap();
 
 export function set_password_change_in_progress(value) {
     password_change_in_progress = value;
+    if (!value) {
+        password_changes += 1;
+    }
 }
 
 $(() => {
@@ -41,9 +47,17 @@ $(() => {
         return this.outerWidth(...args) || 0;
     };
 
+    // Remember the number of completed password changes when the
+    // request was initiated.  This allows us to detect race
+    // situations where a password change occurred before we got a
+    // response that failed due to the ongoing password change.
+    $(document).ajaxSend((event, xhr) => {
+        xhr_password_changes.set(xhr, password_changes);
+    });
+
     // For some reason, jQuery wants this to be attached to an element.
     $(document).ajaxError((event, xhr) => {
-        if (password_change_in_progress) {
+        if (password_change_in_progress || xhr_password_changes.get(xhr) !== password_changes) {
             // The backend for handling password change API requests
             // will replace the user's session; this results in a
             // brief race where any API request will fail with a 401
@@ -64,12 +78,10 @@ $(() => {
         }
     });
 
-    if (typeof $ !== "undefined") {
-        $.fn.expectOne = function () {
-            if (blueslip && this.length !== 1) {
-                blueslip.error("Expected one element in jQuery set, " + this.length + " found");
-            }
-            return this;
-        };
-    }
+    $.fn.expectOne = function () {
+        if (blueslip && this.length !== 1) {
+            blueslip.error("Expected one element in jQuery set, " + this.length + " found");
+        }
+        return this;
+    };
 });

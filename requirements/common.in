@@ -32,7 +32,7 @@ jedi<0.18.0
 Pillow
 
 # Needed for building complex DB queries
-SQLAlchemy
+SQLAlchemy==1.3.*  # 1.4 has badly busted type annotations
 
 # Needed for S3 file uploads
 boto3
@@ -73,7 +73,7 @@ markdown-include
 pika
 
 # Needed to access our database
-psycopg2 --no-binary psycopg2
+psycopg2
 
 # Needed for memcached usage
 python-binary-memcached
@@ -98,9 +98,6 @@ tornado==4.*  # https://github.com/zulip/zulip/issues/8913
 
 # Fast JSON parser
 orjson
-
-# Django extension for serving webpack modules
-django-webpack4-loader
 
 # Needed for iOS push notifications
 apns2
@@ -128,8 +125,8 @@ python-magic
 # the version from Git rather than a PyPI release. Keeping everything in
 # one repository simplifies the process of implementing and documenting
 # new bots for new contributors.
-https://github.com/zulip/python-zulip-api/archive/0.7.0.zip/#egg=zulip==0.7.0_git&subdirectory=zulip
-https://github.com/zulip/python-zulip-api/archive/0.7.0.zip/#egg=zulip_bots==0.7.0+git&subdirectory=zulip_bots
+https://github.com/zulip/python-zulip-api/archive/70f457f82ab3e2fa6fc489f950e46e105dc27ae3.zip#egg=zulip==0.7.1+git&subdirectory=zulip
+https://github.com/zulip/python-zulip-api/archive/70f457f82ab3e2fa6fc489f950e46e105dc27ae3.zip#egg=zulip_bots==0.7.1+git&subdirectory=zulip_bots
 
 # Used for Hesiod lookups, etc.
 py3dns

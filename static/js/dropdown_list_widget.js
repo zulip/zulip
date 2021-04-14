@@ -5,39 +5,48 @@ import render_dropdown_list from "../templates/settings/dropdown_list.hbs";
 import * as blueslip from "./blueslip";
 import * as ListWidget from "./list_widget";
 
-export const DropdownListWidget = function (opts) {
-    const init = () => {
-        // Run basic sanity checks on opts, and set up sane defaults.
-        opts = {
-            null_value: null,
-            render_text: (item_name) => item_name,
-            on_update: () => {},
-            ...opts,
-        };
-        opts.container_id = `${opts.widget_name}_widget`;
-        opts.value_id = `id_${opts.widget_name}`;
-        if (opts.value === undefined) {
-            opts.value = opts.null_value;
-            blueslip.warn("dropdown-list-widget: Called without a default value; using null value");
-        }
+export const DropdownListWidget = function ({
+    widget_name,
+    data,
+    default_text,
+    render_text = (item_name) => item_name,
+    null_value = null,
+    include_current_item = true,
+    value,
+    on_update = () => {},
+}) {
+    const container_id = `${widget_name}_widget`;
+    const value_id = `id_${widget_name}`;
+    if (value === undefined) {
+        value = null_value;
+        blueslip.warn("dropdown-list-widget: Called without a default value; using null value");
+    }
+
+    const render_default_text = (elem) => {
+        elem.text(default_text);
+        elem.addClass("text-warning");
+        elem.closest(".input-group").find(".dropdown_list_reset_button:enabled").hide();
     };
-    init();
 
     const render = (value) => {
-        $(`#${CSS.escape(opts.container_id)} #${CSS.escape(opts.value_id)}`).data("value", value);
+        $(`#${CSS.escape(container_id)} #${CSS.escape(value_id)}`).data("value", value);
 
-        const elem = $(`#${CSS.escape(opts.container_id)} #${CSS.escape(opts.widget_name)}_name`);
+        const elem = $(`#${CSS.escape(container_id)} #${CSS.escape(widget_name)}_name`);
 
-        if (!value || value === opts.null_value) {
-            elem.text(opts.default_text);
-            elem.addClass("text-warning");
-            elem.closest(".input-group").find(".dropdown_list_reset_button:enabled").hide();
+        if (!value || value === null_value) {
+            render_default_text(elem);
             return;
         }
 
         // Happy path
-        const item = opts.data.find((x) => x.value === value.toString());
-        const text = opts.render_text(item.name);
+        const item = data.find((x) => x.value === value.toString());
+
+        if (item === undefined) {
+            render_default_text(elem);
+            return;
+        }
+
+        const text = render_text(item.name);
         elem.text(text);
         elem.removeClass("text-warning");
         elem.closest(".input-group").find(".dropdown_list_reset_button:enabled").show();
@@ -45,15 +54,15 @@ export const DropdownListWidget = function (opts) {
 
     const update = (value) => {
         render(value);
-        opts.on_update(value);
+        on_update(value);
     };
 
     const register_event_handlers = () => {
-        $(`#${CSS.escape(opts.container_id)} .dropdown-list-body`).on(
+        $(`#${CSS.escape(container_id)} .dropdown-list-body`).on(
             "click keypress",
             ".list_item",
             function (e) {
-                const setting_elem = $(this).closest(`.${CSS.escape(opts.widget_name)}_setting`);
+                const setting_elem = $(this).closest(`.${CSS.escape(widget_name)}_setting`);
                 if (e.type === "keypress") {
                     if (e.which === 13) {
                         setting_elem.find(".dropdown-menu").dropdown("toggle");
@@ -65,8 +74,8 @@ export const DropdownListWidget = function (opts) {
                 update(value);
             },
         );
-        $(`#${CSS.escape(opts.container_id)} .dropdown_list_reset_button`).on("click", (e) => {
-            update(opts.null_value);
+        $(`#${CSS.escape(container_id)} .dropdown_list_reset_button`).on("click", (e) => {
+            update(null_value);
             e.preventDefault();
         });
     };
@@ -74,15 +83,19 @@ export const DropdownListWidget = function (opts) {
     const setup = () => {
         // populate the dropdown
         const dropdown_list_body = $(
-            `#${CSS.escape(opts.container_id)} .dropdown-list-body`,
+            `#${CSS.escape(container_id)} .dropdown-list-body`,
         ).expectOne();
-        const search_input = $(
-            `#${CSS.escape(opts.container_id)} .dropdown-search > input[type=text]`,
-        );
-        const dropdown_toggle = $(`#${CSS.escape(opts.container_id)} .dropdown-toggle`);
+        const search_input = $(`#${CSS.escape(container_id)} .dropdown-search > input[type=text]`);
+        const dropdown_toggle = $(`#${CSS.escape(container_id)} .dropdown-toggle`);
+        const get_data = (data) => {
+            if (include_current_item) {
+                return data;
+            }
+            return data.filter((x) => x.value !== value.toString());
+        };
 
-        ListWidget.create(dropdown_list_body, opts.data, {
-            name: `${CSS.escape(opts.widget_name)}_list`,
+        ListWidget.create(dropdown_list_body, get_data(data), {
+            name: `${CSS.escape(widget_name)}_list`,
             modifier(item) {
                 return render_dropdown_list({item});
             },
@@ -92,9 +105,9 @@ export const DropdownListWidget = function (opts) {
                     return item.name.toLowerCase().includes(value);
                 },
             },
-            simplebar_container: $(`#${CSS.escape(opts.container_id)} .dropdown-list-wrapper`),
+            simplebar_container: $(`#${CSS.escape(container_id)} .dropdown-list-wrapper`),
         });
-        $(`#${CSS.escape(opts.container_id)} .dropdown-search`).on("click", (e) => {
+        $(`#${CSS.escape(container_id)} .dropdown-search`).on("click", (e) => {
             e.stopPropagation();
         });
 
@@ -121,14 +134,12 @@ export const DropdownListWidget = function (opts) {
             dropdown_toggle.trigger(custom_event);
         });
 
-        render(opts.value);
+        render(value);
         register_event_handlers();
     };
 
-    const value = () => {
-        let val = $(`#${CSS.escape(opts.container_id)} #${CSS.escape(opts.value_id)}`).data(
-            "value",
-        );
+    const get_value = () => {
+        let val = $(`#${CSS.escape(container_id)} #${CSS.escape(value_id)}`).data("value");
         if (val === null) {
             val = "";
         }
@@ -140,7 +151,7 @@ export const DropdownListWidget = function (opts) {
 
     return {
         render,
-        value,
+        value: get_value,
         update,
     };
 };

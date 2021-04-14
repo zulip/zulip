@@ -6,6 +6,7 @@ const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 mock_cjs("jquery", $);
 const window_stub = $.create("window-stub");
@@ -13,11 +14,6 @@ set_global("to_$", () => window_stub);
 $(window).idle = () => {};
 
 let filter_key_handlers;
-
-const page_params = set_global("page_params", {
-    realm_users: [],
-    user_id: 999,
-});
 
 const _document = {
     hasFocus() {
@@ -51,11 +47,11 @@ mock_esm("../../static/js/resize", {
 mock_esm("../../static/js/scroll_util", {
     scroll_element_into_container: () => {},
 });
-mock_esm("../../static/js/server_events", {
-    check_for_unsuspend() {},
-});
 mock_esm("../../static/js/stream_popover", {
     show_streamlist_sidebar() {},
+});
+mock_esm("../../static/js/watchdog", {
+    check_for_unsuspend() {},
 });
 set_global("document", _document);
 
@@ -139,6 +135,9 @@ run_test("reload_defaults", () => {
 });
 
 run_test("get_status", () => {
+    page_params.realm_users = [];
+    page_params.user_id = 999;
+
     assert.equal(presence.get_status(page_params.user_id), "active");
     assert.equal(presence.get_status(alice.user_id), "inactive");
     assert.equal(presence.get_status(fred.user_id), "active");
@@ -560,6 +559,8 @@ test_ui("clear_search", () => {
 });
 
 test_ui("escape_search", () => {
+    page_params.realm_presence_disabled = true;
+
     activity.set_cursor_and_filter();
 
     $(".user-list-filter").val("somevalue");
@@ -583,6 +584,8 @@ test_ui("initiate_search", () => {
 });
 
 test_ui("toggle_filter_display", () => {
+    page_params.realm_presence_disabled = true;
+
     activity.set_cursor_and_filter();
 
     activity.user_filter.toggle_filter_displayed();

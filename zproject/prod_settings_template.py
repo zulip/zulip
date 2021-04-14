@@ -563,6 +563,10 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## system-level monitoring tools.
 # LOGGING_SHOW_PID = False
 
+#################
+## Animated GIF integration powered by GIPHY.  See:
+## https://zulip.readthedocs.io/en/latest/production/giphy-gif-integration.html
+# GIPHY_API_KEY = "<Your API key from GIPHY>"
 
 ################
 ## Video call integrations.
@@ -671,6 +675,9 @@ ENABLE_GRAVATAR = True
 ## setup in the default Zulip nginx configuration.  Setting CAMO_URI
 ## to '' will disable the Camo integration.
 CAMO_URI = "/external_content/"
+
+## Controls the tutorial popups for new users.
+# TUTORIAL_ENABLED = True
 
 ## Controls whether Zulip will rate-limit user requests.
 # RATE_LIMITING = True

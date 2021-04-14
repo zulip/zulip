@@ -4,11 +4,10 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
-
-const page_params = set_global("page_params", {});
+const {page_params} = require("../zjsunit/zpage_params");
 
 const timerender = mock_esm("../../static/js/timerender");
 
@@ -180,7 +179,6 @@ test("compose fade interactions (streams)", () => {
     };
     stream_data.add_sub(sub);
     stream_data.subscribe_myself(sub);
-    stream_data.update_calculated_fields(sub);
 
     people.add_active_user(fred);
 
@@ -226,7 +224,6 @@ test("compose fade interactions (missing topic)", () => {
     };
     stream_data.add_sub(sub);
     stream_data.subscribe_myself(sub);
-    stream_data.update_calculated_fields(sub);
 
     people.add_active_user(fred);
 
@@ -348,13 +345,16 @@ test("title_data", () => {
         first_line: "Human Myself",
         second_line: "out to lunch",
         third_line: "translated: Active now",
+        show_you: true,
     };
+    page_params.user_id = me.user_id;
     assert.deepEqual(buddy_data.get_title_data(me.user_id, is_group), expected_data);
 
     expected_data = {
         first_line: "Old User",
         second_line: "translated: Last active: translated: More than 2 weeks ago",
         third_line: "",
+        show_you: false,
     };
     assert.deepEqual(buddy_data.get_title_data(old_user.user_id, is_group), expected_data);
 });

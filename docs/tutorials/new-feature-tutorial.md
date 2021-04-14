@@ -56,7 +56,7 @@ organization in Zulip). The following files are involved in the process:
   zerver/lib/events.py implementation.
 
 **Frontend testing**
-- `frontend_tests/puppeteer_tests/08-admin.js`: end-to-end tests for the organization
+- `frontend_tests/puppeteer_tests/admin.ts`: end-to-end tests for the organization
   admin settings pages.
 - `frontend_tests/node_tests/dispatch.js`
 
@@ -293,8 +293,9 @@ active users in a realm.
 
     # zerver/lib/actions.py
 
-    def do_set_realm_property(realm: Realm, name: str, value: bool,
-                              acting_user: Optional[UserProfile]=None) -> None:
+    def do_set_realm_property(
+        realm: Realm, name: str, value: Any, *, acting_user: Optional[UserProfile]
+    ) -> None:
       """Takes in a realm object, the name of an attribute to update, the
          value to update and and the user who initiated the update.
       """
@@ -320,7 +321,9 @@ field and send an event. For example:
 
     # zerver/lib/actions.py
 
-    def do_set_realm_authentication_methods(realm: Realm, authentication_methods: Dict[str, bool]) -> None:
+    def do_set_realm_authentication_methods(
+        realm: Realm, authentication_methods: Dict[str, bool], *, acting_user: Optional[UserProfile]
+    ) -> None:
         for key, value in list(authentication_methods.items()):
             index = getattr(realm.authentication_methods, key).number
             realm.authentication_methods.set_bit(index, int(value))
@@ -412,9 +415,9 @@ annotation).
  def update_realm(
      request: HttpRequest,
      user_profile: UserProfile,
-     name: Optional[str] = REQ(validator=check_string, default=None),
+     name: Optional[str] = REQ(json_validator=check_string, default=None),
      # ...
-+    mandatory_topics: Optional[bool] = REQ(validator=check_bool, default=None),
++    mandatory_topics: Optional[bool] = REQ(json_validator=check_bool, default=None),
      # ...
  ):
      # ...

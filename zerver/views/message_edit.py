@@ -24,7 +24,7 @@ from zerver.lib.streams import get_stream_by_id
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import LEGACY_PREV_TOPIC, REQ_topic
 from zerver.lib.validator import check_bool, check_string_in, to_non_negative_int
-from zerver.models import Message, Realm, UserMessage, UserProfile
+from zerver.models import Message, Realm, UserProfile
 
 
 def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Message) -> None:
@@ -102,15 +102,15 @@ PROPAGATE_MODE_VALUES = ["change_later", "change_one", "change_all"]
 @has_request_variables
 def update_message_backend(
     request: HttpRequest,
-    user_profile: UserMessage,
+    user_profile: UserProfile,
     message_id: int = REQ(converter=to_non_negative_int, path_only=True),
     stream_id: Optional[int] = REQ(converter=to_non_negative_int, default=None),
     topic_name: Optional[str] = REQ_topic(),
     propagate_mode: Optional[str] = REQ(
         default="change_one", str_validator=check_string_in(PROPAGATE_MODE_VALUES)
     ),
-    send_notification_to_old_thread: bool = REQ(default=True, validator=check_bool),
-    send_notification_to_new_thread: bool = REQ(default=True, validator=check_bool),
+    send_notification_to_old_thread: bool = REQ(default=True, json_validator=check_bool),
+    send_notification_to_new_thread: bool = REQ(default=True, json_validator=check_bool),
     content: Optional[str] = REQ(default=None),
 ) -> HttpResponse:
     if not user_profile.realm.allow_message_editing:

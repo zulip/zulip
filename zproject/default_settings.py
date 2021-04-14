@@ -133,6 +133,9 @@ MAX_FILE_UPLOAD_SIZE = 25
 # Jitsi Meet video call integration; set to None to disable integration.
 JITSI_SERVER_URL = "https://meet.jit.si"
 
+# GIPHY API key.
+GIPHY_API_KEY = get_secret("giphy_api_key")
+
 # Allow setting BigBlueButton settings in zulip-secrets.conf in
 # development; this is useful since there are no public BigBlueButton servers.
 BIG_BLUE_BUTTON_URL = get_secret("big_blue_button_url", development_only=True)
@@ -190,6 +193,10 @@ TWO_FACTOR_AUTHENTICATION_ENABLED = False
 # in development mode.
 ALWAYS_SEND_ALL_HOTSPOTS = False
 
+# The new user tutorial is enabled by default, but can be disabled for
+# self-hosters who want to disable the tutorial entirely on their system.
+TUTORIAL_ENABLED = True
+
 # In-development search pills feature.
 SEARCH_PILLS_ENABLED = False
 
@@ -235,9 +242,6 @@ SYSTEM_BOT_REALM = "zulipinternal"
 # analytics into part of the main server, rather
 # than a separate app.
 EXTRA_INSTALLED_APPS = ["analytics"]
-
-# Default GOOGLE_CLIENT_ID to the value needed for Android auth to work
-GOOGLE_CLIENT_ID = "835904834568-77mtr5mtmpgspj9b051del9i9r5t4g4n.apps.googleusercontent.com"
 
 # Used to construct URLs to point to the Zulip server.  Since we
 # only support HTTPS in production, this is just for development.

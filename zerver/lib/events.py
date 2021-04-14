@@ -45,9 +45,12 @@ from zerver.lib.stream_subscription import handle_stream_notifications_compatibi
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.topic_mutes import get_topic_mutes
 from zerver.lib.user_groups import user_groups_in_realm_serialized
+from zerver.lib.user_mutes import get_user_mutes
 from zerver.lib.user_status import get_user_info_dict
 from zerver.lib.users import get_cross_realm_dicts, get_raw_user_data, is_administrator_role
 from zerver.models import (
+    MAX_MESSAGE_LENGTH,
+    MAX_TOPIC_NAME_LENGTH,
     Client,
     CustomProfileField,
     Message,
@@ -58,6 +61,8 @@ from zerver.models import (
     custom_profile_fields_for_realm,
     get_default_stream_groups,
     get_realm_domains,
+    get_realm_playgrounds,
+    linkifiers_for_realm,
     realm_filters_for_realm,
 )
 from zerver.tornado.django_api import get_user_events, request_event_queue
@@ -159,6 +164,9 @@ def fetch_initial_state_data(
     if want("muted_topics"):
         state["muted_topics"] = [] if user_profile is None else get_topic_mutes(user_profile)
 
+    if want("muted_users"):
+        state["muted_users"] = [] if user_profile is None else get_user_mutes(user_profile)
+
     if want("presence"):
         state["presences"] = (
             {} if user_profile is None else get_presences_for_realm(realm, slim_presence)
@@ -232,6 +240,7 @@ def fetch_initial_state_data(
         state["server_inline_url_embed_preview"] = settings.INLINE_URL_EMBED_PREVIEW
         state["server_avatar_changes_disabled"] = settings.AVATAR_CHANGES_DISABLED
         state["server_name_changes_disabled"] = settings.NAME_CHANGES_DISABLED
+        state["giphy_rating_options"] = realm.GIPHY_RATING_OPTIONS
 
         if realm.notifications_stream and not realm.notifications_stream.deactivated:
             notifications_stream = realm.notifications_stream
@@ -245,14 +254,26 @@ def fetch_initial_state_data(
         else:
             state["realm_signup_notifications_stream_id"] = -1
 
+        state["max_stream_name_length"] = Stream.MAX_NAME_LENGTH
+        state["max_stream_description_length"] = Stream.MAX_DESCRIPTION_LENGTH
+        state["max_topic_length"] = MAX_TOPIC_NAME_LENGTH
+        state["max_message_length"] = MAX_MESSAGE_LENGTH
+
     if want("realm_domains"):
         state["realm_domains"] = get_realm_domains(realm)
 
     if want("realm_emoji"):
         state["realm_emoji"] = realm.get_emoji()
 
+    if want("realm_linkifiers"):
+        state["realm_linkifiers"] = linkifiers_for_realm(realm.id)
+
+    # Backwards compatibility code.
     if want("realm_filters"):
         state["realm_filters"] = realm_filters_for_realm(realm.id)
+
+    if want("realm_playgrounds"):
+        state["realm_playgrounds"] = get_realm_playgrounds(realm)
 
     if want("realm_user_groups"):
         state["realm_user_groups"] = user_groups_in_realm_serialized(realm)
@@ -307,6 +328,7 @@ def fetch_initial_state_data(
 
         state["can_create_streams"] = settings_user.can_create_streams()
         state["can_subscribe_other_users"] = settings_user.can_subscribe_other_users()
+        state["can_invite_others_to_realm"] = settings_user.can_invite_others_to_realm()
         state["is_admin"] = settings_user.is_realm_admin
         state["is_owner"] = settings_user.is_realm_owner
         state["is_guest"] = settings_user.is_guest
@@ -397,15 +419,15 @@ def fetch_initial_state_data(
             # it uses data from state["subscriptions"] and other
             # places.
             if user_profile is not None:
-                state["streams"] = do_get_streams(user_profile)
+                state["streams"] = do_get_streams(
+                    user_profile, include_all_active=user_profile.is_realm_admin
+                )
             else:
                 # TODO: This line isn't used by the webapp because it
                 # gets these data via the `subscriptions` key; it will
                 # be used when the mobile apps support logged-out
                 # access.
                 state["streams"] = get_web_public_streams(realm)  # nocoverage
-        state["stream_name_max_length"] = Stream.MAX_NAME_LENGTH
-        state["stream_description_max_length"] = Stream.MAX_DESCRIPTION_LENGTH
     if want("default_streams"):
         if settings_user.is_guest:
             # Guest users and logged-out users don't have access to
@@ -443,6 +465,18 @@ def fetch_initial_state_data(
 
     if want("video_calls"):
         state["has_zoom_token"] = settings_user.zoom_token is not None
+
+    if want("giphy"):
+        # Normally, it would be a nasty security bug to send a
+        # server's API key to end users. However, GIPHY's API key
+        # security model is precisely to do that; every service
+        # publishes its API key (and GIPHY's client-side JS libraries
+        # require the API key to work).  This security model makes
+        # sense because GIPHY API keys are all essentially equivalent
+        # in letting one search for GIFs; GIPHY only requires API keys
+        # to exist at all so that they can deactivate them in cases of
+        # abuse.
+        state["giphy_api_key"] = settings.GIPHY_API_KEY if settings.GIPHY_API_KEY else ""
 
     return state
 
@@ -530,6 +564,16 @@ def apply_event(
         state["hotspots"] = event["hotspots"]
     elif event["type"] == "custom_profile_fields":
         state["custom_profile_fields"] = event["fields"]
+        custom_profile_field_ids = {field["id"] for field in state["custom_profile_fields"]}
+
+        if "raw_users" in state:
+            for user_dict in state["raw_users"].values():
+                if "profile_data" not in user_dict:
+                    continue
+                profile_data = user_dict["profile_data"]
+                for (field_id, field_data) in list(profile_data.items()):
+                    if int(field_id) not in custom_profile_field_ids:
+                        del profile_data[field_id]
     elif event["type"] == "realm_user":
         person = event["person"]
         person_user_id = person["user_id"]
@@ -561,6 +605,7 @@ def apply_event(
                     # Recompute properties based on is_admin/is_guest
                     state["can_create_streams"] = user_profile.can_create_streams()
                     state["can_subscribe_other_users"] = user_profile.can_subscribe_other_users()
+                    state["can_invite_others_to_realm"] = user_profile.can_invite_others_to_realm()
 
                     # TODO: Probably rather than writing the perfect
                     # live-update code for the case of racing with the
@@ -576,7 +621,9 @@ def apply_event(
                         state["never_subscribed"] = sub_info.never_subscribed
 
                     if "streams" in state:
-                        state["streams"] = do_get_streams(user_profile)
+                        state["streams"] = do_get_streams(
+                            user_profile, include_all_active=user_profile.is_realm_admin
+                        )
 
                 for field in ["delivery_email", "email", "full_name"]:
                     if field in person and field in state:
@@ -625,23 +672,21 @@ def apply_event(
                             p["profile_data"][str(custom_field_id)] = {
                                 "value": custom_field_new_value,
                             }
-
+        else:
+            raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "realm_bot":
         if event["op"] == "add":
             state["realm_bots"].append(event["bot"])
-
-        if event["op"] == "remove":
+        elif event["op"] == "remove":
             user_id = event["bot"]["user_id"]
             for bot in state["realm_bots"]:
                 if bot["user_id"] == user_id:
                     bot["is_active"] = False
-
-        if event["op"] == "delete":
+        elif event["op"] == "delete":
             state["realm_bots"] = [
                 item for item in state["realm_bots"] if item["user_id"] != event["bot"]["user_id"]
             ]
-
-        if event["op"] == "update":
+        elif event["op"] == "update":
             for bot in state["realm_bots"]:
                 if bot["user_id"] == event["bot"]["user_id"]:
                     if "owner_id" in event["bot"]:
@@ -649,7 +694,8 @@ def apply_event(
                         bot["owner_id"] = bot_owner_id
                     else:
                         bot.update(event["bot"])
-
+        else:
+            raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "stream":
         if event["op"] == "create":
             for stream in event["streams"]:
@@ -718,6 +764,7 @@ def apply_event(
             policy_permission_dict = {
                 "create_stream_policy": "can_create_streams",
                 "invite_to_stream_policy": "can_subscribe_other_users",
+                "invite_to_realm_policy": "can_invite_others_to_realm",
             }
 
             # Tricky interaction: Whether we can create streams and can subscribe other users
@@ -743,6 +790,17 @@ def apply_event(
                 if key == "authentication_methods":
                     state["realm_password_auth_enabled"] = value["Email"] or value["LDAP"]
                     state["realm_email_auth_enabled"] = value["Email"]
+        elif event["op"] == "deactivated":
+            # The realm has just been deactivated.  If our request had
+            # arrived a moment later, we'd have rendered the
+            # deactivation UI; if it'd been a moment sooner, we've
+            # have rendered the app and then immediately got this
+            # event (or actually, more likely, an auth error on GET
+            # /events) and immediately reloaded into the same
+            # deactivation UI. Passing achieves the same result.
+            pass
+        else:
+            raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "subscription":
         if event["op"] == "add":
             added_stream_ids = {sub["stream_id"] for sub in event["subscriptions"]}
@@ -813,6 +871,8 @@ def apply_event(
                         if sub["stream_id"] in stream_ids:
                             subscribers = set(sub["subscribers"]) - user_ids
                             sub["subscribers"] = sorted(list(subscribers))
+        else:
+            raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "presence":
         if slim_presence:
             user_key = str(event["user_id"])
@@ -923,6 +983,8 @@ def apply_event(
                 for realm_domain in state["realm_domains"]
                 if realm_domain["domain"] != event["domain"]
             ]
+        else:
+            raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "realm_emoji":
         state["realm_emoji"] = event["realm_emoji"]
     elif event["type"] == "realm_export":
@@ -933,8 +995,14 @@ def apply_event(
         state["alert_words"] = event["alert_words"]
     elif event["type"] == "muted_topics":
         state["muted_topics"] = event["muted_topics"]
+    elif event["type"] == "muted_users":
+        state["muted_users"] = event["muted_users"]
     elif event["type"] == "realm_filters":
         state["realm_filters"] = event["realm_filters"]
+    elif event["type"] == "realm_linkifiers":
+        state["realm_linkifiers"] = event["realm_linkifiers"]
+    elif event["type"] == "realm_playgrounds":
+        state["realm_playgrounds"] = event["realm_playgrounds"]
     elif event["type"] == "update_display_settings":
         assert event["setting_name"] in UserProfile.property_types
         state[event["setting_name"]] = event["setting"]
@@ -966,6 +1034,8 @@ def apply_event(
             state["realm_user_groups"] = [
                 ug for ug in state["realm_user_groups"] if ug["id"] != event["group_id"]
             ]
+        else:
+            raise AssertionError("Unexpected event type {type}/{op}".format(**event))
     elif event["type"] == "user_status":
         user_id_str = str(event["user_id"])
         user_status = state["user_status"]

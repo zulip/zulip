@@ -3,8 +3,10 @@ import SimpleBar from "simplebar/dist/simplebar";
 
 import * as blueslip from "./blueslip";
 import * as common from "./common";
+import {$t} from "./i18n";
 import {localstorage} from "./localstorage";
 import * as message_list from "./message_list";
+import * as message_lists from "./message_lists";
 
 // What, if anything, obscures the home tab?
 
@@ -50,7 +52,7 @@ export function reset_scrollbar(element_selector) {
 }
 
 function update_message_in_all_views(message_id, callback) {
-    for (const list of [message_list.all, home_msg_list, message_list.narrowed]) {
+    for (const list of [message_lists.home, message_list.narrowed]) {
         if (list === undefined) {
             continue;
         }
@@ -79,10 +81,13 @@ export function update_starred_view(message_id, new_value) {
             elt.removeClass("fa-star").addClass("fa-star-o");
             star_container.addClass("empty-star");
         }
-        const title_state = starred ? i18n.t("Unstar") : i18n.t("Star");
+        const title_state = starred ? $t({defaultMessage: "Unstar"}) : $t({defaultMessage: "Star"});
         elt.attr(
             "title",
-            i18n.t("__starred_status__ this message (Ctrl + s)", {starred_status: title_state}),
+            $t(
+                {defaultMessage: "{starred_status} this message (Ctrl + s)"},
+                {starred_status: title_state},
+            ),
         );
     });
 }
@@ -104,9 +109,11 @@ export function show_failed_message_success(message_id) {
 }
 
 export function get_hotkey_deprecation_notice(originalHotkey, replacementHotkey) {
-    return i18n.t(
-        'We\'ve replaced the "__originalHotkey__" hotkey with "__replacementHotkey__" ' +
-            "to make this common shortcut easier to trigger.",
+    return $t(
+        {
+            defaultMessage:
+                'We\'ve replaced the "{originalHotkey}" hotkey with "{replacementHotkey}" to make this common shortcut easier to trigger.',
+        },
         {originalHotkey, replacementHotkey},
     );
 }

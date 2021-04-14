@@ -1,3 +1,5 @@
+/* eslint-env commonjs */
+
 "use strict";
 
 // Media query breakpoints according to Bootstrap 4.5
@@ -22,5 +24,16 @@ module.exports = {
         ml_min: ml + "px",
         mm_min: mm + "px",
         ms_min: ms + "px",
+    },
+
+    media_breakpoints_num: {
+        xs,
+        sm,
+        md,
+        lg,
+        xl,
+        ml,
+        mm,
+        ms,
     },
 };

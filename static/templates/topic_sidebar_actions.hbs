@@ -8,15 +8,6 @@
 
     <hr>
 
-    {{! tabindex="0" Makes anchor tag focusable. Needed for keyboard support. }}
-    <li>
-        <a tabindex="0" class="narrow_to_topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
-            <i class="fa fa-bullhorn" aria-hidden="true"></i>
-            {{t "Narrow to topic"}}
-        </a>
-    </li>
-
-
     {{#if can_mute_topic}}
     <li>
         <a tabindex="0" class="sidebar-popover-mute-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
@@ -34,6 +25,16 @@
         </a>
     </li>
     {{/if}}
+
+    {{#if has_starred_messages}}
+    <li>
+        <a href="#" class="sidebar-popover-unstar-all-in-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+            <i class="fa fa-star-o" aria-hidden="true"></i>
+            {{#tr}}Unstar all messages in topic{{/tr}}
+        </a>
+    </li>
+    {{/if}}
+
     <li>
         <a tabindex="0" class="sidebar-popover-mark-topic-read" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-book" aria-hidden="true"></i>
@@ -43,12 +44,12 @@
 
     {{#if is_realm_admin}}
 
-    <div class="admin-separator">{{#tr this}}ADMIN ACTIONS{{/tr}}</div>
+    <div class="admin-separator">{{#tr}}ADMIN ACTIONS{{/tr}}</div>
 
     <li>
         <a tabindex="0" class="sidebar-popover-delete-topic-messages" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-trash" aria-hidden="true"></i>
-            {{t "Delete all messages in topic"}}
+            {{t "Delete topic"}}
         </a>
     </li>
     {{/if}}

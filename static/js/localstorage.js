@@ -120,7 +120,7 @@ export const localstorage = function () {
         },
 
         set(name, data) {
-            if (typeof _data.VERSION !== "undefined") {
+            if (_data.VERSION !== undefined) {
                 ls.setData(_data.VERSION, name, data, _data.expires);
 
                 // if the expires attribute was not set as a global, then

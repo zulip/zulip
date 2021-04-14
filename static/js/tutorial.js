@@ -1,5 +1,6 @@
 import * as channel from "./channel";
 import * as narrow from "./narrow";
+import {page_params} from "./page_params";
 
 function set_tutorial_status(status, callback) {
     return channel.post({

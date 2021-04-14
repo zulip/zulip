@@ -5,10 +5,12 @@ const {strict: assert} = require("assert");
 const _ = require("lodash");
 
 const {stub_templates} = require("../zjsunit/handlebars");
+const {$t} = require("../zjsunit/i18n");
 const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
@@ -29,8 +31,6 @@ const user_groups = mock_esm("../../static/js/user_groups", {
     add: noop,
 });
 const ui_report = mock_esm("../../static/js/ui_report");
-
-const page_params = set_global("page_params", {});
 
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");
@@ -413,10 +413,7 @@ test_ui("with_external_user", (override) => {
 
     // Test the 'off' handlers on the pill-container
     const turned_off = {};
-    pill_container_stub.off = (event_name, sel) => {
-        if (sel === undefined) {
-            sel = "whole";
-        }
+    pill_container_stub.off = (event_name, sel = "whole") => {
         turned_off[event_name + "/" + sel] = true;
     };
 
@@ -533,7 +530,7 @@ test_ui("on_events", (override) => {
                 $("#admin-user-group-status").show();
                 $("form.admin-user-group-form input[type='text']").val("fake-content");
                 ui_report.success = (text, ele) => {
-                    assert.equal(text, "translated: User group added!");
+                    assert.equal(text, "translated HTML: User group added!");
                     assert.equal(ele, $("#admin-user-group-status"));
                 };
 
@@ -549,7 +546,7 @@ test_ui("on_events", (override) => {
                     const xhr = {
                         responseText: '{"msg":"fake-msg"}',
                     };
-                    assert.equal(error_msg, "translated: Failed");
+                    assert.equal(error_msg, "translated HTML: Failed");
                     assert.deepEqual(error_obj, xhr);
                     assert.equal(ele, $("#admin-user-group-status"));
                 };
@@ -575,17 +572,10 @@ test_ui("on_events", (override) => {
             const data = {
                 id: 1,
             };
-            let settings_user_groups_reload_called = false;
             assert.equal(opts.url, "/json/user_groups/1");
             assert.deepEqual(opts.data, data);
 
-            override(settings_user_groups, "reload", () => {
-                settings_user_groups_reload_called = true;
-            });
-            opts.success();
-            assert(settings_user_groups_reload_called);
-
-            fake_this.text(i18n.t("fake-text"));
+            fake_this.text($t({defaultMessage: "fake-text"}));
             opts.error();
             assert.equal(fake_this.text(), "translated: Failed!");
         };
@@ -678,8 +668,8 @@ test_ui("on_events", (override) => {
         const handler_desc = $(user_group_selector).get_on_handler("input", ".description");
         const sib_des = $(description_selector);
         const sib_name = $(name_selector);
-        sib_name.text(i18n.t("mobile"));
-        sib_des.text(i18n.t("All mobile members"));
+        sib_name.text($t({defaultMessage: "mobile"}));
+        sib_des.text($t({defaultMessage: "All mobile members"}));
 
         const group_data = {
             name: "translated: mobile",
@@ -725,8 +715,8 @@ test_ui("on_events", (override) => {
         const handler_desc = $(user_group_selector).get_on_handler("blur", ".description");
         const sib_des = $(description_selector);
         const sib_name = $(name_selector);
-        sib_name.text(i18n.t("mobile"));
-        sib_des.text(i18n.t("All mobile members"));
+        sib_name.text($t({defaultMessage: "mobile"}));
+        sib_des.text($t({defaultMessage: "All mobile members"}));
 
         const group_data = {members: new Set([2, 31])};
         user_groups.get_user_group_from_id = () => group_data;
@@ -775,7 +765,7 @@ test_ui("on_events", (override) => {
                     const xhr = {
                         responseText: '{"msg":"fake-msg"}',
                     };
-                    assert.equal(error_msg, "translated: Failed");
+                    assert.equal(error_msg, "translated HTML: Failed");
                     assert.deepEqual(error_obj, xhr);
                     assert.equal(ele, user_group_error);
                 };

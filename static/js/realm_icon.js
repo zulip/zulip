@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import * as channel from "./channel";
+import {page_params} from "./page_params";
 import * as upload_widget from "./upload_widget";
 
 export function build_realm_icon_widget(upload_function) {

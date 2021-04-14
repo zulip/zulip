@@ -47,6 +47,7 @@ from zerver.models import (
     RealmDomain,
     RealmEmoji,
     RealmFilter,
+    RealmPlayground,
     Recipient,
     Service,
     Stream,
@@ -140,6 +141,7 @@ ALL_ZULIP_TABLES = {
     "zerver_realmdomain",
     "zerver_realmemoji",
     "zerver_realmfilter",
+    "zerver_realmplayground",
     "zerver_recipient",
     "zerver_scheduledemail",
     "zerver_scheduledemail_users",
@@ -160,6 +162,7 @@ ALL_ZULIP_TABLES = {
     "zerver_userprofile_user_permissions",
     "zerver_userstatus",
     "zerver_mutedtopic",
+    "zerver_muteduser",
 }
 
 # This set contains those database tables that we expect to not be
@@ -223,6 +226,7 @@ NON_EXPORTED_TABLES = {
     # export before they reach full production status.
     "zerver_defaultstreamgroup",
     "zerver_defaultstreamgroup_streams",
+    "zerver_muteduser",
     "zerver_submessage",
     # This is low priority, since users can easily just reset themselves to away.
     "zerver_userstatus",
@@ -633,6 +637,13 @@ def get_realm_config() -> Config:
     Config(
         table="zerver_realmfilter",
         model=RealmFilter,
+        normal_parent=realm_config,
+        parent_key="realm_id__in",
+    )
+
+    Config(
+        table="zerver_realmplayground",
+        model=RealmPlayground,
         normal_parent=realm_config,
         parent_key="realm_id__in",
     )

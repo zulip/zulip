@@ -3,7 +3,9 @@ import $ from "jquery";
 import render_admin_tab from "../templates/admin_tab.hbs";
 import render_settings_organization_settings_tip from "../templates/settings/organization_settings_tip.hbs";
 
+import {$t} from "./i18n";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as settings from "./settings";
 import * as settings_bots from "./settings_bots";
 import * as settings_config from "./settings_config";
@@ -16,25 +18,31 @@ import * as settings_toggle from "./settings_toggle";
 
 const admin_settings_label = {
     // Organization settings
-    realm_allow_community_topic_editing: i18n.t("Users can edit the topic of any message"),
-    realm_allow_edit_history: i18n.t("Enable message edit history"),
-    realm_mandatory_topics: i18n.t("Require topics in stream messages"),
-    realm_notifications_stream: i18n.t("New stream notifications:"),
-    realm_signup_notifications_stream: i18n.t("New user notifications:"),
-    realm_inline_image_preview: i18n.t("Show previews of uploaded and linked images"),
-    realm_inline_url_embed_preview: i18n.t("Show previews of linked websites"),
-    realm_default_twenty_four_hour_time: i18n.t("Time format"),
-    realm_send_welcome_emails: i18n.t("Send emails introducing Zulip to new users"),
-    realm_message_content_allowed_in_email_notifications: i18n.t(
-        "Allow message content in missed message emails",
-    ),
-    realm_digest_emails_enabled: i18n.t("Send weekly digest emails to inactive users"),
-    realm_default_code_block_language: i18n.t("Default language for code blocks:"),
+    realm_allow_community_topic_editing: $t({
+        defaultMessage: "Users can edit the topic of any message",
+    }),
+    realm_allow_edit_history: $t({defaultMessage: "Enable message edit history"}),
+    realm_mandatory_topics: $t({defaultMessage: "Require topics in stream messages"}),
+    realm_notifications_stream: $t({defaultMessage: "New stream notifications:"}),
+    realm_signup_notifications_stream: $t({defaultMessage: "New user notifications:"}),
+    realm_inline_image_preview: $t({defaultMessage: "Show previews of uploaded and linked images"}),
+    realm_inline_url_embed_preview: $t({defaultMessage: "Show previews of linked websites"}),
+    realm_default_twenty_four_hour_time: $t({defaultMessage: "Time format"}),
+    realm_send_welcome_emails: $t({defaultMessage: "Send emails introducing Zulip to new users"}),
+    realm_message_content_allowed_in_email_notifications: $t({
+        defaultMessage: "Allow message content in missed message emails",
+    }),
+    realm_digest_emails_enabled: $t({
+        defaultMessage: "Send weekly digest emails to inactive users",
+    }),
+    realm_default_code_block_language: $t({defaultMessage: "Default language for code blocks:"}),
 
     // Organization permissions
-    realm_name_changes_disabled: i18n.t("Prevent users from changing their name"),
-    realm_email_changes_disabled: i18n.t("Prevent users from changing their email address"),
-    realm_avatar_changes_disabled: i18n.t("Prevent users from changing their avatar"),
+    realm_name_changes_disabled: $t({defaultMessage: "Prevent users from changing their name"}),
+    realm_email_changes_disabled: $t({
+        defaultMessage: "Prevent users from changing their email address",
+    }),
+    realm_avatar_changes_disabled: $t({defaultMessage: "Prevent users from changing their avatar"}),
 };
 
 function insert_tip_box() {
@@ -115,6 +123,7 @@ export function build_page() {
         msg_delete_limit_dropdown_values: settings_config.msg_delete_limit_dropdown_values,
         bot_creation_policy_values: settings_bots.bot_creation_policy_values,
         email_address_visibility_values: settings_config.email_address_visibility_values,
+        can_invite_others_to_realm: page_params.can_invite_others_to_realm,
         ...settings_org.get_organization_settings_options(),
     };
 

@@ -4,8 +4,10 @@ import render_settings_upload_space_stats from "../templates/settings/upload_spa
 import render_uploaded_files_list from "../templates/uploaded_files_list.hbs";
 
 import * as channel from "./channel";
+import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
+import {page_params} from "./page_params";
 import * as timerender from "./timerender";
 import * as ui from "./ui";
 import * as ui_report from "./ui_report";
@@ -13,10 +15,7 @@ import * as ui_report from "./ui_report";
 let attachments;
 let upload_space_used;
 
-export function bytes_to_size(bytes, kb_with_1024_bytes) {
-    if (kb_with_1024_bytes === undefined) {
-        kb_with_1024_bytes = false;
-    }
+export function bytes_to_size(bytes, kb_with_1024_bytes = false) {
     const kb_size = kb_with_1024_bytes ? 1024 : 1000;
     const sizes = ["B", "KB", "MB", "GB", "TB"];
     if (bytes === 0) {
@@ -56,10 +55,10 @@ function delete_attachments(attachment) {
         url: "/json/attachments/" + attachment,
         idempotent: true,
         error(xhr) {
-            ui_report.error(i18n.t("Failed"), xhr, status);
+            ui_report.error($t_html({defaultMessage: "Failed"}), xhr, status);
         },
         success() {
-            ui_report.success(i18n.t("Attachment deleted"), status);
+            ui_report.success($t_html({defaultMessage: "Attachment deleted"}), status);
         },
     });
 }
@@ -163,7 +162,7 @@ export function set_up_attachments() {
         },
         error(xhr) {
             loading.destroy_indicator($("#attachments_loading_indicator"));
-            ui_report.error(i18n.t("Failed"), xhr, status);
+            ui_report.error($t_html({defaultMessage: "Failed"}), xhr, status);
         },
     });
 }

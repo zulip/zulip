@@ -34,13 +34,13 @@ NarrowT = Iterable[Sequence[str]]
 def events_register_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    apply_markdown: bool = REQ(default=False, validator=check_bool),
-    client_gravatar: bool = REQ(default=False, validator=check_bool),
-    slim_presence: bool = REQ(default=False, validator=check_bool),
-    all_public_streams: Optional[bool] = REQ(default=None, validator=check_bool),
-    include_subscribers: bool = REQ(default=False, validator=check_bool),
+    apply_markdown: bool = REQ(default=False, json_validator=check_bool),
+    client_gravatar: bool = REQ(default=False, json_validator=check_bool),
+    slim_presence: bool = REQ(default=False, json_validator=check_bool),
+    all_public_streams: Optional[bool] = REQ(default=None, json_validator=check_bool),
+    include_subscribers: bool = REQ(default=False, json_validator=check_bool),
     client_capabilities: Optional[Dict[str, bool]] = REQ(
-        validator=check_dict(
+        json_validator=check_dict(
             [
                 # This field was accidentally made required when it was added in v2.0.0-781;
                 # this was not realized until after the release of Zulip 2.1.2. (It remains
@@ -56,11 +56,15 @@ def events_register_backend(
         ),
         default=None,
     ),
-    event_types: Optional[Iterable[str]] = REQ(validator=check_list(check_string), default=None),
-    fetch_event_types: Optional[Iterable[str]] = REQ(
-        validator=check_list(check_string), default=None
+    event_types: Optional[Iterable[str]] = REQ(
+        json_validator=check_list(check_string), default=None
     ),
-    narrow: NarrowT = REQ(validator=check_list(check_list(check_string, length=2)), default=[]),
+    fetch_event_types: Optional[Iterable[str]] = REQ(
+        json_validator=check_list(check_string), default=None
+    ),
+    narrow: NarrowT = REQ(
+        json_validator=check_list(check_list(check_string, length=2)), default=[]
+    ),
     queue_lifespan_secs: int = REQ(converter=int, default=0, documentation_pending=True),
 ) -> HttpResponse:
     all_public_streams = _default_all_public_streams(user_profile, all_public_streams)

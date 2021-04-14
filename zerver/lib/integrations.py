@@ -453,6 +453,14 @@ INTEGRATIONS: Dict[str, Integration] = {
     "asana": Integration(
         "asana", "asana", ["project-management"], doc="zerver/integrations/asana.md"
     ),
+    "big-blue-button": Integration(
+        "big-blue-button",
+        "big-blue-button",
+        ["communication"],
+        logo="images/integrations/logos/bigbluebutton.svg",
+        display_name="Big Blue Button",
+        doc="zerver/integrations/big-blue-button.md",
+    ),
     "capistrano": Integration(
         "capistrano",
         "capistrano",
@@ -469,6 +477,14 @@ INTEGRATIONS: Dict[str, Integration] = {
     "email": Integration("email", "email", ["communication"], doc="zerver/integrations/email.md"),
     "errbot": Integration(
         "errbot", "errbot", ["meta-integration", "bots"], doc="zerver/integrations/errbot.md"
+    ),
+    "giphy": Integration(
+        "giphy",
+        "giphy",
+        display_name="GIPHY",
+        categories=["misc"],
+        doc="zerver/integrations/giphy.md",
+        logo="images/GIPHY_big_logo.png",
     ),
     "git": Integration(
         "git", "git", ["version-control"], stream_name="commits", doc="zerver/integrations/git.md"
@@ -503,6 +519,14 @@ INTEGRATIONS: Dict[str, Integration] = {
         doc="zerver/integrations/jira-plugin.md",
         stream_name="jira",
         legacy=True,
+    ),
+    "jitsi": Integration(
+        "jitsi",
+        "jitsi",
+        ["communication"],
+        logo="images/integrations/logos/jitsi.svg",
+        display_name="Jitsi Meet",
+        doc="zerver/integrations/jitsi.md",
     ),
     "matrix": Integration(
         "matrix", "matrix", ["communication"], doc="zerver/integrations/matrix.md"
@@ -557,6 +581,14 @@ INTEGRATIONS: Dict[str, Integration] = {
         # _ needed to get around adblock plus
         logo="images/integrations/logos/twitte_r.svg",
         doc="zerver/integrations/twitter.md",
+    ),
+    "zoom": Integration(
+        "zoom",
+        "zoom",
+        ["communication"],
+        logo="images/integrations/logos/zoom.svg",
+        display_name="Zoom",
+        doc="zerver/integrations/zoom.md",
     ),
 }
 

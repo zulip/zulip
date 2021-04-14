@@ -6,10 +6,13 @@ import render_subscription_invites_warning_modal from "../templates/subscription
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
+import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
+import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
+import * as stream_settings_data from "./stream_settings_data";
 import * as subs from "./subs";
 import * as ui_report from "./ui_report";
 
@@ -30,16 +33,17 @@ export function get_name() {
 class StreamSubscriptionError {
     report_no_subs_to_stream() {
         $("#stream_subscription_error").text(
-            i18n.t("You cannot create a stream with no subscribers!"),
+            $t({defaultMessage: "You cannot create a stream with no subscribers!"}),
         );
         $("#stream_subscription_error").show();
     }
 
     cant_create_stream_without_susbscribing() {
         $("#stream_subscription_error").text(
-            i18n.t(
-                "You must be an organization administrator to create a stream without subscribing.",
-            ),
+            $t({
+                defaultMessage:
+                    "You must be an organization administrator to create a stream without subscribing.",
+            }),
         );
         $("#stream_subscription_error").show();
     }
@@ -52,7 +56,9 @@ const stream_subscription_error = new StreamSubscriptionError();
 
 class StreamNameError {
     report_already_exists() {
-        $("#stream_name_error").text(i18n.t("A stream with this name already exists"));
+        $("#stream_name_error").text(
+            $t({defaultMessage: "A stream with this name already exists"}),
+        );
         $("#stream_name_error").show();
     }
 
@@ -61,7 +67,7 @@ class StreamNameError {
     }
 
     report_empty_stream() {
-        $("#stream_name_error").text(i18n.t("A stream needs to have a name"));
+        $("#stream_name_error").text($t({defaultMessage: "A stream needs to have a name"}));
         $("#stream_name_error").show();
     }
 
@@ -153,7 +159,7 @@ function create_stream() {
     // and paste over a description with newline characters in it. Prevent that.
     if (description.includes("\n")) {
         ui_report.client_error(
-            i18n.t("The stream description cannot contain newline characters."),
+            $t_html({defaultMessage: "The stream description cannot contain newline characters."}),
             $(".stream_create_info"),
         );
         return undefined;
@@ -206,7 +212,9 @@ function create_stream() {
     const user_ids = get_principals();
     data.principals = JSON.stringify(user_ids);
 
-    loading.make_indicator($("#stream_creating_indicator"), {text: i18n.t("Creating stream...")});
+    loading.make_indicator($("#stream_creating_indicator"), {
+        text: $t({defaultMessage: "Creating stream..."}),
+    });
 
     // Subscribe yourself and possible other people to a new stream.
     return channel.post({
@@ -215,7 +223,10 @@ function create_stream() {
         success() {
             $("#create_stream_name").val("");
             $("#create_stream_description").val("");
-            ui_report.success(i18n.t("Stream successfully created!"), $(".stream_create_info"));
+            ui_report.success(
+                $t_html({defaultMessage: "Stream successfully created!"}),
+                $(".stream_create_info"),
+            );
             loading.destroy_indicator($("#stream_creating_indicator"));
             // The rest of the work is done via the subscribe event we will get
         },
@@ -234,7 +245,11 @@ function create_stream() {
                 stream_name_error.trigger("select");
             }
 
-            ui_report.error(i18n.t("Error creating stream"), xhr, $(".stream_create_info"));
+            ui_report.error(
+                $t_html({defaultMessage: "Error creating stream"}),
+                xhr,
+                $(".stream_create_info"),
+            );
             loading.destroy_indicator($("#stream_creating_indicator"));
         },
     });
@@ -269,7 +284,7 @@ export function show_new_stream_modal() {
         all_users.unshift(people.get_by_user_id(page_params.user_id));
         return render_new_stream_users({
             users: all_users,
-            streams: stream_data.get_streams_for_settings_page(),
+            streams: stream_settings_data.get_streams_for_settings_page(),
             is_admin: page_params.is_admin,
         });
     });

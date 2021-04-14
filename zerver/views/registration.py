@@ -413,7 +413,9 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             )
 
         if realm_creation:
-            bulk_add_subscriptions(realm, [realm.signup_notifications_stream], [user_profile])
+            bulk_add_subscriptions(
+                realm, [realm.signup_notifications_stream], [user_profile], acting_user=None
+            )
             send_initial_realm_messages(realm)
 
             # Because for realm creation, registration happens on the
@@ -683,10 +685,6 @@ def accounts_home_from_multiuse_invite(request: HttpRequest, confirmation_key: s
     return accounts_home(
         request, multiuse_object_key=confirmation_key, multiuse_object=multiuse_object
     )
-
-
-def generate_204(request: HttpRequest) -> HttpResponse:
-    return HttpResponse(content=None, status=204)
 
 
 def find_account(request: HttpRequest) -> HttpResponse:

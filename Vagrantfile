@@ -7,16 +7,16 @@ def command?(name)
   $?.success?
 end
 
-if Vagrant::VERSION == "1.8.7" then
-    path = `which curl`
-    if path.include?('/opt/vagrant/embedded/bin/curl') then
-        puts "In Vagrant 1.8.7, curl is broken. Please use Vagrant 2.0.2 "\
-             "or run 'sudo rm -f /opt/vagrant/embedded/bin/curl' to fix the "\
-             "issue before provisioning. See "\
-             "https://github.com/mitchellh/vagrant/issues/7997 "\
-             "for reference."
-        exit
-    end
+if Vagrant::VERSION == "1.8.7"
+  path = `which curl`
+  if path.include?("/opt/vagrant/embedded/bin/curl")
+    puts "In Vagrant 1.8.7, curl is broken. Please use Vagrant 2.0.2 " \
+         "or run 'sudo rm -f /opt/vagrant/embedded/bin/curl' to fix the " \
+         "issue before provisioning. See " \
+         "https://github.com/mitchellh/vagrant/issues/7997 " \
+         "for reference."
+    exit
+  end
 end
 
 # Workaround: Vagrant removed the atlas.hashicorp.com to
@@ -26,7 +26,7 @@ end
 # updating of boxes (since the old URL doesn't work).  See
 # https://github.com/hashicorp/vagrant/issues/9442
 if Vagrant::DEFAULT_SERVER_URL == "atlas.hashicorp.com"
-  Vagrant::DEFAULT_SERVER_URL.replace('https://vagrantcloud.com')
+  Vagrant::DEFAULT_SERVER_URL.replace("https://vagrantcloud.com")
 end
 
 # Monkey patch https://github.com/hashicorp/vagrant/pull/10879 so we
@@ -36,7 +36,7 @@ begin
 rescue LoadError
 else
   VagrantPlugins::DockerProvider::Provider.class_eval do
-    method(:usable?).owner == singleton_class or def self.usable?(raise_error=false)
+    method(:usable?).owner == singleton_class or def self.usable?(raise_error = false)
       VagrantPlugins::DockerProvider::Driver.new.execute("docker", "version")
       true
     rescue Vagrant::Errors::CommandUnavailable, VagrantPlugins::DockerProvider::Errors::ExecuteError
@@ -63,13 +63,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.synced_folder ".", "/vagrant", disabled: true
   config.vm.synced_folder ".", "/srv/zulip"
 
-  vagrant_config_file = ENV['HOME'] + "/.zulip-vagrant-config"
+  vagrant_config_file = ENV["HOME"] + "/.zulip-vagrant-config"
   if File.file?(vagrant_config_file)
     IO.foreach(vagrant_config_file) do |line|
       line.chomp!
       key, value = line.split(nil, 2)
       case key
-      when /^([#;]|$)/; # ignore comments
+      when /^([#;]|$)/ # ignore comments
       when "HTTP_PROXY"; http_proxy = value
       when "HTTPS_PROXY"; https_proxy = value
       when "NO_PROXY"; no_proxy = value
@@ -96,9 +96,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   elsif !http_proxy.nil? or !https_proxy.nil?
     # This prints twice due to https://github.com/hashicorp/vagrant/issues/7504
     # We haven't figured out a workaround.
-    puts 'You have specified value for proxy in ~/.zulip-vagrant-config file but did not ' \
-         'install the vagrant-proxyconf plugin. To install it, run `vagrant plugin install ' \
-         'vagrant-proxyconf` in a terminal.  This error will appear twice.'
+    puts "You have specified value for proxy in ~/.zulip-vagrant-config file but did not " \
+         "install the vagrant-proxyconf plugin. To install it, run `vagrant plugin install " \
+         "vagrant-proxyconf` in a terminal.  This error will appear twice."
     exit
   end
 
@@ -132,14 +132,21 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
   end
 
-  config.vm.provider "parallels" do |prl, override|
-	override.vm.box = "bento/ubuntu-18.04"
-	override.vm.box_version = "202005.21.0"
-	prl.memory = vm_memory
-	prl.cpus = vm_num_cpus
+  config.vm.provider "hyperv" do |h, override|
+    override.vm.box = "bento/ubuntu-18.04"
+    h.memory = vm_memory
+    h.maxmemory = vm_memory
+    h.cpus = vm_num_cpus
   end
 
-$provision_script = <<SCRIPT
+  config.vm.provider "parallels" do |prl, override|
+    override.vm.box = "bento/ubuntu-18.04"
+    override.vm.box_version = "202005.21.0"
+    prl.memory = vm_memory
+    prl.cpus = vm_num_cpus
+  end
+
+  $provision_script = <<SCRIPT
 set -x
 set -e
 set -o pipefail

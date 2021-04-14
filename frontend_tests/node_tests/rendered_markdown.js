@@ -2,16 +2,17 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 mock_cjs("jquery", $);
 mock_esm("../../static/js/rtl", {
     get_direction: () => "ltr",
 });
-const page_params = set_global("page_params", {emojiset: "apple"});
+page_params.emojiset = "apple";
 
 const rm = zrequire("rendered_markdown");
 const people = zrequire("people");
@@ -272,5 +273,5 @@ run_test("spoiler-header-empty-fill", () => {
         '<span class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></span>';
     $header.html("");
     rm.update_elements($content);
-    assert.equal(toggle_button_html + "<p>translated: Spoiler</p>", $header.html());
+    assert.equal(toggle_button_html + "<p>translated HTML: Spoiler</p>", $header.html());
 });

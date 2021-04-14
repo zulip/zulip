@@ -8,6 +8,7 @@ const {JSDOM} = require("jsdom");
 const {mock_cjs, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 const template = fs.readFileSync("templates/corporate/upgrade.html", "utf-8");
@@ -18,19 +19,17 @@ const StripeCheckout = set_global("StripeCheckout", {
     configure: noop,
 });
 
-set_global("page_params", {
-    annual_price: 8000,
-    monthly_price: 800,
-    seat_count: 8,
-    percent_off: 20,
-});
-
 mock_cjs("jquery", $);
 
 const helpers = zrequire("../js/billing/helpers");
 zrequire("../js/billing/upgrade");
 
 run_test("initialize", (override) => {
+    page_params.annual_price = 8000;
+    page_params.monthly_price = 800;
+    page_params.seat_count = 8;
+    page_params.percent_off = 20;
+
     let token_func;
     override(helpers, "set_tab", (page_name) => {
         assert.equal(page_name, "upgrade");

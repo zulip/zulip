@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
 /*
@@ -21,6 +21,7 @@ const {run_test} = require("../zjsunit/test");
 // First we tell the compiler to skip certain modules and just
 // replace them with {}.
 const huddle_data = mock_esm("../../static/js/huddle_data");
+const message_lists = mock_esm("../../static/js/message_lists");
 const message_util = mock_esm("../../static/js/message_util");
 const notifications = mock_esm("../../static/js/notifications");
 const pm_list = mock_esm("../../static/js/pm_list");
@@ -29,7 +30,7 @@ const stream_list = mock_esm("../../static/js/stream_list");
 const unread_ops = mock_esm("../../static/js/unread_ops");
 const unread_ui = mock_esm("../../static/js/unread_ui");
 
-set_global("home_msg_list", {});
+message_lists.home = {};
 
 // And we will also test some real code, of course.
 const message_events = zrequire("message_events");
@@ -89,6 +90,7 @@ run_test("insert_message", (override) => {
     assert.equal(message_store.get(new_message.id), undefined);
 
     helper.redirect(huddle_data, "process_loaded_messages");
+    helper.redirect(message_util, "add_new_messages_data");
     helper.redirect(message_util, "add_new_messages");
     helper.redirect(notifications, "received_messages");
     helper.redirect(resize, "resize_page_components");
@@ -106,7 +108,7 @@ run_test("insert_message", (override) => {
     // comes in:
     assert.deepEqual(helper.events, [
         [huddle_data, "process_loaded_messages"],
-        [message_util, "add_new_messages"],
+        [message_util, "add_new_messages_data"],
         [message_util, "add_new_messages"],
         [unread_ui, "update_unread_counts"],
         [resize, "resize_page_components"],

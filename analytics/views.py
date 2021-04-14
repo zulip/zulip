@@ -112,7 +112,6 @@ def render_stats(
         data_url_suffix=data_url_suffix,
         for_installation=for_installation,
         remote=remote,
-        debug_mode=False,
     )
 
     request_language = get_and_set_request_language(
@@ -737,19 +736,19 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     cursor.close()
 
     # Fetch all the realm administrator users
-    realm_admins: Dict[str, List[str]] = defaultdict(list)
+    realm_owners: Dict[str, List[str]] = defaultdict(list)
     for up in UserProfile.objects.select_related("realm").filter(
-        role=UserProfile.ROLE_REALM_ADMINISTRATOR,
+        role=UserProfile.ROLE_REALM_OWNER,
         is_active=True,
     ):
-        realm_admins[up.realm.string_id].append(up.delivery_email)
+        realm_owners[up.realm.string_id].append(up.delivery_email)
 
     for row in rows:
         row["date_created_day"] = row["date_created"].strftime("%Y-%m-%d")
         row["plan_type_string"] = get_plan_name(row["plan_type"])
         row["age_days"] = int((now - row["date_created"]).total_seconds() / 86400)
         row["is_new"] = row["age_days"] < 12 * 7
-        row["realm_admin_email"] = ", ".join(realm_admins[row["string_id"]])
+        row["realm_owner_emails"] = ", ".join(realm_owners[row["string_id"]])
 
     # get messages sent per day
     counts = get_realm_day_counts()
@@ -811,7 +810,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
         amount=total_amount,
         stats_link="",
         date_created_day="",
-        realm_admin_email="",
+        realm_owner_emails="",
         dau_count=total_dau_count,
         user_profile_count=total_user_profile_count,
         bot_count=total_bot_count,
@@ -1239,8 +1238,9 @@ def get_confirmations(
         else:
             link_status = ""
 
-        if timezone_now() < expiry_date:
-            expires_in = timesince(confirmation.date_sent, expiry_date)
+        now = timezone_now()
+        if now < expiry_date:
+            expires_in = timesince(now, expiry_date)
         else:
             expires_in = "Expired"
 
@@ -1280,13 +1280,13 @@ def support(request: HttpRequest) -> HttpResponse:
         if request.POST.get("plan_type", None) is not None:
             new_plan_type = int(request.POST.get("plan_type"))
             current_plan_type = realm.plan_type
-            do_change_plan_type(realm, new_plan_type)
+            do_change_plan_type(realm, new_plan_type, acting_user=request.user)
             msg = f"Plan type of {realm.string_id} changed from {get_plan_name(current_plan_type)} to {get_plan_name(new_plan_type)} "
             context["success_message"] = msg
         elif request.POST.get("discount", None) is not None:
             new_discount = Decimal(request.POST.get("discount"))
             current_discount = get_discount_for_realm(realm) or 0
-            attach_discount_to_realm(realm, new_discount)
+            attach_discount_to_realm(realm, new_discount, acting_user=request.user)
             context[
                 "success_message"
             ] = f"Discount of {realm.string_id} changed to {new_discount}% from {current_discount}%."
@@ -1298,7 +1298,7 @@ def support(request: HttpRequest) -> HttpResponse:
             except ValidationError as error:
                 context["error_message"] = error.message
             else:
-                do_change_realm_subdomain(realm, new_subdomain)
+                do_change_realm_subdomain(realm, new_subdomain, acting_user=request.user)
                 request.session[
                     "success_message"
                 ] = f"Subdomain changed from {old_subdomain} to {new_subdomain}"
@@ -1308,36 +1308,40 @@ def support(request: HttpRequest) -> HttpResponse:
         elif request.POST.get("status", None) is not None:
             status = request.POST.get("status")
             if status == "active":
-                do_send_realm_reactivation_email(realm)
+                do_send_realm_reactivation_email(realm, acting_user=request.user)
                 context[
                     "success_message"
                 ] = f"Realm reactivation email sent to admins of {realm.string_id}."
             elif status == "deactivated":
-                do_deactivate_realm(realm, request.user)
+                do_deactivate_realm(realm, acting_user=request.user)
                 context["success_message"] = f"{realm.string_id} deactivated."
         elif request.POST.get("billing_method", None) is not None:
             billing_method = request.POST.get("billing_method")
             if billing_method == "send_invoice":
-                update_billing_method_of_current_plan(realm, charge_automatically=False)
+                update_billing_method_of_current_plan(
+                    realm, charge_automatically=False, acting_user=request.user
+                )
                 context[
                     "success_message"
                 ] = f"Billing method of {realm.string_id} updated to pay by invoice."
             elif billing_method == "charge_automatically":
-                update_billing_method_of_current_plan(realm, charge_automatically=True)
+                update_billing_method_of_current_plan(
+                    realm, charge_automatically=True, acting_user=request.user
+                )
                 context[
                     "success_message"
                 ] = f"Billing method of {realm.string_id} updated to charge automatically."
         elif request.POST.get("sponsorship_pending", None) is not None:
             sponsorship_pending = request.POST.get("sponsorship_pending")
             if sponsorship_pending == "true":
-                update_sponsorship_status(realm, True)
+                update_sponsorship_status(realm, True, acting_user=request.user)
                 context["success_message"] = f"{realm.string_id} marked as pending sponsorship."
             elif sponsorship_pending == "false":
-                update_sponsorship_status(realm, False)
+                update_sponsorship_status(realm, False, acting_user=request.user)
                 context["success_message"] = f"{realm.string_id} is no longer pending sponsorship."
         elif request.POST.get("approve_sponsorship") is not None:
             if request.POST.get("approve_sponsorship") == "approve_sponsorship":
-                approve_sponsorship(realm)
+                approve_sponsorship(realm, acting_user=request.user)
                 context["success_message"] = f"Sponsorship approved for {realm.string_id}"
         elif request.POST.get("downgrade_method", None) is not None:
             downgrade_method = request.POST.get("downgrade_method")

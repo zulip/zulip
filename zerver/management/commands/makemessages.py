@@ -36,6 +36,7 @@ import itertools
 import json
 import os
 import re
+import subprocess
 from argparse import ArgumentParser
 from typing import Any, Dict, Iterable, Iterator, List, Mapping
 
@@ -51,16 +52,12 @@ strip_whitespace_left = re.compile(
 )
 
 regexes = [
-    r"{{#tr .*?}}([\s\S]*?){{/tr}}",  # '.' doesn't match '\n' by default
+    r"{{#tr}}([\s\S]*?)(?:{{/tr}}|{{#\*inline )",  # '.' doesn't match '\n' by default
     r'{{\s*t "(.*?)"\W*}}',
     r"{{\s*t '(.*?)'\W*}}",
     r'\(t "(.*?)"\)',
     r'=\(t "(.*?)"\)(?=[^{]*}})',
     r"=\(t '(.*?)'\)(?=[^{]*}})",
-    r"i18n\.t\('([^']*?)'\)",
-    r"i18n\.t\('(.*?)',\s*.*?[^,]\)",
-    r'i18n\.t\("([^"]*?)"\)',
-    r'i18n\.t\("(.*?)",\s*.*?[^,]\)',
 ]
 tags = [
     ("err_", "error"),
@@ -169,7 +166,6 @@ class Command(makemessages.Command):
             for match in regex.findall(data):
                 match = match.strip()
                 match = " ".join(line.strip() for line in match.splitlines())
-                match = match.replace("\n", "\\n")
                 translation_strings.append(match)
 
         return translation_strings
@@ -202,6 +198,19 @@ class Command(makemessages.Command):
                     data = reader.read()
                     data = self.ignore_javascript_comments(data)
                     translation_strings.extend(self.extract_strings(data))
+
+        extracted = subprocess.check_output(
+            [
+                "node_modules/.bin/formatjs",
+                "extract",
+                "--additional-function-names=$t,$t_html",
+                "--format=simple",
+                "--ignore=**/*.d.ts",
+                "static/js/**/*.js",
+                "static/js/**/*.ts",
+            ]
+        )
+        translation_strings.extend(json.loads(extracted).values())
 
         return list(set(translation_strings))
 
@@ -247,19 +256,11 @@ class Command(makemessages.Command):
         """
         new_strings = {}  # Dict[str, str]
         for k in translation_strings:
-            k = k.replace("\\n", "\n")
             if locale == "en":
                 # For English language, translation is equal to the key.
                 new_strings[k] = old_strings.get(k, k)
             else:
                 new_strings[k] = old_strings.get(k, "")
-
-        plurals = {k: v for k, v in old_strings.items() if k.endswith("_plural")}
-        for plural_key, value in plurals.items():
-            components = plural_key.split("_")
-            singular_key = "_".join(components[:-1])
-            if singular_key in new_strings:
-                new_strings[plural_key] = value
 
         return new_strings
 

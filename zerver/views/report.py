@@ -44,8 +44,8 @@ def report_send_times(
     time: int = REQ(converter=to_non_negative_int),
     received: int = REQ(converter=to_non_negative_int, default=-1),
     displayed: int = REQ(converter=to_non_negative_int, default=-1),
-    locally_echoed: bool = REQ(validator=check_bool, default=False),
-    rendered_content_disparity: bool = REQ(validator=check_bool, default=False),
+    locally_echoed: bool = REQ(json_validator=check_bool, default=False),
+    rendered_content_disparity: bool = REQ(json_validator=check_bool, default=False),
 ) -> HttpResponse:
     received_str = "(unknown)"
     if received > 0:
@@ -109,11 +109,11 @@ def report_error(
     user_profile: UserProfile,
     message: str = REQ(),
     stacktrace: str = REQ(),
-    ui_message: bool = REQ(validator=check_bool),
+    ui_message: bool = REQ(json_validator=check_bool),
     user_agent: str = REQ(),
     href: str = REQ(),
     log: str = REQ(),
-    more_info: Mapping[str, Any] = REQ(validator=check_dict([]), default={}),
+    more_info: Mapping[str, Any] = REQ(json_validator=check_dict([]), default={}),
 ) -> HttpResponse:
     """Accepts an error report and stores in a queue for processing.  The
     actual error reports are later handled by do_report_error"""

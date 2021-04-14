@@ -10,7 +10,8 @@ const ui = mock_esm("../../static/js/ui");
 
 mock_esm("../../static/js/starred_messages", {
     add: () => {},
-
+    get_starred_msg_ids: () => [1, 2, 3, 4, 5],
+    get_starred_message_ids_in_topic: () => [2, 4, 5],
     remove: () => {},
 });
 
@@ -20,15 +21,11 @@ run_test("starred", (override) => {
     const message = {
         id: 50,
     };
-    set_global("current_msg_list", {
-        all_messages: () => [message],
-        is_search: () => false,
-    });
     let ui_updated;
 
-    ui.update_starred_view = () => {
+    override(ui, "update_starred_view", () => {
         ui_updated = true;
-    };
+    });
 
     let posted_data;
 
@@ -69,6 +66,61 @@ run_test("starred", (override) => {
         starred: false,
     });
 });
+
+run_test("starring local echo", () => {
+    // verify early return for locally echoed message
+    const locally_echoed_message = {
+        id: 51,
+        starred: false,
+        locally_echoed: true,
+    };
+
+    message_flags.toggle_starred_and_update_server(locally_echoed_message);
+
+    // ui.update_starred_view not called
+
+    // channel post request not made
+
+    // starred flag unchanged
+    assert.deepEqual(locally_echoed_message, {
+        id: 51,
+        locally_echoed: true,
+        starred: false,
+    });
+});
+
+run_test("unstar_all", (override) => {
+    // Way to capture posted info in every request
+    let posted_data;
+    override(channel, "post", (opts) => {
+        assert.equal(opts.url, "/json/messages/flags");
+        posted_data = opts.data;
+    });
+
+    // we've set get_starred_msg_ids to return [1, 2, 3, 4, 5]
+    const expected_data = {messages: "[1,2,3,4,5]", flag: "starred", op: "remove"};
+
+    message_flags.unstar_all_messages();
+
+    assert.deepEqual(posted_data, expected_data);
+});
+
+run_test("unstar_all_in_topic", (override) => {
+    // Way to capture posted info in every request
+    let posted_data;
+    override(channel, "post", (opts) => {
+        assert.equal(opts.url, "/json/messages/flags");
+        posted_data = opts.data;
+    });
+
+    // we've set get_starred_message_ids_in_topic to return [2, 4, 5]
+    const expected_data = {messages: "[2,4,5]", flag: "starred", op: "remove"};
+
+    message_flags.unstar_all_messages_in_topic(20, "topic");
+
+    assert.deepEqual(posted_data, expected_data);
+});
+
 run_test("read", (override) => {
     // Way to capture posted info in every request
     let channel_post_opts;
@@ -148,6 +200,23 @@ run_test("read", (override) => {
         success: channel_post_opts.success,
     });
 
+    // Messages still not acked yet
+    const events = {};
+    const stub_delay = 100;
+    function set_timeout(f, delay) {
+        assert.equal(delay, stub_delay);
+        events.f = f;
+        events.timer_set = true;
+        return;
+    }
+    set_global("setTimeout", set_timeout);
+    // Mock successful flagging of ids
+    success_response_data = {
+        messages: [3, 4, 5, 6, 7],
+    };
+    channel_post_opts.success(success_response_data);
+    assert(events.timer_set);
+
     // Mark them non local
     local_msg_1.locally_echoed = false;
     local_msg_2.locally_echoed = false;
@@ -168,5 +237,67 @@ run_test("read", (override) => {
             flag: "read",
         },
         success: channel_post_opts.success,
+    });
+});
+
+run_test("read_empty_data", (override) => {
+    // Way to capture posted info in every request
+    let channel_post_opts;
+    override(channel, "post", (opts) => {
+        channel_post_opts = opts;
+    });
+
+    // For testing purpose limit the batch size value to 5 instead of 1000
+    function send_read(messages) {
+        with_field(message_flags, "_unread_batch_size", 5, () => {
+            message_flags.send_read(messages);
+        });
+    }
+
+    // send read to obtain success callback
+    send_read({locally_echoed: false, id: 1});
+
+    // verify early return on empty data
+    const success_callback = channel_post_opts.success;
+    channel_post_opts = {};
+    let empty_data;
+    success_callback(empty_data);
+    assert.deepEqual(channel_post_opts, {});
+    empty_data = {messages: undefined};
+    success_callback(empty_data);
+    assert.deepEqual(channel_post_opts, {});
+});
+
+run_test("collapse_and_uncollapse", (override) => {
+    // Way to capture posted info in every request
+    let channel_post_opts;
+    override(channel, "post", (opts) => {
+        channel_post_opts = opts;
+    });
+
+    const msg = {id: 5};
+
+    message_flags.save_collapsed(msg);
+
+    assert.deepEqual(channel_post_opts, {
+        url: "/json/messages/flags",
+        idempotent: true,
+        data: {
+            messages: "[5]",
+            op: "add",
+            flag: "collapsed",
+        },
+    });
+
+    message_flags.save_uncollapsed(msg);
+
+    assert.deepEqual(channel_post_opts, {
+        url: "/json/messages/flags",
+        idempotent: true,
+        data: {
+            messages: "[5]",
+            op: "remove",
+            flag: "collapsed",
+        },
     });
 });

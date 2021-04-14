@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, zrequire} = require("../zjsunit/namespace");
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
@@ -20,12 +20,15 @@ const subs = mock_esm("../../static/js/subs", {
     update_settings_for_subscribed: noop,
 });
 
-mock_esm("../../static/js/message_list", {
-    all: {
+mock_esm("../../static/js/all_messages_data", {
+    all_messages_data: {
         all_messages() {
             return ["msg"];
         },
     },
+});
+const message_lists = mock_esm("../../static/js/message_lists", {
+    current: {},
 });
 mock_esm("../../static/js/recent_topics", {
     complete_rerender: () => {},
@@ -33,7 +36,6 @@ mock_esm("../../static/js/recent_topics", {
 mock_esm("../../static/js/settings_notifications", {
     update_page: () => {},
 });
-set_global("current_msg_list", {});
 
 mock_esm("../../static/js/overlays", {streams_open: () => true});
 
@@ -264,8 +266,6 @@ test("marked_subscribed (normal)", (override) => {
     const sub = {...frontend};
     stream_data.add_sub(sub);
     override(stream_data, "subscribe_myself", noop);
-    override(stream_data, "update_calculated_fields", noop);
-
     override(stream_color, "update_stream_color", noop);
 
     narrow_to_frontend();
@@ -280,7 +280,7 @@ test("marked_subscribed (normal)", (override) => {
     override(stream_list, "add_sidebar_row", stream_list_stub.f);
     override(message_util, "do_unread_count_updates", message_util_stub.f);
     override(message_view_header, "render_title_area", message_view_header_stub.f);
-    override(current_msg_list, "update_trailing_bookend", () => {
+    override(message_lists.current, "update_trailing_bookend", () => {
         list_updated = true;
     });
 
@@ -301,7 +301,6 @@ test("marked_subscribed (normal)", (override) => {
 
 test("marked_subscribed (color)", (override) => {
     override(stream_data, "subscribe_myself", noop);
-    override(stream_data, "update_calculated_fields", noop);
     override(message_util, "do_unread_count_updates", noop);
     override(stream_list, "add_sidebar_row", noop);
 
@@ -332,7 +331,6 @@ test("marked_subscribed (color)", (override) => {
 test("marked_subscribed (emails)", (override) => {
     const sub = {...frontend};
     stream_data.add_sub(sub);
-    override(stream_data, "update_calculated_fields", noop);
     override(stream_color, "update_stream_color", noop);
 
     // Test assigning subscriber emails
@@ -355,8 +353,6 @@ test("marked_subscribed (emails)", (override) => {
 });
 
 test("mark_unsubscribed (update_settings_for_unsubscribed)", (override) => {
-    override(stream_data, "update_calculated_fields", noop);
-
     // Test unsubscribe
     const sub = {...dev_help};
     assert(sub.subscribed);
@@ -376,15 +372,13 @@ test("mark_unsubscribed (render_title_area)", (override) => {
     const sub = {...frontend, subscribed: true};
     stream_data.add_sub(sub);
 
-    override(stream_data, "update_calculated_fields", noop);
-
     // Test update bookend and remove done event
     narrow_to_frontend();
     const message_view_header_stub = make_stub();
     override(message_view_header, "render_title_area", message_view_header_stub.f);
     override(stream_data, "unsubscribe_myself", noop);
     override(subs, "update_settings_for_unsubscribed", noop);
-    override(current_msg_list, "update_trailing_bookend", noop);
+    override(message_lists.current, "update_trailing_bookend", noop);
     override(stream_list, "remove_sidebar_row", noop);
 
     stream_events.mark_unsubscribed(sub);
@@ -398,8 +392,6 @@ test("remove_deactivated_user_from_all_streams", () => {
     stream_data.add_sub(dev_help);
     const subs_stub = make_stub();
     subs.update_subscribers_ui = subs_stub.f;
-
-    dev_help.can_access_subscribers = true;
 
     // assert starting state
     assert(!stream_data.is_user_subscribed(dev_help.stream_id, george.user_id));

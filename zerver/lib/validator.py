@@ -357,7 +357,7 @@ def check_external_account_url_pattern(var_name: str, val: object) -> str:
     return s
 
 
-def validate_choice_field_data(field_data: ProfileFieldData) -> Dict[str, Dict[str, str]]:
+def validate_select_field_data(field_data: ProfileFieldData) -> Dict[str, Dict[str, str]]:
     """
     This function is used to validate the data sent to the server while
     creating/editing choices of the choice field in Organization settings.
@@ -379,7 +379,7 @@ def validate_choice_field_data(field_data: ProfileFieldData) -> Dict[str, Dict[s
     return cast(Dict[str, Dict[str, str]], field_data)
 
 
-def validate_choice_field(var_name: str, field_data: str, value: object) -> str:
+def validate_select_field(var_name: str, field_data: str, value: object) -> str:
     """
     This function is used to validate the value selected by the user against a
     choice field. This is not used to validate admin data.

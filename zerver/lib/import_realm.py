@@ -45,12 +45,14 @@ from zerver.models import (
     Huddle,
     Message,
     MutedTopic,
+    MutedUser,
     Reaction,
     Realm,
     RealmAuditLog,
     RealmDomain,
     RealmEmoji,
     RealmFilter,
+    RealmPlayground,
     Recipient,
     Service,
     Stream,
@@ -73,6 +75,7 @@ realm_tables = [
     ("zerver_realmemoji", RealmEmoji, "realmemoji"),
     ("zerver_realmdomain", RealmDomain, "realmdomain"),
     ("zerver_realmfilter", RealmFilter, "realmfilter"),
+    ("zerver_realmplayground", RealmPlayground, "realmplayground"),
 ]  # List[Tuple[TableName, Any, str]]
 
 
@@ -99,6 +102,7 @@ ID_MAP: Dict[str, Dict[int, int]] = {
     "realmemoji": {},
     "realmdomain": {},
     "realmfilter": {},
+    "realmplayground": {},
     "message": {},
     "user_presence": {},
     "useractivity": {},
@@ -111,6 +115,7 @@ ID_MAP: Dict[str, Dict[int, int]] = {
     "recipient_to_huddle_map": {},
     "userhotspot": {},
     "mutedtopic": {},
+    "muteduser": {},
     "service": {},
     "usergroup": {},
     "usergroupmembership": {},
@@ -655,6 +660,15 @@ def bulk_import_client(data: TableData, model: Any, table: TableName) -> None:
         update_id_map(table="client", old_id=item["id"], new_id=client.id)
 
 
+def fix_subscriptions_is_user_active_column(
+    data: TableData, user_profiles: List[UserProfile]
+) -> None:
+    table = get_db_table(Subscription)
+    user_id_to_active_status = {user.id: user.is_active for user in user_profiles}
+    for sub in data[table]:
+        sub["is_user_active"] = user_id_to_active_status[sub["user_profile_id"]]
+
+
 def process_avatars(record: Dict[str, Any]) -> None:
     from zerver.lib.upload import upload_backend
 
@@ -1008,6 +1022,7 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     get_huddles_from_subscription(data, "zerver_subscription")
     re_map_foreign_keys(data, "zerver_subscription", "recipient", related_table="recipient")
     update_model_ids(Subscription, data, "subscription")
+    fix_subscriptions_is_user_active_column(data, user_profiles)
     bulk_import_model(data, Subscription)
 
     if "zerver_realmauditlog" in data:
@@ -1057,6 +1072,13 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         re_map_foreign_keys(data, "zerver_mutedtopic", "recipient", related_table="recipient")
         update_model_ids(MutedTopic, data, "mutedtopic")
         bulk_import_model(data, MutedTopic)
+
+    if "zerver_muteduser" in data:
+        fix_datetime_fields(data, "zerver_muteduser")
+        re_map_foreign_keys(data, "zerver_muteduser", "user_profile", related_table="user_profile")
+        re_map_foreign_keys(data, "zerver_muteduser", "muted_user", related_table="user_profile")
+        update_model_ids(MutedUser, data, "muteduser")
+        bulk_import_model(data, MutedUser)
 
     if "zerver_service" in data:
         re_map_foreign_keys(data, "zerver_service", "user_profile", related_table="user_profile")
@@ -1188,9 +1210,9 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     import_analytics_data(realm=realm, import_dir=import_dir)
 
     if settings.BILLING_ENABLED:
-        do_change_plan_type(realm, Realm.LIMITED)
+        do_change_plan_type(realm, Realm.LIMITED, acting_user=None)
     else:
-        do_change_plan_type(realm, Realm.SELF_HOSTED)
+        do_change_plan_type(realm, Realm.SELF_HOSTED, acting_user=None)
     return realm
 
 

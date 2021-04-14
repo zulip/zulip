@@ -28,5 +28,5 @@ class Command(ZulipBaseCommand):
             exit(0)
 
         print("Deactivating", options["realm_id"])
-        do_deactivate_realm(realm)
+        do_deactivate_realm(realm, acting_user=None)
         print("Done!")

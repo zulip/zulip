@@ -84,7 +84,7 @@ $category-text: hsl(219, 23%, 33%);
         max-width: 100%;
         overflow: auto;
 
-        font-family: Monaco, Menlo, Consolas, "Courier New", Courier, monospace;
+        font-family: "Source Code Pro", monospace;
         font-size: 0.85em;
     }
 
@@ -431,6 +431,25 @@ $category-text: hsl(219, 23%, 33%);
                 font-size: 0.77em;
             }
         }
+    }
+
+    .integration-request {
+        font-size: 1em;
+        padding: 10px 0;
+
+        p {
+            padding-bottom: 10px;
+        }
+
+        .button {
+            padding: 11px 25px 11px 25px;
+            margin: 5px;
+            font-size: 0.9em;
+        }
+    }
+
+    .integration-divider {
+        padding: 11px 15px 0 15px;
     }
 
     /* -- integration instructions -- */

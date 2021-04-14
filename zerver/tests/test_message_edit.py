@@ -246,7 +246,7 @@ class EditMessageTest(ZulipTestCase):
 
     def test_edit_message_history_disabled(self) -> None:
         user_profile = self.example_user("hamlet")
-        do_set_realm_property(user_profile.realm, "allow_edit_history", False)
+        do_set_realm_property(user_profile.realm, "allow_edit_history", False, acting_user=None)
         self.login("hamlet")
 
         # Single-line edit
@@ -439,7 +439,9 @@ class EditMessageTest(ZulipTestCase):
         self.subscribe(hamlet, "Scotland")
         self.subscribe(cordelia, "Scotland")
 
-        msg_id = self.send_stream_message(hamlet, "Scotland", content="@**Cordelia Lear**")
+        msg_id = self.send_stream_message(
+            hamlet, "Scotland", content="@**Cordelia, Lear's daughter**"
+        )
 
         user_info = get_user_info_for_message_updates(msg_id)
         message_user_ids = user_info["message_user_ids"]
@@ -1171,8 +1173,8 @@ class EditMessageTest(ZulipTestCase):
                     "topic": "new topic",
                 },
             )
-        self.assertEqual(len(queries), 47)
-        self.assertEqual(len(cache_tries), 11)
+        self.assertEqual(len(queries), 48)
+        self.assertEqual(len(cache_tries), 13)
 
         messages = get_topic_messages(user_profile, old_stream, "test")
         self.assertEqual(len(messages), 1)

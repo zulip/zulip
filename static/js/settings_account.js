@@ -9,7 +9,10 @@ import * as avatar from "./avatar";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as common from "./common";
+import {csrf_token} from "./csrf";
+import {$t_html} from "./i18n";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pill_typeahead from "./pill_typeahead";
 import * as popovers from "./popovers";
@@ -86,8 +89,8 @@ function display_avatar_upload_started() {
     $("#user-avatar-upload-widget .image-delete-button").hide();
 }
 
-function settings_change_error(message, xhr) {
-    ui_report.error(message, xhr, $("#account-settings-status").expectOne());
+function settings_change_error(message_html, xhr) {
+    ui_report.error(message_html, xhr, $("#account-settings-status").expectOne());
 }
 
 function update_custom_profile_field(field, method) {
@@ -130,7 +133,7 @@ export function append_custom_profile_fields(element_id, user_id) {
     const all_field_template_types = new Map([
         [all_field_types.LONG_TEXT.id, "text"],
         [all_field_types.SHORT_TEXT.id, "text"],
-        [all_field_types.CHOICE.id, "choice"],
+        [all_field_types.SELECT.id, "select"],
         [all_field_types.USER.id, "user"],
         [all_field_types.DATE.id, "date"],
         [all_field_types.EXTERNAL_ACCOUNT.id, "text"],
@@ -139,13 +142,13 @@ export function append_custom_profile_fields(element_id, user_id) {
 
     for (const field of all_custom_fields) {
         let field_value = people.get_custom_profile_data(user_id, field.id);
-        const is_choice_field = field.type === all_field_types.CHOICE.id;
+        const is_select_field = field.type === all_field_types.SELECT.id;
         const field_choices = [];
 
         if (field_value === undefined || field_value === null) {
             field_value = {value: "", rendered_value: ""};
         }
-        if (is_choice_field) {
+        if (is_select_field) {
             const field_choice_dict = JSON.parse(field.field_data);
             for (const choice in field_choice_dict) {
                 if (choice) {
@@ -165,7 +168,7 @@ export function append_custom_profile_fields(element_id, user_id) {
             is_long_text_field: field.type === all_field_types.LONG_TEXT.id,
             is_user_field: field.type === all_field_types.USER.id,
             is_date_field: field.type === all_field_types.DATE.id,
-            is_choice_field,
+            is_select_field,
             field_choices,
         });
         $(element_id).append(html);
@@ -305,7 +308,11 @@ export function set_up() {
                     $("#show_api_key").show();
                 },
                 error(xhr) {
-                    ui_report.error(i18n.t("Error"), xhr, $("#api_key_status").expectOne());
+                    ui_report.error(
+                        $t_html({defaultMessage: "Error"}),
+                        xhr,
+                        $("#api_key_status").expectOne(),
+                    );
                     $("#show_api_key").hide();
                     $("#api_key_modal").show();
                 },
@@ -400,14 +407,6 @@ export function set_up() {
             clear_password_change();
         });
 
-    // If the modal is closed using the 'close' button or the 'Cancel' button
-    $(".modal")
-        .find("[data-dismiss=modal]")
-        .on("click", () => {
-            // Enable mouse events for the background on closing modal
-            $(".overlay.show").attr("style", null);
-        });
-
     $("#change_password_button").on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -433,7 +432,7 @@ export function set_up() {
                 );
                 return;
             } else if (!password_ok) {
-                settings_change_error(i18n.t("New password is too weak"));
+                settings_change_error($t_html({defaultMessage: "New password is too weak"}));
                 return;
             }
         }
@@ -509,9 +508,10 @@ export function set_up() {
                 overlays.close_modal("#change_email_modal");
             },
             error_msg_element: change_email_error,
-            success_msg: i18n
-                .t("Check your email (%s) to confirm the new address.")
-                .replace("%s", data.email),
+            success_msg_html: $t_html(
+                {defaultMessage: "Check your email ({email}) to confirm the new address."},
+                {email: data.email},
+            ),
         };
         settings_ui.do_settings_change(
             channel.patch,
@@ -581,11 +581,18 @@ export function set_up() {
                     window.location.href = "/login/";
                 },
                 error(xhr) {
-                    const error_last_owner = i18n.t(
-                        "Error: Cannot deactivate the only organization owner.",
-                    );
-                    const error_last_user = i18n.t(
-                        'Error: Cannot deactivate the only user. You can deactivate the whole organization though in your <a target="_blank" href="/#organization/organization-profile">Organization profile settings</a>.',
+                    const error_last_owner = $t_html({
+                        defaultMessage: "Error: Cannot deactivate the only organization owner.",
+                    });
+                    const error_last_user = $t_html(
+                        {
+                            defaultMessage:
+                                "Error: Cannot deactivate the only user. You can deactivate the whole organization though in your <z-link>organization profile settings</z-link>.",
+                        },
+                        {
+                            "z-link": (content_html) =>
+                                `<a target="_blank" href="/#organization/organization-profile">${content_html}</a>`,
+                        },
                     );
                     let rendered_error_msg;
                     if (xhr.responseJSON.code === "CANNOT_DEACTIVATE_LAST_USER") {

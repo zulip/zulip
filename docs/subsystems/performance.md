@@ -127,8 +127,8 @@ of the server.
 
 Because these requests are so efficient from a total CPU usage
 perspective, Tornado is significantly less important than other
-services like Presence and Tornado for overall CPU usage of a Zulip
-installation.
+services like Presence and fetching message history for overall CPU
+usage of a Zulip installation.
 
 It's worth noting that most (~80%) Tornado requests end the
 longpolling via a `heartbeat` event, which are issued to idle

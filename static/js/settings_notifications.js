@@ -3,50 +3,15 @@ import $ from "jquery";
 import render_stream_specific_notification_row from "../templates/settings/stream_specific_notification_row.hbs";
 
 import * as channel from "./channel";
+import {$t} from "./i18n";
 import * as notifications from "./notifications";
+import {page_params} from "./page_params";
 import * as settings_config from "./settings_config";
 import * as settings_org from "./settings_org";
 import * as settings_ui from "./settings_ui";
-import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
+import * as stream_settings_data from "./stream_settings_data";
 import * as unread_ui from "./unread_ui";
-
-export function get_notifications_table_row_data(notify_settings) {
-    return settings_config.general_notifications_table_labels.realm.map((column, index) => {
-        const setting_name = notify_settings[index];
-        if (setting_name === undefined) {
-            return {
-                setting_name: "",
-                is_disabled: true,
-                is_checked: false,
-            };
-        }
-        const checkbox = {
-            setting_name,
-            is_disabled: false,
-        };
-        if (column === "mobile") {
-            checkbox.is_disabled = !page_params.realm_push_notifications_enabled;
-        }
-        checkbox.is_checked = page_params[setting_name];
-        return checkbox;
-    });
-}
-
-export const desktop_icon_count_display_values = {
-    messages: {
-        code: 1,
-        description: i18n.t("All unreads"),
-    },
-    notifiable: {
-        code: 2,
-        description: i18n.t("Private messages and mentions"),
-    },
-    none: {
-        code: 3,
-        description: i18n.t("None"),
-    },
-};
 
 function rerender_ui() {
     const unmatched_streams_table = $("#stream-specific-notify-table");
@@ -55,7 +20,7 @@ function rerender_ui() {
         return;
     }
 
-    const unmatched_streams = stream_data.get_unmatched_streams_for_notification_settings();
+    const unmatched_streams = stream_settings_data.get_unmatched_streams_for_notification_settings();
 
     unmatched_streams_table.find(".stream-row").remove();
 
@@ -122,12 +87,12 @@ export function set_up() {
 
     $("#send_test_notification").on("click", () => {
         notifications.send_test_notification(
-            i18n.t("This is what a Zulip notification looks like."),
+            $t({defaultMessage: "This is what a Zulip notification looks like."}),
         );
     });
 
     $("#play_notification_sound").on("click", () => {
-        $("#notifications-area").find("audio")[0].play();
+        $("#notification-sound-audio")[0].play();
     });
 
     const notification_sound_dropdown = $("#notification_sound");

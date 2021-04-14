@@ -93,6 +93,25 @@ exports.mock_esm = (request, obj = {}) => {
     return exports.mock_cjs(request, {...obj, __esModule: true});
 };
 
+exports.unmock_module = (request) => {
+    const filename = Module._resolveFilename(
+        request,
+        require.cache[callsites()[1].getFileName()],
+        false,
+    );
+
+    if (!module_mocks.has(filename)) {
+        throw new Error(`Cannot unmock ${filename}, which was not mocked`);
+    }
+
+    if (!used_module_mocks.has(filename)) {
+        throw new Error(`You asked to mock ${filename} but we never saw it during compilation.`);
+    }
+
+    module_mocks.delete(filename);
+    used_module_mocks.delete(filename);
+};
+
 exports.set_global = function (name, val) {
     if (val === null) {
         throw new Error(`

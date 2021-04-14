@@ -6,15 +6,16 @@ const _ = require("lodash");
 
 const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const {page_params} = require("../zjsunit/zpage_params");
 
 set_global("document", "document-stub");
 
 const noop = () => {};
 
-const page_params = set_global("page_params", {
-    twenty_four_hour_time: false,
-});
-set_global("home_msg_list", "stub");
+page_params.twenty_four_hour_time = false;
+
+mock_esm("../../static/js/message_lists", {home: "stub"});
+
 // timerender calls setInterval when imported
 mock_esm("../../static/js/timerender", {
     render_date(time1, time2) {
@@ -57,13 +58,7 @@ run_test("msg_edited_vars", () => {
     //   * message that includes sender
     //   * message without sender
 
-    function build_message_context(message, message_context) {
-        if (message_context === undefined) {
-            message_context = {};
-        }
-        if (message === undefined) {
-            message = {};
-        }
+    function build_message_context(message = {}, message_context = {}) {
         message_context = {
             include_sender: true,
             ...message_context,
@@ -130,13 +125,7 @@ run_test("merge_message_groups", () => {
     // MessageListView has lots of DOM code, so we are going to test the message
     // group mearging logic on its own.
 
-    function build_message_context(message, message_context) {
-        if (message_context === undefined) {
-            message_context = {};
-        }
-        if (message === undefined) {
-            message = {};
-        }
+    function build_message_context(message = {}, message_context = {}) {
         message_context = {
             include_sender: true,
             ...message_context,

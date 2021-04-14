@@ -519,25 +519,29 @@ class HostDomainMiddleware(MiddlewareMixin):
         return None
 
 
-class SetRemoteAddrFromForwardedFor(MiddlewareMixin):
-    """
-    Middleware that sets REMOTE_ADDR based on the HTTP_X_FORWARDED_FOR.
+class SetRemoteAddrFromRealIpHeader(MiddlewareMixin):
+    """Middleware that sets REMOTE_ADDR based on the X-Real-Ip header.
 
-    This middleware replicates Django's former SetRemoteAddrFromForwardedFor middleware.
-    Because Zulip sits behind a NGINX reverse proxy, if the HTTP_X_FORWARDED_FOR
-    is set in the request, then it has properly been set by NGINX.
-    Therefore HTTP_X_FORWARDED_FOR's value is trusted.
+    This middleware is similar to Django's old
+    SetRemoteAddrFromForwardedFor middleware.  We use X-Real-Ip, and
+    not X-Forwarded-For, because the latter is a list of proxies, some
+    number of which are trusted by us, and some of which could be
+    arbitrarily set by the user.  nginx has already parsed which are
+    which, and has set X-Real-Ip to the first one, going right to
+    left, which is untrusted.
+
+    Since we are always deployed behind nginx, we can trust the
+    X-Real-Ip which is so set.  In development, we fall back to the
+    REMOTE_ADDR supplied by the server.
+
     """
 
     def process_request(self, request: HttpRequest) -> None:
         try:
-            real_ip = request.META["HTTP_X_FORWARDED_FOR"]
+            real_ip = request.META["HTTP_X_REAL_IP"]
         except KeyError:
             return None
         else:
-            # HTTP_X_FORWARDED_FOR can be a comma-separated list of IPs.
-            # For NGINX reverse proxy servers, the client's IP will be the first one.
-            real_ip = real_ip.split(",")[0].strip()
             request.META["REMOTE_ADDR"] = real_ip
 
 

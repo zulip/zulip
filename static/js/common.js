@@ -1,9 +1,6 @@
 import $ from "jquery";
 
-// This reloads the module in development rather than refreshing the page
-if (module.hot) {
-    module.hot.accept();
-}
+import {$t} from "./i18n";
 
 export const status_classes = "alert-error alert-success alert-info alert-warning";
 
@@ -62,11 +59,12 @@ export function password_warning(password, password_field) {
     const min_length = password_field.data("minLength");
 
     if (password.length < min_length) {
-        return i18n.t("Password should be at least __length__ characters long", {
-            length: min_length,
-        });
+        return $t(
+            {defaultMessage: "Password should be at least {length} characters long"},
+            {length: min_length},
+        );
     }
-    return zxcvbn(password).feedback.warning || i18n.t("Password is too weak");
+    return zxcvbn(password).feedback.warning || $t({defaultMessage: "Password is too weak"});
 }
 
 export function phrase_match(query, phrase) {

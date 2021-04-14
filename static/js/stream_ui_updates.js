@@ -2,7 +2,9 @@ import $ from "jquery";
 
 import render_subscription_type from "../templates/subscription_type.hbs";
 
+import {$t} from "./i18n";
 import * as ListWidget from "./list_widget";
+import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
@@ -44,7 +46,7 @@ export function initialize_cant_subscribe_popover(sub) {
         button_wrapper,
         settings_button,
         settings_button,
-        i18n.t("Only stream members can add users to a private stream"),
+        $t({defaultMessage: "Only stream members can add users to a private stream"}),
     );
 }
 
@@ -52,11 +54,11 @@ export function update_settings_button_for_sub(sub) {
     // This is for the Subscribe/Unsubscribe button in the right panel.
     const settings_button = subs.settings_button_for_sub(sub);
     if (sub.subscribed) {
-        settings_button.text(i18n.t("Unsubscribe")).removeClass("unsubscribed");
+        settings_button.text($t({defaultMessage: "Unsubscribe"})).removeClass("unsubscribed");
     } else {
-        settings_button.text(i18n.t("Subscribe")).addClass("unsubscribed");
+        settings_button.text($t({defaultMessage: "Subscribe"})).addClass("unsubscribed");
     }
-    if (sub.should_display_subscription_button) {
+    if (stream_data.can_toggle_subscription(sub)) {
         settings_button.prop("disabled", false);
         settings_button.popover("destroy");
         settings_button.css("pointer-events", "");
@@ -149,7 +151,7 @@ export function update_subscribers_list(sub) {
         return;
     }
 
-    if (!sub.can_access_subscribers) {
+    if (!stream_data.can_view_subscribers(sub)) {
         $(".subscriber_list_settings_container").hide();
     } else {
         const subscribers = peer_data.get_subscribers(sub.stream_id);
@@ -207,7 +209,7 @@ export function update_add_subscriptions_elements(sub) {
             $(".add_subscribers_container"),
             input_element,
             button_element,
-            i18n.t("Only stream members can add users to a private stream"),
+            $t({defaultMessage: "Only stream members can add users to a private stream"}),
         );
     }
 }

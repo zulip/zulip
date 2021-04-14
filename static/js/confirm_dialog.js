@@ -72,10 +72,14 @@ export function launch(conf) {
         conf.on_click();
     });
 
-    confirm_dialog.on("hide", () => {
+    confirm_dialog.on("hidden.bs.modal", () => {
         confirm_dialog.remove();
     });
 
     // Open the modal
     overlays.open_modal("#confirm_dialog_modal");
+
+    conf.parent.on("shown.bs.modal", () => {
+        yes_button.trigger("focus");
+    });
 }

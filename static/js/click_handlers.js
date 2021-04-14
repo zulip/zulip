@@ -1,31 +1,35 @@
 import $ from "jquery";
 import _ from "lodash";
+import tippy from "tippy.js";
 import WinChan from "winchan";
 
 // You won't find every click handler here, but it's a good place to start!
 
-import render_buddy_list_tooltip from "../templates/buddy_list_tooltip.hbs";
 import render_buddy_list_tooltip_content from "../templates/buddy_list_tooltip_content.hbs";
 
 import * as activity from "./activity";
 import * as blueslip from "./blueslip";
+import * as browser_history from "./browser_history";
 import * as buddy_data from "./buddy_data";
 import * as channel from "./channel";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
+import {media_breakpoints_num} from "./css_variables";
 import * as emoji_picker from "./emoji_picker";
 import * as hash_util from "./hash_util";
-import * as hashchange from "./hashchange";
 import * as hotspots from "./hotspots";
+import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_flags from "./message_flags";
+import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as muting_ui from "./muting_ui";
 import * as narrow from "./narrow";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_topics from "./recent_topics";
@@ -40,14 +44,6 @@ import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import * as user_status_ui from "./user_status_ui";
 import * as util from "./util";
-
-function convert_enter_to_click(e) {
-    const key = e.which;
-    if (key === 13) {
-        // Enter
-        $(e.currentTarget).trigger("click");
-    }
-}
 
 export function initialize() {
     // MESSAGE CLICKING
@@ -67,7 +63,7 @@ export function initialize() {
             if (!id) {
                 return;
             }
-            current_msg_list.select_id(id);
+            message_lists.current.select_id(id);
             setTimeout(() => {
                 // The algorithm to trigger long tap is that first, we check
                 // whether the message is still touched after MS_DELAY ms and
@@ -136,6 +132,13 @@ export function initialize() {
             return true;
         }
 
+        // Ideally, this should be done via ClipboardJS, but it does't support
+        // feature of stopPropagation once clicked.
+        // See https://github.com/zenorocha/clipboard.js/pull/475
+        if (target.is(".copy_codeblock") || target.parents(".copy_codeblock").length > 0) {
+            return true;
+        }
+
         return false;
     }
 
@@ -166,7 +169,7 @@ export function initialize() {
             return;
         }
 
-        current_msg_list.select_id(id);
+        message_lists.current.select_id(id);
         compose_actions.respond_to_message({trigger: "message click"});
         e.stopPropagation();
         popovers.hide_all();
@@ -228,8 +231,8 @@ export function initialize() {
     $("body").on("click", ".message_edit_notice", (e) => {
         popovers.hide_all();
         const message_id = rows.id($(e.currentTarget).closest(".message_row"));
-        const row = current_msg_list.get_row(message_id);
-        const message = current_msg_list.get(rows.id(row));
+        const row = message_lists.current.get_row(message_id);
+        const message = message_lists.current.get(rows.id(row));
         const message_history_cancel_btn = $("#message-history-cancel");
 
         if (page_params.realm_allow_edit_history) {
@@ -240,49 +243,13 @@ export function initialize() {
         e.preventDefault();
     });
 
-    // TOOLTIP FOR MESSAGE REACTIONS
-
-    $("#main_div").on("mouseenter", ".message_reaction", (e) => {
-        e.stopPropagation();
-        const elem = $(e.currentTarget);
-        const local_id = elem.attr("data-reaction-id");
-        const message_id = rows.get_message_id(e.currentTarget);
-        const title = reactions.get_reaction_title_data(message_id, local_id);
-
-        elem.tooltip({
-            title,
-            trigger: "hover",
-            placement: "bottom",
-            animation: false,
-        });
-        elem.tooltip("show");
-        $(".tooltip, .tooltip-inner").css({
-            "margin-left": "15px",
-            "max-width": $(window).width() * 0.6,
-        });
-        // Remove the arrow from the tooltip.
-        $(".tooltip-arrow").remove();
-    });
-
-    $("#main_div").on("mouseleave", ".message_reaction", (e) => {
-        e.stopPropagation();
-        $(e.currentTarget).tooltip("destroy");
-    });
-
-    // DESTROY PERSISTING TOOLTIPS ON HOVER
-
-    $("body").on("mouseenter", ".tooltip", (e) => {
-        e.stopPropagation();
-        $(e.currentTarget).remove();
-    });
-
     $("#main_div").on("click", "a.stream", function (e) {
         e.preventDefault();
         // Note that we may have an href here, but we trust the stream id more,
         // so we re-encode the hash.
         const stream_id = Number.parseInt($(this).attr("data-stream-id"), 10);
         if (stream_id) {
-            hashchange.go_to_location(hash_util.by_stream_uri(stream_id));
+            browser_history.go_to_location(hash_util.by_stream_uri(stream_id));
             return;
         }
         window.location.href = $(this).attr("href");
@@ -298,26 +265,18 @@ export function initialize() {
         user_status_ui.update_button();
     });
 
-    // NOTIFICATION CLICK
-
-    $("body").on("click", ".notification", function () {
-        const payload = $(this).data("narrow");
-        ui_util.change_tab_to("#message_feed_container");
-        narrow.activate(payload.raw_operators, payload.opts_notif);
-    });
-
     // MESSAGE EDITING
 
     $("body").on("click", ".edit_content_button", function (e) {
-        const row = current_msg_list.get_row(rows.id($(this).closest(".message_row")));
-        current_msg_list.select_id(rows.id(row));
+        const row = message_lists.current.get_row(rows.id($(this).closest(".message_row")));
+        message_lists.current.select_id(rows.id(row));
         message_edit.start(row);
         e.stopPropagation();
         popovers.hide_all();
     });
     $("body").on("click", ".always_visible_topic_edit,.on_hover_topic_edit", function (e) {
         const recipient_row = $(this).closest(".recipient_row");
-        message_edit.start_topic_edit(recipient_row);
+        message_edit.start_inline_topic_edit(recipient_row);
         e.stopPropagation();
         popovers.hide_all();
     });
@@ -354,7 +313,7 @@ export function initialize() {
     $("body").on("click", ".copy_message", function (e) {
         const row = $(this).closest(".message_row");
         message_edit.end_message_row_edit(row);
-        row.find(".alert-msg").text(i18n.t("Copied!"));
+        row.find(".alert-msg").text($t({defaultMessage: "Copied!"}));
         row.find(".alert-msg").css("display", "block");
         row.find(".alert-msg").delay(1000).fadeOut(300);
         if ($(".tooltip").is(":visible")) {
@@ -423,14 +382,14 @@ export function initialize() {
         muting_ui.mute_topic(stream_id, topic);
     }
 
-    $("body").on("click", ".on_hover_topic_mute", (e) => {
+    $("body").on("click", ".message_header .on_hover_topic_mute", (e) => {
         e.stopPropagation();
         mute_topic($(e.target));
     });
 
     // RECENT TOPICS
 
-    $("body").on("keydown", ".on_hover_topic_mute", convert_enter_to_click);
+    $("body").on("keydown", ".on_hover_topic_mute", ui_util.convert_enter_to_click);
 
     $("body").on("click", "#recent_topics_table .on_hover_topic_unmute", (e) => {
         e.stopPropagation();
@@ -440,7 +399,7 @@ export function initialize() {
         muting_ui.unmute_topic(stream_id, topic);
     });
 
-    $("body").on("keydown", ".on_hover_topic_unmute", convert_enter_to_click);
+    $("body").on("keydown", ".on_hover_topic_unmute", ui_util.convert_enter_to_click);
 
     $("body").on("click", "#recent_topics_table .on_hover_topic_mute", (e) => {
         e.stopPropagation();
@@ -462,7 +421,7 @@ export function initialize() {
         unread_ops.mark_topic_as_read(stream_id, topic);
     });
 
-    $("body").on("keydown", ".on_hover_topic_read", convert_enter_to_click);
+    $("body").on("keydown", ".on_hover_topic_read", ui_util.convert_enter_to_click);
 
     $("body").on("click", ".btn-recent-filters", (e) => {
         e.stopPropagation();
@@ -505,8 +464,8 @@ export function initialize() {
         const group = rows.get_closest_group(narrow_link_elem);
         const msg_id = rows.id_for_recipient_row(group);
 
-        const nearest = current_msg_list.get(msg_id);
-        const selected = current_msg_list.selected_message();
+        const nearest = message_lists.current.get(msg_id);
+        const selected = message_lists.current.selected_message();
         if (util.same_recipient(nearest, selected)) {
             return selected.id;
         }
@@ -569,50 +528,39 @@ export function initialize() {
         });
 
     function do_render_buddy_list_tooltip(elem, title_data) {
-        elem.tooltip({
-            template: render_buddy_list_tooltip(),
-            title: render_buddy_list_tooltip_content(title_data),
-            html: true,
-            trigger: "hover",
-            placement: "bottom",
-            animation: false,
+        let placement = "left";
+        if (window.innerWidth < media_breakpoints_num.md) {
+            // On small devices display tooltips based on available space.
+            // This will default to "bottom" placement for this tooltip.
+            placement = "auto";
+        }
+        tippy(elem[0], {
+            // Quickly display and hide right sidebar tooltips
+            // so that they don't stick and overlap with
+            // each other.
+            delay: 0,
+            content: render_buddy_list_tooltip_content(title_data),
+            arrow: true,
+            placement,
+            allowHTML: true,
+            showOnCreate: true,
+            onHidden: (instance) => {
+                instance.destroy();
+            },
         });
-        elem.tooltip("show");
-
-        $(".tooltip").css("left", elem.pageX + "px");
-        $(".tooltip").css("top", elem.pageY + "px");
     }
 
     // BUDDY LIST TOOLTIPS
-    $("#user_presences").on(
-        "mouseenter",
-        ".user-presence-link, .user_sidebar_entry .user_circle, .user_sidebar_entry .selectable_sidebar_block",
-        (e) => {
-            e.stopPropagation();
-            const elem = $(e.currentTarget)
-                .closest(".user_sidebar_entry")
-                .find(".user-presence-link");
-            const user_id_string = elem.attr("data-user-id");
-            const title_data = buddy_data.get_title_data(user_id_string, false);
-            do_render_buddy_list_tooltip(elem, title_data);
-        },
-    );
-
-    $("#user_presences").on(
-        "mouseleave click",
-        ".user-presence-link, .user_sidebar_entry .user_circle, .user_sidebar_entry .selectable_sidebar_block",
-        (e) => {
-            e.stopPropagation();
-            const elem = $(e.currentTarget)
-                .closest(".user_sidebar_entry")
-                .find(".user-presence-link");
-            $(elem).tooltip("destroy");
-        },
-    );
+    $("#user_presences").on("mouseenter", ".selectable_sidebar_block", (e) => {
+        e.stopPropagation();
+        const elem = $(e.currentTarget).closest(".user_sidebar_entry").find(".user-presence-link");
+        const user_id_string = elem.attr("data-user-id");
+        const title_data = buddy_data.get_title_data(user_id_string, false);
+        do_render_buddy_list_tooltip(elem.parent(), title_data);
+    });
 
     // PM LIST TOOLTIPS
     $("body").on("mouseenter", "#pm_user_status", (e) => {
-        $(".tooltip").remove();
         e.stopPropagation();
         const elem = $(e.currentTarget);
         const user_ids_string = elem.attr("data-user-ids-string");
@@ -621,11 +569,6 @@ export function initialize() {
 
         const title_data = buddy_data.get_title_data(user_ids_string, is_group);
         do_render_buddy_list_tooltip(elem, title_data);
-    });
-
-    $("body").on("mouseleave", "#pm_user_status", (e) => {
-        e.stopPropagation();
-        $(e.currentTarget).tooltip("destroy");
     });
 
     // MISC
@@ -651,25 +594,12 @@ export function initialize() {
         server_events.restart_get_events({dont_block: true});
     });
 
-    // this will hide the alerts that you click "x" on.
-    $("body").on("click", ".alert-box > div .exit", function () {
-        const $alert = $(this).closest(".alert-box > div");
-        $alert.addClass("fade-out");
-        setTimeout(() => {
-            $alert.removeClass("fade-out show");
-        }, 300);
-    });
-
     $("#settings_page").on("click", ".collapse-settings-btn", () => {
         settings_toggle.toggle_org_setting_collapse();
     });
 
     $(".organization-box").on("show.bs.modal", () => {
         popovers.hide_all();
-    });
-
-    $(".alert-box").on("click", ".stackframe .expand", function () {
-        $(this).parent().siblings(".code-context").toggle("fast");
     });
 
     // COMPOSE
@@ -716,12 +646,12 @@ export function initialize() {
 
     $("body").on("click", "[data-overlay-trigger]", function () {
         const target = $(this).attr("data-overlay-trigger");
-        hashchange.go_to_location(target);
+        browser_history.go_to_location(target);
     });
 
     function handle_compose_click(e) {
         // Emoji clicks should be handled by their own click handler in emoji_picker.js
-        if ($(e.target).is("#emoji_map, img.emoji, .drag")) {
+        if ($(e.target).is("#emoji_map, img.emoji, .drag, .compose_giphy_logo")) {
             return;
         }
 
@@ -752,7 +682,7 @@ export function initialize() {
 
     $("#streams_inline_cog").on("click", (e) => {
         e.stopPropagation();
-        hashchange.go_to_location("streams/subscribed");
+        browser_history.go_to_location("streams/subscribed");
     });
 
     $("#streams_filter_icon").on("click", (e) => {
@@ -965,6 +895,11 @@ export function initialize() {
         e.stopPropagation();
     });
 
+    $("body").on("hidden.bs.modal", () => {
+        // Enable mouse events for the background as the modal closes.
+        overlays.enable_background_mouse_events();
+    });
+
     // MAIN CLICK HANDLER
 
     $(document).on("click", (e) => {
@@ -984,15 +919,11 @@ export function initialize() {
             popovers.hide_all();
         }
 
-        // If user clicks outside an active modal
-        if ($(".modal.in").has(e.target).length === 0) {
-            // Enable mouse events for the background as the modal closes
-            $(".overlay.show").attr("style", null);
-        }
-
         if (compose_state.composing()) {
             if ($(e.target).closest("a").length > 0) {
-                // Refocus compose message text box if link is clicked
+                // Refocus compose message text box if one clicks an external
+                // link/url to view something else while composing a message
+                // See issue #4331 for more details
                 $("#compose-textarea").trigger("focus");
                 return;
             } else if (

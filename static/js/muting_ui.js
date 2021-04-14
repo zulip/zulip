@@ -5,11 +5,13 @@ import render_topic_muted from "../templates/topic_muted.hbs";
 
 import * as channel from "./channel";
 import * as feedback_widget from "./feedback_widget";
+import {$t} from "./i18n";
 import * as ListWidget from "./list_widget";
+import * as message_lists from "./message_lists";
 import * as muting from "./muting";
 import * as overlays from "./overlays";
 import * as recent_topics from "./recent_topics";
-import * as settings_muting from "./settings_muting";
+import * as settings_muted_topics from "./settings_muted_topics";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
@@ -29,13 +31,12 @@ export function rerender_on_topic_update() {
     // re-doing a mute or unmute is a pretty recoverable thing.
 
     stream_list.update_streams_sidebar();
-    if (current_msg_list.excludes_muted_topics) {
-        current_msg_list.update_muting_and_rerender();
+    recent_topics.complete_rerender();
+    message_lists.current.update_topic_muting_and_rerender();
+    if (message_lists.current !== message_lists.home) {
+        message_lists.home.update_topic_muting_and_rerender();
     }
-    if (current_msg_list !== home_msg_list) {
-        home_msg_list.update_muting_and_rerender();
-    }
-    if (overlays.settings_open() && settings_muting.loaded) {
+    if (overlays.settings_open() && settings_muted_topics.loaded) {
         set_up_muted_topics_ui();
     }
 }
@@ -127,8 +128,8 @@ export function mute_topic(stream_id, topic) {
         on_undo() {
             unmute_topic(stream_id, topic);
         },
-        title_text: i18n.t("Topic muted"),
-        undo_button_text: i18n.t("Unmute"),
+        title_text: $t({defaultMessage: "Topic muted"}),
+        undo_button_text: $t({defaultMessage: "Unmute"}),
     });
     recent_topics.update_topic_is_muted(stream_id, topic);
 }
@@ -155,4 +156,8 @@ export function toggle_topic_mute(message) {
     } else if (message.type === "stream") {
         mute_topic(stream_id, topic);
     }
+}
+
+export function handle_user_updates(muted_user_ids) {
+    muting.set_muted_users(muted_user_ids);
 }

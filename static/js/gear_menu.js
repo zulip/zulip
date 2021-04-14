@@ -1,8 +1,10 @@
 import $ from "jquery";
 
 import * as hashchange from "./hashchange";
+import {$t} from "./i18n";
 import * as message_viewport from "./message_viewport";
 import * as navigate from "./navigate";
+import {page_params} from "./page_params";
 
 /*
 For various historical reasons there isn't one
@@ -70,7 +72,7 @@ The "info:" items use our info overlay system
 in static/js/info_overlay.js.  They are dispatched
 using a click handler in static/js/click_handlers.js.
 The click handler uses "[data-overlay-trigger]" as
-the selector and then calls hash_change.go_to_location.
+the selector and then calls browser_history.go_to_location.
 
 */
 
@@ -83,9 +85,9 @@ const scroll_positions = new Map();
 export function update_org_settings_menu_item() {
     const item = $(".admin-menu-item").expectOne();
     if (page_params.is_admin) {
-        item.find("span").text(i18n.t("Manage organization"));
+        item.find("span").text($t({defaultMessage: "Manage organization"}));
     } else {
-        item.find("span").text(i18n.t("Organization settings"));
+        item.find("span").text($t({defaultMessage: "Organization settings"}));
     }
 }
 

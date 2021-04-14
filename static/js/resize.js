@@ -3,8 +3,10 @@ import $ from "jquery";
 
 import * as blueslip from "./blueslip";
 import * as condense from "./condense";
+import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as navigate from "./navigate";
+import {page_params} from "./page_params";
 import * as panels from "./panels";
 import * as popovers from "./popovers";
 import * as ui from "./ui";
@@ -66,8 +68,7 @@ function get_new_heights() {
         Number.parseInt($("#right-sidebar").css("marginTop"), 10) -
         $("#userlist-header").safeOuterHeight(true) -
         $("#user_search_section").safeOuterHeight(true) -
-        invite_user_link_height -
-        $("#sidebar-keyboard-shortcuts").safeOuterHeight(true);
+        invite_user_link_height;
 
     res.buddy_list_wrapper_max_height = Math.max(80, usable_height);
 
@@ -243,7 +244,7 @@ export function handler() {
     // This function might run onReady (if we're in a narrow window),
     // but before we've loaded in the messages; in that case, don't
     // try to scroll to one.
-    if (current_msg_list.selected_id() !== -1) {
+    if (message_lists.current.selected_id() !== -1) {
         if (mobile) {
             popovers.set_suppress_scroll_hide();
         }

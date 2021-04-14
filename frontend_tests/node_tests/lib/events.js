@@ -111,12 +111,11 @@ exports.fixtures = {
         upload_space_used: 90000,
     },
 
-    custom_profile_fields__update: {
+    custom_profile_fields: {
         type: "custom_profile_fields",
-        op: "update",
         fields: [
-            {id: 1, name: "teams", type: 1},
-            {id: 2, name: "hobbies", type: 1},
+            {id: 1, name: "teams", type: 1, hint: "", field_data: "", order: 1},
+            {id: 2, name: "hobbies", type: 1, hint: "", field_data: "", order: 2},
         ],
     },
 
@@ -168,6 +167,20 @@ exports.fixtures = {
         ],
     },
 
+    muted_users: {
+        type: "muted_users",
+        muted_users: [
+            {
+                id: 5,
+                timestamp: fake_then,
+            },
+            {
+                id: 23,
+                timestamp: fake_now,
+            },
+        ],
+    },
+
     presence: {
         type: "presence",
         email: "alice@example.com",
@@ -216,6 +229,7 @@ exports.fixtures = {
     realm__deactivated: {
         type: "realm",
         op: "deactivated",
+        realm_id: 2,
     },
 
     realm__update__bot_creation_policy: {
@@ -272,6 +286,13 @@ exports.fixtures = {
         op: "update",
         property: "invite_required",
         value: false,
+    },
+
+    realm__update__invite_to_realm_policy: {
+        type: "realm",
+        op: "update",
+        property: "invite_to_realm_policy",
+        value: 2,
     },
 
     realm__update__invite_to_stream_policy: {
@@ -435,9 +456,15 @@ exports.fixtures = {
         ],
     },
 
-    realm_filters: {
-        type: "realm_filters",
-        realm_filters: [["#[123]", "ticket %(id)s", 55]],
+    realm_linkifiers: {
+        type: "realm_linkifiers",
+        realm_linkifiers: [
+            {
+                pattern: "#[123]",
+                url_format: "ticket %(id)s",
+                id: 55,
+            },
+        ],
     },
 
     realm_user__add: {
@@ -478,6 +505,7 @@ exports.fixtures = {
 
     restart: {
         type: "restart",
+        server_generation: 2,
         immediate: true,
     },
 
@@ -737,6 +765,12 @@ exports.fixtures = {
         op: "add_members",
         group_id: 1,
         user_ids: [2],
+    },
+
+    user_group__remove: {
+        type: "user_group",
+        op: "remove",
+        group_id: 1,
     },
 
     user_group__remove_members: {

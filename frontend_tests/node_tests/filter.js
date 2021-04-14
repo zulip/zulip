@@ -2,13 +2,13 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 mock_cjs("jquery", $);
 const message_store = mock_esm("../../static/js/message_store");
-const page_params = set_global("page_params", {});
 
 const stream_data = zrequire("stream_data");
 const people = zrequire("people");
@@ -38,19 +38,9 @@ people.add_active_user(steve);
 people.initialize_current_user(me.user_id);
 
 function assert_same_operators(result, terms) {
-    terms = terms.map((term) => {
-        // If negated flag is undefined, we explicitly
-        // set it to false.
-        let negated = term.negated;
-        if (!negated) {
-            negated = false;
-        }
-        return {
-            negated,
-            operator: term.operator,
-            operand: term.operand,
-        };
-    });
+    // If negated flag is undefined, we explicitly
+    // set it to false.
+    terms = terms.map(({negated = false, operator, operand}) => ({negated, operator, operand}));
     assert.deepEqual(result, terms);
 }
 
@@ -842,13 +832,13 @@ test("predicate_edge_cases", () => {
     // invalid operator/operand combinations, but right now we just silently
     // return a function that accepts all messages.
     predicate = get_predicate([["in", "bogus"]]);
-    assert(predicate({}));
+    assert(!predicate({}));
 
     predicate = get_predicate([["bogus", 33]]);
     assert(predicate({}));
 
     predicate = get_predicate([["is", "bogus"]]);
-    assert(predicate({}));
+    assert(!predicate({}));
 
     // Exercise caching feature.
     const stream_id = 101;

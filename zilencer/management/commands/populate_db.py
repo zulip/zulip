@@ -134,6 +134,7 @@ def subscribe_users_to_streams(realm: Realm, stream_dict: Dict[str, Dict[str, An
             s = Subscription(
                 recipient=recipient,
                 user_profile=profile,
+                is_user_active=profile.is_active,
                 color=STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)],
             )
             subscriptions_to_add.append(s)
@@ -343,7 +344,7 @@ class Command(BaseCommand):
                 ("Othello, the Moor of Venice", "othello@zulip.com"),
                 ("Iago", "iago@zulip.com"),
                 ("Prospero from The Tempest", "prospero@zulip.com"),
-                ("Cordelia Lear", "cordelia@zulip.com"),
+                ("Cordelia, Lear's daughter", "cordelia@zulip.com"),
                 ("King Hamlet", "hamlet@zulip.com"),
                 ("aaron", "AARON@zulip.com"),
                 ("Polonius", "polonius@zulip.com"),
@@ -424,14 +425,32 @@ class Command(BaseCommand):
                     "Towns",
                     "Wall",
                 ]
+                non_ascii_names = [
+                    "Günter",
+                    "أحمد",
+                    "Magnús",
+                    "आशी",
+                    "イツキ",
+                    "语嫣",
+                    "அருண்",
+                    "Александр",
+                    "José",
+                ]
+                # to imitate emoji insertions in usernames
+                raw_emojis = ["😎", "😂", "🐱‍👤"]
 
             for i in range(num_boring_names, num_names):
                 fname = random.choice(fnames) + str(i)
                 full_name = fname
                 if random.random() < 0.7:
-                    if random.random() < 0.5:
+                    if random.random() < 0.3:
+                        full_name += " " + random.choice(non_ascii_names)
+                    else:
                         full_name += " " + random.choice(mnames)
-                    full_name += " " + random.choice(lnames)
+                    if random.random() < 0.1:
+                        full_name += " {} ".format(random.choice(raw_emojis))
+                    else:
+                        full_name += " " + random.choice(lnames)
                 email = fname.lower() + "@zulip.com"
                 names.append((full_name, email))
 
@@ -569,7 +588,12 @@ class Command(BaseCommand):
             for profile, recipient in subscriptions_list:
                 i += 1
                 color = STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)]
-                s = Subscription(recipient=recipient, user_profile=profile, color=color)
+                s = Subscription(
+                    recipient=recipient,
+                    user_profile=profile,
+                    is_user_active=profile.is_active,
+                    color=color,
+                )
 
                 subscriptions_to_add.append(s)
 
@@ -607,7 +631,7 @@ class Command(BaseCommand):
                 "emacs": {"text": "Emacs", "order": "2"},
             }
             favorite_editor = try_add_realm_custom_profile_field(
-                zulip_realm, "Favorite editor", CustomProfileField.CHOICE, field_data=field_data
+                zulip_realm, "Favorite editor", CustomProfileField.SELECT, field_data=field_data
             )
             birthday = try_add_realm_custom_profile_field(
                 zulip_realm, "Birthday", CustomProfileField.DATE
@@ -722,7 +746,7 @@ class Command(BaseCommand):
 
                 testsuite_lear_users = [
                     ("King Lear", "king@lear.org"),
-                    ("Cordelia Lear", "cordelia@zulip.com"),
+                    ("Cordelia, Lear's daughter", "cordelia@zulip.com"),
                 ]
                 create_users(lear_realm, testsuite_lear_users, tos_version=settings.TOS_VERSION)
 
@@ -731,9 +755,15 @@ class Command(BaseCommand):
                 # suite fast, don't add these users and subscriptions
                 # when running populate_db for the test suite
 
+                # to imitate emoji insertions in stream names
+                raw_emojis = ["😎", "😂", "🐱‍👤"]
+
                 zulip_stream_dict: Dict[str, Dict[str, Any]] = {
                     "devel": {"description": "For developing"},
-                    "all": {"description": "For **everything**"},
+                    # ビデオゲーム - VideoGames (japanese)
+                    "ビデオゲーム": {
+                        "description": "Share your favorite video games!  {}".format(raw_emojis[2])
+                    },
                     "announce": {
                         "description": "For announcements",
                         "stream_post_policy": Stream.STREAM_POST_POLICY_ADMINS,
@@ -743,20 +773,49 @@ class Command(BaseCommand):
                     "social": {"description": "For socializing"},
                     "test": {"description": "For testing `code`"},
                     "errors": {"description": "For errors"},
-                    "sales": {"description": "For sales discussion"},
+                    # 조리법 - Recipes (Korean) , Пельмени - Dumplings (Russian)
+                    "조리법 "
+                    + raw_emojis[0]: {"description": "Everything cooking, from pasta to Пельмени"},
                 }
 
-                # Calculate the maximum number of digits in any extra stream's
-                # number, since a stream with name "Extra Stream 3" could show
-                # up after "Extra Stream 29". (Used later to pad numbers with
-                # 0s).
-                maximum_digits = len(str(options["extra_streams"] - 1))
+                extra_stream_names = [
+                    "802.11a",
+                    "Ad Hoc Network",
+                    "Augmented Reality",
+                    "Cycling",
+                    "DPI",
+                    "FAQ",
+                    "FiFo",
+                    "commits",
+                    "Control panel",
+                    "desktop",
+                    "компьютеры",
+                    "Data security",
+                    "desktop",
+                    "काम",
+                    "discussions",
+                    "Cloud storage",
+                    "GCI",
+                    "Vaporware",
+                    "Recent Trends",
+                    "issues",
+                    "live",
+                    "Health",
+                    "mobile",
+                    "空間",
+                    "provision",
+                    "hidrógeno",
+                    "HR",
+                    "アニメ",
+                ]
 
+                # Add stream names and stream descriptions
                 for i in range(options["extra_streams"]):
-                    # Pad the number with 0s based on `maximum_digits`.
-                    number_str = str(i).zfill(maximum_digits)
+                    extra_stream_name = random.choice(extra_stream_names) + " " + str(i)
 
-                    extra_stream_name = "Extra Stream " + number_str
+                    # to imitate emoji insertions in stream names
+                    if random.random() <= 0.15:
+                        extra_stream_name += random.choice(raw_emojis)
 
                     zulip_stream_dict[extra_stream_name] = {
                         "description": "Auto-generated extra stream.",

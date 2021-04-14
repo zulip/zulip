@@ -309,8 +309,8 @@ def validate_user_custom_profile_field(
     if field_type in validators:
         validator = validators[field_type]
         return validator(var_name, value)
-    elif field_type == CustomProfileField.CHOICE:
-        choice_field_validator = CustomProfileField.CHOICE_FIELD_VALIDATORS[field_type]
+    elif field_type == CustomProfileField.SELECT:
+        choice_field_validator = CustomProfileField.SELECT_FIELD_VALIDATORS[field_type]
         field_data = field.field_data
         # Put an assertion so that mypy doesn't complain.
         assert field_data is not None
@@ -346,13 +346,7 @@ def compute_show_invites_and_add_streams(user_profile: Optional[UserProfile]) ->
     if user_profile.is_guest:
         return False, False
 
-    if user_profile.is_realm_admin:
-        return True, True
-
-    if user_profile.realm.invite_by_admins_only:
-        return False, True
-
-    return True, True
+    return user_profile.can_invite_others_to_realm(), True
 
 
 def format_user_row(

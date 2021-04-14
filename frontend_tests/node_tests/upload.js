@@ -2,9 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 set_global("document", {
     location: {},
@@ -12,10 +13,6 @@ set_global("document", {
 set_global("navigator", {
     userAgent: "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)",
 });
-const page_params = set_global("page_params", {
-    max_file_upload_size: 25,
-});
-set_global("csrf_token", "csrf_token");
 
 // Setting these up so that we can test that links to uploads within messages are
 // automatically converted to server relative links.
@@ -35,11 +32,20 @@ Uppy.Plugin = {
 };
 mock_cjs("@uppy/core", Uppy);
 
+mock_esm("../../static/js/csrf", {csrf_token: "csrf_token"});
+
 const compose_ui = zrequire("compose_ui");
 const compose_actions = zrequire("compose_actions");
 const upload = zrequire("upload");
 
-run_test("feature_check", (override) => {
+function test(label, f) {
+    run_test(label, (override) => {
+        page_params.max_file_upload_size_mib = 25;
+        f(override);
+    });
+}
+
+test("feature_check", (override) => {
     const upload_button = $.create("upload-button-stub");
     upload_button.addClass("notdisplayed");
     upload.feature_check(upload_button);
@@ -50,7 +56,7 @@ run_test("feature_check", (override) => {
     assert(!upload_button.hasClass("notdisplayed"));
 });
 
-run_test("make_upload_absolute", () => {
+test("make_upload_absolute", () => {
     let uri = "/user_uploads/5/d4/6lSlfIPIg9nDI2Upj0Mq_EbE/kerala.png";
     const expected_uri = "https://foo.com/user_uploads/5/d4/6lSlfIPIg9nDI2Upj0Mq_EbE/kerala.png";
     assert.equal(upload.make_upload_absolute(uri), expected_uri);
@@ -59,7 +65,7 @@ run_test("make_upload_absolute", () => {
     assert.equal(upload.make_upload_absolute(uri), uri);
 });
 
-run_test("get_item", () => {
+test("get_item", () => {
     assert.equal(upload.get_item("textarea", {mode: "compose"}), $("#compose-textarea"));
     assert.equal(
         upload.get_item("send_status_message", {mode: "compose"}),
@@ -169,7 +175,7 @@ run_test("get_item", () => {
     );
 });
 
-run_test("hide_upload_status", () => {
+test("hide_upload_status", () => {
     $("#compose-send-button").prop("disabled", true);
     $("#compose-send-status").addClass("alert-info").show();
 
@@ -180,7 +186,7 @@ run_test("hide_upload_status", () => {
     assert.equal($("#compose-send-button").visible(), false);
 });
 
-run_test("show_error_message", () => {
+test("show_error_message", () => {
     $("#compose-send-button").prop("disabled", true);
     $("#compose-send-status").addClass("alert-info").removeClass("alert-error").hide();
     $("#compose-error-msg").text("");
@@ -197,7 +203,7 @@ run_test("show_error_message", () => {
     assert.equal($("#compose-error-msg").text(), "translated: An unknown error occurred.");
 });
 
-run_test("upload_files", (override) => {
+test("upload_files", (override) => {
     let uppy_cancel_all_called = false;
     let files = [
         {
@@ -327,7 +333,7 @@ run_test("upload_files", (override) => {
     assert($("#compose-textarea").val(), "user modified text");
 });
 
-run_test("uppy_config", () => {
+test("uppy_config", () => {
     let uppy_stub_called = false;
     let uppy_set_meta_called = false;
     let uppy_used_xhrupload = false;
@@ -376,7 +382,7 @@ run_test("uppy_config", () => {
     assert.equal(uppy_used_progressbar, true);
 });
 
-run_test("file_input", (override) => {
+test("file_input", (override) => {
     upload.setup_upload({mode: "compose"});
 
     const change_handler = $("body").get_on_handler("change", "#file_input");
@@ -397,7 +403,7 @@ run_test("file_input", (override) => {
     assert(upload_files_called);
 });
 
-run_test("file_drop", (override) => {
+test("file_drop", (override) => {
     upload.setup_upload({mode: "compose"});
 
     let prevent_default_counter = 0;
@@ -435,7 +441,7 @@ run_test("file_drop", (override) => {
     assert.equal(upload_files_called, true);
 });
 
-run_test("copy_paste", (override) => {
+test("copy_paste", (override) => {
     upload.setup_upload({mode: "compose"});
 
     const paste_handler = $("#compose").get_on_handler("paste");
@@ -474,7 +480,7 @@ run_test("copy_paste", (override) => {
     assert.equal(upload_files_called, false);
 });
 
-run_test("uppy_events", (override) => {
+test("uppy_events", (override) => {
     const callbacks = {};
     let uppy_cancel_all_called = false;
     let state = {};
@@ -672,7 +678,7 @@ run_test("uppy_events", (override) => {
     override(upload, "show_error_message", (config, message) => {
         show_error_message_called = true;
         assert.equal(config.mode, "compose");
-        assert.equal(message, null);
+        assert.equal(message, undefined);
     });
     uppy_cancel_all_called = false;
     on_upload_error_callback(file, null, null);

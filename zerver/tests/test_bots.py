@@ -327,7 +327,10 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         # email_address_visiblity limited to admins
         user = self.example_user("hamlet")
         do_set_realm_property(
-            user.realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS
+            user.realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            acting_user=None,
         )
         user.refresh_from_db()
 
@@ -774,7 +777,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         bot_email = "hambot-bot@zulip.testserver"
         bot_user = get_user(bot_email, bot_realm)
-        do_deactivate_user(bot_user)
+        do_deactivate_user(bot_user, acting_user=None)
 
         # A regular user cannot reactivate a generic bot
         self.assert_num_bots_equal(0)
@@ -960,7 +963,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assert_num_bots_equal(1)
 
         target_user_profile = self.example_user("othello")
-        do_deactivate_user(target_user_profile)
+        do_deactivate_user(target_user_profile, acting_user=None)
         target_user_profile = self.example_user("othello")
         self.assertFalse(target_user_profile.is_active)
         bot_info = {

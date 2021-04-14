@@ -184,7 +184,6 @@ custom_profile_field_type = DictType(
 custom_profile_fields_event = event_dict_type(
     required_keys=[
         ("type", Equals("custom_profile_fields")),
-        ("op", Equals("add")),
         ("fields", ListType(custom_profile_field_type)),
     ]
 )
@@ -338,6 +337,28 @@ muted_topics_event = event_dict_type(
 )
 check_muted_topics = make_checker(muted_topics_event)
 
+muted_user_type = DictType(
+    required_keys=[
+        ("id", int),
+        ("timestamp", int),
+    ]
+)
+
+muted_users_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("muted_users")),
+        ("muted_users", ListType(muted_user_type)),
+    ]
+)
+check_muted_users = make_checker(muted_users_event)
+
+_check_topic_links = DictType(
+    required_keys=[
+        ("text", str),
+        ("url", str),
+    ]
+)
+
 message_fields = [
     ("avatar_url", OptionalType(str)),
     ("client", str),
@@ -354,7 +375,7 @@ message_fields = [
     ("sender_id", int),
     ("stream_id", int),
     (TOPIC_NAME, str),
-    (TOPIC_LINKS, ListType(str)),
+    (TOPIC_LINKS, ListType(_check_topic_links)),
     ("submessages", ListType(dict)),
     ("timestamp", int),
     ("type", str),
@@ -458,6 +479,14 @@ reaction_remove_event = event_dict_type(
 )
 check_reaction_remove = make_checker(reaction_remove_event)
 
+realm_deactivated_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("realm")),
+        ("op", Equals("deactivated")),
+        ("realm_id", int),
+    ]
+)
+check_realm_deactivated = make_checker(realm_deactivated_event)
 
 bot_services_outgoing_type = DictType(
     required_keys=[
@@ -651,6 +680,24 @@ realm_domains_remove_event = event_dict_type(
 )
 check_realm_domains_remove = make_checker(realm_domains_remove_event)
 
+realm_playground_type = DictType(
+    required_keys=[("id", int), ("name", str), ("pygments_language", str), ("url_prefix", str)]
+)
+
+realm_playgrounds_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("realm_playgrounds")),
+        ("realm_playgrounds", ListType(realm_playground_type)),
+    ]
+)
+_check_realm_playgrounds = make_checker(realm_playgrounds_event)
+
+
+def check_realm_playgrounds(var_name: str, event: Dict[str, object]) -> None:
+    _check_realm_playgrounds(var_name, event)
+    assert isinstance(event["realm_playgrounds"], list)
+
+
 realm_emoji_type = DictType(
     required_keys=[
         ("id", str),
@@ -734,9 +781,26 @@ def check_realm_export(
     assert has_failed_timestamp == (export["failed_timestamp"] is not None)
 
 
-# This type, like other instances of TupleType, is a legacy feature of
-# a very old Zulip API; we plan to replace it with an object as those
-# are more extensible.
+realm_linkifier_type = DictType(
+    required_keys=[
+        ("pattern", str),
+        ("url_format", str),
+        ("id", int),
+    ]
+)
+
+realm_linkifiers_event = event_dict_type(
+    [
+        ("type", Equals("realm_linkifiers")),
+        ("realm_linkifiers", ListType(realm_linkifier_type)),
+    ]
+)
+check_realm_linkifiers = make_checker(realm_linkifiers_event)
+
+
+# This is a legacy event type to ensure backwards compatibility
+# for old clients. Newer clients should handle only the
+# "realm_linkifiers" event above.
 realm_filter_type = TupleType(
     [
         # we should make this an object
@@ -1077,6 +1141,11 @@ def check_realm_user_update(
     )
 
 
+restart_event = event_dict_type(
+    required_keys=[("type", Equals("restart")), ("server_generation", int), ("immediate", bool)]
+)
+check_restart_event = make_checker(restart_event)
+
 stream_create_event = event_dict_type(
     required_keys=[
         ("type", Equals("stream")),
@@ -1368,7 +1437,7 @@ update_message_topic_fields = [
     ),
     ("stream_id", int),
     ("stream_name", str),
-    (TOPIC_LINKS, ListType(str)),
+    (TOPIC_LINKS, ListType(_check_topic_links)),
     (TOPIC_NAME, str),
 ]
 

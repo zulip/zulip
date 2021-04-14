@@ -2,6 +2,7 @@
 
 const {strict: assert} = require("assert");
 
+const {$t} = require("../zjsunit/i18n");
 const {mock_cjs, mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
@@ -32,7 +33,7 @@ run_test("basic_functions", () => {
         on_update: (val) => {
             updated_value = val;
         },
-        default_text: i18n.t("not set"),
+        default_text: $t({defaultMessage: "not set"}),
         render_text: (text) => `rendered: ${text}`,
     };
 
@@ -55,13 +56,19 @@ run_test("basic_functions", () => {
     assert.equal(widget.value(), "");
     assert.equal(updated_value, null);
     assert(!reset_button.visible());
+
+    widget.update("four");
+    assert.equal($widget.text(), "translated: not set");
+    assert.equal(widget.value(), "four");
+    assert.equal(updated_value, "four");
+    assert(!reset_button.visible());
 });
 
 run_test("no_default_value", () => {
     const opts = {
         widget_name: "my_setting",
         data: ["one", "two", "three"].map((x) => ({name: x, value: x})),
-        default_text: i18n.t("not set"),
+        default_text: $t({defaultMessage: "not set"}),
         render_text: (text) => `rendered: ${text}`,
         null_value: "null-value",
     };

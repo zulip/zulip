@@ -671,7 +671,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         # anyone is mentioned but the user.
         general_user_msg_count = len(get_user_messages(cordelia))
         soft_deactivated_user_msg_count = len(get_user_messages(long_term_idle_user))
-        message = "Test @**Cordelia Lear**  mention"
+        message = "Test @**Cordelia, Lear's daughter**  mention"
         send_stream_message(message)
         assert_last_um_content(long_term_idle_user, message, negate=True)
         assert_um_count(long_term_idle_user, soft_deactivated_user_msg_count)

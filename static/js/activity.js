@@ -8,13 +8,14 @@ import * as channel from "./channel";
 import * as keydown_util from "./keydown_util";
 import {ListCursor} from "./list_cursor";
 import * as narrow from "./narrow";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as presence from "./presence";
-import * as server_events from "./server_events";
 import {UserSearch} from "./user_search";
 import * as user_status from "./user_status";
+import * as watchdog from "./watchdog";
 
 export let user_cursor;
 export let user_filter;
@@ -183,7 +184,7 @@ export function send_presence_to_server(want_redraw) {
     // don't appear in people.js.  We handle this in 2 stages.  First,
     // here, we trigger an extra run of the clock-jump check that
     // detects whether this device just resumed from suspend.  This
-    // ensures that server_events.suspect_offline is always up-to-date
+    // ensures that watchdog.suspect_offline is always up-to-date
     // before we initiate a presence request.
     //
     // If we did just resume, it will also trigger an immediate
@@ -195,7 +196,7 @@ export function send_presence_to_server(want_redraw) {
         return;
     }
 
-    server_events.check_for_unsuspend();
+    watchdog.check_for_unsuspend();
 
     channel.post({
         url: "/json/users/me/presence",

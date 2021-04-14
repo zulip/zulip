@@ -50,6 +50,8 @@ class ErrorCode(AbstractEnum):
     UNAUTHENTICATED_USER = ()
     NONEXISTENT_SUBDOMAIN = ()
     RATE_LIMIT_HIT = ()
+    USER_DEACTIVATED = ()
+    REALM_DEACTIVATED = ()
 
 
 class JsonableError(Exception):
@@ -269,6 +271,30 @@ class StreamAdministratorRequired(JsonableError):
     @staticmethod
     def msg_format() -> str:
         return _("Must be an organization or stream administrator")
+
+
+class UserDeactivatedError(JsonableError):
+    code: ErrorCode = ErrorCode.USER_DEACTIVATED
+    http_status_code = 403
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("Account is deactivated")
+
+
+class RealmDeactivatedError(JsonableError):
+    code: ErrorCode = ErrorCode.REALM_DEACTIVATED
+    http_status_code = 403
+
+    def __init__(self) -> None:
+        pass
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("This organization has been deactivated")
 
 
 class MarkdownRenderingException(Exception):

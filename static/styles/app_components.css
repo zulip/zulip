@@ -271,7 +271,7 @@
 }
 
 /* -- unified overlay design component -- */
-.overlay {
+div.overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -469,7 +469,7 @@
         display: inline;
         margin-right: 8px;
 
-        font-family: FontAwesome, Yantramanav, "Source Sans 3";
+        font-family: FontAwesome;
         font-weight: 600;
     }
 }

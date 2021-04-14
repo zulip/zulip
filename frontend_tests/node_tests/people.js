@@ -6,12 +6,13 @@ const {parseISO} = require("date-fns");
 const _ = require("lodash");
 const MockDate = require("mockdate");
 
-const {mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {$t} = require("../zjsunit/i18n");
+const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
+const {page_params} = require("../zjsunit/zpage_params");
 
-const message_store = mock_esm("../../static/js/message_store");
-const page_params = set_global("page_params", {});
+const message_user_ids = mock_esm("../../static/js/message_user_ids");
 
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");
@@ -426,11 +427,11 @@ test_people("user_type", () => {
     people.add_active_user(guest);
     people.add_active_user(realm_owner);
     people.add_active_user(bot_botson);
-    assert.equal(people.get_user_type(me.user_id), i18n.t("Member"));
-    assert.equal(people.get_user_type(realm_admin.user_id), i18n.t("Administrator"));
-    assert.equal(people.get_user_type(guest.user_id), i18n.t("Guest"));
-    assert.equal(people.get_user_type(realm_owner.user_id), i18n.t("Owner"));
-    assert.equal(people.get_user_type(bot_botson.user_id), i18n.t("Bot"));
+    assert.equal(people.get_user_type(me.user_id), $t({defaultMessage: "Member"}));
+    assert.equal(people.get_user_type(realm_admin.user_id), $t({defaultMessage: "Administrator"}));
+    assert.equal(people.get_user_type(guest.user_id), $t({defaultMessage: "Guest"}));
+    assert.equal(people.get_user_type(realm_owner.user_id), $t({defaultMessage: "Owner"}));
+    assert.equal(people.get_user_type(bot_botson.user_id), $t({defaultMessage: "Bot"}));
 });
 
 test_people("updates", () => {
@@ -813,9 +814,9 @@ test_people("slugs", () => {
 });
 
 test_people("get_people_for_search_bar", (override) => {
-    let message_user_ids;
+    let user_ids;
 
-    override(message_store, "user_ids", () => message_user_ids);
+    override(message_user_ids, "user_ids", () => user_ids);
 
     for (const i of _.range(20)) {
         const person = {
@@ -826,16 +827,16 @@ test_people("get_people_for_search_bar", (override) => {
         people.add_active_user(person);
     }
 
-    message_user_ids = [];
+    user_ids = [];
     const big_results = people.get_people_for_search_bar("James");
 
     assert.equal(big_results.length, 20);
 
-    message_user_ids = [1001, 1002, 1003, 1004, 1005, 1006];
+    user_ids = [1001, 1002, 1003, 1004, 1005, 1006];
     const small_results = people.get_people_for_search_bar("Jones");
 
     // As long as there are 5+ results among the user_ids
-    // in message_store, we will get a small result and not
+    // in message_user_ids, we will get a small result and not
     // search all people.
     assert.equal(small_results.length, 6);
 });
@@ -1075,7 +1076,7 @@ test_people("get_visible_email", () => {
 });
 
 test_people("get_active_message_people", () => {
-    message_store.user_ids = () => [steven.user_id, maria.user_id, alice1.user_id];
+    message_user_ids.user_ids = () => [steven.user_id, maria.user_id, alice1.user_id];
 
     people.add_active_user(steven);
     people.add_active_user(maria);

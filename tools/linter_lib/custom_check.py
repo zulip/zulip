@@ -68,7 +68,10 @@ whitespace_rules: List["Rule"] = [
     {
         "pattern": "\t",
         "strip": "\n",
-        "exclude": {"tools/ci/success-http-headers.template.txt"},
+        "exclude": {
+            "tools/ci/success-http-headers.template.txt",
+            "tools/ci/success-http-headers.template.debian.txt",
+        },
         "description": "Fix tab-based whitespace",
     },
 ]
@@ -117,32 +120,13 @@ js_rules = RuleList(
             "description": 'Avoid using "msgid" as a variable name; use "message_id" instead.',
         },
         {
-            "pattern": r"i18n\.t\([^)]+[^,\{\)]$",
-            "description": "i18n string should not be a multiline string",
-        },
-        {
-            "pattern": r"""i18n\.t\(['"].+?['"]\s*\+""",
-            "description": "Do not concatenate arguments within i18n.t()",
-        },
-        {
-            "pattern": r"""i18n\.t\([a-zA-Z]""",
-            "exclude": {"static/js/templates.js"},
-            "description": "Do not pass a variable into i18n.t; it will not be exported to Transifex for translation.",
-        },
-        {
-            "pattern": r"i18n\.t\(.+\).*\+",
+            "pattern": r"\$t\(.+\).*\+",
             "description": "Do not concatenate i18n strings",
-            "exclude_line": {
-                (
-                    "static/js/narrow.js",
-                    'i18n.t("Some common words were excluded from your search.") +',
-                ),
-            },
         },
-        {"pattern": r"\+.*i18n\.t\(.+\)", "description": "Do not concatenate i18n strings"},
+        {"pattern": r"\+.*\$t\(.+\)", "description": "Do not concatenate i18n strings"},
         {
             "pattern": "[.]html[(]",
-            "exclude_pattern": r"""\.html\(("|'|render_|html|message\.content|util\.clean_user_content_links|i18n\.t|rendered_|$|\)|error_text|widget_elem|\$error|\$\("<p>"\))""",
+            "exclude_pattern": r"""\.html\(("|'|render_|html|message\.content|util\.clean_user_content_links|rendered_|$|\)|error_html|widget_elem|\$error|\$\("<p>"\))""",
             "exclude": {
                 "static/js/portico",
                 "static/js/lightbox.js",
@@ -156,17 +140,15 @@ js_rules = RuleList(
             "pattern": "[\"']json/",
             "description": "Relative URL for JSON route not supported by i18n",
         },
-        # This rule is constructed with + to avoid triggering on itself
-        {"pattern": "^[ ]*//[A-Za-z0-9]", "description": "Missing space after // in comment"},
         {
             "pattern": r"""[.]text\(["'][a-zA-Z]""",
-            "description": "Strings passed to $().text should be wrapped in i18n.t() for internationalization",
+            "description": "Strings passed to $().text should be wrapped in $t() for internationalization",
             "exclude": {"frontend_tests/node_tests/"},
         },
         {
             "pattern": r"""compose_error\(["']""",
-            "description": "Argument to compose_error should be a literal string enclosed "
-            "by i18n.t()",
+            "description": "Argument to compose_error should be a literal string translated "
+            "by $t_html()",
         },
         {
             "pattern": r"ui.report_success\(",
@@ -174,8 +156,8 @@ js_rules = RuleList(
         },
         {
             "pattern": r"""report.success\(["']""",
-            "description": "Argument to ui_report.success should be a literal string enclosed "
-            "by i18n.t()",
+            "description": "Argument to ui_report.success should be a literal string translated "
+            "by $t_html()",
         },
         {
             "pattern": r"ui.report_error\(",
@@ -183,15 +165,15 @@ js_rules = RuleList(
         },
         {
             "pattern": r"""report.error\(["'][^'"]""",
-            "description": "Argument to ui_report.error should be a literal string enclosed "
-            "by i18n.t()",
+            "description": "Argument to ui_report.error should be a literal string translated "
+            "by $t_html()",
             "good_lines": ['ui_report.error("")', 'ui_report.error(_("text"))'],
             "bad_lines": ['ui_report.error("test")'],
         },
         {
             "pattern": r"""report.client_error\(["'][^'"]""",
-            "description": "Argument to ui_report.client_error should be a literal string enclosed "
-            "by i18n.t()",
+            "description": "Argument to ui_report.client_error should be a literal string translated "
+            "by $t_html()",
             "good_lines": ['ui_report.client_error("")', 'ui_report.client_error(_("text"))'],
             "bad_lines": ['ui_report.client_error("test")'],
         },
@@ -613,7 +595,6 @@ html_rules: List["Rule"] = [
             "templates/zerver/hello.html",
             "templates/corporate/upgrade.html",
         },
-        "good_lines": ["{{ render_entrypoint('landing-page') }}"],
         "bad_lines": [
             '<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>'
         ],

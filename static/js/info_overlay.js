@@ -2,9 +2,10 @@ import $ from "jquery";
 
 import render_markdown_help from "../templates/markdown_help.hbs";
 
+import * as browser_history from "./browser_history";
 import * as common from "./common";
 import * as components from "./components";
-import * as hashchange from "./hashchange";
+import {$t, $t_html} from "./i18n";
 import * as keydown_util from "./keydown_util";
 import * as markdown from "./markdown";
 import * as overlays from "./overlays";
@@ -100,8 +101,15 @@ def zulip():
     <span class="k">print</span> <span class="s">"Zulip"</span></pre></div>`,
     },
     {
-        note_html: i18n.t(
-            'To add syntax highlighting to a multi-line code block, add the language\'s <b>first</b> <a target="_blank" rel="noopener noreferrer" href="https://pygments.org/docs/lexers/">Pygments short name</a> after the first set of back-ticks. You can also make a code block by indenting each line with 4 spaces.',
+        note_html: $t_html(
+            {
+                defaultMessage:
+                    "To add syntax highlighting to a multi-line code block, add the language's <b>first</b> <z-link>Pygments short name</z-link> after the first set of back-ticks. You can also make a code block by indenting each line with 4 spaces.",
+            },
+            {
+                "z-link": (content_html) =>
+                    `<a target="_blank" rel="noopener noreferrer" href="https://pygments.org/docs/lexers/">${content_html}</a>`,
+            },
         ),
     },
     {
@@ -129,8 +137,15 @@ This text won't be visible until the user clicks.
 \`\`\``,
     },
     {
-        note_html: i18n.t(
-            'You can also make <a target="_blank" rel="noopener noreferrer" href="https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables">tables</a> with this <a target="_blank" rel="noopener noreferrer" href="https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables">Markdown-ish table syntax</a>.',
+        note_html: $t_html(
+            {
+                defaultMessage:
+                    "You can also make <z-link>tables</z-link> with this <z-link>Markdown-ish table syntax</z-link>.",
+            },
+            {
+                "z-link": (content_html) =>
+                    `<a target="_blank" rel="noopener noreferrer" href="https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables">${content_html}</a>`,
+            },
         ),
     },
 ];
@@ -154,9 +169,9 @@ export function set_up_toggler() {
         selected: 0,
         child_wants_focus: true,
         values: [
-            {label: i18n.t("Keyboard shortcuts"), key: "keyboard-shortcuts"},
-            {label: i18n.t("Message formatting"), key: "message-formatting"},
-            {label: i18n.t("Search operators"), key: "search-operators"},
+            {label: $t({defaultMessage: "Keyboard shortcuts"}), key: "keyboard-shortcuts"},
+            {label: $t({defaultMessage: "Message formatting"}), key: "message-formatting"},
+            {label: $t({defaultMessage: "Search operators"}), key: "search-operators"},
         ],
         callback(name, key) {
             $(".overlay-modal").hide();
@@ -204,7 +219,7 @@ export function show(target) {
             name: "informationalOverlays",
             overlay,
             on_close() {
-                hashchange.exit_overlay();
+                browser_history.exit_overlay();
             },
         });
     }

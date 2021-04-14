@@ -18,11 +18,13 @@ import * as message_edit from "./message_edit";
 import * as message_events from "./message_events";
 import * as message_flags from "./message_flags";
 import * as message_list from "./message_list";
+import * as message_lists from "./message_lists";
 import * as muting_ui from "./muting_ui";
 import * as narrow_state from "./narrow_state";
 import * as night_mode from "./night_mode";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as panels from "./panels";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
@@ -131,6 +133,10 @@ export function dispatch_normal_event(event) {
             muting_ui.handle_topic_updates(event.muted_topics);
             break;
 
+        case "muted_users":
+            muting_ui.handle_user_updates(event.muted_users);
+            break;
+
         case "presence":
             activity.update_presence_info(event.user_id, event.presence, event.server_timestamp);
             break;
@@ -140,7 +146,7 @@ export function dispatch_normal_event(event) {
                 save_pointer: true,
                 save_narrow: true,
                 save_compose: true,
-                message: "The application has been updated; reloading!",
+                message_html: "The application has been updated; reloading!",
             };
             if (event.immediate) {
                 reload_options.immediate = true;
@@ -150,10 +156,16 @@ export function dispatch_normal_event(event) {
         }
 
         case "reaction":
-            if (event.op === "add") {
-                reactions.add_reaction(event);
-            } else if (event.op === "remove") {
-                reactions.remove_reaction(event);
+            switch (event.op) {
+                case "add":
+                    reactions.add_reaction(event);
+                    break;
+                case "remove":
+                    reactions.remove_reaction(event);
+                    break;
+                default:
+                    blueslip.error("Unexpected event type reaction/" + event.op);
+                    break;
             }
             break;
 
@@ -180,7 +192,7 @@ export function dispatch_normal_event(event) {
                 disallow_disposable_email_addresses: noop,
                 inline_image_preview: noop,
                 inline_url_embed_preview: noop,
-                invite_by_admins_only: noop,
+                invite_to_realm_policy: noop,
                 invite_required: noop,
                 mandatory_topics: noop,
                 message_content_edit_limit_seconds: noop,
@@ -198,60 +210,94 @@ export function dispatch_normal_event(event) {
                 waiting_period_threshold: noop,
                 wildcard_mention_policy: noop,
             };
-            if (
-                event.op === "update" &&
-                Object.prototype.hasOwnProperty.call(realm_settings, event.property)
-            ) {
-                page_params["realm_" + event.property] = event.value;
-                realm_settings[event.property]();
-                settings_org.sync_realm_settings(event.property);
-                if (event.property === "create_stream_policy") {
-                    // TODO: Add waiting_period_threshold logic here.
-                    page_params.can_create_streams =
-                        page_params.is_admin || page_params.realm_create_stream_policy === 1;
-                } else if (event.property === "invite_to_stream_policy") {
-                    // TODO: Add waiting_period_threshold logic here.
-                    page_params.can_invite_to_stream =
-                        page_params.is_admin || page_params.realm_invite_to_stream_policy === 1;
-                }
+            switch (event.op) {
+                case "update":
+                    if (Object.prototype.hasOwnProperty.call(realm_settings, event.property)) {
+                        page_params["realm_" + event.property] = event.value;
+                        realm_settings[event.property]();
+                        settings_org.sync_realm_settings(event.property);
+                        if (event.property === "create_stream_policy") {
+                            // TODO: Add waiting_period_threshold logic here.
+                            page_params.can_create_streams =
+                                page_params.is_admin ||
+                                page_params.realm_create_stream_policy === 1;
+                        } else if (event.property === "invite_to_stream_policy") {
+                            // TODO: Add waiting_period_threshold logic here.
+                            page_params.can_invite_to_stream =
+                                page_params.is_admin ||
+                                page_params.realm_invite_to_stream_policy === 1;
+                        } else if (event.property === "invite_to_realm_policy") {
+                            // TODO: Add waiting period threshold logic here.
+                            page_params.can_invite_others_to_realm =
+                                page_params.is_admin ||
+                                page_params.realm_invite_to_realm_policy === 1;
+                        }
 
-                if (event.property === "name" && window.electron_bridge !== undefined) {
-                    window.electron_bridge.send_event("realm_name", event.value);
-                }
-            } else if (event.op === "update_dict" && event.property === "default") {
-                for (const [key, value] of Object.entries(event.data)) {
-                    page_params["realm_" + key] = value;
-                    if (key === "allow_message_editing") {
-                        message_edit.update_message_topic_editing_pencil();
+                        if (event.property === "name" && window.electron_bridge !== undefined) {
+                            window.electron_bridge.send_event("realm_name", event.value);
+                        }
                     }
-                    if (Object.prototype.hasOwnProperty.call(realm_settings, key)) {
-                        settings_org.sync_realm_settings(key);
+                    break;
+                case "update_dict":
+                    switch (event.property) {
+                        case "default":
+                            for (const [key, value] of Object.entries(event.data)) {
+                                page_params["realm_" + key] = value;
+                                if (key === "allow_message_editing") {
+                                    message_edit.update_message_topic_editing_pencil();
+                                }
+                                if (Object.prototype.hasOwnProperty.call(realm_settings, key)) {
+                                    settings_org.sync_realm_settings(key);
+                                }
+                            }
+                            if (event.data.authentication_methods !== undefined) {
+                                settings_org.populate_auth_methods(
+                                    event.data.authentication_methods,
+                                );
+                            }
+                            break;
+                        case "icon":
+                            page_params.realm_icon_url = event.data.icon_url;
+                            page_params.realm_icon_source = event.data.icon_source;
+                            realm_icon.rerender();
+                            {
+                                const electron_bridge = window.electron_bridge;
+                                if (electron_bridge !== undefined) {
+                                    electron_bridge.send_event(
+                                        "realm_icon_url",
+                                        event.data.icon_url,
+                                    );
+                                }
+                            }
+                            break;
+                        case "logo":
+                            page_params.realm_logo_url = event.data.logo_url;
+                            page_params.realm_logo_source = event.data.logo_source;
+                            realm_logo.rerender();
+                            break;
+                        case "night_logo":
+                            page_params.realm_night_logo_url = event.data.night_logo_url;
+                            page_params.realm_night_logo_source = event.data.night_logo_source;
+                            realm_logo.rerender();
+                            break;
+                        default:
+                            blueslip.error(
+                                "Unexpected event type realm/update_dict/" + event.property,
+                            );
+                            break;
                     }
-                }
-                if (event.data.authentication_methods !== undefined) {
-                    settings_org.populate_auth_methods(event.data.authentication_methods);
-                }
-            } else if (event.op === "update_dict" && event.property === "icon") {
-                page_params.realm_icon_url = event.data.icon_url;
-                page_params.realm_icon_source = event.data.icon_source;
-                realm_icon.rerender();
-
-                const electron_bridge = window.electron_bridge;
-                if (electron_bridge !== undefined) {
-                    electron_bridge.send_event("realm_icon_url", event.data.icon_url);
-                }
-            } else if (event.op === "update_dict" && event.property === "logo") {
-                page_params.realm_logo_url = event.data.logo_url;
-                page_params.realm_logo_source = event.data.logo_source;
-                realm_logo.rerender();
-            } else if (event.op === "update_dict" && event.property === "night_logo") {
-                page_params.realm_night_logo_url = event.data.night_logo_url;
-                page_params.realm_night_logo_source = event.data.night_logo_source;
-                realm_logo.rerender();
-            } else if (event.op === "deactivated") {
-                window.location.href = "/accounts/deactivated/";
+                    break;
+                case "deactivated":
+                    // This handler is likely unnecessary, in that if we
+                    // did nothing here, we'd reload and end up at the
+                    // same place when we attempt the next `GET /events`
+                    // and get an error.  Some clients will do that even
+                    // with this code, if they didn't have an active
+                    // longpoll waiting at the moment the realm was
+                    // deactivated.
+                    window.location.href = "/accounts/deactivated/";
+                    break;
             }
-
             if (page_params.is_admin) {
                 // Update the UI notice about the user's profile being
                 // incomplete, as we might have filled in the missing field(s).
@@ -261,20 +307,31 @@ export function dispatch_normal_event(event) {
         }
 
         case "realm_bot":
-            if (event.op === "add") {
-                bot_data.add(event.bot);
-            } else if (event.op === "remove") {
-                bot_data.deactivate(event.bot.user_id);
-                event.bot.is_active = false;
-            } else if (event.op === "delete") {
-                blueslip.info("ignoring bot deletion for live UI update");
-                break;
-            } else if (event.op === "update") {
-                bot_data.update(event.bot.user_id, event.bot);
+            switch (event.op) {
+                case "add":
+                    bot_data.add(event.bot);
+                    settings_bots.eventually_render_bots();
+                    settings_users.update_bot_data(event.bot.user_id);
+                    break;
+                case "remove":
+                    bot_data.deactivate(event.bot.user_id);
+                    event.bot.is_active = false;
+                    settings_bots.eventually_render_bots();
+                    settings_users.update_bot_data(event.bot.user_id);
+                    break;
+                case "delete":
+                    blueslip.info("ignoring bot deletion for live UI update");
+                    break;
+                case "update":
+                    bot_data.update(event.bot.user_id, event.bot);
+                    settings_bots.eventually_render_bots();
+                    settings_users.update_bot_data(event.bot.user_id);
+                    break;
+                default:
+                    blueslip.error("Unexpected event type realm_bot/" + event.op);
+                    break;
             }
-            settings_users.update_bot_data(event.bot.user_id);
             break;
-
         case "realm_emoji":
             // The authoritative data source is here.
             emoji.update_emojis(event.realm_emoji);
@@ -285,88 +342,114 @@ export function dispatch_normal_event(event) {
             composebox_typeahead.update_emoji_data();
             break;
 
-        case "realm_filters":
-            page_params.realm_filters = event.realm_filters;
-            markdown.update_linkifier_rules(page_params.realm_filters);
-            settings_linkifiers.populate_linkifiers(page_params.realm_filters);
+        case "realm_linkifiers":
+            page_params.realm_linkifiers = event.realm_linkifiers;
+            markdown.update_linkifier_rules(page_params.realm_linkifiers);
+            settings_linkifiers.populate_linkifiers(page_params.realm_linkifiers);
             break;
 
-        case "realm_domains": {
-            let i;
-            if (event.op === "add") {
-                page_params.realm_domains.push(event.realm_domain);
-            } else if (event.op === "change") {
-                for (i = 0; i < page_params.realm_domains.length; i += 1) {
-                    if (page_params.realm_domains[i].domain === event.realm_domain.domain) {
-                        page_params.realm_domains[i].allow_subdomains =
-                            event.realm_domain.allow_subdomains;
+        case "realm_domains":
+            {
+                let i;
+                switch (event.op) {
+                    case "add":
+                        page_params.realm_domains.push(event.realm_domain);
+                        settings_org.populate_realm_domains(page_params.realm_domains);
                         break;
-                    }
-                }
-            } else if (event.op === "remove") {
-                for (i = 0; i < page_params.realm_domains.length; i += 1) {
-                    if (page_params.realm_domains[i].domain === event.domain) {
-                        page_params.realm_domains.splice(i, 1);
+                    case "change":
+                        for (i = 0; i < page_params.realm_domains.length; i += 1) {
+                            if (page_params.realm_domains[i].domain === event.realm_domain.domain) {
+                                page_params.realm_domains[i].allow_subdomains =
+                                    event.realm_domain.allow_subdomains;
+                                break;
+                            }
+                        }
+                        settings_org.populate_realm_domains(page_params.realm_domains);
                         break;
-                    }
+                    case "remove":
+                        for (i = 0; i < page_params.realm_domains.length; i += 1) {
+                            if (page_params.realm_domains[i].domain === event.domain) {
+                                page_params.realm_domains.splice(i, 1);
+                                break;
+                            }
+                        }
+                        settings_org.populate_realm_domains(page_params.realm_domains);
+                        break;
+                    default:
+                        blueslip.error("Unexpected event type realm_domains/" + event.op);
+                        break;
                 }
             }
-            settings_org.populate_realm_domains(page_params.realm_domains);
             break;
-        }
 
         case "realm_user":
-            if (event.op === "add") {
-                people.add_active_user(event.person);
-            } else if (event.op === "remove") {
-                people.deactivate(event.person);
-                stream_events.remove_deactivated_user_from_all_streams(event.person.user_id);
-            } else if (event.op === "update") {
-                user_events.update_person(event.person);
+            switch (event.op) {
+                case "add":
+                    people.add_active_user(event.person);
+                    break;
+                case "remove":
+                    people.deactivate(event.person);
+                    stream_events.remove_deactivated_user_from_all_streams(event.person.user_id);
+                    break;
+                case "update":
+                    user_events.update_person(event.person);
+                    break;
+                default:
+                    blueslip.error("Unexpected event type realm_user/" + event.op);
+                    break;
             }
             break;
 
         case "stream":
-            if (event.op === "update") {
-                // Legacy: Stream properties are still managed by subs.js on the client side.
-                stream_events.update_property(event.stream_id, event.property, event.value, {
-                    rendered_description: event.rendered_description,
-                    history_public_to_subscribers: event.history_public_to_subscribers,
-                });
-                settings_streams.update_default_streams_table();
-            } else if (event.op === "create") {
-                stream_data.create_streams(event.streams);
-
-                for (const stream of event.streams) {
-                    const sub = stream_data.get_sub_by_id(stream.stream_id);
-                    stream_data.update_calculated_fields(sub);
-                    if (overlays.streams_open()) {
-                        subs.add_sub_to_table(sub);
-                    }
-                }
-            } else if (event.op === "delete") {
-                for (const stream of event.streams) {
-                    const was_subscribed = stream_data.get_sub_by_id(stream.stream_id).subscribed;
-                    const is_narrowed_to_stream = narrow_state.is_for_stream_id(stream.stream_id);
-                    subs.remove_stream(stream.stream_id);
-                    stream_data.delete_sub(stream.stream_id);
-                    if (was_subscribed) {
-                        stream_list.remove_sidebar_row(stream.stream_id);
-                    }
+            switch (event.op) {
+                case "update":
+                    // Legacy: Stream properties are still managed by subs.js on the client side.
+                    stream_events.update_property(event.stream_id, event.property, event.value, {
+                        rendered_description: event.rendered_description,
+                        history_public_to_subscribers: event.history_public_to_subscribers,
+                    });
                     settings_streams.update_default_streams_table();
-                    stream_data.remove_default_stream(stream.stream_id);
-                    if (is_narrowed_to_stream) {
-                        current_msg_list.update_trailing_bookend();
+                    break;
+                case "create":
+                    stream_data.create_streams(event.streams);
+
+                    for (const stream of event.streams) {
+                        const sub = stream_data.get_sub_by_id(stream.stream_id);
+                        if (overlays.streams_open()) {
+                            subs.add_sub_to_table(sub);
+                        }
                     }
-                    if (page_params.realm_notifications_stream_id === stream.stream_id) {
-                        page_params.realm_notifications_stream_id = -1;
-                        settings_org.sync_realm_settings("notifications_stream_id");
+                    break;
+                case "delete":
+                    for (const stream of event.streams) {
+                        const was_subscribed = stream_data.get_sub_by_id(stream.stream_id)
+                            .subscribed;
+                        const is_narrowed_to_stream = narrow_state.is_for_stream_id(
+                            stream.stream_id,
+                        );
+                        subs.remove_stream(stream.stream_id);
+                        stream_data.delete_sub(stream.stream_id);
+                        if (was_subscribed) {
+                            stream_list.remove_sidebar_row(stream.stream_id);
+                        }
+                        settings_streams.update_default_streams_table();
+                        stream_data.remove_default_stream(stream.stream_id);
+                        if (is_narrowed_to_stream) {
+                            message_lists.current.update_trailing_bookend();
+                        }
+                        if (page_params.realm_notifications_stream_id === stream.stream_id) {
+                            page_params.realm_notifications_stream_id = -1;
+                            settings_org.sync_realm_settings("notifications_stream_id");
+                        }
+                        if (page_params.realm_signup_notifications_stream_id === stream.stream_id) {
+                            page_params.realm_signup_notifications_stream_id = -1;
+                            settings_org.sync_realm_settings("signup_notifications_stream_id");
+                        }
                     }
-                    if (page_params.realm_signup_notifications_stream_id === stream.stream_id) {
-                        page_params.realm_signup_notifications_stream_id = -1;
-                        settings_org.sync_realm_settings("signup_notifications_stream_id");
-                    }
-                }
+                    break;
+                default:
+                    blueslip.error("Unexpected event type stream/" + event.op);
+                    break;
             }
             break;
 
@@ -386,61 +469,78 @@ export function dispatch_normal_event(event) {
         }
 
         case "subscription":
-            if (event.op === "add") {
-                for (const rec of event.subscriptions) {
-                    const sub = stream_data.get_sub_by_id(rec.stream_id);
-                    if (sub) {
-                        stream_data.update_stream_email_address(sub, rec.email_address);
-                        stream_events.mark_subscribed(sub, rec.subscribers, rec.color);
-                    } else {
-                        blueslip.error("Subscribing to unknown stream with ID " + rec.stream_id);
+            switch (event.op) {
+                case "add":
+                    for (const rec of event.subscriptions) {
+                        const sub = stream_data.get_sub_by_id(rec.stream_id);
+                        if (sub) {
+                            stream_data.update_stream_email_address(sub, rec.email_address);
+                            stream_events.mark_subscribed(sub, rec.subscribers, rec.color);
+                        } else {
+                            blueslip.error(
+                                "Subscribing to unknown stream with ID " + rec.stream_id,
+                            );
+                        }
                     }
+                    break;
+                case "peer_add": {
+                    const stream_ids = stream_data.validate_stream_ids(event.stream_ids);
+                    const user_ids = people.validate_user_ids(event.user_ids);
+
+                    peer_data.bulk_add_subscribers({stream_ids, user_ids});
+
+                    for (const stream_id of stream_ids) {
+                        const sub = stream_data.get_sub_by_id(stream_id);
+                        subs.update_subscribers_ui(sub);
+                    }
+
+                    compose_fade.update_faded_users();
+                    break;
                 }
-            } else if (event.op === "peer_add") {
-                const stream_ids = stream_data.validate_stream_ids(event.stream_ids);
-                const user_ids = people.validate_user_ids(event.user_ids);
+                case "peer_remove": {
+                    const stream_ids = stream_data.validate_stream_ids(event.stream_ids);
+                    const user_ids = people.validate_user_ids(event.user_ids);
 
-                peer_data.bulk_add_subscribers({stream_ids, user_ids});
+                    peer_data.bulk_remove_subscribers({stream_ids, user_ids});
 
-                for (const stream_id of stream_ids) {
-                    const sub = stream_data.get_sub_by_id(stream_id);
-                    subs.update_subscribers_ui(sub);
+                    for (const stream_id of stream_ids) {
+                        const sub = stream_data.get_sub_by_id(stream_id);
+                        subs.update_subscribers_ui(sub);
+                    }
+
+                    compose_fade.update_faded_users();
+                    break;
                 }
-
-                compose_fade.update_faded_users();
-            } else if (event.op === "peer_remove") {
-                const stream_ids = stream_data.validate_stream_ids(event.stream_ids);
-                const user_ids = people.validate_user_ids(event.user_ids);
-
-                peer_data.bulk_remove_subscribers({stream_ids, user_ids});
-
-                for (const stream_id of stream_ids) {
-                    const sub = stream_data.get_sub_by_id(stream_id);
-                    subs.update_subscribers_ui(sub);
-                }
-
-                compose_fade.update_faded_users();
-            } else if (event.op === "remove") {
-                for (const rec of event.subscriptions) {
-                    const sub = stream_data.get_sub_by_id(rec.stream_id);
-                    stream_events.mark_unsubscribed(sub);
-                }
-            } else if (event.op === "update") {
-                stream_events.update_property(event.stream_id, event.property, event.value);
+                case "remove":
+                    for (const rec of event.subscriptions) {
+                        const sub = stream_data.get_sub_by_id(rec.stream_id);
+                        stream_events.mark_unsubscribed(sub);
+                    }
+                    break;
+                case "update":
+                    stream_events.update_property(event.stream_id, event.property, event.value);
+                    break;
+                default:
+                    blueslip.error("Unexpected event type subscription/" + event.op);
+                    break;
             }
             break;
-
         case "typing":
             if (event.sender.user_id === page_params.user_id) {
                 // typing notifications are sent to the user who is typing
                 // as well as recipients; we ignore such self-generated events.
                 return;
             }
-
-            if (event.op === "start") {
-                typing_events.display_notification(event);
-            } else if (event.op === "stop") {
-                typing_events.hide_notification(event);
+            switch (event.op) {
+                case "start":
+                    typing_events.display_notification(event);
+                    break;
+                case "stop":
+                    typing_events.hide_notification(event);
+                    break;
+                default:
+                    blueslip.error("Unexpected event type typing/" + event.op);
+                    break;
             }
             break;
 
@@ -469,8 +569,8 @@ export function dispatch_normal_event(event) {
             }
             if (event.setting_name === "twenty_four_hour_time") {
                 // Rerender the whole message list UI
-                home_msg_list.rerender();
-                if (current_msg_list === message_list.narrowed) {
+                message_lists.home.rerender();
+                if (message_lists.current === message_list.narrowed) {
                     message_list.narrowed.rerender();
                 }
             }
@@ -522,8 +622,8 @@ export function dispatch_normal_event(event) {
                 settings_display.report_emojiset_change();
 
                 // Rerender the whole message list UI
-                home_msg_list.rerender();
-                if (current_msg_list === message_list.narrowed) {
+                message_lists.home.rerender();
+                if (message_lists.current === message_list.narrowed) {
                     message_list.narrowed.rerender();
                 }
             }
@@ -565,14 +665,25 @@ export function dispatch_normal_event(event) {
         }
 
         case "user_group":
-            if (event.op === "add") {
-                user_groups.add(event.group);
-            } else if (event.op === "add_members") {
-                user_groups.add_members(event.group_id, event.user_ids);
-            } else if (event.op === "remove_members") {
-                user_groups.remove_members(event.group_id, event.user_ids);
-            } else if (event.op === "update") {
-                user_groups.update(event);
+            switch (event.op) {
+                case "add":
+                    user_groups.add(event.group);
+                    break;
+                case "remove":
+                    user_groups.remove(user_groups.get_user_group_from_id(event.group_id));
+                    break;
+                case "add_members":
+                    user_groups.add_members(event.group_id, event.user_ids);
+                    break;
+                case "remove_members":
+                    user_groups.remove_members(event.group_id, event.user_ids);
+                    break;
+                case "update":
+                    user_groups.update(event);
+                    break;
+                default:
+                    blueslip.error("Unexpected event type user_group/" + event.op);
+                    break;
             }
             settings_user_groups.reload();
             break;

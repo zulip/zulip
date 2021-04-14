@@ -368,7 +368,6 @@ place to start.
 backend zulip
     mode http
     balance leastconn
-    http-request set-header X-Client-IP %[src]
     reqadd X-Forwarded-Proto:\ https
     server zulip 10.10.10.10:80 check
 ```

@@ -6,7 +6,7 @@
 -r docs.in
 
 # moto s3 mock
-moto>=1.3.17.dev221  # https://github.com/spulec/moto/issues/3460
+moto
 
 # Needed for running tools/run-dev.py
 Twisted
@@ -45,7 +45,7 @@ pyinotify
 tblib
 
 # Needed to lint Git commit messages
-gitlint>=0.13.0
+gitlint
 
 # Needed for visualising cprofile reports
 snakeviz
@@ -54,7 +54,7 @@ snakeviz
 python-digitalocean
 
 # Needed for updating the locked pip dependencies
-pip-tools
+pip-tools==5.*  # 6.0.0 requires pip>=20.3
 
 # zulip's linting framework - zulint
 https://github.com/zulip/zulint/archive/20508eb8939e909806e6c8018fadfc24e854a02a.zip#egg=zulint==0.0.1

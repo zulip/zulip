@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_cjs, mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
@@ -13,12 +14,10 @@ const channel = mock_esm("../../static/js/channel");
 const compose = mock_esm("../../static/js/compose", {
     finish: noop,
 });
-const message_store = mock_esm("../../static/js/message_store", {
+const message_user_ids = mock_esm("../../static/js/message_user_ids", {
     user_ids: () => [],
 });
 const stream_topic_history = mock_esm("../../static/js/stream_topic_history");
-
-const page_params = set_global("page_params", {});
 
 let autosize_called;
 
@@ -38,10 +37,6 @@ set_global("document", "document-stub");
 const emoji = zrequire("../shared/js/emoji");
 const typeahead = zrequire("../shared/js/typeahead");
 const compose_state = zrequire("compose_state");
-zrequire("user_status");
-zrequire("presence");
-zrequire("buddy_data");
-zrequire("pm_conversations");
 zrequire("templates");
 const typeahead_helper = zrequire("typeahead_helper");
 const people = zrequire("people");
@@ -54,7 +49,6 @@ const settings_config = zrequire("settings_config");
 const pygments_data = zrequire("../generated/pygments_data.json");
 
 // To be eliminated in next commit:
-stream_data.__Rewire__("update_calculated_fields", () => {});
 stream_data.__Rewire__("set_filter_out_inactives", () => false);
 
 const ct = composebox_typeahead;
@@ -177,7 +171,6 @@ const sweden_stream = {
     description: "Cold, mountains and home decor.",
     stream_id: 1,
     subscribed: true,
-    can_access_subscribers: true,
 };
 const denmark_stream = {
     name: "Denmark",
@@ -220,7 +213,7 @@ const othello = {
 const cordelia = {
     email: "cordelia@zulip.com",
     user_id: 102,
-    full_name: "Cordelia Lear",
+    full_name: "Cordelia, Lear's daughter",
 };
 const deactivated_user = {
     email: "other@zulip.com",
@@ -690,25 +683,6 @@ test("initialize", (override) => {
         ];
         assert.deepEqual(actual_value, expected_value);
 
-        // Even though the items passed to .highlighter() are the full
-        // objects of the users matching the query, it only returns the
-        // HTML string with the "User_name <email>" format, with the
-        // corresponding parts in bold.
-        options.query = "oth";
-        actual_value = options.highlighter(othello);
-        expected_value = `        <span class="user_circle_empty user_circle"></span>\n        <img class="typeahead-image" src="/avatar/${othello.user_id}&amp;s&#x3D;50" />\n<strong>Othello, the Moor of Venice</strong>`;
-        assert.equal(actual_value, expected_value);
-
-        options.query = "Lear";
-        actual_value = options.highlighter(cordelia);
-        expected_value = `        <span class="user_circle_empty user_circle"></span>\n        <img class="typeahead-image" src="/avatar/${cordelia.user_id}&amp;s&#x3D;50" />\n<strong>Cordelia Lear</strong>`;
-        assert.equal(actual_value, expected_value);
-
-        options.query = "othello@zulip.com, co";
-        actual_value = options.highlighter(cordelia);
-        expected_value = `        <span class="user_circle_empty user_circle"></span>\n        <img class="typeahead-image" src="/avatar/${cordelia.user_id}&amp;s&#x3D;50" />\n<strong>Cordelia Lear</strong>`;
-        assert.equal(actual_value, expected_value);
-
         function matcher(query, person) {
             query = typeahead.clean_query_lowercase(query);
             return ct.query_matches_person(query, person);
@@ -789,7 +763,7 @@ test("initialize", (override) => {
         // Adds a `no break-space` at the end. This should fail
         // if there wasn't any logic replacing `no break-space`
         // with normal space.
-        query = "cordelia" + String.fromCharCode(160);
+        query = "cordelia, lear's" + String.fromCharCode(160);
         assert.equal(matcher(query, cordelia), true);
         assert.equal(matcher(query, othello), false);
 
@@ -809,7 +783,7 @@ test("initialize", (override) => {
 
         options.query = "othello@zulip.com, cor";
         actual_value = options.updater(cordelia, event);
-        assert.equal(appended_name, "Cordelia Lear");
+        assert.equal(appended_name, "Cordelia, Lear's daughter");
 
         const click_event = {type: "click", target: "#doesnotmatter"};
         options.query = "othello";
@@ -872,7 +846,11 @@ test("initialize", (override) => {
         // content_highlighter.
         fake_this = {completing: "mention", token: "othello"};
         actual_value = options.highlighter.call(fake_this, othello);
-        expected_value = `        <span class="user_circle_empty user_circle"></span>\n        <img class="typeahead-image" src="/avatar/${othello.user_id}&amp;s&#x3D;50" />\n<strong>Othello, the Moor of Venice</strong>`;
+        expected_value =
+            `        <span class="user_circle_empty user_circle"></span>\n` +
+            `        <img class="typeahead-image" src="/avatar/${othello.user_id}&amp;s&#x3D;50" />\n` +
+            `<strong>Othello, the Moor of Venice</strong>&nbsp;&nbsp;\n` +
+            `<small class="autocomplete_secondary">othello@zulip.com</small>\n`;
         assert.equal(actual_value, expected_value);
 
         fake_this = {completing: "mention", token: "hamletcharacters"};
@@ -1165,10 +1143,7 @@ test("begins_typeahead", (override) => {
         assert.deepEqual(values, reference);
     }
 
-    function assert_stream_list(input, rest) {
-        if (rest === undefined) {
-            rest = "";
-        }
+    function assert_stream_list(input, rest = "") {
         const values = get_values(input, rest);
         assert.deepEqual(sorted_names_from(values), ["Denmark", "Sweden", "The Netherlands"]);
     }
@@ -1493,8 +1468,8 @@ test("typeahead_results", () => {
     assert_emoji_matches("notaemoji", []);
     // Autocomplete user mentions by user name.
     assert_mentions_matches("cordelia", [cordelia]);
-    assert_mentions_matches("cordelia le", [cordelia]);
-    assert_mentions_matches("cordelia le ", []);
+    assert_mentions_matches("cordelia, le", [cordelia]);
+    assert_mentions_matches("cordelia, le ", []);
     assert_mentions_matches("King ", [hamlet, lear]);
     assert_mentions_matches("King H", [hamlet]);
     assert_mentions_matches("King L", [lear]);
@@ -1534,7 +1509,8 @@ test("message people", (override) => {
         the sorting step.
     */
 
-    override(message_store, "user_ids", () => [hal.user_id, harry.user_id]);
+    let user_ids = [hal.user_id, harry.user_id];
+    override(message_user_ids, "user_ids", () => user_ids);
 
     const opts = {
         want_broadcast: false,
@@ -1552,12 +1528,12 @@ test("message people", (override) => {
     assert.deepEqual(results, [harry, hamletcharacters]);
 
     // Now let's exclude Hal.
-    message_store.user_ids = () => [hamlet.user_id, harry.user_id];
+    user_ids = [hamlet.user_id, harry.user_id];
 
     results = get_results("Ha");
     assert.deepEqual(results, [harry, hamletcharacters]);
 
-    message_store.user_ids = () => [hamlet.user_id, harry.user_id, hal.user_id];
+    user_ids = [hamlet.user_id, harry.user_id, hal.user_id];
 
     results = get_results("Ha");
     assert.deepEqual(results, [harry, hamletcharacters]);

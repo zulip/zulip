@@ -449,6 +449,78 @@ ul {
     }
 }
 
+.popover.top .arrow::after {
+    left: -1px;
+}
+
+#giphy_grid_in_popover {
+    /* 300px of GIPHY grid + 5px is the extra gutter space
+     * between gif columns. */
+    width: 305px;
+    border: 0;
+    padding: 0;
+
+    .giphy-gif {
+        cursor: pointer;
+    }
+
+    .giphy-gif-img:focus {
+        /* Red outline for clear visibility
+         * of which image is in foucs.
+         */
+        outline-color: hsl(0, 100%, 50%);
+    }
+
+    .search-box {
+        display: flex;
+        position: sticky;
+        padding: 2px;
+
+        input {
+            flex-grow: 1;
+            margin: 5px;
+            border-radius: 3px;
+        }
+
+        .clear_search_button {
+            position: absolute;
+            top: 5px;
+            right: 3px;
+            font-size: 16px;
+
+            &:focus {
+                .fa-remove {
+                    outline: 2px solid hsl(215, 47%, 50%);
+                }
+            }
+        }
+    }
+
+    .popover-content {
+        overflow: auto;
+        height: 200px;
+        margin: 2px;
+    }
+
+    .popover-footer {
+        text-align: center;
+        background-color: hsl(0, 0%, 0%);
+        border-radius: 0 0 6px 6px;
+
+        img {
+            width: 120px;
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    #giphy_grid_in_popover {
+        position: static;
+        top: 0 !important;
+        left: 0 !important;
+    }
+}
+
 .user_info_status_text {
     opacity: 0.8;
     padding: 2px 0 3px 0;

@@ -232,7 +232,10 @@ def stdout_suppressed() -> Iterator[IO[str]]:
 def reset_emails_in_zulip_realm() -> None:
     realm = get_realm("zulip")
     do_set_realm_property(
-        realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+        realm,
+        "email_address_visibility",
+        Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+        acting_user=None,
     )
 
 
@@ -493,8 +496,11 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             "confirmation_key/",
             "node-coverage/(?P<path>.+)",
             "docs/(?P<path>.+)",
+            "help/delete-a-stream",
+            "api/delete-stream",
             "casper/(?P<path>.+)",
             "static/(?P<path>.+)",
+            "flush_caches",
             *(webhook.url for webhook in WEBHOOK_INTEGRATIONS if not include_webhooks),
         }
 

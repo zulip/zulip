@@ -30,7 +30,12 @@ def get_valid_integration_name(name: str) -> Optional[str]:
 def dev_panel(request: HttpRequest) -> HttpResponse:
     integrations = get_webhook_integrations()
     bots = UserProfile.objects.filter(is_bot=True, bot_type=UserProfile.INCOMING_WEBHOOK_BOT)
-    context = {"integrations": integrations, "bots": bots}
+    context = {
+        "integrations": integrations,
+        "bots": bots,
+        # We set isolated_page to avoid clutter from footer/header.
+        "isolated_page": True,
+    }
     return render(request, "zerver/integrations/development/dev_panel.html", context)
 
 
@@ -93,7 +98,7 @@ def check_send_webhook_fixture_message(
     request: HttpRequest,
     url: str = REQ(),
     body: str = REQ(),
-    is_json: bool = REQ(validator=check_bool),
+    is_json: bool = REQ(json_validator=check_bool),
     custom_headers: str = REQ(),
 ) -> HttpResponse:
     try:

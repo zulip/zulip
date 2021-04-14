@@ -7,23 +7,30 @@ const markdown_assert = require("../zjsunit/markdown_assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
+const {page_params} = require("../zjsunit/zpage_params");
 
 set_global("location", {
     origin: "http://zulip.zulipdev.com",
 });
 
-const page_params = set_global("page_params", {
-    realm_users: [],
-    realm_filters: [
-        ["#(?P<id>[0-9]{2,8})", "https://trac.example.com/ticket/%(id)s"],
-        ["ZBUG_(?P<id>[0-9]{2,8})", "https://trac2.zulip.net/ticket/%(id)s"],
-        [
-            "ZGROUP_(?P<id>[0-9]{2,8}):(?P<zone>[0-9]{1,8})",
-            "https://zone_%(zone)s.zulip.net/ticket/%(id)s",
-        ],
-    ],
-    translate_emoticons: false,
-});
+const example_realm_linkifiers = [
+    {
+        pattern: "#(?P<id>[0-9]{2,8})",
+        url_format: "https://trac.example.com/ticket/%(id)s",
+        id: 1,
+    },
+    {
+        pattern: "ZBUG_(?P<id>[0-9]{2,8})",
+        url_format: "https://trac2.zulip.net/ticket/%(id)s",
+        id: 2,
+    },
+    {
+        pattern: "ZGROUP_(?P<id>[0-9]{2,8}):(?P<zone>[0-9]{1,8})",
+        url_format: "https://zone_%(zone)s.zulip.net/ticket/%(id)s",
+        id: 3,
+    },
+];
+page_params.translate_emoticons = false;
 
 function Image() {
     return {};
@@ -60,7 +67,7 @@ emoji.initialize(emoji_params);
 fenced_code.initialize(pygments_data);
 
 const cordelia = {
-    full_name: "Cordelia Lear",
+    full_name: "Cordelia, Lear's daughter",
     user_id: 101,
     email: "cordelia@zulip.com",
 };
@@ -181,11 +188,12 @@ stream_data.add_sub(edgecase_stream_2);
 // streamTopicHandler and it would be parsed as edgecase_stream_2.
 stream_data.add_sub(amp_stream);
 
-markdown.initialize(page_params.realm_filters, markdown_config.get_helpers());
+markdown.initialize(example_realm_linkifiers, markdown_config.get_helpers());
 
 function test(label, f) {
     run_test(label, (override) => {
-        markdown.update_linkifier_rules(page_params.realm_filters);
+        page_params.realm_users = [];
+        markdown.update_linkifier_rules(example_realm_linkifiers);
         f(override);
     });
 }
@@ -267,7 +275,7 @@ test("message_flags", () => {
     assert(!message.mentioned);
     assert(!message.mentioned_me_directly);
 
-    message = {raw_content: "@**Cordelia Lear**"};
+    message = {raw_content: "@**Cordelia, Lear's daughter**"};
     markdown.apply_markdown(message);
     assert(message.mentioned);
     assert(message.mentioned_me_directly);
@@ -327,9 +335,9 @@ test("marked", () => {
             expected: "<blockquote>\n<p>quote this for me</p>\n</blockquote>\n<p>thanks</p>",
         },
         {
-            input: "This is a @**CordeLIA Lear** mention",
+            input: "This is a @**CordeLIA, Lear's daughter** mention",
             expected:
-                '<p>This is a <span class="user-mention" data-user-id="101">@Cordelia Lear</span> mention</p>',
+                '<p>This is a <span class="user-mention" data-user-id="101">@Cordelia, Lear&#39;s daughter</span> mention</p>',
         },
         {
             input: "These @ @**** are not mentions",
@@ -388,15 +396,15 @@ test("marked", () => {
                 '<p><span aria-label="poop" class="emoji emoji-1f4a9" role="img" title="poop">:poop:</span></p>',
         },
         {
-            input: "Silent mention: @_**Cordelia Lear**",
+            input: "Silent mention: @_**Cordelia, Lear's daughter**",
             expected:
-                '<p>Silent mention: <span class="user-mention silent" data-user-id="101">Cordelia Lear</span></p>',
+                '<p>Silent mention: <span class="user-mention silent" data-user-id="101">Cordelia, Lear&#39;s daughter</span></p>',
         },
         {
             input:
-                "> Mention in quote: @**Cordelia Lear**\n\nMention outside quote: @**Cordelia Lear**",
+                "> Mention in quote: @**Cordelia, Lear's daughter**\n\nMention outside quote: @**Cordelia, Lear's daughter**",
             expected:
-                '<blockquote>\n<p>Mention in quote: <span class="user-mention silent" data-user-id="101">Cordelia Lear</span></p>\n</blockquote>\n<p>Mention outside quote: <span class="user-mention" data-user-id="101">@Cordelia Lear</span></p>',
+                '<blockquote>\n<p>Mention in quote: <span class="user-mention silent" data-user-id="101">Cordelia, Lear&#39;s daughter</span></p>\n</blockquote>\n<p>Mention outside quote: <span class="user-mention" data-user-id="101">@Cordelia, Lear&#39;s daughter</span></p>',
         },
         // Test only those linkifiers which don't return True for
         // `contains_backend_only_syntax()`. Those which return True
@@ -423,9 +431,9 @@ test("marked", () => {
                 '<p>T<br>\n<a class="stream" data-stream-id="1" href="/#narrow/stream/1-Denmark">#Denmark</a></p>',
         },
         {
-            input: "T\n@**Cordelia Lear**",
+            input: "T\n@**Cordelia, Lear's daughter**",
             expected:
-                '<p>T<br>\n<span class="user-mention" data-user-id="101">@Cordelia Lear</span></p>',
+                '<p>T<br>\n<span class="user-mention" data-user-id="101">@Cordelia, Lear&#39;s daughter</span></p>',
         },
         {
             input: "@**Mark Twin|104** and @**Mark Twin|105** are out to confuse you.",
@@ -434,8 +442,8 @@ test("marked", () => {
         },
         {input: "@**Invalid User|1234**", expected: "<p>@**Invalid User|1234**</p>"},
         {
-            input: "@**Cordelia LeAR|103** has a wrong user_id.",
-            expected: "<p>@**Cordelia LeAR|103** has a wrong user_id.</p>",
+            input: "@**Cordelia, Lear's daughter|103** has a wrong user_id.",
+            expected: "<p>@**Cordelia, Lear&#39;s daughter|103** has a wrong user_id.</p>",
         },
         {
             input: "@**Brother of Bobby|123** is really the full name.",
@@ -447,6 +455,16 @@ test("marked", () => {
             expected:
                 '<p><span class="user-mention" data-user-id="106">@Brother of Bobby|123</span></p>',
         },
+        {
+            input: "@**|106** valid user id.",
+            expected:
+                '<p><span class="user-mention" data-user-id="106">@Brother of Bobby|123</span> valid user id.</p>',
+        },
+        {
+            input: "@**|123|106** comes under user|id case.",
+            expected: "<p>@**|123|106** comes under user|id case.</p>",
+        },
+        {input: "@**|1234** invalid id.", expected: "<p>@**|1234** invalid id.</p>"},
         {input: "T\n@hamletcharacters", expected: "<p>T<br>\n@hamletcharacters</p>"},
         {
             input: "T\n@*hamletcharacters*",
@@ -545,41 +563,74 @@ test("topic_links", () => {
     message = {type: "stream", topic: "One #123 link here"};
     markdown.add_topic_links(message);
     assert.equal(message.topic_links.length, 1);
-    assert.equal(message.topic_links[0], "https://trac.example.com/ticket/123");
+    assert.deepEqual(message.topic_links[0], {
+        url: "https://trac.example.com/ticket/123",
+        text: "#123",
+    });
 
     message = {type: "stream", topic: "Two #123 #456 link here"};
     markdown.add_topic_links(message);
     assert.equal(message.topic_links.length, 2);
-    assert.equal(message.topic_links[0], "https://trac.example.com/ticket/123");
-    assert.equal(message.topic_links[1], "https://trac.example.com/ticket/456");
+    assert.deepEqual(message.topic_links[0], {
+        url: "https://trac.example.com/ticket/123",
+        text: "#123",
+    });
+    assert.deepEqual(message.topic_links[1], {
+        url: "https://trac.example.com/ticket/456",
+        text: "#456",
+    });
 
     message = {type: "stream", topic: "New ZBUG_123 link here"};
     markdown.add_topic_links(message);
     assert.equal(message.topic_links.length, 1);
-    assert.equal(message.topic_links[0], "https://trac2.zulip.net/ticket/123");
+    assert.deepEqual(message.topic_links[0], {
+        url: "https://trac2.zulip.net/ticket/123",
+        text: "ZBUG_123",
+    });
 
     message = {type: "stream", topic: "New ZBUG_123 with #456 link here"};
     markdown.add_topic_links(message);
     assert.equal(message.topic_links.length, 2);
-    assert(message.topic_links.includes("https://trac2.zulip.net/ticket/123"));
-    assert(message.topic_links.includes("https://trac.example.com/ticket/456"));
+    assert.deepEqual(message.topic_links[0], {
+        url: "https://trac2.zulip.net/ticket/123",
+        text: "ZBUG_123",
+    });
+    assert.deepEqual(message.topic_links[1], {
+        url: "https://trac.example.com/ticket/456",
+        text: "#456",
+    });
 
     message = {type: "stream", topic: "One ZGROUP_123:45 link here"};
     markdown.add_topic_links(message);
     assert.equal(message.topic_links.length, 1);
-    assert.equal(message.topic_links[0], "https://zone_45.zulip.net/ticket/123");
+    assert.deepEqual(message.topic_links[0], {
+        url: "https://zone_45.zulip.net/ticket/123",
+        text: "ZGROUP_123:45",
+    });
 
     message = {type: "stream", topic: "Hello https://google.com"};
     markdown.add_topic_links(message);
     assert.equal(message.topic_links.length, 1);
-    assert.equal(message.topic_links[0], "https://google.com");
+    assert.deepEqual(message.topic_links[0], {
+        url: "https://google.com",
+        text: "https://google.com",
+    });
 
     message = {type: "stream", topic: "#456 https://google.com https://github.com"};
     markdown.add_topic_links(message);
     assert.equal(message.topic_links.length, 3);
-    assert(message.topic_links.includes("https://google.com"));
-    assert(message.topic_links.includes("https://github.com"));
-    assert(message.topic_links.includes("https://trac.example.com/ticket/456"));
+    assert.deepEqual(message.topic_links[0], {
+        url: "https://trac.example.com/ticket/456",
+        text: "#456",
+    });
+    assert.deepEqual(message.topic_links[1], {
+        url: "https://google.com",
+        text: "https://google.com",
+    });
+    assert.deepEqual(message.topic_links[2], {
+        url: "https://github.com",
+        text: "https://github.com",
+    });
 
     message = {type: "not-stream"};
     markdown.add_topic_links(message);
@@ -600,7 +651,7 @@ test("message_flags", () => {
 
     assert.equal(message.is_me_message, true);
 
-    input = "testing this @**all** @**Cordelia Lear**";
+    input = "testing this @**all** @**Cordelia, Lear's daughter**";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
 
@@ -671,13 +722,28 @@ test("backend_only_linkifiers", () => {
 test("python_to_js_linkifier", () => {
     // The only way to reach python_to_js_linkifier is indirectly, hence the call
     // to update_linkifier_rules.
-    markdown.update_linkifier_rules([["/a(?im)a/g"], ["/a(?L)a/g"]]);
+    markdown.update_linkifier_rules([
+        {
+            pattern: "/a(?im)a/g",
+            url_format: "http://example1.example.com",
+            id: 10,
+        },
+        {
+            pattern: "/a(?L)a/g",
+            url_format: "http://example2.example.com",
+            id: 20,
+        },
+    ]);
     let actual_value = marked.InlineLexer.rules.zulip.linkifiers;
     let expected_value = [/\/aa\/g(?!\w)/gim, /\/aa\/g(?!\w)/g];
     assert.deepEqual(actual_value, expected_value);
     // Test case with multiple replacements.
     markdown.update_linkifier_rules([
-        ["#cf(?P<contest>\\d+)(?P<problem>[A-Z][\\dA-Z]*)", "http://google.com"],
+        {
+            pattern: "#cf(?P<contest>\\d+)(?P<problem>[A-Z][\\dA-Z]*)",
+            url_format: "http://example3.example.com",
+            id: 30,
+        },
     ]);
     actual_value = marked.InlineLexer.rules.zulip.linkifiers;
     expected_value = [/#cf(\d+)([A-Z][\dA-Z]*)(?!\w)/g];
@@ -687,7 +753,13 @@ test("python_to_js_linkifier", () => {
         "error",
         "python_to_js_linkifier: Invalid regular expression: /!@#@(!#&((!&(@#((?!\\w)/: Unterminated group",
     );
-    markdown.update_linkifier_rules([["!@#@(!#&((!&(@#(", "http://google.com"]]);
+    markdown.update_linkifier_rules([
+        {
+            pattern: "!@#@(!#&((!&(@#(",
+            url_format: "http://example4.example.com",
+            id: 40,
+        },
+    ]);
     actual_value = marked.InlineLexer.rules.zulip.linkifiers;
     expected_value = [];
     assert.deepEqual(actual_value, expected_value);

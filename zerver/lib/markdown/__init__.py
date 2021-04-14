@@ -63,6 +63,7 @@ from zerver.lib.tex import render_tex
 from zerver.lib.thumbnail import user_uploads_or_external
 from zerver.lib.timeout import TimeoutExpired, timeout
 from zerver.lib.timezone import common_timezones
+from zerver.lib.types import LinkifierDict
 from zerver.lib.url_encoding import encode_stream, hash_util_encode
 from zerver.lib.url_preview import preview as link_preview
 from zerver.models import (
@@ -72,9 +73,8 @@ from zerver.models import (
     UserGroup,
     UserGroupMembership,
     UserProfile,
-    all_realm_filters,
     get_active_streams,
-    realm_filters_for_realm,
+    linkifiers_for_realm,
 )
 
 ReturnT = TypeVar("ReturnT")
@@ -147,7 +147,15 @@ STREAM_LINK_REGEX = r"""
 
 @one_time
 def get_compiled_stream_link_regex() -> Pattern[str]:
-    return verbose_compile(STREAM_LINK_REGEX)
+    # Not using verbose_compile as it adds ^(.*?) and
+    # (.*?)$ which cause extra overhead of matching
+    # pattern which is not required.
+    # With new InlineProcessor these extra patterns
+    # are not required.
+    return re.compile(
+        STREAM_LINK_REGEX,
+        re.DOTALL | re.UNICODE | re.VERBOSE,
+    )
 
 
 STREAM_TOPIC_LINK_REGEX = r"""
@@ -162,7 +170,15 @@ STREAM_TOPIC_LINK_REGEX = r"""
 
 @one_time
 def get_compiled_stream_topic_link_regex() -> Pattern[str]:
-    return verbose_compile(STREAM_TOPIC_LINK_REGEX)
+    # Not using verbose_compile as it adds ^(.*?) and
+    # (.*?)$ which cause extra overhead of matching
+    # pattern which is not required.
+    # With new InlineProcessor these extra patterns
+    # are not required.
+    return re.compile(
+        STREAM_TOPIC_LINK_REGEX,
+        re.DOTALL | re.UNICODE | re.VERBOSE,
+    )
 
 
 LINK_REGEX: Optional[Pattern[str]] = None
@@ -1764,8 +1780,8 @@ class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
 OUTER_CAPTURE_GROUP = "linkifier_actual_match"
 
 
-def prepare_realm_pattern(source: str) -> str:
-    """Augment a realm filter so it only matches after start-of-string,
+def prepare_linkifier_pattern(source: str) -> str:
+    """Augment a linkifier so it only matches after start-of-string,
     whitespace, or opening delimiters, won't match if there are word
     characters directly after, and saves what was matched as
     OUTER_CAPTURE_GROUP."""
@@ -1774,8 +1790,8 @@ def prepare_realm_pattern(source: str) -> str:
 
 # Given a regular expression pattern, linkifies groups that match it
 # using the provided format string to construct the URL.
-class RealmFilterPattern(markdown.inlinepatterns.Pattern):
-    """ Applied a given realm filter to the input """
+class LinkifierPattern(markdown.inlinepatterns.Pattern):
+    """ Applied a given linkifier to the input """
 
     def __init__(
         self,
@@ -1783,7 +1799,7 @@ class RealmFilterPattern(markdown.inlinepatterns.Pattern):
         format_string: str,
         markdown_instance: Optional[markdown.Markdown] = None,
     ) -> None:
-        self.pattern = prepare_realm_pattern(source_pattern)
+        self.pattern = prepare_linkifier_pattern(source_pattern)
         self.format_string = format_string
         markdown.inlinepatterns.Pattern.__init__(self, self.pattern, markdown_instance)
 
@@ -1796,8 +1812,10 @@ class RealmFilterPattern(markdown.inlinepatterns.Pattern):
         )
 
 
-class UserMentionPattern(markdown.inlinepatterns.Pattern):
-    def handleMatch(self, m: Match[str]) -> Optional[Element]:
+class UserMentionPattern(markdown.inlinepatterns.InlineProcessor):
+    def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
+        self, m: Match[str], data: str
+    ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
         match = m.group("match")
         silent = m.group("silent") == "_"
 
@@ -1806,15 +1824,26 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
             if match.startswith("**") and match.endswith("**"):
                 name = match[2:-2]
             else:
-                return None
+                return None, None, None
 
             wildcard = mention.user_mention_matches_wildcard(name)
 
-            id_syntax_match = re.match(r".+\|(?P<user_id>\d+)$", name)
+            # For @**|id** and @**name|id** mention syntaxes.
+            id_syntax_match = re.match(r"(?P<full_name>.+)?\|(?P<user_id>\d+)$", name)
             if id_syntax_match:
+                full_name = id_syntax_match.group("full_name")
                 id = int(id_syntax_match.group("user_id"))
                 user = db_data["mention_data"].get_user_by_id(id)
+
+                # For @**name|id**, we need to specifically check that
+                # name matches the full_name of user in mention_data.
+                # This enforces our decision that
+                # @**user_1_name|id_for_user_2** should be invalid syntax.
+                if full_name:
+                    if user and user["full_name"] != full_name:
+                        return None, None, None
             else:
+                # For @**name** syntax.
                 user = db_data["mention_data"].get_user_by_name(name)
 
             if wildcard:
@@ -1827,7 +1856,7 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
                 user_id = str(user["id"])
             else:
                 # Don't highlight @mentions that don't refer to a valid user
-                return None
+                return None, None, None
 
             el = Element("span")
             el.set("data-user-id", user_id)
@@ -1838,15 +1867,17 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
                 el.set("class", "user-mention")
                 text = f"@{text}"
             el.text = markdown.util.AtomicString(text)
-            return el
-        return None
+            return el, m.start(), m.end()
+        return None, None, None
 
 
-class UserGroupMentionPattern(markdown.inlinepatterns.Pattern):
-    def handleMatch(self, m: Match[str]) -> Optional[Element]:
-        match = m.group(2)
-
+class UserGroupMentionPattern(markdown.inlinepatterns.InlineProcessor):
+    def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
+        self, m: Match[str], data: str
+    ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
+        match = m.group(1)
         db_data = self.md.zulip_db_data
+
         if self.md.zulip_message and db_data is not None:
             name = extract_user_group(match)
             user_group = db_data["mention_data"].get_user_group(name)
@@ -1857,18 +1888,25 @@ class UserGroupMentionPattern(markdown.inlinepatterns.Pattern):
             else:
                 # Don't highlight @-mentions that don't refer to a valid user
                 # group.
-                return None
+                return None, None, None
 
             el = Element("span")
             el.set("class", "user-group-mention")
             el.set("data-user-group-id", user_group_id)
             text = f"@{name}"
             el.text = markdown.util.AtomicString(text)
-            return el
-        return None
+            return el, m.start(), m.end()
+        return None, None, None
 
 
-class StreamPattern(CompiledPattern):
+class StreamPattern(markdown.inlinepatterns.InlineProcessor):
+    def __init__(self, compiled_re: Pattern[str], md: markdown.Markdown) -> None:
+        # This is similar to the superclass's small __init__ function,
+        # but we skip the compilation step and let the caller give us
+        # a compiled regex.
+        self.compiled_re = compiled_re
+        self.md = md
+
     def find_stream_by_name(self, name: str) -> Optional[Dict[str, Any]]:
         db_data = self.md.zulip_db_data
         if db_data is None:
@@ -1876,13 +1914,15 @@ class StreamPattern(CompiledPattern):
         stream = db_data["stream_names"].get(name)
         return stream
 
-    def handleMatch(self, m: Match[str]) -> Optional[Element]:
+    def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
+        self, m: Match[str], data: str
+    ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
         name = m.group("stream_name")
 
         if self.md.zulip_message:
             stream = self.find_stream_by_name(name)
             if stream is None:
-                return None
+                return None, None, None
             el = Element("a")
             el.set("class", "stream")
             el.set("data-stream-id", str(stream["id"]))
@@ -1895,11 +1935,18 @@ class StreamPattern(CompiledPattern):
             el.set("href", f"/#narrow/stream/{stream_url}")
             text = f"#{name}"
             el.text = markdown.util.AtomicString(text)
-            return el
-        return None
+            return el, m.start(), m.end()
+        return None, None, None
 
 
-class StreamTopicPattern(CompiledPattern):
+class StreamTopicPattern(markdown.inlinepatterns.InlineProcessor):
+    def __init__(self, compiled_re: Pattern[str], md: markdown.Markdown) -> None:
+        # This is similar to the superclass's small __init__ function,
+        # but we skip the compilation step and let the caller give us
+        # a compiled regex.
+        self.compiled_re = compiled_re
+        self.md = md
+
     def find_stream_by_name(self, name: str) -> Optional[Dict[str, Any]]:
         db_data = self.md.zulip_db_data
         if db_data is None:
@@ -1907,14 +1954,16 @@ class StreamTopicPattern(CompiledPattern):
         stream = db_data["stream_names"].get(name)
         return stream
 
-    def handleMatch(self, m: Match[str]) -> Optional[Element]:
+    def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
+        self, m: Match[str], data: str
+    ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
         stream_name = m.group("stream_name")
         topic_name = m.group("topic_name")
 
         if self.md.zulip_message:
             stream = self.find_stream_by_name(stream_name)
             if stream is None or topic_name is None:
-                return None
+                return None, None, None
             el = Element("a")
             el.set("class", "stream-topic")
             el.set("data-stream-id", str(stream["id"]))
@@ -1924,8 +1973,8 @@ class StreamTopicPattern(CompiledPattern):
             el.set("href", link)
             text = f"#{stream_name} > {topic_name}"
             el.text = markdown.util.AtomicString(text)
-            return el
-        return None
+            return el, m.start(), m.end()
+        return None, None, None
 
 
 def possible_linked_stream_names(content: str) -> Set[str]:
@@ -2010,7 +2059,7 @@ class LinkInlineProcessor(markdown.inlinepatterns.LinkInlineProcessor):
         if not el.text or not el.text.strip():
             el.text = href
 
-        # Prevent realm_filters from running on the content of a Markdown link, breaking up the link.
+        # Prevent linkifiers from running on the content of a Markdown link, breaking up the link.
         # This is a monkey-patch, but it might be worth sending a version of this change upstream.
         el.text = markdown.util.AtomicString(el.text)
 
@@ -2039,8 +2088,8 @@ def get_sub_registry(r: markdown.util.Registry, keys: List[str]) -> markdown.uti
     return new_r
 
 
-# These are used as keys ("realm_filters_keys") to md_engines and the respective
-# realm filter caches
+# These are used as keys ("linkifiers_keys") to md_engines and the respective
+# linkifier caches
 DEFAULT_MARKDOWN_KEY = -1
 ZEPHYR_MIRROR_MARKDOWN_KEY = -2
 
@@ -2054,12 +2103,12 @@ class Markdown(markdown.Markdown):
 
     def __init__(
         self,
-        realm_filters: List[Tuple[str, str, int]],
-        realm_filters_key: int,
+        linkifiers: List[LinkifierDict],
+        linkifiers_key: int,
         email_gateway: bool,
     ) -> None:
-        self.realm_filters = realm_filters
-        self.realm_filters_key = realm_filters_key
+        self.linkifiers = linkifiers
+        self.linkifiers_key = linkifiers_key
         self.email_gateway = email_gateway
 
         super().__init__(
@@ -2182,8 +2231,8 @@ class Markdown(markdown.Markdown):
         )
         reg.register(LinkInlineProcessor(markdown.inlinepatterns.LINK_RE, self), "link", 60)
         reg.register(AutoLink(get_web_link_regex(), self), "autolink", 55)
-        # Reserve priority 45-54 for realm filters
-        reg = self.register_realm_filters(reg)
+        # Reserve priority 45-54 for linkifiers
+        reg = self.register_linkifiers(reg)
         reg.register(markdown.inlinepatterns.HtmlInlineProcessor(ENTITY_RE, self), "entity", 40)
         reg.register(
             markdown.inlinepatterns.SimpleTagPattern(r"(\*\*)([^\n]+?)\2", "strong"), "strong", 35
@@ -2199,12 +2248,13 @@ class Markdown(markdown.Markdown):
         reg.register(UnicodeEmoji(unicode_emoji_regex), "unicodeemoji", 0)
         return reg
 
-    def register_realm_filters(
-        self, inlinePatterns: markdown.util.Registry
-    ) -> markdown.util.Registry:
-        for (pattern, format_string, id) in self.realm_filters:
+    def register_linkifiers(self, inlinePatterns: markdown.util.Registry) -> markdown.util.Registry:
+        for linkifier in self.linkifiers:
+            pattern = linkifier["pattern"]
             inlinePatterns.register(
-                RealmFilterPattern(pattern, format_string, self), f"realm_filters/{pattern}", 45
+                LinkifierPattern(pattern, linkifier["url_format"], self),
+                f"linkifiers/{pattern}",
+                45,
             )
         return inlinePatterns
 
@@ -2232,7 +2282,7 @@ class Markdown(markdown.Markdown):
         return postprocessors
 
     def handle_zephyr_mirror(self) -> None:
-        if self.realm_filters_key == ZEPHYR_MIRROR_MARKDOWN_KEY:
+        if self.linkifiers_key == ZEPHYR_MIRROR_MARKDOWN_KEY:
             # Disable almost all inline patterns for zephyr mirror
             # users' traffic that is mirrored.  Note that
             # inline_interesting_links is a treeprocessor and thus is
@@ -2253,18 +2303,18 @@ class Markdown(markdown.Markdown):
 
 
 md_engines: Dict[Tuple[int, bool], Markdown] = {}
-realm_filter_data: Dict[int, List[Tuple[str, str, int]]] = {}
+linkifier_data: Dict[int, List[LinkifierDict]] = {}
 
 
-def make_md_engine(realm_filters_key: int, email_gateway: bool) -> None:
-    md_engine_key = (realm_filters_key, email_gateway)
+def make_md_engine(linkifiers_key: int, email_gateway: bool) -> None:
+    md_engine_key = (linkifiers_key, email_gateway)
     if md_engine_key in md_engines:
         del md_engines[md_engine_key]
 
-    realm_filters = realm_filter_data[realm_filters_key]
+    linkifiers = linkifier_data[linkifiers_key]
     md_engines[md_engine_key] = Markdown(
-        realm_filters=realm_filters,
-        realm_filters_key=realm_filters_key,
+        linkifiers=linkifiers,
+        linkifiers_key=linkifiers_key,
         email_gateway=email_gateway,
     )
 
@@ -2277,61 +2327,67 @@ basic_link_splitter = re.compile(r"[ !;\?\),\'\"]")
 # function on the URLs; they are expected to be HTML-escaped when
 # rendered by clients (just as links rendered into message bodies
 # are validated and escaped inside `url_to_a`).
-def topic_links(realm_filters_key: int, topic_name: str) -> List[str]:
-    matches: List[str] = []
+def topic_links(linkifiers_key: int, topic_name: str) -> List[Dict[str, str]]:
+    matches: List[Dict[str, Union[str, int]]] = []
+    linkifiers = linkifiers_for_realm(linkifiers_key)
 
-    realm_filters = realm_filters_for_realm(realm_filters_key)
-
-    for realm_filter in realm_filters:
-        pattern = prepare_realm_pattern(realm_filter[0])
+    for linkifier in linkifiers:
+        raw_pattern = linkifier["pattern"]
+        url_format_string = linkifier["url_format"]
+        pattern = prepare_linkifier_pattern(raw_pattern)
         for m in re.finditer(pattern, topic_name):
-            matches += [realm_filter[1] % m.groupdict()]
+            match_details = m.groupdict()
+            match_text = match_details["linkifier_actual_match"]
+            # We format the linkifier's url string using the matched text.
+            # Also, we include the matched text in the response, so that our clients
+            # don't have to implement any logic of their own to get back the text.
+            matches += [
+                dict(
+                    url=url_format_string % match_details,
+                    text=match_text,
+                    index=topic_name.find(match_text),
+                )
+            ]
 
     # Also make raw URLs navigable.
     for sub_string in basic_link_splitter.split(topic_name):
         link_match = re.match(get_web_link_regex(), sub_string)
         if link_match:
-            url = link_match.group("url")
-            result = urlsplit(url)
+            actual_match_url = link_match.group("url")
+            result = urlsplit(actual_match_url)
             if not result.scheme:
                 if not result.netloc:
                     i = (result.path + "/").index("/")
                     result = result._replace(netloc=result.path[:i], path=result.path[i:])
                 url = result._replace(scheme="https").geturl()
-            matches.append(url)
+            else:
+                url = actual_match_url
+            matches.append(
+                dict(url=url, text=actual_match_url, index=topic_name.find(actual_match_url))
+            )
 
-    return matches
+    # In order to preserve the order in which the links occur, we sort the matched text
+    # based on its starting index in the topic. We pop the index field before returning.
+    matches = sorted(matches, key=lambda k: k["index"])
+    return [{k: str(v) for k, v in match.items() if k != "index"} for match in matches]
 
 
-def maybe_update_markdown_engines(realm_filters_key: Optional[int], email_gateway: bool) -> None:
-    # If realm_filters_key is None, load all filters
-    global realm_filter_data
-    if realm_filters_key is None:
-        all_filters = all_realm_filters()
-        all_filters[DEFAULT_MARKDOWN_KEY] = []
-        for realm_filters_key, filters in all_filters.items():
-            realm_filter_data[realm_filters_key] = filters
-            make_md_engine(realm_filters_key, email_gateway)
-        # Hack to ensure that realm_filters_key is right for mirrored Zephyrs
-        realm_filter_data[ZEPHYR_MIRROR_MARKDOWN_KEY] = []
-        make_md_engine(ZEPHYR_MIRROR_MARKDOWN_KEY, False)
-    else:
-        realm_filters = realm_filters_for_realm(realm_filters_key)
-        if (
-            realm_filters_key not in realm_filter_data
-            or realm_filter_data[realm_filters_key] != realm_filters
-        ):
-            # Realm filters data has changed, update `realm_filter_data` and any
-            # of the existing Markdown engines using this set of realm filters.
-            realm_filter_data[realm_filters_key] = realm_filters
-            for email_gateway_flag in [True, False]:
-                if (realm_filters_key, email_gateway_flag) in md_engines:
-                    # Update only existing engines(if any), don't create new one.
-                    make_md_engine(realm_filters_key, email_gateway_flag)
+def maybe_update_markdown_engines(linkifiers_key: int, email_gateway: bool) -> None:
+    global linkifier_data
 
-        if (realm_filters_key, email_gateway) not in md_engines:
-            # Markdown engine corresponding to this key doesn't exists so create one.
-            make_md_engine(realm_filters_key, email_gateway)
+    linkifiers = linkifiers_for_realm(linkifiers_key)
+    if linkifiers_key not in linkifier_data or linkifier_data[linkifiers_key] != linkifiers:
+        # Linkifier data has changed, update `linkifier_data` and any
+        # of the existing Markdown engines using this set of linkifiers.
+        linkifier_data[linkifiers_key] = linkifiers
+        for email_gateway_flag in [True, False]:
+            if (linkifiers_key, email_gateway_flag) in md_engines:
+                # Update only existing engines(if any), don't create new one.
+                make_md_engine(linkifiers_key, email_gateway_flag)
+
+    if (linkifiers_key, email_gateway) not in md_engines:
+        # Markdown engine corresponding to this key doesn't exists so create one.
+        make_md_engine(linkifiers_key, email_gateway)
 
 
 # We want to log Markdown parser failures, but shouldn't log the actual input
@@ -2351,18 +2407,24 @@ def get_possible_mentions_info(realm_id: int, mention_texts: Set[str]) -> List[F
     if not mention_texts:
         return []
 
-    # Remove the trailing part of the `name|id` mention syntax,
-    # thus storing only full names in full_names.
-    full_names = set()
-    name_re = r"(?P<full_name>.+)\|\d+$"
+    q_list = set()
+
+    name_re = r"(?P<full_name>.+)?\|(?P<mention_id>\d+)$"
     for mention_text in mention_texts:
         name_syntax_match = re.match(name_re, mention_text)
         if name_syntax_match:
-            full_names.add(name_syntax_match.group("full_name"))
+            full_name = name_syntax_match.group("full_name")
+            mention_id = name_syntax_match.group("mention_id")
+            if full_name:
+                # For **name|id** mentions as mention_id
+                # cannot be null inside this block.
+                q_list.add(Q(full_name__iexact=full_name, id=mention_id))
+            else:
+                # For **|id** syntax.
+                q_list.add(Q(id=mention_id))
         else:
-            full_names.add(mention_text)
-
-    q_list = {Q(full_name__iexact=full_name) for full_name in full_names}
+            # For **name** syntax.
+            q_list.add(Q(full_name__iexact=mention_text))
 
     rows = (
         UserProfile.objects.filter(
@@ -2487,9 +2549,9 @@ def do_convert(
         if message_realm is None:
             message_realm = message.get_realm()
     if message_realm is None:
-        realm_filters_key = DEFAULT_MARKDOWN_KEY
+        linkifiers_key = DEFAULT_MARKDOWN_KEY
     else:
-        realm_filters_key = message_realm.id
+        linkifiers_key = message_realm.id
 
     if message and hasattr(message, "id") and message.id:
         logging_message_id = "id# " + str(message.id)
@@ -2501,18 +2563,11 @@ def do_convert(
             if message.sending_client.name == "zephyr_mirror":
                 # Use slightly customized Markdown processor for content
                 # delivered via zephyr_mirror
-                realm_filters_key = ZEPHYR_MIRROR_MARKDOWN_KEY
+                linkifiers_key = ZEPHYR_MIRROR_MARKDOWN_KEY
 
-    maybe_update_markdown_engines(realm_filters_key, email_gateway)
-    md_engine_key = (realm_filters_key, email_gateway)
-
-    if md_engine_key in md_engines:
-        _md_engine = md_engines[md_engine_key]
-    else:
-        if DEFAULT_MARKDOWN_KEY not in md_engines:
-            maybe_update_markdown_engines(realm_filters_key=None, email_gateway=False)
-
-        _md_engine = md_engines[(DEFAULT_MARKDOWN_KEY, email_gateway)]
+    maybe_update_markdown_engines(linkifiers_key, email_gateway)
+    md_engine_key = (linkifiers_key, email_gateway)
+    _md_engine = md_engines[md_engine_key]
     # Reset the parser; otherwise it will get slower over time.
     _md_engine.reset()
 
@@ -2559,7 +2614,7 @@ def do_convert(
         # Spend at most 5 seconds rendering; this protects the backend
         # from being overloaded by bugs (e.g. Markdown logic that is
         # extremely inefficient in corner cases) as well as user
-        # errors (e.g. a realm filter that makes some syntax
+        # errors (e.g. a linkifier that makes some syntax
         # infinite-loop).
         rendered_content = timeout(5, lambda: _md_engine.convert(content))
 

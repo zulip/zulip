@@ -7,6 +7,7 @@ from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 
 from zerver.lib.actions import check_send_message, do_change_user_role, do_set_realm_property
+from zerver.lib.event_schema import check_restart_event
 from zerver.lib.events import fetch_initial_state_data, get_raw_user_data
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock, queries_captured, stub_event_queue_user_events
@@ -391,7 +392,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
     # Admin users have access to all bots in the realm_bots field
     def test_realm_bots_admin(self) -> None:
         user_profile = self.example_user("hamlet")
-        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         self.assertTrue(user_profile.is_realm_admin)
         result = fetch_initial_state_data(user_profile)
         self.assertTrue(len(result["realm_bots"]) > 2)
@@ -408,7 +409,10 @@ class FetchInitialStateDataTest(ZulipTestCase):
         self.assertFalse(user_profile.is_realm_admin)
 
         do_set_realm_property(
-            user_profile.realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+            user_profile.realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            acting_user=None,
         )
         result = fetch_initial_state_data(user_profile)
 
@@ -416,7 +420,10 @@ class FetchInitialStateDataTest(ZulipTestCase):
             self.assertNotIn("delivery_email", value)
 
         do_set_realm_property(
-            user_profile.realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS
+            user_profile.realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            acting_user=None,
         )
         result = fetch_initial_state_data(user_profile)
 
@@ -428,14 +435,20 @@ class FetchInitialStateDataTest(ZulipTestCase):
         self.assertTrue(user_profile.is_realm_admin)
 
         do_set_realm_property(
-            user_profile.realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE
+            user_profile.realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            acting_user=None,
         )
         result = fetch_initial_state_data(user_profile)
         for key, value in result["raw_users"].items():
             self.assertNotIn("delivery_email", value)
 
         do_set_realm_property(
-            user_profile.realm, "email_address_visibility", Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS
+            user_profile.realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            acting_user=None,
         )
         result = fetch_initial_state_data(user_profile)
         for key, value in result["raw_users"].items():
@@ -816,9 +829,7 @@ class RestartEventsTest(ZulipTestCase):
         self.assertEqual(len(virtual_events), 1)
         restart_event = virtual_events["restart"]
 
-        # TODO: add a schema checker for this to event_schema.py
-        # and exercise it here (as well as the more concrete
-        # check)
+        check_restart_event("restart_event", restart_event)
         self.assertEqual(
             restart_event,
             dict(
@@ -841,7 +852,7 @@ class FetchQueriesTest(ZulipTestCase):
             with mock.patch("zerver.lib.events.always_want") as want_mock:
                 fetch_initial_state_data(user)
 
-        self.assert_length(queries, 29)
+        self.assert_length(queries, 31)
 
         expected_counts = dict(
             alert_words=1,
@@ -851,6 +862,7 @@ class FetchQueriesTest(ZulipTestCase):
             hotspots=0,
             message=1,
             muted_topics=1,
+            muted_users=1,
             presence=1,
             realm=0,
             realm_bot=1,
@@ -859,6 +871,8 @@ class FetchQueriesTest(ZulipTestCase):
             realm_incoming_webhook_bots=0,
             realm_emoji=1,
             realm_filters=1,
+            realm_linkifiers=1,
+            realm_playgrounds=1,
             realm_user=3,
             realm_user_groups=2,
             recent_private_conversations=1,
@@ -871,6 +885,7 @@ class FetchQueriesTest(ZulipTestCase):
             update_message_flags=5,
             user_status=1,
             video_calls=0,
+            giphy=0,
         )
 
         wanted_event_types = {item[0][0] for item in want_mock.call_args_list}

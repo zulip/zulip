@@ -33,6 +33,7 @@ from zerver.decorator import do_two_factor_login
 from zerver.forms import HomepageForm, check_subdomain_available
 from zerver.lib.actions import (
     add_new_user_history,
+    change_user_is_active,
     do_add_default_stream,
     do_change_full_name,
     do_change_realm_subdomain,
@@ -201,7 +202,7 @@ class DeactivationNoticeTestCase(ZulipTestCase):
 
     def test_deactivation_notice_when_realm_subdomain_is_changed(self) -> None:
         realm = get_realm("zulip")
-        do_change_realm_subdomain(realm, "new-subdomain-name")
+        do_change_realm_subdomain(realm, "new-subdomain-name", acting_user=None)
 
         result = self.client_get("/accounts/deactivated/")
         self.assertIn(
@@ -213,7 +214,7 @@ class DeactivationNoticeTestCase(ZulipTestCase):
         self,
     ) -> None:
         realm = get_realm("zulip")
-        do_change_realm_subdomain(realm, "new-name-1")
+        do_change_realm_subdomain(realm, "new-name-1", acting_user=None)
 
         result = self.client_get("/accounts/deactivated/")
         self.assertIn(
@@ -222,7 +223,7 @@ class DeactivationNoticeTestCase(ZulipTestCase):
         )
 
         realm = get_realm("new-name-1")
-        do_change_realm_subdomain(realm, "new-name-2")
+        do_change_realm_subdomain(realm, "new-name-2", acting_user=None)
         result = self.client_get("/accounts/deactivated/")
         self.assertIn(
             'It has moved to <a href="http://new-name-2.testserver">http://new-name-2.testserver</a>.',
@@ -444,7 +445,7 @@ class PasswordResetTest(ZulipTestCase):
     def test_password_reset_for_deactivated_user(self) -> None:
         user_profile = self.example_user("hamlet")
         email = user_profile.delivery_email
-        do_deactivate_user(user_profile)
+        do_deactivate_user(user_profile, acting_user=None)
 
         # start the password reset process by supplying an email address
         result = self.client_post("/accounts/password/reset/", {"email": email})
@@ -467,7 +468,7 @@ class PasswordResetTest(ZulipTestCase):
     def test_password_reset_with_deactivated_realm(self) -> None:
         user_profile = self.example_user("hamlet")
         email = user_profile.delivery_email
-        do_deactivate_realm(user_profile.realm)
+        do_deactivate_realm(user_profile.realm, acting_user=None)
 
         # start the password reset process by supplying an email address
         with self.assertLogs(level="INFO") as m:
@@ -655,7 +656,7 @@ class LoginTest(ZulipTestCase):
 
     def test_login_deactivated_user(self) -> None:
         user_profile = self.example_user("hamlet")
-        do_deactivate_user(user_profile)
+        do_deactivate_user(user_profile, acting_user=None)
         result = self.login_with_return(self.example_email("hamlet"), "xxx")
         self.assertEqual(result.status_code, 200)
         self.assert_in_response("Your account is no longer active.", result)
@@ -746,13 +747,13 @@ class LoginTest(ZulipTestCase):
         with queries_captured() as queries, cache_tries_captured() as cache_tries:
             self.register(self.nonreg_email("test"), "test")
         # Ensure the number of queries we make is not O(streams)
-        self.assertEqual(len(queries), 70)
+        self.assertEqual(len(queries), 71)
 
         # We can probably avoid a couple cache hits here, but there doesn't
         # seem to be any O(N) behavior.  Some of the cache hits are related
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
-        self.assertEqual(len(cache_tries), 15)
+        self.assertEqual(len(cache_tries), 16)
 
         user_profile = self.nonreg_user("test")
         self.assert_logged_in_user_id(user_profile.id)
@@ -1108,8 +1109,8 @@ class InviteUserTest(InviteUserBase):
 
         mirror_user = self.example_user("cordelia")
         mirror_user.is_mirror_dummy = True
-        mirror_user.is_active = False
         mirror_user.save()
+        change_user_is_active(mirror_user, False)
 
         self.assertEqual(
             PreregistrationUser.objects.filter(email=mirror_user.email).count(),
@@ -1232,24 +1233,101 @@ class InviteUserTest(InviteUserBase):
         self.assertTrue(find_key_by_email(email2))
         self.check_sent_emails([email, email2], custom_from_name="Hamlet")
 
-    def test_require_realm_admin(self) -> None:
+    def test_can_invite_others_to_realm(self) -> None:
+        def validation_func(user_profile: UserProfile) -> bool:
+            user_profile.refresh_from_db()
+            return user_profile.can_invite_others_to_realm()
+
+        self.check_has_permission_policies("invite_to_realm_policy", validation_func)
+
+    def test_invite_others_to_realm_setting(self) -> None:
         """
-        The invite_by_admins_only realm setting works properly.
+        The invite_to_realm_policy realm setting works properly.
         """
         realm = get_realm("zulip")
-        realm.invite_by_admins_only = True
-        realm.save()
+        do_set_realm_property(
+            realm, "invite_to_realm_policy", Realm.POLICY_ADMINS_ONLY, acting_user=None
+        )
 
-        self.login("hamlet")
+        self.login("shiva")
         email = "alice-test@zulip.com"
         email2 = "bob-test@zulip.com"
         invitee = f"Alice Test <{email}>, {email2}"
         self.assert_json_error(
-            self.invite(invitee, ["Denmark"]), "Must be an organization administrator"
+            self.invite(invitee, ["Denmark"]),
+            "Insufficient permission",
         )
 
         # Now verify an administrator can do it
         self.login("iago")
+        self.assert_json_success(self.invite(invitee, ["Denmark"]))
+        self.assertTrue(find_key_by_email(email))
+        self.assertTrue(find_key_by_email(email2))
+
+        self.check_sent_emails([email, email2])
+
+        from django.core import mail
+
+        mail.outbox = []
+
+        do_set_realm_property(
+            realm, "invite_to_realm_policy", Realm.POLICY_MODERATORS_ONLY, acting_user=None
+        )
+        self.login("hamlet")
+        email = "carol-test@zulip.com"
+        email2 = "earl-test@zulip.com"
+        invitee = f"Carol Test <{email}>, {email2}"
+        self.assert_json_error(
+            self.invite(invitee, ["Denmark"]),
+            "Insufficient permission",
+        )
+
+        self.login("shiva")
+        self.assert_json_success(self.invite(invitee, ["Denmark"]))
+        self.assertTrue(find_key_by_email(email))
+        self.assertTrue(find_key_by_email(email2))
+        self.check_sent_emails([email, email2])
+
+        mail.outbox = []
+
+        do_set_realm_property(
+            realm, "invite_to_realm_policy", Realm.POLICY_MEMBERS_ONLY, acting_user=None
+        )
+
+        self.login("polonius")
+        email = "dave-test@zulip.com"
+        email2 = "mark-test@zulip.com"
+        invitee = f"Dave Test <{email}>, {email2}"
+        self.assert_json_error(self.invite(invitee, ["Denmark"]), "Not allowed for guest users")
+
+        self.login("hamlet")
+        self.assert_json_success(self.invite(invitee, ["Denmark"]))
+        self.assertTrue(find_key_by_email(email))
+        self.assertTrue(find_key_by_email(email2))
+        self.check_sent_emails([email, email2])
+
+        mail.outbox = []
+
+        do_set_realm_property(
+            realm, "invite_to_realm_policy", Realm.POLICY_FULL_MEMBERS_ONLY, acting_user=None
+        )
+        do_set_realm_property(realm, "waiting_period_threshold", 1000, acting_user=None)
+
+        hamlet = self.example_user("hamlet")
+        hamlet.date_joined = timezone_now() - datetime.timedelta(
+            days=(realm.waiting_period_threshold - 1)
+        )
+
+        email = "issac-test@zulip.com"
+        email2 = "steven-test@zulip.com"
+        invitee = f"Issac Test <{email}>, {email2}"
+        self.assert_json_error(
+            self.invite(invitee, ["Denmark"]),
+            "Insufficient permission",
+        )
+
+        do_set_realm_property(realm, "waiting_period_threshold", 0, acting_user=None)
+
         self.assert_json_success(self.invite(invitee, ["Denmark"]))
         self.assertTrue(find_key_by_email(email))
         self.assertTrue(find_key_by_email(email2))
@@ -1363,7 +1441,7 @@ earl-test@zulip.com""",
         Tests inviting with various missing or invalid parameters.
         """
         realm = get_realm("zulip")
-        do_set_realm_property(realm, "emails_restricted_to_domains", True)
+        do_set_realm_property(realm, "emails_restricted_to_domains", True, acting_user=None)
 
         self.login("hamlet")
         invitee_emails = "foo@zulip.com"
@@ -2433,8 +2511,8 @@ class MultiuseInviteTest(ZulipTestCase):
     def test_only_admin_can_create_multiuse_link_api_call(self) -> None:
         self.login("iago")
         # Only admins should be able to create multiuse invites even if
-        # invite_by_admins_only is set to False.
-        self.realm.invite_by_admins_only = False
+        # invite_to_realm_policy is set to Realm.POLICY_MEMBERS_ONLY.
+        self.realm.invite_to_realm_policy = Realm.POLICY_MEMBERS_ONLY
         self.realm.save()
 
         result = self.client_post("/json/invites/multiuse")
@@ -2881,7 +2959,7 @@ class RealmCreationTest(ZulipTestCase):
     @override_settings(OPEN_REALM_CREATION=True)
     def test_create_realm_using_old_subdomain_of_a_realm(self) -> None:
         realm = get_realm("zulip")
-        do_change_realm_subdomain(realm, "new-name")
+        do_change_realm_subdomain(realm, "new-name", acting_user=None)
 
         password = "test"
         email = "user1@test.com"
@@ -3053,7 +3131,7 @@ class UserSignUpTest(InviteUserBase):
         password = "newpassword"
         timezone = "US/Mountain"
         realm = get_realm("zulip")
-        do_set_realm_property(realm, "default_language", "de")
+        do_set_realm_property(realm, "default_language", "de", acting_user=None)
 
         result = self.client_post("/accounts/home/", {"email": email})
         self.assertEqual(result.status_code, 302)
@@ -3085,7 +3163,7 @@ class UserSignUpTest(InviteUserBase):
         email = self.nonreg_email("newguy")
         password = "newpassword"
         realm = get_realm("zulip")
-        do_set_realm_property(realm, "default_twenty_four_hour_time", True)
+        do_set_realm_property(realm, "default_twenty_four_hour_time", True, acting_user=None)
 
         result = self.client_post("/accounts/home/", {"email": email})
         self.assertEqual(result.status_code, 302)
@@ -3596,8 +3674,8 @@ class UserSignUpTest(InviteUserBase):
 
     def test_failed_signup_due_to_restricted_domain(self) -> None:
         realm = get_realm("zulip")
-        do_set_realm_property(realm, "invite_required", False)
-        do_set_realm_property(realm, "emails_restricted_to_domains", True)
+        do_set_realm_property(realm, "invite_required", False, acting_user=None)
+        do_set_realm_property(realm, "emails_restricted_to_domains", True, acting_user=None)
 
         email = "user@acme.com"
         form = HomepageForm({"email": email}, realm=realm)
@@ -4461,8 +4539,8 @@ class UserSignUpTest(InviteUserBase):
         user_profile = self.mit_user("sipbtest")
         email = user_profile.delivery_email
         user_profile.is_mirror_dummy = True
-        user_profile.is_active = False
         user_profile.save()
+        change_user_is_active(user_profile, False)
 
         result = self.client_post("/register/", {"email": email}, subdomain="zephyr")
 
@@ -4488,8 +4566,8 @@ class UserSignUpTest(InviteUserBase):
         # If the mirror dummy user is already active, attempting to
         # submit the registration form should raise an AssertionError
         # (this is an invalid state, so it's a bug we got here):
-        user_profile.is_active = True
-        user_profile.save()
+        change_user_is_active(user_profile, True)
+
         with self.assertRaisesRegex(
             AssertionError, "Mirror dummy user is already active!"
         ), self.assertLogs("django.request", "ERROR") as error_log:
@@ -4510,8 +4588,7 @@ class UserSignUpTest(InviteUserBase):
             "AssertionError: Mirror dummy user is already active!" in error_log.output[0]
         )
 
-        user_profile.is_active = False
-        user_profile.save()
+        change_user_is_active(user_profile, False)
 
         result = self.submit_reg_form_for_user(
             email,
@@ -4530,7 +4607,11 @@ class UserSignUpTest(InviteUserBase):
         self.assertEqual(result.status_code, 302)
         self.assert_logged_in_user_id(user_profile.id)
 
-    def test_registration_of_active_mirror_dummy_user(self) -> None:
+    @patch(
+        "DNS.dnslookup",
+        return_value=[["sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh"]],
+    )
+    def test_registration_of_active_mirror_dummy_user(self, ignored: Any) -> None:
         """
         Trying to activate an already-active mirror dummy user should
         raise an AssertionError.
@@ -4538,8 +4619,8 @@ class UserSignUpTest(InviteUserBase):
         user_profile = self.mit_user("sipbtest")
         email = user_profile.delivery_email
         user_profile.is_mirror_dummy = True
-        user_profile.is_active = True
         user_profile.save()
+        change_user_is_active(user_profile, True)
 
         with self.assertRaisesRegex(
             AssertionError, "Mirror dummy user is already active!"
@@ -4612,17 +4693,18 @@ class DeactivateUserTest(ZulipTestCase):
         user = self.example_user("desdemona")
         self.assertTrue(user.is_active)
         self.assertTrue(user.is_realm_owner)
-        do_change_user_role(user_2, UserProfile.ROLE_REALM_OWNER)
+        do_change_user_role(user_2, UserProfile.ROLE_REALM_OWNER, acting_user=None)
         self.assertTrue(user_2.is_realm_owner)
         result = self.client_delete("/json/users/me")
         self.assert_json_success(result)
-        do_change_user_role(user, UserProfile.ROLE_REALM_OWNER)
+        do_change_user_role(user, UserProfile.ROLE_REALM_OWNER, acting_user=None)
 
     def test_do_not_deactivate_final_user(self) -> None:
         realm = get_realm("zulip")
-        UserProfile.objects.filter(realm=realm).exclude(role=UserProfile.ROLE_REALM_OWNER).update(
-            is_active=False
-        )
+        for user_profile in UserProfile.objects.filter(realm=realm).exclude(
+            role=UserProfile.ROLE_REALM_OWNER
+        ):
+            do_deactivate_user(user_profile, acting_user=None)
         user = self.example_user("desdemona")
         self.login_user(user)
         result = self.client_delete("/json/users/me")
@@ -4807,7 +4889,7 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertEqual(len(outbox), 1)
 
     def test_find_team_deactivated_user(self) -> None:
-        do_deactivate_user(self.example_user("hamlet"))
+        do_deactivate_user(self.example_user("hamlet"), acting_user=None)
         data = {"emails": self.example_email("hamlet")}
         result = self.client_post("/accounts/find/", data)
         self.assertEqual(result.status_code, 302)
@@ -4817,7 +4899,7 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertEqual(len(outbox), 0)
 
     def test_find_team_deactivated_realm(self) -> None:
-        do_deactivate_realm(get_realm("zulip"))
+        do_deactivate_realm(get_realm("zulip"), acting_user=None)
         data = {"emails": self.example_email("hamlet")}
         result = self.client_post("/accounts/find/", data)
         self.assertEqual(result.status_code, 302)

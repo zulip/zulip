@@ -1,5 +1,5 @@
 import ClipboardJS from "clipboard";
-import {parseISO, formatISO, add, set} from "date-fns";
+import {add, formatISO, parseISO, set} from "date-fns";
 import ConfirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
 import $ from "jquery";
 
@@ -23,15 +23,19 @@ import * as compose_ui from "./compose_ui";
 import * as condense from "./condense";
 import * as emoji_picker from "./emoji_picker";
 import * as feature_flags from "./feature_flags";
+import * as giphy from "./giphy";
 import * as hash_util from "./hash_util";
+import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
+import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as muting from "./muting";
 import * as muting_ui from "./muting_ui";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as reminder from "./reminder";
 import * as resize from "./resize";
@@ -106,7 +110,7 @@ function copy_email_handler(e) {
     const email_textnode = email_el[0].childNodes[2];
 
     email_el.addClass("email_copied");
-    email_textnode.nodeValue = i18n.t("Email copied");
+    email_textnode.nodeValue = $t({defaultMessage: "Email copied"});
 
     setTimeout(() => {
         email_el.removeClass("email_copied");
@@ -192,7 +196,7 @@ function get_custom_profile_field_data(user, field, field_types, dateFormat) {
             profile_field.is_user_field = true;
             profile_field.value = field_value.value;
             break;
-        case field_types.CHOICE.id: {
+        case field_types.SELECT.id: {
             const field_choice_dict = JSON.parse(field.field_data);
             profile_field.value = field_choice_dict[field_value.value].text;
             break;
@@ -307,7 +311,7 @@ function show_user_info_popover_for_message(element, user, message) {
         // by clicking on the same element that caused the popover.
         return;
     }
-    current_msg_list.select_id(message.id);
+    message_lists.current.select_id(message.id);
     const elt = $(element);
     if (elt.data("popover") === undefined) {
         if (user === undefined) {
@@ -485,7 +489,7 @@ function show_user_group_info_popover(element, group, message) {
         // by clicking on the same element that caused the popover.
         return;
     }
-    current_msg_list.select_id(message.id);
+    message_lists.current.select_id(message.id);
     const elt = $(element);
     if (elt.data("popover") === undefined) {
         const args = {
@@ -515,22 +519,22 @@ export function toggle_actions_popover(element, id) {
     }
 
     $(element).closest(".message_row").toggleClass("has_popover has_actions_popover");
-    current_msg_list.select_id(id);
+    message_lists.current.select_id(id);
     const elt = $(element);
     if (elt.data("popover") === undefined) {
-        const message = current_msg_list.get(id);
+        const message = message_lists.current.get(id);
         const editability = message_edit.get_editability(message);
         let use_edit_icon;
         let editability_menu_item;
         if (editability === message_edit.editability_types.FULL) {
             use_edit_icon = true;
-            editability_menu_item = i18n.t("Edit");
+            editability_menu_item = $t({defaultMessage: "Edit"});
         } else if (editability === message_edit.editability_types.TOPIC_ONLY) {
             use_edit_icon = false;
-            editability_menu_item = i18n.t("View source / Edit topic");
+            editability_menu_item = $t({defaultMessage: "View source / Edit topic"});
         } else {
             use_edit_icon = false;
-            editability_menu_item = i18n.t("View source");
+            editability_menu_item = $t({defaultMessage: "View source"});
         }
         const topic = message.topic;
         const can_mute_topic =
@@ -602,10 +606,10 @@ export function toggle_actions_popover(element, id) {
 export function render_actions_remind_popover(element, id) {
     hide_all();
     $(element).closest(".message_row").toggleClass("has_popover has_actions_popover");
-    current_msg_list.select_id(id);
+    message_lists.current.select_id(id);
     const elt = $(element);
     if (elt.data("popover") === undefined) {
-        const message = current_msg_list.get(id);
+        const message = message_lists.current.get(id);
         const args = {
             message,
         };
@@ -816,7 +820,7 @@ export function show_sender_info() {
     const $message = $(".selected_message");
     const $sender = $message.find(".sender_info_hover");
 
-    const message = current_msg_list.get(rows.id($message));
+    const message = message_lists.current.get(rows.id($message));
     const user = people.get_by_user_id(message.sender_id);
     show_user_info_popover_for_message($sender[0], user, message);
     if (current_message_info_popover_elem) {
@@ -883,7 +887,7 @@ export function register_click_handlers() {
         function (e) {
             const row = $(this).closest(".message_row");
             e.stopPropagation();
-            const message = current_msg_list.get(rows.id(row));
+            const message = message_lists.current.get(rows.id(row));
             const user = people.get_by_user_id(message.sender_id);
             show_user_info_popover_for_message(this, user, message);
         },
@@ -899,7 +903,7 @@ export function register_click_handlers() {
         }
         const row = $(this).closest(".message_row");
         e.stopPropagation();
-        const message = current_msg_list.get(rows.id(row));
+        const message = message_lists.current.get(rows.id(row));
         let user;
         if (id_string) {
             const user_id = Number.parseInt(id_string, 10);
@@ -914,7 +918,7 @@ export function register_click_handlers() {
         const user_group_id = Number.parseInt($(this).attr("data-user-group-id"), 10);
         const row = $(this).closest(".message_row");
         e.stopPropagation();
-        const message = current_msg_list.get(rows.id(row));
+        const message = message_lists.current.get(rows.id(row));
         const group = user_groups.get_user_group_from_id(user_group_id, true);
         if (group === undefined) {
             // This user group has likely been deleted.
@@ -1202,8 +1206,8 @@ export function register_click_handlers() {
     });
     $("body").on("click", ".popover_toggle_collapse", (e) => {
         const message_id = $(e.currentTarget).data("message-id");
-        const row = current_msg_list.get_row(message_id);
-        const message = current_msg_list.get(rows.id(row));
+        const row = message_lists.current.get_row(message_id);
+        const message = message_lists.current.get(rows.id(row));
 
         hide_actions_popover();
 
@@ -1220,7 +1224,7 @@ export function register_click_handlers() {
     });
     $("body").on("click", ".popover_edit_message", (e) => {
         const message_id = $(e.currentTarget).data("message-id");
-        const row = current_msg_list.get_row(message_id);
+        const row = message_lists.current.get_row(message_id);
         hide_actions_popover();
         message_edit.start(row);
         e.stopPropagation();
@@ -1228,8 +1232,8 @@ export function register_click_handlers() {
     });
     $("body").on("click", ".view_edit_history", (e) => {
         const message_id = $(e.currentTarget).data("message-id");
-        const row = current_msg_list.get_row(message_id);
-        const message = current_msg_list.get(rows.id(row));
+        const row = message_lists.current.get_row(message_id);
+        const message = message_lists.current.get(rows.id(row));
         const message_history_cancel_btn = $("#message-history-cancel");
 
         hide_actions_popover();
@@ -1274,7 +1278,7 @@ export function register_click_handlers() {
         const message_id = $(this).attr("data-message-id");
         const row = $(`[zid='${CSS.escape(message_id)}']`);
         row.find(".alert-msg")
-            .text(i18n.t("Copied!"))
+            .text($t({defaultMessage: "Copied!"}))
             .css("display", "block")
             .delay(1000)
             .fadeOut(300);
@@ -1344,6 +1348,7 @@ export function hide_all_except_sidebars() {
     hide_actions_popover();
     hide_message_info_popover();
     emoji_picker.hide_emoji_popover();
+    giphy.hide_giphy_popover();
     stream_popover.hide_stream_popover();
     stream_popover.hide_topic_popover();
     stream_popover.hide_all_messages_popover();

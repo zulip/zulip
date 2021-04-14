@@ -1,6 +1,15 @@
 "use strict";
 
 module.exports = {
+    plugins: [
+        [
+            "formatjs",
+            {
+                additionalFunctionNames: ["$t", "$t_html"],
+                overrideIdFn: (id, defaultMessage) => defaultMessage,
+            },
+        ],
+    ],
     presets: [
         [
             "@babel/preset-env",

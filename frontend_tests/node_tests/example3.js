@@ -2,8 +2,9 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const {page_params} = require("../zjsunit/zpage_params");
 
 // In the Zulip app you can narrow your message stream by topic, by
 // sender, by PM recipient, by search keywords, etc.  We will discuss
@@ -13,16 +14,12 @@ const {run_test} = require("../zjsunit/test");
 const {Filter} = zrequire("../js/filter");
 const stream_data = zrequire("stream_data");
 
-// This is the first time we have to deal with page_params.  We
-// use set_global to set it to our preferred state.
-// (There are a few global variables in the Zulip codebase, and
+// This is the first time we have to deal with page_params.
 // page_params has a lot of important data shared by various
-// modules. Most of the data is irrelevant to out tests.)
-set_global("page_params", {
-    // Use this to explicitly say we are not a special Zephyr
-    // realm, since we want to test the "normal" codepath.
-    realm_is_zephyr_mirror_realm: false,
-});
+// modules. Most of the data is irrelevant to out tests.
+// Use this to explicitly say we are not a special Zephyr
+// realm, since we want to test the "normal" codepath.
+page_params.realm_is_zephyr_mirror_realm = false;
 
 const denmark_stream = {
     color: "blue",

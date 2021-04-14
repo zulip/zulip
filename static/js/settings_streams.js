@@ -3,8 +3,10 @@ import $ from "jquery";
 import render_admin_default_streams_list from "../templates/admin_default_streams_list.hbs";
 
 import * as channel from "./channel";
+import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
+import {page_params} from "./page_params";
 import * as stream_data from "./stream_data";
 import * as typeahead_helper from "./typeahead_helper";
 import * as ui from "./ui";
@@ -78,9 +80,9 @@ function make_stream_default(stream_id) {
         data,
         error(xhr) {
             if (xhr.status.toString().charAt(0) === "4") {
-                ui_report.error(i18n.t("Failed"), xhr, default_stream_status);
+                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, default_stream_status);
             } else {
-                ui_report.error(i18n.t("Failed"), default_stream_status);
+                ui_report.error($t_html({defaultMessage: "Failed"}), default_stream_status);
             }
             default_stream_status.show();
         },

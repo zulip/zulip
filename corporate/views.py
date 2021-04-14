@@ -123,13 +123,13 @@ def payment_method_string(stripe_customer: stripe.Customer) -> str:
 def upgrade(
     request: HttpRequest,
     user: UserProfile,
-    billing_modality: str = REQ(validator=check_string),
-    schedule: str = REQ(validator=check_string),
-    license_management: Optional[str] = REQ(validator=check_string, default=None),
-    licenses: Optional[int] = REQ(validator=check_int, default=None),
-    stripe_token: Optional[str] = REQ(validator=check_string, default=None),
-    signed_seat_count: str = REQ(validator=check_string),
-    salt: str = REQ(validator=check_string),
+    billing_modality: str = REQ(json_validator=check_string),
+    schedule: str = REQ(json_validator=check_string),
+    license_management: Optional[str] = REQ(json_validator=check_string, default=None),
+    licenses: Optional[int] = REQ(json_validator=check_int, default=None),
+    stripe_token: Optional[str] = REQ(json_validator=check_string, default=None),
+    signed_seat_count: str = REQ(json_validator=check_string),
+    salt: str = REQ(json_validator=check_string),
 ) -> HttpResponse:
     try:
         seat_count = unsign_seat_count(signed_seat_count, salt)
@@ -232,9 +232,9 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
 def sponsorship(
     request: HttpRequest,
     user: UserProfile,
-    organization_type: str = REQ("organization-type", validator=check_string),
-    website: str = REQ("website", validator=check_string),
-    description: str = REQ("description", validator=check_string),
+    organization_type: str = REQ("organization-type", json_validator=check_string),
+    website: str = REQ("website", json_validator=check_string),
+    description: str = REQ("description", json_validator=check_string),
 ) -> HttpResponse:
     realm = user.realm
 
@@ -265,7 +265,7 @@ def sponsorship(
         context=context,
     )
 
-    update_sponsorship_status(realm, True)
+    update_sponsorship_status(realm, True, acting_user=user)
     user.is_billing_admin = True
     user.save(update_fields=["is_billing_admin"])
 
@@ -350,7 +350,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
 @require_billing_access
 @has_request_variables
 def change_plan_status(
-    request: HttpRequest, user: UserProfile, status: int = REQ("status", validator=check_int)
+    request: HttpRequest, user: UserProfile, status: int = REQ("status", json_validator=check_int)
 ) -> HttpResponse:
     assert status in [
         CustomerPlan.ACTIVE,
@@ -384,7 +384,7 @@ def change_plan_status(
 def replace_payment_source(
     request: HttpRequest,
     user: UserProfile,
-    stripe_token: str = REQ("stripe_token", validator=check_string),
+    stripe_token: str = REQ("stripe_token", json_validator=check_string),
 ) -> HttpResponse:
     try:
         do_replace_payment_source(user, stripe_token, pay_invoices=True)

@@ -133,6 +133,8 @@ def tokenize(text: str) -> List[Token]:
             elif looking_at_handlebars_start():
                 s = get_handlebars_tag(text, state.i)
                 tag = s[3:-2].split()[0]
+                if tag.startswith("*"):
+                    tag = tag[1:]
                 kind = "handlebars_start"
             elif looking_at_handlebars_end():
                 s = get_handlebars_tag(text, state.i)
@@ -318,6 +320,7 @@ def is_special_html_tag(s: str, tag: str) -> bool:
 
 
 OPTIONAL_CLOSING_TAGS = [
+    "br",
     "circle",
     "img",
     "input",

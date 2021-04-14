@@ -24,7 +24,10 @@
                     {{t "Stream permissions" }}
                 </div>
                 <div class="stream-creation-info">
-                    {{t 'These settings are explained in detail in the <a target="_blank" rel="noopener noreferrer" href="/help/stream-permissions">help center</a>.'}}
+                    {{#tr}}
+                        These settings are explained in detail in the <z-link>help center</z-link>.
+                        {{#*inline "z-link"}}<a target="_blank" rel="noopener noreferrer" href="/help/stream-permissions">{{> @partial-block }}</a>{{/inline}}
+                    {{/tr}}
                 </div>
 
                 {{> stream_types

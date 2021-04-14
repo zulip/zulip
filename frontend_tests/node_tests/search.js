@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = () => {};
 
@@ -25,16 +26,20 @@ mock_esm("../../static/js/ui_util", {
     place_caret_at_end: noop,
 });
 
-set_global("page_params", {
-    search_pills_enabled: true,
-});
 set_global("setTimeout", (func) => func());
 
 const search = zrequire("search");
 const search_pill = zrequire("search_pill");
 const {Filter} = zrequire("../js/filter");
 
-run_test("clear_search_form", () => {
+function test(label, f) {
+    run_test(label, (override) => {
+        page_params.search_pills_enabled = true;
+        f(override);
+    });
+}
+
+test("clear_search_form", () => {
     $("#search_query").val("noise");
     $("#search_query").trigger("focus");
     $(".search_button").prop("disabled", false);
@@ -46,7 +51,7 @@ run_test("clear_search_form", () => {
     assert.equal($(".search_button").prop("disabled"), true);
 });
 
-run_test("update_button_visibility", () => {
+test("update_button_visibility", () => {
     const search_query = $("#search_query");
     const search_button = $(".search_button");
 
@@ -79,7 +84,7 @@ run_test("update_button_visibility", () => {
     assert(!search_button.prop("disabled"));
 });
 
-run_test("initialize", () => {
+test("initialize", () => {
     const search_query_box = $("#search_query");
     const searchbox_form = $("#searchbox_form");
     const search_button = $(".search_button");
@@ -314,7 +319,7 @@ run_test("initialize", () => {
     assert(!search_button.prop("disabled"));
 });
 
-run_test("initiate_search", () => {
+test("initiate_search", () => {
     // open typeahead and select text when navbar is open
     // this implicitly expects the code to used the chained
     // function calls, which is something to keep in mind if

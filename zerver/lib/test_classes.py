@@ -6,7 +6,20 @@ import subprocess
 import tempfile
 import urllib
 from contextlib import contextmanager
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Set, Tuple, Union
+from datetime import timedelta
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    Union,
+)
 from unittest import TestResult, mock
 
 import lxml.html
@@ -24,6 +37,7 @@ from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
 from django.test.testcases import SerializeMixin
 from django.urls import resolve
 from django.utils import translation
+from django.utils.timezone import now as timezone_now
 from fakeldap import MockLDAP
 from two_factor.models import PhoneDevice
 
@@ -33,6 +47,7 @@ from zerver.lib.actions import (
     bulk_remove_subscriptions,
     check_send_message,
     check_send_stream_message,
+    do_set_realm_property,
     gather_subscriptions,
 )
 from zerver.lib.cache import bounce_key_prefix_for_testing
@@ -833,7 +848,7 @@ Output:
         self.assertNotEqual(json["msg"], "Error parsing JSON in response!")
         return json
 
-    def get_json_error(self, result: HttpResponse, status_code: int = 400) -> Dict[str, Any]:
+    def get_json_error(self, result: HttpResponse, status_code: int = 400) -> str:
         try:
             json = orjson.loads(result.content)
         except orjson.JSONDecodeError:  # nocoverage
@@ -959,13 +974,13 @@ Output:
             stream = get_stream(stream_name, user_profile.realm)
         except Stream.DoesNotExist:
             stream, from_stream_creation = create_stream_if_needed(realm, stream_name)
-        bulk_add_subscriptions(realm, [stream], [user_profile])
+        bulk_add_subscriptions(realm, [stream], [user_profile], acting_user=None)
         return stream
 
     def unsubscribe(self, user_profile: UserProfile, stream_name: str) -> None:
         client = get_client("website")
         stream = get_stream(stream_name, user_profile.realm)
-        bulk_remove_subscriptions([user_profile], [stream], client)
+        bulk_remove_subscriptions([user_profile], [stream], client, acting_user=None)
 
     # Subscribe to a stream by making an API request
     def common_subscribe_to_streams(
@@ -1179,6 +1194,56 @@ Output:
         """
         # See email_display_from, above.
         return email_message.from_email
+
+    def check_has_permission_policies(
+        self, policy: str, validation_func: Callable[[UserProfile], bool]
+    ) -> None:
+
+        realm = get_realm("zulip")
+        admin_user = self.example_user("iago")
+        moderator_user = self.example_user("shiva")
+        member_user = self.example_user("hamlet")
+        new_member_user = self.example_user("othello")
+        guest_user = self.example_user("polonius")
+
+        do_set_realm_property(realm, "waiting_period_threshold", 1000, acting_user=None)
+        new_member_user.date_joined = timezone_now() - timedelta(
+            days=(realm.waiting_period_threshold - 1)
+        )
+        new_member_user.save()
+
+        member_user.date_joined = timezone_now() - timedelta(
+            days=(realm.waiting_period_threshold + 1)
+        )
+        member_user.save()
+
+        do_set_realm_property(realm, policy, Realm.POLICY_ADMINS_ONLY, acting_user=None)
+        self.assertTrue(validation_func(admin_user))
+        self.assertFalse(validation_func(moderator_user))
+        self.assertFalse(validation_func(member_user))
+        self.assertFalse(validation_func(new_member_user))
+        self.assertFalse(validation_func(guest_user))
+
+        do_set_realm_property(realm, policy, Realm.POLICY_MODERATORS_ONLY, acting_user=None)
+        self.assertTrue(validation_func(admin_user))
+        self.assertTrue(validation_func(moderator_user))
+        self.assertFalse(validation_func(member_user))
+        self.assertFalse(validation_func(new_member_user))
+        self.assertFalse(validation_func(guest_user))
+
+        do_set_realm_property(realm, policy, Realm.POLICY_FULL_MEMBERS_ONLY, acting_user=None)
+        self.assertTrue(validation_func(admin_user))
+        self.assertTrue(validation_func(moderator_user))
+        self.assertTrue(validation_func(member_user))
+        self.assertFalse(validation_func(new_member_user))
+        self.assertFalse(validation_func(guest_user))
+
+        do_set_realm_property(realm, policy, Realm.POLICY_MEMBERS_ONLY, acting_user=None)
+        self.assertTrue(validation_func(admin_user))
+        self.assertTrue(validation_func(moderator_user))
+        self.assertTrue(validation_func(member_user))
+        self.assertTrue(validation_func(new_member_user))
+        self.assertFalse(validation_func(guest_user))
 
 
 class WebhookTestCase(ZulipTestCase):

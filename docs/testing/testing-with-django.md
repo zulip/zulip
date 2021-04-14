@@ -170,15 +170,22 @@ and replace them with fake instances that only implement a limited
 interface. On top of that, these fake instances can be easily
 analyzed.
 
-Say you have a method `greet(name_key)` defined as follows:
+Say you have a module `greetings` defining the following functions:
+
+    def fetch_database(key: str) -> str:
+        # ...
+        # Do some look-ups in a database
+        return data
 
     def greet(name_key: str) -> str:
         name = fetch_database(name_key)
-        return "Hello " + name
+        return "Hello" + name
 
 * You want to test `greet()`.
 
 * In your test, you want to call `greet("Mario")` and verify that it returns the correct greeting:
+
+        from greetings import greet
 
         def test_greet() -> str:
             greeting = greet("Mario")
@@ -195,15 +202,15 @@ Say you have a method `greet(name_key)` defined as follows:
 
 -> **Solution**: You mock `fetch_database()`. This is also referred to as "mocking out" `fetch_database()`.
 
-    from unittest.mock import MagicMock # Our mocking class that will replace `fetch_database()`
+    from unittest.mock import patch
 
     def test_greet() -> None:
         # Mock `fetch_database()` with an object that acts like a shell: It still accepts calls like `fetch_database()`,
         # but doesn't do any database lookup. We "fill" the shell with a return value; This value will be returned on every
         # call to `fetch_database()`.
-        fetch_database = MagicMock(return_value="Mr. Mario Mario")
-        greeting = greet("Mario")
-        assert greeting == "Hello Mr. Mario Mario"
+        with patch("greetings.fetch_database", return_value="Mr. Mario Mario"):
+            greeting = greetings.greet("Mario")
+            assert greeting == "Hello Mr. Mario Mario"
 
 That's all. Note that **this mock is suitable for testing `greet()`, but not for testing `fetch_database()`**.
 More generally, you should only mock those functions you explicitly don't want to test.

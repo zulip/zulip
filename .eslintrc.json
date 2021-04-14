@@ -87,7 +87,8 @@
             }
         ],
         "radix": "error",
-        "spaced-comment": "off",
+        "sort-imports": ["error", {"ignoreDeclarationSort": true}],
+        "spaced-comment": ["error", "always", {"markers": ["/"]}],
         "strict": "error",
         "unicorn/consistent-function-scoping": "off",
         "unicorn/explicit-length-check": "off",
@@ -105,31 +106,15 @@
     },
     "overrides": [
         {
-            "files": ["frontend_tests/node_tests/**"],
-            "globals": {
-                "current_msg_list": false,
-                "home_msg_list": false,
-                "i18n": false,
-                "location": false
-            }
-        },
-        {
             "files": ["frontend_tests/puppeteer_lib/**", "frontend_tests/puppeteer_tests/**"],
             "globals": {
                 "$": false,
-                "current_msg_list": false,
-                "page_params": false,
                 "zulip_test": false
             }
         },
         {
             "files": ["static/js/**"],
             "globals": {
-                "csrf_token": false,
-                "current_msg_list": true,
-                "home_msg_list": false,
-                "i18n": false,
-                "page_params": false,
                 "StripeCheckout": false,
                 "zxcvbn": false
             }
@@ -209,7 +194,6 @@
             "files": ["static/**"],
             "env": {
                 "browser": true,
-                "commonjs": true,
                 "node": false
             },
             "rules": {
@@ -223,7 +207,6 @@
             "files": ["static/shared/**"],
             "env": {
                 "browser": false,
-                "commonjs": false,
                 "shared-node-browser": true
             },
             "rules": {

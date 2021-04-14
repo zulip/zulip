@@ -5,12 +5,15 @@ import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as echo from "./echo";
 import * as message_events from "./message_events";
+import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
+import {page_params} from "./page_params";
 import * as reload from "./reload";
 import * as reload_state from "./reload_state";
 import * as sent_messages from "./sent_messages";
 import * as server_events_dispatch from "./server_events_dispatch";
 import * as ui_report from "./ui_report";
+import * as watchdog from "./watchdog";
 
 // Docs: https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
 
@@ -22,12 +25,6 @@ let get_events_xhr;
 let get_events_timeout;
 let get_events_failures = 0;
 const get_events_params = {};
-
-// This field keeps track of whether we are attempting to
-// force-reconnect to the events server due to suspecting we are
-// offline.  It is important for avoiding races with the presence
-// system when coming back from unsuspend.
-export let suspect_offline = false;
 
 function get_events_success(events) {
     let messages = [];
@@ -139,8 +136,8 @@ function get_events_success(events) {
         }
     }
 
-    if (home_msg_list.selected_id() === -1 && !home_msg_list.empty()) {
-        home_msg_list.select_id(home_msg_list.first().id, {then_scroll: false});
+    if (message_lists.home.selected_id() === -1 && !message_lists.home.empty()) {
+        message_lists.home.select_id(message_lists.home.first().id, {then_scroll: false});
     }
 
     if (update_message_events.length !== 0) {
@@ -173,9 +170,7 @@ function hide_ui_connection_error() {
     $("#connection-error").removeClass("get-events-error");
 }
 
-function get_events(options) {
-    options = {dont_block: false, ...options};
-
+function get_events({dont_block = false} = {}) {
     if (reload_state.is_in_progress()) {
         return;
     }
@@ -187,14 +182,14 @@ function get_events(options) {
         return;
     }
 
-    get_events_params.dont_block = options.dont_block || get_events_failures > 0;
+    get_events_params.dont_block = dont_block || get_events_failures > 0;
 
     if (get_events_params.dont_block) {
         // If we're requesting an immediate re-connect to the server,
         // that means it's fairly likely that this client has been off
         // the Internet and thus may have stale state (which is
         // important for potential presence issues).
-        suspect_offline = true;
+        watchdog.set_suspect_offline(true);
     }
     if (get_events_params.queue_id === undefined) {
         get_events_params.queue_id = page_params.queue_id;
@@ -218,7 +213,7 @@ function get_events(options) {
         idempotent: true,
         timeout: page_params.poll_timeout,
         success(data) {
-            suspect_offline = false;
+            watchdog.set_suspect_offline(false);
             try {
                 get_events_xhr = undefined;
                 get_events_failures = 0;
@@ -302,26 +297,8 @@ export function home_view_loaded() {
     $(document).trigger("home_view_loaded.zulip");
 }
 
-let watchdog_time = Date.now();
-
-export function check_for_unsuspend() {
-    const new_time = Date.now();
-    if (new_time - watchdog_time > 20000) {
-        // 20 seconds.
-        // Defensively reset watchdog_time here in case there's an
-        // exception in one of the event handlers
-        watchdog_time = new_time;
-        // Our app's JS wasn't running, which probably means the machine was
-        // asleep.
-        $(document).trigger("unsuspend");
-    }
-    watchdog_time = new_time;
-}
-
-setInterval(check_for_unsuspend, 5000);
-
 export function initialize() {
-    $(document).on("unsuspend", () => {
+    watchdog.on_unsuspend(() => {
         // Immediately poll for new events on unsuspend
         blueslip.log("Restarting get_events due to unsuspend");
         get_events_failures = 0;

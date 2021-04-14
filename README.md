@@ -17,6 +17,7 @@ largest and fastest growing open source group chat project.
 [![docs](https://readthedocs.org/projects/zulip/badge/?version=latest)](https://zulip.readthedocs.io/en/latest/)
 [![Zulip chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://chat.zulip.org)
 [![Twitter](https://img.shields.io/badge/twitter-@zulip-blue.svg?style=flat)](https://twitter.com/zulip)
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/zulip)](https://github.com/sponsors/zulip)
 
 [mypy-coverage]: https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/
 
@@ -44,7 +45,7 @@ You might be interested in:
   [give us feedback](https://zulip.readthedocs.io/en/latest/overview/contributing.html#user-feedback). We
   would love to hear from you, even if you're just trying the product out.
 
-* **Supporting Zulip**. Advocate for your organization to use Zulip, write a
+* **Supporting Zulip**. Advocate for your organization to use Zulip, become a [sponsor](https://github.com/sponsors/zulip), write a
   review in the mobile app stores, or
   [upvote Zulip](https://zulip.readthedocs.io/en/latest/overview/contributing.html#zulip-outreach) on
   product comparison sites.

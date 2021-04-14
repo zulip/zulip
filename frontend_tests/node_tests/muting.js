@@ -2,11 +2,10 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
-
-const page_params = set_global("page_params", {});
+const {page_params} = require("../zjsunit/zpage_params");
 
 const muting = zrequire("muting");
 const stream_data = zrequire("stream_data");
@@ -44,6 +43,7 @@ stream_data.add_sub(social);
 function test(label, f) {
     run_test(label, (override) => {
         muting.set_muted_topics([]);
+        muting.set_muted_users([]);
         f(override);
     });
 }
@@ -51,9 +51,12 @@ function test(label, f) {
 test("edge_cases", () => {
     // private messages
     assert(!muting.is_topic_muted(undefined, undefined));
+
+    // invalid user
+    assert(!muting.is_user_muted(undefined));
 });
 
-test("basics", () => {
+test("add_and_remove_mutes", () => {
     assert(!muting.is_topic_muted(devel.stream_id, "java"));
     muting.add_muted_topic(devel.stream_id, "java");
     assert(muting.is_topic_muted(devel.stream_id, "java"));
@@ -72,9 +75,24 @@ test("basics", () => {
     // test unknown stream is harmless too
     muting.remove_muted_topic(unknown.stream_id, "java");
     assert(!muting.is_topic_muted(unknown.stream_id, "java"));
+
+    assert(!muting.is_user_muted(1));
+    muting.add_muted_user(1);
+    assert(muting.is_user_muted(1));
+
+    // test idempotentcy
+    muting.add_muted_user(1);
+    assert(muting.is_user_muted(1));
+
+    muting.remove_muted_user(1);
+    assert(!muting.is_user_muted(1));
+
+    // test idempotentcy
+    muting.remove_muted_user(1);
+    assert(!muting.is_user_muted(1));
 });
 
-test("basics", () => {
+test("get_mutes", () => {
     assert.deepEqual(muting.get_muted_topics(), []);
     muting.add_muted_topic(office.stream_id, "gossip", 1577836800);
     muting.add_muted_topic(devel.stream_id, "java", 1577836700);
@@ -96,6 +114,23 @@ test("basics", () => {
             topic: "gossip",
         },
     ]);
+
+    assert.deepEqual(muting.get_muted_users(), []);
+    muting.add_muted_user(6, 1577836800);
+    muting.add_muted_user(4, 1577836800);
+    const muted_users = muting.get_muted_users().sort((a, b) => a.date_muted - b.date_muted);
+    assert.deepEqual(muted_users, [
+        {
+            date_muted: 1577836800000,
+            date_muted_str: "Jan\u00A001,\u00A02020",
+            id: 6,
+        },
+        {
+            date_muted: 1577836800000,
+            date_muted_str: "Jan\u00A001,\u00A02020",
+            id: 4,
+        },
+    ]);
 });
 
 test("unknown streams", () => {
@@ -105,6 +140,10 @@ test("unknown streams", () => {
         ["social", "breakfast", 1577836800],
         ["design", "typography", 1577836800],
         ["BOGUS STREAM", "whatever", 1577836800],
+    ];
+    page_params.muted_users = [
+        {id: 3, timestamp: 1577836800},
+        {id: 2, timestamp: 1577836800},
     ];
     muting.initialize();
 
@@ -122,6 +161,19 @@ test("unknown streams", () => {
             stream: design.name,
             stream_id: design.stream_id,
             topic: "typography",
+        },
+    ]);
+
+    assert.deepEqual(muting.get_muted_users().sort(), [
+        {
+            date_muted: 1577836800000,
+            date_muted_str: "Jan\u00A001,\u00A02020",
+            id: 3,
+        },
+        {
+            date_muted: 1577836800000,
+            date_muted_str: "Jan\u00A001,\u00A02020",
+            id: 2,
         },
     ]);
 });

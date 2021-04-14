@@ -9,21 +9,20 @@ from django.utils.timesince import timesince
 from jinja2 import Environment
 from two_factor.templatetags.two_factor import device_action
 
-from zerver.templatetags.app_filters import display_list, render_markdown_path
+from zerver.templatetags.app_filters import display_list, render_markdown_path, webpack_entry
 
 
 def environment(**options: Any) -> Environment:
     env = Environment(**options)
     env.globals.update(
         default_page_params={
-            "debug_mode": False,
-            "webpack_public_path": staticfiles_storage.url(
-                settings.WEBPACK_LOADER["DEFAULT"]["BUNDLE_DIR_NAME"],
-            ),
+            "debug_mode": settings.DEBUG,
+            "webpack_public_path": staticfiles_storage.url(settings.WEBPACK_BUNDLES),
         },
         static=staticfiles_storage.url,
         url=reverse,
         render_markdown_path=render_markdown_path,
+        webpack_entry=webpack_entry,
     )
 
     env.install_gettext_translations(translation, True)

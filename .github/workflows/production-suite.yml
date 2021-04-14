@@ -36,7 +36,7 @@ jobs:
     # This docker image was created by a generated Dockerfile at:
     #   tools/ci/images/bionic/Dockerfile
     # Bionic ships with Python 3.6.
-    container: mepriyank/actions:bionic
+    container: zulip/ci:bionic
     steps:
       - name: Add required permissions
         run: |
@@ -90,7 +90,7 @@ jobs:
           sudo sed -i '/^bind/s/bind.*/bind 0.0.0.0/' /etc/redis/redis.conf
 
       - name: Build production tarball
-        run: ./tools/ci/production-build 2>&1
+        run: ./tools/ci/production-build
 
       - name: Upload production build artifacts for install jobs
         uses: actions/upload-artifact@v2
@@ -110,15 +110,22 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - docker_image: mepriyank/actions:bionic
+          # Base images are built using `tools/ci/Dockerfile.template`.
+          # The comments at the top explain how to build and upload these images.
+          - docker_image: zulip/ci:bionic
             name: Bionic production install
             is_bionic: true
             os: bionic
 
-          - docker_image: mepriyank/actions:focal
+          - docker_image: zulip/ci:focal
             name: Focal production install
             is_focal: true
             os: focal
+
+          - docker_image: zulip/ci:buster
+            name: Buster production install
+            is_buster: true
+            os: buster
 
     name: ${{ matrix.name  }}
     container: ${{ matrix.docker_image }}
@@ -171,23 +178,23 @@ jobs:
           sudo sed -i '/^bind/s/bind.*/bind 0.0.0.0/' /etc/redis/redis.conf
 
       - name: Production extract tarball
-        run: /tmp/production-extract-tarball 2>&1
+        run: /tmp/production-extract-tarball
 
       - name: Install production
         run: |
           sudo service rabbitmq-server restart
-          sudo /tmp/production-install 2>&1
+          sudo /tmp/production-install
 
       - name: Verify install
-        run: sudo /tmp/production-verify 2>&1
+        run: sudo /tmp/production-verify
 
       - name: Upgrade postgresql
         if: ${{ matrix.is_bionic }}
-        run: sudo /tmp/production-upgrade-pg 2>&1
+        run: sudo /tmp/production-upgrade-pg
 
       - name: Verify install after upgrading postgresql
         if: ${{ matrix.is_bionic }}
-        run: sudo /tmp/production-verify 2>&1
+        run: sudo /tmp/production-verify
 
       - name: Report status
         if: failure()

@@ -1,7 +1,6 @@
 import _ from "lodash";
 
 import * as people from "./people";
-import * as settings_bots from "./settings_bots";
 
 const bots = new Map();
 
@@ -23,10 +22,6 @@ const bot_fields = [
 const services = new Map();
 const services_fields = ["base_url", "interface", "config_data", "service_name", "token"];
 
-const send_change_event = _.debounce(() => {
-    settings_bots.render_bots();
-}, 50);
-
 export function all_user_ids() {
     return Array.from(bots.keys());
 }
@@ -36,19 +31,15 @@ export function add(bot) {
     bots.set(bot.user_id, clean_bot);
     const clean_services = bot.services.map((service) => _.pick(service, services_fields));
     services.set(bot.user_id, clean_services);
-
-    send_change_event();
 }
 
 export function deactivate(bot_id) {
     bots.get(bot_id).is_active = false;
-    send_change_event();
 }
 
 export function del(bot_id) {
     bots.delete(bot_id);
     services.delete(bot_id);
-    send_change_event();
 }
 
 export function update(bot_id, bot_update) {
@@ -57,11 +48,9 @@ export function update(bot_id, bot_update) {
 
     // We currently only support one service per bot.
     const service = services.get(bot_id)[0];
-    if (typeof bot_update.services !== "undefined" && bot_update.services.length > 0) {
+    if (bot_update.services !== undefined && bot_update.services.length > 0) {
         Object.assign(service, _.pick(bot_update.services[0], services_fields));
     }
-
-    send_change_event();
 }
 
 export function get_all_bots_for_current_user() {

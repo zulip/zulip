@@ -15,17 +15,22 @@ Usually, this involves a few steps:
   See [Markdown macros](#markdown-macros) for further details.
 
 * Make sure you've added your integration to
-  `zerver/lib/integrations.py`; this results in your integration
-  appearing on the `/integrations` page.
+  `zerver/lib/integrations.py` in both the `WEBHOOK_INTEGRATIONS`
+  section (or `INTEGRATIONS` if not a webhook), and the
+  `DOC_SCREENSHOT_CONFIG` sections.  These registries configure your
+  integration to appear on the `/integrations` page and make it
+  possible to automatically generate the screenshot of a sample
+  message (which is important for the screenshots to be updated as
+  Zulip's design changes).
 
-* You'll need to add a SVG graphic
+* You'll need to add an SVG graphic
   of your integration's logo under the
   `static/images/integrations/logos/<name>.svg`, where `<name>` is the
   name of the integration, all in lower case; you can usually find them in the
   product branding or press page. Make sure to optimize the SVG graphic by
-  running `svgo -f path-to-file`.
+  running `yarn run svgo -f path-to-file`.
 
-  If you cannot find a SVG graphic of the logo, please find and include a PNG
+  If you cannot find an SVG graphic of the logo, please find and include a PNG
   image of the logo instead.
 
 * Run `tools/setup/generate_integration_bots_avatars.py` to generate a smaller
@@ -40,12 +45,11 @@ Usually, this involves a few steps:
   the screenshot using `tools/generate-integration-docs-screenshot`:
 
   ```sh
-  ./tools/generate-integration-docs-screenshot \
-      zerver/webhooks/pingdom/fixtures/imap_down_to_up.json
+  ./tools/generate-integration-docs-screenshot --integration integrationname
   ```
 
   If you have trouble using this tool, you can also manually generate the
-  screenshot using `send_webhook_fixture_message`. When generating the
+  screenshot using `manage.py send_webhook_fixture_message`. When generating the
   screenshot of a sample message using this method, give your test bot a nice
   name like "GitHub Bot", use the project's logo as the bot's avatar, and take
   the screenshot showing the stream/topic bar for the message, not just the
@@ -66,7 +70,7 @@ always create a new macro by adding a new file to that folder.
 Here are a few common macros used to document Zulip's integrations:
 
 * `{!create-stream.md!}` macro - Recommends that users create a dedicated
-  stream for a given integration. Usually the first step in setting up an
+  stream for a given integration. Usually the first step is setting up an
   integration or incoming webhook. For an example rendering, see **Step 1** of
   [the docs for Zulip's GitHub integration][GitHub].
 
@@ -151,7 +155,7 @@ similar integration and edit it. [Basecamp][basecamp] is a good one to copy.
 
 ### General writing guidelines
 
-At at high level, the goals are for the instructions to feel simple, be easy to
+At a high level, the goals are for the instructions to feel simple, be easy to
 follow, and be easy to maintain. Easier said than done, but here are a few
 concrete guidelines.
 

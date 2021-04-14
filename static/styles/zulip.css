@@ -33,7 +33,7 @@ html {
 }
 
 body {
-    font-family: "Source Sans 3", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: "Source Sans 3", sans-serif;
 }
 
 /* Common background color */
@@ -47,7 +47,7 @@ input,
 button,
 select,
 textarea {
-    font-family: "Source Sans 3", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: "Source Sans 3", sans-serif;
     line-height: normal;
 }
 
@@ -66,7 +66,7 @@ a {
 
 code,
 pre {
-    font-family: Menlo, Consolas, "Courier New", monospace;
+    font-family: "Source Code Pro", monospace;
 }
 
 .no-select {
@@ -379,7 +379,7 @@ p.n-margin {
 
 textarea,
 input {
-    font-family: "Source Sans 3", Helvetica, Arial, sans-serif;
+    font-family: "Source Sans 3", sans-serif;
 }
 
 /* Override Bootstrap's fixed sizes for various elements */
@@ -817,7 +817,7 @@ td.pointer {
        doesn't disturb the layout.  Usually that would be just
        visibility: hidden, but that cannot be animated, so we set
        opacity as well, which can be animated. */
-    > div {
+    .message_control_button {
         opacity: 0;
         visibility: hidden;
         transition: all 0.2s ease;
@@ -1800,7 +1800,7 @@ div.focused_table {
         padding-right: 20px;
         border: none;
         border-radius: 0;
-        font-family: "Source Sans 3";
+        font-family: "Source Sans 3", sans-serif;
         font-weight: 300;
         line-height: $header_height;
     }
@@ -1933,7 +1933,7 @@ div.focused_table {
             top: -3px;
         }
 
-        .dropdown-toggle,
+        .dropdown-toggle:hover,
         li.active .dropdown-toggle:hover {
             opacity: 1;
         }
@@ -1997,7 +1997,9 @@ div.focused_table {
     left: auto;
     right: 0;
     top: 30px;
-    min-width: 180px;
+    /* Match the width of the right sidebar so that we don't have
+       the presence dots distracting you when looking at this. */
+    min-width: 240px;
     box-shadow: 0 0 5px hsla(0, 0%, 0%, 0.2);
 
     &::after {
@@ -2118,12 +2120,12 @@ div.floating_recipient {
 }
 
 .operator_value {
-    font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+    font-family: "Source Code Pro", monospace;
     color: hsl(353, 70%, 65%);
 }
 
 .operator {
-    font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+    font-family: "Source Code Pro", monospace;
 }
 
 #loading_older_messages_indicator,
@@ -2365,30 +2367,10 @@ div.topic_edit_spinner .loading_indicator_spinner {
     top: 1px;
 }
 
-#notifications-area {
-    position: fixed;
-    z-index: 10;
-    bottom: 0;
-    right: 20px;
-    width: 200px;
-    height: auto;
-}
-
-.notifications-gravatar img {
-    max-width: 25px;
-    max-height: 25px;
-    padding-left: 4px;
-    padding-top: 4px;
-}
-
 .empty_feed_notice {
     padding: 3em 1em;
     display: none;
     text-align: center;
-}
-
-.notification {
-    cursor: pointer;
 }
 
 .message-fade,

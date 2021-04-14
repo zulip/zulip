@@ -4,20 +4,15 @@ const {strict: assert} = require("assert");
 
 const _ = require("lodash");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
+const {page_params} = require("../zjsunit/zpage_params");
 
-let page_params = set_global("page_params", {
-    realm_push_notifications_enabled: false,
-});
-
-const muting = zrequire("muting");
-
-set_global("current_msg_list", {});
-set_global("home_msg_list", {});
+page_params.realm_push_notifications_enabled = false;
 
 const {FoldDict} = zrequire("fold_dict");
 const message_store = zrequire("message_store");
+const muting = zrequire("muting");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
 const unread = zrequire("unread");
@@ -47,19 +42,13 @@ function assert_zero_counts(counts) {
 }
 
 function test_notifiable_count(home_unread_messages, expected_notifiable_count) {
-    page_params = set_global("page_params", {
-        desktop_icon_count_display: 1,
-    });
+    page_params.desktop_icon_count_display = 1;
     let notifiable_counts = unread.get_notifiable_count();
     assert.deepEqual(notifiable_counts, home_unread_messages);
-    page_params = set_global("page_params", {
-        desktop_icon_count_display: 2,
-    });
+    page_params.desktop_icon_count_display = 2;
     notifiable_counts = unread.get_notifiable_count();
     assert.deepEqual(notifiable_counts, expected_notifiable_count);
-    page_params = set_global("page_params", {
-        desktop_icon_count_display: 3,
-    });
+    page_params.desktop_icon_count_display = 3;
     notifiable_counts = unread.get_notifiable_count();
     assert.deepEqual(notifiable_counts, 0);
 }
@@ -183,9 +172,9 @@ test("changing_topics", () => {
         unread: true,
     };
 
-    message_store.create_mock_message(message);
-    message_store.create_mock_message(other_message);
-    message_store.create_mock_message(sticky_message);
+    message_store.update_message_cache(message);
+    message_store.update_message_cache(other_message);
+    message_store.update_message_cache(sticky_message);
 
     unread.process_loaded_messages([sticky_message]);
     count = unread.num_unread_for_topic(stream_id, "sticky");

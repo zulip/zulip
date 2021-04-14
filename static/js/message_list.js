@@ -2,10 +2,12 @@ import autosize from "autosize";
 import $ from "jquery";
 
 import * as blueslip from "./blueslip";
+import {$t} from "./i18n";
 import {MessageListData} from "./message_list_data";
 import {MessageListView} from "./message_list_view";
-import * as narrow from "./narrow";
+import * as narrow_banner from "./narrow_banner";
 import * as narrow_state from "./narrow_state";
+import {page_params} from "./page_params";
 import * as stream_data from "./stream_data";
 
 export let narrowed;
@@ -72,7 +74,7 @@ export class MessageList {
             // If adding some new messages to the message tables caused
             // our current narrow to no longer be empty, hide the empty
             // feed placeholder text.
-            narrow.hide_empty_narrow_message();
+            narrow_banner.hide_empty_narrow_message();
         }
 
         if (this === narrowed && !this.empty() && this.selected_id() === -1) {
@@ -127,13 +129,11 @@ export class MessageList {
         return this.data.can_mark_messages_read();
     }
 
-    clear(opts) {
-        opts = {clear_selected_id: true, ...opts};
-
+    clear({clear_selected_id = true} = {}) {
         this.data.clear();
         this.view.clear_rendering_state(true);
 
-        if (opts.clear_selected_id) {
+        if (clear_selected_id) {
             this.data.clear_selected_id();
         }
     }
@@ -232,19 +232,22 @@ export class MessageList {
     }
 
     subscribed_bookend_content(stream_name) {
-        return i18n.t("You subscribed to stream __stream__", {stream: stream_name});
+        return $t({defaultMessage: "You subscribed to stream {stream}"}, {stream: stream_name});
     }
 
     unsubscribed_bookend_content(stream_name) {
-        return i18n.t("You unsubscribed from stream __stream__", {stream: stream_name});
+        return $t({defaultMessage: "You unsubscribed from stream {stream}"}, {stream: stream_name});
     }
 
     not_subscribed_bookend_content(stream_name) {
-        return i18n.t("You are not subscribed to stream __stream__", {stream: stream_name});
+        return $t(
+            {defaultMessage: "You are not subscribed to stream {stream}"},
+            {stream: stream_name},
+        );
     }
 
     deactivated_bookend_content() {
-        return i18n.t("This stream has been deactivated");
+        return $t({defaultMessage: "This stream has been deactivated"});
     }
 
     // Maintains a trailing bookend element explaining any changes in
@@ -294,11 +297,9 @@ export class MessageList {
         this.append_to_view(viewable_messages, opts);
     }
 
-    append_to_view(messages, opts) {
-        opts = {messages_are_new: false, ...opts};
-
+    append_to_view(messages, {messages_are_new = false} = {}) {
         this.num_appends += 1;
-        const render_info = this.view.append(messages, opts.messages_are_new);
+        const render_info = this.view.append(messages, messages_are_new);
         return render_info;
     }
 
@@ -365,9 +366,9 @@ export class MessageList {
 
         if (this === narrowed) {
             if (this.empty()) {
-                narrow.show_empty_narrow_message();
+                narrow_banner.show_empty_narrow_message();
             } else {
-                narrow.hide_empty_narrow_message();
+                narrow_banner.hide_empty_narrow_message();
             }
         }
         this.rerender_view();
@@ -381,12 +382,11 @@ export class MessageList {
         }
     }
 
-    update_muting_and_rerender() {
-        if (!this.excludes_muted_topics) {
-            return;
+    update_topic_muting_and_rerender() {
+        if (this.excludes_muted_topics) {
+            this.data.update_items_for_muting();
+            this.rerender();
         }
-        this.data.update_items_for_muting();
-        this.rerender();
     }
 
     all_messages() {
@@ -416,7 +416,3 @@ export class MessageList {
         return this.data.get_last_message_sent_by_me();
     }
 }
-
-export const all = new MessageList({
-    excludes_muted_topics: false,
-});

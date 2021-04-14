@@ -401,7 +401,7 @@ class UserGroupAPITestCase(ZulipTestCase):
 
         content_with_group_mention = "hey @*support* can you help us with this?"
 
-        ensure_stream(realm, stream_name)
+        ensure_stream(realm, stream_name, acting_user=None)
 
         all_users = {cordelia, hamlet, othello, zoe}
         support_team = {hamlet, zoe}
@@ -443,7 +443,10 @@ class UserGroupAPITestCase(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         self.login_user(iago)
         do_set_realm_property(
-            iago.realm, "user_group_edit_policy", Realm.USER_GROUP_EDIT_POLICY_ADMINS
+            iago.realm,
+            "user_group_edit_policy",
+            Realm.USER_GROUP_EDIT_POLICY_ADMINS,
+            acting_user=None,
         )
 
         params = {

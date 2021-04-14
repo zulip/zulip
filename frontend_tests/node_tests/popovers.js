@@ -3,9 +3,11 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
+const {$t} = require("../zjsunit/i18n");
 const {mock_cjs, mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const noop = function () {};
 
@@ -14,6 +16,12 @@ const rows = mock_esm("../../static/js/rows");
 const stream_data = mock_esm("../../static/js/stream_data");
 mock_esm("../../static/js/emoji_picker", {
     hide_emoji_popover: noop,
+});
+mock_esm("../../static/js/giphy", {
+    hide_giphy_popover: noop,
+});
+const message_lists = mock_esm("../../static/js/message_lists", {
+    current: {},
 });
 mock_esm("../../static/js/message_viewport", {
     height: () => 500,
@@ -24,13 +32,6 @@ mock_esm("../../static/js/stream_popover", {
     hide_all_messages_popover: noop,
     hide_starred_messages_popover: noop,
     hide_streamlist_sidebar: noop,
-});
-
-set_global("current_msg_list", {});
-set_global("page_params", {
-    is_admin: false,
-    realm_email_address_visibility: 3,
-    custom_profile_fields: [],
 });
 
 const people = zrequire("people");
@@ -93,6 +94,9 @@ function make_image_stubber() {
 
 function test_ui(label, f) {
     run_test(label, (override) => {
+        page_params.is_admin = false;
+        page_params.realm_email_address_visibility = 3;
+        page_params.custom_profile_fields = [];
         override(popovers, "clipboard_enable", noop);
         popovers.clear_for_testing();
         popovers.register_click_handlers();
@@ -119,12 +123,12 @@ test_ui("sender_hover", (override) => {
 
     rows.id = () => message.id;
 
-    current_msg_list.get = (msg_id) => {
+    message_lists.current.get = (msg_id) => {
         assert.equal(msg_id, message.id);
         return message;
     };
 
-    current_msg_list.select_id = (msg_id) => {
+    message_lists.current.select_id = (msg_id) => {
         assert.equal(msg_id, message.id);
     };
 
@@ -158,7 +162,7 @@ test_ui("sender_hover", (override) => {
                     user_email: "alice@example.com",
                     user_id: 42,
                     user_time: undefined,
-                    user_type: i18n.t("Member"),
+                    user_type: $t({defaultMessage: "Member"}),
                     user_circle_class: "user_circle_empty",
                     user_last_seen_time_status: "translated: More than 2 weeks ago",
                     pm_with_uri: "#narrow/pm-with/42-alice",
@@ -218,7 +222,7 @@ test_ui("actions_popover", (override) => {
         stream_id: 123,
     };
 
-    current_msg_list.get = (msg_id) => {
+    message_lists.current.get = (msg_id) => {
         assert.equal(msg_id, message.id);
         return message;
     };

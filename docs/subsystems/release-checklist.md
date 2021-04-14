@@ -9,10 +9,16 @@ preparing a new release.
   * Upgrade all Python dependencies in
     `requirements` to latest upstream versions so they can burn in (use
     `pip list --outdated`).
-  * Update all the strings on Transifex and
-    notify translators that they should translate the new strings to get
-    them in for the next release.
-* Create a burn-down list of bugs that need to be fixed before we can
+  * [Upload strings to
+    Transifex](../translating/internationalization.html#translation-process)
+    using `push-translations`.  Post a Transifex
+    [Announcement](https://www.transifex.com/zulip/zulip/announcements/)
+    notifying translators that we're approaching a release.
+  * Merge draft updates to the [changelog](../overview/changelog.md)
+    with changes since the last release. While doing so, take notes on
+    things that might need follow-up work or documentation before we
+    can happily advertise them in a release blog post.
+* Create a burn-down list of issues that need to be fixed before we can
   release, and make sure all of them are being worked on.
 * Draft the release blog post (a.k.a. the release notes) in Paper.  In
   it, list the important changes in the release, from most to least
@@ -51,6 +57,10 @@ preparing a new release.
 * Post the release by [editing the latest tag on
   GitHub](https://github.com/zulip/zulip/tags); use the text from
   `changelog.md` for the release notes.
+
+  **Note:** This will trigger the [GitHub action](https://github.com/zulip/zulip/blob/master/tools/oneclickapps/README.md)
+  for updating DigitalOcean one-click app image. The action uses the latest release
+  tarball published on `zulip.org` for creating the image.
 * Update the [Docker image](https://github.com/zulip/docker-zulip) and
   do a release of that.
 * Update the image of DigitalOcean one click app using

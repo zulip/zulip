@@ -11,6 +11,7 @@ from typing import Any, Dict, List, Mapping, Optional, Tuple
 import orjson
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
+from django.core.mail.message import sanitize_address
 from django.core.management import CommandError
 from django.db import transaction
 from django.template import loader
@@ -148,8 +149,15 @@ def build_email(
     if from_address == FromAddress.support_placeholder:
         from_address = FromAddress.SUPPORT
 
-    # Set the "From" that is displayed separately from the envelope-from
+    # Set the "From" that is displayed separately from the envelope-from.
     extra_headers["From"] = str(Address(display_name=from_name, addr_spec=from_address))
+    # Check ASCII encoding length.  Amazon SES rejects emails with
+    # From names longer than 320 characters (which appears to be a
+    # misinterpretation of the RFC); in that case we drop the name
+    # from the From line, under the theory that it's better to send
+    # the email with a simplified From field than not.
+    if len(sanitize_address(extra_headers["From"], "utf-8")) > 320:
+        extra_headers["From"] = str(Address(addr_spec=from_address))
 
     reply_to = None
     if reply_to_email is not None:
@@ -308,7 +316,7 @@ def clear_scheduled_invitation_emails(email: str) -> None:
     items.delete()
 
 
-@transaction.atomic()
+@transaction.atomic(savepoint=False)
 def clear_scheduled_emails(user_ids: List[int], email_type: Optional[int] = None) -> None:
     # We need to obtain a FOR UPDATE lock on the selected rows to keep a concurrent
     # execution of this function (or something else) from deleting them before we access

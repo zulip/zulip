@@ -166,7 +166,7 @@ class MessagePOSTTest(ZulipTestCase):
 
     def test_sending_message_as_stream_post_policy_admins(self) -> None:
         """
-        Sending messages to streams which only the admins can create and post to.
+        Sending messages to streams which only the admins can post to.
         """
         admin_profile = self.example_user("iago")
         self.login_user(admin_profile)
@@ -204,6 +204,26 @@ class MessagePOSTTest(ZulipTestCase):
             "Only organization administrators can send to this stream.",
         )
 
+        moderator_profile = self.example_user("shiva")
+        self.login_user(moderator_profile)
+
+        # Moderators and their owned bots cannot send to STREAM_POST_POLICY_ADMINS streams
+        self._send_and_verify_message(
+            moderator_profile,
+            stream_name,
+            "Only organization administrators can send to this stream.",
+        )
+        moderator_owned_bot = self.create_test_bot(
+            short_name="whatever3",
+            full_name="whatever3",
+            user_profile=moderator_profile,
+        )
+        self._send_and_verify_message(
+            moderator_owned_bot,
+            stream_name,
+            "Only organization administrators can send to this stream.",
+        )
+
         # Bots without owner (except cross realm bot) cannot send to announcement only streams
         bot_without_owner = do_create_user(
             email="free-bot@zulip.testserver",
@@ -232,14 +252,96 @@ class MessagePOSTTest(ZulipTestCase):
             guest_profile, stream_name, "Only organization administrators can send to this stream."
         )
 
-    def test_sending_message_as_stream_post_policy_restrict_new_members(self) -> None:
+    def test_sending_message_as_stream_post_policy_moderators(self) -> None:
         """
-        Sending messages to streams which new members cannot create and post to.
+        Sending messages to streams which only the moderators can post to.
         """
         admin_profile = self.example_user("iago")
         self.login_user(admin_profile)
 
-        do_set_realm_property(admin_profile.realm, "waiting_period_threshold", 10)
+        stream_name = "Verona"
+        stream = get_stream(stream_name, admin_profile.realm)
+        do_change_stream_post_policy(stream, Stream.STREAM_POST_POLICY_MODERATORS)
+
+        # Admins and their owned bots can send to STREAM_POST_POLICY_MODERATORS streams
+        self._send_and_verify_message(admin_profile, stream_name)
+        admin_owned_bot = self.create_test_bot(
+            short_name="whatever1",
+            full_name="whatever1",
+            user_profile=admin_profile,
+        )
+        self._send_and_verify_message(admin_owned_bot, stream_name)
+
+        moderator_profile = self.example_user("shiva")
+        self.login_user(moderator_profile)
+
+        # Moderators and their owned bots can send to STREAM_POST_POLICY_MODERATORS streams
+        self._send_and_verify_message(moderator_profile, stream_name)
+        moderator_owned_bot = self.create_test_bot(
+            short_name="whatever2",
+            full_name="whatever2",
+            user_profile=moderator_profile,
+        )
+        self._send_and_verify_message(moderator_owned_bot, stream_name)
+
+        non_admin_profile = self.example_user("hamlet")
+        self.login_user(non_admin_profile)
+
+        # Members and their owned bots cannot send to STREAM_POST_POLICY_MODERATORS streams
+        self._send_and_verify_message(
+            non_admin_profile,
+            stream_name,
+            "Only organization administrators and moderators can send to this stream.",
+        )
+        non_admin_owned_bot = self.create_test_bot(
+            short_name="whatever3",
+            full_name="whatever3",
+            user_profile=non_admin_profile,
+        )
+        self._send_and_verify_message(
+            non_admin_owned_bot,
+            stream_name,
+            "Only organization administrators and moderators can send to this stream.",
+        )
+
+        # Bots without owner (except cross realm bot) cannot send to STREAM_POST_POLICY_MODERATORS streams.
+        bot_without_owner = do_create_user(
+            email="free-bot@zulip.testserver",
+            password="",
+            realm=non_admin_profile.realm,
+            full_name="freebot",
+            bot_type=UserProfile.DEFAULT_BOT,
+            acting_user=None,
+        )
+        self._send_and_verify_message(
+            bot_without_owner,
+            stream_name,
+            "Only organization administrators and moderators can send to this stream.",
+        )
+
+        # Cross realm bots should be allowed
+        notification_bot = get_system_bot("notification-bot@zulip.com")
+        internal_send_stream_message(
+            notification_bot, stream, "Test topic", "Test message by notification bot"
+        )
+        self.assertEqual(self.get_last_message().content, "Test message by notification bot")
+
+        guest_profile = self.example_user("polonius")
+        # Guests cannot send to non-STREAM_POST_POLICY_EVERYONE streams
+        self._send_and_verify_message(
+            guest_profile,
+            stream_name,
+            "Only organization administrators and moderators can send to this stream.",
+        )
+
+    def test_sending_message_as_stream_post_policy_restrict_new_members(self) -> None:
+        """
+        Sending messages to streams which new members cannot post to.
+        """
+        admin_profile = self.example_user("iago")
+        self.login_user(admin_profile)
+
+        do_set_realm_property(admin_profile.realm, "waiting_period_threshold", 10, acting_user=None)
         admin_profile.date_joined = timezone_now() - datetime.timedelta(days=9)
         admin_profile.save()
         self.assertTrue(admin_profile.is_provisional_member)
@@ -312,7 +414,7 @@ class MessagePOSTTest(ZulipTestCase):
         self.assertFalse(moderator_profile.is_provisional_member)
 
         # Moderators and their owned bots can send to STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS
-        # streams, even if the admin is a new user
+        # streams, even if the moderator is a new user
         self._send_and_verify_message(moderator_profile, stream_name)
         moderator_owned_bot = self.create_test_bot(
             short_name="whatever3",
@@ -546,7 +648,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         othello = self.example_user("othello")
         cordelia = self.example_user("cordelia")
-        do_deactivate_user(othello)
+        do_deactivate_user(othello, acting_user=None)
         self.login("hamlet")
 
         result = self.client_post(
@@ -1395,6 +1497,7 @@ class StreamMessagesTest(ZulipTestCase):
             )
             Subscription.objects.create(
                 user_profile=user,
+                is_user_active=user.is_active,
                 recipient=recipient,
             )
 
@@ -1454,7 +1557,7 @@ class StreamMessagesTest(ZulipTestCase):
                 body=content,
             )
 
-        self.assert_length(queries, 12)
+        self.assert_length(queries, 13)
 
     def test_stream_message_dict(self) -> None:
         user_profile = self.example_user("iago")
@@ -1539,7 +1642,7 @@ class StreamMessagesTest(ZulipTestCase):
         ).delete()
 
         def mention_cordelia() -> Set[int]:
-            content = "test @**Cordelia Lear** rules"
+            content = "test @**Cordelia, Lear's daughter** rules"
 
             user_ids = self._send_stream_message(
                 user=hamlet,
@@ -1629,12 +1732,18 @@ class StreamMessagesTest(ZulipTestCase):
         self.subscribe(shiva, stream_name)
 
         do_set_realm_property(
-            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_EVERYONE
+            realm,
+            "wildcard_mention_policy",
+            Realm.WILDCARD_MENTION_POLICY_EVERYONE,
+            acting_user=None,
         )
         self.send_and_verify_wildcard_mention_message("polonius")
 
         do_set_realm_property(
-            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_MEMBERS
+            realm,
+            "wildcard_mention_policy",
+            Realm.WILDCARD_MENTION_POLICY_MEMBERS,
+            acting_user=None,
         )
         self.send_and_verify_wildcard_mention_message("polonius", test_fails=True)
         # There is no restriction on small streams.
@@ -1642,9 +1751,12 @@ class StreamMessagesTest(ZulipTestCase):
         self.send_and_verify_wildcard_mention_message("cordelia")
 
         do_set_realm_property(
-            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_FULL_MEMBERS
+            realm,
+            "wildcard_mention_policy",
+            Realm.WILDCARD_MENTION_POLICY_FULL_MEMBERS,
+            acting_user=None,
         )
-        do_set_realm_property(realm, "waiting_period_threshold", 10)
+        do_set_realm_property(realm, "waiting_period_threshold", 10, acting_user=None)
         iago.date_joined = timezone_now()
         iago.save()
         shiva.date_joined = timezone_now()
@@ -1662,7 +1774,10 @@ class StreamMessagesTest(ZulipTestCase):
         self.send_and_verify_wildcard_mention_message("cordelia")
 
         do_set_realm_property(
-            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_STREAM_ADMINS
+            realm,
+            "wildcard_mention_policy",
+            Realm.WILDCARD_MENTION_POLICY_STREAM_ADMINS,
+            acting_user=None,
         )
         # TODO: Change this when we implement stream administrators
         self.send_and_verify_wildcard_mention_message("cordelia", test_fails=True)
@@ -1673,7 +1788,7 @@ class StreamMessagesTest(ZulipTestCase):
         cordelia.date_joined = timezone_now()
         cordelia.save()
         do_set_realm_property(
-            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_ADMINS
+            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_ADMINS, acting_user=None
         )
         self.send_and_verify_wildcard_mention_message("cordelia", test_fails=True)
         # There is no restriction on small streams.
@@ -1681,7 +1796,7 @@ class StreamMessagesTest(ZulipTestCase):
         self.send_and_verify_wildcard_mention_message("iago")
 
         do_set_realm_property(
-            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_NOBODY
+            realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_NOBODY, acting_user=None
         )
         self.send_and_verify_wildcard_mention_message("iago", test_fails=True)
         self.send_and_verify_wildcard_mention_message("iago", sub_count=10)
@@ -1691,7 +1806,7 @@ class StreamMessagesTest(ZulipTestCase):
         self.login_user(cordelia)
 
         self.subscribe(cordelia, "test_stream")
-        do_set_realm_property(cordelia.realm, "wildcard_mention_policy", 10)
+        do_set_realm_property(cordelia.realm, "wildcard_mention_policy", 10, acting_user=None)
         content = "@**all** test wildcard mention"
         with mock.patch("zerver.lib.message.num_subscribers_for_stream_id", return_value=16):
             with self.assertRaisesRegex(AssertionError, "Invalid wildcard mention policy"):
@@ -1865,7 +1980,10 @@ class PersonalMessageSendTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
         do_set_realm_property(
-            user_profile.realm, "private_message_policy", Realm.PRIVATE_MESSAGE_POLICY_DISABLED
+            user_profile.realm,
+            "private_message_policy",
+            Realm.PRIVATE_MESSAGE_POLICY_DISABLED,
+            acting_user=None,
         )
         with self.assertRaises(JsonableError):
             self.send_personal_message(user_profile, self.example_user("cordelia"))
@@ -2116,7 +2234,7 @@ class InternalPrepTest(ZulipTestCase):
 class TestCrossRealmPMs(ZulipTestCase):
     def make_realm(self, domain: str) -> Realm:
         realm = do_create_realm(string_id=domain, name=domain)
-        do_set_realm_property(realm, "invite_required", False)
+        do_set_realm_property(realm, "invite_required", False, acting_user=None)
         RealmDomain.objects.create(realm=realm, domain=domain)
         return realm
 

@@ -79,7 +79,7 @@ def beanstalk_decoder(view_func: ViewFuncT) -> ViewFuncT:
 def api_beanstalk_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Any] = REQ(validator=check_dict([])),
+    payload: Dict[str, Any] = REQ(json_validator=check_dict([])),
     branches: Optional[str] = REQ(default=None),
 ) -> HttpResponse:
     # Beanstalk supports both SVN and Git repositories

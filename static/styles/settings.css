@@ -799,7 +799,7 @@ input[type="checkbox"] {
     }
 
     .api_key .api-key-value-and-button {
-        font-family: Inconsolata, Menlo, monospace;
+        font-family: "Source Code Pro", monospace;
         font-size: 0.85em;
         display: flex;
     }
@@ -823,6 +823,10 @@ input[type="checkbox"] {
 .edit_bot h3 {
     margin: 0;
     font-weight: 400;
+}
+
+.bot_edit_errors {
+    margin: 20px 20px 0 20px;
 }
 
 #bots_lists_navbar .active a {
@@ -851,6 +855,11 @@ input[type="checkbox"] {
 
     .buttons {
         margin: 10px 0 5px 0;
+    }
+
+    button.dropdown-toggle {
+        font-weight: 600;
+        color: hsl(0, 0%, 67%);
     }
 }
 

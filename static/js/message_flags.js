@@ -120,3 +120,8 @@ export function unstar_all_messages() {
     const starred_msg_ids = starred_messages.get_starred_msg_ids();
     send_flag_update_for_messages(starred_msg_ids, "starred", "remove");
 }
+
+export function unstar_all_messages_in_topic(stream_id, topic) {
+    const starred_message_ids = starred_messages.get_starred_message_ids_in_topic(stream_id, topic);
+    send_flag_update_for_messages(starred_message_ids, "starred", "remove");
+}

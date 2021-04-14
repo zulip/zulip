@@ -65,7 +65,7 @@ def get_presence_backend(
 def update_user_status_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    away: Optional[bool] = REQ(validator=check_bool, default=None),
+    away: Optional[bool] = REQ(json_validator=check_bool, default=None),
     status_text: Optional[str] = REQ(str_validator=check_capped_string(60), default=None),
 ) -> HttpResponse:
 
@@ -91,9 +91,9 @@ def update_active_status_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     status: str = REQ(),
-    ping_only: bool = REQ(validator=check_bool, default=False),
-    new_user_input: bool = REQ(validator=check_bool, default=False),
-    slim_presence: bool = REQ(validator=check_bool, default=False),
+    ping_only: bool = REQ(json_validator=check_bool, default=False),
+    new_user_input: bool = REQ(json_validator=check_bool, default=False),
+    slim_presence: bool = REQ(json_validator=check_bool, default=False),
 ) -> HttpResponse:
     status_val = UserPresence.status_from_string(status)
     if status_val is None:

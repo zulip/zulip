@@ -11,6 +11,7 @@ from django.test import override_settings
 from markdown import Markdown
 
 from zerver.lib.actions import (
+    change_user_is_active,
     do_add_alert_words,
     do_create_realm,
     do_remove_realm_emoji,
@@ -54,13 +55,13 @@ from zerver.models import (
     UserGroup,
     UserMessage,
     UserProfile,
+    flush_linkifiers,
     flush_per_request_caches,
-    flush_realm_filter,
     get_client,
     get_realm,
     get_stream,
-    realm_filters_for_realm,
-    realm_in_local_realm_filters_cache,
+    linkifiers_for_realm,
+    realm_in_local_linkifiers_cache,
 )
 
 
@@ -218,22 +219,20 @@ class MarkdownMiscTest(ZulipTestCase):
             )
 
         fred1 = make_user("fred1@example.com", "Fred Flintstone")
-        fred1.is_active = False
-        fred1.save()
+        change_user_is_active(fred1, False)
 
         fred2 = make_user("fred2@example.com", "Fred Flintstone")
 
         fred3 = make_user("fred3@example.com", "Fred Flintstone")
-        fred3.is_active = False
-        fred3.save()
+        change_user_is_active(fred3, False)
 
         fred4 = make_user("fred4@example.com", "Fred Flintstone")
 
         lst = get_possible_mentions_info(
-            realm.id, {"Fred Flintstone", "cordelia LEAR", "Not A User"}
+            realm.id, {"Fred Flintstone", "Cordelia, LEAR's daughter", "Not A User"}
         )
         set_of_names = set(map(lambda x: x["full_name"].lower(), lst))
-        self.assertEqual(set_of_names, {"fred flintstone", "cordelia lear"})
+        self.assertEqual(set_of_names, {"fred flintstone", "cordelia, lear's daughter"})
 
         by_id = {row["id"]: row for row in lst}
         self.assertEqual(
@@ -257,7 +256,7 @@ class MarkdownMiscTest(ZulipTestCase):
         realm = get_realm("zulip")
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
-        content = "@**King Hamlet** @**Cordelia lear**"
+        content = "@**King Hamlet** @**Cordelia, lear's daughter**"
         mention_data = MentionData(realm.id, content)
         self.assertEqual(mention_data.get_user_ids(), {hamlet.id, cordelia.id})
         self.assertEqual(
@@ -274,7 +273,7 @@ class MarkdownMiscTest(ZulipTestCase):
         self.assertEqual(user["email"], hamlet.email)
 
         self.assertFalse(mention_data.message_has_wildcards())
-        content = "@**King Hamlet** @**Cordelia lear** @**all**"
+        content = "@**King Hamlet** @**Cordelia, lear's daughter** @**all**"
         mention_data = MentionData(realm.id, content)
         self.assertTrue(mention_data.message_has_wildcards())
 
@@ -1208,15 +1207,24 @@ class MarkdownTest(ZulipTestCase):
 
         msg.set_topic_name("https://google.com/hello-world")
         converted_topic = topic_links(realm.id, msg.topic_name())
-        self.assertEqual(converted_topic, ["https://google.com/hello-world"])
+        self.assertEqual(
+            converted_topic,
+            [{"url": "https://google.com/hello-world", "text": "https://google.com/hello-world"}],
+        )
 
         msg.set_topic_name("http://google.com/hello-world")
         converted_topic = topic_links(realm.id, msg.topic_name())
-        self.assertEqual(converted_topic, ["http://google.com/hello-world"])
+        self.assertEqual(
+            converted_topic,
+            [{"url": "http://google.com/hello-world", "text": "http://google.com/hello-world"}],
+        )
 
         msg.set_topic_name("Without scheme google.com/hello-world")
         converted_topic = topic_links(realm.id, msg.topic_name())
-        self.assertEqual(converted_topic, ["https://google.com/hello-world"])
+        self.assertEqual(
+            converted_topic,
+            [{"url": "https://google.com/hello-world", "text": "google.com/hello-world"}],
+        )
 
         msg.set_topic_name("Without scheme random.words/hello-world")
         converted_topic = topic_links(realm.id, msg.topic_name())
@@ -1227,18 +1235,34 @@ class MarkdownTest(ZulipTestCase):
         )
         converted_topic = topic_links(realm.id, msg.topic_name())
         self.assertEqual(
-            converted_topic, ["http://ftp.debian.org", "https://google.com/", "https://google.in/"]
+            converted_topic,
+            [
+                {"url": "http://ftp.debian.org", "text": "http://ftp.debian.org"},
+                {"url": "https://google.com/", "text": "https://google.com/"},
+                {"url": "https://google.in/", "text": "https://google.in/"},
+            ],
+        )
+
+        # test order for links without scheme
+        msg.set_topic_name("google.in google.com")
+        converted_topic = topic_links(realm.id, msg.topic_name())
+        self.assertEqual(
+            converted_topic,
+            [
+                {"url": "https://google.in", "text": "google.in"},
+                {"url": "https://google.com", "text": "google.com"},
+            ],
         )
 
     def test_realm_patterns(self) -> None:
         realm = get_realm("zulip")
         url_format_string = r"https://trac.example.com/ticket/%(id)s"
-        realm_filter = RealmFilter(
+        linkifier = RealmFilter(
             realm=realm, pattern=r"#(?P<id>[0-9]{2,8})", url_format_string=url_format_string
         )
-        realm_filter.save()
+        linkifier.save()
         self.assertEqual(
-            realm_filter.__str__(),
+            linkifier.__str__(),
             "<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>",
         )
 
@@ -1255,12 +1279,18 @@ class MarkdownTest(ZulipTestCase):
             converted,
             '<p>We should fix <a href="https://trac.example.com/ticket/224">#224</a> and <a href="https://trac.example.com/ticket/115">#115</a>, but not issue#124 or #1124z or <a href="https://trac.example.com/ticket/16">trac #15</a> today.</p>',
         )
-        self.assertEqual(converted_topic, ["https://trac.example.com/ticket/444"])
+        self.assertEqual(
+            converted_topic, [{"url": "https://trac.example.com/ticket/444", "text": "#444"}]
+        )
 
         msg.set_topic_name("#444 https://google.com")
         converted_topic = topic_links(realm.id, msg.topic_name())
         self.assertEqual(
-            converted_topic, ["https://trac.example.com/ticket/444", "https://google.com"]
+            converted_topic,
+            [
+                {"url": "https://trac.example.com/ticket/444", "text": "#444"},
+                {"url": "https://google.com", "text": "https://google.com"},
+            ],
         )
 
         RealmFilter(
@@ -1284,7 +1314,10 @@ class MarkdownTest(ZulipTestCase):
             if should_have_converted:
                 self.assertTrue("https://trac.example.com" in converted)
                 self.assertEqual(len(converted_topic), 1)
-                self.assertTrue("https://trac.example.com" in converted_topic[0])
+                self.assertEqual(
+                    converted_topic[0],
+                    {"url": "https://trac.example.com/ticket/123", "text": "#123"},
+                )
             else:
                 self.assertTrue("https://trac.example.com" not in converted)
                 self.assertEqual(len(converted_topic), 0)
@@ -1316,33 +1349,46 @@ class MarkdownTest(ZulipTestCase):
         converted_topic = topic_links(realm.id, "hello#123 #234")
         self.assertEqual(
             converted_topic,
-            ["https://trac.example.com/ticket/234", "https://trac.example.com/hello/123"],
+            [
+                {"url": "https://trac.example.com/hello/123", "text": "hello#123"},
+                {"url": "https://trac.example.com/ticket/234", "text": "#234"},
+            ],
+        )
+
+        # test correct order when realm pattern and normal links are both present.
+        converted_topic = topic_links(realm.id, "#234 https://google.com")
+        self.assertEqual(
+            converted_topic,
+            [
+                {"url": "https://trac.example.com/ticket/234", "text": "#234"},
+                {"url": "https://google.com", "text": "https://google.com"},
+            ],
         )
 
     def test_multiple_matching_realm_patterns(self) -> None:
         realm = get_realm("zulip")
         url_format_string = r"https://trac.example.com/ticket/%(id)s"
-        realm_filter_1 = RealmFilter(
+        linkifier_1 = RealmFilter(
             realm=realm,
             pattern=r"(?P<id>ABC\-[0-9]+)(?![A-Z0-9-])",
             url_format_string=url_format_string,
         )
-        realm_filter_1.save()
+        linkifier_1.save()
         self.assertEqual(
-            realm_filter_1.__str__(),
+            linkifier_1.__str__(),
             r"<RealmFilter(zulip): (?P<id>ABC\-[0-9]+)(?![A-Z0-9-])"
             " https://trac.example.com/ticket/%(id)s>",
         )
 
         url_format_string = r"https://other-trac.example.com/ticket/%(id)s"
-        realm_filter_2 = RealmFilter(
+        linkifier_2 = RealmFilter(
             realm=realm,
             pattern=r"(?P<id>[A-Z][A-Z0-9]*\-[0-9]+)(?![A-Z0-9-])",
             url_format_string=url_format_string,
         )
-        realm_filter_2.save()
+        linkifier_2.save()
         self.assertEqual(
-            realm_filter_2.__str__(),
+            linkifier_2.__str__(),
             r"<RealmFilter(zulip): (?P<id>[A-Z][A-Z0-9]*\-[0-9]+)(?![A-Z0-9-])"
             " https://other-trac.example.com/ticket/%(id)s>",
         )
@@ -1358,8 +1404,8 @@ class MarkdownTest(ZulipTestCase):
         converted = markdown_convert(content, message_realm=realm, message=msg)
         converted_topic = topic_links(realm.id, msg.topic_name())
 
-        # The second filter (which was saved later) was ignored as the content was marked AtomicString after first conversion.
-        # There was no easy way to support parsing both filters and not run into an infinite loop, hence the second filter is ignored.
+        # The second linkifier (which was saved later) was ignored as the content was marked AtomicString after first conversion.
+        # There was no easy way to support parsing both linkifiers and not run into an infinite loop, hence the second linkifier is ignored.
         self.assertEqual(
             converted,
             '<p>We should fix <a href="https://trac.example.com/ticket/ABC-123">ABC-123</a> or <a href="https://trac.example.com/ticket/16">trac ABC-123</a> today.</p>',
@@ -1368,37 +1414,17 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(
             converted_topic,
             [
-                "https://trac.example.com/ticket/ABC-123",
-                "https://other-trac.example.com/ticket/ABC-123",
+                {"url": "https://trac.example.com/ticket/ABC-123", "text": "ABC-123"},
+                {"url": "https://other-trac.example.com/ticket/ABC-123", "text": "ABC-123"},
             ],
         )
 
-    def test_maybe_update_markdown_engines(self) -> None:
-        realm = get_realm("zulip")
-        url_format_string = r"https://trac.example.com/ticket/%(id)s"
-        realm_filter = RealmFilter(
-            realm=realm, pattern=r"#(?P<id>[0-9]{2,8})", url_format_string=url_format_string
-        )
-        realm_filter.save()
-
-        import zerver.lib.markdown
-
-        zerver.lib.markdown.realm_filter_data = {}
-        maybe_update_markdown_engines(None, False)
-        all_filters = zerver.lib.markdown.realm_filter_data
-        zulip_filters = all_filters[realm.id]
-        self.assertEqual(len(zulip_filters), 1)
-        self.assertEqual(
-            zulip_filters[0],
-            ("#(?P<id>[0-9]{2,8})", "https://trac.example.com/ticket/%(id)s", realm_filter.id),
-        )
-
-    def test_flush_realm_filter(self) -> None:
+    def test_flush_linkifier(self) -> None:
         realm = get_realm("zulip")
 
         def flush() -> None:
             """
-            flush_realm_filter is a post-save hook, so calling it
+            flush_linkifiers is a post-save hook, so calling it
             directly for testing is kind of awkward
             """
 
@@ -1407,30 +1433,28 @@ class MarkdownTest(ZulipTestCase):
 
             instance = Instance()
             instance.realm_id = realm.id
-            flush_realm_filter(sender=None, instance=instance)
+            flush_linkifiers(sender=None, instance=instance)
 
-        def save_new_realm_filter() -> None:
-            realm_filter = RealmFilter(
-                realm=realm, pattern=r"whatever", url_format_string="whatever"
-            )
-            realm_filter.save()
+        def save_new_linkifier() -> None:
+            linkifier = RealmFilter(realm=realm, pattern=r"whatever", url_format_string="whatever")
+            linkifier.save()
 
         # start fresh for our realm
         flush()
-        self.assertFalse(realm_in_local_realm_filters_cache(realm.id))
+        self.assertFalse(realm_in_local_linkifiers_cache(realm.id))
 
         # call this just for side effects of populating the cache
-        realm_filters_for_realm(realm.id)
-        self.assertTrue(realm_in_local_realm_filters_cache(realm.id))
+        linkifiers_for_realm(realm.id)
+        self.assertTrue(realm_in_local_linkifiers_cache(realm.id))
 
         # Saving a new RealmFilter should have the side effect of
         # flushing the cache.
-        save_new_realm_filter()
-        self.assertFalse(realm_in_local_realm_filters_cache(realm.id))
+        save_new_linkifier()
+        self.assertFalse(realm_in_local_linkifiers_cache(realm.id))
 
         # and flush it one more time, to make sure we don't get a KeyError
         flush()
-        self.assertFalse(realm_in_local_realm_filters_cache(realm.id))
+        self.assertFalse(realm_in_local_linkifiers_cache(realm.id))
 
     def test_realm_patterns_negative(self) -> None:
         realm = get_realm("zulip")
@@ -1706,25 +1730,25 @@ class MarkdownTest(ZulipTestCase):
         msg_with_none = markdown_convert_wrapper(text.format("none"))
 
         # Render with default=javascript
-        do_set_realm_property(realm, "default_code_block_language", "javascript")
+        do_set_realm_property(realm, "default_code_block_language", "javascript", acting_user=None)
         msg_without_language_default_js = markdown_convert_wrapper(text.format(""))
         msg_with_python_default_js = markdown_convert_wrapper(text.format("python"))
 
         # Render with default=python
-        do_set_realm_property(realm, "default_code_block_language", "python")
+        do_set_realm_property(realm, "default_code_block_language", "python", acting_user=None)
         msg_without_language_default_py = markdown_convert_wrapper(text.format(""))
         msg_with_none_default_py = markdown_convert_wrapper(text.format("none"))
 
         # Render with default=quote
-        do_set_realm_property(realm, "default_code_block_language", "quote")
+        do_set_realm_property(realm, "default_code_block_language", "quote", acting_user=None)
         msg_without_language_default_quote = markdown_convert_wrapper(text.format(""))
 
         # Render with default=math
-        do_set_realm_property(realm, "default_code_block_language", "math")
+        do_set_realm_property(realm, "default_code_block_language", "math", acting_user=None)
         msg_without_language_default_math = markdown_convert_wrapper(text.format(""))
 
         # Render without default language
-        do_set_realm_property(realm, "default_code_block_language", None)
+        do_set_realm_property(realm, "default_code_block_language", None, acting_user=None)
         msg_without_language_final = markdown_convert_wrapper(text.format(""))
 
         self.assertTrue(msg_with_js == msg_without_language_default_js)
@@ -1738,12 +1762,12 @@ class MarkdownTest(ZulipTestCase):
 
         # Test checking inside nested quotes
         nested_text = "````quote\n\n{}\n\n{}````".format(text.format("js"), text.format(""))
-        do_set_realm_property(realm, "default_code_block_language", "javascript")
+        do_set_realm_property(realm, "default_code_block_language", "javascript", acting_user=None)
         rendered = markdown_convert_wrapper(nested_text)
         with_language, without_language = re.findall(r"<pre>(.*?)$", rendered, re.MULTILINE)
         self.assertTrue(with_language == without_language)
 
-        do_set_realm_property(realm, "default_code_block_language", None)
+        do_set_realm_property(realm, "default_code_block_language", None, acting_user=None)
         rendered = markdown_convert_wrapper(nested_text)
         with_language, without_language = re.findall(r"<pre>(.*?)$", rendered, re.MULTILINE)
         self.assertFalse(with_language == without_language)
@@ -1830,6 +1854,13 @@ class MarkdownTest(ZulipTestCase):
         )
         self.assertEqual(msg.mentions_user_ids, {user_profile.id})
 
+        content = f"@**|{user_id}**"
+        self.assertEqual(
+            render_markdown(msg, content),
+            '<p><span class="user-mention" ' f'data-user-id="{user_id}">' "@King Hamlet</span></p>",
+        )
+        self.assertEqual(msg.mentions_user_ids, {user_profile.id})
+
     def test_mention_silent(self) -> None:
         sender_user_profile = self.example_user("othello")
         user_profile = self.example_user("hamlet")
@@ -1845,9 +1876,69 @@ class MarkdownTest(ZulipTestCase):
         )
         self.assertEqual(msg.mentions_user_ids, set())
 
+    def test_mention_invalid_followed_by_valid(self) -> None:
+        sender_user_profile = self.example_user("othello")
+        user_profile = self.example_user("hamlet")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        user_id = user_profile.id
+
+        content = "@**Invalid user** and @**King Hamlet**"
+        self.assertEqual(
+            render_markdown(msg, content),
+            '<p>@<strong>Invalid user</strong> and <span class="user-mention" '
+            f'data-user-id="{user_id}">'
+            "@King Hamlet</span></p>",
+        )
+        self.assertEqual(msg.mentions_user_ids, {user_profile.id})
+
+    def test_invalid_mention_not_uses_valid_mention_data(self) -> None:
+        sender_user_profile = self.example_user("othello")
+        hamlet = self.example_user("hamlet")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+
+        # Even though King Hamlet will be present in mention data as
+        # it was was fetched for first mention but second mention is
+        # incorrect(as it uses hamlet's id) so it should not be able
+        # to use that data for creating a valid mention.
+
+        content = f"@**King Hamlet|10** and @**aaron|{hamlet.id}**"
+        self.assertEqual(
+            render_markdown(msg, content),
+            f'<p><span class="user-mention" data-user-id="{hamlet.id}">'
+            f"@King Hamlet</span> and @<strong>aaron|{hamlet.id}</strong></p>",
+        )
+        self.assertEqual(msg.mentions_user_ids, {hamlet.id})
+
+    def test_silent_mention_invalid_followed_by_valid(self) -> None:
+        sender_user_profile = self.example_user("othello")
+        user_profile = self.example_user("hamlet")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        user_id = user_profile.id
+
+        content = "@_**Invalid user** and @_**King Hamlet**"
+        self.assertEqual(
+            render_markdown(msg, content),
+            '<p>@_<strong>Invalid user</strong> and <span class="user-mention silent" '
+            f'data-user-id="{user_id}">'
+            "King Hamlet</span></p>",
+        )
+        self.assertEqual(msg.mentions_user_ids, set())
+
+        content = f"@_**|123456789** and @_**|{user_id}**"
+        self.assertEqual(
+            render_markdown(msg, content),
+            "<p>@_<strong>|123456789</strong> and "
+            '<span class="user-mention silent" '
+            f'data-user-id="{user_id}">'
+            "King Hamlet</span></p>",
+        )
+        self.assertEqual(msg.mentions_user_ids, set())
+
     def test_possible_mentions(self) -> None:
         def assert_mentions(content: str, names: Set[str], has_wildcards: bool = False) -> None:
             self.assertEqual(possible_mentions(content), (names, has_wildcards))
+
+        aaron = self.example_user("aaron")
 
         assert_mentions("", set())
         assert_mentions("boring", set())
@@ -1855,8 +1946,8 @@ class MarkdownTest(ZulipTestCase):
         assert_mentions("smush@**steve**smush", set())
 
         assert_mentions(
-            "Hello @**King Hamlet** and @**Cordelia Lear**\n@**Foo van Barson|1234** @**all**",
-            {"King Hamlet", "Cordelia Lear", "Foo van Barson|1234"},
+            f"Hello @**King Hamlet**, @**|{aaron.id}** and @**Cordelia, Lear's daughter**\n@**Foo van Barson|1234** @**all**",
+            {"King Hamlet", f"|{aaron.id}", "Cordelia, Lear's daughter", "Foo van Barson|1234"},
             True,
         )
 
@@ -1866,7 +1957,7 @@ class MarkdownTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
 
-        content = "@**King Hamlet** and @**Cordelia Lear**, check this out"
+        content = "@**King Hamlet** and @**Cordelia, Lear's daughter**, check this out"
 
         self.assertEqual(
             render_markdown(msg, content),
@@ -1874,7 +1965,7 @@ class MarkdownTest(ZulipTestCase):
             '<span class="user-mention" '
             f'data-user-id="{hamlet.id}">@King Hamlet</span> and '
             '<span class="user-mention" '
-            f'data-user-id="{cordelia.id}">@Cordelia Lear</span>, '
+            f'data-user-id="{cordelia.id}">@Cordelia, Lear\'s daughter</span>, '
             "check this out</p>",
         )
         self.assertEqual(msg.mentions_user_ids, {hamlet.id, cordelia.id})
@@ -1885,7 +1976,7 @@ class MarkdownTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         msg = Message(sender=othello, sending_client=get_client("test"))
 
-        content = "> @**King Hamlet** and @**Othello, the Moor of Venice**\n\n @**King Hamlet** and @**Cordelia Lear**"
+        content = "> @**King Hamlet** and @**Othello, the Moor of Venice**\n\n @**King Hamlet** and @**Cordelia, Lear's daughter**"
         self.assertEqual(
             render_markdown(msg, content),
             "<blockquote>\n<p>"
@@ -1896,7 +1987,7 @@ class MarkdownTest(ZulipTestCase):
             "<p>"
             f'<span class="user-mention" data-user-id="{hamlet.id}">@King Hamlet</span>'
             " and "
-            f'<span class="user-mention" data-user-id="{cordelia.id}">@Cordelia Lear</span>'
+            f'<span class="user-mention" data-user-id="{cordelia.id}">@Cordelia, Lear\'s daughter</span>'
             "</p>",
         )
         self.assertEqual(msg.mentions_user_ids, {hamlet.id, cordelia.id})
@@ -1937,9 +2028,7 @@ class MarkdownTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
 
-        content = (
-            f"@**Mark Twin|{twin1.id}**, @**Mark Twin|{twin2.id}** and @**Cordelia Lear**, hi."
-        )
+        content = f"@**Mark Twin|{twin1.id}**, @**Mark Twin|{twin2.id}** and @**Cordelia, Lear's daughter**, hi."
 
         self.assertEqual(
             render_markdown(msg, content),
@@ -1949,7 +2038,7 @@ class MarkdownTest(ZulipTestCase):
             '<span class="user-mention" '
             f'data-user-id="{twin2.id}">@Mark Twin</span> and '
             '<span class="user-mention" '
-            f'data-user-id="{cordelia.id}">@Cordelia Lear</span>, '
+            f'data-user-id="{cordelia.id}">@Cordelia, Lear\'s daughter</span>, '
             "hi.</p>",
         )
         self.assertEqual(msg.mentions_user_ids, {twin1.id, twin2.id, cordelia.id})
@@ -1970,12 +2059,12 @@ class MarkdownTest(ZulipTestCase):
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
         # Create a linkifier.
         url_format_string = r"https://trac.example.com/ticket/%(id)s"
-        realm_filter = RealmFilter(
+        linkifier = RealmFilter(
             realm=realm, pattern=r"#(?P<id>[0-9]{2,8})", url_format_string=url_format_string
         )
-        realm_filter.save()
+        linkifier.save()
         self.assertEqual(
-            realm_filter.__str__(),
+            linkifier.__str__(),
             "<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>",
         )
         # Create a user that potentially interferes with the pattern.
@@ -2026,6 +2115,27 @@ class MarkdownTest(ZulipTestCase):
         self.assertEqual(msg.mentions_user_ids, {user_profile.id})
         self.assertEqual(msg.mentions_user_group_ids, {user_group.id})
 
+    def test_invalid_user_group_followed_by_valid_mention_single(self) -> None:
+        sender_user_profile = self.example_user("othello")
+        user_profile = self.example_user("hamlet")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        user_id = user_profile.id
+        user_group = self.create_user_group_for_test("support")
+
+        content = "@**King Hamlet** @*Invalid user group* @*support*"
+        self.assertEqual(
+            render_markdown(msg, content),
+            '<p><span class="user-mention" '
+            f'data-user-id="{user_id}">'
+            "@King Hamlet</span> "
+            "@<em>Invalid user group</em> "
+            '<span class="user-group-mention" '
+            f'data-user-group-id="{user_group.id}">'
+            "@support</span></p>",
+        )
+        self.assertEqual(msg.mentions_user_ids, {user_profile.id})
+        self.assertEqual(msg.mentions_user_group_ids, {user_group.id})
+
     def test_user_group_mention_atomic_string(self) -> None:
         sender_user_profile = self.example_user("othello")
         realm = get_realm("zulip")
@@ -2033,12 +2143,12 @@ class MarkdownTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         # Create a linkifier.
         url_format_string = r"https://trac.example.com/ticket/%(id)s"
-        realm_filter = RealmFilter(
+        linkifier = RealmFilter(
             realm=realm, pattern=r"#(?P<id>[0-9]{2,8})", url_format_string=url_format_string
         )
-        realm_filter.save()
+        linkifier.save()
         self.assertEqual(
-            realm_filter.__str__(),
+            linkifier.__str__(),
             "<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>",
         )
         # Create a user-group that potentially interferes with the pattern.
@@ -2068,7 +2178,7 @@ class MarkdownTest(ZulipTestCase):
         assert_mentions("smush@*steve*smush", set())
 
         assert_mentions(
-            "@*support* Hello @**King Hamlet** and @**Cordelia Lear**\n"
+            "@*support* Hello @**King Hamlet** and @**Cordelia, Lear's daughter**\n"
             "@**Foo van Barson** @**all**",
             {"support"},
         )
@@ -2155,6 +2265,18 @@ class MarkdownTest(ZulipTestCase):
             ),
         )
 
+    def test_invalid_stream_followed_by_valid_mention(self) -> None:
+        denmark = get_stream("Denmark", get_realm("zulip"))
+        sender_user_profile = self.example_user("othello")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        content = "#**Invalid** and #**Denmark**"
+        self.assertEqual(
+            render_markdown(msg, content),
+            '<p>#<strong>Invalid</strong> and <a class="stream" data-stream-id="{d.id}" href="/#narrow/stream/{d.id}-Denmark">#{d.name}</a></p>'.format(
+                d=denmark,
+            ),
+        )
+
     def test_stream_multiple(self) -> None:
         sender_user_profile = self.example_user("othello")
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
@@ -2215,12 +2337,12 @@ class MarkdownTest(ZulipTestCase):
         # Create a linkifier.
         sender_user_profile = self.example_user("othello")
         url_format_string = r"https://trac.example.com/ticket/%(id)s"
-        realm_filter = RealmFilter(
+        linkifier = RealmFilter(
             realm=realm, pattern=r"#(?P<id>[0-9]{2,8})", url_format_string=url_format_string
         )
-        realm_filter.save()
+        linkifier.save()
         self.assertEqual(
-            realm_filter.__str__(),
+            linkifier.__str__(),
             "<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>",
         )
         # Create a topic link that potentially interferes with the pattern.
@@ -2284,12 +2406,12 @@ class MarkdownTest(ZulipTestCase):
         # Create a linkifier.
         sender_user_profile = self.example_user("othello")
         url_format_string = r"https://trac.example.com/ticket/%(id)s"
-        realm_filter = RealmFilter(
+        linkifier = RealmFilter(
             realm=realm, pattern=r"#(?P<id>[0-9]{2,8})", url_format_string=url_format_string
         )
-        realm_filter.save()
+        linkifier.save()
         self.assertEqual(
-            realm_filter.__str__(),
+            linkifier.__str__(),
             "<RealmFilter(zulip): #(?P<id>[0-9]{2,8}) https://trac.example.com/ticket/%(id)s>",
         )
         # Create a stream that potentially interferes with the pattern.

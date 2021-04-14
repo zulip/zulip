@@ -18,10 +18,18 @@ Developers](../translating/internationalization.md).
 These are the steps you should follow if you want to help translate
 Zulip:
 
-1. Sign up for [Transifex](https://www.transifex.com) and ask to join
-the [Zulip project on
-Transifex](https://www.transifex.com/zulip/zulip/), requesting access
+1. Sign up for [Transifex](https://www.transifex.com) and ask to join the [Zulip
+project on Transifex](https://www.transifex.com/zulip/zulip/), requesting access
 to any languages that you'd like to contribute to (or add new ones).
+
+   ```eval_rst
+   .. note::
+       Unless you plan to contribute country-specific translations, do not
+       select a country-specific language in the **Languages** menu when you sign
+       up. E.g. use **English (United Kingdom)** if you plan to translate Zulip
+       into UK English, but select **Russian** rather than **Russian (Russia)** for
+       general Russian translations.
+   ```
 
 1. Join [#translation][translation-stream] in the [Zulip development
 community server](../contributing/chat-zulip-org.md), and say hello.

@@ -93,7 +93,7 @@ $alert-error-red: hsl(0, 80%, 40%);
         }
 
         .stacktrace-content {
-            font-family: monospace;
+            font-family: "Source Code Pro", monospace;
             font-size: 0.85rem;
 
             margin-top: 1rem;

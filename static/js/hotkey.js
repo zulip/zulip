@@ -3,6 +3,7 @@ import $ from "jquery";
 import * as emoji from "../shared/js/emoji";
 
 import * as activity from "./activity";
+import * as browser_history from "./browser_history";
 import * as common from "./common";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
@@ -13,17 +14,20 @@ import * as drafts from "./drafts";
 import * as emoji_picker from "./emoji_picker";
 import * as feedback_widget from "./feedback_widget";
 import * as gear_menu from "./gear_menu";
+import * as giphy from "./giphy";
 import * as hashchange from "./hashchange";
 import * as hotspots from "./hotspots";
 import * as lightbox from "./lightbox";
 import * as list_util from "./list_util";
 import * as message_edit from "./message_edit";
 import * as message_flags from "./message_flags";
+import * as message_lists from "./message_lists";
 import * as message_view_header from "./message_view_header";
 import * as muting_ui from "./muting_ui";
 import * as narrow from "./narrow";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
+import {page_params} from "./page_params";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_topics from "./recent_topics";
@@ -35,7 +39,7 @@ import * as topic_zoom from "./topic_zoom";
 import * as ui from "./ui";
 
 function do_narrow_action(action) {
-    action(current_msg_list.selected_id(), {trigger: "hotkey"});
+    action(message_lists.current.selected_id(), {trigger: "hotkey"});
     return true;
 }
 
@@ -124,8 +128,8 @@ const keypress_mappings = {
     77: {name: "toggle_topic_mute", message_view_only: true}, // 'M'
     80: {name: "narrow_private", message_view_only: true}, // 'P'
     82: {name: "respond_to_author", message_view_only: true}, // 'R'
-    83: {name: "narrow_by_topic", message_view_only: true}, //'S'
-    86: {name: "view_selected_stream", message_view_only: false}, //'V'
+    83: {name: "narrow_by_topic", message_view_only: true}, // 'S'
+    86: {name: "view_selected_stream", message_view_only: false}, // 'V'
     97: {name: "all_messages", message_view_only: true}, // 'a'
     99: {name: "compose", message_view_only: true}, // 'c'
     100: {name: "open_drafts", message_view_only: true}, // 'd'
@@ -271,7 +275,22 @@ export function process_escape_key(e) {
             return true;
         }
 
+        if (giphy.is_popped_from_edit_messsage()) {
+            giphy.focus_current_edit_message();
+            // Hide after setting focus so that `edit_message_id` is
+            // still set in giphy.
+            giphy.hide_giphy_popover();
+            return true;
+        }
+
         if (compose_state.composing()) {
+            // Check if the giphy popover was open using compose box.
+            // Hide GIPHY popover if it's open.
+            if (!giphy.is_popped_from_edit_messsage() && giphy.hide_giphy_popover()) {
+                $("#compose-textarea").trigger("focus");
+                return true;
+            }
+
             // Check for errors in compose box; close errors if they exist
             if ($("#compose-send-status").css("display") !== "none") {
                 $("#compose-send-status").hide();
@@ -527,14 +546,7 @@ export function process_hotkey(e, hotkey) {
         case "tab":
         case "shift_tab":
         case "open_recent_topics":
-            if (
-                hashchange.in_recent_topics_hash() &&
-                !popovers.any_active() &&
-                !overlays.is_active() &&
-                !$("#searchbox_form #search_query").is(":focus") &&
-                !$(".user-list-filter").is(":focus") &&
-                !$(".stream-list-filter").is(":focus")
-            ) {
+            if (recent_topics.is_in_focus()) {
                 return recent_topics.change_focused_element($(e.target), event_name);
             }
     }
@@ -655,7 +667,12 @@ export function process_hotkey(e, hotkey) {
         }
 
         if (
-            (event_name === "up_arrow" || event_name === "down_arrow") &&
+            (event_name === "up_arrow" ||
+                event_name === "down_arrow" ||
+                event_name === "page_up" ||
+                event_name === "page_down" ||
+                event_name === "home" ||
+                event_name === "end") &&
             compose_state.focus_in_empty_compose()
         ) {
             compose_actions.cancel();
@@ -734,7 +751,7 @@ export function process_hotkey(e, hotkey) {
             gear_menu.open();
             return true;
         case "show_shortcuts": // Show keyboard shortcuts page
-            hashchange.go_to_location("keyboard-shortcuts");
+            browser_history.go_to_location("keyboard-shortcuts");
             return true;
         case "stream_cycle_backward":
             narrow.stream_cycle_backward();
@@ -749,10 +766,10 @@ export function process_hotkey(e, hotkey) {
             narrow.narrow_to_next_pm_string();
             return true;
         case "open_recent_topics":
-            hashchange.go_to_location("#recent_topics");
+            browser_history.go_to_location("#recent_topics");
             return true;
         case "all_messages":
-            hashchange.go_to_location("#all_messages");
+            browser_history.go_to_location("#all_messages");
             return true;
     }
 
@@ -760,10 +777,10 @@ export function process_hotkey(e, hotkey) {
     // open. These involve compose box hotkeys and hotkeys that can only
     // be done performed on a message.
     if (recent_topics.is_visible()) {
-        return true;
+        return false;
     }
 
-    // Compose box hotkeys
+    // Shortcuts that are useful with an empty message feed, like opening compose.
     switch (event_name) {
         case "compose": // 'c': compose
             compose_actions.start("stream", {trigger: "compose_hotkey"});
@@ -785,16 +802,14 @@ export function process_hotkey(e, hotkey) {
         case "star_deprecated":
             ui.maybe_show_deprecation_notice("*");
             return true;
-        case "copy_with_c":
-            copy_and_paste.copy_handler();
-            return true;
     }
 
-    if (current_msg_list.empty()) {
+    if (message_lists.current.empty()) {
         return false;
     }
 
-    // Navigation shortcuts
+    // Shortcuts for navigation and other applications that require a
+    // nonempty message feed but do not depend on the selected message.
     switch (event_name) {
         case "down_arrow":
         case "vim_down":
@@ -821,9 +836,12 @@ export function process_hotkey(e, hotkey) {
         case "spacebar":
             navigate.page_down();
             return true;
+        case "copy_with_c":
+            copy_and_paste.copy_handler();
+            return true;
     }
 
-    const msg = current_msg_list.selected_message();
+    const msg = message_lists.current.selected_message();
     // Shortcuts that operate on a message
     switch (event_name) {
         case "message_actions":
@@ -868,7 +886,7 @@ export function process_hotkey(e, hotkey) {
             compose_actions.quote_and_reply({trigger: "hotkey"});
             return true;
         case "edit_message": {
-            const row = current_msg_list.get_row(msg.id);
+            const row = message_lists.current.get_row(msg.id);
             message_edit.start(row);
             return true;
         }

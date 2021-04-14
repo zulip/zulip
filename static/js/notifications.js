@@ -2,17 +2,19 @@ import $ from "jquery";
 import _ from "lodash";
 
 import render_compose_notification from "../templates/compose_notification.hbs";
-import render_notification from "../templates/notification.hbs";
 
 import * as alert_words from "./alert_words";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as favicon from "./favicon";
+import {$t} from "./i18n";
+import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as muting from "./muting";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
 import * as navigate from "./navigate";
+import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as spoilers from "./spoilers";
@@ -27,8 +29,6 @@ const notice_memory = new Map();
 // When you start Zulip, window_focused should be true, but it might not be the
 // case after a server-initiated reload.
 let window_focused = document.hasFocus && document.hasFocus();
-
-let supports_sound;
 
 let NotificationAPI;
 
@@ -69,14 +69,6 @@ export function get_notifications() {
     return notice_memory;
 }
 
-function get_audio_file_path(audio_element, audio_file_without_extension) {
-    if (audio_element.canPlayType('audio/ogg; codecs="vorbis"')) {
-        return audio_file_without_extension + ".ogg";
-    }
-
-    return audio_file_without_extension + ".mp3";
-}
-
 export function initialize() {
     $(window)
         .on("focus", () => {
@@ -95,40 +87,18 @@ export function initialize() {
             window_focused = false;
         });
 
-    const audio = $("<audio>");
-    if (audio[0].canPlayType === undefined) {
-        supports_sound = false;
-    } else {
-        supports_sound = true;
-
-        $("#notifications-area").append(audio);
-        audio.append($("<source>").attr("loop", "yes"));
-        const source = $("#notifications-area audio source");
-
-        if (audio[0].canPlayType('audio/ogg; codecs="vorbis"')) {
-            source.attr("type", "audio/ogg");
-        } else {
-            source.attr("type", "audio/mpeg");
-        }
-
-        const audio_file_without_extension =
-            "/static/audio/notification_sounds/" + page_params.notification_sound;
-        source.attr("src", get_audio_file_path(audio[0], audio_file_without_extension));
-    }
+    update_notification_sound_source();
 }
 
 function update_notification_sound_source() {
-    // Simplified version of the source creation in `exports.initialize`, for
-    // updating the source instead of creating it for the first time.
-    const audio = $("#notifications-area audio");
-    const source = $("#notifications-area audio source");
     const audio_file_without_extension =
         "/static/audio/notification_sounds/" + page_params.notification_sound;
-    source.attr("src", get_audio_file_path(audio[0], audio_file_without_extension));
+    $("#notification-sound-source-ogg").attr("src", `${audio_file_without_extension}.ogg`);
+    $("#notification-sound-source-mp3").attr("src", `${audio_file_without_extension}.mp3`);
 
     // Load it so that it is ready to be played; without this the old sound
     // is played.
-    $("#notifications-area").find("audio")[0].load();
+    $("#notification-sound-audio")[0].load();
 }
 
 export function permission_state() {
@@ -179,36 +149,6 @@ export function update_unread_counts(new_unread_count, new_pm_count) {
 
 export function is_window_focused() {
     return window_focused;
-}
-
-function in_browser_notify(message, title, content, raw_operators, opts) {
-    const notification_html = $(
-        render_notification({
-            gravatar_url: people.small_avatar_url(message),
-            title,
-            content,
-            message_id: message.id,
-        }),
-    );
-
-    $(".top-right")
-        .notify({
-            message: {
-                html: notification_html,
-            },
-            fadeOut: {
-                enabled: true,
-                delay: 4000,
-            },
-        })
-        .show();
-
-    $(`.notification[data-message-id='${CSS.escape(message.id)}']`)
-        .expectOne()
-        .data("narrow", {
-            raw_operators,
-            opts_notif: opts,
-        });
 }
 
 export function notify_above_composebox(note, link_class, link_msg_id, link_text) {
@@ -277,8 +217,6 @@ export function process_notification(notification) {
     let title = message.sender_full_name;
     let msg_count = 1;
     let notification_source;
-    let raw_operators = [];
-    const opts = {trigger: "notification click"};
     // Convert the content to plain text, replacing emoji with their alt text
     content = $("<div/>").html(message.content);
     ui.replace_emoji_with_text(content);
@@ -347,16 +285,10 @@ export function process_notification(notification) {
         } else {
             title += " (to you)";
         }
-
-        raw_operators = [{operand: message.reply_to, operator: "pm-with"}];
     }
 
     if (message.type === "stream") {
         title += " (to " + message.stream + " > " + topic + ")";
-        raw_operators = [
-            {operator: "stream", operand: message.stream},
-            {operator: "topic", operand: topic},
-        ];
     }
 
     if (notification.desktop_notify) {
@@ -388,8 +320,6 @@ export function process_notification(notification) {
                 notice_memory.delete(key);
             });
         }
-    } else {
-        in_browser_notify(message, title, content, raw_operators, opts);
     }
 }
 
@@ -552,8 +482,8 @@ export function received_messages(messages) {
                 desktop_notify: granted_desktop_notifications_permission(),
             });
         }
-        if (should_send_audible_notification(message) && supports_sound) {
-            $("#notifications-area").find("audio")[0].play();
+        if (should_send_audible_notification(message)) {
+            $("#notification-sound-audio")[0].play();
         }
     }
 }
@@ -579,18 +509,22 @@ function get_message_header(message) {
         return message.stream + " > " + message.topic;
     }
     if (message.display_recipient.length > 2) {
-        return i18n.t("group private messages with __- recipient__", {
-            recipient: message.display_reply_to,
-        });
+        return $t(
+            {defaultMessage: "group private messages with {recipient}"},
+            {recipient: message.display_reply_to},
+        );
     }
     if (people.is_current_user(message.reply_to)) {
-        return i18n.t("private messages with yourself");
+        return $t({defaultMessage: "private messages with yourself"});
     }
-    return i18n.t("private messages with __- recipient__", {recipient: message.display_reply_to});
+    return $t(
+        {defaultMessage: "private messages with {recipient}"},
+        {recipient: message.display_reply_to},
+    );
 }
 
 export function get_local_notify_mix_reason(message) {
-    const row = current_msg_list.get_row(message.id);
+    const row = message_lists.current.get_row(message.id);
     if (row.length > 0) {
         // If our message is in the current message list, we do
         // not have a mix, so we are happy.
@@ -598,11 +532,11 @@ export function get_local_notify_mix_reason(message) {
     }
 
     if (message.type === "stream" && muting.is_topic_muted(message.stream_id, message.topic)) {
-        return i18n.t("Sent! Your message was sent to a topic you have muted.");
+        return $t({defaultMessage: "Sent! Your message was sent to a topic you have muted."});
     }
 
     if (message.type === "stream" && stream_data.is_muted(message.stream_id)) {
-        return i18n.t("Sent! Your message was sent to a stream you have muted.");
+        return $t({defaultMessage: "Sent! Your message was sent to a stream you have muted."});
     }
 
     // offscreen because it is outside narrow
@@ -614,7 +548,7 @@ export function get_local_notify_mix_reason(message) {
         current_filter.can_apply_locally() &&
         !current_filter.predicate()(message)
     ) {
-        return i18n.t("Sent! Your message is outside your current narrow.");
+        return $t({defaultMessage: "Sent! Your message is outside your current narrow."});
     }
 
     return undefined;
@@ -653,7 +587,7 @@ export function notify_local_mixes(messages, need_user_to_scroll) {
 
         if (!reason) {
             if (need_user_to_scroll) {
-                reason = i18n.t("Sent! Scroll down to view your message.");
+                reason = $t({defaultMessage: "Sent! Scroll down to view your message."});
                 notify_above_composebox(reason, "", null, "");
                 setTimeout(() => {
                     $("#out-of-view-notification").hide();
@@ -667,26 +601,28 @@ export function notify_local_mixes(messages, need_user_to_scroll) {
 
         const link_msg_id = message.id;
         const link_class = "compose_notification_narrow_by_topic";
-        const link_text = i18n.t("Narrow to __- message_recipient__", {
-            message_recipient: get_message_header(message),
-        });
+        const link_text = $t(
+            {defaultMessage: "Narrow to {message_recipient}"},
+            {message_recipient: get_message_header(message)},
+        );
 
         notify_above_composebox(reason, link_class, link_msg_id, link_text);
     }
 }
 
 // for callback when we have to check with the server if a message should be in
-// the current_msg_list (!can_apply_locally; a.k.a. "a search").
+// the message_lists.current (!can_apply_locally; a.k.a. "a search").
 export function notify_messages_outside_current_search(messages) {
     for (const message of messages) {
         if (!people.is_current_user(message.sender_email)) {
             continue;
         }
-        const link_text = i18n.t("Narrow to __- message_recipient__", {
-            message_recipient: get_message_header(message),
-        });
+        const link_text = $t(
+            {defaultMessage: "Narrow to {message_recipient}"},
+            {message_recipient: get_message_header(message)},
+        );
         notify_above_composebox(
-            i18n.t("Sent! Your recent message is outside the current search."),
+            $t({defaultMessage: "Sent! Your recent message is outside the current search."}),
             "compose_notification_narrow_by_topic",
             message.id,
             link_text,
@@ -725,7 +661,7 @@ export function register_click_handlers() {
     });
     $("#out-of-view-notification").on("click", ".compose_notification_scroll_to_message", (e) => {
         const message_id = $(e.currentTarget).data("message-id");
-        current_msg_list.select_id(message_id);
+        message_lists.current.select_id(message_id);
         navigate.scroll_to_selected();
         e.stopPropagation();
         e.preventDefault();

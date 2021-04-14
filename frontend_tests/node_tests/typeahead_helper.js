@@ -3,26 +3,17 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-
-const page_params = set_global("page_params", {realm_is_zephyr_mirror_realm: false});
+const {page_params} = require("../zjsunit/zpage_params");
 
 const settings_config = zrequire("settings_config");
 const pm_conversations = zrequire("pm_conversations");
-
-page_params.realm_email_address_visibility =
-    settings_config.email_address_visibility_values.admins_only.code;
 
 const recent_senders = zrequire("recent_senders");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
-zrequire("narrow");
-zrequire("user_status");
-zrequire("presence");
-zrequire("buddy_data");
-zrequire("hash_util");
 
 const emoji = zrequire("../shared/js/emoji");
 const pygments_data = zrequire("../generated/pygments_data.json");
@@ -113,6 +104,10 @@ function test(label, f) {
         peer_data.clear_for_testing();
         people.clear_recipient_counts_for_testing();
         page_params.is_admin = false;
+        page_params.realm_is_zephyr_mirror_realm = false;
+        page_params.realm_email_address_visibility =
+            settings_config.email_address_visibility_values.admins_only.code;
+
         f(override);
     });
 }
@@ -310,9 +305,6 @@ function get_typeahead_result(query, current_stream, current_topic) {
 }
 
 test("sort_recipients", () => {
-    const dev_sub = stream_data.get_sub("Dev");
-    const linux_sub = stream_data.get_sub("Linux");
-
     // Typeahead for recipientbox [query, "", undefined]
     assert.deepEqual(get_typeahead_result("b", ""), [
         "b_user_1@zulip.net",
@@ -341,9 +333,6 @@ test("sort_recipients", () => {
     peer_data.add_subscriber(1, people.get_user_id(subscriber_email_1));
     peer_data.add_subscriber(1, people.get_user_id(subscriber_email_2));
     peer_data.add_subscriber(1, people.get_user_id(subscriber_email_3));
-
-    stream_data.update_calculated_fields(dev_sub);
-    stream_data.update_calculated_fields(linux_sub);
 
     // For splitting based on whether a PM was sent
     pm_conversations.set_partner(5);
@@ -591,7 +580,6 @@ test("render_person when emails hidden", () => {
         rendered = true;
         return "typeahead-item-stub";
     });
-    th.clear_rendered_person(b_user_1.user_id);
     assert.equal(th.render_person(b_user_1), "typeahead-item-stub");
     assert(rendered);
 });
@@ -607,7 +595,6 @@ test("render_person", () => {
         rendered = true;
         return "typeahead-item-stub";
     });
-    th.clear_rendered_person(a_user.user_id);
     assert.equal(th.render_person(a_user), "typeahead-item-stub");
     assert(rendered);
 });
@@ -624,7 +611,6 @@ test("render_person special_item_text", () => {
         user_id: 7,
         special_item_text: "special_text",
     };
-    th.clear_rendered_person(special_person.user_id);
 
     rendered = false;
     stub_templates((template_name, args) => {
@@ -637,34 +623,6 @@ test("render_person special_item_text", () => {
     assert(rendered);
 });
 
-test("clear_rendered_person", () => {
-    page_params.is_admin = true;
-    th.clear_rendered_person(b_bot.user_id);
-
-    let rendered = false;
-    stub_templates((template_name, args) => {
-        assert.equal(template_name, "typeahead_list_item");
-        assert.equal(args.primary, b_bot.full_name);
-        assert.equal(args.secondary, b_bot.email);
-        rendered = true;
-        return "typeahead-item-stub";
-    });
-    assert.equal(th.render_person(b_bot), "typeahead-item-stub");
-    assert(rendered);
-
-    // Bot once rendered won't be rendered again until clear_rendered_person
-    // function is called. clear_rendered_person is used to clear rendered
-    // data once bot name is modified.
-    rendered = false;
-    assert.equal(th.render_person(b_bot), "typeahead-item-stub");
-    assert.equal(rendered, false);
-
-    // Here rendered will be true as it is being rendered again.
-    th.clear_rendered_person(b_bot.user_id);
-    assert.equal(th.render_person(b_bot), "typeahead-item-stub");
-    assert(rendered);
-});
-
 test("render_stream", () => {
     // Test render_stream with short description
     let rendered = false;
@@ -673,7 +631,6 @@ test("render_stream", () => {
         stream_id: 42,
         name: "Short Description",
     };
-    th.clear_rendered_stream(stream.stream_id);
 
     stub_templates((template_name, args) => {
         assert.equal(template_name, "typeahead_list_item");
@@ -694,7 +651,6 @@ test("render_stream w/long description", () => {
         stream_id: 43,
         name: "Long Description",
     };
-    th.clear_rendered_stream(stream.stream_id);
 
     stub_templates((template_name, args) => {
         assert.equal(template_name, "typeahead_list_item");
@@ -704,35 +660,6 @@ test("render_stream w/long description", () => {
         rendered = true;
         return "typeahead-item-stub";
     });
-    assert.equal(th.render_stream(stream), "typeahead-item-stub");
-    assert(rendered);
-});
-
-test("clear_rendered_stream", () => {
-    let rendered = false;
-    const stream = {
-        description: "This is a description.",
-        stream_id: 44,
-        name: "Stream To Be Cleared",
-    };
-
-    th.clear_rendered_stream(stream.stream_id);
-    stub_templates((template_name, args) => {
-        assert.equal(template_name, "typeahead_list_item");
-        assert.equal(args.primary, stream.name);
-        assert.equal(args.secondary, stream.description);
-        rendered = true;
-        return "typeahead-item-stub";
-    });
-    assert.equal(th.render_stream(stream), "typeahead-item-stub");
-    assert(rendered);
-
-    rendered = false;
-    assert.equal(th.render_stream(stream), "typeahead-item-stub");
-    assert.equal(rendered, false);
-
-    // Here rendered will be true as it is being rendered again.
-    th.clear_rendered_stream(stream.stream_id);
     assert.equal(th.render_stream(stream), "typeahead-item-stub");
     assert(rendered);
 });

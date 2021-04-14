@@ -5,7 +5,7 @@ from typing import Any, AnyStr, Dict, Optional
 
 import requests
 from django.utils.translation import ugettext as _
-from requests import Response
+from requests import Response, Session
 
 from version import ZULIP_VERSION
 from zerver.decorator import JsonableError
@@ -30,13 +30,16 @@ class OutgoingWebhookServiceInterface(metaclass=abc.ABCMeta):
         self.token: str = token
         self.user_profile: UserProfile = user_profile
         self.service_name: str = service_name
+        self.session: Session = Session()
+        self.session.headers.update(
+            {
+                "X-Smokescreen-Role": "webhook",
+                "User-Agent": "ZulipOutgoingWebhook/" + ZULIP_VERSION,
+            }
+        )
 
     @abc.abstractmethod
-    def build_bot_request(self, event: Dict[str, Any]) -> Optional[Any]:
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def send_data_to_server(self, base_url: str, request_data: Any) -> Response:
+    def make_request(self, base_url: str, event: Dict[str, Any]) -> Optional[Response]:
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -45,7 +48,7 @@ class OutgoingWebhookServiceInterface(metaclass=abc.ABCMeta):
 
 
 class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
-    def build_bot_request(self, event: Dict[str, Any]) -> Optional[Any]:
+    def make_request(self, base_url: str, event: Dict[str, Any]) -> Optional[Response]:
         """
         We send a simple version of the message to outgoing
         webhooks, since most of them really only need
@@ -66,19 +69,12 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
             "data": event["command"],
             "message": message_dict,
             "bot_email": self.user_profile.email,
+            "bot_full_name": self.user_profile.full_name,
             "token": self.token,
             "trigger": event["trigger"],
         }
-        return json.dumps(request_data)
 
-    def send_data_to_server(self, base_url: str, request_data: Any) -> Response:
-        user_agent = "ZulipOutgoingWebhook/" + ZULIP_VERSION
-        headers = {
-            "content-type": "application/json",
-            "User-Agent": user_agent,
-        }
-        response = requests.request("POST", base_url, data=request_data, headers=headers)
-        return response
+        return self.session.post(base_url, json=request_data)
 
     def process_success(self, response_json: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         if "response_not_required" in response_json and response_json["response_not_required"]:
@@ -101,7 +97,7 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
 
 class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
-    def build_bot_request(self, event: Dict[str, Any]) -> Optional[Any]:
+    def make_request(self, base_url: str, event: Dict[str, Any]) -> Optional[Response]:
         if event["message"]["type"] == "private":
             failure_message = "Slack outgoing webhooks don't support private messages."
             fail_with_message(event, failure_message)
@@ -120,12 +116,7 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
             ("trigger_word", event["trigger"]),
             ("service_id", event["user_profile_id"]),
         ]
-
-        return request_data
-
-    def send_data_to_server(self, base_url: str, request_data: Any) -> Response:
-        response = requests.request("POST", base_url, data=request_data)
-        return response
+        return self.session.post(base_url, data=request_data)
 
     def process_success(self, response_json: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         if "text" in response_json:
@@ -313,16 +304,28 @@ def process_success_response(
 
 
 def do_rest_call(
-    base_url: str, request_data: Any, event: Dict[str, Any], service_handler: Any
+    base_url: str,
+    event: Dict[str, Any],
+    service_handler: OutgoingWebhookServiceInterface,
 ) -> Optional[Response]:
     """Returns response of call if no exception occurs."""
     try:
-        response = service_handler.send_data_to_server(
-            base_url=base_url,
-            request_data=request_data,
+        response = service_handler.make_request(
+            base_url,
+            event,
         )
+        if not response:
+            return None
         if str(response.status_code).startswith("2"):
-            process_success_response(event, service_handler, response)
+            try:
+                process_success_response(event, service_handler, response)
+            except JsonableError as e:
+                response_message = e.msg
+                logging.info("Outhook trigger failed:", stack_info=True)
+                fail_with_message(event, response_message)
+                response_message = f"The outgoing webhook server attempted to send a message in Zulip, but that request resulted in the following error:\n> {e}"
+                notify_bot_owner(event, failure_message=response_message)
+                return None
         else:
             logging.warning(
                 "Message %(message_url)s triggered an outgoing webhook, returning status "

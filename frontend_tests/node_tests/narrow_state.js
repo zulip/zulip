@@ -2,10 +2,8 @@
 
 const {strict: assert} = require("assert");
 
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-
-set_global("page_params", {});
 
 const people = zrequire("people");
 const {Filter} = zrequire("../js/filter");

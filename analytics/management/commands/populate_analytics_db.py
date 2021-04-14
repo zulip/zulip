@@ -83,9 +83,9 @@ class Command(BaseCommand):
                 "Shylock",
                 realm,
                 full_name="Shylock",
-                role=UserProfile.ROLE_REALM_ADMINISTRATOR,
+                role=UserProfile.ROLE_REALM_OWNER,
             )
-        do_change_user_role(shylock, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
+        do_change_user_role(shylock, UserProfile.ROLE_REALM_OWNER, acting_user=None)
         stream = Stream.objects.create(name="all", realm=realm, date_created=installation_time)
         recipient = Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
         stream.recipient = recipient
@@ -95,7 +95,10 @@ class Command(BaseCommand):
         # TODO: This should use subscribe_users_to_streams from populate_db.
         subs = [
             Subscription(
-                recipient=recipient, user_profile=shylock, color=STREAM_ASSIGNMENT_COLORS[0]
+                recipient=recipient,
+                user_profile=shylock,
+                is_user_active=shylock.is_active,
+                color=STREAM_ASSIGNMENT_COLORS[0],
             ),
         ]
         Subscription.objects.bulk_create(subs)

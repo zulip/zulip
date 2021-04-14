@@ -11,6 +11,7 @@ mock_esm("../../static/js/resize", {
     resize_stream_filters_container: () => {},
 });
 
+const all_messages_data = mock_esm("../../static/js/all_messages_data");
 const channel = mock_esm("../../static/js/channel");
 const compose = mock_esm("../../static/js/compose");
 const compose_actions = mock_esm("../../static/js/compose_actions");
@@ -19,6 +20,13 @@ const message_fetch = mock_esm("../../static/js/message_fetch");
 const message_list = mock_esm("../../static/js/message_list", {
     set_narrowed(value) {
         message_list.narrowed = value;
+    },
+});
+const message_lists = mock_esm("../../static/js/message_lists", {
+    home: {},
+    current: {},
+    set_current(msg_list) {
+        message_lists.current = msg_list;
     },
 });
 const message_scroll = mock_esm("../../static/js/message_scroll");
@@ -34,9 +42,6 @@ mock_esm("../../static/js/recent_topics", {
     hide: () => {},
     is_visible: () => {},
 });
-set_global("current_msg_list", {});
-set_global("home_msg_list", {});
-set_global("page_params", {});
 
 //
 // We have strange hacks in narrow.activate to sleep 0
@@ -152,19 +157,17 @@ run_test("basics", () => {
         offset: () => ({top: 25}),
     };
 
-    current_msg_list.selected_id = () => -1;
-    current_msg_list.get_row = () => row;
+    message_lists.current.selected_id = () => -1;
+    message_lists.current.get_row = () => row;
 
-    message_list.all = {
+    all_messages_data.all_messages_data = {
         all_messages: () => messages,
         get: (msg_id) => {
             assert.equal(msg_id, selected_id);
             return selected_message;
         },
-        data: {
-            fetch_status: {
-                has_found_newest: () => true,
-            },
+        fetch_status: {
+            has_found_newest: () => true,
         },
         empty: () => false,
         first: () => ({id: 900}),
@@ -207,8 +210,8 @@ run_test("basics", () => {
         [message_view_header, "initialize"],
     ]);
 
-    current_msg_list.selected_id = () => -1;
-    current_msg_list.get_row = () => row;
+    message_lists.current.selected_id = () => -1;
+    message_lists.current.get_row = () => row;
     util.sorted_ids = () => [];
 
     narrow.activate([{operator: "is", operand: "private"}], {

@@ -2,7 +2,6 @@ import Handlebars from "handlebars/runtime";
 import _ from "lodash";
 
 import pygments_data from "../generated/pygments_data.json";
-import * as emoji from "../shared/js/emoji";
 import * as typeahead from "../shared/js/typeahead";
 import render_typeahead_list_item from "../templates/typeahead_list_item.hbs";
 
@@ -73,8 +72,6 @@ export function render_typeahead_item(args) {
     return render_typeahead_list_item(args);
 }
 
-const rendered = {persons: new Map(), streams: new Map(), user_groups: new Map()};
-
 export function render_person(person) {
     const user_circle_class = buddy_data.get_user_circle_class(person.user_id);
     if (person.special_item_text) {
@@ -84,39 +81,24 @@ export function render_person(person) {
         });
     }
 
-    let html = rendered.persons.get(person.user_id);
-    if (html === undefined) {
-        const avatar_url = people.small_avatar_url_for_person(person);
+    const avatar_url = people.small_avatar_url_for_person(person);
 
-        const typeahead_arguments = {
-            primary: person.full_name,
-            img_src: avatar_url,
-            user_circle_class,
-            is_person: true,
-        };
-        typeahead_arguments.secondary = settings_data.email_for_user_settings(person);
-        html = render_typeahead_item(typeahead_arguments);
-        rendered.persons.set(person.user_id, html);
-    }
-    return html;
-}
-
-export function clear_rendered_person(user_id) {
-    rendered.persons.delete(user_id);
+    const typeahead_arguments = {
+        primary: person.full_name,
+        img_src: avatar_url,
+        user_circle_class,
+        is_person: true,
+    };
+    typeahead_arguments.secondary = settings_data.email_for_user_settings(person);
+    return render_typeahead_item(typeahead_arguments);
 }
 
 export function render_user_group(user_group) {
-    let html = rendered.user_groups.get(user_group.id);
-    if (html === undefined) {
-        html = render_typeahead_item({
-            primary: user_group.name,
-            secondary: user_group.description,
-            is_user_group: true,
-        });
-        rendered.user_groups.set(user_group.id, html);
-    }
-
-    return html;
+    return render_typeahead_item({
+        primary: user_group.name,
+        secondary: user_group.description,
+        is_user_group: true,
+    });
 }
 
 export function render_person_or_user_group(item) {
@@ -127,12 +109,6 @@ export function render_person_or_user_group(item) {
     return render_person(item);
 }
 
-export function clear_rendered_stream(stream_id) {
-    if (rendered.streams.has(stream_id)) {
-        rendered.streams.delete(stream_id);
-    }
-}
-
 export function render_stream(stream) {
     let desc = stream.description;
     const short_desc = desc.slice(0, 35);
@@ -141,17 +117,11 @@ export function render_stream(stream) {
         desc = short_desc + "...";
     }
 
-    let html = rendered.streams.get(stream.stream_id);
-    if (html === undefined) {
-        html = render_typeahead_item({
-            primary: stream.name,
-            secondary: desc,
-            is_unsubscribed: !stream.subscribed,
-        });
-        rendered.streams.set(stream.stream_id, html);
-    }
-
-    return html;
+    return render_typeahead_item({
+        primary: stream.name,
+        secondary: desc,
+        is_unsubscribed: !stream.subscribed,
+    });
 }
 
 export function render_emoji(item) {
@@ -159,11 +129,13 @@ export function render_emoji(item) {
         is_emoji: true,
         primary: item.emoji_name.split("_").join(" "),
     };
-    if (emoji.active_realm_emojis.has(item.emoji_name)) {
+
+    if (item.emoji_url) {
         args.img_src = item.emoji_url;
     } else {
         args.emoji_code = item.emoji_code;
     }
+
     return render_typeahead_item(args);
 }
 
@@ -302,17 +274,9 @@ export function sort_recipients(
     query,
     current_stream,
     current_topic,
-    groups,
-    max_num_items,
+    groups = [],
+    max_num_items = 20,
 ) {
-    if (!groups) {
-        groups = [];
-    }
-
-    if (max_num_items === undefined) {
-        max_num_items = 20;
-    }
-
     function sort_relevance(items) {
         return sort_people_for_relevance(items, current_stream, current_topic);
     }

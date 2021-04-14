@@ -568,7 +568,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         user3_email = "other-user@uploadtest.example.com"
 
         r1 = do_create_realm(string_id=test_subdomain, name=test_subdomain)
-        do_set_realm_property(r1, "invite_required", False)
+        do_set_realm_property(r1, "invite_required", False, acting_user=None)
         RealmDomain.objects.create(realm=r1, domain=test_subdomain)
 
         user_1 = create_user(user1_email, test_subdomain)
@@ -969,7 +969,12 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         Attempting to upload avatar on a realm with avatar changes disabled should fail.
         """
         self.login("cordelia")
-        do_set_realm_property(self.example_user("cordelia").realm, "avatar_changes_disabled", True)
+        do_set_realm_property(
+            self.example_user("cordelia").realm,
+            "avatar_changes_disabled",
+            True,
+            acting_user=None,
+        )
 
         with get_test_image_file("img.png") as fp1:
             result = self.client_post("/json/users/me/avatar", {"f1": fp1})
@@ -1214,11 +1219,11 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         cordelia.avatar_source = UserProfile.AVATAR_FROM_USER
         cordelia.save()
 
-        do_set_realm_property(cordelia.realm, "avatar_changes_disabled", True)
+        do_set_realm_property(cordelia.realm, "avatar_changes_disabled", True, acting_user=None)
         result = self.client_delete("/json/users/me/avatar")
         self.assert_json_error(result, "Avatar changes are disabled in this organization.", 400)
 
-        do_set_realm_property(cordelia.realm, "avatar_changes_disabled", False)
+        do_set_realm_property(cordelia.realm, "avatar_changes_disabled", False, acting_user=None)
         result = self.client_delete("/json/users/me/avatar")
         user_profile = self.example_user("cordelia")
 
@@ -1326,7 +1331,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
     def test_get_gravatar_icon(self) -> None:
         self.login("hamlet")
         realm = get_realm("zulip")
-        do_change_icon_source(realm, Realm.ICON_FROM_GRAVATAR)
+        do_change_icon_source(realm, Realm.ICON_FROM_GRAVATAR, acting_user=None)
         with self.settings(ENABLE_GRAVATAR=True):
             response = self.client_get("/json/realm/icon", {"foo": "bar"})
             redirect_url = response["Location"]
@@ -1341,7 +1346,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         self.login("hamlet")
 
         realm = get_realm("zulip")
-        do_change_icon_source(realm, Realm.ICON_UPLOADED)
+        do_change_icon_source(realm, Realm.ICON_UPLOADED, acting_user=None)
         response = self.client_get("/json/realm/icon", {"foo": "bar"})
         redirect_url = response["Location"]
         self.assertTrue(redirect_url.endswith(realm_icon_url(realm) + "&foo=bar"))
@@ -1387,7 +1392,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         """
         self.login("iago")
         realm = get_realm("zulip")
-        do_change_icon_source(realm, Realm.ICON_UPLOADED)
+        do_change_icon_source(realm, Realm.ICON_UPLOADED, acting_user=None)
 
         result = self.client_delete("/json/realm/icon")
 
@@ -1463,7 +1468,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_upload_limited_plan_type(self) -> None:
         user_profile = self.example_user("iago")
-        do_change_plan_type(user_profile.realm, Realm.LIMITED)
+        do_change_plan_type(user_profile.realm, Realm.LIMITED, acting_user=None)
         self.login_user(user_profile)
         with get_test_image_file(self.correct_files[0][0]) as fp:
             result = self.client_post(
@@ -1507,7 +1512,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
             f"/user_avatars/{realm.id}/realm/{file_name}?version=2&night={is_night_str}",
         )
 
-        do_change_plan_type(realm, Realm.LIMITED)
+        do_change_plan_type(realm, Realm.LIMITED, acting_user=user_profile)
         if self.night:
             self.assertEqual(realm.night_logo_source, Realm.LOGO_UPLOADED)
         else:

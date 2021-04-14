@@ -4,6 +4,7 @@ const {strict: assert} = require("assert");
 
 const autosize = require("autosize");
 
+const {$t} = require("../zjsunit/i18n");
 const {mock_cjs, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -193,13 +194,19 @@ run_test("compute_placeholder_text", () => {
     };
 
     // Stream narrows
-    assert.equal(compose_ui.compute_placeholder_text(opts), i18n.t("Compose your message here"));
+    assert.equal(
+        compose_ui.compute_placeholder_text(opts),
+        $t({defaultMessage: "Compose your message here"}),
+    );
 
     opts.stream = "all";
-    assert.equal(compose_ui.compute_placeholder_text(opts), i18n.t("Message #all"));
+    assert.equal(compose_ui.compute_placeholder_text(opts), $t({defaultMessage: "Message #all"}));
 
     opts.topic = "Test";
-    assert.equal(compose_ui.compute_placeholder_text(opts), i18n.t("Message #all > Test"));
+    assert.equal(
+        compose_ui.compute_placeholder_text(opts),
+        $t({defaultMessage: "Message #all > Test"}),
+    );
 
     // PM Narrows
     opts = {
@@ -208,23 +215,32 @@ run_test("compute_placeholder_text", () => {
         topic: "",
         private_message_recipient: "",
     };
-    assert.equal(compose_ui.compute_placeholder_text(opts), i18n.t("Compose your message here"));
+    assert.equal(
+        compose_ui.compute_placeholder_text(opts),
+        $t({defaultMessage: "Compose your message here"}),
+    );
 
     opts.private_message_recipient = "bob@zulip.com";
     user_status.set_status_text({
         user_id: bob.user_id,
         status_text: "out to lunch",
     });
-    assert.equal(compose_ui.compute_placeholder_text(opts), i18n.t("Message Bob (out to lunch)"));
+    assert.equal(
+        compose_ui.compute_placeholder_text(opts),
+        $t({defaultMessage: "Message Bob (out to lunch)"}),
+    );
 
     opts.private_message_recipient = "alice@zulip.com";
     user_status.set_status_text({
         user_id: alice.user_id,
         status_text: "",
     });
-    assert.equal(compose_ui.compute_placeholder_text(opts), i18n.t("Message Alice"));
+    assert.equal(compose_ui.compute_placeholder_text(opts), $t({defaultMessage: "Message Alice"}));
 
     // Group PM
     opts.private_message_recipient = "alice@zulip.com,bob@zulip.com";
-    assert.equal(compose_ui.compute_placeholder_text(opts), i18n.t("Message Alice, Bob"));
+    assert.equal(
+        compose_ui.compute_placeholder_text(opts),
+        $t({defaultMessage: "Message Alice, Bob"}),
+    );
 });

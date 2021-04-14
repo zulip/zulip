@@ -7,6 +7,9 @@ import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
+import {csrf_token} from "./csrf";
+import {$t} from "./i18n";
+import {page_params} from "./page_params";
 
 export function make_upload_absolute(uri) {
     if (uri.startsWith(compose.uploads_path)) {
@@ -24,7 +27,7 @@ export function feature_check(upload_button) {
 }
 
 export function get_translated_status(file) {
-    const status = i18n.t("Uploading __filename__…", {filename: file.name});
+    const status = $t({defaultMessage: "Uploading {filename}…"}, {filename: file.name});
     return "[" + status + "]()";
 }
 
@@ -99,10 +102,10 @@ export function hide_upload_status(config) {
     get_item("send_status", config).removeClass("alert-info").hide();
 }
 
-export function show_error_message(config, message) {
-    if (!message) {
-        message = i18n.t("An unknown error occurred.");
-    }
+export function show_error_message(
+    config,
+    message = $t({defaultMessage: "An unknown error occurred."}),
+) {
     get_item("send_button", config).prop("disabled", false);
     get_item("send_status", config).addClass("alert-error").removeClass("alert-info").show();
     get_item("send_status_message", config).text(message);
@@ -115,7 +118,9 @@ export function upload_files(uppy, config, files) {
     if (page_params.max_file_upload_size_mib === 0) {
         show_error_message(
             config,
-            i18n.t("File and image uploads have been disabled for this organization."),
+            $t({
+                defaultMessage: "File and image uploads have been disabled for this organization.",
+            }),
         );
         return;
     }
@@ -133,7 +138,7 @@ export function upload_files(uppy, config, files) {
 
     get_item("send_button", config).prop("disabled", true);
     get_item("send_status", config).addClass("alert-info").removeClass("alert-error").show();
-    get_item("send_status_message", config).html($("<p>").text(i18n.t("Uploading…")));
+    get_item("send_status_message", config).html($("<p>").text($t({defaultMessage: "Uploading…"})));
     get_item("send_status_close_button", config).one("click", () => {
         for (const file of uppy.getFiles()) {
             compose_ui.replace_syntax(
@@ -179,8 +184,8 @@ export function setup_upload(config) {
         },
         locale: {
             strings: {
-                exceedsSize: i18n.t("This file exceeds maximum allowed size of"),
-                failedToUpload: i18n.t("Failed to upload %{file}"),
+                exceedsSize: $t({defaultMessage: "This file exceeds maximum allowed size of"}),
+                failedToUpload: $t({defaultMessage: "Failed to upload %'{file}'"}),
             },
         },
     });
@@ -195,7 +200,9 @@ export function setup_upload(config) {
         limit: 5,
         locale: {
             strings: {
-                timedOut: i18n.t("Upload stalled for %{seconds} seconds, aborting."),
+                timedOut: $t({
+                    defaultMessage: "Upload stalled for %'{seconds}' seconds, aborting.",
+                }),
             },
         },
     });
@@ -304,7 +311,7 @@ export function setup_upload(config) {
     });
 
     uppy.on("upload-error", (file, error, response) => {
-        const message = response ? response.body.msg : null;
+        const message = response ? response.body.msg : undefined;
         uppy.cancelAll();
         show_error_message(config, message);
         compose_ui.replace_syntax(get_translated_status(file), "", get_item("textarea", config));
