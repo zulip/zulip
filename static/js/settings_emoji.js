@@ -1,10 +1,13 @@
 import $ from "jquery";
 
+import emoji_codes from "../generated/emoji/emoji_codes.json";
 import * as emoji from "../shared/js/emoji";
 import render_admin_emoji_list from "../templates/settings/admin_emoji_list.hbs";
 import render_settings_emoji_settings_tip from "../templates/settings/emoji_settings_tip.hbs";
+import emoji_settings_warning_modal from "../templates/settings/emoji_settings_warning_modal.hbs";
 
 import * as channel from "./channel";
+import * as confirm_dialog from "./confirm_dialog";
 import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
@@ -72,6 +75,10 @@ function sort_author_full_name(a, b) {
         return 0;
     }
     return -1;
+}
+
+function is_default_emoji(emoji_name) {
+    return emoji_codes.names.includes(emoji_name);
 }
 
 export function populate_emoji() {
@@ -230,6 +237,21 @@ export function set_up() {
                 return;
             }
 
-            submit_custom_emoji_request();
+            if (is_default_emoji(emoji.name)) {
+                const modal_parent = $("#settings_content");
+                const html_body = emoji_settings_warning_modal({
+                    emoji_name: emoji.name,
+                });
+
+                confirm_dialog.launch({
+                    parent: modal_parent,
+                    html_heading: $t_html({defaultMessage: "Override unicode emoji?"}),
+                    html_body,
+                    html_yes_button: $t_html({defaultMessage: "Yes"}),
+                    on_click: submit_custom_emoji_request,
+                });
+            } else {
+                submit_custom_emoji_request();
+            }
         });
 }
