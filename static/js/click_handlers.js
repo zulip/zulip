@@ -604,20 +604,18 @@ export function initialize() {
 
     // COMPOSE
 
-    // NB: This just binds to current elements, and won't bind to elements
-    // created after ready() is called.
-    $("#compose-send-status .compose-send-status-close").on("click", () => {
+    $("body").on("click", "#compose-send-status .compose-send-status-close", () => {
         $("#compose-send-status").stop(true).fadeOut(500);
     });
-    $("#nonexistent_stream_reply_error .compose-send-status-close").on("click", () => {
+    $("body").on("click", "#nonexistent_stream_reply_error .compose-send-status-close", () => {
         $("#nonexistent_stream_reply_error").stop(true).fadeOut(500);
     });
 
-    $(".compose_stream_button").on("click", () => {
+    $("body").on("click", ".compose_stream_button", () => {
         popovers.hide_mobile_message_buttons_popover();
         compose_actions.start("stream", {trigger: "new topic button"});
     });
-    $(".compose_private_button").on("click", () => {
+    $("body").on("click", ".compose_private_button", () => {
         popovers.hide_mobile_message_buttons_popover();
         compose_actions.start("private");
     });
@@ -631,15 +629,15 @@ export function initialize() {
         compose_actions.start("private");
     });
 
-    $(".compose_reply_button").on("click", () => {
+    $("body").on("click", ".compose_reply_button", () => {
         compose_actions.respond_to_message({trigger: "reply button"});
     });
 
-    $(".empty_feed_compose_stream").on("click", (e) => {
+    $("body").on("click", ".empty_feed_compose_stream", (e) => {
         compose_actions.start("stream", {trigger: "empty feed message"});
         e.preventDefault();
     });
-    $(".empty_feed_compose_private").on("click", (e) => {
+    $("body").on("click", ".empty_feed_compose_private", (e) => {
         compose_actions.start("private", {trigger: "empty feed message"});
         e.preventDefault();
     });
@@ -673,12 +671,14 @@ export function initialize() {
         popovers.hide_all();
     }
 
-    $("#compose_buttons").on("click", handle_compose_click);
-    $(".compose-content").on("click", handle_compose_click);
+    $("body").on("click", "#compose_buttons", handle_compose_click);
+    $("body").on("click", ".compose-content", handle_compose_click);
 
-    $("#compose_close").on("click", () => {
+    $("body").on("click", "#compose_close", () => {
         compose_actions.cancel();
     });
+
+    // LEFT SIDEBAR
 
     $("#streams_inline_cog").on("click", (e) => {
         e.stopPropagation();
