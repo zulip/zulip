@@ -80,9 +80,7 @@ on hardware requirements for larger organizations.
   that Zulip can properly manage image and website previews and mobile
   push notifications.  Outgoing Internet access is not required if you
   [disable those
-  features](https://zulip.com/help/allow-image-link-previews), or
-  configure an [existing outgoing HTTP
-  proxy](../production/deployment.html#using-an-outgoing-http-proxy).
+  features](https://zulip.com/help/allow-image-link-previews).
 * Outgoing SMTP access (usually port 587) to your [SMTP
   server](../production/email.md) so that Zulip can send emails.
 * A domain name (e.g. `zulip.example.com`) that your users will use to
@@ -93,7 +91,13 @@ on hardware requirements for larger organizations.
   address as its external hostname (though we don't recommend that
   configuration).
 * Zulip supports [running behind a reverse proxy][reverse-proxy].
+* Zulip servers running inside a private network should configure the
+  [`smokescreen` integration][smokescreen-proxy] to protect against
+  [SSRF attacks][SSRF], where users could make the Zulip server make
+  requests to private resources.
 
+[SSRF]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
+[smokescreen-proxy]: ../production/deployment.html#using-an-outgoing-http-proxy
 [reverse-proxy]: ../production/deployment.html#putting-the-zulip-application-behind-a-reverse-proxy
 [email-mirror-code]: https://github.com/zulip/zulip/blob/master/zerver/management/commands/email_mirror.py
 
