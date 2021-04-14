@@ -109,7 +109,7 @@ class RealmFilterTest(ZulipTestCase):
         )
         linkifiers_count = RealmFilter.objects.count()
         result = self.client_delete(f"/json/realm/filters/{linkifier_id + 1}")
-        self.assert_json_error(result, "Filter not found")
+        self.assert_json_error(result, "Linkifier not found.")
 
         result = self.client_delete(f"/json/realm/filters/{linkifier_id}")
         self.assert_json_success(result)

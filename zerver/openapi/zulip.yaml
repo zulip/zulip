@@ -6670,7 +6670,7 @@ paths:
         - name: filter_id
           in: path
           description: |
-            The ID of the filter that you want to remove.
+            The ID of the linkifier that you want to remove.
           schema:
             type: integer
           example: 42

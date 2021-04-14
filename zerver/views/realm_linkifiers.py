@@ -41,5 +41,5 @@ def delete_linkifier(
     try:
         do_remove_linkifier(realm=user_profile.realm, id=filter_id)
     except RealmFilter.DoesNotExist:
-        return json_error(_("Filter not found"))
+        return json_error(_("Linkifier not found."))
     return json_success()
