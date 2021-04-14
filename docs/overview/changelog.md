@@ -7,6 +7,27 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
+### 3.4 -- April 14, 2021
+
+- CVE-2021-30487: Prevent administrators from moving topics to
+  disallowed streams.
+- CVE-2021-30479: Prevent guest user access to `all_public_streams`
+  API.
+- CVE-2021-30478: Prevent API super users from forging messages to
+  other organizations.
+- CVE-2021-30477: Prevent outgoing webhook bots from sending arbitrary
+  messages to any stream.
+- Fixed a potential HTML injection bug in outgoing emails.
+- Fixed Postfix configuration error which would prevent outgoing email
+  to any email address containing `.`, `+`, or starting with `mm`, when
+  configured to use the local Postfix to deliver outgoing email.
+- Fixed a backporting error which caused the `manage.py
+  change_user_role` tool to not work for `admin`, `member`, or `guest` roles.
+- Add support for logout events sent from modern versions of the
+  desktop application.
+- Upgraded minor python dependencies.
+- Minor documentation fixes.
+
 ### 3.3 -- December 1, 2020
 
 - Guest users should not be allowed to post to streams marked “Only
