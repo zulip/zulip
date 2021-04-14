@@ -140,6 +140,45 @@ in bursts.
 
 ## Zulip 3.x series
 
+### 3.4 -- April 14, 2021
+
+- CVE-2021-30487: Prevent administrators from moving topics to
+  disallowed streams.
+- CVE-2021-30479: Prevent guest user access to `all_public_streams`
+  API.
+- CVE-2021-30478: Prevent API super users from forging messages to
+  other organizations.
+- CVE-2021-30477: Prevent outgoing webhook bots from sending arbitrary
+  messages to any stream.
+- Fixed a potential HTML injection bug in outgoing emails.
+- Fixed Postfix configuration error which would prevent outgoing email
+  to any email address containing `.`, `+`, or starting with `mm`, when
+  configured to use the local Postfix to deliver outgoing email.
+- Fixed a backporting error which caused the `manage.py
+  change_user_role` tool to not work for `admin`, `member`, or `guest` roles.
+- Add support for logout events sent from modern versions of the
+  desktop application.
+- Upgraded minor python dependencies.
+- Minor documentation fixes.
+
+### 3.3 -- December 1, 2020
+
+- Guest users should not be allowed to post to streams marked “Only
+  organization full members can post.”  This flaw has existed since
+  the feature was added in Zulip Server 3.0.
+- Permit outgoing mail from postfix; this resolves a bug introduced in
+  Zulip Server 3.2 which prevented Zulip from sending outgoing mail if
+  the local mail server (used mostly for incoming mail) was also used
+  for outgoing email (`MAIL_HOST='localhost'`).
+- Ensure that the `upgrade-postgres` tool upgrades the cluster’s data
+  to the specific PostgreSQL version requested; this resolves a bug
+  where, now that PostgreSQL 13 has been released, `upgrade-postgres`
+  would attempt to upgrade to that version and not PostgreSQL 12.
+- Replace the impenetrably-named `./manage.py knight` with
+  `./manage.py change_user_role`, and extend it to support
+  “Organization owner” roles.
+- Handle realm emojis that have been manually deleted more gracefully.
+
 ### 3.2 -- September 15, 2020
 
 - Switched from `libmemcached` to `python-binary-memcached`, a
