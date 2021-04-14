@@ -2,7 +2,6 @@ import Handlebars from "handlebars/runtime";
 import _ from "lodash";
 
 import pygments_data from "../generated/pygments_data.json";
-import * as emoji from "../shared/js/emoji";
 import * as typeahead from "../shared/js/typeahead";
 import render_typeahead_list_item from "../templates/typeahead_list_item.hbs";
 
@@ -130,11 +129,13 @@ export function render_emoji(item) {
         is_emoji: true,
         primary: item.emoji_name.split("_").join(" "),
     };
-    if (emoji.active_realm_emojis.has(item.emoji_name)) {
+
+    if (item.emoji_url) {
         args.img_src = item.emoji_url;
     } else {
         args.emoji_code = item.emoji_code;
     }
+
     return render_typeahead_item(args);
 }
 
