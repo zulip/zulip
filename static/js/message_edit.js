@@ -819,8 +819,8 @@ export function save_message_row_edit(row) {
 
                     row = message_lists.current.get_row(message_id);
                     if (!is_editing(message_id)) {
-                        // Return to the message editing open UI state.
-                        start_edit_maintaining_scroll(row, echo_data.orig_raw_content);
+                        // Return to the message editing open UI state with the edited content.
+                        start_edit_maintaining_scroll(row, echo_data.raw_content);
                     }
                 }
 
