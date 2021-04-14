@@ -156,7 +156,7 @@ Debian](https://docs.docker.com/install/linux/docker-ce/debian/).
 
 ```eval_rst
 .. note::
-    We now recommend using `WSL 2 for Windows development <../development/setup-advanced.html#installing-directly-on-windows-10-experimental>`_.
+    We recommend using `WSL 2 for Windows development <../development/setup-advanced.html#installing-directly-on-windows-10-with-wsl-2>`_.
 ```
 
 1. Install [Git for Windows][git-bash], which installs *Git BASH*.

@@ -3,7 +3,7 @@
 Contents:
 
 * [Installing directly on Ubuntu, Debian, CentOS, or Fedora](#installing-directly-on-ubuntu-debian-centos-or-fedora)
-* [Installing directly on Windows 10](#installing-directly-on-windows-10-experimental)
+* [Installing directly on Windows 10 with WSL 2](#installing-directly-on-windows-10-with-wsl-2)
 * [Using the Vagrant Hyper-V provider on Windows](#using-the-vagrant-hyper-v-provider-on-windows-beta)
 * [Newer versions of supported platforms](#newer-versions-of-supported-platforms)
 * [Installing directly on cloud9](#installing-on-cloud9)
@@ -57,19 +57,17 @@ on using the Zulip development
 environment](../development/setup-vagrant.html#step-4-developing),
 ignoring the parts about `vagrant` (since you're not using it).
 
-## Installing directly on Windows 10 (experimental)
+## Installing directly on Windows 10 with WSL 2
 
-We will be using Microsoft's new feature [WSL
-2](https://docs.microsoft.com/en-us/windows/wsl/wsl2-about) for
-installation.
-
-WSL 2 can be uninstalled by following the instructions [here from Microsoft](https://docs.microsoft.com/en-us/windows/wsl/faq#how-do-i-uninstall-a-wsl-distribution-).
+Zulip's development environment is most easily setup on Windows using
+the [WSL 2](https://docs.microsoft.com/en-us/windows/wsl/wsl2-about)
+installation method described here.
 
 1. Install WSL 2 by following the instructions provided by Microsoft
 [here](https://docs.microsoft.com/en-us/windows/wsl/wsl2-install).
 
 1. Install the `Ubuntu 18.04` Linux distribution from the Microsoft
-Store.
+   Store.
 
 1. Launch the `Ubuntu 18.04` shell and run the following commands:
 
@@ -138,6 +136,10 @@ Store.
    Zulip development
    environment](../development/setup-vagrant.html#step-4-developing),
    ignoring the parts about `vagrant` (since you're not using it).
+
+WSL 2 can be uninstalled by following [Microsoft's documentation][uninstall-wsl]
+
+[uninstall-wsl]: https://docs.microsoft.com/en-us/windows/wsl/faq#how-do-i-uninstall-a-wsl-distribution-
 
 ## Using the Vagrant Hyper-V provider on Windows (beta)
 
