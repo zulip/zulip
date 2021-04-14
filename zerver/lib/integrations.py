@@ -512,6 +512,14 @@ INTEGRATIONS: Dict[str, Integration] = {
         stream_name="jira",
         legacy=True,
     ),
+    "jitsi": Integration(
+        "jitsi",
+        "jitsi",
+        ["communication"],
+        logo="images/integrations/logos/jitsi.svg",
+        display_name="Jitsi Meet",
+        doc="zerver/integrations/jitsi.md",
+    ),
     "matrix": Integration(
         "matrix", "matrix", ["communication"], doc="zerver/integrations/matrix.md"
     ),
