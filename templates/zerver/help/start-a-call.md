@@ -18,12 +18,12 @@ compose box.
 
 {end_tabs}
 
-## Change your video chat provider
+## Change your video call provider
 
 By default, Zulip integrates with
 [Jitsi Meet](https://jitsi.org/jitsi-meet/), a fully-encrypted, 100% open
 source video conferencing solution. Organization administrators can also
-change the organization's video chat provider. Video chat providers
+change the organization's video call provider. The video call providers
 supported by zulip are:
 
 * [Jitsi Meet](/integrations/doc/jitsi)
@@ -34,13 +34,13 @@ supported by zulip are:
     It is also possible to disable the video call button for your organization by
     setting the provider to "None".
 
-### Change your organization's video chat provider
+### Change your organization's video call provider
 
 {start_tabs}
 
 {settings_tab|organization-settings}
 
-1. Under **Other settings** select appropriate provider from **Video chat provider** dropdown.
+1. Under **Other settings** select appropriate provider from **Video call provider** dropdown.
 
 1. Click **Save changes**.
 

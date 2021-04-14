@@ -3301,11 +3301,11 @@ paths:
                                         organization administrator.
 
                                         Useful for administrative settings UI that allows changing the
-                                        video chat provider.
+                                        video call provider.
                                       additionalProperties:
                                         description: |
                                           `{provider_name}`: Dictionary containing the details of the
-                                          video chat provider with the name of the chat provider as
+                                          video call provider with the name of the chat provider as
                                           the key.
                                         type: object
                                         additionalProperties: false
@@ -3313,11 +3313,11 @@ paths:
                                           name:
                                             type: string
                                             description: |
-                                              The name of the video chat provider.
+                                              The name of the video call provider.
                                           id:
                                             type: integer
                                             description: |
-                                              The ID of the video chat provider.
+                                              The ID of the video call provider.
                                     presence_disabled:
                                       type: boolean
                                       description: |
@@ -8224,11 +8224,11 @@ paths:
                           organization administrator.
 
                           Useful for administrative settings UI that allows changing the
-                          video chat provider.
+                          video call provider.
                         additionalProperties:
                           description: |
                             `{provider_name}`: Dictionary containing the details of the
-                            video chat provider with the name of the chat provider as
+                            video call provider with the name of the chat provider as
                             the key.
                           type: object
                           additionalProperties: false
@@ -8236,11 +8236,11 @@ paths:
                             name:
                               type: string
                               description: |
-                                The name of the video chat provider.
+                                The name of the video call provider.
                             id:
                               type: integer
                               description: |
-                                The ID of the video chat provider.
+                                The ID of the video call provider.
                       realm_presence_disabled:
                         type: boolean
                         description: |

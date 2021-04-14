@@ -1,4 +1,4 @@
-Zulip supports using Big Blue Button as its video call video chat
+Zulip supports using Big Blue Button as its video call video call
 provider. This is currently only possible on self-hosted Zulip
 installations.
 
@@ -29,7 +29,7 @@ configure your zulip server to use that Big Blue Button server.
 
 ### Using Big Blue Button
 
-1. Select Big Blue Button as the organization's [video call provider](/help/start-a-call#changing-your-organizations-video-chat-provider).
+1. Select Big Blue Button as the organization's [video call provider](/help/start-a-call#changing-your-organizations-video-call-provider).
 
 1. Zulip's [call button](/help/start-a-call) will now create meetings
    using Big Blue Button.

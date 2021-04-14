@@ -2,7 +2,7 @@ Zulip supports using Zoom as its video call provider.
 
 ### Using Zoom
 
-1. Select Zoom as the organization's [video call provider](/help/start-a-call#changing-your-organizations-video-chat-provider).
+1. Select Zoom as the organization's [video call provider](/help/start-a-call#changing-your-organizations-video-call-provider).
 
 1. Zulip's [call button](/help/start-a-call) will now create meetings
    using Zoom.
