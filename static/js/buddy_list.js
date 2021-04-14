@@ -271,7 +271,7 @@ export class BuddyList extends BuddyListConf {
         height += 10;
         if (this.keys.length === 0) {
             this.container = $(this.container_sel);
-            this.container.append(`${_('No matching users')} `);
+            this.container.append( `<div class="required-text" data-empty="${_( 'No matching users' )}"></div>`);
             return;
         }
         while (this.render_count < this.keys.length) {
