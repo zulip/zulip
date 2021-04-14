@@ -184,7 +184,39 @@ export function set_up() {
             e.stopPropagation();
             const emoji_status = $("#admin-emoji-status");
             const emoji = {};
-            const formData = new FormData();
+
+            function submit_custom_emoji_request() {
+                $("#admin_emoji_submit").prop("disabled", true);
+                const formData = new FormData();
+                for (const [i, file] of Array.prototype.entries.call($("#emoji_file_input")[0].files)) {
+                    formData.append("file-" + i, file);
+                }
+
+                channel.post({
+                    url: "/json/realm/emoji/" + encodeURIComponent(emoji.name),
+                    data: formData,
+                    cache: false,
+                    processData: false,
+                    contentType: false,
+                    success() {
+                        $("#admin-emoji-status").hide();
+                        ui_report.success(
+                            $t_html({defaultMessage: "Custom emoji added!"}),
+                            emoji_status,
+                        );
+                        $("form.admin-emoji-form input[type='text']").val("");
+                        $("#admin_emoji_submit").prop("disabled", false);
+                        emoji_widget.clear();
+                    },
+                    error(xhr) {
+                        $("#admin-emoji-status").hide();
+                        const errors = JSON.parse(xhr.responseText).msg;
+                        xhr.responseText = JSON.stringify({msg: errors});
+                        ui_report.error($t_html({defaultMessage: "Failed"}), xhr, emoji_status);
+                        $("#admin_emoji_submit").prop("disabled", false);
+                    },
+                });
+            }
 
             for (const obj of $(this).serializeArray()) {
                 emoji[obj.name] = obj.value;
@@ -197,34 +229,7 @@ export function set_up() {
                 );
                 return;
             }
-            $("#admin_emoji_submit").prop("disabled", true);
 
-            for (const [i, file] of Array.prototype.entries.call($("#emoji_file_input")[0].files)) {
-                formData.append("file-" + i, file);
-            }
-            channel.post({
-                url: "/json/realm/emoji/" + encodeURIComponent(emoji.name),
-                data: formData,
-                cache: false,
-                processData: false,
-                contentType: false,
-                success() {
-                    $("#admin-emoji-status").hide();
-                    ui_report.success(
-                        $t_html({defaultMessage: "Custom emoji added!"}),
-                        emoji_status,
-                    );
-                    $("form.admin-emoji-form input[type='text']").val("");
-                    $("#admin_emoji_submit").prop("disabled", false);
-                    emoji_widget.clear();
-                },
-                error(xhr) {
-                    $("#admin-emoji-status").hide();
-                    const errors = JSON.parse(xhr.responseText).msg;
-                    xhr.responseText = JSON.stringify({msg: errors});
-                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, emoji_status);
-                    $("#admin_emoji_submit").prop("disabled", false);
-                },
-            });
+            submit_custom_emoji_request();
         });
 }
