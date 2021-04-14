@@ -59,25 +59,22 @@ Handlebars.registerHelper("t", (message) => {
     return intl.formatMessage(descriptor);
 });
 
-Handlebars.registerHelper("tr", function (context, options) {
+Handlebars.registerHelper("tr", function (options) {
     // Marks a block for translation.
     // Example usage 1:
-    //     {{#tr context}}
+    //     {{#tr}}
     //         <p>some English text</p>
     //     {{/tr}}
     //
     // Example usage 2:
-    //     {{#tr context}}
-    //         <p>This {variable} will get value from context</p>
+    //     {{#tr}}
+    //         <p>This {variable} will get value from the current context</p>
     //     {{/tr}}
     //
-    // Notes:
-    //     1. `context` is very important. It can be `this` or an
-    //        object or key of the current context.
-    //     2. Use `{` and `}` instead of `{{` and `}}` to declare
-    //        expressions.
+    // Note: use `{` and `}` instead of `{{` and `}}` to declare
+    // variables.
     const message = options
-        .fn(context)
+        .fn(this)
         .trim()
         .split("\n")
         .map((s) => s.trim())
@@ -92,7 +89,7 @@ Handlebars.registerHelper("tr", function (context, options) {
             ]),
         ),
         ...Object.fromEntries(
-            Object.entries(context ?? {}).map(([key, value]) => [
+            Object.entries(this ?? {}).map(([key, value]) => [
                 key,
                 Handlebars.Utils.escapeExpression(value),
             ]),

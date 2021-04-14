@@ -7,7 +7,7 @@
 {{#if is_invitee_deactivated}}
     {{#if is_admin}}
     <p id="invitation_admin_message">
-        {{#tr this}}
+        {{#tr}}
             You can reactivate deactivated users from <z-link>organization settings</z-link>.
             {{#*inline "z-link"}}<a href="#organization/deactivated-users-admin">{{> @partial-block}}</a>{{/inline}}
         {{/tr}}
