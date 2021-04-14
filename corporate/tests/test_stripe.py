@@ -2299,6 +2299,17 @@ class StripeTest(StripeTestCase):
         self.assertEqual(old_plan.next_invoice_date, None)
         self.assertEqual(old_plan.status, CustomerPlan.ENDED)
 
+    def test_update_plan_with_invalid_status(self, *mocks: Mock) -> None:
+        with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
+            self.local_upgrade(self.seat_count, True, CustomerPlan.ANNUAL, "token")
+        self.login_user(self.example_user("hamlet"))
+
+        response = self.client_post(
+            "/json/billing/plan/change",
+            {"status": CustomerPlan.NEVER_STARTED},
+        )
+        self.assert_json_error_contains(response, "Invalid status")
+
     def test_deactivate_realm(self) -> None:
         user = self.example_user("hamlet")
         with patch("corporate.lib.stripe.timezone_now", return_value=self.now):
