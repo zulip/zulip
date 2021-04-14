@@ -195,7 +195,7 @@ strength allowed is controlled by two settings in
     organization owners. They can only be created on the command
     line (via `manage.py change_user_role can_forge_sender`).
 
-## User-uploaded content
+## User-uploaded content and user-generated requests
 
 * Zulip supports user-uploaded files.  Ideally they should be hosted
   from a separate domain from the main Zulip server to protect against
@@ -242,6 +242,18 @@ strength allowed is controlled by two settings in
 * By default, Zulip will provide image previews inline in the body of
   messages when a message contains a link to an image.  You can
   control this using the `INLINE_IMAGE_PREVIEW` setting.
+
+* A Zulip server can make outgoing HTTP requests through features like
+  outgoing webhooks and embedded video previews. End users have
+  (limited) control the content of these HTTP requests. As a result,
+  Zulip supports routing these outgoing requests [through
+  `smokescreen`][smokescreen-setup] to ensure that Zulip cannot be
+  used to execute [SSRF attacks][SSRF] against other systems on an
+  internal corporate network.  The default `smokescreen` configuration
+  denies access to all non-public IP addresses, including 127.0.0.1.
+
+[SSRF]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
+[smokescreen-setup]: ../production/deployment.html#using-an-outgoing-http-proxy
 
 ## Final notes and security response
 
