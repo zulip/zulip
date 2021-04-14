@@ -1044,6 +1044,27 @@ export function warn_if_private_stream_is_linked(linked_stream) {
     warning_area.show();
 }
 
+export function warn_if_mentioned_private_one_on_one(mentioned) {
+    if (compose_state.get_message_type() !== "private") {
+        return;
+    }
+
+    if (compose_pm_pill.get_user_ids().length === 1) {
+        // display warning
+        const error_msg =
+            "Mentioning " +
+            mentioned.full_name +
+            " will highlight this message. Did you mean to use a silent mention (@_" +
+            mentioned.full_name +
+            ") instead?";
+
+        const error_area = $("#compose_invite_users");
+        error_area.append(error_msg);
+        error_area.show();
+    }
+    return;
+}
+
 export function warn_if_mentioning_unsubscribed_user(mentioned) {
     if (compose_state.get_message_type() !== "stream") {
         return;

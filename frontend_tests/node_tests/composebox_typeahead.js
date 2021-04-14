@@ -374,6 +374,7 @@ test("content_typeahead_selected", (override) => {
     // mention
     fake_this.completing = "mention";
 
+    override(compose, "warn_if_mentioned_private_one_on_one", () => {});
     override(compose, "warn_if_mentioning_unsubscribed_user", () => {});
 
     fake_this.query = "@**Mark Tw";
