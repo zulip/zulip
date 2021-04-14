@@ -62,11 +62,37 @@ const subscriptions_table_colorpicker_options = {
 };
 
 export function set_colorpicker_color(colorpicker, color) {
-    colorpicker.spectrum({
-        ...subscriptions_table_colorpicker_options,
-        color,
-        container: "#subscription_overlay .subscription_settings.show",
-    });
+    if (colorpicker[0].name === "stream_default_color") {
+        colorpicker.spectrum({
+            showPalette: true,
+            showInput: true,
+            clickoutFiresChange: false,
+            palette: stream_color_palette,
+            allowEmpty: true,
+            show() {
+                $(this).data("changed", false);
+            },
+            change() {
+                $(this).data("changed", true);
+            },
+
+            hide() {
+                if (!$(this).data("changed")) {
+                    // if data not changed and is hidden,
+                    // reset the color picker to its original state.
+                    colorpicker.spectrum("destroy");
+                    colorpicker.val("");
+                    set_colorpicker_color(colorpicker);
+                }
+            },
+        });
+    } else {
+        colorpicker.spectrum({
+            ...subscriptions_table_colorpicker_options,
+            color,
+            container: "#subscription_overlay .subscription_settings.show",
+        });
+    }
 }
 
 export function update_stream_color(sub, color, {update_historical = false} = {}) {
