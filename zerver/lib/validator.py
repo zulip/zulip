@@ -465,10 +465,10 @@ def to_non_negative_int(s: str, max_int_size: int = 2 ** 32 - 1) -> int:
     return x
 
 
-def to_positive_or_allowed_int(allowed_integer: int) -> Callable[[str], int]:
+def to_positive_or_allowed_int(allowed_integer: Optional[int] = None) -> Callable[[str], int]:
     def converter(s: str) -> int:
         x = int(s)
-        if x == allowed_integer:
+        if allowed_integer is not None and x == allowed_integer:
             return x
         if x == 0:
             raise ValueError("argument is 0")
