@@ -453,6 +453,14 @@ INTEGRATIONS: Dict[str, Integration] = {
     "asana": Integration(
         "asana", "asana", ["project-management"], doc="zerver/integrations/asana.md"
     ),
+    "big-blue-button": Integration(
+        "big-blue-button",
+        "big-blue-button",
+        ["communication"],
+        logo="images/integrations/logos/bigbluebutton.svg",
+        display_name="Big Blue Button",
+        doc="zerver/integrations/big-blue-button.md",
+    ),
     "capistrano": Integration(
         "capistrano",
         "capistrano",
