@@ -27,6 +27,7 @@ import * as settings_ui from "./settings_ui";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as stream_pill from "./stream_pill";
+import * as stream_popover from "./stream_popover";
 import * as stream_settings_data from "./stream_settings_data";
 import * as stream_ui_updates from "./stream_ui_updates";
 import * as subs from "./subs";
@@ -178,6 +179,13 @@ export function open_edit_panel_for_row(stream_row) {
     $(stream_row).addClass("active");
     setup_subscriptions_stream_hash(sub);
     show_settings_for(stream_row);
+
+    ui.get_scroll_element($(".settings")).off("scroll");
+
+    // hides the color picker if user scrolls
+    ui.get_scroll_element($(".settings")).on("scroll", () => {
+        stream_popover.hide_stream_popover();
+    });
 }
 
 export function open_edit_panel_empty() {
