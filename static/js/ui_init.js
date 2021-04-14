@@ -459,6 +459,11 @@ export function initialize_everything() {
     const user_status_params = pop_fields("user_status");
 
     tippyjs.initialize();
+    // We need to initialze compose early, because other modules'
+    // initialization expects `#compose` to be already present in the
+    // DOM, dating from when the compose area was part of the backend
+    // template.
+    compose.initialize();
     message_lists.initialize();
     alert_popup.initialize();
     alert_words.initialize(alert_words_params);
@@ -499,7 +504,6 @@ export function initialize_everything() {
     });
     markdown.initialize(page_params.realm_linkifiers, markdown_config.get_helpers());
     realm_playground.initialize(page_params.realm_playgrounds);
-    compose.initialize();
     composebox_typeahead.initialize(); // Must happen after compose.initialize()
     search.initialize();
     tutorial.initialize();

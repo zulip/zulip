@@ -1,6 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
 
+import render_compose from "../templates/compose.hbs";
 import render_compose_all_everyone from "../templates/compose_all_everyone.hbs";
 import render_compose_announce from "../templates/compose_announce.hbs";
 import render_compose_invite_users from "../templates/compose_invite_users.hbs";
@@ -1098,6 +1099,15 @@ export function warn_if_mentioning_unsubscribed_user(mentioned) {
 }
 
 export function initialize() {
+    const $compose = $("#compose");
+    $compose.append(
+        render_compose({
+            embedded: $compose.attr("data-embedded") === "",
+            file_upload_enabled: page_params.max_file_upload_size_mib > 0,
+            giphy_api_available: page_params.giphy_api_key !== "",
+        }),
+    );
+
     $("#below-compose-content .video_link").toggle(compute_show_video_chat_button());
     $(
         "#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient",
