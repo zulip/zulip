@@ -275,6 +275,6 @@ def subscriber_ids_with_stream_history_access(stream: Stream) -> Set[int]:
 
     return set(
         subscriptions.filter(user_profile__is_active=True)
-        .exclude(user_profile__role=600)
+        .exclude(user_profile__role=UserProfile.ROLE_GUEST)
         .values_list("user_profile__id", flat=True)
     )
