@@ -1,7 +1,7 @@
 // For documentation on i18n in Zulip, see:
 // https://zulip.readthedocs.io/en/latest/translating/internationalization.html
 
-import {createIntl, createIntlCache} from "@formatjs/intl";
+import {DEFAULT_INTL_CONFIG, IntlErrorCode, createIntl, createIntlCache} from "@formatjs/intl";
 import _ from "lodash";
 
 import {page_params} from "./page_params";
@@ -12,6 +12,13 @@ export const intl = createIntl(
         locale: page_params.default_language,
         defaultLocale: "en",
         messages: page_params.translation_data,
+        onError: /* istanbul ignore next */ (error) => {
+            // Ignore complaints about untranslated strings that were
+            // added since the last sync-translations run.
+            if (error.code !== IntlErrorCode.MISSING_TRANSLATION) {
+                DEFAULT_INTL_CONFIG.onError(error);
+            }
+        },
     },
     cache,
 );
