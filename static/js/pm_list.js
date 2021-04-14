@@ -6,6 +6,7 @@ import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
 import * as pm_list_dom from "./pm_list_dom";
+import * as resize from "./resize";
 import * as stream_popover from "./stream_popover";
 import * as ui from "./ui";
 import * as ui_util from "./ui_util";
@@ -113,8 +114,13 @@ export function _build_private_messages_list() {
     return dom_ast;
 }
 
-export function update_private_messages() {
-    if (!narrow_state.active()) {
+export function update_private_messages(skip_narrow_state_check) {
+    // As all_messages and recent topics view have no narrow associated
+    // with them so if Private messages is clicked on the left sidebar then
+    // in order to expand the private message container we need to skip
+    // narrow state check. This flag is added to, handle left-sidebars clicks
+    // on Private messages without affecting other codebase that uses it.
+    if (!skip_narrow_state_check && !narrow_state.active()) {
         return;
     }
 
@@ -148,7 +154,8 @@ export function is_all_privates() {
 export function expand() {
     private_messages_open = true;
     stream_popover.hide_topic_popover();
-    update_private_messages();
+    const skip_narrow_state_check = true;
+    update_private_messages(skip_narrow_state_check);
     if (is_all_privates()) {
         $(".top_left_private_messages").addClass("active-filter");
     }
@@ -157,4 +164,11 @@ export function expand() {
 export function update_dom_with_unread_counts(counts) {
     update_private_messages();
     set_count(counts.private_message_count);
+}
+
+export function handle_private_message_sidebar_click() {
+    if (!private_messages_open) {
+        expand();
+        resize.resize_stream_filters_container();
+    }
 }

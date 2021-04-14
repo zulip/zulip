@@ -94,7 +94,6 @@ async function navigation_tests(page: Page): Promise<void> {
     await navigate_to_subscriptions(page);
     await navigate_using_left_sidebar(page, "all_messages", "message_feed_container");
     await navigate_to_settings(page);
-    await navigate_using_left_sidebar(page, "narrow/is/private", "message_feed_container");
     await navigate_to_subscriptions(page);
     await navigate_using_left_sidebar(page, verona_narrow, "message_feed_container");
 

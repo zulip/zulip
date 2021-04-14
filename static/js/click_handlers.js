@@ -30,6 +30,7 @@ import * as narrow from "./narrow";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
+import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_topics from "./recent_topics";
@@ -526,6 +527,12 @@ export function initialize() {
             popovers.hide_all();
             $(".tooltip").remove();
         });
+
+    $("li.top_left_private_messages").on("click", ".private_messages_header", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        pm_list.handle_private_message_sidebar_click();
+    });
 
     function do_render_buddy_list_tooltip(elem, title_data) {
         let placement = "left";

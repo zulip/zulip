@@ -7,6 +7,9 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 mock_cjs("jquery", $);
+mock_esm("../../static/js/resize", {
+    resize_stream_filters_container: () => {},
+});
 const narrow_state = mock_esm("../../static/js/narrow_state");
 const pm_list_dom = mock_esm("../../static/js/pm_list_dom");
 const unread = mock_esm("../../static/js/unread");
@@ -226,7 +229,6 @@ test("is_all_privates", (override) => {
 
 test("expand", (override) => {
     override(narrow_state, "filter", private_filter);
-    override(narrow_state, "active", () => true);
     override(pm_list, "_build_private_messages_list", () => "PM_LIST_CONTENTS");
     let html_updated;
     override(vdom, "update", () => {
@@ -238,6 +240,20 @@ test("expand", (override) => {
     pm_list.expand();
     assert(html_updated);
     assert($(".top_left_private_messages").hasClass("active-filter"));
+});
+
+test("handle_private_message_sidebar_click", (override) => {
+    override(narrow_state, "filter", () => false);
+    override(pm_list, "_build_private_messages_list", () => "PM_LIST_CONTENTS");
+    let html_updated;
+    override(vdom, "update", () => {
+        html_updated = true;
+    });
+
+    pm_list.handle_private_message_sidebar_click();
+
+    assert(html_updated);
+    assert(!$(".top_left_private_messages").hasClass("active-filter"));
 });
 
 test("update_private_messages", (override) => {

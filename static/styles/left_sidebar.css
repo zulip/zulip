@@ -519,8 +519,12 @@ li.expanded_private_message {
 }
 
 li.top_left_all_messages a,
-li.top_left_private_messages a,
 li.top_left_mentions a,
 li.top_left_starred_messages a {
     display: block;
+}
+
+li.top_left_private_messages .private_messages_header {
+    display: block;
+    cursor: pointer;
 }
