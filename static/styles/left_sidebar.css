@@ -239,7 +239,18 @@ li.active-sub-filter {
         display: none;
     }
 
+    .top_left_starred_messages .unread_count {
+        background-color: inherit;
+        color: inherit;
+        border: 0.5px solid hsl(105, 2%, 50%);
+        /* The border takes up space, so we need to
+           subtract 1px from the usual 2px margin-top */
+        margin-top: 1px !important;
+    }
+
     .expanded_private_message .unread_count {
+        /* This margin accounts for the fact that the private messages
+           container gets a few pixels taller when expanded  */
         margin: 0;
     }
 
