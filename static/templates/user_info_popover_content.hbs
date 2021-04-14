@@ -24,26 +24,26 @@
             </li>
             {{/if}}
         {{else}}
-            <li class="user_popover_email half-opacity italic">{{#tr this}}(This user has been deactivated){{/tr}}</li>
+            <li class="user_popover_email half-opacity italic">{{#tr}}(This user has been deactivated){{/tr}}</li>
         {{/if}}
 
 
         {{#if user_time}}
-        <li>{{ user_time }} {{#tr this}}Local time{{/tr}}</li>
+        <li>{{ user_time }} {{#tr}}Local time{{/tr}}</li>
         {{/if}}
 
         {{#if is_bot}}
             {{#if bot_owner}}
-                <li>{{#tr this}}Owner{{/tr}}:
+                <li>{{#tr}}Owner{{/tr}}:
                     <span class="bot-owner-name view_user_profile" data-user-id='{{ bot_owner.user_id }}'>
                         {{bot_owner.full_name}}
                     </span>
                 </li>
             {{else}}
                 {{#if is_cross_realm_bot}}
-                <li>{{#tr this}}System bot{{/tr}}</li>
+                <li>{{#tr}}System bot{{/tr}}</li>
                 {{else}}
-                <li>{{#tr this}}Bot{{/tr}}</li>
+                <li>{{#tr}}Bot{{/tr}}</li>
                 {{/if}}
             {{/if}}
         {{else}}
@@ -56,14 +56,14 @@
         {{#if can_set_away}}
         <li>
             <a tabindex="0" class="set_away_status">
-                <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr this}}Set yourself as unavailable{{/tr}}
+                <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr}}Set yourself as unavailable{{/tr}}
             </a>
         </li>
         {{/if}}
         {{#if can_revoke_away}}
         <li>
             <a tabindex="0" class="revoke_away_status">
-                <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr this}}Set yourself as active{{/tr}}
+                <i class="fa fa-minus-circle" aria-hidden="true"></i> {{#tr}}Set yourself as active{{/tr}}
             </a>
         </li>
         {{/if}}
@@ -71,9 +71,9 @@
             <a tabindex="0" class="update_status_text">
                 <i class="fa fa-comments" aria-hidden="true"></i>
                 {{#if status_text}}
-                    {{#tr this}}Edit status message{{/tr}}
+                    {{#tr}}Edit status message{{/tr}}
                 {{else}}
-                    {{#tr this}}Set a status message{{/tr}}
+                    {{#tr}}Set a status message{{/tr}}
                 {{/if}}
             </a>
         </li>
@@ -84,7 +84,7 @@
         <li class="user_info_status_text">
             <span id="status_message">
                 {{status_text}}
-                {{#if is_me}}(<a tabindex="0" class="clear_status">{{#tr this}}clear{{/tr}}</a>){{/if}}
+                {{#if is_me}}(<a tabindex="0" class="clear_status">{{#tr}}clear{{/tr}}</a>){{/if}}
             </span>
         </li>
     {{/if}}
@@ -94,9 +94,9 @@
     <li>
         <a tabindex="0" class="view_full_user_profile">
             {{#if is_me}}
-                <i class="fa fa-user" aria-hidden="true"></i> {{#tr this}}View your profile{{/tr}}
+                <i class="fa fa-user" aria-hidden="true"></i> {{#tr}}View your profile{{/tr}}
             {{else}}
-                <i class="fa fa-user" aria-hidden="true"></i> {{#tr this}}View full profile{{/tr}}
+                <i class="fa fa-user" aria-hidden="true"></i> {{#tr}}View full profile{{/tr}}
             {{/if}}
         </a>
     </li>
@@ -105,7 +105,7 @@
         {{#unless is_me}}
         <li>
             <a tabindex="0" class="{{ private_message_class }}">
-                <i class="fa fa-envelope" aria-hidden="true"></i> {{#tr this}}Send private message{{/tr}} {{#if is_sender_popover}}<span class="hotkey-hint">(R)</span>{{/if}}
+                <i class="fa fa-envelope" aria-hidden="true"></i> {{#tr}}Send private message{{/tr}} {{#if is_sender_popover}}<span class="hotkey-hint">(R)</span>{{/if}}
             </a>
         </li>
         {{/unless}}
@@ -115,13 +115,13 @@
         {{#if has_message_context}}
         <a tabindex="0" class="mention_user">
             <i class="fa fa-at" aria-hidden="true"></i>
-            {{#tr this}}Reply mentioning user{{/tr}}
+            {{#tr}}Reply mentioning user{{/tr}}
             {{#if is_sender_popover}}<span class="hotkey-hint">(@)</span>{{/if}}
         </a>
         {{else}}
         <a tabindex="0" class="copy_mention_syntax" data-clipboard-text="{{ user_mention_syntax }}">
             <i class="fa fa-at" aria-hidden="true"></i>
-            {{#tr this}}Copy mention syntax{{/tr}}
+            {{#tr}}Copy mention syntax{{/tr}}
             {{#if is_sender_popover}}<span class="hotkey-hint">(@)</span>{{/if}}
         </a>
         {{/if}}
@@ -130,7 +130,7 @@
     {{#if is_me}}
     <li>
         <a href="/#settings/your-account">
-            <i class="fa fa-edit" aria-hidden="true"></i> {{#tr this}}Edit your profile{{/tr}}
+            <i class="fa fa-edit" aria-hidden="true"></i> {{#tr}}Edit your profile{{/tr}}
         </a>
     </li>
     {{/if}}
@@ -139,15 +139,15 @@
         <a href="{{ pm_with_uri }}" class="narrow_to_private_messages">
             <i class="fa fa-lock" aria-hidden="true"></i>
             {{#if is_me}}
-                {{#tr this}}View private messages to myself{{/tr}}
+                {{#tr}}View private messages to myself{{/tr}}
             {{else}}
-                {{#tr this}}View private messages{{/tr}}
+                {{#tr}}View private messages{{/tr}}
             {{/if}}
         </a>
     </li>
     <li>
         <a href="{{ sent_by_uri }}" class="narrow_to_messages_sent">
-            <i class="fa fa-paper-plane" aria-hidden="true"></i> {{#tr this}}View messages sent{{/tr}}
+            <i class="fa fa-paper-plane" aria-hidden="true"></i> {{#tr}}View messages sent{{/tr}}
         </a>
     </li>
 </ul>

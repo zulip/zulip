@@ -160,8 +160,8 @@ class FrontendRegexTestCase(ZulipTestCase):
 
         data = [
             (
-                "{{#tr context}}english text with __variable__{{/tr}}{{/tr}}",
-                "english text with __variable__",
+                "{{#tr}}english text with {variable}{{/tr}}{{/tr}}",
+                "english text with {variable}",
             ),
             ('{{t "english text" }}, "extra"}}', "english text"),
             ("{{t 'english text' }}, 'extra'}}", "english text"),

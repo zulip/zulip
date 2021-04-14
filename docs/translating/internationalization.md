@@ -258,12 +258,11 @@ If you are passing a translated string to a Handlebars partial, you can use:
 The syntax for block strings or strings containing variables is:
 
 ```
-{{#tr context}}
+{{#tr}}
     Block of English text.
 {{/tr}}
 
-var context = {'variable': 'variable value'};
-{{#tr context}}
+{{#tr}}
     Block of English text with a {variable}.
 {{/tr}}
 ```
