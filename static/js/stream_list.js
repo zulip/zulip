@@ -27,19 +27,18 @@ export let stream_cursor;
 
 let has_scrolled = false;
 
-export function update_count_in_dom(unread_count_elem, count) {
-    ui_util.update_unread_count_in_dom(unread_count_elem, count);
+export function update_count_in_dom(stream_li, count) {
+    // The subsription_block properly excludes the topic list,
+    // and it also has sensitive margins related to whether the
+    // count is there or not.
+    const subscription_block = stream_li.find(".subscription_block");
 
-    const count_span = unread_count_elem.find(".unread_count");
+    ui_util.update_unread_count_in_dom(subscription_block, count);
+
     if (count === 0) {
-        if (count_span.parent().hasClass("subscription_block")) {
-            count_span.parent(".subscription_block").removeClass("stream-with-count");
-        }
-        return;
-    }
-
-    if (count_span.parent().hasClass("subscription_block")) {
-        count_span.parent(".subscription_block").addClass("stream-with-count");
+        subscription_block.removeClass("stream-with-count");
+    } else {
+        subscription_block.addClass("stream-with-count");
     }
 }
 
@@ -319,14 +318,14 @@ export function redraw_stream_privacy(sub) {
 }
 
 function set_stream_unread_count(stream_id, count) {
-    const unread_count_elem = get_stream_li(stream_id);
-    if (!unread_count_elem) {
+    const stream_li = get_stream_li(stream_id);
+    if (!stream_li) {
         // This can happen for legitimate reasons, but we warn
         // just in case.
         blueslip.warn("stream id no longer in sidebar: " + stream_id);
         return;
     }
-    update_count_in_dom(unread_count_elem, count);
+    update_count_in_dom(stream_li, count);
 }
 
 export function update_streams_sidebar(force_rerender) {

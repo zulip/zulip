@@ -50,11 +50,12 @@ let num_unread_for_stream;
 
 function create_devel_sidebar_row() {
     const devel_count = $.create("devel-count");
+    const subscription_block = $.create("devel-block");
 
     const sidebar_row = $("<devel sidebar row>");
 
-    sidebar_row.set_find_results(".unread_count", devel_count);
-    devel_count.set_parent(sidebar_row);
+    sidebar_row.set_find_results(".subscription_block", subscription_block);
+    subscription_block.set_find_results(".unread_count", devel_count);
 
     stub_templates((template_name, data) => {
         assert.equal(template_name, "stream_sidebar_row");
@@ -69,10 +70,12 @@ function create_devel_sidebar_row() {
 
 function create_social_sidebar_row() {
     const social_count = $.create("social-count");
+    const subscription_block = $.create("social-block");
+
     const sidebar_row = $("<social sidebar row>");
 
-    sidebar_row.set_find_results(".unread_count", social_count);
-    social_count.set_parent(sidebar_row);
+    sidebar_row.set_find_results(".subscription_block", subscription_block);
+    subscription_block.set_find_results(".unread_count", social_count);
 
     stub_templates((template_name, data) => {
         assert.equal(template_name, "stream_sidebar_row");
@@ -580,50 +583,6 @@ test_ui("separators_only_pinned", () => {
     ];
 
     assert.deepEqual(appended_elems, expected_elems);
-});
-
-test_ui("update_count_in_dom", () => {
-    function make_elem(elem, count_selector) {
-        const count = $(count_selector);
-        elem.set_find_results(".unread_count", count);
-        count.set_parent(elem);
-
-        return elem;
-    }
-
-    const stream_li = make_elem($("<stream li>"), "<stream-count>");
-
-    $("<stream li>").length = 0;
-    stream_li.addClass("subscription_block");
-    stream_li.addClass("stream-with-count");
-    assert(stream_li.hasClass("stream-with-count"));
-
-    const stream_count = new Map();
-    const stream_id = 11;
-
-    const stream_row = {
-        get_li() {
-            return stream_li;
-        },
-    };
-
-    stream_list.stream_sidebar.set_row(stream_id, stream_row);
-
-    stream_count.set(stream_id, 0);
-    const counts = {
-        stream_count,
-        topic_count: new Map(),
-    };
-
-    stream_list.update_dom_with_unread_counts(counts);
-    assert.equal($("<stream li>").text(), "never-been-set");
-    assert(!stream_li.hasClass("stream-with-count"));
-
-    stream_count.set(stream_id, 99);
-
-    stream_list.update_dom_with_unread_counts(counts);
-    assert.equal($("<stream-count>").text(), "99");
-    assert(stream_li.hasClass("stream-with-count"));
 });
 
 narrow_state.active = () => false;
