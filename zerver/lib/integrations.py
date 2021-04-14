@@ -582,6 +582,14 @@ INTEGRATIONS: Dict[str, Integration] = {
         logo="images/integrations/logos/twitte_r.svg",
         doc="zerver/integrations/twitter.md",
     ),
+    "zoom": Integration(
+        "zoom",
+        "zoom",
+        ["communication"],
+        logo="images/integrations/logos/zoom.svg",
+        display_name="Zoom",
+        doc="zerver/integrations/zoom.md",
+    ),
 }
 
 BOT_INTEGRATIONS: List[BotIntegration] = [
