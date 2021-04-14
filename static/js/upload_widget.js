@@ -125,7 +125,6 @@ export function build_direct_upload_widget(
     input_error,
     // jQuery button to open file dialog
     upload_button,
-    upload_function,
     max_file_upload_size,
 ) {
     // default value of max uploaded file size
@@ -139,7 +138,7 @@ export function build_direct_upload_widget(
         if (widget_selector === "realm-icon-upload-widget") {
             url = "/json/realm/icon";
         } else if (widget_selector === "user-avatar-upload-widget") {
-            upload_function(get_file_input(), null, true);
+            url = "/json/users/me/avatar";
         }
         // Set url for realm-logo
         else {

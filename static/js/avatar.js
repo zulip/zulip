@@ -50,7 +50,7 @@ export function build_bot_edit_widget(target) {
     );
 }
 
-export function build_user_avatar_widget(upload_function) {
+export function build_user_avatar_widget() {
     const get_file_input = function () {
         return $("#user-avatar-upload-widget .image_file_input").expectOne();
     };
@@ -96,7 +96,6 @@ export function build_user_avatar_widget(upload_function) {
             get_file_input,
             $("#user-avatar-upload-widget .image_file_input_error").expectOne(),
             $("#user-avatar-upload-widget .image_upload_button").expectOne(),
-            upload_function,
             page_params.max_avatar_file_size_mib,
         );
     }

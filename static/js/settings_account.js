@@ -9,7 +9,6 @@ import * as avatar from "./avatar";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as common from "./common";
-import {csrf_token} from "./csrf";
 import {$t_html} from "./i18n";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -76,21 +75,8 @@ export function update_avatar_change_display() {
     }
 }
 
-function display_avatar_upload_complete() {
-    $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "hidden"});
-    $("#user-avatar-upload-widget .image-upload-text").show();
-    $("#user-avatar-upload-widget .image-delete-button").show();
-}
-
-function display_avatar_upload_started() {
-    $("#user-avatar-source").hide();
-    $("#user-avatar-upload-widget .upload-spinner-background").css({visibility: "visible"});
-    $("#user-avatar-upload-widget .image-upload-text").hide();
-    $("#user-avatar-upload-widget .image-delete-button").hide();
-}
-
-function settings_change_error(message_html, xhr) {
-    ui_report.error(message_html, xhr, $("#account-settings-status").expectOne());
+function settings_change_error(message, xhr) {
+    ui_report.error(message, xhr, $("#account-settings-status").expectOne());
 }
 
 function update_custom_profile_field(field, method) {
@@ -635,39 +621,7 @@ export function set_up() {
         });
     });
 
-    function upload_avatar(file_input) {
-        const form_data = new FormData();
-
-        form_data.append("csrfmiddlewaretoken", csrf_token);
-        for (const [i, file] of Array.prototype.entries.call(file_input[0].files)) {
-            form_data.append("file-" + i, file);
-        }
-        display_avatar_upload_started();
-        channel.post({
-            url: "/json/users/me/avatar",
-            data: form_data,
-            cache: false,
-            processData: false,
-            contentType: false,
-            success() {
-                display_avatar_upload_complete();
-                $("#user-avatar-upload-widget .image_file_input_error").hide();
-                $("#user-avatar-source").hide();
-                // Rest of the work is done via the user_events -> avatar_url event we will get
-            },
-            error(xhr) {
-                display_avatar_upload_complete();
-                if (page_params.avatar_source === "G") {
-                    $("#user-avatar-source").show();
-                }
-                const $error = $("#user-avatar-upload-widget .image_file_input_error");
-                $error.text(JSON.parse(xhr.responseText).msg);
-                $error.show();
-            },
-        });
-    }
-
-    avatar.build_user_avatar_widget(upload_avatar);
+    avatar.build_user_avatar_widget();
 
     if (page_params.realm_name_changes_disabled) {
         $(".name_change_container").hide();

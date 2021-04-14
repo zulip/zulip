@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import * as channel from "./channel";
 import {csrf_token} from "./csrf";
+import {page_params} from "./page_params";
 import * as ui_report from "./ui_report";
 
 export class ImageUploadWidget {
@@ -37,10 +38,21 @@ export class ImageUploadWidget {
             success() {
                 image_upload_complete(spinner, upload_text, delete_button);
                 error_text.hide();
+                // Hides `Avatar from Gravatar` on a successful user-avatar upload.
+                if (widget_selector === "user-avatar-upload-widget") {
+                    $("#user-avatar-source").hide();
+                }
             },
             error(xhr) {
                 image_upload_complete(spinner, upload_text, delete_button);
                 ui_report.error("", xhr, error_text);
+                // Displays `Avatar from Gravatar` on user-avatar upload error.
+                if (
+                    widget_selector === "user-avatar-upload-widget" &&
+                    page_params.avatar_source === "G"
+                ) {
+                    $("#user-avatar-source").show();
+                }
             },
         });
     }

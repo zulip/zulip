@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const {ImageUploadWidget} = zrequire("image_upload_widget");
 
@@ -40,6 +41,9 @@ run_test("image_upload_widget", () => {
 
         if (widget === "realm-icon-upload-widget") {
             url = "/json/realm/icon";
+        } else if (widget === "user-avatar-upload-widget") {
+            url = "/json/users/me/avatar";
+            page_params.avatar_source = "G";
         }
         // Set url for realm-logo
         else {
@@ -76,6 +80,7 @@ run_test("image_upload_widget", () => {
         test_complete_upload(spinner, upload_text, delete_button, error_text);
         assert(posted);
     }
+    test_image_upload("user-avatar-upload-widget");
     test_image_upload("realm-day-logo-upload-widget");
     test_image_upload("realm-night-logo-upload-widget");
     test_image_upload("realm-icon-upload-widget");
