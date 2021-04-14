@@ -817,7 +817,7 @@ td.pointer {
        doesn't disturb the layout.  Usually that would be just
        visibility: hidden, but that cannot be animated, so we set
        opacity as well, which can be animated. */
-    > div {
+    .message_control_button {
         opacity: 0;
         visibility: hidden;
         transition: all 0.2s ease;
