@@ -272,7 +272,7 @@ on a dark background, and don't change the dark labels dark either. */
         color: hsla(0, 0%, 90%, 1);
     }
 
-    .overlay,
+    div.overlay,
     #subscription_overlay
         #stream-creation
         #stream_creation_form
@@ -283,7 +283,7 @@ on a dark background, and don't change the dark labels dark either. */
         background-color: hsla(212, 28%, 8%, 0.75);
     }
 
-    .overlay .flex.overlay-content > div,
+    div.overlay .flex.overlay-content > div,
     .dropdown-menu.typeahead,
     #settings_page,
     .informational-overlays .overlay-content {

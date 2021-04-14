@@ -271,7 +271,7 @@
 }
 
 /* -- unified overlay design component -- */
-.overlay {
+div.overlay {
     position: fixed;
     top: 0;
     left: 0;
