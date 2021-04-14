@@ -787,12 +787,20 @@ class ValidatorTestCase(ZulipTestCase):
             self.assertEqual(to_non_negative_int(str(2 ** 32)))
 
     def test_to_positive_or_allowed_int(self) -> None:
+        self.assertEqual(to_positive_or_allowed_int()("5"), 5)
         self.assertEqual(to_positive_or_allowed_int(-1)("5"), 5)
+
         self.assertEqual(to_positive_or_allowed_int(-1)("-1"), -1)
         with self.assertRaisesRegex(ValueError, "argument is negative"):
             to_positive_or_allowed_int(-1)("-5")
+        with self.assertRaisesRegex(ValueError, "argument is negative"):
+            to_positive_or_allowed_int()("-5")
+
         with self.assertRaises(ValueError):
             to_positive_or_allowed_int(-1)("0")
+        with self.assertRaises(ValueError):
+            to_positive_or_allowed_int()("0")
+        self.assertEqual(to_positive_or_allowed_int(0)("0"), 0)
 
     def test_check_float(self) -> None:
         x: Any = 5.5
