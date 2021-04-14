@@ -46,7 +46,7 @@ from zerver.decorator import (
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.send_email import FromAddress, send_email
-from zerver.lib.validator import check_int, check_string_in
+from zerver.lib.validator import check_int, check_int_in, check_string_in
 from zerver.models import UserProfile, get_realm
 
 billing_logger = logging.getLogger("corporate.stripe")
@@ -357,14 +357,20 @@ def billing_home(request: HttpRequest) -> HttpResponse:
 @require_billing_access
 @has_request_variables
 def change_plan_status(
-    request: HttpRequest, user: UserProfile, status: int = REQ("status", json_validator=check_int)
+    request: HttpRequest,
+    user: UserProfile,
+    status: int = REQ(
+        "status",
+        json_validator=check_int_in(
+            [
+                CustomerPlan.ACTIVE,
+                CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
+                CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE,
+                CustomerPlan.ENDED,
+            ]
+        ),
+    ),
 ) -> HttpResponse:
-    assert status in [
-        CustomerPlan.ACTIVE,
-        CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE,
-        CustomerPlan.SWITCH_TO_ANNUAL_AT_END_OF_CYCLE,
-        CustomerPlan.ENDED,
-    ]
 
     plan = get_current_plan_by_realm(user.realm)
     assert plan is not None  # for mypy
