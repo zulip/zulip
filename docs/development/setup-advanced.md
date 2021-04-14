@@ -5,7 +5,7 @@ Contents:
 * [Installing directly on Ubuntu, Debian, CentOS, or Fedora](#installing-directly-on-ubuntu-debian-centos-or-fedora)
 * [Installing directly on Windows 10](#installing-directly-on-windows-10-experimental)
 * [Using the Vagrant Hyper-V provider on Windows](#using-the-vagrant-hyper-v-provider-on-windows-beta)
-* [Installing manually on other Linux/UNIX](#installing-manually-on-unix)
+* [Newer versions of supported platforms](#newer-versions-of-supported-platforms)
 * [Installing directly on cloud9](#installing-on-cloud9)
 
 ## Installing directly on Ubuntu, Debian, CentOS, or Fedora
@@ -266,23 +266,7 @@ server](../contributing/chat-zulip-org.md) if you need help.
 
 [provision-help]: https://chat.zulip.org/#narrow/stream/21-provision-help
 
-## Installing manually on Unix
-
-We recommend one of the other installation methods, since they are
-extremely well-tested and generally Just Work.  But if you know what
-you're doing, these instructions can help you install a Zulip
-development environment on other Linux/UNIX platforms.
-
-* [Newer versions of supported distributions](#newer-versions-of-supported-distributions)
-* [OpenBSD 5.8 (experimental)](#on-openbsd-5-8-experimental)
-* [Common steps](#common-steps)
-
-Because copy-pasting the steps documented here can be error-prone, we
-prefer to extend `tools/provision` to support additional platforms
-over adding new platforms to this documentation (and likely will
-eventually eliminate this documentation section altogether).
-
-### Newer versions of supported distributions
+## Newer versions of supported platforms
 
 You can use
 [our provisioning tool](#installing-directly-on-ubuntu-debian-centos-or-fedora)
@@ -298,124 +282,6 @@ submit a pull request, or you can ask for help in
 [#development help](https://chat.zulip.org/#narrow/stream/49-development-help)
 on chat.zulip.org, and a core team member can help guide you through
 adding support for the platform.
-
-### On OpenBSD 5.8 (experimental):
-
-These instructions are experimental and may have bugs; patches
-welcome!
-
-Start by [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
-and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
-
-```
-git clone --config pull.rebase git@github.com:YOURUSERNAME/zulip.git
-cd zulip
-git remote add -f upstream https://github.com/zulip/zulip.git
-```
-
-```
-doas pkg_add sudo bash gcc postgresql-server redis rabbitmq \
-    memcached py-Pillow py-cryptography py-cffi
-
-# Point environment to custom include locations and use newer GCC
-# (needed for Node modules):
-export CFLAGS="-I/usr/local/include -I/usr/local/include/sasl"
-export CXX=eg++
-
-# Create tsearch_data directory:
-sudo mkdir /usr/local/share/postgresql/tsearch_data
-
-
-# Hack around missing dictionary files -- need to fix this to get the
-# proper dictionaries from what in debian is the hunspell-en-us
-# package.
-sudo touch /usr/local/share/postgresql/tsearch_data/english.stop
-sudo touch /usr/local/share/postgresql/tsearch_data/en_us.dict
-sudo touch /usr/local/share/postgresql/tsearch_data/en_us.affix
-```
-
-Finally continue with the [Common steps](#common-steps) instructions below.
-
-### Common steps
-
-Make sure you have followed the steps specific for your platform:
-
-* [OpenBSD 5.8 (experimental)](#on-openbsd-5-8-experimental)
-
-For managing Zulip's python dependencies, we recommend using
-[virtualenvs](https://virtualenv.pypa.io/en/stable/).
-
-You must create a Python 3 virtualenv.  You must also install appropriate
-python packages in it.
-
-You should either install the virtualenv in `/srv`, or put a symlink to it in
-`/srv`.  If you don't do that, some scripts might not work correctly.
-
-You can run `python3 tools/setup/setup_venvs.py`.  This script will create a
-virtualenv `/srv/zulip-py3-venv`.
-
-If you want to do it manually, here are the steps:
-
-```
-sudo virtualenv /srv/zulip-py3-venv -p python3 # Create a python3 virtualenv
-sudo chown -R `whoami`: /srv/zulip-py3-venv
-source /srv/zulip-py3-venv/bin/activate # Activate python3 virtualenv
-pip install --upgrade pip # upgrade pip itself because older versions have known issues
-pip install --no-deps -r requirements/dev.txt # install python packages required for development
-```
-
-Now run these commands:
-
-```
-sudo ./scripts/lib/install-node
-yarn install
-./tools/setup/emoji/build_emoji
-./scripts/setup/inline_email_css.py
-./tools/setup/build_pygments_data
-./tools/setup/generate_zulip_bots_static_files.py
-./scripts/setup/generate_secrets.py --development
-if [ $(uname) = "OpenBSD" ]; then
-    sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /var/postgresql/tsearch_data/
-else
-    sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /usr/share/postgresql/*/tsearch_data/
-fi
-./scripts/setup/configure-rabbitmq
-./tools/setup/postgresql-init-dev-db
-./tools/rebuild-dev-database
-./tools/setup/postgresql-init-test-db
-./tools/rebuild-test-database
-./manage.py compilemessages
-```
-
-To start the development server:
-
-```
-./tools/run-dev.py
-```
-
-… and visit <http://localhost:9991/>.
-
-If you're running your development server on a remote server, look at
-[the remote development docs][port-forward-setup] for port forwarding
-advice.
-
-#### Proxy setup for by-hand installation
-
-If you are building the development environment on a network where a
-proxy is required to access the Internet, you will need to set the
-proxy in the environment as follows:
-
-- On Ubuntu, set the proxy environment variables using:
- ```
- export https_proxy=http://proxy_host:port
- export http_proxy=http://proxy_host:port
- ```
-
-- And set the yarn proxy and https-proxy using:
- ```
- yarn config set proxy http://proxy_host:port
- yarn config set https-proxy http://proxy_host:port
- ```
 
 ## Installing on Cloud9
 
