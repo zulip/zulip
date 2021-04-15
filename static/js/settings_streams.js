@@ -8,6 +8,7 @@ import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as stream_data from "./stream_data";
+import * as sub_store from "./sub_store";
 import * as typeahead_helper from "./typeahead_helper";
 import * as ui from "./ui";
 import * as ui_report from "./ui_report";
@@ -34,7 +35,7 @@ export function build_default_stream_table() {
     const table = $("#admin_default_streams_table").expectOne();
 
     const stream_ids = stream_data.get_default_stream_ids();
-    const subs = stream_ids.map((stream_id) => stream_data.get_sub_by_id(stream_id));
+    const subs = stream_ids.map((stream_id) => sub_store.get(stream_id));
 
     ListWidget.create(table, subs, {
         name: "default_streams_list",

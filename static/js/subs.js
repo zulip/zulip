@@ -31,6 +31,7 @@ import * as stream_list from "./stream_list";
 import * as stream_muting from "./stream_muting";
 import * as stream_settings_data from "./stream_settings_data";
 import * as stream_ui_updates from "./stream_ui_updates";
+import * as sub_store from "./sub_store";
 import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 import * as util from "./util";
@@ -94,7 +95,7 @@ export function settings_button_for_sub(sub) {
 function get_row_data(row) {
     const row_id = Number.parseInt(row.attr("data-stream-id"), 10);
     if (row_id) {
-        const row_object = stream_data.get_sub_by_id(row_id);
+        const row_object = sub_store.get(row_id);
         return {
             id: row_id,
             object: row_object,
@@ -248,7 +249,7 @@ export function update_message_retention_setting(sub, new_value) {
 }
 
 export function set_color(stream_id, color) {
-    const sub = stream_data.get_sub_by_id(stream_id);
+    const sub = sub_store.get(stream_id);
     stream_edit.set_stream_property(sub, "color", color);
 }
 
@@ -301,7 +302,7 @@ export function remove_stream(stream_id) {
     // stream, but we let jQuery silently handle that.
     const row = row_for_stream_id(stream_id);
     row.remove();
-    const sub = stream_data.get_sub_by_id(stream_id);
+    const sub = sub_store.get(stream_id);
     if (stream_edit.is_sub_settings_active(sub)) {
         stream_edit.open_edit_panel_empty();
     }
@@ -399,7 +400,7 @@ function get_stream_id_buckets(stream_ids, left_panel_params) {
     };
 
     for (const stream_id of stream_ids) {
-        const sub = stream_data.get_sub_by_id(stream_id);
+        const sub = sub_store.get(stream_id);
         const match_status = triage_stream(left_panel_params, sub);
 
         if (match_status === "name_match") {

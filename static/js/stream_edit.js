@@ -29,6 +29,7 @@ import * as stream_data from "./stream_data";
 import * as stream_pill from "./stream_pill";
 import * as stream_settings_data from "./stream_settings_data";
 import * as stream_ui_updates from "./stream_ui_updates";
+import * as sub_store from "./sub_store";
 import * as subs from "./subs";
 import * as ui from "./ui";
 import * as ui_report from "./ui_report";
@@ -162,7 +163,7 @@ function get_sub_for_target(target) {
         return undefined;
     }
 
-    const sub = stream_data.get_sub_by_id(stream_id);
+    const sub = sub_store.get(stream_id);
     if (!sub) {
         blueslip.error("get_sub_for_target() failed id lookup: " + stream_id);
         return undefined;
@@ -443,7 +444,7 @@ export function stream_settings(sub) {
 
 export function show_settings_for(node) {
     const stream_id = get_stream_id(node);
-    const slim_sub = stream_data.get_sub_by_id(stream_id);
+    const slim_sub = sub_store.get(stream_id);
     stream_data.clean_up_description(slim_sub);
     const sub = stream_settings_data.get_sub_for_settings(slim_sub);
 
@@ -542,7 +543,7 @@ function change_stream_privacy(e) {
     e.stopPropagation();
 
     const stream_id = $(e.target).data("stream-id");
-    const sub = stream_data.get_sub_by_id(stream_id);
+    const sub = sub_store.get(stream_id);
     const data = {};
     const stream_privacy_status = $(".stream-privacy-status");
     stream_privacy_status.hide();
@@ -735,7 +736,7 @@ export function initialize() {
 
     $("#subscriptions_table").on("click", ".change-stream-privacy", (e) => {
         const stream_id = get_stream_id(e.target);
-        const stream = stream_data.get_sub_by_id(stream_id);
+        const stream = sub_store.get(stream_id);
 
         const template_data = {
             stream_id,

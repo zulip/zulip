@@ -103,18 +103,6 @@ mock_esm("../../static/js/recent_senders", {
     get_topic_recent_senders: () => [1, 2],
 });
 mock_esm("../../static/js/stream_data", {
-    get_sub_by_id: (stream) => {
-        if (stream === stream5) {
-            // No data is available for deactivated streams
-            return undefined;
-        }
-
-        return {
-            color: "",
-            invite_only: false,
-            is_web_public: true,
-        };
-    },
     is_muted: () =>
         // We only test via muted topics for now.
         // TODO: Make muted streams and test them.
@@ -131,6 +119,20 @@ mock_esm("../../static/js/timerender", {
         date: "date",
         time: "time",
     }),
+});
+mock_esm("../../static/js/sub_store", {
+    get: (stream) => {
+        if (stream === stream5) {
+            // No data is available for deactivated streams
+            return undefined;
+        }
+
+        return {
+            color: "",
+            invite_only: false,
+            is_web_public: true,
+        };
+    },
 });
 mock_esm("../../static/js/top_left_corner", {
     narrow_to_recent_topics: noop,

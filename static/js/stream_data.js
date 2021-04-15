@@ -751,13 +751,3 @@ export function initialize(params) {
 export function remove_default_stream(stream_id) {
     default_stream_ids.delete(stream_id);
 }
-
-export function get_sub_by_id(stream_id) {
-    // TODO: remove this shim in the next commit
-    return sub_store.get(stream_id);
-}
-
-export function validate_stream_ids(stream_ids) {
-    // TODO: remove this shim in the next commit
-    return sub_store.validate_stream_ids(stream_ids);
-}
