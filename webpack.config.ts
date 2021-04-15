@@ -11,6 +11,7 @@ import BundleTracker from "webpack-bundle-tracker";
 
 import DebugRequirePlugin from "./tools/debug-require-webpack-plugin";
 import assets from "./tools/webpack.assets.json";
+import dev_assets from "./tools/webpack.dev-assets.json";
 
 const cacheLoader: webpack.RuleSetUseItem = {
     loader: "cache-loader",
@@ -29,7 +30,7 @@ export default (_env: unknown, argv: {mode?: string}): webpack.Configuration[] =
         entry: production
             ? assets
             : Object.fromEntries(
-                  Object.entries(assets).map(([name, paths]) => [
+                  Object.entries({...assets, ...dev_assets}).map(([name, paths]) => [
                       name,
                       [...paths, "./static/js/debug"],
                   ]),

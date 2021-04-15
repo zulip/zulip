@@ -73,7 +73,11 @@ def build_for_dev_server(host: str, port: str, minify: bool, disable_host_check:
         watch_manager = pyinotify.WatchManager()
         event_notifier = pyinotify.Notifier(watch_manager, WebpackConfigFileChangeHandler())
         # We did a chdir to the root of the Zulip checkout above.
-        for filepath in ["webpack.config.ts", "tools/webpack.assets.json"]:
+        for filepath in [
+            "webpack.config.ts",
+            "tools/webpack.assets.json",
+            "tools/webpack.dev-assets.json",
+        ]:
             watch_manager.add_watch(filepath, pyinotify.IN_MODIFY)
         event_notifier.loop()
     finally:
@@ -94,6 +98,10 @@ def build_for_most_tests() -> None:
     # clean up names.
     with open("tools/webpack.assets.json") as json_data:
         entries = json.load(json_data)
+
+    with open("tools/webpack.dev-assets.json") as json_data:
+        entries.update(json.load(json_data))
+
     stat_data = {
         "status": "done",
         "chunks": {entry: [f"{entry}-stubentry.js"] for entry in entries},

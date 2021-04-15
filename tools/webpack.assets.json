@@ -87,22 +87,8 @@
         "./static/js/analytics/support",
         "./static/styles/app_components.css"
     ],
-    "dev-login": ["./static/js/bundles/portico", "./static/js/portico/dev-login"],
     "desktop-login": ["./static/js/bundles/portico", "./static/js/portico/desktop-login"],
     "desktop-redirect": ["./static/js/bundles/portico", "./static/js/portico/desktop-redirect"],
-    "dev-integrations-panel": [
-        "./static/js/bundles/portico",
-        "./static/js/portico/integrations_dev_panel",
-        "./static/styles/portico/integrations_dev_panel.css",
-        "./static/js/reload_state",
-        "./static/js/channel"
-    ],
-    "dev-email-log": [
-        "./static/js/bundles/common",
-        "./static/js/portico/email_log",
-        "./static/js/reload_state",
-        "./static/js/channel"
-    ],
     "stats": [
         "./static/js/bundles/portico",
         "./static/styles/portico/stats.css",
