@@ -61,4 +61,14 @@ export function initialize() {
         // that when the reaction is hidden, tooltip hides as well.
         appendTo: (reference) => reference,
     });
+
+    delegate("body", {
+        target: ".compose_control_button",
+        content: (reference) => reference.getAttribute("title"),
+        placement: "top",
+        // Add some additional delay when they open
+        // so that regular users don't have to see
+        // them unless they want to.
+        delay: [300, 20],
+    });
 }
