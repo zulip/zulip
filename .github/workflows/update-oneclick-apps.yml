@@ -13,7 +13,7 @@ jobs:
           ZULIP_API_KEY: ${{ secrets.ONE_CLICK_ACTION_ZULIP_BOT_API_KEY }}
           ZULIP_EMAIL: ${{ secrets.ONE_CLICK_ACTION_ZULIP_BOT_EMAIL }}
           ZULIP_SITE: https://chat.zulip.org
-          ONE_CLICK_ACTION_STREAM: kandra-ops
+          ONE_CLICK_ACTION_STREAM: kandra ops
           PYTHON_DIGITALOCEAN_REQUEST_TIMEOUT_SEC: 30
           RELEASE_VERSION: ${{ github.event.release.tag_name }}
         run: |
