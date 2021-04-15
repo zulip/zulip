@@ -2,9 +2,9 @@ import os
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
-from django.conf.urls import url
 from django.contrib.staticfiles.storage import staticfiles_storage
-from django.urls.resolvers import RegexPattern
+from django.urls import path
+from django.urls.resolvers import URLPattern
 from django.utils.functional import Promise
 from django.utils.module_loading import import_string
 from django.utils.translation import gettext as gettext_lazy
@@ -221,8 +221,8 @@ class WebhookIntegration(Integration):
         self.doc = doc
 
     @property
-    def url_object(self) -> RegexPattern:
-        return url(self.url, self.function)
+    def url_object(self) -> URLPattern:
+        return path(self.url, self.function)
 
 
 def split_fixture_path(path: str) -> Tuple[str, str]:
