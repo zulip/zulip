@@ -489,6 +489,13 @@ INTEGRATIONS: Dict[str, Integration] = {
     "git": Integration(
         "git", "git", ["version-control"], stream_name="commits", doc="zerver/integrations/git.md"
     ),
+    "github-actions": Integration(
+        "github-actions",
+        "github-actions",
+        ["continuous-integration"],
+        display_name="GitHub Actions",
+        doc="zerver/integrations/github-actions.md",
+    ),
     "google-calendar": Integration(
         "google-calendar",
         "google-calendar",
