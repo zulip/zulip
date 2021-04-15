@@ -233,6 +233,37 @@ async function test_all_filters(page: Page): Promise<void> {
     await trigger_filter_button(page, participated_filter_button);
 }
 
+// Tests the `t` hotkey which navigates back to recent topic page.
+async function test_recent_topic_hotkey(page: Page): Promise<void> {
+    await page.waitForSelector("#zfilt", {visible: true});
+    await page.keyboard.press("t");
+    await page.waitForSelector(recent_topic_page, {visible: true});
+}
+
+async function test_stream_navigation(page: Page, stream_name: string): Promise<void> {
+    await page.waitForSelector(recent_topic_page, {visible: true});
+
+    const stream = await page.evaluate((stream_name: string) => {
+        const stream_selector = $(`.recent_topic_stream a:contains('${stream_name}')`).first();
+        return stream_selector.attr("href");
+    }, stream_name);
+
+    await page.click(`${recent_topic_page} a[href = '${stream}']`);
+    await page.waitForSelector("#zfilt", {visible: true});
+}
+
+async function test_topic_navigation(page: Page, topic_name: string): Promise<void> {
+    await page.waitForSelector(recent_topic_page, {visible: true});
+
+    const topic = await page.evaluate((topic_name: string) => {
+        const topic_selector = $(`.recent_topic_name a:contains('${topic_name}')`).first();
+        return topic_selector.attr("href");
+    }, topic_name);
+
+    await page.click(`${recent_topic_page} a[href = '${topic}']`);
+    await page.waitForSelector("#zfilt", {visible: true});
+}
+
 async function test_recent_topic(page: Page): Promise<void> {
     await common.log_in(page);
     await page.click(".top_left_recent_topics");
@@ -249,6 +280,11 @@ async function test_recent_topic(page: Page): Promise<void> {
     await test_unread_and_participated_filter_button(page);
     await test_include_muted_and_participated_filter_button(page);
     await test_all_filters(page);
+
+    await test_stream_navigation(page, "Verona");
+    await test_recent_topic_hotkey(page); // Tests for 't' hotkey.
+    await test_topic_navigation(page, "plotter");
+    await test_recent_topic_hotkey(page); // Navigate back to recent topic page.
 }
 
 common.run_test(test_recent_topic);
