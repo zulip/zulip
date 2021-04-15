@@ -261,13 +261,11 @@ function buddy_list_add(user_id, stub) {
 }
 
 test_ui("PM_update_dom_counts", () => {
-    const value = $.create("alice-value");
-    const count = $.create("alice-count");
+    const count = $.create("alice-unread-count");
     const pm_key = alice.user_id.toString();
     const li = $.create("alice stub");
     buddy_list_add(pm_key, li);
-    count.set_find_results(".value", value);
-    li.set_find_results(".count", count);
+    li.set_find_results(".unread_count", count);
     count.set_parents_result("li", li);
 
     const counts = new Map();
@@ -275,14 +273,12 @@ test_ui("PM_update_dom_counts", () => {
     li.addClass("user_sidebar_entry");
 
     activity.update_dom_with_unread_counts({pm_count: counts});
-    assert(li.hasClass("user-with-count"));
-    assert.equal(value.text(), "5");
+    assert.equal(count.text(), "5");
 
     counts.set(pm_key, 0);
 
     activity.update_dom_with_unread_counts({pm_count: counts});
-    assert(!li.hasClass("user-with-count"));
-    assert.equal(value.text(), "");
+    assert.equal(count.text(), "");
 });
 
 test_ui("handlers", (override) => {
