@@ -1105,7 +1105,7 @@ export function initialize() {
         render_compose({
             embedded: $compose.attr("data-embedded") === "",
             file_upload_enabled: page_params.max_file_upload_size_mib > 0,
-            giphy_api_available: page_params.giphy_api_key !== "",
+            giphy_enabled: page_params.giphy_api_key !== "",
         }),
     );
 

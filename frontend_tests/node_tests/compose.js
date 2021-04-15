@@ -1066,7 +1066,7 @@ test_ui("initialize", (override) => {
         assert.equal(template_name, "compose");
         assert.equal(context.embedded, false);
         assert.equal(context.file_upload_enabled, true);
-        assert.equal(context.giphy_api_available, true);
+        assert.equal(context.giphy_enabled, true);
         return "fake-compose-template";
     });
 
