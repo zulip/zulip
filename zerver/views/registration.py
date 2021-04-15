@@ -474,6 +474,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         },
     )
 
+
 def get_email_address_visibility(realm: Optional[Realm]) -> str:
     # help text sentences regarding email address visibility
     vis_all = "All users will be able to see this email address."
@@ -489,7 +490,7 @@ def get_email_address_visibility(realm: Optional[Realm]) -> str:
     elif realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_NOBODY:
         return vis_none
     else:
-        return vis_all # nocoverage 
+        return vis_all  # nocoverage
 
 
 def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:

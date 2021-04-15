@@ -4814,7 +4814,7 @@ class TestLoginPage(ZulipTestCase):
         )
         actual = get_email_address_visibility(realm)
         expected = "Users will not be able to see this email address."
-        self.assertEqual(actual, expected)    
+        self.assertEqual(actual, expected)
 
 
 class TestFindMyTeam(ZulipTestCase):
