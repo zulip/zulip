@@ -13,6 +13,7 @@ import * as people from "./people";
 import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as presence from "./presence";
+import * as ui_util from "./ui_util";
 import {UserSearch} from "./user_search";
 import * as user_status from "./user_status";
 import * as watchdog from "./watchdog";
@@ -51,21 +52,6 @@ export function set_new_user_input(value) {
     new_user_input = value;
 }
 
-function update_pm_count_in_dom(count_span, value_span, count) {
-    const li = count_span.parents("li");
-
-    if (count === 0) {
-        count_span.hide();
-        li.removeClass("user-with-count");
-        value_span.text("");
-        return;
-    }
-
-    count_span.show();
-    li.addClass("user-with-count");
-    value_span.text(count);
-}
-
 function get_pm_list_item(user_id) {
     return buddy_list.find_li({
         key: user_id,
@@ -73,9 +59,8 @@ function get_pm_list_item(user_id) {
 }
 
 function set_pm_count(user_ids_string, count) {
-    const count_span = get_pm_list_item(user_ids_string).find(".count");
-    const value_span = count_span.find(".value");
-    update_pm_count_in_dom(count_span, value_span, count);
+    const pm_li = get_pm_list_item(user_ids_string);
+    ui_util.update_unread_count_in_dom(pm_li, count);
 }
 
 export function update_dom_with_unread_counts(counts) {
