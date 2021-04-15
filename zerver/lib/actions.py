@@ -6643,7 +6643,7 @@ def do_remove_linkifier(
     if pattern is not None:
         RealmFilter.objects.get(realm=realm, pattern=pattern).delete()
     else:
-        RealmFilter.objects.get(realm=realm, pk=id).delete()
+        RealmFilter.objects.get(realm=realm, id=id).delete()
     notify_linkifiers(realm)
 
 
