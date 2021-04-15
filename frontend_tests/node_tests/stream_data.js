@@ -12,6 +12,7 @@ const {page_params} = require("../zjsunit/zpage_params");
 const color_data = zrequire("color_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const people = zrequire("people");
+const sub_store = zrequire("sub_store");
 const stream_data = zrequire("stream_data");
 const stream_settings_data = zrequire("stream_settings_data");
 const settings_config = zrequire("settings_config");
@@ -135,11 +136,11 @@ test("renames", () => {
     stream_data.add_sub(sub);
     sub = stream_data.get_sub("Denmark");
     assert.equal(sub.color, "red");
-    sub = stream_data.get_sub_by_id(id);
+    sub = sub_store.get(id);
     assert.equal(sub.color, "red");
 
     stream_data.rename_sub(sub, "Sweden");
-    sub = stream_data.get_sub_by_id(id);
+    sub = sub_store.get(id);
     assert.equal(sub.color, "red");
     assert.equal(sub.name, "Sweden");
 
@@ -415,12 +416,12 @@ test("delete_sub", () => {
 
     assert(stream_data.is_subscribed("Canada"));
     assert(stream_data.get_sub("Canada").stream_id, canada.stream_id);
-    assert(stream_data.get_sub_by_id(canada.stream_id).name, "Canada");
+    assert(sub_store.get(canada.stream_id).name, "Canada");
 
     stream_data.delete_sub(canada.stream_id);
     assert(!stream_data.is_subscribed("Canada"));
     assert(!stream_data.get_sub("Canada"));
-    assert(!stream_data.get_sub_by_id(canada.stream_id));
+    assert(!sub_store.get(canada.stream_id));
 
     blueslip.expect("warn", "Failed to archive stream 99999");
     stream_data.delete_sub(99999);

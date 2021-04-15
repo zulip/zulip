@@ -33,6 +33,7 @@ import * as server_events from "./server_events";
 import * as settings_config from "./settings_config";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
+import * as sub_store from "./sub_store";
 import * as subs from "./subs";
 import * as transmit from "./transmit";
 import * as ui_report from "./ui_report";
@@ -1184,7 +1185,7 @@ export function initialize() {
             failure(error.msg);
         }
 
-        const sub = stream_data.get_sub_by_id(stream_id);
+        const sub = sub_store.get(stream_id);
 
         stream_edit.invite_user_to_stream([user_id], sub, success, xhr_failure);
     });

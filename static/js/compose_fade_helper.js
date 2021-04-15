@@ -1,4 +1,5 @@
 import * as stream_data from "./stream_data";
+import * as sub_store from "./sub_store";
 import * as util from "./util";
 
 let focused_recipient;
@@ -17,7 +18,7 @@ export function set_focused_recipient(recipient) {
 
 export function would_receive_message(user_id) {
     if (focused_recipient.type === "stream") {
-        const sub = stream_data.get_sub_by_id(focused_recipient.stream_id);
+        const sub = sub_store.get(focused_recipient.stream_id);
         if (!sub) {
             // If the stream isn't valid, there is no risk of a mix
             // yet, so we sort of "lie" and say they would receive a
@@ -42,7 +43,7 @@ export function want_normal_display() {
     if (focused_recipient.type === "stream") {
         // If a stream doesn't exist, there is no real chance of a mix, so fading
         // is just noise to the user.
-        if (!stream_data.get_sub_by_id(focused_recipient.stream_id)) {
+        if (!sub_store.get(focused_recipient.stream_id)) {
             return true;
         }
 

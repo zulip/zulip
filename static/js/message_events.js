@@ -22,9 +22,9 @@ import * as pm_list from "./pm_list";
 import * as recent_senders from "./recent_senders";
 import * as recent_topics from "./recent_topics";
 import * as resize from "./resize";
-import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_topic_history from "./stream_topic_history";
+import * as sub_store from "./sub_store";
 import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
@@ -186,7 +186,7 @@ export function update_messages(events) {
                 event.propagate_mode,
             );
 
-            const stream_name = stream_data.get_sub_by_id(event.stream_id).name;
+            const stream_name = sub_store.get(event.stream_id).name;
             const compose_stream_name = compose_state.stream_name();
             const orig_topic = util.get_edit_event_orig_topic(event);
 
@@ -245,7 +245,7 @@ export function update_messages(events) {
                     msg.topic_links = event.topic_links;
                 }
                 if (stream_changed) {
-                    const new_stream_name = stream_data.get_sub_by_id(new_stream_id).name;
+                    const new_stream_name = sub_store.get(new_stream_id).name;
                     msg.stream_id = event.new_stream_id;
                     msg.stream = new_stream_name;
                     msg.display_recipient = new_stream_name;
@@ -287,7 +287,7 @@ export function update_messages(events) {
                     // stream_data lookup here to fail.
                     //
                     // The fix is likely somewhat involved, so punting for now.
-                    const new_stream_name = stream_data.get_sub_by_id(new_stream_id).name;
+                    const new_stream_name = sub_store.get(new_stream_id).name;
                     new_filter = new_filter.filter_with_new_params({
                         operator: "stream",
                         operand: new_stream_name,

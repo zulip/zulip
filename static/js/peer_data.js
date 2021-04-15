@@ -1,7 +1,7 @@
 import * as blueslip from "./blueslip";
 import {LazySet} from "./lazy_set";
 import * as people from "./people";
-import * as stream_data from "./stream_data";
+import * as sub_store from "./sub_store";
 
 // This maps a stream_id to a LazySet of user_ids who are subscribed.
 const stream_subscribers = new Map();
@@ -21,7 +21,7 @@ function get_user_set(stream_id) {
     // We create one on the fly as necessary, but we warn in that case.
     assert_number(stream_id);
 
-    if (!stream_data.get_sub_by_id(stream_id)) {
+    if (!sub_store.get(stream_id)) {
         blueslip.warn("We called get_user_set for an untracked stream: " + stream_id);
     }
 

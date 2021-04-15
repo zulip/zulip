@@ -23,6 +23,7 @@ import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_bar from "./stream_bar";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
+import * as sub_store from "./sub_store";
 import * as subs from "./subs";
 import * as unread_ops from "./unread_ops";
 
@@ -140,7 +141,7 @@ export function hide_streamlist_sidebar() {
 function stream_popover_sub(e) {
     const elem = $(e.currentTarget).parents("ul");
     const stream_id = elem_to_stream_id(elem);
-    const sub = stream_data.get_sub_by_id(stream_id);
+    const sub = sub_store.get(stream_id);
     if (!sub) {
         blueslip.error("Unknown stream: " + stream_id);
         return undefined;
@@ -192,7 +193,7 @@ function build_stream_popover(opts) {
     show_streamlist_sidebar();
 
     const content = render_stream_sidebar_actions({
-        stream: stream_data.get_sub_by_id(stream_id),
+        stream: sub_store.get(stream_id),
     });
 
     $(elt).popover({
@@ -224,7 +225,7 @@ function build_topic_popover(opts) {
         return;
     }
 
-    const sub = stream_data.get_sub_by_id(stream_id);
+    const sub = sub_store.get(stream_id);
     if (!sub) {
         blueslip.error("cannot build topic popover for stream: " + stream_id);
         return;

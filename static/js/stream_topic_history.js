@@ -1,7 +1,7 @@
 import {all_messages_data} from "./all_messages_data";
 import {FoldDict} from "./fold_dict";
 import * as message_util from "./message_util";
-import * as stream_data from "./stream_data";
+import * as sub_store from "./sub_store";
 import * as unread from "./unread";
 
 const stream_dict = new Map(); // stream_id -> PerStreamHistory object
@@ -45,7 +45,7 @@ export function is_complete_for_stream_id(stream_id) {
         return true;
     }
 
-    const sub = stream_data.get_sub_by_id(stream_id);
+    const sub = sub_store.get(stream_id);
     const in_cache = all_topics_in_cache(sub);
 
     if (in_cache) {

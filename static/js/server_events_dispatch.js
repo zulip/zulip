@@ -52,6 +52,7 @@ import * as stream_data from "./stream_data";
 import * as stream_events from "./stream_events";
 import * as stream_list from "./stream_list";
 import * as stream_topic_history from "./stream_topic_history";
+import * as sub_store from "./sub_store";
 import * as submessage from "./submessage";
 import * as subs from "./subs";
 import * as typing_events from "./typing_events";
@@ -414,7 +415,7 @@ export function dispatch_normal_event(event) {
                     stream_data.create_streams(event.streams);
 
                     for (const stream of event.streams) {
-                        const sub = stream_data.get_sub_by_id(stream.stream_id);
+                        const sub = sub_store.get(stream.stream_id);
                         if (overlays.streams_open()) {
                             subs.add_sub_to_table(sub);
                         }
@@ -422,8 +423,7 @@ export function dispatch_normal_event(event) {
                     break;
                 case "delete":
                     for (const stream of event.streams) {
-                        const was_subscribed = stream_data.get_sub_by_id(stream.stream_id)
-                            .subscribed;
+                        const was_subscribed = sub_store.get(stream.stream_id).subscribed;
                         const is_narrowed_to_stream = narrow_state.is_for_stream_id(
                             stream.stream_id,
                         );
@@ -472,7 +472,7 @@ export function dispatch_normal_event(event) {
             switch (event.op) {
                 case "add":
                     for (const rec of event.subscriptions) {
-                        const sub = stream_data.get_sub_by_id(rec.stream_id);
+                        const sub = sub_store.get(rec.stream_id);
                         if (sub) {
                             stream_data.update_stream_email_address(sub, rec.email_address);
                             stream_events.mark_subscribed(sub, rec.subscribers, rec.color);
@@ -484,13 +484,13 @@ export function dispatch_normal_event(event) {
                     }
                     break;
                 case "peer_add": {
-                    const stream_ids = stream_data.validate_stream_ids(event.stream_ids);
+                    const stream_ids = sub_store.validate_stream_ids(event.stream_ids);
                     const user_ids = people.validate_user_ids(event.user_ids);
 
                     peer_data.bulk_add_subscribers({stream_ids, user_ids});
 
                     for (const stream_id of stream_ids) {
-                        const sub = stream_data.get_sub_by_id(stream_id);
+                        const sub = sub_store.get(stream_id);
                         subs.update_subscribers_ui(sub);
                     }
 
@@ -498,13 +498,13 @@ export function dispatch_normal_event(event) {
                     break;
                 }
                 case "peer_remove": {
-                    const stream_ids = stream_data.validate_stream_ids(event.stream_ids);
+                    const stream_ids = sub_store.validate_stream_ids(event.stream_ids);
                     const user_ids = people.validate_user_ids(event.user_ids);
 
                     peer_data.bulk_remove_subscribers({stream_ids, user_ids});
 
                     for (const stream_id of stream_ids) {
-                        const sub = stream_data.get_sub_by_id(stream_id);
+                        const sub = sub_store.get(stream_id);
                         subs.update_subscribers_ui(sub);
                     }
 
@@ -513,7 +513,7 @@ export function dispatch_normal_event(event) {
                 }
                 case "remove":
                     for (const rec of event.subscriptions) {
-                        const sub = stream_data.get_sub_by_id(rec.stream_id);
+                        const sub = sub_store.get(rec.stream_id);
                         stream_events.mark_unsubscribed(sub);
                     }
                     break;

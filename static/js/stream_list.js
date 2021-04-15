@@ -17,6 +17,7 @@ import * as scroll_util from "./scroll_util";
 import * as stream_data from "./stream_data";
 import * as stream_popover from "./stream_popover";
 import * as stream_sort from "./stream_sort";
+import * as sub_store from "./sub_store";
 import * as topic_list from "./topic_list";
 import * as topic_zoom from "./topic_zoom";
 import * as ui from "./ui";
@@ -471,7 +472,7 @@ function keydown_enter_key() {
         return;
     }
 
-    const sub = stream_data.get_sub_by_id(stream_id);
+    const sub = sub_store.get(stream_id);
 
     if (sub === undefined) {
         blueslip.error("Unknown stream_id for search/enter: " + stream_id);
@@ -505,7 +506,7 @@ export function set_event_handlers() {
             return;
         }
         const stream_id = stream_id_for_elt($(e.target).parents("li"));
-        const sub = stream_data.get_sub_by_id(stream_id);
+        const sub = sub_store.get(stream_id);
         popovers.hide_all();
         narrow.by("stream", sub.name, {trigger: "sidebar"});
 

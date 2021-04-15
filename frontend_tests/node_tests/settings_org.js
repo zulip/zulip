@@ -54,10 +54,10 @@ set_global("FormData", _FormData);
 
 const settings_config = zrequire("settings_config");
 const settings_bots = zrequire("settings_bots");
-const stream_data = zrequire("stream_data");
 const stream_settings_data = zrequire("stream_settings_data");
 const settings_account = zrequire("settings_account");
 const settings_org = zrequire("settings_org");
+const sub_store = zrequire("sub_store");
 const dropdown_list_widget = zrequire("dropdown_list_widget");
 
 function test(label, f) {
@@ -1008,7 +1008,7 @@ test("misc", (override) => {
     let setting_name = "realm_notifications_stream_id";
     let elem = $(`#${CSS.escape(setting_name)}_widget #${CSS.escape(setting_name)}_name`);
     elem.closest = () => stub_notification_disable_parent;
-    stream_data.__Rewire__("get_sub_by_id", (stream_id) => {
+    sub_store.__Rewire__("get", (stream_id) => {
         assert.equal(stream_id, 42);
         return {name: "some_stream"};
     });
@@ -1023,7 +1023,7 @@ test("misc", (override) => {
     setting_name = "realm_signup_notifications_stream_id";
     elem = $(`#${CSS.escape(setting_name)}_widget #${CSS.escape(setting_name)}_name`);
     elem.closest = () => stub_notification_disable_parent;
-    stream_data.__Rewire__("get_sub_by_id", (stream_id) => {
+    sub_store.__Rewire__("get", (stream_id) => {
         assert.equal(stream_id, 75);
         return {name: "some_stream"};
     });
