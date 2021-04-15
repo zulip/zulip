@@ -43,6 +43,42 @@ async function get_topic_names(page: Page): Promise<string[]> {
     return topic_names;
 }
 
+// Waits for the recent topics to filter once typed a certain query within
+// `filter topic` input field.
+async function wait_for_topics_to_filter(page: Page, no_of_topics: number): Promise<void> {
+    await page.waitForSelector(recent_topic_page);
+
+    await page.waitForFunction(
+        (recent_topic_page: string, no_of_topics: number) => {
+            const topics = $(recent_topic_page).find("tbody").find("tr");
+            return topics.length === no_of_topics;
+        },
+        {},
+        recent_topic_page,
+        no_of_topics,
+    );
+}
+
+async function clear_input_field(
+    page: Page,
+    input_field: string,
+    input_text: string,
+): Promise<void> {
+    await page.waitForSelector(recent_topic_page);
+
+    // Trigger focus to input field in case it loses focus.
+    await page.evaluate((input_field: string) => {
+        $(input_field).trigger("focus");
+    }, input_field);
+
+    for (let i = 0; i < input_text.length; i += 1) {
+        await page.keyboard.press("Backspace");
+    }
+
+    // Wait for all topics to load back again.
+    await wait_for_topics_to_filter(page, 7);
+}
+
 // Tests for streams and topic at initial page load.
 async function test_initial_topics(page: Page): Promise<void> {
     await page.waitForSelector(recent_topic_page);
@@ -264,6 +300,49 @@ async function test_topic_navigation(page: Page, topic_name: string): Promise<vo
     await page.waitForSelector("#zfilt", {visible: true});
 }
 
+async function test_filter_topic_input(page: Page): Promise<void> {
+    await page.waitForSelector(recent_topic_page);
+
+    const input_field = "#recent_topics_search";
+    const topic_filter = "database";
+    const stream_filter = "Verona";
+
+    // Filter topics
+
+    await page.type(input_field, topic_filter);
+    // Wait for all topics to filter.
+    await wait_for_topics_to_filter(page, 2);
+
+    const filtered_stream_names = await get_stream_names(page);
+    assert.deepStrictEqual(filtered_stream_names, ["Denmark", "Venice"]);
+
+    const filtered_topic_names = await get_topic_names(page);
+    assert.deepStrictEqual(filtered_topic_names, [
+        "last database linking",
+        "database isn't skipping erratically",
+    ]);
+
+    // Clear the input field.
+    await clear_input_field(page, input_field, topic_filter);
+
+    // Filter streams
+
+    await page.type(input_field, stream_filter);
+    await wait_for_topics_to_filter(page, 3);
+
+    const stream_names = await get_stream_names(page);
+    assert.deepStrictEqual(stream_names, ["Verona", "Verona", "Verona"]);
+
+    const topic_names = await get_topic_names(page);
+    assert.deepStrictEqual(topic_names, [
+        "last nas is loading",
+        "plotter",
+        "green printer is running quickly",
+    ]);
+
+    await clear_input_field(page, input_field, stream_filter);
+}
+
 async function test_recent_topic(page: Page): Promise<void> {
     await common.log_in(page);
     await page.click(".top_left_recent_topics");
@@ -285,6 +364,8 @@ async function test_recent_topic(page: Page): Promise<void> {
     await test_recent_topic_hotkey(page); // Tests for 't' hotkey.
     await test_topic_navigation(page, "plotter");
     await test_recent_topic_hotkey(page); // Navigate back to recent topic page.
+
+    await test_filter_topic_input(page); // Inputs `nas` in filter input text field.
 }
 
 common.run_test(test_recent_topic);
