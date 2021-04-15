@@ -161,7 +161,7 @@ test("update_dom_with_unread_counts", (override) => {
     override(narrow_state, "active", () => true);
 
     const total_count = $.create("total-count-stub");
-    const private_li = $(".top_left_private_messages");
+    const private_li = $(".top_left_private_messages .private_messages_header");
     private_li.set_find_results(".unread_count", total_count);
 
     counts = {

@@ -252,6 +252,7 @@ li.active-sub-filter {
         /* This margin accounts for the fact that the private messages
            container gets a few pixels taller when expanded  */
         margin: 0;
+        display: inline;
     }
 
     i {

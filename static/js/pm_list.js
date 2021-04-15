@@ -24,7 +24,7 @@ export function clear_for_testing() {
 // left corner of the app.  This was split out from stream_list.js.
 
 function get_filter_li() {
-    return $(".top_left_private_messages");
+    return $(".top_left_private_messages .private_messages_header");
 }
 
 function set_count(count) {
