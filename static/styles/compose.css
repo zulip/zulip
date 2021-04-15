@@ -177,6 +177,7 @@
     display: none;
     position: absolute;
     right: 0;
+    opacity: 0.7;
 }
 
 #compose_invite_users,
