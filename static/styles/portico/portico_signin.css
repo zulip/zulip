@@ -834,8 +834,7 @@ button#register_auth_button_gitlab {
 
     #id_email {
         font-weight: normal;
-        margin: 2px;
-        padding-top: 25px;
+        padding: auto;
         text-align: left;
         overflow-wrap: break-word;
     }
