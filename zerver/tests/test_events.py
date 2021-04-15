@@ -86,6 +86,7 @@ from zerver.lib.actions import (
     do_unmute_topic,
     do_unmute_user,
     do_update_embedded_data,
+    do_update_linkifier,
     do_update_message,
     do_update_message_flags,
     do_update_outgoing_webhook_service,
@@ -1356,9 +1357,17 @@ class NormalActionsTest(BaseAction):
         check_realm_linkifiers("events[0]", events[0])
         check_realm_filters("events[1]", events[1])
 
+        regex = "#(?P<id>[0-9]+)"
+        linkifier_id = events[0]["realm_linkifiers"][0]["id"]
         events = self.verify_action(
-            lambda: do_remove_linkifier(self.user_profile.realm, "#(?P<id>[123])"),
+            lambda: do_update_linkifier(self.user_profile.realm, linkifier_id, regex, url),
             num_events=2,
+        )
+        check_realm_linkifiers("events[0]", events[0])
+        check_realm_filters("events[1]", events[1])
+
+        events = self.verify_action(
+            lambda: do_remove_linkifier(self.user_profile.realm, regex), num_events=2
         )
         check_realm_linkifiers("events[0]", events[0])
         check_realm_filters("events[1]", events[1])

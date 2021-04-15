@@ -118,7 +118,12 @@ from zerver.views.realm_domains import (
 from zerver.views.realm_emoji import delete_emoji, list_emoji, upload_emoji
 from zerver.views.realm_export import delete_realm_export, export_realm, get_realm_exports
 from zerver.views.realm_icon import delete_icon_backend, get_icon_backend, upload_icon
-from zerver.views.realm_linkifiers import create_linkifier, delete_linkifier, list_linkifiers
+from zerver.views.realm_linkifiers import (
+    create_linkifier,
+    delete_linkifier,
+    list_linkifiers,
+    update_linkifier,
+)
 from zerver.views.realm_logo import delete_logo_backend, get_logo_backend, upload_logo
 from zerver.views.realm_playgrounds import add_realm_playground, delete_realm_playground
 from zerver.views.registration import (
@@ -265,7 +270,7 @@ v1_api_and_json_patterns = [
     # realm/filters and realm/linkifiers -> zerver.views.realm_linkifiers
     rest_path("realm/linkifiers", GET=list_linkifiers),
     rest_path("realm/filters", POST=create_linkifier),
-    rest_path("realm/filters/<int:filter_id>", DELETE=delete_linkifier),
+    rest_path("realm/filters/<int:filter_id>", DELETE=delete_linkifier, PATCH=update_linkifier),
     # realm/playgrounds -> zerver.views.realm_playgrounds
     rest_path("realm/playgrounds", POST=add_realm_playground),
     rest_path("realm/playgrounds/<int:playground_id>", DELETE=delete_realm_playground),

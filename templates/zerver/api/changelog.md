@@ -10,6 +10,11 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 57**
+
+* [`PATCH /realm/filters/{filter_id}`](/api/update-linkifier): New
+  endpoint added to update a realm linkifier.
+
 **Feature level 56**
 
 * [`POST /register`](/api/register-queue): Added a new setting

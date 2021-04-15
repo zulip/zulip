@@ -6682,6 +6682,35 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/JsonSuccess"
+    patch:
+      operationId: update_linkifier
+      tags: ["server_and_organizations"]
+      description: |
+        Update a [linkifier](/help/add-a-custom-linkifier), regular
+        expression patterns that are automatically linkified when they appear
+        in messages and topics.
+
+        `PATCH {{ api_url }}/v1/realm/filters/{filter_id}`
+
+        **Changes**: New in Zulip 4.0 (feature level 57).
+      parameters:
+        - name: filter_id
+          in: path
+          description: |
+            The ID of the linkifier that you want to update.
+          schema:
+            type: integer
+          example: 2
+          required: true
+        - $ref: "#/components/parameters/LinkifierPattern"
+        - $ref: "#/components/parameters/LinkifierURLFormatString"
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonSuccess"
   /realm/playgrounds:
     post:
       operationId: add_realm_playground

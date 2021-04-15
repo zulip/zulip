@@ -59,6 +59,7 @@
 * [Get server settings](/api/get-server-settings)
 * [Get linkifiers](/api/get-linkifiers)
 * [Add a linkifier](/api/add-linkifier)
+* [Update a linkifier](/api/update-linkifier)
 * [Remove a linkifier](/api/remove-linkifier)
 * [Add a playground](/api/add-playground)
 * [Remove a playground](/api/remove-playground)

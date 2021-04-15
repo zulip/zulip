@@ -6647,6 +6647,17 @@ def do_remove_linkifier(
     notify_linkifiers(realm)
 
 
+def do_update_linkifier(realm: Realm, id: int, pattern: str, url_format_string: str) -> None:
+    pattern = pattern.strip()
+    url_format_string = url_format_string.strip()
+    linkifier = RealmFilter.objects.get(realm=realm, id=id)
+    linkifier.pattern = pattern
+    linkifier.url_format_string = url_format_string
+    linkifier.full_clean()
+    linkifier.save(update_fields=["pattern", "url_format_string"])
+    notify_linkifiers(realm)
+
+
 def get_emails_from_user_ids(user_ids: Sequence[int]) -> Dict[int, str]:
     # We may eventually use memcached to speed this up, but the DB is fast.
     return UserProfile.emails_from_ids(user_ids)

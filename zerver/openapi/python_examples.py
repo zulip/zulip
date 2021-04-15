@@ -372,6 +372,25 @@ def add_realm_filter(client: Client) -> None:
     validate_against_openapi_schema(result, "/realm/filters", "post", "200")
 
 
+@openapi_test_function("/realm/filters/{filter_id}:patch")
+def update_realm_filter(client: Client) -> None:
+
+    # {code_example|start}
+    # Update the linkifier (realm_filter) with ID 1
+    filter_id = 1
+    request = {
+        "pattern": "#(?P<id>[0-9]+)",
+        "url_format_string": "https://github.com/zulip/zulip/issues/%(id)s",
+    }
+
+    result = client.call_endpoint(
+        url=f"/realm/filters/{filter_id}", method="PATCH", request=request
+    )
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/realm/filters/{filter_id}", "patch", "200")
+
+
 @openapi_test_function("/realm/filters/{filter_id}:delete")
 def remove_realm_filter(client: Client) -> None:
 
@@ -1464,6 +1483,7 @@ def test_server_organizations(client: Client) -> None:
 
     get_realm_linkifiers(client)
     add_realm_filter(client)
+    update_realm_filter(client)
     add_realm_playground(client)
     get_server_settings(client)
     remove_realm_filter(client)
