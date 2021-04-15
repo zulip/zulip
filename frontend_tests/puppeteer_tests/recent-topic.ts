@@ -106,6 +106,22 @@ async function test_initial_topics(page: Page): Promise<void> {
     ]);
 }
 
+// Marks a specific topic as read.
+async function mark_as_read(page: Page, topic: string): Promise<void> {
+    await page.evaluate((topic: string) => {
+        const mark_as_read_icon = $(`.on_hover_topic_read[data-topic-name='${topic}']`);
+        mark_as_read_icon.trigger("click");
+    }, topic);
+}
+
+// Mutes the topic for the corresponding topic name passed.
+async function mute_topic(page: Page, topic: string): Promise<void> {
+    await page.evaluate((topic: string) => {
+        const mute_icon = $(`.on_hover_topic_mute[data-topic-name='${topic}']`);
+        mute_icon.trigger("click");
+    }, topic);
+}
+
 // Should yield same result as `test_initial_topics`.
 async function test_all_filter_button(page: Page): Promise<void> {
     await page.waitForSelector(recent_topic_page);
@@ -343,6 +359,62 @@ async function test_filter_topic_input(page: Page): Promise<void> {
     await clear_input_field(page, input_field, stream_filter);
 }
 
+async function test_mark_as_read_button(page: Page, topic: string): Promise<void> {
+    await page.waitForSelector(recent_topic_page);
+
+    // Marking the topic passed as read.
+    await mark_as_read(page, topic);
+
+    const stream_names = await get_stream_names(page);
+    assert.deepStrictEqual(stream_names, [
+        "Verona",
+        "Denmark",
+        "Venice",
+        "Denmark",
+        "Venice",
+        "Verona",
+        "Verona",
+    ]);
+
+    const topic_names = await get_topic_names(page);
+    assert.deepStrictEqual(topic_names, [
+        "last nas is loading",
+        "last database linking",
+        "URLS",
+        "last server wasn't loading slowly",
+        "database isn't skipping erratically",
+        "plotter",
+        "green printer is running quickly",
+    ]);
+}
+
+async function test_muted_topic_button(page: Page, topic: string): Promise<void> {
+    await page.waitForSelector(recent_topic_page);
+
+    // Muting the topic passed.
+    await mute_topic(page, topic);
+
+    const stream_names = await get_stream_names(page);
+    assert.deepStrictEqual(stream_names, [
+        "Verona",
+        "Denmark",
+        "Denmark",
+        "Venice",
+        "Verona",
+        "Verona",
+    ]);
+
+    const topic_names = await get_topic_names(page);
+    assert.deepStrictEqual(topic_names, [
+        "last nas is loading",
+        "last database linking",
+        "last server wasn't loading slowly",
+        "database isn't skipping erratically",
+        "plotter",
+        "green printer is running quickly",
+    ]);
+}
+
 async function test_recent_topic(page: Page): Promise<void> {
     await common.log_in(page);
     await page.click(".top_left_recent_topics");
@@ -366,6 +438,9 @@ async function test_recent_topic(page: Page): Promise<void> {
     await test_recent_topic_hotkey(page); // Navigate back to recent topic page.
 
     await test_filter_topic_input(page); // Inputs `nas` in filter input text field.
+
+    await test_mark_as_read_button(page, "plotter"); // Marks the plotter topic as read.
+    await test_muted_topic_button(page, "URLS"); // Mutes the URLS topic.
 }
 
 common.run_test(test_recent_topic);
