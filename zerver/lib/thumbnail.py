@@ -6,7 +6,7 @@ import urllib
 from urllib.parse import urljoin
 
 from django.conf import settings
-from django.utils.http import is_safe_url
+from django.utils.http import url_has_allowed_host_and_scheme
 from libthumbor import CryptoURL
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -21,7 +21,9 @@ def is_thumbor_enabled() -> bool:
 
 
 def user_uploads_or_external(url: str) -> bool:
-    return not is_safe_url(url, allowed_hosts=None) or url.startswith("/user_uploads/")
+    return not url_has_allowed_host_and_scheme(url, allowed_hosts=None) or url.startswith(
+        "/user_uploads/"
+    )
 
 
 def get_source_type(url: str) -> str:
@@ -38,11 +40,13 @@ def generate_thumbnail_url(path: str, size: str = "0x0", is_camo_url: bool = Fal
     path = urljoin("/", path)
 
     if not is_thumbor_enabled():
-        if is_safe_url(path, allowed_hosts=None):
+        if url_has_allowed_host_and_scheme(path, allowed_hosts=None):
             return path
         return get_camo_url(path)
 
-    if is_safe_url(path, allowed_hosts=None) and not path.startswith("/user_uploads/"):
+    if url_has_allowed_host_and_scheme(path, allowed_hosts=None) and not path.startswith(
+        "/user_uploads/"
+    ):
         return path
 
     source_type = get_source_type(path)

@@ -16,7 +16,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, HttpRes
 from django.shortcuts import redirect, render
 from django.template.response import SimpleTemplateResponse
 from django.urls import reverse
-from django.utils.http import is_safe_url
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_safe
@@ -79,7 +79,7 @@ ExtraContext = Optional[Dict[str, Any]]
 
 
 def get_safe_redirect_to(url: str, redirect_host: str) -> str:
-    is_url_safe = is_safe_url(url=url, allowed_hosts=None)
+    is_url_safe = url_has_allowed_host_and_scheme(url=url, allowed_hosts=None)
     if is_url_safe:
         # Mark as safe to prevent Pysa from surfacing false positives for
         # open redirects. In this branch, we have already checked that the URL
