@@ -356,7 +356,7 @@ function edit_message(row, raw_content) {
             stream_name: message.stream,
             notify_new_thread: notify_new_thread_default,
             notify_old_thread: notify_old_thread_default,
-            giphy_api_available: giphy.is_giphy_enabled(),
+            giphy_enabled: giphy.is_giphy_enabled(),
             hide_drafts_link: true,
         }),
     );

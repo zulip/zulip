@@ -1,4 +1,3 @@
-{{! This file assumes message_id is only preset in message_edit_form and message_id cannot be 0.}}
 <input type="file" class="file_input notvisible pull-left" multiple />
 {{#if file_upload_enabled }}
 <a role="button" class="compose_control_button compose_upload_file fa fa-paperclip notdisplayed" aria-label="{{t 'Upload files' }}" tabindex=0 title="{{t 'Upload files' }}"></a>
@@ -7,7 +6,7 @@
 <a role="button" class="undo_markdown_preview compose_control_button fa fa-edit" aria-label="{{t 'Write' }}" tabindex=0 style="display:none;" title="{{t 'Write' }}"></a>
 <a role="button" class="compose_control_button fa fa-video-camera video_link" aria-label="{{t 'Add video call' }}" tabindex=0 title="{{t 'Add video call' }}"></a>
 <a role="button" class="compose_control_button fa fa-smile-o emoji_map" aria-label="{{t 'Add emoji' }}" tabindex=0 title="{{t 'Add emoji' }}"></a>
-<a role="button" class="compose_control_button compose_giphy_link {{#unless giphy_api_available }} hide {{/unless}}" aria-label="{{t 'Add GIF' }}" title="{{t 'Add GIF' }}">
+<a role="button" class="compose_control_button compose_giphy_link {{#unless giphy_enabled }} hide {{/unless}}" aria-label="{{t 'Add GIF' }}" title="{{t 'Add GIF' }}">
     <img class="compose_giphy_logo" tabindex=0 src="/static/assets/icons/gif.svg" />
 </a>
 {{#unless hide_drafts_link}}
