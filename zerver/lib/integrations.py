@@ -373,6 +373,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
     WebhookIntegration("errbit", ["monitoring"], display_name="Errbit"),
     WebhookIntegration("flock", ["customer-support"], display_name="Flock"),
     WebhookIntegration("freshdesk", ["customer-support"]),
+    WebhookIntegration("freshping", ["monitoring"], display_name="Freshping"),
     WebhookIntegration("front", ["customer-support"], display_name="Front"),
     WebhookIntegration("gitea", ["version-control"], stream_name="commits"),
     WebhookIntegration(
@@ -712,6 +713,7 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
     "freshdesk": [
         ScreenshotConfig("ticket_created.json", image_name="004.png", use_basic_auth=True)
     ],
+    "freshping": [ScreenshotConfig("freshping_check_unreachable.json")],
     "front": [ScreenshotConfig("inbound_message.json")],
     "gci": [ScreenshotConfig("task_abandoned_by_student.json")],
     "gitea": [ScreenshotConfig("pull_request__merged.json")],
