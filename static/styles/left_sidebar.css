@@ -161,6 +161,11 @@ li.show-more-topics {
 
 #private-container {
     max-height: 200px;
+
+    /* Match the opacity for global-filters icons. */
+    span.fa-group {
+        opacity: 0.7;
+    }
 }
 
 :not(.active-sub-filter) {
