@@ -13,6 +13,9 @@ const events = require("./lib/events");
 mock_cjs("jquery", $);
 const channel = mock_esm("../../static/js/channel");
 const upload = mock_esm("../../static/js/upload");
+mock_esm("../../static/js/giphy", {
+    is_giphy_enabled: () => true,
+});
 mock_esm("../../static/js/resize", {
     watch_manual_resize() {},
 });
@@ -27,7 +30,6 @@ set_global("document", {
 const server_events_dispatch = zrequire("server_events_dispatch");
 const compose_ui = zrequire("compose_ui");
 const compose = zrequire("compose");
-
 function stub_out_video_calls() {
     const elem = $("#below-compose-content .video_link");
     elem.toggle = (show) => {

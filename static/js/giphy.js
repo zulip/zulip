@@ -31,10 +31,10 @@ export function focus_current_edit_message() {
 }
 
 export function is_giphy_enabled() {
-    if (page_params.giphy_api_key === "") {
-        return false;
-    }
-    return page_params.realm_giphy_rating !== page_params.giphy_rating_options.disabled.id;
+    return (
+        page_params.giphy_api_key !== "" &&
+        page_params.realm_giphy_rating !== page_params.giphy_rating_options.disabled.id
+    );
 }
 
 // Approximate width and height of

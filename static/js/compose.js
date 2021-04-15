@@ -18,6 +18,7 @@ import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as drafts from "./drafts";
 import * as echo from "./echo";
+import * as giphy from "./giphy";
 import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as markdown from "./markdown";
@@ -1106,7 +1107,7 @@ export function initialize() {
         render_compose({
             embedded: $compose.attr("data-embedded") === "",
             file_upload_enabled: page_params.max_file_upload_size_mib > 0,
-            giphy_enabled: page_params.giphy_api_key !== "",
+            giphy_enabled: giphy.is_giphy_enabled(),
         }),
     );
 

@@ -425,7 +425,11 @@ a.compose_control_button {
     }
 }
 
-a.message-control-button.hide {
+/* This is used to override the
+ * properties of `a.compose_control_button`
+ * without using `!important`.
+ */
+a.compose_control_button.hide {
     display: none;
 }
 
