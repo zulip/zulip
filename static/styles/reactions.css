@@ -80,7 +80,7 @@
             color: hsl(200, 100%, 40%);
         }
 
-        &:only-child {
+        &:first-child {
             display: none;
         }
 
