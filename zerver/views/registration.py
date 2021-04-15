@@ -492,7 +492,7 @@ def get_email_address_visibility(realm: Optional[Realm]) -> str:
     elif realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_NOBODY:
         return vis_none
     else:
-        return vis_all
+        return vis_all # nocoverage
 
 
 def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
