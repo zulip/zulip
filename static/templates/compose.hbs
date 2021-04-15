@@ -5,20 +5,32 @@
             <span id="compose-reply-error-msg"></span>
         </div>
         <div id="compose_buttons">
+            <span class="new_message_button reply_button_container">
+                <button type="button" class="button small rounded compose_reply_button"
+                  id="left_bar_compose_reply_button_big"
+                  title="{{t 'Reply' }} (r)">
+                    <span class="compose_reply_button_label">
+                        {{#tr}}
+                            Message <z-recipient></z-recipient>
+                            {{#*inline "z-recipient"}}<span class="compose_reply_button_recipient_label"></span>{{/inline}}
+                        {{/tr}}
+                    </span>
+                </button>
+            </span>
             <span class="new_message_button">
                 <a class="drafts-link no-underline button small rounded compose_drafts_button" href="#drafts" title="{{t 'Drafts' }} (d)">
                     {{t 'Drafts' }}
                 </a>
                 <span class="alert-draft pull-left">{{t 'Saved as draft' }}</span>
             </span>
-            <span class="new_message_button">
+            <span class="new_message_button mobile_button_container">
                 <button type="button" class="button small rounded compose_mobile_button"
                   id="left_bar_compose_mobile_button_big"
                   title="{{t 'New message' }} (c)">
                     <span>+</span>
                 </button>
             </span>
-            <span class="new_message_button">
+            <span class="new_message_button stream_button_container">
                 <button type="button" class="button small rounded compose_stream_button"
                   id="left_bar_compose_stream_button_big"
                   title="{{t 'New topic' }} (c)">
@@ -26,7 +38,7 @@
                 </button>
             </span>
             {{#unless embedded }}
-            <span class="new_message_button">
+            <span class="new_message_button private_button_container">
                 <button type="button" class="button small rounded compose_private_button"
                   id="left_bar_compose_private_button_big"
                   title="{{t 'New private message' }} (x)">
@@ -34,13 +46,6 @@
                 </button>
             </span>
             {{/unless}}
-            <span class="new_message_button">
-                <button type="button" class="button small rounded compose_reply_button"
-                  id="left_bar_compose_reply_button_big"
-                  title="{{t 'Reply' }} (r)">
-                    <span class="compose_reply_button_label">{{t 'Reply' }}</span>
-                </button>
-            </span>
         </div>
     </div>
     <div class="message_comp compose-content">
