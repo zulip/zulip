@@ -547,7 +547,7 @@ html_rules: List["Rule"] = [
         },
         "exclude": {"templates/analytics/support.html"},
         "good_lines": [
-            '<input class="stream-list-filter" type="text" placeholder="{{ _(\'Search streams\') }}" />'
+            '<input class="stream-list-filter" type="text" placeholder="{{ _(\'Filter streams\') }}" />'
         ],
         "bad_lines": ['<input placeholder="foo">'],
     },
@@ -567,7 +567,7 @@ html_rules: List["Rule"] = [
         "pattern": "placeholder='[^{]",
         "description": "`placeholder` value should be translatable.",
         "good_lines": [
-            '<input class="stream-list-filter" type="text" placeholder="{{ _(\'Search streams\') }}" />'
+            '<input class="stream-list-filter" type="text" placeholder="{{ _(\'Filter streams\') }}" />'
         ],
         "bad_lines": ["<input placeholder='foo'>"],
     },
