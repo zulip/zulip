@@ -3,7 +3,7 @@ from typing import Optional
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.lib.actions import do_mute_topic, do_mute_user, do_unmute_topic, do_unmute_user
 from zerver.lib.request import REQ, has_request_variables

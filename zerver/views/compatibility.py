@@ -2,7 +2,7 @@ import re
 from typing import List, Optional, Tuple
 
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from version import DESKTOP_MINIMUM_VERSION, DESKTOP_WARNING_VERSION
 from zerver.lib.response import json_error, json_success

@@ -3,7 +3,7 @@ from typing import Optional
 
 from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
 from django.shortcuts import redirect
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.thumbnail import generate_thumbnail_url

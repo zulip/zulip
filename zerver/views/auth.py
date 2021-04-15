@@ -17,7 +17,7 @@ from django.shortcuts import redirect, render
 from django.template.response import SimpleTemplateResponse
 from django.urls import reverse
 from django.utils.http import is_safe_url
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_safe
 from social_django.utils import load_backend, load_strategy

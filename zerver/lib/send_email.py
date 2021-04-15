@@ -17,8 +17,8 @@ from django.db import transaction
 from django.template import loader
 from django.template.exceptions import TemplateDoesNotExist
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
-from django.utils.translation import ugettext as _
 
 from confirmation.models import generate_key
 from scripts.setup.inline_email_css import inline_template

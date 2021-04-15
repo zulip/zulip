@@ -2,7 +2,7 @@ from typing import Any, List, Mapping, Optional
 
 import orjson
 from django.http import HttpResponse, HttpResponseNotAllowed
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
 

@@ -2,7 +2,7 @@ from typing import Iterable, List, Optional, Tuple, Union
 
 from django.db.models.query import QuerySet
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from typing_extensions import TypedDict
 
 from zerver.lib.exceptions import StreamAdministratorRequired

@@ -34,7 +34,7 @@ from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, Un
 import orjson
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator, validate_email
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.lib.request import JsonableError, ResultT
 from zerver.lib.types import ProfileFieldData, Validator

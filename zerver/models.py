@@ -32,8 +32,8 @@ from django.db.models.query import QuerySet
 from django.db.models.signals import post_delete, post_save
 from django.utils.functional import Promise
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import ugettext as _
-from django.utils.translation import ugettext_lazy
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 
 from confirmation import settings as confirmation_settings
 from zerver.lib import cache
@@ -363,7 +363,7 @@ class Realm(models.Model):
 
     DEFAULT_NOTIFICATION_STREAM_NAME = "general"
     INITIAL_PRIVATE_STREAM_NAME = "core team"
-    STREAM_EVENTS_NOTIFICATION_TOPIC = ugettext_lazy("stream events")
+    STREAM_EVENTS_NOTIFICATION_TOPIC = gettext_lazy("stream events")
     notifications_stream: Optional["Stream"] = models.ForeignKey(
         "Stream",
         related_name="+",
@@ -397,7 +397,7 @@ class Realm(models.Model):
     COMMUNITY = 2
     org_type: int = models.PositiveSmallIntegerField(default=CORPORATE)
 
-    UPGRADE_TEXT_STANDARD = ugettext_lazy("Available on Zulip Standard. Upgrade to access.")
+    UPGRADE_TEXT_STANDARD = gettext_lazy("Available on Zulip Standard. Upgrade to access.")
     # plan_type controls various features around resource/feature
     # limitations for a Zulip organization on multi-tenant installations
     # like Zulip Cloud.
@@ -815,7 +815,7 @@ class RealmEmoji(models.Model):
             # ending with one of the punctuation characters.
             RegexValidator(
                 regex=r"^[0-9a-z.\-_]+(?<![.\-_])$",
-                message=ugettext_lazy("Invalid characters in emoji name"),
+                message=gettext_lazy("Invalid characters in emoji name"),
             ),
         ]
     )
@@ -1387,10 +1387,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     )
 
     ROLE_ID_TO_NAME_MAP = {
-        ROLE_REALM_OWNER: ugettext_lazy("Organization owner"),
-        ROLE_REALM_ADMINISTRATOR: ugettext_lazy("Organization administrator"),
-        ROLE_MEMBER: ugettext_lazy("Member"),
-        ROLE_GUEST: ugettext_lazy("Guest"),
+        ROLE_REALM_OWNER: gettext_lazy("Organization owner"),
+        ROLE_REALM_ADMINISTRATOR: gettext_lazy("Organization administrator"),
+        ROLE_MEMBER: gettext_lazy("Member"),
+        ROLE_GUEST: gettext_lazy("Guest"),
     }
 
     def get_role_name(self) -> str:
@@ -2338,9 +2338,9 @@ class AbstractReaction(models.Model):
     REALM_EMOJI = "realm_emoji"
     ZULIP_EXTRA_EMOJI = "zulip_extra_emoji"
     REACTION_TYPES = (
-        (UNICODE_EMOJI, ugettext_lazy("Unicode emoji")),
-        (REALM_EMOJI, ugettext_lazy("Custom emoji")),
-        (ZULIP_EXTRA_EMOJI, ugettext_lazy("Zulip extra emoji")),
+        (UNICODE_EMOJI, gettext_lazy("Unicode emoji")),
+        (REALM_EMOJI, gettext_lazy("Custom emoji")),
+        (ZULIP_EXTRA_EMOJI, gettext_lazy("Zulip extra emoji")),
     )
     reaction_type: str = models.CharField(
         default=UNICODE_EMOJI, choices=REACTION_TYPES, max_length=30
@@ -3457,10 +3457,10 @@ class CustomProfileField(models.Model):
     # and value argument. i.e. SELECT require field_data, USER require
     # realm as argument.
     SELECT_FIELD_TYPE_DATA: List[ExtendedFieldElement] = [
-        (SELECT, ugettext_lazy("List of options"), validate_select_field, str, "SELECT"),
+        (SELECT, gettext_lazy("List of options"), validate_select_field, str, "SELECT"),
     ]
     USER_FIELD_TYPE_DATA: List[UserFieldElement] = [
-        (USER, ugettext_lazy("Person picker"), check_valid_user_ids, ast.literal_eval, "USER"),
+        (USER, gettext_lazy("Person picker"), check_valid_user_ids, ast.literal_eval, "USER"),
     ]
 
     SELECT_FIELD_VALIDATORS: Dict[int, ExtendedValidator] = {
@@ -3472,13 +3472,13 @@ class CustomProfileField(models.Model):
 
     FIELD_TYPE_DATA: List[FieldElement] = [
         # Type, Display Name, Validator, Converter, Keyword
-        (SHORT_TEXT, ugettext_lazy("Short text"), check_short_string, str, "SHORT_TEXT"),
-        (LONG_TEXT, ugettext_lazy("Long text"), check_long_string, str, "LONG_TEXT"),
-        (DATE, ugettext_lazy("Date picker"), check_date, str, "DATE"),
-        (URL, ugettext_lazy("Link"), check_url, str, "URL"),
+        (SHORT_TEXT, gettext_lazy("Short text"), check_short_string, str, "SHORT_TEXT"),
+        (LONG_TEXT, gettext_lazy("Long text"), check_long_string, str, "LONG_TEXT"),
+        (DATE, gettext_lazy("Date picker"), check_date, str, "DATE"),
+        (URL, gettext_lazy("Link"), check_url, str, "URL"),
         (
             EXTERNAL_ACCOUNT,
-            ugettext_lazy("External account"),
+            gettext_lazy("External account"),
             check_short_string,
             str,
             "EXTERNAL_ACCOUNT",

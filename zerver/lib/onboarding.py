@@ -2,7 +2,7 @@ from typing import Dict, List
 
 from django.conf import settings
 from django.db.models import Count
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.lib.actions import (
     create_users,

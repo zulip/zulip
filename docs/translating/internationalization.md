@@ -166,7 +166,7 @@ A string in Python can be marked for translation using the `_()` function,
 which can be imported as follows:
 
 ```
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 ```
 
 Zulip expects all the error messages to be translatable as well.  To
@@ -180,13 +180,13 @@ JsonableError(_('English Text'))
 ```
 
 If you're declaring a user-facing string at top level or in a class, you need to
-use `ugettext_lazy` instead, to ensure that the translation happens at
+use `gettext_lazy` instead, to ensure that the translation happens at
 request-processing time when Django knows what language to use, e.g.:
 
 ```python
 from zproject.backends import check_password_strength, email_belongs_to_ldap
 
-AVATAR_CHANGES_DISABLED_ERROR = ugettext_lazy("Avatar changes are disabled in this organization.")
+AVATAR_CHANGES_DISABLED_ERROR = gettext_lazy("Avatar changes are disabled in this organization.")
 
 def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpResponse:
   ...
@@ -200,7 +200,7 @@ class Realm(models.Model):
     ...
     ...
 
-    STREAM_EVENTS_NOTIFICATION_TOPIC = ugettext_lazy('stream events')
+    STREAM_EVENTS_NOTIFICATION_TOPIC = gettext_lazy('stream events')
 ```
 
 To ensure we always internationalize our JSON errors messages, the

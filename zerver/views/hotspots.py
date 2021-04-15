@@ -1,5 +1,5 @@
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.decorator import human_users_only
 from zerver.lib.actions import do_mark_hotspot_as_read

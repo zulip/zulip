@@ -8,8 +8,8 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.utils.html import escape
 from django.utils.safestring import SafeString
-from django.utils.translation import ugettext as _
-from django.utils.translation import ugettext_lazy
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 
 from confirmation.models import (
     Confirmation,
@@ -46,7 +46,7 @@ from zerver.lib.validator import check_bool, check_int, check_int_in, check_stri
 from zerver.models import UserProfile, avatar_changes_disabled, name_changes_disabled
 from zproject.backends import check_password_strength, email_belongs_to_ldap
 
-AVATAR_CHANGES_DISABLED_ERROR = ugettext_lazy("Avatar changes are disabled in this organization.")
+AVATAR_CHANGES_DISABLED_ERROR = gettext_lazy("Avatar changes are disabled in this organization.")
 
 
 def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpResponse:

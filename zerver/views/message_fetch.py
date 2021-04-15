@@ -8,7 +8,7 @@ from django.core.exceptions import ValidationError
 from django.db import connection
 from django.http import HttpRequest, HttpResponse
 from django.utils.html import escape as escape_html
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from sqlalchemy import func
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.engine import Connection, RowProxy

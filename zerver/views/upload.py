@@ -4,7 +4,7 @@ from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, HttpResponseNotFound
 from django.shortcuts import redirect
 from django.utils.cache import patch_cache_control
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from django_sendfile import sendfile
 
 from zerver.lib.response import json_error, json_success

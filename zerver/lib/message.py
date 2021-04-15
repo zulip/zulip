@@ -9,7 +9,7 @@ import orjson
 from django.db import connection
 from django.db.models import Max, Sum
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from psycopg2.sql import SQL
 from typing_extensions import TypedDict
 
