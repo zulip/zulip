@@ -444,6 +444,9 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
 
         return login_and_go_to_home(request, auth_result)
 
+    # email address visibility
+    email_address_visibility = get_email_address_visibility(realm)
+
     return render(
         request,
         "zerver/register.html",
@@ -467,8 +470,26 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             "MAX_NAME_LENGTH": str(UserProfile.MAX_NAME_LENGTH),
             "MAX_PASSWORD_LENGTH": str(form.MAX_PASSWORD_LENGTH),
             "MAX_REALM_SUBDOMAIN_LENGTH": str(Realm.MAX_REALM_SUBDOMAIN_LENGTH),
+            "EMAIL_ADDRESS_VISIBILITY": email_address_visibility,
         },
     )
+
+def get_email_address_visibility(realm: Optional[Realm]) -> str:
+    # help text sentences regarding email address visibility
+    vis_all = "All users will be able to see this email address."
+    vis_admins = "Only organization administrators will be able to see this email address."
+    vis_none = "Users will not be able to see this email address."
+
+    if realm is None:
+        return vis_all
+    if realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+        return vis_all
+    elif realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS:
+        return vis_admins
+    elif realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_NOBODY:
+        return vis_none
+    else:
+        return vis_all # nocoverage 
 
 
 def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
