@@ -48,7 +48,7 @@ below, and add more to your repertoire as needed.
 
 * **Search messages**: `/` or `Ctrl+k`
 
-* **Search streams**: `q`
+* **Filter streams**: `q`
 
 * **Search people**: `w`
 

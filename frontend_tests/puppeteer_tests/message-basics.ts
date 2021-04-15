@@ -319,7 +319,7 @@ async function test_search_venice(page: Page): Promise<void> {
 }
 
 async function test_stream_search_filters_stream_list(page: Page): Promise<void> {
-    console.log("Search streams using left side bar");
+    console.log("Filter streams using left side bar");
 
     await page.waitForSelector(".input-append.notdisplayed"); // Stream filter box invisible initially
     await page.click("#streams_header .sidebar-title");
