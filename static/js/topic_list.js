@@ -10,6 +10,7 @@ import * as narrow from "./narrow";
 import * as stream_data from "./stream_data";
 import * as stream_popover from "./stream_popover";
 import * as stream_topic_history from "./stream_topic_history";
+import * as stream_topic_history_util from "./stream_topic_history_util";
 import * as topic_list_data from "./topic_list_data";
 import * as ui from "./ui";
 import * as vdom from "./vdom";
@@ -251,7 +252,7 @@ export function zoom_in() {
     const spinner = true;
     active_widget.build(spinner);
 
-    stream_topic_history.get_server_history(stream_id, on_success);
+    stream_topic_history_util.get_server_history(stream_id, on_success);
 }
 
 export function initialize() {
