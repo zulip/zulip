@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Any, Dict, List, NoReturn, Optional, Type, TypeVar
 
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 T = TypeVar("T", bound="AbstractEnum")
 

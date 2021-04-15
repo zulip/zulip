@@ -6,7 +6,7 @@ import orjson
 import requests
 from django.conf import settings
 from django.forms.models import model_to_dict
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from analytics.models import InstallationCount, RealmCount
 from version import ZULIP_VERSION

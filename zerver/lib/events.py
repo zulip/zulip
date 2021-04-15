@@ -4,7 +4,7 @@ import copy
 from typing import Any, Callable, Dict, Iterable, Optional, Sequence, Set
 
 from django.conf import settings
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from version import API_FEATURE_LEVEL, ZULIP_VERSION
 from zerver.lib.actions import (

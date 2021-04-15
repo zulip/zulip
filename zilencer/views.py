@@ -7,8 +7,8 @@ from django.core.validators import URLValidator, validate_email
 from django.db import IntegrityError, transaction
 from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
-from django.utils.translation import ugettext as _
-from django.utils.translation import ugettext as err_
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext as err_
 from django.views.decorators.csrf import csrf_exempt
 
 from analytics.lib.counts import COUNT_STATS

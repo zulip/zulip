@@ -4,39 +4,39 @@ from typing import Dict, List
 
 from django.conf import settings
 from django.utils.functional import Promise
-from django.utils.translation import ugettext_lazy
+from django.utils.translation import gettext_lazy
 
 from zerver.models import UserHotspot, UserProfile
 
 INTRO_HOTSPOTS: Dict[str, Dict[str, Promise]] = {
     "intro_reply": {
-        "title": ugettext_lazy("Reply to a message"),
-        "description": ugettext_lazy("Click anywhere on a message to reply."),
+        "title": gettext_lazy("Reply to a message"),
+        "description": gettext_lazy("Click anywhere on a message to reply."),
     },
     "intro_streams": {
-        "title": ugettext_lazy("Catch up on a stream"),
-        "description": ugettext_lazy(
+        "title": gettext_lazy("Catch up on a stream"),
+        "description": gettext_lazy(
             "Messages sent to a stream are seen by everyone subscribed "
             "to that stream. Try clicking on one of the stream links below."
         ),
     },
     "intro_topics": {
-        "title": ugettext_lazy("Topics"),
-        "description": ugettext_lazy(
+        "title": gettext_lazy("Topics"),
+        "description": gettext_lazy(
             "Every message has a topic. Topics keep conversations "
             "easy to follow, and make it easy to reply to conversations that start "
             "while you are offline."
         ),
     },
     "intro_gear": {
-        "title": ugettext_lazy("Settings"),
-        "description": ugettext_lazy(
+        "title": gettext_lazy("Settings"),
+        "description": gettext_lazy(
             "Go to Settings to configure your notifications and display settings."
         ),
     },
     "intro_compose": {
-        "title": ugettext_lazy("Compose"),
-        "description": ugettext_lazy(
+        "title": gettext_lazy("Compose"),
+        "description": gettext_lazy(
             "Click here to start a new conversation. Pick a topic "
             "(2-3 words is best), and give it a go!"
         ),

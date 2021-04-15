@@ -1,6 +1,6 @@
 from typing import Any, Dict, List
 
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.lib.request import JsonableError
 from zerver.lib.upload import delete_message_image

@@ -4,7 +4,7 @@ import orjson
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from analytics.models import RealmCount
 from zerver.decorator import require_realm_admin

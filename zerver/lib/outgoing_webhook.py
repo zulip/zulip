@@ -4,7 +4,7 @@ import logging
 from typing import Any, AnyStr, Dict, Optional
 
 import requests
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from requests import Response, Session
 
 from version import ZULIP_VERSION

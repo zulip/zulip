@@ -13,8 +13,8 @@ from bs4 import BeautifulSoup
 from django.conf import settings
 from django.contrib.auth import get_backends
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
-from django.utils.translation import ugettext as _
 from lxml.cssselect import CSSSelector
 
 from confirmation.models import one_click_unsubscribe_link

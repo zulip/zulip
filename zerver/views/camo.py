@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseForbidden, HttpResponseNotFound
 from django.shortcuts import redirect
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.lib.camo import is_camo_url_valid
 from zerver.lib.thumbnail import generate_thumbnail_url

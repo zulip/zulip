@@ -13,9 +13,9 @@ from django.conf import settings
 from django.core.signing import Signer
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 from django.utils.translation import override as override_language
-from django.utils.translation import ugettext as _
-from django.utils.translation import ugettext_lazy
 
 from corporate.models import (
     Customer,
@@ -172,8 +172,8 @@ def get_idempotency_key(ledger_entry: LicenseLedger) -> Optional[str]:
 
 class BillingError(Exception):
     # error messages
-    CONTACT_SUPPORT = ugettext_lazy("Something went wrong. Please contact {email}.")
-    TRY_RELOADING = ugettext_lazy("Something went wrong. Please reload the page.")
+    CONTACT_SUPPORT = gettext_lazy("Something went wrong. Please contact {email}.")
+    TRY_RELOADING = gettext_lazy("Something went wrong. Please reload the page.")
 
     # description is used only for tests
     def __init__(self, description: str, message: Optional[str] = None) -> None:

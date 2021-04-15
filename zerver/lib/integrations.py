@@ -7,7 +7,7 @@ from django.contrib.staticfiles.storage import staticfiles_storage
 from django.urls.resolvers import RegexPattern
 from django.utils.functional import Promise
 from django.utils.module_loading import import_string
-from django.utils.translation import ugettext as ugettext_lazy
+from django.utils.translation import gettext as gettext_lazy
 
 from zerver.lib.storage import static_path
 from zerver.lib.types import Validator
@@ -32,20 +32,20 @@ features for writing and configuring integrations efficiently.
 """
 
 CATEGORIES: Dict[str, Promise] = {
-    "meta-integration": ugettext_lazy("Integration frameworks"),
-    "continuous-integration": ugettext_lazy("Continuous integration"),
-    "customer-support": ugettext_lazy("Customer support"),
-    "deployment": ugettext_lazy("Deployment"),
-    "communication": ugettext_lazy("Communication"),
-    "financial": ugettext_lazy("Financial"),
-    "hr": ugettext_lazy("HR"),
-    "marketing": ugettext_lazy("Marketing"),
-    "misc": ugettext_lazy("Miscellaneous"),
-    "monitoring": ugettext_lazy("Monitoring tools"),
-    "project-management": ugettext_lazy("Project management"),
-    "productivity": ugettext_lazy("Productivity"),
-    "version-control": ugettext_lazy("Version control"),
-    "bots": ugettext_lazy("Interactive bots"),
+    "meta-integration": gettext_lazy("Integration frameworks"),
+    "continuous-integration": gettext_lazy("Continuous integration"),
+    "customer-support": gettext_lazy("Customer support"),
+    "deployment": gettext_lazy("Deployment"),
+    "communication": gettext_lazy("Communication"),
+    "financial": gettext_lazy("Financial"),
+    "hr": gettext_lazy("HR"),
+    "marketing": gettext_lazy("Marketing"),
+    "misc": gettext_lazy("Miscellaneous"),
+    "monitoring": gettext_lazy("Monitoring tools"),
+    "project-management": gettext_lazy("Project management"),
+    "productivity": gettext_lazy("Productivity"),
+    "version-control": gettext_lazy("Version control"),
+    "bots": gettext_lazy("Interactive bots"),
 }
 
 

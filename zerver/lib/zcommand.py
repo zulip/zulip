@@ -1,6 +1,6 @@
 from typing import Any, Dict
 
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.lib.actions import do_set_user_display_setting
 from zerver.lib.exceptions import JsonableError

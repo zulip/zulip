@@ -19,7 +19,7 @@ from typing import (
 import orjson
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from typing_extensions import Literal
 
 from zerver.lib.exceptions import ErrorCode, InvalidJSONError, JsonableError
