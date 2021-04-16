@@ -7,8 +7,8 @@
 #
 # For details, see requirements/README.md .
 #
-aiobotocore==1.2.2 \
-    --hash=sha256:37c23166603a3bd134e5f6fc22dbbf8c274d4d24c71418fba292ed2cd7a0bf43
+aiobotocore==1.3.0 \
+    --hash=sha256:81890d270b1f948ffd218e8bab11e235bea272840ea8b1b9e0aef1954c6cec9e
     # via tc-aws
 aiohttp==3.7.4.post0 \
     --hash=sha256:02f46fc0e3c5ac58b80d4d56eb0a7c7d97fcef69ace9326289fb9f1955e65cfe \
@@ -53,9 +53,9 @@ aioitertools==0.7.1 \
     --hash=sha256:54a56c7cf3b5290d1cb5e8974353c9f52c677612b5d69a859369a020c53414a3 \
     --hash=sha256:8972308474c41ed5e0636819f948ebff32f2318e70f7e7d23cd208c4357cc773
     # via aiobotocore
-asgiref==3.3.1 \
-    --hash=sha256:5ee950735509d04eb673bd7f7120f8fa1c9e2df495394992c73234d526907e17 \
-    --hash=sha256:7162a3cb30ab0609f1a4c95938fd73e8604f63bdba516a7f7d64b83ff09478f0
+asgiref==3.3.4 \
+    --hash=sha256:92906c611ce6c967347bbfea733f13d6313901d54dcca88195eaeb52b2a8e8ee \
+    --hash=sha256:d1216dfbdfb63826470995d31caed36225dcaf34f182e0fa257a4dd9e86f1b78
     # via django
 async-timeout==3.0.1 \
     --hash=sha256:0c3c816a028d47f659d6ff5c745cb2acf1f966da1fe5c19c77a70282b25f4c5f \
@@ -65,9 +65,9 @@ attrs==20.3.0 \
     --hash=sha256:31b2eced602aa8423c2aea9c76a724617ed67cf9513173fd3a4f03e3a929c7e6 \
     --hash=sha256:832aa3cde19744e49938b91fea06d69ecb9e649c93ba974535d08ad92164f700
     # via aiohttp
-botocore==1.19.52 \
-    --hash=sha256:d8f50e4162012ccfab64c2db4fcc99313d46d57789072251bab56013d66546e2 \
-    --hash=sha256:dc5ec23deadbe9327d3c81d03fddf80805c549059baabd80dea605941fe6a221
+botocore==1.20.49 \
+    --hash=sha256:6a672ba41dd00e5c1c1824ca8143d180d88de8736d78c0b1f96b8d3cb0466561 \
+    --hash=sha256:f7f103fa0651c69dd360c7d0ecd874854303de5cc0869e0cbc2818a52baacc69
     # via aiobotocore
 chardet==4.0.0 \
     --hash=sha256:0d6f53a15db4120f2b08c94f11e7d93d2c911ee118b6b30a04ec3ee8310179fa \
@@ -80,13 +80,13 @@ colorful==0.5.4 \
 derpconf==0.8.3 \
     --hash=sha256:1bb152d8a1cf5c2a6d629bf29acd4af0c00811339642fc0a56172b0a83b31a15
     # via thumbor
-django-auth-ldap==2.3.0 \
-    --hash=sha256:5894317122a086c9955ed366562869a81459cf6b663636b152857bb5d3a0a3b7 \
-    --hash=sha256:cbbb476eff2504b5ab4fdf1fa92d93d2d3408fd9c8bc0c426169d987d0733153
+django-auth-ldap==2.4.0 \
+    --hash=sha256:2d869955da8a0c9a4448671bd9826b9f87458f6a9fc20278e84de8a81200a2be \
+    --hash=sha256:60fcbfc3141c99c3c49d3ccd7311a3992a231c319d94b6d2c143968f63676676
     # via -r requirements/thumbor.in
-django==3.1.7 \
-    --hash=sha256:32ce792ee9b6a0cbbec340123e229ac9f765dff8c2a4ae9247a14b2ba3a365a7 \
-    --hash=sha256:baf099db36ad31f970775d0be5587cc58a6256a6771a44eb795b554d45f211b8
+django==3.1.8 \
+    --hash=sha256:c348b3ddc452bf4b62361f0752f71a339140c777ebea3cdaaaa8fdb7f417a862 \
+    --hash=sha256:f8393103e15ec2d2d313ccbb95a3f1da092f9f58d74ac1c61ca2ac0436ae1eac
     # via
     #   -r requirements/thumbor.in
     #   django-auth-ldap
@@ -342,6 +342,7 @@ typing-extensions==3.7.4.3 \
     # via
     #   aiohttp
     #   aioitertools
+    #   asgiref
     #   yarl
 urllib3==1.26.4 \
     --hash=sha256:2f4da4594db7e1e110a944bb1b551fdf4e6c136ad42e4234131391e21eb5b0df \
