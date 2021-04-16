@@ -479,7 +479,7 @@ class MessageDict:
         if last_edit_time is not None:
             obj["last_edit_timestamp"] = datetime_to_timestamp(last_edit_time)
             assert edit_history is not None
-            obj["edit_history"] = orjson.loads(edit_history)
+            obj["edit_history"] = edit_history
 
         if Message.need_to_render_content(
             rendered_content, rendered_content_version, markdown_version

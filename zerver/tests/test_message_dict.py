@@ -161,7 +161,7 @@ class MessageDictTest(ZulipTestCase):
                     date_sent=timezone_now(),
                     sending_client=sending_client,
                     last_edit_time=timezone_now(),
-                    edit_history="[]",
+                    edit_history=[],
                 )
                 message.set_topic_name("whatever")
                 message.save()
@@ -196,7 +196,7 @@ class MessageDictTest(ZulipTestCase):
             date_sent=timezone_now(),
             sending_client=sending_client,
             last_edit_time=timezone_now(),
-            edit_history="[]",
+            edit_history=[],
         )
         message.set_topic_name("whatever")
         message.save()
@@ -226,7 +226,7 @@ class MessageDictTest(ZulipTestCase):
             date_sent=timezone_now(),
             sending_client=sending_client,
             last_edit_time=timezone_now(),
-            edit_history="[]",
+            edit_history=[],
         )
         message.set_topic_name("whatever")
         message.save()
@@ -290,7 +290,7 @@ class MessageDictTest(ZulipTestCase):
             date_sent=timezone_now(),
             sending_client=sending_client,
             last_edit_time=timezone_now(),
-            edit_history="[]",
+            edit_history=[],
         )
         message.set_topic_name("whatever")
         message.save()
@@ -628,7 +628,7 @@ class SewMessageAndReactionTest(ZulipTestCase):
                     date_sent=timezone_now(),
                     sending_client=sending_client,
                     last_edit_time=timezone_now(),
-                    edit_history="[]",
+                    edit_history=[],
                 )
                 message.set_topic_name("whatever")
                 message.save()

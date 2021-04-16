@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
-import orjson
 from django.db import connection
 from django.db.models.query import Q, QuerySet
 from sqlalchemy import Text
@@ -130,12 +129,7 @@ def update_edit_history(
     message: Message, last_edit_time: datetime, edit_history_event: Dict[str, Any]
 ) -> None:
     message.last_edit_time = last_edit_time
-    if message.edit_history is not None:
-        edit_history = orjson.loads(message.edit_history)
-        edit_history.insert(0, edit_history_event)
-    else:
-        edit_history = [edit_history_event]
-    message.edit_history = orjson.dumps(edit_history).decode()
+    message.edit_history.insert(0, edit_history_event)
 
 
 def update_messages_for_topic_edit(
@@ -183,6 +177,7 @@ def update_messages_for_topic_edit(
 
     for message in messages_list:
         update_edit_history(message, last_edit_time, edit_history_event)
+        message.last_edit_time = last_edit_time
 
     Message.objects.bulk_update(messages_list, update_fields)
 
