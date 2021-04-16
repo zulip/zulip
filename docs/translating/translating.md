@@ -55,9 +55,9 @@ Some useful tips for your translating journey:
   doesn't exist one, write one as you go; they're easiest to write as
   you go along and will help any future translators a lot.
 
-- Don't translate variables or code (usually preceded by a `%`, or inside
-  HTML tags `<...>` or enclosed like `__variable__` or
-  `{{ variable }}`); just keep them verbatim.
+- Don't translate variables or code (usually preceded by a `%`, inside
+  HTML tags `<...>`, or enclosed in braces like `{variable}`); just
+  keep them verbatim.
 
 - When context is unclear, you may find [GitHub
   search](https://github.com/search?q=org%3Azulip+%22alert+word+already+exists%22&type=code)
