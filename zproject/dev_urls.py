@@ -49,13 +49,18 @@ urls = [
         {"document_root": os.path.join(settings.DEPLOY_ROOT, "docs/_build/html")},
     ),
     # The special no-password login endpoint for development
-    path("devlogin/", login_page, {"template_name": "zerver/dev_login.html"}, name="login_page"),
+    path(
+        "devlogin/",
+        login_page,
+        {"template_name": "zerver/development/dev_login.html"},
+        name="login_page",
+    ),
     # Page for testing email templates
     path("emails/", email_page),
     path("emails/generate/", generate_all_emails),
     path("emails/clear/", clear_emails),
     # Listing of useful URLs and various tools for development
-    path("devtools/", TemplateView.as_view(template_name="zerver/dev_tools.html")),
+    path("devtools/", TemplateView.as_view(template_name="zerver/development/dev_tools.html")),
     # Register New User and Realm
     path("devtools/register_user/", register_development_user, name="register_dev_user"),
     path("devtools/register_realm/", register_development_realm, name="register_dev_realm"),

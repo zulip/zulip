@@ -757,7 +757,7 @@ def login_page(
 
     extra_context = kwargs.pop("extra_context", {})
     extra_context["next"] = next
-    if dev_auth_enabled() and kwargs.get("template_name") == "zerver/dev_login.html":
+    if dev_auth_enabled() and kwargs.get("template_name") == "zerver/development/dev_login.html":
         if "new_realm" in request.POST:
             try:
                 realm = get_realm(request.POST["new_realm"])

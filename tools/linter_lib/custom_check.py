@@ -635,7 +635,10 @@ html_rules: List["Rule"] = [
         "description": "Don't use inline event handlers (onclick=, etc. attributes) in HTML. Instead,"
         "attach a jQuery event handler ($('#foo').on('click', function () {...})) when "
         "the DOM is ready (inside a $(function () {...}) block).",
-        "exclude": {"templates/zerver/dev_login.html", "templates/corporate/upgrade.html"},
+        "exclude": {
+            "templates/zerver/development/dev_login.html",
+            "templates/corporate/upgrade.html",
+        },
         "good_lines": ["($('#foo').on('click', function () {}"],
         "bad_lines": [
             "<button id='foo' onclick='myFunction()'>Foo</button>",
@@ -661,7 +664,7 @@ html_rules: List["Rule"] = [
             "templates/zerver/emails/email_base_messages.html",
             # Email log templates; should clean up.
             "templates/zerver/email.html",
-            "templates/zerver/email_log.html",
+            "templates/zerver/development/email_log.html",
             # Social backend logos are dynamically loaded
             "templates/zerver/accounts_home.html",
             "templates/zerver/login.html",
