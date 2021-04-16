@@ -8,6 +8,8 @@ const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
 
+const {PollData} = zrequire("../../static/shared/js/poll_data");
+
 mock_cjs("jquery", $);
 
 const poll_widget = zrequire("poll_widget");
@@ -32,7 +34,7 @@ run_test("PollData my question", () => {
     const is_my_poll = true;
     const question = "Favorite color?";
 
-    const data_holder = new poll_widget.PollData({
+    const data_holder = new PollData({
         current_user_id: me.user_id,
         is_my_poll,
         question,
