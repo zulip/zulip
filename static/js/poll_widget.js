@@ -16,10 +16,11 @@ export class PollData {
     key_to_option = new Map();
     my_idx = 1;
 
-    constructor(is_my_poll, question, options) {
+    constructor(is_my_poll, question, options, report_error_function) {
         this.is_my_poll = is_my_poll;
         this.poll_question = question;
         this.input_mode = is_my_poll; // for now
+        this.report_error_function = report_error_function;
 
         if (question) {
             this.set_question(question);
@@ -151,7 +152,7 @@ export class PollData {
                 const option = this.key_to_option.get(key);
 
                 if (option === undefined) {
-                    blueslip.warn("unknown key for poll: " + key);
+                    this.report_error_function("unknown key for poll: " + key);
                     return;
                 }
 
@@ -186,7 +187,7 @@ export function activate({
     message,
 }) {
     const is_my_poll = people.is_my_user_id(message.sender_id);
-    const poll_data = new PollData(is_my_poll, question, options);
+    const poll_data = new PollData(is_my_poll, question, options, blueslip.warn);
 
     function update_edit_controls() {
         const has_question = elem.find("input.poll-question").val().trim() !== "";
