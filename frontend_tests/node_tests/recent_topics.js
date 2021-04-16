@@ -37,13 +37,7 @@ const topic9 = "topic-9";
 const topic10 = "topic-10";
 
 mock_cjs("jquery", $);
-const {all_messages_data} = mock_esm("../../static/js/all_messages_data", {
-    all_messages_data: {
-        all_messages() {
-            return messages;
-        },
-    },
-});
+
 const ListWidget = mock_esm("../../static/js/list_widget", {
     modifier: noop,
 
@@ -84,6 +78,9 @@ mock_esm("../../static/js/hash_util", {
 });
 mock_esm("../../static/js/narrow", {
     set_narrow_title: noop,
+});
+mock_esm("../../static/js/message_list_data", {
+    MessageListData: class {},
 });
 mock_esm("../../static/js/message_store", {
     get: (msg_id) => messages[msg_id - 1],
@@ -163,6 +160,7 @@ set_global("localStorage", {
     },
 });
 
+const {all_messages_data} = zrequire("all_messages_data");
 const people = zrequire("people");
 const rt = zrequire("recent_topics");
 
@@ -730,7 +728,9 @@ test("test_delete_messages", (override) => {
     rt.update_topics_of_deleted_message_ids([-1]);
 });
 
-test("test_topic_edit", () => {
+test("test_topic_edit", (override) => {
+    override(all_messages_data, "all_messages", () => messages);
+
     // NOTE: This test should always run in the end as it modified the messages data.
     rt.clear_for_tests();
     stub_out_filter_buttons();
