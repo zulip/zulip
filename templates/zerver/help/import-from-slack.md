@@ -82,7 +82,7 @@ cd /home/zulip/deployments/current
 ./scripts/stop-server
 ./manage.py convert_slack_data slack_data.zip --token <token> --output converted_slack_data
 ./manage.py import '' converted_slack_data
-./scripts/restart-server
+./scripts/start-server
 ```
 
 This could take several minutes to run, depending on how much data

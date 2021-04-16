@@ -152,7 +152,7 @@ cd /home/zulip/deployments/current
 ./scripts/stop-server
 ./manage.py convert_mattermost_data /home/zulip/mattermost --output /home/zulip/converted_mattermost_data
 ./manage.py import "" /home/zulip/converted_mattermost_data/<team-name>
-./scripts/restart-server
+./scripts/start-server
 ```
 
 This could take several minutes to run, depending on how much data
