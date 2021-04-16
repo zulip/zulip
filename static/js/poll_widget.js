@@ -15,7 +15,7 @@ export class PollData {
     key_to_option = new Map();
     my_idx = 1;
 
-    constructor(current_user_id, is_my_poll, question, options, report_error_function) {
+    constructor({current_user_id, is_my_poll, question, options, report_error_function}) {
         this.me = current_user_id;
         this.is_my_poll = is_my_poll;
         this.poll_question = question;
@@ -187,13 +187,13 @@ export function activate({
     message,
 }) {
     const is_my_poll = people.is_my_user_id(message.sender_id);
-    const poll_data = new PollData(
-        people.my_current_user_id(),
+    const poll_data = new PollData({
+        current_user_id: people.my_current_user_id(),
         is_my_poll,
         question,
         options,
-        blueslip.warn,
-    );
+        report_error_function: blueslip.warn,
+    });
 
     function update_edit_controls() {
         const has_question = elem.find("input.poll-question").val().trim() !== "";

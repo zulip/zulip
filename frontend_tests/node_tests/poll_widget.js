@@ -32,7 +32,13 @@ run_test("PollData my question", () => {
     const is_my_poll = true;
     const question = "Favorite color?";
 
-    const data_holder = new poll_widget.PollData(me.user_id, is_my_poll, question, [], blueslip.warn);
+    const data_holder = new poll_widget.PollData({
+        current_user_id: me.user_id,
+        is_my_poll,
+        question,
+        options: [],
+        report_error_function: blueslip.warn,
+    });
 
     let data = data_holder.get_widget_data();
 
