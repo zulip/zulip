@@ -19,7 +19,18 @@
     <i class="fa fa-copy"></i>
 </a>
 {% endif %}
-<form method="POST">
+<br>
+{% set first_human_user = realm.get_first_human_user() %}
+{% if first_human_user %}
+<b>First human user</b>: {{ first_human_user.delivery_email  }}
+<a title="Copy emails" class="copy-button" data-copytext="{{ first_human_user.delivery_email }}">
+    <i class="fa fa-copy"></i>
+</a>
+{% else %}
+<b>First human user</b>:
+{% endif %}
+
+<form method="POST" class="support-realm-status-form">
     <b>Status</b>:<br>
     {{ csrf_input }}
     <input type="hidden" name="realm_id" value="{{ realm.id }}" />

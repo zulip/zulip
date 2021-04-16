@@ -618,8 +618,11 @@ class TestSupportEndpoint(ZulipTestCase):
 
         def check_zulip_realm_query_result(result: HttpResponse) -> None:
             zulip_realm = get_realm("zulip")
+            first_human_user = zulip_realm.get_first_human_user()
+            assert first_human_user is not None
             self.assert_in_success_response(
                 [
+                    f"<b>First human user</b>: {first_human_user.delivery_email}\n",
                     f'<input type="hidden" name="realm_id" value="{zulip_realm.id}"',
                     "Zulip Dev</h3>",
                     '<option value="1" selected>Self hosted</option>',
