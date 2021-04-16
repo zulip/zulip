@@ -887,7 +887,7 @@ class HomeTest(ZulipTestCase):
         activity_time = calendar.timegm(now.timetuple())
         user_activity_event = {
             "user_profile_id": hamlet.id,
-            "client": "test-client",
+            "client_id": 1,
             "query": "update_message_flags",
             "time": activity_time,
         }
@@ -896,7 +896,7 @@ class HomeTest(ZulipTestCase):
         activity_time_2 = calendar.timegm(yesterday.timetuple())
         user_activity_event_2 = {
             "user_profile_id": hamlet.id,
-            "client": "test-client-2",
+            "client_id": 2,
             "query": "update_message_flags",
             "time": activity_time_2,
         }
