@@ -754,6 +754,11 @@ jinja2_rules = RuleList(
             "pattern": r"{{ _(.+) }}[\.\?!]",
             "description": "Period should be part of the translatable string.",
         },
+        {
+            "pattern": r'{% set entrypoint = "dev-',
+            "exclude": {"templates/zerver/development/"},
+            "description": "Development entrypoints (dev-) must not be imported in production.",
+        },
     ],
 )
 
