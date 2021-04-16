@@ -27,10 +27,10 @@ announcement).
 
 ## Encryption and authentication
 
-* Traffic between clients (web, desktop and mobile) and the Zulip is
-  encrypted using HTTPS.  By default, all Zulip services talk to each
-  other either via a localhost connection or using an encrypted SSL
-  connection.
+* Traffic between clients (web, desktop and mobile) and the Zulip
+  server is encrypted using HTTPS.  By default, all Zulip services
+  talk to each other either via a localhost connection or using an
+  encrypted SSL connection.
 
 * Zulip requires CSRF tokens in all interactions with the web API to
   prevent CSRF attacks.
