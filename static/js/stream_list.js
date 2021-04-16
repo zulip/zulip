@@ -14,6 +14,7 @@ import * as narrow_state from "./narrow_state";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
 import * as scroll_util from "./scroll_util";
+import * as stream_active from "./stream_active";
 import * as stream_data from "./stream_data";
 import * as stream_popover from "./stream_popover";
 import * as stream_sort from "./stream_sort";
@@ -263,7 +264,7 @@ class StreamSidebarRow {
     }
 
     update_whether_active() {
-        if (stream_data.is_active(this.sub) || this.sub.pin_to_top === true) {
+        if (stream_active.is_active(this.sub) || this.sub.pin_to_top === true) {
             this.list_item.removeClass("inactive_stream");
         } else {
             this.list_item.addClass("inactive_stream");

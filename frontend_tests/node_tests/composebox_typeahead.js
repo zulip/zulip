@@ -41,6 +41,7 @@ zrequire("templates");
 const typeahead_helper = zrequire("typeahead_helper");
 const people = zrequire("people");
 const user_groups = zrequire("user_groups");
+const stream_active = zrequire("stream_active");
 const stream_data = zrequire("stream_data");
 const user_pill = zrequire("user_pill");
 const compose_pm_pill = zrequire("compose_pm_pill");
@@ -935,20 +936,25 @@ test("initialize", (override) => {
         expected_value = ["applescript", "abap"];
         assert.deepEqual(actual_value, expected_value);
 
+        let stream_is_active;
+        override(stream_active, "is_active", () => stream_is_active);
+
         const serbia_stream = {
             name: "Serbia",
             description: "Snow and cold",
             stream_id: 3,
             subscribed: false,
         };
-        // Subscribed stream is active
-        override(stream_data, "is_active", () => false);
+
+        // Subscribed stream is inactive
+        stream_is_active = false;
         fake_this = {completing: "stream", token: "s"};
         actual_value = sort_items(fake_this, [sweden_stream, serbia_stream]);
         expected_value = [sweden_stream, serbia_stream];
         assert.deepEqual(actual_value, expected_value);
-        // Subscribed stream is inactive
-        override(stream_data, "is_active", () => true);
+
+        // Subscribed stream is active
+        stream_is_active = true;
         actual_value = sort_items(fake_this, [sweden_stream, serbia_stream]);
         expected_value = [sweden_stream, serbia_stream];
         assert.deepEqual(actual_value, expected_value);

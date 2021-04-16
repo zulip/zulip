@@ -26,6 +26,7 @@ mock_esm("../../static/js/ui", {get_scroll_element: (element) => element});
 const {Filter} = zrequire("../js/filter");
 const stream_sort = zrequire("stream_sort");
 const unread = zrequire("unread");
+const stream_active = zrequire("stream_active");
 const stream_data = zrequire("stream_data");
 const scroll_util = zrequire("scroll_util");
 const stream_list = zrequire("stream_list");
@@ -160,11 +161,11 @@ test_ui("create_sidebar_row", (override) => {
     assert(!social_li.hasClass("out_of_home_view"));
 
     const row = stream_list.stream_sidebar.get_row(stream_id);
-    override(stream_data, "is_active", () => true);
+    override(stream_active, "is_active", () => true);
     row.update_whether_active();
     assert(!social_li.hasClass("inactive_stream"));
 
-    override(stream_data, "is_active", () => false);
+    override(stream_active, "is_active", () => false);
     row.update_whether_active();
     assert(social_li.hasClass("inactive_stream"));
 
@@ -190,16 +191,16 @@ test_ui("pinned_streams_never_inactive", (override) => {
     const social_sidebar = $("<social sidebar row>");
     let stream_id = social.stream_id;
     let row = stream_list.stream_sidebar.get_row(stream_id);
-    override(stream_data, "is_active", () => false);
+    override(stream_active, "is_active", () => false);
 
     stream_list.build_stream_list();
     assert(social_sidebar.hasClass("inactive_stream"));
 
-    override(stream_data, "is_active", () => true);
+    override(stream_active, "is_active", () => true);
     row.update_whether_active();
     assert(!social_sidebar.hasClass("inactive_stream"));
 
-    override(stream_data, "is_active", () => false);
+    override(stream_active, "is_active", () => false);
     row.update_whether_active();
     assert(social_sidebar.hasClass("inactive_stream"));
 
@@ -207,7 +208,7 @@ test_ui("pinned_streams_never_inactive", (override) => {
     const devel_sidebar = $("<devel sidebar row>");
     stream_id = devel.stream_id;
     row = stream_list.stream_sidebar.get_row(stream_id);
-    override(stream_data, "is_active", () => false);
+    override(stream_active, "is_active", () => false);
 
     stream_list.build_stream_list();
     assert(!devel_sidebar.hasClass("inactive_stream"));
@@ -443,7 +444,7 @@ test_ui("sort_streams", (override) => {
 
     initialize_stream_data();
 
-    override(stream_data, "is_active", (sub) => sub.name !== "cars");
+    override(stream_active, "is_active", (sub) => sub.name !== "cars");
 
     let appended_elems;
     $("#stream_filters").append = (elems) => {
@@ -521,7 +522,7 @@ test_ui("separators_only_pinned_and_dormant", (override) => {
     };
     add_row(DenmarkSub);
 
-    override(stream_data, "is_active", (sub) => sub.name !== "Denmark");
+    override(stream_active, "is_active", (sub) => sub.name !== "Denmark");
 
     let appended_elems;
     $("#stream_filters").append = (elems) => {

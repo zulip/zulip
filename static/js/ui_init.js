@@ -59,6 +59,7 @@ import * as settings_sections from "./settings_sections";
 import * as settings_toggle from "./settings_toggle";
 import * as spoilers from "./spoilers";
 import * as starred_messages from "./starred_messages";
+import * as stream_active from "./stream_active";
 import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
@@ -469,6 +470,7 @@ export function initialize_everything() {
     echo.initialize();
     stream_edit.initialize();
     stream_data.initialize(stream_data_params);
+    stream_active.initialize(); // Must happen after stream_data.initialize()
     pm_conversations.recent.initialize(pm_conversations_params);
     muting.initialize();
     subs.initialize();

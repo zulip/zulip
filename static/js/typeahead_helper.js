@@ -10,6 +10,7 @@ import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
 import * as recent_senders from "./recent_senders";
 import * as settings_data from "./settings_data";
+import * as stream_active from "./stream_active";
 import * as stream_data from "./stream_data";
 import * as user_groups from "./user_groups";
 import * as util from "./util";
@@ -344,7 +345,7 @@ function activity_score(sub) {
             stream_score += 2;
         }
         // Note: A pinned stream may accumulate a 3rd point if it is active
-        if (stream_data.is_active(sub)) {
+        if (stream_active.is_active(sub)) {
             stream_score += 1;
         }
     }

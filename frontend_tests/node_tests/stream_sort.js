@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
+const stream_active = zrequire("stream_active");
 const stream_data = zrequire("stream_data");
 const stream_sort = zrequire("stream_sort");
 
@@ -69,7 +70,7 @@ test("basics", (override) => {
     stream_data.add_sub(clarinet);
     stream_data.add_sub(weaving);
 
-    override(stream_data, "is_active", (sub) => sub.name !== "pneumonia");
+    override(stream_active, "is_active", (sub) => sub.name !== "pneumonia");
 
     // Test sorting into categories/alphabetized
     let sorted = sort_groups("");

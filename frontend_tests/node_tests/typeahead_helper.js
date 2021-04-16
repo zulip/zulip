@@ -13,6 +13,7 @@ const pm_conversations = zrequire("pm_conversations");
 const recent_senders = zrequire("recent_senders");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
+const stream_active = zrequire("stream_active");
 const stream_data = zrequire("stream_data");
 
 const emoji = zrequire("../shared/js/emoji");
@@ -151,7 +152,7 @@ test("sort_streams", (override) => {
         },
     ];
 
-    override(stream_data, "is_active", (sub) => sub.name !== "dead");
+    override(stream_active, "is_active", (sub) => sub.name !== "dead");
 
     test_streams = th.sort_streams(test_streams, "d");
     assert.deepEqual(test_streams[0].name, "Denmark"); // Pinned streams first

@@ -1,3 +1,4 @@
+import * as stream_active from "./stream_active";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as util from "./util";
@@ -48,7 +49,7 @@ export function sort_groups(streams, search_term) {
     streams = filter_streams_by_search(streams, search_term);
 
     function is_normal(sub) {
-        return stream_data.is_active(sub);
+        return stream_active.is_active(sub);
     }
 
     const pinned_streams = [];

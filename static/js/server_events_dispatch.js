@@ -48,6 +48,7 @@ import * as settings_streams from "./settings_streams";
 import * as settings_user_groups from "./settings_user_groups";
 import * as settings_users from "./settings_users";
 import * as starred_messages from "./starred_messages";
+import * as stream_active from "./stream_active";
 import * as stream_data from "./stream_data";
 import * as stream_events from "./stream_events";
 import * as stream_list from "./stream_list";
@@ -579,7 +580,7 @@ export function dispatch_normal_event(event) {
             }
             if (event.setting_name === "demote_inactive_streams") {
                 stream_list.update_streams_sidebar();
-                stream_data.set_filter_out_inactives();
+                stream_active.set_filter_out_inactives();
             }
             if (event.setting_name === "dense_mode") {
                 $("body").toggleClass("less_dense_mode");

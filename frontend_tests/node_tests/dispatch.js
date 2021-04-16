@@ -54,6 +54,7 @@ const settings_profile_fields = mock_esm("../../static/js/settings_profile_field
 const settings_streams = mock_esm("../../static/js/settings_streams");
 const settings_user_groups = mock_esm("../../static/js/settings_user_groups");
 const settings_users = mock_esm("../../static/js/settings_users");
+const stream_active = mock_esm("../../static/js/stream_active");
 const stream_data = mock_esm("../../static/js/stream_data");
 const stream_events = mock_esm("../../static/js/stream_events");
 const submessage = mock_esm("../../static/js/submessage");
@@ -768,7 +769,7 @@ run_test("update_display_settings", (override) => {
     {
         const stub = make_stub();
         event = event_fixtures.update_display_settings__demote_inactive_streams;
-        override(stream_data, "set_filter_out_inactives", noop);
+        override(stream_active, "set_filter_out_inactives", noop);
         override(stream_list, "update_streams_sidebar", stub.f);
         page_params.demote_inactive_streams = 1;
         dispatch(event);

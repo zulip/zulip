@@ -13,6 +13,7 @@ const color_data = zrequire("color_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const people = zrequire("people");
 const sub_store = zrequire("sub_store");
+const stream_active = zrequire("stream_active");
 const stream_data = zrequire("stream_data");
 const stream_settings_data = zrequire("stream_settings_data");
 const settings_config = zrequire("settings_config");
@@ -159,24 +160,24 @@ test("is_active", () => {
 
     page_params.demote_inactive_streams =
         settings_config.demote_inactive_streams_values.automatic.code;
-    stream_data.set_filter_out_inactives();
+    stream_active.set_filter_out_inactives();
 
     sub = {name: "pets", subscribed: false, stream_id: 111};
     stream_data.add_sub(sub);
 
-    assert(stream_data.is_active(sub));
+    assert(stream_active.is_active(sub));
 
     stream_data.subscribe_myself(sub);
-    assert(stream_data.is_active(sub));
+    assert(stream_active.is_active(sub));
 
     assert(contains_sub(stream_data.subscribed_subs(), sub));
     assert(!contains_sub(stream_data.unsubscribed_subs(), sub));
 
     stream_data.unsubscribe_myself(sub);
-    assert(stream_data.is_active(sub));
+    assert(stream_active.is_active(sub));
 
     sub.pin_to_top = true;
-    assert(stream_data.is_active(sub));
+    assert(stream_active.is_active(sub));
     sub.pin_to_top = false;
 
     const opts = {
@@ -186,56 +187,56 @@ test("is_active", () => {
     };
     stream_topic_history.add_message(opts);
 
-    assert(stream_data.is_active(sub));
+    assert(stream_active.is_active(sub));
 
     page_params.demote_inactive_streams =
         settings_config.demote_inactive_streams_values.always.code;
-    stream_data.set_filter_out_inactives();
+    stream_active.set_filter_out_inactives();
 
     sub = {name: "pets", subscribed: false, stream_id: 111};
     stream_data.add_sub(sub);
 
-    assert(!stream_data.is_active(sub));
+    assert(!stream_active.is_active(sub));
 
     sub.pin_to_top = true;
-    assert(stream_data.is_active(sub));
+    assert(stream_active.is_active(sub));
     sub.pin_to_top = false;
 
     stream_data.subscribe_myself(sub);
-    assert(stream_data.is_active(sub));
+    assert(stream_active.is_active(sub));
 
     stream_data.unsubscribe_myself(sub);
-    assert(!stream_data.is_active(sub));
+    assert(!stream_active.is_active(sub));
 
     sub = {name: "lunch", subscribed: false, stream_id: 222};
     stream_data.add_sub(sub);
 
-    assert(stream_data.is_active(sub));
+    assert(stream_active.is_active(sub));
 
     stream_topic_history.add_message(opts);
 
-    assert(stream_data.is_active(sub));
+    assert(stream_active.is_active(sub));
 
     page_params.demote_inactive_streams = settings_config.demote_inactive_streams_values.never.code;
-    stream_data.set_filter_out_inactives();
+    stream_active.set_filter_out_inactives();
 
     sub = {name: "pets", subscribed: false, stream_id: 111};
     stream_data.add_sub(sub);
 
-    assert(stream_data.is_active(sub));
+    assert(stream_active.is_active(sub));
 
     stream_data.subscribe_myself(sub);
-    assert(stream_data.is_active(sub));
+    assert(stream_active.is_active(sub));
 
     stream_data.unsubscribe_myself(sub);
-    assert(stream_data.is_active(sub));
+    assert(stream_active.is_active(sub));
 
     sub.pin_to_top = true;
-    assert(stream_data.is_active(sub));
+    assert(stream_active.is_active(sub));
 
     stream_topic_history.add_message(opts);
 
-    assert(stream_data.is_active(sub));
+    assert(stream_active.is_active(sub));
 });
 
 test("admin_options", () => {
@@ -715,7 +716,7 @@ test("initialize", () => {
     page_params.realm_notifications_stream_id = -1;
 
     initialize();
-    assert(!stream_data.is_filtering_inactives());
+    assert(!stream_active.is_filtering_inactives());
 
     const stream_names = new Set(stream_data.get_streams_for_admin().map((elem) => elem.name));
     assert(stream_names.has("subscriptions"));
@@ -751,7 +752,8 @@ test("filter inactives", () => {
     params.realm_default_streams = [];
 
     stream_data.initialize(params);
-    assert(!stream_data.is_filtering_inactives());
+    stream_active.initialize();
+    assert(!stream_active.is_filtering_inactives());
 
     _.times(30, (i) => {
         const name = "random" + i.toString();
@@ -763,10 +765,12 @@ test("filter inactives", () => {
             newly_subscribed: false,
             stream_id,
         };
-        stream_data.add_sub(sub);
+        params.subscriptions.push(sub);
     });
+
     stream_data.initialize(params);
-    assert(stream_data.is_filtering_inactives());
+    stream_active.initialize();
+    assert(stream_active.is_filtering_inactives());
 });
 
 test("edge_cases", () => {
