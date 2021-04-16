@@ -10,8 +10,8 @@ import * as hash_util from "./hash_util";
 import * as hashchange from "./hashchange";
 import * as ListWidget from "./list_widget";
 import {localstorage} from "./localstorage";
+import * as message_finder from "./message_finder";
 import * as message_store from "./message_store";
-import * as message_util from "./message_util";
 import * as message_view_header from "./message_view_header";
 import * as muting from "./muting";
 import * as narrow from "./narrow";
@@ -291,11 +291,11 @@ export function process_topic_edit(old_stream_id, old_topic, new_topic, new_stre
     // logic behind this and important notes on use of this function.
     topics.delete(get_topic_key(old_stream_id, old_topic));
 
-    const old_topic_msgs = message_util.get_messages_in_topic(old_stream_id, old_topic);
+    const old_topic_msgs = message_finder.get_messages_in_topic(old_stream_id, old_topic);
     process_messages(old_topic_msgs);
 
     new_stream_id = new_stream_id || old_stream_id;
-    const new_topic_msgs = message_util.get_messages_in_topic(new_stream_id, new_topic);
+    const new_topic_msgs = message_finder.get_messages_in_topic(new_stream_id, new_topic);
     process_messages(new_topic_msgs);
 }
 
@@ -309,11 +309,11 @@ export function topic_in_search_results(keyword, stream, topic) {
 }
 
 export function update_topics_of_deleted_message_ids(message_ids) {
-    const topics_to_rerender = message_util.get_topics_for_message_ids(message_ids);
+    const topics_to_rerender = message_finder.get_topics_for_message_ids(message_ids);
 
     for (const [stream_id, topic] of topics_to_rerender.values()) {
         topics.delete(get_topic_key(stream_id, topic));
-        const msgs = message_util.get_messages_in_topic(stream_id, topic);
+        const msgs = message_finder.get_messages_in_topic(stream_id, topic);
         process_messages(msgs);
     }
 }

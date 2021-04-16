@@ -161,6 +161,7 @@ set_global("localStorage", {
 });
 
 const {all_messages_data} = zrequire("all_messages_data");
+const message_finder = zrequire("message_finder");
 const people = zrequire("people");
 const rt = zrequire("recent_topics");
 
@@ -726,6 +727,22 @@ test("test_delete_messages", (override) => {
     // test deleting a message which is not locally
     // stored, doesn't raise any errors.
     rt.update_topics_of_deleted_message_ids([-1]);
+});
+
+test("get_max_message_id_in_stream", (override) => {
+    const candidate_messages = [
+        {id: 1, type: "stream", stream_id: 10},
+        {id: 2, type: "stream", stream_id: 10},
+        {id: 3, type: "stream", stream_id: 30},
+        {id: 4, type: "stream", stream_id: 10},
+        {id: 5, type: "stream", stream_id: 30},
+        {id: 6, type: "private"},
+    ];
+
+    override(all_messages_data, "all_messages", () => candidate_messages);
+
+    assert.equal(message_finder.get_max_message_id_in_stream(10), 4);
+    assert.equal(message_finder.get_max_message_id_in_stream(30), 5);
 });
 
 test("test_topic_edit", (override) => {

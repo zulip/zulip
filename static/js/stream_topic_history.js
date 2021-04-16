@@ -1,6 +1,6 @@
 import {all_messages_data} from "./all_messages_data";
 import {FoldDict} from "./fold_dict";
-import * as message_util from "./message_util";
+import * as message_finder from "./message_finder";
 import * as sub_store from "./sub_store";
 import * as unread from "./unread";
 
@@ -244,7 +244,7 @@ export function remove_messages(opts) {
 
     // Update max_message_id in topic
     if (existing_topic.message_id <= max_removed_msg_id) {
-        const msgs_in_topic = message_util.get_messages_in_topic(stream_id, topic_name);
+        const msgs_in_topic = message_finder.get_messages_in_topic(stream_id, topic_name);
         let max_message_id = 0;
         for (const msg of msgs_in_topic) {
             if (msg.id > max_message_id) {
@@ -256,7 +256,7 @@ export function remove_messages(opts) {
 
     // Update max_message_id in stream
     if (history.max_message_id <= max_removed_msg_id) {
-        history.max_message_id = message_util.get_max_message_id_in_stream(stream_id);
+        history.max_message_id = message_finder.get_max_message_id_in_stream(stream_id);
     }
 }
 
