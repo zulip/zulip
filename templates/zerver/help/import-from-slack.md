@@ -79,7 +79,7 @@ the most common configuration, run the following commands, replacing
 
 ```
 cd /home/zulip/deployments/current
-supervisorctl stop all  # Stop the Zulip server
+./scripts/stop-server
 ./manage.py convert_slack_data slack_data.zip --token <token> --output converted_slack_data
 ./manage.py import '' converted_slack_data
 ./scripts/restart-server

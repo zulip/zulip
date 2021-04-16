@@ -257,7 +257,7 @@ For best results, you'll want to shut down access to the organization
 before exporting; so that nobody can send new messages (etc.)  while
 you're exporting data.  There are two ways to do this:
 
-1. `supervisorctl stop all`, which stops the whole server.  This is
+1. `./scripts/stop-server`, which stops the whole server.  This is
 preferred if you're not hosting multiple organizations, because it has
 no side effects other than disabling the Zulip server for the
 duration.
@@ -282,7 +282,7 @@ following commands:
 
 ```
 cd /home/zulip/deployments/current
-# supervisorctl stop all                  # Stops the Zulip server
+# ./scripts/stop-server
 # export DEACTIVATE_FLAG="--deactivate"   # Deactivates the organization
 ./manage.py export -r '' $DEACTIVATE_FLAG # Exports the data
 ```
@@ -316,7 +316,7 @@ archive of all the organization's uploaded files.
       several months of development ahead of the latest release.
 
     * Note that if your server has limited free RAM, you'll want to
-      shut down the Zulip server with `supervisorctl stop all` while
+      shut down the Zulip server with `./scripts/stop-server` while
       you run the import, since our minimal system requirements do not
       budget extra RAM for running the data import tool.
 

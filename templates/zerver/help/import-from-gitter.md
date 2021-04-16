@@ -49,7 +49,7 @@ the most common configuration, run the following commands:
 
 ```
 cd /home/zulip/deployments/current
-supervisorctl stop all  # Stop the Zulip server
+./scripts/stop-server
 ./manage.py convert_gitter_data gitter_data.json --output converted_gitter_data
 ./manage.py import '' converted_gitter_data
 ./scripts/restart-server

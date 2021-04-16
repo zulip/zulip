@@ -149,7 +149,7 @@ the most common configuration, run the following commands, replacing
 cd /home/zulip
 tar -xzvf export.tar.gz
 cd /home/zulip/deployments/current
-supervisorctl stop all  # Stop the Zulip server
+./scripts/stop-server
 ./manage.py convert_mattermost_data /home/zulip/mattermost --output /home/zulip/converted_mattermost_data
 ./manage.py import "" /home/zulip/converted_mattermost_data/<team-name>
 ./scripts/restart-server

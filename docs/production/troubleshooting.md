@@ -87,6 +87,9 @@ Similarly, you can stop Zulip using:
 supervisorctl stop all
 ```
 
+If you're looking to shut down the server, it is often better to run
+`./scripts/stop-server`.
+
 ## Troubleshooting services
 
 The Zulip application uses several major open source services to store

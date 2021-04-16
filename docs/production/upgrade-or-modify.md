@@ -415,7 +415,6 @@ To upgrade the version of PostgreSQL on the Zulip server:
 2. Stop the server and take a backup:
 
     ```
-    sudo -i # Or otherwise get a root shell
     supervisorctl stop all
     /home/zulip/deployments/current/manage.py backup --output=/home/zulip/postgresql-upgrade.backup.tar.gz
     ```
