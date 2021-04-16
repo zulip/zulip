@@ -238,6 +238,20 @@ $("#foo").html(
 );
 ```
 
+The only HTML tags allowed directly in translated strings are the
+simple HTML tags enumerated in `default_html_elements`
+(`static/js/i18n.js`) with no attributes.  This helps to avoid
+exposing HTML details to translators.  If you need to include more
+complex markup such as a link, you can define a custom HTML tag
+locally to the translation:
+
+```js
+$t_html(
+    {defaultMessage: "<b>HTML</b> linking to the <z-link>login page</z-link>"},
+    {"z-link": (content_html) => `<a href="/login/">${content_html}</a>`},
+)
+```
+
 ### Handlebars templates
 
 For translations in Handlebars templates we also use FormatJS, through two
@@ -279,6 +293,17 @@ The Handlebars expression would be evaluated before the string is
 processed by FormatJS, so that the string to be translated wouldn't be
 constant.  We have a linter to enforce that translated blocks don't
 contain handlebars.
+
+Restrictions on including HTML tags in translated strings are the same
+as in JavaScript.  You can insert more complex markup using a local
+custom HTML tag like this:
+
+```
+{{#tr}}
+    <b>HTML</b> linking to the <z-link>login page</z-link>
+    {{#*inline "z-link"}}<a href="/login/">{{> @partial-block}}</a>{{/inline}}
+{{/tr}}
+```
 
 ## Transifex config
 
