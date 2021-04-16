@@ -10,6 +10,7 @@ import "jquery-validation";
 import "flatpickr";
 
 // Import app JS
+import "../all_messages_data";
 import "../setup";
 import "../reload";
 import "../hotkey";
