@@ -89,7 +89,10 @@
     ],
     "dev-login": ["./static/js/bundles/portico", "./static/js/portico/dev-login"],
     "desktop-login": ["./static/js/bundles/portico", "./static/js/portico/desktop-login"],
-    "desktop-redirect": ["./static/js/bundles/portico", "./static/js/portico/desktop-redirect"],
+    "desktop-and-terminal-redirect": [
+        "./static/js/bundles/portico",
+        "./static/js/portico/desktop-and-terminal-redirect"
+    ],
     "integrations-dev-panel": [
         "./static/js/bundles/portico",
         "./static/js/portico/integrations_dev_panel",

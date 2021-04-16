@@ -7,6 +7,7 @@ import secrets
 import time
 import urllib
 from contextlib import contextmanager
+from itertools import combinations
 from typing import Any, Callable, Dict, Iterator, List, Mapping, Optional, Sequence, Tuple
 from unittest import mock
 
@@ -793,7 +794,23 @@ class DesktopFlowTestingLib(ZulipTestCase):
         return AESGCM(key).decrypt(iv, ciphertext, b"").decode()
 
 
-class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
+class TerminalFlowTestingLib(ZulipTestCase):
+    def verify_terminal_flow_end_page(
+        self, response: HttpResponse, email: str, realm: Realm, terminal_flow_otp: str
+    ) -> None:
+        self.assertEqual(response.status_code, 200)
+        soup = BeautifulSoup(response.content, "html.parser")
+        encrypted_api_key = soup.find("input", value=True)["value"]
+        browser_url = soup.find("a", href=True)["href"]
+
+        self.assertEqual(browser_url, "/login/")
+
+        # Let's decrypt the encrypted_otp_key and verify if its correct
+        user_api_keys = get_all_api_keys(get_user_by_delivery_email(email, realm))
+        self.assertIn(otp_decrypt_api_key(encrypted_api_key, terminal_flow_otp), user_api_keys)
+
+
+class SocialAuthBase(DesktopFlowTestingLib, TerminalFlowTestingLib, ZulipTestCase):
     """This is a base class for testing social-auth backends. These
     methods are often overridden by subclasses:
 
@@ -843,6 +860,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         subdomain: str,
         mobile_flow_otp: Optional[str] = None,
         desktop_flow_otp: Optional[str] = None,
+        terminal_flow_otp: Optional[str] = None,
         is_signup: bool = False,
         next: str = "",
         multiuse_object_key: str = "",
@@ -867,6 +885,9 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
             headers["HTTP_USER_AGENT"] = "ZulipAndroid"
         if desktop_flow_otp is not None:
             params["desktop_flow_otp"] = desktop_flow_otp
+        if terminal_flow_otp is not None:
+            params["terminal_flow_otp"] = terminal_flow_otp
+            headers["HTTP_USER_AGENT"] = "ZulipTerminal"
         if is_signup:
             url = self.SIGNUP_URL
         params["next"] = next
@@ -906,6 +927,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         subdomain: str,
         mobile_flow_otp: Optional[str] = None,
         desktop_flow_otp: Optional[str] = None,
+        terminal_flow_otp: Optional[str] = None,
         is_signup: bool = False,
         next: str = "",
         multiuse_object_key: str = "",
@@ -919,8 +941,8 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         * account_data_dict: Dictionary containing the name/email data
           that should be returned by the social auth backend.
         * subdomain: Which organization's login page is being accessed.
-        * desktop_flow_otp / mobile_flow_otp: Token to be used for
-          mobile or desktop authentication flow testing.
+        * desktop_flow_otp / mobile_flow_otp / terminal_flow_otp: Token to be
+          used for mobile, desktop or terminal authentication flow testing.
         * is_signup: Whether we're testing the social flow for
           /register (True) or /login (False).  This is important
           because we need to verify behavior like the
@@ -944,6 +966,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
             subdomain,
             mobile_flow_otp,
             desktop_flow_otp,
+            terminal_flow_otp,
             is_signup,
             next,
             multiuse_object_key,
@@ -1215,6 +1238,39 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         )
         self.verify_desktop_flow_end_page(result, self.email, desktop_flow_otp)
 
+    def test_social_auth_terminal_success(self) -> None:
+        terminal_flow_otp = "1234abcd" * 8
+        account_data_dict = self.get_account_data_dict(email=self.email, name="Full Name")
+        # Before we start, let's ensure there are no mails in our outbox.
+        self.assertEqual(len(mail.outbox), 0)
+
+        with self.settings(SEND_LOGIN_EMAILS=True):
+            # Verify that the right thing happens with an invalid-format OTP
+            result = self.social_auth_test(
+                account_data_dict, subdomain="zulip", terminal_flow_otp="1234"
+            )
+            self.assert_json_error(result, "Invalid OTP")
+            result = self.social_auth_test(
+                account_data_dict, subdomain="zulip", terminal_flow_otp="invalido" * 8
+            )
+            self.assert_json_error(result, "Invalid OTP")
+
+            # Now do it correctly
+            result = self.social_auth_test(
+                account_data_dict,
+                subdomain="zulip",
+                expect_choose_email_screen=False,
+                terminal_flow_otp=terminal_flow_otp,
+            )
+
+        self.verify_terminal_flow_end_page(
+            result, self.email, get_realm("zulip"), terminal_flow_otp
+        )
+
+        # Since we don't go through Django's login() codepath but trigger the email
+        # notifications of new logins manually, we need to verify that it is generated.
+        self.assertEqual(len(mail.outbox), 1)
+
     def test_social_auth_session_fields_cleared_correctly(self) -> None:
         mobile_flow_otp = "1234abcd" * 8
 
@@ -1238,20 +1294,27 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         initiate_auth()
         self.assertEqual(self.client.session.get("mobile_flow_otp"), None)
 
-    def test_social_auth_mobile_and_desktop_flow_in_one_request_error(self) -> None:
+    def test_social_auth_multiple_otp_flows_in_one_request_error(self) -> None:
         otp = "1234abcd" * 8
         account_data_dict = self.get_account_data_dict(email=self.email, name="Full Name")
-
-        result = self.social_auth_test(
-            account_data_dict,
-            subdomain="zulip",
-            expect_choose_email_screen=False,
-            desktop_flow_otp=otp,
-            mobile_flow_otp=otp,
-        )
-        self.assert_json_error(
-            result, "Can't use both mobile_flow_otp and desktop_flow_otp together."
-        )
+        supported_otps = ["desktop_flow_otp", "mobile_flow_otp", "terminal_flow_otp"]
+        # Test with all 2-element and 3-element otp combinations.
+        mutiple_otp_combinations = [list(comb) for comb in list(combinations(supported_otps, 2))]
+        mutiple_otp_combinations.append(supported_otps)
+        for combination in mutiple_otp_combinations:
+            params = {client_otp_type: otp for client_otp_type in combination}
+            result = self.social_auth_test(
+                account_data_dict,
+                subdomain="zulip",
+                expect_choose_email_screen=False,
+                mobile_flow_otp=params.get("mobile_flow_otp", None),
+                desktop_flow_otp=params.get("desktop_flow_otp", None),
+                terminal_flow_otp=params.get("terminal_flow_otp", None),
+            )
+            self.assert_json_error(
+                result,
+                "Only one among mobile_flow_otp, desktop_flow_otp or terminal_flow_otp can be used at a time.",
+            )
 
     def test_social_auth_registration_existing_account(self) -> None:
         """If the user already exists, signup flow just logs them in"""
@@ -1285,6 +1348,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         skip_registration_form: bool,
         mobile_flow_otp: Optional[str] = None,
         desktop_flow_otp: Optional[str] = None,
+        terminal_flow_otp: Optional[str] = None,
         expect_confirm_registration_page: bool = False,
         expect_full_name_prepopulated: bool = True,
     ) -> None:
@@ -1331,7 +1395,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
                 {"full_name": expected_final_name, "key": confirmation_key, "terms": True},
             )
 
-        # Mobile and desktop flow have additional steps:
+        # Mobile, desktop and terminal flows have additional steps:
         if mobile_flow_otp:
             self.assertEqual(result.status_code, 302)
             redirect_url = result["Location"]
@@ -1347,6 +1411,9 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         elif desktop_flow_otp:
             self.verify_desktop_flow_end_page(result, email, desktop_flow_otp)
             # Now the desktop app is logged in, continue with the logged in check.
+        elif terminal_flow_otp:
+            self.verify_terminal_flow_end_page(result, email, realm, terminal_flow_otp)
+            return
         else:
             self.assertEqual(result.status_code, 302)
 
@@ -1423,6 +1490,34 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
             name,
             self.BACKEND_CLASS.full_name_validated,
             desktop_flow_otp=desktop_flow_otp,
+        )
+
+    @override_settings(TERMS_OF_SERVICE=None)
+    def test_social_auth_terminal_registration(self) -> None:
+        user = self.example_user("hamlet")
+        self.login_user(user)
+        email = "newuser@zulip.com"
+        name = "Full Name"
+        subdomain = "zulip"
+        realm = get_realm("zulip")
+        terminal_flow_otp = "1234abcd" * 8
+        account_data_dict = self.get_account_data_dict(email=email, name=name)
+        result = self.social_auth_test(
+            account_data_dict,
+            subdomain="zulip",
+            expect_choose_email_screen=True,
+            is_signup=True,
+            terminal_flow_otp=terminal_flow_otp,
+        )
+        self.stage_two_of_registration(
+            result,
+            realm,
+            subdomain,
+            email,
+            name,
+            name,
+            self.BACKEND_CLASS.full_name_validated,
+            terminal_flow_otp=terminal_flow_otp,
         )
 
     @override_settings(TERMS_OF_SERVICE=None)
@@ -1745,6 +1840,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
         subdomain: str,
         mobile_flow_otp: Optional[str] = None,
         desktop_flow_otp: Optional[str] = None,
+        terminal_flow_otp: Optional[str] = None,
         is_signup: bool = False,
         next: str = "",
         multiuse_object_key: str = "",
@@ -1756,6 +1852,7 @@ class SAMLAuthBackendTest(SocialAuthBase):
             subdomain,
             mobile_flow_otp,
             desktop_flow_otp,
+            terminal_flow_otp,
             is_signup,
             next,
             multiuse_object_key,
@@ -2622,6 +2719,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
         subdomain: str,
         mobile_flow_otp: Optional[str] = None,
         desktop_flow_otp: Optional[str] = None,
+        terminal_flow_otp: Optional[str] = None,
         is_signup: bool = False,
         next: str = "",
         multiuse_object_key: str = "",
@@ -2635,6 +2733,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
             subdomain,
             mobile_flow_otp,
             desktop_flow_otp,
+            terminal_flow_otp,
             is_signup,
             next,
             multiuse_object_key,
@@ -2665,6 +2764,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
         subdomain: str,
         mobile_flow_otp: Optional[str] = None,
         desktop_flow_otp: Optional[str] = None,
+        terminal_flow_otp: Optional[str] = None,
         is_signup: bool = False,
         next: str = "",
         multiuse_object_key: str = "",
@@ -2696,6 +2796,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
             subdomain,
             mobile_flow_otp,
             desktop_flow_otp,
+            terminal_flow_otp,
             is_signup,
             next,
             multiuse_object_key,
@@ -4281,7 +4382,7 @@ class TestDevAuthBackend(ZulipTestCase):
         self.assert_in_success_response(["Configuration error", "DevAuthBackend"], response)
 
 
-class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
+class TestZulipRemoteUserBackend(DesktopFlowTestingLib, TerminalFlowTestingLib, ZulipTestCase):
     def test_start_remote_user_sso(self) -> None:
         result = self.client_get(
             "/accounts/login/start/sso/", {"param1": "value1", "params": "value2"}
@@ -4548,6 +4649,83 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
             "/accounts/login/sso/", dict(desktop_flow_otp=desktop_flow_otp), REMOTE_USER=remote_user
         )
         self.verify_desktop_flow_end_page(result, email, desktop_flow_otp)
+
+    @override_settings(SEND_LOGIN_EMAILS=True)
+    @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipRemoteUserBackend",))
+    def test_login_terminal_flow_otp_success_email(self) -> None:
+        user_profile = self.example_user("hamlet")
+        email = user_profile.delivery_email
+        user_profile.date_joined = timezone_now() - datetime.timedelta(seconds=61)
+        user_profile.save()
+        terminal_flow_otp = "1234abcd" * 8
+        self.assertEqual(len(mail.outbox), 0)
+
+        # Verify that the right thing happens with an invalid-format OTP
+        result = self.client_get(
+            "/accounts/login/sso/",
+            dict(terminal_flow_otp="1234"),
+            REMOTE_USER=email,
+            HTTP_USER_AGENT="ZulipTerminal",
+        )
+        self.assert_logged_in_user_id(None)
+        self.assert_json_error_contains(result, "Invalid OTP", 400)
+
+        result = self.client_get(
+            "/accounts/login/sso/",
+            dict(terminal_flow_otp="invalido" * 8),
+            REMOTE_USER=email,
+            HTTP_USER_AGENT="ZulipTerminal",
+        )
+        self.assert_logged_in_user_id(None)
+        self.assert_json_error_contains(result, "Invalid OTP", 400)
+
+        result = self.client_get(
+            "/accounts/login/sso/",
+            dict(terminal_flow_otp=terminal_flow_otp),
+            REMOTE_USER=email,
+            HTTP_USER_AGENT="ZulipTerminal",
+        )
+        self.verify_terminal_flow_end_page(result, email, get_realm("zulip"), terminal_flow_otp)
+        self.assertEqual(len(mail.outbox), 1)
+
+    @override_settings(SEND_LOGIN_EMAILS=True)
+    @override_settings(SSO_APPEND_DOMAIN="zulip.com")
+    @override_settings(AUTHENTICATION_BACKENDS=("zproject.backends.ZulipRemoteUserBackend",))
+    def test_login_terminal_flow_otp_success_username(self) -> None:
+        user_profile = self.example_user("hamlet")
+        email = user_profile.delivery_email
+        remote_user = email_to_username(email)
+        user_profile.date_joined = timezone_now() - datetime.timedelta(seconds=61)
+        user_profile.save()
+        terminal_flow_otp = "1234abcd" * 8
+
+        # Verify that the right thing happens with an invalid-format OTP
+        result = self.client_get(
+            "/accounts/login/sso/",
+            dict(terminal_flow_otp="1234"),
+            REMOTE_USER=remote_user,
+            HTTP_USER_AGENT="ZulipTerminal",
+        )
+        self.assert_logged_in_user_id(None)
+        self.assert_json_error_contains(result, "Invalid OTP", 400)
+
+        result = self.client_get(
+            "/accounts/login/sso/",
+            dict(terminal_flow_otp="invalido" * 8),
+            REMOTE_USER=remote_user,
+            HTTP_USER_AGENT="ZulipTerminal",
+        )
+        self.assert_logged_in_user_id(None)
+        self.assert_json_error_contains(result, "Invalid OTP", 400)
+
+        result = self.client_get(
+            "/accounts/login/sso/",
+            dict(terminal_flow_otp=terminal_flow_otp),
+            REMOTE_USER=remote_user,
+            HTTP_USER_AGENT="ZulipTerminal",
+        )
+        self.verify_terminal_flow_end_page(result, email, get_realm("zulip"), terminal_flow_otp)
+        self.assertEqual(len(mail.outbox), 1)
 
     def test_redirect_to(self) -> None:
         """This test verifies the behavior of the redirect_to logic in

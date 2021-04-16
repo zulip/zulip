@@ -1729,7 +1729,7 @@ label.label-title {
     color: hsl(176, 46.4%, 41%);
 }
 
-.desktop-redirect-box {
+.login-token-redirect-box {
     text-align: center;
 
     .copy-token-info {
@@ -1742,13 +1742,13 @@ label.label-title {
     }
 }
 
-.desktop-redirect-links {
+.login-token-redirect-links {
     margin-top: 20px;
     text-decoration: underline;
     color: hsl(0, 0%, 50%);
 }
 
-.desktop-redirect-image {
+.login-token-redirect-image {
     margin-bottom: 20px;
 }
 
