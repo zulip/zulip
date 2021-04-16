@@ -18,3 +18,8 @@ Note that the deployment cycles are different:
    The mobile app always refers to a specific version of this code;
    changes to this code will appear in the mobile app only after a
    commit in the mobile app pulls them in.
+
+To update the version of @zulip/shared on NPM, see the
+[instructions][publishing-shared] in the mobile repo.
+
+[publishing-shared]: https://github.com/zulip/zulip-mobile/blob/master/docs/howto/shared.md#publishing-zulipshared-to-npm
