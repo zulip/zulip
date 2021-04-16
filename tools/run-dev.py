@@ -370,7 +370,10 @@ def print_listeners() -> None:
     # EXTERNAL_HOST logic from dev_settings.py.
     IS_DEV_DROPLET = pwd.getpwuid(os.getuid()).pw_name == "zulipdev"
     if IS_DEV_DROPLET:
-        default_hostname = os.uname()[1].lower()
+        # Technically, the `zulip.` is a subdomain of the server, so
+        # this is kinda misleading, but 99% of development is done on
+        # the default/zulip subdomain.
+        default_hostname = "zulip." + os.uname()[1].lower()
     else:
         default_hostname = "localhost"
     external_host = os.getenv("EXTERNAL_HOST", f"{default_hostname}:{proxy_port}")
