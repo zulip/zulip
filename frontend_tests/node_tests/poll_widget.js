@@ -37,6 +37,7 @@ run_test("PollData my question", () => {
         is_my_poll,
         question,
         options: [],
+        comma_separated_names: people.safe_full_names,
         report_error_function: blueslip.warn,
     });
 

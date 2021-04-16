@@ -15,11 +15,19 @@ export class PollData {
     key_to_option = new Map();
     my_idx = 1;
 
-    constructor({current_user_id, is_my_poll, question, options, report_error_function}) {
+    constructor({
+        current_user_id,
+        is_my_poll,
+        question,
+        options,
+        comma_separated_names,
+        report_error_function,
+    }) {
         this.me = current_user_id;
         this.is_my_poll = is_my_poll;
         this.poll_question = question;
         this.input_mode = is_my_poll; // for now
+        this.comma_separated_names = comma_separated_names;
         this.report_error_function = report_error_function;
 
         if (question) {
@@ -64,7 +72,7 @@ export class PollData {
 
             options.push({
                 option: obj.option,
-                names: people.safe_full_names(voters),
+                names: this.comma_separated_names(voters),
                 count: voters.length,
                 key,
                 current_user_vote,
@@ -192,6 +200,7 @@ export function activate({
         is_my_poll,
         question,
         options,
+        comma_separated_names: people.safe_full_names,
         report_error_function: blueslip.warn,
     });
 
