@@ -4,6 +4,7 @@ import _ from "lodash";
 import render_compose_all_everyone from "../templates/compose_all_everyone.hbs";
 import render_compose_announce from "../templates/compose_announce.hbs";
 import render_compose_invite_users from "../templates/compose_invite_users.hbs";
+import render_compose_warn_one_on_one from "../templates/compose_warn_one_on_one.hbs";
 import render_compose_not_subscribed from "../templates/compose_not_subscribed.hbs";
 import render_compose_private_stream_alert from "../templates/compose_private_stream_alert.hbs";
 
@@ -52,6 +53,7 @@ import * as zcommand from "./zcommand";
 
 let user_acknowledged_all_everyone;
 let user_acknowledged_announce;
+let user_acknowledge_mention_one_on_one;
 let wildcard_mention;
 let uppy;
 
@@ -139,6 +141,12 @@ export function clear_announce_warnings() {
     $("#compose-announce").hide();
     $("#compose-announce").empty();
     $("#compose-send-status").hide();
+}
+
+
+export function clear_one_on_one_warning() {
+    $("#compose-warn-one-on-one").hide();
+    $("#compose-warn-one-on-one").empty();
 }
 
 export function clear_invites() {
@@ -1051,17 +1059,18 @@ export function warn_if_mentioned_private_one_on_one(mentioned) {
 
     if (compose_pm_pill.get_user_ids().length === 1) {
         // display warning
-        const error_msg =
-            "Mentioning " +
-            mentioned.full_name +
-            " will highlight this message. Did you mean to use a silent mention (@_" +
-            mentioned.full_name +
-            ") instead?";
-
-        const error_area = $("#compose_invite_users");
-        error_area.append(error_msg);
+        const error_area = $("#compose-warn-one-on-one");
+        const user_id = mentioned.user_id;
+        const context = {
+            user_id,
+            name: mentioned.full_name,
+        };
+        const new_row = render_compose_warn_one_on_one(context);
+        error_area.append(new_row);
         error_area.show();
+        user_acknowledge_mention_one_on_one = false;
     }
+
     return;
 }
 
@@ -1096,7 +1105,6 @@ export function warn_if_mentioning_unsubscribed_user(mentioned) {
     if (needs_subscribe_warning(user_id, sub.stream_id)) {
         const error_area = $("#compose_invite_users");
         const existing_invites_area = $("#compose_invite_users .compose_invite_user");
-
         const existing_invites = Array.from($(existing_invites_area), (user_row) =>
             Number.parseInt($(user_row).data("user-id"), 10),
         );
@@ -1148,6 +1156,14 @@ export function initialize() {
         user_acknowledged_all_everyone = true;
         clear_all_everyone_warnings();
         finish();
+    });
+
+    $("#compose-warn-one-on-one").on("click", ".compose_warn_one_on_one", (event) => {
+        event.preventDefault();
+
+        $(event.target).parents(".compose_warn_one_on_one").remove();
+        user_acknowledge_mention_one_on_one = true;
+        clear_one_on_one_warning();
     });
 
     $("#compose-announce").on("click", ".compose-announce-confirm", (event) => {
