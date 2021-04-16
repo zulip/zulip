@@ -58,13 +58,16 @@ the remote virtual machine, we recommend installing
 need to.
 
 The main difference from the standard instructions is that for a
-remote development environment, you'll need to run `export
-EXTERNAL_HOST=<REMOTE_IP>:9991` in a shell before running `run-dev.py`
-(and see also the `--interface=''` option documented below).  If your
-server has a static IP address, we recommend putting this command in
-`~/.bashrc`, so you don't need to remember to run it every time. This
-allows you to access Zulip running in your development environment
-using a browser on another host.
+remote development environment, and you're not using our Digital Ocean
+Droplet infrastructure (which handles `EXTERNAL_HOST` for you), you'll
+need to run `export EXTERNAL_HOST=<REMOTE_IP>:9991` in a shell before
+running `run-dev.py` (and see also the `--interface=''` option
+documented below).
+
+If your server has a static IP address, we recommend putting this
+command in `~/.bashrc`, so you don't need to remember to run it every
+time. This allows you to access Zulip running in your development
+environment using a browser on another host.
 
 ## Running the development server
 

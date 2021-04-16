@@ -63,7 +63,10 @@ Once your remote dev instance is ready:
 - Once you log in, you should see `(zulip-py3-venv) ~$`.
 - To start the dev server, `cd zulip` and then run `./tools/run-dev.py`.
 - While the dev server is running, you can see the Zulip server in your browser
-  at http://username.zulipdev.org:9991.
+  at http://zulip.username.zulipdev.org:9991.
+- The development server actually runs on all subdomains of
+  `username.zulipdev.org`; this is important for testing Zulip's
+  support for multiple organizations in your development server.
 
 Once you've confirmed you can connect to your remote server, take a look at:
 
