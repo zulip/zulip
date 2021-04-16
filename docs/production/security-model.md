@@ -235,8 +235,8 @@ strength allowed is controlled by two settings in
   browser is logged into a Zulip account that has received the
   uploaded file in question).
 
-* Zulip supports using the Camo image proxy to proxy content like
-  inline image previews that can be inserted into the Zulip message
+* Zulip supports using the Camo image proxy to proxy content, like
+  inline image previews, that can be inserted into the Zulip message
   feed by other users over HTTPS.
 
 * By default, Zulip will provide image previews inline in the body of
