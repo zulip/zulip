@@ -4,10 +4,9 @@ import random
 import shutil
 from functools import partial
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Type, Union, cast
-from unittest import TestLoader, TestSuite, runner
+from unittest import TestLoader, TestSuite, mock, runner
 from unittest.result import TestResult
 
-import mock
 from django.conf import settings
 from django.db import connections
 from django.test import TestCase
