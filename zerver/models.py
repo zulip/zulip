@@ -639,6 +639,17 @@ class Realm(models.Model):
         # TODO: Change return type to QuerySet[UserProfile]
         return UserProfile.objects.filter(realm=self, is_active=True).select_related()
 
+    def get_first_human_user(self) -> Optional["UserProfile"]:
+        """A useful value for communications with newly created realms.
+        Has a few fundamental limitations:
+
+        * Its value will be effectively random for realms imported from Slack or
+          other third-party tools.
+        * The user may be deactivated, etc., so it's not something that's useful
+          for features, permissions, etc.
+        """
+        return UserProfile.objects.filter(realm=self, is_bot=False).order_by("id").first()
+
     def get_human_owner_users(self) -> QuerySet:
         return UserProfile.objects.filter(
             realm=self, is_bot=False, role=UserProfile.ROLE_REALM_OWNER, is_active=True

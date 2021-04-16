@@ -134,6 +134,24 @@ class PermissionTest(ZulipTestCase):
         admin_users = user_profile.realm.get_admin_users_and_bots(include_realm_owners=False)
         self.assertFalse(user_profile in admin_users)
 
+    def test_get_first_human_user(self) -> None:
+        realm = get_realm("zulip")
+        UserProfile.objects.filter(realm=realm).delete()
+
+        UserProfile.objects.create(
+            realm=realm, email="bot1@zulip.com", delivery_email="bot1@zulip.com", is_bot=True
+        )
+        first_human_user = UserProfile.objects.create(
+            realm=realm, email="user1@zulip.com", delivery_email="user1@zulip.com", is_bot=False
+        )
+        UserProfile.objects.create(
+            realm=realm, email="user2@zulip.com", delivery_email="user2@zulip.com", is_bot=False
+        )
+        UserProfile.objects.create(
+            realm=realm, email="bot2@zulip.com", delivery_email="bot2@zulip.com", is_bot=True
+        )
+        self.assertEqual(first_human_user, realm.get_first_human_user())
+
     def test_updating_non_existent_user(self) -> None:
         self.login("hamlet")
         admin = self.example_user("hamlet")
