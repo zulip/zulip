@@ -167,6 +167,7 @@ EXEMPT_FILES = {
     "static/js/zform.js",
     "static/js/zulip.js",
     "static/js/zulip_test.js",
+    "static/shared/js/poll_data.js",
 }
 
 from tools.lib.test_script import add_provision_check_override_param, assert_provisioning_status_ok
