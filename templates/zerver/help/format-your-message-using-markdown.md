@@ -118,6 +118,22 @@ Organization administrators can also configure a default syntax
 highlighting language.  In this configuration, one can use ````text`
 to display content without any syntax highlighting.
 
+You can tag certain lines of a code block to highlight them for the
+demonstration purposes. Index of code block starts from 1.
+
+~~~
+```python hl_lines="1 3 4"
+# Following function returns the nth Fibonacci number
+def fib(n):
+    # TODO: base case
+    return fib(n-1) + fib(n-2)
+
+x = fib(4)
+```
+~~~
+
+![Markdown line highlighting](/static/images/help/markdown-line-highlighting.png)
+
 ## LaTeX
 ~~~
 Inline: $$O(n^2)$$
