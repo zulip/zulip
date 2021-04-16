@@ -1,4 +1,5 @@
 class zulip::postgresql_common {
+  include zulip::snakeoil
   $version = zulipconf('postgresql', 'version', undef)
   case $::osfamily {
     'debian': {
@@ -8,8 +9,6 @@ class zulip::postgresql_common {
         $postgresql,
         # tools for database monitoring; formerly ptop
         'pgtop',
-        # Needed just to support adding postgres user to 'zulip' group
-        'ssl-cert',
         # our dictionary
         'hunspell-en-us',
         # PostgreSQL Nagios check plugin
@@ -59,7 +58,10 @@ class zulip::postgresql_common {
     }
   }
 
-  zulip::safepackage { $postgresql_packages: ensure => 'installed' }
+  zulip::safepackage { $postgresql_packages:
+    ensure  => 'installed',
+    require => Exec['generate-default-snakeoil'],
+  }
 
   if $::osfamily == 'debian' {
     # The logrotate file only created in debian-based systems
