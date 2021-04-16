@@ -76,9 +76,6 @@ mock_esm("../../static/js/hash_util", {
 
     by_stream_topic_uri: () => "https://www.example.com",
 });
-mock_esm("../../static/js/narrow", {
-    set_narrow_title: noop,
-});
 mock_esm("../../static/js/message_list_data", {
     MessageListData: class {},
 });
@@ -95,6 +92,9 @@ mock_esm("../../static/js/muting", {
         }
         return false;
     },
+});
+mock_esm("../../static/js/narrow", {
+    set_narrow_title: noop,
 });
 mock_esm("../../static/js/recent_senders", {
     get_topic_recent_senders: () => [1, 2],
