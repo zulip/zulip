@@ -44,6 +44,7 @@ import * as settings_invites from "./settings_invites";
 import * as settings_linkifiers from "./settings_linkifiers";
 import * as settings_notifications from "./settings_notifications";
 import * as settings_org from "./settings_org";
+import * as settings_playgrounds from "./settings_playgrounds";
 import * as settings_profile_fields from "./settings_profile_fields";
 import * as settings_streams from "./settings_streams";
 import * as settings_user_groups from "./settings_user_groups";
@@ -353,6 +354,7 @@ export function dispatch_normal_event(event) {
         case "realm_playgrounds":
             page_params.realm_playgrounds = event.realm_playgrounds;
             realm_playground.update_playgrounds(page_params.realm_playgrounds);
+            settings_playgrounds.populate_playgrounds(page_params.realm_playgrounds);
             break;
 
         case "realm_domains":

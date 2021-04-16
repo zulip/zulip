@@ -467,6 +467,18 @@ exports.fixtures = {
         ],
     },
 
+    realm_playgrounds: {
+        type: "realm_playgrounds",
+        realm_playgrounds: [
+            {
+                id: 1,
+                name: "Lean playground",
+                pygments_language: "Lean",
+                url_prefix: "https://leanprover.github.io/live/latest/#code=",
+            },
+        ],
+    },
+
     realm_user__add: {
         type: "realm_user",
         op: "add",
