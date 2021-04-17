@@ -1,7 +1,7 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# 
+#
 # Translators:
 # Alex Schneider Zis <alexszis@gmail.com>, 2018
 # Andrei Bernardo Simoni <andrei_simoni@hotmail.com>, 2021
@@ -1657,6 +1657,12 @@ msgstr "Se você não solicitou essa alteração, entre em contato conosco imedi
 #: templates/zerver/emails/compiled/confirm_registration.html:10
 #: templates/zerver/emails/confirm_registration.source.html:9
 #: templates/zerver/emails/confirm_registration.txt:1
+msgid "You have requested a new Zulip organization. Awesome!"
+msgstr "Você solicitou uma nova organização Zulip. Incrível!"
+
+#: templates/zerver/emails/compiled/confirm_registration.html:10
+#: templates/zerver/emails/confirm_registration.source.html:12
+#: templates/zerver/emails/confirm_registration.txt:6
 msgid "You recently signed up for Zulip. Awesome!"
 msgstr "Você recentemente se inscreveu no Zulip. Incrível!"
 
