@@ -43,7 +43,6 @@ export function set_up() {
         e.stopPropagation();
 
         muting_ui.unmute_topic(stream_id, topic);
-        $row.remove();
     });
 
     populate_list();
