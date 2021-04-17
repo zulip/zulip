@@ -5686,7 +5686,7 @@ def do_update_message(
     if stream_being_edited is not None:
         if stream_being_edited.is_history_public_to_subscribers:
             subscribers = get_active_subscriptions_for_stream_id(
-                stream_id, include_deactivated_users=True
+                stream_id, include_deactivated_users=False
             )
             # We exclude long-term idle users, since they by
             # definition have no active clients.
@@ -5790,7 +5790,7 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
         event["stream_id"] = stream_id
         event["topic"] = sample_message.topic_name()
         subscribers = get_active_subscriptions_for_stream_id(
-            stream_id, include_deactivated_users=True
+            stream_id, include_deactivated_users=False
         )
         # We exclude long-term idle users, since they by definition have no active clients.
         subscribers = subscribers.exclude(user_profile__long_term_idle=True)
