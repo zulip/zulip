@@ -55,6 +55,9 @@
                     <th class="active" data-sort="pygments_language">{{t "Language" }}</th>
                     <th data-sort="playground_name">{{t "Name" }}</th>
                     <th data-sort="url">{{t "URL prefix" }}</th>
+                    {{#if is_admin}}
+                    <th class="actions">{{t "Actions" }}</th>
+                    {{/if}}
                 </thead>
                 <tbody id="admin_playgrounds_table" class="required-text" data-empty="{{t 'No playgrounds configured.' }}"></tbody>
             </table>

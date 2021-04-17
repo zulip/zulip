@@ -54,7 +54,9 @@ export function populate_playgrounds(playgrounds_data) {
                     playground_name: playground.name,
                     pygments_language: playground.pygments_language,
                     url_prefix: playground.url_prefix,
+                    id: playground.id,
                 },
+                can_modify: page_params.is_admin,
             });
         },
         filter: {
@@ -87,6 +89,21 @@ export function set_up() {
 function build_page() {
     meta.loaded = true;
     populate_playgrounds(page_params.realm_playgrounds);
+
+    $(".admin_playgrounds_table").on("click", ".delete", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const btn = $(this);
+
+        channel.del({
+            url: "/json/realm/playgrounds/" + encodeURIComponent(btn.attr("data-playground-id")),
+            error(xhr) {
+                ui_report.generic_row_button_error(xhr, btn);
+            },
+            // There is no need for an on-success action here since the row is removed by the
+            // `realm_playgrounds` events handler which builds the playground list again.
+        });
+    });
 
     $(".organization form.admin-playground-form")
         .off("submit")

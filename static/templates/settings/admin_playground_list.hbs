@@ -9,5 +9,12 @@
     <td>
         <span>{{url_prefix}}</span>
     </td>
+    {{#if ../can_modify}}
+    <td class="no-select actions">
+        <button class="button small delete btn-danger tippy-zulip-tooltip" data-playground-id="{{id}}" data-tippy-content="{{t 'Delete' }} {{ playground_name }}" aria-label="{{t 'Delete' }} {{ playground_name }}">
+            <i class="fa fa-trash-o"></i>
+        </button>
+    </td>
+    {{/if}}
 </tr>
 {{/with}}
