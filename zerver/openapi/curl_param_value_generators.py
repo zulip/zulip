@@ -5,7 +5,6 @@
 # based on Zulip's OpenAPI definitions, as well as test setup and
 # fetching of appropriate parameter values to use when running the
 # cURL examples as part of the tools/test-api test suite.
-import json
 from functools import wraps
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
@@ -283,8 +282,8 @@ def upload_custom_emoji() -> Dict[str, object]:
 def add_realm_playground() -> Dict[str, object]:
     return {
         "name": "Python2 playground",
-        "pygments_language": json.dumps("Python2"),
-        "url_prefix": json.dumps("https://python2.example.com"),
+        "pygments_language": "Python2",
+        "url_prefix": "https://python2.example.com",
     }
 
 

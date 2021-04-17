@@ -6692,7 +6692,8 @@ paths:
 
         `POST {{ api_url }}/v1/realm/playgrounds`
 
-        **Changes**: New in Zulip 4.0 (feature level 49).
+        **Changes**: New in Zulip 4.0 (feature level 49). A parameter encoding bug was
+        fixed in Zulip 4.0 (feature level 57).
       parameters:
         - name: name
           in: query
@@ -6702,7 +6703,7 @@ paths:
             playground options exist for that programming language.
           schema:
             type: string
-          example: "Python playground"
+          example: Python playground
           required: true
         - name: pygments_language
           in: query
@@ -6711,7 +6712,7 @@ paths:
             programming language.
           schema:
             type: string
-          example: "Python"
+          example: Python
           required: true
         - name: url_prefix
           in: query
