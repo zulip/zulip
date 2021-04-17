@@ -6,10 +6,18 @@
 
 {% block content %}
 <p>
+    {% if realm_creation %}
     {{ _('You recently signed up for Zulip. Awesome!') }}
+    {% else %}
+    {{ _('You have requested a new Zulip organization. Awesome!') }}
+    {% endif %}
 </p>
 <p>
+    {% if realm_creation %}
     {{ _('Click the button below to complete registration.') }}
+    {% else %}
+    {{ _('Click the button below to create the organization and register your account.') }}
+    {% endif %}
     <a class="button" href="{{ activate_url }}">{{ _('Complete registration') }}</a>
 </p>
 <p>{% trans support_email=macros.email_tag(support_email) %}Contact us any time at {{ support_email }} if you run into trouble, have any feedback, or just want to chat!{% endtrans %}</p>

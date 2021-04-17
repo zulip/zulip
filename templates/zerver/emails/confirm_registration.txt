@@ -1,6 +1,13 @@
+{% if realm_creation %}
+{{ _('You have requested a new Zulip organization. Awesome!') }}
+
+{{ _('Click the button below to create the organization and register your account.') }}
+{% else %}
 {{ _('You recently signed up for Zulip. Awesome!') }}
 
 {{ _('Click the link below to complete registration.') }}
+{% endif %}
+
     <{{ activate_url }}>
 
 {% trans %}Contact us any time at {{ support_email }} if you run into trouble,have any feedback, or just want to chat!{% endtrans %}
