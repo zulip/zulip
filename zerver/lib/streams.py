@@ -494,6 +494,10 @@ def can_access_stream_history(user_profile: UserProfile, stream: Stream) -> bool
     access_stream is being called elsewhere to confirm that the user
     can actually see this stream.
     """
+
+    if user_profile.realm_id != stream.realm_id:
+        raise AssertionError("user_profile and stream realms don't match")
+
     if stream.is_web_public:
         return True
 
