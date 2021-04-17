@@ -11,7 +11,7 @@ export function set_up() {
         const stream_id = Number.parseInt($row.attr("data-stream-id"), 10);
         const topic = $row.attr("data-topic");
 
-        e.stopImmediatePropagation();
+        e.stopPropagation();
 
         muting_ui.unmute_topic(stream_id, topic);
         $row.remove();

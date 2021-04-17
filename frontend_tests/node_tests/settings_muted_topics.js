@@ -48,7 +48,7 @@ run_test("settings", () => {
     assert.equal(typeof topic_click_handler, "function");
 
     const event = {
-        stopImmediatePropagation: noop,
+        stopPropagation: noop,
     };
 
     const topic_fake_this = $.create("fake.settings-unmute-topic");
