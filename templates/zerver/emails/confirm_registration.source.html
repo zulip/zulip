@@ -7,16 +7,16 @@
 {% block content %}
 <p>
     {% if realm_creation %}
-    {{ _('You recently signed up for Zulip. Awesome!') }}
-    {% else %}
     {{ _('You have requested a new Zulip organization. Awesome!') }}
+    {% else %}
+    {{ _('You recently signed up for Zulip. Awesome!') }}
     {% endif %}
 </p>
 <p>
     {% if realm_creation %}
-    {{ _('Click the button below to complete registration.') }}
-    {% else %}
     {{ _('Click the button below to create the organization and register your account.') }}
+    {% else %}
+    {{ _('Click the button below to complete registration.') }}
     {% endif %}
     <a class="button" href="{{ activate_url }}">{{ _('Complete registration') }}</a>
 </p>
