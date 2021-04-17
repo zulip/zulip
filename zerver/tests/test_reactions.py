@@ -541,7 +541,7 @@ class ReactionEventTest(ZulipTestCase):
         # Make stream history public to subscribers
         do_change_stream_invite_only(stream, False, history_public_to_subscribers=True)
         # Since stream history is public to subscribers, reacting to
-        # message_before_id should notify all non-guest subscribers:
+        # message_before_id should notify all subscribers:
         # Iago and Hamlet.
         events = []
         with tornado_redirected_to_list(events):
@@ -553,7 +553,7 @@ class ReactionEventTest(ZulipTestCase):
         event = events[0]["event"]
         self.assertEqual(event["type"], "reaction")
         event_user_ids = set(events[0]["users"])
-        self.assertEqual(event_user_ids, {iago.id, hamlet.id})
+        self.assertEqual(event_user_ids, {iago.id, hamlet.id, polonius.id})
         remove = self.api_delete(
             iago, f"/api/v1/messages/{message_before_id}/reactions", reaction_info
         )

@@ -546,7 +546,9 @@ class StreamAdminTest(ZulipTestCase):
         )
         self.subscribe(hamlet, stream2.name)
         self.subscribe(polonius, stream2.name)
-        self.assertEqual({hamlet.id}, subscriber_ids_with_stream_history_access(stream2))
+        self.assertEqual(
+            {hamlet.id, polonius.id}, subscriber_ids_with_stream_history_access(stream2)
+        )
 
         stream3 = self.make_stream(
             "history_public_web_public_stream",
@@ -557,6 +559,15 @@ class StreamAdminTest(ZulipTestCase):
         self.subscribe(polonius, stream3.name)
         self.assertEqual(
             {hamlet.id, polonius.id}, subscriber_ids_with_stream_history_access(stream3)
+        )
+
+        stream4 = self.make_stream(
+            "regular_public_stream",
+        )
+        self.subscribe(hamlet, stream4.name)
+        self.subscribe(polonius, stream4.name)
+        self.assertEqual(
+            {hamlet.id, polonius.id}, subscriber_ids_with_stream_history_access(stream4)
         )
 
     def test_deactivate_stream_backend(self) -> None:

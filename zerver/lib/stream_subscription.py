@@ -260,24 +260,19 @@ def subscriber_ids_with_stream_history_access(stream: Stream) -> Set[int]:
 
     1. if !history_public_to_subscribers:
           History is not available to anyone
-    2. if history_public_to_subscribers and is_web_public:
+    2. if history_public_to_subscribers:
           All subscribers can access the history including guests
-    3. if history_public_to_subscribers and !is_web_public:
-          All subscribers can access the history excluding guests
+
+    The results of this function need to be kept consistent with
+    what can_access_stream_history would dictate.
 
     """
 
     if not stream.is_history_public_to_subscribers():
         return set()
 
-    subscriptions = get_active_subscriptions_for_stream_id(
-        stream.id, include_deactivated_users=False
-    )
-    if stream.is_web_public:
-        return set(subscriptions.values_list("user_profile__id", flat=True))
-
     return set(
-        subscriptions.exclude(user_profile__role=UserProfile.ROLE_GUEST).values_list(
-            "user_profile__id", flat=True
-        )
+        get_active_subscriptions_for_stream_id(
+            stream.id, include_deactivated_users=False
+        ).values_list("user_profile__id", flat=True)
     )
