@@ -44,12 +44,12 @@ $topic_indent: calc($far_left_gutter_size + $left_col_size + 4px);
 
 .pm_group_num {
     float: left;
-    padding: 0px 2px 0px 2px;
+    padding: 0 2px 0 2px;
     height: 16px;
     line-height: 16px;
     font-size: 12px;
     font-weight: bold;
-    letter-spacing: 0px;
+    letter-spacing: 0;
     margin-left: 2px;
     border-radius: 4px;
     border-style: solid;

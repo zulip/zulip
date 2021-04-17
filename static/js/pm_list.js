@@ -72,7 +72,7 @@ export function _get_convos() {
 
         const is_group = user_ids_string.includes(",");
 
-        const num_in_group = user_ids_string.split(',').length
+        const num_in_group = user_ids_string.split(",").length;
 
         const is_active = user_ids_string === active_user_ids_string;
 
