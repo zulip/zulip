@@ -6,6 +6,7 @@ import render_compose_announce from "../templates/compose_announce.hbs";
 import render_compose_invite_users from "../templates/compose_invite_users.hbs";
 import render_compose_not_subscribed from "../templates/compose_not_subscribed.hbs";
 import render_compose_private_stream_alert from "../templates/compose_private_stream_alert.hbs";
+import render_compose_warn_one_on_one from "../templates/compose_warn_one_on_one.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
@@ -140,6 +141,11 @@ export function clear_announce_warnings() {
     $("#compose-announce").hide();
     $("#compose-announce").empty();
     $("#compose-send-status").hide();
+}
+
+export function clear_one_on_one_warning() {
+    $("#compose-warn-one-on-one").hide();
+    $("#compose-warn-one-on-one").empty();
 }
 
 export function clear_invites() {
@@ -1045,6 +1051,29 @@ export function warn_if_private_stream_is_linked(linked_stream) {
     warning_area.show();
 }
 
+export function warn_if_mentioned_private_one_on_one(mentioned) {
+    if (compose_state.get_message_type() !== "private") {
+        return;
+    }
+    if (mentioned.is_broadcast === true) {
+        return;
+    }
+    if (compose_pm_pill.get_user_ids().length === 1) {
+        // display warning
+        const error_area = $("#compose-warn-one-on-one");
+        const user_id = mentioned.user_id;
+        const context = {
+            user_id,
+            name: mentioned.full_name,
+        };
+        const new_row = render_compose_warn_one_on_one(context);
+        error_area.append(new_row);
+        error_area.show();
+    }
+
+    return;
+}
+
 export function warn_if_mentioning_unsubscribed_user(mentioned) {
     if (compose_state.get_message_type() !== "stream") {
         return;
@@ -1128,6 +1157,13 @@ export function initialize() {
         user_acknowledged_all_everyone = true;
         clear_all_everyone_warnings();
         finish();
+    });
+
+    $("#compose-warn-one-on-one").on("click", ".compose-warn-one-on-one", (event) => {
+        event.preventDefault();
+
+        $(event.target).parents(".compose-warn-one-on-one").remove();
+        clear_one_on_one_warning();
     });
 
     $("#compose-announce").on("click", ".compose-announce-confirm", (event) => {

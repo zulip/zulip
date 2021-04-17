@@ -1191,6 +1191,28 @@ test_ui("needs_subscribe_warning", () => {
     assert.equal(compose.needs_subscribe_warning(bob.user_id, sub.stream_id), true);
 });
 
+test_ui("warn_if_mentioned_private_one_on_one", () => {
+    const mentioned = {
+        email: "foo@bar.com",
+    };
+
+    function test_noop_case(is_private, is_zephyr_mirror, is_broadcast) {
+        const msg_type = is_private ? "private" : "stream";
+        compose_state.set_message_type(msg_type);
+        // Set two private message recipients
+        compose_state.__Rewire__("private_message_recipient", () => "foo@bar.com, bob@example.com");
+        page_params.realm_is_zephyr_mirror_realm = is_zephyr_mirror;
+        mentioned.is_broadcast = is_broadcast;
+        compose.warn_if_mentioned_private_one_on_one(mentioned);
+        assert.equal($("#compose-warn-one-on-one").visible(), false);
+    }
+
+    // Tests it won't trigger on stream, more than one recipient, or broadcast
+    test_noop_case(true, false, true);
+    test_noop_case(false, true, true);
+    test_noop_case(true, false, true);
+});
+
 test_ui("warn_if_mentioning_unsubscribed_user", (override) => {
     let mentioned = {
         email: "foo@bar.com",
