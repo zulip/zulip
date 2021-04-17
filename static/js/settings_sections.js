@@ -9,6 +9,7 @@ import * as settings_exports from "./settings_exports";
 import * as settings_invites from "./settings_invites";
 import * as settings_linkifiers from "./settings_linkifiers";
 import * as settings_muted_topics from "./settings_muted_topics";
+import * as settings_muted_users from "./settings_muted_users";
 import * as settings_notifications from "./settings_notifications";
 import * as settings_org from "./settings_org";
 import * as settings_playgrounds from "./settings_playgrounds";
@@ -51,6 +52,7 @@ export function initialize() {
     load_func_dict.set("alert-words", alert_words_ui.set_up_alert_words);
     load_func_dict.set("uploaded-files", attachments_ui.set_up_attachments);
     load_func_dict.set("muted-topics", settings_muted_topics.set_up);
+    load_func_dict.set("muted-users", settings_muted_users.set_up);
 
     // org
     load_func_dict.set("org_misc", settings_org.set_up);
@@ -99,5 +101,6 @@ export function reset_sections() {
     settings_streams.reset();
     settings_user_groups.reset();
     settings_muted_topics.reset();
+    settings_muted_users.reset();
     // settings_users doesn't need a reset()
 }

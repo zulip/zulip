@@ -125,6 +125,7 @@ EXEMPT_FILES = {
     "static/js/settings.js",
     "static/js/settings_linkifiers.js",
     "static/js/settings_playgrounds.js",
+    "static/js/settings_muted_users.js",
     "static/js/settings_notifications.js",
     "static/js/settings_org.js",
     "static/js/settings_panel_menu.js",

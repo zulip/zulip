@@ -16,6 +16,7 @@ import * as people from "./people";
 import * as popovers from "./popovers";
 import * as recent_topics from "./recent_topics";
 import * as settings_muted_topics from "./settings_muted_topics";
+import * as settings_muted_users from "./settings_muted_users";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
@@ -195,7 +196,14 @@ export function unmute_user(user_id) {
     });
 }
 
+export function rerender_for_muted_user() {
+    if (overlays.settings_open() && settings_muted_users.loaded) {
+        settings_muted_users.populate_list();
+    }
+}
+
 export function handle_user_updates(muted_user_ids) {
     popovers.hide_all();
     muting.set_muted_users(muted_user_ids);
+    rerender_for_muted_user();
 }
