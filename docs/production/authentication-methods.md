@@ -30,6 +30,7 @@ authentication providers:
 * GitHub accounts, with `GitHubAuthBackend`
 * GitLab accounts, with `GitLabAuthBackend`
 * Microsoft Azure Active Directory, with `AzureADAuthBackend`
+* Facebook accounts, with `FacebookAuthBackend`
 
 Each of these requires one to a handful of lines of configuration in
 `settings.py`, as well as a secret in `zulip-secrets.conf`.  Details

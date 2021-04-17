@@ -552,7 +552,7 @@ def start_social_login(
         return config_error(request, "apple")
 
     # TODO: Add AzureAD also.
-    if backend in ["github", "google", "gitlab"]:
+    if backend in ["github", "google", "gitlab", "facebook"]:
         key_setting = "SOCIAL_AUTH_" + backend.upper() + "_KEY"
         secret_setting = "SOCIAL_AUTH_" + backend.upper() + "_SECRET"
         if not (getattr(settings, key_setting) and getattr(settings, secret_setting)):
@@ -975,6 +975,7 @@ def config_error(request: HttpRequest, error_category_name: str) -> HttpResponse
         "google": {"social_backend_name": "google", "has_markdown_file": True},
         "github": {"social_backend_name": "github", "has_markdown_file": True},
         "gitlab": {"social_backend_name": "gitlab", "has_markdown_file": True},
+        "facebook": {"social_backend_name": "facebook", "has_markdown_file": True},
         "ldap": {"error_name": "ldap_error_realm_is_none"},
         "dev": {"error_name": "dev_not_supported_error"},
         "saml": {"social_backend_name": "saml"},

@@ -40,6 +40,7 @@ from requests import HTTPError
 from social_core.backends.apple import AppleIdAuth
 from social_core.backends.azuread import AzureADOAuth2
 from social_core.backends.base import BaseAuth
+from social_core.backends.facebook import FacebookOAuth2
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, GithubTeamOAuth2
 from social_core.backends.gitlab import GitLabOAuth2
 from social_core.backends.google import GoogleOAuth2
@@ -152,6 +153,10 @@ def gitlab_auth_enabled(realm: Optional[Realm] = None) -> bool:
 
 def apple_auth_enabled(realm: Optional[Realm] = None) -> bool:
     return auth_enabled_helper(["Apple"], realm)
+
+
+def facebook_auth_enable(realm: Optional[Realm] = None) -> bool:
+    return auth_enabled_helper(["Facebook"], realm)
 
 
 def saml_auth_enabled(realm: Optional[Realm] = None) -> bool:
@@ -1717,6 +1722,14 @@ class AzureADAuthBackend(SocialAuthMixin, AzureADOAuth2):
     name = "azuread-oauth2"
     auth_backend_name = "AzureAD"
     display_icon = "/static/images/landing-page/logos/azuread-icon.png"
+
+
+@external_auth_method
+class FacebookAuthBackend(SocialAuthMixin, FacebookOAuth2):
+    sort_order = 60
+    name = "facebook"
+    auth_backend_name = "Facebook"
+    display_icon = "/static/images/landing-page/logos/facebook-icon.png"
 
 
 @external_auth_method

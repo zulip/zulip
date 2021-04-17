@@ -103,6 +103,7 @@ from zproject.backends import (
     EmailAuthBackend,
     ExternalAuthDataDict,
     ExternalAuthResult,
+    FacebookAuthBackend,
     GitHubAuthBackend,
     GitLabAuthBackend,
     GoogleAuthBackend,
@@ -124,6 +125,7 @@ from zproject.backends import (
     check_password_strength,
     dev_auth_enabled,
     email_belongs_to_ldap,
+    facebook_auth_enable,
     get_external_method_dicts,
     github_auth_enabled,
     gitlab_auth_enabled,
@@ -3343,6 +3345,28 @@ class GitLabAuthBackendTest(SocialAuthBase):
     def test_gitlab_auth_enabled(self) -> None:
         with self.settings(AUTHENTICATION_BACKENDS=("zproject.backends.GitLabAuthBackend",)):
             self.assertTrue(gitlab_auth_enabled())
+
+    def get_account_data_dict(self, email: str, name: str) -> Dict[str, Any]:
+        return dict(email=email, name=name, email_verified=True)
+
+
+class FacebookAuthBackendTest(SocialAuthBase):
+    __unittest_skip__ = False
+
+    BACKEND_CLASS = FacebookAuthBackend
+    CLIENT_KEY_SETTING = "SOCIAL_AUTH_FACEBOOK_KEY"
+    CLIENT_SECRET_SETTING = "SOCIAL_AUTH_FACEBOOK_SECRET"
+    LOGIN_URL = "/account/login/social/facebook"
+    SIGNUP_URL = "/accounts/register/social/facebook"
+    AUTHORIZATION_URL = "https://facebook.com/oauth/authorize"
+    ACCESS_TOKEN_URL = "https://facebook.com/oauth/token"
+    USER_INFO_URL = "https://facebook.com/api/v4/user"
+    AUTH_FINISH_URL = "/complete/facebook/"
+    CONFIG_ERROR_URL = "/config-error/facebook"
+
+    def test_facebook_auth_enable(self) -> None:
+        with self.settings(AUTHENTICATION_BACKENDS=("zproject.backends.FacebookAuthBackend",)):
+            self.assertTrue(facebook_auth_enable())
 
     def get_account_data_dict(self, email: str, name: str) -> Dict[str, Any]:
         return dict(email=email, name=name, email_verified=True)

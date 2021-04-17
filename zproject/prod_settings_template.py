@@ -144,6 +144,7 @@ AUTHENTICATION_BACKENDS: Tuple[str, ...] = (
     # 'zproject.backends.GitLabAuthBackend',  # GitLab auth, setup below
     # 'zproject.backends.AzureADAuthBackend',  # Microsoft Azure Active Directory auth, setup below
     # 'zproject.backends.AppleAuthBackend',  # Apple auth, setup below
+    # 'zproject.backends.FacebookAuthBackend',  # Facebook auth, setup below
     # 'zproject.backends.SAMLAuthBackend', # SAML, setup below
     # 'zproject.backends.ZulipLDAPAuthBackend',  # LDAP, setup below
     # 'zproject.backends.ZulipRemoteUserBackend',  # Local SSO, setup docs on readthedocs
@@ -455,6 +456,29 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## email address is "username@example.com", set SSO_APPEND_DOMAIN =
 ## "example.com"), otherwise leave this as None.
 # SSO_APPEND_DOMAIN = None
+
+########
+## Facebook OAuth
+##
+## To set up Facebook OAuth2 authentication, you'll need to do the following:
+##
+## (1) Register a new App at https://developer.facebook.com,
+##      a) Add the 'Facebook Login' product,
+##      b) In the 'Facebook Login' settings:
+##          - Ensure 'Client OAuth Login' is enabled,
+##          - ensure 'Web OAuth Login' is enabled,
+##          - add to 'Valid OAuth Redirect URIs': https://zulip.example.com/complete/facebook (replacing zulip.example.com with your domain name).
+## (2) Enter the App ID as SOCIAL_AUTH_FACEBOOK_KEY here,
+## (3) Put the App Secret in zulip-secrets.conf as 'facebook_secret'.
+## (4) Uncomment SOCIAL_AUTH_FACEBOOK_SCOPE and SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS
+##     below if you want to modify them, but the defaults
+##     should suffice.
+#
+# SOCIAL_AUTH_FACEBOOK_KEY = '<your Facebook App ID>'
+# SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
+# SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
+#   'fields': 'id, name, email'
+# }
 
 ################
 ## Service configuration
