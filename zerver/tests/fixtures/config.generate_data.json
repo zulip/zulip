@@ -54,6 +54,16 @@
             "[unreads](/static/images/story-tutorial/zulip-streams-unreads.png)\n"
       ],
 
+      "attachment-paths": [
+        "static/assets/README",
+        "static/audio/zulip.ogg",
+        "static/html/5xx.html",
+        "static/js/admin.js",
+        "static/js/message_list_view.js",
+        "static/styles/app_components.css",
+        "static/styles/reactions.css"
+      ],
+
       "maths": [
         "$$e^{i \\pi } + 1 = 0$$",
         "$$\\frac{1}{\\Gamma(k)\\theta^k x^{k-1} e^{-\\frac{x}{\\theta}}$$"
@@ -77,7 +87,8 @@
     "math": 1,
     "link" : 8,
     "list": 5,
-    "images" : 5
+    "images" : 5,
+    "attachment" : 3
   },
   "corpus":
   {
