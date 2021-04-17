@@ -3,11 +3,9 @@
 
         <div class="pm_left_col">
             {{#if is_group}}
-                {{#if fraction_present}}
-                <span class="{{user_circle_class}} user_circle" style="background:hsla(106, 74%, 44%, {{fraction_present}});"></span>
-                {{else}}
-                <span class="{{user_circle_class}} user_circle" style="background:none; border-color:hsl(0, 0%, 50%);"></span>
-                {{/if}}
+                <div class="pm_group_num">
+                    {{num_in_group}}
+                </div>
             {{else}}
                 <span class="{{user_circle_class}} user_circle"></span>
             {{/if}}
@@ -16,9 +14,16 @@
         <a href='{{url}}' class="conversation-partners">
             {{recipients}}
         </a>
+<<<<<<< HEAD
         <span class="unread_count {{#if is_zero}}zero_count{{/if}}">
             {{unread}}
         </span>
+=======
+        
+        <div class="private_message_count {{#if is_zero}}zero_count{{/if}}">
+            <div class="value">{{unread}}</div>
+        </div>
+>>>>>>> add counters for number of members for group messages
     </span>
 </li>
 

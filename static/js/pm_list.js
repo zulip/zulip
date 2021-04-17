@@ -72,6 +72,8 @@ export function _get_convos() {
 
         const is_group = user_ids_string.includes(",");
 
+        const num_in_group = user_ids_string.split(',').length
+
         const is_active = user_ids_string === active_user_ids_string;
 
         let user_circle_class;
@@ -100,6 +102,7 @@ export function _get_convos() {
             user_circle_class,
             fraction_present,
             is_group,
+            num_in_group,
         };
         display_messages.push(display_message);
     }

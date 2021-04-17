@@ -51,7 +51,9 @@ $topic_indent: calc($far_left_gutter_size + $left_col_size + 4px);
     font-weight: bold;
     letter-spacing: 0px;
     margin-left: 2px;
-    border-radius: 2px;
+    border-radius: 4px;
+    border-style: solid;
+    border-width: 1px;
 }
 
 #stream_filters,
