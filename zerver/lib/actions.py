@@ -5544,7 +5544,7 @@ def do_update_message(
         # though the messages were deleted, and we should send a
         # delete_message event to them instead.
 
-        subscribers = get_active_subscriptions_for_stream_id(
+        subs_to_old_stream = get_active_subscriptions_for_stream_id(
             stream_id, include_deactivated_users=True
         ).select_related("user_profile")
         subs_to_new_stream = list(
@@ -5553,12 +5553,12 @@ def do_update_message(
             ).select_related("user_profile")
         )
 
-        old_stream_sub_ids = [user.user_profile_id for user in subscribers]
+        old_stream_sub_ids = [user.user_profile_id for user in subs_to_old_stream]
         new_stream_sub_ids = [user.user_profile_id for user in subs_to_new_stream]
 
         # Get users who aren't subscribed to the new_stream.
         subs_losing_usermessages = [
-            sub for sub in subscribers if sub.user_profile_id not in new_stream_sub_ids
+            sub for sub in subs_to_old_stream if sub.user_profile_id not in new_stream_sub_ids
         ]
         # Users who can longer access the message without some action
         # from administrators.
@@ -5685,27 +5685,29 @@ def do_update_message(
     users_to_be_notified = list(map(user_info, ums))
     if stream_being_edited is not None:
         if stream_being_edited.is_history_public_to_subscribers:
-            subscribers = get_active_subscriptions_for_stream_id(
+            subscriptions = get_active_subscriptions_for_stream_id(
                 stream_id, include_deactivated_users=False
             )
             # We exclude long-term idle users, since they by
             # definition have no active clients.
-            subscribers = subscribers.exclude(user_profile__long_term_idle=True)
+            subscriptions = subscriptions.exclude(user_profile__long_term_idle=True)
             # Remove duplicates by excluding the id of users already
             # in users_to_be_notified list.  This is the case where a
             # user both has a UserMessage row and is a current
             # Subscriber
-            subscribers = subscribers.exclude(
+            subscriptions = subscriptions.exclude(
                 user_profile_id__in=[um.user_profile_id for um in ums]
             )
 
             if new_stream is not None:
                 assert delete_event_notify_user_ids is not None
-                subscribers = subscribers.exclude(user_profile_id__in=delete_event_notify_user_ids)
+                subscriptions = subscriptions.exclude(
+                    user_profile_id__in=delete_event_notify_user_ids
+                )
 
             # All users that are subscribed to the stream must be
             # notified when a message is edited
-            subscriber_ids = [user.user_profile_id for user in subscribers]
+            subscriber_ids = [user.user_profile_id for user in subscriptions]
 
             if new_stream is not None:
                 # TODO: Guest users don't see the new moved topic
@@ -5724,10 +5726,10 @@ def do_update_message(
                     for sub in subs_to_new_stream
                     if sub.user_profile.is_guest and sub.user_profile_id not in subscriber_ids
                 ]
-                subscribers = subscribers.exclude(
+                subscriptions = subscriptions.exclude(
                     user_profile_id__in=[sub.user_profile_id for sub in old_stream_unsubbed_guests]
                 )
-                subscriber_ids = [user.user_profile_id for user in subscribers]
+                subscriber_ids = [user.user_profile_id for user in subscriptions]
 
             users_to_be_notified += list(map(subscriber_info, subscriber_ids))
 
@@ -5789,12 +5791,12 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
         stream_id = sample_message.recipient.type_id
         event["stream_id"] = stream_id
         event["topic"] = sample_message.topic_name()
-        subscribers = get_active_subscriptions_for_stream_id(
+        subscriptions = get_active_subscriptions_for_stream_id(
             stream_id, include_deactivated_users=False
         )
         # We exclude long-term idle users, since they by definition have no active clients.
-        subscribers = subscribers.exclude(user_profile__long_term_idle=True)
-        users_to_notify = list(subscribers.values_list("user_profile_id", flat=True))
+        subscriptions = subscriptions.exclude(user_profile__long_term_idle=True)
+        users_to_notify = list(subscriptions.values_list("user_profile_id", flat=True))
         archiving_chunk_size = retention.STREAM_MESSAGE_BATCH_SIZE
 
     move_messages_to_archive(message_ids, realm=realm, chunk_size=archiving_chunk_size)
