@@ -42,6 +42,18 @@ $topic_indent: calc($far_left_gutter_size + $left_col_size + 4px);
     min-width: $left_col_size;
 }
 
+.pm_group_num {
+    float: left;
+    padding: 0px 2px 0px 2px;
+    height: 16px;
+    line-height: 16px;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 0px;
+    margin-left: 2px;
+    border-radius: 2px;
+}
+
 #stream_filters,
 #global_filters {
     font-size: 14px;
