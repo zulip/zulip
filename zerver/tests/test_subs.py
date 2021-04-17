@@ -569,7 +569,7 @@ class StreamAdminTest(ZulipTestCase):
         result = self.client_delete(f"/json/streams/{stream.id}")
         self.assert_json_success(result)
         subscription_exists = (
-            get_active_subscriptions_for_stream_id(stream.id)
+            get_active_subscriptions_for_stream_id(stream.id, include_deactivated_users=True)
             .filter(
                 user_profile=user_profile,
             )
@@ -593,7 +593,7 @@ class StreamAdminTest(ZulipTestCase):
         result = self.client_delete(f"/json/streams/{stream.id}")
         self.assert_json_success(result)
         subscription_exists = (
-            get_active_subscriptions_for_stream_id(stream.id)
+            get_active_subscriptions_for_stream_id(stream.id, include_deactivated_users=True)
             .filter(
                 user_profile=user_profile,
             )

@@ -22,13 +22,22 @@ class SubscriberPeerInfo:
     private_peer_dict: Dict[int, Set[int]]
 
 
-def get_active_subscriptions_for_stream_id(stream_id: int) -> QuerySet:
+def get_active_subscriptions_for_stream_id(
+    stream_id: int, *, include_deactivated_users: bool
+) -> QuerySet:
     # TODO: Change return type to QuerySet[Subscription]
-    return Subscription.objects.filter(
+    query = Subscription.objects.filter(
         recipient__type=Recipient.STREAM,
         recipient__type_id=stream_id,
         active=True,
     )
+    if not include_deactivated_users:
+        # Note that non-active users may still have "active" subscriptions, because we
+        # want to be able to easily reactivate them with their old subscriptions.  This
+        # is why the query here has to look at the is_user_active flag.
+        query = query.filter(is_user_active=True)
+
+    return query
 
 
 def get_active_subscriptions_for_stream_ids(stream_ids: Set[int]) -> QuerySet:
@@ -100,13 +109,9 @@ def get_bulk_stream_subscriber_info(
 
 
 def num_subscribers_for_stream_id(stream_id: int) -> int:
-    return (
-        get_active_subscriptions_for_stream_id(stream_id)
-        .filter(
-            user_profile__is_active=True,
-        )
-        .count()
-    )
+    return get_active_subscriptions_for_stream_id(
+        stream_id, include_deactivated_users=False
+    ).count()
 
 
 def get_user_ids_for_streams(stream_ids: Set[int]) -> Dict[int, Set[int]]:
@@ -265,16 +270,14 @@ def subscriber_ids_with_stream_history_access(stream: Stream) -> Set[int]:
     if not stream.is_history_public_to_subscribers():
         return set()
 
-    subscriptions = get_active_subscriptions_for_stream_id(stream.id)
+    subscriptions = get_active_subscriptions_for_stream_id(
+        stream.id, include_deactivated_users=False
+    )
     if stream.is_web_public:
-        return set(
-            subscriptions.filter(user_profile__is_active=True).values_list(
-                "user_profile__id", flat=True
-            )
-        )
+        return set(subscriptions.values_list("user_profile__id", flat=True))
 
     return set(
-        subscriptions.filter(user_profile__is_active=True)
-        .exclude(user_profile__role=UserProfile.ROLE_GUEST)
-        .values_list("user_profile__id", flat=True)
+        subscriptions.exclude(user_profile__role=UserProfile.ROLE_GUEST).values_list(
+            "user_profile__id", flat=True
+        )
     )

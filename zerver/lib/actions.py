@@ -311,14 +311,16 @@ def can_access_stream_user_ids(stream: Stream) -> Set[int]:
 
 def private_stream_user_ids(stream_id: int) -> Set[int]:
     # TODO: Find similar queries elsewhere and de-duplicate this code.
-    subscriptions = get_active_subscriptions_for_stream_id(stream_id)
+    subscriptions = get_active_subscriptions_for_stream_id(
+        stream_id, include_deactivated_users=True
+    )
     return {sub["user_profile_id"] for sub in subscriptions.values("user_profile_id")}
 
 
 def public_stream_user_ids(stream: Stream) -> Set[int]:
-    guest_subscriptions = get_active_subscriptions_for_stream_id(stream.id).filter(
-        user_profile__role=UserProfile.ROLE_GUEST
-    )
+    guest_subscriptions = get_active_subscriptions_for_stream_id(
+        stream.id, include_deactivated_users=True
+    ).filter(user_profile__role=UserProfile.ROLE_GUEST)
     guest_subscriptions = {
         sub["user_profile_id"] for sub in guest_subscriptions.values("user_profile_id")
     }
@@ -1241,7 +1243,9 @@ def do_deactivate_stream(
     # Get the affected user ids *before* we deactivate everybody.
     affected_user_ids = can_access_stream_user_ids(stream)
 
-    get_active_subscriptions_for_stream_id(stream.id).update(active=False)
+    get_active_subscriptions_for_stream_id(stream.id, include_deactivated_users=True).update(
+        active=False
+    )
 
     was_invite_only = stream.invite_only
     stream.deactivated = True
@@ -3231,13 +3235,7 @@ def get_subscribers_query(stream: Stream, requesting_user: Optional[UserProfile]
     """
     validate_user_access_to_subscribers(requesting_user, stream)
 
-    # Note that non-active users may still have "active" subscriptions, because we
-    # want to be able to easily reactivate them with their old subscriptions.  This
-    # is why the query here has to look at the UserProfile.is_active flag.
-    subscriptions = get_active_subscriptions_for_stream_id(stream.id).filter(
-        user_profile__is_active=True,
-    )
-    return subscriptions
+    return get_active_subscriptions_for_stream_id(stream.id, include_deactivated_users=False)
 
 
 def get_subscriber_emails(
@@ -5546,11 +5544,13 @@ def do_update_message(
         # though the messages were deleted, and we should send a
         # delete_message event to them instead.
 
-        subscribers = get_active_subscriptions_for_stream_id(stream_id).select_related(
-            "user_profile"
-        )
+        subscribers = get_active_subscriptions_for_stream_id(
+            stream_id, include_deactivated_users=True
+        ).select_related("user_profile")
         subs_to_new_stream = list(
-            get_active_subscriptions_for_stream_id(new_stream.id).select_related("user_profile")
+            get_active_subscriptions_for_stream_id(
+                new_stream.id, include_deactivated_users=True
+            ).select_related("user_profile")
         )
 
         old_stream_sub_ids = [user.user_profile_id for user in subscribers]
@@ -5685,7 +5685,9 @@ def do_update_message(
     users_to_be_notified = list(map(user_info, ums))
     if stream_being_edited is not None:
         if stream_being_edited.is_history_public_to_subscribers:
-            subscribers = get_active_subscriptions_for_stream_id(stream_id)
+            subscribers = get_active_subscriptions_for_stream_id(
+                stream_id, include_deactivated_users=True
+            )
             # We exclude long-term idle users, since they by
             # definition have no active clients.
             subscribers = subscribers.exclude(user_profile__long_term_idle=True)
@@ -5787,7 +5789,9 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
         stream_id = sample_message.recipient.type_id
         event["stream_id"] = stream_id
         event["topic"] = sample_message.topic_name()
-        subscribers = get_active_subscriptions_for_stream_id(stream_id)
+        subscribers = get_active_subscriptions_for_stream_id(
+            stream_id, include_deactivated_users=True
+        )
         # We exclude long-term idle users, since they by definition have no active clients.
         subscribers = subscribers.exclude(user_profile__long_term_idle=True)
         users_to_notify = list(subscribers.values_list("user_profile_id", flat=True))
