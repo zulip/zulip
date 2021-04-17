@@ -417,55 +417,6 @@ export const all_notifications = () => ({
     },
 });
 
-const map_language_to_playground_info = {
-    // TODO: This is being hardcoded just for the prototype, post which we should
-    // add support for realm admins to configure their own choices. The keys here
-    // are the pygment lexer subclass names for the different language alias it
-    // supports.
-    Rust: [
-        {
-            name: "Rust playground",
-            url_prefix: "https://play.rust-lang.org/?edition=2018&code=",
-        },
-    ],
-    Julia: [
-        {
-            name: "Julia playground",
-            url_prefix: "https://repl.it/languages/julia/?code=",
-        },
-    ],
-    Python: [
-        {
-            name: "Python 3 playground",
-            url_prefix: "https://repl.it/languages/python3/?code=",
-        },
-    ],
-    "Python 2.7": [
-        {
-            name: "Python 2.7 playground",
-            url_prefix: "https://repl.it/languages/python/?code=",
-        },
-    ],
-    JavaScript: [
-        {
-            name: "JavaScript playground",
-            url_prefix: "https://repl.it/languages/javascript/?code=",
-        },
-    ],
-    Lean: [
-        {
-            name: "Lean playground",
-            url_prefix: "https://leanprover.github.io/live/latest/#code=",
-        },
-        {
-            name: "Lean community playground",
-            url_prefix: "https://leanprover-community.github.io/lean-web-editor/#code=",
-        },
-    ],
-};
-
-export const get_playground_info_for_languages = (lang) => map_language_to_playground_info[lang];
-
 export const desktop_icon_count_display_values = {
     messages: {
         code: 1,

@@ -2,9 +2,12 @@ import $ from "jquery";
 
 import render_admin_playground_list from "../templates/settings/admin_playground_list.hbs";
 
+import * as channel from "./channel";
+import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
 import * as ui from "./ui";
+import * as ui_report from "./ui_report";
 
 const meta = {
     loaded: false,
@@ -84,4 +87,49 @@ export function set_up() {
 function build_page() {
     meta.loaded = true;
     populate_playgrounds(page_params.realm_playgrounds);
+
+    $(".organization form.admin-playground-form")
+        .off("submit")
+        .on("submit", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const playground_status = $("#admin-playground-status");
+            const add_playground_button = $(".new-playground-form button");
+            add_playground_button.prop("disabled", true);
+            playground_status.hide();
+
+            channel.post({
+                url: "/json/realm/playgrounds",
+                data: $(this).serialize(),
+                success() {
+                    $("#playground_pygments_language").val("");
+                    $("#playground_name").val("");
+                    $("#playground_url_prefix").val("");
+                    add_playground_button.prop("disabled", false);
+                    ui_report.success(
+                        $t_html({defaultMessage: "Custom playground added!"}),
+                        playground_status,
+                        3000,
+                    );
+                    // FIXME: One thing to note here is that the "view code in playground"
+                    // option for an already rendered code block (tagged with this newly added
+                    // language) would not be visible without a re-render. To fix this, we should
+                    // probably do some extraction in `rendered_markdown.js` which does a
+                    // live-update of the `data-code-language` parameter in code blocks. Or change
+                    // how we do the HTML in the frontend so that the icon labels/behavior are
+                    // computed dynamically when you hover over the message based on configured
+                    // playgrounds. Since this isn't high priority right now, we can probably
+                    // take this up later.
+                },
+                error(xhr) {
+                    add_playground_button.prop("disabled", false);
+                    ui_report.error(
+                        $t_html({defaultMessage: "Failed"}),
+                        xhr,
+                        playground_status,
+                        3000,
+                    );
+                },
+            });
+        });
 }

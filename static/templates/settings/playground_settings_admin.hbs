@@ -2,10 +2,53 @@
     <div class="admin-table-wrapper">
         <p>
             {{#tr}}
-            Configure external sites that can run code present in a Zulip code block.
+                Configure external code playgrounds for your Zulip organization. Code playgrounds are interactive in-browser development
+                environments, such as <z-link-repl>replit</z-link-repl>, that are designed to make it convenient to edit and debug
+                code. Zulip code blocks that are <z-link-markdown-help>tagged with a programming language</z-link-markdown-help> will have
+                a button visible on hover that allows you to open the code block in the code playground site.
+                {{#*inline "z-link-repl"}}<a href="https://replit.com/" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+                {{#*inline "z-link-markdown-help"}}<a href="/help/format-your-message-using-markdown#code" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
             {{/tr}}
         </p>
-        <input type="text" class="search" placeholder="{{t 'Filter playgrounds' }}" aria-label="{{t 'Filter playgrounds' }}"/>
+        <p>
+            {{#tr}}
+            For example, to configure code playgrounds for languages like Python or JavaScript, you could specify the <i>Language</i>
+            and <i>URL Prefix</i> fields as:
+            {{/tr}}
+        </p>
+        <ul>
+            <li><code>Python</code> {{t "and" }} <code>https://replit.com/languages/python3/?code=</code></li>
+            <li><code>JavaScript</code>  {{t "and" }} <code>https://replit.com/languages/javascript/?code=</code></li>
+        </ul>
+
+        {{#if is_admin}}
+        <form class="form-horizontal admin-playground-form">
+            <div class="add-new-playground-box grey-box">
+                <div class="new-playground-form wrapper">
+                    <div class="settings-section-title">{{t "Add a new code playground" }}</div>
+                    <div class="alert" id="admin-playground-status"></div>
+                    <div class="control-group">
+                        {{!-- TODO: This should have a typeahead suggestion popover --}}
+                        <label for="playground_pygments_language" class="control-label"> {{t "Language" }}</label>
+                        <input type="text" id="playground_pygments_language" name="pygments_language" autocomplete="off" placeholder="Python" />
+                    </div>
+                    <div class="control-group">
+                        <label for="playground_name" class="control-label"> {{t "Name" }}</label>
+                        <input type="text" id="playground_name" name="name" placeholder="Python3 playground" />
+                    </div>
+                    <div class="control-group">
+                        <label for="playground_url_prefix" class="control-label"> {{t "URL prefix" }}</label>
+                        <input type="text" id="playground_url_prefix" name="url_prefix" placeholder="https://replit.com/languages/python3/?code=" />
+                    </div>
+                    <button type="submit" class="button rounded sea-green">
+                        {{t 'Add code playground' }}
+                    </button>
+                </div>
+            </div>
+        </form>
+        {{/if}}
+
+        <input type="text" class="search" placeholder="{{t 'Filter code playgrounds' }}" aria-label="{{t 'Filter code playgrounds' }}"/>
         <div class="progressive-table-wrapper" data-simplebar>
             <table class="table table-condensed table-striped wrapped-table admin_playgrounds_table">
                 <thead>

@@ -89,6 +89,11 @@ pre {
          */
         height: 0 !important;
     }
+    /* If the text in the tooltips stretches to multiple lines,
+     * we want the lines to be left-indented and not right-indented
+     * by default.
+     */
+    text-align: left;
 }
 
 .no-select {

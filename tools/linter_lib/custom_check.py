@@ -546,7 +546,12 @@ html_rules: List["Rule"] = [
             ("templates/zerver/register.html", 'placeholder="acme"'),
             ("templates/zerver/register.html", 'placeholder="Acme or Ακμή"'),
         },
-        "exclude": {"templates/analytics/support.html"},
+        "exclude": {
+            "templates/analytics/support.html",
+            # We have URL prefix and Pygments language name as placeholders
+            # in the below template which we don't want to be translatable.
+            "static/templates/settings/playground_settings_admin.hbs",
+        },
         "good_lines": [
             '<input class="stream-list-filter" type="text" placeholder="{{ _(\'Filter streams\') }}" />'
         ],

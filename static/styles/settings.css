@@ -194,6 +194,14 @@ h3 .fa-question-circle-o {
     }
 }
 
+#playground-settings {
+    #playground_pygments_language,
+    #playground_name,
+    #playground_url_prefix {
+        width: calc(100% - 10em - 6em);
+    }
+}
+
 td .button {
     margin: 2px 0;
     box-shadow: none;
@@ -669,7 +677,8 @@ input[type="checkbox"] {
 }
 
 .add-new-profile-field-box,
-.add-new-linkifier-box {
+.add-new-linkifier-box,
+.add-new-playground-box {
     button {
         margin-left: calc(10em + 20px) !important;
     }
@@ -892,6 +901,7 @@ input[type="checkbox"] {
 #create_alert_word_form,
 .admin-emoji-form,
 .admin-linkifier-form,
+.admin-playground-form,
 .admin-profile-field-form,
 .edit_bot_form {
     .control-label {
@@ -1867,11 +1877,13 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     }
 
     #linkifier-settings .new-linkifier-form,
+    #playground-settings .new-playground-form,
     #profile-field-settings .new-profile-field-form {
         width: 100%;
     }
 
     #linkifier-settings .new-linkifier-form .control-label,
+    #playground-settings .new-playground-form .control-label,
     #profile-field-settings .new-profile-field-form .control-label {
         display: block;
         width: 120px;
@@ -1883,6 +1895,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     }
 
     #linkifier-settings .new-linkifier-form .controls,
+    #playground-settings .new-playground-form .controls,
     #profile-field-settings .new-profile-field-form .controls {
         margin: auto;
         text-align: center;
