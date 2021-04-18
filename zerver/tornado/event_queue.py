@@ -33,6 +33,7 @@ from django.conf import settings
 from django.utils.translation import gettext as _
 from typing_extensions import TypedDict
 
+from version import API_FEATURE_LEVEL, ZULIP_VERSION
 from zerver.decorator import cachify
 from zerver.lib.message import MessageDict
 from zerver.lib.narrow import build_narrow_filter
@@ -572,7 +573,12 @@ def load_event_queues(port: int) -> None:
 
 
 def send_restart_events(immediate: bool = False) -> None:
-    event: Dict[str, Any] = dict(type="restart", server_generation=settings.SERVER_GENERATION)
+    event: Dict[str, Any] = dict(
+        type="restart",
+        zulip_version=ZULIP_VERSION,
+        zulip_feature_level=API_FEATURE_LEVEL,
+        server_generation=settings.SERVER_GENERATION,
+    )
     if immediate:
         event["immediate"] = True
     for client in clients.values():

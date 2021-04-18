@@ -10,6 +10,11 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 59**
+
+* [`GET /events`](/api/get-events): Added new `zulip_version` and
+  `zulip_feature_level` fields to the `restart` event.
+
 **Feature level 58**
 
 * [`POST /register`](/api/register-queue): Added the new

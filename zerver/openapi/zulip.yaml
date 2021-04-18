@@ -3115,6 +3115,68 @@ paths:
                                   "id": 0,
                                 }
                             - type: object
+                              description: |
+                                Event sent to all the users whenever the Zulip server restarts.
+
+                                Specifically, this event is sent whenever the Tornado process
+                                for the user is restarted; in particular, this will always happen
+                                when the Zulip server is upgraded.
+
+                                Clients can use this event to know when they should get a new
+                                event queue after a server upgrade.  Clients doing so must implement
+                                a random delay strategy to spread such restarts over 10 minutes or
+                                more to avoid creating a synchronized thundering herd effect.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - restart
+                                zulip_version:
+                                  type: string
+                                  description: |
+                                    The Zulip version number, in the format where this appears
+                                    in the [server_settings](/api/get-server-settings) and
+                                    [register](/api/register-queue) responses.
+
+                                    **Changes**: New in Zulip 4.0 (feature level 59).
+                                zulip_feature_level:
+                                  type: integer
+                                  description: |
+                                    The [Zulip feature level](/api/changelog) of the server
+                                    after the restart.
+
+                                    Clients can safely avoid refetching their state and
+                                    creating a new event queue when the API feature level has not
+                                    changed, or when they know the specific feature level change
+                                    is not relevant to the client (E.g. it just adds a new endpoint
+                                    that the client doesn't use).
+
+                                    **Changes**: New in Zulip 4.0 (feature level 59).
+                                immediate:
+                                  type: boolean
+                                  description: |
+                                    Whether the client should fetch a new event queue immediately,
+                                    rather than using a backoff strategy to avoid thundering herds.
+                                    A Zulip development server uses this parameter to reload
+                                    clients immediately.
+                                server_generation:
+                                  type: integer
+                                  description: |
+                                    The timestamp at which the server started.
+                              additionalProperties: false
+                              example:
+                                {
+                                  "id": 0,
+                                  "immediate": True,
+                                  "server_generation": 1619334181,
+                                  "type": "restart",
+                                  "zulip_feature_level": 57,
+                                  "zulip_version": "4.0-dev+git",
+                                }
+                            - type: object
                               additionalProperties: false
                               description: |
                                 Event sent to all users in a Zulip organization when the

@@ -6,6 +6,7 @@ import orjson
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 
+from version import API_FEATURE_LEVEL, ZULIP_VERSION
 from zerver.lib.actions import check_send_message, do_change_user_role, do_set_realm_property
 from zerver.lib.event_schema import check_restart_event
 from zerver.lib.events import fetch_initial_state_data, get_raw_user_data
@@ -877,6 +878,8 @@ class RestartEventsTest(ZulipTestCase):
             restart_event,
             dict(
                 type="restart",
+                zulip_version=ZULIP_VERSION,
+                zulip_feature_level=API_FEATURE_LEVEL,
                 server_generation=settings.SERVER_GENERATION,
                 immediate=True,
                 id=0,
