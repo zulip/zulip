@@ -67,9 +67,13 @@ If the script gives an error, consult [Troubleshooting](#troubleshooting) below.
   If you'd prefer to acquire an SSL certificate yourself in any other
   way, it's easy to [provide it to Zulip][doc-ssl-manual].
 
+You can see the more advanced installer options in our [deployment options][doc-deployment-options]
+documentation.
+
 [doc-settings]: ../production/settings.md
 [doc-certbot]: ../production/ssl-certificates.html#certbot-recommended
 [doc-ssl-manual]: ../production/ssl-certificates.html#manual-install
+[doc-deployment-options]: ../production/deployment.html#advanced-installer-options
 
 ## Step 3: Create a Zulip organization, and log in
 
