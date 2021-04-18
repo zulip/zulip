@@ -6885,6 +6885,9 @@ paths:
                to optimize network performance.  This is an important optimization
                in organizations with 10,000s of users.
                New in Zulip 3.0 (feature level 18).
+
+            * `stream_typing_notifications`: Boolean for whether the client
+              supports stream typing notifications.
           content:
             application/json:
               schema:

@@ -1092,6 +1092,7 @@ def do_events_register(
     user_avatar_url_field_optional = client_capabilities.get(
         "user_avatar_url_field_optional", False
     )
+    stream_typing_notifications = client_capabilities.get("stream_typing_notifications", False)
 
     if user_profile.realm.email_address_visibility != Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
         # If real email addresses are not available to the user, their
@@ -1111,6 +1112,7 @@ def do_events_register(
         all_public_streams,
         narrow=narrow,
         bulk_message_deletion=bulk_message_deletion,
+        stream_typing_notifications=stream_typing_notifications,
     )
 
     if queue_id is None:

@@ -74,6 +74,7 @@ def request_event_queue(
     all_public_streams: bool = False,
     narrow: Iterable[Sequence[str]] = [],
     bulk_message_deletion: bool = False,
+    stream_typing_notifications: bool = False,
 ) -> Optional[str]:
 
     if not settings.USING_TORNADO:
@@ -93,6 +94,7 @@ def request_event_queue(
         "secret": settings.SHARED_SECRET,
         "lifespan_secs": queue_lifespan_secs,
         "bulk_message_deletion": orjson.dumps(bulk_message_deletion),
+        "stream_typing_notifications": orjson.dumps(stream_typing_notifications),
     }
 
     if event_types is not None:

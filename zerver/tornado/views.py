@@ -97,6 +97,9 @@ def get_events_backend(
     bulk_message_deletion: bool = REQ(
         default=False, json_validator=check_bool, intentionally_undocumented=True
     ),
+    stream_typing_notifications: bool = REQ(
+        default=False, json_validator=check_bool, intentionally_undocumented=True
+    ),
 ) -> HttpResponse:
     if all_public_streams and not user_profile.can_access_public_streams():
         return json_error(_("User not authorized for this query"))
@@ -136,6 +139,7 @@ def get_events_backend(
             last_connection_time=time.time(),
             narrow=narrow,
             bulk_message_deletion=bulk_message_deletion,
+            stream_typing_notifications=stream_typing_notifications,
         )
 
     result = fetch_events(events_query)

@@ -227,6 +227,7 @@ class BaseAction(ZulipTestCase):
         include_streams: bool = True,
         num_events: int = 1,
         bulk_message_deletion: bool = True,
+        stream_typing_notifications: bool = True,
     ) -> List[Dict[str, Any]]:
         """
         Make sure we have a clean slate of client descriptors for these tests.
@@ -252,6 +253,7 @@ class BaseAction(ZulipTestCase):
                 last_connection_time=time.time(),
                 narrow=[],
                 bulk_message_deletion=bulk_message_deletion,
+                stream_typing_notifications=stream_typing_notifications,
             )
         )
 

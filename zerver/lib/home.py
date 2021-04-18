@@ -162,6 +162,7 @@ def build_page_params_for_home_page_load(
         "notification_settings_null": True,
         "bulk_message_deletion": True,
         "user_avatar_url_field_optional": True,
+        "stream_typing_notifications": False,  # Set this to True when frontend support is implemented.
     }
 
     if user_profile is not None:
