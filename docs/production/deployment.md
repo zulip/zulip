@@ -45,6 +45,29 @@ extremely reliable for years, whereas the Docker image is new and has
 rough edges, so we recommend the normal installer unless you have a
 specific reason to prefer Docker.
 
+## Advanced Installer Options
+
+The Zulip installer supports the following advanced installer options
+as well as those mentioned in the
+[install](../production/install.html#installer-options) documentation:
+
+* `--postgresql-version`: Sets the version of PostgreSQL that will be
+  installed.  We currently support PostgreSQL 10, 11, 12, and 13.
+
+* `--postgresql-missing-dictionaries`: Set
+  `postgresql.missing_dictionaries` ([docs][doc-settings]) in the
+  Zulip settings, which omits some configuration needed for full-text
+  indexing. This should be used with [cloud managed databases like
+  RDS](#using-zulip-with-amazon-rds-as-the-database). This option
+  conflicts with `--no-overwrite-settings`.
+
+* `--no-init-db`: This option instructs the installer to not do any
+  database initialization. This should be used when you already have a
+  Zulip database.
+
+* `--no-overwrite-settings`: This option preserves existing
+  `/etc/zulip` configuration files.
+
 ## Running Zulip's service dependencies on different machines
 
 Zulip has full support for each top-level service living on its own
