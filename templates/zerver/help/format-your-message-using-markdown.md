@@ -118,6 +118,10 @@ Organization administrators can also configure a default syntax
 highlighting language.  In this configuration, one can use ````text`
 to display content without any syntax highlighting.
 
+Hovering over a Zulip code block reveals buttons to copy the code or
+open it in one of the organization's configured [custom code
+playgrounds](/help/add-a-custom-playground).
+
 ## LaTeX
 ~~~
 Inline: $$O(n^2)$$

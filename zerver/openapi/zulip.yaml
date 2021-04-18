@@ -2629,7 +2629,8 @@ paths:
                               additionalProperties: false
                               description: |
                                 Event sent to all users in a Zulip organization when the
-                                set of configured playgrounds for the organization has changed.
+                                set of configured [code playgrounds](/help/add-a-custom-playground)
+                                for the organization has changed.
 
                                 **Changes**: New in Zulip 4.0 (feature level 49).
                               properties:
@@ -6985,8 +6986,7 @@ paths:
       operationId: add_realm_playground
       tags: ["server_and_organizations"]
       description: |
-        Configure realm playgrounds options to run code snippets occurring
-        in a code block using playgrounds which supports that language.
+        Configure [code playgrounds](/help/add-a-custom-playground) for the organization.
 
         `POST {{ api_url }}/v1/realm/playgrounds`
 
@@ -7042,8 +7042,8 @@ paths:
       operationId: remove_realm_playground
       tags: ["server_and_organizations"]
       description: |
-        Remove realm playground options to run code snippets in
-        custom playgrounds
+        Remove a [code playground](/help/add-a-custom-playground) previously
+        configured for an organization.
 
         `DELETE {{ api_url }}/v1/realm/playgrounds/{playground_id}`
 
@@ -7449,8 +7449,8 @@ paths:
                         description: |
                           Present if `realm_playgrounds` is present in `fetch_event_types`.
 
-                          An array of dictionaries where each dictionary describes a playground entry
-                          in this Zulip organization.
+                          An array of dictionaries where each dictionary describes a
+                          [code playground](/help/add-a-custom-playground) configured for this Zulip organization.
 
                           **Changes**: New in Zulip 4.0 (feature level 49).
                       realm_user_groups:

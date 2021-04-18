@@ -25,7 +25,10 @@
         <form class="form-horizontal admin-playground-form">
             <div class="add-new-playground-box grey-box">
                 <div class="new-playground-form wrapper">
-                    <div class="settings-section-title">{{t "Add a new code playground" }}</div>
+                    <div class="settings-section-title">
+                        {{t "Add a new code playground" }}
+                        {{> ../help_link_widget link="/help/add-a-custom-playground" }}
+                    </div>
                     <div class="alert" id="admin-playground-status"></div>
                     <div class="control-group">
                         <label for="playground_pygments_language" class="control-label"> {{t "Language" }}</label>

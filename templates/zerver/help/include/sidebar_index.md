@@ -140,6 +140,7 @@
 * [Add custom emoji](/help/add-custom-emoji)
 * [Configure authentication methods](/help/configure-authentication-methods)
 * [Add a custom linkifier](/help/add-a-custom-linkifier)
+* [Add a custom playground](/help/add-a-custom-playground)
 * [Message retention policy](/help/message-retention-policy)
 * [SAML authentication](/help/saml-authentication)
 

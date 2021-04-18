@@ -62,6 +62,11 @@ link_mapping = {
         "Linkifiers",
         "/#organization/linkifier-settings",
     ],
+    "playground-settings": [
+        "Manage organization",
+        "Playgrounds",
+        "/#organization/playground-settings",
+    ],
     "profile-field-settings": [
         "Manage organization",
         "Custom profile fields",
