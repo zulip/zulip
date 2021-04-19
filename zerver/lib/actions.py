@@ -138,6 +138,7 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.streams import (
     access_stream_for_send_message,
+    can_access_stream_user_ids,
     check_stream_name,
     create_stream_if_needed,
     get_default_value_for_history_public_to_subscribers,
@@ -293,37 +294,6 @@ STREAM_ASSIGNMENT_COLORS = [
 
 def subscriber_info(user_id: int) -> Dict[str, Any]:
     return {"id": user_id, "flags": ["read"]}
-
-
-def can_access_stream_user_ids(stream: Stream) -> Set[int]:
-    # return user ids of users who can access the attributes of
-    # a stream, such as its name/description.
-    if stream.is_public():
-        # For a public stream, this is everyone in the realm
-        # except unsubscribed guest users
-        return public_stream_user_ids(stream)
-    else:
-        # for a private stream, it's subscribers plus realm admins.
-        return private_stream_user_ids(stream.id) | {
-            user.id for user in stream.realm.get_admin_users_and_bots()
-        }
-
-
-def private_stream_user_ids(stream_id: int) -> Set[int]:
-    subscriptions = get_active_subscriptions_for_stream_id(
-        stream_id, include_deactivated_users=False
-    )
-    return {sub["user_profile_id"] for sub in subscriptions.values("user_profile_id")}
-
-
-def public_stream_user_ids(stream: Stream) -> Set[int]:
-    guest_subscriptions = get_active_subscriptions_for_stream_id(
-        stream.id, include_deactivated_users=False
-    ).filter(user_profile__role=UserProfile.ROLE_GUEST)
-    guest_subscriptions = {
-        sub["user_profile_id"] for sub in guest_subscriptions.values("user_profile_id")
-    }
-    return set(active_non_guest_user_ids(stream.realm_id)) | guest_subscriptions
 
 
 def bot_owner_user_ids(user_profile: UserProfile) -> Set[int]:

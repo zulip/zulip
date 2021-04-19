@@ -1,4 +1,4 @@
-from typing import Iterable, List, Optional, Tuple, Union
+from typing import Iterable, List, Optional, Set, Tuple, Union
 
 from django.db.models.query import QuerySet
 from django.utils.timezone import now as timezone_now
@@ -8,6 +8,7 @@ from typing_extensions import TypedDict
 from zerver.lib.exceptions import StreamAdministratorRequired
 from zerver.lib.markdown import markdown_convert
 from zerver.lib.request import JsonableError
+from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_id
 from zerver.models import (
     DefaultStreamGroup,
     Realm,
@@ -476,6 +477,38 @@ def access_stream_for_unmute_topic_by_id(
     except Stream.DoesNotExist:
         raise JsonableError(error)
     return stream
+
+
+def private_stream_user_ids(stream_id: int) -> Set[int]:
+    subscriptions = get_active_subscriptions_for_stream_id(
+        stream_id, include_deactivated_users=False
+    )
+    return {sub["user_profile_id"] for sub in subscriptions.values("user_profile_id")}
+
+
+def public_stream_user_ids(stream: Stream) -> Set[int]:
+    guest_subscriptions = get_active_subscriptions_for_stream_id(
+        stream.id, include_deactivated_users=False
+    ).filter(user_profile__role=UserProfile.ROLE_GUEST)
+    guest_subscriptions = {
+        sub["user_profile_id"] for sub in guest_subscriptions.values("user_profile_id")
+    }
+    return set(active_non_guest_user_ids(stream.realm_id)) | guest_subscriptions
+
+
+def can_access_stream_user_ids(stream: Stream) -> Set[int]:
+    # return user ids of users who can access the attributes of a
+    # stream, such as its name/description.  Useful for sending events
+    # to all users with access to a stream's attributes.
+    if stream.is_public():
+        # For a public stream, this is everyone in the realm
+        # except unsubscribed guest users
+        return public_stream_user_ids(stream)
+    else:
+        # for a private stream, it's subscribers plus realm admins.
+        return private_stream_user_ids(stream.id) | {
+            user.id for user in stream.realm.get_admin_users_and_bots()
+        }
 
 
 def can_access_stream_history(user_profile: UserProfile, stream: Stream) -> bool:
