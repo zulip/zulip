@@ -9,6 +9,7 @@ import * as people from "./people";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as stream_topic_history from "./stream_topic_history";
+import * as stream_topic_history_util from "./stream_topic_history_util";
 import * as typeahead_helper from "./typeahead_helper";
 
 export const max_num_of_search_results = 12;
@@ -341,6 +342,8 @@ function get_topic_suggestions(last, operators) {
         return [];
     }
 
+    // Fetch topic history from the server, in case we will need it.
+    stream_topic_history_util.get_server_history(stream_id, () => {});
     let topics = stream_topic_history.get_recent_topic_names(stream_id);
 
     if (!topics || !topics.length) {

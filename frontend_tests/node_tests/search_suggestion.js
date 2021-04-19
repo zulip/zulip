@@ -2,9 +2,11 @@
 
 const {strict: assert} = require("assert");
 
-const {with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {page_params} = require("../zjsunit/zpage_params");
+
+const stream_topic_history_util = mock_esm("../../static/js/stream_topic_history_util");
 
 const settings_config = zrequire("settings_config");
 
@@ -629,8 +631,8 @@ test("topic_suggestions", (override) => {
     let suggestions;
     let expected;
 
+    override(stream_topic_history_util, "get_server_history", () => {});
     override(stream_data, "subscribed_streams", () => ["office"]);
-
     override(narrow_state, "stream", () => "office");
 
     const devel_id = 44;

@@ -21,6 +21,7 @@ import * as rows from "./rows";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as stream_topic_history from "./stream_topic_history";
+import * as stream_topic_history_util from "./stream_topic_history_util";
 import * as timerender from "./timerender";
 import * as typeahead_helper from "./typeahead_helper";
 import * as user_groups from "./user_groups";
@@ -68,6 +69,9 @@ export function topics_seen_for(stream_name) {
     if (!stream_id) {
         return [];
     }
+
+    // Fetch topic history from the server, in case we will need it soon.
+    stream_topic_history_util.get_server_history(stream_id, () => {});
     const topic_names = stream_topic_history.get_recent_topic_names(stream_id);
     return topic_names;
 }
