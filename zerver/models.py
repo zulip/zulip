@@ -1186,6 +1186,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     ROLE_TYPES = [
         ROLE_REALM_OWNER,
         ROLE_REALM_ADMINISTRATOR,
+        ROLE_MODERATOR,
         ROLE_MEMBER,
         ROLE_GUEST,
     ]

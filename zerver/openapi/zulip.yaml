@@ -390,6 +390,7 @@ paths:
                                           enum:
                                             - 100
                                             - 200
+                                            - 300
                                             - 400
                                             - 600
                                     - type: object
@@ -6750,6 +6751,7 @@ paths:
 
             * Organization owner: 100
             * Organization administrator: 200
+            * Organization moderator: 300
             * Member: 400
             * Guest: 600
 
@@ -6758,7 +6760,8 @@ paths:
             The owner role cannot be removed from the only organization owner.
 
             **Changes**: New in Zulip 3.0 (feature level 8), replacing the previous
-            pair of `is_admin` and `is_guest` boolean parameters.
+            pair of `is_admin` and `is_guest` boolean parameters. Organization moderator
+            role added in Zulip 4.0 (feature level 60).
           schema:
             type: integer
           example: 400

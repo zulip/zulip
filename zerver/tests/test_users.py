@@ -447,17 +447,27 @@ class PermissionTest(ZulipTestCase):
                 user_profile.is_realm_admin
                 and not user_profile.is_guest
                 and not user_profile.is_realm_owner
+                and not user_profile.is_moderator
             )
         elif role == UserProfile.ROLE_REALM_OWNER:
             return (
                 user_profile.is_realm_owner
                 and user_profile.is_realm_admin
+                and not user_profile.is_moderator
+                and not user_profile.is_guest
+            )
+        elif role == UserProfile.ROLE_MODERATOR:
+            return (
+                user_profile.is_moderator
+                and not user_profile.is_realm_owner
+                and not user_profile.is_realm_admin
                 and not user_profile.is_guest
             )
 
         if role == UserProfile.ROLE_MEMBER:
             return (
                 not user_profile.is_guest
+                and not user_profile.is_moderator
                 and not user_profile.is_realm_admin
                 and not user_profile.is_realm_owner
             )
@@ -465,6 +475,7 @@ class PermissionTest(ZulipTestCase):
         assert role == UserProfile.ROLE_GUEST
         return (
             user_profile.is_guest
+            and not user_profile.is_moderator
             and not user_profile.is_realm_admin
             and not user_profile.is_realm_owner
         )
@@ -523,6 +534,26 @@ class PermissionTest(ZulipTestCase):
         iago = self.example_user("iago")
         do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER, acting_user=None)
         self.check_user_role_change("iago", UserProfile.ROLE_REALM_ADMINISTRATOR)
+
+    def test_change_owner_to_moderator(self) -> None:
+        iago = self.example_user("iago")
+        do_change_user_role(iago, UserProfile.ROLE_REALM_OWNER, acting_user=None)
+        self.check_user_role_change("iago", UserProfile.ROLE_MODERATOR)
+
+    def test_change_moderator_to_owner(self) -> None:
+        self.check_user_role_change("shiva", UserProfile.ROLE_REALM_OWNER)
+
+    def test_change_admin_to_moderator(self) -> None:
+        self.check_user_role_change("iago", UserProfile.ROLE_MODERATOR)
+
+    def test_change_moderator_to_admin(self) -> None:
+        self.check_user_role_change("shiva", UserProfile.ROLE_REALM_ADMINISTRATOR)
+
+    def test_change_guest_to_moderator(self) -> None:
+        self.check_user_role_change("polonius", UserProfile.ROLE_MODERATOR)
+
+    def test_change_moderator_to_guest(self) -> None:
+        self.check_user_role_change("shiva", UserProfile.ROLE_GUEST)
 
     def test_admin_user_can_change_profile_data(self) -> None:
         realm = get_realm("zulip")

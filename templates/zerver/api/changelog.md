@@ -10,6 +10,13 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 60**
+
+* [`PATCH /users/{user_id}`](/api/update-user): Added support for
+  changing a user's organization-level role to moderator.
+* API endpoints that return `role` values can now return `300`, the
+  encoding of the moderator role.
+
 **Feature level 59**
 
 * [`GET /users`](/api/get-users), [`GET /users/{user_id}`](/api/get-user),
