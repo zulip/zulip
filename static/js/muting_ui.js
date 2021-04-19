@@ -5,8 +5,10 @@ import render_topic_muted from "../templates/topic_muted.hbs";
 
 import * as channel from "./channel";
 import * as feedback_widget from "./feedback_widget";
+import {Filter} from "./filter";
 import {$t} from "./i18n";
 import * as ListWidget from "./list_widget";
+import {mld_cache} from "./message_list_data_cache";
 import * as message_lists from "./message_lists";
 import * as muting from "./muting";
 import * as overlays from "./overlays";
@@ -23,6 +25,23 @@ function timestamp_ms() {
 }
 
 let last_topic_update = 0;
+
+function update_MLD_muting(tuples, action) {
+    for (const tuple of tuples) {
+        const operators = [
+            {operator: "stream", operand: tuple[0]},
+            {operator: "topic", operand: tuple[1]},
+        ];
+        const list_data = mld_cache.get_valid_mlds(new Filter(operators));
+        for (const mld of list_data) {
+            if (action === "unmute") {
+                mld_cache.delete(mld.filter);
+            } else {
+                mld.update_items_for_muting();
+            }
+        }
+    }
+}
 
 export function rerender_on_topic_update() {
     // Note: We tend to optimistically rerender muting preferences before
@@ -77,8 +96,11 @@ export function handle_topic_updates(muted_topics) {
         return;
     }
 
+    const unmuted_topics = muting.get_unmuted_topics(muted_topics);
     update_muted_topics(muted_topics);
     rerender_on_topic_update();
+    update_MLD_muting(unmuted_topics, "unmute");
+    update_MLD_muting(muted_topics, "mute");
 }
 
 export function update_muted_topics(muted_topics) {

@@ -6,11 +6,13 @@ import * as channel from "./channel";
 import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
 import * as condense from "./condense";
+import {Filter} from "./filter";
 import * as huddle_data from "./huddle_data";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_helper from "./message_helper";
 import * as message_list from "./message_list";
+import {mld_cache} from "./message_list_data_cache";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as message_util from "./message_util";
@@ -116,6 +118,9 @@ export function insert_new_messages(messages, sent_by_this_client) {
         // we're in the home view, so update its list
         render_info = message_util.add_new_messages(messages, message_lists.home);
     }
+    for (const mld of mld_cache.entries()) {
+        mld.add_messages(messages);
+    }
 
     if (sent_by_this_client) {
         const need_user_to_scroll = render_info && render_info.need_user_to_scroll;
@@ -133,6 +138,27 @@ export function insert_new_messages(messages, sent_by_this_client) {
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
     recent_topics.process_messages(messages);
+}
+
+function remove_messages_from_mld(mld, message_ids) {
+    mld.remove(message_ids);
+    if (mld.empty()) {
+        mld_cache.delete(mld.filter);
+    }
+}
+
+function remove_messages_from_mld_cache(operators, message_ids) {
+    const list_data = mld_cache.get_valid_mlds(new Filter(operators));
+    for (const mld of list_data) {
+        remove_messages_from_mld(mld, message_ids);
+    }
+}
+
+function add_messages_to_mld_cache(operators, messages) {
+    const list_data = mld_cache.get_valid_mlds(new Filter(operators));
+    for (const mld of list_data) {
+        mld.add_messages(messages);
+    }
 }
 
 export function update_messages(events) {
@@ -259,6 +285,31 @@ export function update_messages(events) {
                 });
             }
 
+            let operators;
+            const pre_edit_topic = orig_topic;
+            const post_edit_topic = topic_edited ? new_topic : pre_edit_topic;
+            if (!stream_changed && topic_edited) {
+                operators = [
+                    {operator: "stream", operand: stream_name},
+                    {operator: "topic", operand: pre_edit_topic},
+                ];
+                remove_messages_from_mld_cache(operators, event.message_ids);
+
+                operators[1].operand = post_edit_topic;
+                add_messages_to_mld_cache(operators, event_messages);
+            } else if (stream_changed) {
+                const new_stream_name = sub_store.get(new_stream_id).name;
+                operators = [
+                    {operator: "stream", operand: stream_name},
+                    {operator: "topic", operand: pre_edit_topic},
+                ];
+                remove_messages_from_mld_cache(operators, event.message_ids);
+
+                operators[0].operand = new_stream_name;
+                operators[1].operand = post_edit_topic;
+                add_messages_to_mld_cache(operators, event_messages);
+            }
+
             if (
                 going_forward_change &&
                 // This logic is a bit awkward.  What we're trying to
@@ -337,8 +388,8 @@ export function update_messages(events) {
                 // list and then pass these to the remove messages codepath.
                 // While we can pass all our messages to the add messages
                 // codepath as the filtering is done within the method.
-                message_lists.current.remove_and_rerender(message_ids_to_remove);
                 message_lists.current.add_messages(event_messages);
+                message_lists.current.remove_and_rerender(message_ids_to_remove);
             }
         }
 
@@ -440,6 +491,10 @@ export function remove_messages(message_ids) {
         }
         list.remove_and_rerender(message_ids);
     }
+    for (const mld of mld_cache.entries()) {
+        remove_messages_from_mld(mld, message_ids);
+    }
+
     recent_senders.update_topics_of_deleted_message_ids(message_ids);
     recent_topics.update_topics_of_deleted_message_ids(message_ids);
 }

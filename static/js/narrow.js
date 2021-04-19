@@ -14,6 +14,7 @@ import * as message_edit from "./message_edit";
 import * as message_fetch from "./message_fetch";
 import * as message_list from "./message_list";
 import {MessageListData} from "./message_list_data";
+import {mld_cache} from "./message_list_data_cache";
 import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
 import * as message_store from "./message_store";
@@ -269,9 +270,14 @@ export function activate(raw_operators, opts) {
     save_pre_narrow_offset_for_reload();
 
     let msg_data = new MessageListData({
-        filter: narrow_state.filter(),
+        filter,
         excludes_muted_topics,
     });
+
+    const mld_exists = mld_cache.has(filter);
+    if (mld_exists) {
+        msg_data = mld_cache.get(filter);
+    }
 
     // Populate the message list if we can apply our filter locally (i.e.
     // with no backend help) and we have the message we want to select.
@@ -280,6 +286,7 @@ export function activate(raw_operators, opts) {
     maybe_add_local_messages({
         id_info,
         msg_data,
+        mld_exists,
     });
 
     if (!id_info.local_select_id) {
@@ -293,6 +300,12 @@ export function activate(raw_operators, opts) {
             filter: narrow_state.filter(),
             excludes_muted_topics,
         });
+    }
+
+    let mld_was_empty;
+    if (!mld_exists && all_messages_data.fetch_status.has_found_newest()) {
+        mld_cache.add(msg_data);
+        mld_was_empty = msg_data.empty();
     }
 
     const msg_list = new message_list.MessageList({
@@ -322,6 +335,12 @@ export function activate(raw_operators, opts) {
     const select_immediately = id_info.local_select_id !== undefined;
 
     (function fetch_messages() {
+        if (mld_exists) {
+            // We have already fetched messages from the server
+            // for this narrow and recieved a contiguous block
+            // of messages. Thus we do not need to fetch again.
+            return;
+        }
         let anchor;
 
         // Either we're trying to center the narrow around a
@@ -349,6 +368,14 @@ export function activate(raw_operators, opts) {
                         id_info,
                         select_offset: then_select_offset,
                     });
+                }
+                if (mld_was_empty) {
+                    // We try to store it to our MLDCache again.
+                    //
+                    // If the user changes the narrow before the
+                    // request is completed, this function is
+                    // never called and thus the mld is not cached.
+                    mld_cache.add(msg_data);
                 }
                 msg_list.network_time = new Date();
                 maybe_report_narrow_time(msg_list);
@@ -448,6 +475,7 @@ export function maybe_add_local_messages(opts) {
     //  - add messages into our message list from our local cache
     const id_info = opts.id_info;
     const msg_data = opts.msg_data;
+    const mld_exists = opts.mld_exists;
     const unread_info = narrow_state.get_first_unread_info();
 
     // If we don't have a specific message we're hoping to select
@@ -500,7 +528,7 @@ export function maybe_add_local_messages(opts) {
         // need to look at unread here.
         id_info.final_select_id = min_defined(id_info.target_id, unread_info.msg_id);
 
-        if (!load_local_messages(msg_data)) {
+        if (!mld_exists && !load_local_messages(msg_data)) {
             return;
         }
 
@@ -532,7 +560,7 @@ export function maybe_add_local_messages(opts) {
             // correctly from there, so we must go to the server.
             return;
         }
-        if (!load_local_messages(msg_data)) {
+        if (!mld_exists && !load_local_messages(msg_data)) {
             return;
         }
         // Otherwise, we have matching messages, and all_messages_data
@@ -565,7 +593,7 @@ export function maybe_add_local_messages(opts) {
         // available for local population, we must go to the server.
         return;
     }
-    if (!load_local_messages(msg_data)) {
+    if (!mld_exists && !load_local_messages(msg_data)) {
         return;
     }
     if (msg_data.get(id_info.target_id)) {

@@ -59,6 +59,7 @@ const util = zrequire("util");
 const narrow_state = zrequire("narrow_state");
 const stream_data = zrequire("stream_data");
 const narrow = zrequire("narrow");
+const {mld_cache} = zrequire("message_list_data_cache");
 
 const denmark = {
     subscribed: false,
@@ -175,20 +176,30 @@ run_test("basics", () => {
     };
 
     let cont;
+    let fetch_messages;
 
     message_fetch.load_messages_for_narrow = (opts) => {
         cont = opts.cont;
+        fetch_messages = true;
 
+        let anchor = 1000;
+        if (!all_messages_data.all_messages_data.fetch_status.has_found_newest()) {
+            anchor = "first_unread";
+        }
         assert.deepEqual(opts, {
             cont: opts.cont,
-            anchor: 1000,
+            anchor,
         });
     };
+
+    assert.equal(mld_cache.keys().length, 0);
 
     narrow.activate(terms, {
         then_select_id: selected_id,
     });
 
+    assert(fetch_messages);
+    assert.equal(mld_cache.keys().length, 1);
     assert.equal(message_list.narrowed.selected_id, selected_id);
     assert.equal(message_list.narrowed.view.offset, 25);
     assert.equal(narrow_state.narrowed_to_pms(), false);
@@ -214,6 +225,7 @@ run_test("basics", () => {
     message_lists.current.get_row = () => row;
     util.sorted_ids = () => [];
 
+    fetch_messages = false;
     narrow.activate([{operator: "is", operand: "private"}], {
         then_select_id: selected_id,
     });
@@ -228,4 +240,23 @@ run_test("basics", () => {
     helper.clear();
     cont();
     helper.assert_events(["report narrow times"]);
+
+    message_lists.current.selected_id = () => -1;
+
+    fetch_messages = false;
+    narrow.activate(terms, {});
+    // The MLD key already exists in our cache.
+    assert(!fetch_messages);
+    assert.equal(mld_cache.keys().length, 1);
+
+    all_messages_data.all_messages_data.fetch_status.has_found_newest = () => false;
+    message_lists.current.selected_id = () => -1;
+
+    mld_cache.empty();
+    fetch_messages = false;
+    narrow.activate(terms, {});
+    // We can start caching the MLD objects only when
+    // we have fetched all the latest messages.
+    assert(fetch_messages);
+    assert.equal(mld_cache.keys().length, 0);
 });

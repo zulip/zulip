@@ -184,4 +184,30 @@ test("case_insensitivity", () => {
     muting.set_muted_topics([["SOCial", "breakfast"]]);
     assert(muting.is_topic_muted(social.stream_id, "breakfast"));
     assert(muting.is_topic_muted(social.stream_id, "breakFAST"));
+    muting.remove_muted_topic(social.stream_id, "breakfast");
+});
+
+run_test("get_unmuted_topics", () => {
+    const get_muted_topics = () => muting.get_muted_topics().map((elem) => elem.topic);
+
+    let expected_muted_topics = ["breakfast", "gossip", "java", "typography"];
+    for (const topic of expected_muted_topics) {
+        muting.add_muted_topic(devel.stream_id, topic);
+    }
+
+    const unmute_topics = [
+        ["devel", "gossip"],
+        ["devel", "typography"],
+    ];
+    const expected_remaining_muted_topics = [
+        ["devel", "breakfast"],
+        ["devel", "java"],
+    ];
+
+    assert.deepEqual(get_muted_topics(), expected_muted_topics);
+
+    assert.deepEqual(muting.get_unmuted_topics(unmute_topics), expected_remaining_muted_topics);
+
+    expected_muted_topics = ["breakfast", "java"];
+    assert.deepEqual(get_muted_topics(), expected_muted_topics);
 });
