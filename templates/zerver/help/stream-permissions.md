@@ -4,8 +4,8 @@ Streams are similar to chatrooms, IRC channels, or email lists in that they
 determine who receives a message. There are three types of streams in Zulip.
 
 * **Public**: Members can join and view the complete message history.
-  Guest users interact with public streams as though they were a
-  private stream with shared history.
+  Public streams are visible to Guest users only if they are
+  subscribed (exactly like private streams with shared history).
 
 * **Private, shared history**: You must be added by a member of the
   stream. The complete message history is available as soon as you are
