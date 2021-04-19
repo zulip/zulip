@@ -6844,6 +6844,9 @@ paths:
             `fetch_event_types` are used to fetch initial data. If
             `fetch_event_types` is not provided, `event_types` is used and if
             `event_types` is not provided, this parameter defaults to `None`.
+
+            Event types not supported by the server are ignored, in order to simplify
+            the implementation of client apps that support multiple server versions.
           content:
             application/json:
               schema:
@@ -11712,6 +11715,9 @@ components:
         your client in your client code.  For most applications, one
         is only interested in messages, so one specifies:
         `event_types=['message']`
+
+        Event types not supported by the server are ignored, in order to simplify
+        the implementation of client apps that support multiple server versions.
       content:
         application/json:
           schema:
