@@ -66,14 +66,14 @@ administrator can access private stream messages:
 | Remove others         | &#10004;          |           |
 | Delete                | &#10004;          |           |
 
-&#10004; Always
+&#10004; <span style ="padding: 15px;">Always</span>
 
-&#9726; If subscribed to the stream
+&#9726; <span style ="padding: 5px;">If subscribed to the stream</span>
 
-&#10038; [Configurable](/help/stream-sending-policy).  Owners,
+&#10038; <span style ="padding: 15px;">[Configurable](/help/stream-sending-policy). Owners,
 Administrators, and Members can, by default, post to any public
 stream, and Guests can only post to public streams if they are
-subscribed.
+subscribed.</span>
 
 ### Private streams
 
@@ -94,12 +94,12 @@ subscribed.
 | Remove others         | &#10004;          |           |
 | Delete                | &#10004;          |           |
 
-&#10004; Always
+&#10004;<span style ="padding: 15px;"> Always</span>
 
-&#9726; If subscribed to the stream
+&#9726;<span style ="padding: 5px;"> If subscribed to the stream</span>
 
-&#10038; [Configurable](/help/stream-sending-policy), but at minimum
-must be subscribed to the stream.
+&#10038; <span style ="padding: 15px;"> [Configurable](/help/stream-sending-policy), but at minimum
+must be subscribed to the stream.</span>
 
 ## Related articles
 
