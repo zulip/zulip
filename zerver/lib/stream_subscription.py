@@ -46,6 +46,7 @@ def get_active_subscriptions_for_stream_ids(stream_ids: Set[int]) -> QuerySet:
         recipient__type=Recipient.STREAM,
         recipient__type_id__in=stream_ids,
         active=True,
+        is_user_active=True,
     )
 
 
@@ -117,9 +118,6 @@ def num_subscribers_for_stream_id(stream_id: int) -> int:
 def get_user_ids_for_streams(stream_ids: Set[int]) -> Dict[int, Set[int]]:
     all_subs = (
         get_active_subscriptions_for_stream_ids(stream_ids)
-        .filter(
-            user_profile__is_active=True,
-        )
         .values(
             "recipient__type_id",
             "user_profile_id",

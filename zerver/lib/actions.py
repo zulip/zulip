@@ -6703,7 +6703,7 @@ def get_occupied_streams(realm: Realm) -> QuerySet:
     exists_expression = Exists(
         Subscription.objects.filter(
             active=True,
-            user_profile__is_active=True,
+            is_user_active=True,
             user_profile__realm=realm,
             recipient_id=OuterRef("recipient_id"),
         ),
