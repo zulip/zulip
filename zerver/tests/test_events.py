@@ -1303,6 +1303,22 @@ class NormalActionsTest(BaseAction):
             check_realm_user_update("events[0]", events[0], "role")
             self.assertEqual(events[0]["person"]["role"], role)
 
+    def test_change_is_moderator(self) -> None:
+        reset_emails_in_zulip_realm()
+
+        # Important: We need to refresh from the database here so that
+        # we don't have a stale UserProfile object with an old value
+        # for email being passed into this next function.
+        self.user_profile.refresh_from_db()
+
+        do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
+        for role in [UserProfile.ROLE_MODERATOR, UserProfile.ROLE_MEMBER]:
+            events = self.verify_action(
+                lambda: do_change_user_role(self.user_profile, role, acting_user=None)
+            )
+            check_realm_user_update("events[0]", events[0], "role")
+            self.assertEqual(events[0]["person"]["role"], role)
+
     def test_change_is_guest(self) -> None:
         reset_emails_in_zulip_realm()
 

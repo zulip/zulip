@@ -12,6 +12,9 @@ below features are supported.
 
 **Feature level 60**
 
+* [`POST /register`](/api/register-queue): Added a new boolean field
+  `is_moderator`, similar to the existing `is_admin`, `is_owner` and
+  `is_guest` fields, to the response.
 * [`PATCH /users/{user_id}`](/api/update-user): Added support for
   changing a user's organization-level role to moderator.
 * API endpoints that return `role` values can now return `300`, the

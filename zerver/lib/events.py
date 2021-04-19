@@ -337,6 +337,7 @@ def fetch_initial_state_data(
         state["can_invite_others_to_realm"] = settings_user.can_invite_others_to_realm()
         state["is_admin"] = settings_user.is_realm_admin
         state["is_owner"] = settings_user.is_realm_owner
+        state["is_moderator"] = settings_user.is_moderator
         state["is_guest"] = settings_user.is_guest
         state["user_id"] = settings_user.id
         state["enter_sends"] = settings_user.enter_sends
@@ -609,6 +610,7 @@ def apply_event(
                 if "role" in person:
                     state["is_admin"] = is_administrator_role(person["role"])
                     state["is_owner"] = person["role"] == UserProfile.ROLE_REALM_OWNER
+                    state["is_moderator"] = person["role"] == UserProfile.ROLE_MODERATOR
                     state["is_guest"] = person["role"] == UserProfile.ROLE_GUEST
                     # Recompute properties based on is_admin/is_guest
                     state["can_create_streams"] = user_profile.can_create_streams()
