@@ -310,16 +310,15 @@ def can_access_stream_user_ids(stream: Stream) -> Set[int]:
 
 
 def private_stream_user_ids(stream_id: int) -> Set[int]:
-    # TODO: Find similar queries elsewhere and de-duplicate this code.
     subscriptions = get_active_subscriptions_for_stream_id(
-        stream_id, include_deactivated_users=True
+        stream_id, include_deactivated_users=False
     )
     return {sub["user_profile_id"] for sub in subscriptions.values("user_profile_id")}
 
 
 def public_stream_user_ids(stream: Stream) -> Set[int]:
     guest_subscriptions = get_active_subscriptions_for_stream_id(
-        stream.id, include_deactivated_users=True
+        stream.id, include_deactivated_users=False
     ).filter(user_profile__role=UserProfile.ROLE_GUEST)
     guest_subscriptions = {
         sub["user_profile_id"] for sub in guest_subscriptions.values("user_profile_id")
