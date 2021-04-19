@@ -526,7 +526,7 @@ function test_sync_realm_settings() {
 
     {
         /*
-            Test that when create stream policy is set to "by members" that the dropdown
+            Test that when invite to stream policy is set to "by members" that the dropdown
             is set to the correct value.
         */
         const property_elem = $("#id_realm_invite_to_stream_policy");
@@ -544,7 +544,7 @@ function test_sync_realm_settings() {
 
     {
         /*
-            Test that when create stream policy is set to "by admins only" that the dropdown
+            Test that when invite to stream policy is set to "by admins only" that the dropdown
             is set to the correct value.
         */
         const property_elem = $("#id_realm_invite_to_stream_policy");
