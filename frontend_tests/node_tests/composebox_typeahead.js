@@ -18,6 +18,7 @@ const message_user_ids = mock_esm("../../static/js/message_user_ids", {
     user_ids: () => [],
 });
 const stream_topic_history = mock_esm("../../static/js/stream_topic_history");
+const stream_topic_history_util = mock_esm("../../static/js/stream_topic_history_util");
 
 let autosize_called;
 
@@ -316,6 +317,10 @@ test("topics_seen_for", (override) => {
         return ["With Twisted Metal", "acceptance", "civil fears"];
     });
 
+    override(stream_topic_history_util, "get_server_history", (stream_id) => {
+        assert.equal(stream_id, denmark_stream.stream_id);
+    });
+
     assert.deepEqual(ct.topics_seen_for("Denmark"), [
         "With Twisted Metal",
         "acceptance",
@@ -557,6 +562,8 @@ function sorted_names_from(subs) {
 
 test("initialize", (override) => {
     let expected_value;
+
+    override(stream_topic_history_util, "get_server_history", () => {});
 
     let stream_typeahead_called = false;
     $("#stream_message_recipient_stream").typeahead = (options) => {
@@ -1109,6 +1116,8 @@ test("initialize", (override) => {
 });
 
 test("begins_typeahead", (override) => {
+    override(stream_topic_history_util, "get_server_history", () => {});
+
     const begin_typehead_this = {
         options: {
             completions: {
