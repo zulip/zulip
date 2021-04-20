@@ -1225,10 +1225,15 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     # Import the analytics file.
     import_analytics_data(realm=realm, import_dir=import_dir)
 
+    RealmAuditLog.objects.create(
+        realm=realm, event_type=RealmAuditLog.REALM_IMPORTED, event_time=timezone_now()
+    )
+
     if settings.BILLING_ENABLED:
         do_change_plan_type(realm, Realm.LIMITED, acting_user=None)
     else:
         do_change_plan_type(realm, Realm.SELF_HOSTED, acting_user=None)
+
     return realm
 
 

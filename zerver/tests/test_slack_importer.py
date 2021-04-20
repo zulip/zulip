@@ -1067,6 +1067,7 @@ class SlackImporter(ZulipTestCase):
                 RealmAuditLog.SUBSCRIPTION_CREATED,
                 RealmAuditLog.REALM_PLAN_TYPE_CHANGED,
                 RealmAuditLog.REALM_CREATED,
+                RealmAuditLog.REALM_IMPORTED,
             },
         )
 
