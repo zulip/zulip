@@ -311,10 +311,15 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         if "timezone" in request.POST and request.POST["timezone"] in pytz.all_timezones_set:
             timezone = request.POST["timezone"]
 
-        if "source_realm_id" in request.POST and request.POST["source_realm_id"] != "":
-            source_profile: Optional[UserProfile] = get_source_profile(
-                email, int(request.POST["source_realm_id"])
-            )
+        if "source_realm_id" in request.POST:
+            # Non-integer realm_id values like "string" are treated
+            # like the "Do not import" value of "".
+            try:
+                source_realm_id = int(request.POST["source_realm_id"])
+            except ValueError:
+                source_profile: Optional[UserProfile] = None
+            else:
+                source_profile = get_source_profile(email, source_realm_id)
         else:
             source_profile = None
 

@@ -3748,6 +3748,7 @@ class UserSignUpTest(InviteUserBase):
         result = self.submit_reg_form_for_user(
             email,
             password,
+            # Subdomain is already used, by construction.
             realm_subdomain=realm.string_id,
             realm_name=realm_name,
             source_realm_id=str(realm.id),
