@@ -93,7 +93,7 @@ if os.path.exists("/etc/supervisor/conf.d/zulip/zulip_db.conf"):
     subprocess.check_call(["supervisorctl", "restart", "process-fts-updates"])
 
 logging.info("Done!")
-print(OKGREEN + "Application restarted successfully!" + ENDC)
+print(OKGREEN + "Zulip restarted successfully!" + ENDC)
 
 if change_symlink and "PWD" in os.environ:
     for symlink in [last_symlink, current_symlink]:
