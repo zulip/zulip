@@ -3,6 +3,7 @@ import unittest
 
 import tools.lib.template_parser
 from tools.lib.html_branches import (
+    Node,
     build_id_dict,
     get_tag_info,
     html_branches,
@@ -49,35 +50,40 @@ class TestHtmlBranches(unittest.TestCase):
 
         tree = html_tag_tree(html)
 
-        assert tree.children[0].token is not None
-        self.assertEqual(tree.children[0].token.kind, "html_start")
-        self.assertEqual(tree.children[0].token.tag, "html")
+        def serialize(node: Node) -> object:
+            return (
+                node.token and (node.token.kind, node.token.tag),
+                [serialize(child) for child in node.children],
+            )
 
-        assert tree.children[0].children[0].token is not None
-        self.assertEqual(tree.children[0].children[0].token.kind, "html_start")
-        self.assertEqual(tree.children[0].children[0].token.tag, "head")
-
-        assert tree.children[0].children[0].children[0].token is not None
-        self.assertEqual(tree.children[0].children[0].children[0].token.kind, "html_start")
-        self.assertEqual(tree.children[0].children[0].children[0].token.tag, "title")
-
-        assert tree.children[0].children[1].token is not None
-        self.assertEqual(tree.children[0].children[1].token.kind, "html_start")
-        self.assertEqual(tree.children[0].children[1].token.tag, "body")
-
-        assert tree.children[0].children[1].children[0].token is not None
-        self.assertEqual(tree.children[0].children[1].children[0].token.kind, "html_start")
-        self.assertEqual(tree.children[0].children[1].children[0].token.tag, "p")
-
-        assert tree.children[0].children[1].children[0].children[0].token is not None
-        self.assertEqual(
-            tree.children[0].children[1].children[0].children[0].token.kind, "html_singleton"
+        expected = (
+            None,
+            [
+                (
+                    ("html_start", "html"),
+                    [
+                        (
+                            ("html_start", "head"),
+                            [
+                                (("html_start", "title"), []),
+                                (("html_singleton", "meta"), []),
+                                (("html_singleton", "link"), []),
+                            ],
+                        ),
+                        (
+                            ("html_start", "body"),
+                            [
+                                (
+                                    ("html_start", "p"),
+                                    [(("html_start", "br"), []), (("html_start", "p"), [])],
+                                )
+                            ],
+                        ),
+                    ],
+                )
+            ],
         )
-        self.assertEqual(tree.children[0].children[1].children[0].children[0].token.tag, "br")
-
-        assert tree.children[0].children[1].children[1].token is not None
-        self.assertEqual(tree.children[0].children[1].children[1].token.kind, "html_start")
-        self.assertEqual(tree.children[0].children[1].children[1].token.tag, "p")
+        self.assertEqual(serialize(tree), expected)
 
     def test_html_branches(self) -> None:
         html = """
@@ -99,19 +105,16 @@ class TestHtmlBranches(unittest.TestCase):
         """
 
         branches = html_branches(html)
-
-        self.assertEqual(branches[0].text(), "html head title")
-        self.assertEqual(branches[1].text(), "html body p br")
-        self.assertEqual(branches[2].text(), "html body p")
-
         self.assertEqual(
-            branches[0].staircase_text(), "\n    html\n        head\n            title\n"
+            [(branch.text(), branch.staircase_text()) for branch in branches],
+            [
+                ("html head title", "\n    html\n        head\n            title\n"),
+                ("html head meta", "\n    html\n        head\n            meta\n"),
+                ("html head link", "\n    html\n        head\n            link\n"),
+                ("html body p br", "\n    html\n        body\n            p\n                br\n"),
+                ("html body p p", "\n    html\n        body\n            p\n                p\n"),
+            ],
         )
-        self.assertEqual(
-            branches[1].staircase_text(),
-            "\n    html\n        body\n            p\n                br\n",
-        )
-        self.assertEqual(branches[2].staircase_text(), "\n    html\n        body\n            p\n")
 
     def test_build_id_dict(self) -> None:
         templates = ["test_template1.html", "test_template2.html"]
