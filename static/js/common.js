@@ -1,4 +1,5 @@
 import $ from "jquery";
+import tippy from "tippy.js";
 
 import {$t} from "./i18n";
 
@@ -137,29 +138,48 @@ export function adjust_mac_shortcuts(key_elem_class, require_cmd_style) {
 
 // See https://zulip.readthedocs.io/en/latest/development/authentication.html#password-form-implementation
 // for design details on this feature.
-//
-// This toggle code would probably be cleaner as 2 functions.
-function toggle_password_visibility(password_field_id, password_selector) {
+function set_password_toggle_label(password_selector, label, tippy_tooltips) {
+    $(password_selector).attr("aria-label", label);
+    if (tippy_tooltips) {
+        if (!$(password_selector)[0]._tippy) {
+            tippy(password_selector);
+        }
+        $(password_selector)[0]._tippy.setContent(label);
+    } else {
+        $(password_selector).attr("title", label);
+    }
+}
+
+function toggle_password_visibility(password_field_id, password_selector, tippy_tooltips) {
+    let label;
     const password_field = $(password_field_id);
 
     if (password_field.attr("type") === "password") {
         password_field.attr("type", "text");
         $(password_selector).removeClass("fa-eye-slash").addClass("fa-eye");
+        label = $t({defaultMessage: "Hide password"});
     } else {
         password_field.attr("type", "password");
         $(password_selector).removeClass("fa-eye").addClass("fa-eye-slash");
+        label = $t({defaultMessage: "Show password"});
     }
+    set_password_toggle_label(password_selector, label, tippy_tooltips);
 }
 
 export function reset_password_toggle_icons(password_field, password_selector) {
     $(password_field).attr("type", "password");
     $(password_selector).removeClass("fa-eye").addClass("fa-eye-slash");
+    const label = $t({defaultMessage: "Show password"});
+    set_password_toggle_label(password_selector, label, true);
 }
 
-export function setup_password_visibility_toggle(password_field_id, password_selector) {
+export function setup_password_visibility_toggle(password_field_id, password_selector, opts = {}) {
+    opts = {tippy_tooltips: false, ...opts};
+    const label = $t({defaultMessage: "Show password"});
+    set_password_toggle_label(password_selector, label, opts.tippy_tooltips);
     $(password_selector).on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        toggle_password_visibility(password_field_id, password_selector);
+        toggle_password_visibility(password_field_id, password_selector, opts.tippy_tooltips);
     });
 }

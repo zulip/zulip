@@ -72,7 +72,7 @@ page can be easily identified in it's respective JavaScript file. -->
                                   {% if email %} autofocus {% endif %}
                                   required />
                                 <label for="id_password" class="control-label">{{ _('Password') }}</label>
-                                <i class="fa fa-eye-slash password_visibility_toggle" role="button" title="{{ _('Toggle password visibility') }}" aria-label="{{ _('Toggle password visibility') }}"></i>
+                                <i class="fa fa-eye-slash password_visibility_toggle" role="button"></i>
                             </div>
                             {% else %}
                             {% include "two_factor/_wizard_forms.html" %}
