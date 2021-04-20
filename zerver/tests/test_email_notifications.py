@@ -366,7 +366,7 @@ class TestMissedMessages(ZulipTestCase):
                 " Manage email preferences: http://zulip.testserver/#settings/notifications",
             ]
 
-            email_subject = "New missed messages"
+            email_subject = "New messages"
             verify_body_does_not_include = [
                 "Denmark > test",
                 "Othello, the Moor of Venice",
@@ -408,7 +408,7 @@ class TestMissedMessages(ZulipTestCase):
                 "View or reply in Zulip",
                 " Manage email preferences: http://zulip.testserver/#settings/notifications",
             ]
-            email_subject = "New missed messages"
+            email_subject = "New messages"
             verify_body_does_not_include = [
                 "Denmark > test",
                 "Othello, the Moor of Venice",
@@ -490,7 +490,7 @@ class TestMissedMessages(ZulipTestCase):
                     "View or reply in Zulip",
                     " Manage email preferences: http://zulip.testserver/#settings/notifications",
                 ]
-            email_subject = "New missed messages"
+            email_subject = "New messages"
             verify_body_does_not_include = [
                 "Othello, the Moor of Venice",
                 "Extremely personal message!",
@@ -550,7 +550,7 @@ class TestMissedMessages(ZulipTestCase):
                 "View or reply in Zulip",
                 " Manage email preferences: http://zulip.testserver/#settings/notifications",
             ]
-            email_subject = "New missed messages"
+            email_subject = "New messages"
             verify_body_does_not_include = [
                 "Iago",
                 "Othello, the Moor of Venice Othello, the Moor of Venice",
