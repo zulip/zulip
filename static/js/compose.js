@@ -1129,7 +1129,7 @@ export function initialize() {
 
     resize.watch_manual_resize("#compose-textarea");
 
-    upload.feature_check($("#compose #attach_files"));
+    upload.feature_check($("#compose .compose_upload_file"));
 
     $("#compose-all-everyone").on("click", ".compose-all-everyone-confirm", (event) => {
         event.preventDefault();
@@ -1229,7 +1229,7 @@ export function initialize() {
     // Click event binding for "Attach files" button
     // Triggers a click on a hidden file input field
 
-    $("#compose").on("click", "#attach_files", (e) => {
+    $("#compose").on("click", ".compose_upload_file", (e) => {
         e.preventDefault();
         $("#compose .file_input").trigger("click");
     });

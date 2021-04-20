@@ -1044,7 +1044,7 @@ test_ui("initialize", (override) => {
         this.upload = true;
         xmlhttprequest_checked = true;
     });
-    $("#compose #attach_files").addClass("notdisplayed");
+    $("#compose .compose_upload_file").addClass("notdisplayed");
 
     set_global("document", "document-stub");
 
@@ -1074,7 +1074,7 @@ test_ui("initialize", (override) => {
 
     assert(resize_watch_manual_resize_checked);
     assert(xmlhttprequest_checked);
-    assert(!$("#compose #attach_files").hasClass("notdisplayed"));
+    assert(!$("#compose .compose_upload_file").hasClass("notdisplayed"));
     assert(setup_upload_called);
 
     function set_up_compose_start_mock(expected_opts) {
@@ -1509,7 +1509,7 @@ test_ui("on_events", (override) => {
     })();
 
     (function test_attach_files_compose_clicked() {
-        const handler = $("#compose").get_on_handler("click", "#attach_files");
+        const handler = $("#compose").get_on_handler("click", ".compose_upload_file");
         $("#compose .file_input").clone = (param) => {
             assert(param);
         };
