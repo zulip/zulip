@@ -934,7 +934,7 @@ export function register_click_handlers() {
         }
     });
 
-    $("#main_div, #preview_content").on("click", ".code_external_link", function (e) {
+    $("#main_div, #compose .preview_content").on("click", ".code_external_link", function (e) {
         const view_in_playground_button = $(this);
         const codehilite_div = $(this).closest(".codehilite");
         e.stopPropagation();

@@ -25,7 +25,7 @@ export function is_popped_from_edit_messsage() {
 }
 
 export function focus_current_edit_message() {
-    $(`#message_edit_content_${CSS.escape(edit_message_id)}`).trigger("focus");
+    $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`).trigger("focus");
 }
 
 // Approximate width and height of
@@ -66,7 +66,9 @@ function renderGIPHYGrid(targetEl) {
                 onGifClick: (props) => {
                     let textarea = $("#compose-textarea");
                     if (edit_message_id !== undefined) {
-                        textarea = $(`#message_edit_content_${CSS.escape(edit_message_id)}`);
+                        textarea = $(
+                            `#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`,
+                        );
                     }
 
                     compose_ui.insert_syntax_and_focus(

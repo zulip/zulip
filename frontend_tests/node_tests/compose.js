@@ -872,9 +872,9 @@ test_ui("enter_with_preview_open", (override) => {
     compose_state.set_message_type("stream");
     $("#compose-textarea").val("message me");
     $("#compose-textarea").hide();
-    $("#undo_markdown_preview").show();
-    $("#preview_message_area").show();
-    $("#markdown_preview").hide();
+    $("#compose .undo_markdown_preview").show();
+    $("#compose .preview_message_area").show();
+    $("#compose .markdown_preview").hide();
     page_params.enter_sends = true;
     let send_message_called = false;
     override(compose, "send_message", () => {
@@ -882,9 +882,9 @@ test_ui("enter_with_preview_open", (override) => {
     });
     compose.enter_with_preview_open();
     assert($("#compose-textarea").visible());
-    assert(!$("#undo_markdown_preview").visible());
-    assert(!$("#preview_message_area").visible());
-    assert($("#markdown_preview").visible());
+    assert(!$("#compose .undo_markdown_preview").visible());
+    assert(!$("#compose .preview_message_area").visible());
+    assert($("#compose .markdown_preview").visible());
     assert(send_message_called);
 
     page_params.enter_sends = false;
@@ -894,7 +894,7 @@ test_ui("enter_with_preview_open", (override) => {
 
     // Test sending a message without content.
     $("#compose-textarea").val("");
-    $("#preview_message_area").show();
+    $("#compose .preview_message_area").show();
     $("#enter_sends").prop("checked", true);
     page_params.enter_sends = true;
 
@@ -929,9 +929,9 @@ test_ui("finish", (override) => {
 
     (function test_when_compose_validation_succeed() {
         $("#compose-textarea").hide();
-        $("#undo_markdown_preview").show();
-        $("#preview_message_area").show();
-        $("#markdown_preview").hide();
+        $("#compose .undo_markdown_preview").show();
+        $("#compose .preview_message_area").show();
+        $("#compose .markdown_preview").hide();
         $("#compose-textarea").val("foobarfoobar");
         compose_state.set_message_type("private");
         override(compose_state, "private_message_recipient", () => "bob@example.com");
@@ -946,9 +946,9 @@ test_ui("finish", (override) => {
         });
         assert(compose.finish());
         assert($("#compose-textarea").visible());
-        assert(!$("#undo_markdown_preview").visible());
-        assert(!$("#preview_message_area").visible());
-        assert($("#markdown_preview").visible());
+        assert(!$("#compose .undo_markdown_preview").visible());
+        assert(!$("#compose .preview_message_area").visible());
+        assert($("#compose .markdown_preview").visible());
         assert(send_message_called);
         assert(compose_finished_event_checked);
     })();
@@ -1530,16 +1530,16 @@ test_ui("on_events", (override) => {
         // Tests setup
         function setup_visibilities() {
             $("#compose-textarea").show();
-            $("#markdown_preview").show();
-            $("#undo_markdown_preview").hide();
-            $("#preview_message_area").hide();
+            $("#compose .markdown_preview").show();
+            $("#compose .undo_markdown_preview").hide();
+            $("#compose .preview_message_area").hide();
         }
 
         function assert_visibilities() {
             assert(!$("#compose-textarea").visible());
-            assert(!$("#markdown_preview").visible());
-            assert($("#undo_markdown_preview").visible());
-            assert($("#preview_message_area").visible());
+            assert(!$("#compose .markdown_preview").visible());
+            assert($("#compose .undo_markdown_preview").visible());
+            assert($("#compose .preview_message_area").visible());
         }
 
         function setup_mock_markdown_contains_backend_only_syntax(msg_content, return_val) {
@@ -1561,13 +1561,13 @@ test_ui("on_events", (override) => {
                 rendered: "Server: foobarfoobar",
             };
             success_callback(resp);
-            assert.equal($("#preview_content").html(), "Server: foobarfoobar");
+            assert.equal($("#compose .preview_content").html(), "Server: foobarfoobar");
         }
 
         function test_post_error(error_callback) {
             error_callback();
             assert.equal(
-                $("#preview_content").html(),
+                $("#compose .preview_content").html(),
                 "translated HTML: Failed to generate preview",
             );
         }
@@ -1582,7 +1582,7 @@ test_ui("on_events", (override) => {
                 function test(func, param) {
                     let destroy_indicator_called = false;
                     loading.destroy_indicator = (spinner) => {
-                        assert.equal(spinner, $("#markdown_preview_spinner"));
+                        assert.equal(spinner, $("#compose .markdown_preview_spinner"));
                         destroy_indicator_called = true;
                     };
                     setup_mock_markdown_contains_backend_only_syntax(msg, true);
@@ -1597,7 +1597,7 @@ test_ui("on_events", (override) => {
             };
         }
 
-        const handler = $("#compose").get_on_handler("click", "#markdown_preview");
+        const handler = $("#compose").get_on_handler("click", ".markdown_preview");
 
         // Tests start here
         $("#compose-textarea").val("");
@@ -1609,7 +1609,7 @@ test_ui("on_events", (override) => {
 
         handler(event);
 
-        assert.equal($("#preview_content").html(), "translated HTML: Nothing to preview");
+        assert.equal($("#compose .preview_content").html(), "translated HTML: Nothing to preview");
         assert_visibilities();
 
         let make_indicator_called = false;
@@ -1618,7 +1618,7 @@ test_ui("on_events", (override) => {
         setup_mock_markdown_contains_backend_only_syntax("```foobarfoobar```", true);
         setup_mock_markdown_is_status_message("```foobarfoobar```", false);
         loading.make_indicator = (spinner) => {
-            assert.equal(spinner.selector, "#markdown_preview_spinner");
+            assert.equal(spinner.selector, "#compose .markdown_preview_spinner");
             make_indicator_called = true;
         };
         mock_channel_post("```foobarfoobar```");
@@ -1644,16 +1644,16 @@ test_ui("on_events", (override) => {
 
         assert(apply_markdown_called);
         assert_visibilities();
-        assert.equal($("#preview_content").html(), "Server: foobarfoobar");
+        assert.equal($("#compose .preview_content").html(), "Server: foobarfoobar");
     })();
 
     (function test_undo_markdown_preview_clicked() {
-        const handler = $("#compose").get_on_handler("click", "#undo_markdown_preview");
+        const handler = $("#compose").get_on_handler("click", ".undo_markdown_preview");
 
         $("#compose-textarea").hide();
-        $("#undo_markdown_preview").show();
-        $("#preview_message_area").show();
-        $("#markdown_preview").hide();
+        $("#compose .undo_markdown_preview").show();
+        $("#compose .preview_message_area").show();
+        $("#compose .markdown_preview").hide();
 
         const event = {
             preventDefault: noop,
@@ -1662,9 +1662,9 @@ test_ui("on_events", (override) => {
         handler(event);
 
         assert($("#compose-textarea").visible());
-        assert(!$("#undo_markdown_preview").visible());
-        assert(!$("#preview_message_area").visible());
-        assert($("#markdown_preview").visible());
+        assert(!$("#compose .undo_markdown_preview").visible());
+        assert(!$("#compose .preview_message_area").visible());
+        assert($("#compose .markdown_preview").visible());
     })();
 });
 

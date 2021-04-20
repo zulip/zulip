@@ -686,7 +686,9 @@ export function register_click_handlers() {
         // The following check will return false if emoji was not selected in
         // message edit form.
         if (edit_message_id !== null) {
-            const edit_message_textarea = $(`#message_edit_content_${CSS.escape(edit_message_id)}`);
+            const edit_message_textarea = $(
+                `#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`,
+            );
             // Assign null to edit_message_id so that the selection of emoji in new
             // message composition form works correctly.
             edit_message_id = null;

@@ -163,10 +163,10 @@ export function reset_user_acknowledged_announce_flag() {
 
 export function clear_preview_area() {
     $("#compose-textarea").show();
-    $("#undo_markdown_preview").hide();
-    $("#preview_message_area").hide();
-    $("#preview_content").empty();
-    $("#markdown_preview").show();
+    $("#compose .undo_markdown_preview").hide();
+    $("#compose .preview_message_area").hide();
+    $("#compose .preview_content").empty();
+    $("#compose .markdown_preview").show();
 }
 
 function update_stream_button(btn_text, title) {
@@ -1317,18 +1317,22 @@ export function initialize() {
         }
     });
 
-    $("#compose").on("click", "#markdown_preview", (e) => {
+    $("#compose").on("click", ".markdown_preview", (e) => {
         e.preventDefault();
         const content = $("#compose-textarea").val();
         $("#compose-textarea").hide();
-        $("#markdown_preview").hide();
-        $("#undo_markdown_preview").show();
-        $("#preview_message_area").show();
+        $("#compose .markdown_preview").hide();
+        $("#compose .undo_markdown_preview").show();
+        $("#compose .preview_message_area").show();
 
-        render_and_show_preview($("#markdown_preview_spinner"), $("#preview_content"), content);
+        render_and_show_preview(
+            $("#compose .markdown_preview_spinner"),
+            $("#compose .preview_content"),
+            content,
+        );
     });
 
-    $("#compose").on("click", "#undo_markdown_preview", (e) => {
+    $("#compose").on("click", ".undo_markdown_preview", (e) => {
         e.preventDefault();
         clear_preview_area();
     });

@@ -43,10 +43,10 @@
     <div class="control-group no-margin">
         <div class="controls edit-controls">
             {{> copy_message_button message_id=this.message_id}}
-            <textarea class="message_edit_content" maxlength="10000" id="message_edit_content_{{message_id}}">{{content}}</textarea>
+            <textarea class="message_edit_content" maxlength="10000">{{content}}</textarea>
             <div class="scrolling_list preview_message_area" id="preview_message_area_{{message_id}}" style="display:none;">
-                <div id="markdown_preview_spinner_{{message_id}}"></div>
-                <div id="preview_content_{{message_id}}" class="preview_content rendered_markdown"></div>
+                <div class="markdown_preview_spinner"></div>
+                <div class="preview_content rendered_markdown"></div>
             </div>
         </div>
     </div>
@@ -62,8 +62,8 @@
                     {{#if file_upload_enabled}}
                     <a role="button" tabindex=0 class="compose_control_button attach_files fa fa-paperclip notdisplayed" aria-label="{{t "Attach files" }}" title="{{t "Attach files" }}"></a>
                     {{/if}}
-                    <a role="button" tabindex=0 id="markdown_preview_{{message_id}}" class="compose_control_button fa fa-eye" aria-label="{{t 'Preview' }}" title="{{t 'Preview' }}"></a>
-                    <a role="button" tabindex=0 id="undo_markdown_preview_{{message_id}}" class="compose_control_button fa fa-edit" aria-label="{{t 'Write' }}" style="display:none;" title="{{t 'Write' }}"></a>
+                    <a role="button" tabindex=0 class="markdown_preview compose_control_button fa fa-eye" aria-label="{{t 'Preview' }}" title="{{t 'Preview' }}"></a>
+                    <a role="button" tabindex=0 class="undo_markdown_preview compose_control_button fa fa-edit" aria-label="{{t 'Write' }}" style="display:none;" title="{{t 'Write' }}"></a>
                     {{#if show_video_chat_button}}
                     <a role="button" tabindex=0 class="compose_control_button fa fa-video-camera video_link" aria-label="{{t "Add video call" }}" data-message-id="{{message_id}}" title="{{t "Add video call" }}"></a>
                     {{/if}}

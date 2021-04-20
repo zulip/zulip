@@ -216,8 +216,8 @@ export function parse_image_data(image) {
     const is_vimeo_video = Boolean($image.closest(".vimeo-video").length);
     const is_embed_video = Boolean($image.closest(".embed-video").length);
 
-    // check if image is descendent of #preview_content
-    const is_compose_preview_image = $image.closest("#preview_content").length === 1;
+    // check if image is descendent of #compose .preview_content
+    const is_compose_preview_image = $image.closest("#compose .preview_content").length === 1;
 
     const $parent = $image.parent();
     let $type;
@@ -277,7 +277,7 @@ export function next() {
 
 // this is a block of events that are required for the lightbox to work.
 export function initialize() {
-    $("#main_div, #preview_content").on("click", ".message_inline_image a", function (e) {
+    $("#main_div, #compose .preview_content").on("click", ".message_inline_image a", function (e) {
         // prevent the link from opening in a new page.
         e.preventDefault();
         // prevent the message compose dialog from happening.

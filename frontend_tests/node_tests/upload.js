@@ -79,15 +79,15 @@ test("get_item", () => {
     assert.equal(upload.get_item("drag_drop_container", {mode: "compose"}), $("#compose"));
     assert.equal(
         upload.get_item("markdown_preview_hide_button", {mode: "compose"}),
-        $("#undo_markdown_preview"),
+        $("#compose .undo_markdown_preview"),
     );
 
     assert.equal(
         upload.get_item("textarea", {mode: "edit", row: 1}),
-        $(`#message_edit_content_${CSS.escape(1)}`),
+        $(`#edit_form_${CSS.escape(1)} .message_edit_content`),
     );
 
-    $(`#message_edit_content_${CSS.escape(2)}`).closest = () => {
+    $(`#edit_form_${CSS.escape(2)} .message_edit_content`).closest = () => {
         $(".message_edit_form").set_find_results(".message_edit_save", $(".message_edit_save"));
         return $(".message_edit_form");
     };
@@ -128,7 +128,7 @@ test("get_item", () => {
     );
     assert.equal(
         upload.get_item("markdown_preview_hide_button", {mode: "edit", row: 65}),
-        $(`#undo_markdown_preview_${CSS.escape(65)}`),
+        $(`#edit_form_${CSS.escape(65)} .undo_markdown_preview`),
     );
 
     assert.throws(
@@ -268,12 +268,12 @@ test("upload_files", (override) => {
         compose_ui_autosize_textarea_called = true;
     });
     let markdown_preview_hide_button_clicked = false;
-    $("#undo_markdown_preview").on("click", () => {
+    $("#compose .undo_markdown_preview").on("click", () => {
         markdown_preview_hide_button_clicked = true;
     });
     $("#compose-send-button").prop("disabled", false);
     $("#compose-send-status").removeClass("alert-info").hide();
-    $("#undo_markdown_preview").show();
+    $("#compose .undo_markdown_preview").show();
     upload.upload_files(uppy, config, files);
     assert($("#compose-send-button").prop("disabled"));
     assert($("#compose-send-status").hasClass("alert-info"));
