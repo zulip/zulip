@@ -27,6 +27,7 @@ export function do_settings_change(
     status_element,
     {
         success_msg_html = strings.success_html,
+        failure_msg_html = strings.failure_html,
         success_continuation,
         error_continuation,
         sticky = false,
@@ -54,9 +55,9 @@ export function do_settings_change(
         error(xhr) {
             if (error_msg_element) {
                 loading.destroy_indicator(spinner);
-                ui_report.error(strings.failure_html, xhr, error_msg_element);
+                ui_report.error(failure_msg_html, xhr, error_msg_element);
             } else {
-                ui_report.error(strings.failure_html, xhr, spinner);
+                ui_report.error(failure_msg_html, xhr, spinner);
             }
             if (error_continuation !== undefined) {
                 error_continuation(xhr);
