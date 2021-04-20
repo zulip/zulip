@@ -157,8 +157,8 @@ async function test_send_multirecipient_pm_from_cordelia_pm_narrow(page: Page): 
     await common.pm_recipient.expect(page, recipient_internal_emails);
 }
 
-const markdown_preview_button = "#markdown_preview";
-const markdown_preview_hide_button = "#undo_markdown_preview";
+const markdown_preview_button = "#compose .markdown_preview";
+const markdown_preview_hide_button = "#compose .undo_markdown_preview";
 
 async function test_markdown_preview_buttons_visibility(page: Page): Promise<void> {
     await page.waitForSelector(markdown_preview_button, {visible: true});
@@ -176,19 +176,19 @@ async function test_markdown_preview_buttons_visibility(page: Page): Promise<voi
 }
 
 async function test_markdown_preview_without_any_content(page: Page): Promise<void> {
-    await page.click("#markdown_preview");
-    await page.waitForSelector("#undo_markdown_preview", {visible: true});
-    const markdown_preview_element = await page.$("#preview_content");
+    await page.click("#compose .markdown_preview");
+    await page.waitForSelector("#compose .undo_markdown_preview", {visible: true});
+    const markdown_preview_element = await page.$("#compose .preview_content");
     assert.equal(
         await page.evaluate((element: Element) => element.textContent, markdown_preview_element),
         "Nothing to preview",
     );
-    await page.click("#undo_markdown_preview");
+    await page.click("#compose .undo_markdown_preview");
 }
 
 async function test_markdown_rendering(page: Page): Promise<void> {
-    await page.waitForSelector("#markdown_preview", {visible: true});
-    let markdown_preview_element = await page.$("#preview_content");
+    await page.waitForSelector("#compose .markdown_preview", {visible: true});
+    let markdown_preview_element = await page.$("#compose .preview_content");
     assert.equal(
         await page.evaluate((element: Element) => element.textContent, markdown_preview_element),
         "",
@@ -196,12 +196,12 @@ async function test_markdown_rendering(page: Page): Promise<void> {
     await common.fill_form(page, 'form[action^="/json/messages"]', {
         content: "**Markdown preview** >> Test for Markdown preview",
     });
-    await page.click("#markdown_preview");
-    await page.waitForSelector("#preview_content", {visible: true});
+    await page.click("#compose .markdown_preview");
+    await page.waitForSelector("#compose .preview_content", {visible: true});
     const expected_markdown_html =
         "<p><strong>Markdown preview</strong> &gt;&gt; Test for Markdown preview</p>";
-    await page.waitForFunction(() => $("#preview_content").html() !== "");
-    markdown_preview_element = await page.$("#preview_content");
+    await page.waitForFunction(() => $("#compose .preview_content").html() !== "");
+    markdown_preview_element = await page.$("#compose .preview_content");
     assert.equal(
         await page.evaluate((element: Element) => element.innerHTML, markdown_preview_element),
         expected_markdown_html,

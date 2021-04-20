@@ -339,40 +339,31 @@ export function initialize() {
         $(`#edit_form_${CSS.escape(row_id)} .file_input`).trigger("click");
     });
 
-    $("body").on("click", ".message_edit_form [id^='markdown_preview_']", function (e) {
+    $("body").on("click", ".message_edit_form .markdown_preview", (e) => {
         e.preventDefault();
-
-        const row_id = rows.id($(this).closest(".message_row"));
-        function $_(selector) {
-            return $(`${selector}_${CSS.escape(row_id)}`);
-        }
-
-        const content = $_("#message_edit_content").val();
-        $_("#message_edit_content").hide();
-        $_("#markdown_preview").hide();
-        $_("#undo_markdown_preview").show();
-        $_("#preview_message_area").show();
+        const row = rows.get_closest_row(e.target);
+        const $msg_edit_content = row.find(".message_edit_content");
+        const content = $msg_edit_content.val();
+        $msg_edit_content.hide();
+        row.find(".markdown_preview").hide();
+        row.find(".undo_markdown_preview").show();
+        row.find(".preview_message_area").show();
 
         compose.render_and_show_preview(
-            $_("#markdown_preview_spinner"),
-            $_("#preview_content"),
+            row.find(".markdown_preview_spinner"),
+            row.find(".preview_content"),
             content,
         );
     });
 
-    $("body").on("click", ".message_edit_form [id^='undo_markdown_preview_']", function (e) {
+    $("body").on("click", ".message_edit_form .undo_markdown_preview", (e) => {
         e.preventDefault();
-
-        const row_id = rows.id($(this).closest(".message_row"));
-        function $_(selector) {
-            return $(`${selector}_${CSS.escape(row_id)}`);
-        }
-
-        $_("#message_edit_content").show();
-        $_("#undo_markdown_preview").hide();
-        $_("#preview_message_area").hide();
-        $_("#preview_content").empty();
-        $_("#markdown_preview").show();
+        const row = rows.get_closest_row(e.target);
+        row.find(".message_edit_content").show();
+        row.find(".undo_markdown_preview").hide();
+        row.find(".preview_message_area").hide();
+        row.find(".preview_content").empty();
+        row.find(".markdown_preview").show();
     });
 
     // TOPIC MUTING

@@ -63,7 +63,7 @@ async function open_compose_markdown_preview(page: Page): Promise<void> {
     await page.waitForSelector(new_topic_button, {visible: true});
     await page.click(new_topic_button);
 
-    const markdown_preview_button = "#markdown_preview"; // eye icon.
+    const markdown_preview_button = "#compose .markdown_preview"; // eye icon.
     await page.waitForSelector(markdown_preview_button, {visible: true});
     await page.click(markdown_preview_button);
 }

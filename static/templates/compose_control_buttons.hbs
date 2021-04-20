@@ -2,8 +2,8 @@
 {{#if file_upload_enabled }}
 <a role="button" class="compose_control_button compose_upload_file fa fa-paperclip notdisplayed" aria-label="{{t 'Upload files' }}" tabindex=0 title="{{t 'Upload files' }}"></a>
 {{/if}}
-<a role="button" id="markdown_preview" class="compose_control_button fa fa-eye" aria-label="{{t 'Preview' }}" tabindex=0 title="{{t 'Preview' }}"></a>
-<a role="button" id="undo_markdown_preview" class="compose_control_button fa fa-edit" aria-label="{{t 'Write' }}" tabindex=0 style="display:none;" title="{{t 'Write' }}"></a>
+<a role="button" class="markdown_preview compose_control_button fa fa-eye" aria-label="{{t 'Preview' }}" tabindex=0 title="{{t 'Preview' }}"></a>
+<a role="button" class="undo_markdown_preview compose_control_button fa fa-edit" aria-label="{{t 'Write' }}" tabindex=0 style="display:none;" title="{{t 'Write' }}"></a>
 <a role="button" class="compose_control_button fa fa-video-camera video_link" aria-label="{{t 'Add video call' }}" tabindex=0 title="{{t 'Add video call' }}"></a>
 <a role="button" class="compose_control_button fa fa-smile-o" aria-label="{{t 'Add emoji' }}" id="emoji_map" tabindex=0 title="{{t 'Add emoji' }}"></a>
 {{#if giphy_api_available }}

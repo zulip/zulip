@@ -56,7 +56,7 @@ export function get_item(key, config) {
             case "drag_drop_container":
                 return $("#compose");
             case "markdown_preview_hide_button":
-                return $("#undo_markdown_preview");
+                return $("#compose .undo_markdown_preview");
             default:
                 throw new Error(`Invalid key name for mode "${config.mode}"`);
         }
@@ -66,9 +66,9 @@ export function get_item(key, config) {
         }
         switch (key) {
             case "textarea":
-                return $(`#message_edit_content_${CSS.escape(config.row)}`);
+                return $(`#edit_form_${CSS.escape(config.row)} .message_edit_content`);
             case "send_button":
-                return $(`#message_edit_content_${CSS.escape(config.row)}`)
+                return $(`#edit_form_${CSS.escape(config.row)} .message_edit_content`)
                     .closest(".message_edit_form")
                     .find(".message_edit_save");
             case "send_status_identifier":
@@ -88,7 +88,7 @@ export function get_item(key, config) {
             case "drag_drop_container":
                 return $(".message_edit_form");
             case "markdown_preview_hide_button":
-                return $(`#undo_markdown_preview_${CSS.escape(config.row)}`);
+                return $(`#edit_form_${CSS.escape(config.row)} .undo_markdown_preview`);
             default:
                 throw new Error(`Invalid key name for mode "${config.mode}"`);
         }

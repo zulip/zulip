@@ -300,7 +300,8 @@ function timer_text(seconds_left) {
 
 function create_copy_to_clipboard_handler(source, message_id) {
     new ClipboardJS(source, {
-        target: () => document.querySelector(`#message_edit_content_${CSS.escape(message_id)}`),
+        target: () =>
+            document.querySelector(`#edit_form_${CSS.escape(message_id)} .message_edit_content`),
     });
 }
 
@@ -403,7 +404,7 @@ function edit_message(row, raw_content) {
         create_copy_to_clipboard_handler(copy_message[0], message.id);
     } else if (editability === editability_types.FULL) {
         copy_message.remove();
-        const edit_id = `#message_edit_content_${CSS.escape(rows.id(row))}`;
+        const edit_id = `#edit_form_${CSS.escape(rows.id(row))} .message_edit_content`;
         const listeners = resize.watch_manual_resize(edit_id);
         if (listeners) {
             currently_editing_messages.get(rows.id(row)).listeners = listeners;
@@ -590,7 +591,9 @@ export function end_message_row_edit(row) {
 
         // Clean up resize event listeners
         const listeners = currently_editing_messages.get(message.id).listeners;
-        const edit_box = document.querySelector(`#message_edit_content_${CSS.escape(message.id)}`);
+        const edit_box = document.querySelector(
+            `#edit_form_${CSS.escape(message.id)} .message_edit_content`,
+        );
         if (listeners !== undefined) {
             // Event listeners to clean up are only set in some edit types
             edit_box.removeEventListener("mousedown", listeners[0]);
@@ -872,7 +875,7 @@ export function edit_last_sent_message() {
     // Finally do the real work!
     compose_actions.cancel();
     start(msg_row, () => {
-        $("#message_edit_content").trigger("focus");
+        $(".message_edit_content").trigger("focus");
     });
 }
 
