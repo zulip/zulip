@@ -332,8 +332,6 @@ function edit_message(row, raw_content) {
         file_upload_enabled = true;
     }
 
-    const show_video_chat_button = compose.compute_show_video_chat_button();
-
     const show_edit_stream = message.is_stream && page_params.is_admin;
     // current message's stream has been already been added and selected in handlebar
     const available_streams = show_edit_stream
@@ -350,7 +348,6 @@ function edit_message(row, raw_content) {
             topic: message.topic,
             content: raw_content,
             file_upload_enabled,
-            show_video_chat_button,
             minutes_to_edit: Math.floor(page_params.realm_message_content_edit_limit_seconds / 60),
             show_edit_stream,
             available_streams,
@@ -368,6 +365,9 @@ function edit_message(row, raw_content) {
 
     form.on("keydown", handle_message_row_edit_keydown);
 
+    form.find(".message-edit-feature-group .video_link").toggle(
+        compose.compute_show_video_chat_button(),
+    );
     upload.feature_check($(`#edit_form_${CSS.escape(rows.id(row))} .compose_upload_file`));
 
     const message_edit_stream = row.find(`#select_stream_id_${CSS.escape(message.id)}`);

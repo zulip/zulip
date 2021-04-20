@@ -1,3 +1,4 @@
+{{! This file assumes message_id is only preset in message_edit_form and message_id cannot be 0.}}
 <input type="file" class="file_input notvisible pull-left" multiple />
 {{#if file_upload_enabled }}
 <a role="button" class="compose_control_button compose_upload_file fa fa-paperclip notdisplayed" aria-label="{{t 'Upload files' }}" tabindex=0 title="{{t 'Upload files' }}"></a>

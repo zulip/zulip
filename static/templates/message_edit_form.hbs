@@ -58,22 +58,7 @@
                 <button type="button" class="button small rounded message_edit_cancel">{{t "Cancel" }}</button>
                 {{#if is_content_editable}}
                 <div class="message-edit-feature-group">
-                    <input type="file" class="file_input notvisible pull-left" multiple />
-                    {{#if file_upload_enabled}}
-                    <a role="button" tabindex=0 class="compose_control_button attach_files fa fa-paperclip notdisplayed" aria-label="{{t "Attach files" }}" title="{{t "Attach files" }}"></a>
-                    {{/if}}
-                    <a role="button" tabindex=0 class="markdown_preview compose_control_button fa fa-eye" aria-label="{{t 'Preview' }}" title="{{t 'Preview' }}"></a>
-                    <a role="button" tabindex=0 class="undo_markdown_preview compose_control_button fa fa-edit" aria-label="{{t 'Write' }}" style="display:none;" title="{{t 'Write' }}"></a>
-                    {{#if show_video_chat_button}}
-                    <a role="button" tabindex=0 class="compose_control_button fa fa-video-camera video_link" aria-label="{{t "Add video call" }}" title="{{t "Add video call" }}"></a>
-                    {{/if}}
-                    <a role="button" tabindex=0 class="emoji_map compose_control_button fa fa-smile-o" aria-label="{{t 'Add emoji' }}" title="{{t 'Add emoji' }}"></a>
-                    {{#if giphy_api_available }}
-                    <a role="button" class="compose_control_button" aria-label="{{t 'Add GIF' }}" id="compose_box_giphy_grid" title="{{t 'Add GIF' }}">
-                        <img class="compose_giphy_logo" tabindex=0 src="/static/images/GIPHY_logo.png">
-                    </a>
-                    {{/if}}
-                    <a role="button" tabindex=0 class="message-control-link" data-overlay-trigger="message-formatting" >{{t 'Help' }}</a>
+                    {{> compose_control_buttons }}
                 </div>
                 {{/if}}
             {{else}}
