@@ -43,7 +43,7 @@ if args.fill_cache:
     subprocess.check_call(["./manage.py", "fill_memcached_caches"])
 
 core_server_services = ["zulip-django"]
-if os.path.exists("/etc/supervisor/conf.d/thumbor.conf"):
+if os.path.exists("/etc/supervisor/conf.d/zulip/thumbor.conf"):
     core_server_services.append("zulip-thumbor")
 
 current_symlink = os.path.join(DEPLOYMENTS_DIR, "current")
@@ -89,7 +89,7 @@ if using_sso.strip() == b"True":
     logging.info("Restarting Apache WSGI process...")
     subprocess.check_call(["pkill", "-f", "apache2", "-u", "zulip"])
 
-if os.path.exists("/etc/supervisor/conf.d/zulip_db.conf"):
+if os.path.exists("/etc/supervisor/conf.d/zulip/zulip_db.conf"):
     subprocess.check_call(["supervisorctl", "restart", "process-fts-updates"])
 
 logging.info("Done!")
