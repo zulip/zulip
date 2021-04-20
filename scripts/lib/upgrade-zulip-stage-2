@@ -101,19 +101,8 @@ IS_SERVER_UP = True
 def shutdown_server() -> None:
     global IS_SERVER_UP
 
-    core_server_services = [
-        "zulip-django",
-        "zulip-tornado" if tornado_processes == 1 else "zulip-tornado:*",
-    ]
-    worker_services = ["zulip-workers:*"]
-    # Stop and start thumbor service only if thumbor is installed.
-    if os.path.exists("/etc/supervisor/conf.d/zulip/thumbor.conf"):
-        core_server_services.append("zulip-thumbor")
-
     logging.info("Stopping Zulip...")
-    subprocess.check_call(
-        ["supervisorctl", "stop", *worker_services, *core_server_services], preexec_fn=su_to_zulip
-    )
+    subprocess.check_call(["./scripts/stop-server"], preexec_fn=su_to_zulip)
     IS_SERVER_UP = False
 
 
@@ -272,11 +261,6 @@ if not args.skip_migrations:
     if need_create_large_indexes:
         logging.info("Creating some expensive indexes before starting downtime.")
         subprocess.check_call(["./manage.py", "create_large_indexes"], preexec_fn=su_to_zulip)
-
-# Now we start shutting down services; we start with
-# process-fts-updates, which isn't on the critical serving path.
-if os.path.exists("/etc/supervisor/conf.d/zulip/zulip_db.conf"):
-    subprocess.check_call(["supervisorctl", "stop", "process-fts-updates"], preexec_fn=su_to_zulip)
 
 if (not args.skip_puppet or migrations_needed) and IS_SERVER_UP:
     # By default, we shut down the service to apply migrations and
