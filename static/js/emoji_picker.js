@@ -703,13 +703,10 @@ export function register_click_handlers() {
     $("body").on("click", ".emoji_map", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        // The data-message-id attribute is only present in the emoji icon present in
-        // the message edit form. So the following check will return false if this
-        // event was not fired from message edit form.
-        if ($(this).attr("data-message-id") !== undefined) {
-            // Store data-message-id value in global variable edit_message_id so that
+        if ($(e.target).parents(".message_edit_form").length === 1) {
+            // Store message id in global variable edit_message_id so that
             // its value can be further used to correctly find the message textarea element.
-            edit_message_id = $(this).attr("data-message-id");
+            edit_message_id = rows.get_message_id(e.target);
         } else {
             edit_message_id = null;
         }
