@@ -332,7 +332,7 @@ export function initialize() {
         const send_status = $(`#message-edit-send-status-${CSS.escape(row_id)}`);
         $(send_status).stop(true).fadeOut(200);
     });
-    $("body").on("click", ".message_edit_form [id^='attach_files_']", function (e) {
+    $("body").on("click", ".message_edit_form .compose_upload_file", function (e) {
         e.preventDefault();
 
         const row_id = rows.id($(this).closest(".message_row"));
