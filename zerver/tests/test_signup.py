@@ -85,6 +85,7 @@ from zerver.models import (
     Message,
     PreregistrationUser,
     Realm,
+    RealmAuditLog,
     Recipient,
     ScheduledEmail,
     Stream,
@@ -2759,6 +2760,12 @@ class RealmCreationTest(ZulipTestCase):
         self.assertIn("Signups enabled", messages[0].content)
         self.assertIn("signed up", messages[1].content)
         self.assertEqual("zuliptest", messages[1].topic_name())
+
+        realm_creation_audit_log = RealmAuditLog.objects.get(
+            realm=realm, event_type=RealmAuditLog.REALM_CREATED
+        )
+        self.assertEqual(realm_creation_audit_log.acting_user, user)
+        self.assertEqual(realm_creation_audit_log.event_time, realm.date_created)
 
         # Piggyback a little check for how we handle
         # empty string_ids.

@@ -652,6 +652,18 @@ def do_create_user(
             }
         ).decode(),
     )
+
+    if realm_creation:
+        # If this user just created a realm, make sure they are
+        # properly tagged as the creator of the realm.
+        realm_creation_audit_log = (
+            RealmAuditLog.objects.filter(event_type=RealmAuditLog.REALM_CREATED, realm=realm)
+            .order_by("id")
+            .last()
+        )
+        realm_creation_audit_log.acting_user = user_profile
+        realm_creation_audit_log.save(update_fields=["acting_user"])
+
     do_increment_logging_stat(
         user_profile.realm,
         COUNT_STATS["active_users_log:is_bot:day"],
@@ -4531,8 +4543,14 @@ def do_create_realm(
         # suites that want to backdate the date of a realm's creation.
         assert not settings.PRODUCTION
         kwargs["date_created"] = date_created
-    realm = Realm(string_id=string_id, name=name, **kwargs)
-    realm.save()
+
+    with transaction.atomic():
+        realm = Realm(string_id=string_id, name=name, **kwargs)
+        realm.save()
+
+        RealmAuditLog.objects.create(
+            realm=realm, event_type=RealmAuditLog.REALM_CREATED, event_time=realm.date_created
+        )
 
     # Create stream once Realm object has been saved
     notifications_stream = ensure_stream(
