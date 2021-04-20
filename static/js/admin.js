@@ -30,7 +30,7 @@ const admin_settings_label = {
     realm_default_twenty_four_hour_time: $t({defaultMessage: "Time format"}),
     realm_send_welcome_emails: $t({defaultMessage: "Send emails introducing Zulip to new users"}),
     realm_message_content_allowed_in_email_notifications: $t({
-        defaultMessage: "Allow message content in missed message emails",
+        defaultMessage: "Allow message content in message notification emails",
     }),
     realm_digest_emails_enabled: $t({
         defaultMessage: "Send weekly digest emails to inactive users",

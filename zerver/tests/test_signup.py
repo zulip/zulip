@@ -2563,10 +2563,10 @@ class EmailUnsubscribeTests(ZulipTestCase):
         result = self.client_get(urllib.parse.urlparse(unsubscribe_link).path)
         self.assert_in_response("Unknown email unsubscribe request", result)
 
-    def test_missedmessage_unsubscribe(self) -> None:
+    def test_message_notification_emails_unsubscribe(self) -> None:
         """
-        We provide one-click unsubscribe links in missed message
-        e-mails that you can click even when logged out to update your
+        We provide one-click unsubscribe links in message notification emails
+        that you can click even when logged out to update your
         email notification settings.
         """
         user_profile = self.example_user("hamlet")

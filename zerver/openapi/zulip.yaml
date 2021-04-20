@@ -9089,7 +9089,7 @@ paths:
         - name: message_content_in_email_notifications
           in: query
           description: |
-            Include the message's content in missed messages email notifications.
+            Include the message's content in email notifications for new messages.
           schema:
             type: boolean
           example: true
@@ -9128,7 +9128,7 @@ paths:
         - name: realm_name_in_notifications
           in: query
           description: |
-            Include organization name in subject of missed message emails.
+            Include organization name in subject of message notification emails.
           schema:
             type: boolean
           example: true

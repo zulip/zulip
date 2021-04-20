@@ -55,10 +55,10 @@ function setup_settings_label() {
             defaultMessage: "Send email notifications for new logins to my account",
         }),
         message_content_in_email_notifications: $t({
-            defaultMessage: "Include message content in missed message emails",
+            defaultMessage: "Include message content in message notification emails",
         }),
         realm_name_in_notifications: $t({
-            defaultMessage: "Include organization name in subject of missed message emails",
+            defaultMessage: "Include organization name in subject of message notification emails",
         }),
         presence_enabled: $t({
             defaultMessage: "Display my availability to other users when online",

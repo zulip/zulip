@@ -800,7 +800,7 @@ class TestMissedMessages(ZulipTestCase):
         )
 
         # When message content is not allowed at realm level
-        # Emails don't have missed message irrespective of message content setting of the user
+        # Emails don't have message content irrespective of message content setting of the user
         realm = get_realm("zulip")
         realm.message_content_allowed_in_email_notifications = False
         realm.save(update_fields=["message_content_allowed_in_email_notifications"])
