@@ -774,6 +774,10 @@ urls += [
         "help/delete-a-stream", RedirectView.as_view(url="/help/archive-a-stream", permanent=True)
     ),
     path("api/delete-stream", RedirectView.as_view(url="/api/archive-stream", permanent=True)),
+    path(
+        "help/configure-missed-message-emails",
+        RedirectView.as_view(url="/help/configure-message-notification-emails", permanent=True),
+    ),
     path("help/", help_documentation_view),
     path("help/<path:article>", help_documentation_view),
     path("api/", api_documentation_view),
