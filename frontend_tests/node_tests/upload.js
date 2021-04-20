@@ -71,7 +71,10 @@ test("get_item", () => {
         upload.get_item("send_status_message", {mode: "compose"}),
         $("#compose-error-msg"),
     );
-    assert.equal(upload.get_item("file_input_identifier", {mode: "compose"}), "#file_input");
+    assert.equal(
+        upload.get_item("file_input_identifier", {mode: "compose"}),
+        "#compose .file_input",
+    );
     assert.equal(upload.get_item("source", {mode: "compose"}), "compose-file-input");
     assert.equal(upload.get_item("drag_drop_container", {mode: "compose"}), $("#compose"));
     assert.equal(
@@ -116,7 +119,7 @@ test("get_item", () => {
 
     assert.equal(
         upload.get_item("file_input_identifier", {mode: "edit", row: 123}),
-        `#message_edit_file_input_${CSS.escape(123)}`,
+        `#edit_form_${CSS.escape(123)} .file_input`,
     );
     assert.equal(upload.get_item("source", {mode: "edit", row: 123}), "message-edit-file-input");
     assert.equal(
@@ -385,7 +388,7 @@ test("uppy_config", () => {
 test("file_input", (override) => {
     upload.setup_upload({mode: "compose"});
 
-    const change_handler = $("body").get_on_handler("change", "#file_input");
+    const change_handler = $("body").get_on_handler("change", "#compose .file_input");
     const files = ["file1", "file2"];
     const event = {
         target: {

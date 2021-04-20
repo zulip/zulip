@@ -1231,7 +1231,7 @@ export function initialize() {
 
     $("#compose").on("click", "#attach_files", (e) => {
         e.preventDefault();
-        $("#compose #file_input").trigger("click");
+        $("#compose .file_input").trigger("click");
     });
 
     $("body").on("click", ".video_link", (e) => {

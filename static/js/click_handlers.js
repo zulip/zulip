@@ -336,7 +336,7 @@ export function initialize() {
         e.preventDefault();
 
         const row_id = rows.id($(this).closest(".message_row"));
-        $(`#message_edit_file_input_${CSS.escape(row_id)}`).trigger("click");
+        $(`#edit_form_${CSS.escape(row_id)} .file_input`).trigger("click");
     });
 
     $("body").on("click", ".message_edit_form [id^='markdown_preview_']", function (e) {

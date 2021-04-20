@@ -50,7 +50,7 @@ export function get_item(key, config) {
             case "send_status_message":
                 return $("#compose-error-msg");
             case "file_input_identifier":
-                return "#file_input";
+                return "#compose .file_input";
             case "source":
                 return "compose-file-input";
             case "drag_drop_container":
@@ -82,7 +82,7 @@ export function get_item(key, config) {
             case "send_status_message":
                 return $(`#message-edit-send-status-${CSS.escape(config.row)}`).find(".error-msg");
             case "file_input_identifier":
-                return `#message_edit_file_input_${CSS.escape(config.row)}`;
+                return `#edit_form_${CSS.escape(config.row)} .file_input`;
             case "source":
                 return "message-edit-file-input";
             case "drag_drop_container":
