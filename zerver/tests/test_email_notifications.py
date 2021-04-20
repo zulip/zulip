@@ -305,9 +305,7 @@ class TestMissedMessages(ZulipTestCase):
         else:
             reply_to_emails = ["noreply@testserver"]
         msg = mail.outbox[0]
-        from_email = str(
-            Address(display_name="Zulip missed messages", addr_spec=FromAddress.NOREPLY)
-        )
+        from_email = str(Address(display_name="Zulip notifications", addr_spec=FromAddress.NOREPLY))
         self.assertEqual(len(mail.outbox), 1)
         if send_as_user:
             from_email = f'"{othello.full_name}" <{othello.email}>'
