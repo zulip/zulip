@@ -10,6 +10,7 @@ import * as compose_ui from "./compose_ui";
 import {media_breakpoints_num} from "./css_variables";
 import {page_params} from "./page_params";
 import * as popovers from "./popovers";
+import * as rows from "./rows";
 import * as ui_util from "./ui_util";
 
 const giphy_fetch = new GiphyFetch(page_params.giphy_api_key);
@@ -188,10 +189,13 @@ export function initialize() {
         }
         popovers.hide_all();
         const $elt = $(e.target);
-        // Store data-message-id value in global variable edit_message_id so that
-        // its value can be further used to correctly find the message textarea element.
-        // This will store `undefined` when called from compose box, by design.
-        edit_message_id = $elt.attr("data-message-id");
+        if ($elt.parents(".message_edit_form").length === 1) {
+            // Store message id in global variable edit_message_id so that
+            // its value can be further used to correctly find the message textarea element.
+            edit_message_id = rows.id($elt.parents(".message_row"));
+        } else {
+            edit_message_id = undefined;
+        }
 
         active_popover_element = $elt.closest("#compose_box_giphy_grid");
         active_popover_element.popover({
