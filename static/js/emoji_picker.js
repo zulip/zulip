@@ -700,7 +700,7 @@ export function register_click_handlers() {
         hide_emoji_popover();
     });
 
-    $("body").on("click", "#emoji_map", function (e) {
+    $("body").on("click", ".emoji_map", function (e) {
         e.preventDefault();
         e.stopPropagation();
         // The data-message-id attribute is only present in the emoji icon present in
