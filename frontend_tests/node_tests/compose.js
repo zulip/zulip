@@ -1510,11 +1510,11 @@ test_ui("on_events", (override) => {
 
     (function test_attach_files_compose_clicked() {
         const handler = $("#compose").get_on_handler("click", "#attach_files");
-        $("#file_input").clone = (param) => {
+        $("#compose .file_input").clone = (param) => {
             assert(param);
         };
         let compose_file_input_clicked = false;
-        $("#compose #file_input").on("click", () => {
+        $("#compose .file_input").on("click", () => {
             compose_file_input_clicked = true;
         });
 

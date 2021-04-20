@@ -58,7 +58,7 @@
                 <button type="button" class="button small rounded message_edit_cancel">{{t "Cancel" }}</button>
                 {{#if is_content_editable}}
                 <div class="message-edit-feature-group">
-                    <input type="file" id="message_edit_file_input_{{message_id}}" class="notvisible pull-left" multiple />
+                    <input type="file" class="file_input notvisible pull-left" multiple />
                     {{#if file_upload_enabled}}
                     <a role="button" tabindex=0 class="compose_control_button fa fa-paperclip notdisplayed" aria-label="{{t "Attach files" }}" id="attach_files_{{message_id}}" title="{{t "Attach files" }}"></a>
                     {{/if}}
