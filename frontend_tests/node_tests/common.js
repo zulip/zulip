@@ -2,13 +2,20 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 mock_cjs("jquery", $);
 
 const noop = () => {};
+
+mock_esm("tippy.js", {
+    default: (selector) => {
+        $(selector)[0]._tippy = noop;
+        $(selector)[0]._tippy.setContent = noop;
+    },
+});
 
 set_global("document", {});
 
@@ -130,7 +137,9 @@ run_test("adjust_mac_shortcuts mac", (override) => {
 });
 
 run_test("show password", () => {
-    const password_selector = ".password_visibility_toggle";
+    const password_selector = "#id_password ~ .password_visibility_toggle";
+
+    $(password_selector)[0] = () => {};
 
     function set_attribute(type) {
         $("#id_password").attr("type", type);

@@ -325,6 +325,7 @@ export function set_up() {
         common.setup_password_visibility_toggle(
             "#get_api_key_password",
             "#get_api_key_password + .password_visibility_toggle",
+            {tippy_tooltips: true},
         );
 
         if (page_params.realm_password_auth_enabled === false) {

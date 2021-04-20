@@ -113,10 +113,12 @@ export function build_page() {
     common.setup_password_visibility_toggle(
         "#old_password",
         "#old_password + .password_visibility_toggle",
+        {tippy_tooltips: true},
     );
     common.setup_password_visibility_toggle(
         "#new_password",
         "#new_password + .password_visibility_toggle",
+        {tippy_tooltips: true},
     );
 }
 
