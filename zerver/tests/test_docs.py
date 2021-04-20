@@ -54,7 +54,7 @@ class DocPageTest(ZulipTestCase):
             self.assertIn(s, str(result.content))
         if not doc_html_str:
             self.assert_in_success_response(
-                ['<meta name="robots" content="noindex,nofollow">'], result
+                ['<meta name="robots" content="noindex,nofollow" />'], result
             )
 
         # Test the URL on the root subdomain
@@ -65,7 +65,7 @@ class DocPageTest(ZulipTestCase):
         self.assertIn(expected_content, str(result.content))
         if not doc_html_str:
             self.assert_in_success_response(
-                ['<meta name="robots" content="noindex,nofollow">'], result
+                ['<meta name="robots" content="noindex,nofollow" />'], result
             )
 
         for s in extra_strings:
@@ -88,7 +88,7 @@ class DocPageTest(ZulipTestCase):
                 # Every page has a meta-description
                 self.assert_in_success_response(['<meta name="description" content="'], result)
             self.assert_not_in_success_response(
-                ['<meta name="robots" content="noindex,nofollow">'], result
+                ['<meta name="robots" content="noindex,nofollow" />'], result
             )
 
             # Test the URL on the "zephyr" subdomain with the landing page setting
@@ -101,7 +101,7 @@ class DocPageTest(ZulipTestCase):
                 self.assertIn(s, str(result.content))
             if not doc_html_str:
                 self.assert_in_success_response(
-                    ['<meta name="robots" content="noindex,nofollow">'], result
+                    ['<meta name="robots" content="noindex,nofollow" />'], result
                 )
 
     def test_api_doc_endpoints(self) -> None:
@@ -172,14 +172,14 @@ class DocPageTest(ZulipTestCase):
     def test_portico_pages_open_graph_metadata(self) -> None:
         # Why Zulip
         url = "/why-zulip/"
-        title = '<meta property="og:title" content="Team chat with first-class threading">'
+        title = '<meta property="og:title" content="Team chat with first-class threading" />'
         description = '<meta property="og:description" content="Most team chats are overwhelming'
         self._test(url, title, doc_html_str=True)
         self._test(url, description, doc_html_str=True)
 
         # Features
         url = "/features/"
-        title = '<meta property="og:title" content="Zulip Features">'
+        title = '<meta property="og:title" content="Zulip Features" />'
         description = '<meta property="og:description" content="First class threading'
         self._test(url, title, doc_html_str=True)
         self._test(url, description, doc_html_str=True)
@@ -202,21 +202,21 @@ class DocPageTest(ZulipTestCase):
 
     def test_integration_pages_open_graph_metadata(self) -> None:
         url = "/integrations/doc/github"
-        title = '<meta property="og:title" content="Connect GitHub to Zulip">'
+        title = '<meta property="og:title" content="Connect GitHub to Zulip" />'
         description = '<meta property="og:description" content="Zulip comes with over'
         self._test(url, title, doc_html_str=True)
         self._test(url, description, doc_html_str=True)
 
         # Test category pages
         url = "/integrations/communication"
-        title = '<meta property="og:title" content="Connect your Communication tools to Zulip">'
+        title = '<meta property="og:title" content="Connect your Communication tools to Zulip" />'
         description = '<meta property="og:description" content="Zulip comes with over'
         self._test(url, title, doc_html_str=True)
         self._test(url, description, doc_html_str=True)
 
         # Test integrations page
         url = "/integrations/"
-        title = '<meta property="og:title" content="Connect the tools you use to Zulip">'
+        title = '<meta property="og:title" content="Connect the tools you use to Zulip" />'
         description = '<meta property="og:description" content="Zulip comes with over'
         self._test(url, title, doc_html_str=True)
         self._test(url, description, doc_html_str=True)

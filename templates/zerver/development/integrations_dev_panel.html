@@ -3,7 +3,7 @@
 
 {% block customhead %}
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 {% endblock %}
 
 
@@ -67,21 +67,21 @@
         </div>
     </div>
 
-    <br>
+    <br />
 
     <div class="row2">
         <label for="URL"><b>URL</b>  (Automatically Generated)</label>
         <input id="URL" type="text" />
     </div>
 
-    <br>
+    <br />
 
     <div class="row3">
         <label for="custom_http_headers"><b>Custom HTTP Headers</b></label>
         <textarea id="custom_http_headers"></textarea>
     </div>
 
-    <br>
+    <br />
 
     <div class="row4">
         <div class="col1">
@@ -104,6 +104,6 @@
 </div>
 
 <div class="pad-small"></div>
-<input id="csrftoken" type="hidden" value="{{ csrf_token }}">
+<input id="csrftoken" type="hidden" value="{{ csrf_token }}" />
 
 {% endblock %}

@@ -2,7 +2,7 @@
 {% set entrypoint = "billing" %}
 
 {% block customhead %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <script src="https://checkout.stripe.com/checkout.js"></script>
 {% endblock %}
 
@@ -26,7 +26,7 @@
                     <li><a data-toggle="tab" href="#settings">Settings</a></li>
                 </ul>
 
-                <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}" />
                 <div class="tab-content">
                     <div class="tab-pane active" id="overview">
                         {% if free_trial %}
@@ -133,13 +133,13 @@
                 </div>
                 <div id="goto-zulip-organization-link">
                     {% if onboarding %}
-                    <br>
+                    <br />
                     <h3>
                         <b><a href="/">Go to your Zulip organization</a></b>
                     </h3>
                     {% endif %}
                 </div>
-                <hr>
+                <hr />
                 <div class="support-link">
                     <p>
                         Contact <a href="mailto:support@zulip.com">support@zulip.com</a>
