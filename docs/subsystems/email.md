@@ -4,7 +4,7 @@ This page has developer documentation on the Zulip email system. If you're
 trying to configure your server to send email, you might be looking for our
 guide to [sending outgoing email](../production/email.md). If you're trying to
 configure an email integration to receive incoming email (e.g. so that users
-can reply to missed message emails via email), you might be interested in
+can reply to message notification emails via email), you might be interested in
 our instructions for
 [setting up an email integration](https://zulip.com/integrations/doc/email).
 

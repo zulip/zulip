@@ -794,7 +794,7 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
 class TestMissedMessageEmailMessages(ZulipTestCase):
     def test_receive_missed_personal_message_email_messages(self) -> None:
 
-        # build dummy messages for missed messages email reply
+        # build dummy messages for message notification email reply
         # have Hamlet send Othello a PM. Othello will reply via email
         # Hamlet will receive the message.
         self.login("hamlet")
@@ -838,7 +838,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
 
     def test_receive_missed_huddle_message_email_messages(self) -> None:
 
-        # build dummy messages for missed messages email reply
+        # build dummy messages for message notification email reply
         # have Othello send Iago and Cordelia a PM. Cordelia will reply via email
         # Iago and Othello will receive the message.
         self.login("othello")
@@ -889,9 +889,9 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         self.assertEqual(message.recipient.type, Recipient.HUDDLE)
 
     def test_receive_missed_stream_message_email_messages(self) -> None:
-        # build dummy messages for missed messages email reply
+        # build dummy messages for message notification email reply
         # have Hamlet send a message to stream Denmark, that Othello
-        # will receive a missed message email about.
+        # will receive a message notification email about.
         # Othello will reply via email.
         # Hamlet will see the message in the stream.
         self.subscribe(self.example_user("hamlet"), "Denmark")
@@ -970,7 +970,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
 
         self.assertEqual(
             message.content,
-            "Error sending message to stream announce via missed messages email reply:\nOnly organization administrators can send to this stream.",
+            "Error sending message to stream announce via message notification email reply:\nOnly organization administrators can send to this stream.",
         )
         self.assertEqual(message.sender, get_system_bot(settings.NOTIFICATION_BOT))
 

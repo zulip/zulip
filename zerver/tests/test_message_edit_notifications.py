@@ -508,7 +508,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         self.assertEqual(info["enqueue_kwargs"], expected_enqueue_kwargs)
 
         # Because Cordelia is FULLY present, we don't need to send any offline
-        # push notifications or missed message emails.
+        # push notifications or message notification emails.
         self.assertEqual(len(info["queue_messages"]), 0)
 
     def test_clear_notification_when_mention_removed(self) -> None:

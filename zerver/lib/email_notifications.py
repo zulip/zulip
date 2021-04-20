@@ -184,7 +184,7 @@ def build_message_list(
     stream_map: Dict[int, Stream],  # only needs id, name
 ) -> List[Dict[str, Any]]:
     """
-    Builds the message list object for the missed message email template.
+    Builds the message list object for the message notification email template.
     The messages are collapsed into per-recipient and per-sender blocks, like
     our web interface
     """
@@ -506,7 +506,7 @@ def do_send_missedmessage_events_reply_in_zulip(
     from_address = FromAddress.NOREPLY
     if len(senders) == 1 and settings.SEND_MISSED_MESSAGE_EMAILS_AS_USER:
         # If this setting is enabled, you can reply to the Zulip
-        # missed message emails directly back to the original sender.
+        # message notification emails directly back to the original sender.
         # However, one must ensure the Zulip server is in the SPF
         # record for the domain, or there will be spam/deliverability
         # problems.

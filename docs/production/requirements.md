@@ -125,7 +125,7 @@ certificate documentation](ssl-certificates.md).
 
 * Outgoing email (SMTP) credentials that Zulip can use to send
   outgoing emails to users (e.g. email address confirmation emails
-  during the signup process, missed message notifications, password
+  during the signup process, message notification emails, password
   reset, etc.).  If you don't have an existing outgoing SMTP solution,
   read about
   [free outgoing SMTP options and options for prototyping](email.html#free-outgoing-email-services).
