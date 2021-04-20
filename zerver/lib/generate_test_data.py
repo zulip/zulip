@@ -60,22 +60,24 @@ def load_generators(config: Dict[str, Any]) -> Dict[str, Any]:
 
     results["lists"] = itertools.cycle(cfg["lists"])
 
+    results["attachment-paths"] = itertools.cycle(cfg["attachment-paths"])
+
     return results
 
 
-def parse_file(config: Dict[str, Any], gens: Dict[str, Any], corpus_file: str) -> List[str]:
+def parse_file(config: Dict[str, Any], gens: Dict[str, Any], corpus_file: str) -> List[List[str]]:
 
     # First, load the entire file into a dictionary,
     # then apply our custom filters to it as needed.
 
-    paragraphs: List[str] = []
+    paragraphs_with_attachment_paths: List[List[str]] = []
 
     with open(corpus_file) as infile:
         # OUR DATA: we need to separate the person talking and what they say
         paragraphs = remove_line_breaks(infile)
-        paragraphs = add_flair(paragraphs, gens)
+        paragraphs_with_attachment_paths = add_flair(paragraphs, gens)
 
-    return paragraphs
+    return paragraphs_with_attachment_paths
 
 
 def get_flair_gen(length: int) -> List[str]:
@@ -93,7 +95,7 @@ def get_flair_gen(length: int) -> List[str]:
     return result
 
 
-def add_flair(paragraphs: List[str], gens: Dict[str, Any]) -> List[str]:
+def add_flair(paragraphs: List[str], gens: Dict[str, Any]) -> List[List[str]]:
 
     # roll the dice and see what kind of flair we should add, if any
     results = []
@@ -102,6 +104,7 @@ def add_flair(paragraphs: List[str], gens: Dict[str, Any]) -> List[str]:
 
     for i in range(len(paragraphs)):
         key = flair[i]
+        txt = None
         if key == "None":
             txt = paragraphs[i]
         elif key == "italic":
@@ -135,7 +138,19 @@ def add_flair(paragraphs: List[str], gens: Dict[str, Any]) -> List[str]:
             # even when developing offline).
             txt = paragraphs[i] + "\n" + next(gens["images"])
 
-        results.append(txt)
+        # Attachments:
+        # Similar to images, we can use files already in the project as
+        # attachments. However, we must hit the `upload` endpoint, which
+        # has to be performed in populate_db.py. Therefore, the attachment
+        # path is not included as part of the message text but appended
+        # after the text.
+        if txt is not None:
+            txt_with_attachment_path = [txt]
+        elif key == "attachment":
+            txt_with_attachment_path = [paragraphs[i]]
+            txt_with_attachment_path.append(next(gens["attachment-paths"]))
+
+        results.append(txt_with_attachment_path)
 
     return results
 
@@ -197,20 +212,20 @@ def remove_line_breaks(fh: Any) -> List[str]:
     return results
 
 
-def write_file(paragraphs: List[str], filename: str) -> None:
+def write_file(paragraphs_with_attachment_paths: List[List[str]], filename: str) -> None:
 
     with open(filename, "wb") as outfile:
-        outfile.write(orjson.dumps(paragraphs))
+        outfile.write(orjson.dumps(paragraphs_with_attachment_paths))
 
 
 def create_test_data() -> None:
 
     gens = load_generators(config)  # returns a dictionary of generators
 
-    paragraphs = parse_file(config, gens, config["corpus"]["filename"])
+    paragraphs_with_attachment_paths = parse_file(config, gens, config["corpus"]["filename"])
 
     write_file(
-        paragraphs,
+        paragraphs_with_attachment_paths,
         os.path.join(get_or_create_dev_uuid_var_path("test-backend"), "test_messages.json"),
     )
 

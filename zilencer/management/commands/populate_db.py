@@ -929,7 +929,7 @@ def generate_and_send_messages(
     ) as infile:
         dialog = orjson.loads(infile.read())
     random.shuffle(dialog)
-    texts = itertools.cycle(dialog)
+    texts_with_attachment_paths = itertools.cycle(dialog)
 
     # We need to filter out streams from the analytics realm as we don't want to generate
     # messages to its streams - and they might also have no subscribers, which would break
@@ -960,7 +960,8 @@ def generate_and_send_messages(
         message = Message()
         message.sending_client = get_client("populate_db")
 
-        message.content = next(texts)
+        text_with_attachment_path = next(texts_with_attachment_paths)
+        message.content = text_with_attachment_path[0]
 
         randkey = random.randint(1, random_max)
         if (
