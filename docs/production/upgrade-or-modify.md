@@ -133,6 +133,14 @@ suggest using that updated template to update
    section in `/etc/zulip/settings-new.py` and copy the setting from
    `settings.py` into there.
 
+   The following tool may help, by finding the most likely version of
+   the template that your `/etc/zulip/settings.py` was installed
+   using, and the differences that your file has from that:
+
+   ```
+   /home/zulip/deployments/current/scripts/setup/compare-settings-to-template
+   ```
+
    If there are settings which you cannot find documented in
    `/etc/zulip/settings-new.py`, check the [changelog][changelog] to see
    if they have been removed.
