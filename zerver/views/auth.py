@@ -619,25 +619,6 @@ def redirect_and_log_into_subdomain(result: ExternalAuthResult) -> HttpResponse:
     return redirect(subdomain_login_uri)
 
 
-def get_dev_users(realm: Optional[Realm] = None, extra_users_count: int = 10) -> List[UserProfile]:
-    # Development environments usually have only a few users, but
-    # it still makes sense to limit how many extra users we render to
-    # support performance testing with DevAuthBackend.
-    if realm is not None:
-        users_query = UserProfile.objects.select_related().filter(
-            is_bot=False, is_active=True, realm=realm
-        )
-    else:
-        users_query = UserProfile.objects.select_related().filter(is_bot=False, is_active=True)
-
-    shakespearian_users = users_query.exclude(email__startswith="extrauser").order_by("email")
-    extra_users = users_query.filter(email__startswith="extrauser").order_by("email")
-    # Limit the number of extra users we offer by default
-    extra_users = extra_users[0:extra_users_count]
-    users = list(shakespearian_users) + list(extra_users)
-    return users
-
-
 def redirect_to_misconfigured_ldap_notice(request: HttpResponse, error_type: int) -> HttpResponse:
     if error_type == ZulipLDAPAuthBackend.REALM_IS_NONE_ERROR:
         return config_error(request, "ldap")
@@ -658,20 +639,6 @@ def show_deactivation_notice(request: HttpRequest) -> HttpResponse:
 
 def redirect_to_deactivation_notice() -> HttpResponse:
     return HttpResponseRedirect(reverse(show_deactivation_notice))
-
-
-def add_dev_login_context(realm: Optional[Realm], context: Dict[str, Any]) -> None:
-    users = get_dev_users(realm)
-    context["current_realm"] = realm
-    context["all_realms"] = Realm.objects.all()
-
-    def sort(lst: List[UserProfile]) -> List[UserProfile]:
-        return sorted(lst, key=lambda u: u.delivery_email)
-
-    context["direct_owners"] = sort([u for u in users if u.is_realm_owner])
-    context["direct_admins"] = sort([u for u in users if u.is_realm_admin and not u.is_realm_owner])
-    context["guest_users"] = sort([u for u in users if u.is_guest])
-    context["direct_users"] = sort([u for u in users if not (u.is_realm_admin or u.is_guest)])
 
 
 def update_login_page_context(request: HttpRequest, context: Dict[str, Any]) -> None:
@@ -758,6 +725,8 @@ def login_page(
     extra_context = kwargs.pop("extra_context", {})
     extra_context["next"] = next
     if dev_auth_enabled() and kwargs.get("template_name") == "zerver/development/dev_login.html":
+        from zerver.views.development.dev_login import add_dev_login_context
+
         if "new_realm" in request.POST:
             try:
                 realm = get_realm(request.POST["new_realm"])
@@ -825,98 +794,6 @@ def start_two_factor_auth(
     """
     two_fa_view = TwoFactorLoginView.as_view(extra_context=extra_context, **kwargs)
     return two_fa_view(request, **kwargs)
-
-
-@csrf_exempt
-@has_request_variables
-def dev_direct_login(
-    request: HttpRequest,
-    next: str = REQ(default="/"),
-) -> HttpResponse:
-    # This function allows logging in without a password and should only be called
-    # in development environments.  It may be called if the DevAuthBackend is included
-    # in settings.AUTHENTICATION_BACKENDS
-    if (not dev_auth_enabled()) or settings.PRODUCTION:
-        # This check is probably not required, since authenticate would fail without
-        # an enabled DevAuthBackend.
-        return config_error(request, "dev")
-    email = request.POST["direct_email"]
-    subdomain = get_subdomain(request)
-    realm = get_realm(subdomain)
-    user_profile = authenticate(dev_auth_username=email, realm=realm)
-    if user_profile is None:
-        return config_error(request, "dev")
-    do_login(request, user_profile)
-
-    redirect_to = get_safe_redirect_to(next, user_profile.realm.uri)
-    return HttpResponseRedirect(redirect_to)
-
-
-def check_dev_auth_backend() -> None:
-    if settings.PRODUCTION:
-        raise JsonableError(_("Endpoint not available in production."))
-    if not dev_auth_enabled():
-        raise JsonableError(_("DevAuthBackend not enabled."))
-
-
-@csrf_exempt
-@require_post
-@has_request_variables
-def api_dev_fetch_api_key(request: HttpRequest, username: str = REQ()) -> HttpResponse:
-    """This function allows logging in without a password on the Zulip
-    mobile apps when connecting to a Zulip development environment.  It
-    requires DevAuthBackend to be included in settings.AUTHENTICATION_BACKENDS.
-    """
-    check_dev_auth_backend()
-
-    # Django invokes authenticate methods by matching arguments, and this
-    # authentication flow will not invoke LDAP authentication because of
-    # this condition of Django so no need to check if LDAP backend is
-    # enabled.
-    validate_login_email(username)
-    realm = get_realm_from_request(request)
-    if realm is None:
-        return json_error(_("Invalid subdomain"))
-    return_data: Dict[str, bool] = {}
-    user_profile = authenticate(dev_auth_username=username, realm=realm, return_data=return_data)
-    if return_data.get("inactive_realm"):
-        return json_error(
-            _("This organization has been deactivated."),
-            data={"reason": "realm deactivated"},
-            status=403,
-        )
-    if return_data.get("inactive_user"):
-        return json_error(
-            _("Your account has been disabled."), data={"reason": "user disable"}, status=403
-        )
-    if user_profile is None:
-        return json_error(
-            _("This user is not registered."), data={"reason": "unregistered"}, status=403
-        )
-    do_login(request, user_profile)
-    api_key = get_api_key(user_profile)
-    return json_success({"api_key": api_key, "email": user_profile.delivery_email})
-
-
-@csrf_exempt
-def api_dev_list_users(request: HttpRequest) -> HttpResponse:
-    check_dev_auth_backend()
-
-    users = get_dev_users()
-    return json_success(
-        dict(
-            direct_admins=[
-                dict(email=u.delivery_email, realm_uri=u.realm.uri)
-                for u in users
-                if u.is_realm_admin
-            ],
-            direct_users=[
-                dict(email=u.delivery_email, realm_uri=u.realm.uri)
-                for u in users
-                if not u.is_realm_admin
-            ],
-        )
-    )
 
 
 @csrf_exempt
