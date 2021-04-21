@@ -223,6 +223,7 @@ class HomeTest(ZulipTestCase):
         "subscriptions",
         "test_suite",
         "timezone",
+        "timezone_auto_update",
         "translate_emoticons",
         "translation_data",
         "twenty_four_hour_time",

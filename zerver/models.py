@@ -1294,6 +1294,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     COLOR_SCHEME_LIGHT = 3
     COLOR_SCHEME_CHOICES = [COLOR_SCHEME_AUTOMATIC, COLOR_SCHEME_NIGHT, COLOR_SCHEME_LIGHT]
     color_scheme: int = models.PositiveSmallIntegerField(default=COLOR_SCHEME_AUTOMATIC)
+    timezone_auto_update: bool = models.BooleanField(default=True)
 
     # UI setting controlling Zulip's behavior of demoting in the sort
     # order and graying out streams with no recent traffic.  The
@@ -1385,6 +1386,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         timezone=str,
         translate_emoticons=bool,
         twenty_four_hour_time=bool,
+        timezone_auto_update=bool,
     )
 
     notification_setting_types = dict(

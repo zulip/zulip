@@ -8108,6 +8108,13 @@ paths:
 
                           See [PATCH /settings/display](/api/update-display-settings)
                           for api details on display settings.
+                      timezone_auto_update:
+                        type: boolean
+                        description: |
+                          Present if `update_display_settings` is present in `fetch_event_types`.
+
+                          Whether the user wants the timezone displayed in profile to be updated
+                          automatically based on the browser local timezone.
                       translate_emoticons:
                         type: boolean
                         description: |
@@ -9526,6 +9533,14 @@ paths:
           schema:
             type: boolean
           example: true
+        - name: timezone_auto_update
+          in: query
+          description: |
+            Whether the user wants the timezone displayed in profile to be updated automatically
+            based on the browser local timezone.
+          schema:
+            type: boolean
+          example: true
         - name: dense_mode
           in: query
           description: |
@@ -9678,6 +9693,10 @@ paths:
                         type: boolean
                         description: |
                           The setting for `twenty_four_hour_time`, if it was changed in this request.
+                      timezone_auto_update:
+                        type: boolean
+                        description: |
+                          The setting for `timezone_auto_update`, if it was changed in this request.
                       dense_mode:
                         type: boolean
                         description: |

@@ -10,6 +10,14 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 62**
+
+* [`PATCH /settings/display`](/api/update-display-settings): Added
+  new `timezone_auto_update` field to check if the user wants to
+  update his timezone automatically with the browser's timezone.
+* [`POST /register`](/api/register-queue): Added new `timezone_auto_update`
+  field to the response.
+
 **Feature level 61**
 
 * Added support for inviting users as moderators to the invitation

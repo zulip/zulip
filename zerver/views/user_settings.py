@@ -209,6 +209,7 @@ def update_display_settings_backend(
     timezone: Optional[str] = REQ(
         json_validator=check_string_in(pytz.all_timezones_set), default=None
     ),
+    timezone_auto_update: Optional[bool] = REQ(json_validator=check_bool, default=None),
 ) -> HttpResponse:
 
     # We can't use REQ for this widget because
