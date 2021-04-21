@@ -7,6 +7,7 @@ from django.conf import settings
 from django.db import transaction
 from django.db.models import Max
 from django.utils.timezone import now as timezone_now
+from sentry_sdk import capture_exception
 
 from zerver.lib.logging_util import log_to_file
 from zerver.models import (
@@ -342,11 +343,18 @@ def do_soft_activate_users(users: List[UserProfile]) -> List[UserProfile]:
 
 def do_catch_up_soft_deactivated_users(users: List[UserProfile]) -> List[UserProfile]:
     users_caught_up = []
+    failures = []
     for user_profile in users:
         if user_profile.long_term_idle:
-            add_missing_messages(user_profile)
-            users_caught_up.append(user_profile)
+            try:
+                add_missing_messages(user_profile)
+                users_caught_up.append(user_profile)
+            except Exception:  # nocoverage
+                capture_exception()  # nocoverage
+                failures.append(user_profile)  # nocoverage
     logger.info("Caught up %d soft-deactivated users", len(users_caught_up))
+    if failures:
+        logger.error("Failed to catch up %d soft-deactivated users", len(failures))  # nocoverage
     return users_caught_up
 
 
