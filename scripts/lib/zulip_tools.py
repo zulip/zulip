@@ -238,7 +238,7 @@ def run(args: Sequence[str], **kwargs: Any) -> None:
         )
         print(WHITEONRED + "Actual error output for the subcommand is just above this." + ENDC)
         print()
-        raise
+        sys.exit(1)
 
 
 def log_management_command(cmd: Sequence[str], log_path: str) -> None:
