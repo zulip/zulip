@@ -75,6 +75,16 @@ pre {
      * for tooltips here.
      */
     font-family: "Source Sans 3", sans-serif !important;
+
+    .tippy-arrow::before {
+        /* `.tippy-arrow:before` element sometimes
+         * inherits the height of the parent, we
+         * don't want any height here since we
+         * want it to remain an triangle.
+         * The bug was only found in Firefox.
+         */
+        height: 0 !important;
+    }
 }
 
 .no-select {
