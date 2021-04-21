@@ -550,6 +550,7 @@ export function dispatch_normal_event(event) {
                 "high_contrast_mode",
                 "left_side_userlist",
                 "timezone",
+                "timezone_auto_update",
                 "twenty_four_hour_time",
                 "translate_emoticons",
                 "starred_message_counts",
@@ -565,6 +566,12 @@ export function dispatch_normal_event(event) {
                 // cannot rerender with the new language the strings
                 // present in the backend/Jinja2 templates.
                 page_params.default_language_name = event.language_name;
+            }
+            if (event.setting_name === "timezone_auto_update") {
+                panels.show_timezone_inconsistent_alert();
+            }
+            if (event.setting_name === "timezone") {
+                panels.show_timezone_inconsistent_alert();
             }
             if (event.setting_name === "twenty_four_hour_time") {
                 // Rerender the whole message list UI

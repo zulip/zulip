@@ -36,6 +36,7 @@ const message_lists = mock_esm("../../static/js/message_lists");
 const muting_ui = mock_esm("../../static/js/muting_ui");
 const night_mode = mock_esm("../../static/js/night_mode");
 const notifications = mock_esm("../../static/js/notifications");
+const panels = mock_esm("../../static/js/panels");
 const reactions = mock_esm("../../static/js/reactions");
 const realm_icon = mock_esm("../../static/js/realm_icon");
 const realm_logo = mock_esm("../../static/js/realm_logo");
@@ -296,6 +297,8 @@ run_test("realm settings", (override) => {
     override(settings_org, "sync_realm_settings", noop);
     override(settings_bots, "update_bot_permissions_ui", noop);
     override(notifications, "redraw_title", noop);
+    override(panels, "check_profile_incomplete", noop);
+    override(panels, "show_profile_incomplete", noop);
 
     function test_electron_dispatch(event, fake_send_event) {
         let called = false;
@@ -670,7 +673,25 @@ run_test("update_display_settings", (override) => {
     message_lists.current.rerender = () => {
         called = true;
     };
+    {
+        const stub = make_stub();
+        event = event_fixtures.update_display_settings__timezone_auto_update;
+        page_params.timezone_auto_update = false;
+        override(panels, "show_timezone_inconsistent_alert", stub.f);
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        assert_same(page_params.timezone_auto_update, true);
+    }
 
+    {
+        const stub = make_stub();
+        event = event_fixtures.update_display_settings__timezone;
+        page_params.timezone = "US/Central";
+        override(panels, "show_timezone_inconsistent_alert", stub.f); // automatically checks if called
+        dispatch(event);
+        assert.equal(stub.num_calls, 1);
+        assert_same(page_params.timezone, "Asia/Kolkata");
+    }
     override(message_lists.home, "rerender", noop);
     event = event_fixtures.update_display_settings__twenty_four_hour_time;
     page_params.twenty_four_hour_time = false;

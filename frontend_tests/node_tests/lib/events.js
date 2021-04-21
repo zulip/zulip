@@ -718,6 +718,20 @@ exports.fixtures = {
         user: test_user.email,
     },
 
+    update_display_settings__timezone: {
+        type: "update_display_settings",
+        setting_name: "timezone",
+        setting: "Asia/Kolkata",
+        user: test_user.email,
+    },
+
+    update_display_settings__timezone_auto_update: {
+        type: "update_display_settings",
+        setting_name: "timezone_auto_update",
+        setting: true,
+        user: test_user.email,
+    },
+
     update_display_settings__translate_emoticons: {
         type: "update_display_settings",
         setting_name: "translate_emoticons",
