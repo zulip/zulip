@@ -24,6 +24,7 @@ from django.utils import translation
 from django.utils.timesince import timesince
 from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
+from django.views.decorators.cache import never_cache
 from jinja2 import Markup as mark_safe
 from psycopg2.sql import SQL, Composable, Literal
 
@@ -1195,6 +1196,7 @@ def ad_hoc_queries() -> List[Dict[str, str]]:
 
 @require_server_admin
 @has_request_variables
+@never_cache
 def get_activity(request: HttpRequest) -> HttpResponse:
     duration_content, realm_minutes = user_activity_intervals()
     counts_content: str = realm_summary_table(realm_minutes)
@@ -1258,6 +1260,7 @@ def get_confirmations(
 
 
 @require_server_admin
+@never_cache
 def support(request: HttpRequest) -> HttpResponse:
     context: Dict[str, Any] = {}
 
