@@ -336,5 +336,5 @@ export function paste_handler(event) {
 
 export function initialize() {
     $("#compose-textarea").on("paste", paste_handler);
-    $("body").on("paste", "#message_edit_form", paste_handler);
+    $("body").on("paste", ".message_edit_form", paste_handler);
 }
