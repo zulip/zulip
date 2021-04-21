@@ -83,6 +83,7 @@ test("videos", (override) => {
         let called = false;
 
         const textarea = $.create("target-stub");
+        textarea.set_parents_result(".message_edit_form", []);
 
         const ev = {
             preventDefault: () => {},
@@ -107,6 +108,7 @@ test("videos", (override) => {
         let called = false;
 
         const textarea = $.create("jitsi-target-stub");
+        textarea.set_parents_result(".message_edit_form", []);
 
         const ev = {
             preventDefault: () => {},
@@ -142,6 +144,7 @@ test("videos", (override) => {
         let called = false;
 
         const textarea = $.create("zoom-target-stub");
+        textarea.set_parents_result(".message_edit_form", []);
 
         const ev = {
             preventDefault: () => {},
@@ -186,6 +189,7 @@ test("videos", (override) => {
         let called = false;
 
         const textarea = $.create("bbb-target-stub");
+        textarea.set_parents_result(".message_edit_form", []);
 
         const ev = {
             preventDefault: () => {},

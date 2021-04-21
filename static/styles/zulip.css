@@ -2505,7 +2505,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 }
 
 /* Reduce some of the heavy padding from Bootstrap. */
-#message_edit_form {
+.message_edit_form {
     margin-bottom: 10px;
     cursor: default;
 

@@ -327,19 +327,19 @@ export function initialize() {
             ui_util.blur_active_element();
         }
     });
-    $("#message_edit_form .send-status-close").on("click", function () {
+    $(".message_edit_form .send-status-close").on("click", function () {
         const row_id = rows.id($(this).closest(".message_row"));
         const send_status = $(`#message-edit-send-status-${CSS.escape(row_id)}`);
         $(send_status).stop(true).fadeOut(200);
     });
-    $("body").on("click", "#message_edit_form [id^='attach_files_']", function (e) {
+    $("body").on("click", ".message_edit_form [id^='attach_files_']", function (e) {
         e.preventDefault();
 
         const row_id = rows.id($(this).closest(".message_row"));
         $(`#message_edit_file_input_${CSS.escape(row_id)}`).trigger("click");
     });
 
-    $("body").on("click", "#message_edit_form [id^='markdown_preview_']", function (e) {
+    $("body").on("click", ".message_edit_form [id^='markdown_preview_']", function (e) {
         e.preventDefault();
 
         const row_id = rows.id($(this).closest(".message_row"));
@@ -360,7 +360,7 @@ export function initialize() {
         );
     });
 
-    $("body").on("click", "#message_edit_form [id^='undo_markdown_preview_']", function (e) {
+    $("body").on("click", ".message_edit_form [id^='undo_markdown_preview_']", function (e) {
         e.preventDefault();
 
         const row_id = rows.id($(this).closest(".message_row"));

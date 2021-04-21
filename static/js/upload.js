@@ -69,7 +69,7 @@ export function get_item(key, config) {
                 return $(`#message_edit_content_${CSS.escape(config.row)}`);
             case "send_button":
                 return $(`#message_edit_content_${CSS.escape(config.row)}`)
-                    .closest("#message_edit_form")
+                    .closest(".message_edit_form")
                     .find(".message_edit_save");
             case "send_status_identifier":
                 return `#message-edit-send-status-${CSS.escape(config.row)}`;
@@ -86,7 +86,7 @@ export function get_item(key, config) {
             case "source":
                 return "message-edit-file-input";
             case "drag_drop_container":
-                return $("#message_edit_form");
+                return $(".message_edit_form");
             case "markdown_preview_hide_button":
                 return $(`#undo_markdown_preview_${CSS.escape(config.row)}`);
             default:

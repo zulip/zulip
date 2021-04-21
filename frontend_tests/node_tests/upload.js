@@ -85,8 +85,8 @@ test("get_item", () => {
     );
 
     $(`#message_edit_content_${CSS.escape(2)}`).closest = () => {
-        $("#message_edit_form").set_find_results(".message_edit_save", $(".message_edit_save"));
-        return $("#message_edit_form");
+        $(".message_edit_form").set_find_results(".message_edit_save", $(".message_edit_save"));
+        return $(".message_edit_form");
     };
     assert.equal(upload.get_item("send_button", {mode: "edit", row: 2}), $(".message_edit_save"));
 
@@ -121,7 +121,7 @@ test("get_item", () => {
     assert.equal(upload.get_item("source", {mode: "edit", row: 123}), "message-edit-file-input");
     assert.equal(
         upload.get_item("drag_drop_container", {mode: "edit", row: 1}),
-        $("#message_edit_form"),
+        $(".message_edit_form"),
     );
     assert.equal(
         upload.get_item("markdown_preview_hide_button", {mode: "edit", row: 65}),

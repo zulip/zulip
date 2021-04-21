@@ -170,15 +170,15 @@ export function update_message_topic_editing_pencil() {
 export function hide_message_edit_spinner(row) {
     const spinner = row.find(".message_edit_spinner");
     loading.destroy_indicator(spinner);
-    $("#message_edit_form .message_edit_save").show();
-    $("#message_edit_form .message_edit_cancel").show();
+    $(".message_edit_form .message_edit_save").show();
+    $(".message_edit_form .message_edit_cancel").show();
 }
 
 export function show_message_edit_spinner(row) {
     const spinner = row.find(".message_edit_spinner");
     loading.make_indicator(spinner);
-    $("#message_edit_form .message_edit_save").hide();
-    $("#message_edit_form .message_edit_cancel").hide();
+    $(".message_edit_form .message_edit_save").hide();
+    $(".message_edit_form .message_edit_cancel").hide();
 }
 
 export function show_topic_edit_spinner(row) {
