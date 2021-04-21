@@ -507,6 +507,24 @@ function test_sync_realm_settings() {
 
     {
         /*
+            Test that when create stream policy is set to "by moderators only" that the dropdown
+            is set to the correct value.
+        */
+        const property_elem = $("#id_realm_create_stream_policy");
+        property_elem.length = 1;
+        property_elem.attr("id", "id_realm_create_stream_policy");
+
+        page_params.realm_create_stream_policy = 4;
+
+        settings_org.sync_realm_settings("create_stream_policy");
+        assert.equal(
+            $("#id_realm_create_stream_policy").val(),
+            settings_config.common_policy_values.by_moderators_only.code,
+        );
+    }
+
+    {
+        /*
             Test that when invite to stream policy is set to "full members" that the dropdown
             is set to the correct value.
         */
@@ -556,6 +574,24 @@ function test_sync_realm_settings() {
         assert.equal(
             $("#id_realm_invite_to_stream_policy").val(),
             settings_config.common_policy_values.by_admins_only.code,
+        );
+    }
+
+    {
+        /*
+            Test that when invite to stream policy is set to "by moderators only" that the dropdown
+            is set to the correct value.
+        */
+        const property_elem = $("#id_realm_invite_to_stream_policy");
+        property_elem.length = 1;
+        property_elem.attr("id", "id_realm_invite_to_stream_policy");
+
+        page_params.realm_invite_to_stream_policy = 4;
+
+        settings_org.sync_realm_settings("invite_to_stream_policy");
+        assert.equal(
+            $("#id_realm_invite_to_stream_policy").val(),
+            settings_config.common_policy_values.by_moderators_only.code,
         );
     }
 
@@ -815,14 +851,20 @@ test("test get_organization_settings_options", () => {
             description: $t({defaultMessage: "Admins"}),
         },
         {
-            key: "by_full_members",
+            key: "by_moderators_only",
             order: 2,
+            code: 4,
+            description: $t({defaultMessage: "Admins and moderators"}),
+        },
+        {
+            key: "by_full_members",
+            order: 3,
             code: 3,
             description: $t({defaultMessage: "Admins and full members"}),
         },
         {
             key: "by_members",
-            order: 3,
+            order: 4,
             code: 1,
             description: $t({defaultMessage: "Admins and members"}),
         },
