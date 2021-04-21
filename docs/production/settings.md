@@ -19,6 +19,22 @@ restart the server with the following command:
 su zulip -c '/home/zulip/deployments/current/scripts/restart-server'
 ```
 
+Zulip has dozens of settings documented in the comments in
+`/etc/zulip/settings.py`; you can review [the latest version of the
+settings.py template][settings-py-template], and if you've upgraded
+from an old versions of Zulip, we recommend [carefully updating your
+`/etc/zulip/settings.py`][update-settings-docs] to fold in the inline
+comment documentation for new configuration settings after upgrading
+to each new major release.
+
+[update-settings-docs]: ../production/upgrade-or-modify.html#updating-settings-py-inline-documentation
+[settings-py-template]: https://github.com/zulip/zulip/blob/master/zproject/prod_settings_template.py
+
+Since Zulip's settings file is a Python script, there are a number of
+other things that one can configure that are not documented; ask on
+[chat.zulip.org](../contributing/chat-zulip-org.md)
+if there's something you'd like to do but can't figure out how to.
+
 ## Specific settings
 
 ### Domain and email settings
@@ -77,19 +93,6 @@ support for included HTML).  A good approach is to use paths like
 configuration along with your other Zulip server configuration.
 
 ### Miscellaneous server settings
-
-Zulip has dozens of settings documented in the comments in
-`/etc/zulip/settings.py`; you can review
-[the latest version of the settings.py template][settings-py-template]
-if you've deleted the comments or want to check if new settings have
-been added in more recent versions of Zulip.
-
-Since Zulip's settings file is a Python script, there are a number of
-other things that one can configure that are not documented; ask on
-[chat.zulip.org](../contributing/chat-zulip-org.md)
-if there's something you'd like to do but can't figure out how to.
-
-[settings-py-template]: https://github.com/zulip/zulip/blob/master/zproject/prod_settings_template.py
 
 Some popular settings in `/etc/zulip/settings.py` include:
 * The Twitter integration, which provides pretty inline previews of

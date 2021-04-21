@@ -4,8 +4,9 @@ This page explains how to upgrade, patch, or modify Zulip, including:
 
 - [Upgrading to a release](#upgrading-to-a-release)
 - [Upgrading from a Git repository](#upgrading-from-a-git-repository)
+- [Updating `settings.py` inline documentation](#updating-settings-py-inline-documentation)
 - [Troubleshooting and rollback](#troubleshooting-and-rollback)
-- [Preserving local changes to configuration files](#preserving-local-changes-to-configuration-files)
+- [Preserving local changes to service configuration files](#preserving-local-changes-to-service-configuration-files)
 - [Upgrading the operating system](#upgrading-the-operating-system)
 - [Upgrading PostgreSQL](#upgrading-postgresql)
 - [Modifying Zulip](#modifying-zulip)
@@ -16,7 +17,7 @@ This page explains how to upgrade, patch, or modify Zulip, including:
 Note that there are additional instructions if you're [using
 docker-zulip][docker-upgrade], have [patched Zulip](#modifying-zulip),
 or have [modified Zulip-managed configuration
-files](#preserving-local-changes-to-configuration-files).  To upgrade
+files](#preserving-local-changes-to-service-configuration-files).  To upgrade
 to a new Zulip release:
 
 1. Read the [upgrade notes](../overview/changelog.html#upgrade-notes)
@@ -102,6 +103,52 @@ git_repo_url = https://github.com/zulip/zulip.git
 See also our documentation on [upgrading
 docker-zulip](https://github.com/zulip/docker-zulip#upgrading-from-a-git-repository).
 
+## Updating `settings.py` inline documentation
+
+Zulip installations often upgrade many times over their lifetime, and
+we strive to keep all configuration files backwards-compatible.
+However, our practice of leaving the `/etc/zulip/settings.py`
+unchanged during upgrades means that there may be new features which
+are not documented in that file, since it was based on a template
+provided by an earlier version of Zulip, during the initial install.
+
+After upgrading across major versions of Zulip Server, we recommend
+comparing your `/etc/zulip/settings.py` file to the current settings
+template, which can be found in
+`/home/zulip/deployments/current/zproject/prod_settings_template.py`. We
+suggest using that updated template to update
+`/etc/zulip/settings.py`:
+
+1. Copy the current `settings.py` to make a backup (especially if you
+   do not have a recent [complete backup][backups]), and make a copy
+   of the current template:
+
+   ```
+   cp -a /etc/zulip/settings.py ~/zulip-settings-backup.py
+   cp -a /home/zulip/deployments/current/zproject/prod_settings_template.py /etc/zulip/settings-new.py
+   ```
+
+1. Open both `/etc/zulip/settings.py` and `/etc/zulip/settings-new.py`
+   files in an editor; for each setting set in `settings.py`, find its
+   section in `/etc/zulip/settings-new.py` and copy the setting from
+   `settings.py` into there.
+
+   If there are settings which you cannot find documented in
+   `/etc/zulip/settings-new.py`, check the [changelog][changelog] to see
+   if they have been removed.
+
+1. Overwriting the configuration with the updated file, and restart
+   the server to pick up the new file; this should be a no-op, but it
+   is much better to discover immediately if it is not:
+
+   ```
+   cp -a /etc/zulip/settings-new.py /etc/zulip/settings.py
+   su zulip -c '/home/zulip/deployments/current/scripts/restart-server'
+   ```
+
+[backups]: ../production/export-and-import.html#backups
+[changelog]: ../overview/changelog.md
+
 ## Troubleshooting and rollback
 
 See also the general Zulip server [troubleshooting
@@ -155,11 +202,11 @@ earlier previous version by running
 `restart-server` script stops any running Zulip server, and starts
 the version corresponding to the `restart-server` path you call.
 
-## Preserving local changes to configuration files
+## Preserving local changes to service configuration files
 
 ```eval_rst
 .. warning::
-    If you have modified configuration files installed by
+    If you have modified service configuration files installed by
     Zulip (e.g. the nginx configuration), the Zulip upgrade process will
     overwrite your configuration when it does the ``puppet apply``.
 ```

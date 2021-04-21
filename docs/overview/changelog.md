@@ -50,13 +50,14 @@ in bursts.
 - Consider enabling [smokescreen][smokescreen]
 - Private streams can no longer be default streams (i.e. the ones new
   users are automatically added to).
-- We rewrote the template for `/etc/zulip/settings.py` to be more
-  readable.  Installations that have been running for more than a year
-  may want to carefully resync the comments from
-  `/home/zulip/deployments/current/zproject/prod_settings_template.py`.
+- As this is a major release, we recommend [carefully updating the
+  inline documentation in your
+  `/etc/zulip/settings.py`][update-settings-docs].  Notably, we rewrote the
+  template to be better organized and more readable.
 
 [docker-zulip-manual]: https://github.com/zulip/docker-zulip#manual-configuration
 [smokescreen]: ../production/deployment.html#using-an-outgoing-http-proxy
+[update-settings-docs]: ../production/upgrade-or-modify.html#updating-settings-py-inline-documentation
 
 #### Full feature changelog
 
