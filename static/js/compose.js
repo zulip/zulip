@@ -28,6 +28,7 @@ import * as people from "./people";
 import * as reminder from "./reminder";
 import * as rendered_markdown from "./rendered_markdown";
 import * as resize from "./resize";
+import * as rows from "./rows";
 import * as rtl from "./rtl";
 import * as sent_messages from "./sent_messages";
 import * as server_events from "./server_events";
@@ -1238,13 +1239,10 @@ export function initialize() {
         e.preventDefault();
 
         let target_textarea;
-        // The data-message-id attribute is only present in the video
-        // call icon present in the message edit form.  If present,
-        // the request is for the edit UI; otherwise, it's for the
-        // compose box.
-        const edit_message_id = $(e.target).attr("data-message-id");
-        if (edit_message_id !== undefined) {
-            target_textarea = $(`#message_edit_content_${CSS.escape(edit_message_id)}`);
+        let edit_message_id;
+        if ($(e.target).parents(".message_edit_form").length === 1) {
+            edit_message_id = rows.id($(e.target).parents(".message_row"));
+            target_textarea = $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`);
         }
 
         let video_call_link;
