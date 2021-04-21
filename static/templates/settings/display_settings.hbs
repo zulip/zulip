@@ -80,6 +80,12 @@
                     <option value="{{ this }}">{{ this }}</option>
                     {{/each}}
                 </select>
+                {{> settings_checkbox
+                  setting_name="timezone_auto_update"
+                  is_checked=page_params.timezone_auto_update
+                  label=settings_label.timezone_auto_update
+                  render_only=(lookup ../display_settings.render_only timezone_auto_update)
+                  }}
             </div>
         </div>
 

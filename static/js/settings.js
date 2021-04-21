@@ -77,6 +77,9 @@ function setup_settings_label() {
         }),
         starred_message_counts: $t({defaultMessage: "Show counts for starred messages"}),
         twenty_four_hour_time: $t({defaultMessage: "Time format"}),
+        timezone_auto_update: $t({
+            defaultMessage: "Automatically offer to update with my computer’s time zone",
+        }),
         translate_emoticons: new Handlebars.SafeString(
             $t_html({
                 defaultMessage: "Convert emoticons before sending (<code>:)</code> becomes 😃)",

@@ -52,6 +52,8 @@ export function set_up() {
 
     $("#twenty_four_hour_time").val(JSON.stringify(page_params.twenty_four_hour_time));
 
+    $("#timezone_auto_update").prop("checked", page_params.timezone_auto_update);
+
     $(`.emojiset_choice[value="${CSS.escape(page_params.emojiset)}"]`).prop("checked", true);
 
     $("#default_language_modal [data-dismiss]").on("click", () => {
@@ -143,6 +145,12 @@ export function set_up() {
         const data = {timezone: JSON.stringify(this.value)};
         change_display_setting(data, "#time-settings-status");
     });
+
+    $("#timezone_auto_update").on("change", function () {
+        const data = {timezone_auto_update: $(this).prop("checked")};
+        change_display_setting(data, "#time-settings-status");
+    });
+
     $(".emojiset_choice").on("click", function () {
         const data = {emojiset: JSON.stringify($(this).val())};
         const current_emojiset = JSON.stringify(page_params.emojiset);
@@ -199,6 +207,7 @@ export function update_page() {
     $("#default_language_name").text(page_params.default_language_name);
     $("#translate_emoticons").prop("checked", page_params.translate_emoticons);
     $("#twenty_four_hour_time").val(JSON.stringify(page_params.twenty_four_hour_time));
+    $("#timezone_auto_update").prop("checked", page_params.timezone_auto_update);
     $("#color_scheme").val(JSON.stringify(page_params.color_scheme));
     $("#default_view").val(page_params.default_view);
 
