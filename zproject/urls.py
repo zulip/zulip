@@ -21,11 +21,8 @@ from zerver.views.alert_words import add_alert_words, list_alert_words, remove_a
 from zerver.views.archive import archive, get_web_public_topics_backend
 from zerver.views.attachments import list_by_user, remove
 from zerver.views.auth import (
-    api_dev_fetch_api_key,
-    api_dev_list_users,
     api_fetch_api_key,
     api_get_server_settings,
-    dev_direct_login,
     json_fetch_api_key,
     log_into_subdomain,
     login_page,
@@ -49,6 +46,11 @@ from zerver.views.custom_profile_fields import (
     reorder_realm_custom_profile_fields,
     update_realm_custom_profile_field,
     update_user_custom_profile_data,
+)
+from zerver.views.development.dev_login import (
+    api_dev_fetch_api_key,
+    api_dev_list_users,
+    dev_direct_login,
 )
 from zerver.views.digest import digest_page
 from zerver.views.documentation import IntegrationView, MarkdownDirectoryView, integration_doc
