@@ -69,6 +69,14 @@ pre {
     font-family: "Source Code Pro", monospace;
 }
 
+[data-tippy-root] {
+    /* Since tooltip elements are sometimes inside elements
+     * which have different font-family, we force font-family
+     * for tooltips here.
+     */
+    font-family: "Source Sans 3", sans-serif !important;
+}
+
 .no-select {
     user-select: none;
 }
