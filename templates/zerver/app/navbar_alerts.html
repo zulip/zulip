@@ -72,4 +72,18 @@
         Marking all messages as read…
         {% endtrans %}
     </div>
+    <div data-process="timezone-auto-update" class="alert alert-info">
+        <div data-step="1">
+            {% trans %}
+            Your computer’s time zone has changed. Update your profile’s time zone to
+            <span class="suggested-timezone"></span> ?
+            {% endtrans %}
+            <span class="buttons">
+                <a class="alert-link update-timezone " role="button" tabindex=0>{{ _("Yes") }}</a>
+                &bull;
+                <a class="alert-link disable-update" role="button" tabindex=0>{{ _("No, don't ask again") }}</a>
+            </span>
+        </div>
+        <span class="close" data-dismiss="alert" aria-label="{{ _('Close') }}" role="button" tabindex=0>&times;</span>
+    </div>
 </div>

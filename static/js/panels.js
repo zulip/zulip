@@ -1,5 +1,6 @@
 import $ from "jquery";
 
+import * as channel from "./channel";
 import {localstorage} from "./localstorage";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
@@ -78,8 +79,23 @@ export function show_profile_incomplete(is_profile_incomplete) {
     }
 }
 
+export function is_timezone_inconsistent() {
+    const browser_timezone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    if (!page_params.timezone_auto_update) {
+        return false;
+    }
+    if (browser_timezone === page_params.timezone) {
+        return false;
+    }
+    return true;
+}
+
 export function initialize() {
     const ls = localstorage();
+    const browser_timezone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
+    $(".suggested-timezone").text(browser_timezone);
+
     if (page_params.insecure_desktop_app) {
         open($("[data-process='insecure-desktop-app']"));
     } else if (page_params.server_needs_upgrade) {
@@ -94,6 +110,8 @@ export function initialize() {
         open($("[data-process='bankruptcy']"));
     } else if (check_profile_incomplete()) {
         open($("[data-process='profile-incomplete']"));
+    } else if (is_timezone_inconsistent()) {
+        open($("[data-process='timezone-auto-update']"));
     }
 
     // Configure click handlers.
@@ -116,6 +134,24 @@ export function initialize() {
         $(".bankruptcy-loader").show();
         setTimeout(unread_ops.mark_all_as_read, 1000);
         $(window).trigger("resize");
+    });
+
+    $(".update-timezone").on("click", (e) => {
+        e.preventDefault();
+        const data = {timezone: JSON.stringify(browser_timezone)};
+        channel.patch({
+            url: "/json/settings/display",
+            data,
+        });
+    });
+
+    $(".disable-update").on("click", (e) => {
+        e.preventDefault();
+        const data = {timezone_auto_update: false};
+        channel.patch({
+            url: "/json/settings/display",
+            data,
+        });
     });
 
     $("#panels").on("click", ".alert .close, .alert .exit", function (e) {
