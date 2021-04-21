@@ -91,6 +91,14 @@ export function is_timezone_inconsistent() {
     return true;
 }
 
+export function show_timezone_inconsistent_alert() {
+    if (is_timezone_inconsistent()) {
+        $("[data-process='timezone-auto-update']").show();
+    } else {
+        $("[data-process='timezone-auto-update']").hide();
+    }
+}
+
 export function initialize() {
     const ls = localstorage();
     const browser_timezone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
