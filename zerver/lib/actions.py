@@ -4998,7 +4998,7 @@ def do_mark_stream_messages_as_read(
         where=[UserMessage.where_unread()],
     )
 
-    message_ids = list(msgs.values_list("message__id", flat=True))
+    message_ids = list(msgs.values_list("message_id", flat=True))
 
     count = msgs.update(
         flags=F("flags").bitor(UserMessage.flags.read),
@@ -5038,7 +5038,7 @@ def do_mark_muted_user_messages_as_read(
         user_profile=user_profile, message__sender=muted_user
     ).extra(where=[UserMessage.where_unread()])
 
-    message_ids = list(messages.values_list("message__id", flat=True))
+    message_ids = list(messages.values_list("message_id", flat=True))
 
     count = messages.update(
         flags=F("flags").bitor(UserMessage.flags.read),
@@ -5136,7 +5136,7 @@ def do_update_message_flags(
         raise JsonableError(_("Invalid message flag operation: '{}'").format(operation))
     flagattr = getattr(UserMessage.flags, flag)
 
-    msgs = UserMessage.objects.filter(user_profile=user_profile, message__id__in=messages)
+    msgs = UserMessage.objects.filter(user_profile=user_profile, message_id__in=messages)
     # This next block allows you to star any message, even those you
     # didn't receive (e.g. because you're looking at a public stream
     # you're not subscribed to, etc.).  The problem is that starring
@@ -7202,7 +7202,7 @@ def get_owned_bot_dicts(
             "default_sending_stream": botdict["default_sending_stream__name"],
             "default_events_register_stream": botdict["default_events_register_stream__name"],
             "default_all_public_streams": botdict["default_all_public_streams"],
-            "owner_id": botdict["bot_owner__id"],
+            "owner_id": botdict["bot_owner_id"],
             "avatar_url": avatar_url_from_dict(botdict),
             "services": services_by_ids[botdict["id"]],
         }

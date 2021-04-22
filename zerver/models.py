@@ -2402,7 +2402,7 @@ class Reaction(AbstractReaction):
             "emoji_code",
             "reaction_type",
             "user_profile__email",
-            "user_profile__id",
+            "user_profile_id",
             "user_profile__full_name",
         ]
         return Reaction.objects.filter(message_id__in=needed_ids).values(*fields)
@@ -2537,7 +2537,7 @@ def get_usermessage_by_message_id(
 ) -> Optional[UserMessage]:
     try:
         return UserMessage.objects.select_related().get(
-            user_profile=user_profile, message__id=message_id
+            user_profile=user_profile, message_id=message_id
         )
     except UserMessage.DoesNotExist:
         return None
@@ -3624,11 +3624,11 @@ class Service(models.Model):
 
 
 def get_bot_services(user_profile_id: int) -> List[Service]:
-    return list(Service.objects.filter(user_profile__id=user_profile_id))
+    return list(Service.objects.filter(user_profile_id=user_profile_id))
 
 
 def get_service_profile(user_profile_id: int, service_name: str) -> Service:
-    return Service.objects.get(user_profile__id=user_profile_id, name=service_name)
+    return Service.objects.get(user_profile_id=user_profile_id, name=service_name)
 
 
 class BotStorageData(models.Model):

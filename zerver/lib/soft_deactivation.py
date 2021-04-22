@@ -165,7 +165,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
     subscription_logs = list(
         RealmAuditLog.objects.select_related("modified_stream")
         .filter(
-            modified_user=user_profile, modified_stream__id__in=stream_ids, event_type__in=events
+            modified_user=user_profile, modified_stream_id__in=stream_ids, event_type__in=events
         )
         .order_by("event_last_message_id", "id")
     )
@@ -190,7 +190,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
 
     all_stream_msgs = list(
         Message.objects.filter(
-            recipient__id__in=recipient_ids, id__gt=user_profile.last_active_message_id
+            recipient_id__in=recipient_ids, id__gt=user_profile.last_active_message_id
         )
         .order_by("id")
         .values("id", "recipient__type_id")
@@ -199,8 +199,8 @@ def add_missing_messages(user_profile: UserProfile) -> None:
         UserMessage.objects.filter(
             user_profile=user_profile,
             message__recipient__type=Recipient.STREAM,
-            message__id__gt=user_profile.last_active_message_id,
-        ).values_list("message__id", flat=True)
+            message_id__gt=user_profile.last_active_message_id,
+        ).values_list("message_id", flat=True)
     )
 
     # Filter those messages for which UserMessage rows have been already created
@@ -233,7 +233,7 @@ def do_soft_deactivate_user(user_profile: UserProfile) -> None:
     try:
         user_profile.last_active_message_id = (
             UserMessage.objects.filter(user_profile=user_profile)
-            .order_by("-message__id")[0]
+            .order_by("-message_id")[0]
             .message_id
         )
     except IndexError:  # nocoverage

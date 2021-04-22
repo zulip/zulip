@@ -31,7 +31,7 @@ def reset_is_private_flag(apps: StateApps, schema_editor: DatabaseSchemaEditor) 
             # of hackery to generate the SQL just right (with an
             # `ORDER BY` clause that forces using the new index).
             flag_set_objects = (
-                UserMessage.objects.filter(user_profile__id=user_id)
+                UserMessage.objects.filter(user_profile_id=user_id)
                 .extra(where=["flags & 2048 != 0"])
                 .order_by("message_id")[0:1000]
             )

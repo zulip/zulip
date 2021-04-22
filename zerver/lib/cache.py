@@ -554,7 +554,7 @@ bot_dict_fields: List[str] = [
     "api_key",
     "avatar_source",
     "avatar_version",
-    "bot_owner__id",
+    "bot_owner_id",
     "bot_type",
     "default_all_public_streams",
     "default_events_register_stream__name",

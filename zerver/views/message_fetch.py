@@ -1105,7 +1105,7 @@ def get_messages_backend(
         message_ids = [row[0] for row in rows]
 
         # TODO: This could be done with an outer join instead of two queries
-        um_rows = UserMessage.objects.filter(user_profile=user_profile, message__id__in=message_ids)
+        um_rows = UserMessage.objects.filter(user_profile=user_profile, message_id__in=message_ids)
         user_message_flags = {um.message_id: um.flags_list() for um in um_rows}
 
         for message_id in message_ids:
