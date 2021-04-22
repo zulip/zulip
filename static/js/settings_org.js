@@ -193,6 +193,12 @@ function get_property_value(property_name) {
             ) {
                 return "no_invite_required_by_admins_only";
             }
+            if (
+                page_params.realm_invite_to_realm_policy ===
+                settings_config.invite_to_realm_policy_values.by_full_members
+            ) {
+                return "no_invite_required_by_full_members";
+            }
             return "no_invite_required";
         }
         if (
@@ -200,6 +206,12 @@ function get_property_value(property_name) {
             settings_config.invite_to_realm_policy_values.by_admins_only
         ) {
             return "by_admins_only";
+        }
+        if (
+            page_params.realm_invite_to_realm_policy ===
+            settings_config.invite_to_realm_policy_values.by_full_members
+        ) {
+            return "by_full_members";
         }
         return "by_anyone";
     }
@@ -826,10 +838,18 @@ export function build_page() {
                 data.invite_required = false;
                 data.invite_to_realm_policy =
                     settings_config.invite_to_realm_policy_values.by_admins_only;
+            } else if (user_invite_restriction === "no_invite_required_by_full_members") {
+                data.invite_required = false;
+                data.invite_to_realm_policy =
+                    settings_config.invite_to_realm_policy_values.by_full_members;
             } else if (user_invite_restriction === "by_admins_only") {
                 data.invite_required = true;
                 data.invite_to_realm_policy =
                     settings_config.invite_to_realm_policy_values.by_admins_only;
+            } else if (user_invite_restriction === "by_full_members") {
+                data.invite_required = true;
+                data.invite_to_realm_policy =
+                    settings_config.invite_to_realm_policy_values.by_full_members;
             } else {
                 data.invite_required = true;
                 data.invite_to_realm_policy =

@@ -126,6 +126,7 @@ export const invite_to_stream_policy_values = create_stream_policy_values;
 export const invite_to_realm_policy_values = {
     by_members: 1,
     by_admins_only: 2,
+    by_full_members: 3,
 };
 
 export const user_group_edit_policy_values = {
