@@ -15,7 +15,7 @@ from django.views.generic import RedirectView, TemplateView
 
 from zerver.forms import LoggingSetPasswordForm
 from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
-from zerver.lib.oauth2 import oauth2_endpoint_views
+from zerver.lib.oauth2 import get_oauth_backend, oauth2_endpoint_views
 from zerver.lib.rest import rest_path
 from zerver.tornado.views import cleanup_event_queue, get_events, get_events_internal, notify
 from zerver.views.alert_words import add_alert_words, list_alert_words, remove_alert_words
@@ -314,6 +314,8 @@ v1_api_and_json_patterns = [
     rest_path("mark_stream_as_read", POST=mark_stream_as_read),
     rest_path("mark_topic_as_read", POST=mark_topic_as_read),
     rest_path("zcommand", POST=zcommand_backend),
+    # oauth
+    rest_path("oauth/<oauth_id>", GET=get_oauth_backend),
     # Endpoints for syncing drafts.
     rest_path(
         "drafts",
