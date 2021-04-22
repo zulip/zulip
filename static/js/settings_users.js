@@ -1,8 +1,8 @@
 import $ from "jquery";
 
-import render_admin_bot_form from "../templates/admin_bot_form.hbs";
 import render_admin_human_form from "../templates/admin_human_form.hbs";
 import render_admin_user_list from "../templates/admin_user_list.hbs";
+import render_admin_bot_form from "../templates/settings/admin_bot_form.hbs";
 
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
