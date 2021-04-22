@@ -7,6 +7,10 @@ import $ from "jquery";
 import * as html_parser from "prettier/parser-html";
 import * as prettier from "prettier/standalone";
 
+import generated_emoji_codes from "../../generated/emoji/emoji_codes.json";
+import generated_pygments_data from "../../generated/pygments_data.json";
+import * as emoji from "../../shared/js/emoji";
+import * as fenced_code from "../../shared/js/fenced_code";
 import * as channel from "../channel";
 import * as markdown from "../markdown";
 // Importing "stream_data.js" to avoid import error while
@@ -163,6 +167,18 @@ function get_frontend_markdown() {
     }
 }
 
+function get_markdown_fixture(fixture_name) {
+    channel.get({
+        url: "/devtools/markdown/" + encodeURIComponent(fixture_name) + "/fixture",
+        // Since the user may add or modify fixtures as they edit.
+        idempotent: false,
+        success(response) {
+            $("#raw_content").val(response.test_input);
+        },
+        error: handle_unsuccessful_response,
+    });
+}
+
 function show_diff() {
     const message = $("#raw_content").val().trim();
 
@@ -190,8 +206,15 @@ function show_diff() {
 // Initialization
 $(() => {
     tabs = get_tabs_data();
+    emoji.initialize({realm_emoji: {}, emoji_codes: generated_emoji_codes});
     markdown.initialize([], get_helpers());
+    fenced_code.initialize(generated_pygments_data);
     focus_tab.backend_markdown_tab();
+
+    $("#markdown_fixture_names").on("change", function () {
+        const fixture_name = $(this).children("option:selected").val();
+        get_markdown_fixture(fixture_name);
+    });
 
     $("#markdown_tabs .backend-markdown-tab").on("click", (e) => {
         e.preventDefault();

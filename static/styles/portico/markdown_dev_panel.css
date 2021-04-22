@@ -44,7 +44,8 @@
         }
     }
 
-    .row1 {
+    .row1,
+    .row2 {
         display: grid;
         grid-template-columns: 50% 50%;
         margin-left: 2%;
@@ -68,6 +69,11 @@
                 width: 95%;
             }
         }
+    }
+    .row2 {
+        flex-wrap: wrap;
+        justify-content: space-between;
+
         .raw_content_wrapper {
             .raw_content_title {
                 display: flex;

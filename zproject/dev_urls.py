@@ -25,7 +25,7 @@ from zerver.views.development.integrations import (
     get_fixtures,
     send_all_webhook_fixture_messages,
 )
-from zerver.views.development.markdown import markdown_panel
+from zerver.views.development.markdown import get_markdown_fixture, markdown_panel
 from zerver.views.development.registration import (
     confirmation_key,
     register_demo_development_realm,
@@ -96,6 +96,7 @@ urls = [
     # Add a convenient way to test markdown with frontend (markdown.js) and
     # backend (Python-Markdown) processor and compare their results.
     path("devtools/markdown", markdown_panel),
+    path("devtools/markdown/<fixture_name>/fixture", get_markdown_fixture),
     # Special endpoint to remove all the server-side caches.
     path("flush_caches", remove_caches),
     # Redirect camo URLs for development
