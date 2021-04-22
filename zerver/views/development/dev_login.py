@@ -48,7 +48,10 @@ def add_dev_login_context(realm: Optional[Realm], context: Dict[str, Any]) -> No
     context["direct_owners"] = sort([u for u in users if u.is_realm_owner])
     context["direct_admins"] = sort([u for u in users if u.is_realm_admin and not u.is_realm_owner])
     context["guest_users"] = sort([u for u in users if u.is_guest])
-    context["direct_users"] = sort([u for u in users if not (u.is_realm_admin or u.is_guest)])
+    context["direct_moderators"] = sort([u for u in users if u.is_moderator])
+    context["direct_users"] = sort(
+        [u for u in users if not (u.is_realm_admin or u.is_guest or u.is_moderator)]
+    )
 
 
 @csrf_exempt

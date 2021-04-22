@@ -37,6 +37,15 @@ page can be easily identified in it's respective JavaScript file -->
                         {% else %}
                             <p>No administrators found in this realm</p>
                         {% endif %}
+                        <h2>{{ _('Moderators') }}</h2>
+                        {% if direct_moderators %}
+                            {% for direct_moderator in direct_moderators %}
+                            <p><input type="submit" formaction="{{ direct_moderator.realm.uri }}{{ url('login-local') }}"
+                                      name="direct_email" class="btn-direct btn-admin" value="{{ direct_moderator.delivery_email }}" /></p>
+                            {% endfor %}
+                        {% else %}
+                            <p>No moderators found in this realm</p>
+                        {% endif %}
                         <h2>{{ _('Guest users') }}</h2>
                         {% if guest_users %}
                             {% for guest_user in guest_users %}
