@@ -938,6 +938,48 @@ class EditMessageTest(ZulipTestCase):
         self.assert_json_success(result)
         verify_edit_history(new_topic, 2)
 
+    def test_topic_and_content_edit(self) -> None:
+        self.login("hamlet")
+        id1 = self.send_stream_message(
+            self.example_user("hamlet"), "Scotland", "message 1", "topic"
+        )
+        id2 = self.send_stream_message(self.example_user("iago"), "Scotland", "message 2", "topic")
+        id3 = self.send_stream_message(
+            self.example_user("hamlet"), "Scotland", "message 3", "topic"
+        )
+
+        new_topic = "edited"
+        result = self.client_patch(
+            "/json/messages/" + str(id1),
+            {
+                "message_id": id1,
+                "topic": new_topic,
+                "propagate_mode": "change_later",
+                "content": "edited message",
+            },
+        )
+
+        self.assert_json_success(result)
+
+        # Content change of only id1 should come in edit history
+        # and topic change should be present in all the messages.
+        msg1 = Message.objects.get(id=id1)
+        msg2 = Message.objects.get(id=id2)
+        msg3 = Message.objects.get(id=id3)
+
+        msg1_edit_history = orjson.loads(msg1.edit_history)
+        self.assertTrue("prev_content" in msg1_edit_history[0].keys())
+
+        for msg in [msg2, msg3]:
+            self.assertFalse("prev_content" in orjson.loads(msg.edit_history)[0].keys())
+
+        for msg in [msg1, msg2, msg3]:
+            self.assertEqual(
+                new_topic,
+                msg.topic_name(),
+            )
+            self.assertEqual(len(orjson.loads(msg.edit_history)), 1)
+
     def test_propagate_topic_forward(self) -> None:
         self.login("hamlet")
         id1 = self.send_stream_message(self.example_user("hamlet"), "Scotland", topic_name="topic1")

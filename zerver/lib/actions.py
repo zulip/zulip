@@ -5562,9 +5562,22 @@ def do_update_message(
         edit_history_event[LEGACY_PREV_TOPIC] = orig_topic_name
 
     update_edit_history(message, timestamp, edit_history_event)
+
     delete_event_notify_user_ids: List[int] = []
     if propagate_mode in ["change_later", "change_all"]:
         assert topic_name is not None or new_stream is not None
+        # Other messages should only get topic/stream fields in their edit history.
+        topic_only_edit_history_event = {
+            k: v
+            for (k, v) in edit_history_event.items()
+            if k
+            not in [
+                "prev_content",
+                "prev_rendered_content",
+                "prev_rendered_content_version",
+            ]
+        }
+
         messages_list = update_messages_for_topic_edit(
             edited_message=message,
             propagate_mode=propagate_mode,
@@ -5572,7 +5585,7 @@ def do_update_message(
             topic_name=topic_name,
             new_stream=new_stream,
             old_recipient_id=old_recipient_id,
-            edit_history_event=edit_history_event,
+            edit_history_event=topic_only_edit_history_event,
             last_edit_time=timestamp,
         )
         changed_messages += messages_list
