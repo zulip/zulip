@@ -8,6 +8,36 @@
     .portico-page {
     padding-bottom: 0px;
     }
+
+    [data-tooltip][aria-label] { 
+    position: absolute;
+    
+    }
+
+    [data-tooltip][aria-label]::before {
+    content: attr(aria-label);
+    position: absolute;
+    opacity: 0;
+    visibility: none;
+    }
+
+    [data-tooltip^="left"][aria-label]::before {
+    right: calc(1rem + 100%);
+    bottom: 65%;
+    transform: translateY(50%);
+    }
+
+    [data-tooltip^="right"][aria-label]::before {
+    left: calc(1rem + 100%);
+    bottom: 60%;
+    transform: translateY(50%);
+    }
+
+    [data-tooltip][aria-label]:hover::before {
+    visibility: visible;
+    opacity: 1;
+    }
+
 </style>
 {% endblock %}
 
@@ -141,8 +171,8 @@
                         </div>
                     </div>
 
-                    <a class="carousel-control left visibility-control hide" href="#tour-carousel" data-slide="prev"><i class="fa fa-chevron-left" aria-hidden="true"></i></a>
-                    <a class="carousel-control right visibility-control" href="#tour-carousel" data-slide="next"><i class="fa fa-chevron-right" aria-hidden="true"></i></a>
+                    <a class="carousel-control left visibility-control hide" href="#tour-carousel" data-slide="prev" aria-label="Previous" data-tooltip="left"><i class="fa fa-chevron-left" aria-hidden="true"></i></a>
+                    <a class="carousel-control right visibility-control" href="#tour-carousel" data-slide="next" aria-label="Next" data-tooltip="right"><i class="fa fa-chevron-right" aria-hidden="true"></i></a>
                     <ol class="carousel-indicators">
                         <li data-target="#tour-carousel" data-slide-to="0" class="active"></li>
                         <li data-target="#tour-carousel" data-slide-to="1"></li>
