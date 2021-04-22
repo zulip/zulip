@@ -8,12 +8,12 @@ from zerver.models import MutedUser, UserProfile
 
 def get_user_mutes(user_profile: UserProfile) -> List[Dict[str, int]]:
     rows = MutedUser.objects.filter(user_profile=user_profile).values(
-        "muted_user__id",
+        "muted_user_id",
         "date_muted",
     )
     return [
         {
-            "id": row["muted_user__id"],
+            "id": row["muted_user_id"],
             "timestamp": datetime_to_timestamp(row["date_muted"]),
         }
         for row in rows
@@ -48,5 +48,5 @@ def get_muting_users(muted_user: UserProfile) -> Set[int]:
     """
     rows = MutedUser.objects.filter(
         muted_user=muted_user,
-    ).values("user_profile__id")
-    return {row["user_profile__id"] for row in rows}
+    ).values("user_profile_id")
+    return {row["user_profile_id"] for row in rows}

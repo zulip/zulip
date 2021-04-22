@@ -272,5 +272,5 @@ def subscriber_ids_with_stream_history_access(stream: Stream) -> Set[int]:
     return set(
         get_active_subscriptions_for_stream_id(
             stream.id, include_deactivated_users=False
-        ).values_list("user_profile__id", flat=True)
+        ).values_list("user_profile_id", flat=True)
     )

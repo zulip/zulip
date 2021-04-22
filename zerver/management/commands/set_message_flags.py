@@ -48,7 +48,7 @@ class Command(ZulipBaseCommand):
         if all_until:
             filt = models.Q(id__lte=all_until)
         else:
-            filt = models.Q(message__id__in=[mid.strip() for mid in sys.stdin.read().split(",")])
+            filt = models.Q(message_id__in=[mid.strip() for mid in sys.stdin.read().split(",")])
         mids = [
             m.id
             for m in UserMessage.objects.filter(filt, user_profile=user_profile).order_by("-id")

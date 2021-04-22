@@ -63,7 +63,7 @@ class RawReactionRow(TypedDict):
     reaction_type: str
     user_profile__email: str
     user_profile__full_name: str
-    user_profile__id: int
+    user_profile_id: int
 
 
 class RawUnreadMessagesResult(TypedDict):
@@ -646,10 +646,10 @@ class ReactionDict:
             # as a small performance optimization.
             "user": {
                 "email": row["user_profile__email"],
-                "id": row["user_profile__id"],
+                "id": row["user_profile_id"],
                 "full_name": row["user_profile__full_name"],
             },
-            "user_id": row["user_profile__id"],
+            "user_id": row["user_profile_id"],
         }
 
 
