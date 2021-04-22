@@ -5564,7 +5564,7 @@ def do_update_message(
     if propagate_mode in ["change_later", "change_all"]:
         assert topic_name is not None or new_stream is not None
         messages_list = update_messages_for_topic_edit(
-            message=message,
+            edited_message=message,
             propagate_mode=propagate_mode,
             orig_topic_name=orig_topic_name,
             topic_name=topic_name,

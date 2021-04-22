@@ -127,7 +127,7 @@ def user_message_exists_for_topic(
 
 
 def update_messages_for_topic_edit(
-    message: Message,
+    edited_message: Message,
     propagate_mode: str,
     orig_topic_name: str,
     topic_name: Optional[str],
@@ -141,13 +141,13 @@ def update_messages_for_topic_edit(
     if old_recipient_id is not None:
         recipient_id = old_recipient_id
     else:
-        recipient_id = message.recipient_id
+        recipient_id = edited_message.recipient_id
 
     propagate_query = Q(recipient_id=recipient_id, subject__iexact=orig_topic_name)
     if propagate_mode == "change_all":
-        propagate_query = propagate_query & ~Q(id=message.id)
+        propagate_query = propagate_query & ~Q(id=edited_message.id)
     if propagate_mode == "change_later":
-        propagate_query = propagate_query & Q(id__gt=message.id)
+        propagate_query = propagate_query & Q(id__gt=edited_message.id)
 
     messages = Message.objects.filter(propagate_query).select_related()
 
