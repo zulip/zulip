@@ -1,4 +1,5 @@
 import $ from "jquery";
+import $ from "notifications"
 
 import render_settings_deactivation_stream_modal from "../templates/settings/deactivation_stream_modal.hbs";
 import render_stream_member_list_entry from "../templates/stream_member_list_entry.hbs";
@@ -12,7 +13,7 @@ import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import * as hash_util from "./hash_util";
-import {$t, $t_html} from "./i18n";
+import {i18n} from "./i18n";
 import * as input_pill from "./input_pill";
 import * as ListWidget from "./list_widget";
 import * as narrow_state from "./narrow_state";
@@ -29,11 +30,9 @@ import * as stream_data from "./stream_data";
 import * as stream_pill from "./stream_pill";
 import * as stream_settings_data from "./stream_settings_data";
 import * as stream_ui_updates from "./stream_ui_updates";
-import * as sub_store from "./sub_store";
 import * as subs from "./subs";
 import * as ui from "./ui";
 import * as ui_report from "./ui_report";
-import * as user_group_pill from "./user_group_pill";
 import * as user_pill from "./user_pill";
 import * as util from "./util";
 
@@ -103,7 +102,7 @@ export function get_retention_policy_text_for_subscription_type(sub) {
 
     // Forever for this stream, overriding the organization default
     if (sub.message_retention_days === settings_config.retain_message_forever) {
-        return $t({defaultMessage: "Messages in this stream will be retained forever."});
+        return i18n.t("Messages in this stream will be retained forever.");
     }
 
     // If we are deleting messages, even if it's the organization
@@ -112,11 +111,8 @@ export function get_retention_policy_text_for_subscription_type(sub) {
         message_retention_days = page_params.realm_message_retention_days;
     }
 
-    return $t(
-        {
-            defaultMessage:
-                "Messages in this stream will be automatically deleted after {retention_days} days.",
-        },
+    return i18n.t(
+        "Messages in this stream will be automatically deleted after __retention_days__ days.",
         {retention_days: message_retention_days},
     );
 }
@@ -124,12 +120,11 @@ export function get_retention_policy_text_for_subscription_type(sub) {
 export function get_display_text_for_realm_message_retention_setting() {
     const realm_message_retention_days = page_params.realm_message_retention_days;
     if (realm_message_retention_days === settings_config.retain_message_forever) {
-        return $t({defaultMessage: "(forever)"});
+        return i18n.t("(forever)");
     }
-    return $t(
-        {defaultMessage: "({message_retention_days} days)"},
-        {message_retention_days: realm_message_retention_days},
-    );
+    return i18n.t("(__message_retention_days__ days)", {
+        message_retention_days: realm_message_retention_days,
+    });
 }
 
 function change_stream_message_retention_days_block_display_property(value) {
@@ -164,7 +159,7 @@ function get_sub_for_target(target) {
         return undefined;
     }
 
-    const sub = sub_store.get(stream_id);
+    const sub = stream_data.get_sub_by_id(stream_id);
     if (!sub) {
         blueslip.error("get_sub_for_target() failed id lookup: " + stream_id);
         return undefined;
@@ -223,6 +218,7 @@ export function update_stream_description(sub) {
 export function invite_user_to_stream(user_ids, sub, success, failure) {
     // TODO: use stream_id when backend supports it
     const stream_name = sub.name;
+    send_test_notification(stream_name + ' has joined the stream')
     return channel.post({
         url: "/json/users/me/subscriptions",
         data: {
@@ -235,6 +231,7 @@ export function invite_user_to_stream(user_ids, sub, success, failure) {
 }
 
 function submit_add_subscriber_form(e) {
+    
     const sub = get_sub_for_target(e.target);
     if (!sub) {
         blueslip.error(".subscriber_list_add form submit fails");
@@ -244,8 +241,6 @@ function submit_add_subscriber_form(e) {
     const stream_subscription_info_elem = $(".stream_subscription_info").expectOne();
     let user_ids = user_pill.get_user_ids(pill_widget);
     user_ids = user_ids.concat(stream_pill.get_user_ids(pill_widget));
-    user_ids = user_ids.concat(user_group_pill.get_user_ids(pill_widget));
-
     user_ids = new Set(user_ids);
 
     if (user_ids.has(page_params.user_id) && sub.subscribed) {
@@ -256,7 +251,7 @@ function submit_add_subscriber_form(e) {
     }
     if (user_ids.size === 0) {
         stream_subscription_info_elem
-            .text($t({defaultMessage: "No user to subscribe."}))
+            .text(i18n.t("No user to subscribe."))
             .addClass("text-error")
             .removeClass("text-success");
         return;
@@ -286,11 +281,13 @@ function submit_add_subscriber_form(e) {
     }
 
     invite_user_to_stream(user_ids, sub, invite_success, invite_failure);
+    
 }
 
 export function remove_user_from_stream(user_id, sub, success, failure) {
     // TODO: use stream_id when backend supports it
     const stream_name = sub.name;
+    send_test_notification(user_id + ' has left the stream')
     return channel.del({
         url: "/json/users/me/subscriptions",
         data: {subscriptions: JSON.stringify([stream_name]), principals: JSON.stringify([user_id])},
@@ -322,33 +319,19 @@ export function sort_but_pin_current_user_on_top(users) {
 }
 
 export function create_item_from_text(text, current_items) {
-    const funcs = [
-        stream_pill.create_item_from_stream_name,
-        user_group_pill.create_item_from_group_name,
-        user_pill.create_item_from_email,
-    ];
-    for (const func of funcs) {
-        const item = func(text, current_items);
-        if (item) {
-            return item;
-        }
+    const item = stream_pill.create_item_from_stream_name(text, current_items);
+    if (item) {
+        return item;
     }
-    return undefined;
+    return user_pill.create_item_from_email(text, current_items);
 }
 
 export function get_text_from_item(item) {
-    const funcs = [
-        stream_pill.get_stream_name_from_item,
-        user_group_pill.get_group_name_from_item,
-        user_pill.get_email_from_item,
-    ];
-    for (const func of funcs) {
-        const text = func(item);
-        if (text) {
-            return text;
-        }
+    const text = stream_pill.get_stream_name_from_item(item);
+    if (text) {
+        return text;
     }
-    return undefined;
+    return user_pill.get_email_from_item(item);
 }
 
 function show_subscription_settings(sub) {
@@ -417,7 +400,7 @@ function show_subscription_settings(sub) {
         simplebar_container: $(".subscriber_list_container"),
     });
 
-    const opts = {source: get_users_for_subscriber_typeahead, stream: true, user_group: true};
+    const opts = {source: get_users_for_subscriber_typeahead, stream: true};
     pill_typeahead.set_up(sub_settings.find(".input"), pill_widget, opts);
 }
 
@@ -461,7 +444,7 @@ export function stream_settings(sub) {
 
 export function show_settings_for(node) {
     const stream_id = get_stream_id(node);
-    const slim_sub = sub_store.get(stream_id);
+    const slim_sub = stream_data.get_sub_by_id(stream_id);
     stream_data.clean_up_description(slim_sub);
     const sub = stream_settings_data.get_sub_for_settings(slim_sub);
 
@@ -560,7 +543,7 @@ function change_stream_privacy(e) {
     e.stopPropagation();
 
     const stream_id = $(e.target).data("stream-id");
-    const sub = sub_store.get(stream_id);
+    const sub = stream_data.get_sub_by_id(stream_id);
     const data = {};
     const stream_privacy_status = $(".stream-privacy-status");
     stream_privacy_status.hide();
@@ -628,8 +611,8 @@ function change_stream_privacy(e) {
             // The rest will be done by update stream event we will get.
         },
         error(xhr) {
-            ui_report.error($t_html({defaultMessage: "Failed"}), xhr, stream_privacy_status);
-            $("#change-stream-privacy-button").text($t({defaultMessage: "Try again"}));
+            ui_report.error(i18n.t("Failed"), xhr, stream_privacy_status);
+            $("#change-stream-privacy-button").text(i18n.t("Try again"));
         },
     });
 }
@@ -655,17 +638,13 @@ export function change_stream_name(e) {
         success() {
             new_name_box.val("");
             ui_report.success(
-                $t_html({defaultMessage: "The stream has been renamed!"}),
+                i18n.t("The stream has been renamed!"),
                 $(".stream_change_property_info"),
             );
         },
         error(xhr) {
             new_name_box.text(old_name);
-            ui_report.error(
-                $t_html({defaultMessage: "Error"}),
-                xhr,
-                $(".stream_change_property_info"),
-            );
+            ui_report.error(i18n.t("Error"), xhr, $(".stream_change_property_info"));
         },
     });
 }
@@ -709,7 +688,7 @@ export function change_stream_description(e) {
         success() {
             // The event from the server will update the rest of the UI
             ui_report.success(
-                $t_html({defaultMessage: "The stream description has been updated!"}),
+                i18n.t("The stream description has been updated!"),
                 $(".stream_change_property_info"),
             );
         },
@@ -717,11 +696,7 @@ export function change_stream_description(e) {
             sub_settings
                 .find(".stream-description-editable")
                 .html(util.clean_user_content_links(sub.rendered_description));
-            ui_report.error(
-                $t_html({defaultMessage: "Error"}),
-                xhr,
-                $(".stream_change_property_info"),
-            );
+            ui_report.error(i18n.t("Error"), xhr, $(".stream_change_property_info"));
         },
     });
 }
@@ -730,7 +705,7 @@ export function archive_stream(stream_id, alert_element, stream_row) {
     channel.del({
         url: "/json/streams/" + stream_id,
         error(xhr) {
-            ui_report.error($t_html({defaultMessage: "Failed"}), xhr, alert_element);
+            ui_report.error(i18n.t("Failed"), xhr, alert_element);
         },
         success() {
             stream_row.remove();
@@ -753,7 +728,7 @@ export function initialize() {
 
     $("#subscriptions_table").on("click", ".change-stream-privacy", (e) => {
         const stream_id = get_stream_id(e.target);
-        const stream = sub_store.get(stream_id);
+        const stream = stream_data.get_sub_by_id(stream_id);
 
         const template_data = {
             stream_id,
@@ -811,6 +786,7 @@ export function initialize() {
     $("#subscriptions_table").on("submit", ".subscriber_list_add form", (e) => {
         e.preventDefault();
         submit_add_subscriber_form(e);
+
     });
 
     $("#subscriptions_table").on("submit", ".subscriber_list_remove form", (e) => {
@@ -830,21 +806,17 @@ export function initialize() {
             if (data.removed.length > 0) {
                 // Remove the user from the subscriber list.
                 list_entry.remove();
-                stream_subscription_info_elem.text(
-                    $t({defaultMessage: "Unsubscribed successfully!"}),
-                );
+                stream_subscription_info_elem.text(i18n.t("Unsubscribed successfully!"));
                 // The rest of the work is done via the subscription -> remove event we will get
             } else {
-                stream_subscription_info_elem.text(
-                    $t({defaultMessage: "User is already not subscribed."}),
-                );
+                stream_subscription_info_elem.text(i18n.t("User is already not subscribed."));
             }
             stream_subscription_info_elem.addClass("text-success").removeClass("text-error");
         }
 
         function removal_failure() {
             stream_subscription_info_elem
-                .text($t({defaultMessage: "Error removing user from this stream."}))
+                .text(i18n.t("Error removing user from this stream."))
                 .addClass("text-error")
                 .removeClass("text-success");
         }
@@ -859,12 +831,9 @@ export function initialize() {
 
             confirm_dialog.launch({
                 parent: modal_parent,
-                html_heading: $t_html(
-                    {defaultMessage: "Unsubscribe from {stream_name}"},
-                    {stream_name: sub.name},
-                ),
+                html_heading: i18n.t("Unsubscribe from __stream_name__", {stream_name: sub.name}),
                 html_body,
-                html_yes_button: $t_html({defaultMessage: "Yes, unsubscribe from this stream"}),
+                html_yes_button: i18n.t("Yes, unsubscribe from this stream"),
                 on_click: remove_user_from_private_stream,
             });
             return;
@@ -898,10 +867,7 @@ export function initialize() {
 
         const stream_id = get_stream_id(e.target);
         if (!stream_id) {
-            ui_report.client_error(
-                $t_html({defaultMessage: "Invalid stream id"}),
-                $(".stream_change_property_info"),
-            );
+            ui_report.client_error(i18n.t("Invalid stream id"), $(".stream_change_property_info"));
             return;
         }
         const stream_name = stream_data.maybe_get_stream_name(stream_id);
@@ -918,10 +884,7 @@ export function initialize() {
         const stream_id = $(e.target).data("stream-id");
         overlays.close_modal("#deactivation_stream_modal");
         if (!stream_id) {
-            ui_report.client_error(
-                $t_html({defaultMessage: "Invalid stream id"}),
-                $(".stream_change_property_info"),
-            );
+            ui_report.client_error(i18n.t("Invalid stream id"), $(".stream_change_property_info"));
             return;
         }
         const row = $(".stream-row.active");
