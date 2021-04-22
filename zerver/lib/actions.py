@@ -156,6 +156,7 @@ from zerver.lib.topic import (
     filter_by_exact_message_topic,
     filter_by_topic_name_via_message,
     save_message_for_edit_use_case,
+    update_edit_history,
     update_messages_for_topic_edit,
 )
 from zerver.lib.topic_mutes import add_topic_mute, get_topic_mutes, remove_topic_mute
@@ -5560,6 +5561,7 @@ def do_update_message(
         event[TOPIC_LINKS] = topic_links(message.sender.realm_id, topic_name)
         edit_history_event[LEGACY_PREV_TOPIC] = orig_topic_name
 
+    update_edit_history(message, timestamp, edit_history_event)
     delete_event_notify_user_ids: List[int] = []
     if propagate_mode in ["change_later", "change_all"]:
         assert topic_name is not None or new_stream is not None
@@ -5615,13 +5617,6 @@ def do_update_message(
             }
             delete_event_notify_user_ids = [sub.user_profile_id for sub in subs_losing_access]
             send_event(user_profile.realm, delete_event, delete_event_notify_user_ids)
-
-    if message.edit_history is not None:
-        edit_history = orjson.loads(message.edit_history)
-        edit_history.insert(0, edit_history_event)
-    else:
-        edit_history = [edit_history_event]
-    message.edit_history = orjson.dumps(edit_history).decode()
 
     # This does message.save(update_fields=[...])
     save_message_for_edit_use_case(message=message)
