@@ -60,10 +60,13 @@ function sort_role(a, b) {
         if (user.is_admin) {
             return 0;
         }
-        if (user.is_guest) {
-            return 2;
+        if (user.is_moderator) {
+            return 1;
         }
-        return 1; // member
+        if (user.is_guest) {
+            return 3;
+        }
+        return 2; // member
     }
     return compare_a_b(role(a), role(b));
 }

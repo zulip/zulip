@@ -1110,6 +1110,10 @@ export function _add_user(person) {
         users who may be deactivated or outside
         our realm (like cross-realm bots).
     */
+    person.is_moderator = false;
+    if (person.role === settings_config.user_role_values.moderator.code) {
+        person.is_moderator = true;
+    }
     if (person.user_id) {
         people_by_user_id_dict.set(person.user_id, person);
     } else {

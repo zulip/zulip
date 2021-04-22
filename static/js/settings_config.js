@@ -273,6 +273,10 @@ export const user_role_values = {
         code: 400,
         description: $t({defaultMessage: "Member"}),
     },
+    moderator: {
+        code: 300,
+        description: $t({defaultMessage: "Moderator"}),
+    },
     admin: {
         code: 200,
         description: $t({defaultMessage: "Administrator"}),
