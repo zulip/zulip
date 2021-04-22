@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import render_admin_linkifier_list from "../templates/admin_linkifier_list.hbs";
+import render_admin_linkifier_list from "../templates/settings/admin_linkifier_list.hbs";
 
 import * as channel from "./channel";
 import {$t_html} from "./i18n";
