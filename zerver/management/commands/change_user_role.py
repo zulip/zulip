@@ -23,7 +23,15 @@ ONLY perform this on customer request from an authorized person.
         parser.add_argument(
             "new_role",
             metavar="<new_role>",
-            choices=["owner", "admin", "member", "guest", "can_forge_sender", "can_create_users"],
+            choices=[
+                "owner",
+                "admin",
+                "moderator",
+                "member",
+                "guest",
+                "can_forge_sender",
+                "can_create_users",
+            ],
             help="new role of the user",
         )
         parser.add_argument(
@@ -43,6 +51,7 @@ ONLY perform this on customer request from an authorized person.
         user_role_map = {
             "owner": UserProfile.ROLE_REALM_OWNER,
             "admin": UserProfile.ROLE_REALM_ADMINISTRATOR,
+            "moderator": UserProfile.ROLE_MODERATOR,
             "member": UserProfile.ROLE_MEMBER,
             "guest": UserProfile.ROLE_GUEST,
         }

@@ -1406,6 +1406,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     ROLE_ID_TO_NAME_MAP = {
         ROLE_REALM_OWNER: gettext_lazy("Organization owner"),
         ROLE_REALM_ADMINISTRATOR: gettext_lazy("Organization administrator"),
+        ROLE_MODERATOR: gettext_lazy("Moderator"),
         ROLE_MEMBER: gettext_lazy("Member"),
         ROLE_GUEST: gettext_lazy("Guest"),
     }
