@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import render_admin_default_streams_list from "../templates/admin_default_streams_list.hbs";
+import render_admin_default_streams_list from "../templates/settings/admin_default_streams_list.hbs";
 
 import * as channel from "./channel";
 import {$t_html} from "./i18n";
