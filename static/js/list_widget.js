@@ -166,6 +166,10 @@ export function create($container, list, opts) {
 
     const widget = {};
 
+    widget.get_current_list = function () {
+        return meta.filtered_list;
+    };
+
     widget.filter_and_sort = function () {
         meta.filtered_list = get_filtered_items(meta.filter_value, meta.list, opts);
 

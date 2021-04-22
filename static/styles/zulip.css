@@ -2194,6 +2194,11 @@ div.floating_recipient {
     color: hsl(0, 0%, 100%);
 }
 
+#user-checkboxes-simplebar-wrapper {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
 #user-checkboxes {
     margin-top: 10px;
 

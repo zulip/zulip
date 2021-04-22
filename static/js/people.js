@@ -1061,6 +1061,8 @@ export function get_people_for_stream_create() {
                 email: person.email,
                 user_id: person.user_id,
                 full_name: person.full_name,
+                checked: false,
+                disabled: false,
             });
         }
     }

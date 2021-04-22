@@ -492,9 +492,27 @@ test_people("get_people_for_stream_create", () => {
 
     const others = people.get_people_for_stream_create();
     const expected = [
-        {email: "alice1@example.com", user_id: alice1.user_id, full_name: "Alice"},
-        {email: "alice2@example.com", user_id: alice2.user_id, full_name: "Alice"},
-        {email: "bob@example.com", user_id: bob.user_id, full_name: "Bob van Roberts"},
+        {
+            email: "alice1@example.com",
+            user_id: alice1.user_id,
+            full_name: "Alice",
+            checked: false,
+            disabled: false,
+        },
+        {
+            email: "alice2@example.com",
+            user_id: alice2.user_id,
+            full_name: "Alice",
+            checked: false,
+            disabled: false,
+        },
+        {
+            email: "bob@example.com",
+            user_id: bob.user_id,
+            full_name: "Bob van Roberts",
+            checked: false,
+            disabled: false,
+        },
     ];
     assert.deepEqual(others, expected);
 });
