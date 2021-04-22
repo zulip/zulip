@@ -92,10 +92,18 @@ run_test("updates", () => {
 
     user_events.update_person({
         user_id: isaac.user_id,
+        role: settings_config.user_role_values.moderator.code,
+    });
+    person = people.get_by_email(isaac.email);
+    assert.equal(person.is_moderator, true);
+
+    user_events.update_person({
+        user_id: isaac.user_id,
         role: settings_config.user_role_values.admin.code,
     });
     person = people.get_by_email(isaac.email);
     assert.equal(person.full_name, "Isaac Newton");
+    assert.equal(person.is_moderator, false);
     assert.equal(person.is_admin, true);
 
     user_events.update_person({

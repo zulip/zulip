@@ -70,6 +70,7 @@ export const update_person = function update(person) {
         person_obj.is_admin =
             person.role === settings_config.user_role_values.admin.code || person_obj.is_owner;
         person_obj.is_guest = person.role === settings_config.user_role_values.guest.code;
+        person_obj.is_moderator = person.role === settings_config.user_role_values.moderator.code;
         settings_users.update_user_data(person.user_id, person);
 
         if (people.is_my_user_id(person.user_id) && page_params.is_owner !== person_obj.is_owner) {
@@ -84,6 +85,13 @@ export const update_person = function update(person) {
             settings_org.maybe_disable_widgets();
             settings_profile_fields.maybe_disable_widgets();
             settings_streams.maybe_disable_widgets();
+        }
+
+        if (
+            people.is_my_user_id(person.user_id) &&
+            page_params.is_moderator !== person_obj.is_moderator
+        ) {
+            page_params.is_moderator = person_obj.is_moderator;
         }
     }
 
