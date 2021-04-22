@@ -328,8 +328,8 @@ python_rules = RuleList(
         },
         {
             "pattern": r"""\Wjson_error\(['"].+[),]$""",
-            "exclude": {"zerver/tests"},
-            "description": "Argument to json_error should a literal string enclosed by _()",
+            "exclude": {"zerver/tests", "zerver/views/development/"},
+            "description": "Argument to json_error should be a literal string enclosed by _()",
         },
         # To avoid JsonableError(_variable) and JsonableError(_(variable))
         {
