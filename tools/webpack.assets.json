@@ -64,14 +64,10 @@
         "./static/styles/portico/landing_page.css",
         "./static/styles/portico/integrations.css"
     ],
-    "signup": [
-        "./static/js/bundles/portico",
-        "jquery-validation/dist/jquery.validate.min",
-        "./static/js/portico/signup"
-    ],
+    "signup": ["./static/js/bundles/portico", "jquery-validation", "./static/js/portico/signup"],
     "register": [
         "./static/js/bundles/portico",
-        "jquery-validation/dist/jquery.validate.min",
+        "jquery-validation",
         "./static/js/portico/signup",
         "zxcvbn/dist/zxcvbn"
     ],
