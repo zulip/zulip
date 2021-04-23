@@ -340,7 +340,7 @@ function filter_user_ids(user_filter_text, user_ids) {
     return Array.from(user_id_dict.keys());
 }
 
-function get_user_id_list(user_filter_text) {
+function get_filtered_user_id_list(user_filter_text) {
     let base_user_id_list;
 
     if (user_filter_text) {
@@ -360,7 +360,7 @@ function get_user_id_list(user_filter_text) {
 
 export function get_filtered_and_sorted_user_ids(user_filter_text) {
     let user_ids;
-    user_ids = get_user_id_list(user_filter_text);
+    user_ids = get_filtered_user_id_list(user_filter_text);
     user_ids = maybe_shrink_list(user_ids, user_filter_text);
     return sort_users(user_ids);
 }
