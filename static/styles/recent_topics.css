@@ -93,13 +93,9 @@
             flex-grow: 1;
         }
 
-        .clear_search_button {
-            /* Overrides app_components.css property. */
-            padding-top: 6px !important;
-        }
-
         #recent_topics_search_clear {
-            margin-top: -10px !important;
+            position: absolute;
+            right: 10px;
         }
 
         .btn-recent-filters {
