@@ -122,28 +122,6 @@ export function sort_users(user_ids) {
     return user_ids;
 }
 
-function filter_user_ids(user_filter_text, user_ids) {
-    if (user_filter_text === "") {
-        return user_ids;
-    }
-
-    user_ids = user_ids.filter((user_id) => !people.is_my_user_id(user_id));
-
-    let search_terms = user_filter_text.toLowerCase().split(/[,|]+/);
-    search_terms = search_terms.map((s) => s.trim());
-
-    const persons = user_ids.map((user_id) => people.get_by_user_id(user_id));
-
-    const user_id_dict = people.filter_people_by_search_terms(persons, search_terms);
-    return Array.from(user_id_dict.keys());
-}
-
-export function matches_filter(user_filter_text, user_id) {
-    // This is a roundabout way of checking a user if you look
-    // too hard at it, but it should be fine for now.
-    return filter_user_ids(user_filter_text, [user_id]).length === 1;
-}
-
 function get_num_unread(user_id) {
     return unread.num_unread_for_person(user_id.toString());
 }
@@ -280,6 +258,31 @@ export function get_item(user_id) {
     return info;
 }
 
+export function get_items_for_users(user_ids) {
+    const user_info = user_ids.map((user_id) => info_for(user_id));
+    compose_fade_users.update_user_info(user_info, fade_config);
+    return user_info;
+}
+
+export function huddle_fraction_present(huddle) {
+    const user_ids = huddle.split(",").map((s) => Number.parseInt(s, 10));
+
+    let num_present = 0;
+
+    for (const user_id of user_ids) {
+        if (presence.is_active(user_id)) {
+            num_present += 1;
+        }
+    }
+
+    if (num_present === user_ids.length) {
+        return 1;
+    } else if (num_present !== 0) {
+        return 0.5;
+    }
+    return undefined;
+}
+
 function user_is_recently_active(user_id) {
     // return true if the user has a green/orange circle
     return level(user_id) <= 2;
@@ -303,6 +306,22 @@ function maybe_shrink_list(user_ids, user_filter_text) {
     user_ids = user_ids.filter((user_id) => user_is_recently_active(user_id));
 
     return user_ids;
+}
+
+function filter_user_ids(user_filter_text, user_ids) {
+    if (user_filter_text === "") {
+        return user_ids;
+    }
+
+    user_ids = user_ids.filter((user_id) => !people.is_my_user_id(user_id));
+
+    let search_terms = user_filter_text.toLowerCase().split(/[,|]+/);
+    search_terms = search_terms.map((s) => s.trim());
+
+    const persons = user_ids.map((user_id) => people.get_by_user_id(user_id));
+
+    const user_id_dict = people.filter_people_by_search_terms(persons, search_terms);
+    return Array.from(user_id_dict.keys());
 }
 
 function get_user_id_list(user_filter_text) {
@@ -340,27 +359,8 @@ export function get_filtered_and_sorted_user_ids(user_filter_text) {
     return sort_users(user_ids);
 }
 
-export function get_items_for_users(user_ids) {
-    const user_info = user_ids.map((user_id) => info_for(user_id));
-    compose_fade_users.update_user_info(user_info, fade_config);
-    return user_info;
-}
-
-export function huddle_fraction_present(huddle) {
-    const user_ids = huddle.split(",").map((s) => Number.parseInt(s, 10));
-
-    let num_present = 0;
-
-    for (const user_id of user_ids) {
-        if (presence.is_active(user_id)) {
-            num_present += 1;
-        }
-    }
-
-    if (num_present === user_ids.length) {
-        return 1;
-    } else if (num_present !== 0) {
-        return 0.5;
-    }
-    return undefined;
+export function matches_filter(user_filter_text, user_id) {
+    // This is a roundabout way of checking a user if you look
+    // too hard at it, but it should be fine for now.
+    return filter_user_ids(user_filter_text, [user_id]).length === 1;
 }
