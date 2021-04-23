@@ -309,7 +309,7 @@ function maybe_shrink_list(user_ids, user_filter_text) {
 }
 
 function filter_user_ids(user_filter_text, user_ids) {
-    if (user_filter_text === "") {
+    if (!user_filter_text) {
         return user_ids;
     }
 
@@ -325,18 +325,20 @@ function filter_user_ids(user_filter_text, user_ids) {
 }
 
 function get_user_id_list(user_filter_text) {
-    let user_ids;
+    let base_user_id_list;
 
     if (user_filter_text) {
         // If there's a filter, select from all users, not just those
         // recently active.
-        user_ids = filter_user_ids(user_filter_text, people.get_active_user_ids());
+        base_user_id_list = people.get_active_user_ids();
     } else {
         // From large realms, the user_ids in presence may exclude
         // users who have been idle more than three weeks.  When the
         // filter text is blank, we show only those recently active users.
-        user_ids = presence.get_user_ids();
+        base_user_id_list = presence.get_user_ids();
     }
+
+    let user_ids = filter_user_ids(user_filter_text, base_user_id_list);
 
     user_ids = user_ids.filter((user_id) => {
         const person = people.get_by_user_id(user_id);
