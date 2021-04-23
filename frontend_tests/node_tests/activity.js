@@ -57,6 +57,7 @@ set_global("document", _document);
 
 const huddle_data = zrequire("huddle_data");
 const compose_fade = zrequire("compose_fade");
+const muting = zrequire("muting");
 const narrow = zrequire("narrow");
 const presence = zrequire("presence");
 const people = zrequire("people");
@@ -213,6 +214,7 @@ function clear_buddy_list() {
 function test_ui(label, f) {
     run_test(label, (override) => {
         clear_buddy_list();
+        muting.set_muted_users([]);
         f(override);
     });
 }
@@ -420,6 +422,21 @@ test_ui("filter_user_ids", () => {
         mark.user_id,
     ]);
 
+    muting.add_muted_user(jill.user_id);
+    muting.add_muted_user(mark.user_id);
+
+    // Test no match for muted user when there is no filter.
+    user_ids = get_user_ids();
+    assert.deepEqual(user_ids, [alice.user_id, fred.user_id, norbert.user_id, zoe.user_id]);
+
+    // Test no match for muted users even with filter text.
+    user_filter.val("ji,ma");
+    user_ids = get_user_ids();
+    assert.deepEqual(user_ids, []);
+
+    muting.remove_muted_user(jill.user_id);
+    muting.remove_muted_user(mark.user_id);
+
     user_filter.val("abc"); // no match
     user_ids = get_user_ids();
     assert.deepEqual(user_ids, []);
@@ -542,6 +559,17 @@ test_ui("realm_presence_disabled", () => {
 
     activity.redraw_user();
     activity.build_user_sidebar();
+});
+
+test_ui("redraw_muted_user", () => {
+    muting.add_muted_user(mark.user_id);
+    let appended_html;
+    $("#user_presences").append = function (html) {
+        appended_html = html;
+    };
+
+    activity.redraw_user(mark.user_id);
+    assert(appended_html === undefined);
 });
 
 test_ui("clear_search", () => {

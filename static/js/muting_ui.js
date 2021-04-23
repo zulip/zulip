@@ -4,6 +4,7 @@ import render_confirm_mute_user from "../templates/confirm_mute_user.hbs";
 import render_muted_topic_ui_row from "../templates/muted_topic_ui_row.hbs";
 import render_topic_muted from "../templates/topic_muted.hbs";
 
+import * as activity from "./activity";
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import * as feedback_widget from "./feedback_widget";
@@ -200,6 +201,8 @@ export function rerender_for_muted_user() {
     if (overlays.settings_open() && settings_muted_users.loaded) {
         settings_muted_users.populate_list();
     }
+
+    activity.redraw();
 }
 
 export function handle_user_updates(muted_user_ids) {

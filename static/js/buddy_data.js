@@ -2,6 +2,7 @@ import * as blueslip from "./blueslip";
 import * as compose_fade_users from "./compose_fade_users";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
+import * as muting from "./muting";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as presence from "./presence";
@@ -319,8 +320,19 @@ function filter_user_ids(user_filter_text, user_ids) {
             return false;
         }
 
-        // if the user is bot, do not show in presence data.
-        return !person.is_bot;
+        if (person.is_bot) {
+            // Bots should never appear in the right sidebar.  This
+            // case should never happen, since bots cannot have
+            // presence data.
+            return false;
+        }
+
+        if (muting.is_user_muted(user_id)) {
+            // Muted users are hidden from the right sidebar entirely.
+            return false;
+        }
+
+        return true;
     });
 
     if (!user_filter_text) {
