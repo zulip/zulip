@@ -309,10 +309,25 @@ function maybe_shrink_list(user_ids, user_filter_text) {
 }
 
 function filter_user_ids(user_filter_text, user_ids) {
+    // This first filter is for whether the user is eligible to be
+    // displayed in the right sidebar at all.
+    user_ids = user_ids.filter((user_id) => {
+        const person = people.get_by_user_id(user_id);
+
+        if (!person) {
+            blueslip.warn("Got user_id in presence but not people: " + user_id);
+            return false;
+        }
+
+        // if the user is bot, do not show in presence data.
+        return !person.is_bot;
+    });
+
     if (!user_filter_text) {
         return user_ids;
     }
 
+    // If a query is present in "Filter users", we return matches.
     user_ids = user_ids.filter((user_id) => !people.is_my_user_id(user_id));
 
     let search_terms = user_filter_text.toLowerCase().split(/[,|]+/);
@@ -321,6 +336,7 @@ function filter_user_ids(user_filter_text, user_ids) {
     const persons = user_ids.map((user_id) => people.get_by_user_id(user_id));
 
     const user_id_dict = people.filter_people_by_search_terms(persons, search_terms);
+
     return Array.from(user_id_dict.keys());
 }
 
@@ -338,19 +354,7 @@ function get_user_id_list(user_filter_text) {
         base_user_id_list = presence.get_user_ids();
     }
 
-    let user_ids = filter_user_ids(user_filter_text, base_user_id_list);
-
-    user_ids = user_ids.filter((user_id) => {
-        const person = people.get_by_user_id(user_id);
-
-        if (!person) {
-            blueslip.warn("Got user_id in presence but not people: " + user_id);
-            return false;
-        }
-
-        // if the user is bot, do not show in presence data.
-        return !person.is_bot;
-    });
+    const user_ids = filter_user_ids(user_filter_text, base_user_id_list);
     return user_ids;
 }
 
