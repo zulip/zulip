@@ -9,6 +9,7 @@ import bmemcached
 import orjson
 from django.conf import settings
 from django.contrib.sessions.models import Session
+from django.core.files import File
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandParser
 from django.db import connection
@@ -35,6 +36,7 @@ from zerver.lib.push_notifications import logger as push_notifications_logger
 from zerver.lib.server_initialization import create_internal_realm, create_users
 from zerver.lib.storage import static_path
 from zerver.lib.types import ProfileFieldData
+from zerver.lib.upload import upload_message_file
 from zerver.lib.url_preview.preview import CACHE_NAME as PREVIEW_CACHE_NAME
 from zerver.lib.user_groups import create_user_group
 from zerver.lib.users import add_service
@@ -918,6 +920,7 @@ def get_recipient_by_id(rid: int) -> Recipient:
 # - multiple personals converastions
 # - multiple messages per subject
 # - both single and multi-line content
+# - attachments in some of the messages (development only)
 def generate_and_send_messages(
     data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any], Callable[[str], Any], int]
 ) -> int:
@@ -961,7 +964,7 @@ def generate_and_send_messages(
         message.sending_client = get_client("populate_db")
 
         text_with_attachment_path = next(texts_with_attachment_paths)
-        message.content = text_with_attachment_path[0]
+        text = text_with_attachment_path[0]
 
         randkey = random.randint(1, random_max)
         if (
@@ -1008,6 +1011,19 @@ def generate_and_send_messages(
             ).user_profile
             message.subject = random.choice(possible_topics[message.recipient.id])
             saved_data["subject"] = message.subject
+
+        if not options["test_suite"]:
+            # the test suite is not yet compatible with Attachment data structures
+            # created for the generated messages
+            # so we create Attachment data structures for development only
+
+            # given a relative path to a file to be attached, use the
+            # `upload` endpoint to create and add a corresponding Attachment
+            for i in range(1, len(text_with_attachment_path)):
+                attachment_path = text_with_attachment_path[i]
+                text += upload_attachment(attachment_path, message.sender)
+
+        message.content = text
 
         message.date_sent = choose_date_sent(num_messages, tot_messages, options["threads"])
         messages.append(message)
@@ -1133,3 +1149,16 @@ def create_user_groups() -> None:
         get_user_by_delivery_email("hamlet@zulip.com", zulip),
     ]
     create_user_group("hamletcharacters", members, zulip, description="Characters of Hamlet")
+
+
+def upload_attachment(attachment_path: str, sender: UserProfile) -> str:
+    with open(attachment_path, "rb") as infile:
+        uploaded_file = File(infile)
+        uploaded_file_name = os.path.basename(uploaded_file.name)
+        uploaded_file_size = uploaded_file.size
+        file_data = uploaded_file.read()
+        uploaded_uri = upload_message_file(
+            uploaded_file_name, uploaded_file_size, None, file_data, sender
+        )
+
+    return "\n[" + uploaded_file_name + "](http://localhost:9991" + uploaded_uri + ")\n"
