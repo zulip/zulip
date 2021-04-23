@@ -47,11 +47,6 @@ from zerver.views.custom_profile_fields import (
     update_realm_custom_profile_field,
     update_user_custom_profile_data,
 )
-from zerver.views.development.dev_login import (
-    api_dev_fetch_api_key,
-    api_dev_list_users,
-    dev_direct_login,
-)
 from zerver.views.digest import digest_page
 from zerver.views.documentation import IntegrationView, MarkdownDirectoryView, integration_doc
 from zerver.views.drafts import create_drafts, delete_draft, edit_draft, fetch_drafts
@@ -531,7 +526,6 @@ i18n_urls = [
         "accounts/register/social/<backend>/<extra_arg>", start_social_signup, name="signup-social"
     ),
     path("accounts/login/subdomain/<token>", log_into_subdomain),
-    path("accounts/login/local/", dev_direct_login, name="login-local"),
     # We have two entries for accounts/login; only the first one is
     # used for URL resolution.  The second here is to allow
     # reverse("login") in templates to
@@ -726,13 +720,6 @@ v1_api_mobile_patterns = [
     # This json format view used by the mobile apps accepts a username
     # password/pair and returns an API key.
     path("fetch_api_key", api_fetch_api_key),
-    # This is for the signing in through the devAuthBackEnd on mobile apps.
-    path("dev_fetch_api_key", api_dev_fetch_api_key),
-    # This is for fetching the emails of the admins and the users.
-    path("dev_list_users", api_dev_list_users),
-]
-urls += [
-    path("api/v1/", include(v1_api_mobile_patterns)),
 ]
 
 # View for uploading messages from email mirror
@@ -789,6 +776,11 @@ if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
 if settings.DEVELOPMENT:
     urls += dev_urls.urls
     i18n_urls += dev_urls.i18n_urls
+    v1_api_mobile_patterns += dev_urls.v1_api_mobile_patterns
+
+urls += [
+    path("api/v1/", include(v1_api_mobile_patterns)),
+]
 
 # The sequence is important; if i18n URLs don't come first then
 # reverse URL mapping points to i18n URLs which causes the frontend

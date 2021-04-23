@@ -11,6 +11,11 @@ from django.views.static import serve
 
 from zerver.views.auth import config_error, login_page
 from zerver.views.development.cache import remove_caches
+from zerver.views.development.dev_login import (
+    api_dev_fetch_api_key,
+    api_dev_list_users,
+    dev_direct_login,
+)
 from zerver.views.development.email_log import clear_emails, email_page, generate_all_emails
 from zerver.views.development.integrations import (
     check_send_webhook_fixture_message,
@@ -83,6 +88,12 @@ urls = [
     path("flush_caches", remove_caches),
 ]
 
+v1_api_mobile_patterns = [
+    # This is for the signing in through the devAuthBackEnd on mobile apps.
+    path("dev_fetch_api_key", api_dev_fetch_api_key),
+    # This is for fetching the emails of the admins and the users.
+    path("dev_list_users", api_dev_list_users),
+]
 # Serve static assets via the Django server
 if use_prod_static:
     urls += [
@@ -98,6 +109,7 @@ else:
     urls += static(urlsplit(settings.STATIC_URL).path, view=serve_static)
 
 i18n_urls = [
+    path("accounts/login/local/", dev_direct_login, name="login-local"),
     path("confirmation_key/", confirmation_key),
 ]
 urls += i18n_urls
