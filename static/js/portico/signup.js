@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import * as common from "../common";
+import {password_quality, password_warning} from "../password_quality";
 
 $(() => {
     // NB: this file is included on multiple pages.  In each context,
@@ -10,17 +11,17 @@ $(() => {
     if (password_field.length > 0) {
         $.validator.addMethod(
             "password_strength",
-            (value) => common.password_quality(value, undefined, password_field),
-            () => common.password_warning(password_field.val(), password_field),
+            (value) => password_quality(value, undefined, password_field),
+            () => password_warning(password_field.val(), password_field),
         );
         // Reset the state of the password strength bar if the page
         // was just reloaded due to a validation failure on the backend.
-        common.password_quality(password_field.val(), $("#pw_strength .bar"), password_field);
+        password_quality(password_field.val(), $("#pw_strength .bar"), password_field);
 
         password_field.on("input", function () {
             // Update the password strength bar even if we aren't validating
             // the field yet.
-            common.password_quality($(this).val(), $("#pw_strength .bar"), $(this));
+            password_quality($(this).val(), $("#pw_strength .bar"), $(this));
         });
     }
 
