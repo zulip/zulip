@@ -1,5 +1,5 @@
 import $ from "jquery";
-import SimpleBar from "simplebar/dist/simplebar";
+import SimpleBar from "simplebar";
 
 import * as common from "../common";
 
