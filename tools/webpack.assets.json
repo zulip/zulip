@@ -65,12 +65,7 @@
         "./static/styles/portico/integrations.css"
     ],
     "signup": ["./static/js/bundles/portico", "jquery-validation", "./static/js/portico/signup"],
-    "register": [
-        "./static/js/bundles/portico",
-        "jquery-validation",
-        "./static/js/portico/signup",
-        "zxcvbn/dist/zxcvbn"
-    ],
+    "register": ["./static/js/bundles/portico", "jquery-validation", "./static/js/portico/signup"],
     "confirm-preregistrationuser": [
         "./static/js/bundles/common",
         "./static/js/portico/confirm-preregistrationuser"

@@ -23,6 +23,8 @@ import * as setup from "./setup";
 import * as ui_report from "./ui_report";
 import * as user_pill from "./user_pill";
 
+let password_quality; // Loaded asynchronously
+
 export function update_email(new_email) {
     const email_input = $("#email_value");
 
@@ -393,7 +395,7 @@ export function set_up() {
             "#new_password + .password_visibility_toggle",
         );
         $("#old_password, #new_password").val("");
-        common.password_quality("", $("#pw_strength .bar"), $("#new_password"));
+        password_quality?.("", $("#pw_strength .bar"), $("#new_password"));
     }
 
     clear_password_change();
@@ -415,8 +417,7 @@ export function set_up() {
         if (page_params.realm_password_auth_enabled !== false) {
             // zxcvbn.js is pretty big, and is only needed on password
             // change, so load it asynchronously.
-            const {default: zxcvbn} = await import("zxcvbn");
-            window.zxcvbn = zxcvbn;
+            password_quality = (await import("./password_quality")).password_quality;
             $("#pw_strength .bar").removeClass("fade");
         }
     });
@@ -443,15 +444,14 @@ export function set_up() {
         const new_pw_field = $("#new_password");
         const new_pw = data.new_password;
         if (new_pw !== "") {
-            const password_ok = common.password_quality(new_pw, undefined, new_pw_field);
-            if (password_ok === undefined) {
-                // zxcvbn.js didn't load, for whatever reason.
+            if (password_quality === undefined) {
+                // password_quality didn't load, for whatever reason.
                 settings_change_error(
                     "An internal error occurred; try reloading the page. " +
                         "Sorry for the trouble!",
                 );
                 return;
-            } else if (!password_ok) {
+            } else if (!password_quality(new_pw, undefined, new_pw_field)) {
                 settings_change_error($t_html({defaultMessage: "New password is too weak"}));
                 return;
             }
@@ -481,7 +481,7 @@ export function set_up() {
 
     $("#new_password").on("input", () => {
         const field = $("#new_password");
-        common.password_quality(field.val(), $("#pw_strength .bar"), field);
+        password_quality?.(field.val(), $("#pw_strength .bar"), field);
     });
 
     $("#change_full_name_button").on("click", (e) => {

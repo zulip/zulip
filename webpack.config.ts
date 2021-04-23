@@ -83,15 +83,6 @@ export default (_env: unknown, argv: {mode?: string}): webpack.Configuration[] =
                     ],
                     use: [cacheLoader, "babel-loader"],
                 },
-                // Uses script-loader on minified files so we don't change global variables in them.
-                // Also has the effect of making processing these files fast
-                // Currently the source maps don't work with these so use unminified files
-                // if debugging is required.
-                {
-                    // We dont want to match admin.js
-                    test: /(\.min|min\.|zxcvbn)\.js/,
-                    use: [cacheLoader, "script-loader"],
-                },
                 // regular css files
                 {
                     test: /\.css$/,

@@ -12,62 +12,6 @@ export function autofocus(selector) {
     });
 }
 
-// Return a boolean indicating whether the password is acceptable.
-// Also updates a Bootstrap progress bar control (a jQuery object)
-// if provided.
-//
-// Assumes that zxcvbn.js has been loaded.
-//
-// This is in common.js because we want to use it from the signup page
-// and also from the in-app password change interface.
-export function password_quality(password, bar, password_field) {
-    // We load zxcvbn.js asynchronously, so the variable might not be set.
-    if (typeof zxcvbn === "undefined") {
-        return undefined;
-    }
-
-    const min_length = password_field.data("minLength");
-    const min_guesses = password_field.data("minGuesses");
-
-    const result = zxcvbn(password);
-    const acceptable = password.length >= min_length && result.guesses >= min_guesses;
-
-    if (bar !== undefined) {
-        const t = result.crack_times_seconds.offline_slow_hashing_1e4_per_second;
-        let bar_progress = Math.min(1, Math.log(1 + t) / 22);
-
-        // Even if zxcvbn loves your short password, the bar should be
-        // filled at most 1/3 of the way, because we won't accept it.
-        if (!acceptable) {
-            bar_progress = Math.min(bar_progress, 0.33);
-        }
-
-        // The bar bottoms out at 10% so there's always something
-        // for the user to see.
-        bar.width(90 * bar_progress + 10 + "%")
-            .removeClass("bar-success bar-danger")
-            .addClass(acceptable ? "bar-success" : "bar-danger");
-    }
-
-    return acceptable;
-}
-
-export function password_warning(password, password_field) {
-    if (typeof zxcvbn === "undefined") {
-        return undefined;
-    }
-
-    const min_length = password_field.data("minLength");
-
-    if (password.length < min_length) {
-        return $t(
-            {defaultMessage: "Password should be at least {length} characters long"},
-            {length: min_length},
-        );
-    }
-    return zxcvbn(password).feedback.warning || $t({defaultMessage: "Password is too weak"});
-}
-
 export function phrase_match(query, phrase) {
     // match "tes" to "test" and "stream test" but not "hostess"
     let i;
