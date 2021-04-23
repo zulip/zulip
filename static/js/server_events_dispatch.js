@@ -573,6 +573,11 @@ export function dispatch_normal_event(event) {
             }
             if (event.setting_name === "default_language") {
                 // We additionally need to set the language name.
+                //
+                // Note that this does not change translations at all;
+                // a reload is fundamentally required because we
+                // cannot rerender with the new language the strings
+                // present in the backend/Jinja2 templates.
                 page_params.default_language_name = event.language_name;
             }
             if (event.setting_name === "twenty_four_hour_time") {

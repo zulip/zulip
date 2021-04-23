@@ -9,7 +9,7 @@ import {page_params} from "./page_params";
 const cache = createIntlCache();
 export const intl = createIntl(
     {
-        locale: page_params.default_language,
+        locale: page_params.request_language,
         defaultLocale: "en",
         messages: page_params.translation_data,
         onError: /* istanbul ignore next */ (error) => {

@@ -202,6 +202,7 @@ class HomeTest(ZulipTestCase):
         "realm_waiting_period_threshold",
         "realm_wildcard_mention_policy",
         "recent_private_conversations",
+        "request_language",
         "root_domain_uri",
         "save_stacktraces",
         "search_pills_enabled",
