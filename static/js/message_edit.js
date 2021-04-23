@@ -387,7 +387,6 @@ function edit_message(row, raw_content) {
     if (editability === editability_types.NO) {
         message_edit_content.attr("readonly", "readonly");
         message_edit_topic.attr("readonly", "readonly");
-        create_copy_to_clipboard_handler(copy_message[0], message.id);
     } else if (editability === editability_types.NO_LONGER) {
         // You can currently only reach this state in non-streams. If that
         // changes (e.g. if we stop allowing topics to be modified forever
@@ -395,14 +394,11 @@ function edit_message(row, raw_content) {
         // row.find('input.message_edit_topic') as well.
         message_edit_content.attr("readonly", "readonly");
         message_edit_countdown_timer.text($t({defaultMessage: "View source"}));
-        create_copy_to_clipboard_handler(copy_message[0], message.id);
     } else if (editability === editability_types.TOPIC_ONLY) {
         message_edit_content.attr("readonly", "readonly");
         // Hint why you can edit the topic but not the message content
         message_edit_countdown_timer.text($t({defaultMessage: "Topic editing only"}));
-        create_copy_to_clipboard_handler(copy_message[0], message.id);
     } else if (editability === editability_types.FULL) {
-        copy_message.remove();
         const edit_id = `#message_edit_content_${CSS.escape(rows.id(row))}`;
         const listeners = resize.watch_manual_resize(edit_id);
         if (listeners) {
@@ -417,6 +413,7 @@ function edit_message(row, raw_content) {
             compose.handle_keyup(event, $(this).expectOne());
         });
     }
+    create_copy_to_clipboard_handler(copy_message[0], message.id);
 
     // Add tooltip
     if (

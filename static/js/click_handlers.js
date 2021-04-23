@@ -312,7 +312,13 @@ export function initialize() {
     });
     $("body").on("click", ".copy_message", function (e) {
         const row = $(this).closest(".message_row");
-        message_edit.end_message_row_edit(row);
+        const message = message_lists.current.get(rows.id(row));
+        const editability = message_edit.get_editability(message, 5);
+        const is_content_editable = editability === message_edit.editability_types.FULL;
+
+        if (!is_content_editable) {
+            message_edit.end_message_row_edit(row);
+        }
         row.find(".alert-msg").text($t({defaultMessage: "Copied!"}));
         row.find(".alert-msg").css("display", "block");
         row.find(".alert-msg").delay(1000).fadeOut(300);
