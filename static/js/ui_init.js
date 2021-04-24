@@ -504,7 +504,7 @@ export function initialize_everything() {
         emoji_codes: generated_emoji_codes,
     });
     markdown.initialize(page_params.realm_linkifiers, markdown_config.get_helpers());
-    realm_playground.initialize(page_params.realm_playgrounds);
+    realm_playground.initialize(page_params.realm_playgrounds, generated_pygments_data);
     composebox_typeahead.initialize(); // Must happen after compose.initialize()
     search.initialize();
     tutorial.initialize();

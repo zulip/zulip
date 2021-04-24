@@ -6,6 +6,8 @@ import * as channel from "./channel";
 import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import {page_params} from "./page_params";
+import * as realm_playground from "./realm_playground";
+import * as typeahead_helper from "./typeahead_helper";
 import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 
@@ -149,4 +151,19 @@ function build_page() {
                 },
             });
         });
+
+    $("#playground_pygments_language").typeahead({
+        source() {
+            return realm_playground.get_pygments_pretty_names_list();
+        },
+        items: 5,
+        fixed: true,
+        highlighter(item) {
+            return typeahead_helper.render_typeahead_item({primary: item});
+        },
+        matcher(item) {
+            const q = this.query.trim().toLowerCase();
+            return item.toLowerCase().startsWith(q);
+        },
+    });
 }
