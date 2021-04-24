@@ -142,6 +142,7 @@ export function update_messages(events) {
     let changed_compose = false;
     let message_content_edited = false;
     let stream_changed = false;
+    let stream_archived = false;
 
     for (const event of events) {
         const msg = message_store.get(event.message_id);
@@ -176,17 +177,20 @@ export function update_messages(events) {
 
         const new_stream_id = event.new_stream_id;
 
+        const old_stream = sub_store.get(event.stream_id);
+
         // A topic edit may affect multiple messages, listed in
         // event.message_ids. event.message_id is still the first message
         // where the user initiated the edit.
         topic_edited = new_topic !== undefined;
         stream_changed = new_stream_id !== undefined;
+        stream_archived = old_stream === undefined;
         if (topic_edited || stream_changed) {
             const going_forward_change = ["change_later", "change_all"].includes(
                 event.propagate_mode,
             );
 
-            const stream_name = sub_store.get(event.stream_id).name;
+            const stream_name = stream_archived ? undefined : old_stream.name;
             const compose_stream_name = compose_state.stream_name();
             const orig_topic = util.get_edit_event_orig_topic(event);
 
