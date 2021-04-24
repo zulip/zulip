@@ -492,6 +492,10 @@ input[type="checkbox"] {
     margin-top: 1px;
 }
 
+.alert_word_status_text {
+    word-break: break-word;
+}
+
 .alert-notification {
     display: inline-block;
     vertical-align: top;
