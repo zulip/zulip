@@ -131,7 +131,7 @@ test_ui("populate_user_groups", (override) => {
     let templates_render_called = false;
     const fake_rendered_temp = $.create("fake_admin_user_group_list_template_rendered");
     stub_templates((template, args) => {
-        assert.equal(template, "admin_user_group_list");
+        assert.equal(template, "settings/admin_user_group_list");
         assert.equal(args.user_group.id, 1);
         assert.equal(args.user_group.name, "Mobile");
         assert.equal(args.user_group.description, "All mobile people");
