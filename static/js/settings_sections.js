@@ -12,6 +12,7 @@ import * as settings_muted_topics from "./settings_muted_topics";
 import * as settings_muted_users from "./settings_muted_users";
 import * as settings_notifications from "./settings_notifications";
 import * as settings_org from "./settings_org";
+import * as settings_oauth from "./settings_oauth";
 import * as settings_playgrounds from "./settings_playgrounds";
 import * as settings_profile_fields from "./settings_profile_fields";
 import * as settings_streams from "./settings_streams";
@@ -29,6 +30,7 @@ export function get_group(section) {
         case "organization-settings":
         case "organization-permissions":
         case "auth-methods":
+        case "oauth-application":
             return "org_misc";
 
         case "bot-list-admin":
@@ -49,6 +51,7 @@ export function initialize() {
     load_func_dict.set("display-settings", settings_display.set_up);
     load_func_dict.set("notifications", settings_notifications.set_up);
     load_func_dict.set("your-bots", settings_bots.set_up);
+    load_func_dict.set("oauth-application", settings_oauth.set_up);
     load_func_dict.set("alert-words", alert_words_ui.set_up_alert_words);
     load_func_dict.set("uploaded-files", attachments_ui.set_up_attachments);
     load_func_dict.set("muted-topics", settings_muted_topics.set_up);
