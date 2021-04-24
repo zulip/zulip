@@ -80,6 +80,8 @@ export function initialize() {
     const ls = localstorage();
     if (page_params.insecure_desktop_app) {
         open($("[data-process='insecure-desktop-app']"));
+    } else if (page_params.server_needs_upgrade) {
+        open($("[data-process='server-needs-upgrade']"));
     } else if (page_params.warn_no_email === true && page_params.is_admin) {
         // if email has not been set up and the user is the admin,
         // display a warning to tell them to set up an email server.

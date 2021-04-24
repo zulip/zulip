@@ -441,3 +441,6 @@ NAGIOS_BOT_HOST = EXTERNAL_HOST
 
 # Use half of the available CPUs for data import purposes.
 DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM = (len(os.sched_getaffinity(0)) // 2) or 1
+
+# How long after the last upgrade to nag users that the server is insecure
+SERVER_UPGRADE_NAG_DEADLINE = 365

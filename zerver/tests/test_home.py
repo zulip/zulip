@@ -5,6 +5,7 @@ from typing import Any
 from unittest.mock import patch
 
 import orjson
+import pytz
 from django.conf import settings
 from django.http import HttpResponse
 from django.utils.timezone import now as timezone_now
@@ -17,10 +18,10 @@ from zerver.lib.actions import (
     do_create_user,
 )
 from zerver.lib.events import add_realm_logo_fields
-from zerver.lib.home import get_furthest_read_time
+from zerver.lib.home import LAST_SERVER_UPGRADE_TIME, get_furthest_read_time, is_outdated_server
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import get_user_messages, queries_captured
+from zerver.lib.test_helpers import get_user_messages, override_settings, queries_captured
 from zerver.lib.users import compute_show_invites_and_add_streams
 from zerver.models import (
     DefaultStream,
@@ -211,6 +212,7 @@ class HomeTest(ZulipTestCase):
         "server_inline_image_preview",
         "server_inline_url_embed_preview",
         "server_name_changes_disabled",
+        "server_needs_upgrade",
         "settings_send_digest_emails",
         "starred_message_counts",
         "starred_messages",
@@ -873,6 +875,27 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(
             compute_navbar_logo_url(page_params), "/static/images/logo/zulip-org-logo.svg?version=0"
         )
+
+    @override_settings(SERVER_UPGRADE_NAG_DEADLINE=365)
+    def test_is_outdated_server(self) -> None:
+        # Check when server_upgrade_nag_deadline > last_server_upgrade_time
+        hamlet = self.example_user("hamlet")
+        iago = self.example_user("iago")
+        now = LAST_SERVER_UPGRADE_TIME.replace(tzinfo=pytz.utc)
+        with patch("zerver.lib.home.timezone_now", return_value=now + timedelta(days=10)):
+            self.assertEqual(is_outdated_server(iago), False)
+            self.assertEqual(is_outdated_server(hamlet), False)
+            self.assertEqual(is_outdated_server(None), False)
+
+        with patch("zerver.lib.home.timezone_now", return_value=now + timedelta(days=397)):
+            self.assertEqual(is_outdated_server(iago), True)
+            self.assertEqual(is_outdated_server(hamlet), True)
+            self.assertEqual(is_outdated_server(None), True)
+
+        with patch("zerver.lib.home.timezone_now", return_value=now + timedelta(days=380)):
+            self.assertEqual(is_outdated_server(iago), True)
+            self.assertEqual(is_outdated_server(hamlet), False)
+            self.assertEqual(is_outdated_server(None), False)
 
     def test_furthest_read_time(self) -> None:
         msg_id = self.send_test_message("hello!", sender_name="iago")
