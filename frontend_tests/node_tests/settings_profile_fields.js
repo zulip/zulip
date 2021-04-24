@@ -65,7 +65,7 @@ function test_populate(opts) {
 
     const template_data = [];
     stub_templates((fn, data) => {
-        assert.equal(fn, "admin_profile_field_list");
+        assert.equal(fn, "settings/admin_profile_field_list");
         template_data.push(data);
         return "whatever";
     });
