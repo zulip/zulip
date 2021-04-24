@@ -3492,10 +3492,7 @@ def send_peer_subscriber_events(
                 sender = get_system_bot(settings.NOTIFICATION_BOT)
                 notifications.append(
                     internal_prep_stream_message(
-                        sender=sender,
-                        stream=stream_dict[stream_id],
-                        topic="hello",
-                        content=msg
+                        sender=sender, stream=stream_dict[stream_id], topic="hello", content=msg
                     )
                 )
             if len(notifications) > 0:

@@ -542,19 +542,18 @@ def add_subscriptions_backend(
     result: Dict[str, Any] = dict(
         subscribed=defaultdict(list), already_subscribed=defaultdict(list)
     )
-    
+
     newly_added_users = []
     for sub_info in subscribed:
         subscriber = sub_info.user
         stream = sub_info.stream
-        sub = sub_info.sub
         result["subscribed"][subscriber.email].append(stream.name)
         email_to_user_profile[subscriber.email] = subscriber
 
         # Send notification in private stream for newly added users
         if stream.invite_only and subscriber != user_profile:
             newly_added_users.append(subscriber.full_name)
-    
+
     # Send notification in private stream for newly added users
     notifications = []
     sender = get_system_bot(settings.NOTIFICATION_BOT)
@@ -562,16 +561,9 @@ def add_subscriptions_backend(
         names = " and ".join(newly_added_users)
     else:
         names = "{} people".format(len(newly_added_users))
-    msg = "{} added {} to {}.".format(user_profile.full_name,
-                                        names,
-                                        stream.name)
+    msg = "{} added {} to {}.".format(user_profile.full_name, names, stream.name)
     notifications.append(
-        internal_prep_stream_message(
-            sender=sender,
-            stream=stream,
-            topic="hello",
-            content=msg
-        )
+        internal_prep_stream_message(sender=sender, stream=stream, topic="hello", content=msg)
     )
     if len(notifications) > 0:
         do_send_messages(notifications, mark_as_read=[user_profile.id])
@@ -656,10 +648,6 @@ def send_messages_for_new_subscribers(
                     content=msg,
                 )
             )
-
-            private_streams = defaultdict(list)
-
-            
 
     if announce and len(created_streams) > 0:
         notifications_stream = user_profile.realm.get_notifications_stream()
