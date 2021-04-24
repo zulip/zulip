@@ -3479,6 +3479,28 @@ def send_peer_subscriber_events(
         altered_user_ids = altered_user_dict[stream_id]
         peer_user_ids = private_peer_dict[stream_id] - altered_user_ids
 
+        # For sending user left stream messages
+        if op == "peer_remove":
+            notifications = []
+            for user_id in altered_user_ids:
+                try:
+                    user_profile = get_user_by_id_in_realm_including_cross_realm(user_id, realm)
+                except UserProfile.DoesNotExist:
+                    raise JsonableError(_("Invalid user ID {}").format(user_id))
+
+                msg = "{} left {}.".format(user_profile.full_name, stream_dict[stream_id].name)
+                sender = get_system_bot(settings.NOTIFICATION_BOT)
+                notifications.append(
+                    internal_prep_stream_message(
+                        sender=sender,
+                        stream=stream_dict[stream_id],
+                        topic="hello",
+                        content=msg
+                    )
+                )
+            if len(notifications) > 0:
+                do_send_messages(notifications, mark_as_read=[user_profile.id])
+
         if peer_user_ids and altered_user_ids:
             event = dict(
                 type="subscription",
