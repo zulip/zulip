@@ -8,7 +8,6 @@ import * as fenced_code from "../shared/js/fenced_code";
 import render_edit_content_button from "../templates/edit_content_button.hbs";
 
 import * as activity from "./activity";
-import * as alert_popup from "./alert_popup";
 import * as alert_words from "./alert_words";
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
@@ -465,7 +464,6 @@ export function initialize_everything() {
     // template.
     compose.initialize();
     message_lists.initialize();
-    alert_popup.initialize();
     alert_words.initialize(alert_words_params);
     emojisets.initialize();
     people.initialize(page_params.user_id, people_params);
