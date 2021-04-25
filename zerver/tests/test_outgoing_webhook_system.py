@@ -86,7 +86,7 @@ class DoRestCallTests(ZulipTestCase):
         for service_class in [GenericOutgoingWebhookService, SlackOutgoingWebhookService]:
             handler = service_class("token", bot_user, "service")
             with mock.patch.object(handler, "session") as session:
-                session.post.return_value = ResponseMock(200)
+                session.post.return_value = ResponseMock(200, b"{}")
                 do_rest_call("", mock_event, handler)
                 session.post.assert_called_once()
 
@@ -158,7 +158,7 @@ The webhook got a response with status code *400*.""",
 
         session = service_handler.session
         with mock.patch.object(session, "send") as mock_send:
-            mock_send.return_value = ResponseMock(200)
+            mock_send.return_value = ResponseMock(200, b"{}")
             final_response = do_rest_call("https://example.com/", mock_event, service_handler)
             assert final_response is not None
 
@@ -332,7 +332,7 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
 
         session = mock.Mock(spec=requests.Session)
         session.headers = {}
-        session.post.return_value = ResponseMock(200)
+        session.post.return_value = ResponseMock(200, b"{}")
         with mock.patch("zerver.lib.outgoing_webhook.Session") as sessionmaker:
             sessionmaker.return_value = session
             self.send_personal_message(
