@@ -3488,6 +3488,9 @@ def send_peer_subscriber_events(
                 except UserProfile.DoesNotExist:
                     raise JsonableError(_("Invalid user ID {}").format(user_id))
 
+                if user_profile.is_bot:
+                    continue
+
                 msg = "{} left {}.".format(user_profile.full_name, stream_dict[stream_id].name)
                 sender = get_system_bot(settings.NOTIFICATION_BOT)
                 notifications.append(
