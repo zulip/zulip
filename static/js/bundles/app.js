@@ -32,7 +32,6 @@ import "../../styles/components.css";
 import "../../styles/app_components.css";
 import "../../styles/rendered_markdown.css";
 import "../../styles/zulip.css";
-import "../../styles/alerts.css";
 import "../../styles/settings.css";
 import "../../styles/image_upload_widget.css";
 import "../../styles/subscriptions.css";

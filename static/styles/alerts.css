@@ -27,23 +27,6 @@ $alert-error-red: hsl(0, 80%, 40%);
     }
 }
 
-/* general alert styling changes */
-.alert {
-    @extend .alert-display;
-
-    &#organization-status {
-        margin: 20px;
-    }
-
-    &.stream_create_info {
-        margin: 10px 10px 0 10px;
-    }
-
-    .bankruptcy_unread_count {
-        font-weight: 600;
-    }
-}
-
 /* alert box component changes */
 .alert-box {
     position: absolute;

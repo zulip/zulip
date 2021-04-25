@@ -494,3 +494,26 @@ div.overlay {
     background-color: hsl(105, 2%, 50%);
     color: hsl(0, 0%, 100%);
 }
+
+/* Implement the webapp's default-hidden convention for alert
+   elements.  Portico pages lack this CSS and thus show them by
+   default. */
+.alert {
+    display: none;
+
+    &.show {
+        display: block;
+    }
+
+    &#organization-status {
+        margin: 20px;
+    }
+
+    &.stream_create_info {
+        margin: 10px 10px 0 10px;
+    }
+
+    .bankruptcy_unread_count {
+        font-weight: 600;
+    }
+}
