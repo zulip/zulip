@@ -180,10 +180,10 @@ export function render_markdown_timestamp(time, text) {
     const hourformat = page_params.twenty_four_hour_time ? "HH:mm" : "h:mm a";
     const timestring = format(time, "E, MMM d yyyy, " + hourformat);
     const titlestring = "This time is in your timezone. Original text was '" + text + "'.";
-    var current_time = new Date();
+    let current_time = new Date();
     // calculate the time difference
-    var diff;
-    var sentence;
+    let diff = 0;
+    let sentence = " ";
     if (time.getTime() > current_time.getTime()) {
       diff = Math.round((time.getTime() - current_time.getTime()) / 1000 / 60 / 60);
       sentence = " hours from now.";
