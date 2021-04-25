@@ -169,6 +169,7 @@ def create_missed_message_address(user_profile: UserProfile, message: Message) -
 
 
 def construct_zulip_body(
+    subject,
     message: EmailMessage,
     realm: Realm,
     show_sender: bool = False,
@@ -177,6 +178,9 @@ def construct_zulip_body(
     prefer_text: bool = True,
 ) -> str:
     body = extract_body(message, include_quotes, prefer_text)
+    if (len(subject) > 60):
+        subject = "Subject: " + subject
+        body = subject + body
     # Remove null characters, since Zulip will reject
     body = body.replace("\x00", "")
     if not include_footer:
@@ -422,7 +426,7 @@ def process_stream_message(to: str, message: EmailMessage) -> None:
     if "include_quotes" not in options:
         options["include_quotes"] = is_forwarded(subject_header)
 
-    body = construct_zulip_body(message, stream.realm, **options)
+    body = construct_zulip_body(subject, message, stream.realm, **options)
     send_zulip(get_system_bot(settings.EMAIL_GATEWAY_BOT), stream, subject, body)
     logger.info(
         "Successfully processed email to %s (%s)",
