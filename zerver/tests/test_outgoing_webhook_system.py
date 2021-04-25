@@ -288,6 +288,35 @@ The outgoing webhook server attempted to send a message in Zulip, but that reque
         assert bot_user.bot_owner is not None
         self.assertEqual(bot_owner_notification.recipient_id, bot_user.bot_owner.recipient_id)
 
+    def test_invalid_json_in_response(self) -> None:
+        bot_user = self.example_user("outgoing_webhook_bot")
+        mock_event = self.mock_event(bot_user)
+        service_handler = GenericOutgoingWebhookService("token", bot_user, "service")
+
+        expect_logging_info = self.assertLogs(level="INFO")
+        expect_fail = mock.patch("zerver.lib.outgoing_webhook.fail_with_message")
+
+        with responses.RequestsMock(assert_all_requests_are_fired=True) as requests_mock:
+            # We mock the endpoint to return response with a body which isn't valid json.
+            requests_mock.add(
+                requests_mock.POST,
+                "https://example.zulip.com",
+                status=200,
+                body="this isn't valid json",
+            )
+            with expect_logging_info, expect_fail as mock_fail:
+                do_rest_call("https://example.zulip.com", mock_event, service_handler)
+            self.assertTrue(mock_fail.called)
+            bot_owner_notification = self.get_last_message()
+            self.assertEqual(
+                bot_owner_notification.content,
+                """[A message](http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/) to your bot @_**Outgoing Webhook** triggered an outgoing webhook.
+The outgoing webhook server attempted to send a message in Zulip, but that request resulted in the following error:
+> Invalid JSON in response""",
+            )
+        assert bot_user.bot_owner is not None
+        self.assertEqual(bot_owner_notification.recipient_id, bot_user.bot_owner.recipient_id)
+
 
 class TestOutgoingWebhookMessaging(ZulipTestCase):
     def create_outgoing_bot(self, bot_owner: UserProfile) -> UserProfile:
