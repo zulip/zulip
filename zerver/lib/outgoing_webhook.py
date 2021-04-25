@@ -288,8 +288,7 @@ def process_success_response(
     try:
         response_json = json.loads(response.text)
     except json.JSONDecodeError:
-        fail_with_message(event, "Invalid JSON in response")
-        return
+        raise JsonableError(_("Invalid JSON in response"))
 
     if not isinstance(response_json, dict):
         raise JsonableError(_("Invalid response format"))

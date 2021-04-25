@@ -5,6 +5,7 @@ from unittest import mock
 import requests
 
 from zerver.lib.avatar import get_gravatar_url
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import MessageDict
 from zerver.lib.outgoing_webhook import get_service_interface_class, process_success_response
 from zerver.lib.test_classes import ZulipTestCase
@@ -47,13 +48,12 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
         response.status_code = 200
         response.text = "unparsable text"
 
-        with mock.patch("zerver.lib.outgoing_webhook.fail_with_message") as m:
+        with self.assertRaisesRegex(JsonableError, "Invalid JSON in response"):
             process_success_response(
                 event=event,
                 service_handler=service_handler,
                 response=response,
             )
-        self.assertTrue(m.called)
 
     def test_make_request(self) -> None:
         othello = self.example_user("othello")
