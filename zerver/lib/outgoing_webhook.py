@@ -291,6 +291,9 @@ def process_success_response(
         fail_with_message(event, "Invalid JSON in response")
         return
 
+    if not isinstance(response_json, dict):
+        raise JsonableError(_("Invalid response format"))
+
     success_data = service_handler.process_success(response_json)
 
     if success_data is None:
