@@ -180,7 +180,7 @@ export function render_markdown_timestamp(time, text) {
     const hourformat = page_params.twenty_four_hour_time ? "HH:mm" : "h:mm a";
     const timestring = format(time, "E, MMM d yyyy, " + hourformat);
     const titlestring = "This time is in your timezone. Original text was '" + text + "'.";
-    let current_time = new Date();
+    const current_time = new Date();
     // calculate the time difference
     let diff = 0;
     let sentence = " ";
