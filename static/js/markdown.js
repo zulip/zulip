@@ -211,7 +211,7 @@ export function apply_markdown(message) {
             return quote;
         },
     };
-    // Our python-markdown processor appends two \n\n to input
+    // Our Python-Markdown processor appends two \n\n to input
     message.content = marked(message.raw_content + "\n\n", options).trim();
     message.is_me_message = is_status_message(message.raw_content);
 }

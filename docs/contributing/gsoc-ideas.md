@@ -238,8 +238,8 @@ work from the student.
 
 More important to us than specific deliverables in a project proposal
 is a clear body of work to focus on; E.g. if we see a proposal with 8
-markdown processor issues, we'll interpret this as a student excited
-to work on the markdown processor for the summer, even if the specific
+Markdown processor issues, we'll interpret this as a student excited
+to work on the Markdown processor for the summer, even if the specific
 set of 8 issues may not be the right ones to invest in.
 
 ### Focus areas

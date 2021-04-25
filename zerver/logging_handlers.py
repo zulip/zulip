@@ -116,7 +116,7 @@ class AdminNotifyHandler(logging.Handler):
         # prevent the infinite loop of Zulip messages by ERROR_BOT if
         # the outer try block here throws an exception before we have
         # a chance to check the exception for whether it comes from
-        # markdown.
+        # the Markdown processor.
         is_markdown_rendering_exception = True
 
         try:

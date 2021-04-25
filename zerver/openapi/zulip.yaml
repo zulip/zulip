@@ -1836,7 +1836,7 @@ paths:
                                 content:
                                   type: string
                                   description: |
-                                    The new content of the message, in the original markdown.
+                                    The new content of the message, in the original Markdown.
                                 rendered_content:
                                   type: string
                                   description: |
