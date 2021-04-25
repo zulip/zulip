@@ -26,7 +26,7 @@ The Zulip plugin is now registered with Redmine!
 
 1. On your {{ settings_html|safe }}, create a new Redmine bot.
 
-2. Log into your Redmine instance, click on **Administration** in the top-left
+2. Log in to your Redmine instance, click on **Administration** in the top-left
 corner, then click on **Plugins**.
 
 3. Find the **Redmine Zulip** plugin, and click **Configure**. Fill

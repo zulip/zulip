@@ -448,7 +448,7 @@ def do_login(request: HttpRequest, user_profile: UserProfile) -> None:
     request._requestor_for_logs = user_profile.format_requestor_for_logs()
     process_client(request, user_profile, is_browser_view=True)
     if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
-        # Login with two factor authentication as well.
+        # Log in with two factor authentication as well.
         do_two_factor_login(request, user_profile)
 
 

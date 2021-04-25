@@ -1097,7 +1097,7 @@ Zulip installations; it has minimal changes for existing servers.
 - Upgraded to modern versions of most of our stale dependencies.
 - Updated our CSS toolchain to support hot module reloading.
 - Updated numerous pages within the /help/ site.
-- We no longer require re-authing to signup after trying to log in with
+- We no longer require re-authing to sign up after trying to log in with
   an OAuth authentication backend (GitHub or Google).
 - Made major improvements to the Help Center.
 - Improved system for configuring the S3 file uploads backend.

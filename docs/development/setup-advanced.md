@@ -59,7 +59,7 @@ ignoring the parts about `vagrant` (since you're not using it).
 
 ## Installing directly on Windows 10 with WSL 2
 
-Zulip's development environment is most easily setup on Windows using
+Zulip's development environment is most easily set up on Windows using
 the [WSL 2](https://docs.microsoft.com/en-us/windows/wsl/wsl2-about)
 installation method described here.
 
@@ -122,7 +122,7 @@ installation method described here.
 
    ```eval_rst
    .. note::
-       If you shutdown WSL, after starting it again, you will have to manually start
+       If you shut down WSL, after starting it again, you will have to manually start
        the services using ``./tools/wsl/start_services``.
    ```
 

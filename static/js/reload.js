@@ -222,7 +222,7 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
     try {
         server_events.cleanup_event_queue();
     } catch (error) {
-        blueslip.error("Failed to cleanup before reloading", undefined, error.stack);
+        blueslip.error("Failed to clean up before reloading", undefined, error.stack);
     }
 
     window.location.reload(true);

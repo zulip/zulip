@@ -69,7 +69,7 @@ actual email clients.  This is important because web email clients
 have limited CSS functionality, autolinkify things, and otherwise
 mutate the HTML email one can see previewed on `/emails`.
 
-To do this sort of testing, you need to setup an outgoing SMTP
+To do this sort of testing, you need to set up an outgoing SMTP
 provider. Our production advice for
 [Gmail](../production/email.html#using-gmail-for-outgoing-email) and
 [transactional email

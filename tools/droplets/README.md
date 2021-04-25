@@ -19,7 +19,7 @@ API token.
 ## Step 2: Create your DigitalOcean API token
 
 Once you've been added to the Zulip team,
-[login](https://cloud.digitalocean.com/droplets) to the DigitalOcean control
+[log in](https://cloud.digitalocean.com/droplets) to the DigitalOcean control
 panel and [create your personal API token][do-create-api-token]. **Make sure
 you create your API token under the Zulip team.** (It should look something
 like [this][image-zulip-team]).
@@ -135,7 +135,7 @@ Rough steps:
 1. `tools/run-dev.py`, and check that `base.zulipdev.org:9991` is up and running.
 1. `> ~/.bash_history && history -c && sudo shutdown -h now` to clear any command
    line history (To reduce chance of confusing new contributors in case you made a typo)
-   and shutdown the droplet.
+   and shut down the droplet.
 1. Go to the Images tab on DigitalOcean, and "Take a Snapshot".
 1. Wait for several minutes.
 1. Do something like `curl -X GET -H "Content-Type: application/json"
@@ -157,7 +157,7 @@ Rough steps:
 1. Log in to the Zulip organization view, rather than via your personal account.
 1. Create a new droplet in DigitalOcean with 2GB RAM and `base.zulipdev.org` as the
    SSH authentication key.
-1. Login to the droplet as root user. Make sure to point the SSH program to the private
+1. Log in to the droplet as root user. Make sure to point the SSH program to the private
    key of `base.zulipdev.org` during this step.
 1. Create a user called `zulipdev` and add it to the `sudo` group.
 1. Make sudo of `zulipdev` user passwordless by including

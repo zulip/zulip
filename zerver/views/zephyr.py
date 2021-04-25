@@ -71,6 +71,6 @@ def webathena_kerberos_login(
         )
     except subprocess.CalledProcessError:
         logging.exception("Error updating the user's ccache", stack_info=True)
-        return json_error(_("We were unable to setup mirroring for you"))
+        return json_error(_("We were unable to set up mirroring for you"))
 
     return json_success()

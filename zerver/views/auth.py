@@ -679,7 +679,7 @@ class TwoFactorLoginView(BaseTwoFactorLoginView):
 
     def done(self, form_list: List[Form], **kwargs: Any) -> HttpResponse:
         """
-        Login the user and redirect to the desired page.
+        Log in the user and redirect to the desired page.
 
         We need to override this function so that we can redirect to
         realm.uri instead of '/'.

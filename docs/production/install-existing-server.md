@@ -55,7 +55,7 @@ install process:
 puppet-agent[29873]: Could not request certificate: Failed to open TCP connection to puppet:8140
 ```
 
-So you'll need to shutdown any Puppet servers.
+So you'll need to shut down any Puppet servers.
 
 ```shell
 $ sudo service puppet-agent stop

@@ -194,7 +194,8 @@ NON_EXPORTED_TABLES = {
     "zerver_scheduledemail_users",
     "zerver_scheduledmessage",
     # These tables are related to a user's 2FA authentication
-    # configuration, which will need to be re-setup on the new server.
+    # configuration, which will need to be set up again on the new
+    # server.
     "two_factor_phonedevice",
     "otp_static_staticdevice",
     "otp_static_statictoken",

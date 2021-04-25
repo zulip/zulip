@@ -102,7 +102,7 @@ ALWAYS_SEND_ALL_HOTSPOTS = False
 # FAKE_LDAP_MODE supports using a fake LDAP database in the
 # development environment, without needing an LDAP server!
 #
-# Three modes are allowed, and each will setup Zulip and the fake LDAP
+# Three modes are allowed, and each will set up Zulip and the fake LDAP
 # database in a way appropriate for the corresponding mode described
 # in https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap-including-active-directory
 #   (A) If users' email addresses are in LDAP and used as username.

@@ -592,7 +592,7 @@ export function end_message_row_edit(row) {
         const listeners = currently_editing_messages.get(message.id).listeners;
         const edit_box = document.querySelector(`#message_edit_content_${CSS.escape(message.id)}`);
         if (listeners !== undefined) {
-            // Event listeners to cleanup are only set in some edit types
+            // Event listeners to clean up are only set in some edit types
             edit_box.removeEventListener("mousedown", listeners[0]);
             document.body.removeEventListener("mouseup", listeners[1]);
         }

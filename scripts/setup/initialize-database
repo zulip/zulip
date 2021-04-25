@@ -57,6 +57,6 @@ if [ -z "$QUIET" ]; then
     echo
     echo "    /home/zulip/deployments/current/manage.py generate_realm_creation_link"
     echo
-    echo "This generates a secure, single-use link that you you can use to setup "
+    echo "This generates a secure, single-use link that you you can use to set up "
     echo "a Zulip organization from the convenience of your web browser."
 fi
