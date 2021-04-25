@@ -305,7 +305,7 @@ messages is intuitively the main feature of a chat service: a message
 sent to 50 users triggers ~50 `GET /events` requests.
 
 A typical message-send request takes 20-70ms, with more expensive
-requests typically resulting from [markdown
+requests typically resulting from [Markdown
 rendering](../subsystems/markdown.md) of more complex syntax.  As a
 result, these requests are not material to Zulip's scalability.
 Editing messages and adding emoji reactions are very similar to

@@ -80,7 +80,7 @@ you would like to send a response message:
 }
 ```
 
-The `content` field should contain Zulip-format markdown.
+The `content` field should contain Zulip-format Markdown.
 
 Note that an outgoing webhook bot can use the [Zulip REST
 API](/api/rest) with its API key in case your bot needs to do

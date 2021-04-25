@@ -2272,7 +2272,7 @@ class Markdown(markdown.Markdown):
         return treeprocessors
 
     def build_postprocessors(self) -> markdown.util.Registry:
-        # These are the default python-markdown processors, unmodified.
+        # These are the default Python-Markdown processors, unmodified.
         postprocessors = markdown.util.Registry()
         postprocessors.register(markdown.postprocessors.RawHtmlPostprocessor(self), "raw_html", 20)
         postprocessors.register(
