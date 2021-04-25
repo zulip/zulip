@@ -166,7 +166,7 @@ function do_hashchange_overlay(old_hash) {
         // We need to show recent topics in the background.
         // Even though recent topics may not be the default view
         // here, we show it because we need to show a view in
-        // background and recent topics seems preferrable for that.
+        // background and recent topics seems preferable for that.
         recent_topics.show();
     }
     const base = hash_util.get_hash_category(window.location.hash);

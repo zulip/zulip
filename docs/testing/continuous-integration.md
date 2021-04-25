@@ -29,7 +29,7 @@ run to iteratively debug something.
 * GitHub Actions stores timestamps for every line in the logs. They
 are hidden by default; you can see them by toggling the `Show
 timestamps` option in the menu on any job's log page.  (You can get
-this sort of timestamp in a development environemnt by piping output
+this sort of timestamp in a development environment by piping output
 to `ts`).
 
 * GitHub Actions runs on every branch you push on your Zulip fork.

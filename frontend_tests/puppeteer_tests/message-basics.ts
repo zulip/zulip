@@ -423,7 +423,7 @@ async function test_users_search(page: Page): Promise<void> {
     await arrow(page, "Down");
     await arrow(page, "Up");
     await arrow(page, "Up");
-    await arrow(page, "Up"); // does nothing; allready on the top.
+    await arrow(page, "Up"); // does nothing; already on the top.
     await arrow(page, "Down");
     await arrow(page, "Down");
     await arrow(page, "Down");

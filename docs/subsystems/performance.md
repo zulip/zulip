@@ -341,7 +341,7 @@ that powers [/stats](https://zulip.com/help/analytics) are run by
 [queue processors](../subsystems/queuing.md) and cron jobs, not in
 response to incoming HTTP requests.  In practice, all of these have
 been written such that they are immaterial to total load and thus
-architectual scalability, though we do from time to time need to do
+architectural scalability, though we do from time to time need to do
 operational work to add additional queue processors for particularly
 high-traffic queues.  For all of our queue processors, any
 serialization requirements are at most per-user, and thus it would be

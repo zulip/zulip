@@ -92,7 +92,7 @@ function config_fake_channel(conf) {
     channel.get = (opts) => {
         assert.equal(opts.url, "/json/messages");
         // There's a separate call with anchor="newest" that happens
-        // unconditionally; do basic verfication of that call.
+        // unconditionally; do basic verification of that call.
         if (opts.data.anchor === "newest") {
             if (!called_with_newest_flag) {
                 called_with_newest_flag = true;

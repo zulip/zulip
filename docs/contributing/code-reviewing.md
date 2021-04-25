@@ -49,7 +49,7 @@ will assume it isn't ready for review and move on to other work.
 If you need help or think an open discussion topic requires more
 feedback or a more complex discussion, move the discussion to a topic
 in the Zulip development community server.  Be sure to provide links
-from the GitHub PR to the conversation (and vise versa) so that it's
+from the GitHub PR to the conversation (and vice versa) so that it's
 convenient to read both conversations together.
 
 ## Principles of code review

@@ -675,7 +675,7 @@ class SlackImporter(ZulipTestCase):
 
     def test_get_message_sending_user(self) -> None:
         message_with_file = {"subtype": "file", "type": "message", "file": {"user": "U064KUGRJ"}}
-        message_without_file = {"subtype": "file", "type": "messge", "user": "U064KUGRJ"}
+        message_without_file = {"subtype": "file", "type": "message", "user": "U064KUGRJ"}
 
         user_file = get_message_sending_user(message_with_file)
         self.assertEqual(user_file, "U064KUGRJ")
