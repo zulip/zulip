@@ -24,7 +24,7 @@ work correctly. These secrets are passed as environment variables to the GitHub 
 
 Also pass the following as environment variables in `.github/workflows/update-oneclick-apps.yml`.
 *  `PYTHON_DIGITALOCEAN_REQUEST_TIMEOUT_SEC` -  This configures the maximum number of seconds
-  to wait before the requests made by `python-digitalocean` timeout. If not configured, it's
+  to wait before the requests made by `python-digitalocean` time out. If not configured, it's
   common for the requests to take 20+ minutes before getting timed out.
 
 ### Verifying the one click app image

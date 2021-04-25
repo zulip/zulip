@@ -1665,7 +1665,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         `emails_restricted_to_domains = False`, but later change
         `emails_restricted_to_domains = True`, the invitation should
         succeed but the invitee's signup attempt should fail as
-        users are not allowed to signup using email containing +
+        users are not allowed to sign up using email containing +
         when the realm is restricted to domain.
         """
         zulip_realm = get_realm("zulip")

@@ -344,7 +344,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         members = get_memberships_of_users(user_group, [hamlet, othello, aaron])
         self.assertEqual(len(members), 3)
 
-        # For normal testing we again login with hamlet
+        # For normal testing we again log in with hamlet
         self.logout()
         self.login_user(hamlet)
         # Test remove members

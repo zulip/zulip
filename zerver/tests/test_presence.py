@@ -442,7 +442,7 @@ class SingleUserPresenceTests(ZulipTestCase):
     def test_single_user_get(self) -> None:
         reset_emails_in_zulip_realm()
 
-        # First, we setup the test with some data
+        # First, we set up the test with some data
         user = self.example_user("othello")
         self.login_user(user)
         result = self.client_post("/json/users/me/presence", {"status": "active"})
@@ -637,7 +637,7 @@ class UserPresenceAggregationTests(ZulipTestCase):
 
 class GetRealmStatusesTest(ZulipTestCase):
     def test_get_statuses(self) -> None:
-        # Setup the test by simulating users reporting their presence data.
+        # Set up the test by simulating users reporting their presence data.
         othello = self.example_user("othello")
         hamlet = self.example_user("hamlet")
 

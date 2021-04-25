@@ -70,7 +70,7 @@ The backup tool provides the following options:
   console output will show the path to the output tarball.
 - `--skip-db`: Skip backup of the database.  Useful if you're using a
   remote PostgreSQL host with its own backup system and just need to
-  backup non-database state.
+  back up non-database state.
 - `--skip-uploads`: If `LOCAL_UPLOADS_DIR` is set, user-uploaded files
   in that directory will be ignored.
 
@@ -126,7 +126,7 @@ server, including the database, settings, secrets from
 `/etc/zulip`, and user-uploaded files stored on the Zulip server.
 
 The following data is not included in these backup archives,
-and you may want to backup separately:
+and you may want to back up separately:
 
 * The server access/error logs from `/var/log/zulip`.  The Zulip
   server only appends to logs, and they can be very large compared to

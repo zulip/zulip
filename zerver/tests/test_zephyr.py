@@ -53,7 +53,7 @@ class ZephyrTest(ZulipTestCase):
         ), self.assertLogs(level="ERROR") as log:
             result = post("zephyr", cred=cred)
 
-        self.assert_json_error(result, "We were unable to setup mirroring for you")
+        self.assert_json_error(result, "We were unable to set up mirroring for you")
         self.assertIn("Error updating the user's ccache", log.output[0])
 
         with ccache_mock(return_value=b"1234"), mirror_mock(), ssh_mock() as ssh:

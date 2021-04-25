@@ -75,7 +75,7 @@ working on a proposal until 2 weeks before the deadline.
 
 ## Getting started
 
-We have an easy-to-setup development environment, and a library of
+We have an easy-to-set-up development environment, and a library of
 tasks that are great for first-time contributors. Use
 [our first-time Zulip developer guide](../overview/contributing.html#your-first-codebase-contribution)
 to get your Zulip development environment set up and to find your first issue. If you have any

@@ -149,7 +149,7 @@ structure of the system, when thinking about changes to it:
   following a topic (to get notifications for messages only within
   that topic in a stream). There are a lot of different workflows
   possible with Zulip's threading, and it's important to make it easy
-  for users to setup Zulip's notification to fit as many of those
+  for users to set up Zulip's notification to fit as many of those
   workflows as possible.
 * **Message editing**. Zulip supports editing messages, and that
   interacts with notifications in ways that require careful handling:

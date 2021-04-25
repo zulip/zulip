@@ -4974,7 +4974,7 @@ class GetSubscribersTest(ZulipTestCase):
                 self.assertTrue(stream_dict["stream_id"] not in unsub_ids)
 
                 # The Rome stream has is_web_public=True, with default
-                # subscribers not setup by this test, so we do the
+                # subscribers not set up by this test, so we do the
                 # following check only for the streams we created.
                 if stream_dict["name"] in web_public_streams:
                     self.assertEqual(len(stream_dict["subscribers"]), len(users_to_subscribe))

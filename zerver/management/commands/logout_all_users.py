@@ -16,9 +16,9 @@ class Command(ZulipBaseCommand):
         parser.add_argument(
             "--deactivated-only",
             action="store_true",
-            help="Only logout all users who are deactivated",
+            help="Only log out all users who are deactivated",
         )
-        self.add_realm_args(parser, help="Only logout all users in a particular realm")
+        self.add_realm_args(parser, help="Only log out all users in a particular realm")
 
     def handle(self, *args: Any, **options: Any) -> None:
         realm = self.get_realm(options)

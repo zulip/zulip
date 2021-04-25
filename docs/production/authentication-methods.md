@@ -137,7 +137,7 @@ of the following configurations:
 the `zproject.backends.ZulipLDAPAuthBackend` auth backend, in
 `AUTHENTICATION_BACKENDS` in `/etc/zulip/settings.py`.  After doing so
 (and as always [restarting the Zulip server](settings.md) to ensure
-your settings changes take effect), you should be able to log into
+your settings changes take effect), you should be able to log in to
 Zulip by entering your email address and LDAP password on the Zulip
 login form.
 
