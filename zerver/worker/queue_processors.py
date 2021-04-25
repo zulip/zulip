@@ -483,7 +483,7 @@ class UserActivityWorker(LoopQueueProcessingWorker):
                 # that used the client name in event["client"] instead of having
                 # event["client_id"] directly.
                 #
-                # TODO/compatability: We can delete this once it is no
+                # TODO/compatibility: We can delete this once it is no
                 # longer possible to directly upgrade from 2.1 to master.
                 if event["client"] not in self.client_id_map:
                     client = get_client(event["client"])

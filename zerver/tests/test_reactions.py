@@ -583,7 +583,7 @@ class ReactionEventTest(ZulipTestCase):
         private_message_id = self.send_personal_message(
             iago,
             hamlet,
-            "hello to single reciever",
+            "hello to single receiver",
         )
         events = []
         with tornado_redirected_to_list(events):
@@ -601,7 +601,7 @@ class ReactionEventTest(ZulipTestCase):
         huddle_message_id = self.send_huddle_message(
             hamlet,
             [polonius, iago],
-            "hello message to muliple reciever",
+            "hello message to muliple receiver",
         )
         events = []
         with tornado_redirected_to_list(events):

@@ -21,7 +21,7 @@ class TimeZoneTest(ZulipTestCase):
             ("CST", +28800),  # China Standard Time
             ("CST", -18000),  # Cuba Standard Time
             ("PST", -28800),  # Pacific Standard Time
-            ("PST", +28800),  # Phillipine Standard Time
+            ("PST", +28800),  # Philipine Standard Time
             ("IST", +19800),  # India Standard Time
             ("IST", +7200),  # Israel Standard Time
             ("IST", +3600),  # Ireland Standard Time

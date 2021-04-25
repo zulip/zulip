@@ -239,8 +239,8 @@ export function add_topic_links(message) {
                 link_url = link_url.replace(back_ref, matched_group);
                 i += 1;
             }
-            // We store the starting index as well, to sort the order of occurence of the links
-            // in the topic, similar to the logic implemeted in zerver/lib/markdown/__init__.py
+            // We store the starting index as well, to sort the order of occurrence of the links
+            // in the topic, similar to the logic implemented in zerver/lib/markdown/__init__.py
             links.push({url: link_url, text: match[0], index: topic.indexOf(match[0])});
         }
     }

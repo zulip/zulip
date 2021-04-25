@@ -63,7 +63,7 @@ Some useful tips for your translating journey:
   search](https://github.com/search?q=org%3Azulip+%22alert+word+already+exists%22&type=code)
   helpful for finding the code using a given string (ignore `.po` and
   `.json` matches, and note the search box is semi-invisible in the
-  upper-left corner of the page), or looking at the "Occurences"
+  upper-left corner of the page), or looking at the "Occurrences"
   section in the Transifex UI, browsing to the file on
   [GitHub](https://github.com/zulip/zulip/), and then searching for
   the string with `Ctrl+F` in your browser.

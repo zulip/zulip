@@ -605,7 +605,7 @@ export function change_focused_element($elt, input_key) {
         }
 
         switch (input_key) {
-            //  Allow broswer to handle all
+            //  Allow browser to handle all
             //  character keypresses.
             case "vim_left":
             case "vim_right":

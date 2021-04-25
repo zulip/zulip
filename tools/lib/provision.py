@@ -202,7 +202,7 @@ elif "debian" in os_families():
     DEBIAN_DEPENDECIES = UBUNTU_COMMON_APT_DEPENDENCIES
     # The below condition is required since libappindicator is
     # not available for bullseye (sid). "libgroonga1" is an
-    # additional depedency for postgresql-13-pgdg-pgroonga.
+    # additional dependency for postgresql-13-pgdg-pgroonga.
     #
     # See https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=895037
     if distro_info["VERSION_CODENAME"] == "bullseye":

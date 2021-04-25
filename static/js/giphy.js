@@ -28,7 +28,7 @@ export function focus_current_edit_message() {
     $(`#message_edit_content_${CSS.escape(edit_message_id)}`).trigger("focus");
 }
 
-// Approximate width and heigh of
+// Approximate width and height of
 // giphy popover as computed by chrome
 // + 25px;
 const APPROX_HEIGHT = 350;
@@ -126,7 +126,7 @@ export function hide_giphy_popover() {
         // We need to destroy the popover because when
         // we hide it, bootstrap popover
         // library removes `giphy-content` element
-        // as part of cleaning up everthing inside
+        // as part of cleaning up everything inside
         // `popover-content`, so we need to reinitialize
         // the popover by destroying it.
         active_popover_element.popover("destroy");
@@ -204,7 +204,7 @@ export function initialize() {
         // Allow simplebar to render, then fetch and
         // render GIFs. otherwise simplebar replaces
         // the `.gipihy-content` element when trying
-        // to wrap it and hence, our jquery refernce
+        // to wrap it and hence, our jquery reference
         // to `.giphy-content` is lost. Thus, no GIF
         // is rendered.
         setTimeout(() => {
@@ -227,7 +227,7 @@ export function initialize() {
 
         // Focus on search box by default.
         // This is specially helpful for users
-        // navigating via keybaord.
+        // navigating via keyboard.
         $("#giphy-search-query").trigger("focus");
     });
 }

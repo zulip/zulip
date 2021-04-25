@@ -58,7 +58,7 @@ def get_next_hotspots(user: UserProfile) -> List[Dict[str, object]]:
     # ALWAYS_SEND_ALL_HOTSPOTS has some bugs; see ReadTheDocs (link
     # above) for details.
     #
-    # Since this is just for development purposes, it's convinient for us to send
+    # Since this is just for development purposes, it's convenient for us to send
     # all the hotspots rather than any specific category.
     if settings.ALWAYS_SEND_ALL_HOTSPOTS:
         return [

@@ -1825,7 +1825,7 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
 
     def get_user_details(self, response: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Overriden to correctly grab the user's name from the request params,
+        Overridden to correctly grab the user's name from the request params,
         as current upstream code expects it in the id_token and Apple changed
         the API.
         Taken from https://github.com/python-social-auth/social-core/pull/483

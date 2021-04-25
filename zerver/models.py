@@ -471,11 +471,11 @@ class Realm(models.Model):
             "id": 2,
         },
         "pg": {
-            "name": "PG - Parental guidence",
+            "name": "PG - Parental guidance",
             "id": 3,
         },
         "pg-13": {
-            "name": "PG13 - Parental guidence (under 13)",
+            "name": "PG13 - Parental guidance (under 13)",
             "id": 4,
         },
         "r": {

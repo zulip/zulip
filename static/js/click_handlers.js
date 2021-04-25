@@ -132,7 +132,7 @@ export function initialize() {
             return true;
         }
 
-        // Ideally, this should be done via ClipboardJS, but it does't support
+        // Ideally, this should be done via ClipboardJS, but it doesn't support
         // feature of stopPropagation once clicked.
         // See https://github.com/zenorocha/clipboard.js/pull/475
         if (target.is(".copy_codeblock") || target.parents(".copy_codeblock").length > 0) {

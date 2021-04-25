@@ -459,7 +459,7 @@ export function initialize_everything() {
     const user_status_params = pop_fields("user_status");
 
     tippyjs.initialize();
-    // We need to initialze compose early, because other modules'
+    // We need to initialize compose early, because other modules'
     // initialization expects `#compose` to be already present in the
     // DOM, dating from when the compose area was part of the backend
     // template.

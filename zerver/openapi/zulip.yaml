@@ -6716,7 +6716,7 @@ paths:
       operationId: add_realm_playground
       tags: ["server_and_organizations"]
       description: |
-        Configure realm playgrounds options to run code snippets occuring
+        Configure realm playgrounds options to run code snippets occurring
         in a code block using playgrounds which supports that language.
 
         `POST {{ api_url }}/v1/realm/playgrounds`
@@ -7364,7 +7364,7 @@ paths:
                             type: integer
                             description: |
                               The total number of unread messages to display; this includes private
-                              and group private messages, as well as all messags to unmuted topics
+                              and group private messages, as well as all messages to unmuted topics
                               on unmuted streams.
                           pms:
                             type: array
