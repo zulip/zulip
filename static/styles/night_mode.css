@@ -49,7 +49,7 @@ body.night-mode {
     .stream_label {
         color: hsl(212, 28%, 18%);
     }
-    
+
     button.user-status-value:hover {
         color: hsl(200, 100%, 40%) !important;
     }
