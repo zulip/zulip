@@ -49,6 +49,10 @@ body.night-mode {
     .stream_label {
         color: hsl(212, 28%, 18%);
     }
+    
+    button.user-status-value:hover {
+        color: hsl(200, 100%, 40%) !important;
+    }
 
     .new-style label.checkbox input[type="checkbox"] ~ span {
         border-color: hsla(0, 0%, 100%, 0.4);
