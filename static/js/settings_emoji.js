@@ -195,7 +195,9 @@ export function set_up() {
             function submit_custom_emoji_request() {
                 $("#admin_emoji_submit").prop("disabled", true);
                 const formData = new FormData();
-                for (const [i, file] of Array.prototype.entries.call($("#emoji_file_input")[0].files)) {
+                for (const [i, file] of Array.prototype.entries.call(
+                    $("#emoji_file_input")[0].files,
+                )) {
                     formData.append("file-" + i, file);
                 }
 
