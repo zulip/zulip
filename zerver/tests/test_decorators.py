@@ -202,7 +202,7 @@ class DecoratorTestCase(ZulipTestCase):
     def test_REQ_validator(self) -> None:
         @has_request_variables
         def get_total(
-            request: HttpRequest, numbers: Iterable[int] = REQ(validator=check_list(check_int))
+            request: HttpRequest, numbers: Iterable[int] = REQ(json_validator=check_list(check_int))
         ) -> int:
             return sum(numbers)
 

@@ -78,7 +78,7 @@
 * [Mute a topic](/help/mute-a-topic)
 * [Alert words](/help/add-an-alert-word)
 * [Disable new login emails](/help/disable-new-login-emails)
-* [Configure missed message emails](/help/configure-missed-message-emails)
+* [Configure message notification emails](/help/configure-message-notification-emails)
 * [Change notification sound](/help/change-notification-sound)
 * [Troubleshoot desktop notifications](/help/troubleshooting-desktop-notifications)
 * [Test mobile notifications](/help/test-mobile-notifications)
@@ -86,6 +86,7 @@
 ## Tools & customization
 * [Bots and integrations](/help/bots-and-integrations)
 * [Add a bot or integration](/help/add-a-bot-or-integration)
+* [Request an integration](/help/request-an-integration)
 * [Create a poll](/help/create-a-poll)
 * [Night mode](/help/night-mode)
 * [Enable emoticon translations](/help/enable-emoticon-translations)

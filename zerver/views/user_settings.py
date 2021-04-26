@@ -8,8 +8,8 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 from django.utils.html import escape
 from django.utils.safestring import SafeString
-from django.utils.translation import ugettext as _
-from django.utils.translation import ugettext_lazy
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 
 from confirmation.models import (
     Confirmation,
@@ -46,7 +46,7 @@ from zerver.lib.validator import check_bool, check_int, check_int_in, check_stri
 from zerver.models import UserProfile, avatar_changes_disabled, name_changes_disabled
 from zproject.backends import check_password_strength, email_belongs_to_ldap
 
-AVATAR_CHANGES_DISABLED_ERROR = ugettext_lazy("Avatar changes are disabled in this organization.")
+AVATAR_CHANGES_DISABLED_ERROR = gettext_lazy("Avatar changes are disabled in this organization.")
 
 
 def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpResponse:
@@ -188,25 +188,27 @@ default_view_options = ["recent_topics", "all_messages"]
 def update_display_settings_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    twenty_four_hour_time: Optional[bool] = REQ(validator=check_bool, default=None),
-    dense_mode: Optional[bool] = REQ(validator=check_bool, default=None),
-    starred_message_counts: Optional[bool] = REQ(validator=check_bool, default=None),
-    fluid_layout_width: Optional[bool] = REQ(validator=check_bool, default=None),
-    high_contrast_mode: Optional[bool] = REQ(validator=check_bool, default=None),
+    twenty_four_hour_time: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    dense_mode: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    starred_message_counts: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    fluid_layout_width: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    high_contrast_mode: Optional[bool] = REQ(json_validator=check_bool, default=None),
     color_scheme: Optional[int] = REQ(
-        validator=check_int_in(UserProfile.COLOR_SCHEME_CHOICES), default=None
+        json_validator=check_int_in(UserProfile.COLOR_SCHEME_CHOICES), default=None
     ),
-    translate_emoticons: Optional[bool] = REQ(validator=check_bool, default=None),
-    default_language: Optional[str] = REQ(validator=check_string, default=None),
+    translate_emoticons: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    default_language: Optional[str] = REQ(json_validator=check_string, default=None),
     default_view: Optional[str] = REQ(
-        validator=check_string_in(default_view_options), default=None
+        json_validator=check_string_in(default_view_options), default=None
     ),
-    left_side_userlist: Optional[bool] = REQ(validator=check_bool, default=None),
-    emojiset: Optional[str] = REQ(validator=check_string_in(emojiset_choices), default=None),
+    left_side_userlist: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    emojiset: Optional[str] = REQ(json_validator=check_string_in(emojiset_choices), default=None),
     demote_inactive_streams: Optional[int] = REQ(
-        validator=check_int_in(UserProfile.DEMOTE_STREAMS_CHOICES), default=None
+        json_validator=check_int_in(UserProfile.DEMOTE_STREAMS_CHOICES), default=None
     ),
-    timezone: Optional[str] = REQ(validator=check_string_in(pytz.all_timezones_set), default=None),
+    timezone: Optional[str] = REQ(
+        json_validator=check_string_in(pytz.all_timezones_set), default=None
+    ),
 ) -> HttpResponse:
 
     # We can't use REQ for this widget because
@@ -230,26 +232,38 @@ def update_display_settings_backend(
 def json_change_notify_settings(
     request: HttpRequest,
     user_profile: UserProfile,
-    enable_stream_desktop_notifications: Optional[bool] = REQ(validator=check_bool, default=None),
-    enable_stream_email_notifications: Optional[bool] = REQ(validator=check_bool, default=None),
-    enable_stream_push_notifications: Optional[bool] = REQ(validator=check_bool, default=None),
-    enable_stream_audible_notifications: Optional[bool] = REQ(validator=check_bool, default=None),
-    wildcard_mentions_notify: Optional[bool] = REQ(validator=check_bool, default=None),
-    notification_sound: Optional[str] = REQ(validator=check_string, default=None),
-    enable_desktop_notifications: Optional[bool] = REQ(validator=check_bool, default=None),
-    enable_sounds: Optional[bool] = REQ(validator=check_bool, default=None),
-    enable_offline_email_notifications: Optional[bool] = REQ(validator=check_bool, default=None),
-    enable_offline_push_notifications: Optional[bool] = REQ(validator=check_bool, default=None),
-    enable_online_push_notifications: Optional[bool] = REQ(validator=check_bool, default=None),
-    enable_digest_emails: Optional[bool] = REQ(validator=check_bool, default=None),
-    enable_login_emails: Optional[bool] = REQ(validator=check_bool, default=None),
-    message_content_in_email_notifications: Optional[bool] = REQ(
-        validator=check_bool, default=None
+    enable_stream_desktop_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
     ),
-    pm_content_in_desktop_notifications: Optional[bool] = REQ(validator=check_bool, default=None),
-    desktop_icon_count_display: Optional[int] = REQ(validator=check_int, default=None),
-    realm_name_in_notifications: Optional[bool] = REQ(validator=check_bool, default=None),
-    presence_enabled: Optional[bool] = REQ(validator=check_bool, default=None),
+    enable_stream_email_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    enable_stream_push_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    enable_stream_audible_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    wildcard_mentions_notify: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    notification_sound: Optional[str] = REQ(json_validator=check_string, default=None),
+    enable_desktop_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    enable_sounds: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    enable_offline_email_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    enable_offline_push_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    enable_online_push_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    enable_digest_emails: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    enable_login_emails: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    message_content_in_email_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    pm_content_in_desktop_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
+    desktop_icon_count_display: Optional[int] = REQ(json_validator=check_int, default=None),
+    realm_name_in_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    presence_enabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
 ) -> HttpResponse:
     result = {}
 
@@ -326,7 +340,9 @@ def regenerate_api_key(request: HttpRequest, user_profile: UserProfile) -> HttpR
 @human_users_only
 @has_request_variables
 def change_enter_sends(
-    request: HttpRequest, user_profile: UserProfile, enter_sends: bool = REQ(validator=check_bool)
+    request: HttpRequest,
+    user_profile: UserProfile,
+    enter_sends: bool = REQ(json_validator=check_bool),
 ) -> HttpResponse:
     do_change_enter_sends(user_profile, enter_sends)
     return json_success()

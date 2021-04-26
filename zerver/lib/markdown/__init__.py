@@ -73,7 +73,6 @@ from zerver.models import (
     UserGroup,
     UserGroupMembership,
     UserProfile,
-    all_linkifiers_for_installation,
     get_active_streams,
     linkifiers_for_realm,
 )
@@ -2373,32 +2372,22 @@ def topic_links(linkifiers_key: int, topic_name: str) -> List[Dict[str, str]]:
     return [{k: str(v) for k, v in match.items() if k != "index"} for match in matches]
 
 
-def maybe_update_markdown_engines(linkifiers_key: Optional[int], email_gateway: bool) -> None:
-    # If linkifiers_key is None, load all linkifiers
+def maybe_update_markdown_engines(linkifiers_key: int, email_gateway: bool) -> None:
     global linkifier_data
-    if linkifiers_key is None:
-        all_linkifiers = all_linkifiers_for_installation()
-        all_linkifiers[DEFAULT_MARKDOWN_KEY] = []
-        for linkifiers_key, linkifiers in all_linkifiers.items():
-            linkifier_data[linkifiers_key] = linkifiers
-            make_md_engine(linkifiers_key, email_gateway)
-        # Hack to ensure that linkifiers_key is right for mirrored Zephyrs
-        linkifier_data[ZEPHYR_MIRROR_MARKDOWN_KEY] = []
-        make_md_engine(ZEPHYR_MIRROR_MARKDOWN_KEY, False)
-    else:
-        linkifiers = linkifiers_for_realm(linkifiers_key)
-        if linkifiers_key not in linkifier_data or linkifier_data[linkifiers_key] != linkifiers:
-            # Linkifier data has changed, update `linkifier_data` and any
-            # of the existing Markdown engines using this set of linkifiers.
-            linkifier_data[linkifiers_key] = linkifiers
-            for email_gateway_flag in [True, False]:
-                if (linkifiers_key, email_gateway_flag) in md_engines:
-                    # Update only existing engines(if any), don't create new one.
-                    make_md_engine(linkifiers_key, email_gateway_flag)
 
-        if (linkifiers_key, email_gateway) not in md_engines:
-            # Markdown engine corresponding to this key doesn't exists so create one.
-            make_md_engine(linkifiers_key, email_gateway)
+    linkifiers = linkifiers_for_realm(linkifiers_key)
+    if linkifiers_key not in linkifier_data or linkifier_data[linkifiers_key] != linkifiers:
+        # Linkifier data has changed, update `linkifier_data` and any
+        # of the existing Markdown engines using this set of linkifiers.
+        linkifier_data[linkifiers_key] = linkifiers
+        for email_gateway_flag in [True, False]:
+            if (linkifiers_key, email_gateway_flag) in md_engines:
+                # Update only existing engines(if any), don't create new one.
+                make_md_engine(linkifiers_key, email_gateway_flag)
+
+    if (linkifiers_key, email_gateway) not in md_engines:
+        # Markdown engine corresponding to this key doesn't exists so create one.
+        make_md_engine(linkifiers_key, email_gateway)
 
 
 # We want to log Markdown parser failures, but shouldn't log the actual input
@@ -2578,14 +2567,7 @@ def do_convert(
 
     maybe_update_markdown_engines(linkifiers_key, email_gateway)
     md_engine_key = (linkifiers_key, email_gateway)
-
-    if md_engine_key in md_engines:
-        _md_engine = md_engines[md_engine_key]
-    else:
-        if DEFAULT_MARKDOWN_KEY not in md_engines:
-            maybe_update_markdown_engines(linkifiers_key=None, email_gateway=False)
-
-        _md_engine = md_engines[(DEFAULT_MARKDOWN_KEY, email_gateway)]
+    _md_engine = md_engines[md_engine_key]
     # Reset the parser; otherwise it will get slower over time.
     _md_engine.reset()
 

@@ -1,10 +1,10 @@
 import $ from "jquery";
 import _ from "lodash";
+import tippy from "tippy.js";
 import WinChan from "winchan";
 
 // You won't find every click handler here, but it's a good place to start!
 
-import render_buddy_list_tooltip from "../templates/buddy_list_tooltip.hbs";
 import render_buddy_list_tooltip_content from "../templates/buddy_list_tooltip_content.hbs";
 
 import * as activity from "./activity";
@@ -15,10 +15,11 @@ import * as channel from "./channel";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
+import {media_breakpoints_num} from "./css_variables";
 import * as emoji_picker from "./emoji_picker";
 import * as hash_util from "./hash_util";
 import * as hotspots from "./hotspots";
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_flags from "./message_flags";
@@ -131,6 +132,13 @@ export function initialize() {
             return true;
         }
 
+        // Ideally, this should be done via ClipboardJS, but it does't support
+        // feature of stopPropagation once clicked.
+        // See https://github.com/zenorocha/clipboard.js/pull/475
+        if (target.is(".copy_codeblock") || target.parents(".copy_codeblock").length > 0) {
+            return true;
+        }
+
         return false;
     }
 
@@ -235,42 +243,6 @@ export function initialize() {
         e.preventDefault();
     });
 
-    // TOOLTIP FOR MESSAGE REACTIONS
-
-    $("#main_div").on("mouseenter", ".message_reaction", (e) => {
-        e.stopPropagation();
-        const elem = $(e.currentTarget);
-        const local_id = elem.attr("data-reaction-id");
-        const message_id = rows.get_message_id(e.currentTarget);
-        const title = reactions.get_reaction_title_data(message_id, local_id);
-
-        elem.tooltip({
-            title,
-            trigger: "hover",
-            placement: "bottom",
-            animation: false,
-        });
-        elem.tooltip("show");
-        $(".tooltip, .tooltip-inner").css({
-            "margin-left": "15px",
-            "max-width": $(window).width() * 0.6,
-        });
-        // Remove the arrow from the tooltip.
-        $(".tooltip-arrow").remove();
-    });
-
-    $("#main_div").on("mouseleave", ".message_reaction", (e) => {
-        e.stopPropagation();
-        $(e.currentTarget).tooltip("destroy");
-    });
-
-    // DESTROY PERSISTING TOOLTIPS ON HOVER
-
-    $("body").on("mouseenter", ".tooltip", (e) => {
-        e.stopPropagation();
-        $(e.currentTarget).remove();
-    });
-
     $("#main_div").on("click", "a.stream", function (e) {
         e.preventDefault();
         // Note that we may have an href here, but we trust the stream id more,
@@ -341,7 +313,7 @@ export function initialize() {
     $("body").on("click", ".copy_message", function (e) {
         const row = $(this).closest(".message_row");
         message_edit.end_message_row_edit(row);
-        row.find(".alert-msg").text(i18n.t("Copied!"));
+        row.find(".alert-msg").text($t({defaultMessage: "Copied!"}));
         row.find(".alert-msg").css("display", "block");
         row.find(".alert-msg").delay(1000).fadeOut(300);
         if ($(".tooltip").is(":visible")) {
@@ -403,16 +375,20 @@ export function initialize() {
         $_("#markdown_preview").show();
     });
 
-    // MUTING
-    function mute_topic($elt) {
+    // TOPIC MUTING
+    function mute_or_unmute_topic($elt, mute_topic) {
         const stream_id = Number.parseInt($elt.attr("data-stream-id"), 10);
         const topic = $elt.attr("data-topic-name");
-        muting_ui.mute_topic(stream_id, topic);
+        if (mute_topic) {
+            muting_ui.mute_topic(stream_id, topic);
+        } else {
+            muting_ui.unmute_topic(stream_id, topic);
+        }
     }
 
     $("body").on("click", ".message_header .on_hover_topic_mute", (e) => {
         e.stopPropagation();
-        mute_topic($(e.target));
+        mute_or_unmute_topic($(e.target), true);
     });
 
     // RECENT TOPICS
@@ -421,10 +397,9 @@ export function initialize() {
 
     $("body").on("click", "#recent_topics_table .on_hover_topic_unmute", (e) => {
         e.stopPropagation();
-        recent_topics.focus_clicked_element($(e.target), recent_topics.COLUMNS.mute);
-        const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id"), 10);
-        const topic = $(e.currentTarget).attr("data-topic-name");
-        muting_ui.unmute_topic(stream_id, topic);
+        const $elt = $(e.target);
+        recent_topics.focus_clicked_element($elt, recent_topics.COLUMNS.mute);
+        mute_or_unmute_topic($elt, false);
     });
 
     $("body").on("keydown", ".on_hover_topic_unmute", ui_util.convert_enter_to_click);
@@ -433,7 +408,7 @@ export function initialize() {
         e.stopPropagation();
         const $elt = $(e.target);
         recent_topics.focus_clicked_element($elt, recent_topics.COLUMNS.mute);
-        mute_topic($elt);
+        mute_or_unmute_topic($elt, true);
     });
 
     $("body").on("click", "#recent_topics_search", (e) => {
@@ -556,50 +531,67 @@ export function initialize() {
         });
 
     function do_render_buddy_list_tooltip(elem, title_data) {
-        elem.tooltip({
-            template: render_buddy_list_tooltip(),
-            title: render_buddy_list_tooltip_content(title_data),
-            html: true,
-            trigger: "hover",
-            placement: "bottom",
-            animation: false,
+        let placement = "left";
+        let observer;
+        if (window.innerWidth < media_breakpoints_num.md) {
+            // On small devices display tooltips based on available space.
+            // This will default to "bottom" placement for this tooltip.
+            placement = "auto";
+        }
+        tippy(elem[0], {
+            // Quickly display and hide right sidebar tooltips
+            // so that they don't stick and overlap with
+            // each other.
+            delay: 0,
+            content: render_buddy_list_tooltip_content(title_data),
+            arrow: true,
+            placement,
+            allowHTML: true,
+            showOnCreate: true,
+            onHidden: (instance) => {
+                instance.destroy();
+                observer.disconnect();
+            },
+            onShow: (instance) => {
+                // For both buddy list and top left corner pm list, `target_node`
+                // is their parent `ul` element. We cannot use MutationObserver
+                // directly on the reference element because it will be removed
+                // and we need to attach it on an element which will remain in the
+                // DOM which is their parent `ul`.
+                const target_node = $(instance.reference).parents("ul").get(0);
+                // We only need to know if any of the `li` elements were removed.
+                const config = {attributes: false, childList: true, subtree: false};
+                const callback = function (mutationsList) {
+                    for (const mutation of mutationsList) {
+                        // Hide instance if reference is in the removed node list.
+                        if (
+                            Array.prototype.includes.call(
+                                mutation.removedNodes,
+                                instance.reference.parentElement,
+                            )
+                        ) {
+                            instance.hide();
+                        }
+                    }
+                };
+                observer = new MutationObserver(callback);
+                observer.observe(target_node, config);
+            },
+            appendTo: () => document.body,
         });
-        elem.tooltip("show");
-
-        $(".tooltip").css("left", elem.pageX + "px");
-        $(".tooltip").css("top", elem.pageY + "px");
     }
 
     // BUDDY LIST TOOLTIPS
-    $("#user_presences").on(
-        "mouseenter",
-        ".user-presence-link, .user_sidebar_entry .user_circle, .user_sidebar_entry .selectable_sidebar_block",
-        (e) => {
-            e.stopPropagation();
-            const elem = $(e.currentTarget)
-                .closest(".user_sidebar_entry")
-                .find(".user-presence-link");
-            const user_id_string = elem.attr("data-user-id");
-            const title_data = buddy_data.get_title_data(user_id_string, false);
-            do_render_buddy_list_tooltip(elem, title_data);
-        },
-    );
-
-    $("#user_presences").on(
-        "mouseleave click",
-        ".user-presence-link, .user_sidebar_entry .user_circle, .user_sidebar_entry .selectable_sidebar_block",
-        (e) => {
-            e.stopPropagation();
-            const elem = $(e.currentTarget)
-                .closest(".user_sidebar_entry")
-                .find(".user-presence-link");
-            $(elem).tooltip("destroy");
-        },
-    );
+    $("#user_presences").on("mouseenter", ".selectable_sidebar_block", (e) => {
+        e.stopPropagation();
+        const elem = $(e.currentTarget).closest(".user_sidebar_entry").find(".user-presence-link");
+        const user_id_string = elem.attr("data-user-id");
+        const title_data = buddy_data.get_title_data(user_id_string, false);
+        do_render_buddy_list_tooltip(elem.parent(), title_data);
+    });
 
     // PM LIST TOOLTIPS
     $("body").on("mouseenter", "#pm_user_status", (e) => {
-        $(".tooltip").remove();
         e.stopPropagation();
         const elem = $(e.currentTarget);
         const user_ids_string = elem.attr("data-user-ids-string");
@@ -608,11 +600,6 @@ export function initialize() {
 
         const title_data = buddy_data.get_title_data(user_ids_string, is_group);
         do_render_buddy_list_tooltip(elem, title_data);
-    });
-
-    $("body").on("mouseleave", "#pm_user_status", (e) => {
-        e.stopPropagation();
-        $(e.currentTarget).tooltip("destroy");
     });
 
     // MISC
@@ -648,20 +635,18 @@ export function initialize() {
 
     // COMPOSE
 
-    // NB: This just binds to current elements, and won't bind to elements
-    // created after ready() is called.
-    $("#compose-send-status .compose-send-status-close").on("click", () => {
+    $("body").on("click", "#compose-send-status .compose-send-status-close", () => {
         $("#compose-send-status").stop(true).fadeOut(500);
     });
-    $("#nonexistent_stream_reply_error .compose-send-status-close").on("click", () => {
+    $("body").on("click", "#nonexistent_stream_reply_error .compose-send-status-close", () => {
         $("#nonexistent_stream_reply_error").stop(true).fadeOut(500);
     });
 
-    $(".compose_stream_button").on("click", () => {
+    $("body").on("click", ".compose_stream_button", () => {
         popovers.hide_mobile_message_buttons_popover();
         compose_actions.start("stream", {trigger: "new topic button"});
     });
-    $(".compose_private_button").on("click", () => {
+    $("body").on("click", ".compose_private_button", () => {
         popovers.hide_mobile_message_buttons_popover();
         compose_actions.start("private");
     });
@@ -675,15 +660,15 @@ export function initialize() {
         compose_actions.start("private");
     });
 
-    $(".compose_reply_button").on("click", () => {
+    $("body").on("click", ".compose_reply_button", () => {
         compose_actions.respond_to_message({trigger: "reply button"});
     });
 
-    $(".empty_feed_compose_stream").on("click", (e) => {
+    $("body").on("click", ".empty_feed_compose_stream", (e) => {
         compose_actions.start("stream", {trigger: "empty feed message"});
         e.preventDefault();
     });
-    $(".empty_feed_compose_private").on("click", (e) => {
+    $("body").on("click", ".empty_feed_compose_private", (e) => {
         compose_actions.start("private", {trigger: "empty feed message"});
         e.preventDefault();
     });
@@ -695,7 +680,7 @@ export function initialize() {
 
     function handle_compose_click(e) {
         // Emoji clicks should be handled by their own click handler in emoji_picker.js
-        if ($(e.target).is("#emoji_map, img.emoji, .drag")) {
+        if ($(e.target).is("#emoji_map, img.emoji, .drag, .compose_giphy_logo")) {
             return;
         }
 
@@ -717,12 +702,14 @@ export function initialize() {
         popovers.hide_all();
     }
 
-    $("#compose_buttons").on("click", handle_compose_click);
-    $(".compose-content").on("click", handle_compose_click);
+    $("body").on("click", "#compose_buttons", handle_compose_click);
+    $("body").on("click", ".compose-content", handle_compose_click);
 
-    $("#compose_close").on("click", () => {
+    $("body").on("click", "#compose_close", () => {
         compose_actions.cancel();
     });
+
+    // LEFT SIDEBAR
 
     $("#streams_inline_cog").on("click", (e) => {
         e.stopPropagation();

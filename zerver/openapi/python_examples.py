@@ -308,15 +308,18 @@ def get_subscription_status(client: Client) -> None:
     )
 
 
-@openapi_test_function("/realm/filters:get")
-def get_realm_filters(client: Client) -> None:
+@openapi_test_function("/realm/linkifiers:get")
+def get_realm_linkifiers(client: Client) -> None:
 
     # {code_example|start}
     # Fetch all the filters in this organization
-    result = client.get_realm_filters()
+    result = client.call_endpoint(
+        url="/realm/linkifiers",
+        method="GET",
+    )
     # {code_example|end}
 
-    validate_against_openapi_schema(result, "/realm/filters", "get", "200")
+    validate_against_openapi_schema(result, "/realm/linkifiers", "get", "200")
 
 
 @openapi_test_function("/realm/profile_fields:get")
@@ -369,6 +372,25 @@ def add_realm_filter(client: Client) -> None:
     validate_against_openapi_schema(result, "/realm/filters", "post", "200")
 
 
+@openapi_test_function("/realm/filters/{filter_id}:patch")
+def update_realm_filter(client: Client) -> None:
+
+    # {code_example|start}
+    # Update the linkifier (realm_filter) with ID 1
+    filter_id = 1
+    request = {
+        "pattern": "#(?P<id>[0-9]+)",
+        "url_format_string": "https://github.com/zulip/zulip/issues/%(id)s",
+    }
+
+    result = client.call_endpoint(
+        url=f"/realm/filters/{filter_id}", method="PATCH", request=request
+    )
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/realm/filters/{filter_id}", "patch", "200")
+
+
 @openapi_test_function("/realm/filters/{filter_id}:delete")
 def remove_realm_filter(client: Client) -> None:
 
@@ -387,8 +409,8 @@ def add_realm_playground(client: Client) -> None:
     # Add a realm playground for Python
     request = {
         "name": "Python playground",
-        "pygments_language": json.dumps("Python"),
-        "url_prefix": json.dumps("https://python.example.com"),
+        "pygments_language": "Python",
+        "url_prefix": "https://python.example.com",
     }
     result = client.call_endpoint(url="/realm/playgrounds", method="POST", request=request)
     # {code_example|end}
@@ -1101,6 +1123,22 @@ def update_notification_settings(client: Client) -> None:
     validate_against_openapi_schema(result, "/settings/notifications", "patch", "200")
 
 
+@openapi_test_function("/settings/display:patch")
+def update_display_settings(client: Client) -> None:
+
+    # {code_example|start}
+    # Show user list on left sidebar in narrow windows.
+    # Change emoji set used for display to Google modern.
+    request = {
+        "left_side_userlist": True,
+        "emojiset": '"google"',
+    }
+    result = client.call_endpoint("settings/display", method="PATCH", request=request)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, "/settings/display", "patch", "200")
+
+
 @openapi_test_function("/user_uploads:post")
 def upload_file(client: Client) -> None:
     path_to_file = os.path.join(ZULIP_DIR, "zerver", "tests", "images", "img.jpg")
@@ -1391,6 +1429,7 @@ def test_users(client: Client, owner_client: Client) -> None:
     get_subscription_status(client)
     get_profile(client)
     update_notification_settings(client)
+    update_display_settings(client)
     upload_file(client)
     get_attachments(client)
     set_typing_status(client)
@@ -1442,8 +1481,9 @@ def test_queues(client: Client) -> None:
 
 def test_server_organizations(client: Client) -> None:
 
-    get_realm_filters(client)
+    get_realm_linkifiers(client)
     add_realm_filter(client)
+    update_realm_filter(client)
     add_realm_playground(client)
     get_server_settings(client)
     remove_realm_filter(client)

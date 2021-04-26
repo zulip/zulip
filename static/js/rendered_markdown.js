@@ -7,11 +7,11 @@ import render_markdown_timestamp from "../templates/markdown_timestamp.hbs";
 import view_code_in_playground from "../templates/view_code_in_playground.hbs";
 
 import * as blueslip from "./blueslip";
-import {i18n} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as realm_playground from "./realm_playground";
 import * as rtl from "./rtl";
-import * as settings_config from "./settings_config";
 import * as stream_data from "./stream_data";
 import * as timerender from "./timerender";
 import * as user_groups from "./user_groups";
@@ -179,7 +179,10 @@ export const update_elements = (content) => {
 
     content.find("span.timestamp-error").each(function () {
         const time_str = $(this).text().replace("Invalid time format: ", "");
-        const text = i18n.t("Invalid time format: __timestamp__", {timestamp: time_str});
+        const text = $t(
+            {defaultMessage: "Invalid time format: {timestamp}"},
+            {timestamp: time_str},
+        );
         $(this).text(text);
     });
 
@@ -187,7 +190,7 @@ export const update_elements = (content) => {
         // If a spoiler block has no header content, it should have a default header.
         // We do this client side to allow for i18n by the client.
         if ($(this).html().trim().length === 0) {
-            $(this).append(`<p>${i18n.t("Spoiler")}</p>`);
+            $(this).append(`<p>${$t_html({defaultMessage: "Spoiler"})}</p>`);
         }
 
         // Add the expand/collapse button to spoiler blocks
@@ -202,7 +205,7 @@ export const update_elements = (content) => {
         const $pre = $codehilite.find("pre");
         const fenced_code_lang = $codehilite.data("code-language");
         if (fenced_code_lang !== undefined) {
-            const playground_info = settings_config.get_playground_info_for_languages(
+            const playground_info = realm_playground.get_playground_info_for_languages(
                 fenced_code_lang,
             );
             if (playground_info !== undefined) {
@@ -210,15 +213,18 @@ export const update_elements = (content) => {
                 // offer to view the code in that playground.  When
                 // there are multiple playgrounds, we display a
                 // popover listing the options.
-                let title = i18n.t("View in playground");
+                let title = $t({defaultMessage: "View in playground"});
                 const view_in_playground_button = $(view_code_in_playground());
                 $pre.prepend(view_in_playground_button);
                 if (playground_info.length === 1) {
-                    title = i18n.t(`View in ${playground_info[0].name}`);
+                    title = $t(
+                        {defaultMessage: "View in {playground_name}"},
+                        {playground_name: playground_info[0].name},
+                    );
                 } else {
                     view_in_playground_button.attr("aria-haspopup", "true");
                 }
-                view_in_playground_button.attr("title", title);
+                view_in_playground_button.attr("data-tippy-content", title);
                 view_in_playground_button.attr("aria-label", title);
             }
         }

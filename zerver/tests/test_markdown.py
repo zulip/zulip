@@ -45,7 +45,6 @@ from zerver.lib.message import render_markdown
 from zerver.lib.request import JsonableError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.tex import render_tex
-from zerver.lib.types import LinkifierDict
 from zerver.lib.user_groups import create_user_group
 from zerver.models import (
     MAX_MESSAGE_LENGTH,
@@ -230,10 +229,10 @@ class MarkdownMiscTest(ZulipTestCase):
         fred4 = make_user("fred4@example.com", "Fred Flintstone")
 
         lst = get_possible_mentions_info(
-            realm.id, {"Fred Flintstone", "cordelia LEAR", "Not A User"}
+            realm.id, {"Fred Flintstone", "Cordelia, LEAR's daughter", "Not A User"}
         )
         set_of_names = set(map(lambda x: x["full_name"].lower(), lst))
-        self.assertEqual(set_of_names, {"fred flintstone", "cordelia lear"})
+        self.assertEqual(set_of_names, {"fred flintstone", "cordelia, lear's daughter"})
 
         by_id = {row["id"]: row for row in lst}
         self.assertEqual(
@@ -257,7 +256,7 @@ class MarkdownMiscTest(ZulipTestCase):
         realm = get_realm("zulip")
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
-        content = "@**King Hamlet** @**Cordelia lear**"
+        content = "@**King Hamlet** @**Cordelia, lear's daughter**"
         mention_data = MentionData(realm.id, content)
         self.assertEqual(mention_data.get_user_ids(), {hamlet.id, cordelia.id})
         self.assertEqual(
@@ -274,7 +273,7 @@ class MarkdownMiscTest(ZulipTestCase):
         self.assertEqual(user["email"], hamlet.email)
 
         self.assertFalse(mention_data.message_has_wildcards())
-        content = "@**King Hamlet** @**Cordelia lear** @**all**"
+        content = "@**King Hamlet** @**Cordelia, lear's daughter** @**all**"
         mention_data = MentionData(realm.id, content)
         self.assertTrue(mention_data.message_has_wildcards())
 
@@ -1420,30 +1419,6 @@ class MarkdownTest(ZulipTestCase):
             ],
         )
 
-    def test_maybe_update_markdown_engines(self) -> None:
-        realm = get_realm("zulip")
-        url_format_string = r"https://trac.example.com/ticket/%(id)s"
-        linkifier = RealmFilter(
-            realm=realm, pattern=r"#(?P<id>[0-9]{2,8})", url_format_string=url_format_string
-        )
-        linkifier.save()
-
-        import zerver.lib.markdown
-
-        zerver.lib.markdown.linkifier_data = {}
-        maybe_update_markdown_engines(None, False)
-        all_linkifiers = zerver.lib.markdown.linkifier_data
-        zulip_linkifiers = all_linkifiers[realm.id]
-        self.assertEqual(len(zulip_linkifiers), 1)
-        self.assertDictEqual(
-            zulip_linkifiers[0],
-            LinkifierDict(
-                pattern="#(?P<id>[0-9]{2,8})",
-                url_format="https://trac.example.com/ticket/%(id)s",
-                id=linkifier.id,
-            ),
-        )
-
     def test_flush_linkifier(self) -> None:
         realm = get_realm("zulip")
 
@@ -1971,8 +1946,8 @@ class MarkdownTest(ZulipTestCase):
         assert_mentions("smush@**steve**smush", set())
 
         assert_mentions(
-            f"Hello @**King Hamlet**, @**|{aaron.id}** and @**Cordelia Lear**\n@**Foo van Barson|1234** @**all**",
-            {"King Hamlet", f"|{aaron.id}", "Cordelia Lear", "Foo van Barson|1234"},
+            f"Hello @**King Hamlet**, @**|{aaron.id}** and @**Cordelia, Lear's daughter**\n@**Foo van Barson|1234** @**all**",
+            {"King Hamlet", f"|{aaron.id}", "Cordelia, Lear's daughter", "Foo van Barson|1234"},
             True,
         )
 
@@ -1982,7 +1957,7 @@ class MarkdownTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
 
-        content = "@**King Hamlet** and @**Cordelia Lear**, check this out"
+        content = "@**King Hamlet** and @**Cordelia, Lear's daughter**, check this out"
 
         self.assertEqual(
             render_markdown(msg, content),
@@ -1990,7 +1965,7 @@ class MarkdownTest(ZulipTestCase):
             '<span class="user-mention" '
             f'data-user-id="{hamlet.id}">@King Hamlet</span> and '
             '<span class="user-mention" '
-            f'data-user-id="{cordelia.id}">@Cordelia Lear</span>, '
+            f'data-user-id="{cordelia.id}">@Cordelia, Lear\'s daughter</span>, '
             "check this out</p>",
         )
         self.assertEqual(msg.mentions_user_ids, {hamlet.id, cordelia.id})
@@ -2001,7 +1976,7 @@ class MarkdownTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         msg = Message(sender=othello, sending_client=get_client("test"))
 
-        content = "> @**King Hamlet** and @**Othello, the Moor of Venice**\n\n @**King Hamlet** and @**Cordelia Lear**"
+        content = "> @**King Hamlet** and @**Othello, the Moor of Venice**\n\n @**King Hamlet** and @**Cordelia, Lear's daughter**"
         self.assertEqual(
             render_markdown(msg, content),
             "<blockquote>\n<p>"
@@ -2012,7 +1987,7 @@ class MarkdownTest(ZulipTestCase):
             "<p>"
             f'<span class="user-mention" data-user-id="{hamlet.id}">@King Hamlet</span>'
             " and "
-            f'<span class="user-mention" data-user-id="{cordelia.id}">@Cordelia Lear</span>'
+            f'<span class="user-mention" data-user-id="{cordelia.id}">@Cordelia, Lear\'s daughter</span>'
             "</p>",
         )
         self.assertEqual(msg.mentions_user_ids, {hamlet.id, cordelia.id})
@@ -2053,9 +2028,7 @@ class MarkdownTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
 
-        content = (
-            f"@**Mark Twin|{twin1.id}**, @**Mark Twin|{twin2.id}** and @**Cordelia Lear**, hi."
-        )
+        content = f"@**Mark Twin|{twin1.id}**, @**Mark Twin|{twin2.id}** and @**Cordelia, Lear's daughter**, hi."
 
         self.assertEqual(
             render_markdown(msg, content),
@@ -2065,7 +2038,7 @@ class MarkdownTest(ZulipTestCase):
             '<span class="user-mention" '
             f'data-user-id="{twin2.id}">@Mark Twin</span> and '
             '<span class="user-mention" '
-            f'data-user-id="{cordelia.id}">@Cordelia Lear</span>, '
+            f'data-user-id="{cordelia.id}">@Cordelia, Lear\'s daughter</span>, '
             "hi.</p>",
         )
         self.assertEqual(msg.mentions_user_ids, {twin1.id, twin2.id, cordelia.id})
@@ -2205,7 +2178,7 @@ class MarkdownTest(ZulipTestCase):
         assert_mentions("smush@*steve*smush", set())
 
         assert_mentions(
-            "@*support* Hello @**King Hamlet** and @**Cordelia Lear**\n"
+            "@*support* Hello @**King Hamlet** and @**Cordelia, Lear's daughter**\n"
             "@**Foo van Barson** @**all**",
             {"support"},
         )

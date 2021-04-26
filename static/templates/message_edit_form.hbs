@@ -20,13 +20,13 @@
                 <input type="text" placeholder="{{topic}}" value="{{topic}}" class="message_edit_topic" id="message_edit_topic" />
                 <div class="message_edit_breadcrumb_messages"  style='display:none;'>
                     <label class="checkbox">
-                        <input class="send_notification_to_new_thread" name="send_notification_to_new_thread" type="checkbox" {{#if notify_new_thread}}checked="checked"{{/if}}>
+                        <input class="send_notification_to_new_thread" name="send_notification_to_new_thread" type="checkbox" {{#if notify_new_thread}}checked="checked"{{/if}} />
                         <span></span>
                     </label>
                     <label for="send_notification_to_new_thread">{{t "Send notification to new topic" }}</label>
                     <div class="break-row"></div> <!-- break -->
                     <label class="checkbox">
-                        <input class="send_notification_to_old_thread" name="send_notification_to_old_thread" type="checkbox" {{#if notify_old_thread}}checked="checked"{{/if}}>
+                        <input class="send_notification_to_old_thread" name="send_notification_to_old_thread" type="checkbox" {{#if notify_old_thread}}checked="checked"{{/if}} />
                         <span></span>
                     </label>
                     <label for="send_notification_to_old_thread">{{t "Send notification to old topic" }}</label>
@@ -60,14 +60,19 @@
                 <div class="message-edit-feature-group">
                     <input type="file" id="message_edit_file_input_{{message_id}}" class="notvisible pull-left" multiple />
                     {{#if file_upload_enabled}}
-                    <a role="button" tabindex=0 class="message-control-button fa fa-paperclip notdisplayed" aria-label="{{t "Attach files" }}" id="attach_files_{{message_id}}" title="{{t "Attach files" }}"></a>
+                    <a role="button" tabindex=0 class="compose_control_button fa fa-paperclip notdisplayed" aria-label="{{t "Attach files" }}" id="attach_files_{{message_id}}" title="{{t "Attach files" }}"></a>
                     {{/if}}
-                    <a role="button" tabindex=0 id="markdown_preview_{{message_id}}" class="message-control-button fa fa-eye" aria-label="{{t 'Preview' }}" title="{{t 'Preview' }}"></a>
-                    <a role="button" tabindex=0 id="undo_markdown_preview_{{message_id}}" class="message-control-button fa fa-edit" aria-label="{{t 'Write' }}" style="display:none;" title="{{t 'Write' }}"></a>
+                    <a role="button" tabindex=0 id="markdown_preview_{{message_id}}" class="compose_control_button fa fa-eye" aria-label="{{t 'Preview' }}" title="{{t 'Preview' }}"></a>
+                    <a role="button" tabindex=0 id="undo_markdown_preview_{{message_id}}" class="compose_control_button fa fa-edit" aria-label="{{t 'Write' }}" style="display:none;" title="{{t 'Write' }}"></a>
                     {{#if show_video_chat_button}}
-                    <a role="button" tabindex=0 class="message-control-button fa fa-video-camera video_link" aria-label="{{t "Add video call" }}" data-message-id="{{message_id}}" title="{{t "Add video call" }}"></a>
+                    <a role="button" tabindex=0 class="compose_control_button fa fa-video-camera video_link" aria-label="{{t "Add video call" }}" data-message-id="{{message_id}}" title="{{t "Add video call" }}"></a>
                     {{/if}}
-                    <a role="button" tabindex=0 class="message-control-button fa fa-smile-o" aria-label="{{t 'Add emoji' }}" id="emoji_map" data-message-id="{{message_id}}" title="{{t 'Add emoji' }}"></a>
+                    <a role="button" tabindex=0 class="compose_control_button fa fa-smile-o" aria-label="{{t 'Add emoji' }}" id="emoji_map" data-message-id="{{message_id}}" title="{{t 'Add emoji' }}"></a>
+                    {{#if giphy_api_available }}
+                    <a role="button" class="compose_control_button" aria-label="{{t 'Add GIF' }}" id="compose_box_giphy_grid" title="{{t 'Add GIF' }}">
+                        <img class="compose_giphy_logo" tabindex=0 src="/static/images/GIPHY_logo.png" data-message-id="{{message_id}}" />
+                    </a>
+                    {{/if}}
                     <a role="button" tabindex=0 class="message-control-link" data-overlay-trigger="message-formatting" >{{t 'Help' }}</a>
                 </div>
                 {{/if}}
@@ -77,8 +82,7 @@
             {{#if has_been_editable}}
             <div class="message-edit-timer-control-group">
                 <span class="message_edit_countdown_timer"></span>
-                <span><i id="message_edit_tooltip" class="message_edit_tooltip fa fa-question-circle" aria-hidden="true" data-toggle="tooltip"
-                    title="{{#tr this}}This organization is configured to restrict editing of message content to __minutes_to_edit__ minutes after it is sent.{{/tr}}"></i>
+                <span><i id="message_edit_tooltip" class="tippy-zulip-tooltip message_edit_tooltip fa fa-question-circle" aria-hidden="true" data-tippy-content="{{#tr}}This organization is configured to restrict editing of message content to {minutes_to_edit} minutes after it is sent.{{/tr}}"></i>
                 </span>
             </div>
             {{/if}}

@@ -2,7 +2,7 @@ import re
 
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.decorator import require_realm_admin
 from zerver.lib.actions import do_add_realm_playground, do_remove_realm_playground
@@ -39,8 +39,8 @@ def add_realm_playground(
     request: HttpRequest,
     user_profile: UserProfile,
     name: str = REQ(),
-    url_prefix: str = REQ(validator=check_url),
-    pygments_language: str = REQ(validator=check_pygments_language),
+    url_prefix: str = REQ(str_validator=check_url),
+    pygments_language: str = REQ(str_validator=check_pygments_language),
 ) -> HttpResponse:
     try:
         playground_id = do_add_realm_playground(

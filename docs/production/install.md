@@ -3,7 +3,7 @@
 You'll need an Ubuntu or Debian system that satisfies
 [the installation requirements](../production/requirements.md). Alternatively,
 you can use a preconfigured
-[DigitalOcean droplet](https://marketplace.digitalocean.com/apps/zulip), or
+[DigitalOcean droplet](https://marketplace.digitalocean.com/apps/zulip?refcode=3ee45da8ee26), or
 Zulip's
 [experimental Docker image](../production/deployment.html#zulip-in-docker).
 

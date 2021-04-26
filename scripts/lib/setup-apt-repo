@@ -67,7 +67,7 @@ deb-src http://apt.postgresql.org/pub/repos/apt/ $release-pgdg main
 deb http://ppa.launchpad.net/groonga/ppa/ubuntu $release main
 deb-src http://ppa.launchpad.net/groonga/ppa/ubuntu $release main
 EOF
-elif [[ "$release" =~ ^(buster)$ ]]; then
+elif [[ "$release" =~ ^(buster|bullseye)$ ]]; then
     distribution=debian
     apt-key add "$SCRIPTS_PATH"/setup/pgdg.asc
     cat >$SOURCES_FILE <<EOF

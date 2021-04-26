@@ -32,7 +32,7 @@ async function test_deactivate_user(page: Page): Promise<void> {
     );
     assert.strictEqual(
         await common.get_text_from_selector(page, "#deactivation_user_modal .do_deactivate_button"),
-        "Deactivate now",
+        "Confirm",
         "Deactivate button has incorrect text.",
     );
     await page.click("#deactivation_user_modal .do_deactivate_button");

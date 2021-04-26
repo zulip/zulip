@@ -357,7 +357,7 @@ class WorkerTest(ZulipTestCase):
                 worker.start()
                 self.assertEqual(mock_mirror_email.call_count, 2)
 
-                # However, missed message emails don't get rate limited:
+                # However, message notification emails don't get rate limited:
                 with self.settings(EMAIL_GATEWAY_PATTERN="%s@example.com"):
                     address = "mm" + ("x" * 32) + "@example.com"
                     event = dict(

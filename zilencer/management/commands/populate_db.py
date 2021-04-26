@@ -344,7 +344,7 @@ class Command(BaseCommand):
                 ("Othello, the Moor of Venice", "othello@zulip.com"),
                 ("Iago", "iago@zulip.com"),
                 ("Prospero from The Tempest", "prospero@zulip.com"),
-                ("Cordelia Lear", "cordelia@zulip.com"),
+                ("Cordelia, Lear's daughter", "cordelia@zulip.com"),
                 ("King Hamlet", "hamlet@zulip.com"),
                 ("aaron", "AARON@zulip.com"),
                 ("Polonius", "polonius@zulip.com"),
@@ -746,7 +746,7 @@ class Command(BaseCommand):
 
                 testsuite_lear_users = [
                     ("King Lear", "king@lear.org"),
-                    ("Cordelia Lear", "cordelia@zulip.com"),
+                    ("Cordelia, Lear's daughter", "cordelia@zulip.com"),
                 ]
                 create_users(lear_realm, testsuite_lear_users, tos_version=settings.TOS_VERSION)
 

@@ -454,8 +454,11 @@ ul {
 }
 
 #giphy_grid_in_popover {
-    /* 300px of GIPHY grid + 15px scroll bar width */
-    width: 315px;
+    /* 300px of GIPHY grid + 5px is the extra gutter space
+     * between gif columns. */
+    width: 305px;
+    border: 0;
+    padding: 0;
 
     .giphy-gif {
         cursor: pointer;
@@ -471,20 +474,38 @@ ul {
     .search-box {
         display: flex;
         position: sticky;
+        padding: 2px;
 
         input {
             flex-grow: 1;
             margin: 5px;
+            border-radius: 3px;
+        }
+
+        .clear_search_button {
+            position: absolute;
+            top: 5px;
+            right: 3px;
+            font-size: 16px;
+
+            &:focus {
+                .fa-remove {
+                    outline: 2px solid hsl(215, 47%, 50%);
+                }
+            }
         }
     }
 
     .popover-content {
         overflow: auto;
         height: 200px;
+        margin: 2px;
     }
 
     .popover-footer {
         text-align: center;
+        background-color: hsl(0, 0%, 0%);
+        border-radius: 0 0 6px 6px;
 
         img {
             width: 120px;

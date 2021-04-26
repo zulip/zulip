@@ -10,7 +10,7 @@ import render_settings_dev_env_email_access from "../templates/settings/dev_env_
 import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as common from "./common";
-import {i18n} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as stream_data from "./stream_data";
@@ -68,7 +68,10 @@ function submit_invitation_form() {
         data,
         beforeSend,
         success() {
-            ui_report.success(i18n.t("User(s) invited successfully."), invite_status);
+            ui_report.success(
+                $t_html({defaultMessage: "User(s) invited successfully."}),
+                invite_status,
+            );
             invitee_emails_group.removeClass("warning");
             invitee_emails.val("");
 
@@ -111,7 +114,7 @@ function submit_invitation_form() {
             }
         },
         complete() {
-            $("#submit-invitation").text(i18n.t("Invite"));
+            $("#submit-invitation").text($t({defaultMessage: "Invite"}));
             $("#submit-invitation").prop("disabled", false);
             $("#invitee_emails").focus();
             ui.get_scroll_element($("#invite_user_form .modal-body"))[0].scrollTop = 0;
@@ -135,7 +138,7 @@ function generate_multiuse_invite() {
             ui_report.error("", xhr, invite_status);
         },
         complete() {
-            $("#submit-invitation").text(i18n.t("Generate invite link"));
+            $("#submit-invitation").text($t({defaultMessage: "Generate invite link"}));
             $("#submit-invitation").prop("disabled", false);
         },
     });
@@ -210,15 +213,15 @@ export function initialize() {
         $("#multiuse_radio_section").show();
         $("#invite-method-choice").hide();
         $("#invitee_emails").prop("disabled", true);
-        $("#submit-invitation").text(i18n.t("Generate invite link"));
-        $("#submit-invitation").data("loading-text", i18n.t("Generating link..."));
+        $("#submit-invitation").text($t({defaultMessage: "Generate invite link"}));
+        $("#submit-invitation").data("loading-text", $t({defaultMessage: "Generating link..."}));
         reset_error_messages();
     });
 
     $("#invite-user").on("change", "#generate_multiuse_invite_radio", () => {
         $("#invitee_emails").prop("disabled", false);
-        $("#submit-invitation").text(i18n.t("Invite"));
-        $("#submit-invitation").data("loading-text", i18n.t("Inviting..."));
+        $("#submit-invitation").text($t({defaultMessage: "Invite"}));
+        $("#submit-invitation").data("loading-text", $t({defaultMessage: "Inviting..."}));
         $("#multiuse_radio_section").hide();
         $("#invite-method-choice").show();
         reset_error_messages();

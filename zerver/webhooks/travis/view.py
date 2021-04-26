@@ -25,10 +25,10 @@ Details: [changes]({}), [build log]({})"""
 def api_travis_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    ignore_pull_requests: bool = REQ(validator=check_bool, default=True),
+    ignore_pull_requests: bool = REQ(json_validator=check_bool, default=True),
     message: Dict[str, object] = REQ(
         "payload",
-        validator=check_dict(
+        json_validator=check_dict(
             [
                 ("author_name", check_string),
                 ("status_message", check_string),

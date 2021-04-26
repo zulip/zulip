@@ -2,7 +2,7 @@ import $ from "jquery";
 
 import render_message_view_header from "../templates/message_view_header.hbs";
 
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
@@ -22,13 +22,13 @@ function make_message_view_header(filter) {
     const message_view_header = {};
     if (recent_topics.is_visible()) {
         return {
-            title: i18n.t("Recent topics"),
+            title: $t({defaultMessage: "Recent topics"}),
             icon: "clock-o",
         };
     }
     if (filter === undefined) {
         return {
-            title: i18n.t("All messages"),
+            title: $t({defaultMessage: "All messages"}),
             icon: "align-left",
         };
     }
@@ -37,9 +37,9 @@ function make_message_view_header(filter) {
     if (filter.has_operator("stream") && !filter._sub) {
         message_view_header.sub_count = "0";
         message_view_header.formatted_sub_count = "0";
-        message_view_header.rendered_narrow_description = i18n.t(
-            "This stream does not exist or is private.",
-        );
+        message_view_header.rendered_narrow_description = $t({
+            defaultMessage: "This stream does not exist or is private.",
+        });
         return message_view_header;
     }
     if (filter._sub) {
@@ -52,8 +52,8 @@ function make_message_view_header(filter) {
         message_view_header.sub_count = sub_count;
         message_view_header.formatted_sub_count = get_formatted_sub_count(sub_count);
         // the "title" is passed as a variable and doesn't get translated (nor should it)
-        message_view_header.sub_count_tooltip_text = i18n.t(
-            "__count__ users are subscribed to #__title__",
+        message_view_header.sub_count_tooltip_text = $t(
+            {defaultMessage: "{count} users are subscribed to #{title}"},
             {count: message_view_header.sub_count, title: message_view_header.title},
         );
         message_view_header.stream_settings_link =

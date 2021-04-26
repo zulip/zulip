@@ -184,7 +184,7 @@ export function initialize() {
     hashchange.changehash(vars.oldhash);
 }
 
-function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compose, message) {
+function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compose, message_html) {
     if (reload_state.is_in_progress()) {
         blueslip.log("do_reload_app: Doing nothing since reload_in_progress");
         return;
@@ -200,7 +200,7 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
     }
 
     // TODO: We need a better API for showing messages.
-    ui_report.message(message, $("#reloading-application"));
+    ui_report.message(message_html, $("#reloading-application"));
     blueslip.log("Starting server requested page reload");
     reload_state.set_state_to_in_progress();
 
@@ -234,10 +234,10 @@ export function initiate({
     save_narrow = true,
     save_compose = true,
     send_after_reload = false,
-    message = "Reloading ...",
+    message_html = "Reloading ...",
 }) {
     if (immediate) {
-        do_reload_app(send_after_reload, save_pointer, save_narrow, save_compose, message);
+        do_reload_app(send_after_reload, save_pointer, save_narrow, save_compose, message_html);
     }
 
     if (reload_state.is_pending()) {
@@ -274,7 +274,7 @@ export function initiate({
     let compose_started_handler;
 
     function reload_from_idle() {
-        do_reload_app(false, save_pointer, save_narrow, save_compose, message);
+        do_reload_app(false, save_pointer, save_narrow, save_compose, message_html);
     }
 
     // Make sure we always do a reload eventually after

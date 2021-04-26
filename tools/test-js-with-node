@@ -104,6 +104,7 @@ EXEMPT_FILES = {
     "static/js/ready.js",
     "static/js/realm_icon.js",
     "static/js/realm_logo.js",
+    "static/js/realm_playground.js",
     "static/js/recent_topics.js",
     "static/js/reload.js",
     "static/js/reminder.js",
@@ -123,6 +124,8 @@ EXEMPT_FILES = {
     "static/js/settings_invites.js",
     "static/js/settings.js",
     "static/js/settings_linkifiers.js",
+    "static/js/settings_playgrounds.js",
+    "static/js/settings_muted_users.js",
     "static/js/settings_notifications.js",
     "static/js/settings_org.js",
     "static/js/settings_panel_menu.js",
@@ -167,6 +170,7 @@ EXEMPT_FILES = {
     "static/js/zform.js",
     "static/js/zulip.js",
     "static/js/zulip_test.js",
+    "static/shared/js/poll_data.js",
 }
 
 from tools.lib.test_script import add_provision_check_override_param, assert_provisioning_status_ok

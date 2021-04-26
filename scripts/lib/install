@@ -196,7 +196,7 @@ if [ -f /etc/os-release ]; then
 fi
 
 case "$os_id$os_version_id" in
-    debian10 | ubuntu18.04 | ubuntu20.04) ;;
+    debian10 | debian11 | ubuntu18.04 | ubuntu20.04) ;;
     *)
         set +x
         cat <<EOF
@@ -204,6 +204,7 @@ case "$os_id$os_version_id" in
 Unsupported OS release: $os_id $os_version_id
 
 Zulip in production is supported only on:
+ - Debian 11 "bullseye" (beta)
  - Debian 10 "buster"
  - Ubuntu 18.04 LTS "bionic"
  - Ubuntu 20.04 LTS "focal"
@@ -519,6 +520,10 @@ if has_class "zulip::app_frontend_base"; then
         su zulip -c '/home/zulip/deployments/current/tools/update-prod-static'
     fi
 fi
+
+# Set up a basic .gitconfig for the 'zulip' user
+su zulip -c "git config --global user.email $ZULIP_ADMINISTRATOR"
+su zulip -c "git config --global user.name 'Zulip Server ($EXTERNAL_HOST)'"
 
 if [ -n "$NO_INIT_DB" ]; then
     set +x

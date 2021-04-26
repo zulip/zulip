@@ -33,8 +33,8 @@ from django.db.models import Count, Exists, F, OuterRef, Q, Sum
 from django.db.models.query import QuerySet
 from django.utils.html import escape
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
-from django.utils.translation import ugettext as _
 from psycopg2.extras import execute_values
 from psycopg2.sql import SQL
 from typing_extensions import TypedDict
@@ -138,6 +138,7 @@ from zerver.lib.stream_subscription import (
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.streams import (
     access_stream_for_send_message,
+    can_access_stream_user_ids,
     check_stream_name,
     create_stream_if_needed,
     get_default_value_for_history_public_to_subscribers,
@@ -155,6 +156,7 @@ from zerver.lib.topic import (
     filter_by_exact_message_topic,
     filter_by_topic_name_via_message,
     save_message_for_edit_use_case,
+    update_edit_history,
     update_messages_for_topic_edit,
 )
 from zerver.lib.topic_mutes import add_topic_mute, get_topic_mutes, remove_topic_mute
@@ -167,7 +169,7 @@ from zerver.lib.upload import (
     upload_emoji_image,
 )
 from zerver.lib.user_groups import access_user_group_by_id, create_user_group
-from zerver.lib.user_mutes import add_user_mute, get_user_mutes, remove_user_mute
+from zerver.lib.user_mutes import add_user_mute, get_muting_users, get_user_mutes
 from zerver.lib.user_status import update_user_status
 from zerver.lib.users import (
     check_bot_name_available,
@@ -190,6 +192,7 @@ from zerver.models import (
     EmailChangeStatus,
     Message,
     MultiuseInvite,
+    MutedUser,
     PreregistrationUser,
     Reaction,
     Realm,
@@ -235,6 +238,7 @@ from zerver.models import (
     get_user_by_id_in_realm_including_cross_realm,
     get_user_profile_by_id,
     is_cross_realm_bot_email,
+    linkifiers_for_realm,
     query_for_ids,
     realm_filters_for_realm,
     validate_attachment_request,
@@ -291,36 +295,6 @@ STREAM_ASSIGNMENT_COLORS = [
 
 def subscriber_info(user_id: int) -> Dict[str, Any]:
     return {"id": user_id, "flags": ["read"]}
-
-
-def can_access_stream_user_ids(stream: Stream) -> Set[int]:
-    # return user ids of users who can access the attributes of
-    # a stream, such as its name/description.
-    if stream.is_public():
-        # For a public stream, this is everyone in the realm
-        # except unsubscribed guest users
-        return public_stream_user_ids(stream)
-    else:
-        # for a private stream, it's subscribers plus realm admins.
-        return private_stream_user_ids(stream.id) | {
-            user.id for user in stream.realm.get_admin_users_and_bots()
-        }
-
-
-def private_stream_user_ids(stream_id: int) -> Set[int]:
-    # TODO: Find similar queries elsewhere and de-duplicate this code.
-    subscriptions = get_active_subscriptions_for_stream_id(stream_id)
-    return {sub["user_profile_id"] for sub in subscriptions.values("user_profile_id")}
-
-
-def public_stream_user_ids(stream: Stream) -> Set[int]:
-    guest_subscriptions = get_active_subscriptions_for_stream_id(stream.id).filter(
-        user_profile__role=UserProfile.ROLE_GUEST
-    )
-    guest_subscriptions = {
-        sub["user_profile_id"] for sub in guest_subscriptions.values("user_profile_id")
-    }
-    return set(active_non_guest_user_ids(stream.realm_id)) | guest_subscriptions
 
 
 def bot_owner_user_ids(user_profile: UserProfile) -> Set[int]:
@@ -1239,7 +1213,9 @@ def do_deactivate_stream(
     # Get the affected user ids *before* we deactivate everybody.
     affected_user_ids = can_access_stream_user_ids(stream)
 
-    get_active_subscriptions_for_stream_id(stream.id).update(active=False)
+    get_active_subscriptions_for_stream_id(stream.id, include_deactivated_users=True).update(
+        active=False
+    )
 
     was_invite_only = stream.invite_only
     stream.deactivated = True
@@ -1847,6 +1823,11 @@ def do_send_messages(
             # Service bots (outgoing webhook bots and embedded bots) don't store UserMessage rows;
             # they will be processed later.
             mentioned_user_ids = send_request.message.mentions_user_ids
+
+            # Extend the set with users who have muted the sender.
+            mark_as_read_for_users = get_muting_users(send_request.message.sender)
+            mark_as_read_for_users.update(mark_as_read)
+
             user_messages = create_user_messages(
                 message=send_request.message,
                 um_eligible_user_ids=send_request.um_eligible_user_ids,
@@ -1854,7 +1835,7 @@ def do_send_messages(
                 stream_push_user_ids=send_request.stream_push_user_ids,
                 stream_email_user_ids=send_request.stream_email_user_ids,
                 mentioned_user_ids=mentioned_user_ids,
-                mark_as_read=mark_as_read,
+                mark_as_read_for_users=mark_as_read_for_users,
             )
 
             for um in user_messages:
@@ -2029,7 +2010,7 @@ def create_user_messages(
     stream_push_user_ids: AbstractSet[int],
     stream_email_user_ids: AbstractSet[int],
     mentioned_user_ids: AbstractSet[int],
-    mark_as_read: Sequence[int] = [],
+    mark_as_read_for_users: Set[int],
 ) -> List[UserMessageLite]:
     ums_to_create = []
     for user_profile_id in um_eligible_user_ids:
@@ -2048,7 +2029,7 @@ def create_user_messages(
     for um in ums_to_create:
         if (
             um.user_profile_id == message.sender.id and message.sent_by_human()
-        ) or um.user_profile_id in mark_as_read:
+        ) or um.user_profile_id in mark_as_read_for_users:
             um.flags |= UserMessage.flags.read
         if wildcard:
             um.flags |= UserMessage.flags.wildcard_mentioned
@@ -2534,6 +2515,8 @@ def check_send_message(
     local_id: Optional[str] = None,
     sender_queue_id: Optional[str] = None,
     widget_content: Optional[str] = None,
+    *,
+    skip_stream_access_check: bool = False,
 ) -> int:
 
     addressee = Addressee.legacy_build(sender, message_type_name, message_to, topic_name)
@@ -2550,6 +2533,7 @@ def check_send_message(
             local_id,
             sender_queue_id,
             widget_content,
+            skip_stream_access_check=skip_stream_access_check,
         )
     except ZephyrMessageAlreadySentException as e:
         return e.message_id
@@ -2747,6 +2731,8 @@ def check_message(
     sender_queue_id: Optional[str] = None,
     widget_content: Optional[str] = None,
     email_gateway: bool = False,
+    *,
+    skip_stream_access_check: bool = False,
 ) -> SendMessageRequest:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -2789,10 +2775,16 @@ def check_message(
             type=Recipient.STREAM,
         )
 
-        if sender.bot_type != sender.OUTGOING_WEBHOOK_BOT:
+        if not skip_stream_access_check:
             access_stream_for_send_message(
                 sender=sender, stream=stream, forwarder_user_profile=forwarder_user_profile
             )
+        else:
+            # Defensive assertion - the only currently supported use case
+            # for this option is for outgoing webhook bots and since this
+            # is security-sensitive code, it's beneficial to ensure nothing
+            # else can sneak past the access check.
+            assert sender.bot_type == sender.OUTGOING_WEBHOOK_BOT
 
     elif addressee.is_private():
         user_profiles = addressee.user_profiles()
@@ -3213,13 +3205,7 @@ def get_subscribers_query(stream: Stream, requesting_user: Optional[UserProfile]
     """
     validate_user_access_to_subscribers(requesting_user, stream)
 
-    # Note that non-active users may still have "active" subscriptions, because we
-    # want to be able to easily reactivate them with their old subscriptions.  This
-    # is why the query here has to look at the UserProfile.is_active flag.
-    subscriptions = get_active_subscriptions_for_stream_id(stream.id).filter(
-        user_profile__is_active=True,
-    )
-    return subscriptions
+    return get_active_subscriptions_for_stream_id(stream.id, include_deactivated_users=False)
 
 
 def get_subscriber_emails(
@@ -3726,7 +3712,8 @@ def do_change_subscription_property(
     stream: Stream,
     property_name: str,
     value: Any,
-    acting_user: Optional[UserProfile] = None,
+    *,
+    acting_user: Optional[UserProfile],
 ) -> None:
     database_property_name = property_name
     event_property_name = property_name
@@ -4005,7 +3992,8 @@ def do_change_avatar_fields(
     user_profile: UserProfile,
     avatar_source: str,
     skip_notify: bool = False,
-    acting_user: Optional[UserProfile] = None,
+    *,
+    acting_user: Optional[UserProfile],
 ) -> None:
     user_profile.avatar_source = avatar_source
     user_profile.avatar_version += 1
@@ -4024,13 +4012,13 @@ def do_change_avatar_fields(
         notify_avatar_url_change(user_profile)
 
 
-def do_delete_avatar_image(user: UserProfile, acting_user: Optional[UserProfile] = None) -> None:
+def do_delete_avatar_image(user: UserProfile, *, acting_user: Optional[UserProfile]) -> None:
     do_change_avatar_fields(user, UserProfile.AVATAR_FROM_GRAVATAR, acting_user=acting_user)
     delete_avatar_image(user)
 
 
 def do_change_icon_source(
-    realm: Realm, icon_source: str, acting_user: Optional[UserProfile] = None
+    realm: Realm, icon_source: str, *, acting_user: Optional[UserProfile]
 ) -> None:
     realm.icon_source = icon_source
     realm.icon_version += 1
@@ -4058,7 +4046,7 @@ def do_change_icon_source(
 
 
 def do_change_logo_source(
-    realm: Realm, logo_source: str, night: bool, acting_user: Optional[UserProfile] = None
+    realm: Realm, logo_source: str, night: bool, *, acting_user: Optional[UserProfile]
 ) -> None:
     if not night:
         realm.logo_source = logo_source
@@ -4134,7 +4122,7 @@ def do_change_plan_type(
 
 
 def do_change_default_sending_stream(
-    user_profile: UserProfile, stream: Optional[Stream], acting_user: Optional[UserProfile] = None
+    user_profile: UserProfile, stream: Optional[Stream], *, acting_user: Optional[UserProfile]
 ) -> None:
     old_value = user_profile.default_sending_stream_id
     user_profile.default_sending_stream = stream
@@ -4175,7 +4163,7 @@ def do_change_default_sending_stream(
 
 
 def do_change_default_events_register_stream(
-    user_profile: UserProfile, stream: Optional[Stream], acting_user: Optional[UserProfile] = None
+    user_profile: UserProfile, stream: Optional[Stream], *, acting_user: Optional[UserProfile]
 ) -> None:
     old_value = user_profile.default_events_register_stream_id
     user_profile.default_events_register_stream = stream
@@ -4216,7 +4204,7 @@ def do_change_default_events_register_stream(
 
 
 def do_change_default_all_public_streams(
-    user_profile: UserProfile, value: bool, acting_user: Optional[UserProfile] = None
+    user_profile: UserProfile, value: bool, *, acting_user: Optional[UserProfile]
 ) -> None:
     old_value = user_profile.default_all_public_streams
     user_profile.default_all_public_streams = value
@@ -4532,7 +4520,8 @@ def do_change_notification_settings(
     user_profile: UserProfile,
     name: str,
     value: Union[bool, int, str],
-    acting_user: Optional[UserProfile] = None,
+    *,
+    acting_user: Optional[UserProfile],
 ) -> None:
     """Takes in a UserProfile object, the name of a global notification
     preference to update, and the value to update to
@@ -5032,9 +5021,49 @@ def do_mark_stream_messages_as_read(
         where=[UserMessage.where_unread()],
     )
 
-    message_ids = list(msgs.values_list("message__id", flat=True))
+    message_ids = list(msgs.values_list("message_id", flat=True))
 
     count = msgs.update(
+        flags=F("flags").bitor(UserMessage.flags.read),
+    )
+
+    event = dict(
+        type="update_message_flags",
+        op="add",
+        operation="add",
+        flag="read",
+        messages=message_ids,
+        all=False,
+    )
+    event_time = timezone_now()
+
+    send_event(user_profile.realm, event, [user_profile.id])
+    do_clear_mobile_push_notifications_for_ids([user_profile.id], message_ids)
+
+    do_increment_logging_stat(
+        user_profile, COUNT_STATS["messages_read::hour"], None, event_time, increment=count
+    )
+    do_increment_logging_stat(
+        user_profile,
+        COUNT_STATS["messages_read_interactions::hour"],
+        None,
+        event_time,
+        increment=min(1, count),
+    )
+    return count
+
+
+def do_mark_muted_user_messages_as_read(
+    user_profile: UserProfile,
+    muted_user: UserProfile,
+) -> int:
+    messages = UserMessage.objects.filter(
+        user_profile=user_profile, message__sender=muted_user
+    ).extra(where=[UserMessage.where_unread()])
+
+    message_ids = list(messages.values_list("message_id", flat=True))
+
+    count = messages.update(
         flags=F("flags").bitor(UserMessage.flags.read),
     )
 
@@ -5130,7 +5159,7 @@ def do_update_message_flags(
         raise JsonableError(_("Invalid message flag operation: '{}'").format(operation))
     flagattr = getattr(UserMessage.flags, flag)
 
-    msgs = UserMessage.objects.filter(user_profile=user_profile, message__id__in=messages)
+    msgs = UserMessage.objects.filter(user_profile=user_profile, message_id__in=messages)
     # This next block allows you to star any message, even those you
     # didn't receive (e.g. because you're looking at a public stream
     # you're not subscribed to, etc.).  The problem is that starring
@@ -5507,19 +5536,21 @@ def do_update_message(
         # though the messages were deleted, and we should send a
         # delete_message event to them instead.
 
-        subscribers = get_active_subscriptions_for_stream_id(stream_id).select_related(
-            "user_profile"
-        )
+        subs_to_old_stream = get_active_subscriptions_for_stream_id(
+            stream_id, include_deactivated_users=True
+        ).select_related("user_profile")
         subs_to_new_stream = list(
-            get_active_subscriptions_for_stream_id(new_stream.id).select_related("user_profile")
+            get_active_subscriptions_for_stream_id(
+                new_stream.id, include_deactivated_users=True
+            ).select_related("user_profile")
         )
 
-        old_stream_sub_ids = [user.user_profile_id for user in subscribers]
+        old_stream_sub_ids = [user.user_profile_id for user in subs_to_old_stream]
         new_stream_sub_ids = [user.user_profile_id for user in subs_to_new_stream]
 
         # Get users who aren't subscribed to the new_stream.
         subs_losing_usermessages = [
-            sub for sub in subscribers if sub.user_profile_id not in new_stream_sub_ids
+            sub for sub in subs_to_old_stream if sub.user_profile_id not in new_stream_sub_ids
         ]
         # Users who can longer access the message without some action
         # from administrators.
@@ -5552,17 +5583,31 @@ def do_update_message(
         event[TOPIC_LINKS] = topic_links(message.sender.realm_id, topic_name)
         edit_history_event[LEGACY_PREV_TOPIC] = orig_topic_name
 
+    update_edit_history(message, timestamp, edit_history_event)
+
     delete_event_notify_user_ids: List[int] = []
     if propagate_mode in ["change_later", "change_all"]:
         assert topic_name is not None or new_stream is not None
+        # Other messages should only get topic/stream fields in their edit history.
+        topic_only_edit_history_event = {
+            k: v
+            for (k, v) in edit_history_event.items()
+            if k
+            not in [
+                "prev_content",
+                "prev_rendered_content",
+                "prev_rendered_content_version",
+            ]
+        }
+
         messages_list = update_messages_for_topic_edit(
-            message=message,
+            edited_message=message,
             propagate_mode=propagate_mode,
             orig_topic_name=orig_topic_name,
             topic_name=topic_name,
             new_stream=new_stream,
             old_recipient_id=old_recipient_id,
-            edit_history_event=edit_history_event,
+            edit_history_event=topic_only_edit_history_event,
             last_edit_time=timestamp,
         )
         changed_messages += messages_list
@@ -5608,13 +5653,6 @@ def do_update_message(
             delete_event_notify_user_ids = [sub.user_profile_id for sub in subs_losing_access]
             send_event(user_profile.realm, delete_event, delete_event_notify_user_ids)
 
-    if message.edit_history is not None:
-        edit_history = orjson.loads(message.edit_history)
-        edit_history.insert(0, edit_history_event)
-    else:
-        edit_history = [edit_history_event]
-    message.edit_history = orjson.dumps(edit_history).decode()
-
     # This does message.save(update_fields=[...])
     save_message_for_edit_use_case(message=message)
 
@@ -5646,25 +5684,29 @@ def do_update_message(
     users_to_be_notified = list(map(user_info, ums))
     if stream_being_edited is not None:
         if stream_being_edited.is_history_public_to_subscribers:
-            subscribers = get_active_subscriptions_for_stream_id(stream_id)
+            subscriptions = get_active_subscriptions_for_stream_id(
+                stream_id, include_deactivated_users=False
+            )
             # We exclude long-term idle users, since they by
             # definition have no active clients.
-            subscribers = subscribers.exclude(user_profile__long_term_idle=True)
+            subscriptions = subscriptions.exclude(user_profile__long_term_idle=True)
             # Remove duplicates by excluding the id of users already
             # in users_to_be_notified list.  This is the case where a
             # user both has a UserMessage row and is a current
             # Subscriber
-            subscribers = subscribers.exclude(
+            subscriptions = subscriptions.exclude(
                 user_profile_id__in=[um.user_profile_id for um in ums]
             )
 
             if new_stream is not None:
                 assert delete_event_notify_user_ids is not None
-                subscribers = subscribers.exclude(user_profile_id__in=delete_event_notify_user_ids)
+                subscriptions = subscriptions.exclude(
+                    user_profile_id__in=delete_event_notify_user_ids
+                )
 
             # All users that are subscribed to the stream must be
             # notified when a message is edited
-            subscriber_ids = [user.user_profile_id for user in subscribers]
+            subscriber_ids = [user.user_profile_id for user in subscriptions]
 
             if new_stream is not None:
                 # TODO: Guest users don't see the new moved topic
@@ -5683,10 +5725,10 @@ def do_update_message(
                     for sub in subs_to_new_stream
                     if sub.user_profile.is_guest and sub.user_profile_id not in subscriber_ids
                 ]
-                subscribers = subscribers.exclude(
+                subscriptions = subscriptions.exclude(
                     user_profile_id__in=[sub.user_profile_id for sub in old_stream_unsubbed_guests]
                 )
-                subscriber_ids = [user.user_profile_id for user in subscribers]
+                subscriber_ids = [user.user_profile_id for user in subscriptions]
 
             users_to_be_notified += list(map(subscriber_info, subscriber_ids))
 
@@ -5748,11 +5790,12 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
         stream_id = sample_message.recipient.type_id
         event["stream_id"] = stream_id
         event["topic"] = sample_message.topic_name()
-        subscribers = get_active_subscriptions_for_stream_id(stream_id)
+        subscriptions = get_active_subscriptions_for_stream_id(
+            stream_id, include_deactivated_users=False
+        )
         # We exclude long-term idle users, since they by definition have no active clients.
-        subscribers = subscribers.exclude(user_profile__long_term_idle=True)
-        subscriber_ids = [user.user_profile_id for user in subscribers]
-        users_to_notify = list(map(subscriber_info, subscriber_ids))
+        subscriptions = subscriptions.exclude(user_profile__long_term_idle=True)
+        users_to_notify = list(subscriptions.values_list("user_profile_id", flat=True))
         archiving_chunk_size = retention.STREAM_MESSAGE_BATCH_SIZE
 
     move_messages_to_archive(message_ids, realm=realm, chunk_size=archiving_chunk_size)
@@ -6528,14 +6571,35 @@ def do_mute_user(
     if date_muted is None:
         date_muted = timezone_now()
     add_user_mute(user_profile, muted_user, date_muted)
+    do_mark_muted_user_messages_as_read(user_profile, muted_user)
     event = dict(type="muted_users", muted_users=get_user_mutes(user_profile))
     send_event(user_profile.realm, event, [user_profile.id])
 
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm,
+        acting_user=user_profile,
+        modified_user=user_profile,
+        event_type=RealmAuditLog.USER_MUTED,
+        event_time=date_muted,
+        extra_data=orjson.dumps({"muted_user_id": muted_user.id}).decode(),
+    )
 
-def do_unmute_user(user_profile: UserProfile, muted_user: UserProfile) -> None:
-    remove_user_mute(user_profile, muted_user)
+
+def do_unmute_user(mute_object: MutedUser) -> None:
+    user_profile = mute_object.user_profile
+    muted_user = mute_object.muted_user
+    mute_object.delete()
     event = dict(type="muted_users", muted_users=get_user_mutes(user_profile))
     send_event(user_profile.realm, event, [user_profile.id])
+
+    RealmAuditLog.objects.create(
+        realm=user_profile.realm,
+        acting_user=user_profile,
+        modified_user=user_profile,
+        event_type=RealmAuditLog.USER_UNMUTED,
+        event_time=timezone_now(),
+        extra_data=orjson.dumps({"unmuted_user_id": muted_user.id}).decode(),
+    )
 
 
 def do_mark_hotspot_as_read(user: UserProfile, hotspot: str) -> None:
@@ -6545,6 +6609,13 @@ def do_mark_hotspot_as_read(user: UserProfile, hotspot: str) -> None:
 
 
 def notify_linkifiers(realm: Realm) -> None:
+    realm_linkifiers = linkifiers_for_realm(realm.id)
+    event = dict(type="realm_linkifiers", realm_linkifiers=realm_linkifiers)
+    send_event(realm, event, active_user_ids(realm.id))
+
+    # Below is code for backwards compatibility. The now deprecated
+    # "realm_filters" event-type is used by older clients, and uses
+    # tuples.
     realm_filters = realm_filters_for_realm(realm.id)
     event = dict(type="realm_filters", realm_filters=realm_filters)
     send_event(realm, event, active_user_ids(realm.id))
@@ -6571,7 +6642,18 @@ def do_remove_linkifier(
     if pattern is not None:
         RealmFilter.objects.get(realm=realm, pattern=pattern).delete()
     else:
-        RealmFilter.objects.get(realm=realm, pk=id).delete()
+        RealmFilter.objects.get(realm=realm, id=id).delete()
+    notify_linkifiers(realm)
+
+
+def do_update_linkifier(realm: Realm, id: int, pattern: str, url_format_string: str) -> None:
+    pattern = pattern.strip()
+    url_format_string = url_format_string.strip()
+    linkifier = RealmFilter.objects.get(realm=realm, id=id)
+    linkifier.pattern = pattern
+    linkifier.url_format_string = url_format_string
+    linkifier.full_clean()
+    linkifier.save(update_fields=["pattern", "url_format_string"])
     notify_linkifiers(realm)
 
 
@@ -6609,7 +6691,7 @@ def do_change_realm_domain(realm_domain: RealmDomain, allow_subdomains: bool) ->
 
 
 def do_remove_realm_domain(
-    realm_domain: RealmDomain, acting_user: Optional[UserProfile] = None
+    realm_domain: RealmDomain, *, acting_user: Optional[UserProfile]
 ) -> None:
     realm = realm_domain.realm
     domain = realm_domain.domain
@@ -6651,7 +6733,7 @@ def get_occupied_streams(realm: Realm) -> QuerySet:
     exists_expression = Exists(
         Subscription.objects.filter(
             active=True,
-            user_profile__is_active=True,
+            is_user_active=True,
             user_profile__realm=realm,
             recipient_id=OuterRef("recipient_id"),
         ),
@@ -7150,7 +7232,7 @@ def get_owned_bot_dicts(
             "default_sending_stream": botdict["default_sending_stream__name"],
             "default_events_register_stream": botdict["default_events_register_stream__name"],
             "default_all_public_streams": botdict["default_all_public_streams"],
-            "owner_id": botdict["bot_owner__id"],
+            "owner_id": botdict["bot_owner_id"],
             "avatar_url": avatar_url_from_dict(botdict),
             "services": services_by_ids[botdict["id"]],
         }

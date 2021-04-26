@@ -17,7 +17,7 @@ from zerver.lib.message import MessageDict, has_message_access, messages_for_ids
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import cache_tries_captured, queries_captured
 from zerver.lib.topic import LEGACY_PREV_TOPIC, TOPIC_NAME
-from zerver.models import Message, Stream, UserMessage, UserProfile
+from zerver.models import Message, Stream, UserMessage, UserProfile, get_realm, get_stream
 
 
 class EditMessageTest(ZulipTestCase):
@@ -439,7 +439,9 @@ class EditMessageTest(ZulipTestCase):
         self.subscribe(hamlet, "Scotland")
         self.subscribe(cordelia, "Scotland")
 
-        msg_id = self.send_stream_message(hamlet, "Scotland", content="@**Cordelia Lear**")
+        msg_id = self.send_stream_message(
+            hamlet, "Scotland", content="@**Cordelia, Lear's daughter**"
+        )
 
         user_info = get_user_info_for_message_updates(msg_id)
         message_user_ids = user_info["message_user_ids"]
@@ -936,6 +938,48 @@ class EditMessageTest(ZulipTestCase):
         self.assert_json_success(result)
         verify_edit_history(new_topic, 2)
 
+    def test_topic_and_content_edit(self) -> None:
+        self.login("hamlet")
+        id1 = self.send_stream_message(
+            self.example_user("hamlet"), "Scotland", "message 1", "topic"
+        )
+        id2 = self.send_stream_message(self.example_user("iago"), "Scotland", "message 2", "topic")
+        id3 = self.send_stream_message(
+            self.example_user("hamlet"), "Scotland", "message 3", "topic"
+        )
+
+        new_topic = "edited"
+        result = self.client_patch(
+            "/json/messages/" + str(id1),
+            {
+                "message_id": id1,
+                "topic": new_topic,
+                "propagate_mode": "change_later",
+                "content": "edited message",
+            },
+        )
+
+        self.assert_json_success(result)
+
+        # Content change of only id1 should come in edit history
+        # and topic change should be present in all the messages.
+        msg1 = Message.objects.get(id=id1)
+        msg2 = Message.objects.get(id=id2)
+        msg3 = Message.objects.get(id=id3)
+
+        msg1_edit_history = orjson.loads(msg1.edit_history)
+        self.assertTrue("prev_content" in msg1_edit_history[0].keys())
+
+        for msg in [msg2, msg3]:
+            self.assertFalse("prev_content" in orjson.loads(msg.edit_history)[0].keys())
+
+        for msg in [msg1, msg2, msg3]:
+            self.assertEqual(
+                new_topic,
+                msg.topic_name(),
+            )
+            self.assertEqual(len(orjson.loads(msg.edit_history)), 1)
+
     def test_propagate_topic_forward(self) -> None:
         self.login("hamlet")
         id1 = self.send_stream_message(self.example_user("hamlet"), "Scotland", topic_name="topic1")
@@ -1082,6 +1126,99 @@ class EditMessageTest(ZulipTestCase):
             f"This topic was moved here from #**test move stream>test** by @_**Iago|{user_profile.id}**",
         )
 
+    def test_move_message_realm_admin_cant_move_to_another_realm(self) -> None:
+        user_profile = self.example_user("iago")
+        self.assertEqual(user_profile.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        self.login("iago")
+
+        lear_realm = get_realm("lear")
+        new_stream = self.make_stream("new", lear_realm)
+
+        msg_id = self.send_stream_message(user_profile, "Verona", topic_name="test123")
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "message_id": msg_id,
+                "stream_id": new_stream.id,
+                "propagate_mode": "change_all",
+            },
+        )
+
+        self.assert_json_error(result, "Invalid stream id")
+
+    def test_move_message_realm_admin_cant_move_to_private_stream_without_subscription(
+        self,
+    ) -> None:
+        user_profile = self.example_user("iago")
+        self.assertEqual(user_profile.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        self.login("iago")
+
+        new_stream = self.make_stream("new", invite_only=True)
+        msg_id = self.send_stream_message(user_profile, "Verona", topic_name="test123")
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "message_id": msg_id,
+                "stream_id": new_stream.id,
+                "propagate_mode": "change_all",
+            },
+        )
+
+        self.assert_json_error(result, "Invalid stream id")
+
+    def test_move_message_realm_admin_cant_move_from_private_stream_without_subscription(
+        self,
+    ) -> None:
+        user_profile = self.example_user("iago")
+        self.assertEqual(user_profile.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        self.login("iago")
+
+        self.make_stream("privatestream", invite_only=True)
+        self.subscribe(user_profile, "privatestream")
+        msg_id = self.send_stream_message(user_profile, "privatestream", topic_name="test123")
+        self.unsubscribe(user_profile, "privatestream")
+
+        verona = get_stream("Verona", user_profile.realm)
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "message_id": msg_id,
+                "stream_id": verona.id,
+                "propagate_mode": "change_all",
+            },
+        )
+
+        self.assert_json_error(
+            result,
+            "You don't have permission to move this message due to missing access to its stream",
+        )
+
+    def test_move_message_cant_move_private_message(
+        self,
+    ) -> None:
+        user_profile = self.example_user("iago")
+        self.assertEqual(user_profile.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        self.login("iago")
+
+        hamlet = self.example_user("hamlet")
+        msg_id = self.send_personal_message(user_profile, hamlet)
+
+        verona = get_stream("Verona", user_profile.realm)
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "message_id": msg_id,
+                "stream_id": verona.id,
+                "propagate_mode": "change_all",
+            },
+        )
+
+        self.assert_json_error(result, "Message must be a stream message")
+
     def test_move_message_to_stream_change_later(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test"
@@ -1171,8 +1308,8 @@ class EditMessageTest(ZulipTestCase):
                     "topic": "new topic",
                 },
             )
-        self.assertEqual(len(queries), 47)
-        self.assertEqual(len(cache_tries), 11)
+        self.assertEqual(len(queries), 50)
+        self.assertEqual(len(cache_tries), 13)
 
         messages = get_topic_messages(user_profile, old_stream, "test")
         self.assertEqual(len(messages), 1)
@@ -1443,6 +1580,13 @@ class EditMessageTest(ZulipTestCase):
             user_messages_created=False,
             to_invite_only=False,
         )
+
+    def test_can_move_messages_between_streams(self) -> None:
+        def validation_func(user_profile: UserProfile) -> bool:
+            user_profile.refresh_from_db()
+            return user_profile.can_move_messages_between_streams()
+
+        self.check_has_permission_policies("move_messages_between_streams_policy", validation_func)
 
 
 class DeleteMessageTest(ZulipTestCase):

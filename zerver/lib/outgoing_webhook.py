@@ -4,7 +4,7 @@ import logging
 from typing import Any, AnyStr, Dict, Optional
 
 import requests
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from requests import Response, Session
 
 from version import ZULIP_VERSION
@@ -162,6 +162,10 @@ def send_response_message(
 
     response_data is what the bot wants to send back and has these fields:
         content - raw Markdown content for Zulip to render
+
+    WARNING: This function sends messages bypassing the stream access check
+    for the bot - so use with caution to not call this in codepaths
+    that might let someone send arbitrary messages to any stream through this.
     """
 
     message_type = message_info["type"]
@@ -196,6 +200,7 @@ def send_response_message(
         message_content=content,
         widget_content=widget_content,
         realm=realm,
+        skip_stream_access_check=True,
     )
 
 

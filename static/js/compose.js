@@ -1,7 +1,7 @@
-import Handlebars from "handlebars/runtime";
 import $ from "jquery";
 import _ from "lodash";
 
+import render_compose from "../templates/compose.hbs";
 import render_compose_all_everyone from "../templates/compose_all_everyone.hbs";
 import render_compose_announce from "../templates/compose_announce.hbs";
 import render_compose_invite_users from "../templates/compose_invite_users.hbs";
@@ -18,7 +18,7 @@ import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import * as drafts from "./drafts";
 import * as echo from "./echo";
-import {i18n} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as markdown from "./markdown";
 import * as notifications from "./notifications";
@@ -34,6 +34,7 @@ import * as server_events from "./server_events";
 import * as settings_config from "./settings_config";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
+import * as sub_store from "./sub_store";
 import * as subs from "./subs";
 import * as transmit from "./transmit";
 import * as ui_report from "./ui_report";
@@ -179,18 +180,18 @@ function update_conversation_button(btn_text, title) {
 }
 
 export function update_closed_compose_buttons_for_private() {
-    const text_stream = i18n.t("New stream message");
+    const text_stream = $t({defaultMessage: "New stream message"});
     const title_stream = text_stream + " (c)";
-    const text_conversation = i18n.t("New private message");
+    const text_conversation = $t({defaultMessage: "New private message"});
     const title_conversation = text_conversation + " (x)";
     update_stream_button(text_stream, title_stream);
     update_conversation_button(text_conversation, title_conversation);
 }
 
 export function update_closed_compose_buttons_for_stream() {
-    const text_stream = i18n.t("New topic");
+    const text_stream = $t({defaultMessage: "New topic"});
     const title_stream = text_stream + " (c)";
-    const text_conversation = i18n.t("New private message");
+    const text_conversation = $t({defaultMessage: "New private message"});
     const title_conversation = text_conversation + " (x)";
     update_stream_button(text_stream, title_stream);
     update_conversation_button(text_conversation, title_conversation);
@@ -223,7 +224,7 @@ export function abort_video_callbacks(edit_message_id = "") {
 }
 
 export function empty_topic_placeholder() {
-    return i18n.t("(no topic)");
+    return $t({defaultMessage: "(no topic)"});
 }
 
 export function create_message_object() {
@@ -282,13 +283,13 @@ export function create_message_object() {
     return message;
 }
 
-export function compose_error(error_text, bad_input) {
+export function compose_error(error_html, bad_input) {
     $("#compose-send-status")
         .removeClass(common.status_classes)
         .addClass("alert-error")
         .stop(true)
         .fadeTo(0, 1);
-    $("#compose-error-msg").html(error_text);
+    $("#compose-error-msg").html(error_html);
     $("#compose-send-button").prop("disabled", false);
     $("#sending-indicator").hide();
     if (bad_input !== undefined) {
@@ -304,13 +305,13 @@ export function nonexistent_stream_reply_error() {
     }, 5000);
 }
 
-function compose_not_subscribed_error(error_text, bad_input) {
+function compose_not_subscribed_error(error_html, bad_input) {
     $("#compose-send-status")
         .removeClass(common.status_classes)
         .addClass("home-error-bar")
         .stop(true)
         .fadeTo(0, 1);
-    $("#compose-error-msg").html(error_text);
+    $("#compose-error-msg").html(error_html);
     $("#compose-send-button").prop("disabled", false);
     $("#sending-indicator").hide();
     $(".compose-send-status-close").hide();
@@ -379,7 +380,7 @@ export function send_message(request = create_message_object()) {
         // If we're not local echo'ing messages, or if this message was not
         // locally echoed, show error in compose box
         if (!locally_echoed) {
-            compose_error(response, $("#compose-textarea"));
+            compose_error(_.escape(response), $("#compose-textarea"));
             return;
         }
 
@@ -554,7 +555,10 @@ function validate_stream_message_mentions(stream_id) {
     if (wildcard_mention !== null && stream_count > wildcard_mention_large_stream_threshold) {
         if (!wildcard_mention_allowed()) {
             compose_error(
-                i18n.t("You do not have permission to use wildcard mentions in this stream."),
+                $t_html({
+                    defaultMessage:
+                        "You do not have permission to use wildcard mentions in this stream.",
+                }),
             );
             return false;
         }
@@ -610,12 +614,16 @@ function validate_stream_message_post_policy(sub) {
     const stream_post_policy = sub.stream_post_policy;
 
     if (stream_post_policy === stream_post_permission_type.admins.code) {
-        compose_error(i18n.t("Only organization admins are allowed to post to this stream."));
+        compose_error(
+            $t_html({
+                defaultMessage: "Only organization admins are allowed to post to this stream.",
+            }),
+        );
         return false;
     }
 
     if (page_params.is_guest && stream_post_policy !== stream_post_permission_type.everyone.code) {
-        compose_error(i18n.t("Guests are not allowed to post to this stream."));
+        compose_error($t_html({defaultMessage: "Guests are not allowed to post to this stream."}));
         return false;
     }
 
@@ -623,16 +631,19 @@ function validate_stream_message_post_policy(sub) {
     const current_datetime = new Date(Date.now());
     const person_date_joined = new Date(person.date_joined);
     const days = (current_datetime - person_date_joined) / 1000 / 86400;
-    let error_text;
+    let error_html;
     if (
         stream_post_policy === stream_post_permission_type.non_new_members.code &&
         days < page_params.realm_waiting_period_threshold
     ) {
-        error_text = i18n.t(
-            "New members are not allowed to post to this stream.<br>Permission will be granted in __days__ days.",
+        error_html = $t_html(
+            {
+                defaultMessage:
+                    "New members are not allowed to post to this stream.<br />Permission will be granted in {days} days.",
+            },
             {days},
         );
-        compose_error(error_text);
+        compose_error(error_html);
         return false;
     }
     return true;
@@ -641,20 +652,23 @@ function validate_stream_message_post_policy(sub) {
 export function validation_error(error_type, stream_name) {
     let response;
 
-    const context = {};
-    context.stream_name = Handlebars.Utils.escapeExpression(stream_name);
-
     switch (error_type) {
         case "does-not-exist":
-            response = i18n.t(
-                "<p>The stream <b>__stream_name__</b> does not exist.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>",
-                context,
+            response = $t_html(
+                {
+                    defaultMessage:
+                        "<p>The stream <b>{stream_name}</b> does not exist.</p><p>Manage your subscriptions <z-link>on your Streams page</z-link>.</p>",
+                },
+                {
+                    stream_name,
+                    "z-link": (content_html) => `<a href='#streams/all'>${content_html}</a>`,
+                },
             );
             compose_error(response, $("#stream_message_recipient_stream"));
             return false;
         case "error":
             compose_error(
-                i18n.t("Error checking subscription"),
+                $t_html({defaultMessage: "Error checking subscription"}),
                 $("#stream_message_recipient_stream"),
             );
             return false;
@@ -682,14 +696,20 @@ export function validate_stream_message_address_info(stream_name) {
 function validate_stream_message() {
     const stream_name = compose_state.stream_name();
     if (stream_name === "") {
-        compose_error(i18n.t("Please specify a stream"), $("#stream_message_recipient_stream"));
+        compose_error(
+            $t_html({defaultMessage: "Please specify a stream"}),
+            $("#stream_message_recipient_stream"),
+        );
         return false;
     }
 
     if (page_params.realm_mandatory_topics) {
         const topic = compose_state.topic();
         if (topic === "") {
-            compose_error(i18n.t("Please specify a topic"), $("#stream_message_recipient_topic"));
+            compose_error(
+                $t_html({defaultMessage: "Please specify a topic"}),
+                $("#stream_message_recipient_topic"),
+            );
             return false;
         }
     }
@@ -740,7 +760,7 @@ function validate_private_message() {
         if (user_ids.length !== 1 || !people.get_by_user_id(user_ids[0]).is_bot) {
             // Unless we're composing to a bot
             compose_error(
-                i18n.t("Private messages are disabled in this organization."),
+                $t_html({defaultMessage: "Private messages are disabled in this organization."}),
                 $("#private_message_recipient"),
             );
             return false;
@@ -749,7 +769,7 @@ function validate_private_message() {
 
     if (compose_state.private_message_recipient().length === 0) {
         compose_error(
-            i18n.t("Please specify at least one valid recipient"),
+            $t_html({defaultMessage: "Please specify at least one valid recipient"}),
             $("#private_message_recipient"),
         );
         return false;
@@ -764,14 +784,14 @@ function validate_private_message() {
     if (invalid_recipients.length === 1) {
         context = {recipient: invalid_recipients.join()};
         compose_error(
-            i18n.t("The recipient __recipient__ is not valid", context),
+            $t_html({defaultMessage: "The recipient {recipient} is not valid"}, context),
             $("#private_message_recipient"),
         );
         return false;
     } else if (invalid_recipients.length > 1) {
         context = {recipients: invalid_recipients.join()};
         compose_error(
-            i18n.t("The recipients __recipients__ are not valid", context),
+            $t_html({defaultMessage: "The recipients {recipients} are not valid"}, context),
             $("#private_message_recipient"),
         );
         return false;
@@ -783,18 +803,26 @@ export function validate() {
     $("#compose-send-button").prop("disabled", true).trigger("blur");
     const message_content = compose_state.message_content();
     if (reminder.is_deferred_delivery(message_content)) {
-        show_sending_indicator(i18n.t("Scheduling..."));
+        show_sending_indicator($t({defaultMessage: "Scheduling..."}));
     } else {
-        show_sending_indicator(i18n.t("Sending..."));
+        show_sending_indicator($t({defaultMessage: "Sending..."}));
     }
 
     if (/^\s*$/.test(message_content)) {
-        compose_error(i18n.t("You have nothing to send!"), $("#compose-textarea"));
+        compose_error(
+            $t_html({defaultMessage: "You have nothing to send!"}),
+            $("#compose-textarea"),
+        );
         return false;
     }
 
     if ($("#zephyr-mirror-error").is(":visible")) {
-        compose_error(i18n.t("You need to be running Zephyr mirroring in order to send messages!"));
+        compose_error(
+            $t_html({
+                defaultMessage:
+                    "You need to be running Zephyr mirroring in order to send messages!",
+            }),
+        );
         return false;
     }
 
@@ -904,7 +932,7 @@ export function needs_subscribe_warning(user_id, stream_id) {
 }
 
 function insert_video_call_url(url, target_textarea) {
-    const link_text = i18n.t("Click to join video call");
+    const link_text = $t({defaultMessage: "Click to join video call"});
     compose_ui.insert_syntax_and_focus(`[${link_text}](${url})`, target_textarea);
 }
 
@@ -929,7 +957,7 @@ export function render_and_show_preview(preview_spinner, preview_content_box, co
     }
 
     if (content.length === 0) {
-        show_preview(i18n.t("Nothing to preview"));
+        show_preview($t_html({defaultMessage: "Nothing to preview"}));
     } else {
         if (markdown.contains_backend_only_syntax(content)) {
             const spinner = preview_spinner.expectOne();
@@ -962,7 +990,7 @@ export function render_and_show_preview(preview_spinner, preview_content_box, co
                 if (markdown.contains_backend_only_syntax(content)) {
                     loading.destroy_indicator(preview_spinner);
                 }
-                show_preview(i18n.t("Failed to generate preview"));
+                show_preview($t_html({defaultMessage: "Failed to generate preview"}));
             },
         });
     }
@@ -1071,6 +1099,15 @@ export function warn_if_mentioning_unsubscribed_user(mentioned) {
 }
 
 export function initialize() {
+    const $compose = $("#compose");
+    $compose.append(
+        render_compose({
+            embedded: $compose.attr("data-embedded") === "",
+            file_upload_enabled: page_params.max_file_upload_size_mib > 0,
+            giphy_api_available: page_params.giphy_api_key !== "",
+        }),
+    );
+
     $("#below-compose-content .video_link").toggle(compute_show_video_chat_button());
     $(
         "#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient",
@@ -1149,7 +1186,7 @@ export function initialize() {
 
         function failure(error_msg) {
             clear_invites();
-            compose_error(error_msg, $("#compose-textarea"));
+            compose_error(_.escape(error_msg), $("#compose-textarea"));
             $(event.target).prop("disabled", true);
         }
 
@@ -1158,7 +1195,7 @@ export function initialize() {
             failure(error.msg);
         }
 
-        const sub = stream_data.get_sub_by_id(stream_id);
+        const sub = sub_store.get(stream_id);
 
         stream_edit.invite_user_to_stream([user_id], sub, success, xhr_failure);
     });
@@ -1245,7 +1282,7 @@ export function initialize() {
                             }
                             if (status !== "abort") {
                                 ui_report.generic_embed_error(
-                                    i18n.t("Failed to create video call."),
+                                    $t_html({defaultMessage: "Failed to create video call."}),
                                 );
                             }
                         },

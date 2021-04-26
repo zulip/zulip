@@ -584,8 +584,8 @@ class TestSupportEndpoint(ZulipTestCase):
                     '<span class="label">user</span>\n',
                     f"<h3>{full_name}</h3>",
                     f"<b>Email</b>: {email}",
-                    "<b>Is active</b>: True<br>",
-                    f"<b>Role</b>: {role}<br>",
+                    "<b>Is active</b>: True<br />",
+                    f"<b>Role</b>: {role}<br />",
                 ],
                 html_response,
             )
@@ -596,9 +596,11 @@ class TestSupportEndpoint(ZulipTestCase):
             )
             self.assert_in_success_response(
                 [
-                    f"<b>Admins</b>: {self.example_email('desdemona')}, {self.example_email('iago')}\n",
-                    'class="copy-button" data-copytext="{}, {}"'.format(
-                        self.example_email("desdemona"), self.example_email("iago")
+                    f"<b>Admins</b>: {self.example_email('iago')}\n",
+                    f"<b>Owners</b>: {self.example_email('desdemona')}\n",
+                    'class="copy-button" data-copytext="{}">'.format(self.example_email("iago")),
+                    'class="copy-button" data-copytext="{}">'.format(
+                        self.example_email("desdemona")
                     ),
                 ],
                 result,
@@ -616,8 +618,11 @@ class TestSupportEndpoint(ZulipTestCase):
 
         def check_zulip_realm_query_result(result: HttpResponse) -> None:
             zulip_realm = get_realm("zulip")
+            first_human_user = zulip_realm.get_first_human_user()
+            assert first_human_user is not None
             self.assert_in_success_response(
                 [
+                    f"<b>First human user</b>: {first_human_user.delivery_email}\n",
                     f'<input type="hidden" name="realm_id" value="{zulip_realm.id}"',
                     "Zulip Dev</h3>",
                     '<option value="1" selected>Self hosted</option>',

@@ -2,9 +2,11 @@ from typing import Any, Dict, Optional
 from urllib.parse import urljoin
 
 from django.conf import settings
+from django.contrib.staticfiles.storage import staticfiles_storage
 from django.http import HttpRequest
 from django.utils.html import escape
 from django.utils.safestring import SafeString
+from django.utils.translation import get_language
 
 from version import (
     LATEST_MAJOR_VERSION,
@@ -27,6 +29,11 @@ from zproject.backends import (
     password_auth_enabled,
     require_email_format_usernames,
 )
+
+DEFAULT_PAGE_PARAMS = {
+    "debug_mode": settings.DEBUG,
+    "webpack_public_path": staticfiles_storage.url(settings.WEBPACK_BUNDLES),
+}
 
 
 def common_context(user: UserProfile) -> Dict[str, Any]:
@@ -129,6 +136,11 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
     # get the same result.
     platform = get_client_name(request)
 
+    default_page_params = {
+        **DEFAULT_PAGE_PARAMS,
+        "request_language": get_language(),
+    }
+
     context = {
         "root_domain_landing_page": settings.ROOT_DOMAIN_LANDING_PAGE,
         "custom_logo_url": settings.CUSTOM_LOGO_URL,
@@ -161,6 +173,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         "platform": platform,
         "allow_search_engine_indexing": allow_search_engine_indexing,
         "landing_page_navbar_message": settings.LANDING_PAGE_NAVBAR_MESSAGE,
+        "default_page_params": default_page_params,
     }
 
     context["OPEN_GRAPH_URL"] = f"{realm_uri}{request.path}"

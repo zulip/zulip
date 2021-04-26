@@ -6,7 +6,7 @@ import * as typeahead from "../shared/js/typeahead";
 
 import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import * as message_user_ids from "./message_user_ids";
 import * as reload_state from "./reload_state";
 import * as settings_data from "./settings_data";
@@ -163,6 +163,10 @@ export function is_known_user_id(user_id) {
     return people_by_user_id_dict.has(user_id);
 }
 
+export function is_known_user(user) {
+    return user && is_known_user_id(user.user_id);
+}
+
 function sort_numerically(user_ids) {
     user_ids.sort((a, b) => a - b);
 
@@ -266,15 +270,15 @@ export function get_user_type(user_id) {
     const user_profile = get_by_user_id(user_id);
 
     if (user_profile.is_owner) {
-        return i18n.t("Owner");
+        return $t({defaultMessage: "Owner"});
     } else if (user_profile.is_admin) {
-        return i18n.t("Administrator");
+        return $t({defaultMessage: "Administrator"});
     } else if (user_profile.is_guest) {
-        return i18n.t("Guest");
+        return $t({defaultMessage: "Guest"});
     } else if (user_profile.is_bot) {
-        return i18n.t("Bot");
+        return $t({defaultMessage: "Bot"});
     }
-    return i18n.t("Member");
+    return $t({defaultMessage: "Member"});
 }
 
 export function emails_strings_to_user_ids_string(emails_string) {
@@ -1057,6 +1061,8 @@ export function get_people_for_stream_create() {
                 email: person.email,
                 user_id: person.user_id,
                 full_name: person.full_name,
+                checked: false,
+                disabled: false,
             });
         }
     }

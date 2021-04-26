@@ -32,7 +32,7 @@ in `frontend_tests/node_tests`.  Here is an example test from
     stream_data.add_sub('Denmark', sub);
     sub = stream_data.get_sub('Denmark');
     assert.equal(sub.color, 'red');
-    sub = stream_data.get_sub_by_id(id);
+    sub = sub_store.get(id);
     assert.equal(sub.color, 'red');
 }());
 ```

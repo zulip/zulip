@@ -11,6 +11,21 @@ APT_OPTIONS=(-o 'Dpkg::Options::=--force-confdef' -o 'Dpkg::Options::=--force-co
 apt-get update
 
 if [ -f /etc/os-release ]; then
+    # This is a temporary hack to test Debian Bullseye systems as
+    # though Bullseye was already released, so we don't need to
+    # change all of our scripts to parse bullseye/sid.
+    check_pretty_name="$(
+        . /etc/os-release
+        printf '%s\n' "$PRETTY_NAME"
+    )"
+    { read -r pretty_name; } <<<"$check_pretty_name"
+
+    if [ "$pretty_name" = "Debian GNU/Linux bullseye/sid" ]; then
+        echo "VERSION_CODENAME=bullseye" | tee -a >>/etc/os-release
+        echo "VERSION_ID=\"11\"" | tee -a >>/etc/os-release
+    fi
+    # End hack
+
     os_info="$(
         . /etc/os-release
         printf '%s\n' "$VERSION_CODENAME"

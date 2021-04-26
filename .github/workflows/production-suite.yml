@@ -110,6 +110,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # Base images are built using `tools/ci/Dockerfile.template`.
+          # The comments at the top explain how to build and upload these images.
           - docker_image: zulip/ci:bionic
             name: Bionic production install
             is_bionic: true
@@ -124,6 +126,11 @@ jobs:
             name: Buster production install
             is_buster: true
             os: buster
+
+          - docker_image: zulip/ci:bullseye
+            name: Bullseye production install
+            is_bullseye: true
+            os: bullseye
 
     name: ${{ matrix.name  }}
     container: ${{ matrix.docker_image }}

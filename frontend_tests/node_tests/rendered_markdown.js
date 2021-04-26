@@ -273,5 +273,5 @@ run_test("spoiler-header-empty-fill", () => {
         '<span class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></span>';
     $header.html("");
     rm.update_elements($content);
-    assert.equal(toggle_button_html + "<p>translated: Spoiler</p>", $header.html());
+    assert.equal(toggle_button_html + "<p>translated HTML: Spoiler</p>", $header.html());
 });

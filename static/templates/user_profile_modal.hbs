@@ -14,33 +14,33 @@
                 </a>
                 {{/if}}
             </div>
-            <br>
+            <br />
             {{#if show_email}}
             <div id="email" class="default-field">
-                <span class="name">{{#tr this}}Email{{/tr}}</span>
+                <span class="name">{{#tr}}Email{{/tr}}</span>
                 <span class="value">{{email}}</span>
             </div>
             {{/if}}
             <div id="date-joined" class="default-field">
-                <span class="name">{{#tr this}}Joined{{/tr}}</span>
+                <span class="name">{{#tr}}Joined{{/tr}}</span>
                 <span class="value">{{date_joined}}</span>
             </div>
             <div id="user-type" class="default-field">
-                <span class="name">{{#tr this}}Role{{/tr}}</span>
+                <span class="name">{{#tr}}Role{{/tr}}</span>
                 <span class="value">{{user_type}}</span>
             </div>
             <div class="default-field">
-                <span class="name">{{#tr this}}Last active{{/tr}}</span>
+                <span class="name">{{#tr}}Last active{{/tr}}</span>
                 <span class="value">{{last_seen}}</span>
             </div>
             {{#if user_time}}
             <div class="default-field">
-                <span class="name">{{#tr this}}Local time{{/tr}}</span>
+                <span class="name">{{#tr}}Local time{{/tr}}</span>
                 <span class="value">{{user_time}}</span>
             </div>
             {{/if}}
         </div>
-        <hr>
+        <hr />
         <div id="content">
             {{#each profile_data}}
             <div data-type="{{this.type}}" class="field-section custom_user_field" data-field-id="{{this.id}}">

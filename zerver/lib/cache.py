@@ -534,6 +534,10 @@ def realm_user_dicts_cache_key(realm_id: int) -> str:
     return f"realm_user_dicts:{realm_id}"
 
 
+def get_muting_users_cache_key(muted_user: "UserProfile") -> str:
+    return f"muting_users_list:{muted_user.id}"
+
+
 def get_realm_used_upload_space_cache_key(realm: "Realm") -> str:
     return f"realm_used_upload_space:{realm.id}"
 
@@ -550,7 +554,7 @@ bot_dict_fields: List[str] = [
     "api_key",
     "avatar_source",
     "avatar_version",
-    "bot_owner__id",
+    "bot_owner_id",
     "bot_type",
     "default_all_public_streams",
     "default_events_register_stream__name",
@@ -640,6 +644,11 @@ def flush_user_profile(sender: Any, **kwargs: Any) -> None:
     # changed the fields in the dict or become (in)active
     if user_profile.is_bot and changed(kwargs, bot_dict_fields):
         cache_delete(bot_dicts_in_realm_cache_key(user_profile.realm))
+
+
+def flush_muting_users_cache(sender: Any, **kwargs: Any) -> None:
+    mute_object = kwargs["instance"]
+    cache_delete(get_muting_users_cache_key(mute_object.muted_user))
 
 
 # Called by models.py to flush various caches whenever we save

@@ -8,7 +8,7 @@ from django.core.exceptions import ValidationError
 from django.db import connection
 from django.http import HttpRequest, HttpResponse
 from django.utils.html import escape as escape_html
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from sqlalchemy import func
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.engine import Connection, RowProxy
@@ -736,6 +736,9 @@ def exclude_muting_conditions(
     except Stream.DoesNotExist:
         pass
 
+    # Stream-level muting only applies when looking at views that
+    # include multiple streams, since we do want users to be able to
+    # browser messages within a muted stream.
     if stream_id is None:
         rows = Subscription.objects.filter(
             user_profile=user_profile,
@@ -750,6 +753,15 @@ def exclude_muting_conditions(
             conditions.append(condition)
 
     conditions = exclude_topic_mutes(conditions, user_profile, stream_id)
+
+    # Muted user logic for hiding messages is implemented entirely
+    # client-side. This is by design, as it allows UI to hint that
+    # muted messages exist where their absence might make conversation
+    # difficult to understand. As a result, we do not need to consider
+    # muted users in this server-side logic for returning messages to
+    # clients. (We could in theory exclude PMs from muted users, but
+    # they're likely to be sufficiently rare to not be worth extra
+    # logic/testing here).
 
     return conditions
 
@@ -922,15 +934,15 @@ def parse_anchor_value(anchor_val: Optional[str], use_first_unread_anchor: bool)
 def get_messages_backend(
     request: HttpRequest,
     maybe_user_profile: Union[UserProfile, AnonymousUser],
-    anchor_val: Optional[str] = REQ("anchor", str_validator=check_string, default=None),
+    anchor_val: Optional[str] = REQ("anchor", default=None),
     num_before: int = REQ(converter=to_non_negative_int),
     num_after: int = REQ(converter=to_non_negative_int),
     narrow: OptionalNarrowListT = REQ("narrow", converter=narrow_parameter, default=None),
     use_first_unread_anchor_val: bool = REQ(
-        "use_first_unread_anchor", validator=check_bool, default=False
+        "use_first_unread_anchor", json_validator=check_bool, default=False
     ),
-    client_gravatar: bool = REQ(validator=check_bool, default=False),
-    apply_markdown: bool = REQ(validator=check_bool, default=True),
+    client_gravatar: bool = REQ(json_validator=check_bool, default=False),
+    apply_markdown: bool = REQ(json_validator=check_bool, default=True),
 ) -> HttpResponse:
     anchor = parse_anchor_value(anchor_val, use_first_unread_anchor_val)
     if num_before + num_after > MAX_MESSAGES_PER_FETCH:
@@ -1093,7 +1105,7 @@ def get_messages_backend(
         message_ids = [row[0] for row in rows]
 
         # TODO: This could be done with an outer join instead of two queries
-        um_rows = UserMessage.objects.filter(user_profile=user_profile, message__id__in=message_ids)
+        um_rows = UserMessage.objects.filter(user_profile=user_profile, message_id__in=message_ids)
         user_message_flags = {um.message_id: um.flags_list() for um in um_rows}
 
         for message_id in message_ids:
@@ -1300,7 +1312,7 @@ def post_process_limited_query(
 def messages_in_narrow_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    msg_ids: List[int] = REQ(validator=check_list(check_int)),
+    msg_ids: List[int] = REQ(json_validator=check_list(check_int)),
     narrow: OptionalNarrowListT = REQ(converter=narrow_parameter),
 ) -> HttpResponse:
 

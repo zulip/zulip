@@ -23,7 +23,7 @@ from django.urls import reverse
 from django.utils import translation
 from django.utils.timesince import timesince
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from jinja2 import Markup as mark_safe
 from psycopg2.sql import SQL, Composable, Literal
 
@@ -736,19 +736,19 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
     cursor.close()
 
     # Fetch all the realm administrator users
-    realm_admins: Dict[str, List[str]] = defaultdict(list)
+    realm_owners: Dict[str, List[str]] = defaultdict(list)
     for up in UserProfile.objects.select_related("realm").filter(
-        role=UserProfile.ROLE_REALM_ADMINISTRATOR,
+        role=UserProfile.ROLE_REALM_OWNER,
         is_active=True,
     ):
-        realm_admins[up.realm.string_id].append(up.delivery_email)
+        realm_owners[up.realm.string_id].append(up.delivery_email)
 
     for row in rows:
         row["date_created_day"] = row["date_created"].strftime("%Y-%m-%d")
         row["plan_type_string"] = get_plan_name(row["plan_type"])
         row["age_days"] = int((now - row["date_created"]).total_seconds() / 86400)
         row["is_new"] = row["age_days"] < 12 * 7
-        row["realm_admin_email"] = ", ".join(realm_admins[row["string_id"]])
+        row["realm_owner_emails"] = ", ".join(realm_owners[row["string_id"]])
 
     # get messages sent per day
     counts = get_realm_day_counts()
@@ -810,7 +810,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
         amount=total_amount,
         stats_link="",
         date_created_day="",
-        realm_admin_email="",
+        realm_owner_emails="",
         dau_count=total_dau_count,
         user_profile_count=total_user_profile_count,
         bot_count=total_bot_count,
@@ -1429,14 +1429,22 @@ def support(request: HttpRequest) -> HttpResponse:
 
         context["confirmations"] = confirmations
 
-    def realm_admin_emails(realm: Realm) -> str:
+    def get_realm_owner_emails_as_string(realm: Realm) -> str:
         return ", ".join(
-            realm.get_human_admin_users()
+            realm.get_human_owner_users()
             .order_by("delivery_email")
             .values_list("delivery_email", flat=True)
         )
 
-    context["realm_admin_emails"] = realm_admin_emails
+    def get_realm_admin_emails_as_string(realm: Realm) -> str:
+        return ", ".join(
+            realm.get_human_admin_users(include_realm_owners=False)
+            .order_by("delivery_email")
+            .values_list("delivery_email", flat=True)
+        )
+
+    context["get_realm_owner_emails_as_string"] = get_realm_owner_emails_as_string
+    context["get_realm_admin_emails_as_string"] = get_realm_admin_emails_as_string
     context["get_discount_for_realm"] = get_discount_for_realm
     context["realm_icon_url"] = realm_icon_url
     context["Confirmation"] = Confirmation

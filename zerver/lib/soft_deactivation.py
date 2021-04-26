@@ -7,6 +7,7 @@ from django.conf import settings
 from django.db import transaction
 from django.db.models import Max
 from django.utils.timezone import now as timezone_now
+from sentry_sdk import capture_exception
 
 from zerver.lib.logging_util import log_to_file
 from zerver.models import (
@@ -164,7 +165,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
     subscription_logs = list(
         RealmAuditLog.objects.select_related("modified_stream")
         .filter(
-            modified_user=user_profile, modified_stream__id__in=stream_ids, event_type__in=events
+            modified_user=user_profile, modified_stream_id__in=stream_ids, event_type__in=events
         )
         .order_by("event_last_message_id", "id")
     )
@@ -189,7 +190,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
 
     all_stream_msgs = list(
         Message.objects.filter(
-            recipient__id__in=recipient_ids, id__gt=user_profile.last_active_message_id
+            recipient_id__in=recipient_ids, id__gt=user_profile.last_active_message_id
         )
         .order_by("id")
         .values("id", "recipient__type_id")
@@ -198,8 +199,8 @@ def add_missing_messages(user_profile: UserProfile) -> None:
         UserMessage.objects.filter(
             user_profile=user_profile,
             message__recipient__type=Recipient.STREAM,
-            message__id__gt=user_profile.last_active_message_id,
-        ).values_list("message__id", flat=True)
+            message_id__gt=user_profile.last_active_message_id,
+        ).values_list("message_id", flat=True)
     )
 
     # Filter those messages for which UserMessage rows have been already created
@@ -232,7 +233,7 @@ def do_soft_deactivate_user(user_profile: UserProfile) -> None:
     try:
         user_profile.last_active_message_id = (
             UserMessage.objects.filter(user_profile=user_profile)
-            .order_by("-message__id")[0]
+            .order_by("-message_id")[0]
             .message_id
         )
     except IndexError:  # nocoverage
@@ -342,11 +343,18 @@ def do_soft_activate_users(users: List[UserProfile]) -> List[UserProfile]:
 
 def do_catch_up_soft_deactivated_users(users: List[UserProfile]) -> List[UserProfile]:
     users_caught_up = []
+    failures = []
     for user_profile in users:
         if user_profile.long_term_idle:
-            add_missing_messages(user_profile)
-            users_caught_up.append(user_profile)
+            try:
+                add_missing_messages(user_profile)
+                users_caught_up.append(user_profile)
+            except Exception:  # nocoverage
+                capture_exception()  # nocoverage
+                failures.append(user_profile)  # nocoverage
     logger.info("Caught up %d soft-deactivated users", len(users_caught_up))
+    if failures:
+        logger.error("Failed to catch up %d soft-deactivated users", len(failures))  # nocoverage
     return users_caught_up
 
 

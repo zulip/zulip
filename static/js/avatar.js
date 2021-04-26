@@ -4,7 +4,7 @@ import render_confirm_delete_user_avatar from "../templates/confirm_delete_user_
 
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
-import {i18n} from "./i18n";
+import {$t_html} from "./i18n";
 import {page_params} from "./page_params";
 import * as settings_data from "./settings_data";
 import * as upload_widget from "./upload_widget";
@@ -84,9 +84,9 @@ export function build_user_avatar_widget(upload_function) {
 
         confirm_dialog.launch({
             parent: modal_parent,
-            html_heading: i18n.t("Delete profile picture"),
+            html_heading: $t_html({defaultMessage: "Delete profile picture"}),
             html_body,
-            html_yes_button: i18n.t("Delete"),
+            html_yes_button: $t_html({defaultMessage: "Confirm"}),
             on_click: delete_user_avatar,
         });
     });

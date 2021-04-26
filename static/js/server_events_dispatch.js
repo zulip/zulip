@@ -31,6 +31,7 @@ import * as people from "./people";
 import * as reactions from "./reactions";
 import * as realm_icon from "./realm_icon";
 import * as realm_logo from "./realm_logo";
+import * as realm_playground from "./realm_playground";
 import * as reload from "./reload";
 import * as scroll_bar from "./scroll_bar";
 import * as settings_account from "./settings_account";
@@ -43,6 +44,7 @@ import * as settings_invites from "./settings_invites";
 import * as settings_linkifiers from "./settings_linkifiers";
 import * as settings_notifications from "./settings_notifications";
 import * as settings_org from "./settings_org";
+import * as settings_playgrounds from "./settings_playgrounds";
 import * as settings_profile_fields from "./settings_profile_fields";
 import * as settings_streams from "./settings_streams";
 import * as settings_user_groups from "./settings_user_groups";
@@ -52,6 +54,7 @@ import * as stream_data from "./stream_data";
 import * as stream_events from "./stream_events";
 import * as stream_list from "./stream_list";
 import * as stream_topic_history from "./stream_topic_history";
+import * as sub_store from "./sub_store";
 import * as submessage from "./submessage";
 import * as subs from "./subs";
 import * as typing_events from "./typing_events";
@@ -146,7 +149,7 @@ export function dispatch_normal_event(event) {
                 save_pointer: true,
                 save_narrow: true,
                 save_compose: true,
-                message: "The application has been updated; reloading!",
+                message_html: "The application has been updated; reloading!",
             };
             if (event.immediate) {
                 reload_options.immediate = true;
@@ -342,10 +345,16 @@ export function dispatch_normal_event(event) {
             composebox_typeahead.update_emoji_data();
             break;
 
-        case "realm_filters":
-            page_params.realm_filters = event.realm_filters;
-            markdown.update_linkifier_rules(page_params.realm_filters);
-            settings_linkifiers.populate_linkifiers(page_params.realm_filters);
+        case "realm_linkifiers":
+            page_params.realm_linkifiers = event.realm_linkifiers;
+            markdown.update_linkifier_rules(page_params.realm_linkifiers);
+            settings_linkifiers.populate_linkifiers(page_params.realm_linkifiers);
+            break;
+
+        case "realm_playgrounds":
+            page_params.realm_playgrounds = event.realm_playgrounds;
+            realm_playground.update_playgrounds(page_params.realm_playgrounds);
+            settings_playgrounds.populate_playgrounds(page_params.realm_playgrounds);
             break;
 
         case "realm_domains":
@@ -414,7 +423,7 @@ export function dispatch_normal_event(event) {
                     stream_data.create_streams(event.streams);
 
                     for (const stream of event.streams) {
-                        const sub = stream_data.get_sub_by_id(stream.stream_id);
+                        const sub = sub_store.get(stream.stream_id);
                         if (overlays.streams_open()) {
                             subs.add_sub_to_table(sub);
                         }
@@ -422,8 +431,7 @@ export function dispatch_normal_event(event) {
                     break;
                 case "delete":
                     for (const stream of event.streams) {
-                        const was_subscribed = stream_data.get_sub_by_id(stream.stream_id)
-                            .subscribed;
+                        const was_subscribed = sub_store.get(stream.stream_id).subscribed;
                         const is_narrowed_to_stream = narrow_state.is_for_stream_id(
                             stream.stream_id,
                         );
@@ -472,7 +480,7 @@ export function dispatch_normal_event(event) {
             switch (event.op) {
                 case "add":
                     for (const rec of event.subscriptions) {
-                        const sub = stream_data.get_sub_by_id(rec.stream_id);
+                        const sub = sub_store.get(rec.stream_id);
                         if (sub) {
                             stream_data.update_stream_email_address(sub, rec.email_address);
                             stream_events.mark_subscribed(sub, rec.subscribers, rec.color);
@@ -484,13 +492,13 @@ export function dispatch_normal_event(event) {
                     }
                     break;
                 case "peer_add": {
-                    const stream_ids = stream_data.validate_stream_ids(event.stream_ids);
+                    const stream_ids = sub_store.validate_stream_ids(event.stream_ids);
                     const user_ids = people.validate_user_ids(event.user_ids);
 
                     peer_data.bulk_add_subscribers({stream_ids, user_ids});
 
                     for (const stream_id of stream_ids) {
-                        const sub = stream_data.get_sub_by_id(stream_id);
+                        const sub = sub_store.get(stream_id);
                         subs.update_subscribers_ui(sub);
                     }
 
@@ -498,13 +506,13 @@ export function dispatch_normal_event(event) {
                     break;
                 }
                 case "peer_remove": {
-                    const stream_ids = stream_data.validate_stream_ids(event.stream_ids);
+                    const stream_ids = sub_store.validate_stream_ids(event.stream_ids);
                     const user_ids = people.validate_user_ids(event.user_ids);
 
                     peer_data.bulk_remove_subscribers({stream_ids, user_ids});
 
                     for (const stream_id of stream_ids) {
-                        const sub = stream_data.get_sub_by_id(stream_id);
+                        const sub = sub_store.get(stream_id);
                         subs.update_subscribers_ui(sub);
                     }
 
@@ -513,7 +521,7 @@ export function dispatch_normal_event(event) {
                 }
                 case "remove":
                     for (const rec of event.subscriptions) {
-                        const sub = stream_data.get_sub_by_id(rec.stream_id);
+                        const sub = sub_store.get(rec.stream_id);
                         stream_events.mark_unsubscribed(sub);
                     }
                     break;
@@ -565,6 +573,11 @@ export function dispatch_normal_event(event) {
             }
             if (event.setting_name === "default_language") {
                 // We additionally need to set the language name.
+                //
+                // Note that this does not change translations at all;
+                // a reload is fundamentally required because we
+                // cannot rerender with the new language the strings
+                // present in the backend/Jinja2 templates.
                 page_params.default_language_name = event.language_name;
             }
             if (event.setting_name === "twenty_four_hour_time") {

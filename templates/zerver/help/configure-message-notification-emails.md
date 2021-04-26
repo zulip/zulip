@@ -1,16 +1,16 @@
-# Configure missed message emails
+# Configure message notification emails
 
 ## Include organization name in subject line
 
 If you belong to multiple Zulip organizations, it can be helpful to have the
-name of the organization in the subject line of your missed message emails.
+name of the organization in the subject line of your message notification emails.
 
 {start_tabs}
 
 {settings_tab|notifications}
 
 1. Under **Other notification settings**, select
-   **Include organization name in subject of missed message emails**.
+   **Include organization name in subject of message notification emails**.
 
 {end_tabs}
 
@@ -29,6 +29,6 @@ being sent through your email.
 {settings_tab|notifications}
 
 1. Under **Other notification settings**, toggle
-   **Include message content in missed message emails**.
+   **Include message content in message notification emails**.
 
 {end_tabs}

@@ -2,7 +2,7 @@ import re
 from typing import List, Sequence, Set
 
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.decorator import require_member_or_admin, require_realm_admin
 from zerver.lib.actions import (
@@ -18,7 +18,7 @@ from zerver.lib.request import REQ, JsonableError, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_id
 from zerver.lib.validator import check_int, check_list
-from zerver.models import MultiuseInvite, PreregistrationUser, Realm, Stream, UserProfile
+from zerver.models import MultiuseInvite, PreregistrationUser, Stream, UserProfile
 
 
 def check_if_owner_required(invited_as: int, user_profile: UserProfile) -> None:
@@ -35,21 +35,14 @@ def invite_users_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     invitee_emails_raw: str = REQ("invitee_emails"),
-    invite_as: int = REQ(validator=check_int, default=PreregistrationUser.INVITE_AS["MEMBER"]),
-    stream_ids: List[int] = REQ(validator=check_list(check_int)),
+    invite_as: int = REQ(json_validator=check_int, default=PreregistrationUser.INVITE_AS["MEMBER"]),
+    stream_ids: List[int] = REQ(json_validator=check_list(check_int)),
 ) -> HttpResponse:
 
     if not user_profile.can_invite_others_to_realm():
-        if user_profile.realm.invite_to_realm_policy == Realm.POLICY_ADMINS_ONLY:
-            return json_error(_("Only administrators can invite others to this organization."))
-        if user_profile.realm.invite_to_realm_policy == Realm.POLICY_MODERATORS_ONLY:
-            return json_error(
-                _("Only administrators and moderators can invite others to this organization.")
-            )
-        if user_profile.realm.invite_to_realm_policy == Realm.POLICY_FULL_MEMBERS_ONLY:
-            return json_error(_("Your account is too new to invite others to this organization."))
-        # Guest case will be handled by require_member_or_admin decorator.
-        raise AssertionError("Unexpected policy validation failure")
+        # Guest users case will not be handled here as it will
+        # be handled by the decorator above.
+        raise JsonableError(_("Insufficient permission"))
     if invite_as not in PreregistrationUser.INVITE_AS.values():
         return json_error(_("Must be invited as an valid type of user"))
     check_if_owner_required(invite_as, user_profile)
@@ -167,8 +160,8 @@ def resend_user_invite_email(
 def generate_multiuse_invite_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    invite_as: int = REQ(validator=check_int, default=PreregistrationUser.INVITE_AS["MEMBER"]),
-    stream_ids: Sequence[int] = REQ(validator=check_list(check_int), default=[]),
+    invite_as: int = REQ(json_validator=check_int, default=PreregistrationUser.INVITE_AS["MEMBER"]),
+    stream_ids: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
 ) -> HttpResponse:
     check_if_owner_required(invite_as, user_profile)
 

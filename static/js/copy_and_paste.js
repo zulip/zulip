@@ -1,5 +1,5 @@
 import $ from "jquery";
-import TurndownService from "turndown/lib/turndown.cjs";
+import TurndownService from "turndown";
 
 import * as compose_ui from "./compose_ui";
 import * as message_lists from "./message_lists";

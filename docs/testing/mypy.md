@@ -376,9 +376,9 @@ collection.  For example:
 * An exclude list where the default is to exclude nothing should be
   non-`Optional` with default `[]`.
 
-Don't test an `Optional` value using truthiness (`if value:` or `if
-not value:`), especially when the type might have falsy values other
-than `None`.
+Don't test an `Optional` value using truthiness (`if value:`, `not
+value`, `value or default_value`), especially when the type might have
+falsy values other than `None`.
 
 ```python
 s: Optional[str]

@@ -492,6 +492,20 @@ non-empty value is currently equivalent to true).
 
 [s3-uploads]: ../production/upload-backends.html#s3-backend-configuration
 
+#### `queue_workers_multiprocess`
+
+By default, Zulip automatically detects whether the system has enough
+memory to run Zulip queue processors in the higher-throughput but more
+multiprocess mode (or to save 1.5GiB of RAM with the multithreaded
+mode). The calculation is based on whether the system has enough
+memory (currently 3.5GiB) to run a single-server Zulip installation in
+the multiprocess mode.
+
+Set to `true` or `false` to override the automatic calculation.  This
+override is useful both Docker systems (where the above algorithm
+might see the host's memory, not the container's) and/or when using
+remote servers for postgres, memcached, redis, and RabbitMQ.
+
 #### `uwsgi_buffer_size`
 
 Override the default uwsgi buffer size of 8192.

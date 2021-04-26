@@ -3,6 +3,7 @@ import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as settings_config from "./settings_config";
 import * as stream_data from "./stream_data";
+import * as sub_store from "./sub_store";
 import * as util from "./util";
 
 export function get_sub_for_settings(sub) {
@@ -111,7 +112,7 @@ export function sort_for_stream_settings(stream_ids, order) {
     //       which uses Intl.Collator() when possible.
 
     function name(stream_id) {
-        const sub = stream_data.get_sub_by_id(stream_id);
+        const sub = sub_store.get(stream_id);
         if (!sub) {
             return "";
         }
@@ -119,7 +120,7 @@ export function sort_for_stream_settings(stream_ids, order) {
     }
 
     function weekly_traffic(stream_id) {
-        const sub = stream_data.get_sub_by_id(stream_id);
+        const sub = sub_store.get(stream_id);
         if (sub && sub.stream_weekly_traffic !== null) {
             return sub.stream_weekly_traffic;
         }

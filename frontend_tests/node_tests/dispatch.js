@@ -39,6 +39,7 @@ const notifications = mock_esm("../../static/js/notifications");
 const reactions = mock_esm("../../static/js/reactions");
 const realm_icon = mock_esm("../../static/js/realm_icon");
 const realm_logo = mock_esm("../../static/js/realm_logo");
+const realm_playground = mock_esm("../../static/js/realm_playground");
 const reload = mock_esm("../../static/js/reload");
 const scroll_bar = mock_esm("../../static/js/scroll_bar");
 const settings_account = mock_esm("../../static/js/settings_account");
@@ -48,6 +49,7 @@ const settings_emoji = mock_esm("../../static/js/settings_emoji");
 const settings_exports = mock_esm("../../static/js/settings_exports");
 const settings_invites = mock_esm("../../static/js/settings_invites");
 const settings_linkifiers = mock_esm("../../static/js/settings_linkifiers");
+const settings_playgrounds = mock_esm("../../static/js/settings_playgrounds");
 const settings_notifications = mock_esm("../../static/js/settings_notifications");
 const settings_org = mock_esm("../../static/js/settings_org");
 const settings_profile_fields = mock_esm("../../static/js/settings_profile_fields");
@@ -516,13 +518,22 @@ run_test("realm_emoji", (override) => {
     }
 });
 
-run_test("linkifier", (override) => {
-    const event = event_fixtures.realm_filters;
-    page_params.realm_filters = [];
+run_test("realm_linkifiers", (override) => {
+    const event = event_fixtures.realm_linkifiers;
+    page_params.realm_linkifiers = [];
     override(settings_linkifiers, "populate_linkifiers", noop);
     override(markdown, "update_linkifier_rules", noop);
     dispatch(event);
-    assert_same(page_params.realm_filters, event.realm_filters);
+    assert_same(page_params.realm_linkifiers, event.realm_linkifiers);
+});
+
+run_test("realm_playgrounds", (override) => {
+    const event = event_fixtures.realm_playgrounds;
+    page_params.realm_playgrounds = [];
+    override(settings_playgrounds, "populate_playgrounds", noop);
+    override(realm_playground, "update_playgrounds", noop);
+    dispatch(event);
+    assert_same(page_params.realm_playgrounds, event.realm_playgrounds);
 });
 
 run_test("realm_domains", (override) => {

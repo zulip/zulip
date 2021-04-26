@@ -6,3 +6,6 @@ focal:
 
 buster:
   base_image: buildpack-deps:buster-scm
+
+bullseye:
+  base_image: buildpack-deps:bullseye-scm

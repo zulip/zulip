@@ -2377,6 +2377,69 @@ paths:
 
                                 Processing this event is important to doing Markdown local echo
                                 correctly.
+
+                                **Changes**: New in Zulip 4.0 (feature level 54), replacing the
+                                previous `realm_filters` event type, which is still sent for
+                                backwards compatibility reasons.
+
+                                Clients should migrate to requesting and processing the
+                                `realm_linkifiers` event type when possible, since we plan to remove
+                                the legacy `realm_filters` logic entirely in a future release.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - realm_linkifiers
+                                realm_linkifiers:
+                                  type: array
+                                  description: |
+                                    Array of dictionaries where each dictionary contains details about
+                                    a single realm linkifier.
+                                  items:
+                                    type: object
+                                    additionalProperties: false
+                                    properties:
+                                      pattern:
+                                        type: string
+                                        description: |
+                                          The string regex pattern which represents the pattern that
+                                          should be linkified by this linkifier.
+                                      url_format:
+                                        type: string
+                                        description: |
+                                          The URL format string to be used for linkifying matches.
+
+                                      id:
+                                        type: integer
+                                        description: |
+                                          The ID of the linkifier.
+                              example:
+                                {
+                                  "type": "realm_linkifiers",
+                                  "realm_linkifiers":
+                                    [
+                                      {
+                                        "pattern": "#(?P<id>[123])",
+                                        "url_format": "https://realm.com/my_realm_filter/%(id)s",
+                                        "id": 1,
+                                      },
+                                    ],
+                                  "id": 0,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              deprecated: true
+                              description: |
+                                Legacy event type. Sent to all users in a Zulip organization
+                                when the set of configured [linkifiers](/help/add-a-custom-linkifier)
+                                for the organization has changed.
+
+                                **Changes**: Deprecated in Zulip 4.0 (feature level 54), replaced by
+                                the `realm_linkifiers` event type, which has a clearer name and format,
+                                instead.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -2961,6 +3024,17 @@ paths:
                                       description: |
                                         The policy for which users can add other users to streams in this
                                         organization.
+                                    move_messages_between_streams_policy:
+                                      type: integer
+                                      description: |
+                                        The policy for which users can move messages from one stream to another.
+
+                                        * 1 = Members only
+                                        * 2 = Administrators only
+                                        * 3 = Full members only
+                                        * 4 = Moderators only
+
+                                        **Changes**: New in Zulip 4.0 (feature level 56)
                                     wildcard_mention_policy:
                                       type: integer
                                       description: |
@@ -2990,6 +3064,12 @@ paths:
                                       type: string
                                       description: |
                                         The description of the organization, used on login and registration pages.
+                                    realm_giphy_rating:
+                                      type: integer
+                                      description: |
+                                        Maximum rating of the GIFs that will be retrieved from GIPHY.
+
+                                        **Changes**: New in Zulip 4.0 (feature level 55).
                                     digest_emails_enabled:
                                       type: boolean
                                       description: |
@@ -3238,11 +3318,11 @@ paths:
                                         organization administrator.
 
                                         Useful for administrative settings UI that allows changing the
-                                        video chat provider.
+                                        video call provider.
                                       additionalProperties:
                                         description: |
                                           `{provider_name}`: Dictionary containing the details of the
-                                          video chat provider with the name of the chat provider as
+                                          video call provider with the name of the chat provider as
                                           the key.
                                         type: object
                                         additionalProperties: false
@@ -3250,11 +3330,11 @@ paths:
                                           name:
                                             type: string
                                             description: |
-                                              The name of the video chat provider.
+                                              The name of the video call provider.
                                           id:
                                             type: integer
                                             description: |
-                                              The ID of the video chat provider.
+                                              The ID of the video call provider.
                                     presence_disabled:
                                       type: boolean
                                       description: |
@@ -6485,7 +6565,7 @@ paths:
                         "msg": "Cannot deactivate the only organization owner",
                         "result": "error",
                       }
-  /realm/filters:
+  /realm/linkifiers:
     get:
       operationId: get_linkifiers
       tags: ["server_and_organizations"]
@@ -6495,7 +6575,11 @@ paths:
         expression patterns that are automatically linkified when they appear
         in messages and topics.
 
-        `GET {{ api_url }}/v1/realm/filters`
+        `GET {{ api_url }}/v1/realm/linkifiers`
+
+        **Changes**: New in Zulip 4.0 (feature level 54). On older versions,
+        a similar `GET /realm/filters` endpoint was available with each entry in
+        a `[pattern, url_format, id]` tuple format.
       responses:
         "200":
           description: Success.
@@ -6508,35 +6592,41 @@ paths:
                     properties:
                       result: {}
                       msg: {}
-                      filters:
+                      linkifiers:
                         type: array
-                        items:
-                          type: array
-                          items:
-                            oneOf:
-                              - type: string
-                              - type: integer
                         description: |
-                          An array of tuples, each representing one of
-                          the linkifiers set up in the
-                          organization. Each of these tuples contain the
-                          pattern, the formatted URL and the filter's
-                          ID, in that order. See the [Create
-                          linkifiers](/api/add-linkifier) article for
-                          details on what each field means.
+                          An array of objects, where each object describes a linkifier.
+                        items:
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            pattern:
+                              type: string
+                              description: |
+                                The string regex pattern which represents the pattern that
+                                should be linkified by this linkifier.
+                            url_format:
+                              type: string
+                              description: |
+                                The URL format string to be used for linkifying matches.
+                            id:
+                              type: integer
+                              description: |
+                                The ID of the linkifier.
                     example:
                       {
                         "msg": "",
-                        "filters":
+                        "linkifiers":
                           [
-                            [
-                              "#(?P<id>[0-9]+)",
-                              "https://github.com/zulip/zulip/issues/%(id)s",
-                              1,
-                            ],
+                            {
+                              "pattern": "#(?P<id>[0-9]+)",
+                              "url_format": "https://github.com/zulip/zulip/issues/%(id)s",
+                              "id": 1,
+                            },
                           ],
                         "result": "success",
                       }
+  /realm/filters:
     post:
       operationId: add_linkifier
       tags: ["server_and_organizations"]
@@ -6547,26 +6637,8 @@ paths:
 
         `POST {{ api_url }}/v1/realm/filters`
       parameters:
-        - name: pattern
-          in: query
-          description: |
-            The [Python regular
-            expression](https://docs.python.org/3/howto/regex.html) that should
-            trigger the linkifier.
-          schema:
-            type: string
-          example: "#(?P<id>[0-9]+)"
-          required: true
-        - name: url_format_string
-          in: query
-          description: |
-            The URL used for the link. If you used named groups for the `pattern`,
-            you can insert their content here with
-            `%(name_of_the_capturing_group)s`.
-          schema:
-            type: string
-          example: https://github.com/zulip/zulip/issues/%(id)s
-          required: true
+        - $ref: "#/components/parameters/LinkifierPattern"
+        - $ref: "#/components/parameters/LinkifierURLFormatString"
       responses:
         "200":
           description: Success.
@@ -6598,11 +6670,40 @@ paths:
         - name: filter_id
           in: path
           description: |
-            The ID of the filter that you want to remove.
+            The ID of the linkifier that you want to remove.
           schema:
             type: integer
           example: 42
           required: true
+      responses:
+        "200":
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JsonSuccess"
+    patch:
+      operationId: update_linkifier
+      tags: ["server_and_organizations"]
+      description: |
+        Update a [linkifier](/help/add-a-custom-linkifier), regular
+        expression patterns that are automatically linkified when they appear
+        in messages and topics.
+
+        `PATCH {{ api_url }}/v1/realm/filters/{filter_id}`
+
+        **Changes**: New in Zulip 4.0 (feature level 57).
+      parameters:
+        - name: filter_id
+          in: path
+          description: |
+            The ID of the linkifier that you want to update.
+          schema:
+            type: integer
+          example: 2
+          required: true
+        - $ref: "#/components/parameters/LinkifierPattern"
+        - $ref: "#/components/parameters/LinkifierURLFormatString"
       responses:
         "200":
           description: Success.
@@ -6620,7 +6721,8 @@ paths:
 
         `POST {{ api_url }}/v1/realm/playgrounds`
 
-        **Changes**: New in Zulip 4.0 (feature level 49).
+        **Changes**: New in Zulip 4.0 (feature level 49). A parameter encoding bug was
+        fixed in Zulip 4.0 (feature level 57).
       parameters:
         - name: name
           in: query
@@ -6630,7 +6732,7 @@ paths:
             playground options exist for that programming language.
           schema:
             type: string
-          example: "Python playground"
+          example: Python playground
           required: true
         - name: pygments_language
           in: query
@@ -6639,7 +6741,7 @@ paths:
             programming language.
           schema:
             type: string
-          example: "Python"
+          example: Python
           required: true
         - name: url_prefix
           in: query
@@ -6771,6 +6873,9 @@ paths:
             `fetch_event_types` are used to fetch initial data. If
             `fetch_event_types` is not provided, `event_types` is used and if
             `event_types` is not provided, this parameter defaults to `None`.
+
+            Event types not supported by the server are ignored, in order to simplify
+            the implementation of client apps that support multiple server versions.
           content:
             application/json:
               schema:
@@ -6885,6 +6990,52 @@ paths:
                           **Deprecated**: This field may be removed in future versions as it no
                           longer has a clear purpose.  Clients wishing to fetch the latest messages
                           should pass `anchor="latest"` to `GET /messages`.
+                      max_stream_name_length:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The maximum allowed length for a stream name.  Clients should use
+                          these properties rather than hardcoding field sizes, as they may
+                          change in a future Zulip release.
+
+                          **Changes**: New in Zulip 4.0 (feature level 53).  Previously,
+                          this required `stream` in `fetch_event_types`, was called
+                          `stream_name_max_length`, and always had value 60.
+                      max_stream_description_length:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The maximum allowed length for a stream description.  Clients should use
+                          these properties rather than hardcoding field sizes, as they may
+                          change in a future Zulip release.
+
+                          **Changes**: New in Zulip 4.0 (feature level 53).  Previously,
+                          this required `stream` in `fetch_event_types`, was called
+                          `stream_description_max_length`, and always had value 1024.
+                      max_topic_length:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The maximum allowed length for a topic.  Clients should use
+                          these properties rather than hardcoding field sizes, as they may
+                          change in a future Zulip release.
+
+                          **Changes**: New in Zulip 4.0 (feature level 53).  Previously,
+                          this always had value 60.
+                      max_message_length:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The maximum allowed length for a message.  Clients should use
+                          these properties rather than hardcoding field sizes, as they may
+                          change in a future Zulip release.
+
+                          **Changes**: New in Zulip 4.0 (feature level 53).  Previously,
+                          this always had value 10000.
                       muted_topics:
                         type: array
                         description: |
@@ -6963,8 +7114,37 @@ paths:
                           - type: array
                             items:
                               type: integer
+                      realm_linkifiers:
+                        type: array
+                        description: |
+                          Present if `realm_linkifiers` is present in `fetch_event_types`.
+
+                          Array of objects where each object describes a single
+                          [linkifier](/help/add-a-custom-linkifier).
+
+                          **Changes**: New in Zulip 4.0 (feature level 54). Clients can
+                          access these data on older server versions via the previous
+                          `realm_filters` key.
+                        items:
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            pattern:
+                              type: string
+                              description: |
+                                The string regex pattern which represents the pattern that
+                                should be linkified on matching.
+                            url_format:
+                              type: string
+                              description: |
+                                The URL with which the pattern matching string should be linkified.
+                            id:
+                              type: integer
+                              description: |
+                                The ID of the linkifier.
                       realm_filters:
                         type: array
+                        deprecated: true
                         items:
                           type: array
                           items:
@@ -6972,16 +7152,20 @@ paths:
                               - type: integer
                               - type: string
                         description: |
-                          Present if `realm_filters` is present in `fetch_event_types`.
+                          Legacy property for linkifiers. Present if `realm_filters` is
+                          present in `fetch_event_types`.
 
                           An array of tuples (fixed-length arrays) where each tuple describes
-                          a single realm filter ([linkifier](/help/add-a-custom-linkifier).
+                          a single [linkifier](/help/add-a-custom-linkifier).
                           The first element of the tuple is a string regex pattern which represents
                           the pattern that should be linkified on matching.
 
                           The second element is the URL with which the
                           pattern matching string should be linkified with and the third element
                           is the id of the realm filter.
+
+                          **Changes**: Deprecated in Zulip 4.0 (feature level 54), replaced by
+                          the `realm_linkifiers` key instead.
                       realm_playgrounds:
                         type: array
                         items:
@@ -7303,22 +7487,6 @@ paths:
 
                           For organization administrators, this will include all private streams
                           in the organization.
-                      stream_name_max_length:
-                        type: integer
-                        description: |
-                          Present if `stream` is present in `fetch_event_types`.
-
-                          The maximum allowed length for a stream name.  Clients should use
-                          these properties rather than hardcoding field sizes, as they may
-                          change in a future Zulip release.
-                      stream_description_max_length:
-                        type: integer
-                        description: |
-                          Present if `stream` is present in `fetch_event_types`.
-
-                          The maximum allowed length for a stream description.  Clients should use
-                          these properties rather than hardcoding field sizes, as they may
-                          change in a future Zulip release.
                       realm_default_streams:
                         type: array
                         items:
@@ -7395,6 +7563,8 @@ paths:
                           Developers of clients should also read the
                           [GIPHY API TOS](https://support.giphy.com/hc/en-us/articles/360028134111-GIPHY-API-Terms-of-Service-)
                           before using this API key.
+
+                          **Changes**: Added in Zulip 4.0 (feature level 47).
                       enable_desktop_notifications:
                         type: boolean
                         description: |
@@ -7555,18 +7725,27 @@ paths:
                           Present if `update_display_settings` is present in `fetch_event_types`.
 
                           The color scheme selected by the user.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       default_language:
                         type: string
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`.
 
                           The default language chosen by the user.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       demote_inactive_streams:
                         type: integer
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`.
 
                           Whether the user has chosen to demote inactive streams.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       dense_mode:
                         type: boolean
                         description: |
@@ -7574,18 +7753,27 @@ paths:
 
                           Whether the user has switched on dense mode.  Dense mode is an experimental
                           feature that is only available in development environments.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       emojiset:
                         type: string
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`.
 
                           The name of the emojiset that the user has chosen.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       fluid_layout_width:
                         type: boolean
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`.
 
                           Whether the user has chosen for the layout width to be fluid.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       default_view:
                         type: string
                         description: |
@@ -7595,12 +7783,18 @@ paths:
                           as the URL suffix after `#` to be rendered when Zulip loads.
 
                           Currently supported values are `all_messages` and `recent_topics`.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       high_contrast_mode:
                         type: boolean
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`.
 
                           Whether has switched on high contrast mode.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       left_side_userlist:
                         type: boolean
                         description: |
@@ -7609,6 +7803,9 @@ paths:
                           Whether the user has chosen for the userlist to be displayed
                           on the left side of the screen (for desktop app and webapp) in narrow
                           windows.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       starred_message_counts:
                         type: boolean
                         description: |
@@ -7616,6 +7813,9 @@ paths:
 
                           Whether the user has chosen the number of starred messages to
                           be displayed similar to unread counts.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       timezone:
                         type: string
                         description: |
@@ -7623,6 +7823,9 @@ paths:
 
                           The timezone configured for the user.  This is used primarily to display
                           the user's timezone to other users.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       translate_emoticons:
                         type: boolean
                         description: |
@@ -7630,6 +7833,9 @@ paths:
 
                           Whether the user has chosen for emoticons to be translated into emoji
                           in the Zulip compose box.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       twenty_four_hour_time:
                         type: boolean
                         description: |
@@ -7637,6 +7843,9 @@ paths:
 
                           Whether the user has chosen a twenty four hour time display (true)
                           or a twelve hour one (false).
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                       emojiset_choices:
                         description: |
                           Present if `update_display_settings` is present in `fetch_event_types`.
@@ -7646,6 +7855,9 @@ paths:
 
                           Only relevant to clients with configuration UI for choosing an emojiset;
                           the currently selected emojiset is available in the `emojiset` key.
+
+                          See [PATCH /settings/display](/api/update-display-settings)
+                          for api details on display settings.
                         type: array
                         items:
                           type: object
@@ -7792,6 +8004,19 @@ paths:
 
                           **Changes**: New in Zulip 4.0 (feature level 50) replacing the
                           previous `realm_invite_by_admins_only` boolean.
+                      realm_move_messages_between_streams_policy:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The policy for which users can move messages from one stream to another.
+
+                          * 1 = Members only
+                          * 2 = Administrators only
+                          * 3 = Full members only
+                          * 4 = Moderators only
+
+                          **Changes**: New in Zulip 4.0 (feature level 56)
                       realm_inline_image_preview:
                         type: boolean
                         description: |
@@ -7875,6 +8100,14 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           The configured video call provider for the organization.
+                      realm_giphy_rating:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The configured GIPHY rating for the organization.
+
+                          **Changes**: New in Zulip 4.0 (feature level 55).
                       realm_waiting_period_threshold:
                         type: integer
                         description: |
@@ -8064,11 +8297,11 @@ paths:
                           organization administrator.
 
                           Useful for administrative settings UI that allows changing the
-                          video chat provider.
+                          video call provider.
                         additionalProperties:
                           description: |
                             `{provider_name}`: Dictionary containing the details of the
-                            video chat provider with the name of the chat provider as
+                            video call provider with the name of the chat provider as
                             the key.
                           type: object
                           additionalProperties: false
@@ -8076,11 +8309,11 @@ paths:
                             name:
                               type: string
                               description: |
-                                The name of the video chat provider.
+                                The name of the video call provider.
                             id:
                               type: integer
                               description: |
-                                The ID of the video chat provider.
+                                The ID of the video call provider.
                       realm_presence_disabled:
                         type: boolean
                         description: |
@@ -8246,6 +8479,31 @@ paths:
                           This Zulip server's configured minimum `zxcvbn` minimum guesses.
                           Necessary for password change UI to show whether the password
                           will be accepted.
+                      giphy_rating_options:
+                        type: object
+                        description: |
+                          Dictionary where each entry describes a valid rating
+                          that is configured on this server and could be selected by an
+                          organization administrator.
+
+                          Useful for administrative settings UI that allows changing the
+                          allowed rating of GIFs.
+                        additionalProperties:
+                          description: |
+                            `{rating_name}`: Dictionary containing the details of the
+                            rating with the name of the rating as
+                            the key.
+                          type: object
+                          additionalProperties: false
+                          properties:
+                            name:
+                              type: string
+                              description: |
+                                The description of the rating option.
+                            id:
+                              type: integer
+                              description: |
+                                The ID of the rating option.
                       max_file_upload_size_mib:
                         type: integer
                         description: |
@@ -8831,7 +9089,7 @@ paths:
         - name: message_content_in_email_notifications
           in: query
           description: |
-            Include the message's content in missed messages email notifications.
+            Include the message's content in email notifications for new messages.
           schema:
             type: boolean
           example: true
@@ -8870,7 +9128,7 @@ paths:
         - name: realm_name_in_notifications
           in: query
           description: |
-            Include organization name in subject of missed message emails.
+            Include organization name in subject of message notification emails.
           schema:
             type: boolean
           example: true
@@ -8946,6 +9204,236 @@ paths:
                       {
                         "enable_offline_push_notifications": true,
                         "enable_online_push_notifications": true,
+                        "msg": "",
+                        "result": "success",
+                      }
+  /settings/display:
+    patch:
+      operationId: update_display_settings
+      tags: ["users"]
+      description: |
+        This endpoint is used to edit the current user's user interface settings.
+
+        `PATCH {{ api_url }}/v1/settings/display`
+      parameters:
+        - name: twenty_four_hour_time
+          in: query
+          description: |
+            Whether time should be [displayed in 24-hour notation](/help/change-the-time-format).
+          schema:
+            type: boolean
+          example: true
+        - name: dense_mode
+          in: query
+          description: |
+            This setting has no effect at present.  It is reserved for use in controlling
+            the default font size in Zulip.
+          schema:
+            type: boolean
+          example: true
+        - name: starred_message_counts
+          in: query
+          description: |
+            Whether clients should display the [number of starred
+            messages](/help/star-a-message#display-the-number-of-starred-messages).
+          schema:
+            type: boolean
+          example: true
+        - name: fluid_layout_width
+          in: query
+          description: |
+            Whether to use the [maximum available screen width](/help/enable-full-width-display)
+            for the webapp's center panel (message feed, recent topics) on wide screens.
+          schema:
+            type: boolean
+          example: true
+        - name: high_contrast_mode
+          in: query
+          description: |
+            This setting is reserved for use to control variations in Zulip's design
+            to help visually impaired users.
+          schema:
+            type: boolean
+          example: true
+        - name: color_scheme
+          in: query
+          description: |
+            Controls which [color theme](/help/night-mode) to use.
+
+            * 1 - Automatic
+            * 2 - Night mode
+            * 3 - Day mode
+
+            Automatic detection is implementing using the standard `prefers-color-scheme`
+            media query.
+          content:
+            application/json:
+              schema:
+                type: integer
+                enum:
+                  - 1
+                  - 2
+                  - 3
+              example: 1
+        - name: translate_emoticons
+          in: query
+          description: |
+            Whether to [translate emoticons to emoji](/help/enable-emoticon-translations)
+            in messages the user sends.
+          schema:
+            type: boolean
+          example: true
+        - name: default_language
+          in: query
+          description: |
+            What [default language](/help/change-your-language) to use for the account.
+
+            This controls both the Zulip UI as well as email notifications sent to the user.
+
+            The value needs to be a standard language code that the Zulip server has
+            translation data for; for example, `"en"` for English` or `"de"` for German.
+          content:
+            application/json:
+              schema:
+                type: string
+              example: "en"
+        - name: default_view
+          in: query
+          description: |
+            The [default view](/help/change-default-view) used when opening a new
+            Zulip webapp window or hitting the `Esc` keyboard shortcut repeatedly.
+
+            * "recent_topics" - Recent topics view
+            * "all_messages" - All messages view
+          schema:
+            type: string
+          example: '"all_messages"'
+        - name: left_side_userlist
+          in: query
+          description: |
+            Whether the users list on left sidebar in narrow windows.
+
+            This feature is not heavily used and is likely to be reworked.
+          schema:
+            type: boolean
+          example: true
+        - name: emojiset
+          in: query
+          description: |
+            The user's configured [emoji set](/help/emoji-and-emoticons#use-emoticons),
+            used to display emoji to the user everything they appear in the UI.
+
+            * "google" - Google modern
+            * "google-blob" - Google classic
+            * "twitter" - Twitter
+            * "text" - Plain text
+          schema:
+            type: string
+          example: '"google"'
+        - name: demote_inactive_streams
+          in: query
+          description: |
+            Whether to [demote inactive streams](/help/manage-inactive-streams) in the left sidebar.
+
+            * 1 - Automatic
+            * 2 - Always
+            * 3 - Never
+          content:
+            application/json:
+              schema:
+                type: integer
+                enum:
+                  - 1
+                  - 2
+                  - 3
+              example: 1
+        - name: timezone
+          in: query
+          description: |
+            The user's [configured timezone](/help/change-your-timezone).
+
+            Timezone values supported by the server are served at
+            [/static/generated/timezones.json](/static/generated/timezones.json).
+          content:
+            application/json:
+              schema:
+                type: string
+              example: "Asia/Kolkata"
+      responses:
+        "200":
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccessBase"
+                  - additionalProperties: false
+                    properties:
+                      result: {}
+                      msg: {}
+                      twenty_four_hour_time:
+                        type: boolean
+                        description: |
+                          The setting for `twenty_four_hour_time`, if it was changed in this request.
+                      dense_mode:
+                        type: boolean
+                        description: |
+                          The setting for `dense_mode`, if it was changed in this request.
+                          This setting is however reserved for future, and can not be
+                          modified in production environment.
+                      starred_message_counts:
+                        type: boolean
+                        description: |
+                          The setting for `starred_message_counts`, if it was changed
+                          in this request.
+                      fluid_layout_width:
+                        type: boolean
+                        description: |
+                          The setting for `fluid_layout_width`, if it was changed
+                          in this request.
+                      high_contrast_mode:
+                        type: boolean
+                        description: |
+                          The setting for `high_contrast_mode`, if it was changed in
+                          this request.
+                          This setting is however reserved for future, and can not be
+                          modified in production environment.
+                      color_scheme:
+                        type: integer
+                        description: |
+                          The numerical key corresponding to new `color_scheme` if it was changed in this request.
+                      translate_emoticons:
+                        type: boolean
+                        description: |
+                          The setting for `translate_emoticons`, if it was changed in this request.
+                      default_language:
+                        type: string
+                        description: |
+                          The language code corresponding to new `default_language` if it was changed in this request.
+                      default_view:
+                        type: string
+                        description: |
+                          The new setting for `default_view`, if it was changed in this request.
+                      left_side_userlist:
+                        type: boolean
+                        description: |
+                          The setting for `left_side_userlist`, if it was changed in this request.
+                      emojiset:
+                        type: string
+                        description: |
+                          The string identifier corresponding to new `emojiset` if it was changed in this request.
+                      demote_inactive_streams:
+                        type: integer
+                        description: |
+                          The numerical key corresponding to new `demote_inactive_streams` setting if it was changed in this request.
+                      timezone:
+                        type: string
+                        description: |
+                          The setting for `timezone`, if it was changed in this request.
+                    example:
+                      {
+                        "emojiset": "google",
+                        "left_side_userlist": true,
                         "msg": "",
                         "result": "success",
                       }
@@ -11256,6 +11744,9 @@ components:
         your client in your client code.  For most applications, one
         is only interested in messages, so one specifies:
         `event_types=['message']`
+
+        Event types not supported by the server are ignored, in order to simplify
+        the implementation of client apps that support multiple server versions.
       content:
         application/json:
           schema:
@@ -11540,3 +12031,25 @@ components:
           - type: integer
       example: "20"
       required: false
+    LinkifierPattern:
+      name: pattern
+      in: query
+      description: |
+        The [Python regular
+        expression](https://docs.python.org/3/howto/regex.html) that should
+        trigger the linkifier.
+      schema:
+        type: string
+      example: "#(?P<id>[0-9]+)"
+      required: true
+    LinkifierURLFormatString:
+      name: url_format_string
+      in: query
+      description: |
+        The URL used for the link. If you used named groups for the `pattern`,
+        you can insert their content here with
+        `%(name_of_the_capturing_group)s`.
+      schema:
+        type: string
+      example: https://github.com/zulip/zulip/issues/%(id)s
+      required: true

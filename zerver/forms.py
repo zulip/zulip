@@ -13,7 +13,7 @@ from django.core.validators import validate_email
 from django.http import HttpRequest
 from django.urls import reverse
 from django.utils.http import urlsafe_base64_encode
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from jinja2 import Markup as mark_safe
 from two_factor.forms import AuthenticationTokenForm as TwoFactorAuthenticationTokenForm
 from two_factor.utils import totp_digits

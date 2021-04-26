@@ -1490,7 +1490,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         payload = get_message_payload_apns(user_profile, message)
         expected = {
             "alert": {
-                "title": "Cordelia Lear, King Hamlet, Othello, the Moor of Venice",
+                "title": "Cordelia, Lear's daughter, King Hamlet, Othello, the Moor of Venice",
                 "subtitle": "King Hamlet:",
                 "body": message.content,
             },
@@ -1622,7 +1622,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         payload = get_message_payload_apns(user_profile, message)
         expected = {
             "alert": {
-                "title": "Cordelia Lear, King Hamlet, Othello, the Moor of Venice",
+                "title": "Cordelia, Lear's daughter, King Hamlet, Othello, the Moor of Venice",
                 "subtitle": "King Hamlet:",
                 "body": "***REDACTED***",
             },
@@ -2298,8 +2298,8 @@ class TestPushNotificationsContent(ZulipTestCase):
             },
             {
                 "name": "mentions",
-                "rendered_content": f'<p>Mentioning <span class="user-mention" data-user-id="{cordelia.id}">@Cordelia Lear</span>.</p>',
-                "expected_output": "Mentioning @Cordelia Lear.",
+                "rendered_content": f'<p>Mentioning <span class="user-mention" data-user-id="{cordelia.id}">@Cordelia, Lear\'s daughter</span>.</p>',
+                "expected_output": "Mentioning @Cordelia, Lear's daughter.",
             },
             {
                 "name": "stream_names",

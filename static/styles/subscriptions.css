@@ -802,6 +802,7 @@ form#add_new_subscription {
             position: absolute;
             bottom: 0;
             width: calc(100% - 27px);
+            padding-top: 9px;
         }
 
         .stream-creation-body {

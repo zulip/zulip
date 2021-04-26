@@ -404,7 +404,7 @@ input.recipient_box {
     vertical-align: top;
 }
 
-a.message-control-button {
+a.compose_control_button {
     display: block;
     opacity: 0.4;
     color: inherit;

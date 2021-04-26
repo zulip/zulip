@@ -401,7 +401,12 @@ class StreamAdminTest(ZulipTestCase):
 
         sub = get_subscription("private_stream_2", user_profile)
         do_change_subscription_property(
-            user_profile, sub, stream, "role", Subscription.ROLE_STREAM_ADMINISTRATOR
+            user_profile,
+            sub,
+            stream,
+            "role",
+            Subscription.ROLE_STREAM_ADMINISTRATOR,
+            acting_user=None,
         )
         result = self.client_patch(f"/json/streams/{stream.id}", params)
         self.assert_json_success(result)
@@ -451,7 +456,12 @@ class StreamAdminTest(ZulipTestCase):
 
         sub = get_subscription("public_stream_2", user_profile)
         do_change_subscription_property(
-            user_profile, sub, stream, "role", Subscription.ROLE_STREAM_ADMINISTRATOR
+            user_profile,
+            sub,
+            stream,
+            "role",
+            Subscription.ROLE_STREAM_ADMINISTRATOR,
+            acting_user=None,
         )
         result = self.client_patch(f"/json/streams/{stream.id}", params)
         self.assert_json_success(result)
@@ -536,7 +546,9 @@ class StreamAdminTest(ZulipTestCase):
         )
         self.subscribe(hamlet, stream2.name)
         self.subscribe(polonius, stream2.name)
-        self.assertEqual({hamlet.id}, subscriber_ids_with_stream_history_access(stream2))
+        self.assertEqual(
+            {hamlet.id, polonius.id}, subscriber_ids_with_stream_history_access(stream2)
+        )
 
         stream3 = self.make_stream(
             "history_public_web_public_stream",
@@ -549,6 +561,15 @@ class StreamAdminTest(ZulipTestCase):
             {hamlet.id, polonius.id}, subscriber_ids_with_stream_history_access(stream3)
         )
 
+        stream4 = self.make_stream(
+            "regular_public_stream",
+        )
+        self.subscribe(hamlet, stream4.name)
+        self.subscribe(polonius, stream4.name)
+        self.assertEqual(
+            {hamlet.id, polonius.id}, subscriber_ids_with_stream_history_access(stream4)
+        )
+
     def test_deactivate_stream_backend(self) -> None:
         user_profile = self.example_user("hamlet")
         self.login_user(user_profile)
@@ -559,7 +580,7 @@ class StreamAdminTest(ZulipTestCase):
         result = self.client_delete(f"/json/streams/{stream.id}")
         self.assert_json_success(result)
         subscription_exists = (
-            get_active_subscriptions_for_stream_id(stream.id)
+            get_active_subscriptions_for_stream_id(stream.id, include_deactivated_users=True)
             .filter(
                 user_profile=user_profile,
             )
@@ -572,13 +593,18 @@ class StreamAdminTest(ZulipTestCase):
         self.subscribe(user_profile, stream.name)
         sub = get_subscription(stream.name, user_profile)
         do_change_subscription_property(
-            user_profile, sub, stream, "role", Subscription.ROLE_STREAM_ADMINISTRATOR
+            user_profile,
+            sub,
+            stream,
+            "role",
+            Subscription.ROLE_STREAM_ADMINISTRATOR,
+            acting_user=None,
         )
 
         result = self.client_delete(f"/json/streams/{stream.id}")
         self.assert_json_success(result)
         subscription_exists = (
-            get_active_subscriptions_for_stream_id(stream.id)
+            get_active_subscriptions_for_stream_id(stream.id, include_deactivated_users=True)
             .filter(
                 user_profile=user_profile,
             )
@@ -859,7 +885,12 @@ class StreamAdminTest(ZulipTestCase):
         self.subscribe(user_profile, "new_stream")
         sub = get_subscription("new_stream", user_profile)
         do_change_subscription_property(
-            user_profile, sub, new_stream, "role", Subscription.ROLE_STREAM_ADMINISTRATOR
+            user_profile,
+            sub,
+            new_stream,
+            "role",
+            Subscription.ROLE_STREAM_ADMINISTRATOR,
+            acting_user=None,
         )
         del events[:]
         with tornado_redirected_to_list(events):
@@ -1055,7 +1086,12 @@ class StreamAdminTest(ZulipTestCase):
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
         sub = get_subscription("stream_name1", user_profile)
         do_change_subscription_property(
-            user_profile, sub, stream, "role", Subscription.ROLE_STREAM_ADMINISTRATOR
+            user_profile,
+            sub,
+            stream,
+            "role",
+            Subscription.ROLE_STREAM_ADMINISTRATOR,
+            acting_user=None,
         )
 
         with tornado_redirected_to_list(events):
@@ -1076,7 +1112,9 @@ class StreamAdminTest(ZulipTestCase):
         sub = get_subscription("stream_name1", user_profile)
 
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
-        do_change_subscription_property(user_profile, sub, stream, "role", Subscription.ROLE_MEMBER)
+        do_change_subscription_property(
+            user_profile, sub, stream, "role", Subscription.ROLE_MEMBER, acting_user=None
+        )
 
         stream_id = get_stream("stream_name1", user_profile.realm).id
         result = self.client_patch(
@@ -1107,7 +1145,9 @@ class StreamAdminTest(ZulipTestCase):
         sub = get_subscription("stream_name1", user_profile)
 
         do_change_user_role(user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
-        do_change_subscription_property(user_profile, sub, stream, "role", Subscription.ROLE_MEMBER)
+        do_change_subscription_property(
+            user_profile, sub, stream, "role", Subscription.ROLE_MEMBER, acting_user=None
+        )
 
         do_set_realm_property(user_profile.realm, "waiting_period_threshold", 10, acting_user=None)
 
@@ -1132,7 +1172,12 @@ class StreamAdminTest(ZulipTestCase):
             test_non_admin(how_old=5, is_new=True, policy=policy)
 
         do_change_subscription_property(
-            user_profile, sub, stream, "role", Subscription.ROLE_STREAM_ADMINISTRATOR
+            user_profile,
+            sub,
+            stream,
+            "role",
+            Subscription.ROLE_STREAM_ADMINISTRATOR,
+            acting_user=None,
         )
 
         for policy in policies:
@@ -1498,7 +1543,12 @@ class StreamAdminTest(ZulipTestCase):
             if is_stream_admin:
                 sub = get_subscription(stream_name, user_profile)
                 do_change_subscription_property(
-                    user_profile, sub, stream, "role", Subscription.ROLE_STREAM_ADMINISTRATOR
+                    user_profile,
+                    sub,
+                    stream,
+                    "role",
+                    Subscription.ROLE_STREAM_ADMINISTRATOR,
+                    acting_user=None,
                 )
         if target_users_subbed:
             for user in target_users:
@@ -1761,7 +1811,7 @@ class StreamAdminTest(ZulipTestCase):
         # Cannot create stream because not an admin.
         stream_name = ["admins_only"]
         result = self.common_subscribe_to_streams(user_profile, stream_name, allow_fail=True)
-        self.assert_json_error(result, "Only administrators can create streams.")
+        self.assert_json_error(result, "Insufficient permission")
 
         # Make current user an admin.
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
@@ -1789,7 +1839,7 @@ class StreamAdminTest(ZulipTestCase):
         # period.
         stream_name = ["waiting_period"]
         result = self.common_subscribe_to_streams(user_profile, stream_name, allow_fail=True)
-        self.assert_json_error(result, "Your account is too new to create streams.")
+        self.assert_json_error(result, "Insufficient permission")
 
         # Make user account 11 days old..
         user_profile.date_joined = timezone_now() - timedelta(days=11)
@@ -1838,9 +1888,7 @@ class StreamAdminTest(ZulipTestCase):
             {"principals": orjson.dumps([cordelia_user_id]).decode()},
             allow_fail=True,
         )
-        self.assert_json_error(
-            result, "Your account is too new to modify other users' subscriptions."
-        )
+        self.assert_json_error(result, "Insufficient permission")
 
         # Anyone can invite users..
         do_set_realm_property(hamlet_user.realm, "waiting_period_threshold", 0, acting_user=None)
@@ -3239,7 +3287,7 @@ class SubscriptionAPITest(ZulipTestCase):
         )
         with mock.patch("zerver.models.UserProfile.can_create_streams", return_value=False):
             result = self.common_subscribe_to_streams(self.test_user, ["stream1"], allow_fail=True)
-            self.assert_json_error(result, "Only administrators can create streams.")
+            self.assert_json_error(result, "Insufficient permission")
 
         with mock.patch("zerver.models.UserProfile.can_create_streams", return_value=True):
             self.common_subscribe_to_streams(self.test_user, ["stream2"])
@@ -3261,7 +3309,7 @@ class SubscriptionAPITest(ZulipTestCase):
             ["new_stream1"],
             allow_fail=True,
         )
-        self.assert_json_error(result, "Only administrators can create streams.")
+        self.assert_json_error(result, "Insufficient permission")
 
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         self.common_subscribe_to_streams(user_profile, ["new_stream1"])
@@ -3278,7 +3326,7 @@ class SubscriptionAPITest(ZulipTestCase):
             ["new_stream2"],
             allow_fail=True,
         )
-        self.assert_json_error(result, "Only administrators and moderators can create streams.")
+        self.assert_json_error(result, "Insufficient permission")
 
         do_change_user_role(user_profile, UserProfile.ROLE_MODERATOR, acting_user=None)
         self.common_subscribe_to_streams(user_profile, ["new_stream2"])
@@ -3309,18 +3357,17 @@ class SubscriptionAPITest(ZulipTestCase):
             ["new_stream4"],
             allow_fail=True,
         )
-        self.assert_json_error(result, "Your account is too new to create streams.")
+        self.assert_json_error(result, "Insufficient permission")
 
         do_set_realm_property(realm, "waiting_period_threshold", 0, acting_user=None)
         self.common_subscribe_to_streams(user_profile, ["new_stream3"])
 
     def test_can_create_streams(self) -> None:
-        othello = self.example_user("othello")
+        def validation_func(user_profile: UserProfile) -> bool:
+            user_profile.refresh_from_db()
+            return user_profile.can_create_streams()
 
-        def validation_func() -> bool:
-            return othello.can_create_streams()
-
-        self.check_has_permission_policies(othello, "create_stream_policy", validation_func)
+        self.check_has_permission_policies("create_stream_policy", validation_func)
 
     def test_user_settings_for_subscribing_other_users(self) -> None:
         """
@@ -3344,7 +3391,7 @@ class SubscriptionAPITest(ZulipTestCase):
             {"principals": orjson.dumps([invitee_user_id]).decode()},
             allow_fail=True,
         )
-        self.assert_json_error(result, "Only administrators can modify other users' subscriptions.")
+        self.assert_json_error(result, "Insufficient permission")
 
         do_change_user_role(self.test_user, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         self.common_subscribe_to_streams(
@@ -3364,9 +3411,7 @@ class SubscriptionAPITest(ZulipTestCase):
             {"principals": orjson.dumps([invitee_user_id]).decode()},
             allow_fail=True,
         )
-        self.assert_json_error(
-            result, "Only administrators and moderators can modify other users' subscriptions."
-        )
+        self.assert_json_error(result, "Insufficient permission")
 
         do_change_user_role(self.test_user, UserProfile.ROLE_MODERATOR, acting_user=None)
         self.common_subscribe_to_streams(
@@ -3407,9 +3452,7 @@ class SubscriptionAPITest(ZulipTestCase):
             {"principals": orjson.dumps([invitee_user_id]).decode()},
             allow_fail=True,
         )
-        self.assert_json_error(
-            result, "Your account is too new to modify other users' subscriptions."
-        )
+        self.assert_json_error(result, "Insufficient permission")
 
         do_set_realm_property(realm, "waiting_period_threshold", 0, acting_user=None)
         self.common_subscribe_to_streams(
@@ -3421,12 +3464,12 @@ class SubscriptionAPITest(ZulipTestCase):
         You can't subscribe other people to streams if you are a guest or your account is not old
         enough.
         """
-        othello = self.example_user("othello")
 
-        def validation_func() -> bool:
-            return othello.can_subscribe_other_users()
+        def validation_func(user_profile: UserProfile) -> bool:
+            user_profile.refresh_from_db()
+            return user_profile.can_subscribe_other_users()
 
-        self.check_has_permission_policies(othello, "invite_to_stream_policy", validation_func)
+        self.check_has_permission_policies("invite_to_stream_policy", validation_func)
 
     def test_subscriptions_add_invalid_stream(self) -> None:
         """
@@ -3501,7 +3544,7 @@ class SubscriptionAPITest(ZulipTestCase):
                     streams_to_sub,
                     dict(principals=orjson.dumps([user1.id, user2.id]).decode()),
                 )
-        self.assert_length(queries, 34)
+        self.assert_length(queries, 35)
 
         self.assert_length(events, 5)
         for ev in [x for x in events if x["event"]["type"] not in ("message", "stream")]:
@@ -3714,7 +3757,7 @@ class SubscriptionAPITest(ZulipTestCase):
             }
         ]
 
-        with self.assertRaisesRegex(JsonableError, "Not allowed for guest users"):
+        with self.assertRaisesRegex(JsonableError, "Insufficient permission"):
             list_to_streams(streams_raw, guest_user)
 
         stream = self.make_stream("private_stream", invite_only=True)
@@ -4396,7 +4439,7 @@ class SubscriptionAPITest(ZulipTestCase):
                 [new_streams[0]],
                 dict(principals=orjson.dumps([user1.id, user2.id]).decode()),
             )
-        self.assert_length(queries, 34)
+        self.assert_length(queries, 35)
 
         # Test creating private stream.
         with queries_captured() as queries:
@@ -4406,6 +4449,7 @@ class SubscriptionAPITest(ZulipTestCase):
                 dict(principals=orjson.dumps([user1.id, user2.id]).decode()),
                 invite_only=True,
             )
+
         self.assert_length(queries, 47)
 
         # Test creating a public stream with announce when realm has a notification stream.
@@ -4421,7 +4465,7 @@ class SubscriptionAPITest(ZulipTestCase):
                     principals=orjson.dumps([user1.id, user2.id]).decode(),
                 ),
             )
-        self.assert_length(queries, 42)
+        self.assert_length(queries, 43)
 
 
 class GetStreamsTest(ZulipTestCase):

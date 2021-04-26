@@ -3,11 +3,13 @@
 Streams are similar to chatrooms, IRC channels, or email lists in that they
 determine who receives a message. There are three types of streams in Zulip.
 
-* **Public**: Anyone other than guests can join, and anyone (other
-  than guests) can view the complete message history without joining.
+* **Public**: Members can join and view the complete message history.
+  Public streams are visible to Guest users only if they are
+  subscribed (exactly like private streams with shared history).
 
-* **Private, shared history**: You must be added by a member of the stream. The
-  complete message history is available as soon as you are added.
+* **Private, shared history**: You must be added by a member of the
+  stream. The complete message history is available as soon as you are
+  added.
 
 * **Private, protected history**: You must be added by a member of the
   stream. You only have access to the messages that are sent after you are added.
@@ -29,8 +31,9 @@ At a high level:
   whether a stream with that name exists, but cannot see any other
   details about the stream.
 
-* From the perspective of a guest, all streams are private streams, and they
-  additionally can't add other members to the streams they are subscribed to.
+* From the perspective of a guest, all streams are private streams,
+  and they additionally can't add other members to the streams they
+  are subscribed to.
 
 There are two situations in which an organization owner or
 administrator can access private stream messages:
@@ -49,6 +52,7 @@ administrator can access private stream messages:
 
 |                       | Owners and admins | Members   | Guests
 |---                    |---                |---        |---
+| View stream name      | &#10004;          | &#10004;  | &#9726;
 | Join                  | &#10004;          | &#10004;  |
 | Unsubscribe           | &#9726;           | &#9726;   | &#9726;
 | Add others            | &#10004;          | &#10004;  |
@@ -64,7 +68,7 @@ administrator can access private stream messages:
 
 &#10004; Always
 
-&#9726; &nbsp; If subscribed to the stream
+&#9726; If subscribed to the stream
 
 &#10038; [Configurable](/help/stream-sending-policy).  Owners,
 Administrators, and Members can, by default, post to any public
@@ -76,6 +80,7 @@ subscribed.
 
 |                       | Owners and admins | Members   | Guests
 |---                    |---                |---        |---
+| View stream name      | &#10004;          | &#9726;   | &#9726;
 | Join                  |                   |           |
 | Unsubscribe           | &#9726;           | &#9726;   | &#9726;
 | Add others            | &#9726;           | &#9726;   |
@@ -91,7 +96,7 @@ subscribed.
 
 &#10004; Always
 
-&#9726; &nbsp; If subscribed to the stream
+&#9726; If subscribed to the stream
 
 &#10038; [Configurable](/help/stream-sending-policy), but at minimum
 must be subscribed to the stream.

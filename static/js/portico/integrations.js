@@ -3,7 +3,7 @@ import _ from "lodash";
 
 import * as blueslip from "../blueslip";
 import * as common from "../common";
-import {i18n} from "../i18n";
+import {$t} from "../i18n";
 
 import * as google_analytics from "./google-analytics";
 import {path_parts} from "./landing-page";
@@ -89,7 +89,7 @@ function update_categories() {
 
     const $dropdown_label = $(".integration-categories-dropdown .dropdown-category-label");
     if (state.category === INITIAL_STATE.category) {
-        $dropdown_label.text(i18n.t("Filter by category"));
+        $dropdown_label.text($t({defaultMessage: "Filter by category"}));
     } else {
         $dropdown_label.text(CATEGORIES.get(state.category));
     }

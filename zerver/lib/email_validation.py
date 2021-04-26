@@ -2,7 +2,7 @@ from typing import Callable, Dict, Optional, Set, Tuple
 
 from django.core import validators
 from django.core.exceptions import ValidationError
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.lib.name_restrictions import is_disposable_domain
 

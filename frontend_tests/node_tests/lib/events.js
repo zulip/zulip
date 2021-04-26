@@ -456,9 +456,27 @@ exports.fixtures = {
         ],
     },
 
-    realm_filters: {
-        type: "realm_filters",
-        realm_filters: [["#[123]", "ticket %(id)s", 55]],
+    realm_linkifiers: {
+        type: "realm_linkifiers",
+        realm_linkifiers: [
+            {
+                pattern: "#[123]",
+                url_format: "ticket %(id)s",
+                id: 55,
+            },
+        ],
+    },
+
+    realm_playgrounds: {
+        type: "realm_playgrounds",
+        realm_playgrounds: [
+            {
+                id: 1,
+                name: "Lean playground",
+                pygments_language: "Lean",
+                url_prefix: "https://leanprover.github.io/live/latest/#code=",
+            },
+        ],
     },
 
     realm_user__add: {

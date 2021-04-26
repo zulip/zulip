@@ -10,6 +10,53 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 57**
+
+* [`PATCH /realm/filters/{filter_id}`](/api/update-linkifier): New
+  endpoint added to update a realm linkifier.
+
+**Feature level 56**
+
+* [`POST /register`](/api/register-queue): Added a new setting
+  `move_messages_between_streams_policy` for controlling who can
+  move messages between streams.
+
+**Feature level 55**
+
+* [`POST /register`](/api/register-queue): Added `realm_giphy_rating`
+  and `giphy_rating_options` fields.
+* `PATCH /realm`: Added `giphy_rating` parameter.
+
+**Feature level 54**
+
+* `GET /realm/filters` has been removed and replace with [`GET
+  /realm/linkifiers`](/api/get-linkifiers) which returns the data in a
+  cleaner dictionary format.
+* [`GET /events`](/api/get-events): Introduced new event type
+  `realm_linkifiers`.  The previous `realm_filters` event type is
+  still supported for backwards compatibility, but will be removed in
+  a future release.
+* [`POST /register`](/api/register-queue): The response now supports a
+  `realm_linkifiers` event type, containing the same data as the
+  legacy `realm_filters` key, with a more extensible object
+  format. The previous `realm_filters` event type is still supported
+  for backwards compatibility, but will be removed in a future
+  release. The legacy `realm_filters` key is deprecated but remains
+  available for backwards compatibility.
+
+**Feature level 53**
+
+* [`POST /register`](/api/register-queue): Added `max_topic_length`
+  and `max_message_length`, and renamed `max_stream_name_length` and
+  `max_stream_description_length` to allow clients to transparently
+  support these values changing in a future server version.
+
+**Feature level 52**
+
+* `PATCH /realm`: Removed unnecessary JSON-encoding of string
+  parameters `name`, `description`, `default_language`, and
+  `default_code_block_language`.
+
 **Feature level 51**
 
 * [`POST /register`](/api/register-queue): Added a new boolean field

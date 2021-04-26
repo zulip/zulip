@@ -3,7 +3,7 @@ import re
 from typing import Optional, Tuple
 
 import orjson
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import OrganizationAdministratorRequired
 from zerver.lib.request import JsonableError

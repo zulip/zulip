@@ -115,8 +115,7 @@
         {
             "files": ["static/js/**"],
             "globals": {
-                "StripeCheckout": false,
-                "zxcvbn": false
+                "StripeCheckout": false
             }
         },
         {

@@ -12,6 +12,7 @@ const all_messages_data = zrequire("all_messages_data");
 const unread = zrequire("unread");
 const stream_data = zrequire("stream_data");
 const stream_topic_history = zrequire("stream_topic_history");
+const stream_topic_history_util = zrequire("stream_topic_history_util");
 
 function test(label, f) {
     run_test(label, (override) => {
@@ -313,7 +314,7 @@ test("server_history_end_to_end", () => {
         get_success_callback = opts.success;
     };
 
-    stream_topic_history.get_server_history(stream_id, () => {
+    stream_topic_history_util.get_server_history(stream_id, () => {
         on_success_called = true;
     });
 
@@ -331,7 +332,7 @@ test("server_history_end_to_end", () => {
     };
 
     on_success_called = false;
-    stream_topic_history.get_server_history(stream_id, () => {
+    stream_topic_history_util.get_server_history(stream_id, () => {
         on_success_called = true;
     });
     assert(on_success_called);

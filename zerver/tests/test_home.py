@@ -85,6 +85,7 @@ class HomeTest(ZulipTestCase):
         "full_name",
         "furthest_read_time",
         "giphy_api_key",
+        "giphy_rating_options",
         "has_mobile_devices",
         "has_zoom_token",
         "high_contrast_mode",
@@ -106,6 +107,10 @@ class HomeTest(ZulipTestCase):
         "max_icon_file_size",
         "max_logo_file_size",
         "max_message_id",
+        "max_message_length",
+        "max_stream_description_length",
+        "max_stream_name_length",
+        "max_topic_length",
         "message_content_in_email_notifications",
         "muted_topics",
         "muted_users",
@@ -154,6 +159,7 @@ class HomeTest(ZulipTestCase):
         "realm_embedded_bots",
         "realm_emoji",
         "realm_filters",
+        "realm_giphy_rating",
         "realm_icon_source",
         "realm_icon_url",
         "realm_incoming_webhook_bots",
@@ -163,6 +169,7 @@ class HomeTest(ZulipTestCase):
         "realm_invite_to_realm_policy",
         "realm_invite_to_stream_policy",
         "realm_is_zephyr_mirror_realm",
+        "realm_linkifiers",
         "realm_logo_source",
         "realm_logo_url",
         "realm_mandatory_topics",
@@ -170,6 +177,7 @@ class HomeTest(ZulipTestCase):
         "realm_message_content_delete_limit_seconds",
         "realm_message_content_edit_limit_seconds",
         "realm_message_retention_days",
+        "realm_move_messages_between_streams_policy",
         "realm_name",
         "realm_name_changes_disabled",
         "realm_name_in_notifications",
@@ -194,6 +202,7 @@ class HomeTest(ZulipTestCase):
         "realm_waiting_period_threshold",
         "realm_wildcard_mention_policy",
         "recent_private_conversations",
+        "request_language",
         "root_domain_uri",
         "save_stacktraces",
         "search_pills_enabled",
@@ -206,8 +215,6 @@ class HomeTest(ZulipTestCase):
         "starred_message_counts",
         "starred_messages",
         "stop_words",
-        "stream_description_max_length",
-        "stream_name_max_length",
         "subscriptions",
         "test_suite",
         "timezone",
@@ -232,14 +239,14 @@ class HomeTest(ZulipTestCase):
     def test_home(self) -> None:
         # Keep this list sorted!!!
         html_bits = [
-            "Compose your message here...",
+            "start the conversation",
             "Exclude messages with topic",
             "Keyboard shortcuts",
             "Loading...",
             "Manage streams",
             "Narrow to topic",
             "Next message",
-            "Search streams",
+            "Filter streams",
             # Verify that the app styles get included
             "app-stubentry.js",
             "data-params",
@@ -394,7 +401,7 @@ class HomeTest(ZulipTestCase):
         which still want the home page to load properly.
         """
         html = result.content.decode("utf-8")
-        if "Compose your message" not in html:
+        if "start a conversation" not in html:
             raise AssertionError("Home page probably did not load.")
 
     def test_terms_of_service(self) -> None:
@@ -867,11 +874,6 @@ class HomeTest(ZulipTestCase):
             compute_navbar_logo_url(page_params), "/static/images/logo/zulip-org-logo.svg?version=0"
         )
 
-    def test_generate_204(self) -> None:
-        self.login("hamlet")
-        result = self.client_get("/api/v1/generate_204")
-        self.assertEqual(result.status_code, 204)
-
     def test_furthest_read_time(self) -> None:
         msg_id = self.send_test_message("hello!", sender_name="iago")
 
@@ -887,7 +889,7 @@ class HomeTest(ZulipTestCase):
         activity_time = calendar.timegm(now.timetuple())
         user_activity_event = {
             "user_profile_id": hamlet.id,
-            "client": "test-client",
+            "client_id": 1,
             "query": "update_message_flags",
             "time": activity_time,
         }
@@ -896,7 +898,7 @@ class HomeTest(ZulipTestCase):
         activity_time_2 = calendar.timegm(yesterday.timetuple())
         user_activity_event_2 = {
             "user_profile_id": hamlet.id,
-            "client": "test-client-2",
+            "client_id": 2,
             "query": "update_message_flags",
             "time": activity_time_2,
         }

@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.decorator import require_realm_admin
 from zerver.lib.actions import do_change_logo_source
@@ -17,7 +17,7 @@ from zerver.models import UserProfile
 @require_realm_admin
 @has_request_variables
 def upload_logo(
-    request: HttpRequest, user_profile: UserProfile, night: bool = REQ(validator=check_bool)
+    request: HttpRequest, user_profile: UserProfile, night: bool = REQ(json_validator=check_bool)
 ) -> HttpResponse:
     user_profile.realm.ensure_not_on_limited_plan()
 
@@ -40,7 +40,7 @@ def upload_logo(
 @require_realm_admin
 @has_request_variables
 def delete_logo_backend(
-    request: HttpRequest, user_profile: UserProfile, night: bool = REQ(validator=check_bool)
+    request: HttpRequest, user_profile: UserProfile, night: bool = REQ(json_validator=check_bool)
 ) -> HttpResponse:
     # We don't actually delete the logo because it might still
     # be needed if the URL was cached and it is rewritten
@@ -53,7 +53,7 @@ def delete_logo_backend(
 
 @has_request_variables
 def get_logo_backend(
-    request: HttpRequest, user_profile: UserProfile, night: bool = REQ(validator=check_bool)
+    request: HttpRequest, user_profile: UserProfile, night: bool = REQ(json_validator=check_bool)
 ) -> HttpResponse:
     url = get_realm_logo_url(user_profile.realm, night)
 

@@ -32,7 +32,9 @@ def email_page(request: HttpRequest) -> HttpResponse:
     except FileNotFoundError:
         content = ""
     return render(
-        request, "zerver/email_log.html", {"log": content, "forward_address": get_forward_address()}
+        request,
+        "zerver/development/email_log.html",
+        {"log": content, "forward_address": get_forward_address()},
     )
 
 

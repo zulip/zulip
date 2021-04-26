@@ -9,7 +9,7 @@ import orjson
 from django.db import connection
 from django.db.models import Max, Sum
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from psycopg2.sql import SQL
 from typing_extensions import TypedDict
 
@@ -63,7 +63,7 @@ class RawReactionRow(TypedDict):
     reaction_type: str
     user_profile__email: str
     user_profile__full_name: str
-    user_profile__id: int
+    user_profile_id: int
 
 
 class RawUnreadMessagesResult(TypedDict):
@@ -646,10 +646,10 @@ class ReactionDict:
             # as a small performance optimization.
             "user": {
                 "email": row["user_profile__email"],
-                "id": row["user_profile__id"],
+                "id": row["user_profile_id"],
                 "full_name": row["user_profile__full_name"],
             },
-            "user_id": row["user_profile__id"],
+            "user_id": row["user_profile_id"],
         }
 
 
@@ -1009,6 +1009,9 @@ def extract_unread_data_from_um_rows(
 
         if topic_mute_checker(recipient_id, topic):
             return True
+
+        # Messages sent by muted users are never unread, so we don't
+        # need any logic related to muted users here.
 
         return False
 

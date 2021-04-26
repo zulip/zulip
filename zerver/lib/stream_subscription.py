@@ -22,13 +22,22 @@ class SubscriberPeerInfo:
     private_peer_dict: Dict[int, Set[int]]
 
 
-def get_active_subscriptions_for_stream_id(stream_id: int) -> QuerySet:
+def get_active_subscriptions_for_stream_id(
+    stream_id: int, *, include_deactivated_users: bool
+) -> QuerySet:
     # TODO: Change return type to QuerySet[Subscription]
-    return Subscription.objects.filter(
+    query = Subscription.objects.filter(
         recipient__type=Recipient.STREAM,
         recipient__type_id=stream_id,
         active=True,
     )
+    if not include_deactivated_users:
+        # Note that non-active users may still have "active" subscriptions, because we
+        # want to be able to easily reactivate them with their old subscriptions.  This
+        # is why the query here has to look at the is_user_active flag.
+        query = query.filter(is_user_active=True)
+
+    return query
 
 
 def get_active_subscriptions_for_stream_ids(stream_ids: Set[int]) -> QuerySet:
@@ -37,6 +46,7 @@ def get_active_subscriptions_for_stream_ids(stream_ids: Set[int]) -> QuerySet:
         recipient__type=Recipient.STREAM,
         recipient__type_id__in=stream_ids,
         active=True,
+        is_user_active=True,
     )
 
 
@@ -100,21 +110,14 @@ def get_bulk_stream_subscriber_info(
 
 
 def num_subscribers_for_stream_id(stream_id: int) -> int:
-    return (
-        get_active_subscriptions_for_stream_id(stream_id)
-        .filter(
-            user_profile__is_active=True,
-        )
-        .count()
-    )
+    return get_active_subscriptions_for_stream_id(
+        stream_id, include_deactivated_users=False
+    ).count()
 
 
 def get_user_ids_for_streams(stream_ids: Set[int]) -> Dict[int, Set[int]]:
     all_subs = (
         get_active_subscriptions_for_stream_ids(stream_ids)
-        .filter(
-            user_profile__is_active=True,
-        )
         .values(
             "recipient__type_id",
             "user_profile_id",
@@ -255,26 +258,19 @@ def subscriber_ids_with_stream_history_access(stream: Stream) -> Set[int]:
 
     1. if !history_public_to_subscribers:
           History is not available to anyone
-    2. if history_public_to_subscribers and is_web_public:
+    2. if history_public_to_subscribers:
           All subscribers can access the history including guests
-    3. if history_public_to_subscribers and !is_web_public:
-          All subscribers can access the history excluding guests
+
+    The results of this function need to be kept consistent with
+    what can_access_stream_history would dictate.
 
     """
 
     if not stream.is_history_public_to_subscribers():
         return set()
 
-    subscriptions = get_active_subscriptions_for_stream_id(stream.id)
-    if stream.is_web_public:
-        return set(
-            subscriptions.filter(user_profile__is_active=True).values_list(
-                "user_profile__id", flat=True
-            )
-        )
-
     return set(
-        subscriptions.filter(user_profile__is_active=True)
-        .exclude(user_profile__role=600)
-        .values_list("user_profile__id", flat=True)
+        get_active_subscriptions_for_stream_id(
+            stream.id, include_deactivated_users=False
+        ).values_list("user_profile_id", flat=True)
     )

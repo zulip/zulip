@@ -25,9 +25,7 @@ mock_esm("../../static/js/hash_util", {
 const stream_data = zrequire("stream_data");
 const subs = zrequire("subs");
 
-run_test("redraw_left_panel", (override) => {
-    override(subs, "add_tooltip_to_left_panel_row", () => {});
-
+run_test("redraw_left_panel", () => {
     // set-up sub rows stubs
     const denmark = {
         elem: "denmark",

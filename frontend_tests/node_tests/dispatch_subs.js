@@ -186,7 +186,6 @@ test("stream create", (override) => {
 
     const stub = make_stub();
     override(stream_data, "create_streams", stub.f);
-    override(stream_data, "get_sub_by_id", noop);
     override(subs, "add_sub_to_table", noop);
     override(overlays, "streams_open", () => true);
     dispatch(event);

@@ -16,6 +16,7 @@ const peer_data = zrequire("peer_data");
 const people = zrequire("people");
 const presence = zrequire("presence");
 const stream_data = zrequire("stream_data");
+const sub_store = zrequire("sub_store");
 const user_status = zrequire("user_status");
 const buddy_data = zrequire("buddy_data");
 
@@ -206,7 +207,7 @@ test("compose fade interactions (streams)", () => {
 
     // Test our punting logic.
     const bogus_stream_id = 99999;
-    assert.equal(stream_data.get_sub_by_id(bogus_stream_id), undefined);
+    assert.equal(sub_store.get(bogus_stream_id), undefined);
 
     compose_fade_helper.set_focused_recipient({
         type: "stream",
@@ -345,13 +346,16 @@ test("title_data", () => {
         first_line: "Human Myself",
         second_line: "out to lunch",
         third_line: "translated: Active now",
+        show_you: true,
     };
+    page_params.user_id = me.user_id;
     assert.deepEqual(buddy_data.get_title_data(me.user_id, is_group), expected_data);
 
     expected_data = {
         first_line: "Old User",
         second_line: "translated: Last active: translated: More than 2 weeks ago",
         third_line: "",
+        show_you: false,
     };
     assert.deepEqual(buddy_data.get_title_data(old_user.user_id, is_group), expected_data);
 });

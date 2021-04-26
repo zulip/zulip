@@ -405,8 +405,10 @@ it as follows:
     1. On your Zulip server, `mkdir -p /etc/zulip/saml/idps/`
     2. Put the IDP public certificate in `/etc/zulip/saml/idps/{idp_name}.crt`
     3. (Optional) Put the Zulip server public certificate in `/etc/zulip/saml/zulip-cert.crt`
-    4. (Optional) Put the Zulip server private key in `/etc/zulip/saml/zulip-private-key.key`
-    5. Set the proper permissions on these files and directories:
+       and the corresponding private key in `/etc/zulip/saml/zulip-private-key.key`. Note that
+       the certificate should be the single X.509 certificate for the server, not a full chain of
+       trust, which consists of multiple certificates.
+    4. Set the proper permissions on these files and directories:
 
     ```
     chown -R zulip.zulip /etc/zulip/saml/

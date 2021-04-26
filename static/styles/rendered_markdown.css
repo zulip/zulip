@@ -445,7 +445,7 @@
         visibility: hidden;
         position: absolute;
         right: 23px;
-        margin-top: -2px;
+        margin-top: -4px;
         font-size: 1.4em;
         /* The default icon and on-hover colors are inherited from <a> tag.
         so we set our own to match the copy-to-clipbord icon */
@@ -497,8 +497,10 @@ rendered_markdown block; we just need to do further analysis to
 confirm doing so won't break anything. */
 
 code {
-    /* 11/14 em, so 11 px when body is the default 14 px */
-    font-size: 0.786em;
+    /* 11.55px when body is the default 14px; this is chosen to be
+       slightly above the 11.5px threshold where the height jumps by a
+       pixel on most platforms. */
+    font-size: 0.825em;
     unicode-bidi: embed;
     direction: ltr;
     color: hsl(0, 0%, 0%);
@@ -520,7 +522,7 @@ code {
 pre {
     direction: ltr;
     /* code block text is a bit smaller than normal text */
-    font-size: 0.786em;
+    font-size: 0.825em;
     line-height: 1.4;
     white-space: pre;
     overflow-x: auto;

@@ -6,7 +6,7 @@ const {JSDOM} = require("jsdom");
 const MockDate = require("mockdate");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {i18n} = require("../zjsunit/i18n");
+const {$t, $t_html} = require("../zjsunit/i18n");
 const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
@@ -183,7 +183,7 @@ test_ui("validate_stream_message_address_info", () => {
     assert(!compose.validate_stream_message_address_info("Frontend"));
     assert.equal(
         $("#compose-error-msg").html(),
-        "translated: <p>The stream <b>Frontend</b> does not exist.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>",
+        "translated HTML: <p>The stream <b>Frontend</b> does not exist.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>",
     );
 
     channel.post = (payload) => {
@@ -191,7 +191,10 @@ test_ui("validate_stream_message_address_info", () => {
         payload.error({status: 500});
     };
     assert(!compose.validate_stream_message_address_info("social"));
-    assert.equal($("#compose-error-msg").html(), i18n.t("Error checking subscription"));
+    assert.equal(
+        $("#compose-error-msg").html(),
+        $t_html({defaultMessage: "Error checking subscription"}),
+    );
 });
 
 test_ui("validate", () => {
@@ -229,7 +232,10 @@ test_ui("validate", () => {
     assert(!$("#sending-indicator").visible());
     assert(!$("#compose-send-button").is_focused());
     assert.equal($("#compose-send-button").prop("disabled"), false);
-    assert.equal($("#compose-error-msg").html(), i18n.t("You have nothing to send!"));
+    assert.equal(
+        $("#compose-error-msg").html(),
+        $t_html({defaultMessage: "You have nothing to send!"}),
+    );
 
     reminder.is_deferred_delivery = () => true;
     compose.validate();
@@ -249,7 +255,9 @@ test_ui("validate", () => {
     assert(zephyr_checked);
     assert.equal(
         $("#compose-error-msg").html(),
-        i18n.t("You need to be running Zephyr mirroring in order to send messages!"),
+        $t_html({
+            defaultMessage: "You need to be running Zephyr mirroring in order to send messages!",
+        }),
     );
 
     initialize_pm_pill();
@@ -262,7 +270,7 @@ test_ui("validate", () => {
     assert(!compose.validate());
     assert.equal(
         $("#compose-error-msg").html(),
-        i18n.t("Please specify at least one valid recipient"),
+        $t_html({defaultMessage: "Please specify at least one valid recipient"}),
     );
 
     initialize_pm_pill();
@@ -273,7 +281,7 @@ test_ui("validate", () => {
 
     assert.equal(
         $("#compose-error-msg").html(),
-        i18n.t("Please specify at least one valid recipient", {}),
+        $t_html({defaultMessage: "Please specify at least one valid recipient"}),
     );
 
     compose_state.private_message_recipient("foo@zulip.com,alice@zulip.com");
@@ -281,7 +289,7 @@ test_ui("validate", () => {
 
     assert.equal(
         $("#compose-error-msg").html(),
-        i18n.t("Please specify at least one valid recipient", {}),
+        $t_html({defaultMessage: "Please specify at least one valid recipient"}),
     );
 
     people.add_active_user(bob);
@@ -295,13 +303,19 @@ test_ui("validate", () => {
     compose_state.set_message_type("stream");
     compose_state.stream_name("");
     assert(!compose.validate());
-    assert.equal($("#compose-error-msg").html(), i18n.t("Please specify a stream"));
+    assert.equal(
+        $("#compose-error-msg").html(),
+        $t_html({defaultMessage: "Please specify a stream"}),
+    );
 
     compose_state.stream_name("Denmark");
     page_params.realm_mandatory_topics = true;
     compose_state.topic("");
     assert(!compose.validate());
-    assert.equal($("#compose-error-msg").html(), i18n.t("Please specify a topic"));
+    assert.equal(
+        $("#compose-error-msg").html(),
+        $t_html({defaultMessage: "Please specify a topic"}),
+    );
 });
 
 test_ui("get_invalid_recipient_emails", (override) => {
@@ -412,7 +426,9 @@ test_ui("validate_stream_message", (override) => {
     assert(!compose.validate());
     assert.equal(
         $("#compose-error-msg").html(),
-        i18n.t("You do not have permission to use wildcard mentions in this stream."),
+        $t_html({
+            defaultMessage: "You do not have permission to use wildcard mentions in this stream.",
+        }),
     );
 });
 
@@ -435,7 +451,7 @@ test_ui("test_validate_stream_message_post_policy_admin_only", () => {
     assert(!compose.validate());
     assert.equal(
         $("#compose-error-msg").html(),
-        i18n.t("Only organization admins are allowed to post to this stream."),
+        $t_html({defaultMessage: "Only organization admins are allowed to post to this stream."}),
     );
 
     // Reset error message.
@@ -449,7 +465,7 @@ test_ui("test_validate_stream_message_post_policy_admin_only", () => {
     assert(!compose.validate());
     assert.equal(
         $("#compose-error-msg").html(),
-        i18n.t("Only organization admins are allowed to post to this stream."),
+        $t_html({defaultMessage: "Only organization admins are allowed to post to this stream."}),
     );
 });
 
@@ -469,7 +485,7 @@ test_ui("test_validate_stream_message_post_policy_full_members_only", () => {
     assert(!compose.validate());
     assert.equal(
         $("#compose-error-msg").html(),
-        i18n.t("Guests are not allowed to post to this stream."),
+        $t_html({defaultMessage: "Guests are not allowed to post to this stream."}),
     );
 
     // reset compose_state.stream_name to 'social' again so that any tests occurring after this
@@ -885,7 +901,10 @@ test_ui("enter_with_preview_open", (override) => {
     compose.enter_with_preview_open();
 
     assert($("#enter_sends").prop("checked"));
-    assert.equal($("#compose-error-msg").html(), i18n.t("You have nothing to send!"));
+    assert.equal(
+        $("#compose-error-msg").html(),
+        $t_html({defaultMessage: "You have nothing to send!"}),
+    );
 });
 
 test_ui("finish", (override) => {
@@ -902,7 +921,10 @@ test_ui("finish", (override) => {
         assert(!$("#sending-indicator").visible());
         assert(!$("#compose-send-button").is_focused());
         assert.equal($("#compose-send-button").prop("disabled"), false);
-        assert.equal($("#compose-error-msg").html(), i18n.t("You have nothing to send!"));
+        assert.equal(
+            $("#compose-error-msg").html(),
+            $t_html({defaultMessage: "You have nothing to send!"}),
+        );
     })();
 
     (function test_when_compose_validation_succeed() {
@@ -1038,6 +1060,14 @@ test_ui("initialize", (override) => {
                 uppy_cancel_all_called = true;
             },
         };
+    });
+
+    stub_templates((template_name, context) => {
+        assert.equal(template_name, "compose");
+        assert.equal(context.embedded, false);
+        assert.equal(context.file_upload_enabled, true);
+        assert.equal(context.giphy_api_available, true);
+        return "fake-compose-template";
     });
 
     compose.initialize();
@@ -1536,7 +1566,10 @@ test_ui("on_events", (override) => {
 
         function test_post_error(error_callback) {
             error_callback();
-            assert.equal($("#preview_content").html(), "translated: Failed to generate preview");
+            assert.equal(
+                $("#preview_content").html(),
+                "translated HTML: Failed to generate preview",
+            );
         }
 
         function mock_channel_post(msg) {
@@ -1576,7 +1609,7 @@ test_ui("on_events", (override) => {
 
         handler(event);
 
-        assert.equal($("#preview_content").html(), "translated: Nothing to preview");
+        assert.equal($("#preview_content").html(), "translated HTML: Nothing to preview");
         assert_visibilities();
 
         let make_indicator_called = false;
@@ -1700,12 +1733,24 @@ test_ui("narrow_button_titles", () => {
     util.is_mobile = () => false;
 
     compose.update_closed_compose_buttons_for_private();
-    assert.equal($("#left_bar_compose_stream_button_big").text(), i18n.t("New stream message"));
-    assert.equal($("#left_bar_compose_private_button_big").text(), i18n.t("New private message"));
+    assert.equal(
+        $("#left_bar_compose_stream_button_big").text(),
+        $t({defaultMessage: "New stream message"}),
+    );
+    assert.equal(
+        $("#left_bar_compose_private_button_big").text(),
+        $t({defaultMessage: "New private message"}),
+    );
 
     compose.update_closed_compose_buttons_for_stream();
-    assert.equal($("#left_bar_compose_stream_button_big").text(), i18n.t("New topic"));
-    assert.equal($("#left_bar_compose_private_button_big").text(), i18n.t("New private message"));
+    assert.equal(
+        $("#left_bar_compose_stream_button_big").text(),
+        $t({defaultMessage: "New topic"}),
+    );
+    assert.equal(
+        $("#left_bar_compose_private_button_big").text(),
+        $t({defaultMessage: "New private message"}),
+    );
 });
 
 MockDate.reset();

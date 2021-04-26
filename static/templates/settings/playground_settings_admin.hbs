@@ -1,0 +1,20 @@
+<div id="playground-settings" class="settings-section" data-name="playground-settings">
+    <div class="admin-table-wrapper">
+        <p>
+            {{#tr}}
+            Configure external sites that can run code present in a Zulip code block.
+            {{/tr}}
+        </p>
+        <input type="text" class="search" placeholder="{{t 'Filter playgrounds' }}" aria-label="{{t 'Filter playgrounds' }}"/>
+        <div class="progressive-table-wrapper" data-simplebar>
+            <table class="table table-condensed table-striped wrapped-table admin_playgrounds_table">
+                <thead>
+                    <th class="active" data-sort="pygments_language">{{t "Language" }}</th>
+                    <th data-sort="playground_name">{{t "Name" }}</th>
+                    <th data-sort="url">{{t "URL prefix" }}</th>
+                </thead>
+                <tbody id="admin_playgrounds_table" class="required-text" data-empty="{{t 'No playgrounds configured.' }}"></tbody>
+            </table>
+        </div>
+    </div>
+</div>

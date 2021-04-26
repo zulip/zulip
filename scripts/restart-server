@@ -19,8 +19,13 @@ from scripts.lib.zulip_tools import (
     overwrite_symlink,
 )
 
+action = "restart"
+if not sys.argv[0].endswith("restart-server"):
+    action = "start"
+verbing = action.title() + "ing"
+
 logging.Formatter.converter = time.gmtime
-logging.basicConfig(format="%(asctime)s restart-server: %(message)s", level=logging.INFO)
+logging.basicConfig(format=f"%(asctime)s {action}-server: %(message)s", level=logging.INFO)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--fill-cache", action="store_true", help="Fill the memcached caches")
@@ -43,7 +48,7 @@ if args.fill_cache:
     subprocess.check_call(["./manage.py", "fill_memcached_caches"])
 
 core_server_services = ["zulip-django"]
-if os.path.exists("/etc/supervisor/conf.d/thumbor.conf"):
+if os.path.exists("/etc/supervisor/conf.d/zulip/thumbor.conf"):
     core_server_services.append("zulip-thumbor")
 
 current_symlink = os.path.join(DEPLOYMENTS_DIR, "current")
@@ -67,17 +72,18 @@ if len(tornado_ports) > 1:
         # restarts.  This also avoids behavior with restarting a whole
         # supervisord group where if any individual process is slow to
         # stop, the whole bundle stays stopped for an extended time.
-        logging.info("Restarting Tornado process on port %s", p)
-        subprocess.check_call(["supervisorctl", "restart", f"zulip-tornado:zulip-tornado-port-{p}"])
+        logging.info("%s Tornado process on port %s", verbing, p)
+        subprocess.check_call(["supervisorctl", action, f"zulip-tornado:zulip-tornado-port-{p}"])
 else:
-    logging.info("Restarting Tornado process")
-    subprocess.check_call(["supervisorctl", "restart", "zulip-tornado", "zulip-tornado:*"])
+    logging.info("%s Tornado process", verbing)
+    subprocess.check_call(["supervisorctl", action, "zulip-tornado", "zulip-tornado:*"])
 
 # Restart the uWSGI and related processes via supervisorctl.
-logging.info("Stopping workers")
-subprocess.check_call(["supervisorctl", "stop", "zulip-workers:*"])
-logging.info("Stopping server core")
-subprocess.check_call(["supervisorctl", "stop", *core_server_services])
+if action == "restart":
+    logging.info("Stopping workers")
+    subprocess.check_call(["supervisorctl", "stop", "zulip-workers:*"])
+    logging.info("Stopping server core")
+    subprocess.check_call(["supervisorctl", "stop", *core_server_services])
 
 logging.info("Starting server core")
 subprocess.check_call(["supervisorctl", "start", *reversed(core_server_services)])
@@ -89,11 +95,11 @@ if using_sso.strip() == b"True":
     logging.info("Restarting Apache WSGI process...")
     subprocess.check_call(["pkill", "-f", "apache2", "-u", "zulip"])
 
-if os.path.exists("/etc/supervisor/conf.d/zulip_db.conf"):
-    subprocess.check_call(["supervisorctl", "restart", "process-fts-updates"])
+if os.path.exists("/etc/supervisor/conf.d/zulip/zulip_db.conf"):
+    subprocess.check_call(["supervisorctl", action, "process-fts-updates"])
 
 logging.info("Done!")
-print(OKGREEN + "Application restarted successfully!" + ENDC)
+print(OKGREEN + f"Zulip {action}ed successfully!" + ENDC)
 
 if change_symlink and "PWD" in os.environ:
     for symlink in [last_symlink, current_symlink]:

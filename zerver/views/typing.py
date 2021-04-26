@@ -1,7 +1,7 @@
 from typing import List
 
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.decorator import REQ, has_request_variables
 from zerver.lib.actions import check_send_typing_notification
@@ -21,7 +21,7 @@ def send_notification_backend(
         "type", str_validator=check_string_in(VALID_MESSAGE_TYPES), default="private"
     ),
     operator: str = REQ("op", str_validator=check_string_in(VALID_OPERATOR_TYPES)),
-    user_ids: List[int] = REQ("to", validator=check_list(check_int)),
+    user_ids: List[int] = REQ("to", json_validator=check_list(check_int)),
 ) -> HttpResponse:
     if len(user_ids) == 0:
         return json_error(_("Missing parameter: 'to' (recipient)"))

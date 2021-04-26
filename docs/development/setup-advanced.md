@@ -1,10 +1,11 @@
-# Advanced setup (non-Vagrant)
+# Advanced setup
 
 Contents:
 
 * [Installing directly on Ubuntu, Debian, CentOS, or Fedora](#installing-directly-on-ubuntu-debian-centos-or-fedora)
-* [Installing directly on Windows 10](#installing-directly-on-windows-10-experimental)
-* [Installing manually on other Linux/UNIX](#installing-manually-on-unix)
+* [Installing directly on Windows 10 with WSL 2](#installing-directly-on-windows-10-with-wsl-2)
+* [Using the Vagrant Hyper-V provider on Windows](#using-the-vagrant-hyper-v-provider-on-windows-beta)
+* [Newer versions of supported platforms](#newer-versions-of-supported-platforms)
 * [Installing directly on cloud9](#installing-on-cloud9)
 
 ## Installing directly on Ubuntu, Debian, CentOS, or Fedora
@@ -13,7 +14,7 @@ If you'd like to install a Zulip development environment on a computer
 that's running one of:
 
 * Ubuntu 20.04 Focal, 18.04 Bionic
-* Debian 10 Buster
+* Debian 10 Buster, 11 Bullseye (beta)
 * CentOS 7 (beta)
 * Fedora 33 (beta)
 * RHEL 7 (beta)
@@ -56,19 +57,17 @@ on using the Zulip development
 environment](../development/setup-vagrant.html#step-4-developing),
 ignoring the parts about `vagrant` (since you're not using it).
 
-## Installing directly on Windows 10 (experimental)
+## Installing directly on Windows 10 with WSL 2
 
-We will be using Microsoft's new feature [WSL
-2](https://docs.microsoft.com/en-us/windows/wsl/wsl2-about) for
-installation.
-
-WSL 2 can be uninstalled by following the instructions [here from Microsoft](https://docs.microsoft.com/en-us/windows/wsl/faq#how-do-i-uninstall-a-wsl-distribution-).
+Zulip's development environment is most easily setup on Windows using
+the [WSL 2](https://docs.microsoft.com/en-us/windows/wsl/wsl2-about)
+installation method described here.
 
 1. Install WSL 2 by following the instructions provided by Microsoft
 [here](https://docs.microsoft.com/en-us/windows/wsl/wsl2-install).
 
 1. Install the `Ubuntu 18.04` Linux distribution from the Microsoft
-Store.
+   Store.
 
 1. Launch the `Ubuntu 18.04` shell and run the following commands:
 
@@ -138,23 +137,138 @@ Store.
    environment](../development/setup-vagrant.html#step-4-developing),
    ignoring the parts about `vagrant` (since you're not using it).
 
-## Installing manually on Unix
+WSL 2 can be uninstalled by following [Microsoft's documentation][uninstall-wsl]
 
-We recommend one of the other installation methods, since they are
-extremely well-tested and generally Just Work.  But if you know what
-you're doing, these instructions can help you install a Zulip
-development environment on other Linux/UNIX platforms.
+[uninstall-wsl]: https://docs.microsoft.com/en-us/windows/wsl/faq#how-do-i-uninstall-a-wsl-distribution-
 
-* [Newer versions of supported distributions](#newer-versions-of-supported-distributions)
-* [OpenBSD 5.8 (experimental)](#on-openbsd-5-8-experimental)
-* [Common steps](#common-steps)
+## Using the Vagrant Hyper-V provider on Windows (beta)
 
-Because copy-pasting the steps documented here can be error-prone, we
-prefer to extend `tools/provision` to support additional platforms
-over adding new platforms to this documentation (and likely will
-eventually eliminate this documentation section altogether).
+You should have [Vagrant](https://www.vagrantup.com/downloads) and
+[Hyper-V][hyper-v] installed on your system. Ensure they both work as
+expected.
 
-### Newer versions of supported distributions
+[hyper-v]: https://docs.microsoft.com/en-us/virtualization/hyper-v-on-windows/quick-start/enable-hyper-v
+
+**NOTE**: Hyper-V is available only on Windows Enterprise, Pro, or Education.
+
+1. Start by [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
+   and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
+
+   ```
+   git clone --config pull.rebase git@github.com:YOURUSERNAME/zulip.git
+   cd zulip
+   git remote add -f upstream https://github.com/zulip/zulip.git
+   ```
+
+1. You will have to open up powershell with administrator rights in
+   order to use Hyper-V. Then provision the development environment:
+
+   ```bash
+   vagrant up --provider=hyperv
+   ```
+
+   You should get output like this:
+
+   ```text
+   Bringing machine 'default' up with 'hyperv' provider...
+   ==> default: Verifying Hyper-V is enabled...
+   ==> default: Verifying Hyper-V is accessible...
+   <other stuff>...
+   ==> default: Waiting for the machine to report its IP address...
+       default: Timeout: 120 seconds
+       default: IP: 172.28.119.70
+   ==> default: Waiting for machine to boot. This may take a few minutes...
+       default: SSH address: 172.28.122.156
+   ==> default: Machine booted and ready!
+   ==> default: Preparing SMB shared folders...
+   Vagrant requires administrator access for pruning SMB shares and
+   may request access to complete removal of stale shares.
+   ==> default: Starting the machine...
+   <other stuff>...
+    default: Username (user[@domain]): <your-machine-username>
+    default: Password (will be hidden):
+   ```
+
+   At this point, you will be prompted for your Windows administrator
+   username and password (not your Microsoft account credentials).
+
+1. SSH into your newly created virtual machine
+
+   ```bash
+   vagrant ssh
+   ```
+
+   This will ssh you into the bash shell of the Zulip development environment
+   where you can execute bash commands.
+
+1. Set the `EXTERNAL_HOST` environment variable.
+
+   ```bash
+   (zulip-py3-venv) vagrant@ubuntu-18:/srv/zulip$ export EXTERNAL_HOST="$(hostname -I | xargs):9991"
+   (zulip-py3-venv) vagrant@ubuntu-18:/srv/zulip$ echo $EXTERNAL_HOST
+   ```
+
+   The output will be like:
+
+   ```text
+   172.28.122.156:9991
+   ```
+
+   Make sure you note down this down. This is where your zulip development web
+   server can be accessed.
+
+   ```eval_rst
+   .. important::
+      The output of the above command changes every time you restart the Vagrant
+      development machine. Thus, it will have to be run every time you bring one up.
+      This quirk is one reason this method is marked experimental.
+   ```
+
+1. You should now be able to start the Zulip development server.
+
+   ```bash
+   (zulip-py3-venv) vagrant@ubuntu-18:/srv/zulip$ ./tools/run-dev.py
+   ```
+
+   The output will look like:
+
+   ```text
+   Starting Zulip on:
+
+        http://172.30.24.235:9991/
+
+   Internal ports:
+      9991: Development server proxy (connect here)
+      9992: Django
+      9993: Tornado
+      9994: webpack
+      9995: Thumbor
+   ```
+
+   Visit the indicated URL in your web browser.
+
+1. You can stop the development environment using `vagrant halt`, and restart it
+   using `vagrant up` and then going through steps **3** and **4** again.
+
+### Problems you may encounter
+
+1. If you get the error `Hyper-V could not initialize memory`, this is
+   likely because your system has insufficient free memory to start
+   the virtual machine.  You can generally work around this error by
+   closing all other running programs and running `vagrant up
+   --provider=hyperv` again. You can reopen the other programs after
+   the provisioning is completed. If it still isn't enough, try
+   restarting your system and running the command again.
+
+2. Be patient the first time you run `./tools/run-dev.py`.
+
+As with other installation methods, please visit [#provision
+help][provision-help] in the [Zulip development community
+server](../contributing/chat-zulip-org.md) if you need help.
+
+[provision-help]: https://chat.zulip.org/#narrow/stream/21-provision-help
+
+## Newer versions of supported platforms
 
 You can use
 [our provisioning tool](#installing-directly-on-ubuntu-debian-centos-or-fedora)
@@ -170,124 +284,6 @@ submit a pull request, or you can ask for help in
 [#development help](https://chat.zulip.org/#narrow/stream/49-development-help)
 on chat.zulip.org, and a core team member can help guide you through
 adding support for the platform.
-
-### On OpenBSD 5.8 (experimental):
-
-These instructions are experimental and may have bugs; patches
-welcome!
-
-Start by [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
-and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
-
-```
-git clone --config pull.rebase git@github.com:YOURUSERNAME/zulip.git
-cd zulip
-git remote add -f upstream https://github.com/zulip/zulip.git
-```
-
-```
-doas pkg_add sudo bash gcc postgresql-server redis rabbitmq \
-    memcached py-Pillow py-cryptography py-cffi
-
-# Point environment to custom include locations and use newer GCC
-# (needed for Node modules):
-export CFLAGS="-I/usr/local/include -I/usr/local/include/sasl"
-export CXX=eg++
-
-# Create tsearch_data directory:
-sudo mkdir /usr/local/share/postgresql/tsearch_data
-
-
-# Hack around missing dictionary files -- need to fix this to get the
-# proper dictionaries from what in debian is the hunspell-en-us
-# package.
-sudo touch /usr/local/share/postgresql/tsearch_data/english.stop
-sudo touch /usr/local/share/postgresql/tsearch_data/en_us.dict
-sudo touch /usr/local/share/postgresql/tsearch_data/en_us.affix
-```
-
-Finally continue with the [Common steps](#common-steps) instructions below.
-
-### Common steps
-
-Make sure you have followed the steps specific for your platform:
-
-* [OpenBSD 5.8 (experimental)](#on-openbsd-5-8-experimental)
-
-For managing Zulip's python dependencies, we recommend using
-[virtualenvs](https://virtualenv.pypa.io/en/stable/).
-
-You must create a Python 3 virtualenv.  You must also install appropriate
-python packages in it.
-
-You should either install the virtualenv in `/srv`, or put a symlink to it in
-`/srv`.  If you don't do that, some scripts might not work correctly.
-
-You can run `python3 tools/setup/setup_venvs.py`.  This script will create a
-virtualenv `/srv/zulip-py3-venv`.
-
-If you want to do it manually, here are the steps:
-
-```
-sudo virtualenv /srv/zulip-py3-venv -p python3 # Create a python3 virtualenv
-sudo chown -R `whoami`: /srv/zulip-py3-venv
-source /srv/zulip-py3-venv/bin/activate # Activate python3 virtualenv
-pip install --upgrade pip # upgrade pip itself because older versions have known issues
-pip install --no-deps -r requirements/dev.txt # install python packages required for development
-```
-
-Now run these commands:
-
-```
-sudo ./scripts/lib/install-node
-yarn install
-./tools/setup/emoji/build_emoji
-./scripts/setup/inline_email_css.py
-./tools/setup/build_pygments_data
-./tools/setup/generate_zulip_bots_static_files.py
-./scripts/setup/generate_secrets.py --development
-if [ $(uname) = "OpenBSD" ]; then
-    sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /var/postgresql/tsearch_data/
-else
-    sudo cp ./puppet/zulip/files/postgresql/zulip_english.stop /usr/share/postgresql/*/tsearch_data/
-fi
-./scripts/setup/configure-rabbitmq
-./tools/setup/postgresql-init-dev-db
-./tools/rebuild-dev-database
-./tools/setup/postgresql-init-test-db
-./tools/rebuild-test-database
-./manage.py compilemessages
-```
-
-To start the development server:
-
-```
-./tools/run-dev.py
-```
-
-… and visit <http://localhost:9991/>.
-
-If you're running your development server on a remote server, look at
-[the remote development docs][port-forward-setup] for port forwarding
-advice.
-
-#### Proxy setup for by-hand installation
-
-If you are building the development environment on a network where a
-proxy is required to access the Internet, you will need to set the
-proxy in the environment as follows:
-
-- On Ubuntu, set the proxy environment variables using:
- ```
- export https_proxy=http://proxy_host:port
- export http_proxy=http://proxy_host:port
- ```
-
-- And set the yarn proxy and https-proxy using:
- ```
- yarn config set proxy http://proxy_host:port
- yarn config set https-proxy http://proxy_host:port
- ```
 
 ## Installing on Cloud9
 

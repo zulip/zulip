@@ -5,7 +5,7 @@ import orjson
 from django.db import IntegrityError
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.decorator import REQ, has_request_variables
 from zerver.lib.actions import (
@@ -20,7 +20,7 @@ from zerver.lib.markdown import MentionData
 from zerver.lib.message import access_message, normalize_body
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.response import json_error, json_success
-from zerver.lib.streams import get_stream_by_id
+from zerver.lib.streams import access_stream_by_id
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import LEGACY_PREV_TOPIC, REQ_topic
 from zerver.lib.validator import check_bool, check_string_in, to_non_negative_int
@@ -109,8 +109,8 @@ def update_message_backend(
     propagate_mode: Optional[str] = REQ(
         default="change_one", str_validator=check_string_in(PROPAGATE_MODE_VALUES)
     ),
-    send_notification_to_old_thread: bool = REQ(default=True, validator=check_bool),
-    send_notification_to_new_thread: bool = REQ(default=True, validator=check_bool),
+    send_notification_to_old_thread: bool = REQ(default=True, json_validator=check_bool),
+    send_notification_to_new_thread: bool = REQ(default=True, json_validator=check_bool),
     content: Optional[str] = REQ(default=None),
 ) -> HttpResponse:
     if not user_profile.realm.allow_message_editing:
@@ -206,12 +206,22 @@ def update_message_backend(
     number_changed = 0
 
     if stream_id is not None:
+        if not message.is_stream_message():
+            raise JsonableError(_("Message must be a stream message"))
         if not user_profile.is_realm_admin:
             raise JsonableError(_("You don't have permission to move this message"))
+        try:
+            access_stream_by_id(user_profile, message.recipient.type_id)
+        except JsonableError:
+            raise JsonableError(
+                _(
+                    "You don't have permission to move this message due to missing access to its stream"
+                )
+            )
         if content is not None:
             raise JsonableError(_("Cannot change message content while changing stream"))
 
-        new_stream = get_stream_by_id(stream_id)
+        new_stream = access_stream_by_id(user_profile, stream_id, require_active=True)[0]
 
     number_changed = do_update_message(
         user_profile,

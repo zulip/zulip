@@ -110,10 +110,8 @@ h3 .fa-question-circle-o {
     }
 }
 
-#change_email_modal {
-    max-width: 460px;
-}
-
+#change_password_modal,
+#change_email_modal,
 #change_full_name_modal {
     max-width: 480px;
 }
@@ -825,6 +823,10 @@ input[type="checkbox"] {
     font-weight: 400;
 }
 
+.bot_edit_errors {
+    margin: 20px 20px 0 20px;
+}
+
 #bots_lists_navbar .active a {
     background-color: hsl(0, 0%, 98%);
 }
@@ -927,6 +929,29 @@ input[type="checkbox"] {
         position: absolute;
         right: 20px;
         top: 0;
+    }
+}
+
+#api_key_form,
+#change_password_modal {
+    .password-div {
+        position: relative;
+
+        input[type="text"] {
+            margin-bottom: 10px;
+        }
+
+        .password_visibility_toggle {
+            position: absolute;
+            left: 190px;
+            top: 28px;
+            width: 14px;
+            opacity: 0.6;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
     }
 }
 
@@ -1393,10 +1418,6 @@ input[type="checkbox"] {
             font-weight: 600;
             cursor: pointer;
         }
-    }
-
-    #change_password_modal {
-        width: auto;
     }
 
     .custom_user_field {

@@ -187,12 +187,13 @@ def send_bot_payload_message(
 
 def capture_last_message_screenshot(bot: UserProfile, image_path: str) -> None:
     message = Message.objects.filter(sender=bot).last()
+    realm = get_realm("zulip")
     if message is None:
         print(f"No message found for {bot.full_name}")
         return
     message_id = str(message.id)
     screenshot_script = os.path.join(TOOLS_DIR, "message-screenshot.js")
-    subprocess.check_call(["node", screenshot_script, message_id, image_path])
+    subprocess.check_call(["node", screenshot_script, message_id, image_path, realm.uri])
 
 
 def generate_screenshot_from_config(

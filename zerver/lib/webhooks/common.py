@@ -4,7 +4,7 @@ from typing import Any, Callable, Dict, Optional, Union
 from urllib.parse import unquote
 
 from django.http import HttpRequest
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.lib.actions import (
     check_send_private_message,

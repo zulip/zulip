@@ -4,11 +4,16 @@
         <h3 id="deactivation_user_modal_label">{{t "Deactivate" }} <span class="email"></span></h3>
     </div>
     <div class="modal-body">
-        <p>{{#tr this}}By deactivating <strong><span class="user_name"></span></strong> &lt;<span class="email"></span>&gt;, they will be logged out immediately.{{/tr}}</p>
+        <p>
+            {{#tr}}
+                By deactivating <z-user></z-user>, they will be logged out immediately.
+                {{#*inline "z-user"}}<strong><span class="user_name"></span></strong> &lt;<span class="email"></span>&gt;{{/inline}}
+            {{/tr}}
+        </p>
         <p>{{t "Their password will be cleared from our systems, and any bots they maintain will be disabled." }}</p>
     </div>
     <div class="modal-footer">
         <button class="button rounded" data-dismiss="modal">{{t "Cancel" }}</button>
-        <button class="button rounded btn-danger do_deactivate_button">{{t "Deactivate now" }}</button>
+        <button class="button rounded btn-danger do_deactivate_button">{{t "Confirm" }}</button>
     </div>
 </div>

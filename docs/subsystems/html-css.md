@@ -148,11 +148,11 @@ relevant background as well.
 
 Zulip's frontend is primarily JavaScript in the `static/js` directory;
 we are working on migrating these to TypeScript modules.  Stylesheets
-are written in CSS extended by various PostCSS plugins; they
-are converted from plain CSS, and we have yet to take full advantage of
+are written in CSS extended by various PostCSS plugins; they are
+converted from plain CSS, and we have yet to take full advantage of
 the features PostCSS offers.  We use Webpack to transpile and build JS
 and CSS bundles that the browser can understand, one for each entry
-points specified in `tools/webpack.assets.json`; source maps are
+points specified in `tools/webpack.*assets.json`; source maps are
 generated in the process for better debugging experience.
 
 In development mode, bundles are built and served on the fly using
@@ -165,7 +165,7 @@ ready for deployment.
 
 You can trace which source files are included in which HTML templates
 by comparing the `entrypoint` variables in the HTML templates under
-`templates/` with the bundles declared in `tools/webpack.assets.json`.
+`templates/` with the bundles declared in `tools/webpack.*assets.json`.
 
 ### Adding static files
 
@@ -196,8 +196,8 @@ first add it to the appropriate place under `static/`.
   `static/assets/icons/template.hbs` template.
 
 For your asset to be included in a development/production bundle, it
-needs to be accessible from one of the entry points defined in
-`tools/webpack.assets.json`.
+needs to be accessible from one of the entry points defined either in
+`tools/webpack.assets.json` or `tools/webpack.dev-assets.json`.
 
 * If you plan to only use the file within the app proper, and not on the login
   page or other standalone pages, put it in the `app` bundle by importing it
@@ -206,10 +206,13 @@ needs to be accessible from one of the entry points defined in
   logged-out/portico pages, import it to
   `static/js/bundles/common.js` which itself is imported to the
   `app` and `common` bundles.
-* If it's just used on a single standalone page (e.g. `/stats`),
-  create a new entry point in `tools/webpack.assets.json`. Use the
-  `bundle` macro (defined in `templates/zerver/base.html`) in the
-  relevant Jinja2 template to inject the compiled JS and CSS.
+* If it's just used on a single standalone page which is only used in
+  a development environment (e.g. `/devlogin`) create a new entry
+  point in `tools/webpack.dev-assets.json` or it's used in both
+  production and development (e.g. `/stats`) create a new entry point
+  in `tools/webpack.assets.json`. Use the `bundle` macro (defined in
+  `templates/zerver/base.html`) in the relevant Jinja2 template to
+  inject the compiled JS and CSS.
 
 If you want to test minified files in development, look for the
 `DEBUG =` line in `zproject/default_settings.py` and set it to `False`.
@@ -277,8 +280,6 @@ function in those scenarios, add it to `zulip_test`.  This is also
 [Jinja2]: http://jinja.pocoo.org/
 [Handlebars]: https://handlebarsjs.com/
 [trans]: http://jinja.pocoo.org/docs/dev/templates/#i18n
-[i18next]: https://www.i18next.com
-[official]: https://www.i18next.com/plurals.html
 [jconditionals]: http://jinja.pocoo.org/docs/2.9/templates/#list-of-control-structures
 [hconditionals]: https://handlebarsjs.com/guide/#block_helpers.html
 [translation]: ../translating/translating.md

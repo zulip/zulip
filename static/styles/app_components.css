@@ -271,7 +271,7 @@
 }
 
 /* -- unified overlay design component -- */
-.overlay {
+div.overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -476,4 +476,21 @@
 
 .tip::before {
     content: "\f0a2";
+}
+
+/* We are mostly consistent in how we style
+   unread counts, except for starred messages.
+   This is the common section.
+*/
+.unread_count {
+    float: right;
+    padding: 0 4px;
+    height: 16px;
+    line-height: 16px;
+    font-size: 12px;
+    font-weight: normal;
+    letter-spacing: 0.6px;
+    border-radius: 4px;
+    background-color: hsl(105, 2%, 50%);
+    color: hsl(0, 0%, 100%);
 }

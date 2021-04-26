@@ -3864,12 +3864,14 @@ class DevFetchAPIKeyTest(ZulipTestCase):
         self.assert_json_error_contains(result, "This organization has been deactivated", 403)
 
     def test_dev_auth_disabled(self) -> None:
-        with mock.patch("zerver.views.auth.dev_auth_enabled", return_value=False):
+        with mock.patch("zerver.views.development.dev_login.dev_auth_enabled", return_value=False):
             result = self.client_post("/api/v1/dev_fetch_api_key", dict(username=self.email))
             self.assert_json_error_contains(result, "DevAuthBackend not enabled.", 400)
 
     def test_invalid_subdomain(self) -> None:
-        with mock.patch("zerver.views.auth.get_realm_from_request", return_value=None):
+        with mock.patch(
+            "zerver.views.development.dev_login.get_realm_from_request", return_value=None
+        ):
             result = self.client_post(
                 "/api/v1/dev_fetch_api_key",
                 dict(username=self.email, password=initial_password(self.email)),
@@ -3885,7 +3887,7 @@ class DevGetEmailsTest(ZulipTestCase):
         self.assert_in_response("direct_users", result)
 
     def test_dev_auth_disabled(self) -> None:
-        with mock.patch("zerver.views.auth.dev_auth_enabled", return_value=False):
+        with mock.patch("zerver.views.development.dev_login.dev_auth_enabled", return_value=False):
             result = self.client_get("/api/v1/dev_list_users")
             self.assert_json_error_contains(result, "DevAuthBackend not enabled.", 400)
 

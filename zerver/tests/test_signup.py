@@ -746,13 +746,13 @@ class LoginTest(ZulipTestCase):
         with queries_captured() as queries, cache_tries_captured() as cache_tries:
             self.register(self.nonreg_email("test"), "test")
         # Ensure the number of queries we make is not O(streams)
-        self.assertEqual(len(queries), 70)
+        self.assertEqual(len(queries), 71)
 
         # We can probably avoid a couple cache hits here, but there doesn't
         # seem to be any O(N) behavior.  Some of the cache hits are related
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
-        self.assertEqual(len(cache_tries), 15)
+        self.assertEqual(len(cache_tries), 16)
 
         user_profile = self.nonreg_user("test")
         self.assert_logged_in_user_id(user_profile.id)
@@ -1233,12 +1233,11 @@ class InviteUserTest(InviteUserBase):
         self.check_sent_emails([email, email2], custom_from_name="Hamlet")
 
     def test_can_invite_others_to_realm(self) -> None:
-        othello = self.example_user("othello")
+        def validation_func(user_profile: UserProfile) -> bool:
+            user_profile.refresh_from_db()
+            return user_profile.can_invite_others_to_realm()
 
-        def validation_func() -> bool:
-            return othello.can_invite_others_to_realm()
-
-        self.check_has_permission_policies(othello, "invite_to_realm_policy", validation_func)
+        self.check_has_permission_policies("invite_to_realm_policy", validation_func)
 
     def test_invite_others_to_realm_setting(self) -> None:
         """
@@ -1255,7 +1254,7 @@ class InviteUserTest(InviteUserBase):
         invitee = f"Alice Test <{email}>, {email2}"
         self.assert_json_error(
             self.invite(invitee, ["Denmark"]),
-            "Only administrators can invite others to this organization.",
+            "Insufficient permission",
         )
 
         # Now verify an administrator can do it
@@ -1279,7 +1278,7 @@ class InviteUserTest(InviteUserBase):
         invitee = f"Carol Test <{email}>, {email2}"
         self.assert_json_error(
             self.invite(invitee, ["Denmark"]),
-            "Only administrators and moderators can invite others to this organization.",
+            "Insufficient permission",
         )
 
         self.login("shiva")
@@ -1323,7 +1322,7 @@ class InviteUserTest(InviteUserBase):
         invitee = f"Issac Test <{email}>, {email2}"
         self.assert_json_error(
             self.invite(invitee, ["Denmark"]),
-            "Your account is too new to invite others to this organization.",
+            "Insufficient permission",
         )
 
         do_set_realm_property(realm, "waiting_period_threshold", 0, acting_user=None)
@@ -2564,10 +2563,10 @@ class EmailUnsubscribeTests(ZulipTestCase):
         result = self.client_get(urllib.parse.urlparse(unsubscribe_link).path)
         self.assert_in_response("Unknown email unsubscribe request", result)
 
-    def test_missedmessage_unsubscribe(self) -> None:
+    def test_message_notification_emails_unsubscribe(self) -> None:
         """
-        We provide one-click unsubscribe links in missed message
-        e-mails that you can click even when logged out to update your
+        We provide one-click unsubscribe links in message notification emails
+        that you can click even when logged out to update your
         email notification settings.
         """
         user_profile = self.example_user("hamlet")
@@ -4607,7 +4606,11 @@ class UserSignUpTest(InviteUserBase):
         self.assertEqual(result.status_code, 302)
         self.assert_logged_in_user_id(user_profile.id)
 
-    def test_registration_of_active_mirror_dummy_user(self) -> None:
+    @patch(
+        "DNS.dnslookup",
+        return_value=[["sipbtest:*:20922:101:Fred Sipb,,,:/mit/sipbtest:/bin/athena/tcsh"]],
+    )
+    def test_registration_of_active_mirror_dummy_user(self, ignored: Any) -> None:
         """
         Trying to activate an already-active mirror dummy user should
         raise an AssertionError.

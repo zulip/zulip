@@ -18,7 +18,7 @@
 
     "uid=cordelia,ou=users,dc=zulip,dc=com": {
         "objectClass": ["user"],
-        "cn": ["Cordelia Lear"],
+        "cn": ["Cordelia, Lear's daughter"],
         "uid": ["cordelia"],
         "mail": ["cordelia@zulip.com"],
         "sn": ["Cordelia"]

@@ -21,12 +21,8 @@ from zerver.views.alert_words import add_alert_words, list_alert_words, remove_a
 from zerver.views.archive import archive, get_web_public_topics_backend
 from zerver.views.attachments import list_by_user, remove
 from zerver.views.auth import (
-    api_dev_fetch_api_key,
-    api_dev_list_users,
     api_fetch_api_key,
-    api_fetch_google_client_id,
     api_get_server_settings,
-    dev_direct_login,
     json_fetch_api_key,
     log_into_subdomain,
     login_page,
@@ -119,7 +115,12 @@ from zerver.views.realm_domains import (
 from zerver.views.realm_emoji import delete_emoji, list_emoji, upload_emoji
 from zerver.views.realm_export import delete_realm_export, export_realm, get_realm_exports
 from zerver.views.realm_icon import delete_icon_backend, get_icon_backend, upload_icon
-from zerver.views.realm_linkifiers import create_linkifier, delete_linkifier, list_linkifiers
+from zerver.views.realm_linkifiers import (
+    create_linkifier,
+    delete_linkifier,
+    list_linkifiers,
+    update_linkifier,
+)
 from zerver.views.realm_logo import delete_logo_backend, get_logo_backend, upload_logo
 from zerver.views.realm_playgrounds import add_realm_playground, delete_realm_playground
 from zerver.views.registration import (
@@ -129,7 +130,6 @@ from zerver.views.registration import (
     check_prereg_key_and_redirect,
     create_realm,
     find_account,
-    generate_204,
     realm_redirect,
 )
 from zerver.views.report import (
@@ -248,8 +248,6 @@ if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
 v1_api_and_json_patterns = [
     # realm-level calls
     rest_path("realm", PATCH=update_realm),
-    # Returns a 204, used by desktop app to verify connectivity status
-    path("generate_204", generate_204),
     path("realm/subdomain/<subdomain>", check_subdomain_available),
     # realm/domains -> zerver.views.realm_domains
     rest_path("realm/domains", GET=list_realm_domains, POST=create_realm_domain),
@@ -266,9 +264,10 @@ v1_api_and_json_patterns = [
     rest_path("realm/icon", POST=upload_icon, DELETE=delete_icon_backend, GET=get_icon_backend),
     # realm/logo -> zerver.views.realm_logo
     rest_path("realm/logo", POST=upload_logo, DELETE=delete_logo_backend, GET=get_logo_backend),
-    # realm/filters -> zerver.views.realm_linkifiers
-    rest_path("realm/filters", GET=list_linkifiers, POST=create_linkifier),
-    rest_path("realm/filters/<int:filter_id>", DELETE=delete_linkifier),
+    # realm/filters and realm/linkifiers -> zerver.views.realm_linkifiers
+    rest_path("realm/linkifiers", GET=list_linkifiers),
+    rest_path("realm/filters", POST=create_linkifier),
+    rest_path("realm/filters/<int:filter_id>", DELETE=delete_linkifier, PATCH=update_linkifier),
     # realm/playgrounds -> zerver.views.realm_playgrounds
     rest_path("realm/playgrounds", POST=add_realm_playground),
     rest_path("realm/playgrounds/<int:playground_id>", DELETE=delete_realm_playground),
@@ -527,7 +526,6 @@ i18n_urls = [
         "accounts/register/social/<backend>/<extra_arg>", start_social_signup, name="signup-social"
     ),
     path("accounts/login/subdomain/<token>", log_into_subdomain),
-    path("accounts/login/local/", dev_direct_login, name="login-local"),
     # We have two entries for accounts/login; only the first one is
     # used for URL resolution.  The second here is to allow
     # reverse("login") in templates to
@@ -722,15 +720,6 @@ v1_api_mobile_patterns = [
     # This json format view used by the mobile apps accepts a username
     # password/pair and returns an API key.
     path("fetch_api_key", api_fetch_api_key),
-    # This is for the signing in through the devAuthBackEnd on mobile apps.
-    path("dev_fetch_api_key", api_dev_fetch_api_key),
-    # This is for fetching the emails of the admins and the users.
-    path("dev_list_users", api_dev_list_users),
-    # Used to present the GOOGLE_CLIENT_ID to mobile apps
-    path("fetch_google_client_id", api_fetch_google_client_id),
-]
-urls += [
-    path("api/v1/", include(v1_api_mobile_patterns)),
 ]
 
 # View for uploading messages from email mirror
@@ -774,6 +763,10 @@ urls += [
         "help/delete-a-stream", RedirectView.as_view(url="/help/archive-a-stream", permanent=True)
     ),
     path("api/delete-stream", RedirectView.as_view(url="/api/archive-stream", permanent=True)),
+    path(
+        "help/configure-missed-message-emails",
+        RedirectView.as_view(url="/help/configure-message-notification-emails", permanent=True),
+    ),
     path("help/", help_documentation_view),
     path("help/<path:article>", help_documentation_view),
     path("api/", api_documentation_view),
@@ -787,6 +780,11 @@ if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
 if settings.DEVELOPMENT:
     urls += dev_urls.urls
     i18n_urls += dev_urls.i18n_urls
+    v1_api_mobile_patterns += dev_urls.v1_api_mobile_patterns
+
+urls += [
+    path("api/v1/", include(v1_api_mobile_patterns)),
+]
 
 # The sequence is important; if i18n URLs don't come first then
 # reverse URL mapping points to i18n URLs which causes the frontend

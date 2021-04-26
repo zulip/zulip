@@ -6,7 +6,7 @@ const {parseISO} = require("date-fns");
 const _ = require("lodash");
 const MockDate = require("mockdate");
 
-const {i18n} = require("../zjsunit/i18n");
+const {$t} = require("../zjsunit/i18n");
 const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
@@ -242,6 +242,8 @@ test_people("basics", () => {
     const email = "isaac@example.com";
 
     assert(!people.is_known_user_id(32));
+    assert(!people.is_known_user(isaac));
+    assert(!people.is_known_user(undefined));
     assert(!people.is_valid_full_name_and_user_id(full_name, 32));
     assert.equal(people.get_user_id_from_name(full_name), undefined);
 
@@ -251,6 +253,7 @@ test_people("basics", () => {
 
     assert(people.is_valid_full_name_and_user_id(full_name, 32));
     assert(people.is_known_user_id(32));
+    assert(people.is_known_user(isaac));
     assert.equal(people.get_active_human_count(), 2);
 
     assert.equal(people.get_user_id_from_name(full_name), 32);
@@ -427,11 +430,11 @@ test_people("user_type", () => {
     people.add_active_user(guest);
     people.add_active_user(realm_owner);
     people.add_active_user(bot_botson);
-    assert.equal(people.get_user_type(me.user_id), i18n.t("Member"));
-    assert.equal(people.get_user_type(realm_admin.user_id), i18n.t("Administrator"));
-    assert.equal(people.get_user_type(guest.user_id), i18n.t("Guest"));
-    assert.equal(people.get_user_type(realm_owner.user_id), i18n.t("Owner"));
-    assert.equal(people.get_user_type(bot_botson.user_id), i18n.t("Bot"));
+    assert.equal(people.get_user_type(me.user_id), $t({defaultMessage: "Member"}));
+    assert.equal(people.get_user_type(realm_admin.user_id), $t({defaultMessage: "Administrator"}));
+    assert.equal(people.get_user_type(guest.user_id), $t({defaultMessage: "Guest"}));
+    assert.equal(people.get_user_type(realm_owner.user_id), $t({defaultMessage: "Owner"}));
+    assert.equal(people.get_user_type(bot_botson.user_id), $t({defaultMessage: "Bot"}));
 });
 
 test_people("updates", () => {
@@ -489,9 +492,27 @@ test_people("get_people_for_stream_create", () => {
 
     const others = people.get_people_for_stream_create();
     const expected = [
-        {email: "alice1@example.com", user_id: alice1.user_id, full_name: "Alice"},
-        {email: "alice2@example.com", user_id: alice2.user_id, full_name: "Alice"},
-        {email: "bob@example.com", user_id: bob.user_id, full_name: "Bob van Roberts"},
+        {
+            email: "alice1@example.com",
+            user_id: alice1.user_id,
+            full_name: "Alice",
+            checked: false,
+            disabled: false,
+        },
+        {
+            email: "alice2@example.com",
+            user_id: alice2.user_id,
+            full_name: "Alice",
+            checked: false,
+            disabled: false,
+        },
+        {
+            email: "bob@example.com",
+            user_id: bob.user_id,
+            full_name: "Bob van Roberts",
+            checked: false,
+            disabled: false,
+        },
     ];
     assert.deepEqual(others, expected);
 });

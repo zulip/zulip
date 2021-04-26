@@ -12,9 +12,9 @@ STATIC_PATH = "static/"
 def build_for_prod_or_puppeteer(quiet: bool) -> NoReturn:
     """Builds for production, writing the output to disk"""
 
-    webpack_args = ["node", "node_modules/.bin/webpack-cli", "-p"]
+    webpack_args = ["node", "node_modules/.bin/webpack-cli", "--mode=production"]
     if quiet:
-        webpack_args.append("--display=errors-only")
+        webpack_args += ["--stats=errors-only"]
     os.execvp(webpack_args[0], webpack_args)
 
 
@@ -24,7 +24,7 @@ def build_for_dev_server(host: str, port: str, minify: bool, disable_host_check:
     # This is our most dynamic configuration, which we use for our
     # dev server.  The key piece here is that we identify changes to
     # files as devs make edits and serve new assets on the fly.
-    webpack_args = ["node", "node_modules/.bin/webpack-dev-server"]
+    webpack_args = ["node", "node_modules/.bin/webpack-cli", "serve"]
     webpack_args += [
         # webpack-cli has a bug where it ignores --watch-poll with
         # multi-config, and we don't need the katex-cli part anyway.
@@ -52,7 +52,8 @@ def build_for_dev_server(host: str, port: str, minify: bool, disable_host_check:
             if fields[1] == cwd:
                 inotify_broken = fields[2] in ["nfs", "vboxsf", "prl_fs"]
     if inotify_broken:
-        webpack_args.append("--watch-poll=1000")
+        os.environ["CHOKIDAR_USEPOLLING"] = "1"
+        os.environ["CHOKIDAR_INTERVAL"] = "1000"
 
     # TODO: This process should also fall back to periodic polling if
     # inotify_broken.
@@ -72,7 +73,11 @@ def build_for_dev_server(host: str, port: str, minify: bool, disable_host_check:
         watch_manager = pyinotify.WatchManager()
         event_notifier = pyinotify.Notifier(watch_manager, WebpackConfigFileChangeHandler())
         # We did a chdir to the root of the Zulip checkout above.
-        for filepath in ["webpack.config.ts", "tools/webpack.assets.json"]:
+        for filepath in [
+            "webpack.config.ts",
+            "tools/webpack.assets.json",
+            "tools/webpack.dev-assets.json",
+        ]:
             watch_manager.add_watch(filepath, pyinotify.IN_MODIFY)
         event_notifier.loop()
     finally:
@@ -93,6 +98,10 @@ def build_for_most_tests() -> None:
     # clean up names.
     with open("tools/webpack.assets.json") as json_data:
         entries = json.load(json_data)
+
+    with open("tools/webpack.dev-assets.json") as json_data:
+        entries.update(json.load(json_data))
+
     stat_data = {
         "status": "done",
         "chunks": {entry: [f"{entry}-stubentry.js"] for entry in entries},

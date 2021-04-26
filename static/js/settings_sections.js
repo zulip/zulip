@@ -9,8 +9,10 @@ import * as settings_exports from "./settings_exports";
 import * as settings_invites from "./settings_invites";
 import * as settings_linkifiers from "./settings_linkifiers";
 import * as settings_muted_topics from "./settings_muted_topics";
+import * as settings_muted_users from "./settings_muted_users";
 import * as settings_notifications from "./settings_notifications";
 import * as settings_org from "./settings_org";
+import * as settings_playgrounds from "./settings_playgrounds";
 import * as settings_profile_fields from "./settings_profile_fields";
 import * as settings_streams from "./settings_streams";
 import * as settings_user_groups from "./settings_user_groups";
@@ -50,6 +52,7 @@ export function initialize() {
     load_func_dict.set("alert-words", alert_words_ui.set_up_alert_words);
     load_func_dict.set("uploaded-files", attachments_ui.set_up_attachments);
     load_func_dict.set("muted-topics", settings_muted_topics.set_up);
+    load_func_dict.set("muted-users", settings_muted_users.set_up);
 
     // org
     load_func_dict.set("org_misc", settings_org.set_up);
@@ -58,6 +61,7 @@ export function initialize() {
     load_func_dict.set("emoji-settings", settings_emoji.set_up);
     load_func_dict.set("default-streams-list", settings_streams.set_up);
     load_func_dict.set("linkifier-settings", settings_linkifiers.set_up);
+    load_func_dict.set("playground-settings", settings_playgrounds.set_up);
     load_func_dict.set("invites-list-admin", settings_invites.set_up);
     load_func_dict.set("user-groups-admin", settings_user_groups.set_up);
     load_func_dict.set("profile-field-settings", settings_profile_fields.set_up);
@@ -90,11 +94,13 @@ export function reset_sections() {
     settings_emoji.reset();
     settings_exports.reset();
     settings_linkifiers.reset();
+    settings_playgrounds.reset();
     settings_invites.reset();
     settings_org.reset();
     settings_profile_fields.reset();
     settings_streams.reset();
     settings_user_groups.reset();
     settings_muted_topics.reset();
+    settings_muted_users.reset();
     // settings_users doesn't need a reset()
 }

@@ -6,7 +6,7 @@ import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as common from "./common";
 import * as feedback_widget from "./feedback_widget";
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import * as night_mode from "./night_mode";
 import * as scroll_bar from "./scroll_bar";
 
@@ -75,8 +75,8 @@ export function enter_day_mode() {
                         command: "/night",
                     });
                 },
-                title_text: i18n.t("Day mode"),
-                undo_button_text: i18n.t("Night"),
+                title_text: $t({defaultMessage: "Day mode"}),
+                undo_button_text: $t({defaultMessage: "Night"}),
             });
         },
     });
@@ -97,8 +97,8 @@ export function enter_night_mode() {
                         command: "/day",
                     });
                 },
-                title_text: i18n.t("Night mode"),
-                undo_button_text: i18n.t("Day"),
+                title_text: $t({defaultMessage: "Night mode"}),
+                undo_button_text: $t({defaultMessage: "Day"}),
             });
         },
     });
@@ -119,8 +119,8 @@ export function enter_fluid_mode() {
                         command: "/fixed-width",
                     });
                 },
-                title_text: i18n.t("Fluid width mode"),
-                undo_button_text: i18n.t("Fixed width"),
+                title_text: $t({defaultMessage: "Fluid width mode"}),
+                undo_button_text: $t({defaultMessage: "Fixed width"}),
             });
         },
     });
@@ -141,8 +141,8 @@ export function enter_fixed_mode() {
                         command: "/fluid-width",
                     });
                 },
-                title_text: i18n.t("Fixed width mode"),
-                undo_button_text: i18n.t("Fluid width"),
+                title_text: $t({defaultMessage: "Fixed width mode"}),
+                undo_button_text: $t({defaultMessage: "Fluid width"}),
             });
         },
     });

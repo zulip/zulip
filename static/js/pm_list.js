@@ -8,6 +8,7 @@ import * as pm_conversations from "./pm_conversations";
 import * as pm_list_dom from "./pm_list_dom";
 import * as stream_popover from "./stream_popover";
 import * as ui from "./ui";
+import * as ui_util from "./ui_util";
 import * as unread from "./unread";
 import * as vdom from "./vdom";
 
@@ -23,23 +24,11 @@ export function clear_for_testing() {
 // left corner of the app.  This was split out from stream_list.js.
 
 function get_filter_li() {
-    return $(".top_left_private_messages");
-}
-
-function update_count_in_dom(count_span, value_span, count) {
-    if (count === 0) {
-        count_span.hide();
-        value_span.text("");
-    } else {
-        count_span.show();
-        value_span.text(count);
-    }
+    return $(".top_left_private_messages .private_messages_header");
 }
 
 function set_count(count) {
-    const count_span = get_filter_li().find(".count");
-    const value_span = count_span.find(".value");
-    update_count_in_dom(count_span, value_span, count);
+    ui_util.update_unread_count_in_dom(get_filter_li(), count);
 }
 
 function remove_expanded_private_messages() {

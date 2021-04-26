@@ -1,12 +1,13 @@
 import $ from "jquery";
 
 import render_announce_stream_docs from "../templates/announce_stream_docs.hbs";
+import render_new_stream_user from "../templates/new_stream_user.hbs";
 import render_new_stream_users from "../templates/new_stream_users.hbs";
 import render_subscription_invites_warning_modal from "../templates/subscription_invites_warning_modal.hbs";
 
-import * as blueslip from "./blueslip";
 import * as channel from "./channel";
-import {i18n} from "./i18n";
+import {$t, $t_html} from "./i18n";
+import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
@@ -17,6 +18,8 @@ import * as subs from "./subs";
 import * as ui_report from "./ui_report";
 
 let created_stream;
+let all_users;
+let all_users_list_widget;
 
 export function reset_created_stream() {
     created_stream = undefined;
@@ -33,16 +36,17 @@ export function get_name() {
 class StreamSubscriptionError {
     report_no_subs_to_stream() {
         $("#stream_subscription_error").text(
-            i18n.t("You cannot create a stream with no subscribers!"),
+            $t({defaultMessage: "You cannot create a stream with no subscribers!"}),
         );
         $("#stream_subscription_error").show();
     }
 
     cant_create_stream_without_susbscribing() {
         $("#stream_subscription_error").text(
-            i18n.t(
-                "You must be an organization administrator to create a stream without subscribing.",
-            ),
+            $t({
+                defaultMessage:
+                    "You must be an organization administrator to create a stream without subscribing.",
+            }),
         );
         $("#stream_subscription_error").show();
     }
@@ -55,7 +59,9 @@ const stream_subscription_error = new StreamSubscriptionError();
 
 class StreamNameError {
     report_already_exists() {
-        $("#stream_name_error").text(i18n.t("A stream with this name already exists"));
+        $("#stream_name_error").text(
+            $t({defaultMessage: "A stream with this name already exists"}),
+        );
         $("#stream_name_error").show();
     }
 
@@ -64,7 +70,7 @@ class StreamNameError {
     }
 
     report_empty_stream() {
-        $("#stream_name_error").text(i18n.t("A stream needs to have a name"));
+        $("#stream_name_error").text($t({defaultMessage: "A stream needs to have a name"}));
         $("#stream_name_error").show();
     }
 
@@ -139,10 +145,8 @@ function update_announce_stream_state() {
 }
 
 function get_principals() {
-    return Array.from($("#stream_creation_form input:checkbox[name=user]:checked"), (elem) => {
-        const label = $(elem).closest(".add-user-label");
-        return Number.parseInt(label.attr("data-user-id"), 10);
-    });
+    // Return list of user ids which were selected by user.
+    return all_users.filter((user) => user.checked === true).map((user) => user.user_id);
 }
 
 function create_stream() {
@@ -156,7 +160,7 @@ function create_stream() {
     // and paste over a description with newline characters in it. Prevent that.
     if (description.includes("\n")) {
         ui_report.client_error(
-            i18n.t("The stream description cannot contain newline characters."),
+            $t_html({defaultMessage: "The stream description cannot contain newline characters."}),
             $(".stream_create_info"),
         );
         return undefined;
@@ -209,7 +213,9 @@ function create_stream() {
     const user_ids = get_principals();
     data.principals = JSON.stringify(user_ids);
 
-    loading.make_indicator($("#stream_creating_indicator"), {text: i18n.t("Creating stream...")});
+    loading.make_indicator($("#stream_creating_indicator"), {
+        text: $t({defaultMessage: "Creating stream..."}),
+    });
 
     // Subscribe yourself and possible other people to a new stream.
     return channel.post({
@@ -218,7 +224,10 @@ function create_stream() {
         success() {
             $("#create_stream_name").val("");
             $("#create_stream_description").val("");
-            ui_report.success(i18n.t("Stream successfully created!"), $(".stream_create_info"));
+            ui_report.success(
+                $t_html({defaultMessage: "Stream successfully created!"}),
+                $(".stream_create_info"),
+            );
             loading.destroy_indicator($("#stream_creating_indicator"));
             // The rest of the work is done via the subscribe event we will get
         },
@@ -237,7 +246,11 @@ function create_stream() {
                 stream_name_error.trigger("select");
             }
 
-            ui_report.error(i18n.t("Error creating stream"), xhr, $(".stream_create_info"));
+            ui_report.error(
+                $t_html({defaultMessage: "Error creating stream"}),
+                xhr,
+                $(".stream_create_info"),
+            );
             loading.destroy_indicator($("#stream_creating_indicator"));
         },
     });
@@ -266,20 +279,41 @@ export function show_new_stream_modal() {
     $("#stream-creation").removeClass("hide");
     $(".right .settings").hide();
 
-    const html = blueslip.measure_time("render new stream users", () => {
-        const all_users = people.get_people_for_stream_create();
-        // Add current user on top of list
-        all_users.unshift(people.get_by_user_id(page_params.user_id));
-        return render_new_stream_users({
-            users: all_users,
+    const add_people_container = $("#people_to_add");
+    add_people_container.html(
+        render_new_stream_users({
             streams: stream_settings_data.get_streams_for_settings_page(),
-            is_admin: page_params.is_admin,
-        });
+        }),
+    );
+
+    all_users = people.get_people_for_stream_create();
+    // Add current user on top of list
+    const current_user = people.get_by_user_id(page_params.user_id);
+    all_users.unshift({
+        email: current_user.email,
+        user_id: current_user.user_id,
+        full_name: current_user.full_name,
+        checked: true,
+        disabled: !page_params.is_admin,
     });
 
-    const container = $("#people_to_add");
-    container.html(html);
-    create_handlers_for_users(container);
+    all_users_list_widget = ListWidget.create($("#user-checkboxes"), all_users, {
+        name: "new_stream_add_users",
+        parent_container: add_people_container,
+        modifier(item) {
+            return render_new_stream_user(item);
+        },
+        filter: {
+            element: $("#people_to_add .add-user-list-filter"),
+            predicate(user, search_term) {
+                return people.build_person_matcher(search_term)(user);
+            },
+        },
+        simplebar_container: $("#user-checkboxes-simplebar-wrapper"),
+        html_selector: (user) => $(`#${CSS.escape("user_checkbox_" + user.user_id)}`),
+    });
+
+    create_handlers_for_users(add_people_container);
 
     // Make the options default to the same each time:
     // public, "announce stream" on.
@@ -287,6 +321,7 @@ export function show_new_stream_modal() {
     $("#stream_creation_form .stream-message-retention-days-input").hide();
     $("#stream_creation_form select[name=stream_message_retention_setting]").val("realm_default");
 
+    update_announce_stream_state();
     if (stream_data.realm_has_notifications_stream()) {
         $("#announce-new-stream").show();
         $("#announce-new-stream input").prop("disabled", false);
@@ -295,99 +330,76 @@ export function show_new_stream_modal() {
         $("#announce-new-stream").hide();
     }
     clear_error_display();
-
-    $("#stream-checkboxes label.checkbox").on("change", function (e) {
-        const elem = $(this);
-        const stream_id = Number.parseInt(elem.attr("data-stream-id"), 10);
-        const checked = elem.find("input").prop("checked");
-        const subscriber_ids = new Set(peer_data.get_subscribers(stream_id));
-
-        $("#user-checkboxes label.checkbox").each(function () {
-            const user_elem = $(this);
-            const user_id = Number.parseInt(user_elem.attr("data-user-id"), 10);
-
-            if (subscriber_ids.has(user_id)) {
-                user_elem.find("input").prop("checked", checked);
-            }
-        });
-
-        e.preventDefault();
-    });
 }
 
 export function create_handlers_for_users(container) {
     // container should be $('#people_to_add')...see caller to verify
-    container.on("change", "#user-checkboxes input", update_announce_stream_state);
+    function update_checked_state_for_users(value, users) {
+        // Update the all_users backing data structure for
+        // which users will be submitted should the user click save,
+        // and also ensure that any visible checkboxes reflect
+        // the state of that data structure.
 
-    // 'Check all' and 'Uncheck all' visible users
-    container.on("click", ".subs_set_all_users", (e) => {
-        $("#user-checkboxes .checkbox").each((idx, li) => {
-            if (li.style.display !== "none") {
-                $(li.firstElementChild).prop("checked", true);
+        // If we have to rerender a very large number of users, it's
+        // eventually faster to just do a full redraw rather than
+        // many hundreds of single-item rerenders.
+        const full_redraw = !users || users.length > 250;
+        for (const user of all_users) {
+            // We don't want to uncheck the user creating the stream if it is not admin.
+            if (user.user_id === page_params.user_id && value === false && !page_params.is_admin) {
+                continue;
             }
-        });
-        e.preventDefault();
-        update_announce_stream_state();
+            // We update for all users if `users` parameter is empty.
+            if (users === undefined || users.includes(user.user_id)) {
+                user.checked = value;
+
+                if (!full_redraw) {
+                    all_users_list_widget.render_item(user);
+                }
+            }
+        }
+
+        if (full_redraw) {
+            all_users_list_widget.hard_redraw();
+        }
+    }
+
+    container.on("change", "#user-checkboxes input", (e) => {
+        const elem = $(e.target);
+        const user_id = Number.parseInt(elem.attr("data-user-id"), 10);
+        const checked = elem.prop("checked");
+        update_checked_state_for_users(checked, [user_id]);
     });
 
-    container.on("click", ".subs_unset_all_users", (e) => {
-        $("#user-checkboxes .checkbox").each((idx, li) => {
-            if (li.style.display !== "none") {
-                // The first checkbox is the one for ourself; this is the code path for:
-                // `stream_subscription_error.cant_create_stream_without_susbscribing`
-                if (idx === 0 && !page_params.is_admin) {
-                    return;
-                }
-                $(li.firstElementChild).prop("checked", false);
-            }
-        });
+    // 'Check all' and 'Uncheck all' visible users
+    container.on("click", ".subs_set_all_users, .subs_unset_all_users", (e) => {
         e.preventDefault();
-        update_announce_stream_state();
+        // Only `check / uncheck` users who are displayed.
+        const mark_checked = e.target.classList.contains("subs_set_all_users");
+        const users_displayed = all_users_list_widget.get_current_list();
+        if (all_users.length !== users_displayed.length) {
+            update_checked_state_for_users(
+                mark_checked,
+                users_displayed.map((user) => user.user_id),
+            );
+        } else {
+            update_checked_state_for_users(mark_checked);
+        }
     });
 
     container.on("click", "#copy-from-stream-expand-collapse", (e) => {
+        e.preventDefault();
         $("#stream-checkboxes").toggle();
         $("#copy-from-stream-expand-collapse .toggle").toggleClass("fa-caret-right fa-caret-down");
-        e.preventDefault();
     });
 
-    // Search people or streams
-    container.on("input", ".add-user-list-filter", (e) => {
-        const user_list = $(".add-user-list-filter");
-        if (user_list === 0) {
-            return;
-        }
-        const search_term = user_list.expectOne().val().trim();
-        const search_terms = search_term.toLowerCase().split(",");
-
-        (function filter_user_checkboxes() {
-            const user_labels = $("#user-checkboxes label.add-user-label");
-
-            if (search_term === "") {
-                user_labels.css({display: "block"});
-                return;
-            }
-
-            const users = people.get_people_for_stream_create();
-            const filtered_users = people.filter_people_by_search_terms(users, search_terms);
-
-            // Be careful about modifying the follow code.  A naive implementation
-            // will work very poorly with a large user population (~1000 users).
-            //
-            // I tested using: `./manage.py populate_db --extra-users 3500`
-            //
-            // This would break the previous implementation, whereas the new
-            // implementation is merely sluggish.
-            user_labels.each(function () {
-                const elem = $(this);
-                const user_id = Number.parseInt(elem.attr("data-user-id"), 10);
-                const user_checked = filtered_users.has(user_id);
-                const display = user_checked ? "block" : "none";
-                elem.css({display});
-            });
-        })();
-
+    $("#stream-checkboxes label.checkbox").on("change", (e) => {
         e.preventDefault();
+        const elem = $(e.target).closest("[data-stream-id]");
+        const stream_id = Number.parseInt(elem.attr("data-stream-id"), 10);
+        const checked = elem.find("input").prop("checked");
+        const subscriber_ids = peer_data.get_subscribers(stream_id);
+        update_checked_state_for_users(checked, subscriber_ids);
     });
 }
 

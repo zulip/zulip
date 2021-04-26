@@ -36,7 +36,7 @@ def dev_panel(request: HttpRequest) -> HttpResponse:
         # We set isolated_page to avoid clutter from footer/header.
         "isolated_page": True,
     }
-    return render(request, "zerver/integrations/development/dev_panel.html", context)
+    return render(request, "zerver/development/integrations_dev_panel.html", context)
 
 
 def send_webhook_fixture_message(
@@ -98,7 +98,7 @@ def check_send_webhook_fixture_message(
     request: HttpRequest,
     url: str = REQ(),
     body: str = REQ(),
-    is_json: bool = REQ(validator=check_bool),
+    is_json: bool = REQ(json_validator=check_bool),
     custom_headers: str = REQ(),
 ) -> HttpResponse:
     try:

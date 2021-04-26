@@ -120,26 +120,13 @@ js_rules = RuleList(
             "description": 'Avoid using "msgid" as a variable name; use "message_id" instead.',
         },
         {
-            "pattern": r"i18n\.t\([^)]+[^,\{\)]$",
-            "description": "i18n string should not be a multiline string",
-        },
-        {
-            "pattern": r"""i18n\.t\(['"].+?['"]\s*\+""",
-            "description": "Do not concatenate arguments within i18n.t()",
-        },
-        {
-            "pattern": r"""i18n\.t\([a-zA-Z]""",
-            "exclude": {"static/js/templates.js"},
-            "description": "Do not pass a variable into i18n.t; it will not be exported to Transifex for translation.",
-        },
-        {
-            "pattern": r"i18n\.t\(.+\).*\+",
+            "pattern": r"\$t\(.+\).*\+",
             "description": "Do not concatenate i18n strings",
         },
-        {"pattern": r"\+.*i18n\.t\(.+\)", "description": "Do not concatenate i18n strings"},
+        {"pattern": r"\+.*\$t\(.+\)", "description": "Do not concatenate i18n strings"},
         {
             "pattern": "[.]html[(]",
-            "exclude_pattern": r"""\.html\(("|'|render_|html|message\.content|util\.clean_user_content_links|i18n\.t|rendered_|$|\)|error_text|widget_elem|\$error|\$\("<p>"\))""",
+            "exclude_pattern": r"""\.html\(("|'|render_|html|message\.content|util\.clean_user_content_links|rendered_|$|\)|error_html|widget_elem|\$error|\$\("<p>"\))""",
             "exclude": {
                 "static/js/portico",
                 "static/js/lightbox.js",
@@ -153,17 +140,15 @@ js_rules = RuleList(
             "pattern": "[\"']json/",
             "description": "Relative URL for JSON route not supported by i18n",
         },
-        # This rule is constructed with + to avoid triggering on itself
-        {"pattern": "^[ ]*//[A-Za-z0-9]", "description": "Missing space after // in comment"},
         {
             "pattern": r"""[.]text\(["'][a-zA-Z]""",
-            "description": "Strings passed to $().text should be wrapped in i18n.t() for internationalization",
+            "description": "Strings passed to $().text should be wrapped in $t() for internationalization",
             "exclude": {"frontend_tests/node_tests/"},
         },
         {
             "pattern": r"""compose_error\(["']""",
-            "description": "Argument to compose_error should be a literal string enclosed "
-            "by i18n.t()",
+            "description": "Argument to compose_error should be a literal string translated "
+            "by $t_html()",
         },
         {
             "pattern": r"ui.report_success\(",
@@ -171,8 +156,8 @@ js_rules = RuleList(
         },
         {
             "pattern": r"""report.success\(["']""",
-            "description": "Argument to ui_report.success should be a literal string enclosed "
-            "by i18n.t()",
+            "description": "Argument to ui_report.success should be a literal string translated "
+            "by $t_html()",
         },
         {
             "pattern": r"ui.report_error\(",
@@ -180,15 +165,15 @@ js_rules = RuleList(
         },
         {
             "pattern": r"""report.error\(["'][^'"]""",
-            "description": "Argument to ui_report.error should be a literal string enclosed "
-            "by i18n.t()",
+            "description": "Argument to ui_report.error should be a literal string translated "
+            "by $t_html()",
             "good_lines": ['ui_report.error("")', 'ui_report.error(_("text"))'],
             "bad_lines": ['ui_report.error("test")'],
         },
         {
             "pattern": r"""report.client_error\(["'][^'"]""",
-            "description": "Argument to ui_report.client_error should be a literal string enclosed "
-            "by i18n.t()",
+            "description": "Argument to ui_report.client_error should be a literal string translated "
+            "by $t_html()",
             "good_lines": ['ui_report.client_error("")', 'ui_report.client_error(_("text"))'],
             "bad_lines": ['ui_report.client_error("test")'],
         },
@@ -307,6 +292,7 @@ python_rules = RuleList(
         {
             "pattern": "django.utils.translation",
             "include_only": {"test/", "zerver/views/development/"},
+            "exclude": {"zerver/views/development/dev_login.py"},
             "description": "Test strings should not be tagged for translation",
             "good_lines": [""],
             "bad_lines": ["django.utils.translation"],
@@ -562,7 +548,7 @@ html_rules: List["Rule"] = [
         },
         "exclude": {"templates/analytics/support.html"},
         "good_lines": [
-            '<input class="stream-list-filter" type="text" placeholder="{{ _(\'Search streams\') }}" />'
+            '<input class="stream-list-filter" type="text" placeholder="{{ _(\'Filter streams\') }}" />'
         ],
         "bad_lines": ['<input placeholder="foo">'],
     },
@@ -582,7 +568,7 @@ html_rules: List["Rule"] = [
         "pattern": "placeholder='[^{]",
         "description": "`placeholder` value should be translatable.",
         "good_lines": [
-            '<input class="stream-list-filter" type="text" placeholder="{{ _(\'Search streams\') }}" />'
+            '<input class="stream-list-filter" type="text" placeholder="{{ _(\'Filter streams\') }}" />'
         ],
         "bad_lines": ["<input placeholder='foo'>"],
     },
@@ -650,7 +636,10 @@ html_rules: List["Rule"] = [
         "description": "Don't use inline event handlers (onclick=, etc. attributes) in HTML. Instead,"
         "attach a jQuery event handler ($('#foo').on('click', function () {...})) when "
         "the DOM is ready (inside a $(function () {...}) block).",
-        "exclude": {"templates/zerver/dev_login.html", "templates/corporate/upgrade.html"},
+        "exclude": {
+            "templates/zerver/development/dev_login.html",
+            "templates/corporate/upgrade.html",
+        },
         "good_lines": ["($('#foo').on('click', function () {}"],
         "bad_lines": [
             "<button id='foo' onclick='myFunction()'>Foo</button>",
@@ -676,7 +665,7 @@ html_rules: List["Rule"] = [
             "templates/zerver/emails/email_base_messages.html",
             # Email log templates; should clean up.
             "templates/zerver/email.html",
-            "templates/zerver/email_log.html",
+            "templates/zerver/development/email_log.html",
             # Social backend logos are dynamically loaded
             "templates/zerver/accounts_home.html",
             "templates/zerver/login.html",
@@ -765,6 +754,11 @@ jinja2_rules = RuleList(
         {
             "pattern": r"{{ _(.+) }}[\.\?!]",
             "description": "Period should be part of the translatable string.",
+        },
+        {
+            "pattern": r'{% set entrypoint = "dev-',
+            "exclude": {"templates/zerver/development/"},
+            "description": "Development entrypoints (dev-) must not be imported in production.",
         },
     ],
 )

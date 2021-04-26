@@ -3,7 +3,7 @@ import $ from "jquery";
 import render_admin_export_list from "../templates/admin_export_list.hbs";
 
 import * as channel from "./channel";
-import {i18n} from "./i18n";
+import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import * as people from "./people";
@@ -106,13 +106,13 @@ export function set_up() {
             url: "/json/export/realm",
             success() {
                 ui_report.success(
-                    i18n.t("Export started. Check back in a few minutes."),
+                    $t_html({defaultMessage: "Export started. Check back in a few minutes."}),
                     export_status,
                     4000,
                 );
             },
             error(xhr) {
-                ui_report.error(i18n.t("Export failed"), xhr, export_status);
+                ui_report.error($t_html({defaultMessage: "Export failed"}), xhr, export_status);
             },
         });
     });

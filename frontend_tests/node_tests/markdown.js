@@ -13,13 +13,22 @@ set_global("location", {
     origin: "http://zulip.zulipdev.com",
 });
 
-const example_realm_filters = [
-    ["#(?P<id>[0-9]{2,8})", "https://trac.example.com/ticket/%(id)s"],
-    ["ZBUG_(?P<id>[0-9]{2,8})", "https://trac2.zulip.net/ticket/%(id)s"],
-    [
-        "ZGROUP_(?P<id>[0-9]{2,8}):(?P<zone>[0-9]{1,8})",
-        "https://zone_%(zone)s.zulip.net/ticket/%(id)s",
-    ],
+const example_realm_linkifiers = [
+    {
+        pattern: "#(?P<id>[0-9]{2,8})",
+        url_format: "https://trac.example.com/ticket/%(id)s",
+        id: 1,
+    },
+    {
+        pattern: "ZBUG_(?P<id>[0-9]{2,8})",
+        url_format: "https://trac2.zulip.net/ticket/%(id)s",
+        id: 2,
+    },
+    {
+        pattern: "ZGROUP_(?P<id>[0-9]{2,8}):(?P<zone>[0-9]{1,8})",
+        url_format: "https://zone_%(zone)s.zulip.net/ticket/%(id)s",
+        id: 3,
+    },
 ];
 page_params.translate_emoticons = false;
 
@@ -58,7 +67,7 @@ emoji.initialize(emoji_params);
 fenced_code.initialize(pygments_data);
 
 const cordelia = {
-    full_name: "Cordelia Lear",
+    full_name: "Cordelia, Lear's daughter",
     user_id: 101,
     email: "cordelia@zulip.com",
 };
@@ -179,12 +188,12 @@ stream_data.add_sub(edgecase_stream_2);
 // streamTopicHandler and it would be parsed as edgecase_stream_2.
 stream_data.add_sub(amp_stream);
 
-markdown.initialize(example_realm_filters, markdown_config.get_helpers());
+markdown.initialize(example_realm_linkifiers, markdown_config.get_helpers());
 
 function test(label, f) {
     run_test(label, (override) => {
         page_params.realm_users = [];
-        markdown.update_linkifier_rules(example_realm_filters);
+        markdown.update_linkifier_rules(example_realm_linkifiers);
         f(override);
     });
 }
@@ -266,7 +275,7 @@ test("message_flags", () => {
     assert(!message.mentioned);
     assert(!message.mentioned_me_directly);
 
-    message = {raw_content: "@**Cordelia Lear**"};
+    message = {raw_content: "@**Cordelia, Lear's daughter**"};
     markdown.apply_markdown(message);
     assert(message.mentioned);
     assert(message.mentioned_me_directly);
@@ -326,9 +335,9 @@ test("marked", () => {
             expected: "<blockquote>\n<p>quote this for me</p>\n</blockquote>\n<p>thanks</p>",
         },
         {
-            input: "This is a @**CordeLIA Lear** mention",
+            input: "This is a @**CordeLIA, Lear's daughter** mention",
             expected:
-                '<p>This is a <span class="user-mention" data-user-id="101">@Cordelia Lear</span> mention</p>',
+                '<p>This is a <span class="user-mention" data-user-id="101">@Cordelia, Lear&#39;s daughter</span> mention</p>',
         },
         {
             input: "These @ @**** are not mentions",
@@ -387,15 +396,15 @@ test("marked", () => {
                 '<p><span aria-label="poop" class="emoji emoji-1f4a9" role="img" title="poop">:poop:</span></p>',
         },
         {
-            input: "Silent mention: @_**Cordelia Lear**",
+            input: "Silent mention: @_**Cordelia, Lear's daughter**",
             expected:
-                '<p>Silent mention: <span class="user-mention silent" data-user-id="101">Cordelia Lear</span></p>',
+                '<p>Silent mention: <span class="user-mention silent" data-user-id="101">Cordelia, Lear&#39;s daughter</span></p>',
         },
         {
             input:
-                "> Mention in quote: @**Cordelia Lear**\n\nMention outside quote: @**Cordelia Lear**",
+                "> Mention in quote: @**Cordelia, Lear's daughter**\n\nMention outside quote: @**Cordelia, Lear's daughter**",
             expected:
-                '<blockquote>\n<p>Mention in quote: <span class="user-mention silent" data-user-id="101">Cordelia Lear</span></p>\n</blockquote>\n<p>Mention outside quote: <span class="user-mention" data-user-id="101">@Cordelia Lear</span></p>',
+                '<blockquote>\n<p>Mention in quote: <span class="user-mention silent" data-user-id="101">Cordelia, Lear&#39;s daughter</span></p>\n</blockquote>\n<p>Mention outside quote: <span class="user-mention" data-user-id="101">@Cordelia, Lear&#39;s daughter</span></p>',
         },
         // Test only those linkifiers which don't return True for
         // `contains_backend_only_syntax()`. Those which return True
@@ -422,9 +431,9 @@ test("marked", () => {
                 '<p>T<br>\n<a class="stream" data-stream-id="1" href="/#narrow/stream/1-Denmark">#Denmark</a></p>',
         },
         {
-            input: "T\n@**Cordelia Lear**",
+            input: "T\n@**Cordelia, Lear's daughter**",
             expected:
-                '<p>T<br>\n<span class="user-mention" data-user-id="101">@Cordelia Lear</span></p>',
+                '<p>T<br>\n<span class="user-mention" data-user-id="101">@Cordelia, Lear&#39;s daughter</span></p>',
         },
         {
             input: "@**Mark Twin|104** and @**Mark Twin|105** are out to confuse you.",
@@ -433,8 +442,8 @@ test("marked", () => {
         },
         {input: "@**Invalid User|1234**", expected: "<p>@**Invalid User|1234**</p>"},
         {
-            input: "@**Cordelia LeAR|103** has a wrong user_id.",
-            expected: "<p>@**Cordelia LeAR|103** has a wrong user_id.</p>",
+            input: "@**Cordelia, Lear's daughter|103** has a wrong user_id.",
+            expected: "<p>@**Cordelia, Lear&#39;s daughter|103** has a wrong user_id.</p>",
         },
         {
             input: "@**Brother of Bobby|123** is really the full name.",
@@ -642,7 +651,7 @@ test("message_flags", () => {
 
     assert.equal(message.is_me_message, true);
 
-    input = "testing this @**all** @**Cordelia Lear**";
+    input = "testing this @**all** @**Cordelia, Lear's daughter**";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
 
@@ -713,13 +722,28 @@ test("backend_only_linkifiers", () => {
 test("python_to_js_linkifier", () => {
     // The only way to reach python_to_js_linkifier is indirectly, hence the call
     // to update_linkifier_rules.
-    markdown.update_linkifier_rules([["/a(?im)a/g"], ["/a(?L)a/g"]]);
+    markdown.update_linkifier_rules([
+        {
+            pattern: "/a(?im)a/g",
+            url_format: "http://example1.example.com",
+            id: 10,
+        },
+        {
+            pattern: "/a(?L)a/g",
+            url_format: "http://example2.example.com",
+            id: 20,
+        },
+    ]);
     let actual_value = marked.InlineLexer.rules.zulip.linkifiers;
     let expected_value = [/\/aa\/g(?!\w)/gim, /\/aa\/g(?!\w)/g];
     assert.deepEqual(actual_value, expected_value);
     // Test case with multiple replacements.
     markdown.update_linkifier_rules([
-        ["#cf(?P<contest>\\d+)(?P<problem>[A-Z][\\dA-Z]*)", "http://google.com"],
+        {
+            pattern: "#cf(?P<contest>\\d+)(?P<problem>[A-Z][\\dA-Z]*)",
+            url_format: "http://example3.example.com",
+            id: 30,
+        },
     ]);
     actual_value = marked.InlineLexer.rules.zulip.linkifiers;
     expected_value = [/#cf(\d+)([A-Z][\dA-Z]*)(?!\w)/g];
@@ -729,7 +753,13 @@ test("python_to_js_linkifier", () => {
         "error",
         "python_to_js_linkifier: Invalid regular expression: /!@#@(!#&((!&(@#((?!\\w)/: Unterminated group",
     );
-    markdown.update_linkifier_rules([["!@#@(!#&((!&(@#(", "http://google.com"]]);
+    markdown.update_linkifier_rules([
+        {
+            pattern: "!@#@(!#&((!&(@#(",
+            url_format: "http://example4.example.com",
+            id: 40,
+        },
+    ]);
     actual_value = marked.InlineLexer.rules.zulip.linkifiers;
     expected_value = [];
     assert.deepEqual(actual_value, expected_value);

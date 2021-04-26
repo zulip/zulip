@@ -5,7 +5,7 @@ const {strict: assert} = require("assert");
 const _ = require("lodash");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {i18n} = require("../zjsunit/i18n");
+const {$t} = require("../zjsunit/i18n");
 const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
@@ -150,6 +150,9 @@ test_ui("populate_user_groups", (override) => {
         if (user_id === iago.user_id) {
             return iago;
         }
+        if (user_id === alice.user_id) {
+            return alice;
+        }
         if (user_id === undefined) {
             return noop;
         }
@@ -157,6 +160,9 @@ test_ui("populate_user_groups", (override) => {
         blueslip.expect("warn", "Undefined user in function append_user");
         get_by_user_id_called = true;
         return undefined;
+    };
+    people.is_known_user = function () {
+        return people.get_by_user_id !== undefined && people.get_by_user_id !== noop;
     };
 
     override(settings_user_groups, "can_edit", () => true);
@@ -232,12 +238,12 @@ test_ui("populate_user_groups", (override) => {
         })();
 
         (function test_sorter() {
-            let sort_recipientbox_typeahead_called = false;
-            typeahead_helper.sort_recipientbox_typeahead = () => {
-                sort_recipientbox_typeahead_called = true;
+            let sort_recipients_typeahead_called = false;
+            typeahead_helper.sort_recipients = function () {
+                sort_recipients_typeahead_called = true;
             };
-            config.sorter.call(fake_context);
-            assert(sort_recipientbox_typeahead_called);
+            config.sorter.call(fake_context, []);
+            assert(sort_recipients_typeahead_called);
         })();
 
         (function test_updater() {
@@ -530,7 +536,7 @@ test_ui("on_events", (override) => {
                 $("#admin-user-group-status").show();
                 $("form.admin-user-group-form input[type='text']").val("fake-content");
                 ui_report.success = (text, ele) => {
-                    assert.equal(text, "translated: User group added!");
+                    assert.equal(text, "translated HTML: User group added!");
                     assert.equal(ele, $("#admin-user-group-status"));
                 };
 
@@ -546,7 +552,7 @@ test_ui("on_events", (override) => {
                     const xhr = {
                         responseText: '{"msg":"fake-msg"}',
                     };
-                    assert.equal(error_msg, "translated: Failed");
+                    assert.equal(error_msg, "translated HTML: Failed");
                     assert.deepEqual(error_obj, xhr);
                     assert.equal(ele, $("#admin-user-group-status"));
                 };
@@ -575,7 +581,7 @@ test_ui("on_events", (override) => {
             assert.equal(opts.url, "/json/user_groups/1");
             assert.deepEqual(opts.data, data);
 
-            fake_this.text(i18n.t("fake-text"));
+            fake_this.text($t({defaultMessage: "fake-text"}));
             opts.error();
             assert.equal(fake_this.text(), "translated: Failed!");
         };
@@ -668,8 +674,8 @@ test_ui("on_events", (override) => {
         const handler_desc = $(user_group_selector).get_on_handler("input", ".description");
         const sib_des = $(description_selector);
         const sib_name = $(name_selector);
-        sib_name.text(i18n.t("mobile"));
-        sib_des.text(i18n.t("All mobile members"));
+        sib_name.text($t({defaultMessage: "mobile"}));
+        sib_des.text($t({defaultMessage: "All mobile members"}));
 
         const group_data = {
             name: "translated: mobile",
@@ -715,8 +721,8 @@ test_ui("on_events", (override) => {
         const handler_desc = $(user_group_selector).get_on_handler("blur", ".description");
         const sib_des = $(description_selector);
         const sib_name = $(name_selector);
-        sib_name.text(i18n.t("mobile"));
-        sib_des.text(i18n.t("All mobile members"));
+        sib_name.text($t({defaultMessage: "mobile"}));
+        sib_des.text($t({defaultMessage: "All mobile members"}));
 
         const group_data = {members: new Set([2, 31])};
         user_groups.get_user_group_from_id = () => group_data;
@@ -765,7 +771,7 @@ test_ui("on_events", (override) => {
                     const xhr = {
                         responseText: '{"msg":"fake-msg"}',
                     };
-                    assert.equal(error_msg, "translated: Failed");
+                    assert.equal(error_msg, "translated HTML: Failed");
                     assert.deepEqual(error_obj, xhr);
                     assert.equal(ele, user_group_error);
                 };

@@ -43,6 +43,7 @@ stream_data.add_sub(social);
 function test(label, f) {
     run_test(label, (override) => {
         muting.set_muted_topics([]);
+        muting.set_muted_users([]);
         f(override);
     });
 }

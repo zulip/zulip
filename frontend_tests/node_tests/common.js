@@ -2,13 +2,20 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 
 mock_cjs("jquery", $);
 
 const noop = () => {};
+
+mock_esm("tippy.js", {
+    default: (selector) => {
+        $(selector)[0]._tippy = noop;
+        $(selector)[0]._tippy.setContent = noop;
+    },
+});
 
 set_global("document", {});
 
@@ -127,4 +134,41 @@ run_test("adjust_mac_shortcuts mac", (override) => {
         assert.equal(test_item.stub.hasClass("mac-cmd-key"), test_item.is_cmd_key);
         assert.equal(test_item.stub.text(), test_item.mac_key);
     }
+});
+
+run_test("show password", () => {
+    const password_selector = "#id_password ~ .password_visibility_toggle";
+
+    $(password_selector)[0] = () => {};
+
+    function set_attribute(type) {
+        $("#id_password").attr("type", type);
+    }
+
+    function check_assertion(type, present_class, absent_class) {
+        assert.equal($("#id_password").attr("type"), type);
+        assert($(password_selector).hasClass(present_class));
+        assert(!$(password_selector).hasClass(absent_class));
+    }
+
+    const ev = {
+        preventDefault: () => {},
+        stopPropagation: () => {},
+    };
+
+    set_attribute("password");
+    common.setup_password_visibility_toggle("#id_password", password_selector);
+
+    const handler = $(password_selector).get_on_handler("click");
+
+    handler(ev);
+    check_assertion("text", "fa-eye", "fa-eye-slash");
+
+    handler(ev);
+    check_assertion("password", "fa-eye-slash", "fa-eye");
+
+    handler(ev);
+
+    common.reset_password_toggle_icons("#id_password", password_selector);
+    check_assertion("password", "fa-eye-slash", "fa-eye");
 });

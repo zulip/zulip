@@ -23,7 +23,7 @@ def clean_alert_words(alert_words: List[str]) -> List[str]:
 def add_alert_words(
     request: HttpRequest,
     user_profile: UserProfile,
-    alert_words: List[str] = REQ(validator=check_list(check_capped_string(100))),
+    alert_words: List[str] = REQ(json_validator=check_list(check_capped_string(100))),
 ) -> HttpResponse:
     do_add_alert_words(user_profile, clean_alert_words(alert_words))
     return json_success({"alert_words": user_alert_words(user_profile)})
@@ -33,7 +33,7 @@ def add_alert_words(
 def remove_alert_words(
     request: HttpRequest,
     user_profile: UserProfile,
-    alert_words: List[str] = REQ(validator=check_list(check_string)),
+    alert_words: List[str] = REQ(json_validator=check_list(check_string)),
 ) -> HttpResponse:
     do_remove_alert_words(user_profile, alert_words)
     return json_success({"alert_words": user_alert_words(user_profile)})

@@ -50,7 +50,7 @@ class CommonUtils {
     };
 
     fullname: Record<string, string> = {
-        cordelia: "Cordelia Lear",
+        cordelia: "Cordelia, Lear's daughter",
         othello: "Othello, the Moor of Venice",
         hamlet: "King Hamlet",
     };
@@ -406,7 +406,7 @@ class CommonUtils {
      * This method returns a array, which is formmated as:
      *  [
      *    ['stream > topic', ['message 1', 'message 2']],
-     *    ['You and Cordelia Lear', ['message 1', 'message 2']]
+     *    ['You and Cordelia, Lear's daughter', ['message 1', 'message 2']]
      *  ]
      *
      * The messages are sorted chronologically.

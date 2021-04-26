@@ -2,6 +2,7 @@
 
 const {strict: assert} = require("assert");
 
+const {stub_templates} = require("../zjsunit/handlebars");
 const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -71,6 +72,11 @@ test("videos", (override) => {
     override(upload, "feature_check", () => {});
 
     stub_out_video_calls();
+
+    stub_templates((template_name) => {
+        assert.equal(template_name, "compose");
+        return "fake-compose-template";
+    });
     compose.initialize();
 
     (function test_no_provider_video_link_compose_clicked() {

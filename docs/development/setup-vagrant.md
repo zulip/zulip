@@ -49,7 +49,7 @@ a proxy to access the internet.)
 - **All**: 2GB available RAM, Active broadband internet connection, [GitHub account][set-up-git].
 - **macOS**: macOS (10.11 El Capitan or newer recommended)
 - **Ubuntu LTS**: 20.04 or 18.04
-  - or **Debian**: 10 "buster"
+  - or **Debian**: 10 "buster" or 11 "bullseye"
 - **Windows**: Windows 64-bit (Win 10 recommended), hardware
   virtualization enabled (VT-x or AMD-V), administrator access.
 
@@ -156,7 +156,7 @@ Debian](https://docs.docker.com/install/linux/docker-ce/debian/).
 
 ```eval_rst
 .. note::
-    We now recommend using `WSL 2 for Windows development <../development/setup-advanced.html#installing-directly-on-windows-10-experimental>`_.
+    We recommend using `WSL 2 for Windows development <../development/setup-advanced.html#installing-directly-on-windows-10-with-wsl-2>`_.
 ```
 
 1. Install [Git for Windows][git-bash], which installs *Git BASH*.

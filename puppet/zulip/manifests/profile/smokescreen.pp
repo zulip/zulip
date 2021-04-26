@@ -42,7 +42,7 @@ class zulip::profile::smokescreen {
     notify  => Service[supervisor],
   }
 
-  file { '/etc/supervisor/conf.d/smokescreen.conf':
+  file { '/etc/supervisor/conf.d/zulip/smokescreen.conf':
     ensure  => file,
     require => [
       Package[supervisor],
@@ -53,5 +53,10 @@ class zulip::profile::smokescreen {
     mode    => '0644',
     content => template('zulip/supervisor/smokescreen.conf.erb'),
     notify  => Service[supervisor],
+  }
+  # Removed 2021-03 in version 4.0; these lines can be removed in
+  # Zulip version 5.0 and later.
+  file { '/etc/supervisor/conf.d/smokescreen.conf':
+    ensure  => absent,
   }
 }

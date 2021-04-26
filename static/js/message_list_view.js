@@ -14,7 +14,7 @@ import * as compose from "./compose";
 import * as compose_fade from "./compose_fade";
 import * as condense from "./condense";
 import * as hash_util from "./hash_util";
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
@@ -28,6 +28,7 @@ import * as recent_topics from "./recent_topics";
 import * as rendered_markdown from "./rendered_markdown";
 import * as rows from "./rows";
 import * as stream_data from "./stream_data";
+import * as sub_store from "./sub_store";
 import * as submessage from "./submessage";
 import * as timerender from "./timerender";
 import * as util from "./util";
@@ -147,7 +148,7 @@ function populate_group_from_message_container(group, message_container) {
         group.match_topic = util.get_match_topic(message_container.msg);
         group.stream_url = message_container.stream_url;
         group.topic_url = message_container.topic_url;
-        const sub = stream_data.get_sub_by_id(message_container.msg.stream_id);
+        const sub = sub_store.get(message_container.msg.stream_id);
         if (sub === undefined) {
             // Hack to handle unusual cases like the tutorial where
             // the streams used don't actually exist in the subs
@@ -615,9 +616,9 @@ export class MessageListView {
         // for rendering.
         const message_containers = messages.map((message) => {
             if (message.starred) {
-                message.starred_status = i18n.t("Unstar");
+                message.starred_status = $t({defaultMessage: "Unstar"});
             } else {
-                message.starred_status = i18n.t("Star");
+                message.starred_status = $t({defaultMessage: "Star"});
             }
 
             return {msg: message};

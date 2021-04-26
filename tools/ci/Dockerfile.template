@@ -105,6 +105,14 @@ RUN export git_version=$(git --version | cut -d ' ' -f3 | cut -d 'v' -f2) && \
       sudo apt-get install -y git; \
     fi
 
+# Remove systemd package as it is not required and hinders with install
+RUN if [ ! "$(dpkg-query -f='$(Version)' --show systemd)" = "" ]; then \
+      apt-get remove --purge --auto-remove systemd -y && \
+      echo 'Package: systemd\nPin: release *\nPin-Priority: -1' | sudo tee -a /etc/apt/preferences.d/systemd && \
+      echo '\n\nPackage: *systemd*\nPin: release *\nPin-Priority: -1' | sudo tee -a /etc/apt/preferences.d/systemd && \
+      echo '\nPackage: systemd:amd64\nPin: release *\nPin-Priority: -1' | sudo tee -a /etc/apt/preferences.d/systemd; \
+    fi
+
 ARG USERNAME=github
 RUN groupadd --gid 3434 $USERNAME \
   && useradd --uid 3434 --gid $USERNAME --shell /bin/bash --create-home $USERNAME \

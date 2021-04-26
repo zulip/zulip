@@ -5,7 +5,7 @@ import * as keydown_util from "./keydown_util";
     Toggle x = components.toggle({
         selected: Integer selected_index,
         values: Array<Object> [
-            { label: i18n.t("String title") }
+            {label: $t({defaultMessage: "String title"})}
         ],
         callback: function () {
             // .. on value change.

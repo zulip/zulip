@@ -45,6 +45,7 @@ import * as panels from "./panels";
 import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
 import * as presence from "./presence";
+import * as realm_playground from "./realm_playground";
 import * as recent_topics from "./recent_topics";
 import * as reload from "./reload";
 import * as resize from "./resize";
@@ -323,18 +324,6 @@ export function initialize_kitchen_sink_stuff() {
         timerender.set_full_datetime(message, time_elem);
     });
 
-    $("#streams_header h4").tooltip({placement: "right", animation: false});
-
-    $('#streams_header i[data-toggle="tooltip"]').tooltip({placement: "left", animation: false});
-
-    $("#userlist-header #userlist-title").tooltip({placement: "right", animation: false});
-
-    $("#userlist-header #user_filter_icon").tooltip({placement: "left", animation: false});
-
-    $('.message_failed i[data-toggle="tooltip"]').tooltip();
-
-    $('.copy_message[data-toggle="tooltip"]').tooltip();
-
     $("body").on("mouseover", ".message_edit_content", function () {
         $(this).closest(".message_row").find(".copy_message").show();
     });
@@ -345,11 +334,6 @@ export function initialize_kitchen_sink_stuff() {
 
     $("body").on("mouseenter", ".copy_message", function () {
         $(this).show();
-        $(this).tooltip("show");
-    });
-
-    $("body").on("mouseleave", ".copy_message", function () {
-        $(this).tooltip("hide");
     });
 
     if (!page_params.realm_allow_message_editing) {
@@ -475,6 +459,11 @@ export function initialize_everything() {
     const user_status_params = pop_fields("user_status");
 
     tippyjs.initialize();
+    // We need to initialze compose early, because other modules'
+    // initialization expects `#compose` to be already present in the
+    // DOM, dating from when the compose area was part of the backend
+    // template.
+    compose.initialize();
     message_lists.initialize();
     alert_popup.initialize();
     alert_words.initialize(alert_words_params);
@@ -513,8 +502,8 @@ export function initialize_everything() {
         realm_emoji: emoji_params.realm_emoji,
         emoji_codes: generated_emoji_codes,
     });
-    markdown.initialize(page_params.realm_filters, markdown_config.get_helpers());
-    compose.initialize();
+    markdown.initialize(page_params.realm_linkifiers, markdown_config.get_helpers());
+    realm_playground.initialize(page_params.realm_playgrounds);
     composebox_typeahead.initialize(); // Must happen after compose.initialize()
     search.initialize();
     tutorial.initialize();

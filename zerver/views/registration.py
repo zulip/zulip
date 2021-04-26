@@ -13,7 +13,7 @@ from django.db.models import Q
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 
 from confirmation import settings as confirmation_settings
@@ -661,10 +661,6 @@ def accounts_home_from_multiuse_invite(request: HttpRequest, confirmation_key: s
     return accounts_home(
         request, multiuse_object_key=confirmation_key, multiuse_object=multiuse_object
     )
-
-
-def generate_204(request: HttpRequest) -> HttpResponse:
-    return HttpResponse(content=None, status=204)
 
 
 def find_account(request: HttpRequest) -> HttpResponse:

@@ -4,7 +4,7 @@ from typing import Any, Callable, Dict, Match, Optional
 import magic
 import requests
 from django.conf import settings
-from django.utils.encoding import smart_text
+from django.utils.encoding import smart_str
 
 from version import ZULIP_VERSION
 from zerver.lib.cache import cache_with_key, get_cache_with_key, preview_url_cache_key
@@ -37,7 +37,7 @@ TIMEOUT = 15
 
 
 def is_link(url: str) -> Optional[Match[str]]:
-    return link_regex.match(smart_text(url))
+    return link_regex.match(smart_str(url))
 
 
 def guess_mimetype_from_content(response: requests.Response) -> str:

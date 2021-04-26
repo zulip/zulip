@@ -1,19 +1,25 @@
 import re
 
-from zerver.lib.actions import do_add_linkifier
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import RealmFilter, get_realm
+from zerver.models import RealmFilter
 
 
 class RealmFilterTest(ZulipTestCase):
     def test_list(self) -> None:
         self.login("iago")
-        realm = get_realm("zulip")
-        do_add_linkifier(realm, "#(?P<id>[123])", "https://realm.com/my_realm_filter/%(id)s")
-        result = self.client_get("/json/realm/filters")
+        data = {
+            "pattern": "#(?P<id>[123])",
+            "url_format_string": "https://realm.com/my_realm_filter/%(id)s",
+        }
+        result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_success(result)
-        self.assertEqual(200, result.status_code)
-        self.assertEqual(len(result.json()["filters"]), 1)
+
+        result = self.client_get("/json/realm/linkifiers")
+        self.assert_json_success(result)
+        linkifiers = result.json()["linkifiers"]
+        self.assertEqual(len(linkifiers), 1)
+        self.assertEqual(linkifiers[0]["pattern"], "#(?P<id>[123])")
+        self.assertEqual(linkifiers[0]["url_format"], "https://realm.com/my_realm_filter/%(id)s")
 
     def test_create(self) -> None:
         self.login("iago")
@@ -103,14 +109,65 @@ class RealmFilterTest(ZulipTestCase):
 
     def test_delete(self) -> None:
         self.login("iago")
-        realm = get_realm("zulip")
-        linkifier_id = do_add_linkifier(
-            realm, "#(?P<id>[123])", "https://realm.com/my_realm_filter/%(id)s"
-        )
+        data = {
+            "pattern": "#(?P<id>[123])",
+            "url_format_string": "https://realm.com/my_realm_filter/%(id)s",
+        }
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_success(result)
+
+        linkifier_id = result.json()["id"]
         linkifiers_count = RealmFilter.objects.count()
         result = self.client_delete(f"/json/realm/filters/{linkifier_id + 1}")
-        self.assert_json_error(result, "Filter not found")
+        self.assert_json_error(result, "Linkifier not found.")
 
         result = self.client_delete(f"/json/realm/filters/{linkifier_id}")
         self.assert_json_success(result)
         self.assertEqual(RealmFilter.objects.count(), linkifiers_count - 1)
+
+    def test_update(self) -> None:
+        self.login("iago")
+        data = {
+            "pattern": "#(?P<id>[123])",
+            "url_format_string": "https://realm.com/my_realm_filter/%(id)s",
+        }
+        result = self.client_post("/json/realm/filters", info=data)
+        self.assert_json_success(result)
+
+        linkifier_id = result.json()["id"]
+        data = {
+            "pattern": "#(?P<id>[0-9]+)",
+            "url_format_string": "https://realm.com/my_realm_filter/issues/%(id)s",
+        }
+        result = self.client_patch(f"/json/realm/filters/{linkifier_id}", info=data)
+        self.assert_json_success(result)
+        self.assertIsNotNone(re.match(data["pattern"], "#1234"))
+
+        # Verify that the linkifier is updated accordingly.
+        result = self.client_get("/json/realm/linkifiers")
+        self.assert_json_success(result)
+        linkifier = result.json()["linkifiers"]
+        self.assertEqual(len(linkifier), 1)
+        self.assertEqual(linkifier[0]["pattern"], "#(?P<id>[0-9]+)")
+        self.assertEqual(
+            linkifier[0]["url_format"], "https://realm.com/my_realm_filter/issues/%(id)s"
+        )
+
+        data = {
+            "pattern": r"ZUL-(?P<id>\d++)",
+            "url_format_string": "https://realm.com/my_realm_filter/%(id)s",
+        }
+        result = self.client_patch(f"/json/realm/filters/{linkifier_id}", info=data)
+        self.assert_json_error(
+            result, "Invalid linkifier pattern.  Valid characters are [ a-zA-Z_#=/:+!-]."
+        )
+
+        data["pattern"] = r"ZUL-(?P<id>\d+)"
+        data["url_format_string"] = "$fgfg"
+        result = self.client_patch(f"/json/realm/filters/{linkifier_id}", info=data)
+        self.assert_json_error(result, "Enter a valid URL.")
+
+        data["pattern"] = r"#(?P<id>[123])"
+        data["url_format_string"] = "https://realm.com/my_realm_filter/%(id)s"
+        result = self.client_patch(f"/json/realm/filters/{linkifier_id + 1}", info=data)
+        self.assert_json_error(result, "Linkifier not found.")

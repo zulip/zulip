@@ -69,6 +69,24 @@ pre {
     font-family: "Source Code Pro", monospace;
 }
 
+[data-tippy-root] {
+    /* Since tooltip elements are sometimes inside elements
+     * which have different font-family, we force font-family
+     * for tooltips here.
+     */
+    font-family: "Source Sans 3", sans-serif !important;
+
+    .tippy-arrow::before {
+        /* `.tippy-arrow:before` element sometimes
+         * inherits the height of the parent, we
+         * don't want any height here since we
+         * want it to remain an triangle.
+         * The bug was only found in Firefox.
+         */
+        height: 0 !important;
+    }
+}
+
 .no-select {
     user-select: none;
 }
@@ -817,7 +835,7 @@ td.pointer {
        doesn't disturb the layout.  Usually that would be just
        visibility: hidden, but that cannot be animated, so we set
        opacity as well, which can be animated. */
-    > div {
+    .message_control_button {
         opacity: 0;
         visibility: hidden;
         transition: all 0.2s ease;
@@ -827,6 +845,12 @@ td.pointer {
         > i {
             vertical-align: middle;
         }
+    }
+
+    /* Tooltips should not follow the width restrictions of their parent element. */
+    [data-tippy-root] {
+        width: max-content;
+        word-wrap: unset;
     }
 
     > .reaction_button {
@@ -1997,7 +2021,9 @@ div.focused_table {
     left: auto;
     right: 0;
     top: 30px;
-    min-width: 180px;
+    /* Match the width of the right sidebar so that we don't have
+       the presence dots distracting you when looking at this. */
+    min-width: 240px;
     box-shadow: 0 0 5px hsla(0, 0%, 0%, 0.2);
 
     &::after {
@@ -2166,6 +2192,11 @@ div.floating_recipient {
 .table-striped thead th {
     background-color: hsl(0, 0%, 27%);
     color: hsl(0, 0%, 100%);
+}
+
+#user-checkboxes-simplebar-wrapper {
+    max-height: 500px;
+    overflow-y: auto;
 }
 
 #user-checkboxes {

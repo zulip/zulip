@@ -84,7 +84,7 @@ The Hello World integration is in `zerver/webhooks/helloworld/view.py`:
 from typing import Any, Dict, Iterable, Optional
 
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.decorator import webhook_view
 from zerver.lib.webhooks.common import check_send_webhook_message

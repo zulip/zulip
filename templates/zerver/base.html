@@ -4,7 +4,7 @@
     {# Base template for the whole site. #}
 
     <head>
-        <meta charset="UTF-8">
+        <meta charset="UTF-8" />
         {% block title %}
             {% if user_profile and user_profile.realm.name %}
                 <title>{{user_profile.realm.name}} - Zulip</title>
@@ -16,10 +16,10 @@
                 {% endif %}
             {% endif %}
         {% endblock %}
-        <link id="favicon" rel="icon" href="/static/images/favicon.svg?v=4">
-        <link rel="alternate icon" href="/static/images/favicon.png?v=4">
+        <link id="favicon" rel="icon" href="/static/images/favicon.svg?v=4" />
+        <link rel="alternate icon" href="/static/images/favicon.png?v=4" />
         {% block meta_viewport %}
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         {% endblock %}
         {% if not user_profile %}
         {% include 'zerver/meta_tags.html' %}

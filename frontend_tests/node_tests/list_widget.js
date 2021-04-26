@@ -219,6 +219,7 @@ run_test("filtering", () => {
     // is a glorified indexOf call.)
     search_input.val = () => "g";
     search_input.simulate_input_event();
+    assert.deepEqual(widget.get_current_list(), ["dog", "egg", "grape"]);
     expected_html = "<div>dog</div><div>egg</div><div>grape</div>";
     assert.deepEqual(container.appended_data.html(), expected_html);
 

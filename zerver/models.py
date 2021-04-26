@@ -3,13 +3,11 @@ import datetime
 import re
 import secrets
 import time
-from collections import defaultdict
 from datetime import timedelta
 from typing import (
     AbstractSet,
     Any,
     Callable,
-    DefaultDict,
     Dict,
     Iterable,
     List,
@@ -34,8 +32,8 @@ from django.db.models.query import QuerySet
 from django.db.models.signals import post_delete, post_save
 from django.utils.functional import Promise
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import ugettext as _
-from django.utils.translation import ugettext_lazy
+from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 
 from confirmation import settings as confirmation_settings
 from zerver.lib import cache
@@ -50,6 +48,7 @@ from zerver.lib.cache import (
     cache_set,
     cache_with_key,
     flush_message,
+    flush_muting_users_cache,
     flush_realm,
     flush_stream,
     flush_submessage,
@@ -184,6 +183,7 @@ def clear_supported_auth_backends_cache() -> None:
 
 class Realm(models.Model):
     MAX_REALM_NAME_LENGTH = 40
+    MAX_REALM_DESCRIPTION_LENGTH = 1000
     MAX_REALM_SUBDOMAIN_LENGTH = 40
     MAX_REALM_REDIRECT_URL_LENGTH = 128
 
@@ -271,6 +271,11 @@ class Realm(models.Model):
 
     # Who in the organization is allowed to invite other users to streams.
     invite_to_stream_policy: int = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
+
+    # Who in the organization is allowed to move messages between streams.
+    move_messages_between_streams_policy: int = models.PositiveSmallIntegerField(
+        default=POLICY_ADMINS_ONLY
+    )
 
     USER_GROUP_EDIT_POLICY_MEMBERS = 1
     USER_GROUP_EDIT_POLICY_ADMINS = 2
@@ -363,7 +368,7 @@ class Realm(models.Model):
 
     DEFAULT_NOTIFICATION_STREAM_NAME = "general"
     INITIAL_PRIVATE_STREAM_NAME = "core team"
-    STREAM_EVENTS_NOTIFICATION_TOPIC = ugettext_lazy("stream events")
+    STREAM_EVENTS_NOTIFICATION_TOPIC = gettext_lazy("stream events")
     notifications_stream: Optional["Stream"] = models.ForeignKey(
         "Stream",
         related_name="+",
@@ -397,7 +402,7 @@ class Realm(models.Model):
     COMMUNITY = 2
     org_type: int = models.PositiveSmallIntegerField(default=CORPORATE)
 
-    UPGRADE_TEXT_STANDARD = ugettext_lazy("Available on Zulip Standard. Upgrade to access.")
+    UPGRADE_TEXT_STANDARD = gettext_lazy("Available on Zulip Standard. Upgrade to access.")
     # plan_type controls various features around resource/feature
     # limitations for a Zulip organization on multi-tenant installations
     # like Zulip Cloud.
@@ -451,6 +456,37 @@ class Realm(models.Model):
         default=VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"]
     )
 
+    GIPHY_RATING_OPTIONS = {
+        "disabled": {
+            "name": "GIPHY integration disabled",
+            "id": 0,
+        },
+        # Source: https://github.com/Giphy/giphy-js/blob/master/packages/fetch-api/README.md#shared-options
+        "y": {
+            "name": "Y - Very young audience",
+            "id": 1,
+        },
+        "g": {
+            "name": "G - General audience",
+            "id": 2,
+        },
+        "pg": {
+            "name": "PG - Parental guidence",
+            "id": 3,
+        },
+        "pg-13": {
+            "name": "PG13 - Parental guidence (under 13)",
+            "id": 4,
+        },
+        "r": {
+            "name": "R - Restricted",
+            "id": 5,
+        },
+    }
+
+    # maximum rating of the GIFs that will be retrieved from GIPHY
+    giphy_rating: int = models.PositiveSmallIntegerField(default=GIPHY_RATING_OPTIONS["g"]["id"])
+
     default_code_block_language: Optional[str] = models.TextField(null=True, default=None)
 
     # Define the types of the various automatically managed properties
@@ -461,6 +497,7 @@ class Realm(models.Model):
         bot_creation_policy=int,
         create_stream_policy=int,
         invite_to_stream_policy=int,
+        move_messages_between_streams_policy=int,
         default_language=str,
         default_twenty_four_hour_time=bool,
         description=str,
@@ -468,6 +505,7 @@ class Realm(models.Model):
         disallow_disposable_email_addresses=bool,
         email_address_visibility=int,
         email_changes_disabled=bool,
+        giphy_rating=int,
         invite_required=bool,
         invite_to_realm_policy=int,
         inline_image_preview=bool,
@@ -606,6 +644,17 @@ class Realm(models.Model):
     def get_active_users(self) -> Sequence["UserProfile"]:
         # TODO: Change return type to QuerySet[UserProfile]
         return UserProfile.objects.filter(realm=self, is_active=True).select_related()
+
+    def get_first_human_user(self) -> Optional["UserProfile"]:
+        """A useful value for communications with newly created realms.
+        Has a few fundamental limitations:
+
+        * Its value will be effectively random for realms imported from Slack or
+          other third-party tools.
+        * The user may be deactivated, etc., so it's not something that's useful
+          for features, permissions, etc.
+        """
+        return UserProfile.objects.filter(realm=self, is_bot=False).order_by("id").first()
 
     def get_human_owner_users(self) -> QuerySet:
         return UserProfile.objects.filter(
@@ -783,7 +832,7 @@ class RealmEmoji(models.Model):
             # ending with one of the punctuation characters.
             RegexValidator(
                 regex=r"^[0-9a-z.\-_]+(?<![.\-_])$",
-                message=ugettext_lazy("Invalid characters in emoji name"),
+                message=gettext_lazy("Invalid characters in emoji name"),
             ),
         ]
     )
@@ -926,20 +975,6 @@ def linkifiers_for_realm_remote_cache(realm_id: int) -> List[LinkifierDict]:
     filters = []
     for linkifier in RealmFilter.objects.filter(realm_id=realm_id):
         filters.append(
-            LinkifierDict(
-                pattern=linkifier.pattern,
-                url_format=linkifier.url_format_string,
-                id=linkifier.id,
-            )
-        )
-
-    return filters
-
-
-def all_linkifiers_for_installation() -> Dict[int, List[LinkifierDict]]:
-    filters: DefaultDict[int, List[LinkifierDict]] = defaultdict(list)
-    for linkifier in RealmFilter.objects.all():
-        filters[linkifier.realm_id].append(
             LinkifierDict(
                 pattern=linkifier.pattern,
                 url_format=linkifier.url_format_string,
@@ -1369,10 +1404,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     )
 
     ROLE_ID_TO_NAME_MAP = {
-        ROLE_REALM_OWNER: ugettext_lazy("Organization owner"),
-        ROLE_REALM_ADMINISTRATOR: ugettext_lazy("Organization administrator"),
-        ROLE_MEMBER: ugettext_lazy("Member"),
-        ROLE_GUEST: ugettext_lazy("Guest"),
+        ROLE_REALM_OWNER: gettext_lazy("Organization owner"),
+        ROLE_REALM_ADMINISTRATOR: gettext_lazy("Organization administrator"),
+        ROLE_MEMBER: gettext_lazy("Member"),
+        ROLE_GUEST: gettext_lazy("Guest"),
     }
 
     def get_role_name(self) -> str:
@@ -1519,6 +1554,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             "create_stream_policy",
             "invite_to_stream_policy",
             "invite_to_realm_policy",
+            "move_messages_between_streams_policy",
         ]:
             raise AssertionError("Invalid policy")
 
@@ -1553,11 +1589,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def can_invite_others_to_realm(self) -> bool:
         return self.has_permission("invite_to_realm_policy")
 
+    def can_move_messages_between_streams(self) -> bool:
+        return self.has_permission("move_messages_between_streams_policy")
+
     def can_access_public_streams(self) -> bool:
         return not (self.is_guest or self.realm.is_zephyr_mirror_realm)
-
-    def can_access_all_realm_members(self) -> bool:
-        return not (self.realm.is_zephyr_mirror_realm or self.is_guest)
 
     def major_tos_version(self) -> int:
         if self.tos_version is not None:
@@ -1913,6 +1949,10 @@ class MutedUser(models.Model):
 
     def __str__(self) -> str:
         return f"<MutedUser: {self.user_profile.email} -> {self.muted_user.email}>"
+
+
+post_save.connect(flush_muting_users_cache, sender=MutedUser)
+post_delete.connect(flush_muting_users_cache, sender=MutedUser)
 
 
 class Client(models.Model):
@@ -2319,9 +2359,9 @@ class AbstractReaction(models.Model):
     REALM_EMOJI = "realm_emoji"
     ZULIP_EXTRA_EMOJI = "zulip_extra_emoji"
     REACTION_TYPES = (
-        (UNICODE_EMOJI, ugettext_lazy("Unicode emoji")),
-        (REALM_EMOJI, ugettext_lazy("Custom emoji")),
-        (ZULIP_EXTRA_EMOJI, ugettext_lazy("Zulip extra emoji")),
+        (UNICODE_EMOJI, gettext_lazy("Unicode emoji")),
+        (REALM_EMOJI, gettext_lazy("Custom emoji")),
+        (ZULIP_EXTRA_EMOJI, gettext_lazy("Zulip extra emoji")),
     )
     reaction_type: str = models.CharField(
         default=UNICODE_EMOJI, choices=REACTION_TYPES, max_length=30
@@ -2362,7 +2402,7 @@ class Reaction(AbstractReaction):
             "emoji_code",
             "reaction_type",
             "user_profile__email",
-            "user_profile__id",
+            "user_profile_id",
             "user_profile__full_name",
         ]
         return Reaction.objects.filter(message_id__in=needed_ids).values(*fields)
@@ -2497,7 +2537,7 @@ def get_usermessage_by_message_id(
 ) -> Optional[UserMessage]:
     try:
         return UserMessage.objects.select_related().get(
-            user_profile=user_profile, message__id=message_id
+            user_profile=user_profile, message_id=message_id
         )
     except UserMessage.DoesNotExist:
         return None
@@ -3292,6 +3332,9 @@ class AbstractRealmAuditLog(models.Model):
     SUBSCRIPTION_DEACTIVATED = 303
     SUBSCRIPTION_PROPERTY_CHANGED = 304
 
+    USER_MUTED = 350
+    USER_UNMUTED = 351
+
     STRIPE_CUSTOMER_CREATED = 401
     STRIPE_CARD_CHANGED = 402
     STRIPE_PLAN_CHANGED = 403
@@ -3435,10 +3478,10 @@ class CustomProfileField(models.Model):
     # and value argument. i.e. SELECT require field_data, USER require
     # realm as argument.
     SELECT_FIELD_TYPE_DATA: List[ExtendedFieldElement] = [
-        (SELECT, ugettext_lazy("List of options"), validate_select_field, str, "SELECT"),
+        (SELECT, gettext_lazy("List of options"), validate_select_field, str, "SELECT"),
     ]
     USER_FIELD_TYPE_DATA: List[UserFieldElement] = [
-        (USER, ugettext_lazy("Person picker"), check_valid_user_ids, ast.literal_eval, "USER"),
+        (USER, gettext_lazy("Person picker"), check_valid_user_ids, ast.literal_eval, "USER"),
     ]
 
     SELECT_FIELD_VALIDATORS: Dict[int, ExtendedValidator] = {
@@ -3450,13 +3493,13 @@ class CustomProfileField(models.Model):
 
     FIELD_TYPE_DATA: List[FieldElement] = [
         # Type, Display Name, Validator, Converter, Keyword
-        (SHORT_TEXT, ugettext_lazy("Short text"), check_short_string, str, "SHORT_TEXT"),
-        (LONG_TEXT, ugettext_lazy("Long text"), check_long_string, str, "LONG_TEXT"),
-        (DATE, ugettext_lazy("Date picker"), check_date, str, "DATE"),
-        (URL, ugettext_lazy("Link"), check_url, str, "URL"),
+        (SHORT_TEXT, gettext_lazy("Short text"), check_short_string, str, "SHORT_TEXT"),
+        (LONG_TEXT, gettext_lazy("Long text"), check_long_string, str, "LONG_TEXT"),
+        (DATE, gettext_lazy("Date picker"), check_date, str, "DATE"),
+        (URL, gettext_lazy("Link"), check_url, str, "URL"),
         (
             EXTERNAL_ACCOUNT,
-            ugettext_lazy("External account"),
+            gettext_lazy("External account"),
             check_short_string,
             str,
             "EXTERNAL_ACCOUNT",
@@ -3581,11 +3624,11 @@ class Service(models.Model):
 
 
 def get_bot_services(user_profile_id: int) -> List[Service]:
-    return list(Service.objects.filter(user_profile__id=user_profile_id))
+    return list(Service.objects.filter(user_profile_id=user_profile_id))
 
 
 def get_service_profile(user_profile_id: int, service_name: str) -> Service:
-    return Service.objects.get(user_profile__id=user_profile_id, name=service_name)
+    return Service.objects.get(user_profile_id=user_profile_id, name=service_name)
 
 
 class BotStorageData(models.Model):

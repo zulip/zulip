@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {i18n} = require("../zjsunit/i18n");
+const {$t} = require("../zjsunit/i18n");
 const {mock_cjs, mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -135,7 +135,7 @@ run_test("remove_alert_word", (override) => {
     const remove_alert_word = $(".remove-alert-word");
     const list_item = $("tr.alert-word-item");
     const val_item = $("span.value");
-    val_item.text(i18n.t("zot"));
+    val_item.text($t({defaultMessage: "zot"}));
 
     remove_alert_word.set_parents_result("tr", list_item);
     list_item.set_find_results(".value", val_item);

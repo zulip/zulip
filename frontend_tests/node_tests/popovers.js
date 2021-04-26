@@ -3,7 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {stub_templates} = require("../zjsunit/handlebars");
-const {i18n} = require("../zjsunit/i18n");
+const {$t} = require("../zjsunit/i18n");
 const {mock_cjs, mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
@@ -16,6 +16,9 @@ const rows = mock_esm("../../static/js/rows");
 const stream_data = mock_esm("../../static/js/stream_data");
 mock_esm("../../static/js/emoji_picker", {
     hide_emoji_popover: noop,
+});
+mock_esm("../../static/js/giphy", {
+    hide_giphy_popover: noop,
 });
 const message_lists = mock_esm("../../static/js/message_lists", {
     current: {},
@@ -94,6 +97,7 @@ function test_ui(label, f) {
         page_params.is_admin = false;
         page_params.realm_email_address_visibility = 3;
         page_params.custom_profile_fields = [];
+        page_params.development_environment = false;
         override(popovers, "clipboard_enable", noop);
         popovers.clear_for_testing();
         popovers.register_click_handlers();
@@ -155,11 +159,13 @@ test_ui("sender_hover", (override) => {
                 assert.deepEqual(opts, {
                     can_set_away: false,
                     can_revoke_away: false,
+                    can_mute: false,
+                    can_unmute: false,
                     user_full_name: "Alice Smith",
                     user_email: "alice@example.com",
                     user_id: 42,
                     user_time: undefined,
-                    user_type: i18n.t("Member"),
+                    user_type: $t({defaultMessage: "Member"}),
                     user_circle_class: "user_circle_empty",
                     user_last_seen_time_status: "translated: More than 2 weeks ago",
                     pm_with_uri: "#narrow/pm-with/42-alice",

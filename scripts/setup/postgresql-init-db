@@ -28,7 +28,7 @@ fi
 
 # Shut down all services to ensure a quiescent state.
 if [ -e "/var/run/supervisor.sock" ]; then
-    supervisorctl stop all
+    su zulip -c "$(dirname "$(dirname "$0")")/stop-server"
 fi
 
 # Drop any open connections to any old database.

@@ -260,23 +260,23 @@ class ParserTest(unittest.TestCase):
         validate(text=my_html)
 
     def test_tokenize(self) -> None:
-        tag = "<meta whatever>bla"
+        tag = "<!DOCTYPE html>"
         token = tokenize(tag)[0]
-        self.assertEqual(token.kind, "html_special")
+        self.assertEqual(token.kind, "html_doctype")
 
         tag = "<a>bla"
         token = tokenize(tag)[0]
         self.assertEqual(token.kind, "html_start")
         self.assertEqual(token.tag, "a")
 
-        tag = "<br>bla"
+        tag = "<br />bla"
         token = tokenize(tag)[0]
         self.assertEqual(token.kind, "html_singleton")
         self.assertEqual(token.tag, "br")
 
         tag = "<input>bla"
         token = tokenize(tag)[0]
-        self.assertEqual(token.kind, "html_singleton")
+        self.assertEqual(token.kind, "html_start")  # We later mark this an error.
         self.assertEqual(token.tag, "input")
 
         tag = "<input />bla"

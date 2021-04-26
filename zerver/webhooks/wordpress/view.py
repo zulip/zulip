@@ -1,6 +1,6 @@
 # Webhooks for external integrations.
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.decorator import webhook_view
 from zerver.lib.request import REQ, has_request_variables

@@ -8,7 +8,7 @@ import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import {csrf_token} from "./csrf";
 import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget";
-import {i18n} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -328,9 +328,9 @@ export function populate_realm_domains(realm_domains) {
     );
     let domains = domains_list.join(", ");
     if (domains.length === 0) {
-        domains = i18n.t("None");
+        domains = $t({defaultMessage: "None"});
     }
-    $("#allowed_domains_label").text(i18n.t("Allowed domains: __domains__", {domains}));
+    $("#allowed_domains_label").text($t({defaultMessage: "Allowed domains: {domains}"}, {domains}));
 
     const realm_domains_table_body = $("#realm_domains_table tbody").expectOne();
     realm_domains_table_body.find("tr").remove();
@@ -493,28 +493,28 @@ export function change_save_button_state($element, state) {
     let data_status;
     let is_show;
     if (state === "unsaved") {
-        button_text = i18n.t("Save changes");
+        button_text = $t({defaultMessage: "Save changes"});
         data_status = "unsaved";
         is_show = true;
 
         $element.find(".discard-button").show();
     } else if (state === "saved") {
-        button_text = i18n.t("Save changes");
+        button_text = $t({defaultMessage: "Save changes"});
         data_status = "";
         is_show = false;
     } else if (state === "saving") {
-        button_text = i18n.t("Saving");
+        button_text = $t({defaultMessage: "Saving"});
         data_status = "saving";
         is_show = true;
 
         $element.find(".discard-button").hide();
         $saveBtn.addClass("saving");
     } else if (state === "failed") {
-        button_text = i18n.t("Save changes");
+        button_text = $t({defaultMessage: "Save changes"});
         data_status = "failed";
         is_show = true;
     } else if (state === "succeeded") {
-        button_text = i18n.t("Saved");
+        button_text = $t({defaultMessage: "Saved"});
         data_status = "saved";
         is_show = false;
     }
@@ -628,7 +628,7 @@ export function init_dropdown_widgets() {
         on_update: () => {
             save_discard_widget_status_handler($("#org-notifications"));
         },
-        default_text: i18n.t("Disabled"),
+        default_text: $t({defaultMessage: "Disabled"}),
         render_text: (x) => `#${x}`,
         null_value: -1,
     };
@@ -652,7 +652,7 @@ export function init_dropdown_widgets() {
         on_update: () => {
             save_discard_widget_status_handler($("#org-other-settings"));
         },
-        default_text: i18n.t("No language set"),
+        default_text: $t({defaultMessage: "No language set"}),
     });
 }
 
@@ -734,7 +734,7 @@ export function build_page() {
             error(xhr) {
                 change_save_button_state(save_btn_container, "failed");
                 save_button.hide();
-                ui_report.error(i18n.t("Save failed"), xhr, failed_alert_elem);
+                ui_report.error($t_html({defaultMessage: "Save failed"}), xhr, failed_alert_elem);
             },
         });
     };
@@ -778,11 +778,10 @@ export function build_page() {
                 ).seconds;
             }
         } else if (subsection === "notifications") {
-            data.notifications_stream_id = JSON.stringify(
-                Number.parseInt(notifications_stream_widget.value(), 10),
-            );
-            data.signup_notifications_stream_id = JSON.stringify(
-                Number.parseInt(signup_notifications_stream_widget.value(), 10),
+            data.notifications_stream_id = Number.parseInt(notifications_stream_widget.value(), 10);
+            data.signup_notifications_stream_id = Number.parseInt(
+                signup_notifications_stream_widget.value(),
+                10,
             );
         } else if (subsection === "message_retention") {
             const message_retention_setting_value = $("#id_realm_message_retention_setting").val();
@@ -795,7 +794,8 @@ export function build_page() {
             }
         } else if (subsection === "other_settings") {
             const code_block_language_value = default_code_language_widget.value();
-            data.default_code_block_language = JSON.stringify(code_block_language_value);
+            // No need to JSON-encode, since this value is already a string.
+            data.default_code_block_language = code_block_language_value;
         } else if (subsection === "other_permissions") {
             const add_emoji_permission = $("#id_realm_add_emoji_by_admins_only").val();
 
@@ -866,7 +866,7 @@ export function build_page() {
                 const input_value = get_input_element_value(input_elem);
                 if (input_value !== undefined) {
                     const property_name = input_elem.attr("id").replace("id_realm_", "");
-                    data[property_name] = JSON.stringify(input_value);
+                    data[property_name] = input_value;
                 }
             }
         }
@@ -966,11 +966,14 @@ export function build_page() {
         channel.del({
             url,
             success() {
-                ui_report.success(i18n.t("Deleted successfully!"), realm_domains_info);
+                ui_report.success(
+                    $t_html({defaultMessage: "Deleted successfully!"}),
+                    realm_domains_info,
+                );
                 fade_status_element(realm_domains_info);
             },
             error(xhr) {
-                ui_report.error(i18n.t("Failed"), xhr, realm_domains_info);
+                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, realm_domains_info);
                 fade_status_element(realm_domains_info);
             },
         });
@@ -995,11 +998,14 @@ export function build_page() {
                     "checked",
                     false,
                 );
-                ui_report.success(i18n.t("Added successfully!"), realm_domains_info);
+                ui_report.success(
+                    $t_html({defaultMessage: "Added successfully!"}),
+                    realm_domains_info,
+                );
                 fade_status_element(realm_domains_info);
             },
             error(xhr) {
-                ui_report.error(i18n.t("Failed"), xhr, realm_domains_info);
+                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, realm_domains_info);
                 fade_status_element(realm_domains_info);
             },
         });
@@ -1021,23 +1027,28 @@ export function build_page() {
             success() {
                 if (allow_subdomains) {
                     ui_report.success(
-                        i18n.t("Update successful: Subdomains allowed for __domain__", {
-                            domain,
-                        }),
+                        $t_html(
+                            {defaultMessage: "Update successful: Subdomains allowed for {domain}"},
+                            {domain},
+                        ),
                         realm_domains_info,
                     );
                 } else {
                     ui_report.success(
-                        i18n.t("Update successful: Subdomains no longer allowed for __domain__", {
-                            domain,
-                        }),
+                        $t_html(
+                            {
+                                defaultMessage:
+                                    "Update successful: Subdomains no longer allowed for {domain}",
+                            },
+                            {domain},
+                        ),
                         realm_domains_info,
                     );
                 }
                 fade_status_element(realm_domains_info);
             },
             error(xhr) {
-                ui_report.error(i18n.t("Failed"), xhr, realm_domains_info);
+                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, realm_domains_info);
                 fade_status_element(realm_domains_info);
             },
         });
@@ -1120,7 +1131,7 @@ export function build_page() {
             url: "/json/realm/deactivate",
             error(xhr) {
                 ui_report.error(
-                    i18n.t("Failed"),
+                    $t_html({defaultMessage: "Failed"}),
                     xhr,
                     $("#admin-realm-deactivation-status").expectOne(),
                 );

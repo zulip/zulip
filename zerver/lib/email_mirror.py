@@ -225,7 +225,7 @@ def send_mm_reply_to_stream(
             message_content=body,
         )
     except JsonableError as error:
-        error_message = "Error sending message to stream {stream} via missed messages email reply:\n{error}".format(
+        error_message = "Error sending message to stream {stream} via message notification email reply:\n{error}".format(
             stream=stream.name, error=error.msg
         )
         internal_send_private_message(
@@ -445,7 +445,7 @@ def process_missed_message(to: str, message: EmailMessage) -> None:
         recipient = mm_address.message.recipient
 
     if not is_user_active(user_profile):
-        logger.warning("Sending user is not active. Ignoring this missed message email.")
+        logger.warning("Sending user is not active. Ignoring this message notification email.")
         return
 
     body = construct_zulip_body(message, user_profile.realm)

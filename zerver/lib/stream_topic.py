@@ -28,4 +28,6 @@ class StreamTopicTarget:
         return {row["user_profile_id"] for row in query}
 
     def get_active_subscriptions(self) -> QuerySet:
-        return get_active_subscriptions_for_stream_id(self.stream_id)
+        return get_active_subscriptions_for_stream_id(
+            self.stream_id, include_deactivated_users=True
+        )

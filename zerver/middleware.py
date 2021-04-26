@@ -15,7 +15,7 @@ from django.shortcuts import render
 from django.utils import translation
 from django.utils.cache import patch_vary_headers
 from django.utils.deprecation import MiddlewareMixin
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from django.views.csrf import csrf_failure as html_csrf_failure
 from sentry_sdk import capture_exception
 from sentry_sdk.integrations.logging import ignore_logger

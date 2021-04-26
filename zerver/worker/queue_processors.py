@@ -27,6 +27,7 @@ from typing import (
     Mapping,
     MutableSequence,
     Optional,
+    Sequence,
     Set,
     Tuple,
     Type,
@@ -39,8 +40,8 @@ from django.conf import settings
 from django.db import connection
 from django.db.models import F
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
-from django.utils.translation import ugettext as _
 from sentry_sdk import add_breadcrumb, configure_scope
 from zulip_bots.lib import extract_query_without_mention
 
@@ -481,7 +482,9 @@ class UserActivityWorker(LoopQueueProcessingWorker):
                 # This is for compatibility with older events still stuck in the queue,
                 # that used the client name in event["client"] instead of having
                 # event["client_id"] directly.
-                # TODO: This can be deleted for release >= 4.0.
+                #
+                # TODO/compatability: We can delete this once it is no
+                # longer possible to directly upgrade from 2.1 to master.
                 if event["client"] not in self.client_id_map:
                     client = get_client(event["client"])
                     self.client_id_map[event["client"]] = client.id
@@ -913,10 +916,10 @@ class TestWorker(QueueProcessingWorker):
 class NoopWorker(QueueProcessingWorker):
     """Used to profile the queue processing framework, in zilencer's queue_rate."""
 
-    def __init__(self, max_consume: int = 1000, slow_queries: Optional[List[int]] = None) -> None:
+    def __init__(self, max_consume: int = 1000, slow_queries: Sequence[int] = []) -> None:
         self.consumed = 0
         self.max_consume = max_consume
-        self.slow_queries: Set[int] = set(slow_queries or [])
+        self.slow_queries: Set[int] = set(slow_queries)
 
     def consume(self, event: Mapping[str, Any]) -> None:
         self.consumed += 1
@@ -934,10 +937,10 @@ class BatchNoopWorker(LoopQueueProcessingWorker):
 
     batch_size = 500
 
-    def __init__(self, max_consume: int = 1000, slow_queries: Optional[List[int]] = None) -> None:
+    def __init__(self, max_consume: int = 1000, slow_queries: Sequence[int] = []) -> None:
         self.consumed = 0
         self.max_consume = max_consume
-        self.slow_queries: Set[int] = set(slow_queries or [])
+        self.slow_queries: Set[int] = set(slow_queries)
 
     def consume_batch(self, events: List[Dict[str, Any]]) -> None:
         event_numbers = set(range(self.consumed + 1, self.consumed + 1 + len(events)))

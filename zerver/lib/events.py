@@ -4,7 +4,7 @@ import copy
 from typing import Any, Callable, Dict, Iterable, Optional, Sequence, Set
 
 from django.conf import settings
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from version import API_FEATURE_LEVEL, ZULIP_VERSION
 from zerver.lib.actions import (
@@ -49,6 +49,8 @@ from zerver.lib.user_mutes import get_user_mutes
 from zerver.lib.user_status import get_user_info_dict
 from zerver.lib.users import get_cross_realm_dicts, get_raw_user_data, is_administrator_role
 from zerver.models import (
+    MAX_MESSAGE_LENGTH,
+    MAX_TOPIC_NAME_LENGTH,
     Client,
     CustomProfileField,
     Message,
@@ -60,6 +62,7 @@ from zerver.models import (
     get_default_stream_groups,
     get_realm_domains,
     get_realm_playgrounds,
+    linkifiers_for_realm,
     realm_filters_for_realm,
 )
 from zerver.tornado.django_api import get_user_events, request_event_queue
@@ -237,6 +240,7 @@ def fetch_initial_state_data(
         state["server_inline_url_embed_preview"] = settings.INLINE_URL_EMBED_PREVIEW
         state["server_avatar_changes_disabled"] = settings.AVATAR_CHANGES_DISABLED
         state["server_name_changes_disabled"] = settings.NAME_CHANGES_DISABLED
+        state["giphy_rating_options"] = realm.GIPHY_RATING_OPTIONS
 
         if realm.notifications_stream and not realm.notifications_stream.deactivated:
             notifications_stream = realm.notifications_stream
@@ -250,12 +254,21 @@ def fetch_initial_state_data(
         else:
             state["realm_signup_notifications_stream_id"] = -1
 
+        state["max_stream_name_length"] = Stream.MAX_NAME_LENGTH
+        state["max_stream_description_length"] = Stream.MAX_DESCRIPTION_LENGTH
+        state["max_topic_length"] = MAX_TOPIC_NAME_LENGTH
+        state["max_message_length"] = MAX_MESSAGE_LENGTH
+
     if want("realm_domains"):
         state["realm_domains"] = get_realm_domains(realm)
 
     if want("realm_emoji"):
         state["realm_emoji"] = realm.get_emoji()
 
+    if want("realm_linkifiers"):
+        state["realm_linkifiers"] = linkifiers_for_realm(realm.id)
+
+    # Backwards compatibility code.
     if want("realm_filters"):
         state["realm_filters"] = realm_filters_for_realm(realm.id)
 
@@ -415,8 +428,6 @@ def fetch_initial_state_data(
                 # be used when the mobile apps support logged-out
                 # access.
                 state["streams"] = get_web_public_streams(realm)  # nocoverage
-        state["stream_name_max_length"] = Stream.MAX_NAME_LENGTH
-        state["stream_description_max_length"] = Stream.MAX_DESCRIPTION_LENGTH
     if want("default_streams"):
         if settings_user.is_guest:
             # Guest users and logged-out users don't have access to
@@ -988,6 +999,8 @@ def apply_event(
         state["muted_users"] = event["muted_users"]
     elif event["type"] == "realm_filters":
         state["realm_filters"] = event["realm_filters"]
+    elif event["type"] == "realm_linkifiers":
+        state["realm_linkifiers"] = event["realm_linkifiers"]
     elif event["type"] == "realm_playgrounds":
         state["realm_playgrounds"] = event["realm_playgrounds"]
     elif event["type"] == "update_display_settings":

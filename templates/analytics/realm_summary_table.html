@@ -61,8 +61,8 @@
             </td>
 
             <td>
-                {% if not loop.last %}
-                <a class="envelope-link" data-admin-emails="{{ row.realm_admin_email }}">
+                {% if not loop.first %}
+                <a class="envelope-link" data-admin-emails="{{ row.realm_owner_emails }}">
                     <i class="fa fa-envelope"></i>
                 </a>
                 {% endif %}

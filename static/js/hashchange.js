@@ -25,7 +25,6 @@ import * as ui_util from "./ui_util";
 
 // Read https://zulip.readthedocs.io/en/latest/subsystems/hashchange-system.html
 // or locally: docs/subsystems/hashchange-system.md
-let changing_hash = false;
 
 function get_full_url(hash) {
     const location = window.location;
@@ -70,7 +69,7 @@ export function in_recent_topics_hash() {
 }
 
 export function changehash(newhash) {
-    if (changing_hash) {
+    if (browser_history.state.changing_hash) {
         return;
     }
     maybe_hide_recent_topics();
@@ -79,7 +78,7 @@ export function changehash(newhash) {
 }
 
 export function save_narrow(operators) {
-    if (changing_hash) {
+    if (browser_history.state.changing_hash) {
         return;
     }
     const new_hash = hash_util.operators_to_hash(operators);
@@ -290,15 +289,17 @@ function hashchanged(from_reload, e) {
     }
 
     if (hash_util.is_overlay_hash(window.location.hash)) {
+        browser_history.state.changing_hash = true;
         do_hashchange_overlay(old_hash);
+        browser_history.state.changing_hash = false;
         return undefined;
     }
 
     // We are changing to a "main screen" view.
     overlays.close_for_hash_change();
-    changing_hash = true;
+    browser_history.state.changing_hash = true;
     const ret = do_hashchange_normal(from_reload);
-    changing_hash = false;
+    browser_history.state.changing_hash = false;
     return ret;
 }
 

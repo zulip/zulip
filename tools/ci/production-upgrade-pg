@@ -3,11 +3,11 @@
 set -e
 set -x
 
-ZULIP_PATH=/home/github/zulip
+cd /home/github/zulip
 
-supervisorctl stop all
-"$ZULIP_PATH"/scripts/setup/upgrade-postgresql
-supervisorctl start all
+su zulip -c ./scripts/stop-server
+./scripts/setup/upgrade-postgresql
+su zulip -c ./scripts/start-server
 
 echo "Upgrade of PostgreSQL complete!"
 exit 0

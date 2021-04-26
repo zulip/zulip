@@ -2,7 +2,7 @@ import os
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Sequence
 
 from django.conf import settings
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.lib.request import JsonableError
 from zerver.lib.topic import get_topic_from_message_info

@@ -105,13 +105,13 @@ class SendLoginEmailTest(ZulipTestCase):
         user.date_joined = mock_time - datetime.timedelta(seconds=JUST_CREATED_THRESHOLD + 1)
         user.save()
 
-        do_change_notification_settings(user, "enable_login_emails", False)
+        do_change_notification_settings(user, "enable_login_emails", False, acting_user=None)
         self.assertFalse(user.enable_login_emails)
         with mock.patch("zerver.signals.timezone_now", return_value=mock_time):
             self.login_user(user)
         self.assertEqual(len(mail.outbox), 0)
 
-        do_change_notification_settings(user, "enable_login_emails", True)
+        do_change_notification_settings(user, "enable_login_emails", True, acting_user=None)
         self.assertTrue(user.enable_login_emails)
         with mock.patch("zerver.signals.timezone_now", return_value=mock_time):
             self.login_user(user)
@@ -249,5 +249,6 @@ class TestNotifyNewUser(ZulipTestCase):
         actual_stream = Stream.objects.get(id=message.recipient.type_id)
         self.assertEqual(actual_stream.name, Realm.INITIAL_PRIVATE_STREAM_NAME)
         self.assertIn(
-            f"@_**Cordelia Lear|{new_user.id}** just signed up for Zulip.", message.content
+            f"@_**Cordelia, Lear's daughter|{new_user.id}** just signed up for Zulip.",
+            message.content,
         )

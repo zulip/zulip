@@ -1,6 +1,6 @@
 import orjson
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.decorator import REQ, has_request_variables
 from zerver.lib.actions import do_add_submessage
@@ -14,7 +14,7 @@ from zerver.models import UserProfile
 def process_submessage(
     request: HttpRequest,
     user_profile: UserProfile,
-    message_id: int = REQ(validator=check_int),
+    message_id: int = REQ(json_validator=check_int),
     msg_type: str = REQ(),
     content: str = REQ(),
 ) -> HttpResponse:

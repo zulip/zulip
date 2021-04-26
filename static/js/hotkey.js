@@ -14,6 +14,7 @@ import * as drafts from "./drafts";
 import * as emoji_picker from "./emoji_picker";
 import * as feedback_widget from "./feedback_widget";
 import * as gear_menu from "./gear_menu";
+import * as giphy from "./giphy";
 import * as hashchange from "./hashchange";
 import * as hotspots from "./hotspots";
 import * as lightbox from "./lightbox";
@@ -274,10 +275,18 @@ export function process_escape_key(e) {
             return true;
         }
 
+        if (giphy.is_popped_from_edit_messsage()) {
+            giphy.focus_current_edit_message();
+            // Hide after setting focus so that `edit_message_id` is
+            // still set in giphy.
+            giphy.hide_giphy_popover();
+            return true;
+        }
+
         if (compose_state.composing()) {
+            // Check if the giphy popover was open using compose box.
             // Hide GIPHY popover if it's open.
-            if ($("#giphy_grid_in_popover").length) {
-                $("#compose_box_giphy_grid").popover("hide");
+            if (!giphy.is_popped_from_edit_messsage() && giphy.hide_giphy_popover()) {
                 $("#compose-textarea").trigger("focus");
                 return true;
             }

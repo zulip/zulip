@@ -238,7 +238,7 @@ def run(args: Sequence[str], **kwargs: Any) -> None:
         )
         print(WHITEONRED + "Actual error output for the subcommand is just above this." + ENDC)
         print()
-        raise
+        sys.exit(1)
 
 
 def log_management_command(cmd: Sequence[str], log_path: str) -> None:
@@ -425,6 +425,11 @@ def parse_os_release() -> Dict[str, str]:
                 continue
             k, v = line.split("=", 1)
             [distro_info[k]] = shlex.split(v)
+    if distro_info["PRETTY_NAME"] == "Debian GNU/Linux bullseye/sid":
+        # This hack can be removed once bullseye releases and reports
+        # its VERSION_ID in /etc/os-release.
+        distro_info["VERSION_CODENAME"] = "bullseye"
+        distro_info["VERSION_ID"] = "11"
     return distro_info
 
 

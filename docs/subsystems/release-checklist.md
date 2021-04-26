@@ -18,6 +18,8 @@ preparing a new release.
     with changes since the last release. While doing so, take notes on
     things that might need follow-up work or documentation before we
     can happily advertise them in a release blog post.
+  * Inspect all `TODO/compatibility` comments for whether we can
+    remove any backwards-compatibility code in this release.
 * Create a burn-down list of issues that need to be fixed before we can
   release, and make sure all of them are being worked on.
 * Draft the release blog post (a.k.a. the release notes) in Paper.  In

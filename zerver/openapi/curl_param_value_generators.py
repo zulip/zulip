@@ -5,7 +5,6 @@
 # based on Zulip's OpenAPI definitions, as well as test setup and
 # fetching of appropriate parameter values to use when running the
 # cURL examples as part of the tools/test-api test suite.
-import json
 from functools import wraps
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
@@ -53,6 +52,16 @@ def openapi_param_value_generator(
         return _record_calls_wrapper
 
     return wrapper
+
+
+def assert_all_helper_functions_called() -> None:
+    """Throws an exception if any registered helpers were not called by tests"""
+    if REGISTERED_GENERATOR_FUNCTIONS == CALLED_GENERATOR_FUNCTIONS:
+        return
+
+    uncalled_functions = str(REGISTERED_GENERATOR_FUNCTIONS - CALLED_GENERATOR_FUNCTIONS)
+
+    raise Exception(f"Registered curl API generators were not called: {uncalled_functions}")
 
 
 def patch_openapi_example_values(
@@ -273,8 +282,8 @@ def upload_custom_emoji() -> Dict[str, object]:
 def add_realm_playground() -> Dict[str, object]:
     return {
         "name": "Python2 playground",
-        "pygments_language": json.dumps("Python2"),
-        "url_prefix": json.dumps("https://python2.example.com"),
+        "pygments_language": "Python2",
+        "url_prefix": "https://python2.example.com",
     }
 
 

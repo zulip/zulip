@@ -15,6 +15,7 @@ import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_muting from "./stream_muting";
+import * as sub_store from "./sub_store";
 import * as subs from "./subs";
 
 // In theory, this function should apply the account-level defaults,
@@ -28,7 +29,7 @@ function update_stream_setting(sub, value, setting) {
 }
 
 export function update_property(stream_id, property, value, other_values) {
-    const sub = stream_data.get_sub_by_id(stream_id);
+    const sub = sub_store.get(stream_id);
     if (sub === undefined) {
         // This isn't a stream we know about, so ignore it.
         blueslip.warn("Update for an unknown subscription", {

@@ -1088,7 +1088,7 @@ def export_partial_message_files(
         ).values_list("id", flat=True)
 
         consented_recipient_ids = Subscription.objects.filter(
-            user_profile__id__in=consented_user_ids
+            user_profile_id__in=consented_user_ids
         ).values_list("recipient_id", flat=True)
 
         recipient_ids = set(public_stream_recipient_ids) | set(consented_recipient_ids)
@@ -1897,7 +1897,7 @@ def get_analytics_config() -> Config:
 def get_consented_user_ids(consent_message_id: int) -> Set[int]:
     return set(
         Reaction.objects.filter(
-            message__id=consent_message_id,
+            message_id=consent_message_id,
             reaction_type="unicode_emoji",
             # outbox = 1f4e4
             emoji_code="1f4e4",
