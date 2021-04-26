@@ -82,7 +82,7 @@ from zerver.lib.send_email import (
     EmailNotDeliveredException,
     FromAddress,
     handle_send_email_format_changes,
-    send_email_from_dict,
+    send_email,
     send_future_email,
 )
 from zerver.lib.timestamp import timestamp_to_datetime
@@ -613,13 +613,13 @@ class EmailSendingWorker(QueueProcessingWorker):
     @retry_send_email_failures
     def consume(self, event: Dict[str, Any]) -> None:
         # Copy the event, so that we don't pass the `failed_tries'
-        # data to send_email_from_dict (which neither takes that
+        # data to send_email (which neither takes that
         # argument nor needs that data).
         copied_event = copy.deepcopy(event)
         if "failed_tries" in copied_event:
             del copied_event["failed_tries"]
         handle_send_email_format_changes(copied_event)
-        send_email_from_dict(copied_event)
+        send_email(**copied_event)
 
 
 @assign_queue("missedmessage_mobile_notifications")

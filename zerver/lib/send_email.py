@@ -227,10 +227,6 @@ def send_email(
         raise EmailNotDeliveredException
 
 
-def send_email_from_dict(email_dict: Mapping[str, Any]) -> None:
-    send_email(**dict(email_dict))
-
-
 def send_future_email(
     template_prefix: str,
     realm: Realm,
