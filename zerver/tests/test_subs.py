@@ -1592,7 +1592,7 @@ class StreamAdminTest(ZulipTestCase):
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=17,
+            query_count=35,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=True,
@@ -1609,7 +1609,7 @@ class StreamAdminTest(ZulipTestCase):
         streams you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=17,
+            query_count=35,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=True,
             is_subbed=False,
@@ -1664,7 +1664,7 @@ class StreamAdminTest(ZulipTestCase):
         You can remove others from private streams you're a stream administrator of.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=17,
+            query_count=35,
             target_users=[self.example_user("cordelia")],
             is_realm_admin=False,
             is_stream_admin=True,
@@ -3477,12 +3477,15 @@ class SubscriptionAPITest(ZulipTestCase):
 
         # verify that a welcome message was sent to the stream
         msg = self.get_last_message()
-        self.assertEqual(msg.recipient.type, msg.recipient.STREAM)
-        self.assertEqual(msg.topic_name(), "stream events")
-        self.assertEqual(msg.sender.email, settings.NOTIFICATION_BOT)
-        self.assertIn(
-            f"Stream created by @_**{self.test_user.full_name}|{self.test_user.id}**", msg.content
-        )
+        if invite_only:
+            previous_msg = self.get_second_to_last_message()
+            self.assertEqual(previous_msg.sender.email, settings.NOTIFICATION_BOT)
+            self.assertIn('added', previous_msg.content)
+        else:
+            self.assertEqual(msg.recipient.type, msg.recipient.STREAM)
+            self.assertEqual(msg.topic_name(), u'stream events')
+            self.assertIn('Stream created by @_**', msg.content)
+            self.assertEqual(msg.sender.email, settings.NOTIFICATION_BOT)
 
     def test_multi_user_subscription(self) -> None:
         user1 = self.example_user("cordelia")
@@ -3812,8 +3815,8 @@ class SubscriptionAPITest(ZulipTestCase):
                         acting_user=None,
                     )
 
-        self.assert_length(query_count, 28)
-        self.assert_length(cache_count, 4)
+        self.assert_length(query_count, 55)
+        self.assert_length(cache_count, 17)
 
         peer_events = [e for e in events if e["event"].get("op") == "peer_remove"]
 
@@ -3837,6 +3840,11 @@ class SubscriptionAPITest(ZulipTestCase):
             notifications.append((",".join(stream_names), removed_user_ids, notified_user_ids))
 
         notifications.sort(key=lambda tup: tup[0])
+        
+        msg = self.get_last_message()
+        expected_msg = "{} left {}.".format(user1.full_name, private.name)
+        self.assertEqual(msg.sender.email, settings.NOTIFICATION_BOT)
+        self.assertEqual(msg.content, expected_msg)
 
         self.assertEqual(
             notifications,
@@ -4398,7 +4406,7 @@ class SubscriptionAPITest(ZulipTestCase):
                 dict(principals=orjson.dumps([user1.id, user2.id]).decode()),
                 invite_only=True,
             )
-        self.assert_length(queries, 36)
+        self.assert_length(queries, 47)
 
         # Test creating a public stream with announce when realm has a notification stream.
         notifications_stream = get_stream(self.streams[0], self.test_realm)
