@@ -19,6 +19,24 @@ You can [preview the
 message](/help/preview-your-message-before-sending) before sending to
 see what the message will look like.
 
+## Restrict maximum rating of GIFs retrieved from GIPHY
+
+{!admin-only.md!}
+
+By default, the GIPHY integration is configured to only retrieve GIFs
+that GIPHY categorizes as rated G (General audience). You can change
+this configure or disable GIPHY integration entirely:
+
+{start_tabs}
+
+{settings_tab|organization-settings}
+
+1. Under **Other settings**, select a rating from **Maximum rating of GIFs**.
+
+{!save-changes.md!}
+
+{end_tabs}
+
 ## Troubleshooting
 
 * If you don't see the GIPHY icon, this is likely because you are

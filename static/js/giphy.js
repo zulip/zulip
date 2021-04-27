@@ -6,6 +6,7 @@ import _ from "lodash";
 import render_giphy_picker from "../templates/giphy_picker.hbs";
 import render_giphy_picker_mobile from "../templates/giphy_picker_mobile.hbs";
 
+import * as blueslip from "./blueslip";
 import * as compose_ui from "./compose_ui";
 import {media_breakpoints_num} from "./css_variables";
 import {page_params} from "./page_params";
@@ -29,18 +30,46 @@ export function focus_current_edit_message() {
     $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`).trigger("focus");
 }
 
+export function is_giphy_enabled() {
+    if (page_params.giphy_api_key === "") {
+        return false;
+    }
+    return page_params.realm_giphy_rating !== page_params.giphy_rating_options.disabled.id;
+}
+
 // Approximate width and height of
 // giphy popover as computed by chrome
 // + 25px;
 const APPROX_HEIGHT = 350;
 const APPROX_WIDTH = 300;
 
+export function update_giphy_rating() {
+    if (page_params.realm_giphy_rating === page_params.giphy_rating_options.disabled.id) {
+        $("#compose_box_giphy_grid").hide();
+    } else {
+        $("#compose_box_giphy_grid").show();
+    }
+}
+
+function get_rating() {
+    const options = page_params.giphy_rating_options;
+    for (const rating in page_params.giphy_rating_options) {
+        if (options[rating].id === page_params.realm_giphy_rating) {
+            return rating;
+        }
+    }
+
+    // The below should never run unless a server bug allowed a
+    // `giphy_rating` value not present in `giphy_rating_options`.
+    blueslip.error("Invalid giphy_rating value: " + page_params.realm_giphy_rating);
+    return "g";
+}
+
 function fetchGifs(offset) {
     const config = {
         offset,
         limit: 25,
-        // Default rating to 'g' until we can make this configurable.
-        rating: "g",
+        rating: get_rating(),
         // We don't pass random_id here, for privacy reasons.
     };
     if (search_term === "") {

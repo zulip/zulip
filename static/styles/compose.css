@@ -423,6 +423,10 @@ a.compose_control_button {
     }
 }
 
+a.message-control-button.hide {
+    display: none;
+}
+
 .drag {
     display: none;
     height: 18px;

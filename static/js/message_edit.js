@@ -11,6 +11,7 @@ import * as compose_actions from "./compose_actions";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
 import * as echo from "./echo";
+import * as giphy from "./giphy";
 import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
 import * as markdown from "./markdown";
@@ -355,7 +356,7 @@ function edit_message(row, raw_content) {
             stream_name: message.stream,
             notify_new_thread: notify_new_thread_default,
             notify_old_thread: notify_old_thread_default,
-            giphy_enabled: page_params.giphy_api_key !== "",
+            giphy_api_available: giphy.is_giphy_enabled(),
             hide_drafts_link: true,
         }),
     );

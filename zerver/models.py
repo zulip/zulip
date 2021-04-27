@@ -463,23 +463,23 @@ class Realm(models.Model):
         },
         # Source: https://github.com/Giphy/giphy-js/blob/master/packages/fetch-api/README.md#shared-options
         "y": {
-            "name": "Y - Very young audience",
+            "name": "Allow GIFs rated Y (Very young audience)",
             "id": 1,
         },
         "g": {
-            "name": "G - General audience",
+            "name": "Allow GIFs rated G (General audience)",
             "id": 2,
         },
         "pg": {
-            "name": "PG - Parental guidance",
+            "name": "Allow GIFs rated PG (Parental guidance)",
             "id": 3,
         },
         "pg-13": {
-            "name": "PG13 - Parental guidance (under 13)",
+            "name": "Allow GIFs rated PG13 (Parental guidance - under 13)",
             "id": 4,
         },
         "r": {
-            "name": "R - Restricted",
+            "name": "Allow GIFs rated R (Restricted)",
             "id": 5,
         },
     }

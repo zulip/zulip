@@ -65,6 +65,7 @@ const unread_ops = mock_esm("../../static/js/unread_ops");
 const user_events = mock_esm("../../static/js/user_events");
 const user_groups = mock_esm("../../static/js/user_groups");
 mock_esm("../../static/js/compose");
+mock_esm("../../static/js/giphy");
 
 const electron_bridge = set_global("electron_bridge", {});
 
