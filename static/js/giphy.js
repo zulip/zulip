@@ -45,9 +45,9 @@ const APPROX_WIDTH = 300;
 
 export function update_giphy_rating() {
     if (page_params.realm_giphy_rating === page_params.giphy_rating_options.disabled.id) {
-        $("#compose_box_giphy_grid").hide();
+        $(".compose_giphy_link").hide();
     } else {
-        $("#compose_box_giphy_grid").show();
+        $(".compose_giphy_link").show();
     }
 }
 
@@ -226,7 +226,7 @@ export function initialize() {
             edit_message_id = undefined;
         }
 
-        active_popover_element = $elt.closest("#compose_box_giphy_grid");
+        active_popover_element = $elt.closest(".compose_giphy_link");
         active_popover_element.popover({
             animation: true,
             placement: get_popover_placement(),

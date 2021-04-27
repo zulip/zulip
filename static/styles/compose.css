@@ -399,7 +399,7 @@ input.recipient_box {
     display: inline-block;
 }
 
-#compose_box_giphy_grid img {
+.compose_giphy_link img {
     position: relative;
     top: -3px;
     width: auto;
