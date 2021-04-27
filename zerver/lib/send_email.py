@@ -164,6 +164,16 @@ def build_email(
     if len(sanitize_address(extra_headers["From"], "utf-8")) > 320:
         extra_headers["From"] = str(Address(addr_spec=from_address))
 
+    # If we have an unsubscribe link for this email, configure it for
+    # "Unsubscribe" buttons in email clients via the List-Unsubscribe header.
+    #
+    # Note that Microsoft ignores URLs in List-Unsubscribe headers, as
+    # they only support the alternative `mailto:` format, which we
+    # have not implemented.
+    if "unsubscribe_link" in context:
+        extra_headers["List-Unsubscribe"] = f"<{context['unsubscribe_link']}>"
+        extra_headers["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
+
     reply_to = None
     if reply_to_email is not None:
         reply_to = [reply_to_email]
