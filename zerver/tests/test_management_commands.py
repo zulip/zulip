@@ -592,6 +592,6 @@ class TestSendCustomEmail(ZulipTestCase):
                 mock_print.mock_calls[1:],
                 [
                     call("Would send the above email to:"),
-                    call("  user10@zulip.testserver"),
+                    call("  hamlet@zulip.com (zulip)"),
                 ],
             )

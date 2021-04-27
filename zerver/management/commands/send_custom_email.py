@@ -91,4 +91,4 @@ class Command(ZulipBaseCommand):
         if options["dry_run"]:
             print("Would send the above email to:")
             for user in users:
-                print(f"  {user.email}")
+                print(f"  {user.delivery_email} ({user.realm.string_id})")
