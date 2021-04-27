@@ -103,7 +103,7 @@ Some popular settings in `/etc/zulip/settings.py` include:
 If you haven't already, subscribe to the
 [zulip-announce](https://groups.google.com/forum/#!forum/zulip-announce)
 list so that you can receive important announces like new Zulip
-releases or major changes to the app ecosystem..
+releases or major changes to the app ecosystem.
 
 ## Enjoy your Zulip installation!
 
