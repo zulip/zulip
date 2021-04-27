@@ -214,9 +214,9 @@ export function resize_sidebars() {
 }
 
 export function resize_page_components() {
+    panels.resize_app();
     const h = resize_sidebars();
     resize_bottom_whitespace(h);
-    panels.resize_app();
 }
 
 let _old_width = $(window).width();
