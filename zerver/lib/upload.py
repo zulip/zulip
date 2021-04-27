@@ -387,7 +387,7 @@ class S3UploadBackend(ZulipUploadBackend):
         network_location = urllib.parse.urlparse(
             self.avatar_bucket.meta.client.meta.endpoint_url
         ).netloc
-        self.avatar_bucket_url = f"https://{self.avatar_bucket.name}.{network_location}"
+        self.avatar_bucket_url = f"https://{network_location}/{self.avatar_bucket.name}"
 
         self.uploads_bucket = get_bucket(settings.S3_AUTH_UPLOADS_BUCKET, self.session)
 
