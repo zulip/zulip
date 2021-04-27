@@ -599,6 +599,10 @@ def is_vagrant_env_host(path: str) -> bool:
     return ".vagrant" in os.listdir(path)
 
 
+def has_application_server() -> bool:
+    return os.path.exists("/etc/supervisor/conf.d/zulip/zulip.conf")
+
+
 def deport(netloc: str) -> str:
     """Remove the port from a hostname:port string.  Brackets on a literal
     IPv6 address are included."""

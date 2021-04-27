@@ -16,6 +16,7 @@ from scripts.lib.zulip_tools import (
     WARNING,
     get_config_file,
     get_tornado_ports,
+    has_application_server,
     overwrite_symlink,
 )
 
@@ -62,35 +63,37 @@ if change_symlink:
 
 config_file = get_config_file()
 tornado_ports = get_tornado_ports(config_file)
+workers = []
 
-# Start by restarting the workers and similar processes, one at a
-# time.  Workers can always support processing events with old event
-# contents, but cannot necessarily understand events enqueued by a
-# newer Django process.  Restarting them one at a time, rather than
-# all-at-once, minimizes the downtime of each, and reduces startup
-# contention.
-#
-# For "start" or less-graceful circumstances, we don't need to
-# iterate; we'll stop all of them at once, and start them all later.
-# In those cases, using the glob form is faster -- but if we do need
-# to iterate, we need to expand the glob.
-if action == "start" or args.less_graceful:
-    workers = ["zulip-workers:*"]
-else:
-    worker_status = subprocess.run(
-        ["supervisorctl", "status", "zulip-workers:*"],
-        universal_newlines=True,
-        stdout=subprocess.PIPE,
-    )
-    # `supercisorctl status` returns 3 if any are stopped, which is fine here.
-    if worker_status.returncode not in (0, 3):
-        worker_status.check_returncode()
-    workers = [status_line.split()[0] for status_line in worker_status.stdout.splitlines()]
+if has_application_server():
+    # Start by restarting the workers and similar processes, one at a
+    # time.  Workers can always support processing events with old event
+    # contents, but cannot necessarily understand events enqueued by a
+    # newer Django process.  Restarting them one at a time, rather than
+    # all-at-once, minimizes the downtime of each, and reduces startup
+    # contention.
+    #
+    # For "start" or less-graceful circumstances, we don't need to
+    # iterate; we'll stop all of them at once, and start them all later.
+    # In those cases, using the glob form is faster -- but if we do need
+    # to iterate, we need to expand the glob.
+    if action == "start" or args.less_graceful:
+        workers.append("zulip-workers:*")
+    else:
+        worker_status = subprocess.run(
+            ["supervisorctl", "status", "zulip-workers:*"],
+            universal_newlines=True,
+            stdout=subprocess.PIPE,
+        )
+        # `supercisorctl status` returns 3 if any are stopped, which is fine here.
+        if worker_status.returncode not in (0, 3):
+            worker_status.check_returncode()
+        workers.extend(status_line.split()[0] for status_line in worker_status.stdout.splitlines())
 
 if os.path.exists("/etc/supervisor/conf.d/zulip/zulip_db.conf"):
     workers.append("process-fts-updates")
 
-if action == "restart":
+if action == "restart" and len(workers) > 0:
     if args.less_graceful:
         # The less graceful form stops every worker now; we start them
         # back up at the end.
@@ -105,40 +108,43 @@ if action == "restart":
             logging.info("Restarting %s", worker)
             subprocess.check_call(["supervisorctl", "restart", worker])
 
-# Next, we restart the Tornado processes sequentially, in order to
-# minimize downtime of the tornado service caused by too many Python
-# processes restarting at the same time, resulting in each receiving
-# insufficient priority.  This is important, because Tornado is the
-# main source of user-visible downtime when we restart a Zulip server.
-# We do this before restarting Django, in case there are new event
-# types which it will need to know how to deal with.
-if len(tornado_ports) > 1:
-    for p in tornado_ports:
-        # Restart Tornado processes individually for a better rate of
-        # restarts.  This also avoids behavior with restarting a whole
-        # supervisord group where if any individual process is slow to
-        # stop, the whole bundle stays stopped for an extended time.
-        logging.info("%s Tornado process on port %s", verbing, p)
-        subprocess.check_call(["supervisorctl", action, f"zulip-tornado:zulip-tornado-port-{p}"])
-else:
-    logging.info("%s Tornado process", verbing)
-    subprocess.check_call(["supervisorctl", action, "zulip-tornado", "zulip-tornado:*"])
+if has_application_server():
+    # Next, we restart the Tornado processes sequentially, in order to
+    # minimize downtime of the tornado service caused by too many Python
+    # processes restarting at the same time, resulting in each receiving
+    # insufficient priority.  This is important, because Tornado is the
+    # main source of user-visible downtime when we restart a Zulip server.
+    # We do this before restarting Django, in case there are new event
+    # types which it will need to know how to deal with.
+    if len(tornado_ports) > 1:
+        for p in tornado_ports:
+            # Restart Tornado processes individually for a better rate of
+            # restarts.  This also avoids behavior with restarting a whole
+            # supervisord group where if any individual process is slow to
+            # stop, the whole bundle stays stopped for an extended time.
+            logging.info("%s Tornado process on port %s", verbing, p)
+            subprocess.check_call(
+                ["supervisorctl", action, f"zulip-tornado:zulip-tornado-port-{p}"]
+            )
+    else:
+        logging.info("%s Tornado process", verbing)
+        subprocess.check_call(["supervisorctl", action, "zulip-tornado", "zulip-tornado:*"])
 
-# Finally, restart the Django uWSGI processes.
-logging.info("%s django server", verbing)
-subprocess.check_call(["supervisorctl", action, "zulip-django"])
+    # Finally, restart the Django uWSGI processes.
+    logging.info("%s django server", verbing)
+    subprocess.check_call(["supervisorctl", action, "zulip-django"])
+
+    using_sso = subprocess.check_output(["./scripts/get-django-setting", "USING_APACHE_SSO"])
+    if using_sso.strip() == b"True":
+        logging.info("Restarting Apache WSGI process...")
+        subprocess.check_call(["pkill", "-x", "apache2", "-u", "zulip"])
 
 # If we were doing this non-gracefully, or starting as opposed to
 # restarting, we need to turn the workers (back) on.  There's no
 # advantage to doing this not-all-at-once.
-if action == "start" or args.less_graceful:
+if (action == "start" or args.less_graceful) and len(workers) > 0:
     logging.info("Starting workers")
     subprocess.check_call(["supervisorctl", "start", *workers])
-
-using_sso = subprocess.check_output(["./scripts/get-django-setting", "USING_APACHE_SSO"])
-if using_sso.strip() == b"True":
-    logging.info("Restarting Apache WSGI process...")
-    subprocess.check_call(["pkill", "-x", "apache2", "-u", "zulip"])
 
 logging.info("Done!")
 print(OKGREEN + f"Zulip {action}ed successfully!" + ENDC)
