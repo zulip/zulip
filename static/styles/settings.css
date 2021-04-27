@@ -142,6 +142,10 @@ h3 .fa-question-circle-o {
     }
 }
 
+#notification_sound {
+    text-transform: capitalize;
+}
+
 .attributions_title {
     margin-top: 24px;
 }
