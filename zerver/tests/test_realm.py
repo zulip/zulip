@@ -5,6 +5,7 @@ from unittest import mock
 
 import orjson
 from django.conf import settings
+from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.lib.actions import (
@@ -29,6 +30,7 @@ from zerver.models import (
     Realm,
     RealmAuditLog,
     ScheduledEmail,
+    Stream,
     UserMessage,
     UserProfile,
     get_realm,
@@ -331,7 +333,7 @@ class RealmTest(ZulipTestCase):
         realm = get_realm("zulip")
         self.assertEqual(realm.notifications_stream, None)
 
-        new_notif_stream_id = 4
+        new_notif_stream_id = Stream.objects.get(name="Denmark").id
         req = dict(notifications_stream_id=orjson.dumps(new_notif_stream_id).decode())
         result = self.client_patch("/json/realm", req)
         self.assert_json_success(result)
@@ -374,7 +376,7 @@ class RealmTest(ZulipTestCase):
         realm = get_realm("zulip")
         self.assertEqual(realm.signup_notifications_stream, None)
 
-        new_signup_notifications_stream_id = 4
+        new_signup_notifications_stream_id = Stream.objects.get(name="Denmark").id
         req = dict(
             signup_notifications_stream_id=orjson.dumps(new_signup_notifications_stream_id).decode()
         )
@@ -784,6 +786,72 @@ class RealmTest(ZulipTestCase):
         req = dict(message_retention_days=orjson.dumps(10).decode())
         result = self.client_patch("/json/realm", req)
         self.assert_json_success(result)
+
+    def test_do_create_realm(self) -> None:
+        realm = do_create_realm("realm_string_id", "realm name")
+
+        self.assertEqual(realm.string_id, "realm_string_id")
+        self.assertEqual(realm.name, "realm name")
+        self.assertFalse(realm.emails_restricted_to_domains)
+        self.assertEqual(realm.email_address_visibility, Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE)
+        self.assertEqual(realm.description, "")
+        self.assertTrue(realm.invite_required)
+        self.assertEqual(realm.plan_type, Realm.LIMITED)
+        self.assertEqual(realm.org_type, Realm.CORPORATE)
+        self.assertEqual(type(realm.date_created), datetime.datetime)
+
+        self.assertTrue(
+            RealmAuditLog.objects.filter(
+                realm=realm, event_type=RealmAuditLog.REALM_CREATED, event_time=realm.date_created
+            ).exists()
+        )
+
+        assert realm.notifications_stream is not None
+        self.assertEqual(realm.notifications_stream.name, "general")
+        self.assertEqual(realm.notifications_stream.realm, realm)
+
+        assert realm.signup_notifications_stream is not None
+        self.assertEqual(realm.signup_notifications_stream.name, "core team")
+        self.assertEqual(realm.signup_notifications_stream.realm, realm)
+
+        self.assertEqual(realm.plan_type, Realm.LIMITED)
+
+    def test_do_create_realm_with_keyword_arguments(self) -> None:
+        date_created = timezone_now() - datetime.timedelta(days=100)
+        realm = do_create_realm(
+            "realm_string_id",
+            "realm name",
+            emails_restricted_to_domains=True,
+            date_created=date_created,
+            email_address_visibility=Realm.EMAIL_ADDRESS_VISIBILITY_MEMBERS,
+            description="realm description",
+            invite_required=False,
+            plan_type=Realm.STANDARD_FREE,
+            org_type=Realm.COMMUNITY,
+        )
+        self.assertEqual(realm.string_id, "realm_string_id")
+        self.assertEqual(realm.name, "realm name")
+        self.assertTrue(realm.emails_restricted_to_domains)
+        self.assertEqual(realm.email_address_visibility, Realm.EMAIL_ADDRESS_VISIBILITY_MEMBERS)
+        self.assertEqual(realm.description, "realm description")
+        self.assertFalse(realm.invite_required)
+        self.assertEqual(realm.plan_type, Realm.STANDARD_FREE)
+        self.assertEqual(realm.org_type, Realm.COMMUNITY)
+        self.assertEqual(realm.date_created, date_created)
+
+        self.assertTrue(
+            RealmAuditLog.objects.filter(
+                realm=realm, event_type=RealmAuditLog.REALM_CREATED, event_time=realm.date_created
+            ).exists()
+        )
+
+        assert realm.notifications_stream is not None
+        self.assertEqual(realm.notifications_stream.name, "general")
+        self.assertEqual(realm.notifications_stream.realm, realm)
+
+        assert realm.signup_notifications_stream is not None
+        self.assertEqual(realm.signup_notifications_stream.name, "core team")
+        self.assertEqual(realm.signup_notifications_stream.realm, realm)
 
 
 class RealmAPITest(ZulipTestCase):

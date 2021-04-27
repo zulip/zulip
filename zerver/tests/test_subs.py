@@ -3926,7 +3926,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertGreaterEqual(len(self.streams), 2)
         streams_to_remove = self.streams[1:]
         not_subbed = []
-        for stream in Stream.objects.all():
+        for stream in Stream.objects.filter(realm=get_realm("zulip")):
             if stream.name not in self.streams:
                 not_subbed.append(stream.name)
         random.shuffle(not_subbed)

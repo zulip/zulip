@@ -1758,7 +1758,8 @@ class TestGetGCMPayload(PushNotificationTest):
         )
 
     def test_get_message_payload_gcm_stream_notifications(self) -> None:
-        message = self.get_message(Recipient.STREAM, 1)
+        stream = Stream.objects.get(name="Denmark")
+        message = self.get_message(Recipient.STREAM, stream.id)
         message.trigger = "stream_push_notify"
         message.stream_name = "Denmark"
         hamlet = self.example_user("hamlet")
@@ -1794,7 +1795,8 @@ class TestGetGCMPayload(PushNotificationTest):
 
     @override_settings(PUSH_NOTIFICATION_REDACT_CONTENT=True)
     def test_get_message_payload_gcm_redacted_content(self) -> None:
-        message = self.get_message(Recipient.STREAM, 1)
+        stream = Stream.objects.get(name="Denmark")
+        message = self.get_message(Recipient.STREAM, stream.id)
         message.trigger = "stream_push_notify"
         message.stream_name = "Denmark"
         hamlet = self.example_user("hamlet")
