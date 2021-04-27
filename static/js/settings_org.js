@@ -269,6 +269,11 @@ function set_video_chat_provider_dropdown() {
     $("#id_realm_video_chat_provider").val(chat_provider_id);
 }
 
+function set_giphy_rating_dropdown() {
+    const rating_id = page_params.realm_giphy_rating;
+    $("#id_realm_giphy_rating").val(rating_id);
+}
+
 function set_msg_edit_limit_dropdown() {
     const value = get_property_value("realm_msg_edit_limit_setting");
     $("#id_realm_msg_edit_limit_setting").val(value);
@@ -687,6 +692,7 @@ export function build_page() {
 
     set_realm_waiting_period_dropdown();
     set_video_chat_provider_dropdown();
+    set_giphy_rating_dropdown();
     set_msg_edit_limit_dropdown();
     set_msg_delete_limit_dropdown();
     set_message_retention_setting_dropdown();

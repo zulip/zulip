@@ -12,6 +12,7 @@ import * as compose from "./compose";
 import * as compose_fade from "./compose_fade";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as emoji_picker from "./emoji_picker";
+import * as giphy from "./giphy";
 import * as hotspots from "./hotspots";
 import * as markdown from "./markdown";
 import * as message_edit from "./message_edit";
@@ -210,6 +211,7 @@ export function dispatch_normal_event(event) {
                 signup_notifications_stream_id: noop,
                 emails_restricted_to_domains: noop,
                 video_chat_provider: compose.update_video_chat_button_display,
+                giphy_rating: giphy.update_giphy_rating,
                 waiting_period_threshold: noop,
                 wildcard_mention_policy: noop,
             };
