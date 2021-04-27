@@ -17,6 +17,7 @@ export function create_item_from_group_name(group_name, current_items) {
     }
 
     const item = {
+        type: "user_group",
         display_value: display_pill(group),
         id: group.id,
         group_name: group.name,
@@ -51,6 +52,7 @@ export function get_user_ids(pill_widget) {
 export function append_user_group(group, pill_widget) {
     if (group !== undefined && group !== null) {
         pill_widget.appendValidatedData({
+            type: "user_group",
             display_value: display_pill(group),
             id: group.id,
         });

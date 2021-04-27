@@ -94,6 +94,11 @@ export function create(opts) {
                 return;
             }
 
+            if (!item.type) {
+                blueslip.error("no type defined for the item");
+                return;
+            }
+
             const payload = {
                 id,
                 item,
