@@ -164,6 +164,7 @@ export function hide_giphy_popover() {
         active_popover_element.popover("destroy");
         active_popover_element = undefined;
         edit_message_id = undefined;
+        gifs_grid = undefined;
         return true;
     }
     return false;
