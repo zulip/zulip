@@ -23,7 +23,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
 
-from confirmation.models import generate_key
+from confirmation.models import generate_key, one_click_unsubscribe_link
 from scripts.setup.inline_email_css import inline_template
 from zerver.lib.logging_util import log_to_file
 from zerver.models import EMAIL_TYPES, Realm, ScheduledEmail, UserProfile, get_user_profile_by_id
@@ -464,6 +464,7 @@ def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None
         context = {
             "realm_uri": user_profile.realm.uri,
             "realm_name": user_profile.realm.name,
+            "unsubscribe_link": one_click_unsubscribe_link(user_profile, "marketing"),
         }
         send_email(
             email_id,
