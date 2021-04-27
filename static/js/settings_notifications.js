@@ -92,7 +92,9 @@ export function set_up() {
     });
 
     $("#play_notification_sound").on("click", () => {
-        $("#notification-sound-audio")[0].play();
+        if (page_params.notification_sound !== "none") {
+            $("#notification-sound-audio")[0].play();
+        }
     });
 
     const notification_sound_dropdown = $("#notification_sound");

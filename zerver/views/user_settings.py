@@ -272,6 +272,7 @@ def json_change_notify_settings(
     if (
         notification_sound is not None
         and notification_sound not in get_available_notification_sounds()
+        and notification_sound != "none"
     ):
         raise JsonableError(_("Invalid notification sound '{}'").format(notification_sound))
 

@@ -59,6 +59,7 @@ function test(label, f) {
         page_params.enable_desktop_notifications = true;
         page_params.enable_sounds = true;
         page_params.wildcard_mentions_notify = true;
+        page_params.notification_sound = "ding";
         f(override);
     });
 }
@@ -239,13 +240,35 @@ test("message_is_notifiable", () => {
     assert.equal(notifications.should_send_audible_notification(message), true);
     assert.equal(notifications.message_is_notifiable(message), false);
 
+    // Case 9: If `None` is selected as the notification sound, send no
+    // audible notification, no matter what other user configurations are.
+    message = {
+        id: 50,
+        content: "message number 7",
+        sent_by_me: false,
+        notification_sent: false,
+        mentioned: true,
+        mentioned_me_directly: true,
+        type: "stream",
+        stream: "general",
+        stream_id: general.stream_id,
+        topic: "whatever",
+    };
+    page_params.notification_sound = "none";
+    assert.equal(notifications.should_send_desktop_notification(message), true);
+    assert.equal(notifications.should_send_audible_notification(message), false);
+    assert.equal(notifications.message_is_notifiable(message), true);
+
+    // Reset state
+    page_params.notification_sound = "ding";
+
     // If none of the above cases apply
     // (ie: topic is not muted, message does not mention user,
     //  no notification sent before, message not sent by user),
     // return true to pass it to notifications settings, which will return false.
     message = {
         id: 60,
-        content: "message number 7",
+        content: "message number 8",
         sent_by_me: false,
         notification_sent: false,
         mentioned: false,

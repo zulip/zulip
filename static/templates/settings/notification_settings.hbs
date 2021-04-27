@@ -69,6 +69,7 @@
                   {{#unless enable_sound_select}}
                   disabled
                   {{/unless}}>
+                    <option value="none">{{t "None" }}</option>
                     {{#each page_params.available_notification_sounds}}
                     <option value="{{ this }}">{{ this }}</option>
                     {{/each}}

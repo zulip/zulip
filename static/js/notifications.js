@@ -91,14 +91,16 @@ export function initialize() {
 }
 
 function update_notification_sound_source() {
-    const audio_file_without_extension =
-        "/static/audio/notification_sounds/" + page_params.notification_sound;
+    const notification_sound = page_params.notification_sound;
+    const audio_file_without_extension = "/static/audio/notification_sounds/" + notification_sound;
     $("#notification-sound-source-ogg").attr("src", `${audio_file_without_extension}.ogg`);
     $("#notification-sound-source-mp3").attr("src", `${audio_file_without_extension}.mp3`);
 
-    // Load it so that it is ready to be played; without this the old sound
-    // is played.
-    $("#notification-sound-audio")[0].load();
+    if (notification_sound !== "none") {
+        // Load it so that it is ready to be played; without this the old sound
+        // is played.
+        $("#notification-sound-audio")[0].load();
+    }
 }
 
 export function permission_state() {
@@ -415,6 +417,12 @@ export function should_send_desktop_notification(message) {
 }
 
 export function should_send_audible_notification(message) {
+    // If `None` is selected as the notification sound, never send
+    // audible notifications regardless of other configuration.
+    if (page_params.notification_sound === "none") {
+        return false;
+    }
+
     // For streams, ding if sounds are enabled for all messages on
     // this stream.
     if (
