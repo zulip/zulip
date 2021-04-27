@@ -9,7 +9,7 @@ const {page_params} = require("../zjsunit/zpage_params");
 // We download our translations in `page_params` (which
 // are for the user's chosen language), so we simulate
 // that here for the tests.
-page_params.default_language = "en";
+page_params.request_language = "en";
 page_params.translation_data = {
     "Quote and reply or forward": "Citer et répondre ou transférer",
     "Notification triggers": "Déclencheurs de notification",
