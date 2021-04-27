@@ -237,15 +237,17 @@ export function initialize() {
         });
 
         active_popover_element.popover("show");
-        // Allow simplebar to render, then fetch and
-        // render GIFs. otherwise simplebar replaces
-        // the `.gipihy-content` element when trying
-        // to wrap it and hence, our jquery reference
-        // to `.giphy-content` is lost. Thus, no GIF
-        // is rendered.
-        setTimeout(() => {
-            gifs_grid = renderGIPHYGrid($("#giphy_grid_in_popover .giphy-content")[0]);
-        }, 0);
+        // It takes about 1s for the popover to show; So,
+        // we wait for popover to display before rendering GIFs
+        // in it, otherwise popover is rendered with empty content.
+        const popover_observer = new MutationObserver(() => {
+            if ($("#giphy_grid_in_popover .giphy-content").is(":visible")) {
+                gifs_grid = renderGIPHYGrid($("#giphy_grid_in_popover .giphy-content")[0]);
+                popover_observer.disconnect();
+            }
+        });
+        const opts = {attributes: false, childList: true, characterData: false, subtree: true};
+        popover_observer.observe(document, opts);
 
         $("body").on(
             "keyup",
