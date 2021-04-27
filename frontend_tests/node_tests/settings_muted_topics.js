@@ -21,10 +21,10 @@ const frontend = {
 };
 stream_data.add_sub(frontend);
 
-run_test("settings", () => {
+run_test("settings", (override) => {
     muting.add_muted_topic(frontend.stream_id, "js", 1577836800);
-    let set_up_topic_ui_called = false;
-    muting_ui.set_up_muted_topics_ui = () => {
+    let populate_list_called = false;
+    override(settings_muted_topics, "populate_list", () => {
         const opts = muting.get_muted_topics();
         assert.deepEqual(opts, [
             {
@@ -35,14 +35,15 @@ run_test("settings", () => {
                 topic: "js",
             },
         ]);
-        set_up_topic_ui_called = true;
-    };
+        populate_list_called = true;
+    });
 
     settings_muted_topics.reset();
     assert.equal(settings_muted_topics.loaded, false);
 
     settings_muted_topics.set_up();
     assert.equal(settings_muted_topics.loaded, true);
+    assert(populate_list_called);
 
     const topic_click_handler = $("body").get_on_handler("click", ".settings-unmute-topic");
     assert.equal(typeof topic_click_handler, "function");
@@ -81,6 +82,5 @@ run_test("settings", () => {
     };
     topic_click_handler.call(topic_fake_this, event);
     assert(unmute_topic_called);
-    assert(set_up_topic_ui_called);
     assert.equal(topic_data_called, 2);
 });

@@ -1,7 +1,6 @@
 import $ from "jquery";
 
 import render_confirm_mute_user from "../templates/confirm_mute_user.hbs";
-import render_muted_topic_ui_row from "../templates/muted_topic_ui_row.hbs";
 import render_topic_muted from "../templates/topic_muted.hbs";
 
 import * as activity from "./activity";
@@ -9,7 +8,6 @@ import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
 import * as feedback_widget from "./feedback_widget";
 import {$t} from "./i18n";
-import * as ListWidget from "./list_widget";
 import * as message_lists from "./message_lists";
 import * as muting from "./muting";
 import * as overlays from "./overlays";
@@ -21,7 +19,6 @@ import * as settings_muted_users from "./settings_muted_users";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
-import * as ui from "./ui";
 import * as unread_ui from "./unread_ui";
 
 function timestamp_ms() {
@@ -43,7 +40,7 @@ export function rerender_on_topic_update() {
         message_lists.home.update_topic_muting_and_rerender();
     }
     if (overlays.settings_open() && settings_muted_topics.loaded) {
-        set_up_muted_topics_ui();
+        settings_muted_topics.populate_list();
     }
 }
 
@@ -90,30 +87,6 @@ export function handle_topic_updates(muted_topics) {
 export function update_muted_topics(muted_topics) {
     muting.set_muted_topics(muted_topics);
     unread_ui.update_unread_counts();
-}
-
-export function set_up_muted_topics_ui() {
-    const muted_topics = muting.get_muted_topics();
-    const muted_topics_table = $("#muted_topics_table");
-    const $search_input = $("#muted_topics_search");
-
-    ListWidget.create(muted_topics_table, muted_topics, {
-        name: "muted-topics-list",
-        modifier(muted_topics) {
-            return render_muted_topic_ui_row({muted_topics});
-        },
-        filter: {
-            element: $search_input,
-            predicate(item, value) {
-                return item.topic.toLocaleLowerCase().includes(value);
-            },
-            onupdate() {
-                ui.reset_scrollbar(muted_topics_table.closest(".progressive-table-wrapper"));
-            },
-        },
-        parent_container: $("#muted-topic-settings"),
-        simplebar_container: $("#muted-topic-settings .progressive-table-wrapper"),
-    });
 }
 
 export function mute_topic(stream_id, topic) {
