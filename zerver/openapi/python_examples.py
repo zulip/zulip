@@ -725,7 +725,7 @@ def update_subscription_settings(client: Client) -> None:
             "value": True,
         },
         {
-            "stream_id": 3,
+            "stream_id": 7,
             "property": "color",
             "value": "#f00f00",
         },

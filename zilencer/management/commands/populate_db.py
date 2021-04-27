@@ -22,6 +22,7 @@ from zerver.lib.actions import (
     build_message_send_dict,
     check_add_realm_emoji,
     do_change_user_role,
+    do_create_realm,
     do_send_messages,
     do_update_user_custom_profile_data_if_changed,
     try_add_realm_custom_profile_field,
@@ -319,17 +320,13 @@ class Command(BaseCommand):
             )
             RealmDomain.objects.create(realm=zulip_realm, domain="zulip.com")
             if options["test_suite"]:
-                mit_realm = Realm.objects.create(
+                mit_realm = do_create_realm(
                     string_id="zephyr",
                     name="MIT",
                     emails_restricted_to_domains=True,
                     invite_required=False,
+                    plan_type=Realm.SELF_HOSTED,
                     org_type=Realm.CORPORATE,
-                )
-                RealmAuditLog.objects.create(
-                    realm=mit_realm,
-                    event_type=RealmAuditLog.REALM_CREATED,
-                    event_time=mit_realm.date_created,
                 )
                 RealmDomain.objects.create(realm=mit_realm, domain="mit.edu")
 

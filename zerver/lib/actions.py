@@ -4865,6 +4865,11 @@ def do_create_realm(
     name: str,
     *,
     emails_restricted_to_domains: Optional[bool] = None,
+    email_address_visibility: Optional[int] = None,
+    description: Optional[str] = None,
+    invite_required: Optional[bool] = None,
+    plan_type: Optional[int] = None,
+    org_type: Optional[int] = None,
     date_created: Optional[datetime.datetime] = None,
 ) -> Realm:
     if Realm.objects.filter(string_id=string_id).exists():
@@ -4876,6 +4881,17 @@ def do_create_realm(
     kwargs: Dict[str, Any] = {}
     if emails_restricted_to_domains is not None:
         kwargs["emails_restricted_to_domains"] = emails_restricted_to_domains
+    if email_address_visibility is not None:
+        kwargs["email_address_visibility"] = email_address_visibility
+    if description is not None:
+        kwargs["description"] = description
+    if invite_required is not None:
+        kwargs["invite_required"] = invite_required
+    if plan_type is not None:
+        kwargs["plan_type"] = plan_type
+    if org_type is not None:
+        kwargs["org_type"] = org_type
+
     if date_created is not None:
         # The date_created parameter is intended only for use by test
         # suites that want to backdate the date of a realm's creation.
@@ -4914,7 +4930,7 @@ def do_create_realm(
 
     realm.save(update_fields=["notifications_stream", "signup_notifications_stream"])
 
-    if settings.BILLING_ENABLED:
+    if plan_type is None and settings.BILLING_ENABLED:
         do_change_plan_type(realm, Realm.LIMITED, acting_user=None)
 
     sender = get_system_bot(settings.NOTIFICATION_BOT)

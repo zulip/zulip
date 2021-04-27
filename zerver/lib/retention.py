@@ -399,7 +399,7 @@ def archive_stream_messages(
     realm: Realm, streams: List[Stream], chunk_size: int = STREAM_MESSAGE_BATCH_SIZE
 ) -> None:
     if not streams:
-        return
+        return  # nocoverage # TODO
 
     logger.info("Archiving stream messages for realm %s", realm.string_id)
     retention_policy_dict: Dict[int, int] = {}

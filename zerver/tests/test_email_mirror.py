@@ -1500,7 +1500,7 @@ class TestEmailMirrorLogAndReport(ZulipTestCase):
         self.assertEqual(
             error_log.output,
             [
-                "ERROR:zerver.lib.email_mirror:Sender: hamlet@zulip.com\nTo: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX@testserver <Address to stream id: 1>\ntest error message"
+                f"ERROR:zerver.lib.email_mirror:Sender: hamlet@zulip.com\nTo: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX@testserver <Address to stream id: {stream.id}>\ntest error message"
             ],
         )
         message = most_recent_message(user_profile)
