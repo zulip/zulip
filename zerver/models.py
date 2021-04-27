@@ -1238,6 +1238,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     enable_digest_emails: bool = models.BooleanField(default=True)
     enable_login_emails: bool = models.BooleanField(default=True)
+    enable_marketing_emails: bool = models.BooleanField(default=True)
     realm_name_in_notifications: bool = models.BooleanField(default=False)
     presence_enabled: bool = models.BooleanField(default=True)
 
@@ -1386,6 +1387,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         enable_desktop_notifications=bool,
         enable_digest_emails=bool,
         enable_login_emails=bool,
+        enable_marketing_emails=bool,
         enable_offline_email_notifications=bool,
         enable_offline_push_notifications=bool,
         enable_online_push_notifications=bool,

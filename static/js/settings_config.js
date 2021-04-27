@@ -346,6 +346,7 @@ const email_notification_settings = [
     "enable_login_emails",
     "message_content_in_email_notifications",
     "realm_name_in_notifications",
+    "enable_marketing_emails",
 ];
 
 const presence_notification_settings = ["presence_enabled"];

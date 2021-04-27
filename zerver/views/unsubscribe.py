@@ -53,6 +53,12 @@ def do_login_unsubscribe(user_profile: UserProfile) -> None:
     )
 
 
+def do_marketing_unsubscribe(user_profile: UserProfile) -> None:
+    do_change_notification_settings(
+        user_profile, "enable_marketing_emails", False, acting_user=user_profile
+    )
+
+
 # The keys are part of the URL for the unsubscribe link and must be valid
 # without encoding.
 # The values are a tuple of (display name, unsubscribe function), where the
@@ -62,6 +68,7 @@ email_unsubscribers = {
     "welcome": ("welcome", do_welcome_unsubscribe),
     "digest": ("digest", do_digest_unsubscribe),
     "login": ("login", do_login_unsubscribe),
+    "marketing": ("marketing", do_marketing_unsubscribe),
 }
 
 # Login NOT required. These are for one-click unsubscribes.

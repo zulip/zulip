@@ -2659,6 +2659,26 @@ class EmailUnsubscribeTests(ZulipTestCase):
         user_profile.refresh_from_db()
         self.assertFalse(user_profile.enable_login_emails)
 
+    def test_marketing_unsubscribe(self) -> None:
+        """
+        We provide one-click unsubscribe links in marketing e-mails that you can
+        click even when logged out to stop receiving them.
+        """
+        user_profile = self.example_user("hamlet")
+        self.assertTrue(user_profile.enable_marketing_emails)
+
+        # Simulate unsubscribing from digest e-mails.
+        unsubscribe_link = one_click_unsubscribe_link(user_profile, "marketing")
+        result = self.client_get(urllib.parse.urlparse(unsubscribe_link).path)
+
+        # The setting is toggled off, and scheduled jobs have been removed.
+        self.assertEqual(result.status_code, 200)
+
+        # Circumvent user_profile caching.
+        user_profile.refresh_from_db()
+        self.assertFalse(user_profile.enable_marketing_emails)
+        self.assertEqual(0, ScheduledEmail.objects.filter(users=user_profile).count())
+
 
 class RealmCreationTest(ZulipTestCase):
     @override_settings(OPEN_REALM_CREATION=True)

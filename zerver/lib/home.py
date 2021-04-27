@@ -220,6 +220,8 @@ def build_page_params_for_home_page_load(
         save_stacktraces=settings.SAVE_FRONTEND_STACKTRACES,
         warn_no_email=settings.WARN_NO_EMAIL,
         search_pills_enabled=settings.SEARCH_PILLS_ENABLED,
+        # Only show marketing email settings if on Zulip Cloud
+        enable_marketing_emails_enabled=settings.CORPORATE_ENABLED,
         # Misc. extra data.
         initial_servertime=time.time(),  # Used for calculating relative presence age
         default_language_name=get_language_name(register_ret["default_language"]),

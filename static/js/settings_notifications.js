@@ -66,6 +66,14 @@ export function set_enable_digest_emails_visibility() {
     }
 }
 
+export function set_enable_marketing_emails_visibility() {
+    if (page_params.enable_marketing_emails_enabled) {
+        $("#enable_marketing_emails_label").parent().show();
+    } else {
+        $("#enable_marketing_emails_label").parent().hide();
+    }
+}
+
 export function set_up() {
     $("#notification-settings").on("change", "input, select", function (e) {
         e.preventDefault();
@@ -113,6 +121,7 @@ export function set_up() {
         }
     });
     set_enable_digest_emails_visibility();
+    set_enable_marketing_emails_visibility();
     rerender_ui();
 }
 

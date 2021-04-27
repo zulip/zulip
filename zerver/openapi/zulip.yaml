@@ -7697,6 +7697,14 @@ paths:
                           The current value of this global notification setting for the user.
                           See [update-notification-settings](/api/update-notification-settings)
                           for details on notification settings.
+                      enable_marketing_emails:
+                        type: boolean
+                        description: |
+                          Present if `update_global_notifications` is present in `fetch_event_types`.
+
+                          The current value of this global notification setting for the user.
+                          See [update-notification-settings](/api/update-notification-settings)
+                          for details on notification settings.
                       enable_offline_email_notifications:
                         type: boolean
                         description: |
@@ -9187,6 +9195,13 @@ paths:
           schema:
             type: boolean
           example: true
+        - name: enable_marketing_emails
+          in: query
+          description: |
+            Enable marketing emails. Has no function outside Zulip Cloud.
+          schema:
+            type: boolean
+          example: true
         - name: enable_login_emails
           in: query
           description: |
@@ -9268,6 +9283,11 @@ paths:
                         type: boolean
                         description: |
                           The setting for `enable_digest_emails`, if it was changed in this
+                          request.
+                      enable_marketing_emails:
+                        type: boolean
+                        description: |
+                          The setting for `enable_marketing_emails`, if it was changed in this
                           request.
                       enable_offline_email_notifications:
                         type: boolean
