@@ -3471,13 +3471,13 @@ def send_peer_subscriber_events(
             for user_id in altered_user_ids:
                 try:
                     user_profile = get_user_by_id_in_realm_including_cross_realm(user_id, realm)
-                except UserProfile.DoesNotExist:
-                    raise JsonableError(_("Invalid user ID {}").format(user_id))
+                except UserProfile.DoesNotExist:  # nocoverage
+                    raise JsonableError(_("Invalid user ID %s").format(user_id))  # nocoverage
 
                 if user_profile.is_bot:
-                    continue
+                    continue  # nocoverage
 
-                msg = "{} left {}.".format(user_profile.full_name, stream_dict[stream_id].name)
+                msg = _("{} left {}.").format(user_profile.full_name, stream_dict[stream_id].name)
                 sender = get_system_bot(settings.NOTIFICATION_BOT)
                 notifications.append(
                     internal_prep_stream_message(

@@ -549,10 +549,10 @@ def add_subscriptions_backend(
         notifications = []
         sender = get_system_bot(settings.NOTIFICATION_BOT)
         if len(newly_added_users) < 3:
-            names = " and ".join(newly_added_users)
+            names = _(" and ".join(newly_added_users))
         else:
-            names = "{} people".format(len(newly_added_users))
-        msg = "{} added {} to {}.".format(user_profile.full_name, names, stream.name)
+            names = _("{} people").format(len(newly_added_users))
+        msg = _("{} added {} to {}.").format(user_profile.full_name, names, stream.name)
         notifications.append(
             internal_prep_stream_message(sender=sender, stream=stream, topic="hello", content=msg)
         )
