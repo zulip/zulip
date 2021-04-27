@@ -684,12 +684,16 @@ run_test("update_display_settings", (override) => {
     }
 
     {
-        const stub = make_stub();
+        const stub1 = make_stub();
         event = event_fixtures.update_display_settings__timezone;
         page_params.timezone = "US/Central";
-        override(panels, "show_timezone_inconsistent_alert", stub.f); // automatically checks if called
+        override(panels, "show_timezone_inconsistent_alert", stub1.f); // automatically checks if called
+        const stub2 = make_stub();
+        override(panels, "is_timezone_inconsistent", stub2.f);
         dispatch(event);
-        assert.equal(stub.num_calls, 1);
+        assert.equal(stub1.num_calls, 1);
+        const args = stub2.get_args("timezone");
+        assert_same(args.timezone, event.setting);
         assert_same(page_params.timezone, "Asia/Kolkata");
     }
     override(message_lists.home, "rerender", noop);

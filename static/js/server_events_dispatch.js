@@ -571,6 +571,9 @@ export function dispatch_normal_event(event) {
                 panels.show_timezone_inconsistent_alert();
             }
             if (event.setting_name === "timezone") {
+                if (panels.is_timezone_inconsistent(event.setting)) {
+                    page_params.timezone_auto_update = false;
+                }
                 panels.show_timezone_inconsistent_alert();
             }
             if (event.setting_name === "twenty_four_hour_time") {
