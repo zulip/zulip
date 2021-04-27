@@ -330,17 +330,13 @@ class Command(BaseCommand):
                 )
                 RealmDomain.objects.create(realm=mit_realm, domain="mit.edu")
 
-                lear_realm = Realm.objects.create(
+                lear_realm = do_create_realm(
                     string_id="lear",
                     name="Lear & Co.",
                     emails_restricted_to_domains=False,
                     invite_required=False,
+                    plan_type=Realm.SELF_HOSTED,
                     org_type=Realm.CORPORATE,
-                )
-                RealmAuditLog.objects.create(
-                    realm=lear_realm,
-                    event_type=RealmAuditLog.REALM_CREATED,
-                    event_time=lear_realm.date_created,
                 )
 
                 # Default to allowing all members to send mentions in
