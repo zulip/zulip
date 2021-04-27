@@ -50,12 +50,18 @@ else:
 
 
 def is_outdated_server(user_profile: Optional[UserProfile]) -> bool:
-    # TODO: We should ideally be using the minimum of this calculation
-    # and the date the release tarball was generated.
-    tzaware_last_upgrade_time = LAST_SERVER_UPGRADE_TIME
-    deadline = tzaware_last_upgrade_time + datetime.timedelta(
-        days=settings.SERVER_UPGRADE_NAG_DEADLINE
-    )
+    # Release tarballs are unpacked via `tar -xf`, which means the
+    # `mtime` on files in them is preserved from when the release
+    # tarball was built.  Checking this allows us to catch cases where
+    # someone has upgraded in the last year but to a release more than
+    # a year old.
+    git_version_path = os.path.join(settings.DEPLOY_ROOT, "version.py")
+    release_build_time = datetime.datetime.utcfromtimestamp(
+        os.path.getmtime(git_version_path)
+    ).replace(tzinfo=pytz.utc)
+
+    version_no_newer_than = min(LAST_SERVER_UPGRADE_TIME, release_build_time)
+    deadline = version_no_newer_than + datetime.timedelta(days=settings.SERVER_UPGRADE_NAG_DEADLINE)
 
     if user_profile is None or not user_profile.is_realm_admin:
         # Administrators get warned at the deadline; all users 30 days later.
