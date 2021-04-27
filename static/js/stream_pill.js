@@ -24,6 +24,7 @@ export function create_item_from_stream_name(stream_name, current_items) {
     }
 
     const item = {
+        type: "stream",
         display_value: display_pill(sub),
         stream_id: sub.stream_id,
         stream_name: sub.name,
@@ -58,6 +59,7 @@ export function get_user_ids(pill_widget) {
 
 export function append_stream(stream, pill_widget) {
     pill_widget.appendValidatedData({
+        type: "stream",
         display_value: display_pill(stream),
         stream_id: stream.stream_id,
         stream_name: stream.name,

@@ -75,9 +75,12 @@ run_test("basics", (override) => {
     config.get_text_from_item = noop;
     const widget = input_pill.create(config);
 
+    // type for a pill can be any string but it needs to be
+    // defined while creating any pill.
     const item = {
         display_value: "JavaScript",
         language: "js",
+        type: "language",
         img_src: example_img_link,
     };
 
@@ -100,16 +103,19 @@ function set_up() {
         blue: {
             display_value: "BLUE",
             description: "color of the sky",
+            type: "color",
             img_src: example_img_link,
         },
 
         red: {
             display_value: "RED",
+            type: "color",
             description: "color of stop signs",
         },
 
         yellow: {
             display_value: "YELLOW",
+            type: "color",
             description: "color of bananas",
         },
     };
@@ -551,6 +557,13 @@ run_test("misc things", () => {
     blueslip.expect("error", "no display_value returned");
     widget.appendValidatedData("this-has-no-item-attribute");
 
+    blueslip.expect("error", "no type defined for the item");
+    widget.appendValidatedData({
+        display_value: "This item has no type.",
+        language: "js",
+        img_src: example_img_link,
+    });
+
     // click on container
     const container_click_handler = container.get_on_handler("click");
 
@@ -575,7 +588,7 @@ run_test("appendValue/clear", () => {
 
     const config = {
         container,
-        create_item_from_text: (s) => ({display_value: s}),
+        create_item_from_text: (s) => ({type: "color", display_value: s}),
         get_text_from_item: (s) => s.display_value,
     };
 

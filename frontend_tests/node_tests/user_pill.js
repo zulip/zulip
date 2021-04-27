@@ -23,12 +23,14 @@ const isaac = {
 
 const bogus_item = {
     email: "bogus@example.com",
+    type: "user",
     display_value: "bogus@example.com",
 };
 
 const isaac_item = {
     email: "isaac@example.com",
     display_value: "Isaac Newton",
+    type: "user",
     user_id: isaac.user_id,
     img_src: `/avatar/${isaac.user_id}&s=50`,
 };

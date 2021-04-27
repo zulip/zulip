@@ -26,11 +26,13 @@ peer_data.set_subscribers(sweden.stream_id, [1, 2, 3, 4, 5]);
 const denmark_pill = {
     stream_name: denmark.name,
     stream_id: denmark.stream_id,
+    type: "stream",
     display_value: "#Denmark: 3 users",
 };
 const sweden_pill = {
     stream_name: sweden.name,
     stream_id: sweden.stream_id,
+    type: "stream",
     display_value: "#Sweden: 5 users",
 };
 
