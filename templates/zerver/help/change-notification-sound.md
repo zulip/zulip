@@ -12,3 +12,5 @@ You can change the sound Zulip uses for audible desktop notifications.
    **Notification sound**.
 
 {end_tabs}
+
+You can select "None" to completely disable audible desktop notifications in Zulip.
