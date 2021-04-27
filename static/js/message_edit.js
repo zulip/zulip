@@ -356,6 +356,7 @@ function edit_message(row, raw_content) {
             notify_new_thread: notify_new_thread_default,
             notify_old_thread: notify_old_thread_default,
             giphy_enabled: page_params.giphy_api_key !== "",
+            hide_drafts_link: true,
         }),
     );
 
