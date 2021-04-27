@@ -12,5 +12,7 @@
     <img class="compose_giphy_logo" tabindex=0 src="/static/images/GIPHY_logo.png" />
 </a>
 {{/if}}
+{{#unless hide_drafts_link}}
 <a class="message-control-link drafts-link" href="#drafts" title="{{t 'Drafts' }} (d)">{{t 'Drafts' }}</a>
+{{/unless}}
 <a role="button" class="message-control-link" tabindex=0 data-overlay-trigger="message-formatting">{{t 'Help' }}</a>
