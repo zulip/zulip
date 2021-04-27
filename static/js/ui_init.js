@@ -469,6 +469,7 @@ export function initialize_everything() {
     people.initialize(page_params.user_id, people_params);
     scroll_bar.initialize();
     message_viewport.initialize();
+    panels.initialize();
     initialize_kitchen_sink_stuff();
     echo.initialize();
     stream_edit.initialize();
@@ -522,7 +523,6 @@ export function initialize_everything() {
     sent_messages.initialize();
     hotspots.initialize();
     ui.initialize();
-    panels.initialize();
     typing.initialize();
     starred_messages.initialize();
     user_status_ui.initialize();
