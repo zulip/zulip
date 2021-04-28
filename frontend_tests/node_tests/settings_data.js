@@ -6,6 +6,7 @@ const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {page_params} = require("../zjsunit/zpage_params");
 
+const people = zrequire("people");
 const settings_data = zrequire("settings_data");
 const settings_config = zrequire("settings_config");
 
@@ -19,7 +20,10 @@ const settings_config = zrequire("settings_config");
 const isaac = {
     email: "isaac@example.com",
     delivery_email: "isaac-delivery@example.com",
+    user_id: 30,
+    full_name: "Isaac",
 };
+people.add_active_user(isaac);
 
 run_test("email_for_user_settings", () => {
     const email = settings_data.email_for_user_settings;
@@ -101,4 +105,34 @@ run_test("user_can_change_logo", () => {
     page_params.is_admin = false;
     page_params.zulip_plan_is_not_limited = true;
     assert.equal(can_change_logo(), false);
+});
+
+run_test("user_can_invite_others_to_realm", () => {
+    const can_invite_others_to_realm = settings_data.user_can_invite_others_to_realm;
+
+    page_params.is_admin = true;
+    page_params.realm_invite_to_realm_policy =
+        settings_config.common_policy_values.by_admins_only.code;
+    assert.equal(can_invite_others_to_realm(), true);
+
+    page_params.is_admin = false;
+    assert.equal(can_invite_others_to_realm(), false);
+
+    page_params.is_guest = true;
+    page_params.realm_invite_to_realm_policy = settings_config.common_policy_values.by_members.code;
+    assert.equal(can_invite_others_to_realm(), false);
+
+    page_params.is_guest = false;
+    assert.equal(can_invite_others_to_realm(), true);
+
+    page_params.realm_invite_to_realm_policy =
+        settings_config.common_policy_values.by_full_members.code;
+    page_params.user_id = 30;
+    people.add_active_user(isaac);
+    isaac.date_joined = new Date(Date.now());
+    page_params.realm_waiting_period_threshold = 10;
+    assert.equal(can_invite_others_to_realm(), false);
+
+    isaac.date_joined = new Date(Date.now() - 20 * 86400000);
+    assert.equal(can_invite_others_to_realm(), true);
 });

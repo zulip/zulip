@@ -124,7 +124,7 @@ export function build_page() {
         msg_delete_limit_dropdown_values: settings_config.msg_delete_limit_dropdown_values,
         bot_creation_policy_values: settings_bots.bot_creation_policy_values,
         email_address_visibility_values: settings_config.email_address_visibility_values,
-        can_invite_others_to_realm: page_params.can_invite_others_to_realm,
+        can_invite_others_to_realm: settings_data.user_can_invite_others_to_realm(),
         ...settings_org.get_organization_settings_options(),
     };
 
