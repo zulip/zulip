@@ -92,12 +92,7 @@ export function get_sorted_options_list(option_values_object) {
 
 export function get_organization_settings_options() {
     const options = {};
-    options.create_stream_policy_values = get_sorted_options_list(
-        settings_config.create_stream_policy_values,
-    );
-    options.invite_to_stream_policy_values = get_sorted_options_list(
-        settings_config.invite_to_stream_policy_values,
-    );
+    options.common_policy_values = get_sorted_options_list(settings_config.common_policy_values);
     options.user_group_edit_policy_values = get_sorted_options_list(
         settings_config.user_group_edit_policy_values,
     );
@@ -189,13 +184,13 @@ function get_property_value(property_name) {
         if (!page_params.realm_invite_required) {
             if (
                 page_params.realm_invite_to_realm_policy ===
-                settings_config.invite_to_realm_policy_values.by_admins_only
+                settings_config.common_policy_values.by_admins_only.code
             ) {
                 return "no_invite_required_by_admins_only";
             }
             if (
                 page_params.realm_invite_to_realm_policy ===
-                settings_config.invite_to_realm_policy_values.by_full_members
+                settings_config.common_policy_values.by_full_members.code
             ) {
                 return "no_invite_required_by_full_members";
             }
@@ -203,13 +198,13 @@ function get_property_value(property_name) {
         }
         if (
             page_params.realm_invite_to_realm_policy ===
-            settings_config.invite_to_realm_policy_values.by_admins_only
+            settings_config.common_policy_values.by_admins_only.code
         ) {
             return "by_admins_only";
         }
         if (
             page_params.realm_invite_to_realm_policy ===
-            settings_config.invite_to_realm_policy_values.by_full_members
+            settings_config.common_policy_values.by_full_members.code
         ) {
             return "by_full_members";
         }
@@ -838,28 +833,26 @@ export function build_page() {
             const user_invite_restriction = $("#id_realm_user_invite_restriction").val();
             if (user_invite_restriction === "no_invite_required") {
                 data.invite_required = false;
-                data.invite_to_realm_policy =
-                    settings_config.invite_to_realm_policy_values.by_members;
+                data.invite_to_realm_policy = settings_config.common_policy_values.by_members.code;
             } else if (user_invite_restriction === "no_invite_required_by_admins_only") {
                 data.invite_required = false;
                 data.invite_to_realm_policy =
-                    settings_config.invite_to_realm_policy_values.by_admins_only;
+                    settings_config.common_policy_values.by_admins_only.code;
             } else if (user_invite_restriction === "no_invite_required_by_full_members") {
                 data.invite_required = false;
                 data.invite_to_realm_policy =
-                    settings_config.invite_to_realm_policy_values.by_full_members;
+                    settings_config.common_policy_values.by_full_members.code;
             } else if (user_invite_restriction === "by_admins_only") {
                 data.invite_required = true;
                 data.invite_to_realm_policy =
-                    settings_config.invite_to_realm_policy_values.by_admins_only;
+                    settings_config.common_policy_values.by_admins_only.code;
             } else if (user_invite_restriction === "by_full_members") {
                 data.invite_required = true;
                 data.invite_to_realm_policy =
-                    settings_config.invite_to_realm_policy_values.by_full_members;
+                    settings_config.common_policy_values.by_full_members.code;
             } else {
                 data.invite_required = true;
-                data.invite_to_realm_policy =
-                    settings_config.invite_to_realm_policy_values.by_members;
+                data.invite_to_realm_policy = settings_config.common_policy_values.by_members.code;
             }
 
             const waiting_period_threshold = $("#id_realm_waiting_period_setting").val();

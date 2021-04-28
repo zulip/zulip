@@ -179,9 +179,8 @@ function test_submit_settings_form(override, submit_form) {
         realm_waiting_period_threshold: 1,
         realm_default_language: '"es"',
         realm_default_twenty_four_hour_time: false,
-        realm_invite_to_stream_policy:
-            settings_config.invite_to_stream_policy_values.by_admins_only.code,
-        realm_create_stream_policy: settings_config.create_stream_policy_values.by_members.code,
+        realm_invite_to_stream_policy: settings_config.common_policy_values.by_admins_only.code,
+        realm_create_stream_policy: settings_config.common_policy_values.by_members.code,
     });
 
     override(global, "setTimeout", (func) => func());
@@ -466,7 +465,7 @@ function test_sync_realm_settings() {
         settings_org.sync_realm_settings("create_stream_policy");
         assert.equal(
             $("#id_realm_create_stream_policy").val(),
-            settings_config.create_stream_policy_values.by_full_members.code,
+            settings_config.common_policy_values.by_full_members.code,
         );
     }
 
@@ -484,7 +483,7 @@ function test_sync_realm_settings() {
         settings_org.sync_realm_settings("create_stream_policy");
         assert.equal(
             $("#id_realm_create_stream_policy").val(),
-            settings_config.create_stream_policy_values.by_members.code,
+            settings_config.common_policy_values.by_members.code,
         );
     }
 
@@ -502,7 +501,7 @@ function test_sync_realm_settings() {
         settings_org.sync_realm_settings("create_stream_policy");
         assert.equal(
             $("#id_realm_create_stream_policy").val(),
-            settings_config.create_stream_policy_values.by_admins_only.code,
+            settings_config.common_policy_values.by_admins_only.code,
         );
     }
 
@@ -520,7 +519,7 @@ function test_sync_realm_settings() {
         settings_org.sync_realm_settings("invite_to_stream_policy");
         assert.equal(
             $("#id_realm_invite_to_stream_policy").val(),
-            settings_config.create_stream_policy_values.by_full_members.code,
+            settings_config.common_policy_values.by_full_members.code,
         );
     }
 
@@ -538,7 +537,7 @@ function test_sync_realm_settings() {
         settings_org.sync_realm_settings("invite_to_stream_policy");
         assert.equal(
             $("#id_realm_invite_to_stream_policy").val(),
-            settings_config.create_stream_policy_values.by_members.code,
+            settings_config.common_policy_values.by_members.code,
         );
     }
 
@@ -556,7 +555,7 @@ function test_sync_realm_settings() {
         settings_org.sync_realm_settings("invite_to_stream_policy");
         assert.equal(
             $("#id_realm_invite_to_stream_policy").val(),
-            settings_config.create_stream_policy_values.by_admins_only.code,
+            settings_config.common_policy_values.by_admins_only.code,
         );
     }
 
@@ -807,8 +806,8 @@ test("set_up", (override) => {
 
 test("test get_organization_settings_options", () => {
     const sorted_option_values = settings_org.get_organization_settings_options();
-    const sorted_create_stream_policy_values = sorted_option_values.create_stream_policy_values;
-    const expected_create_stream_policy_values = [
+    const sorted_common_policy_values = sorted_option_values.common_policy_values;
+    const expected_common_policy_values = [
         {
             key: "by_admins_only",
             order: 1,
@@ -828,7 +827,7 @@ test("test get_organization_settings_options", () => {
             description: $t({defaultMessage: "Admins and members"}),
         },
     ];
-    assert.deepEqual(sorted_create_stream_policy_values, expected_create_stream_policy_values);
+    assert.deepEqual(sorted_common_policy_values, expected_common_policy_values);
 });
 
 test("test get_sorted_options_list", () => {
