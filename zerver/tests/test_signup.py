@@ -2667,17 +2667,14 @@ class EmailUnsubscribeTests(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         self.assertTrue(user_profile.enable_marketing_emails)
 
-        # Simulate unsubscribing from digest e-mails.
+        # Simulate unsubscribing from marketing e-mails.
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "marketing")
         result = self.client_get(urllib.parse.urlparse(unsubscribe_link).path)
-
-        # The setting is toggled off, and scheduled jobs have been removed.
         self.assertEqual(result.status_code, 200)
 
         # Circumvent user_profile caching.
         user_profile.refresh_from_db()
         self.assertFalse(user_profile.enable_marketing_emails)
-        self.assertEqual(0, ScheduledEmail.objects.filter(users=user_profile).count())
 
 
 class RealmCreationTest(ZulipTestCase):
