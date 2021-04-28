@@ -191,7 +191,8 @@ export class MessageList {
                 id,
                 items_length: this.data.num_items(),
             };
-            throw new Error("Cannot select id -1", error_data);
+            blueslip.error("Cannot select id -1", error_data);
+            throw new Error("Cannot select id -1");
         }
 
         id = closest_id;
