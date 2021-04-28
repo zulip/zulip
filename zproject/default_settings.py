@@ -446,4 +446,4 @@ DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM = (len(os.sched_getaffinity(0)) // 2) or 
 # to be upgraded because of likely security releases in the meantime.
 # Default is 18 months, constructed as 12 months before someone should
 # upgrade, plus 6 months for the system administrator to get around to it.
-SERVER_UPGRADE_NAG_DEADLINE = 30 * 18
+SERVER_UPGRADE_NAG_DEADLINE_DAYS = 30 * 18

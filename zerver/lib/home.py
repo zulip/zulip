@@ -61,7 +61,9 @@ def is_outdated_server(user_profile: Optional[UserProfile]) -> bool:
     ).replace(tzinfo=pytz.utc)
 
     version_no_newer_than = min(LAST_SERVER_UPGRADE_TIME, release_build_time)
-    deadline = version_no_newer_than + datetime.timedelta(days=settings.SERVER_UPGRADE_NAG_DEADLINE)
+    deadline = version_no_newer_than + datetime.timedelta(
+        days=settings.SERVER_UPGRADE_NAG_DEADLINE_DAYS
+    )
 
     if user_profile is None or not user_profile.is_realm_admin:
         # Administrators get warned at the deadline; all users 30 days later.

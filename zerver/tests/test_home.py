@@ -876,7 +876,7 @@ class HomeTest(ZulipTestCase):
             compute_navbar_logo_url(page_params), "/static/images/logo/zulip-org-logo.svg?version=0"
         )
 
-    @override_settings(SERVER_UPGRADE_NAG_DEADLINE=365)
+    @override_settings(SERVER_UPGRADE_NAG_DEADLINE_DAYS=365)
     def test_is_outdated_server(self) -> None:
         # Check when server_upgrade_nag_deadline > last_server_upgrade_time
         hamlet = self.example_user("hamlet")
