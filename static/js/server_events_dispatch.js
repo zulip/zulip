@@ -226,11 +226,6 @@ export function dispatch_normal_event(event) {
                             page_params.can_create_streams =
                                 page_params.is_admin ||
                                 page_params.realm_create_stream_policy === 1;
-                        } else if (event.property === "invite_to_stream_policy") {
-                            // TODO: Add waiting_period_threshold logic here.
-                            page_params.can_invite_to_stream =
-                                page_params.is_admin ||
-                                page_params.realm_invite_to_stream_policy === 1;
                         }
 
                         if (event.property === "name" && window.electron_bridge !== undefined) {
