@@ -80,14 +80,25 @@ class DoRestCallTests(ZulipTestCase):
             service_handler, "session"
         ) as session, expect_send_response as mock_send:
             session.post.return_value = ResponseMock(200, orjson.dumps(dict(content="whatever")))
-            do_rest_call("", mock_event, service_handler)
+            with self.assertLogs(level="INFO") as logs:
+                do_rest_call("", mock_event, service_handler)
+            self.assertEqual(len(logs.output), 1)
+            self.assertIn(
+                f"Outgoing webhook request from {bot_user.id}@zulip took ", logs.output[0]
+            )
+
         self.assertTrue(mock_send.called)
 
         for service_class in [GenericOutgoingWebhookService, SlackOutgoingWebhookService]:
             handler = service_class("token", bot_user, "service")
             with mock.patch.object(handler, "session") as session:
                 session.post.return_value = ResponseMock(200, b"{}")
-                do_rest_call("", mock_event, handler)
+                with self.assertLogs(level="INFO") as logs:
+                    do_rest_call("", mock_event, handler)
+                self.assertEqual(len(logs.output), 1)
+                self.assertIn(
+                    f"Outgoing webhook request from {bot_user.id}@zulip took ", logs.output[0]
+                )
                 session.post.assert_called_once()
 
     def test_retry_request(self) -> None:
@@ -159,8 +170,14 @@ The webhook got a response with status code *400*.""",
         session = service_handler.session
         with mock.patch.object(session, "send") as mock_send:
             mock_send.return_value = ResponseMock(200, b"{}")
-            final_response = do_rest_call("https://example.com/", mock_event, service_handler)
+            with self.assertLogs(level="INFO") as logs:
+                final_response = do_rest_call("https://example.com/", mock_event, service_handler)
             assert final_response is not None
+
+            self.assertEqual(len(logs.output), 1)
+            self.assertIn(
+                f"Outgoing webhook request from {bot_user.id}@zulip took ", logs.output[0]
+            )
 
             mock_send.assert_called_once()
             prepared_request = mock_send.call_args[0][0]
@@ -364,11 +381,15 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         session.post.return_value = ResponseMock(200, b"{}")
         with mock.patch("zerver.lib.outgoing_webhook.Session") as sessionmaker:
             sessionmaker.return_value = session
-            self.send_personal_message(
-                sender,
-                bot,
-                content="some content",
-            )
+            with self.assertLogs(level="INFO") as logs:
+                self.send_personal_message(
+                    sender,
+                    bot,
+                    content="some content",
+                )
+            self.assertEqual(len(logs.output), 2)
+            self.assertIn(f"Outgoing webhook request from {bot.id}@zulip took ", logs.output[0])
+            self.assertIn(f"Outgoing webhook request from {bot.id}@zulip took ", logs.output[1])
 
         url_token_tups = set()
         session.post.assert_called()
@@ -403,7 +424,11 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         )
         with mock.patch("zerver.lib.outgoing_webhook.Session") as sessionmaker:
             sessionmaker.return_value = session
-            self.send_personal_message(sender, bot, content="foo")
+            with self.assertLogs(level="INFO") as logs:
+                self.send_personal_message(sender, bot, content="foo")
+        self.assertEqual(len(logs.output), 1)
+        self.assertIn(f"Outgoing webhook request from {bot.id}@zulip took ", logs.output[0])
+
         last_message = self.get_last_message()
         self.assertEqual(last_message.content, "Hidley ho, I'm a webhook responding!")
         self.assertEqual(last_message.sender_id, bot.id)
@@ -471,9 +496,13 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         )
         with mock.patch("zerver.lib.outgoing_webhook.Session") as sessionmaker:
             sessionmaker.return_value = session
-            self.send_stream_message(
-                bot_owner, "Denmark", content=f"@**{bot.full_name}** foo", topic_name="bar"
-            )
+            with self.assertLogs(level="INFO") as logs:
+                self.send_stream_message(
+                    bot_owner, "Denmark", content=f"@**{bot.full_name}** foo", topic_name="bar"
+                )
+        self.assertEqual(len(logs.output), 1)
+        self.assertIn(f"Outgoing webhook request from {bot.id}@zulip took ", logs.output[0])
+
         last_message = self.get_last_message()
         self.assertEqual(last_message.content, "Hidley ho, I'm a webhook responding!")
         self.assertEqual(last_message.sender_id, bot.id)

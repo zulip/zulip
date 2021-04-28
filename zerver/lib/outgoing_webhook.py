@@ -1,6 +1,7 @@
 import abc
 import json
 import logging
+from time import perf_counter
 from typing import Any, AnyStr, Dict, Optional
 
 import requests
@@ -317,9 +318,17 @@ def do_rest_call(
 ) -> Optional[Response]:
     """Returns response of call if no exception occurs."""
     try:
+        start_time = perf_counter()
         response = service_handler.make_request(
             base_url,
             event,
+        )
+        bot_profile = service_handler.user_profile
+        logging.info(
+            "Outgoing webhook request from %s@%s took %f seconds",
+            bot_profile.id,
+            bot_profile.realm.string_id,
+            perf_counter() - start_time,
         )
         if not response:
             return None
