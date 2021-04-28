@@ -27,6 +27,7 @@ from confirmation.models import generate_key, one_click_unsubscribe_link
 from scripts.setup.inline_email_css import inline_template
 from zerver.lib.logging_util import log_to_file
 from zerver.models import EMAIL_TYPES, Realm, ScheduledEmail, UserProfile, get_user_profile_by_id
+from zproject.email_backends import EmailLogBackEnd, get_forward_address
 
 MAX_CONNECTION_TRIES = 3
 
@@ -256,10 +257,22 @@ def send_email(
 def initialize_connection(connection: Optional[BaseEmailBackend] = None) -> BaseEmailBackend:
     if not connection:
         connection = get_connection()
+
     if connection.open():
         # If it's a new connection, no need to no-op to check connectivity
         return connection
-    # No-op to ensure that we don't return a connection that has been closed by the mail server
+
+    if isinstance(connection, EmailLogBackEnd) and not get_forward_address():
+        # With the development environment backend and without a
+        # configured forwarding address, we don't actually send emails.
+        #
+        # As a result, the connection cannot be closed by the server
+        # (as there is none), and `connection.noop` is not
+        # implemented, so we need to return the connection early.
+        return connection
+
+    # No-op to ensure that we don't return a connection that has been
+    # closed by the mail server.
     if isinstance(connection, EmailBackend):
         try:
             status = connection.connection.noop()[0]
@@ -269,6 +282,7 @@ def initialize_connection(connection: Optional[BaseEmailBackend] = None) -> Base
             # Close and connect again.
             connection.close()
             connection.open()
+
     return connection
 
 
