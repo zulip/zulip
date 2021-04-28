@@ -143,6 +143,14 @@ export function stream_sub() {
     return sub;
 }
 
+export function stream_id() {
+    const sub = stream_sub();
+    if (sub === undefined) {
+        return undefined;
+    }
+    return sub.stream_id;
+}
+
 export function topic() {
     if (current_filter === undefined) {
         return undefined;
