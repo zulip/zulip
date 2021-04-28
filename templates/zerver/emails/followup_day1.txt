@@ -27,6 +27,10 @@
 {% trans %}Learn more ({{ getting_started_link }}) about Zulip, become a pro with a few keyboard shortcuts ({{ keyboard_shortcuts_link }}), or dive right in to {{ realm_uri }}!{% endtrans %}
 {% endif %}
 
+{% if offer_demo %}
+
+If you would like to get a live demo from a member of our team, sign up for a time slot at https://alya-abbott.youcanbook.me/!
+{% endif %}
 
 {{ _("Cheers,") }}
 {{ _("Team Zulip") }}

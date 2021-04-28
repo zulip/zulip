@@ -647,6 +647,8 @@ def enqueue_welcome_emails(user: UserProfile, realm_creation: bool = False) -> N
         realm_creation=realm_creation,
         email=user.delivery_email,
         is_realm_admin=user.is_realm_admin,
+        # offer_demo defined to ensure that this only runs on zulipchat.com
+        offer_demo=realm_creation and settings.CORPORATE_ENABLED,
     )
     if user.is_realm_admin:
         context["getting_started_link"] = (
