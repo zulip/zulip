@@ -13,7 +13,7 @@ from django.contrib.auth.views import PasswordResetConfirmView
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse
-from django.test import override_settings
+from django.test import Client, override_settings
 from django.urls import reverse
 from django.utils.timezone import now as timezone_now
 
@@ -2670,6 +2670,27 @@ class EmailUnsubscribeTests(ZulipTestCase):
         # Simulate unsubscribing from marketing e-mails.
         unsubscribe_link = one_click_unsubscribe_link(user_profile, "marketing")
         result = self.client_get(urllib.parse.urlparse(unsubscribe_link).path)
+        self.assertEqual(result.status_code, 200)
+
+        # Circumvent user_profile caching.
+        user_profile.refresh_from_db()
+        self.assertFalse(user_profile.enable_marketing_emails)
+
+    def test_marketing_unsubscribe_post(self) -> None:
+        """
+        The List-Unsubscribe-Post header lets email clients trigger an
+        automatic unsubscription request via POST (see RFC 8058), so
+        test that too.
+        """
+        user_profile = self.example_user("hamlet")
+        self.assertTrue(user_profile.enable_marketing_emails)
+
+        # Simulate unsubscribing from marketing e-mails.
+        unsubscribe_link = one_click_unsubscribe_link(user_profile, "marketing")
+        client = Client(enforce_csrf_checks=True)
+        result = client.post(
+            urllib.parse.urlparse(unsubscribe_link).path, {"List-Unsubscribe": "One-Click"}
+        )
         self.assertEqual(result.status_code, 200)
 
         # Circumvent user_profile caching.
