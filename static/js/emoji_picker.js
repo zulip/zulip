@@ -263,7 +263,7 @@ function toggle_reaction(emoji_name, event) {
 
     reactions.toggle_emoji_reaction(message_id, emoji_name, event);
 
-    if (event === undefined || !event.shiftKey) {
+    if (!event.shiftKey) {
         hide_emoji_popover();
     }
 
