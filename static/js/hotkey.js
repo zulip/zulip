@@ -32,6 +32,7 @@ import * as popovers from "./popovers";
 import * as reactions from "./reactions";
 import * as recent_topics from "./recent_topics";
 import * as search from "./search";
+import * as settings_data from "./settings_data";
 import * as stream_list from "./stream_list";
 import * as stream_popover from "./stream_popover";
 import * as subs from "./subs";
@@ -724,7 +725,11 @@ export function process_hotkey(e, hotkey) {
             subs.view_stream();
             return true;
         }
-        if (event_name === "n_key" && overlays.streams_open() && page_params.can_create_streams) {
+        if (
+            event_name === "n_key" &&
+            overlays.streams_open() &&
+            settings_data.user_can_create_streams()
+        ) {
             subs.open_create_stream();
             return true;
         }

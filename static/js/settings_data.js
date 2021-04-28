@@ -114,3 +114,7 @@ export function user_can_invite_others_to_realm() {
 export function user_can_subscribe_other_users() {
     return user_has_permission(page_params.realm_invite_to_stream_policy);
 }
+
+export function user_can_create_streams() {
+    return user_has_permission(page_params.realm_create_stream_policy);
+}

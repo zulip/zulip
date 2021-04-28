@@ -24,6 +24,7 @@ import {page_params} from "./page_params";
 import * as people from "./people";
 import * as scroll_util from "./scroll_util";
 import * as search_util from "./search_util";
+import * as settings_data from "./settings_data";
 import * as stream_create from "./stream_create";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
@@ -626,7 +627,7 @@ export function setup_page(callback) {
         $("#subscriptions_table").empty();
 
         const template_data = {
-            can_create_streams: page_params.can_create_streams,
+            can_create_streams: settings_data.user_can_create_streams(),
             hide_all_streams: !should_list_all_streams(),
             max_name_length: page_params.max_stream_name_length,
             max_description_length: page_params.max_stream_description_length,
