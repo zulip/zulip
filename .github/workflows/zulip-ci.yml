@@ -24,6 +24,7 @@ jobs:
             os: bionic
             is_bionic: true
             include_frontend_tests: true
+            include_puppeteer_test_with_firefox: false
 
           # This docker image was created by a generated Dockerfile at:
           #   tools/ci/images/focal/Dockerfile
@@ -33,6 +34,7 @@ jobs:
             os: focal
             is_focal: true
             include_frontend_tests: false
+            include_puppeteer_test_with_firefox: false
 
           # This docker image was created by a generated Dockerfile at:
           #   tools/ci/images/focal/Dockerfile
@@ -42,6 +44,7 @@ jobs:
             os: bullseye
             is_bullseye: true
             include_frontend_tests: false
+            include_puppeteer_test_with_firefox: true
 
     runs-on: ubuntu-latest
     name: ${{ matrix.name }}
@@ -200,6 +203,12 @@ jobs:
           source tools/ci/activate-venv
           ./tools/test-js-with-puppeteer
 
+      - name: Run puppeteer tests with firefox
+        if: ${{ matrix.include_puppeteer_test_with_firefox }}
+        run: |
+          source tools/ci/activate-venv
+          ./tools/test-js-with-puppeteer --firefox
+
       - name: Check for untracked files
         run: |
           source tools/ci/activate-venv
@@ -232,7 +241,7 @@ jobs:
 
       - name: Store Puppeteer artifacts
         # Upload these on failure, as well
-        if: ${{ always() && matrix.include_frontend_tests }}
+        if: ${{ always() && (matrix.include_frontend_tests || matrix.include_puppeteer_test_with_firefox) }}
         uses: actions/upload-artifact@v2
         with:
           name: puppeteer
