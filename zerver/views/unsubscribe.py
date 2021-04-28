@@ -2,6 +2,7 @@ from typing import Callable
 
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
 
 from confirmation.models import Confirmation, ConfirmationKeyException, get_object_from_key
 from zerver.context_processors import common_context
@@ -72,6 +73,7 @@ email_unsubscribers = {
 }
 
 # Login NOT required. These are for one-click unsubscribes.
+@csrf_exempt
 def email_unsubscribe(request: HttpRequest, email_type: str, confirmation_key: str) -> HttpResponse:
     if email_type in email_unsubscribers:
         display_name, unsubscribe_function = email_unsubscribers[email_type]
