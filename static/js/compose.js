@@ -33,6 +33,7 @@ import * as rtl from "./rtl";
 import * as sent_messages from "./sent_messages";
 import * as server_events from "./server_events";
 import * as settings_config from "./settings_config";
+import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as sub_store from "./sub_store";
@@ -1088,7 +1089,7 @@ export function warn_if_mentioning_unsubscribed_user(mentioned) {
                 user_id,
                 stream_id: sub.stream_id,
                 name: mentioned.full_name,
-                can_subscribe_other_users: page_params.can_subscribe_other_users,
+                can_subscribe_other_users: settings_data.user_can_subscribe_other_users(),
             };
 
             const new_row = render_compose_invite_users(context);

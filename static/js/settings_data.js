@@ -110,3 +110,7 @@ function user_has_permission(policy_value) {
 export function user_can_invite_others_to_realm() {
     return user_has_permission(page_params.realm_invite_to_realm_policy);
 }
+
+export function user_can_subscribe_other_users() {
+    return user_has_permission(page_params.realm_invite_to_stream_policy);
+}

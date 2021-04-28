@@ -70,6 +70,9 @@ mock_esm("../../static/js/notifications", {
 mock_esm("../../static/js/rendered_markdown", {
     update_elements: () => {},
 });
+mock_esm("../../static/js/settings_data", {
+    user_can_subscribe_other_users: () => true,
+});
 set_global("navigator", _navigator);
 
 // Setting these up so that we can test that links to uploads within messages are
