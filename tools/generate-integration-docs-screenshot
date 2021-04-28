@@ -41,6 +41,7 @@ from zerver.lib.actions import (
 from zerver.lib.integrations import (
     DOC_SCREENSHOT_CONFIG,
     INTEGRATIONS,
+    BaseScreenshotConfig,
     Integration,
     ScreenshotConfig,
     WebhookIntegration,
@@ -54,9 +55,7 @@ from zerver.lib.webhooks.common import get_fixture_http_headers
 from zerver.models import Message, UserProfile, get_realm, get_user_by_delivery_email
 
 
-def create_integration_bot(
-    integration: WebhookIntegration, bot_name: Optional[str] = None
-) -> UserProfile:
+def create_integration_bot(integration: Integration, bot_name: Optional[str] = None) -> UserProfile:
     realm = get_realm("zulip")
     owner = get_user_by_delivery_email("iago@zulip.com", realm)
     bot_email = f"{integration.name}-bot@example.com"
@@ -87,7 +86,7 @@ def create_integration_bot(
     return bot
 
 
-def create_integration_stream(integration: WebhookIntegration, bot: UserProfile) -> None:
+def create_integration_stream(integration: Integration, bot: UserProfile) -> None:
     assert isinstance(bot.bot_owner, UserProfile)
     realm = bot.bot_owner.realm
     stream, created = create_stream_if_needed(realm, integration.stream_name)
@@ -204,13 +203,17 @@ def capture_last_message_screenshot(bot: UserProfile, image_path: str) -> None:
 
 
 def generate_screenshot_from_config(
-    integration_name: str, screenshot_config: ScreenshotConfig
+    integration_name: str, screenshot_config: BaseScreenshotConfig
 ) -> None:
     integration = get_integration(integration_name)
     fixture_path, image_path = get_fixture_and_image_paths(integration, screenshot_config)
     bot = create_integration_bot(integration, screenshot_config.bot_name)
     create_integration_stream(integration, bot)
-    message_sent = send_bot_payload_message(bot, integration, fixture_path, screenshot_config)
+    if isinstance(integration, WebhookIntegration):
+        assert isinstance(screenshot_config, ScreenshotConfig)
+        message_sent = send_bot_payload_message(bot, integration, fixture_path, screenshot_config)
+    else:
+        raise AssertionError("Not yet implemented")
     if message_sent:
         capture_last_message_screenshot(bot, image_path)
         print(f"Screenshot captured to: {BOLDRED}{image_path}{ENDC}")
