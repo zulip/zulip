@@ -114,6 +114,14 @@ export function stream() {
     return undefined;
 }
 
+export function stream_id() {
+    const stream_name = stream();
+    if (stream_name === undefined) {
+        return undefined;
+    }
+    return stream_data.get_stream_id(stream_name);
+}
+
 export function stream_sub() {
     if (current_filter === undefined) {
         return undefined;

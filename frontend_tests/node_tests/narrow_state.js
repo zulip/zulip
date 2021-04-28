@@ -29,6 +29,7 @@ function test(label, f) {
 test("stream", () => {
     assert.equal(narrow_state.public_operators(), undefined);
     assert.ok(!narrow_state.active());
+    assert.equal(narrow_state.stream_id(), undefined);
 
     const test_stream = {name: "Test", stream_id: 15};
     stream_data.add_sub(test_stream);
@@ -43,6 +44,7 @@ test("stream", () => {
     assert.ok(narrow_state.active());
 
     assert.equal(narrow_state.stream(), "Test");
+    assert.equal(narrow_state.stream_id(), 15);
     assert.equal(narrow_state.stream_sub().stream_id, test_stream.stream_id);
     assert.equal(narrow_state.topic(), "Bar");
     assert.ok(narrow_state.is_for_stream_id(test_stream.stream_id));
