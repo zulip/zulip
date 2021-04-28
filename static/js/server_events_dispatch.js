@@ -221,12 +221,6 @@ export function dispatch_normal_event(event) {
                         page_params["realm_" + event.property] = event.value;
                         realm_settings[event.property]();
                         settings_org.sync_realm_settings(event.property);
-                        if (event.property === "create_stream_policy") {
-                            // TODO: Add waiting_period_threshold logic here.
-                            page_params.can_create_streams =
-                                page_params.is_admin ||
-                                page_params.realm_create_stream_policy === 1;
-                        }
 
                         if (event.property === "name" && window.electron_bridge !== undefined) {
                             window.electron_bridge.send_event("realm_name", event.value);

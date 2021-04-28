@@ -167,3 +167,33 @@ run_test("user_can_subscribe_other_users", () => {
     isaac.date_joined = new Date(Date.now() - 20 * 86400000);
     assert.equal(can_subscribe_other_users(), true);
 });
+
+run_test("user_can_create_streams", () => {
+    const can_create_streams = settings_data.user_can_create_streams;
+
+    page_params.is_admin = true;
+    page_params.realm_create_stream_policy =
+        settings_config.common_policy_values.by_admins_only.code;
+    assert.equal(can_create_streams(), true);
+
+    page_params.is_admin = false;
+    assert.equal(can_create_streams(), false);
+
+    page_params.is_guest = true;
+    page_params.realm_create_stream_policy = settings_config.common_policy_values.by_members.code;
+    assert.equal(can_create_streams(), false);
+
+    page_params.is_guest = false;
+    assert.equal(can_create_streams(), true);
+
+    page_params.realm_create_stream_policy =
+        settings_config.common_policy_values.by_full_members.code;
+    page_params.user_id = 30;
+    people.add_active_user(isaac);
+    isaac.date_joined = new Date(Date.now());
+    page_params.realm_waiting_period_threshold = 10;
+    assert.equal(can_create_streams(), false);
+
+    isaac.date_joined = new Date(Date.now() - 20 * 86400000);
+    assert.equal(can_create_streams(), true);
+});
