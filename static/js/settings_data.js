@@ -1,4 +1,5 @@
 import {page_params} from "./page_params";
+import * as people from "./people";
 import * as settings_config from "./settings_config";
 
 /*
@@ -79,4 +80,33 @@ export function user_can_change_avatar() {
 
 export function user_can_change_logo() {
     return page_params.is_admin && page_params.zulip_plan_is_not_limited;
+}
+
+function user_has_permission(policy_value) {
+    if (page_params.is_admin) {
+        return true;
+    }
+
+    if (page_params.is_guest) {
+        return false;
+    }
+
+    if (policy_value === settings_config.common_policy_values.by_admins_only.code) {
+        return false;
+    }
+
+    if (policy_value === settings_config.common_policy_values.by_members.code) {
+        return true;
+    }
+
+    const person = people.get_by_user_id(page_params.user_id);
+    const current_datetime = new Date(Date.now());
+    const person_date_joined = new Date(person.date_joined);
+    const days = (current_datetime - person_date_joined) / 1000 / 86400;
+
+    return days >= page_params.realm_waiting_period_threshold;
+}
+
+export function user_can_invite_others_to_realm() {
+    return user_has_permission(page_params.realm_invite_to_realm_policy);
 }
