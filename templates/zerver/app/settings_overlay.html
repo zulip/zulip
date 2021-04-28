@@ -140,7 +140,6 @@
                     <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
                     {% endif %}
                 </li>
-                {% if development_environment %}
                 <li tabindex="0" data-section="playground-settings">
                     <i class="icon fa fa-external-link" aria-hidden="true"></i>
                     <div class="text">{{ _('Code playgrounds') }}</div>
@@ -148,7 +147,6 @@
                     <i class="locked fa fa-lock" title="{{ _('Only organization administrators can edit these settings.') }}"></i>
                     {% endif %}
                 </li>
-                {% endif %}
                 {% if is_admin %}
                 <li tabindex="0" data-section="profile-field-settings">
                     <i class="icon fa fa-user" aria-hidden="true"></i>
