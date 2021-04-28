@@ -320,7 +320,7 @@ function handleTimestamp(time) {
     }
 
     const escaped_time = _.escape(time);
-    if (timeobject === null || !isValid(timeobject)) {
+    if (!isValid(timeobject)) {
         // Unsupported time format: rerender accordingly.
 
         // We do not show an error on these formats in local echo because
