@@ -80,11 +80,7 @@ function make_stream_default(stream_id) {
         url: "/json/default_streams",
         data,
         error(xhr) {
-            if (xhr.status.toString().charAt(0) === "4") {
-                ui_report.error($t_html({defaultMessage: "Failed"}), xhr, default_stream_status);
-            } else {
-                ui_report.error($t_html({defaultMessage: "Failed"}), default_stream_status);
-            }
+            ui_report.error($t_html({defaultMessage: "Failed"}), xhr, default_stream_status);
             default_stream_status.show();
         },
     });
