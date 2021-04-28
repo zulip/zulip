@@ -1315,11 +1315,18 @@ typing_person_type = DictType(
     ]
 )
 
+equals_private_or_stream = EnumType(
+    [
+        "private",
+        "stream",
+    ]
+)
+
 typing_start_event = event_dict_type(
     required_keys=[
         ("type", Equals("typing")),
         ("op", Equals("start")),
-        ("message_type", str),
+        ("message_type", equals_private_or_stream),
         ("sender", typing_person_type),
     ],
     optional_keys=[
@@ -1334,7 +1341,7 @@ typing_stop_event = event_dict_type(
     required_keys=[
         ("type", Equals("typing")),
         ("op", Equals("stop")),
-        ("message_type", str),
+        ("message_type", equals_private_or_stream),
         ("sender", typing_person_type),
     ],
     optional_keys=[
