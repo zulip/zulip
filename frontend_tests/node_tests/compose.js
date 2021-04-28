@@ -2,7 +2,6 @@
 
 const {strict: assert} = require("assert");
 
-const {JSDOM} = require("jsdom");
 const MockDate = require("mockdate");
 
 const {stub_templates} = require("../zjsunit/handlebars");
@@ -16,8 +15,6 @@ const {page_params} = require("../zjsunit/zpage_params");
 mock_cjs("jquery", $);
 
 const noop = () => {};
-
-set_global("DOMParser", new JSDOM().window.DOMParser);
 
 let compose_actions_start_checked;
 let compose_actions_expected_opts;

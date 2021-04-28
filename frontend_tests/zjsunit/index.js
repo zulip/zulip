@@ -4,6 +4,7 @@ const path = require("path");
 
 require("css.escape");
 const Handlebars = require("handlebars/runtime");
+const {JSDOM} = require("jsdom");
 const _ = require("lodash");
 
 const handlebars = require("./handlebars");
@@ -48,6 +49,8 @@ const window = new Proxy(global, {
 });
 
 // Set up Handlebars
+const {DOMParser} = new JSDOM().window;
+
 handlebars.hook_require();
 
 const noop = function () {};
@@ -83,6 +86,7 @@ try {
         namespace.set_global("location", {
             hash: "#",
         });
+        namespace.set_global("DOMParser", DOMParser);
         namespace.set_global("setTimeout", noop);
         namespace.set_global("setInterval", noop);
         _.throttle = immediate;

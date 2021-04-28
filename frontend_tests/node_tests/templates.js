@@ -2,12 +2,9 @@
 
 const {strict: assert} = require("assert");
 
-const {JSDOM} = require("jsdom");
-
-const {set_global, zrequire} = require("../zjsunit/namespace");
+const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
-set_global("DOMParser", new JSDOM().window.DOMParser);
 zrequire("templates");
 
 run_test("and", () => {

@@ -9,6 +9,7 @@ const {SourceMapConsumer, SourceNode} = require("source-map");
 const templates_path = path.resolve(__dirname, "../../static/templates");
 
 exports.stub_templates = (stub) => {
+    require("../../static/js/templates");
     window.template_stub = stub;
 };
 
@@ -39,7 +40,11 @@ function compile_hbs(module, filename) {
         SourceNode.fromStringWithSourceMap(pc.code, new SourceMapConsumer(pc.map)),
         ");\n",
         "module.exports = (...args) => {\n",
-        "    if (window.template_stub !== undefined) {\n",
+        "    const template_stub = window.template_stub;\n",
+        "    if (template_stub !== undefined) {\n",
+        "        delete window.template_stub;\n",
+        "        template(...args);\n",
+        "        window.template_stub = template_stub;\n",
         "        return window.template_stub(",
         JSON.stringify(name),
         ", ...args);\n",
