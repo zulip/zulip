@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+set -eu
+
+ADD="en_US.UTF-8 UTF-8"
+
+if ! [ -f /etc/locale.gen ]; then
+    apt-get install -y locales
+fi
+
+if grep -x "$ADD" /etc/locale.gen; then
+    exit 0
+fi
+
+if ! [ -x /usr/bin/debconf-get-selections ]; then
+    apt-get install -y debconf-utils
+fi
+
+EXISTING=$(debconf-get-selections | grep locales/locales_to_be_generated | cut -f 4)
+
+if [ -z "$EXISTING" ]; then
+    NEW="$ADD"
+else
+    NEW="$EXISTING, $ADD"
+fi
+
+echo locales locales/locales_to_be_generated select "$NEW" | debconf-set-selections
+rm /etc/locale.gen
+dpkg-reconfigure --frontend noninteractive locales

@@ -350,6 +350,9 @@ elif [ "$package_system" = yum ]; then
     fi
 fi
 
+# Make sure we have an en_US.UTF-8 locale
+"$ZULIP_PATH"/scripts/lib/setup-locales
+
 if [ -n "$USE_CERTBOT" ]; then
     "$ZULIP_PATH"/scripts/setup/setup-certbot \
         --no-zulip-conf --method=standalone \

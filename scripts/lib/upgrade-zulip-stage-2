@@ -160,6 +160,9 @@ if not os.path.exists(os.path.join(deploy_path, "zproject/prod_settings.py")):
     # zulip<1.4.0, we need to do it.  See discussion in commit 586b23637.
     os.symlink("/etc/zulip/settings.py", os.path.join(deploy_path, "zproject/prod_settings.py"))
 
+# Make sure we have an en_US.UTF-8 locale
+subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "setup-locales")])
+
 # Now we should have an environment setup where we can run our tools;
 # first, creating the production venv.
 subprocess.check_call(
