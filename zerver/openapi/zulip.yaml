@@ -1800,56 +1800,72 @@ paths:
                                   description: |
                                     The ID of the message which was edited.
 
-                                    This field is used for content edits. For stream and topic edits, use the
-                                    `message_ids` field instead.
+                                    This field should be used to apply content edits to the client's
+                                    cached message history.  If the stream or topic was changed, the
+                                    set of moved messages is encoded in the separate `message_ids`
+                                    field, which is guaranteed to include `message_id`.
                                 message_ids:
                                   type: array
                                   items:
                                     type: integer
                                   description: |
-                                    For edits changing the stream or topic of multiple messages,
-                                    the list of IDs of other messages to be moved as well.
+                                    The list of IDs of messages to which any stream or topic changes
+                                    encoded in this event should be applied.
 
-                                    The messages are guaranteed to have all been previously in the
-                                    same stream and topic.
+                                    These messages are guaranteed to have all been previously sent
+                                    to stream `stream_id` with topic `orig_subject`, and have been
+                                    moved to `new_stream_id` with topic `subject` (if those fields
+                                    are present in the event).
 
-                                    Any content change updates only the message indicated in `message_id`.
+                                    Clients processing these events should update all cached message
+                                    history associated with the moved messages (including adjusting
+                                    `unread_msgs` data structures, where the client may not have the
+                                    message itself in its history) to reflect the new stream and
+                                    topic.
+
+                                    Content changes should be applied only to the single message
+                                    indicated by `message_id`.
                                 edit_timestamp:
                                   type: integer
                                   description: |
-                                    The timestamp when the message was edited.
+                                    The time when this message edit operation was processed by the
+                                    server.
                                 stream_name:
                                   type: string
                                   description: |
                                     Only present if the message was originally sent to a stream.
 
-                                    The name of the stream that the message was sent to.
+                                    The name of the stream that the message was sent to.  Clients
+                                    are recommended to use the `stream_id` field instead.
                                 stream_id:
                                   type: integer
                                   description: |
                                     Only present if the message was originally sent to a stream.
 
-                                    The ID of the stream that the message was sent to.
+                                    The pre-edit stream for all of the messages with IDs in
+                                    `message_ids`.
                                 new_stream_id:
                                   type: integer
                                   description: |
                                     Note: Only present if message(s) were moved to a different stream.
 
-                                    The ID of the stream that the message was moved to.
+                                    The post-edit stream for all of the messages with IDs in
+                                    `message_ids`.
                                 propagate_mode:
                                   type: string
                                   description: |
-                                    Which message(s) should be edited: just the one indicated in
-                                    `message_id`, messages in the same topic that had been sent after this
-                                    one, or all of them.
+                                    The choice the editing user made about which messages should be
+                                    affected by a stream/topic edit: just the one indicated in
+                                    `message_id`, messages in the same topic that had been sent
+                                    after this one, or all messages in that topic.
 
                                     This parameter should be used to decide whether to change
                                     navigation and compose box state in response to the edit.  For
                                     example, if the user was previously in topic narrow, and the
                                     topic was edited with `change_later` or `change_all`, the Zulip
                                     webapp will automatically navigate to the new topic narrow.
-                                    Additionally, a message being composed to the old topic should
-                                    have its recipient automatically moved to the new topic.
+                                    Similarly, a message being composed to the old topic should
+                                    have its recipient changed to the new topic.
 
                                     This navigation makes it much more convenient to move content
                                     between topics without disruption or messages continuing
@@ -1861,12 +1877,19 @@ paths:
                                 orig_subject:
                                   type: string
                                   description: |
-                                    The original topic of the message. Only present if the topic of the message
-                                    was changed.
+                                    The pre-edit topic for all of the messages with IDs in
+                                    `message_ids`.
+
+                                    Only present if this event moved messages to a different
+                                    topic.
                                 subject:
                                   type: string
                                   description: |
-                                    The current topic of the message following the edit.
+                                    The post-edit topic for all of the messages with IDs in
+                                    `message_ids`.
+
+                                    Only present if this event moved messages to a different
+                                    topic.
                                 topic_links:
                                   type: array
                                   items:
@@ -1885,7 +1908,11 @@ paths:
                                     Data on any links to be included in the `topic`
                                     line (these are generated by
                                     [custom linkification filter](/help/add-a-custom-linkifier)
-                                    that match content in the message's topic.)
+                                    that match content in the message's topic.), corresponding
+                                    to the post-edit topic.
+
+                                    Only present if this event moved messages to a different
+                                    topic.
 
                                     **Changes**: This field contained a list of urls before
                                       Zulip 4.0 (feature level 46).
@@ -1897,34 +1924,47 @@ paths:
                                 orig_content:
                                   type: string
                                   description: |
-                                    The original Markdown content of the message, before this edit.
+                                    The original content of the message with ID `message_id`
+                                    immediately prior to this edit, in the original markdown.
                                 orig_rendered_content:
                                   type: string
                                   description: |
-                                    The original content of the message, before this edit, rendered as HTML.
+                                    The original content of the message with ID `message_id`
+                                    immediately prior to this edit, rendered as HTML.
                                 prev_rendered_content_version:
                                   type: integer
                                   description: |
                                     The Markdown processor version number for the pre-edit message.
+
+                                    Clients should ignore this field.
                                 content:
                                   type: string
                                   description: |
-                                    The new content of the message, in the original Markdown. Applies only
-                                    to the message indicated by `message_id`, not all messages in `message_ids`.
+                                    The new content of the message with ID `message_id`, in the
+                                    original Markdown.
                                 rendered_content:
                                   type: string
                                   description: |
-                                    The new content of the message, rendered in HTML.
+                                    The new content of the message with ID `message_id`,
+                                    rendered in HTML.
                                 is_me_message:
                                   type: boolean
                                   description: |
-                                    Whether the message is now a [/me status message][status-messages].
+                                    Whether the message with ID `message_id` is now a
+                                    [/me status message][status-messages].
+
+                                    [status-messages]: /help/format-your-message-using-markdown#status-messages
                                 flags:
                                   type: array
                                   description: |
-                                    The user's personal [message flags][message-flags] for the message
-                                    following the edit.  The client should compare these to the original
-                                    flags to identify cases where a mention was added by the edit.
+                                    The user's personal [message flags][message-flags] for the
+                                    message with ID `message_id` following the edit.
+
+                                    A client application should compare these to the original flags
+                                    to identify cases where a mention or alert word was added by the
+                                    edit.
+
+                                    [message-flags]: /api/update-message-flags#available-flags
                                   items:
                                     type: string
                               example:
