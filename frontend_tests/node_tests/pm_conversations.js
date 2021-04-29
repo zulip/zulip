@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 
+const muting = zrequire("muting");
 const people = zrequire("people");
 const pmc = zrequire("pm_conversations");
 
@@ -21,6 +22,7 @@ const params = {
 function test(label, f) {
     run_test(label, (override) => {
         pmc.clear_for_testing();
+        muting.set_muted_topics([]);
         people.initialize_current_user(15);
         f(override);
     });
@@ -67,4 +69,32 @@ test("insert_recent_private_message", () => {
         {user_ids_string: "1,2", max_message_id: 98},
     ]);
     assert.deepEqual(pmc.recent.get_strings(), ["1", "1,2,3", "15", "3", "1,2"]);
+});
+
+test("muted_users", () => {
+    pmc.recent.initialize(params);
+
+    // Base data
+    assert.deepEqual(pmc.recent.get(), [
+        {user_ids_string: "1", max_message_id: 100},
+        {user_ids_string: "3", max_message_id: 99},
+        {user_ids_string: "1,2", max_message_id: 98},
+        {user_ids_string: "1,2,3", max_message_id: 97},
+        {user_ids_string: "15", max_message_id: 96},
+    ]);
+    assert.deepEqual(pmc.recent.get_strings(), ["1", "3", "1,2", "1,2,3", "15"]);
+
+    // Mute some users.
+    muting.add_muted_user(1);
+    muting.add_muted_user(2);
+
+    // We should now get back only those messages which are either-
+    // 1:1 PMs in which the other user hasn't been muted.
+    // Huddles where there's at least one non-muted participant.
+    assert.deepEqual(pmc.recent.get(), [
+        {user_ids_string: "3", max_message_id: 99},
+        {user_ids_string: "1,2,3", max_message_id: 97},
+        {user_ids_string: "15", max_message_id: 96},
+    ]);
+    assert.deepEqual(pmc.recent.get_strings(), ["3", "1,2,3", "15"]);
 });

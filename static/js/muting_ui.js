@@ -13,6 +13,7 @@ import * as message_lists from "./message_lists";
 import * as muting from "./muting";
 import * as overlays from "./overlays";
 import * as people from "./people";
+import * as pm_list from "./pm_list";
 import * as popovers from "./popovers";
 import * as recent_topics from "./recent_topics";
 import * as settings_muted_topics from "./settings_muted_topics";
@@ -150,6 +151,7 @@ export function rerender_for_muted_user() {
     }
 
     activity.redraw();
+    pm_list.update_private_messages();
 }
 
 export function handle_user_updates(muted_user_ids) {
