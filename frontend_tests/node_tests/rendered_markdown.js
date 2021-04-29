@@ -148,19 +148,19 @@ run_test("stream-links", () => {
     const $stream_topic = $.create("a.stream-topic");
     $stream_topic.set_find_results(".highlight", false);
     $stream_topic.attr("data-stream-id", stream.stream_id);
-    $stream_topic.text("#random>topic name");
+    $stream_topic.text("#random > topic name > still the topic name");
     $content.set_find_results("a.stream", $array([$stream]));
     $content.set_find_results("a.stream-topic", $array([$stream_topic]));
 
     // Initial asserts
     assert.equal($stream.text(), "never-been-set");
-    assert.equal($stream_topic.text(), "#random>topic name");
+    assert.equal($stream_topic.text(), "#random > topic name > still the topic name");
 
     rm.update_elements($content);
 
     // Final asserts
     assert.equal($stream.text(), `#${stream.name}`);
-    assert.equal($stream_topic.text(), `#${stream.name} > topic name`);
+    assert.equal($stream_topic.text(), `#${stream.name} > topic name > still the topic name`);
 });
 
 run_test("timestamp", () => {
