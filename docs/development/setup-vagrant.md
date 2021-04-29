@@ -24,11 +24,17 @@ Contents:
 **If you encounter errors installing the Zulip development
 environment,** check [troubleshooting and common
 errors](#troubleshooting-and-common-errors). If that doesn't help,
-please visit [#provision
-help](https://chat.zulip.org/#narrow/stream/21-provision-help) in the
-[Zulip development community
-server](../contributing/chat-zulip-org.md) for real-time help or
-[file an issue](https://github.com/zulip/zulip/issues).
+please visit 
+<a href="https://chat.zulip.org/#narrow/stream/21-provision-help" target="_blank">#provision
+help</a>
+![new tab icon](/docs/images/new-tab.png)
+in the
+<a href="../contributing/chat-zulip-org.md" target="_blank">Zulip development community
+server</a>
+![new tab icon](/docs/images/new-tab.png)
+ for real-time help or
+<a href="https://github.com/zulip/zulip/issues" target="_blank">file an issue</a>
+![new tab icon](/docs/images/new-tab.png).
 
 When reporting your issue, please include the following information:
 
@@ -46,7 +52,10 @@ an active internet connection throughout the entire installation
 processes. (See [Specifying a proxy](#specifying-a-proxy) if you need
 a proxy to access the internet.)
 
-- **All**: 2GB available RAM, Active broadband internet connection, [GitHub account][set-up-git].
+- **All**: 2GB available RAM, Active broadband internet connection,
+<a href="https://zulip.readthedocs.io/en/latest/git/setup.html" target="_blank">GitHub account</a>
+![new tab icon](/docs/images/new-tab.png).
+
 - **macOS**: macOS (10.11 El Capitan or newer recommended)
 - **Ubuntu LTS**: 20.04 or 18.04
   - or **Debian**: 10 "buster" or 11 "bullseye"
@@ -63,11 +72,14 @@ docs.
 You can skip this step if you already have Git, GitHub, and SSH access
 to GitHub working on your machine.
 
-Follow our [Git guide][set-up-git] in order to install Git, set up a
+Follow our <a href="https://zulip.readthedocs.io/en/latest/git/setup.html" target="_blank">GitHub guide</a>
+![new tab icon](/docs/images/new-tab.png) in order to install Git, set up a
 GitHub account, create an SSH key to access code on GitHub
 efficiently, etc.  Be sure to create an SSH key and add it to your
 GitHub account using
-[these instructions](https://help.github.com/en/articles/generating-an-ssh-key).
+<a href="https://help.github.com/en/articles/generating-an-ssh-key" target="_blank">these instructions</a>
+![new tab icon](/docs/images/new-tab.png).
+
 
 ### Step 1: Install prerequisites
 
@@ -80,13 +92,22 @@ Jump to:
 
 #### macOS
 
-1. Install [Vagrant][vagrant-dl] (latest).
-2. Install [VirtualBox][vbox-dl] (latest).
+1. Install <a href="https://www.vagrantup.com/downloads" target="_blank">Vagrant</a>
+![new tab icon](/docs/images/new-tab.png)  (latest). 
 
-(For a non-free option, but better performance, you can also use [VMware
-Fusion][vmware-fusion-dl] with the [VMware Fusion Vagrant
-plugin][vagrant-vmware-fusion-dl] or [Parallels Desktop][parallels-desktop-dl] as
-a provider for Vagrant.)
+2. Install <a href="https://www.virtualbox.org/wiki/Downloads" target="_blank">VirtualBox</a>
+![new tab icon](/docs/images/new-tab.png)
+(latest).
+
+(For a non-free option, but better performance, you can also use 
+<a href="https://www.vmware.com/products/fusion.html" target="_blank">VMware Fusion</a>
+![new tab icon](/docs/images/new-tab.png)
+with the <a href="https://www.vagrantup.com/vmware" target="_blank">VMware Fusion Vagrant plugin</a>
+![new tab icon](/docs/images/new-tab.png)
+or 
+<a href="https://www.parallels.com/products/desktop/" target="_blank">Parallels Desktop</a>
+![new tab icon](/docs/images/new-tab.png)
+as a provider for Vagrant.)
 
 Now you are ready for [Step 2: Get Zulip code](#step-2-get-zulip-code).
 
@@ -121,8 +142,10 @@ christie adm cdrom sudo dip plugdev lpadmin sambashare docker
 ##### 3. Make sure the Docker daemon is running:
 
 If you had previously installed and removed an older version of
-Docker, an [Ubuntu
-bug](https://bugs.launchpad.net/ubuntu/+source/docker.io/+bug/1844894)
+Docker, an 
+<a href="https://bugs.launchpad.net/ubuntu/+source/docker.io/+bug/1844894" target="_blank">Ubuntu
+bug</a>
+![new tab icon](/docs/images/new-tab.png)
 may prevent Docker from being automatically enabled and started after
 installation.  You can check using the following:
 
@@ -149,8 +172,10 @@ Now you are ready for [Step 2: Get Zulip code](#step-2-get-zulip-code).
 
 The setup for Debian is very similar to that [for Ubuntu
 above](#ubuntu), except that the `docker.io` package is only available
-in Debian 10 and later; for Debian 9, see [Docker CE for
-Debian](https://docs.docker.com/install/linux/docker-ce/debian/).
+in Debian 10 and later; for Debian 9, see
+<a href="https://docs.docker.com/install/linux/docker-ce/debian/" target="_blank">Docker CE for
+Debian</a>
+![new tab icon](/docs/images/new-tab.png)
 
 #### Windows 10
 
@@ -159,11 +184,17 @@ Debian](https://docs.docker.com/install/linux/docker-ce/debian/).
     We recommend using `WSL 2 for Windows development <../development/setup-advanced.html#installing-directly-on-windows-10-with-wsl-2>`_.
 ```
 
-1. Install [Git for Windows][git-bash], which installs *Git BASH*.
-2. Install [VirtualBox][vbox-dl] (latest).
-3. Install [Vagrant][vagrant-dl] (latest).
+1. Install <a href="https://gitforwindows.org/" target="_blank">Git for Windows</a>
+![new tab icon](/docs/images/new-tab.png)
+, which installs *Git BASH*.
+2. Install <a href="https://www.virtualbox.org/wiki/Downloads" target="_blank">VirtualBox</a>
+![new tab icon](/docs/images/new-tab.png)
+(latest).
+3. Install <a href="https://www.vagrantup.com/downloads" target="_blank">Vagrant</a>
+![new tab icon](/docs/images/new-tab.png)  (latest). 
 
-(Note: While *Git BASH* is recommended, you may also use [Cygwin][cygwin-dl].
+(Note: While *Git BASH* is recommended, you may also use <a href="https://cygwin.com/" target="_blank">Cygwin</a>
+![new tab icon](/docs/images/new-tab.png).
 If you do, make sure to **install default required packages** along with
 **git**, **curl**, **openssh**, and **rsync** binaries.)
 
@@ -176,8 +207,9 @@ It is important that you **always run Git BASH with administrator
 privileges** when working on Zulip code, as not doing so will cause
 errors in the development environment (such as symlink creation). You
 might wish to configure your Git BASH shortcut to always run with
-these privileges enabled (see this [guide][bash-admin-setup] for how
-to set this up).
+these privileges enabled (see this <a href="https://superuser.com/questions/1002262/run-applications-as-administrator-by-default-in-windows-10" target="_blank">guide</a>
+![new tab icon](/docs/images/new-tab.png)
+for how to set this up).
 
 ##### Enable native symlinks
 
@@ -240,9 +272,12 @@ projects and to instead follow these instructions exactly.)
    do this.
 2. Open Terminal (macOS/Ubuntu) or Git BASH (Windows; must
    **run as an Administrator**).
-3. In Terminal/Git BASH,
-   [clone your fork of the Zulip repository](../git/cloning.html#step-1b-clone-to-your-machine) and
-   [connect the Zulip upstream repository](../git/cloning.html#step-1c-connect-your-fork-to-zulip-upstream):
+3. In Terminal/Git BASH, <a href="../git/cloning.html#step-1b-clone-to-your-machine" target="_blank">clone your fork of the Zulip repository</a>
+![new tab icon](/docs/images/new-tab.png)
+and
+<a href="../git/cloning.html#step-1c-connect-your-fork-to-zulip-upstream" target="_blank">connect the Zulip upstream repository</a>
+![new tab icon](/docs/images/new-tab.png)
+:
 
 ```
 git clone --config pull.rebase git@github.com:YOURUSERNAME/zulip.git
@@ -299,7 +334,9 @@ does the following:
   downloads all required dependencies, sets up the python environment for
   the Zulip development server, and initializes a default test
   database.  We call this process "provisioning", and it is documented
-  in some detail in our [dependencies documentation](../subsystems/dependencies.md).
+  in some detail in our <a href="../subsystems/dependencies.md" target="_blank">dependencies documentation</a>
+![new tab icon](/docs/images/new-tab.png)
+.
 
 You will need an active internet connection during the entire
 process. (See [Specifying a proxy](#specifying-a-proxy) if you need a
@@ -309,10 +346,11 @@ can use `vagrant provision` (`vagrant up` will just boot the guest
 without provisioning after the first time).  Other common issues are
 documented in the
 [Troubleshooting and Common Errors](#troubleshooting-and-common-errors)
-section.  If that doesn't help, please visit
-[#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
-in the [Zulip development community server](../contributing/chat-zulip-org.md) for
-real-time help.
+section.  If that doesn't help, please visit <a href="https://chat.zulip.org/#narrow/stream/21-provision-help" target="_blank">#provision help</a>
+![new tab icon](/docs/images/new-tab.png)
+in the <a href="../contributing/chat-zulip-org.md" target="_blank">Zulip development community server</a>
+![new tab icon](/docs/images/new-tab.png)
+for real-time help.
 
 On Windows, you will see the message `The system cannot find the path
 specified.` several times.  This is normal and is not a problem.
@@ -422,8 +460,9 @@ It's good to have the terminal running `run-dev.py` up as you work since error
 messages including tracebacks along with every backend request will be printed
 there.
 
-See [Logging](../subsystems/logging.md) for further details on the run-dev.py console
-output.
+See <a href="../subsystems/logging.md" target="_blank">Logging</a>
+![new tab icon](/docs/images/new-tab.png)
+for further details on the run-dev.py console output.
 
 #### Committing and pushing changes with Git
 
@@ -431,8 +470,9 @@ When you're ready to commit or push changes via Git, you will do this by
 running Git commands in Terminal (macOS/Ubuntu) or Git BASH (Windows) in the
 directory where you cloned Zulip on your main machine.
 
-If you're new to working with Git/GitHub, check out our [Git & GitHub
-Guide][rtd-git-guide].
+If you're new to working with Git/GitHub, check out our <a href="https://zulip.readthedocs.io/en/latest/git/index.html" target="_blank">Git & GitHub
+Guide</a>
+![new tab icon](/docs/images/new-tab.png).
 
 #### Maintaining the development environment
 
@@ -449,11 +489,14 @@ guest); this should complete in about a minute.
 After provisioning, you'll want to
 [(re)start the Zulip development server](#step-3-start-the-development-environment).
 
-If you run into any trouble, [#provision
-help](https://chat.zulip.org/#narrow/stream/21-provision-help) in the
-[Zulip development community
-server](../contributing/chat-zulip-org.md) is a great place to ask for
-help.
+If you run into any trouble, <a href="https://chat.zulip.org/#narrow/stream/21-provision-help)" target="_blank">#provision
+help</a>
+![new tab icon](/docs/images/new-tab.png)
+in the
+<a href="../contributing/chat-zulip-org.md" target="_blank">Zulip development community
+server</a>
+![new tab icon](/docs/images/new-tab.png)
+is a great place to ask for help.
 
 #### Rebuilding the development environment
 
@@ -509,9 +552,11 @@ $ vagrant halt
 ==> default: Attempting graceful shutdown of VM...
 ```
 
-Check out the Vagrant documentation to learn more about
-[suspend](https://www.vagrantup.com/docs/cli/suspend.html) and
-[halt](https://www.vagrantup.com/docs/cli/halt.html).
+Check out the Vagrant documentation to learn more about <a href="https://www.vagrantup.com/docs/cli/suspend.html" target="_blank">suspend</a>
+![new tab icon](/docs/images/new-tab.png)
+and
+<a href="https://www.vagrantup.com/docs/cli/halt.html" target="_blank">halt</a>
+![new tab icon](/docs/images/new-tab.png).
 
 #### Resuming the development environment
 
@@ -533,10 +578,15 @@ $ ./tools/run-dev.py
 
 Next, read the following to learn more about developing for Zulip:
 
-* [Git & GitHub Guide][rtd-git-guide]
-* [Using the development environment][rtd-using-dev-env]
-* [Testing][rtd-testing] (and [Configuring CI][ci] to
-run the full test suite against any branches you push to your fork,
+* <a href="https://zulip.readthedocs.io/en/latest/git/index.html" target="_blank">Git & GitHub Guide</a>
+![new tab icon](/docs/images/new-tab.png)
+* <a href="https://zulip.readthedocs.io/en/latest/development/using.html" target="_blank">Using the development environment</a>
+![new tab icon](/docs/images/new-tab.png)
+* <a href="https://zulip.readthedocs.io/en/latest/testing/testing.html" target="_blank">Testing</a>
+![new tab icon](/docs/images/new-tab.png)
+(and <a href="https://zulip.readthedocs.io/en/latest/git/cloning.html#step-3-configure-continuous-integration-for-your-fork" target="_blank">Configuring CI</a>
+![new tab icon](/docs/images/new-tab.png)
+to run the full test suite against any branches you push to your fork,
 which can help you optimize your development workflow).
 
 ### Troubleshooting and common errors
@@ -549,9 +599,12 @@ equivalently `vagrant provision` from outside).
 If these solutions aren't working for you or you encounter an issue not
 documented below, there are a few ways to get further help:
 
-* Ask in [#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
-  in the [Zulip development community server](../contributing/chat-zulip-org.md).
-* [File an issue](https://github.com/zulip/zulip/issues).
+* Ask in <a href="https://chat.zulip.org/#narrow/stream/21-provision-help" target="_blank">#provision help</a>
+![new tab icon](/docs/images/new-tab.png)
+  in the <a href="../contributing/chat-zulip-org.md" target="_blank">Zulip development community server</a>
+![new tab icon](/docs/images/new-tab.png).
+* <a href="https://github.com/zulip/zulip/issues" target="_blank">File an issue</a>
+![new tab icon](/docs/images/new-tab.png).
 
 When reporting your issue, please include the following information:
 
@@ -669,12 +722,13 @@ Then Vagrant was not able to create a symbolic link.
 
 First, if you are using Windows, **make sure you have run Git BASH (or
 Cygwin) as an administrator**. By default, only administrators can
-create symbolic links on Windows.  Additionally [UAC][windows-uac], a
+create symbolic links on Windows.  Additionally <a href="https://docs.microsoft.com/en-us/windows/security/identity-protection/user-account-control/how-user-account-control-works" target="_blank">UAC</a>
+![new tab icon](/docs/images/new-tab.png), a
 Windows feature intended to limit the impact of malware, can prevent
-even administrator accounts from creating symlinks.  [Turning off
-UAC][disable-uac] will allow you to create symlinks. You can also try
-some of the solutions mentioned
-[here](https://superuser.com/questions/124679/how-do-i-create-a-link-in-windows-7-home-premium-as-a-regular-user).
+even administrator accounts from creating symlinks.  <a href="https://stackoverflow.com/questions/15320550/why-is-secreatesymboliclinkprivilege-ignored-on-windows-8" target="_blank">Turning off UAC</a>
+![new tab icon](/docs/images/new-tab.png) will allow you to create symlinks. You can also try
+some of the solutions mentioned <a href="https://superuser.com/questions/124679/how-do-i-create-a-link-in-windows-7-home-premium-as-a-regular-user" target="_blank">here</a>
+![new tab icon](/docs/images/new-tab.png).
 
 [windows-uac]: https://docs.microsoft.com/en-us/windows/security/identity-protection/user-account-control/how-user-account-control-works
 [disable-uac]: https://stackoverflow.com/questions/15320550/why-is-secreatesymboliclinkprivilege-ignored-on-windows-8
@@ -755,8 +809,8 @@ setting called VT-x (Intel) or (AMD-V).
 If this is already enabled in your BIOS, double-check that you are running a
 64-bit operating system.
 
-For further information about troubleshooting vagrant timeout errors [see
-this post](https://stackoverflow.com/questions/22575261/vagrant-stuck-connection-timeout-retrying#22575302).
+For further information about troubleshooting vagrant timeout errors <a href="https://stackoverflow.com/questions/22575261/vagrant-stuck-connection-timeout-retrying#22575302" target="_blank">see this post</a>
+![new tab icon](/docs/images/new-tab.png).
 
 #### Vagrant was unable to communicate with the guest machine
 
@@ -829,8 +883,8 @@ Likely causes are:
 
 1. Networking issues
 2. Insufficient RAM. Check whether you've allotted at least two
-gigabytes of RAM, which is the minimum Zulip
-[requires](../development/setup-vagrant.html#requirements). If
+gigabytes of RAM, which is the minimum Zulip <a href="../development/setup-vagrant.html#requirements" target="_blank">requires</a>
+![new tab icon](/docs/images/new-tab.png). If
 not, go to your VM settings and increase the RAM, then restart
 the VM.
 
@@ -890,8 +944,8 @@ default:     os.rmdir(name, dir_fd=topfd)
 default: OSError: [Errno 26] Text file busy: 'baremetrics'
 ```
 
-This error is caused by a
-[bug](https://www.virtualbox.org/ticket/19004) in recent versions of
+This error is caused by a <a href="https://www.virtualbox.org/ticket/19004" target="_blank">bug</a>
+![new tab icon](/docs/images/new-tab.png) in recent versions of
 the VirtualBox Guest Additions for Linux on Windows hosts.  You can
 check the running version of VirtualBox Guest Additions with this
 command:
