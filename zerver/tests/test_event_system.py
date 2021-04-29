@@ -1,5 +1,5 @@
 import time
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Optional
 from unittest import mock
 
 import orjson
@@ -29,8 +29,12 @@ from zerver.tornado.event_queue import (
     process_message_event,
     send_restart_events,
 )
-from zerver.tornado.views import get_events
-from zerver.views.events_register import _default_all_public_streams, _default_narrow
+from zerver.tornado.views import get_events, get_events_backend
+from zerver.views.events_register import (
+    _default_all_public_streams,
+    _default_narrow,
+    events_register_backend,
+)
 
 
 class EventsEndpointTest(ZulipTestCase):
@@ -829,6 +833,16 @@ class ClientDescriptorsTest(ZulipTestCase):
 
 
 class RestartEventsTest(ZulipTestCase):
+    def tornado_call(
+        self,
+        view_func: Callable[[HttpRequest, UserProfile], HttpResponse],
+        user_profile: UserProfile,
+        post_data: Dict[str, Any],
+        client_name: Optional[str] = None,
+    ) -> HttpResponse:
+        request = HostRequestMock(post_data, user_profile, client_name=client_name)
+        return view_func(request, user_profile)
+
     def test_restart(self) -> None:
         hamlet = self.example_user("hamlet")
         realm = hamlet.realm
@@ -868,6 +882,78 @@ class RestartEventsTest(ZulipTestCase):
                 id=0,
             ),
         )
+
+    def test_restart_event_recursive_call_logic(self) -> None:
+        # This is a test for a subtle corner case; see the comments
+        # around RestartEventError for details.
+        hamlet = self.example_user("hamlet")
+        realm = hamlet.realm
+
+        # Setup an empty event queue
+        clear_client_event_queues_for_testing()
+
+        queue_data = dict(
+            all_public_streams=False,
+            apply_markdown=True,
+            client_gravatar=True,
+            client_type_name="website",
+            event_types=None,
+            last_connection_time=time.time(),
+            queue_timeout=0,
+            realm_id=realm.id,
+            user_profile_id=hamlet.id,
+        )
+        client = allocate_client_descriptor(queue_data)
+
+        # Add a restart event to it.
+        send_restart_events(immediate=True)
+
+        # Make a second queue after the restart events were sent.
+        second_client = allocate_client_descriptor(queue_data)
+
+        # Fetch the restart event just sent above, without removing it
+        # from the queue. We will use this as a mock return value in
+        # get_user_events.
+        restart_event = orjson.loads(
+            self.tornado_call(
+                get_events_backend,
+                hamlet,
+                post_data={
+                    "queue_id": client.event_queue.id,
+                    "last_event_id": -1,
+                    "dont_block": "true",
+                    "user_profile_id": hamlet.id,
+                    "secret": settings.SHARED_SECRET,
+                    "client": "internal",
+                },
+                client_name="internal",
+            ).content
+        )["events"]
+
+        # Now the tricky part: We call events_register_backend,
+        # arranging it so that the first `get_user_events` call
+        # returns our restart event (triggering the recursive
+        # behavior), but the second (with a new queue) returns no
+        # events.
+        #
+        # Because get_user_events always returns [] in tests, we need
+        # to mock its return value as well; in an ideal world, we
+        # would only need to mock client / second_client.
+        with mock.patch(
+            "zerver.lib.events.request_event_queue",
+            side_effect=[client.event_queue.id, second_client.event_queue.id],
+        ), mock.patch("zerver.lib.events.get_user_events", side_effect=[restart_event, []]):
+            self.tornado_call(
+                events_register_backend,
+                hamlet,
+                {
+                    "queue_id": client.event_queue.id,
+                    "user_client": "website",
+                    "last_event_id": -1,
+                    "dont_block": orjson.dumps(True).decode(),
+                },
+                client_name="website",
+            )
 
 
 class FetchQueriesTest(ZulipTestCase):

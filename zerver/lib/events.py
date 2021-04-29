@@ -69,6 +69,12 @@ from zerver.tornado.django_api import get_user_events, request_event_queue
 from zproject.backends import email_auth_enabled, password_auth_enabled
 
 
+class RestartEventException(Exception):
+    """
+    Special error for handling restart events in apply_events.
+    """
+
+
 def add_realm_logo_fields(state: Dict[str, Any], realm: Realm) -> None:
     state["realm_logo_url"] = get_realm_logo_url(realm, night=False)
     state["realm_logo_source"] = get_realm_logo_source(realm, night=False)
@@ -492,6 +498,8 @@ def apply_events(
     include_subscribers: bool,
 ) -> None:
     for event in events:
+        if event["type"] == "restart":
+            raise RestartEventException()
         if fetch_event_types is not None and event["type"] not in fetch_event_types:
             # TODO: continuing here is not, most precisely, correct.
             # In theory, an event of one type, e.g. `realm_user`,
@@ -1141,15 +1149,39 @@ def do_events_register(
 
     # Apply events that came in while we were fetching initial data
     events = get_user_events(user_profile, queue_id, -1)
-    apply_events(
-        user_profile,
-        state=ret,
-        events=events,
-        fetch_event_types=fetch_event_types,
-        client_gravatar=client_gravatar,
-        slim_presence=slim_presence,
-        include_subscribers=include_subscribers,
-    )
+    try:
+        apply_events(
+            user_profile,
+            state=ret,
+            events=events,
+            fetch_event_types=fetch_event_types,
+            client_gravatar=client_gravatar,
+            slim_presence=slim_presence,
+            include_subscribers=include_subscribers,
+        )
+    except RestartEventException:
+        # This represents a rare race condition, where Tornado
+        # restarted (and sent `restart` events) while we were waiting
+        # for fetch_initial_state_data to return. To avoid the client
+        # needing to reload shortly after loading, we recursively call
+        # do_events_register here.
+        ret = do_events_register(
+            user_profile,
+            user_client,
+            apply_markdown,
+            client_gravatar,
+            slim_presence,
+            event_types,
+            queue_lifespan_secs,
+            all_public_streams,
+            include_subscribers,
+            include_streams,
+            client_capabilities,
+            narrow,
+            fetch_event_types,
+        )
+
+        return ret
 
     post_process_state(user_profile, ret, notification_settings_null)
 
