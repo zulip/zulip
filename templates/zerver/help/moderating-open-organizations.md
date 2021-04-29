@@ -25,7 +25,7 @@ Zulip has many features designed to simplify moderation:
 * [Restrict email visibility](/help/restrict-visibility-of-email-addresses)
   to reduce the likelihood of off-platform spam.
 * [Restrict wildcard mentions](/help/restrict-wildcard-mentions)
-  so only moderators can mention everyone in your organization.
+  so only [moderators](/help/roles-and-permissions) can mention everyone in your organization.
 
 ## Response
 
