@@ -8,6 +8,16 @@ const {run_test} = require("../zjsunit/test");
 const people = zrequire("people");
 const pmc = zrequire("pm_conversations");
 
+const params = {
+    recent_private_conversations: [
+        {user_ids: [1], max_message_id: 100},
+        {user_ids: [3], max_message_id: 99},
+        {user_ids: [1, 2], max_message_id: 98},
+        {user_ids: [1, 2, 3], max_message_id: 97},
+        {user_ids: [15], max_message_id: 96}, // self
+    ],
+};
+
 function test(label, f) {
     run_test(label, (override) => {
         pmc.clear_for_testing();
@@ -30,34 +40,31 @@ test("partners", () => {
 });
 
 test("insert_recent_private_message", () => {
-    const params = {
-        recent_private_conversations: [
-            {user_ids: [11, 2], max_message_id: 150},
-            {user_ids: [1], max_message_id: 111},
-            {user_ids: [], max_message_id: 7},
-        ],
-    };
     pmc.recent.initialize(params);
 
+    // Base data
     assert.deepEqual(pmc.recent.get(), [
-        {user_ids_string: "2,11", max_message_id: 150},
-        {user_ids_string: "1", max_message_id: 111},
-        {user_ids_string: "15", max_message_id: 7},
+        {user_ids_string: "1", max_message_id: 100},
+        {user_ids_string: "3", max_message_id: 99},
+        {user_ids_string: "1,2", max_message_id: 98},
+        {user_ids_string: "1,2,3", max_message_id: 97},
+        {user_ids_string: "15", max_message_id: 96},
     ]);
 
-    pmc.recent.insert([1], 1001);
-    pmc.recent.insert([2], 2001);
-    pmc.recent.insert([1], 3001);
+    // Insert new messages (which should rearrange these entries).
+    pmc.recent.insert([1], 1000);
+    pmc.recent.insert([1, 2, 3], 999);
+    pmc.recent.insert([], 101); // Self-PM
 
-    // try to backdate user1's latest message
+    // Try to backdate user1's latest message.
     pmc.recent.insert([1], 555);
 
     assert.deepEqual(pmc.recent.get(), [
-        {user_ids_string: "1", max_message_id: 3001},
-        {user_ids_string: "2", max_message_id: 2001},
-        {user_ids_string: "2,11", max_message_id: 150},
-        {user_ids_string: "15", max_message_id: 7},
+        {user_ids_string: "1", max_message_id: 1000},
+        {user_ids_string: "1,2,3", max_message_id: 999},
+        {user_ids_string: "15", max_message_id: 101},
+        {user_ids_string: "3", max_message_id: 99},
+        {user_ids_string: "1,2", max_message_id: 98},
     ]);
-
-    assert.deepEqual(pmc.recent.get_strings(), ["1", "2", "2,11", "15"]);
+    assert.deepEqual(pmc.recent.get_strings(), ["1", "1,2,3", "15", "3", "1,2"]);
 });
