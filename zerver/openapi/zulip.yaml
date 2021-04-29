@@ -1802,6 +1802,18 @@ paths:
 
                                     This field is used for content edits. For stream and topic edits, use the
                                     `message_ids` field instead.
+                                message_ids:
+                                  type: array
+                                  items:
+                                    type: integer
+                                  description: |
+                                    For edits changing the stream or topic of multiple messages,
+                                    the list of IDs of other messages to be moved as well.
+
+                                    The messages are guaranteed to have all been previously in the
+                                    same stream and topic.
+
+                                    Any content change updates only the message indicated in `message_id`.
                                 edit_timestamp:
                                   type: integer
                                   description: |
@@ -1824,31 +1836,6 @@ paths:
                                     Note: Only present if message(s) were moved to a different stream.
 
                                     The ID of the stream that the message was moved to.
-                                orig_content:
-                                  type: string
-                                  description: |
-                                    The original Markdown content of the message, before this edit.
-                                orig_rendered_content:
-                                  type: string
-                                  description: |
-                                    The original content of the message, before this edit, rendered as HTML.
-                                prev_rendered_content_version:
-                                  type: integer
-                                  description: |
-                                    The Markdown processor version number for the pre-edit message.
-                                content:
-                                  type: string
-                                  description: |
-                                    The new content of the message, in the original Markdown. Applies only
-                                    to the message indicated by `message_id`, not all messages in `message_ids`.
-                                rendered_content:
-                                  type: string
-                                  description: |
-                                    The new content of the message, rendered in HTML.
-                                is_me_message:
-                                  type: boolean
-                                  description: |
-                                    Whether the message is now a [/me status message][status-messages].
                                 propagate_mode:
                                   type: string
                                   description: |
@@ -1895,18 +1882,31 @@ paths:
                                     was called `subject_links`; clients are recommended to
                                     rename `subject_links` to `topic_links` if present for
                                     compatibility with older Zulip servers.
-                                message_ids:
-                                  type: array
-                                  items:
-                                    type: integer
+                                orig_content:
+                                  type: string
                                   description: |
-                                    For edits changing the stream or topic of multiple messages,
-                                    the list of IDs of other messages to be moved as well.
-
-                                    The messages are guaranteed to have all been previously in the
-                                    same stream and topic.
-
-                                    Any content change updates only the message indicated in `message_id`.
+                                    The original Markdown content of the message, before this edit.
+                                orig_rendered_content:
+                                  type: string
+                                  description: |
+                                    The original content of the message, before this edit, rendered as HTML.
+                                prev_rendered_content_version:
+                                  type: integer
+                                  description: |
+                                    The Markdown processor version number for the pre-edit message.
+                                content:
+                                  type: string
+                                  description: |
+                                    The new content of the message, in the original Markdown. Applies only
+                                    to the message indicated by `message_id`, not all messages in `message_ids`.
+                                rendered_content:
+                                  type: string
+                                  description: |
+                                    The new content of the message, rendered in HTML.
+                                is_me_message:
+                                  type: boolean
+                                  description: |
+                                    Whether the message is now a [/me status message][status-messages].
                                 flags:
                                   type: array
                                   description: |
