@@ -399,12 +399,10 @@ input.recipient_box {
     display: inline-block;
 }
 
-.compose_giphy_link img {
+.compose_giphy_link .compose_giphy_logo {
     position: relative;
-    top: -3px;
-    width: auto;
-    height: 21px;
-    vertical-align: top;
+    font-size: 23px;
+    top: -4px;
 }
 
 a.compose_control_button {
