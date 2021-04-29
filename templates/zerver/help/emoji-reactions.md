@@ -15,7 +15,7 @@ underneath the message.
 
     !!! warn ""
         For messages that you've sent, click the ellipsis
-        (<i class="zulip-icon ellipsis-v-solid"></i>) and then
+        (<i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>) and then
         **Add emoji reaction**.
 
 1. Select an emoji. Type to search, use the arrow keys, or click on an emoji

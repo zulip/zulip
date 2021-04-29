@@ -24,7 +24,7 @@ whereas [archiving a stream](/help/archive-a-stream) does not.
 
 1. Hover over the topic in the **left sidebar**.
 
-1. Click the ellipsis (<i class="zulip-icon ellipsis-v-solid"></i>).
+1. Click the ellipsis (<i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>).
 
 1. Click **Delete topic**.
 
