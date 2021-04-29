@@ -8,12 +8,15 @@ const {run_test} = require("../zjsunit/test");
 const people = zrequire("people");
 const pmc = zrequire("pm_conversations");
 
-function initialize_recents(params) {
-    pmc.clear_for_testing();
-    pmc.recent.initialize(params);
+function test(label, f) {
+    run_test(label, (override) => {
+        pmc.clear_for_testing();
+        people.initialize_current_user(15);
+        f(override);
+    });
 }
 
-run_test("partners", () => {
+test("partners", () => {
     const user1_id = 1;
     const user2_id = 2;
     const user3_id = 3;
@@ -26,7 +29,7 @@ run_test("partners", () => {
     assert.equal(pmc.is_partner(user3_id), true);
 });
 
-run_test("insert_recent_private_message", () => {
+test("insert_recent_private_message", () => {
     const params = {
         recent_private_conversations: [
             {user_ids: [11, 2], max_message_id: 150},
@@ -34,8 +37,7 @@ run_test("insert_recent_private_message", () => {
             {user_ids: [], max_message_id: 7},
         ],
     };
-    people.initialize_current_user(15);
-    initialize_recents(params);
+    pmc.recent.initialize(params);
 
     assert.deepEqual(pmc.recent.get(), [
         {user_ids_string: "2,11", max_message_id: 150},
