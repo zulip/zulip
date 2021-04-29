@@ -399,7 +399,7 @@ input.recipient_box {
     display: inline-block;
 }
 
-.compose_giphy_link .compose_giphy_logo {
+.compose_giphy_link .compose_gif_icon {
     position: relative;
     font-size: 23px;
     top: -4px;
