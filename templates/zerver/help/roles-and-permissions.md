@@ -9,6 +9,10 @@ There are several possible roles in a Zulip organization.
   and organization settings.  Cannot create or demote organization
   owners.
 
+* **Moderator**: Has similar access to a **Full Member**;
+  additionally, many "Organization permissions" settings allow
+  moderators to be given additional privileges.
+
 * **Member**: Has access to all public streams.  Member is the default
   role for most users.  [Some organization
   settings](/help/restrict-permissions-of-new-members) allow an
