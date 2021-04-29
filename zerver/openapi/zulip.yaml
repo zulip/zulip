@@ -701,6 +701,8 @@ paths:
                                   type: array
                                   description: |
                                     The user's [message flags][message-flags] for the message.
+
+                                    [message-flags]: /api/update-message-flags#available-flags
                                   items:
                                     type: string
                               additionalProperties: false
@@ -2225,6 +2227,8 @@ paths:
                               description: |
                                 Event sent to a user when [message flags][message-flags] are added
                                 to a message.
+
+                                [message-flags]: /api/update-message-flags#available-flags
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -2279,6 +2283,8 @@ paths:
                               description: |
                                 Event sent to a user when [message flags][message-flags] are
                                 removed from a message.
+
+                                [message-flags]: /api/update-message-flags#available-flags
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -11381,6 +11387,8 @@ components:
           type: boolean
           description: |
             Whether the message is a [/me status message][status-messages]
+
+            [status-messages]: /help/format-your-message-using-markdown#status-messages
         reactions:
           type: array
           description: |
@@ -11494,6 +11502,8 @@ components:
               type: array
               description: |
                 The user's [message flags][message-flags] for the message.
+
+                [message-flags]: /api/update-message-flags#available-flags
               items:
                 type: string
             last_edit_timestamp:
