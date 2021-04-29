@@ -11,6 +11,7 @@ from typing import (
     AbstractSet,
     Any,
     Callable,
+    Collection,
     Dict,
     Iterable,
     List,
@@ -260,9 +261,6 @@ class SubscriptionInfo:
     never_subscribed: List[Dict[str, Any]]
 
 
-# This will be used to type annotate parameters in a function if the function
-# works on both str and unicode in python 2 but in python 3 it only works on str.
-SizedTextIterable = Union[Sequence[str], AbstractSet[str]]
 ONBOARDING_TOTAL_MESSAGES = 1000
 ONBOARDING_UNREAD_MESSAGES = 20
 
@@ -6343,7 +6341,7 @@ def check_invite_limit(realm: Realm, num_invitees: int) -> None:
 
 def do_invite_users(
     user_profile: UserProfile,
-    invitee_emails: SizedTextIterable,
+    invitee_emails: Collection[str],
     streams: Iterable[Stream],
     invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
 ) -> None:
