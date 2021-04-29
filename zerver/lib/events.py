@@ -1107,25 +1107,6 @@ def do_events_register(
         # clients cannot compute gravatars, so we force-set it to false.
         client_gravatar = False
 
-    # Note that we pass event_types, not fetch_event_types here, since
-    # that's what controls which future events are sent.
-    queue_id = request_event_queue(
-        user_profile,
-        user_client,
-        apply_markdown,
-        client_gravatar,
-        slim_presence,
-        queue_lifespan_secs,
-        event_types,
-        all_public_streams,
-        narrow=narrow,
-        bulk_message_deletion=bulk_message_deletion,
-        stream_typing_notifications=stream_typing_notifications,
-    )
-
-    if queue_id is None:
-        raise JsonableError(_("Could not allocate event queue"))
-
     if fetch_event_types is not None:
         event_types_set: Optional[Set[str]] = set(fetch_event_types)
     elif event_types is not None:
@@ -1136,52 +1117,58 @@ def do_events_register(
     # Fill up the UserMessage rows if a soft-deactivated user has returned
     reactivate_user_if_soft_deactivated(user_profile)
 
-    ret = fetch_initial_state_data(
-        user_profile,
-        event_types=event_types_set,
-        queue_id=queue_id,
-        client_gravatar=client_gravatar,
-        user_avatar_url_field_optional=user_avatar_url_field_optional,
-        slim_presence=slim_presence,
-        include_subscribers=include_subscribers,
-        include_streams=include_streams,
-    )
-
-    # Apply events that came in while we were fetching initial data
-    events = get_user_events(user_profile, queue_id, -1)
-    try:
-        apply_events(
-            user_profile,
-            state=ret,
-            events=events,
-            fetch_event_types=fetch_event_types,
-            client_gravatar=client_gravatar,
-            slim_presence=slim_presence,
-            include_subscribers=include_subscribers,
-        )
-    except RestartEventException:
-        # This represents a rare race condition, where Tornado
-        # restarted (and sent `restart` events) while we were waiting
-        # for fetch_initial_state_data to return. To avoid the client
-        # needing to reload shortly after loading, we recursively call
-        # do_events_register here.
-        ret = do_events_register(
+    while True:
+        # Note that we pass event_types, not fetch_event_types here, since
+        # that's what controls which future events are sent.
+        queue_id = request_event_queue(
             user_profile,
             user_client,
             apply_markdown,
             client_gravatar,
             slim_presence,
-            event_types,
             queue_lifespan_secs,
+            event_types,
             all_public_streams,
-            include_subscribers,
-            include_streams,
-            client_capabilities,
-            narrow,
-            fetch_event_types,
+            narrow=narrow,
+            bulk_message_deletion=bulk_message_deletion,
+            stream_typing_notifications=stream_typing_notifications,
         )
 
-        return ret
+        if queue_id is None:
+            raise JsonableError(_("Could not allocate event queue"))
+
+        ret = fetch_initial_state_data(
+            user_profile,
+            event_types=event_types_set,
+            queue_id=queue_id,
+            client_gravatar=client_gravatar,
+            user_avatar_url_field_optional=user_avatar_url_field_optional,
+            slim_presence=slim_presence,
+            include_subscribers=include_subscribers,
+            include_streams=include_streams,
+        )
+
+        # Apply events that came in while we were fetching initial data
+        events = get_user_events(user_profile, queue_id, -1)
+        try:
+            apply_events(
+                user_profile,
+                state=ret,
+                events=events,
+                fetch_event_types=fetch_event_types,
+                client_gravatar=client_gravatar,
+                slim_presence=slim_presence,
+                include_subscribers=include_subscribers,
+            )
+        except RestartEventException:
+            # This represents a rare race condition, where Tornado
+            # restarted (and sent `restart` events) while we were waiting
+            # for fetch_initial_state_data to return. To avoid the client
+            # needing to reload shortly after loading, we recursively call
+            # do_events_register here.
+            continue
+        else:
+            break
 
     post_process_state(user_profile, ret, notification_settings_null)
 
