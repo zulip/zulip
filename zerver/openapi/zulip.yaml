@@ -1842,6 +1842,18 @@ paths:
                                     Which message(s) should be edited: just the one indicated in
                                     `message_id`, messages in the same topic that had been sent after this
                                     one, or all of them.
+
+                                    This parameter should be used to decide whether to change
+                                    navigation and compose box state in response to the edit.  For
+                                    example, if the user was previously in topic narrow, and the
+                                    topic was edited with `change_later` or `change_all`, the Zulip
+                                    webapp will automatically navigate to the new topic narrow.
+                                    Additionally, a message being composed to the old topic should
+                                    have its recipient automatically moved to the new topic.
+
+                                    This navigation makes it much more convenient to move content
+                                    between topics without disruption or messages continuing
+                                    to be sent to the pre-edit topic by accident.
                                   enum:
                                     - change_one
                                     - change_later
@@ -4664,6 +4676,11 @@ paths:
             Which message(s) should be edited: just the one indicated in
             `message_id`, messages in the same topic that had been sent after this
             one, or all of them.
+
+            This parameter determines both which messages get moved and also whether
+            clients that are currently narrowed to the topic containing the message
+            should navigate or adjust their compose box recipient to point to the
+            post-edit stream/topic.
           schema:
             type: string
             enum:
