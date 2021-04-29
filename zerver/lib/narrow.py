@@ -1,5 +1,5 @@
 import os
-from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Sequence
+from typing import Any, Callable, Collection, Dict, Iterable, List, Mapping, Optional, Sequence
 
 from django.conf import settings
 from django.utils.translation import gettext as _
@@ -56,7 +56,7 @@ def is_web_public_narrow(narrow: Optional[Iterable[Dict[str, Any]]]) -> bool:
     return False
 
 
-def build_narrow_filter(narrow: Iterable[Sequence[str]]) -> Callable[[Mapping[str, Any]], bool]:
+def build_narrow_filter(narrow: Collection[Sequence[str]]) -> Callable[[Mapping[str, Any]], bool]:
     """Changes to this function should come with corresponding changes to
     BuildNarrowFilterTest."""
     check_supported_events_narrow_filter(narrow)

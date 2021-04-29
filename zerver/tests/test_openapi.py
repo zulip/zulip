@@ -3,19 +3,7 @@ import os
 import re
 import sys
 from collections import abc
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Iterable,
-    List,
-    Mapping,
-    Optional,
-    Sequence,
-    Set,
-    Tuple,
-    Union,
-)
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Set, Tuple, Union
 from unittest.mock import MagicMock, patch
 
 import yaml
@@ -383,8 +371,6 @@ so maybe we shouldn't mark it as intentionally undocumented in the URLs.
                 origin = list
             elif origin == Dict:
                 origin = dict
-            elif origin == Iterable:
-                origin = abc.Iterable
             elif origin == Mapping:
                 origin = abc.Mapping
             elif origin == Sequence:
@@ -397,7 +383,7 @@ so maybe we shouldn't mark it as intentionally undocumented in the URLs.
         elif origin == Union:
             subtypes = [self.get_standardized_argument_type(st) for st in t.__args__]
             return self.get_type_by_priority(subtypes)
-        elif origin in [list, abc.Iterable, abc.Sequence]:
+        elif origin in [list, abc.Sequence]:
             [st] = t.__args__
             return (list, self.get_standardized_argument_type(st))
         elif origin in [dict, abc.Mapping]:

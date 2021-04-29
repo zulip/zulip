@@ -1,4 +1,4 @@
-from typing import Dict, Iterable, Optional, Sequence
+from typing import Dict, Optional, Sequence
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
@@ -20,15 +20,15 @@ def _default_all_public_streams(
 
 
 def _default_narrow(
-    user_profile: UserProfile, narrow: Iterable[Sequence[str]]
-) -> Iterable[Sequence[str]]:
+    user_profile: UserProfile, narrow: Sequence[Sequence[str]]
+) -> Sequence[Sequence[str]]:
     default_stream: Optional[Stream] = user_profile.default_events_register_stream
     if not narrow and default_stream is not None:
         narrow = [["stream", default_stream.name]]
     return narrow
 
 
-NarrowT = Iterable[Sequence[str]]
+NarrowT = Sequence[Sequence[str]]
 
 
 @has_request_variables
@@ -58,10 +58,10 @@ def events_register_backend(
         ),
         default=None,
     ),
-    event_types: Optional[Iterable[str]] = REQ(
+    event_types: Optional[Sequence[str]] = REQ(
         json_validator=check_list(check_string), default=None
     ),
-    fetch_event_types: Optional[Iterable[str]] = REQ(
+    fetch_event_types: Optional[Sequence[str]] = REQ(
         json_validator=check_list(check_string), default=None
     ),
     narrow: NarrowT = REQ(

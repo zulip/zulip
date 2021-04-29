@@ -1,7 +1,7 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html for
 # high-level documentation on how this system works.
 import copy
-from typing import Any, Callable, Dict, Iterable, Optional, Sequence, Set
+from typing import Any, Callable, Collection, Dict, Iterable, Optional, Sequence, Set
 
 from django.conf import settings
 from django.utils.translation import gettext as _
@@ -492,7 +492,7 @@ def apply_events(
     *,
     state: Dict[str, Any],
     events: Iterable[Dict[str, Any]],
-    fetch_event_types: Optional[Iterable[str]],
+    fetch_event_types: Optional[Collection[str]],
     client_gravatar: bool,
     slim_presence: bool,
     include_subscribers: bool,
@@ -1081,14 +1081,14 @@ def do_events_register(
     apply_markdown: bool = True,
     client_gravatar: bool = False,
     slim_presence: bool = False,
-    event_types: Optional[Iterable[str]] = None,
+    event_types: Optional[Sequence[str]] = None,
     queue_lifespan_secs: int = 0,
     all_public_streams: bool = False,
     include_subscribers: bool = True,
     include_streams: bool = True,
     client_capabilities: Dict[str, bool] = {},
-    narrow: Iterable[Sequence[str]] = [],
-    fetch_event_types: Optional[Iterable[str]] = None,
+    narrow: Collection[Sequence[str]] = [],
+    fetch_event_types: Optional[Collection[str]] = None,
 ) -> Dict[str, Any]:
     # Technically we don't need to check this here because
     # build_narrow_filter will check it, but it's nicer from an error

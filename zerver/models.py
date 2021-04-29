@@ -9,7 +9,6 @@ from typing import (
     Any,
     Callable,
     Dict,
-    Iterable,
     List,
     Optional,
     Sequence,
@@ -589,11 +588,11 @@ class Realm(models.Model):
         return f"<Realm: {self.string_id} {self.id}>"
 
     @cache_with_key(get_realm_emoji_cache_key, timeout=3600 * 24 * 7)
-    def get_emoji(self) -> Dict[str, Dict[str, Iterable[str]]]:
+    def get_emoji(self) -> Dict[str, Dict[str, Any]]:
         return get_realm_emoji_uncached(self)
 
     @cache_with_key(get_active_realm_emoji_cache_key, timeout=3600 * 24 * 7)
-    def get_active_emoji(self) -> Dict[str, Dict[str, Iterable[str]]]:
+    def get_active_emoji(self) -> Dict[str, Dict[str, Any]]:
         return get_active_realm_emoji_uncached(self)
 
     def get_admin_users_and_bots(

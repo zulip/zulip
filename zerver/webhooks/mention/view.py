@@ -1,5 +1,5 @@
 # Webhooks for external integrations.
-from typing import Any, Dict, Iterable
+from typing import Any, Dict, Sequence
 
 from django.http import HttpRequest, HttpResponse
 
@@ -15,7 +15,7 @@ from zerver.models import UserProfile
 def api_mention_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Iterable[Dict[str, Any]]] = REQ(argument_type="body"),
+    payload: Dict[str, Sequence[Dict[str, Any]]] = REQ(argument_type="body"),
 ) -> HttpResponse:
     title = payload["title"]
     source_url = payload["url"]

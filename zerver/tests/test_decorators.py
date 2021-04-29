@@ -2,7 +2,7 @@ import base64
 import os
 import re
 from collections import defaultdict
-from typing import Any, Dict, Iterable, List, Tuple
+from typing import Any, Dict, List, Sequence, Tuple
 from unittest import mock, skipUnless
 
 import orjson
@@ -167,7 +167,7 @@ class DecoratorTestCase(ZulipTestCase):
 
         @has_request_variables
         def get_total(
-            request: HttpRequest, numbers: Iterable[int] = REQ(converter=my_converter)
+            request: HttpRequest, numbers: Sequence[int] = REQ(converter=my_converter)
         ) -> int:
             return sum(numbers)
 
@@ -202,7 +202,7 @@ class DecoratorTestCase(ZulipTestCase):
     def test_REQ_validator(self) -> None:
         @has_request_variables
         def get_total(
-            request: HttpRequest, numbers: Iterable[int] = REQ(json_validator=check_list(check_int))
+            request: HttpRequest, numbers: Sequence[int] = REQ(json_validator=check_list(check_int))
         ) -> int:
             return sum(numbers)
 
