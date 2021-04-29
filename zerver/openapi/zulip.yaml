@@ -1799,6 +1799,9 @@ paths:
                                   type: integer
                                   description: |
                                     The ID of the message which was edited.
+
+                                    This field is used for content edits. For stream and topic edits, use the
+                                    `message_ids` field instead.
                                 edit_timestamp:
                                   type: integer
                                   description: |
@@ -1836,7 +1839,8 @@ paths:
                                 content:
                                   type: string
                                   description: |
-                                    The new content of the message, in the original Markdown.
+                                    The new content of the message, in the original Markdown. Applies only
+                                    to the message indicated by `message_id`, not all messages in `message_ids`.
                                 rendered_content:
                                   type: string
                                   description: |
@@ -1900,7 +1904,9 @@ paths:
                                     the list of IDs of other messages to be moved as well.
 
                                     The messages are guaranteed to have all been previously in the
-                                    sam stream and topic.
+                                    same stream and topic.
+
+                                    Any content change updates only the message indicated in `message_id`.
                                 flags:
                                   type: array
                                   description: |
