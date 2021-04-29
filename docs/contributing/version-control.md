@@ -122,7 +122,7 @@ Here are some more positive examples:
 > gather_subscriptions: Fix exception handling bad input.
 
 
-Compare "*gather_subscriptions: Fix exception handling bad input.*" with:
+Compare "*gather_subscriptions: Fix exception handling when given bad input.*" with:
 
 * "*gather_subscriptions was broken*", which doesn't explain how
   it was broken (and isn't in the imperative)
@@ -145,11 +145,20 @@ automatically catch common mistakes in the commit message itself.
 
 -   The body is written in prose, with full paragraphs; each paragraph should
     be separated from the next by a single blank line.
--   The body explains:
-    -   why and how the change was made
-    -   any manual testing you did in addition to running the automated tests
+-   The body, like the subject, should also be in the imperative form.
+-   The purpose of the body should be to explain:
+    -   the problem the commit tries to solve; that is, what is wrong
+        with the current code without the commit, which will allow the
+        reader to understand the _impact_ of the commit
+    -   why, of all potential ways to solve the problem, is _this_
+        form of the solution the right one; it should be a strong
+        argument for why the commit is correct or better than before
+    -   the reasons why any alternate (potentially more "obvious")
+        solutions did not work, or did not work as well
+    -   any manual testing you did in addition to running the
+        automated tests
     -   any aspects of the commit that you think are questionable and
-        you'd like special attention applied to.
+        you'd like special attention applied to
 -   If the commit makes performance improvements, you should generally
     include some rough benchmarks showing that it actually improves the
     performance.
@@ -165,7 +174,7 @@ automatically catch common mistakes in the commit message itself.
     to about 68 characters per line, but no more than 70, so that your
     commit message will be reasonably readable in `git log` in a normal
     terminal. You may find it helpful to:
-    - configure Git to use your preferred editor, with the EDITOR
-    environment variable or `git config --global core.editor`, and
-    - configure the editor to automatically wrap text to 70 or fewer
-    columns per line (all text editors support this).
+    -   configure Git to use your preferred editor, with the EDITOR
+        environment variable or `git config --global core.editor`
+    -   configure the editor to automatically wrap text to 70 or fewer
+        columns per line (all text editors support this)
