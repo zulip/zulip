@@ -384,7 +384,7 @@ export class MessageList {
     }
 
     update_topic_muting_and_rerender() {
-        this.data.update_items_for_muting();
+        this.data.update_items_for_topic_muting();
         if (this.data.excludes_muted_topics) {
             this.rerender();
         }

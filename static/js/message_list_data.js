@@ -186,7 +186,7 @@ export class MessageListData {
         return this.messages_filtered_for_topic_mutes(messages);
     }
 
-    update_items_for_muting() {
+    update_items_for_topic_muting() {
         if (!this.excludes_muted_topics) {
             return;
         }

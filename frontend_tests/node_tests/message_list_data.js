@@ -74,7 +74,7 @@ run_test("basics", () => {
     mld.remove([50]);
     assert_contents(mld, [10, 15, 20, 25, 30, 35, 40, 45, 60, 70]);
 
-    mld.update_items_for_muting();
+    mld.update_items_for_topic_muting();
     assert_contents(mld, [10, 15, 20, 25, 30, 35, 40, 45, 60, 70]);
 
     mld.reset_select_to_closest();
