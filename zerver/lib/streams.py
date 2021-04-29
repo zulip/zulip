@@ -1,4 +1,4 @@
-from typing import Iterable, List, Optional, Set, Tuple, Union
+from typing import Collection, List, Optional, Set, Tuple, Union
 
 from django.db.models.query import QuerySet
 from django.utils.timezone import now as timezone_now
@@ -565,7 +565,7 @@ def can_access_stream_history_by_id(user_profile: UserProfile, stream_id: int) -
 
 
 def filter_stream_authorization(
-    user_profile: UserProfile, streams: Iterable[Stream]
+    user_profile: UserProfile, streams: Collection[Stream]
 ) -> Tuple[List[Stream], List[Stream]]:
     recipient_ids = [stream.recipient_id for stream in streams]
     subscribed_recipient_ids = set(
@@ -599,7 +599,7 @@ def filter_stream_authorization(
 
 
 def list_to_streams(
-    streams_raw: Iterable[StreamDict],
+    streams_raw: Collection[StreamDict],
     user_profile: UserProfile,
     autocreate: bool = False,
     admin_access_required: bool = False,

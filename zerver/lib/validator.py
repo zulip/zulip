@@ -29,7 +29,19 @@ for any particular type of object.
 """
 import re
 from datetime import datetime
-from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, Union, cast, overload
+from typing import (
+    Any,
+    Callable,
+    Collection,
+    Dict,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    Union,
+    cast,
+    overload,
+)
 
 import orjson
 from django.core.exceptions import ValidationError
@@ -213,8 +225,8 @@ def check_tuple(sub_validators: List[Validator[ResultT]]) -> Validator[Tuple[Any
 # https://zulip.readthedocs.io/en/latest/testing/mypy.html#using-overload-to-accurately-describe-variations
 @overload
 def check_dict(
-    required_keys: Iterable[Tuple[str, Validator[object]]] = [],
-    optional_keys: Iterable[Tuple[str, Validator[object]]] = [],
+    required_keys: Collection[Tuple[str, Validator[object]]] = [],
+    optional_keys: Collection[Tuple[str, Validator[object]]] = [],
     *,
     _allow_only_listed_keys: bool = False,
 ) -> Validator[Dict[str, object]]:
@@ -223,8 +235,8 @@ def check_dict(
 
 @overload
 def check_dict(
-    required_keys: Iterable[Tuple[str, Validator[ResultT]]] = [],
-    optional_keys: Iterable[Tuple[str, Validator[ResultT]]] = [],
+    required_keys: Collection[Tuple[str, Validator[ResultT]]] = [],
+    optional_keys: Collection[Tuple[str, Validator[ResultT]]] = [],
     *,
     value_validator: Validator[ResultT],
     _allow_only_listed_keys: bool = False,
@@ -233,8 +245,8 @@ def check_dict(
 
 
 def check_dict(
-    required_keys: Iterable[Tuple[str, Validator[ResultT]]] = [],
-    optional_keys: Iterable[Tuple[str, Validator[ResultT]]] = [],
+    required_keys: Collection[Tuple[str, Validator[ResultT]]] = [],
+    optional_keys: Collection[Tuple[str, Validator[ResultT]]] = [],
     *,
     value_validator: Optional[Validator[ResultT]] = None,
     _allow_only_listed_keys: bool = False,
@@ -283,8 +295,8 @@ def check_dict(
 
 
 def check_dict_only(
-    required_keys: Iterable[Tuple[str, Validator[ResultT]]],
-    optional_keys: Iterable[Tuple[str, Validator[ResultT]]] = [],
+    required_keys: Collection[Tuple[str, Validator[ResultT]]],
+    optional_keys: Collection[Tuple[str, Validator[ResultT]]] = [],
 ) -> Validator[Dict[str, ResultT]]:
     return cast(
         Validator[Dict[str, ResultT]],
@@ -292,7 +304,7 @@ def check_dict_only(
     )
 
 
-def check_union(allowed_type_funcs: Iterable[Validator[ResultT]]) -> Validator[ResultT]:
+def check_union(allowed_type_funcs: Collection[Validator[ResultT]]) -> Validator[ResultT]:
     """
     Use this validator if an argument is of a variable type (e.g. processing
     properties that might be strings or booleans).
