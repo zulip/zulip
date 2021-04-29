@@ -202,8 +202,6 @@ function bot_info(bot_user_id) {
     const info = {};
 
     info.is_bot = true;
-    info.is_admin = false;
-    info.is_guest = false;
     info.is_active = bot_user.is_active;
     info.user_id = bot_user.user_id;
     info.full_name = bot_user.full_name;
