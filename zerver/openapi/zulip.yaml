@@ -702,6 +702,12 @@ paths:
                                   description: |
                                     The user's [message flags][message-flags] for the message.
 
+                                    Clients should inspect the flags field rather than assuming that
+                                    new messages are unread; [muted users](/api/mute-user), messages
+                                    sent by the current user, and more subtle scenarios can result
+                                    in a new message that the server has already marked as read for
+                                    the user.
+
                                     [message-flags]: /api/update-message-flags#available-flags
                                   items:
                                     type: string
