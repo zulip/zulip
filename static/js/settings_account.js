@@ -558,7 +558,7 @@ export function set_up() {
         // will not show up because of a call to `close_active_modal` in `settings.js`.
         e.preventDefault();
         e.stopPropagation();
-        $("#deactivate_self_modal").modal("show");
+        overlays.open_modal("#deactivate_self_modal");
     });
 
     $("#account-settings").on("click", ".custom_user_field .remove_date", (e) => {
@@ -598,7 +598,7 @@ export function set_up() {
             channel.del({
                 url: "/json/users/me",
                 success() {
-                    $("#deactivate_self_modal").modal("hide");
+                    overlays.close_modal("#deactivate_self_modal");
                     window.location.href = "/login/";
                 },
                 error(xhr) {
@@ -623,7 +623,7 @@ export function set_up() {
                             rendered_error_msg = error_last_user;
                         }
                     }
-                    $("#deactivate_self_modal").modal("hide");
+                    overlays.close_modal("#deactivate_self_modal");
                     $("#account-settings-status")
                         .addClass("alert-error")
                         .html(rendered_error_msg)

@@ -18,6 +18,7 @@ import {$t, $t_html} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as muting from "./muting";
 import * as muting_ui from "./muting_ui";
+import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
@@ -363,7 +364,7 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
     );
 
     stream_bar.decorate(current_stream_name, stream_header_colorblock, false);
-    $("#move_topic_modal").modal("show");
+    overlays.open_modal("#move_topic_modal");
 }
 
 export function register_click_handlers() {

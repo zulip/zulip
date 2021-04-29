@@ -369,7 +369,7 @@ export function hide_mobile_message_buttons_popover() {
 }
 
 export function hide_user_profile() {
-    $("#user-profile-modal").modal("hide");
+    overlays.close_modal("#user-profile-modal");
 }
 
 export function show_user_profile(user) {
@@ -396,7 +396,7 @@ export function show_user_profile(user) {
     };
 
     $("#user-profile-modal-holder").html(render_user_profile_modal(args));
-    $("#user-profile-modal").modal("show");
+    overlays.open_modal("#user-profile-modal");
 
     settings_account.initialize_custom_user_type_fields(
         "#user-profile-modal #content",

@@ -7,6 +7,7 @@ import {$t} from "./i18n";
 import {localstorage} from "./localstorage";
 import * as message_list from "./message_list";
 import * as message_lists from "./message_lists";
+import * as overlays from "./overlays";
 
 // What, if anything, obscures the home tab?
 
@@ -144,7 +145,7 @@ export function maybe_show_deprecation_notice(key) {
     }
 
     if (!shown_deprecation_notices.includes(key)) {
-        $("#deprecation-notice-modal").modal("show");
+        overlays.open_modal("#deprecation-notice-modal");
         $("#deprecation-notice-message").text(message);
         $("#close-deprecation-notice").trigger("focus");
         shown_deprecation_notices.push(key);
