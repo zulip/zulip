@@ -1797,6 +1797,8 @@ class DefaultStreamTest(ZulipTestCase):
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         self.login_user(user_profile)
 
+        DefaultStream.objects.filter(realm=user_profile.realm).delete()
+
         stream_name = "stream ADDED via api"
         stream = ensure_stream(user_profile.realm, stream_name, acting_user=None)
         result = self.client_post("/json/default_streams", dict(stream_id=stream.id))
@@ -4384,7 +4386,7 @@ class GetStreamsTest(ZulipTestCase):
 
         self.assertEqual(
             stream_names,
-            {"Venice", "Denmark", "Scotland", "Verona", "Rome"},
+            {"Venice", "Denmark", "Scotland", "Verona", "Rome", "core team"},
         )
 
     def test_public_streams_api(self) -> None:
@@ -4421,7 +4423,9 @@ class GetStreamsTest(ZulipTestCase):
         self.assert_json_success(result)
 
         json = result.json()
-        all_streams = [stream.name for stream in Stream.objects.filter(realm=realm)]
+        all_streams = [
+            stream.name for stream in Stream.objects.filter(realm=realm, invite_only=False)
+        ]
         self.assertEqual(sorted(s["name"] for s in json["streams"]), sorted(all_streams))
 
 
