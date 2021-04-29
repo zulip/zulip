@@ -106,7 +106,7 @@ a.no-underline:hover {
     }
 }
 
-i.zulip-icon.bot {
+i.zulip-icon.zulip-icon-bot {
     color: hsl(180, 5%, 74%);
     vertical-align: top;
     padding: 0 2px;
