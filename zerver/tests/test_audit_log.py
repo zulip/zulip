@@ -73,7 +73,7 @@ class TestRealmAuditLog(ZulipTestCase):
         do_activate_user(user, acting_user=user)
         do_deactivate_user(user, acting_user=user)
         do_reactivate_user(user, acting_user=user)
-        self.assertEqual(RealmAuditLog.objects.filter(event_time__gte=now).count(), 5)
+        self.assertEqual(RealmAuditLog.objects.filter(event_time__gte=now).count(), 6)
         event_types = list(
             RealmAuditLog.objects.filter(
                 realm=realm,

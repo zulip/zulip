@@ -713,7 +713,7 @@ class NormalActionsTest(BaseAction):
                 acting_user=None,
             ),
             state_change_expected=True,
-            num_events=4,
+            num_events=5,
         )
 
         check_invites_changed("events[3]", events[3])
@@ -901,11 +901,20 @@ class NormalActionsTest(BaseAction):
         )
 
     def test_register_events(self) -> None:
-        events = self.verify_action(lambda: self.register("test1@zulip.com", "test1"))
-        self.assert_length(events, 1)
+        events = self.verify_action(lambda: self.register("test1@zulip.com", "test1"), num_events=3)
+        self.assert_length(events, 3)
+
         check_realm_user_add("events[0]", events[0])
         new_user_profile = get_user_by_delivery_email("test1@zulip.com", self.user_profile.realm)
         self.assertEqual(new_user_profile.delivery_email, "test1@zulip.com")
+
+        check_subscription_peer_add("events[1]", events[1])
+
+        check_message("events[2]", events[2])
+        self.assertIn(
+            f'data-user-id="{new_user_profile.id}">test1_zulip.com</span> just signed up for Zulip',
+            events[2]["message"]["content"],
+        )
 
     def test_register_events_email_address_visibility(self) -> None:
         do_set_realm_property(
@@ -915,11 +924,19 @@ class NormalActionsTest(BaseAction):
             acting_user=None,
         )
 
-        events = self.verify_action(lambda: self.register("test1@zulip.com", "test1"))
-        self.assert_length(events, 1)
+        events = self.verify_action(lambda: self.register("test1@zulip.com", "test1"), num_events=3)
+        self.assert_length(events, 3)
         check_realm_user_add("events[0]", events[0])
         new_user_profile = get_user_by_delivery_email("test1@zulip.com", self.user_profile.realm)
         self.assertEqual(new_user_profile.email, f"user{new_user_profile.id}@zulip.testserver")
+
+        check_subscription_peer_add("events[1]", events[1])
+
+        check_message("events[2]", events[2])
+        self.assertIn(
+            f'data-user-id="{new_user_profile.id}">test1_zulip.com</span> just signed up for Zulip',
+            events[2]["message"]["content"],
+        )
 
     def test_alert_words_events(self) -> None:
         events = self.verify_action(lambda: do_add_alert_words(self.user_profile, ["alert_word"]))
@@ -1005,7 +1022,7 @@ class NormalActionsTest(BaseAction):
 
     def test_default_stream_groups_events(self) -> None:
         streams = []
-        for stream_name in ["Scotland", "Verona", "Denmark"]:
+        for stream_name in ["Scotland", "Rome", "Denmark"]:
             streams.append(get_stream(stream_name, self.user_profile.realm))
 
         events = self.verify_action(
@@ -1052,7 +1069,7 @@ class NormalActionsTest(BaseAction):
 
     def test_default_stream_group_events_guest(self) -> None:
         streams = []
-        for stream_name in ["Scotland", "Verona", "Denmark"]:
+        for stream_name in ["Scotland", "Rome", "Denmark"]:
             streams.append(get_stream(stream_name, self.user_profile.realm))
 
         do_create_default_stream_group(self.user_profile.realm, "group1", "This is group1", streams)

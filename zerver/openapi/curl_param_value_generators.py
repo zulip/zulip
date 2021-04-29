@@ -124,7 +124,7 @@ def add_emoji_to_message() -> Dict[str, object]:
     user_profile = helpers.example_user("iago")
 
     # from OpenAPI format data in zulip.yaml
-    message_id = 41
+    message_id = 43
     emoji_name = "octopus"
     emoji_code = "1f419"
     reaction_type = "unicode_emoji"

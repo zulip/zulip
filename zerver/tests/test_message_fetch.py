@@ -165,7 +165,7 @@ class NarrowBuilderTest(ZulipTestCase):
         # Number of recipient ids will increase by 1 and not 3
         self._do_add_term_test(
             term,
-            "WHERE recipient_id IN (%(recipient_id_1)s, %(recipient_id_2)s, %(recipient_id_3)s, %(recipient_id_4)s, %(recipient_id_5)s, %(recipient_id_6)s)",
+            "WHERE recipient_id IN (%(recipient_id_1)s, %(recipient_id_2)s, %(recipient_id_3)s, %(recipient_id_4)s, %(recipient_id_5)s, %(recipient_id_6)s",
         )
 
     def test_add_term_using_streams_operator_and_public_stream_operand_negated(self) -> None:
@@ -1406,9 +1406,15 @@ class GetOldMessagesTest(ZulipTestCase):
         """
         Test old `/json/messages` returns reactions.
         """
+        self.send_stream_message(self.example_user("iago"), "Verona")
+
         self.login("hamlet")
-        messages = self.get_and_check_messages({})
-        message_id = messages["messages"][0]["id"]
+
+        get_messages_params: Dict[str, Union[int, str]] = {"anchor": "newest", "num_before": 1}
+        messages = self.get_and_check_messages(get_messages_params)["messages"]
+        self.assert_length(messages, 1)
+        message_id = messages[0]["id"]
+        self.assert_length(messages[0]["reactions"], 0)
 
         self.login("othello")
         reaction_name = "thumbs_up"
@@ -1421,15 +1427,11 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assert_json_success(payload)
 
         self.login("hamlet")
-        messages = self.get_and_check_messages({})
-        message_to_assert = None
-        for message in messages["messages"]:
-            if message["id"] == message_id:
-                message_to_assert = message
-                break
-        assert message_to_assert is not None
-        self.assert_length(message_to_assert["reactions"], 1)
-        self.assertEqual(message_to_assert["reactions"][0]["emoji_name"], reaction_name)
+        messages = self.get_and_check_messages(get_messages_params)["messages"]
+        self.assert_length(messages, 1)
+        self.assertEqual(messages[0]["id"], message_id)
+        self.assert_length(messages[0]["reactions"], 1)
+        self.assertEqual(messages[0]["reactions"][0]["emoji_name"], reaction_name)
 
     def test_successful_get_messages(self) -> None:
         """

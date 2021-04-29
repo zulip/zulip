@@ -245,6 +245,7 @@ async function test_streams_search_feature(page: Page): Promise<void> {
     );
 
     await page.type('#stream_filter input[type="text"]', "Puppeteer");
+    await page.waitForSelector(".stream-row[data-stream-name='core team']", {hidden: true});
     assert.strictEqual(
         await common.get_text_from_selector(page, ".stream-row:not(.notdisplayed) .stream-name"),
         "Puppeteer",

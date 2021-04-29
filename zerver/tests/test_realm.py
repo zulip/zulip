@@ -352,8 +352,6 @@ class RealmTest(ZulipTestCase):
     def test_get_default_notifications_stream(self) -> None:
         realm = get_realm("zulip")
         verona = get_stream("verona", realm)
-        realm.notifications_stream_id = verona.id
-        realm.save(update_fields=["notifications_stream"])
 
         notifications_stream = realm.get_notifications_stream()
         assert notifications_stream is not None

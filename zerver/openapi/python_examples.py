@@ -512,7 +512,7 @@ def get_streams(client: Client) -> None:
     # {code_example|end}
 
     validate_against_openapi_schema(result, "/streams", "get", "200")
-    assert len(result["streams"]) == 4
+    assert len(result["streams"]) == 5
 
 
 @openapi_test_function("/streams/{stream_id}:patch")

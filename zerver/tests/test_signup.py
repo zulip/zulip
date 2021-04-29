@@ -774,13 +774,13 @@ class LoginTest(ZulipTestCase):
         with queries_captured() as queries, cache_tries_captured() as cache_tries:
             self.register(self.nonreg_email("test"), "test")
         # Ensure the number of queries we make is not O(streams)
-        self.assert_length(queries, 73)
+        self.assert_length(queries, 88)
 
         # We can probably avoid a couple cache hits here, but there doesn't
         # seem to be any O(N) behavior.  Some of the cache hits are related
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
-        self.assert_length(cache_tries, 16)
+        self.assert_length(cache_tries, 20)
 
         user_profile = self.nonreg_user("test")
         self.assert_logged_in_user_id(user_profile.id)
@@ -1456,24 +1456,29 @@ class InviteUserTest(InviteUserBase):
         self.assertTrue(public_msg_id in invitee_msg_ids)
         self.assertFalse(secret_msg_id in invitee_msg_ids)
         self.assertFalse(invitee_profile.is_realm_admin)
-        # Test that exactly 2 new Zulip messages were sent, both notifications.
-        last_3_messages = list(reversed(list(Message.objects.all().order_by("-id")[0:3])))
-        first_msg = last_3_messages[0]
-        self.assertEqual(first_msg.id, secret_msg_id)
 
-        # The first, from notification-bot to the user who invited the new user.
-        second_msg = last_3_messages[1]
-        self.assertEqual(second_msg.sender.email, "notification-bot@zulip.com")
+        invitee_msg, signups_stream_msg, inviter_msg, secret_msg = Message.objects.all().order_by(
+            "-id"
+        )[0:4]
+
+        self.assertEqual(secret_msg.id, secret_msg_id)
+
+        self.assertEqual(inviter_msg.sender.email, "notification-bot@zulip.com")
         self.assertTrue(
-            second_msg.content.startswith(
+            inviter_msg.content.startswith(
                 f"alice_zulip.com <`{invitee_profile.email}`> accepted your",
             )
         )
 
-        # The second, from welcome-bot to the user who was invited.
-        third_msg = last_3_messages[2]
-        self.assertEqual(third_msg.sender.email, "welcome-bot@zulip.com")
-        self.assertTrue(third_msg.content.startswith("Hello, and welcome to Zulip!"))
+        self.assertEqual(signups_stream_msg.sender.email, "notification-bot@zulip.com")
+        self.assertTrue(
+            signups_stream_msg.content.startswith(
+                f"@_**alice_zulip.com|{invitee_profile.id}** just signed up",
+            )
+        )
+
+        self.assertEqual(invitee_msg.sender.email, "welcome-bot@zulip.com")
+        self.assertTrue(invitee_msg.content.startswith("Hello, and welcome to Zulip!"))
 
     def test_multi_user_invite(self) -> None:
         """
@@ -3611,7 +3616,13 @@ class UserSignUpTest(InviteUserBase):
         self.assertEqual(result.status_code, 200)
 
         default_streams = []
-        for stream_name in ["venice", "verona"]:
+
+        existing_default_streams = DefaultStream.objects.filter(realm=realm)
+        self.assert_length(existing_default_streams, 1)
+        self.assertEqual(existing_default_streams[0].stream.name, "Verona")
+        default_streams.append(existing_default_streams[0].stream)
+
+        for stream_name in ["venice", "rome"]:
             stream = get_stream(stream_name, realm)
             do_add_default_stream(stream)
             default_streams.append(stream)
@@ -3686,6 +3697,7 @@ class UserSignUpTest(InviteUserBase):
         result = self.client_get(confirmation_url)
         self.assertEqual(result.status_code, 200)
 
+        DefaultStream.objects.filter(realm=realm).delete()
         default_streams = []
         for stream_name in ["venice", "verona"]:
             stream = get_stream(stream_name, realm)
