@@ -173,7 +173,7 @@ class TestFollowupEmails(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         enqueue_welcome_emails(hamlet)
         scheduled_emails = ScheduledEmail.objects.filter(users=hamlet)
-        email_data = orjson.loads(scheduled_emails[0].data)
+        email_data = scheduled_emails[0].data
         self.assertEqual(email_data["context"]["email"], self.example_email("hamlet"))
         self.assertEqual(email_data["context"]["is_realm_admin"], False)
         self.assertEqual(email_data["context"]["getting_started_link"], "https://zulip.com")
@@ -184,7 +184,7 @@ class TestFollowupEmails(ZulipTestCase):
         iago = self.example_user("iago")
         enqueue_welcome_emails(iago)
         scheduled_emails = ScheduledEmail.objects.filter(users=iago)
-        email_data = orjson.loads(scheduled_emails[0].data)
+        email_data = scheduled_emails[0].data
         self.assertEqual(email_data["context"]["email"], self.example_email("iago"))
         self.assertEqual(email_data["context"]["is_realm_admin"], True)
         self.assertEqual(
@@ -218,7 +218,7 @@ class TestFollowupEmails(ZulipTestCase):
             scheduled_emails = ScheduledEmail.objects.filter(users=user)
 
             self.assertEqual(len(scheduled_emails), 2)
-            email_data = orjson.loads(scheduled_emails[0].data)
+            email_data = scheduled_emails[0].data
             self.assertEqual(email_data["context"]["ldap"], True)
             self.assertEqual(
                 email_data["context"]["ldap_username"], "newuser_email_as_uid@zulip.com"
@@ -244,7 +244,7 @@ class TestFollowupEmails(ZulipTestCase):
             scheduled_emails = ScheduledEmail.objects.filter(users=user)
 
             self.assertEqual(len(scheduled_emails), 2)
-            email_data = orjson.loads(scheduled_emails[0].data)
+            email_data = scheduled_emails[0].data
             self.assertEqual(email_data["context"]["ldap"], True)
             self.assertEqual(email_data["context"]["ldap_username"], "newuser")
 
@@ -267,7 +267,7 @@ class TestFollowupEmails(ZulipTestCase):
             scheduled_emails = ScheduledEmail.objects.filter(users=user)
 
             self.assertEqual(len(scheduled_emails), 2)
-            email_data = orjson.loads(scheduled_emails[0].data)
+            email_data = scheduled_emails[0].data
             self.assertEqual(email_data["context"]["ldap"], True)
             self.assertEqual(email_data["context"]["ldap_username"], "newuser_with_email")
 
@@ -281,12 +281,8 @@ class TestFollowupEmails(ZulipTestCase):
             "scheduled_timestamp"
         )
         self.assertEqual(2, len(scheduled_emails))
-        self.assertEqual(
-            orjson.loads(scheduled_emails[1].data)["template_prefix"], "zerver/emails/followup_day2"
-        )
-        self.assertEqual(
-            orjson.loads(scheduled_emails[0].data)["template_prefix"], "zerver/emails/followup_day1"
-        )
+        self.assertEqual(scheduled_emails[1].data["template_prefix"], "zerver/emails/followup_day2")
+        self.assertEqual(scheduled_emails[0].data["template_prefix"], "zerver/emails/followup_day1")
 
         ScheduledEmail.objects.all().delete()
 
@@ -294,7 +290,7 @@ class TestFollowupEmails(ZulipTestCase):
         scheduled_emails = ScheduledEmail.objects.filter(users=cordelia)
         # Cordelia has account in more than 1 realm so day2 email should not be sent
         self.assertEqual(len(scheduled_emails), 1)
-        email_data = orjson.loads(scheduled_emails[0].data)
+        email_data = scheduled_emails[0].data
         self.assertEqual(email_data["template_prefix"], "zerver/emails/followup_day1")
 
 

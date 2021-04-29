@@ -10,7 +10,6 @@ from email.utils import formataddr, parseaddr
 from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 import backoff
-import orjson
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives, get_connection
 from django.core.mail.backends.base import BaseEmailBackend
@@ -341,7 +340,7 @@ def send_future_email(
         type=EMAIL_TYPES[template_name],
         scheduled_timestamp=timezone_now() + delay,
         realm=realm,
-        data=orjson.dumps(email_fields).decode(),
+        data=email_fields,
     )
 
     # We store the recipients in the ScheduledEmail object itself,
@@ -428,7 +427,7 @@ def handle_send_email_format_changes(job: Dict[str, Any]) -> None:
 
 
 def deliver_scheduled_emails(email: ScheduledEmail) -> None:
-    data = orjson.loads(email.data)
+    data = email.data
     user_ids = list(email.users.values_list("id", flat=True))
     if not user_ids and not email.address:
         # This state doesn't make sense, so something must be mutating,
