@@ -239,9 +239,7 @@ function human_info(person) {
     const info = {};
 
     info.is_bot = false;
-    info.is_admin = person.is_admin;
-    info.is_guest = person.is_guest;
-    info.is_owner = person.is_owner;
+    info.user_role_text = people.get_user_type(person.user_id);
     info.is_active = people.is_person_active(person.user_id);
     info.user_id = person.user_id;
     info.full_name = person.full_name;

@@ -40,6 +40,7 @@ const me = {
     is_admin: false,
     is_guest: false,
     is_bot: false,
+    role: 400,
     // no avatar, so client should construct a /avatar/{user_id} URL.
 };
 
@@ -86,6 +87,7 @@ const realm_admin = {
     is_admin: true,
     is_guest: false,
     is_bot: false,
+    role: 200,
 };
 
 const guest = {
@@ -96,6 +98,7 @@ const guest = {
     is_admin: false,
     is_guest: true,
     is_bot: false,
+    role: 600,
 };
 
 const realm_owner = {
@@ -106,6 +109,7 @@ const realm_owner = {
     is_admin: true,
     is_guest: false,
     is_bot: false,
+    role: 100,
 };
 
 const bot_botson = {
@@ -648,6 +652,7 @@ test_people("message_methods", () => {
             is_admin: false,
             is_bot: false,
             is_guest: false,
+            role: 400,
             timezone: "America/Los_Angeles",
             user_id: 30,
         },

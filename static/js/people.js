@@ -9,6 +9,7 @@ import {FoldDict} from "./fold_dict";
 import {$t} from "./i18n";
 import * as message_user_ids from "./message_user_ids";
 import * as reload_state from "./reload_state";
+import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as util from "./util";
 
@@ -268,17 +269,11 @@ export function get_user_time(user_id) {
 
 export function get_user_type(user_id) {
     const user_profile = get_by_user_id(user_id);
-
-    if (user_profile.is_owner) {
-        return $t({defaultMessage: "Owner"});
-    } else if (user_profile.is_admin) {
-        return $t({defaultMessage: "Administrator"});
-    } else if (user_profile.is_guest) {
-        return $t({defaultMessage: "Guest"});
-    } else if (user_profile.is_bot) {
+    if (user_profile.is_bot) {
         return $t({defaultMessage: "Bot"});
     }
-    return $t({defaultMessage: "Member"});
+
+    return settings_config.user_role_map.get(user_profile.role);
 }
 
 export function emails_strings_to_user_ids_string(emails_string) {
