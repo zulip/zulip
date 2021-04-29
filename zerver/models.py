@@ -375,14 +375,14 @@ class Realm(models.Model):
         related_name="+",
         null=True,
         blank=True,
-        on_delete=CASCADE,
+        on_delete=models.SET_NULL,
     )
     signup_notifications_stream: Optional["Stream"] = models.ForeignKey(
         "Stream",
         related_name="+",
         null=True,
         blank=True,
-        on_delete=CASCADE,
+        on_delete=models.SET_NULL,
     )
 
     MESSAGE_RETENTION_SPECIAL_VALUES_MAP = {
@@ -1266,13 +1266,13 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         "zerver.Stream",
         null=True,
         related_name="+",
-        on_delete=CASCADE,
+        on_delete=models.SET_NULL,
     )
     default_events_register_stream: Optional["Stream"] = models.ForeignKey(
         "zerver.Stream",
         null=True,
         related_name="+",
-        on_delete=CASCADE,
+        on_delete=models.SET_NULL,
     )
     default_all_public_streams: bool = models.BooleanField(default=False)
 
