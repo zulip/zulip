@@ -5,8 +5,6 @@ line.  To help with this, Zulip ships with over 100 command-line tools
 implemented using the [Django management commands
 framework][django-management].
 
-[django-management]: https://docs.djangoproject.com/en/2.2/ref/django-admin/#django-admin-and-manage-py
-
 ## Running management commands
 
 Start by logging in as the `zulip` user on the Zulip server.  Then run
@@ -83,7 +81,9 @@ In [2]: do_change_user_delivery_email(user_profile, "new_email@example.com")
 ```
 
 Any Django tutorial can give you helpful advice on querying and
-formatting data from Zulip's tables for inspection.
+formatting data from Zulip's tables for inspection; Zulip's own
+[new feature tutorial](../tutorials/new-feature-tutorial.md) should help
+you understand how the codebase is organized.
 
 We recommend against directly editing objects and saving them using
 Django's `object.save()`.  While this will save your changes to the
@@ -128,3 +128,48 @@ There are dozens of useful management commands under
 
 All of our management commands have internal documentation available
 via `manage.py command_name --help`.
+
+## Custom management commands
+
+Zulip supports several mechanisms for running custom code on a
+self-hosted Zulip server:
+
+* Using an existing [integration][integrations] or writing your own
+  [webhook integration][webhook-integrations] or [bot][writing-bots].
+* Writing a program using the [Zulip API][zulip-api].
+* [Modifying the Zulip server][modifying-zulip].
+* Using the interactive [management shell](#manage-py-shell),
+  documented above, for one-time work or prototyping.
+* Writing a custom management command, detailed here.
+
+Custom management commands are Python 3 programs that run inside
+Zulip's context, so that they can access its libraries, database, and
+code freely.  They can be the best choice when you want to run custom
+code that is not permitted by Zulip's security model (and thus can't
+be done more easily using the [REST API][zulip-api]) and that you
+might want to run often (and so the interactive `manage.py shell` is
+not suitable, though we recommend using the management shell to
+prototype queries).
+
+Our developer documentation on [writing management
+commands][management-commands-dev] explains how to write them.
+
+Simply writing the command inside a `deployments/` directory is not
+ideal, because a new such directory is created every time you upgrade
+the Zulip server.
+
+Instead, we recommend deploying custom management commands either via
+the [modifying Zulip][modifying-zulip] process or by storing them in
+`/etc/zulip` (so they are included in
+[backups](../production/export-and-import.html#backups)) and then
+symlinking them into
+`/home/zulip/deployments/current/zerver/management/` after each
+upgrade.
+
+[modifying-zulip]: ../production/upgrade-or-modify.html#modifying-zulip
+[writing-bots]: https://zulip.com/api/writing-bots
+[integrations]: https://zulip.com/integrations
+[zulip-api]: https://zulip.com/api/rest
+[webhook-integrations]: https://zulip.com/api/incoming-webhooks-overview
+[management-commands-dev]: ../subsystems/management-commands.md
+[django-management]: https://docs.djangoproject.com/en/2.2/ref/django-admin/#django-admin-and-manage-py
