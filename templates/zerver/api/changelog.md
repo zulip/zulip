@@ -10,6 +10,11 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 61**
+
+* Added support for inviting users as moderators to the invitation
+  endpoints.
+
 **Feature level 60**
 
 * [`POST /register`](/api/register-queue): Added a new boolean field

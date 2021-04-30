@@ -1713,6 +1713,7 @@ class PreregistrationUser(models.Model):
     INVITE_AS = dict(
         REALM_OWNER=100,
         REALM_ADMIN=200,
+        MODERATOR=300,
         MEMBER=400,
         GUEST_USER=600,
     )

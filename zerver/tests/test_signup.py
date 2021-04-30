@@ -1171,6 +1171,37 @@ class InviteUserTest(InviteUserBase):
         )
         self.assert_json_error(response, "Must be an organization administrator")
 
+    def test_successful_invite_user_as_moderator_from_admin_account(self) -> None:
+        self.login("iago")
+        invitee = self.nonreg_email("alice")
+        result = self.invite(
+            invitee, ["Denmark"], invite_as=PreregistrationUser.INVITE_AS["MODERATOR"]
+        )
+        self.assert_json_success(result)
+        self.assertTrue(find_key_by_email(invitee))
+
+        self.submit_reg_form_for_user(invitee, "password")
+        invitee_profile = self.nonreg_user("alice")
+        self.assertFalse(invitee_profile.is_realm_admin)
+        self.assertTrue(invitee_profile.is_moderator)
+        self.assertFalse(invitee_profile.is_guest)
+
+    def test_invite_user_as_moderator_from_normal_account(self) -> None:
+        self.login("hamlet")
+        invitee = self.nonreg_email("alice")
+        response = self.invite(
+            invitee, ["Denmark"], invite_as=PreregistrationUser.INVITE_AS["MODERATOR"]
+        )
+        self.assert_json_error(response, "Must be an organization administrator")
+
+    def test_invite_user_as_moderator_from_moderator_account(self) -> None:
+        self.login("shiva")
+        invitee = self.nonreg_email("alice")
+        response = self.invite(
+            invitee, ["Denmark"], invite_as=PreregistrationUser.INVITE_AS["MODERATOR"]
+        )
+        self.assert_json_error(response, "Must be an organization administrator")
+
     def test_invite_user_as_invalid_type(self) -> None:
         """
         Test inviting a user as invalid type of user i.e. type of invite_as

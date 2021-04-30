@@ -12,7 +12,7 @@ the article below describes each in more detail.
 * Share a **reusable invitation link**.
 
 The last two, invite-based, techniques also allow you to control the
-[role (owner, admin, member, or guest)](/help/roles-and-permissions) that the
+[role (owner, admin, moderator, member, or guest)](/help/roles-and-permissions) that the
 invited people will have.
 
 You can also manage access by
@@ -78,7 +78,7 @@ and reusable invitation links expire 10 days after they are sent.
 
 1. Enter a list of email addresses.
 
-1. Decide whether the users should join as [admins, members, or
+1. Decide whether the users should join as [admins, moderators, members, or
    guests](/help/roles-and-permissions).
 
 1. Select which streams they should join. If you send invitations often, you
@@ -100,7 +100,7 @@ and reusable invitation links expire 10 days after they are sent.
 
 1. Click **Generate invite link**.
 
-1. Decide whether users using the link should join as [admins,
+1. Decide whether users using the link should join as [admins, moderators
    members, or guests](/help/roles-and-permissions).
 
 1. Select which streams they should join. If you send invitations often, you
