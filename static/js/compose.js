@@ -784,8 +784,11 @@ function validate_private_message_policy(private_message_policy_type) {
     if (private_message_policy_type === 2) {
         // Frontend check for for PRIVATE_MESSAGE_POLICY_DISABLED
         const user_ids = compose_pm_pill.get_user_ids();
-        if (user_ids.length !== 1 || !people.get_by_user_id(user_ids[0]).is_bot) {
-            // Unless we're composing to a bot
+        if (
+            user_ids.length !== 1 ||
+            (!people.get_by_user_id(user_ids[0]).is_bot && user_ids[0] !== page_params.user_id)
+        ) {
+            // Unless we're composing to a bot or self
             compose_error(
                 $t_html({defaultMessage: "Private messages are disabled in this organization."}),
                 $("#private_message_recipient"),
@@ -796,7 +799,11 @@ function validate_private_message_policy(private_message_policy_type) {
     if (private_message_policy_type === 3) {
         // Frontend check for for PRIVATE_MESSAGE_POLICY_ADMIN_ONLY
         const user_ids = compose_pm_pill.get_user_ids();
-        if (user_ids.length !== 1 || !people.get_by_user_id(user_ids[0]).is_bot) {
+        if (
+            user_ids.length !== 1 ||
+            (!people.get_by_user_id(user_ids[0]).is_bot && user_ids[0] !== page_params.user_id)
+        ) {
+            // Unless we're composing to a bot or self
             if (page_params.is_guest) {
                 compose_error(
                     $t_html({

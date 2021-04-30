@@ -2808,6 +2808,9 @@ def validate_stream_id_with_pm_notification(
 def check_private_message_policy(
     realm: Realm, sender: UserProfile, user_profiles: Sequence[UserProfile]
 ) -> None:
+    if len(user_profiles) == 1 and sender.id == user_profiles[0].id:
+        # We allow self PMs for all policies.
+        return
 
     if sender.is_bot or (len(user_profiles) == 1 and user_profiles[0].is_bot):
         # We allow PMs only between users and bots, to avoid

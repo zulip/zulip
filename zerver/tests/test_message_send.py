@@ -2045,7 +2045,7 @@ class PersonalMessageSendTest(ZulipTestCase):
         )
         with self.assertRaises(JsonableError):
             self.send_personal_message(user_profile, self.example_user("cordelia"))
-
+        self.send_personal_message(user_profile, user_profile)
         self.can_send_pm_to_bot(user_profile)
 
     def test_private_message_policy_admin_only(self) -> None:
@@ -2089,12 +2089,13 @@ class PersonalMessageSendTest(ZulipTestCase):
             self.send_personal_message(test_user_dict["admin_user"], user)
             self.send_personal_message(user, test_user_dict["admin_user"])
 
-            if not user.is_realm_admin:
+            if not user.is_realm_admin and user != test_user_dict["non_admin_user"]:
                 with self.assertRaisesRegex(
                     JsonableError,
                     "Members can send private messages to administrators only.",
                 ):
                     self.send_personal_message(user, test_user_dict["non_admin_user"])
+            self.send_personal_message(user, user)
 
         self.send_huddle_message(test_user_dict["admin_user"], list(test_user_dict.values()))
 
