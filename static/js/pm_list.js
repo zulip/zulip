@@ -75,11 +75,9 @@ export function _get_convos() {
         const is_active = user_ids_string === active_user_ids_string;
 
         let user_circle_class;
-        let fraction_present;
 
         if (is_group) {
             user_circle_class = "user_circle_fraction";
-            fraction_present = buddy_data.huddle_fraction_present(user_ids_string);
         } else {
             const user_id = Number.parseInt(user_ids_string, 10);
             user_circle_class = buddy_data.get_user_circle_class(user_id);
@@ -98,7 +96,6 @@ export function _get_convos() {
             is_active,
             url: hash_util.pm_with_uri(reply_to),
             user_circle_class,
-            fraction_present,
             is_group,
         };
         display_messages.push(display_message);
