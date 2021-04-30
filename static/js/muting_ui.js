@@ -52,7 +52,7 @@ export function handle_topic_updates(muted_topics) {
     rerender_for_muted_topic(old_muted_topics);
 }
 
-export function mute_topic(stream_id, topic) {
+export function mute_topic(stream_id, topic, from_hotkey) {
     const stream_name = stream_data.maybe_get_stream_name(stream_id);
     const data = {
         stream_id,
@@ -65,6 +65,17 @@ export function mute_topic(stream_id, topic) {
         idempotent: true,
         data,
         success() {
+            if (!from_hotkey) {
+                return;
+            }
+
+            // The following feedback_widget notice helps avoid
+            // confusion when a user who is not familiar with Zulip's
+            // keyboard UI hits "M" in the wrong context and has a
+            // bunch of messages suddenly disappear.  This notice is
+            // only useful when muting from the keyboard, since you
+            // know what you did if you triggered muting with the
+            // mouse.
             feedback_widget.show({
                 populate(container) {
                     const rendered_html = render_topic_muted();
@@ -108,7 +119,7 @@ export function toggle_topic_mute(message) {
     if (muting.is_topic_muted(stream_id, topic)) {
         unmute_topic(stream_id, topic);
     } else if (message.type === "stream") {
-        mute_topic(stream_id, topic);
+        mute_topic(stream_id, topic, true);
     }
 }
 
