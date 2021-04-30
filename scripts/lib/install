@@ -173,6 +173,10 @@ export LC_ALL="en_US.UTF-8"
 export LANG="en_US.UTF-8"
 export LANGUAGE="en_US.UTF-8"
 
+# Force a known path; this fixes problems on Debian where `su` from
+# non-root may not adjust `$PATH` to root's.
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
 # Check for a supported OS release.
 if [ -f /etc/os-release ]; then
     os_info="$(
