@@ -9,7 +9,7 @@ sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import may_be_perform_purging, parse_cache_script_args
 
 YARN_CACHE_PATH = os.path.expanduser("~/.cache/yarn/")
-CURRENT_VERSION = "v6"
+CURRENT_VERSION_DIR = os.path.join(YARN_CACHE_PATH, "v6")
 
 
 def remove_unused_versions_dir(args: argparse.Namespace) -> None:
@@ -19,13 +19,13 @@ def remove_unused_versions_dir(args: argparse.Namespace) -> None:
     ~/.cache/yarn for packages that you haven't installed in years; but one
     can always remove the cache entirely.
     """
-    current_version_dir = os.path.join(YARN_CACHE_PATH, CURRENT_VERSION)
+    dirs_to_keep = {CURRENT_VERSION_DIR}
     try:
         dirs_to_purge = set(
             [
                 os.path.join(YARN_CACHE_PATH, directory)
                 for directory in os.listdir(YARN_CACHE_PATH)
-                if directory != CURRENT_VERSION
+                if os.path.join(YARN_CACHE_PATH, directory) not in dirs_to_keep
             ]
         )
     except FileNotFoundError:
@@ -33,7 +33,7 @@ def remove_unused_versions_dir(args: argparse.Namespace) -> None:
 
     may_be_perform_purging(
         dirs_to_purge,
-        {current_version_dir},
+        dirs_to_keep,
         "yarn cache",
         args.dry_run,
         args.verbose,
