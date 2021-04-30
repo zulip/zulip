@@ -893,6 +893,7 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
                 "Could not find UserMessage with message_id %s and user_id %s",
                 missed_message["message_id"],
                 user_profile_id,
+                exc_info=True,
             )
             return
 
