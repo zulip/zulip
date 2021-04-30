@@ -107,117 +107,53 @@ run_test("user_can_change_logo", () => {
     assert.equal(can_change_logo(), false);
 });
 
-run_test("user_can_invite_others_to_realm", () => {
-    const can_invite_others_to_realm = settings_data.user_can_invite_others_to_realm;
+function test_policy(label, policy, validation_func) {
+    run_test(label, () => {
+        page_params.is_admin = true;
+        page_params[policy] = settings_config.common_policy_values.by_admins_only.code;
+        assert.equal(validation_func(), true);
 
-    page_params.is_admin = true;
-    page_params.realm_invite_to_realm_policy =
-        settings_config.common_policy_values.by_admins_only.code;
-    assert.equal(can_invite_others_to_realm(), true);
+        page_params.is_admin = false;
+        assert.equal(validation_func(), false);
 
-    page_params.is_admin = false;
-    assert.equal(can_invite_others_to_realm(), false);
+        page_params.is_moderator = true;
+        page_params[policy] = settings_config.common_policy_values.by_moderators_only.code;
+        assert.equal(validation_func(), true);
 
-    page_params.is_moderator = true;
-    page_params.realm_invite_to_realm_policy =
-        settings_config.common_policy_values.by_moderators_only.code;
-    assert.equal(can_invite_others_to_realm(), true);
+        page_params.is_moderator = false;
+        assert.equal(validation_func(), false);
 
-    page_params.is_moderator = false;
-    assert.equal(can_invite_others_to_realm(), false);
+        page_params.is_guest = true;
+        page_params[policy] = settings_config.common_policy_values.by_members.code;
+        assert.equal(validation_func(), false);
 
-    page_params.is_guest = true;
-    page_params.realm_invite_to_realm_policy = settings_config.common_policy_values.by_members.code;
-    assert.equal(can_invite_others_to_realm(), false);
+        page_params.is_guest = false;
+        assert.equal(validation_func(), true);
 
-    page_params.is_guest = false;
-    assert.equal(can_invite_others_to_realm(), true);
+        page_params[policy] = settings_config.common_policy_values.by_full_members.code;
+        page_params.user_id = 30;
+        people.add_active_user(isaac);
+        isaac.date_joined = new Date(Date.now());
+        page_params.realm_waiting_period_threshold = 10;
+        assert.equal(validation_func(), false);
 
-    page_params.realm_invite_to_realm_policy =
-        settings_config.common_policy_values.by_full_members.code;
-    page_params.user_id = 30;
-    people.add_active_user(isaac);
-    isaac.date_joined = new Date(Date.now());
-    page_params.realm_waiting_period_threshold = 10;
-    assert.equal(can_invite_others_to_realm(), false);
+        isaac.date_joined = new Date(Date.now() - 20 * 86400000);
+        assert.equal(validation_func(), true);
+    });
+}
 
-    isaac.date_joined = new Date(Date.now() - 20 * 86400000);
-    assert.equal(can_invite_others_to_realm(), true);
-});
-
-run_test("user_can_subscribe_other_users", () => {
-    const can_subscribe_other_users = settings_data.user_can_subscribe_other_users;
-
-    page_params.is_admin = true;
-    page_params.realm_invite_to_stream_policy =
-        settings_config.common_policy_values.by_admins_only.code;
-    assert.equal(can_subscribe_other_users(), true);
-
-    page_params.is_admin = false;
-    assert.equal(can_subscribe_other_users(), false);
-
-    page_params.is_moderator = true;
-    page_params.realm_invite_to_stream_policy =
-        settings_config.common_policy_values.by_moderators_only.code;
-    assert.equal(can_subscribe_other_users(), true);
-
-    page_params.is_moderator = false;
-    assert.equal(can_subscribe_other_users(), false);
-
-    page_params.is_guest = true;
-    page_params.realm_invite_to_stream_policy =
-        settings_config.common_policy_values.by_members.code;
-    assert.equal(can_subscribe_other_users(), false);
-
-    page_params.is_guest = false;
-    assert.equal(can_subscribe_other_users(), true);
-
-    page_params.realm_invite_to_stream_policy =
-        settings_config.common_policy_values.by_full_members.code;
-    page_params.user_id = 30;
-    people.add_active_user(isaac);
-    isaac.date_joined = new Date(Date.now());
-    page_params.realm_waiting_period_threshold = 10;
-    assert.equal(can_subscribe_other_users(), false);
-
-    isaac.date_joined = new Date(Date.now() - 20 * 86400000);
-    assert.equal(can_subscribe_other_users(), true);
-});
-
-run_test("user_can_create_streams", () => {
-    const can_create_streams = settings_data.user_can_create_streams;
-
-    page_params.is_admin = true;
-    page_params.realm_create_stream_policy =
-        settings_config.common_policy_values.by_admins_only.code;
-    assert.equal(can_create_streams(), true);
-
-    page_params.is_admin = false;
-    assert.equal(can_create_streams(), false);
-
-    page_params.is_moderator = true;
-    page_params.realm_create_stream_policy =
-        settings_config.common_policy_values.by_moderators_only.code;
-    assert.equal(can_create_streams(), true);
-
-    page_params.is_moderator = false;
-    assert.equal(can_create_streams(), false);
-
-    page_params.is_guest = true;
-    page_params.realm_create_stream_policy = settings_config.common_policy_values.by_members.code;
-    assert.equal(can_create_streams(), false);
-
-    page_params.is_guest = false;
-    assert.equal(can_create_streams(), true);
-
-    page_params.realm_create_stream_policy =
-        settings_config.common_policy_values.by_full_members.code;
-    page_params.user_id = 30;
-    people.add_active_user(isaac);
-    isaac.date_joined = new Date(Date.now());
-    page_params.realm_waiting_period_threshold = 10;
-    assert.equal(can_create_streams(), false);
-
-    isaac.date_joined = new Date(Date.now() - 20 * 86400000);
-    assert.equal(can_create_streams(), true);
-});
+test_policy(
+    "user_can_create_streams",
+    "realm_create_stream_policy",
+    settings_data.user_can_create_streams,
+);
+test_policy(
+    "user_can_subscribe_other_users",
+    "realm_invite_to_stream_policy",
+    settings_data.user_can_subscribe_other_users,
+);
+test_policy(
+    "user_can_invite_others_to_realm",
+    "realm_invite_to_realm_policy",
+    settings_data.user_can_invite_others_to_realm,
+);
