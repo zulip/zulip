@@ -1056,7 +1056,7 @@ export function save_message_row_edit($row) {
 }
 
 export function maybe_show_edit($row, id) {
-    if (currently_editing_messages.has(id)) {
+    if (currently_editing_messages.has(id) && message_lists.current.get_row(id) === $row) {
         message_lists.current.show_edit_message($row, currently_editing_messages.get(id));
     }
 }
