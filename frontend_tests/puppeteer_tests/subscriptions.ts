@@ -140,6 +140,7 @@ async function test_user_filter_ui(
 
     // Test check all
     await page.click(".subs_set_all_users");
+    await wait_for_checked(page, "othello", true);
     await clear_ot_filter_with_backspace(page);
     await verify_filtered_users_are_visible_again(page, cordelia_checkbox, othello_checkbox);
     await verify_check_all_only_affects_visible_users(page);
