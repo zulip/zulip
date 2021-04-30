@@ -49,8 +49,6 @@ VNU_IGNORE = [
     r"No “p” element in scope but a “p” end tag seen\.",
     r"Element “div” not allowed as child of element “ul” in this context\. "
     + r"\(Suppressing further errors from this subtree\.\)",
-    # Warnings that are probably less important.
-    r"The “type” attribute is unnecessary for JavaScript resources\.",
 ]
 VNU_IGNORE_REGEX = re.compile(r"|".join(VNU_IGNORE))
 
