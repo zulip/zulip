@@ -19,7 +19,7 @@ go beneath the header.
 $sidebar_top: calc($header_height + $header_padding_bottom);
 
 /* These need to agree with scroll_bar.js */
-$left_sidebar_width: 250px;
+$left_sidebar_width: 270px;
 $right_sidebar_width: 250px;
 
 body,

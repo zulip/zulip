@@ -41,7 +41,7 @@ export function initialize() {
     // Workaround for browsers with fixed scrollbars
     sbWidth = getScrollbarWidth();
     // These need to agree with zulip.css
-    const left_sidebar_width = 250;
+    const left_sidebar_width = 270;
     const right_sidebar_width = 250;
 
     if (sbWidth > 0) {
