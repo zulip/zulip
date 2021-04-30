@@ -1176,6 +1176,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                 "Could not find UserMessage with message_id %s and user_id %s",
                 message_id,
                 self.user_profile.id,
+                exc_info=True,
             )
             mock_push_notifications.assert_called_once()
 
