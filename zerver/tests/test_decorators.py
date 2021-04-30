@@ -18,7 +18,6 @@ from zerver.decorator import (
     authenticated_rest_api_view,
     authenticated_uploads_api_view,
     cachify,
-    get_client_name,
     internal_notify_view,
     is_local_addr,
     rate_limit,
@@ -82,6 +81,7 @@ from zerver.lib.validator import (
     to_non_negative_int,
     to_positive_or_allowed_int,
 )
+from zerver.middleware import parse_client
 from zerver.models import Realm, UserProfile, get_realm, get_user
 
 if settings.ZILENCER_ENABLED:
@@ -89,41 +89,41 @@ if settings.ZILENCER_ENABLED:
 
 
 class DecoratorTestCase(ZulipTestCase):
-    def test_get_client_name(self) -> None:
+    def test_parse_client(self) -> None:
         req = HostRequestMock()
-        self.assertEqual(get_client_name(req), "Unspecified")
+        self.assertEqual(parse_client(req), ("Unspecified", None))
 
         req.META[
             "HTTP_USER_AGENT"
         ] = "ZulipElectron/4.0.3 Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_3) AppleWebKit/537.36 (KHTML, like Gecko) Zulip/4.0.3 Chrome/66.0.3359.181 Electron/3.1.10 Safari/537.36"
-        self.assertEqual(get_client_name(req), "ZulipElectron")
+        self.assertEqual(parse_client(req), ("ZulipElectron", "4.0.3"))
 
         req.META["HTTP_USER_AGENT"] = "ZulipDesktop/0.4.4 (Mac)"
-        self.assertEqual(get_client_name(req), "ZulipDesktop")
+        self.assertEqual(parse_client(req), ("ZulipDesktop", "0.4.4"))
 
         req.META["HTTP_USER_AGENT"] = "ZulipMobile/26.22.145 (Android 10)"
-        self.assertEqual(get_client_name(req), "ZulipMobile")
+        self.assertEqual(parse_client(req), ("ZulipMobile", "26.22.145"))
 
         req.META["HTTP_USER_AGENT"] = "ZulipMobile/26.22.145 (iOS 13.3.1)"
-        self.assertEqual(get_client_name(req), "ZulipMobile")
+        self.assertEqual(parse_client(req), ("ZulipMobile", "26.22.145"))
 
         # TODO: This should ideally be Firefox.
         req.META[
             "HTTP_USER_AGENT"
         ] = "Mozilla/5.0 (X11; Linux x86_64; rv:73.0) Gecko/20100101 Firefox/73.0"
-        self.assertEqual(get_client_name(req), "Mozilla")
+        self.assertEqual(parse_client(req), ("Mozilla", None))
 
         # TODO: This should ideally be Chrome.
         req.META[
             "HTTP_USER_AGENT"
         ] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.43 Safari/537.36"
-        self.assertEqual(get_client_name(req), "Mozilla")
+        self.assertEqual(parse_client(req), ("Mozilla", None))
 
         # TODO: This should ideally be Mobile Safari if we had better user-agent parsing.
         req.META[
             "HTTP_USER_AGENT"
         ] = "Mozilla/5.0 (Linux; Android 8.0.0; SM-G930F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.132 Mobile Safari/537.36"
-        self.assertEqual(get_client_name(req), "Mozilla")
+        self.assertEqual(parse_client(req), ("Mozilla", None))
 
     def test_REQ_aliases(self) -> None:
         @has_request_variables

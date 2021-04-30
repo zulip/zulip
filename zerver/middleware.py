@@ -2,7 +2,18 @@ import cProfile
 import logging
 import time
 import traceback
-from typing import Any, AnyStr, Callable, Dict, Iterable, List, MutableMapping, Optional, Union
+from typing import (
+    Any,
+    AnyStr,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    MutableMapping,
+    Optional,
+    Tuple,
+    Union,
+)
 
 from django.conf import settings
 from django.conf.urls.i18n import is_language_prefix_patterns_used
@@ -20,7 +31,6 @@ from django.views.csrf import csrf_failure as html_csrf_failure
 from sentry_sdk import capture_exception
 from sentry_sdk.integrations.logging import ignore_logger
 
-from zerver.decorator import get_client_name
 from zerver.lib.cache import get_remote_cache_requests, get_remote_cache_time
 from zerver.lib.db import reset_queries
 from zerver.lib.debug import maybe_tracemalloc_listen
@@ -290,16 +300,41 @@ class RequestContext(MiddlewareMixin):
             unset_request()
 
 
+def parse_client(request: HttpRequest) -> Tuple[str, Optional[str]]:
+    # If the API request specified a client in the request content,
+    # that has priority.  Otherwise, extract the client from the
+    # User-Agent.
+    if "client" in request.GET:  # nocoverage
+        return request.GET["client"], None
+    if "client" in request.POST:
+        return request.POST["client"], None
+    if "HTTP_USER_AGENT" in request.META:
+        user_agent: Optional[Dict[str, str]] = parse_user_agent(request.META["HTTP_USER_AGENT"])
+    else:
+        user_agent = None
+    if user_agent is None:
+        # In the future, we will require setting USER_AGENT, but for
+        # now we just want to tag these requests so we can review them
+        # in logs and figure out the extent of the problem
+        return "Unspecified", None
+
+    client_name = user_agent["name"]
+    if client_name.startswith("Zulip"):
+        return client_name, user_agent.get("version")
+
+    # We could show browser versions in logs, and it'd probably be a
+    # good idea, but the current parsing will just get you Mozilla/5.0.
+    #
+    # Fixing this probably means using a third-party library, and
+    # making sure it's fast enough that we're happy to do it even on
+    # hot-path cases.
+    return client_name, None
+
+
 class LogRequests(MiddlewareMixin):
     # We primarily are doing logging using the process_view hook, but
     # for some views, process_view isn't run, so we call the start
     # method here too
-    def process_user_agent(self, request: HttpRequest) -> None:
-        request.client_name = get_client_name(request)
-        request.client_version = None
-        if request.client_name.startswith("Zulip"):
-            request.client_version = parse_user_agent(request.META["HTTP_USER_AGENT"])["version"]
-
     def process_request(self, request: HttpRequest) -> None:
         maybe_tracemalloc_listen()
 
@@ -310,8 +345,8 @@ class LogRequests(MiddlewareMixin):
 
             # Avoid re-initializing request._log_data if it's already there.
             return
-        self.process_user_agent(request)
 
+        request.client_name, request.client_version = parse_client(request)
         request._log_data = {}
         record_request_start_data(request._log_data)
 
