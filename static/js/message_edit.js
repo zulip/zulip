@@ -21,6 +21,7 @@ import * as message_viewport from "./message_viewport";
 import {page_params} from "./page_params";
 import * as resize from "./resize";
 import * as rows from "./rows";
+import * as settings_data from "./settings_data";
 import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 import * as ui_report from "./ui_report";
@@ -346,7 +347,8 @@ function edit_message(row, raw_content) {
         file_upload_enabled = true;
     }
 
-    const show_edit_stream = message.is_stream && page_params.is_admin;
+    const show_edit_stream =
+        message.is_stream && settings_data.user_can_move_messages_between_streams();
     // current message's stream has been already been added and selected in handlebar
     const available_streams = show_edit_stream
         ? stream_data.subscribed_subs().filter((s) => s.stream_id !== message.stream_id)

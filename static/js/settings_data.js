@@ -126,3 +126,7 @@ export function user_can_subscribe_other_users() {
 export function user_can_create_streams() {
     return user_has_permission(page_params.realm_create_stream_policy);
 }
+
+export function user_can_move_messages_between_streams() {
+    return user_has_permission(page_params.realm_move_messages_between_streams_policy);
+}

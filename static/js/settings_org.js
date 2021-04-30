@@ -247,6 +247,7 @@ const simple_dropdown_properties = [
     "realm_add_emoji_by_admins_only",
     "realm_user_invite_restriction",
     "realm_wildcard_mention_policy",
+    "realm_move_messages_between_streams_policy",
 ];
 
 function set_property_dropdown_value(property_name) {

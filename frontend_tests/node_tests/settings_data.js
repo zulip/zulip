@@ -157,3 +157,8 @@ test_policy(
     "realm_invite_to_realm_policy",
     settings_data.user_can_invite_others_to_realm,
 );
+test_policy(
+    "user_can_move_messages_between_streams",
+    "realm_move_messages_between_streams_policy",
+    settings_data.user_can_move_messages_between_streams,
+);
