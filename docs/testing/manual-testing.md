@@ -273,7 +273,7 @@ Here are the things to test:
     - Compose (send a message to the stream)
     - Mark as read (scroll back and then have Hamlet send you a message)
     - Mute/unmute (do both)
-    - Unsubscribe (and then go to Stream settings in the gear menu to resubscribe)
+    - Unsubscribe (and then go to Stream settings in the avatar menu to resubscribe)
     - Choose custom color (play around with this)
 
 - Topic sidebar menus (click ellipsis when hovering over topics)
@@ -409,11 +409,11 @@ Miscellaneous:
 ### Stream settings ###
 
 Test various UI entry points into stream settings:
-- Use small gear menu in left sidebar, then filter to "devel".
+- Use small avatar menu in left sidebar, then filter to "devel".
 - Use popover menu in left sidebar next to "devel".
-- Use gear menu above buddy list and filter to "devel".
-- Use gear menu and click on "devel."
-- Use gear menu and then click on chevron menu next to "devel."
+- Use avatar menu above buddy list and filter to "devel".
+- Use avatar menu and click on "devel."
+- Use avatar menu and then click on chevron menu next to "devel."
   (I'm not sure why we still have the chevron at this writing.)
 
 Create new public stream "public1" and add Hamlet:
@@ -455,7 +455,7 @@ Test per-stream options:
 
 ### User settings ###
 
-You can modify per-user settings by choosing "Settings" in the gear menu.
+You can modify per-user settings by choosing "Settings" in the avatar menu.
 Do these tasks as Cordelia.
 
 - Your account
@@ -500,7 +500,7 @@ Here are the tasks for this section:
 - Use the "?" hotkey to open the keyboard help
 - Proofread the dialog for typos.
 - Close the dialog.
-- Re-open the keyboard help using the gear menu.
+- Re-open the keyboard help using the avatar menu.
 - Find a hotkey that you don't frequently use and experiment with its
   usage.
 
@@ -520,11 +520,11 @@ Make sure that these options launch appropriate help screens:
 Here are the tasks:
 - Invite ignore@zulip.com using the link beneath the buddy list but
   then don't take further action.
-- Fully invite foo@zulip.com using the gear menu.
+- Fully invite foo@zulip.com using the avatar menu.
 - Go to the development console to get the login link for foo@zulip.com.
 - Go through the signup flow.
 - Follow the tutorial.
-- Use the gear menu to log out.
+- Use the avatar menu to log out.
 - Log back in as Cordelia (admittedly, this step doesn't really QA
   much of our production code, since the login flow is customized for
   the development environment).

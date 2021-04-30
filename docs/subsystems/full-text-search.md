@@ -8,7 +8,7 @@ full-text search for all languages.
 
 The user interface and feature set for Zulip's full-text search is
 documented in the "Search operators" documentation section in the Zulip
-app's gear menu.
+app's avatar menu.
 
 ## The default full-text search implementation
 

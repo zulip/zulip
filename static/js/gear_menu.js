@@ -1,10 +1,12 @@
 import $ from "jquery";
 
+import * as buddy_data from "./buddy_data";
 import * as hashchange from "./hashchange";
 import {$t} from "./i18n";
 import * as message_viewport from "./message_viewport";
 import * as navigate from "./navigate";
 import {page_params} from "./page_params";
+import * as presence from "./presence";
 
 /*
 For various historical reasons there isn't one
@@ -93,13 +95,14 @@ export function update_org_settings_menu_item() {
 
 export function initialize() {
     update_org_settings_menu_item();
+    set_avatar();
 
-    $('#gear-menu a[data-toggle="tab"]').on("show", (e) => {
+    $('#avatar-menu a[data-toggle="tab"]').on("show", (e) => {
         // Save the position of our old tab away, before we switch
         const old_tab = $(e.relatedTarget).attr("href");
         scroll_positions.set(old_tab, message_viewport.scrollTop());
     });
-    $('#gear-menu a[data-toggle="tab"]').on("shown", (e) => {
+    $('#avatar-menu a[data-toggle="tab"]').on("shown", (e) => {
         const target_tab = $(e.target).attr("href");
         // Hide all our error messages when switching tabs
         $(".alert").removeClass("show");
@@ -130,7 +133,7 @@ export function initialize() {
 export function open() {
     $("#settings-dropdown").trigger("click");
     // there are invisible li tabs, which should not be clicked.
-    $("#gear-menu").find("li:not(.invisible) a").eq(0).trigger("focus");
+    $("#avatar-menu").find("li:not(.invisible) a").eq(0).trigger("focus");
 }
 
 export function is_open() {
@@ -141,4 +144,22 @@ export function close() {
     if (is_open()) {
         $(".dropdown").removeClass("open");
     }
+}
+
+export function set_avatar() {
+    const avatar_url = page_params.avatar_url;
+    const user_id = page_params.user_id;
+    const full_name = page_params.full_name;
+    const active_status = presence.get_status(user_id);
+    const last_seen = buddy_data.user_last_seen_time_status(user_id);
+    const user_circle_class = buddy_data.get_user_circle_class(user_id);
+
+    $(".settings-dropdown-avatar").attr("src", avatar_url);
+    $(".dropdown-user-fullname").append(full_name);
+    $(".dropdown-user-presence").append(
+        "<span class='" +
+            user_circle_class +
+            " user_circle'></span>" +
+            buddy_data.get_last_seen(active_status, last_seen),
+    );
 }

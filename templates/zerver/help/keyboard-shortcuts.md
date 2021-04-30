@@ -165,7 +165,7 @@ Keyboard navigation (e.g. arrow keys) works as expected.
 
 * **Toggle shortcuts help**: `?`
 
-* **Toggle gear menu**: `g`
+* **Toggle avatar menu**: `g`
 
 ### For a selected message (outlined in blue)
 
