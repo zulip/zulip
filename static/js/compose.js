@@ -780,10 +780,8 @@ function validate_stream_message() {
     return true;
 }
 
-// The function checks whether the recipients are users of the realm or cross realm users (bots
-// for now)
-function validate_private_message() {
-    if (page_params.realm_private_message_policy === 2) {
+function validate_private_message_policy(private_message_policy_type) {
+    if (private_message_policy_type === 2) {
         // Frontend check for for PRIVATE_MESSAGE_POLICY_DISABLED
         const user_ids = compose_pm_pill.get_user_ids();
         if (user_ids.length !== 1 || !people.get_by_user_id(user_ids[0]).is_bot) {
@@ -795,7 +793,7 @@ function validate_private_message() {
             return false;
         }
     }
-    if (page_params.realm_private_message_policy === 3) {
+    if (private_message_policy_type === 3) {
         // Frontend check for for PRIVATE_MESSAGE_POLICY_ADMIN_ONLY
         const user_ids = compose_pm_pill.get_user_ids();
         if (user_ids.length !== 1 || !people.get_by_user_id(user_ids[0]).is_bot) {
@@ -842,7 +840,15 @@ function validate_private_message() {
             }
         }
     }
+    return true;
+}
 
+// The function checks whether the recipients are users of the realm or cross realm users (bots
+// for now)
+function validate_private_message() {
+    if (!validate_private_message_policy(page_params.realm_private_message_policy)) {
+        return false;
+    }
     if (compose_state.private_message_recipient().length === 0) {
         compose_error(
             $t_html({defaultMessage: "Please specify at least one valid recipient"}),
