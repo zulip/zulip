@@ -22,8 +22,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
             <p>You&rsquo;re almost there! We just need you to do one last thing.</p>
             {% endtrans %}
         </div>
-
-        <form method="post" class="form-horizontal white-box" id="registration" action="{{ url('accounts_register') }}">
+        <form method="post" class="form-horizontal white-box" id="registration" action="{{ url('accounts_register') }}" enctype="multipart/form-data">
             {{ csrf_input }}
 
             <fieldset class="org-registration">
@@ -97,6 +96,41 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                     <div class="organization-path">{{ realm_uri }}</div>
                 </div>
                 {% endif %}
+
+                <hr />
+                <h3>Choose profile picture</h3>
+                <input id="gravatar_url" type="hidden" value="{{ user_gravatar_url }}" />
+                <div class="user-avatar-box">
+                    <div id="user-avatar-upload-widget-portico" class="inline-block image_upload_widget">
+                        <div class="image-upload-button">
+                            <div class="image-upload-background"></div>
+                            <span class="image-delete-button" aria-label="{{ _('Delete profile picture') }}" role="button" tabindex="0">
+                                &times;
+                            </span>
+                            <span class="image-delete-text" aria-label="{{ _('Delete profile picture') }}" tabindex="0">
+                                {{_('Delete profile picture')}}
+                            </span>
+                            <span class="image-upload-text" aria-label="{{ _('Upload profile picture') }}" role="button" tabindex="0">
+                                {{ _('Upload new profile picture') }}
+                            </span>
+                            <span class="upload-spinner-background">
+                                <object class="image_upload_spinner" type="image/svg+xml" data="/static/images/tail-spin.svg"></object>
+                            </span>
+                        </div>
+                        <img class="image-block" src="{{ user_gravatar_url }}" />
+                        <input type="file" name="file_input" class="notvisible image-file-input" value="{{ _('Upload new profile picture')}}" accept="image/jpeg,image/png,image/gif,image/tiff" />
+                    </div>
+                    <div class="image-file-input-error text-error">
+                        {% if form.user_avatar.errors %}
+                            {% for error in form.user_avatar.errors %}
+                            <p class="help-inline text-error">{{ error }}</p>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div id="user-avatar-source">
+                        <a href="https://en.gravatar.com/" target="_blank" rel="noopener noreferrer">{{ _("Avatar from Gravatar") }}</a>
+                    </div>
+                </div>
 
                 <div class="input-box no-validation">
                     <input type='hidden' name='key' value='{{ key }}' />

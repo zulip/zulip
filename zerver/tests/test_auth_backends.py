@@ -1283,6 +1283,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         name: str,
         expected_final_name: str,
         skip_registration_form: bool,
+        uploaded_avatar_image: Optional[str] = None,
         mobile_flow_otp: Optional[str] = None,
         desktop_flow_otp: Optional[str] = None,
         expect_confirm_registration_page: bool = False,
@@ -1326,10 +1327,19 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
                 self.assert_in_success_response([expected_final_name], result)
 
             # Click confirm registration button.
-            result = self.client_post(
-                "/accounts/register/",
-                {"full_name": expected_final_name, "key": confirmation_key, "terms": True},
-            )
+            post_dict = {
+                "full_name": expected_final_name,
+                "key": confirmation_key,
+                "terms": True,
+            }
+
+            if uploaded_avatar_image is not None:
+                test_image_file = get_test_image_file(uploaded_avatar_image)
+                post_dict["file"] = test_image_file
+
+            result = self.client_post("/accounts/register/", post_dict)
+
+        user_profile = get_user_by_delivery_email(email, realm)
 
         # Mobile and desktop flow have additional steps:
         if mobile_flow_otp:
@@ -1343,6 +1353,10 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
             encrypted_api_key = query_params["otp_encrypted_api_key"][0]
             user_api_keys = get_all_api_keys(get_user_by_delivery_email(email, realm))
             self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), user_api_keys)
+            self.verify_user_avatar(
+                user_profile,
+                uploaded_avatar_image,
+            )
             return
         elif desktop_flow_otp:
             self.verify_desktop_flow_end_page(result, email, desktop_flow_otp)
@@ -1350,11 +1364,28 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         else:
             self.assertEqual(result.status_code, 302)
 
-        user_profile = get_user_by_delivery_email(email, realm)
         self.assert_logged_in_user_id(user_profile.id)
         self.assertEqual(user_profile.full_name, expected_final_name)
 
         self.assertFalse(user_profile.has_usable_password())
+        self.verify_user_avatar(
+            user_profile,
+            uploaded_avatar_image,
+        )
+
+    def verify_user_avatar(
+        self,
+        user_profile: UserProfile,
+        uploaded_avatar_image: Optional[str] = None,
+    ) -> None:
+        if uploaded_avatar_image is not None:
+            user_avatar_url = avatar_url(user_profile) or ""
+            self.assertNotEqual(user_avatar_url, "")
+            response = self.client_get(user_avatar_url)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(user_profile.avatar_source, UserProfile.AVATAR_FROM_USER)
+        else:
+            self.assertEqual(user_profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
 
     @override_settings(TERMS_OF_SERVICE=None)
     def test_social_auth_registration(self) -> None:
@@ -2918,6 +2949,56 @@ class GitHubAuthBackendTest(SocialAuthBase):
         self, email: str, name: str, user_avatar_url: str = ""
     ) -> Dict[str, Any]:
         return dict(email=email, name=name, user_avatar_url=user_avatar_url)
+
+    def test_register_user_and_upload_avatar(self) -> None:
+        """
+        This tests if user is able to register and upload the avatar
+        successfully or not.
+        """
+        email = "newuser@zulip.com"
+        name = "Full Name"
+        subdomain = "zulip"
+        realm = get_realm("zulip")
+        user_uploaded_avatar_image = "img.gif"
+
+        account_data_dict = self.get_account_data_dict(email=email, name=name)
+        result = self.social_auth_test(
+            account_data_dict, expect_choose_email_screen=True, subdomain=subdomain, is_signup=True
+        )
+        self.stage_two_of_registration(
+            result,
+            realm,
+            subdomain,
+            email,
+            name,
+            name,
+            self.BACKEND_CLASS.full_name_validated,
+            uploaded_avatar_image=user_uploaded_avatar_image,
+        )
+
+    def test_register_user_and_no_avatar_uploaded(self) -> None:
+        """
+        This tests if user is able to register successfully or not, when
+        no avatar is uploaded by the user during signup process.
+        """
+        email = "newuser@zulip.com"
+        name = "Full Name"
+        subdomain = "zulip"
+        realm = get_realm("zulip")
+
+        account_data_dict = self.get_account_data_dict(email=email, name=name)
+        result = self.social_auth_test(
+            account_data_dict, expect_choose_email_screen=True, subdomain=subdomain, is_signup=True
+        )
+        self.stage_two_of_registration(
+            result,
+            realm,
+            subdomain,
+            email,
+            name,
+            name,
+            self.BACKEND_CLASS.full_name_validated,
+        )
 
     def test_social_auth_email_not_verified(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)

@@ -45,12 +45,14 @@ from zerver.lib.actions import (
     do_set_user_display_setting,
     lookup_default_stream_groups,
 )
+from zerver.lib.avatar import get_gravatar_url
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.onboarding import send_initial_realm_messages, setup_realm_internal_bots
 from zerver.lib.pysa import mark_sanitized
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.sessions import get_expirable_session_var
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
+from zerver.lib.upload import upload_avatar_image
 from zerver.lib.url_encoding import add_query_to_redirect_url
 from zerver.lib.users import get_accounts_for_email
 from zerver.lib.zephyr import compute_mit_user_fullname
@@ -185,6 +187,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
     name_validated = False
     full_name = None
     require_ldap_password = False
+    user_gravatar_url = get_gravatar_url(email=prereg_user.email, avatar_version=1, medium=True)
 
     if request.POST.get("from_confirmation"):
         try:
@@ -281,6 +284,9 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             except KeyError:
                 pass
         form = RegistrationForm(postdata, realm_creation=realm_creation)
+
+    if request.FILES:
+        form.fields["user_avatar"].initial = request.FILES
 
     if not (password_auth_enabled(realm) and password_required):
         form["password"].field.required = False
@@ -398,11 +404,16 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             # make it respect invited_as_admin / is_realm_admin.
 
         if user_profile is None:
+            avatar_source = (
+                UserProfile.AVATAR_FROM_USER if request.FILES else UserProfile.AVATAR_FROM_GRAVATAR
+            )
+
             user_profile = do_create_user(
                 email,
                 password,
                 realm,
                 full_name,
+                avatar_source=avatar_source,
                 prereg_user=prereg_user,
                 role=role,
                 tos_version=settings.TOS_VERSION,
@@ -412,6 +423,10 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                 realm_creation=realm_creation,
                 acting_user=None,
             )
+
+        if request.FILES:
+            user_file = list(request.FILES.values())[0]
+            upload_avatar_image(user_file, user_profile, user_profile)
 
         if realm_creation:
             bulk_add_subscriptions(
@@ -452,6 +467,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             "form": form,
             "email": email,
             "key": key,
+            "user_gravatar_url": user_gravatar_url,
             "full_name": request.session.get("authenticated_full_name", None),
             "lock_name": name_validated and name_changes_disabled(realm),
             # password_auth_enabled is normally set via our context processor,

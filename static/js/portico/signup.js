@@ -2,6 +2,7 @@ import $ from "jquery";
 
 import * as common from "../common";
 import {password_quality, password_warning} from "../password_quality";
+import * as upload_widget from "../upload_widget";
 
 $(() => {
     // NB: this file is included on multiple pages.  In each context,
@@ -231,4 +232,39 @@ $(() => {
     $("body").on("click", "#choose_email .choose-email-box", function () {
         this.parentNode.submit();
     });
+
+    $("#user-avatar-upload-widget-portico .image-delete-button").on("click keydown", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        $("#user-avatar-upload-widget-portico .image-delete-button").hide();
+        const user_gravatar_url = $("#gravatar_url").val();
+        $(".image-block").attr("src", user_gravatar_url);
+        $("#user-avatar-source").show();
+    });
+
+    function build_user_avatar_widget_portico(upload_function) {
+        const get_file_input = function () {
+            return $("#user-avatar-upload-widget-portico .image-file-input");
+        };
+
+        return upload_widget.build_direct_upload_widget(
+            get_file_input,
+            $(".user-avatar-box .image-file-input-error"),
+            $("#user-avatar-upload-widget-portico .image-upload-button"),
+            upload_function,
+        );
+    }
+
+    function upload_avatar(file_input) {
+        const reader = new FileReader();
+        reader.addEventListener("load", () => {
+            $("#user-avatar-upload-widget-portico .image-block").attr("src", reader.result);
+        });
+        reader.readAsDataURL(file_input[0].files[0]);
+        $("#user-avatar-upload-widget-portico .image-delete-button").show();
+        $("#user-avatar-source").hide();
+    }
+
+    build_user_avatar_widget_portico(upload_avatar);
 });
