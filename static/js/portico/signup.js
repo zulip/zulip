@@ -233,6 +233,14 @@ $(() => {
         this.parentNode.submit();
     });
 
+    if ($("#use-social-avatar").attr("value") === "on") {
+        $("#user-avatar-source").hide();
+        $("#user-avatar-upload-widget-portico .image-delete-button").show();
+    } else {
+        $("#user-avatar-source").show();
+        $("#user-avatar-upload-widget-portico .image-delete-button").hide();
+    }
+
     $("#user-avatar-upload-widget-portico .image-delete-button").on("click keydown", (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -240,6 +248,7 @@ $(() => {
         $("#user-avatar-upload-widget-portico .image-delete-button").hide();
         const user_gravatar_url = $("#gravatar_url").val();
         $(".image-block").attr("src", user_gravatar_url);
+        $("#use-social-avatar").val("off");
         $("#user-avatar-source").show();
     });
 
@@ -264,6 +273,7 @@ $(() => {
         reader.readAsDataURL(file_input[0].files[0]);
         $("#user-avatar-upload-widget-portico .image-delete-button").show();
         $("#user-avatar-source").hide();
+        $("#use-social-avatar").val("off");
     }
 
     build_user_avatar_widget_portico(upload_avatar);

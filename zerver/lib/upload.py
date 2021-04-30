@@ -15,6 +15,7 @@ from typing import Any, Callable, Optional, Tuple
 
 import boto3
 import botocore
+import requests
 from boto3.resources.base import ServiceResource
 from boto3.session import Session
 from botocore.client import Config
@@ -933,6 +934,12 @@ def upload_avatar_image(
     upload_backend.upload_avatar_image(
         user_file, acting_user_profile, target_user_profile, content_type=content_type
     )
+
+
+def upload_avatar_image_from_url(avatar_url: str, user_profile: UserProfile) -> None:
+    response = requests.get(avatar_url)
+    user_avatar_file_io = io.BytesIO(response.content)
+    upload_backend.upload_avatar_image(user_avatar_file_io, user_profile, user_profile)
 
 
 def delete_avatar_image(user_profile: UserProfile) -> None:

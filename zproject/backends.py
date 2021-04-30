@@ -25,7 +25,7 @@ from django.conf import settings
 from django.contrib.auth import authenticate, get_backends
 from django.contrib.auth.backends import RemoteUserBackend
 from django.core.exceptions import ValidationError
-from django.core.validators import validate_email
+from django.core.validators import URLValidator, validate_email
 from django.dispatch import Signal, receiver
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
@@ -1123,6 +1123,7 @@ class ExternalAuthDataDict(TypedDict, total=False):
     desktop_flow_otp: Optional[str]
     multiuse_object_key: str
     full_name_validated: bool
+    user_avatar_url: str
 
 
 class ExternalAuthResult:
@@ -1387,6 +1388,15 @@ def social_associate_user_helper(
     full_name = kwargs["details"].get("fullname")
     first_name = kwargs["details"].get("first_name")
     last_name = kwargs["details"].get("last_name")
+    user_avatar_url = kwargs["response"].get("avatar_url", "")
+
+    try:
+        URLValidator()(user_avatar_url)
+    except ValidationError:
+        user_avatar_url = ""
+
+    return_data["user_avatar_url"] = user_avatar_url
+
     if all(name is None for name in [full_name, first_name, last_name]) and backend.name != "apple":
         # Apple authentication provides the user's name only the very first time a user tries to log in.
         # So if the user aborts login or otherwise is doing this the second time,
@@ -1501,6 +1511,7 @@ def social_auth_finish(
     full_name_validated = backend.full_name_validated
     email_address = return_data["validated_email"]
     full_name = return_data["full_name"]
+    user_avatar_url = return_data["user_avatar_url"]
     redirect_to = strategy.session_get("next")
     realm = Realm.objects.get(id=return_data["realm_id"])
     multiuse_object_key = strategy.session_get("multiuse_object_key", "")
@@ -1528,6 +1539,7 @@ def social_auth_finish(
         full_name_validated=full_name_validated,
         mobile_flow_otp=mobile_flow_otp,
         desktop_flow_otp=desktop_flow_otp,
+        user_avatar_url=user_avatar_url,
     )
     if user_profile is None:
         data_dict.update(dict(full_name=full_name, email=email_address))

@@ -107,6 +107,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                             <span class="image-delete-button" aria-label="{{ _('Delete profile picture') }}" role="button" tabindex="0">
                                 &times;
                             </span>
+                            <input type="hidden" name="use_social_avatar" id="use-social-avatar" value="{% if user_avatar_url %}on{% else %}off{% endif %}" />
                             <span class="image-delete-text" aria-label="{{ _('Delete profile picture') }}" tabindex="0">
                                 {{_('Delete profile picture')}}
                             </span>
@@ -117,7 +118,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                                 <object class="image_upload_spinner" type="image/svg+xml" data="/static/images/tail-spin.svg"></object>
                             </span>
                         </div>
-                        <img class="image-block" src="{{ user_gravatar_url }}" />
+                        <img class="image-block" src="{% if user_avatar_url %}{{ user_avatar_url }}{% else %}{{ user_gravatar_url }}{% endif %}" />
                         <input type="file" name="file_input" class="notvisible image-file-input" value="{{ _('Upload new profile picture')}}" accept="image/jpeg,image/png,image/gif,image/tiff" />
                     </div>
                     <div class="image-file-input-error text-error">

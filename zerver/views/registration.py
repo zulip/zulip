@@ -404,9 +404,11 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             # make it respect invited_as_admin / is_realm_admin.
 
         if user_profile is None:
-            avatar_source = (
-                UserProfile.AVATAR_FROM_USER if request.FILES else UserProfile.AVATAR_FROM_GRAVATAR
-            )
+            avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
+            if request.FILES or (
+                request.POST.get("use_social_avatar") == "on" and prereg_user.user_avatar_url
+            ):
+                avatar_source = UserProfile.AVATAR_FROM_USER
 
             user_profile = do_create_user(
                 email,
@@ -467,6 +469,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             "form": form,
             "email": email,
             "key": key,
+            "user_avatar_url": prereg_user.user_avatar_url,
             "user_gravatar_url": user_gravatar_url,
             "full_name": request.session.get("authenticated_full_name", None),
             "lock_name": name_validated and name_changes_disabled(realm),
