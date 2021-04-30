@@ -38,6 +38,7 @@
 * [Edit or delete a message](/help/edit-or-delete-a-message)
 * [Message a stream by email](/help/message-a-stream-by-email)
 * [Add GIFs in your message](/help/animated-gifs-from-giphy)
+* [Create a poll](/help/create-a-poll)
 
 ## Reading messages
 * [Reading strategies](/help/reading-strategies)
@@ -87,7 +88,6 @@
 * [Bots and integrations](/help/bots-and-integrations)
 * [Add a bot or integration](/help/add-a-bot-or-integration)
 * [Request an integration](/help/request-an-integration)
-* [Create a poll](/help/create-a-poll)
 * [Night mode](/help/night-mode)
 * [Enable emoticon translations](/help/enable-emoticon-translations)
 * [Manage your uploaded files](/help/manage-your-uploaded-files)
