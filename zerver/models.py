@@ -1707,9 +1707,8 @@ class PreregistrationUser(models.Model):
     # objects created as part of realm creation.
     realm: Optional[Realm] = models.ForeignKey(Realm, null=True, on_delete=CASCADE)
 
-    # Changes to INVITED_AS should also be reflected in
-    # settings_invites.invited_as_values in
-    # static/js/settings_invites.js
+    # These values should be consistent with the values
+    # in settings_config.user_role_values.
     INVITE_AS = dict(
         REALM_OWNER=100,
         REALM_ADMIN=200,
