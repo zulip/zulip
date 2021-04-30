@@ -18,6 +18,10 @@ go beneath the header.
 */
 $sidebar_top: calc($header_height + $header_padding_bottom);
 
+/* These need to agree with scroll_bar.js */
+$left_sidebar_width: 250px;
+$right_sidebar_width: 250px;
+
 body,
 html {
     width: 100%;
@@ -345,21 +349,19 @@ p.n-margin {
     left: 0;
 }
 
-.column-left,
 .column-right {
-    width: 250px;
-    max-width: 250px;
-}
-
-.column-left {
+    width: $right_sidebar_width;
+    max-width: $right_sidebar_width;
     position: absolute;
-    left: 0;
+    right: 0;
     top: 0;
 }
 
-.column-right {
+.column-left {
+    width: $left_sidebar_width;
+    max-width: $left_sidebar_width;
     position: absolute;
-    right: 0;
+    left: 0;
     top: 0;
 }
 
@@ -375,7 +377,7 @@ p.n-margin {
     }
 
     .column-left .left-sidebar {
-        width: 242px;
+        width: $left_sidebar_width;
         padding-left: 0;
     }
 
@@ -389,9 +391,10 @@ p.n-margin {
     }
 }
 
-.column-middle {
-    margin-right: 250px;
-    margin-left: 250px;
+.column-middle,
+.compose-content {
+    margin-right: $right_sidebar_width;
+    margin-left: $left_sidebar_width;
     position: relative;
 }
 
@@ -2772,7 +2775,7 @@ select.inline_select_topic_edit {
 
                 height: 100%;
                 padding-left: 10px;
-                width: 250px;
+                width: $left_sidebar_width;
             }
         }
     }
