@@ -166,8 +166,8 @@ sudo dpkg-divert --add --rename /etc/default/motd-news
 sudo sh -c 'echo ENABLED=0 > /etc/default/motd-news'
 
 # Set default locale, this prevents errors if the user has another locale set.
-if ! grep -q 'LC_ALL=en_US.UTF-8' /etc/default/locale; then
-    echo "LC_ALL=en_US.UTF-8" | sudo tee -a /etc/default/locale
+if ! grep -q 'LC_ALL=C.UTF-8' /etc/default/locale; then
+    echo "LC_ALL=C.UTF-8" | sudo tee -a /etc/default/locale
 fi
 
 # Set an environment variable, so that we won't print the virtualenv

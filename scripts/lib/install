@@ -168,10 +168,9 @@ set -x
 ZULIP_PATH="$(readlink -f "$(dirname "$0")"/../..)"
 
 # Force a known locale.  Some packages on PyPI fail to install in some locales.
-localedef -i en_US -f UTF-8 en_US.UTF-8
-export LC_ALL="en_US.UTF-8"
-export LANG="en_US.UTF-8"
-export LANGUAGE="en_US.UTF-8"
+export LC_ALL="C.UTF-8"
+export LANG="C.UTF-8"
+export LANGUAGE="C.UTF-8"
 
 # Force a known path; this fixes problems on Debian where `su` from
 # non-root may not adjust `$PATH` to root's.
