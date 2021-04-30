@@ -8,23 +8,21 @@
 
     <hr />
 
-    {{#if can_mute_topic}}
+    {{#unless topic_muted}}
     <li>
         <a tabindex="0" class="sidebar-popover-mute-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-bell-slash" aria-hidden="true"></i>
             {{t "Mute topic"}}
         </a>
     </li>
-    {{/if}}
-
-    {{#if can_unmute_topic}}
+    {{else}}
     <li>
         <a tabindex="0" class="sidebar-popover-unmute-topic" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-bell" aria-hidden="true"></i>
             {{t "Unmute topic"}}
         </a>
     </li>
-    {{/if}}
+    {{/unless}}
 
     {{#if has_starred_messages}}
     <li>

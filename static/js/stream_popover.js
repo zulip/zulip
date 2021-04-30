@@ -234,17 +234,14 @@ function build_topic_popover(opts) {
     popovers.hide_all();
     show_streamlist_sidebar();
 
-    const is_muted = muting.is_topic_muted(sub.stream_id, topic_name);
-    const can_mute_topic = !is_muted;
-    const can_unmute_topic = is_muted;
+    const topic_muted = muting.is_topic_muted(sub.stream_id, topic_name);
     const has_starred_messages = starred_messages.get_count_in_topic(sub.stream_id, topic_name) > 0;
 
     const content = render_topic_sidebar_actions({
         stream_name: sub.name,
         stream_id: sub.stream_id,
         topic_name,
-        can_mute_topic,
-        can_unmute_topic,
+        topic_muted,
         is_realm_admin: page_params.is_admin,
         color: sub.color,
         has_starred_messages,
