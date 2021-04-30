@@ -382,6 +382,11 @@ export function initialize() {
         mute_or_unmute_topic($(e.target), true);
     });
 
+    $("body").on("click", ".message_header .on_hover_topic_unmute", (e) => {
+        e.stopPropagation();
+        mute_or_unmute_topic($(e.target), false);
+    });
+
     // RECENT TOPICS
 
     $("body").on("keydown", ".on_hover_topic_mute", ui_util.convert_enter_to_click);

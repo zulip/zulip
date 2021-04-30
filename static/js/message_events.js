@@ -414,6 +414,13 @@ export function update_messages(events) {
         message_lists.home.update_topic_muting_and_rerender();
         // However, we don't need to rerender message_list.narrowed if
         // we just changed the narrow earlier in this function.
+        //
+        // TODO: We can potentially optimize this logic to avoid
+        // calling `update_topic_muting_and_rerender` if the muted
+        // messages would not match the view before or after this
+        // edit.  Doing so could save significant work, since most
+        // topic edits will not match the current topic narrow in
+        // large organizations.
         if (!changed_narrow && message_lists.current === message_list.narrowed) {
             message_list.narrowed.update_topic_muting_and_rerender();
         }

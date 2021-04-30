@@ -36,7 +36,7 @@ export function is_topic_muted(stream_id, topic) {
         return false;
     }
     const sub_dict = muted_topics.get(stream_id);
-    return sub_dict && sub_dict.get(topic);
+    return (sub_dict && sub_dict.get(topic)) || false;
 }
 
 export function get_muted_topics() {
