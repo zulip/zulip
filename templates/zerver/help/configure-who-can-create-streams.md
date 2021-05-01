@@ -20,7 +20,7 @@ heavy use has as many streams as users.
 
 {settings_tab|organization-permissions}
 
-2. Under **Other permissions**, configure **Who can create streams**.
+2. Under **Stream permissions**, configure **Who can create streams**.
 
 {!save-changes.md!}
 
