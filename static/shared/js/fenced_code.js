@@ -72,11 +72,9 @@ function wrap_quote(text) {
 
 function wrap_tex(tex) {
     try {
-        return katex.renderToString(tex, {
-            displayMode: true,
-        });
+        return "<p>" + katex.renderToString(tex, {displayMode: true}) + "</p>";
     } catch {
-        return '<span class="tex-error">' + _.escape(tex) + "</span>";
+        return '<p><span class="tex-error">' + _.escape(tex) + "</span></p>";
     }
 }
 
