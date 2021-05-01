@@ -110,6 +110,7 @@ export function build_page() {
         display_settings: settings_config.get_all_display_settings(),
         user_can_change_name: settings_data.user_can_change_name(),
         user_can_change_avatar: settings_data.user_can_change_avatar(),
+        user_role_text: people.get_user_type(page_params.user_id),
     });
 
     $(".settings-box").html(rendered_settings_tab);

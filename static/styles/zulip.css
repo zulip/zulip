@@ -18,6 +18,10 @@ go beneath the header.
 */
 $sidebar_top: calc($header_height + $header_padding_bottom);
 
+/* These need to agree with scroll_bar.js */
+$left_sidebar_width: 270px;
+$right_sidebar_width: 250px;
+
 body,
 html {
     width: 100%;
@@ -345,21 +349,19 @@ p.n-margin {
     left: 0;
 }
 
-.column-left,
 .column-right {
-    width: 250px;
-    max-width: 250px;
-}
-
-.column-left {
+    width: $right_sidebar_width;
+    max-width: $right_sidebar_width;
     position: absolute;
-    left: 0;
+    right: 0;
     top: 0;
 }
 
-.column-right {
+.column-left {
+    width: $left_sidebar_width;
+    max-width: $left_sidebar_width;
     position: absolute;
-    right: 0;
+    left: 0;
     top: 0;
 }
 
@@ -375,7 +377,7 @@ p.n-margin {
     }
 
     .column-left .left-sidebar {
-        width: 242px;
+        width: $left_sidebar_width;
         padding-left: 0;
     }
 
@@ -389,9 +391,10 @@ p.n-margin {
     }
 }
 
-.column-middle {
-    margin-right: 250px;
-    margin-left: 250px;
+.column-middle,
+.compose-content {
+    margin-right: $right_sidebar_width;
+    margin-left: $left_sidebar_width;
     position: relative;
 }
 
@@ -694,6 +697,28 @@ li.actual-dropdown-menu i {
     width: 14px;
     text-align: center;
     margin-right: 3px;
+}
+
+#gear_menu_about_zulip {
+    .white_zulip_icon_without_text {
+        position: relative;
+        top: 3px;
+        width: 14px;
+        height: 14px;
+        margin-right: 3px;
+        filter: invert(20%) sepia(11%) saturate(0%) hue-rotate(272deg)
+            brightness(20%) contrast(95%);
+    }
+    .about_zulip_text {
+        position: relative;
+        top: 1.4px;
+    }
+
+    :hover {
+        .white_zulip_icon_without_text {
+            filter: none;
+        }
+    }
 }
 
 .settings-dropdown-cog {
@@ -1251,7 +1276,7 @@ td.pointer {
     vertical-align: top;
     position: relative;
 
-    i.zulip-icon.bot {
+    i.zulip-icon.zulip-icon-bot {
         font-size: 12px;
     }
 }
@@ -1277,7 +1302,7 @@ td.pointer {
     }
 }
 
-.popover_info i.zulip-icon.bot {
+.popover_info i.zulip-icon.zulip-icon-bot {
     margin-top: 3px;
 }
 
@@ -2518,8 +2543,8 @@ div.topic_edit_spinner .loading_indicator_spinner {
             top: -1px;
         }
 
-        .compose_giphy_logo {
-            top: -2px;
+        .compose_gif_icon {
+            top: 6px;
         }
     }
 
@@ -2663,6 +2688,57 @@ select.inline_select_topic_edit {
     display: none;
 }
 
+#about-zulip {
+    .exit {
+        font-size: 1.5rem;
+        font-weight: 600;
+        background-color: transparent;
+        border: none;
+        position: absolute;
+        right: 8px;
+        z-index: 1;
+        color: hsl(0, 0%, 67%);
+    }
+
+    .overlay-content {
+        position: relative;
+        width: 300px;
+        border-radius: 4px;
+    }
+
+    .modal-body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .about-zulip-logo {
+        padding-top: 20px;
+        height: 70px;
+    }
+
+    .about-zulip-title {
+        font-weight: 600;
+        padding: 10px;
+    }
+
+    .about-zulip-version {
+        color: hsl(222, 8%, 28%);
+
+        .fa-copy {
+            padding-left: 3px;
+        }
+
+        :hover {
+            cursor: pointer;
+
+            .fa-copy {
+                color: hsl(0, 0%, 0%);
+            }
+        }
+    }
+}
+
 /* This max-width must be synced with message_viewport.is_narrow */
 @media (width < $xl_min) {
     .app-main,
@@ -2772,7 +2848,7 @@ select.inline_select_topic_edit {
 
                 height: 100%;
                 padding-left: 10px;
-                width: 250px;
+                width: $left_sidebar_width;
             }
         }
     }

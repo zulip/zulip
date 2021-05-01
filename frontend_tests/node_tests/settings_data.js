@@ -118,6 +118,14 @@ run_test("user_can_invite_others_to_realm", () => {
     page_params.is_admin = false;
     assert.equal(can_invite_others_to_realm(), false);
 
+    page_params.is_moderator = true;
+    page_params.realm_invite_to_realm_policy =
+        settings_config.common_policy_values.by_moderators_only.code;
+    assert.equal(can_invite_others_to_realm(), true);
+
+    page_params.is_moderator = false;
+    assert.equal(can_invite_others_to_realm(), false);
+
     page_params.is_guest = true;
     page_params.realm_invite_to_realm_policy = settings_config.common_policy_values.by_members.code;
     assert.equal(can_invite_others_to_realm(), false);
@@ -146,6 +154,14 @@ run_test("user_can_subscribe_other_users", () => {
     assert.equal(can_subscribe_other_users(), true);
 
     page_params.is_admin = false;
+    assert.equal(can_subscribe_other_users(), false);
+
+    page_params.is_moderator = true;
+    page_params.realm_invite_to_stream_policy =
+        settings_config.common_policy_values.by_moderators_only.code;
+    assert.equal(can_subscribe_other_users(), true);
+
+    page_params.is_moderator = false;
     assert.equal(can_subscribe_other_users(), false);
 
     page_params.is_guest = true;
@@ -177,6 +193,14 @@ run_test("user_can_create_streams", () => {
     assert.equal(can_create_streams(), true);
 
     page_params.is_admin = false;
+    assert.equal(can_create_streams(), false);
+
+    page_params.is_moderator = true;
+    page_params.realm_create_stream_policy =
+        settings_config.common_policy_values.by_moderators_only.code;
+    assert.equal(can_create_streams(), true);
+
+    page_params.is_moderator = false;
     assert.equal(can_create_streams(), false);
 
     page_params.is_guest = true;

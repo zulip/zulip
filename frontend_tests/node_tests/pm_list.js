@@ -95,7 +95,6 @@ test("build_private_messages_list", (override) => {
             is_active: false,
             url: "#narrow/pm-with/101,102-group",
             user_circle_class: "user_circle_fraction",
-            fraction_present: undefined,
             is_group: true,
         },
     ];
@@ -136,7 +135,6 @@ test("build_private_messages_list_bot", (override) => {
             is_active: false,
             url: "#narrow/pm-with/314-outgoingwebhook",
             user_circle_class: "user_circle_green",
-            fraction_present: undefined,
             is_group: false,
         },
         {
@@ -147,7 +145,6 @@ test("build_private_messages_list_bot", (override) => {
             is_active: false,
             url: "#narrow/pm-with/101,102-group",
             user_circle_class: "user_circle_fraction",
-            fraction_present: undefined,
             is_group: true,
         },
     ];

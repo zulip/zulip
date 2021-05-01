@@ -85,6 +85,7 @@ from zerver.models import (
     Message,
     PreregistrationUser,
     Realm,
+    RealmAuditLog,
     Recipient,
     ScheduledEmail,
     Stream,
@@ -1167,6 +1168,37 @@ class InviteUserTest(InviteUserBase):
         invitee = self.nonreg_email("alice")
         response = self.invite(
             invitee, ["Denmark"], invite_as=PreregistrationUser.INVITE_AS["REALM_ADMIN"]
+        )
+        self.assert_json_error(response, "Must be an organization administrator")
+
+    def test_successful_invite_user_as_moderator_from_admin_account(self) -> None:
+        self.login("iago")
+        invitee = self.nonreg_email("alice")
+        result = self.invite(
+            invitee, ["Denmark"], invite_as=PreregistrationUser.INVITE_AS["MODERATOR"]
+        )
+        self.assert_json_success(result)
+        self.assertTrue(find_key_by_email(invitee))
+
+        self.submit_reg_form_for_user(invitee, "password")
+        invitee_profile = self.nonreg_user("alice")
+        self.assertFalse(invitee_profile.is_realm_admin)
+        self.assertTrue(invitee_profile.is_moderator)
+        self.assertFalse(invitee_profile.is_guest)
+
+    def test_invite_user_as_moderator_from_normal_account(self) -> None:
+        self.login("hamlet")
+        invitee = self.nonreg_email("alice")
+        response = self.invite(
+            invitee, ["Denmark"], invite_as=PreregistrationUser.INVITE_AS["MODERATOR"]
+        )
+        self.assert_json_error(response, "Must be an organization administrator")
+
+    def test_invite_user_as_moderator_from_moderator_account(self) -> None:
+        self.login("shiva")
+        invitee = self.nonreg_email("alice")
+        response = self.invite(
+            invitee, ["Denmark"], invite_as=PreregistrationUser.INVITE_AS["MODERATOR"]
         )
         self.assert_json_error(response, "Must be an organization administrator")
 
@@ -2759,6 +2791,12 @@ class RealmCreationTest(ZulipTestCase):
         self.assertIn("Signups enabled", messages[0].content)
         self.assertIn("signed up", messages[1].content)
         self.assertEqual("zuliptest", messages[1].topic_name())
+
+        realm_creation_audit_log = RealmAuditLog.objects.get(
+            realm=realm, event_type=RealmAuditLog.REALM_CREATED
+        )
+        self.assertEqual(realm_creation_audit_log.acting_user, user)
+        self.assertEqual(realm_creation_audit_log.event_time, realm.date_created)
 
         # Piggyback a little check for how we handle
         # empty string_ids.

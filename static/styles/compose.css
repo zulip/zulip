@@ -43,14 +43,12 @@
     }
 }
 
+/* Main geometry for this element is in zulip.css */
 .compose-content {
     border-top: 1px solid hsla(0, 0%, 0%, 0.07);
     transition: background-color 200ms linear;
 
     padding: 8px 10px 8px 10px;
-    margin-left: 250px;
-    margin-right: 250px;
-    position: relative;
 
     border-left: 1px solid hsl(0, 0%, 93%);
     border-right: 1px solid hsl(0, 0%, 93%);
@@ -399,12 +397,10 @@ input.recipient_box {
     display: inline-block;
 }
 
-.compose_giphy_link img {
+.compose_giphy_link .compose_gif_icon {
     position: relative;
-    top: -3px;
-    width: auto;
-    height: 21px;
-    vertical-align: top;
+    font-size: 23px;
+    top: -4px;
 }
 
 a.compose_control_button {
@@ -425,7 +421,11 @@ a.compose_control_button {
     }
 }
 
-a.message-control-button.hide {
+/* This is used to override the
+ * properties of `a.compose_control_button`
+ * without using `!important`.
+ */
+a.compose_control_button.hide {
     display: none;
 }
 

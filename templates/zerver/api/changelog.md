@@ -10,6 +10,34 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 61**
+
+* Added support for inviting users as moderators to the invitation
+  endpoints.
+
+**Feature level 60**
+
+* [`POST /register`](/api/register-queue): Added a new boolean field
+  `is_moderator`, similar to the existing `is_admin`, `is_owner` and
+  `is_guest` fields, to the response.
+* [`PATCH /users/{user_id}`](/api/update-user): Added support for
+  changing a user's organization-level role to moderator.
+* API endpoints that return `role` values can now return `300`, the
+  encoding of the moderator role.
+
+**Feature level 59**
+
+* [`GET /users`](/api/get-users), [`GET /users/{user_id}`](/api/get-user),
+  [`GET /users/{email}`](/api/get-user-by-email) and
+  [`GET /users/me`](/api/get-own-user): Added `role` field to returned
+  user objects.
+* [`GET /events`](/api/get-events): Added `role` field to
+  user objects sent in `realm_user` events.
+* [`POST /register`](/api/register-queue): Added `role` field
+  in the user objects returned in the `realm_users` field.
+* [`GET /events`](/api/get-events): Added new `zulip_version` and
+  `zulip_feature_level` fields to the `restart` event.
+
 **Feature level 58**
 
 * [`POST /register`](/api/register-queue): Added the new

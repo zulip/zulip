@@ -30,7 +30,6 @@ set_global("document", {
 const narrow_state = mock_esm("../../static/js/narrow_state");
 const stream_data = mock_esm("../../static/js/stream_data");
 
-const muting = zrequire("muting");
 const {MessageList} = zrequire("message_list");
 
 function accept_all_filter() {
@@ -382,44 +381,6 @@ run_test("bookend", (override) => {
         assert.equal(bookend.subscribed, false);
         assert.equal(bookend.show_button, true);
     }
-});
-
-run_test("filter_muted_topic_messages", () => {
-    const list = new MessageList({
-        excludes_muted_topics: true,
-    });
-    muting.add_muted_topic(1, "muted");
-
-    const unmuted = [
-        {
-            id: 50,
-            type: "stream",
-            stream_id: 1,
-            mentioned: true, // overrides mute
-            topic: "muted",
-        },
-        {
-            id: 60,
-            type: "stream",
-            stream_id: 1,
-            mentioned: false,
-            topic: "whatever",
-        },
-    ];
-    const muted = [
-        {
-            id: 70,
-            type: "stream",
-            stream_id: 1,
-            mentioned: false,
-            topic: "muted",
-        },
-    ];
-
-    // Make sure unmuted_message filters out the "muted" entry,
-    // which we mark as having a muted topic, and not mentioned.
-    const test_unmuted = list.unmuted_messages(unmuted.concat(muted));
-    assert.deepEqual(unmuted, test_unmuted);
 });
 
 run_test("add_remove_rerender", () => {

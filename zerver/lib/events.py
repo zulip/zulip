@@ -1,7 +1,7 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html for
 # high-level documentation on how this system works.
 import copy
-from typing import Any, Callable, Dict, Iterable, Optional, Sequence, Set
+from typing import Any, Callable, Collection, Dict, Iterable, Optional, Sequence, Set
 
 from django.conf import settings
 from django.utils.translation import gettext as _
@@ -67,6 +67,12 @@ from zerver.models import (
 )
 from zerver.tornado.django_api import get_user_events, request_event_queue
 from zproject.backends import email_auth_enabled, password_auth_enabled
+
+
+class RestartEventException(Exception):
+    """
+    Special error for handling restart events in apply_events.
+    """
 
 
 def add_realm_logo_fields(state: Dict[str, Any], realm: Realm) -> None:
@@ -331,6 +337,7 @@ def fetch_initial_state_data(
         state["can_invite_others_to_realm"] = settings_user.can_invite_others_to_realm()
         state["is_admin"] = settings_user.is_realm_admin
         state["is_owner"] = settings_user.is_realm_owner
+        state["is_moderator"] = settings_user.is_moderator
         state["is_guest"] = settings_user.is_guest
         state["user_id"] = settings_user.id
         state["enter_sends"] = settings_user.enter_sends
@@ -486,12 +493,14 @@ def apply_events(
     *,
     state: Dict[str, Any],
     events: Iterable[Dict[str, Any]],
-    fetch_event_types: Optional[Iterable[str]],
+    fetch_event_types: Optional[Collection[str]],
     client_gravatar: bool,
     slim_presence: bool,
     include_subscribers: bool,
 ) -> None:
     for event in events:
+        if event["type"] == "restart":
+            raise RestartEventException()
         if fetch_event_types is not None and event["type"] not in fetch_event_types:
             # TODO: continuing here is not, most precisely, correct.
             # In theory, an event of one type, e.g. `realm_user`,
@@ -601,6 +610,7 @@ def apply_event(
                 if "role" in person:
                     state["is_admin"] = is_administrator_role(person["role"])
                     state["is_owner"] = person["role"] == UserProfile.ROLE_REALM_OWNER
+                    state["is_moderator"] = person["role"] == UserProfile.ROLE_MODERATOR
                     state["is_guest"] = person["role"] == UserProfile.ROLE_GUEST
                     # Recompute properties based on is_admin/is_guest
                     state["can_create_streams"] = user_profile.can_create_streams()
@@ -1073,14 +1083,14 @@ def do_events_register(
     apply_markdown: bool = True,
     client_gravatar: bool = False,
     slim_presence: bool = False,
-    event_types: Optional[Iterable[str]] = None,
+    event_types: Optional[Sequence[str]] = None,
     queue_lifespan_secs: int = 0,
     all_public_streams: bool = False,
     include_subscribers: bool = True,
     include_streams: bool = True,
     client_capabilities: Dict[str, bool] = {},
-    narrow: Iterable[Sequence[str]] = [],
-    fetch_event_types: Optional[Iterable[str]] = None,
+    narrow: Collection[Sequence[str]] = [],
+    fetch_event_types: Optional[Collection[str]] = None,
 ) -> Dict[str, Any]:
     # Technically we don't need to check this here because
     # build_narrow_filter will check it, but it's nicer from an error
@@ -1099,25 +1109,6 @@ def do_events_register(
         # clients cannot compute gravatars, so we force-set it to false.
         client_gravatar = False
 
-    # Note that we pass event_types, not fetch_event_types here, since
-    # that's what controls which future events are sent.
-    queue_id = request_event_queue(
-        user_profile,
-        user_client,
-        apply_markdown,
-        client_gravatar,
-        slim_presence,
-        queue_lifespan_secs,
-        event_types,
-        all_public_streams,
-        narrow=narrow,
-        bulk_message_deletion=bulk_message_deletion,
-        stream_typing_notifications=stream_typing_notifications,
-    )
-
-    if queue_id is None:
-        raise JsonableError(_("Could not allocate event queue"))
-
     if fetch_event_types is not None:
         event_types_set: Optional[Set[str]] = set(fetch_event_types)
     elif event_types is not None:
@@ -1128,28 +1119,58 @@ def do_events_register(
     # Fill up the UserMessage rows if a soft-deactivated user has returned
     reactivate_user_if_soft_deactivated(user_profile)
 
-    ret = fetch_initial_state_data(
-        user_profile,
-        event_types=event_types_set,
-        queue_id=queue_id,
-        client_gravatar=client_gravatar,
-        user_avatar_url_field_optional=user_avatar_url_field_optional,
-        slim_presence=slim_presence,
-        include_subscribers=include_subscribers,
-        include_streams=include_streams,
-    )
+    while True:
+        # Note that we pass event_types, not fetch_event_types here, since
+        # that's what controls which future events are sent.
+        queue_id = request_event_queue(
+            user_profile,
+            user_client,
+            apply_markdown,
+            client_gravatar,
+            slim_presence,
+            queue_lifespan_secs,
+            event_types,
+            all_public_streams,
+            narrow=narrow,
+            bulk_message_deletion=bulk_message_deletion,
+            stream_typing_notifications=stream_typing_notifications,
+        )
 
-    # Apply events that came in while we were fetching initial data
-    events = get_user_events(user_profile, queue_id, -1)
-    apply_events(
-        user_profile,
-        state=ret,
-        events=events,
-        fetch_event_types=fetch_event_types,
-        client_gravatar=client_gravatar,
-        slim_presence=slim_presence,
-        include_subscribers=include_subscribers,
-    )
+        if queue_id is None:
+            raise JsonableError(_("Could not allocate event queue"))
+
+        ret = fetch_initial_state_data(
+            user_profile,
+            event_types=event_types_set,
+            queue_id=queue_id,
+            client_gravatar=client_gravatar,
+            user_avatar_url_field_optional=user_avatar_url_field_optional,
+            slim_presence=slim_presence,
+            include_subscribers=include_subscribers,
+            include_streams=include_streams,
+        )
+
+        # Apply events that came in while we were fetching initial data
+        events = get_user_events(user_profile, queue_id, -1)
+        try:
+            apply_events(
+                user_profile,
+                state=ret,
+                events=events,
+                fetch_event_types=fetch_event_types,
+                client_gravatar=client_gravatar,
+                slim_presence=slim_presence,
+                include_subscribers=include_subscribers,
+            )
+        except RestartEventException:
+            # This represents a rare race condition, where Tornado
+            # restarted (and sent `restart` events) while we were waiting
+            # for fetch_initial_state_data to return. To avoid the client
+            # needing to reload shortly after loading, we recursively call
+            # do_events_register here.
+            continue
+        else:
+            break
 
     post_process_state(user_profile, ret, notification_settings_null)
 

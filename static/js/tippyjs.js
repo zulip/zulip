@@ -64,7 +64,6 @@ export function initialize() {
 
     delegate("body", {
         target: ".compose_control_button",
-        content: (reference) => reference.getAttribute("title"),
         placement: "top",
         // Add some additional delay when they open
         // so that regular users don't have to see

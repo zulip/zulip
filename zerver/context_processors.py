@@ -14,7 +14,6 @@ from version import (
     LATEST_RELEASE_VERSION,
     ZULIP_VERSION,
 )
-from zerver.decorator import get_client_name
 from zerver.lib.exceptions import InvalidSubdomainError
 from zerver.lib.realm_description import get_realm_rendered_description, get_realm_text_description
 from zerver.lib.realm_icon import get_realm_icon_url
@@ -48,6 +47,13 @@ def common_context(user: UserProfile) -> Dict[str, Any]:
         "external_host": settings.EXTERNAL_HOST,
         "user_name": user.full_name,
     }
+
+
+def get_zulip_version_name(zulip_version: str) -> str:
+    if zulip_version.endswith("+git"):
+        return "Zulip " + zulip_version[:-4]
+
+    return "Zulip " + zulip_version
 
 
 def get_realm_from_request(request: HttpRequest) -> Optional[Realm]:
@@ -131,15 +137,12 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         f'<a href="mailto:{escape(support_email)}">{escape(support_email)}</a>'
     )
 
-    # We can't use request.client here because we might not be using
-    # an auth decorator that sets it, but we can call its helper to
-    # get the same result.
-    platform = get_client_name(request)
-
     default_page_params = {
         **DEFAULT_PAGE_PARAMS,
         "request_language": get_language(),
     }
+
+    ZULIP_VERSION_NAME = get_zulip_version_name(ZULIP_VERSION)
 
     context = {
         "root_domain_landing_page": settings.ROOT_DOMAIN_LANDING_PAGE,
@@ -166,11 +169,12 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         "password_min_length": settings.PASSWORD_MIN_LENGTH,
         "password_min_guesses": settings.PASSWORD_MIN_GUESSES,
         "zulip_version": ZULIP_VERSION,
+        "zulip_version_name": ZULIP_VERSION_NAME,
         "user_is_authenticated": user_is_authenticated,
         "settings_path": settings_path,
         "secrets_path": secrets_path,
         "settings_comments_path": settings_comments_path,
-        "platform": platform,
+        "platform": request.client_name,
         "allow_search_engine_indexing": allow_search_engine_indexing,
         "landing_page_navbar_message": settings.LANDING_PAGE_NAVBAR_MESSAGE,
         "default_page_params": default_page_params,

@@ -19,14 +19,12 @@ export function set_narrowed(value) {
 export class MessageList {
     constructor(opts) {
         if (opts.data) {
-            this.excludes_muted_topics = opts.data.excludes_muted_topics;
             this.data = opts.data;
         } else {
             const filter = opts.filter;
 
-            this.excludes_muted_topics = opts.excludes_muted_topics;
             this.data = new MessageListData({
-                excludes_muted_topics: this.excludes_muted_topics,
+                excludes_muted_topics: opts.excludes_muted_topics,
                 filter,
             });
         }
@@ -386,8 +384,8 @@ export class MessageList {
     }
 
     update_topic_muting_and_rerender() {
-        if (this.excludes_muted_topics) {
-            this.data.update_items_for_muting();
+        this.data.update_items_for_topic_muting();
+        if (this.data.excludes_muted_topics) {
             this.rerender();
         }
     }

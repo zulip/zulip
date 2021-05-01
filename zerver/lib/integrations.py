@@ -405,7 +405,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
     WebhookIntegration("intercom", ["customer-support"], display_name="Intercom"),
     WebhookIntegration("jira", ["project-management"], display_name="JIRA"),
     WebhookIntegration("jotform", ["misc"], display_name="Jotform"),
-    WebhookIntegration("json", ["misc"], display_name="JSON formatter"),
+    WebhookIntegration("json", ["misc"], display_name="JSON Formatter"),
     WebhookIntegration("librato", ["monitoring"]),
     WebhookIntegration("mention", ["marketing"], display_name="Mention"),
     WebhookIntegration("netlify", ["continuous-integration", "deployment"], display_name="Netlify"),

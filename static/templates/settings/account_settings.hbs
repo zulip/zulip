@@ -124,17 +124,7 @@
 
                 <div class="user-role input-group grid">
                     <label for="user_role" class="inline-block title">{{t "Role" }}</label>
-                    <span>
-                        {{#if page_params.is_owner}}
-                        {{t "Owner" }}
-                        {{else if page_params.is_admin}}
-                        {{t "Administrator" }}
-                        {{else if page_params.is_guest}}
-                        {{t "Guest" }}
-                        {{else}}
-                        {{t "Member" }}
-                        {{/if}}
-                    </span>
+                    <span>{{user_role_text}}</span>
                 </div>
 
                 <form class="deactivate_account grid">
@@ -176,6 +166,7 @@
             <div class="modal-body">
                 <p>{{#tr}}By deactivating your account, you will be logged out immediately.{{/tr}}</p>
                 <p>{{t "Note that any bots that you maintain will be disabled." }}</p>
+                <p>{{t "Are you sure you want to deactivate your account?"}}</p>
             </div>
             <div class="modal-footer">
                 <button class="button" data-dismiss="modal">{{t "Cancel" }}</button>

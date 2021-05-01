@@ -51,6 +51,7 @@ from zerver.models import (
     Subscription,
     UserMessage,
     UserProfile,
+    get_client,
     get_realm,
     get_stream,
 )
@@ -327,10 +328,13 @@ class HostRequestMock:
         post_data: Dict[str, Any] = {},
         user_profile: Optional[UserProfile] = None,
         host: str = settings.EXTERNAL_HOST,
+        client_name: Optional[str] = None,
     ) -> None:
         self.host = host
         self.GET: Dict[str, Any] = {}
         self.method = ""
+        if client_name is not None:
+            self.client = get_client(client_name)
 
         # Convert any integer parameters passed into strings, even
         # though of course the HTTP API would do so.  Ideally, we'd
@@ -348,6 +352,7 @@ class HostRequestMock:
         self.user = user_profile
         self.body = ""
         self.content_type = ""
+        self.client_name = ""
 
     def get_host(self) -> str:
         return self.host

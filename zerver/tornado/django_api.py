@@ -70,7 +70,7 @@ def request_event_queue(
     client_gravatar: bool,
     slim_presence: bool,
     queue_lifespan_secs: int,
-    event_types: Optional[Iterable[str]] = None,
+    event_types: Optional[Sequence[str]] = None,
     all_public_streams: bool = False,
     narrow: Iterable[Sequence[str]] = [],
     bulk_message_deletion: bool = False,

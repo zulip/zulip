@@ -74,7 +74,7 @@ run_test("basics", () => {
     mld.remove([50]);
     assert_contents(mld, [10, 15, 20, 25, 30, 35, 40, 45, 60, 70]);
 
-    mld.update_items_for_muting();
+    mld.update_items_for_topic_muting();
     assert_contents(mld, [10, 15, 20, 25, 30, 35, 40, 45, 60, 70]);
 
     mld.reset_select_to_closest();
@@ -120,17 +120,16 @@ run_test("muting", () => {
 
     // `messages_filtered_for_topic_mutes` should skip filtering
     // messages if `excludes_muted_topics` is false.
-    let is_topic_muted_calls = 0;
-
     with_field(
         muting,
         "is_topic_muted",
         () => {
-            is_topic_muted_calls = is_topic_muted_calls + 1;
+            throw new Error(
+                "Messages should not be filtered for topic mutes if excludes_muted_topics is false.",
+            );
         },
         () => {
             const res = mld.messages_filtered_for_topic_mutes(msgs);
-            assert.equal(is_topic_muted_calls, 0);
             assert.deepEqual(res, msgs);
         },
     );

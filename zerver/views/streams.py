@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Sequence, Set, Union
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Set, Union
 
 import orjson
 from django.conf import settings
@@ -336,8 +336,8 @@ remove_subscriptions_schema = check_list(check_string)
 def update_subscriptions_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    delete: Iterable[str] = REQ(json_validator=remove_subscriptions_schema, default=[]),
-    add: Iterable[Mapping[str, str]] = REQ(json_validator=add_subscriptions_schema, default=[]),
+    delete: Sequence[str] = REQ(json_validator=remove_subscriptions_schema, default=[]),
+    add: Sequence[Mapping[str, str]] = REQ(json_validator=add_subscriptions_schema, default=[]),
 ) -> HttpResponse:
     if not add and not delete:
         return json_error(_('Nothing to do. Specify at least one of "add" or "delete".'))
@@ -380,7 +380,7 @@ check_principals: Validator[Union[List[str], List[int]]] = check_union(
 def remove_subscriptions_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    streams_raw: Iterable[str] = REQ("subscriptions", json_validator=remove_subscriptions_schema),
+    streams_raw: Sequence[str] = REQ("subscriptions", json_validator=remove_subscriptions_schema),
     principals: Optional[Union[List[str], List[int]]] = REQ(
         json_validator=check_principals, default=None
     ),
@@ -446,7 +446,7 @@ EMPTY_PRINCIPALS: Union[Sequence[str], Sequence[int]] = []
 def add_subscriptions_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    streams_raw: Iterable[Mapping[str, str]] = REQ(
+    streams_raw: Sequence[Mapping[str, str]] = REQ(
         "subscriptions", json_validator=add_subscriptions_schema
     ),
     invite_only: bool = REQ(json_validator=check_bool, default=False),

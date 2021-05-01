@@ -1013,6 +1013,7 @@ realm_user_type = DictType(
         ("is_owner", bool),
         ("is_bot", bool),
         ("is_guest", bool),
+        ("role", EnumType(UserProfile.ROLE_TYPES)),
         ("is_active", bool),
         ("profile_data", StringDictType(dict)),
         ("timezone", str),
@@ -1142,7 +1143,13 @@ def check_realm_user_update(
 
 
 restart_event = event_dict_type(
-    required_keys=[("type", Equals("restart")), ("server_generation", int), ("immediate", bool)]
+    required_keys=[
+        ("type", Equals("restart")),
+        ("zulip_version", str),
+        ("zulip_feature_level", int),
+        ("server_generation", int),
+        ("immediate", bool),
+    ]
 )
 check_restart_event = make_checker(restart_event)
 

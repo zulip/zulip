@@ -25,11 +25,11 @@ At a high level:
   stream messages, like adding new subscribers or changing the stream
   privacy settings.
 
-* [Organization members](/help/roles-and-permissions) cannot easily
-  see which private streams exist, or interact with them in any way
-  until they are added.  Given a stream name, they can figure out
-  whether a stream with that name exists, but cannot see any other
-  details about the stream.
+* [Organization members and moderators](/help/roles-and-permissions)
+  cannot easily see which private streams exist, or interact with them
+  in any way until they are added.  Given a stream name, they can
+  figure out whether a stream with that name exists, but cannot see
+  any other details about the stream.
 
 * From the perspective of a guest, all streams are private streams,
   and they additionally can't add other members to the streams they
@@ -80,6 +80,7 @@ subscribed.</span>
 ### Private streams
 
 <div class="center"></div>
+
 
 |                       | Owners and admins | Moderators | Members   | Guests
 |---                    |---                |            |---        |---

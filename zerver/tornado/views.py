@@ -1,5 +1,5 @@
 import time
-from typing import Iterable, Optional, Sequence
+from typing import Optional, Sequence
 
 import orjson
 from django.http import HttpRequest, HttpResponse
@@ -86,7 +86,7 @@ def get_events_backend(
         default=None, json_validator=check_list(check_string), intentionally_undocumented=True
     ),
     dont_block: bool = REQ(default=False, json_validator=check_bool),
-    narrow: Iterable[Sequence[str]] = REQ(
+    narrow: Sequence[Sequence[str]] = REQ(
         default=[],
         json_validator=check_list(check_list(check_string)),
         intentionally_undocumented=True,

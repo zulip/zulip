@@ -122,6 +122,29 @@ export function unstar_all_messages() {
 }
 
 export function unstar_all_messages_in_topic(stream_id, topic) {
-    const starred_message_ids = starred_messages.get_starred_message_ids_in_topic(stream_id, topic);
-    send_flag_update_for_messages(starred_message_ids, "starred", "remove");
+    const data = {
+        anchor: "newest",
+        // In the unlikely event the user has >1000 starred messages
+        // in a topic, this won't find them all. This is probably an
+        // acceptable bug; one can do it multiple times, and we avoid
+        // creating an API endpoint just for this very minor feature.
+        num_before: 1000,
+        num_after: 0,
+        narrow: JSON.stringify([
+            {operator: "stream", operand: stream_id},
+            {operator: "topic", operand: topic},
+            {operator: "is", operand: "starred"},
+        ]),
+    };
+
+    channel.get({
+        url: "/json/messages",
+        data,
+        idempotent: true,
+        success(data) {
+            const messages = data.messages;
+            const starred_message_ids = messages.map((message) => message.id);
+            send_flag_update_for_messages(starred_message_ids, "starred", "remove");
+        },
+    });
 }

@@ -95,6 +95,14 @@ function user_has_permission(policy_value) {
         return false;
     }
 
+    if (page_params.is_moderator) {
+        return true;
+    }
+
+    if (policy_value === settings_config.common_policy_values.by_moderators_only.code) {
+        return false;
+    }
+
     if (policy_value === settings_config.common_policy_values.by_members.code) {
         return true;
     }

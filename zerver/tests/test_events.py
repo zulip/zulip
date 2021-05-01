@@ -161,7 +161,12 @@ from zerver.lib.event_schema import (
     check_user_group_update,
     check_user_status,
 )
-from zerver.lib.events import apply_events, fetch_initial_state_data, post_process_state
+from zerver.lib.events import (
+    RestartEventException,
+    apply_events,
+    fetch_initial_state_data,
+    post_process_state,
+)
 from zerver.lib.markdown import MentionData
 from zerver.lib.message import render_markdown
 from zerver.lib.test_classes import ZulipTestCase
@@ -198,6 +203,7 @@ from zerver.openapi.openapi import validate_against_openapi_schema
 from zerver.tornado.event_queue import (
     allocate_client_descriptor,
     clear_client_event_queues_for_testing,
+    send_restart_events,
 )
 from zerver.views.realm_playgrounds import access_playground_by_id
 
@@ -1297,6 +1303,22 @@ class NormalActionsTest(BaseAction):
             check_realm_user_update("events[0]", events[0], "role")
             self.assertEqual(events[0]["person"]["role"], role)
 
+    def test_change_is_moderator(self) -> None:
+        reset_emails_in_zulip_realm()
+
+        # Important: We need to refresh from the database here so that
+        # we don't have a stale UserProfile object with an old value
+        # for email being passed into this next function.
+        self.user_profile.refresh_from_db()
+
+        do_change_user_role(self.user_profile, UserProfile.ROLE_MEMBER, acting_user=None)
+        for role in [UserProfile.ROLE_MODERATOR, UserProfile.ROLE_MEMBER]:
+            events = self.verify_action(
+                lambda: do_change_user_role(self.user_profile, role, acting_user=None)
+            )
+            check_realm_user_update("events[0]", events[0], "role")
+            self.assertEqual(events[0]["person"]["role"], role)
+
     def test_change_is_guest(self) -> None:
         reset_emails_in_zulip_realm()
 
@@ -1937,6 +1959,10 @@ class NormalActionsTest(BaseAction):
 
         events = self.verify_action(lambda: do_set_zoom_token(self.user_profile, None))
         check_has_zoom_token("events[0]", events[0], value=False)
+
+    def test_restart_event(self) -> None:
+        with self.assertRaises(RestartEventException):
+            self.verify_action(lambda: send_restart_events(immediate=True))
 
 
 class RealmPropertyActionTest(BaseAction):

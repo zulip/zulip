@@ -190,6 +190,12 @@ function get_property_value(property_name) {
             }
             if (
                 page_params.realm_invite_to_realm_policy ===
+                settings_config.common_policy_values.by_moderators_only.code
+            ) {
+                return "no_invite_required_by_moderators_only";
+            }
+            if (
+                page_params.realm_invite_to_realm_policy ===
                 settings_config.common_policy_values.by_full_members.code
             ) {
                 return "no_invite_required_by_full_members";
@@ -201,6 +207,12 @@ function get_property_value(property_name) {
             settings_config.common_policy_values.by_admins_only.code
         ) {
             return "by_admins_only";
+        }
+        if (
+            page_params.realm_invite_to_realm_policy ===
+            settings_config.common_policy_values.by_moderators_only.code
+        ) {
+            return "by_moderators_only";
         }
         if (
             page_params.realm_invite_to_realm_policy ===
@@ -838,6 +850,10 @@ export function build_page() {
                 data.invite_required = false;
                 data.invite_to_realm_policy =
                     settings_config.common_policy_values.by_admins_only.code;
+            } else if (user_invite_restriction === "no_invite_required_by_moderators_only") {
+                data.invite_required = false;
+                data.invite_to_realm_policy =
+                    settings_config.common_policy_values.by_moderators_only.code;
             } else if (user_invite_restriction === "no_invite_required_by_full_members") {
                 data.invite_required = false;
                 data.invite_to_realm_policy =
@@ -846,6 +862,10 @@ export function build_page() {
                 data.invite_required = true;
                 data.invite_to_realm_policy =
                     settings_config.common_policy_values.by_admins_only.code;
+            } else if (user_invite_restriction === "by_moderators_only") {
+                data.invite_required = true;
+                data.invite_to_realm_policy =
+                    settings_config.common_policy_values.by_moderators_only.code;
             } else if (user_invite_restriction === "by_full_members") {
                 data.invite_required = true;
                 data.invite_to_realm_policy =

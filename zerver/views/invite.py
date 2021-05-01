@@ -47,7 +47,11 @@ def invite_users_backend(
         return json_error(_("Must be invited as an valid type of user"))
     check_if_owner_required(invite_as, user_profile)
     if (
-        invite_as == PreregistrationUser.INVITE_AS["REALM_ADMIN"]
+        invite_as
+        in [
+            PreregistrationUser.INVITE_AS["REALM_ADMIN"],
+            PreregistrationUser.INVITE_AS["MODERATOR"],
+        ]
         and not user_profile.is_realm_admin
     ):
         return json_error(_("Must be an organization administrator"))

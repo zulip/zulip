@@ -312,6 +312,11 @@ class Command(BaseCommand):
                 invite_required=False,
                 org_type=Realm.CORPORATE,
             )
+            RealmAuditLog.objects.create(
+                realm=zulip_realm,
+                event_type=RealmAuditLog.REALM_CREATED,
+                event_time=zulip_realm.date_created,
+            )
             RealmDomain.objects.create(realm=zulip_realm, domain="zulip.com")
             if options["test_suite"]:
                 mit_realm = Realm.objects.create(
@@ -321,6 +326,11 @@ class Command(BaseCommand):
                     invite_required=False,
                     org_type=Realm.CORPORATE,
                 )
+                RealmAuditLog.objects.create(
+                    realm=mit_realm,
+                    event_type=RealmAuditLog.REALM_CREATED,
+                    event_time=mit_realm.date_created,
+                )
                 RealmDomain.objects.create(realm=mit_realm, domain="mit.edu")
 
                 lear_realm = Realm.objects.create(
@@ -329,6 +339,11 @@ class Command(BaseCommand):
                     emails_restricted_to_domains=False,
                     invite_required=False,
                     org_type=Realm.CORPORATE,
+                )
+                RealmAuditLog.objects.create(
+                    realm=lear_realm,
+                    event_type=RealmAuditLog.REALM_CREATED,
+                    event_time=lear_realm.date_created,
                 )
 
                 # Default to allowing all members to send mentions in

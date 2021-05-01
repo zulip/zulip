@@ -237,8 +237,7 @@ function build_topic_popover(opts) {
     const is_muted = muting.is_topic_muted(sub.stream_id, topic_name);
     const can_mute_topic = !is_muted;
     const can_unmute_topic = is_muted;
-    const has_starred_messages =
-        starred_messages.get_starred_message_ids_in_topic(sub.stream_id, topic_name).length > 0;
+    const has_starred_messages = starred_messages.get_count_in_topic(sub.stream_id, topic_name) > 0;
 
     const content = render_topic_sidebar_actions({
         stream_name: sub.name,

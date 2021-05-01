@@ -40,6 +40,7 @@ $topic_indent: calc($far_left_gutter_size + $left_col_size + 4px);
 
 .pm_left_col {
     min-width: $left_col_size;
+    margin-left: 15px;
 }
 
 #stream_filters,
@@ -161,6 +162,11 @@ li.show-more-topics {
 
 #private-container {
     max-height: 200px;
+
+    /* Match the opacity for global-filters icons. */
+    span.fa-group {
+        opacity: 0.7;
+    }
 }
 
 :not(.active-sub-filter) {
@@ -175,6 +181,7 @@ li.show-more-topics {
 #add-stream-link {
     text-decoration: none;
     margin-left: 10px;
+    margin-top: 5px;
     i {
         min-width: 19px;
         text-align: center;

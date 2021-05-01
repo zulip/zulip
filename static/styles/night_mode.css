@@ -10,6 +10,14 @@ body.night-mode {
         color: inherit;
     }
 
+    table.table-striped thead.table-sticky-headers th {
+        background-color: hsl(0, 0%, 0%);
+
+        &:hover {
+            background-color: hsl(211, 29%, 14%);
+        }
+    }
+
     .app-main,
     .header-main,
     #message_view_header_underpadding,
@@ -31,15 +39,6 @@ body.night-mode {
 
     .compose-send-status-close:hover {
         opacity: 0.4;
-    }
-
-    .compose_giphy_logo {
-        filter: invert(85%) sepia(4%) saturate(1223%) hue-rotate(190deg)
-            brightness(114%) contrast(99%); /* #ecf7ff */
-        &:hover {
-            filter: invert(68%) sepia(35%) saturate(626%) hue-rotate(160deg)
-                brightness(96%) contrast(94%); /* #64bfed */
-        }
     }
 
     .message_embed .data-container::after {
@@ -317,6 +316,19 @@ on a dark background, and don't change the dark labels dark either. */
     hr {
         color: hsl(212, 28%, 18%);
         opacity: 0.2;
+    }
+
+    #about-zulip {
+        .about-zulip-version {
+            color: hsl(212, 17%, 81%);
+        }
+    }
+
+    #gear_menu_about_zulip {
+        .white_zulip_icon_without_text {
+            filter: invert(10%) sepia(16%) saturate(175%) hue-rotate(194deg)
+                brightness(99%) contrast(89%);
+        }
     }
 
     .nav .dropdown-menu::after,

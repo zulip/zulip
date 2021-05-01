@@ -48,6 +48,7 @@ const alice = {
     avatar_version: 5,
     is_guest: false,
     is_admin: false,
+    role: 400,
 };
 
 const me = {

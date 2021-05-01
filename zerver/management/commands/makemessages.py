@@ -38,7 +38,7 @@ import os
 import re
 import subprocess
 from argparse import ArgumentParser
-from typing import Any, Dict, Iterable, Iterator, List, Mapping
+from typing import Any, Collection, Dict, Iterator, List, Mapping
 
 from django.core.management.commands import makemessages
 from django.template.base import BLOCK_TAG_END, BLOCK_TAG_START
@@ -220,7 +220,7 @@ class Command(makemessages.Command):
     def get_namespace(self) -> str:
         return self.frontend_namespace
 
-    def get_locales(self) -> Iterable[str]:
+    def get_locales(self) -> Collection[str]:
         locale = self.frontend_locale
         exclude = self.frontend_exclude
         process_all = self.frontend_all

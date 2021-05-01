@@ -109,13 +109,18 @@ export const common_policy_values = {
         code: 2,
         description: $t({defaultMessage: "Admins"}),
     },
-    by_full_members: {
+    by_moderators_only: {
         order: 2,
+        code: 4,
+        description: $t({defaultMessage: "Admins and moderators"}),
+    },
+    by_full_members: {
+        order: 3,
         code: 3,
         description: $t({defaultMessage: "Admins and full members"}),
     },
     by_members: {
-        order: 3,
+        order: 4,
         code: 1,
         description: $t({defaultMessage: "Admins and members"}),
     },
@@ -267,6 +272,10 @@ export const user_role_values = {
     member: {
         code: 400,
         description: $t({defaultMessage: "Member"}),
+    },
+    moderator: {
+        code: 300,
+        description: $t({defaultMessage: "Moderator"}),
     },
     admin: {
         code: 200,

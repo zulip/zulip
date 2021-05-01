@@ -31,10 +31,10 @@ export function focus_current_edit_message() {
 }
 
 export function is_giphy_enabled() {
-    if (page_params.giphy_api_key === "") {
-        return false;
-    }
-    return page_params.realm_giphy_rating !== page_params.giphy_rating_options.disabled.id;
+    return (
+        page_params.giphy_api_key !== "" &&
+        page_params.realm_giphy_rating !== page_params.giphy_rating_options.disabled.id
+    );
 }
 
 // Approximate width and height of
@@ -200,7 +200,7 @@ function get_popover_placement() {
 
 export function initialize() {
     $("body").on("keydown", ".giphy-gif", ui_util.convert_enter_to_click);
-    $("body").on("keydown", ".compose_giphy_logo", ui_util.convert_enter_to_click);
+    $("body").on("keydown", ".compose_gif_icon", ui_util.convert_enter_to_click);
 
     $("body").on("click", "#giphy_search_clear", (e) => {
         e.stopPropagation();
@@ -208,7 +208,7 @@ export function initialize() {
         update_grid_with_search_term();
     });
 
-    $("body").on("click", ".compose_giphy_logo", (e) => {
+    $("body").on("click", ".compose_gif_icon", (e) => {
         e.preventDefault();
         e.stopPropagation();
 

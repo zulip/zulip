@@ -63,6 +63,9 @@ const ui_util = mock_esm("../../static/js/ui_util");
 mock_esm("../../static/js/drafts", {
     delete_draft_after_send: noop,
 });
+mock_esm("../../static/js/giphy", {
+    is_giphy_enabled: () => true,
+});
 mock_esm("../../static/js/notifications", {
     notify_above_composebox: noop,
     clear_compose_notifications: noop,

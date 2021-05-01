@@ -187,6 +187,24 @@ class EditMessageTest(ZulipTestCase):
         result = self.client_get("/json/messages/" + str(msg_id))
         self.assert_json_error(result, "Invalid message(s)")
 
+    # Right now, we prevent users from editing widgets.
+    def test_edit_submessage(self) -> None:
+        self.login("hamlet")
+        msg_id = self.send_stream_message(
+            self.example_user("hamlet"),
+            "Scotland",
+            topic_name="editing",
+            content="/poll Games?\nYES\nNO",
+        )
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "message_id": msg_id,
+                "content": "/poll Games?\nYES\nNO\nMaybe",
+            },
+        )
+        self.assert_json_error(result, "Widgets cannot be edited.")
+
     def test_edit_message_no_permission(self) -> None:
         self.login("hamlet")
         msg_id = self.send_stream_message(

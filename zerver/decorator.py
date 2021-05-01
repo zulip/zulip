@@ -43,7 +43,6 @@ from zerver.lib.response import json_error, json_method_not_allowed, json_succes
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.types import ViewFuncT
-from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.utils import has_api_key_format, statsd
 from zerver.models import Realm, UserProfile, get_client, get_user_profile_by_api_key
 
@@ -165,27 +164,6 @@ def require_billing_access(func: ViewFuncT) -> ViewFuncT:
     return cast(ViewFuncT, wrapper)  # https://github.com/python/mypy/issues/1927
 
 
-def get_client_name(request: HttpRequest) -> str:
-    # If the API request specified a client in the request content,
-    # that has priority.  Otherwise, extract the client from the
-    # User-Agent.
-    if "client" in request.GET:  # nocoverage
-        return request.GET["client"]
-    if "client" in request.POST:
-        return request.POST["client"]
-    if "HTTP_USER_AGENT" in request.META:
-        user_agent: Optional[Dict[str, str]] = parse_user_agent(request.META["HTTP_USER_AGENT"])
-    else:
-        user_agent = None
-    if user_agent is not None:
-        return user_agent["name"]
-
-    # In the future, we will require setting USER_AGENT, but for
-    # now we just want to tag these requests so we can review them
-    # in logs and figure out the extent of the problem
-    return "Unspecified"
-
-
 def process_client(
     request: HttpRequest,
     user_profile: UserProfile,
@@ -196,7 +174,7 @@ def process_client(
     query: Optional[str] = None,
 ) -> None:
     if client_name is None:
-        client_name = get_client_name(request)
+        client_name = request.client_name
 
     # We could check for a browser's name being "Mozilla", but
     # e.g. Opera and MobileSafari don't set that, and it seems

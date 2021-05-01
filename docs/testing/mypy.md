@@ -390,14 +390,21 @@ if s is None:  # good
 
 ### Read-only types
 
-The basic Python collections `List`, `Dict`, and `Set` are mutable,
-but it's confusing for a function to mutate a collection that was
-passed to it as an argument, especially by accident.  To avoid this,
-prefer annotating function parameters with read-only types:
+The basic Python collections
+[`List`](https://docs.python.org/3/library/typing.html#typing.List),
+[`Dict`](https://docs.python.org/3/library/typing.html#typing.Dict),
+and [`Set`](https://docs.python.org/3/library/typing.html#typing.Set)
+are mutable, but it's confusing for a function to mutate a collection
+that was passed to it as an argument, especially by accident.  To
+avoid this, prefer annotating function parameters with read-only
+types:
 
-* `Sequence` or `Iterable` instead of `List`,
-* `Mapping` instead of `Dict`,
-* `AbstractSet` instead of `Set`.
+* [`Sequence`](https://docs.python.org/3/library/typing.html#typing.Sequence)
+  instead of `List`,
+* [`Mapping`](https://docs.python.org/3/library/typing.html#typing.Mapping)
+  instead of `Dict`,
+* [`AbstractSet`](https://docs.python.org/3/library/typing.html#typing.AbstractSet)
+  instead of `Set`.
 
 This is especially important for parameters with default arguments,
 since a mutable default argument is confusingly shared between all
@@ -408,6 +415,14 @@ def f(items: Sequence[int] = []) -> int:
     items.append(1)  # mypy catches this mistake
     return sum(items)
 ```
+
+In some cases the more general
+[`Collection`](https://docs.python.org/3/library/typing.html#typing.Collection)
+or
+[`Iterable`](https://docs.python.org/3/library/typing.html#typing.Iterable)
+types might be appropriate.  (But don’t use `Iterable` for a value
+that might be iterated multiple times, since a one-use iterator is
+`Iterable` too.)
 
 A function's return type can be mutable if the return value is always
 a freshly created collection, since the caller ends up with the only

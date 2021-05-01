@@ -35,6 +35,7 @@ USAGE = """
 
 # We do not yet require 100% line coverage for these files:
 EXEMPT_FILES = {
+    "static/js/about_zulip.js",
     "static/js/admin.js",
     "static/js/alert_popup.ts",
     "static/js/archive.js",

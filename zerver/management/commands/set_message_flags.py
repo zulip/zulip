@@ -1,6 +1,6 @@
 import logging
 import sys
-from typing import Any, Iterable
+from typing import Any, Collection
 
 from django.core.management.base import CommandParser
 from django.db import models
@@ -59,7 +59,7 @@ class Command(ZulipBaseCommand):
             sys.stdout.close()
             sys.stderr.close()
 
-        def do_update(batch: Iterable[int]) -> None:
+        def do_update(batch: Collection[int]) -> None:
             msgs = UserMessage.objects.filter(id__in=batch)
             if op == "add":
                 msgs.update(flags=models.F("flags").bitor(flag))

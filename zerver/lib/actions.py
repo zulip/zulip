@@ -11,6 +11,7 @@ from typing import (
     AbstractSet,
     Any,
     Callable,
+    Collection,
     Dict,
     Iterable,
     List,
@@ -260,9 +261,6 @@ class SubscriptionInfo:
     never_subscribed: List[Dict[str, Any]]
 
 
-# This will be used to type annotate parameters in a function if the function
-# works on both str and unicode in python 2 but in python 3 it only works on str.
-SizedTextIterable = Union[Sequence[str], AbstractSet[str]]
 ONBOARDING_TOTAL_MESSAGES = 1000
 ONBOARDING_UNREAD_MESSAGES = 20
 
@@ -654,6 +652,18 @@ def do_create_user(
             }
         ).decode(),
     )
+
+    if realm_creation:
+        # If this user just created a realm, make sure they are
+        # properly tagged as the creator of the realm.
+        realm_creation_audit_log = (
+            RealmAuditLog.objects.filter(event_type=RealmAuditLog.REALM_CREATED, realm=realm)
+            .order_by("id")
+            .last()
+        )
+        realm_creation_audit_log.acting_user = user_profile
+        realm_creation_audit_log.save(update_fields=["acting_user"])
+
     do_increment_logging_stat(
         user_profile.realm,
         COUNT_STATS["active_users_log:is_bot:day"],
@@ -2552,7 +2562,7 @@ def extract_private_recipients(s: str) -> Union[List[str], List[int]]:
     return get_validated_user_ids(data)
 
 
-def get_validated_user_ids(user_ids: Iterable[int]) -> List[int]:
+def get_validated_user_ids(user_ids: Collection[int]) -> List[int]:
     for user_id in user_ids:
         if not isinstance(user_id, int):
             raise JsonableError(_("Recipient lists may contain emails or user IDs, but not both."))
@@ -2560,7 +2570,7 @@ def get_validated_user_ids(user_ids: Iterable[int]) -> List[int]:
     return list(set(user_ids))
 
 
-def get_validated_emails(emails: Iterable[str]) -> List[str]:
+def get_validated_emails(emails: Collection[str]) -> List[str]:
     for email in emails:
         if not isinstance(email, str):
             raise JsonableError(_("Recipient lists may contain emails or user IDs, but not both."))
@@ -3218,7 +3228,7 @@ def validate_user_access_to_subscribers_helper(
 
 
 def bulk_get_subscriber_user_ids(
-    stream_dicts: Iterable[Mapping[str, Any]],
+    stream_dicts: Collection[Mapping[str, Any]],
     user_profile: UserProfile,
     subscribed_stream_ids: Set[int],
 ) -> Dict[int, List[int]]:
@@ -3350,7 +3360,7 @@ SubT = Tuple[List[SubInfo], List[SubInfo]]
 
 def bulk_add_subscriptions(
     realm: Realm,
-    streams: Iterable[Stream],
+    streams: Collection[Stream],
     users: Iterable[UserProfile],
     color_map: Mapping[str, str] = {},
     from_user_creation: bool = False,
@@ -4533,8 +4543,14 @@ def do_create_realm(
         # suites that want to backdate the date of a realm's creation.
         assert not settings.PRODUCTION
         kwargs["date_created"] = date_created
-    realm = Realm(string_id=string_id, name=name, **kwargs)
-    realm.save()
+
+    with transaction.atomic():
+        realm = Realm(string_id=string_id, name=name, **kwargs)
+        realm.save()
+
+        RealmAuditLog.objects.create(
+            realm=realm, event_type=RealmAuditLog.REALM_CREATED, event_time=realm.date_created
+        )
 
     # Create stream once Realm object has been saved
     notifications_stream = ensure_stream(
@@ -6199,7 +6215,7 @@ def get_active_presence_idle_user_ids(
 
     user_ids = set()
     for user_id in active_user_ids:
-        flags: Iterable[str] = user_flags.get(user_id, [])
+        flags = user_flags.get(user_id, [])
         mentioned = "mentioned" in flags or "wildcard_mentioned" in flags
         private_message = is_pm and user_id != sender_id
         alerted = "has_alert_word" in flags
@@ -6291,7 +6307,7 @@ class InvitationError(JsonableError):
         self.sent_invitations: bool = sent_invitations
 
 
-def estimate_recent_invites(realms: Iterable[Realm], *, days: int) -> int:
+def estimate_recent_invites(realms: Collection[Realm], *, days: int) -> int:
     """An upper bound on the number of invites sent in the last `days` days"""
     recent_invites = RealmCount.objects.filter(
         realm__in=realms,
@@ -6343,8 +6359,8 @@ def check_invite_limit(realm: Realm, num_invitees: int) -> None:
 
 def do_invite_users(
     user_profile: UserProfile,
-    invitee_emails: SizedTextIterable,
-    streams: Iterable[Stream],
+    invitee_emails: Collection[str],
+    streams: Collection[Stream],
     invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
 ) -> None:
 
@@ -6599,7 +6615,7 @@ def do_remove_realm_emoji(realm: Realm, name: str) -> None:
     notify_realm_emoji(realm)
 
 
-def notify_alert_words(user_profile: UserProfile, words: Iterable[str]) -> None:
+def notify_alert_words(user_profile: UserProfile, words: Sequence[str]) -> None:
     event = dict(type="alert_words", alert_words=words)
     send_event(user_profile.realm, event, [user_profile.id])
 

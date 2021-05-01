@@ -14,6 +14,7 @@ from typing import (
     AbstractSet,
     Any,
     Callable,
+    Collection,
     Deque,
     Dict,
     Iterable,
@@ -33,6 +34,7 @@ from django.conf import settings
 from django.utils.translation import gettext as _
 from typing_extensions import TypedDict
 
+from version import API_FEATURE_LEVEL, ZULIP_VERSION
 from zerver.decorator import cachify
 from zerver.lib.message import MessageDict
 from zerver.lib.narrow import build_narrow_filter
@@ -84,7 +86,7 @@ class ClientDescriptor:
         slim_presence: bool = False,
         all_public_streams: bool = False,
         lifespan_secs: int = 0,
-        narrow: Iterable[Sequence[str]] = [],
+        narrow: Collection[Sequence[str]] = [],
         bulk_message_deletion: bool = False,
         stream_typing_notifications: bool = False,
     ) -> None:
@@ -572,7 +574,12 @@ def load_event_queues(port: int) -> None:
 
 
 def send_restart_events(immediate: bool = False) -> None:
-    event: Dict[str, Any] = dict(type="restart", server_generation=settings.SERVER_GENERATION)
+    event: Dict[str, Any] = dict(
+        type="restart",
+        zulip_version=ZULIP_VERSION,
+        zulip_feature_level=API_FEATURE_LEVEL,
+        server_generation=settings.SERVER_GENERATION,
+    )
     if immediate:
         event["immediate"] = True
     for client in clients.values():
@@ -850,7 +857,7 @@ def maybe_enqueue_notifications(
 
 class ClientInfo(TypedDict):
     client: ClientDescriptor
-    flags: Iterable[str]
+    flags: Collection[str]
     is_sender: bool
 
 
@@ -884,7 +891,7 @@ def get_client_info_for_message_event(
 
     for user_data in users:
         user_profile_id: int = user_data["id"]
-        flags: Iterable[str] = user_data.get("flags", [])
+        flags: Collection[str] = user_data.get("flags", [])
 
         for client in get_client_descriptors_for_user(user_profile_id):
             send_to_clients[client.event_queue.id] = dict(
@@ -897,7 +904,7 @@ def get_client_info_for_message_event(
 
 
 def process_message_event(
-    event_template: Mapping[str, Any], users: Iterable[Mapping[str, Any]]
+    event_template: Mapping[str, Any], users: Collection[Mapping[str, Any]]
 ) -> None:
     """See
     https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html
@@ -1205,9 +1212,9 @@ def process_notification(notice: Mapping[str, Any]) -> None:
     start_time = time.time()
 
     if event["type"] == "message":
-        process_message_event(event, cast(Iterable[Mapping[str, Any]], users))
+        process_message_event(event, cast(List[Mapping[str, Any]], users))
     elif event["type"] == "update_message":
-        process_message_update_event(event, cast(Iterable[Mapping[str, Any]], users))
+        process_message_update_event(event, cast(List[Mapping[str, Any]], users))
     elif event["type"] == "delete_message":
         if len(users) > 0 and isinstance(users[0], dict):
             # do_delete_messages used to send events with users in
@@ -1217,14 +1224,14 @@ def process_notification(notice: Mapping[str, Any]) -> None:
             #
             # TODO/compatibility: Remove this block once you can no
             # longer directly upgrade directly from 4.x to master.
-            user_ids: List[int] = [user["id"] for user in cast(List[Mapping[str, int]], users)]
+            user_ids: List[int] = [user["id"] for user in cast(List[Mapping[str, Any]], users)]
         else:
             user_ids = cast(List[int], users)
         process_deletion_event(event, user_ids)
     elif event["type"] == "presence":
-        process_presence_event(event, cast(Iterable[int], users))
+        process_presence_event(event, cast(List[int], users))
     else:
-        process_event(event, cast(Iterable[int], users))
+        process_event(event, cast(List[int], users))
     logging.debug(
         "Tornado: Event %s for %s users took %sms",
         event["type"],

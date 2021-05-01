@@ -6,6 +6,7 @@ import render_confirm_unstar_all_messages_in_topic from "../templates/confirm_un
 import * as confirm_dialog from "./confirm_dialog";
 import {$t_html} from "./i18n";
 import * as message_flags from "./message_flags";
+import * as stream_data from "./stream_data";
 
 export function confirm_unstar_all_messages() {
     const modal_parent = $(".left-sidebar-modal-holder");
@@ -25,8 +26,14 @@ export function confirm_unstar_all_messages_in_topic(stream_id, topic) {
         message_flags.unstar_all_messages_in_topic(stream_id, topic);
     }
 
+    const stream_name = stream_data.maybe_get_stream_name(stream_id);
+    if (stream_name === undefined) {
+        return;
+    }
+
     const modal_parent = $(".left-sidebar-modal-holder");
     const html_body = render_confirm_unstar_all_messages_in_topic({
+        stream_name,
         topic,
     });
 

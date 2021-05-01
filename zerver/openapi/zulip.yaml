@@ -390,6 +390,7 @@ paths:
                                           enum:
                                             - 100
                                             - 200
+                                            - 300
                                             - 400
                                             - 600
                                     - type: object
@@ -701,6 +702,14 @@ paths:
                                   type: array
                                   description: |
                                     The user's [message flags][message-flags] for the message.
+
+                                    Clients should inspect the flags field rather than assuming that
+                                    new messages are unread; [muted users](/api/mute-user), messages
+                                    sent by the current user, and more subtle scenarios can result
+                                    in a new message that the server has already marked as read for
+                                    the user.
+
+                                    [message-flags]: /api/update-message-flags#available-flags
                                   items:
                                     type: string
                               additionalProperties: false
@@ -806,6 +815,7 @@ paths:
                                       "is_admin": false,
                                       "is_owner": false,
                                       "is_guest": false,
+                                      "role": 400,
                                       "is_bot": false,
                                       "full_name": "full name",
                                       "timezone": "",
@@ -1799,58 +1809,77 @@ paths:
                                   type: integer
                                   description: |
                                     The ID of the message which was edited.
+
+                                    This field should be used to apply content edits to the client's
+                                    cached message history.  If the stream or topic was changed, the
+                                    set of moved messages is encoded in the separate `message_ids`
+                                    field, which is guaranteed to include `message_id`.
+                                message_ids:
+                                  type: array
+                                  items:
+                                    type: integer
+                                  description: |
+                                    The list of IDs of messages to which any stream or topic changes
+                                    encoded in this event should be applied.
+
+                                    These messages are guaranteed to have all been previously sent
+                                    to stream `stream_id` with topic `orig_subject`, and have been
+                                    moved to `new_stream_id` with topic `subject` (if those fields
+                                    are present in the event).
+
+                                    Clients processing these events should update all cached message
+                                    history associated with the moved messages (including adjusting
+                                    `unread_msgs` data structures, where the client may not have the
+                                    message itself in its history) to reflect the new stream and
+                                    topic.
+
+                                    Content changes should be applied only to the single message
+                                    indicated by `message_id`.
                                 edit_timestamp:
                                   type: integer
                                   description: |
-                                    The timestamp when the message was edited.
+                                    The time when this message edit operation was processed by the
+                                    server.
                                 stream_name:
                                   type: string
                                   description: |
                                     Only present if the message was originally sent to a stream.
 
-                                    The name of the stream that the message was sent to.
+                                    The name of the stream that the message was sent to.  Clients
+                                    are recommended to use the `stream_id` field instead.
                                 stream_id:
                                   type: integer
                                   description: |
                                     Only present if the message was originally sent to a stream.
 
-                                    The ID of the stream that the message was sent to.
+                                    The pre-edit stream for all of the messages with IDs in
+                                    `message_ids`.
                                 new_stream_id:
                                   type: integer
                                   description: |
                                     Note: Only present if message(s) were moved to a different stream.
 
-                                    The ID of the stream that the message was moved to.
-                                orig_content:
-                                  type: string
-                                  description: |
-                                    The original Markdown content of the message, before this edit.
-                                orig_rendered_content:
-                                  type: string
-                                  description: |
-                                    The original content of the message, before this edit, rendered as HTML.
-                                prev_rendered_content_version:
-                                  type: integer
-                                  description: |
-                                    The Markdown processor version number for the pre-edit message.
-                                content:
-                                  type: string
-                                  description: |
-                                    The new content of the message, in the original Markdown.
-                                rendered_content:
-                                  type: string
-                                  description: |
-                                    The new content of the message, rendered in HTML.
-                                is_me_message:
-                                  type: boolean
-                                  description: |
-                                    Whether the message is now a [/me status message][status-messages].
+                                    The post-edit stream for all of the messages with IDs in
+                                    `message_ids`.
                                 propagate_mode:
                                   type: string
                                   description: |
-                                    Which message(s) should be edited: just the one indicated in
-                                    `message_id`, messages in the same topic that had been sent after this
-                                    one, or all of them.
+                                    The choice the editing user made about which messages should be
+                                    affected by a stream/topic edit: just the one indicated in
+                                    `message_id`, messages in the same topic that had been sent
+                                    after this one, or all messages in that topic.
+
+                                    This parameter should be used to decide whether to change
+                                    navigation and compose box state in response to the edit.  For
+                                    example, if the user was previously in topic narrow, and the
+                                    topic was edited with `change_later` or `change_all`, the Zulip
+                                    webapp will automatically navigate to the new topic narrow.
+                                    Similarly, a message being composed to the old topic should
+                                    have its recipient changed to the new topic.
+
+                                    This navigation makes it much more convenient to move content
+                                    between topics without disruption or messages continuing
+                                    to be sent to the pre-edit topic by accident.
                                   enum:
                                     - change_one
                                     - change_later
@@ -1858,12 +1887,19 @@ paths:
                                 orig_subject:
                                   type: string
                                   description: |
-                                    The original topic of the message. Only present if the topic of the message
-                                    was changed.
+                                    The pre-edit topic for all of the messages with IDs in
+                                    `message_ids`.
+
+                                    Only present if this event moved messages to a different
+                                    topic.
                                 subject:
                                   type: string
                                   description: |
-                                    The current topic of the message following the edit.
+                                    The post-edit topic for all of the messages with IDs in
+                                    `message_ids`.
+
+                                    Only present if this event moved messages to a different
+                                    topic.
                                 topic_links:
                                   type: array
                                   items:
@@ -1882,7 +1918,11 @@ paths:
                                     Data on any links to be included in the `topic`
                                     line (these are generated by
                                     [custom linkification filter](/help/add-a-custom-linkifier)
-                                    that match content in the message's topic.)
+                                    that match content in the message's topic.), corresponding
+                                    to the post-edit topic.
+
+                                    Only present if this event moved messages to a different
+                                    topic.
 
                                     **Changes**: This field contained a list of urls before
                                       Zulip 4.0 (feature level 46).
@@ -1891,22 +1931,50 @@ paths:
                                     was called `subject_links`; clients are recommended to
                                     rename `subject_links` to `topic_links` if present for
                                     compatibility with older Zulip servers.
-                                message_ids:
-                                  type: array
-                                  items:
-                                    type: integer
+                                orig_content:
+                                  type: string
                                   description: |
-                                    For edits changing the stream or topic of multiple messages,
-                                    the list of IDs of other messages to be moved as well.
+                                    The original content of the message with ID `message_id`
+                                    immediately prior to this edit, in the original markdown.
+                                orig_rendered_content:
+                                  type: string
+                                  description: |
+                                    The original content of the message with ID `message_id`
+                                    immediately prior to this edit, rendered as HTML.
+                                prev_rendered_content_version:
+                                  type: integer
+                                  description: |
+                                    The Markdown processor version number for the pre-edit message.
 
-                                    The messages are guaranteed to have all been previously in the
-                                    sam stream and topic.
+                                    Clients should ignore this field.
+                                content:
+                                  type: string
+                                  description: |
+                                    The new content of the message with ID `message_id`, in the
+                                    original Markdown.
+                                rendered_content:
+                                  type: string
+                                  description: |
+                                    The new content of the message with ID `message_id`,
+                                    rendered in HTML.
+                                is_me_message:
+                                  type: boolean
+                                  description: |
+                                    Whether the message with ID `message_id` is now a
+                                    [/me status message][status-messages].
+
+                                    [status-messages]: /help/format-your-message-using-markdown#status-messages
                                 flags:
                                   type: array
                                   description: |
-                                    The user's personal [message flags][message-flags] for the message
-                                    following the edit.  The client should compare these to the original
-                                    flags to identify cases where a mention was added by the edit.
+                                    The user's personal [message flags][message-flags] for the
+                                    message with ID `message_id` following the edit.
+
+                                    A client application should compare these to the original flags
+                                    to identify cases where a mention or alert word was added by the
+                                    edit.
+
+                                    [message-flags]: /api/update-message-flags#available-flags
                                   items:
                                     type: string
                               example:
@@ -2167,6 +2235,8 @@ paths:
                               description: |
                                 Event sent to a user when [message flags][message-flags] are added
                                 to a message.
+
+                                [message-flags]: /api/update-message-flags#available-flags
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -2221,6 +2291,8 @@ paths:
                               description: |
                                 Event sent to a user when [message flags][message-flags] are
                                 removed from a message.
+
+                                [message-flags]: /api/update-message-flags#available-flags
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -3043,6 +3115,68 @@ paths:
                                   "op": "deactivated",
                                   "realm_id": 2,
                                   "id": 0,
+                                }
+                            - type: object
+                              description: |
+                                Event sent to all the users whenever the Zulip server restarts.
+
+                                Specifically, this event is sent whenever the Tornado process
+                                for the user is restarted; in particular, this will always happen
+                                when the Zulip server is upgraded.
+
+                                Clients can use this event to know when they should get a new
+                                event queue after a server upgrade.  Clients doing so must implement
+                                a random delay strategy to spread such restarts over 10 minutes or
+                                more to avoid creating a synchronized thundering herd effect.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - restart
+                                zulip_version:
+                                  type: string
+                                  description: |
+                                    The Zulip version number, in the format where this appears
+                                    in the [server_settings](/api/get-server-settings) and
+                                    [register](/api/register-queue) responses.
+
+                                    **Changes**: New in Zulip 4.0 (feature level 59).
+                                zulip_feature_level:
+                                  type: integer
+                                  description: |
+                                    The [Zulip feature level](/api/changelog) of the server
+                                    after the restart.
+
+                                    Clients can safely avoid refetching their state and
+                                    creating a new event queue when the API feature level has not
+                                    changed, or when they know the specific feature level change
+                                    is not relevant to the client (E.g. it just adds a new endpoint
+                                    that the client doesn't use).
+
+                                    **Changes**: New in Zulip 4.0 (feature level 59).
+                                immediate:
+                                  type: boolean
+                                  description: |
+                                    Whether the client should fetch a new event queue immediately,
+                                    rather than using a backoff strategy to avoid thundering herds.
+                                    A Zulip development server uses this parameter to reload
+                                    clients immediately.
+                                server_generation:
+                                  type: integer
+                                  description: |
+                                    The timestamp at which the server started.
+                              additionalProperties: false
+                              example:
+                                {
+                                  "id": 0,
+                                  "immediate": True,
+                                  "server_generation": 1619334181,
+                                  "type": "restart",
+                                  "zulip_feature_level": 57,
+                                  "zulip_version": "4.0-dev+git",
                                 }
                             - type: object
                               additionalProperties: false
@@ -4658,6 +4792,11 @@ paths:
             Which message(s) should be edited: just the one indicated in
             `message_id`, messages in the same topic that had been sent after this
             one, or all of them.
+
+            This parameter determines both which messages get moved and also whether
+            clients that are currently narrowed to the topic containing the message
+            should navigate or adjust their compose box recipient to point to the
+            post-edit stream/topic.
           schema:
             type: string
             enum:
@@ -4899,6 +5038,7 @@ paths:
                               "email": "AARON@zulip.com",
                               "is_admin": false,
                               "is_owner": false,
+                              "role": 400,
                               "avatar_url": "https://secure.gravatar.com/avatar/818c212b9f8830dfef491b3f7da99a14?d=identicon&version=1",
                               "bot_type": null,
                               "timezone": "",
@@ -4942,6 +5082,7 @@ paths:
                               "timezone": "",
                               "is_admin": false,
                               "is_owner": false,
+                              "role": 400,
                               "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                               "is_active": true,
                               "email": "hamlet@zulip.com",
@@ -4956,6 +5097,7 @@ paths:
                               "avatar_url": "https://secure.gravatar.com/avatar/7328586831cdbb1627649bd857b1ee8c?d=identicon&version=1",
                               "is_admin": false,
                               "is_owner": false,
+                              "role": 400,
                               "user_id": 23,
                               "bot_type": 1,
                               "timezone": "",
@@ -5200,6 +5342,25 @@ paths:
 
                           **Changes**: New in Zulip 3.0 (feature level 8).
                         example: false
+                      role:
+                        type: integer
+                        enum:
+                          - 100
+                          - 200
+                          - 300
+                          - 400
+                          - 600
+                        description: |
+                          [Organization-level role](/help/roles-and-permissions)) of the user.
+                          Poosible values are:
+
+                          * Organization owner => 100
+                          * Organization administrator => 200
+                          * Organization moderator => 300
+                          * Member => 400
+                          * Guest => 600
+
+                          **Changes**: New in Zulip 4.0 (feature level 59).
                       is_guest:
                         type: boolean
                         description: |
@@ -5268,6 +5429,7 @@ paths:
                         "full_name": "Iago",
                         "is_admin": true,
                         "is_owner": false,
+                        "role": 200,
                         "is_guest": false,
                         "is_bot": false,
                         "is_active": true,
@@ -6475,6 +6637,7 @@ paths:
                             "timezone": "",
                             "is_admin": false,
                             "is_owner": false,
+                            "role": 400,
                             "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                             "is_active": true,
                             "email": "hamlet@zulip.com",
@@ -6549,6 +6712,7 @@ paths:
                             "timezone": "",
                             "is_admin": false,
                             "is_owner": false,
+                            "role": 400,
                             "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
                             "is_active": true,
                             "email": "hamlet@zulip.com",
@@ -6587,6 +6751,7 @@ paths:
 
             * Organization owner: 100
             * Organization administrator: 200
+            * Organization moderator: 300
             * Member: 400
             * Guest: 600
 
@@ -6595,7 +6760,8 @@ paths:
             The owner role cannot be removed from the only organization owner.
 
             **Changes**: New in Zulip 3.0 (feature level 8), replacing the previous
-            pair of `is_admin` and `is_guest` boolean parameters.
+            pair of `is_admin` and `is_guest` boolean parameters. Organization moderator
+            role added in Zulip 4.0 (feature level 60).
           schema:
             type: integer
           example: 400
@@ -8769,6 +8935,14 @@ paths:
                           Present if `realm_user` is present in `fetch_event_types`.
 
                           Whether the current user is an [organization owner](/help/roles-and-permissions).
+                      is_moderator:
+                        type: boolean
+                        description: |
+                          Present if `realm_user` is present in `fetch_event_types`.
+
+                          Whether the current user is an [organization moderator](/help/roles-and-permissions).
+
+                          **Changes**: New in Zulip 4.0 (feature level 60).
                       is_guest:
                         type: boolean
                         description: |
@@ -8832,6 +9006,7 @@ paths:
                                 full_name: {}
                                 is_admin: {}
                                 is_owner: {}
+                                role: {}
                                 bot_type: {}
                                 user_id: {}
                                 bot_owner_id: {}
@@ -11318,6 +11493,8 @@ components:
           type: boolean
           description: |
             Whether the message is a [/me status message][status-messages]
+
+            [status-messages]: /help/format-your-message-using-markdown#status-messages
         reactions:
           type: array
           description: |
@@ -11379,7 +11556,7 @@ components:
           description: |
             Data on any links to be included in the `topic`
             line (these are generated by [custom linkification
-            filters][linkification-filters] that match content in the
+            filters](/help/add-a-custom-linkifier) that match content in the
             message's topic.)
 
             **Changes**: This field contained a list of urls before
@@ -11388,7 +11565,6 @@ components:
             New in Zulip 3.0 (feature level 1): Previously, this field was called
             `subject_links`; clients are recommended to rename `subject_links` to `topic_links`
             if present for compatibility with older Zulip servers.
-
         submessages:
           type: array
           items:
@@ -11432,6 +11608,8 @@ components:
               type: array
               description: |
                 The user's [message flags][message-flags] for the message.
+
+                [message-flags]: /api/update-message-flags#available-flags
               items:
                 type: string
             last_edit_timestamp:
@@ -11495,6 +11673,7 @@ components:
             full_name: {}
             is_admin: {}
             is_owner: {}
+            role: {}
             bot_type: {}
             user_id: {}
             bot_owner_id: {}
@@ -11552,6 +11731,25 @@ components:
             If true, is_admin will also be true.
 
             **Changes**: New in Zulip 3.0 (feature level 8).
+        role:
+          type: integer
+          enum:
+            - 100
+            - 200
+            - 300
+            - 400
+            - 600
+          description: |
+            [Organization-level role](/help/roles-and-permissions)) of the user.
+            Poosible values are:
+
+            * Organization owner => 100
+            * Organization administrator => 200
+            * Organization moderator => 300
+            * Member => 400
+            * Guest => 600
+
+            **Changes**: New in Zulip 4.0 (feature level 59).
         bot_type:
           type: integer
           nullable: true

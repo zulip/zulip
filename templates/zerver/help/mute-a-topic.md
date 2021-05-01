@@ -15,8 +15,8 @@ Muted topics still appear in the left sidebar, though they are grayed out.
 1. On the left, click on the stream that contains the topic you want to mute or unmute.
 
 2. Hover over the topic to reveal a ellipsis
-   (<i class="zulip-icon ellipsis-v-solid"></i>) to its right.
-   Click on the ellipsis (<i class="zulip-icon ellipsis-v-solid"></i>).
+   (<i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>) to its right.
+   Click on the ellipsis (<i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>).
 
 4. Select **Mute the topic <topic name\>**.
 

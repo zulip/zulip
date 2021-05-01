@@ -9,7 +9,6 @@ from typing import (
     Any,
     Callable,
     Dict,
-    Iterable,
     List,
     Optional,
     Sequence,
@@ -589,11 +588,11 @@ class Realm(models.Model):
         return f"<Realm: {self.string_id} {self.id}>"
 
     @cache_with_key(get_realm_emoji_cache_key, timeout=3600 * 24 * 7)
-    def get_emoji(self) -> Dict[str, Dict[str, Iterable[str]]]:
+    def get_emoji(self) -> Dict[str, Dict[str, Any]]:
         return get_realm_emoji_uncached(self)
 
     @cache_with_key(get_active_realm_emoji_cache_key, timeout=3600 * 24 * 7)
-    def get_active_emoji(self) -> Dict[str, Dict[str, Iterable[str]]]:
+    def get_active_emoji(self) -> Dict[str, Dict[str, Any]]:
         return get_active_realm_emoji_uncached(self)
 
     def get_admin_users_and_bots(
@@ -1186,6 +1185,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     ROLE_TYPES = [
         ROLE_REALM_OWNER,
         ROLE_REALM_ADMINISTRATOR,
+        ROLE_MODERATOR,
         ROLE_MEMBER,
         ROLE_GUEST,
     ]
@@ -1707,12 +1707,12 @@ class PreregistrationUser(models.Model):
     # objects created as part of realm creation.
     realm: Optional[Realm] = models.ForeignKey(Realm, null=True, on_delete=CASCADE)
 
-    # Changes to INVITED_AS should also be reflected in
-    # settings_invites.invited_as_values in
-    # static/js/settings_invites.js
+    # These values should be consistent with the values
+    # in settings_config.user_role_values.
     INVITE_AS = dict(
         REALM_OWNER=100,
         REALM_ADMIN=200,
+        MODERATOR=300,
         MEMBER=400,
         GUEST_USER=600,
     )
@@ -3329,6 +3329,7 @@ class AbstractRealmAuditLog(models.Model):
     REALM_REACTIVATION_EMAIL_SENT = 212
     REALM_SPONSORSHIP_PENDING_STATUS_CHANGED = 213
     REALM_SUBDOMAIN_CHANGED = 214
+    REALM_CREATED = 215
 
     SUBSCRIPTION_CREATED = 301
     SUBSCRIPTION_ACTIVATED = 302

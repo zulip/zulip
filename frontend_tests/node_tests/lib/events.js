@@ -489,6 +489,7 @@ exports.fixtures = {
             is_admin: false,
             is_active: true,
             is_owner: false,
+            role: 400,
             is_bot: false,
             is_guest: false,
             profile_data: {},
@@ -517,6 +518,8 @@ exports.fixtures = {
 
     restart: {
         type: "restart",
+        zulip_version: "4.0-dev+git",
+        zulip_feature_level: 55,
         server_generation: 2,
         immediate: true,
     },

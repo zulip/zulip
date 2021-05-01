@@ -39,7 +39,9 @@ const me = {
     timezone: "America/Los_Angeles",
     is_admin: false,
     is_guest: false,
+    is_moderator: false,
     is_bot: false,
+    role: 400,
     // no avatar, so client should construct a /avatar/{user_id} URL.
 };
 
@@ -85,7 +87,9 @@ const realm_admin = {
     is_owner: false,
     is_admin: true,
     is_guest: false,
+    is_moderator: false,
     is_bot: false,
+    role: 200,
 };
 
 const guest = {
@@ -95,7 +99,9 @@ const guest = {
     is_owner: false,
     is_admin: false,
     is_guest: true,
+    is_moderator: false,
     is_bot: false,
+    role: 600,
 };
 
 const realm_owner = {
@@ -105,7 +111,9 @@ const realm_owner = {
     is_owner: true,
     is_admin: true,
     is_guest: false,
+    is_moderator: false,
     is_bot: false,
+    role: 100,
 };
 
 const bot_botson = {
@@ -114,6 +122,18 @@ const bot_botson = {
     full_name: "Bot Botson",
     is_bot: true,
     bot_owner_id: isaac.user_id,
+};
+
+const moderator = {
+    email: "moderator@example.com",
+    full_name: "Moderator",
+    user_id: 36,
+    is_owner: false,
+    is_admin: false,
+    is_guest: false,
+    is_moderator: true,
+    is_bot: false,
+    role: 300,
 };
 
 const steven = {
@@ -429,11 +449,13 @@ test_people("user_type", () => {
     people.add_active_user(realm_admin);
     people.add_active_user(guest);
     people.add_active_user(realm_owner);
+    people.add_active_user(moderator);
     people.add_active_user(bot_botson);
     assert.equal(people.get_user_type(me.user_id), $t({defaultMessage: "Member"}));
     assert.equal(people.get_user_type(realm_admin.user_id), $t({defaultMessage: "Administrator"}));
     assert.equal(people.get_user_type(guest.user_id), $t({defaultMessage: "Guest"}));
     assert.equal(people.get_user_type(realm_owner.user_id), $t({defaultMessage: "Owner"}));
+    assert.equal(people.get_user_type(moderator.user_id), $t({defaultMessage: "Moderator"}));
     assert.equal(people.get_user_type(bot_botson.user_id), $t({defaultMessage: "Bot"}));
 });
 
@@ -648,6 +670,8 @@ test_people("message_methods", () => {
             is_admin: false,
             is_bot: false,
             is_guest: false,
+            is_moderator: false,
+            role: 400,
             timezone: "America/Los_Angeles",
             user_id: 30,
         },

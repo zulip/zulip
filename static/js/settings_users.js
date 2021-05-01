@@ -60,10 +60,13 @@ function sort_role(a, b) {
         if (user.is_admin) {
             return 0;
         }
-        if (user.is_guest) {
-            return 2;
+        if (user.is_moderator) {
+            return 1;
         }
-        return 1; // member
+        if (user.is_guest) {
+            return 3;
+        }
+        return 2; // member
     }
     return compare_a_b(role(a), role(b));
 }
@@ -85,18 +88,6 @@ function sort_last_active(a, b) {
 
 function get_user_info_row(user_id) {
     return $(`tr.user_row[data-user-id='${CSS.escape(user_id)}']`);
-}
-
-function set_user_role_dropdown(person) {
-    let role_value = settings_config.user_role_values.member.code;
-    if (person.is_owner) {
-        role_value = settings_config.user_role_values.owner.code;
-    } else if (person.is_admin) {
-        role_value = settings_config.user_role_values.admin.code;
-    } else if (person.is_guest) {
-        role_value = settings_config.user_role_values.guest.code;
-    }
-    $("#user-role-select").val(role_value);
 }
 
 function update_view_on_deactivate(row) {
@@ -202,8 +193,6 @@ function bot_info(bot_user_id) {
     const info = {};
 
     info.is_bot = true;
-    info.is_admin = false;
-    info.is_guest = false;
     info.is_active = bot_user.is_active;
     info.user_id = bot_user.user_id;
     info.full_name = bot_user.full_name;
@@ -241,9 +230,7 @@ function human_info(person) {
     const info = {};
 
     info.is_bot = false;
-    info.is_admin = person.is_admin;
-    info.is_guest = person.is_guest;
-    info.is_owner = person.is_owner;
+    info.user_role_text = people.get_user_type(person.user_id);
     info.is_active = people.is_person_active(person.user_id);
     info.user_id = person.user_id;
     info.full_name = person.full_name;
@@ -418,7 +405,7 @@ function open_human_form(person) {
     const modal_container = $("#user-info-form-modal-container");
     modal_container.empty().append(div);
     overlays.open_modal("#admin-human-form");
-    set_user_role_dropdown(person);
+    $("#user-role-select").val(person.role);
     if (!page_params.is_owner) {
         $("#user-role-select")
             .find(`option[value="${CSS.escape(settings_config.user_role_values.owner.code)}"]`)

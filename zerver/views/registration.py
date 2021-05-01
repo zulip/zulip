@@ -45,7 +45,6 @@ from zerver.lib.actions import (
     do_set_user_display_setting,
     lookup_default_stream_groups,
 )
-from zerver.lib.create_user import get_role_for_new_user
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.onboarding import send_initial_realm_messages, setup_realm_internal_bots
 from zerver.lib.pysa import mark_sanitized
@@ -134,7 +133,9 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
     realm_creation = prereg_user.realm_creation
     password_required = prereg_user.password_required
 
-    role = get_role_for_new_user(prereg_user.invited_as, realm_creation)
+    role = prereg_user.invited_as
+    if realm_creation:
+        role = UserProfile.ROLE_REALM_OWNER
 
     try:
         validators.validate_email(email)
