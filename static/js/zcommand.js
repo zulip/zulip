@@ -30,9 +30,11 @@ What in the heck is a zcommand?
 
 export function send(opts) {
     const command = opts.command;
+    const command_data = opts.command_data;
     const on_success = opts.on_success;
     const data = {
         command,
+        command_data: JSON.stringify(command_data),
     };
 
     channel.post({
@@ -43,8 +45,12 @@ export function send(opts) {
                 on_success(data);
             }
         },
-        error() {
-            tell_user("server did not respond");
+        error(xhr) {
+            if (xhr.responseText) {
+                tell_user(JSON.parse(xhr.responseText).msg);
+            } else {
+                tell_user("server did not respond");
+            }
         },
     });
 }
