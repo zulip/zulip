@@ -2,9 +2,14 @@
 
 ## Add users to a stream
 
-Anyone (other than guests) subscribed to a stream can add users to that
-stream. Additionally, anyone (other than guests) can add users to a public
-stream, whether or not they are subscribed to the stream.
+By default, anyone (other than guests) subscribed to a stream can add
+users to that stream. Additionally, anyone (other than guests) can add
+users to a public stream, whether or not they are subscribed to the
+stream.
+
+Organization administrators can configure which
+[roles](/help/roles-and-permissions) have access to [add other users
+to a stream][configure-invites].
 
 {start_tabs}
 
@@ -39,3 +44,5 @@ including streams the admin is not subscribed to.
 1. Click **Unsubscribe** to the right of their email address.
 
 {end_tabs}
+
+[configure-invites]: /help/configure-who-can-invite-to-streams
