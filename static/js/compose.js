@@ -625,6 +625,20 @@ function validate_stream_message_post_policy(sub) {
         return false;
     }
 
+    if (page_params.is_moderator) {
+        return true;
+    }
+
+    if (stream_post_policy === stream_post_permission_type.moderators.code) {
+        compose_error(
+            $t_html({
+                defaultMessage:
+                    "Only organization admins and moderators are allowed to post to this stream.",
+            }),
+        );
+        return false;
+    }
+
     if (page_params.is_guest && stream_post_policy !== stream_post_permission_type.everyone.code) {
         compose_error($t_html({defaultMessage: "Guests are not allowed to post to this stream."}));
         return false;
