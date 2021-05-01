@@ -1283,6 +1283,11 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         name: str,
         expected_final_name: str,
         skip_registration_form: bool,
+        user_avatar_url: str = "",
+        social_avatar_content_path: str = "",
+        use_social_avatar: bool = False,
+        request_from_avatar_url_fails: bool = False,
+        uploaded_avatar_image: Optional[str] = None,
         mobile_flow_otp: Optional[str] = None,
         desktop_flow_otp: Optional[str] = None,
         expect_confirm_registration_page: bool = False,
@@ -1311,6 +1316,13 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         else:
             self.assertIn("do_confirm/" + confirmation_key, result.url)
             do_confirm_url = result.url
+
+        if user_avatar_url:
+            # If there is an avatar_url, then the user_avatar_url
+            # field of `PreregistrationUser` must be equal to that.
+            prereg_user = confirmation.content_object
+            self.assertEqual(prereg_user.user_avatar_url, user_avatar_url)
+
         result = self.client_get(do_confirm_url, name=name)
         self.assert_in_response('action="/accounts/register/"', result)
         confirmation_data = {"from_confirmation": "1", "key": confirmation_key}
@@ -1326,10 +1338,38 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
                 self.assert_in_success_response([expected_final_name], result)
 
             # Click confirm registration button.
-            result = self.client_post(
-                "/accounts/register/",
-                {"full_name": expected_final_name, "key": confirmation_key, "terms": True},
-            )
+            with responses.RequestsMock(assert_all_requests_are_fired=False) as requests_mock:
+                if user_avatar_url and social_avatar_content_path:
+                    social_avatar_content = open(social_avatar_content_path, "rb").read()
+                    if not request_from_avatar_url_fails:
+                        requests_mock.add(
+                            requests_mock.GET,
+                            user_avatar_url,
+                            status=200,
+                            content_type="binary",
+                            body=social_avatar_content,
+                        )
+                    else:
+                        requests_mock.add(
+                            requests_mock.GET,
+                            user_avatar_url,
+                            status=500,
+                        )
+
+                post_dict = {
+                    "full_name": expected_final_name,
+                    "key": confirmation_key,
+                    "terms": True,
+                    "use_social_avatar": "on" if use_social_avatar else "off",
+                }
+
+                if uploaded_avatar_image is not None:
+                    test_image_file = get_test_image_file(uploaded_avatar_image)
+                    post_dict["file"] = test_image_file
+
+                result = self.client_post("/accounts/register/", post_dict)
+
+        user_profile = get_user_by_delivery_email(email, realm)
 
         # Mobile and desktop flow have additional steps:
         if mobile_flow_otp:
@@ -1343,6 +1383,13 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
             encrypted_api_key = query_params["otp_encrypted_api_key"][0]
             user_api_keys = get_all_api_keys(get_user_by_delivery_email(email, realm))
             self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), user_api_keys)
+            self.verify_user_avatar(
+                user_profile,
+                user_avatar_url,
+                use_social_avatar,
+                request_from_avatar_url_fails,
+                uploaded_avatar_image,
+            )
             return
         elif desktop_flow_otp:
             self.verify_desktop_flow_end_page(result, email, desktop_flow_otp)
@@ -1350,11 +1397,40 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         else:
             self.assertEqual(result.status_code, 302)
 
-        user_profile = get_user_by_delivery_email(email, realm)
         self.assert_logged_in_user_id(user_profile.id)
         self.assertEqual(user_profile.full_name, expected_final_name)
 
         self.assertFalse(user_profile.has_usable_password())
+        self.verify_user_avatar(
+            user_profile,
+            user_avatar_url,
+            use_social_avatar,
+            request_from_avatar_url_fails,
+            uploaded_avatar_image,
+        )
+
+    def verify_user_avatar(
+        self,
+        user_profile: UserProfile,
+        user_avatar_url: str = "",
+        use_social_avatar: bool = False,
+        request_from_avatar_url_fails: bool = False,
+        uploaded_avatar_image: Optional[str] = None,
+    ) -> None:
+        if uploaded_avatar_image is not None:
+            user_avatar_url = avatar_url(user_profile) or ""
+            self.assertNotEqual(user_avatar_url, "")
+            response = self.client_get(user_avatar_url)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(user_profile.avatar_source, UserProfile.AVATAR_FROM_USER)
+        elif user_avatar_url and use_social_avatar and not request_from_avatar_url_fails:
+            user_avatar_url = avatar_url(user_profile) or ""
+            self.assertNotEqual(user_avatar_url, "")
+            response = self.client_get(user_avatar_url)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(user_profile.avatar_source, UserProfile.AVATAR_FROM_USER)
+        else:
+            self.assertEqual(user_profile.avatar_source, UserProfile.AVATAR_FROM_GRAVATAR)
 
     @override_settings(TERMS_OF_SERVICE=None)
     def test_social_auth_registration(self) -> None:
@@ -2914,10 +2990,247 @@ class GitHubAuthBackendTest(SocialAuthBase):
 
         self.email_data = email_data
 
-    def get_account_data_dict(
-        self, email: str, name: str, user_avatar_url: str = ""
-    ) -> Dict[str, Any]:
-        return dict(email=email, name=name, user_avatar_url=user_avatar_url)
+    def get_account_data_dict(self, email: str, name: str, avatar_url: str = "") -> Dict[str, Any]:
+        return dict(email=email, name=name, avatar_url=avatar_url)
+
+    def test_register_user_and_upload_avatar(self) -> None:
+        """
+        This tests if user is able to register and upload the avatar
+        successfully or not.
+        """
+        email = "newuser@zulip.com"
+        name = "Full Name"
+        subdomain = "zulip"
+        realm = get_realm("zulip")
+        user_uploaded_avatar_image = "img.gif"
+
+        account_data_dict = self.get_account_data_dict(email=email, name=name)
+        result = self.social_auth_test(
+            account_data_dict, expect_choose_email_screen=True, subdomain=subdomain, is_signup=True
+        )
+        self.stage_two_of_registration(
+            result,
+            realm,
+            subdomain,
+            email,
+            name,
+            name,
+            self.BACKEND_CLASS.full_name_validated,
+            uploaded_avatar_image=user_uploaded_avatar_image,
+        )
+
+    def test_register_user_and_no_avatar_uploaded(self) -> None:
+        """
+        This tests if user is able to register successfully or not, when
+        no avatar is uploaded by the user during signup process.
+        This test is similar to the case when user github avatar is not
+        found, i.e. during data extraction `avatar_url` field was "".
+        """
+        email = "newuser@zulip.com"
+        name = "Full Name"
+        subdomain = "zulip"
+        realm = get_realm("zulip")
+
+        account_data_dict = self.get_account_data_dict(email=email, name=name)
+        result = self.social_auth_test(
+            account_data_dict, expect_choose_email_screen=True, subdomain=subdomain, is_signup=True
+        )
+        self.stage_two_of_registration(
+            result,
+            realm,
+            subdomain,
+            email,
+            name,
+            name,
+            self.BACKEND_CLASS.full_name_validated,
+        )
+
+    def test_register_new_user_and_use_github_avatar(self) -> None:
+        """
+        Test adding support for a new user to register and use their github avatar.
+        If the user doesn't exist yet, social auth can be used to register an account.
+        This test covers the `except` block in `zerver.views.auth.maybe_send_to_registration`.
+        """
+        email = "newuser@zulip.com"
+        name = "Full Name"
+        subdomain = "zulip"
+        realm = get_realm("zulip")
+        mocked_user_avatar_url = "https://github.com/user/mock_avatar_url/img.png"
+        mocked_github_avatar_image_path = "zerver/tests/images/img.png"
+
+        account_data_dict = self.get_account_data_dict(
+            email=email, name=name, avatar_url=mocked_user_avatar_url
+        )
+        result = self.social_auth_test(
+            account_data_dict, expect_choose_email_screen=True, subdomain=subdomain, is_signup=True
+        )
+        self.stage_two_of_registration(
+            result,
+            realm,
+            subdomain,
+            email,
+            name,
+            name,
+            self.BACKEND_CLASS.full_name_validated,
+            user_avatar_url=mocked_user_avatar_url,
+            social_avatar_content_path=mocked_github_avatar_image_path,
+            use_social_avatar=True,
+        )
+
+    def test_use_github_avatar_when_prereg_user_exist(self) -> None:
+        """
+        This tests if a user who doesn't exist yet, is able to register
+        and wants to use his social avatar. This test covers the `try` block
+        in `zerver.views.auth.maybe_send_to_registration`.
+        """
+        email = "newuser@zulip.com"
+        name = "Full Name"
+        subdomain = "zulip"
+        realm = get_realm("zulip")
+        mock_user_avatar_url = "https://github.com/user/mock_avatar_url/img.png"
+        mocked_github_avatar_image_path = "zerver/tests/images/img.png"
+
+        iago = self.example_user("iago")
+        do_invite_users(iago, [email], [])
+
+        account_data_dict = self.get_account_data_dict(
+            email=email, name=name, avatar_url=mock_user_avatar_url
+        )
+        result = self.social_auth_test(
+            account_data_dict, expect_choose_email_screen=True, subdomain=subdomain, is_signup=True
+        )
+        self.stage_two_of_registration(
+            result,
+            realm,
+            subdomain,
+            email,
+            name,
+            name,
+            self.BACKEND_CLASS.full_name_validated,
+            user_avatar_url=mock_user_avatar_url,
+            social_avatar_content_path=mocked_github_avatar_image_path,
+            use_social_avatar=True,
+        )
+
+    def test_register_user_and_dont_use_github_avatar(self) -> None:
+        """
+        This tests if there is a user_avatar_url but the user choose not
+        to use it. Their avatar source must be Gravatar, in this case.
+        """
+        email = "newuser@zulip.com"
+        name = "Full Name"
+        subdomain = "zulip"
+        realm = get_realm("zulip")
+        mocked_user_avatar_url = "https://github.com/user/mock_avatar_url/img.png"
+        mocked_github_avatar_image_path = "zerver/tests/images/img.png"
+
+        account_data_dict = self.get_account_data_dict(
+            email=email, name=name, avatar_url=mocked_user_avatar_url
+        )
+        result = self.social_auth_test(
+            account_data_dict, expect_choose_email_screen=True, subdomain=subdomain, is_signup=True
+        )
+        self.stage_two_of_registration(
+            result,
+            realm,
+            subdomain,
+            email,
+            name,
+            name,
+            self.BACKEND_CLASS.full_name_validated,
+            user_avatar_url=mocked_user_avatar_url,
+            social_avatar_content_path=mocked_github_avatar_image_path,
+        )
+
+    def test_github_request_from_avatar_url_fails(self) -> None:
+        """
+        This tests if GET request from user's github avatar url fails then
+        he must be able to register and their avatar source must be Gravatar.
+        """
+        email = "newuser@zulip.com"
+        name = "Full Name"
+        subdomain = "zulip"
+        mocked_user_avatar_url = "https://github.com/user/mock_avatar_url/img.png"
+        mocked_github_avatar_image_path = "zerver/tests/images/img.png"
+        realm = get_realm("zulip")
+
+        account_data_dict = self.get_account_data_dict(
+            email=email, name=name, avatar_url=mocked_user_avatar_url
+        )
+        result = self.social_auth_test(
+            account_data_dict, expect_choose_email_screen=True, subdomain=subdomain, is_signup=True
+        )
+        self.stage_two_of_registration(
+            result,
+            realm,
+            subdomain,
+            email,
+            name,
+            name,
+            self.BACKEND_CLASS.full_name_validated,
+            user_avatar_url=mocked_user_avatar_url,
+            social_avatar_content_path=mocked_github_avatar_image_path,
+            use_social_avatar=True,
+            request_from_avatar_url_fails=True,
+        )
+
+    def test_register_user_and_upload_avatar_and_use_user_github_avatar(self) -> None:
+        """
+        This is an edge case, where somehow `use_social_avatar` is True and user has also
+        uploaded an avatar. In such case, we should consider the avatar uploaded by the user.
+        """
+        email = "newuser@zulip.com"
+        name = "Full Name"
+        subdomain = "zulip"
+        realm = get_realm("zulip")
+        user_uploaded_avatar_image = "img.tif"
+        mocked_github_avatar_image_path = "zerver/tests/images/img.png"
+        mocked_user_avatar_url = "https://github.com/user/mock_avatar_url/img.png"
+
+        account_data_dict = self.get_account_data_dict(
+            email=email, name=name, avatar_url=mocked_user_avatar_url
+        )
+        result = self.social_auth_test(
+            account_data_dict, expect_choose_email_screen=True, subdomain=subdomain, is_signup=True
+        )
+        self.stage_two_of_registration(
+            result,
+            realm,
+            subdomain,
+            email,
+            name,
+            name,
+            self.BACKEND_CLASS.full_name_validated,
+            user_avatar_url=mocked_user_avatar_url,
+            social_avatar_content_path=mocked_github_avatar_image_path,
+            use_social_avatar=True,
+            uploaded_avatar_image=user_uploaded_avatar_image,
+        )
+
+    def test_register_user_and_use_social_avatar_and_no_user_github_avatar_found(self) -> None:
+        """
+        This is an edge case, where somehow `use_social_avatar` is True but user github avatar
+        url is not found. In such case, avatar source must be gravatar.
+        """
+        email = "newuser@zulip.com"
+        name = "Full Name"
+        subdomain = "zulip"
+        realm = get_realm("zulip")
+
+        account_data_dict = self.get_account_data_dict(email=email, name=name)
+        result = self.social_auth_test(
+            account_data_dict, expect_choose_email_screen=True, subdomain=subdomain, is_signup=True
+        )
+        self.stage_two_of_registration(
+            result,
+            realm,
+            subdomain,
+            email,
+            name,
+            name,
+            self.BACKEND_CLASS.full_name_validated,
+            use_social_avatar=True,
+        )
 
     def test_social_auth_email_not_verified(self) -> None:
         account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)

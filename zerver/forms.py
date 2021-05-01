@@ -12,6 +12,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.http import HttpRequest
 from django.urls import reverse
+from django.utils.datastructures import MultiValueDict
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
 from jinja2 import Markup as mark_safe
@@ -36,6 +37,7 @@ from zerver.models import (
     get_realm,
     get_user_by_delivery_email,
 )
+from zerver.views.user_settings import check_uploaded_file
 from zproject.backends import check_password_strength, email_auth_enabled, email_belongs_to_ldap
 
 MIT_VALIDATION_ERROR = (
@@ -106,6 +108,7 @@ class RegistrationForm(forms.Form):
     # actually required for a realm
     password = forms.CharField(widget=forms.PasswordInput, max_length=MAX_PASSWORD_LENGTH)
     realm_subdomain = forms.CharField(max_length=Realm.MAX_REALM_SUBDOMAIN_LENGTH, required=False)
+    user_avatar = forms.FileField(required=False)
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         # Since the superclass doesn't except random extra kwargs, we
@@ -146,6 +149,12 @@ class RegistrationForm(forms.Form):
 
         check_subdomain_available(subdomain)
         return subdomain
+
+    def clean_user_avatar(self) -> MultiValueDict:
+        try:
+            return check_uploaded_file(self.cleaned_data["user_avatar"])
+        except JsonableError as e:
+            raise ValidationError(e.msg)
 
 
 class ToSForm(forms.Form):

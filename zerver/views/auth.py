@@ -93,6 +93,7 @@ def create_preregistration_user(
     email: str,
     request: HttpRequest,
     realm_creation: bool = False,
+    user_avatar_url: str = "",
     password_required: bool = True,
     full_name: Optional[str] = None,
     full_name_validated: bool = False,
@@ -110,12 +111,14 @@ def create_preregistration_user(
         realm=realm,
         full_name=full_name,
         full_name_validated=full_name_validated,
+        user_avatar_url=user_avatar_url,
     )
 
 
 def maybe_send_to_registration(
     request: HttpRequest,
     email: str,
+    user_avatar_url: str = "",
     full_name: str = "",
     mobile_flow_otp: Optional[str] = None,
     desktop_flow_otp: Optional[str] = None,
@@ -193,11 +196,16 @@ def maybe_send_to_registration(
                 prereg_user.full_name = full_name
                 prereg_user.full_name_validated = full_name_validated
                 update_fields.extend(["full_name", "full_name_validated"])
+
+            if user_avatar_url:
+                prereg_user.user_avatar_url = user_avatar_url
+                update_fields.append("user_avatar_url")
             prereg_user.save(update_fields=update_fields)
         except PreregistrationUser.DoesNotExist:
             prereg_user = create_preregistration_user(
                 email,
                 request,
+                user_avatar_url=user_avatar_url,
                 password_required=password_required,
                 full_name=full_name,
                 full_name_validated=full_name_validated,

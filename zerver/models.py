@@ -1689,6 +1689,7 @@ class PreregistrationUser(models.Model):
     # store it here to use it to prepopulate the Full Name field in the registration form:
     full_name: Optional[str] = models.CharField(max_length=UserProfile.MAX_NAME_LENGTH, null=True)
     full_name_validated: bool = models.BooleanField(default=False)
+    user_avatar_url: Optional[str] = models.TextField(null=True)
     referred_by: Optional[UserProfile] = models.ForeignKey(
         UserProfile, null=True, on_delete=CASCADE
     )

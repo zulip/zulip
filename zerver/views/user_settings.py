@@ -6,6 +6,7 @@ from django.contrib.auth import authenticate, update_session_auth_hash
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
+from django.utils.datastructures import MultiValueDict
 from django.utils.html import escape
 from django.utils.safestring import SafeString
 from django.utils.translation import gettext as _
@@ -289,20 +290,33 @@ def json_change_notify_settings(
     return json_success(result)
 
 
-def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-    if len(request.FILES) != 1:
-        return json_error(_("You must upload exactly one avatar."))
+def check_uploaded_file(uploaded_file: MultiValueDict) -> MultiValueDict:
+    if uploaded_file is None:
+        return None
 
-    if avatar_changes_disabled(user_profile.realm) and not user_profile.is_realm_admin:
-        return json_error(str(AVATAR_CHANGES_DISABLED_ERROR))
+    if len(list(uploaded_file.values())) != 1:
+        raise JsonableError(_("You must upload exactly one avatar."))
 
-    user_file = list(request.FILES.values())[0]
+    user_file = list(uploaded_file.values())[0]
     if (settings.MAX_AVATAR_FILE_SIZE * 1024 * 1024) < user_file.size:
-        return json_error(
+        raise JsonableError(
             _("Uploaded file is larger than the allowed limit of {} MiB").format(
                 settings.MAX_AVATAR_FILE_SIZE,
             )
         )
+    return uploaded_file
+
+
+def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+    if avatar_changes_disabled(user_profile.realm) and not user_profile.is_realm_admin:
+        return json_error(str(AVATAR_CHANGES_DISABLED_ERROR))
+
+    try:
+        check_uploaded_file(request.FILES)
+    except JsonableError as e:
+        return json_error(_(e.msg))
+
+    user_file = list(request.FILES.values())[0]
     upload_avatar_image(user_file, user_profile, user_profile)
     do_change_avatar_fields(user_profile, UserProfile.AVATAR_FROM_USER, acting_user=user_profile)
     user_avatar_url = avatar_url(user_profile)

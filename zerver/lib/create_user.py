@@ -5,9 +5,17 @@ from django.contrib.auth.models import UserManager
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.hotspots import copy_hotspots
-from zerver.lib.upload import copy_avatar
+from zerver.lib.upload import copy_avatar, upload_avatar_image_from_url
 from zerver.lib.utils import generate_api_key
-from zerver.models import Realm, Recipient, Stream, Subscription, UserProfile, get_fake_email_domain
+from zerver.models import (
+    PreregistrationUser,
+    Realm,
+    Recipient,
+    Stream,
+    Subscription,
+    UserProfile,
+    get_fake_email_domain,
+)
 
 
 def copy_user_settings(source_profile: UserProfile, target_profile: UserProfile) -> None:
@@ -120,6 +128,7 @@ def create_user(
     bot_owner: Optional[UserProfile] = None,
     tos_version: Optional[str] = None,
     timezone: str = "",
+    prereg_user: Optional[PreregistrationUser] = None,
     avatar_source: str = UserProfile.AVATAR_FROM_GRAVATAR,
     is_mirror_dummy: bool = False,
     default_sending_stream: Optional[Stream] = None,
@@ -177,4 +186,20 @@ def create_user(
     Subscription.objects.create(
         user_profile=user_profile, recipient=recipient, is_user_active=user_profile.is_active
     )
+
+    if (
+        prereg_user is not None
+        and prereg_user.user_avatar_url
+        and avatar_source == UserProfile.AVATAR_FROM_USER
+    ):
+        try:
+            upload_avatar_image_from_url(prereg_user.user_avatar_url, user_profile)
+        except Exception:
+            # This condition considers 2 possible cases when:
+            # 1. `use_social_avatar` was `on` but no `avatar_url` was found
+            # 2. or GET request from `avatar_url` fails.
+            # Hence we need to change the `avatar_source` to Gravatar.
+            user_profile.avatar_source = UserProfile.AVATAR_FROM_GRAVATAR
+            user_profile.save(update_fields=["avatar_source"])
+
     return user_profile

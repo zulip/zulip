@@ -150,6 +150,77 @@
     }
 }
 
+/* CSS related to portico page user avatar upload widget only */
+#user-avatar-upload-widget-portico {
+    .image-upload-background {
+        height: 150px;
+    }
+
+    .image_upload_button {
+        border-radius: 5px;
+        box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
+        z-index: 99;
+    }
+
+    .image-delete-button {
+        font-size: 2rem;
+    }
+
+    .image-delete-text {
+        top: 65px;
+        right: 18px;
+    }
+
+    .image-upload-text {
+        text-align: center;
+        top: 58px;
+        right: 5px;
+    }
+
+    .image_upload_spinner {
+        top: 40%;
+        right: 40%;
+        width: 50px;
+        height: 50px;
+    }
+
+    .image-block {
+        border-radius: 5px;
+        box-shadow: 0 0 10px hsla(0, 0%, 0%, 0.1);
+        width: 150px;
+        height: 150px;
+        top: 0;
+    }
+
+    .notvisible {
+        visibility: hidden !important;
+        width: 0 !important;
+        min-width: 0 !important;
+        min-height: 0 !important;
+        height: 0 !important;
+        overflow: hidden !important;
+        position: absolute !important;
+    }
+}
+
+.user-registration h3 {
+    text-align: center;
+}
+
+.user-avatar-box {
+    display: inline-block;
+    height: 175px;
+    margin-left: 80px;
+
+    .image_upload_widget {
+        height: 150px;
+    }
+
+    .text-error {
+        font-size: 0.9rem;
+    }
+}
+
 #user-avatar-source {
     font-size: 1em;
     z-index: 99;

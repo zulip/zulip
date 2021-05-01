@@ -8,6 +8,7 @@ import urllib
 from contextlib import contextmanager
 from datetime import timedelta
 from typing import (
+    IO,
     Any,
     Callable,
     Dict,
@@ -608,6 +609,8 @@ Output:
         realm_subdomain: str = "zuliptest",
         from_confirmation: str = "",
         full_name: Optional[str] = None,
+        use_social_avatar: str = "off",
+        file_upload: Dict[str, IO[Any]] = {},
         timezone: str = "",
         realm_in_root_domain: Optional[str] = None,
         default_stream_groups: Sequence[str] = [],
@@ -625,17 +628,19 @@ Output:
         """
         if full_name is None:
             full_name = email.replace("@", "_")
-        payload = {
+        payload: Dict[str, Any] = {
             "full_name": full_name,
             "password": password,
             "realm_name": realm_name,
             "realm_subdomain": realm_subdomain,
+            "use_social_avatar": use_social_avatar,
             "key": key if key is not None else find_key_by_email(email),
             "timezone": timezone,
             "terms": True,
             "from_confirmation": from_confirmation,
             "default_stream_group": default_stream_groups,
             "source_realm": source_realm,
+            **file_upload,
         }
         if realm_in_root_domain is not None:
             payload["realm_in_root_domain"] = realm_in_root_domain

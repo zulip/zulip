@@ -3325,6 +3325,89 @@ class UserSignUpTest(InviteUserBase):
         # Verify that the user is asked for name and password
         self.assert_in_success_response(["id_password", "id_full_name"], result)
 
+    def test_signup_avatar_upload_success(self) -> None:
+        """
+        Check if a normal avatar upload is handled properly during signup.
+        """
+        email = "newguy@zulip.com"
+        password = "newpassword"
+
+        result = self.client_post("/accounts/home/", {"email": email})
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(f"/accounts/send_confirm/{email}"))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email so we can get started.", result)
+
+        # Visit the confirmation link.
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url)
+        self.assertEqual(result.status_code, 200)
+
+        with get_test_image_file("img.png") as fp:
+            result = self.client_post(
+                "/accounts/register/",
+                {
+                    "password": password,
+                    "key": find_key_by_email(email),
+                    "terms": True,
+                    "full_name": "New Guy",
+                    "file": fp,
+                    "from_confirmation": "1",
+                },
+            )
+        self.assert_in_success_response(["We just need you to do one last thing."], result)
+
+    def test_signup_multiple_avatar_upload_failure(self) -> None:
+        """
+        Attempt to upload multiple avatars should fail, during signup.
+        """
+        email = "newguy@zulip.com"
+        password = "newpassword"
+
+        result = self.client_post("/accounts/home/", {"email": email})
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(f"/accounts/send_confirm/{email}"))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email so we can get started.", result)
+
+        # Visit the confirmation link.
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url)
+        self.assertEqual(result.status_code, 200)
+
+        with get_test_image_file("img.png") as fp1, get_test_image_file("img.jpg") as fp2:
+            file_upload = {"f1": fp1, "f2": fp2}
+            result = self.submit_reg_form_for_user(email, password, file_upload=file_upload)
+
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_response("You must upload exactly one avatar.", result)
+
+    def test_signup_avatar_upload_file_size_error(self) -> None:
+        """
+        Attempt to upload avatar larger than specified should fail, during signup.
+        """
+        email = "newguy@zulip.com"
+        password = "newpassword"
+
+        result = self.client_post("/accounts/home/", {"email": email})
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(f"/accounts/send_confirm/{email}"))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email so we can get started.", result)
+
+        # Visit the confirmation link.
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url)
+        self.assertEqual(result.status_code, 200)
+
+        with get_test_image_file("img.png") as fp:
+            file_upload = {"f1": fp}
+            with self.settings(MAX_AVATAR_FILE_SIZE=0):
+                result = self.submit_reg_form_for_user(email, password, file_upload=file_upload)
+
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_response("Uploaded file is larger than the allowed limit of 0 MiB", result)
+
     def test_signup_without_password(self) -> None:
         """
         Check if signing up without a password works properly when

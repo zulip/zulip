@@ -630,6 +630,7 @@ def do_create_user(
         bot_owner=bot_owner,
         tos_version=tos_version,
         timezone=timezone,
+        prereg_user=prereg_user,
         avatar_source=avatar_source,
         default_sending_stream=default_sending_stream,
         default_events_register_stream=default_events_register_stream,
