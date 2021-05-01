@@ -10,7 +10,6 @@ import urllib
 import urllib.parse
 from collections import defaultdict, deque
 from dataclasses import dataclass
-from io import StringIO
 from typing import (
     Any,
     Callable,
@@ -1535,22 +1534,11 @@ class Tex(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match: Match[str]) -> Element:
         rendered = render_tex(match.group("body"), is_inline=True)
         if rendered is not None:
-            # We need to give Python-Markdown an ElementTree object, but if we
-            # give it one with correctly stored XML namespaces, it will mangle
-            # everything when serializing it.  So we play this stupid game to
-            # store xmlns as a normal attribute.  :-[
-            assert ' zulip-xmlns="' not in rendered
-            rendered = rendered.replace(' xmlns="', ' zulip-xmlns="')
-            parsed = etree.iterparse(StringIO(rendered))
-            for event, elem in parsed:
-                if "zulip-xmlns" in elem.attrib:
-                    elem.attrib["xmlns"] = elem.attrib.pop("zulip-xmlns")
-                root = elem
-            return root
+            return self.md.htmlStash.store(rendered)
         else:  # Something went wrong while rendering
             span = Element("span")
             span.set("class", "tex-error")
-            span.text = "$$" + match.group("body") + "$$"
+            span.text = markdown.util.AtomicString("$$" + match.group("body") + "$$")
             return span
 
 
@@ -2235,7 +2223,9 @@ class Markdown(markdown.Markdown):
             markdown.inlinepatterns.DoubleTagPattern(STRONG_EM_RE, "strong,em"), "strong_em", 100
         )
         reg.register(UserMentionPattern(mention.find_mentions, self), "usermention", 95)
-        reg.register(Tex(r"\B(?<!\$)\$\$(?P<body>[^\n_$](\\\$|[^$\n])*)\$\$(?!\$)\B"), "tex", 90)
+        reg.register(
+            Tex(r"\B(?<!\$)\$\$(?P<body>[^\n_$](\\\$|[^$\n])*)\$\$(?!\$)\B", self), "tex", 90
+        )
         reg.register(StreamTopicPattern(get_compiled_stream_topic_link_regex(), self), "topic", 87)
         reg.register(StreamPattern(get_compiled_stream_link_regex(), self), "stream", 85)
         reg.register(Timestamp(r"<time:(?P<time>[^>]*?)>"), "timestamp", 75)
