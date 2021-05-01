@@ -37,6 +37,9 @@ from scripts.lib.zulip_tools import (
 
 assert_running_as_root()
 
+# Set a known, reliable PATH
+os.environ["PATH"] = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
 logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s upgrade-zulip-stage-2: %(message)s", level=logging.INFO)
 
