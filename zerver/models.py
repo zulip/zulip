@@ -1284,7 +1284,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     high_contrast_mode: bool = models.BooleanField(default=False)
     translate_emoticons: bool = models.BooleanField(default=False)
     twenty_four_hour_time: bool = models.BooleanField(default=False)
-    starred_message_counts: bool = models.BooleanField(default=False)
+    starred_message_counts: bool = models.BooleanField(default=True)
     COLOR_SCHEME_AUTOMATIC = 1
     COLOR_SCHEME_NIGHT = 2
     COLOR_SCHEME_LIGHT = 3
