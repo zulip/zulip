@@ -475,6 +475,43 @@ test_ui("test_validate_stream_message_post_policy_admin_only", () => {
     );
 });
 
+test_ui("test_validate_stream_message_post_policy_moderators_only", () => {
+    page_params.is_admin = false;
+    page_params.is_moderator = false;
+    page_params.is_guest = false;
+
+    const sub = {
+        stream_id: 104,
+        name: "stream104",
+        subscribed: true,
+        stream_post_policy: stream_data.stream_post_policy_values.moderators.code,
+    };
+
+    compose_state.topic("subject104");
+    compose_state.stream_name("stream104");
+    stream_data.add_sub(sub);
+    assert(!compose.validate());
+    assert.equal(
+        $("#compose-error-msg").html(),
+        $t_html({
+            defaultMessage:
+                "Only organization admins and moderators are allowed to post to this stream.",
+        }),
+    );
+
+    // Reset error message.
+    compose_state.stream_name("social");
+
+    page_params.is_guest = true;
+    assert.equal(
+        $("#compose-error-msg").html(),
+        $t_html({
+            defaultMessage:
+                "Only organization admins and moderators are allowed to post to this stream.",
+        }),
+    );
+});
+
 test_ui("test_validate_stream_message_post_policy_full_members_only", () => {
     page_params.is_admin = false;
     page_params.is_guest = true;

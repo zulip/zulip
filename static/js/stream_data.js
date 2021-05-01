@@ -137,6 +137,12 @@ export const stream_post_policy_values = {
         code: 2,
         description: $t({defaultMessage: "Only organization administrators can post"}),
     },
+    moderators: {
+        code: 4,
+        description: $t({
+            defaultMessage: "Only organization administrators and moderators can post",
+        }),
+    },
     non_new_members: {
         code: 3,
         description: $t({defaultMessage: "Only organization full members can post"}),
