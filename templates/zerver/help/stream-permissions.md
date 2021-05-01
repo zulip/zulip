@@ -50,56 +50,59 @@ administrator can access private stream messages:
 
 ### Public streams
 
-|                       | Owners and admins | Members   | Guests
-|---                    |---                |---        |---
-| View stream name      | &#10004;          | &#10004;  | &#9726;
-| Join                  | &#10004;          | &#10004;  |
-| Unsubscribe           | &#9726;           | &#9726;   | &#9726;
-| Add others            | &#10004;          | &#10004;  |
-| See subscriber list   | &#10004;          | &#10004;  | &#9726;
-| See full history      | &#10004;          | &#10004;  | &#9726;
-| See estimated traffic | &#10004;          | &#10004;  | &#9726;
-| Post                  | &#10004;          | &#10038;  | &#10038;
-| Change the privacy    | &#10004;          |           |
-| Rename                | &#10004;          |           |
-| Edit the description  | &#10004;          |           |
-| Remove others         | &#10004;          |           |
-| Delete                | &#10004;          |           |
+<div class="center"></div>
 
-&#10004; Always
+|                       | Owners and admins | Moderators | Members   | Guests
+|---                    |---                |            |---        |---
+| View stream name      | &#10004;          | &#10004;   | &#10004;  | &#9726;
+| Join                  | &#10004;          | &#10004;   | &#10004;  |
+| Unsubscribe           | &#9726;           | &#9726;    | &#9726;   | &#9726;
+| Add others            | &#10004;          | &#10004;   | &#10004;  |
+| See subscriber list   | &#10004;          | &#10004;   | &#10004;  | &#9726;
+| See full history      | &#10004;          | &#10004;   | &#10004;  | &#9726;
+| See estimated traffic | &#10004;          | &#10004;   | &#10004;  | &#9726;
+| Post                  | &#10004;          | &#10038;   | &#10038;  | &#10038;
+| Change the privacy    | &#10004;          |            |           |
+| Rename                | &#10004;          |            |           |
+| Edit the description  | &#10004;          |            |           |
+| Remove others         | &#10004;          |            |           |
+| Delete                | &#10004;          |            |           |
+
+<span class="shift_Right">&#10004; Always</span>
 
 &#9726; If subscribed to the stream
 
-&#10038; [Configurable](/help/stream-sending-policy).  Owners,
+<span class="shift_Left">&#10038; [Configurable](/help/stream-sending-policy).  Owners,
 Administrators, and Members can, by default, post to any public
 stream, and Guests can only post to public streams if they are
-subscribed.
+subscribed.</span>
 
 ### Private streams
 
+<div class="center"></div>
 
-|                       | Owners and admins | Members   | Guests
-|---                    |---                |---        |---
-| View stream name      | &#10004;          | &#9726;   | &#9726;
-| Join                  |                   |           |
-| Unsubscribe           | &#9726;           | &#9726;   | &#9726;
-| Add others            | &#9726;           | &#9726;   |
-| See subscriber list   | &#10004;          | &#9726;   | &#9726;
-| See full history      | &#10038;          | &#10038;  | &#10038;
-| See estimated traffic | &#10004;          | &#9726;   | &#9726;
-| Post                  | &#9726;           | &#10038;  | &#10038;
-| Change the privacy    | &#9726;           |           |
-| Rename                | &#10004;          |           |
-| Edit the description  | &#10004;          |           |
-| Remove others         | &#10004;          |           |
-| Delete                | &#10004;          |           |
+|                       | Owners and admins | Moderators | Members   | Guests
+|---                    |---                |            |---        |---
+| View stream name      | &#10004;          | &#9726;    | &#9726;   | &#9726;
+| Join                  |                   |            |           |
+| Unsubscribe           | &#9726;           | &#9726;    | &#9726;   | &#9726;
+| Add others            | &#9726;           | &#9726;    | &#9726;   |
+| See subscriber list   | &#10004;          | &#9726;    | &#9726;   | &#9726;
+| See full history      | &#10038;          | &#10038;   | &#10038;  | &#10038;
+| See estimated traffic | &#10004;          | &#9726;    | &#9726;   | &#9726;
+| Post                  | &#9726;           | &#10038;   | &#10038;  | &#10038;
+| Change the privacy    | &#9726;           |            |           |
+| Rename                | &#10004;          |            |           |
+| Edit the description  | &#10004;          |            |           |
+| Remove others         | &#10004;          |            |           |
+| Delete                | &#10004;          |            |           |
 
-&#10004; Always
+<span class="shift_Right">&#10004; Always</span>
 
 &#9726; If subscribed to the stream
 
-&#10038; [Configurable](/help/stream-sending-policy), but at minimum
-must be subscribed to the stream.
+<span class="shift_Left">&#10038; [Configurable](/help/stream-sending-policy), but at minimum
+must be subscribed to the stream.</span>
 
 ## Related articles
 

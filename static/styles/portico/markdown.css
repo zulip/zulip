@@ -78,6 +78,19 @@
         }
     }
 
+    span.shift_Right {
+        margin-left: 0.65px;
+    }
+
+    span.shift_Left {
+        margin-left: -2.3px;
+    }
+
+    div.center + table th:not(:first-child),
+    div.center + table td:not(:first-child) {
+        text-align: center;
+    }
+
     ul,
     ol {
         margin-left: 30px;
