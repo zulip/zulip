@@ -121,16 +121,21 @@ and reusable invitation links expire 10 days after they are sent.
 
 ## Change who can send invitations
 
-By default, organization admins and members can send invitations. You can
-restrict invites to admins only.
+By default, all members can invite new users to join your Zulip
+organization. However, you can restrict the permission to invite new
+users to other sets of roles:
+
+* Organization administrators
+* Organization administrators and moderators
+* Organization administrators and all members
+* Organization administrators and [full members](/help/restrict-permissions-of-new-members)
 
 {start_tabs}
 
 {settings_tab|organization-permissions}
 
-1. Under Joining the organization, set
-   **Are invitations required for joining the organization?** to
-   **Yes. Only admins can send invitations**.
+1. Under **Joining the organization**, configure
+   **Are invitations required for joining the organization?**.
 
 1. Click **Save changes**.
 
