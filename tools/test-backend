@@ -76,7 +76,6 @@ not_yet_fully_covered = [
     "zerver/lib/markdown/help_relative_links.py",
     "zerver/lib/markdown/nested_code_blocks.py",
     # Other lib files that ideally would coverage, but aren't sorted
-    "zerver/__init__.py",
     "zerver/filters.py",
     "zerver/middleware.py",
     "zerver/lib/bot_lib.py",
