@@ -50,6 +50,7 @@ administrator can access private stream messages:
 
 ### Public streams
 
+<div class="centered_table"></div>
 |                       | Owners and admins | Moderators | Members   | Guests
 |---                    |---                |            |---        |---
 | View stream name      | &#10004;          | &#10004;   | &#10004;  | &#9726;
@@ -77,7 +78,7 @@ subscribed.
 
 ### Private streams
 
-
+<div class="centered_table"></div>
 |                       | Owners and admins | Moderators | Members   | Guests
 |---                    |---                |            |---        |---
 | View stream name      | &#10004;          | &#9726;    | &#9726;   | &#9726;

@@ -13,6 +13,7 @@ is highly configurable. Two things are true under any configuration:
 * Message content can only ever be modified by the original author.
 * Any message can be deleted at any time by an organization administrator.
 
+<div class="centered_table"></div>
 |                                    | Admins   | Members |
 |---                                 |---       |---      |
 | Edit your message content          | [1]      | [1]     |
