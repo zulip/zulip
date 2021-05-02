@@ -234,6 +234,10 @@ export function initialize() {
             html: true,
             trigger: "manual",
             template: get_popover_content(),
+            /* Popovers without a content property are not displayed,
+             * so we need something here; but we haven't contacted the
+             * Giphy API yet to get the actual content to display. */
+            content: " ",
         });
 
         active_popover_element.popover("show");
