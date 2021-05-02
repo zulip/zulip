@@ -87,11 +87,11 @@ def sanitize_name(value: str) -> str:
 
     This implementation is based on django.utils.text.slugify; it is
     modified by:
-    * adding '.' and '_' to the list of allowed characters.
+    * adding '.' to the list of allowed characters.
     * preserving the case of the value.
     """
     value = unicodedata.normalize("NFKC", value)
-    value = re.sub(r"[^\w\s._-]", "", value, flags=re.U).strip()
+    value = re.sub(r"[^\w\s.-]", "", value, flags=re.U).strip()
     value = re.sub(r"[-\s]+", "-", value, flags=re.U)
     assert value not in {"", ".", ".."}
     return mark_safe(value)
