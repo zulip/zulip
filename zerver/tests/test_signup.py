@@ -3756,9 +3756,9 @@ class UserSignUpTest(InviteUserBase):
         self.assert_in_success_response(
             [
                 "Subdomain unavailable. Please choose a different one.",
-                "selected >\n                            Zulip Dev\n",
-                'name="password"\n                      value="test"',
-                'value="Test"\n                          name="realm_name"',
+                "Zulip Dev\n",
+                'value="test"',
+                'name="realm_name"',
             ],
             result,
         )
