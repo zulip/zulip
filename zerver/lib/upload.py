@@ -89,6 +89,7 @@ def sanitize_name(value: str) -> str:
     modified by:
     * adding '.' to the list of allowed characters.
     * preserving the case of the value.
+    * not stripping trailing dashes and underscores.
     """
     value = unicodedata.normalize("NFKC", value)
     value = re.sub(r"[^\w\s.-]", "", value, flags=re.U).strip()
