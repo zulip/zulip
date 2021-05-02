@@ -107,6 +107,7 @@
     width: calc(100% - 16px);
     display: flex;
     flex-direction: row;
+    align-items: center;
 }
 
 .user-presence-link {
