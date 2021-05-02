@@ -1832,9 +1832,9 @@ class StreamMessagesTest(ZulipTestCase):
         do_set_realm_property(
             realm, "wildcard_mention_policy", Realm.WILDCARD_MENTION_POLICY_ADMINS, acting_user=None
         )
-        self.send_and_verify_wildcard_mention_message("cordelia", test_fails=True)
+        self.send_and_verify_wildcard_mention_message("shiva", test_fails=True)
         # There is no restriction on small streams.
-        self.send_and_verify_wildcard_mention_message("cordelia", sub_count=10)
+        self.send_and_verify_wildcard_mention_message("shiva", sub_count=10)
         self.send_and_verify_wildcard_mention_message("iago")
 
         do_set_realm_property(
