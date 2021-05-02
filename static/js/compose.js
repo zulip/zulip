@@ -522,6 +522,13 @@ export function wildcard_mention_allowed() {
         // TODO: Check the user's stream-level role once stream-level admins exist.
         return page_params.is_admin;
     }
+
+    if (
+        page_params.realm_wildcard_mention_policy ===
+        settings_config.wildcard_mention_policy_values.by_moderators_only.code
+    ) {
+        return page_params.is_admin || page_params.is_moderator;
+    }
     // TODO: Uncomment when we add support for stream-level administrators.
     // if (
     //     page_params.realm_wildcard_mention_policy ===
