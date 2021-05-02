@@ -368,6 +368,14 @@ test_ui("test_wildcard_mention_allowed", () => {
     assert(compose.wildcard_mention_allowed());
 
     page_params.realm_wildcard_mention_policy =
+        settings_config.wildcard_mention_policy_values.by_moderators_only.code;
+    page_params.is_moderator = false;
+    assert(!compose.wildcard_mention_allowed());
+
+    page_params.is_moderator = true;
+    assert(compose.wildcard_mention_allowed());
+
+    page_params.realm_wildcard_mention_policy =
         settings_config.wildcard_mention_policy_values.by_stream_admins_only.code;
     page_params.is_admin = false;
     assert(!compose.wildcard_mention_allowed());
