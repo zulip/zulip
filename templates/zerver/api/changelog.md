@@ -10,6 +10,10 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 62**
+
+* Added `moderators only` option for `wildcard_mention_policy`.
+
 **Feature level 61**
 
 * Added support for inviting users as moderators to the invitation

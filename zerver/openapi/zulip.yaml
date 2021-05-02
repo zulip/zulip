@@ -3257,11 +3257,13 @@ paths:
                                         * 4 => Only stream and organization administrators can use wildcard mentions in large streams.
                                         * 5 => Only organization administrators can use wildcard mentions in large streams.
                                         * 6 => Nobody can use wildcard mentions in large streams.
+                                        * 7 => Only organization adminstartors and moderators can use wildcard mentions in large streams.
 
                                         All users will receive a warning/reminder when using
                                         mentions in large streams, even when permitted to do so.
 
-                                        **Changes**: New in Zulip 4.0 (feature level 33).
+                                        **Changes**: New in Zulip 4.0 (feature level 33). Moderators option added in
+                                        Zulip 4.0 (feature level 62).
                                     default_language:
                                       type: string
                                       description: |
@@ -8208,11 +8210,13 @@ paths:
                           * 4 => Only stream and organization administrators can use wildcard mentions in large streams.
                           * 5 => Only organization administrators can use wildcard mentions in large streams.
                           * 6 => Nobody can use wildcard mentions in large streams.
+                          * 7 => Only organization adminstartors and moderators can use wildcard mentions in large streams.
 
                           All users will receive a warning/reminder when using
                           mentions in large streams, even when permitted to do so.
 
-                          **Changes**: New in Zulip 4.0 (feature level 33).
+                          **Changes**: New in Zulip 4.0 (feature level 33). Moderators option added in
+                          Zulip 4.0 (feature level 62).
                       realm_default_language:
                         type: string
                         description: |

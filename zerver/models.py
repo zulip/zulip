@@ -305,6 +305,7 @@ class Realm(models.Model):
     WILDCARD_MENTION_POLICY_STREAM_ADMINS = 4
     WILDCARD_MENTION_POLICY_ADMINS = 5
     WILDCARD_MENTION_POLICY_NOBODY = 6
+    WILDCARD_MENTION_POLICY_MODERATORS = 7
     wildcard_mention_policy: int = models.PositiveSmallIntegerField(
         default=WILDCARD_MENTION_POLICY_STREAM_ADMINS,
     )
@@ -315,6 +316,7 @@ class Realm(models.Model):
         WILDCARD_MENTION_POLICY_STREAM_ADMINS,
         WILDCARD_MENTION_POLICY_ADMINS,
         WILDCARD_MENTION_POLICY_NOBODY,
+        WILDCARD_MENTION_POLICY_MODERATORS,
     ]
 
     # Who in the organization has access to users' actual email

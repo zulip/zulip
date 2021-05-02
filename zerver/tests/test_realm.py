@@ -892,6 +892,7 @@ class RealmAPITest(ZulipTestCase):
                 Realm.WILDCARD_MENTION_POLICY_STREAM_ADMINS,
                 Realm.WILDCARD_MENTION_POLICY_ADMINS,
                 Realm.WILDCARD_MENTION_POLICY_NOBODY,
+                Realm.WILDCARD_MENTION_POLICY_MODERATORS,
             ],
             bot_creation_policy=[1, 2],
             email_address_visibility=[
