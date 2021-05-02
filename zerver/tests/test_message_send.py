@@ -1827,6 +1827,16 @@ class StreamMessagesTest(ZulipTestCase):
         self.send_and_verify_wildcard_mention_message("cordelia", sub_count=10)
         self.send_and_verify_wildcard_mention_message("iago")
 
+        do_set_realm_property(
+            realm,
+            "wildcard_mention_policy",
+            Realm.WILDCARD_MENTION_POLICY_MODERATORS,
+            acting_user=None,
+        )
+        self.send_and_verify_wildcard_mention_message("cordelia", test_fails=True)
+        self.send_and_verify_wildcard_mention_message("cordelia", sub_count=10)
+        self.send_and_verify_wildcard_mention_message("shiva")
+
         cordelia.date_joined = timezone_now()
         cordelia.save()
         do_set_realm_property(
