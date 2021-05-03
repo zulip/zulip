@@ -1804,14 +1804,15 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
 
 class TestRequireDecorators(ZulipTestCase):
     def test_require_server_admin_decorator(self) -> None:
-        user = self.example_user("hamlet")
-        self.login_user(user)
+        realm_owner = self.example_user("desdemona")
+        self.login_user(realm_owner)
 
         result = self.client_get("/activity")
         self.assertEqual(result.status_code, 302)
 
-        user.is_staff = True
-        user.save()
+        server_admin = self.example_user("iago")
+        self.login_user(server_admin)
+        self.assertEqual(server_admin.is_staff, True)
 
         result = self.client_get("/activity")
         self.assertEqual(result.status_code, 200)
