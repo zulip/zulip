@@ -1,7 +1,7 @@
 import re
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import RealmFilter
+from zerver.models import RealmFilter, UserProfile
 
 
 class RealmFilterTest(ZulipTestCase):
@@ -171,3 +171,18 @@ class RealmFilterTest(ZulipTestCase):
         data["url_format_string"] = "https://realm.com/my_realm_filter/%(id)s"
         result = self.client_patch(f"/json/realm/filters/{linkifier_id + 1}", info=data)
         self.assert_json_error(result, "Linkifier not found.")
+
+    def test_admin_bot_linkifier_permissions(self) -> None:
+        user_profile = self.example_user("iago")
+        admin_bot = self.create_test_bot(
+            "adminbot", user_profile, bot_type=UserProfile.ADMINISTRATOR_BOT
+        )
+        self.assertTrue(admin_bot.is_bot)
+        self.assertTrue(admin_bot.is_realm_admin)
+        self.logout()
+        result = self.api_post(admin_bot, "/json/realm/filters")
+        self.assert_json_error(result, "This endpoint does not accept bot requests.")
+        result = self.api_patch(admin_bot, "/json/realm/filters/1")
+        self.assert_json_error(result, "This endpoint does not accept bot requests.")
+        result = self.api_delete(admin_bot, "/json/realm/filters/1")
+        self.assert_json_error(result, "This endpoint does not accept bot requests.")

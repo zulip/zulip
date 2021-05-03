@@ -2,7 +2,7 @@ from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import gettext as _
 
-from zerver.decorator import require_realm_admin
+from zerver.decorator import human_users_only, require_realm_admin
 from zerver.lib.actions import do_add_linkifier, do_remove_linkifier, do_update_linkifier
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
@@ -15,6 +15,7 @@ def list_linkifiers(request: HttpRequest, user_profile: UserProfile) -> HttpResp
     return json_success({"linkifiers": linkifiers})
 
 
+@human_users_only
 @require_realm_admin
 @has_request_variables
 def create_linkifier(
@@ -34,6 +35,7 @@ def create_linkifier(
         return json_error(e.messages[0], data={"errors": dict(e)})
 
 
+@human_users_only
 @require_realm_admin
 def delete_linkifier(
     request: HttpRequest, user_profile: UserProfile, filter_id: int
@@ -45,6 +47,7 @@ def delete_linkifier(
     return json_success()
 
 
+@human_users_only
 @require_realm_admin
 @has_request_variables
 def update_linkifier(
