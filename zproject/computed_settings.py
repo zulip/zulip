@@ -6,6 +6,7 @@ from pathlib import PosixPath
 from typing import Any, Dict, List, Tuple, Union
 from urllib.parse import urljoin
 
+from django.contrib.auth.hashers import BasePasswordHasher
 from django.template.loaders import app_directories
 
 import zerver.lib.logging_util
@@ -432,6 +433,9 @@ else:
         "django.contrib.auth.hashers.Argon2PasswordHasher",
         "django.contrib.auth.hashers.PBKDF2PasswordHasher",
     )
+
+# Temporarily revert salt upgrade (https://github.com/django/django/pull/12553)
+BasePasswordHasher.salt_entropy = 71
 
 ########################################################################
 # API/BOT SETTINGS
