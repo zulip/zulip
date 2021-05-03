@@ -21,7 +21,7 @@
 # Jnnk b <jannikbuddeberg@icloud.com>, 2020
 # Johannes Hoch <hojo11@gmx.de>, 2019-2020
 # Keyhan, 2019
-# drpetersen <lpetersen@gmx.net>, 2019
+# L Petersen <lpetersen@gmx.net>, 2019
 # BornToBeRoot, 2015
 # n3w2oo <kontakt@n3w2oo.net>, 2016
 # Niklas P <niklaspotthoff@gmail.com>, 2016
@@ -36,9 +36,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-04-14 00:25+0000\n"
-"PO-Revision-Date: 2021-04-14 06:58+0000\n"
-"Last-Translator: Felix <strifel@outlook.de>\n"
+"POT-Creation-Date: 2021-04-30 23:14+0000\n"
+"PO-Revision-Date: 2021-04-30 23:14+0000\n"
+"Last-Translator: Johannes Hoch <hojo11@gmx.de>\n"
 "Language-Team: German (http://www.transifex.com/zulip/zulip/language/de/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -46,7 +46,7 @@ msgstr ""
 "Language: de\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: analytics/views.py:140 zerver/decorator.py:560 zerver/decorator.py:572
+#: analytics/views.py:140 zerver/decorator.py:538 zerver/decorator.py:550
 msgid "Not allowed for guest users"
 msgstr "Nicht zugänglich für Gastnutzer"
 
@@ -62,8 +62,8 @@ msgstr "Öffentliche Streams"
 msgid "Private streams"
 msgstr "Private Streams"
 
-#: analytics/views.py:317 templates/zerver/app/left_sidebar.html:19
-#: templates/zerver/app/left_sidebar.html:25
+#: analytics/views.py:317 templates/zerver/app/left_sidebar.html:17
+#: templates/zerver/app/left_sidebar.html:23
 msgid "Private messages"
 msgstr "Private Nachrichten"
 
@@ -171,7 +171,7 @@ msgid "Humans"
 msgstr "Menschen"
 
 #: templates/analytics/stats.html:37
-#: templates/zerver/app/settings_overlay.html:115
+#: templates/zerver/app/settings_overlay.html:121
 msgid "Bots"
 msgstr "Bots"
 
@@ -217,7 +217,7 @@ msgid "Total users"
 msgstr "Gesamtzahl der aktiven Nutzer"
 
 #: templates/analytics/stats.html:73
-#: templates/zerver/app/settings_overlay.html:97
+#: templates/zerver/app/settings_overlay.html:103
 msgid "Users"
 msgstr "Nutzer"
 
@@ -370,13 +370,13 @@ msgstr "Akzeptiere die neuen Nutzungsbedingungen"
 
 #: templates/zerver/accounts_accept_terms.html:24
 #: templates/zerver/create_realm.html:22 templates/zerver/login.html:65
-#: templates/zerver/register.html:104 templates/zerver/reset.html:22
+#: templates/zerver/register.html:104 templates/zerver/reset.html:19
 #: templates/zerver/reset_confirm.html:20
 msgid "Email"
 msgstr "E-Mail"
 
 #: templates/zerver/accounts_accept_terms.html:43
-#: templates/zerver/register.html:227
+#: templates/zerver/register.html:229
 #, python-format
 msgid ""
 "I agree to the <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" "
@@ -396,12 +396,12 @@ msgid "You need an invitation to join this organization."
 msgstr "Du musst eingeladen werden, um dieser Organisation beitreten zu können."
 
 #: templates/zerver/accounts_home.html:68 templates/zerver/footer.html:40
-#: templates/zerver/login.html:128 templates/zerver/portico-header.html:37
-#: templates/zerver/register.html:237
+#: templates/zerver/login.html:129 templates/zerver/portico-header.html:37
+#: templates/zerver/register.html:239
 msgid "Sign up"
 msgstr "Registrieren"
 
-#: templates/zerver/accounts_home.html:72 templates/zerver/login.html:107
+#: templates/zerver/accounts_home.html:72 templates/zerver/login.html:108
 #: templates/zerver/register.html:65
 msgid "OR"
 msgstr "ODER"
@@ -427,112 +427,6 @@ msgstr "Immer noch keine E-Mail? Wir können sie <a href=\"#\" id=\"resend_email
 msgid "Just in case, take a look at your Spam folder."
 msgstr "Schau, um sicher zu gehen, auch in deinem Spamordner nach."
 
-#: templates/zerver/app/compose.html:10 templates/zerver/app/compose.html:11
-#: templates/zerver/app/compose.html:109
-#: templates/zerver/app/keyboard_shortcuts.html:260
-msgid "Drafts"
-msgstr "Entwürfe"
-
-#: templates/zerver/app/compose.html:13
-msgid "Saved as draft"
-msgstr "Als Entwurf gespeichert"
-
-#: templates/zerver/app/compose.html:18
-msgid "New message"
-msgstr "Neue Nachricht"
-
-#: templates/zerver/app/compose.html:25 templates/zerver/app/compose.html:26
-msgid "New topic"
-msgstr "Neues Thema"
-
-#: templates/zerver/app/compose.html:33 templates/zerver/app/compose.html:34
-#: templates/zerver/app/keyboard_shortcuts.html:20
-#: templates/zerver/app/keyboard_shortcuts.html:130
-msgid "New private message"
-msgstr "Neue private Nachricht"
-
-#: templates/zerver/app/compose.html:41 templates/zerver/app/compose.html:42
-msgid "Reply"
-msgstr "Antworten"
-
-#: templates/zerver/app/compose.html:59
-#: templates/zerver/app/keyboard_shortcuts.html:24
-#: templates/zerver/app/keyboard_shortcuts.html:146
-msgid "Cancel compose"
-msgstr "Verfassen abbrechen"
-
-#: templates/zerver/app/compose.html:67
-msgid "This is a private stream"
-msgstr "Dies ist ein privater Stream."
-
-#: templates/zerver/app/compose.html:69
-msgid "Stream"
-msgstr "Stream"
-
-#: templates/zerver/app/compose.html:71
-msgid "Topic"
-msgstr "Thema"
-
-#: templates/zerver/app/compose.html:76
-msgid "To"
-msgstr "An"
-
-#: templates/zerver/app/compose.html:80
-msgid "You and"
-msgstr "Du und"
-
-#: templates/zerver/app/compose.html:81
-msgid "Add one or more users"
-msgstr "Einen oder mehrere Nutzer hinzufügen"
-
-#: templates/zerver/app/compose.html:81
-msgid "Add another user..."
-msgstr "Noch einen Nutzer hinzufügen..."
-
-#: templates/zerver/app/compose.html:88
-msgid "Compose your message here"
-msgstr "Erstelle hier deine Nachricht"
-
-#: templates/zerver/app/compose.html:88
-msgid "Compose your message here..."
-msgstr "Erstelle hier deine Nachricht..."
-
-#: templates/zerver/app/compose.html:95
-msgid "Send"
-msgstr "Absenden"
-
-#: templates/zerver/app/compose.html:98
-msgid "Attach files"
-msgstr "Dateien anhängen"
-
-#: templates/zerver/app/compose.html:100
-msgid "Preview"
-msgstr "Vorschau"
-
-#: templates/zerver/app/compose.html:101
-msgid "Write"
-msgstr "Schreiben"
-
-#: templates/zerver/app/compose.html:102
-msgid "Add video call"
-msgstr "Videoanruf hinzufügen"
-
-#: templates/zerver/app/compose.html:103
-msgid "Add emoji"
-msgstr "Emoji hinzufügen"
-
-#: templates/zerver/app/compose.html:105
-msgid "Add GIF"
-msgstr "GIF einfügen"
-
-#: templates/zerver/app/compose.html:110
-msgid "Help"
-msgstr "Hilfe"
-
-#: templates/zerver/app/compose.html:115
-msgid "Press Enter to send"
-msgstr "Enter drücken zum Absenden"
-
 #: templates/zerver/app/delete_message.html:3
 #: templates/zerver/app/deprecation_notice.html:5
 #: templates/zerver/app/invite_user.html:5
@@ -543,7 +437,8 @@ msgstr "Enter drücken zum Absenden"
 #: templates/zerver/app/navbar_alerts.html:27
 #: templates/zerver/app/navbar_alerts.html:37
 #: templates/zerver/app/navbar_alerts.html:46
-#: templates/zerver/app/navbar_alerts.html:59
+#: templates/zerver/app/navbar_alerts.html:55
+#: templates/zerver/app/navbar_alerts.html:68
 msgid "Close"
 msgstr "Schließen"
 
@@ -560,13 +455,13 @@ msgid "Deleting a message removes it for everyone."
 msgstr "Das Löschen einer Nachricht wird diese für alle entfernt."
 
 #: templates/zerver/app/delete_message.html:19
-#: templates/zerver/app/invite_user.html:57
+#: templates/zerver/app/invite_user.html:58
 msgid "Cancel"
 msgstr "Abbrechen"
 
 #: templates/zerver/app/delete_message.html:20
-msgid "Yes, delete this message"
-msgstr "Ja, diese Nachricht löschen"
+msgid "Confirm"
+msgstr "Bestätigen"
 
 #: templates/zerver/app/deprecation_notice.html:6
 msgid "Deprecation notice"
@@ -755,30 +650,35 @@ msgid "User(s) join as"
 msgstr "Nutzer treten bei als"
 
 #: templates/zerver/app/invite_user.html:40
-msgid "Members"
-msgstr "Mitglieder"
-
-#: templates/zerver/app/invite_user.html:42
-msgid "Organization administrators"
-msgstr "Organisations-Administratoren"
-
-#: templates/zerver/app/invite_user.html:44
 msgid "Guests"
 msgstr "Gäste"
 
-#: templates/zerver/app/invite_user.html:46
+#: templates/zerver/app/invite_user.html:41
+msgid "Members"
+msgstr "Mitglieder"
+
+#: templates/zerver/app/invite_user.html:43
+#: templates/zerver/development/dev_login.html:40
+msgid "Moderators"
+msgstr ""
+
+#: templates/zerver/app/invite_user.html:44
+msgid "Organization administrators"
+msgstr "Organisations-Administratoren"
+
+#: templates/zerver/app/invite_user.html:47
 msgid "Organization owners"
 msgstr "Eigentümer der Organisation"
 
-#: templates/zerver/app/invite_user.html:52
+#: templates/zerver/app/invite_user.html:53
 msgid "Streams they should join"
 msgstr "Streams, die für den Nutzer standardmäßig abonniert sind"
 
-#: templates/zerver/app/invite_user.html:59
+#: templates/zerver/app/invite_user.html:60
 msgid "Inviting..."
 msgstr "Lade ein..."
 
-#: templates/zerver/app/invite_user.html:59
+#: templates/zerver/app/invite_user.html:60
 msgid "Invite"
 msgstr "Einladen"
 
@@ -801,6 +701,16 @@ msgstr "Auf Nachricht antworten"
 #: templates/zerver/app/keyboard_shortcuts.html:126
 msgid "New stream message"
 msgstr "Neue Stream-Nachricht"
+
+#: templates/zerver/app/keyboard_shortcuts.html:20
+#: templates/zerver/app/keyboard_shortcuts.html:130
+msgid "New private message"
+msgstr "Neue private Nachricht"
+
+#: templates/zerver/app/keyboard_shortcuts.html:24
+#: templates/zerver/app/keyboard_shortcuts.html:146
+msgid "Cancel compose"
+msgstr "Verfassen abbrechen"
 
 #: templates/zerver/app/keyboard_shortcuts.html:28
 #: templates/zerver/app/keyboard_shortcuts.html:264
@@ -844,9 +754,11 @@ msgid "Navigation"
 msgstr "Navigation"
 
 #: templates/zerver/app/keyboard_shortcuts.html:73
-#: templates/zerver/app/left_sidebar.html:74
-msgid "Search streams"
-msgstr "Suche Streams"
+#: templates/zerver/app/left_sidebar.html:62
+#: templates/zerver/app/left_sidebar.html:64
+#: templates/zerver/app/left_sidebar.html:66
+msgid "Filter streams"
+msgstr "Streams filtern"
 
 #: templates/zerver/app/keyboard_shortcuts.html:77
 #: templates/zerver/app/right_sidebar.html:9
@@ -966,8 +878,8 @@ msgid "Toggle topic mute"
 msgstr "Stummschaltung des Themas umschalten"
 
 #: templates/zerver/app/keyboard_shortcuts.html:243
-#: templates/zerver/app/left_sidebar.html:59
-#: templates/zerver/app/left_sidebar.html:65
+#: templates/zerver/app/left_sidebar.html:51
+#: templates/zerver/app/left_sidebar.html:57
 msgid "Recent topics"
 msgstr "Neueste Themen"
 
@@ -976,8 +888,12 @@ msgid "View recent topics"
 msgstr "Neueste Themen ansehen"
 
 #: templates/zerver/app/keyboard_shortcuts.html:251
-msgid "Search recent topics"
-msgstr "Neueste Themen durchsuchen"
+msgid "Filter topics"
+msgstr ""
+
+#: templates/zerver/app/keyboard_shortcuts.html:260
+msgid "Drafts"
+msgstr "Entwürfe"
 
 #: templates/zerver/app/keyboard_shortcuts.html:268
 msgid "Edit selected draft"
@@ -1036,32 +952,27 @@ msgstr "Detaillierte Übersicht von Tastaturkürzeln"
 msgid "All messages"
 msgstr "Alle Nachrichten"
 
-#: templates/zerver/app/left_sidebar.html:40
+#: templates/zerver/app/left_sidebar.html:36
 msgid "Mentions"
 msgstr "Erwähnungen"
 
-#: templates/zerver/app/left_sidebar.html:52
+#: templates/zerver/app/left_sidebar.html:46
 msgid "Starred messages"
 msgstr "Markierte Nachrichten"
 
-#: templates/zerver/app/left_sidebar.html:70
-#: templates/zerver/app/left_sidebar.html:72
-msgid "Filter streams"
-msgstr "Streams filtern"
-
-#: templates/zerver/app/left_sidebar.html:70
+#: templates/zerver/app/left_sidebar.html:62
 msgid "STREAMS"
 msgstr "STREAMS"
 
-#: templates/zerver/app/left_sidebar.html:71
+#: templates/zerver/app/left_sidebar.html:63
 msgid "Subscribe, add, or configure streams"
 msgstr "Streams abonnieren, konfigurieren oder hinzufügen"
 
-#: templates/zerver/app/left_sidebar.html:81
+#: templates/zerver/app/left_sidebar.html:73
 msgid "Back to streams"
 msgstr "Zurück zu den Streams"
 
-#: templates/zerver/app/left_sidebar.html:88
+#: templates/zerver/app/left_sidebar.html:80
 msgid "Subscribe to more streams"
 msgstr "Weitere Streams abonnieren"
 
@@ -1116,7 +1027,7 @@ msgstr "Streams verwalten"
 
 #: templates/zerver/app/navbar.html:70
 #: templates/zerver/app/settings_overlay.html:4
-#: templates/zerver/app/settings_overlay.html:166 zerver/lib/hotspots.py:32
+#: templates/zerver/app/settings_overlay.html:181 zerver/lib/hotspots.py:32
 msgid "Settings"
 msgstr "Einstellungen"
 
@@ -1235,6 +1146,14 @@ msgid "Download the latest version."
 msgstr "Lade die aktuellste Version herunter."
 
 #: templates/zerver/app/navbar_alerts.html:50
+msgid "This Zulip server is running an old version and should be upgraded."
+msgstr ""
+
+#: templates/zerver/app/navbar_alerts.html:52
+msgid "Learn more."
+msgstr ""
+
+#: templates/zerver/app/navbar_alerts.html:59
 #, python-format
 msgid ""
 "\n"
@@ -1242,15 +1161,15 @@ msgid ""
 "            "
 msgstr "\n            Willkommen zurück!  Es gibt <span class=\"bankruptcy_unread_count\">%(count)s</span> ungelesene Nachrichten.  Möchtest du sie alle als gelesen markieren?\n            "
 
-#: templates/zerver/app/navbar_alerts.html:54
+#: templates/zerver/app/navbar_alerts.html:63
 msgid "Yes, please!"
 msgstr "Ja, bitte!"
 
-#: templates/zerver/app/navbar_alerts.html:56
+#: templates/zerver/app/navbar_alerts.html:65
 msgid "No, I'll catch up."
 msgstr "Nein, ich hole das auf."
 
-#: templates/zerver/app/navbar_alerts.html:62
+#: templates/zerver/app/navbar_alerts.html:71
 msgid ""
 "\n"
 "        Marking all messages as read…\n"
@@ -1420,83 +1339,92 @@ msgstr "Hochgeladene Dateien"
 msgid "Muted topics"
 msgstr "Stummgeschaltete Themen"
 
-#: templates/zerver/app/settings_overlay.html:51
+#: templates/zerver/app/settings_overlay.html:49
+msgid "Muted users"
+msgstr ""
+
+#: templates/zerver/app/settings_overlay.html:57
 msgid "Organization profile"
 msgstr "Organisationsprofil"
 
-#: templates/zerver/app/settings_overlay.html:53
-#: templates/zerver/app/settings_overlay.html:60
-#: templates/zerver/app/settings_overlay.html:67
-#: templates/zerver/app/settings_overlay.html:77
-#: templates/zerver/app/settings_overlay.html:99
-#: templates/zerver/app/settings_overlay.html:108
-#: templates/zerver/app/settings_overlay.html:117
-#: templates/zerver/app/settings_overlay.html:126
-#: templates/zerver/app/settings_overlay.html:134
+#: templates/zerver/app/settings_overlay.html:59
+#: templates/zerver/app/settings_overlay.html:66
+#: templates/zerver/app/settings_overlay.html:73
+#: templates/zerver/app/settings_overlay.html:83
+#: templates/zerver/app/settings_overlay.html:105
+#: templates/zerver/app/settings_overlay.html:114
+#: templates/zerver/app/settings_overlay.html:123
+#: templates/zerver/app/settings_overlay.html:132
+#: templates/zerver/app/settings_overlay.html:140
+#: templates/zerver/app/settings_overlay.html:148
 msgid "Only organization administrators can edit these settings."
 msgstr "Diese Einstellungen können nur von Administratoren dieser Organisation bearbeitet werden."
 
-#: templates/zerver/app/settings_overlay.html:58
+#: templates/zerver/app/settings_overlay.html:64
 msgid "Organization settings"
 msgstr "Einstellungen der Organisation"
 
-#: templates/zerver/app/settings_overlay.html:65
+#: templates/zerver/app/settings_overlay.html:71
 msgid "Organization permissions"
 msgstr "Organisationsberechtigungen"
 
-#: templates/zerver/app/settings_overlay.html:72 zerver/models.py:2313
+#: templates/zerver/app/settings_overlay.html:78 zerver/models.py:2366
 msgid "Custom emoji"
 msgstr "Benutzerdefinierte Emoji"
 
-#: templates/zerver/app/settings_overlay.html:74
+#: templates/zerver/app/settings_overlay.html:80
 msgid "Guest users cannot edit custom emoji."
 msgstr "Gäste können keine benutzerdefinierten Emojis ändern."
 
-#: templates/zerver/app/settings_overlay.html:84
+#: templates/zerver/app/settings_overlay.html:90
 msgid "User groups"
 msgstr "Nutzergruppen"
 
-#: templates/zerver/app/settings_overlay.html:89
+#: templates/zerver/app/settings_overlay.html:95
 msgid "Authentication methods"
 msgstr "Authentifizierungs-Methoden"
 
-#: templates/zerver/app/settings_overlay.html:91
+#: templates/zerver/app/settings_overlay.html:97
 msgid "Only organization owners can edit these settings."
 msgstr "Nur Besitzer dieser Organisation können diese Einstellungen ändern."
 
-#: templates/zerver/app/settings_overlay.html:106
+#: templates/zerver/app/settings_overlay.html:112
 msgid "Deactivated users"
 msgstr "Deaktivierte Nutzer"
 
-#: templates/zerver/app/settings_overlay.html:124
+#: templates/zerver/app/settings_overlay.html:130
 msgid "Default streams"
 msgstr "Standardstreams"
 
-#: templates/zerver/app/settings_overlay.html:132
+#: templates/zerver/app/settings_overlay.html:138
 msgid "Linkifiers"
 msgstr "Linkifiers"
 
-#: templates/zerver/app/settings_overlay.html:140
+#: templates/zerver/app/settings_overlay.html:146
+msgid "Code playgrounds"
+msgstr ""
+
+#: templates/zerver/app/settings_overlay.html:155
 msgid "Custom profile fields"
 msgstr "Benutzerdefinierte Profilfelder"
 
-#: templates/zerver/app/settings_overlay.html:146
+#: templates/zerver/app/settings_overlay.html:161
 msgid "Invitations"
 msgstr "Einladungen"
 
-#: templates/zerver/app/settings_overlay.html:152
+#: templates/zerver/app/settings_overlay.html:167
 msgid "Data exports"
 msgstr "Datenexporte"
 
-#: templates/zerver/app/settings_overlay.html:158
+#: templates/zerver/app/settings_overlay.html:173
 msgid "Show more"
 msgstr "Mehr anzeigen"
 
 #: templates/zerver/billing_nav.html:4
+#: templates/zerver/development/integrations_dev_panel.html:15
 #: templates/zerver/emails/compiled/followup_day2.html:28
 #: templates/zerver/emails/followup_day2.source.html:27
 #: templates/zerver/emails/followup_day2.txt:17
-#: templates/zerver/integrations/development/dev_panel.html:15
 #: templates/zerver/landing_nav.html:13 templates/zerver/portico-header.html:5
 #: templates/zerver/portico-header.html:8
 msgid "Zulip"
@@ -1536,8 +1464,9 @@ msgid "The registration link has expired or is not valid."
 msgstr "Der Link zum Registrieren ist abgelaufen oder nicht gültig."
 
 #: templates/zerver/confirmation_link_expired_error.html:9
+#: templates/zerver/footer.html:35
 #: templates/zerver/log_into_subdomain_token_invalid.html:9
-#: templates/zerver/login.html:102 templates/zerver/portico-header.html:27
+#: templates/zerver/login.html:103 templates/zerver/portico-header.html:27
 #: templates/zerver/portico-header.html:33
 msgid "Log in"
 msgstr "Anmelden"
@@ -1546,7 +1475,7 @@ msgstr "Anmelden"
 msgid "Create a new Zulip organization"
 msgstr "Neue Organisation erstellen"
 
-#: templates/zerver/create_realm.html:20
+#: templates/zerver/create_realm.html:20 templates/zerver/reset.html:22
 msgid "Enter your email address"
 msgstr "E-Mail-Adressen eingeben"
 
@@ -1626,19 +1555,19 @@ msgstr "Danach kannst du dieses Fenster schließen."
 msgid "Or, continue in your browser."
 msgstr "Oder fahre in deinem Browser fort."
 
-#: templates/zerver/dev_login.html:22
+#: templates/zerver/development/dev_login.html:22
 msgid "Owners"
 msgstr "Besitzer"
 
-#: templates/zerver/dev_login.html:31
+#: templates/zerver/development/dev_login.html:31
 msgid "Administrators"
 msgstr "Administratoren"
 
-#: templates/zerver/dev_login.html:40
+#: templates/zerver/development/dev_login.html:49
 msgid "Guest users"
 msgstr "Gastnutzer"
 
-#: templates/zerver/dev_login.html:52
+#: templates/zerver/development/dev_login.html:61
 msgid "Normal users"
 msgstr "Normale Nutzer"
 
@@ -1735,6 +1664,25 @@ msgstr "Hier klicken, um sich bei Zulip einzuloggen und aufzuholen"
 #: templates/zerver/emails/compiled/digest.html:40
 #: templates/zerver/emails/compiled/followup_day2.html:34
 #: templates/zerver/emails/compiled/notify_new_login.html:48
+#: templates/zerver/emails/custom/compiled/custom_email_13351dad3bd3972e796012ab305e4a5d.html:66
+#: templates/zerver/emails/custom/compiled/custom_email_1db042280b1efac69028573753f2ebed.html:16
+#: templates/zerver/emails/custom/compiled/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.html:26
+#: templates/zerver/emails/custom/compiled/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.html:18
+#: templates/zerver/emails/custom/compiled/custom_email_d5c63509cf008c626cdcbdde801f814c.html:35
+#: templates/zerver/emails/custom/compiled/custom_email_dab625ae2974493761ac9453f4022481.html:34
+#: templates/zerver/emails/custom/compiled/custom_email_edbafec978446c47ea6c6960a29a245a.html:16
+#: templates/zerver/emails/custom/compiled/custom_email_f25fc427d4e556e25426d5d35b76e470.html:35
+#: templates/zerver/emails/custom/custom_email_13351dad3bd3972e796012ab305e4a5d.source.html:65
+#: templates/zerver/emails/custom/custom_email_1db042280b1efac69028573753f2ebed.source.html:15
+#: templates/zerver/emails/custom/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.source.html:24
+#: templates/zerver/emails/custom/custom_email_3c65b45c31a882a18c94828cdcf2b1cb.source.html:35
+#: templates/zerver/emails/custom/custom_email_3f08f8f8c55fdeb21fd5f42f9b36f5d5.txt:8
+#: templates/zerver/emails/custom/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.source.html:17
+#: templates/zerver/emails/custom/custom_email_d5c63509cf008c626cdcbdde801f814c.source.html:34
+#: templates/zerver/emails/custom/custom_email_dab625ae2974493761ac9453f4022481.source.html:33
+#: templates/zerver/emails/custom/custom_email_edbafec978446c47ea6c6960a29a245a.source.html:15
+#: templates/zerver/emails/custom/custom_email_f25fc427d4e556e25426d5d35b76e470.source.html:34
+#: templates/zerver/emails/custom_email_base.pre.html:15
 #: templates/zerver/emails/digest.source.html:39
 #: templates/zerver/emails/followup_day2.source.html:33
 #: templates/zerver/emails/notify_new_login.source.html:46
@@ -1747,6 +1695,7 @@ msgid "Unsubscribe from digest emails"
 msgstr "Abmelden von E-Mails mit Zusammenfassungen"
 
 #: templates/zerver/emails/compiled/email_base_default.html:90
+#: templates/zerver/emails/custom/custom_email_13351dad3bd3972e796012ab305e4a5d.txt:31
 #: templates/zerver/emails/custom/custom_email_87e5498dc967c76480e0895fe3f11751.txt:30
 #: templates/zerver/emails/custom/custom_email_b4026e4b7cec0fffdb28e3155fbc7653.txt:31
 #: templates/zerver/emails/email_base_default.source.html:31
@@ -2287,6 +2236,28 @@ msgid ""
 "feedback, or just want to chat!"
 msgstr "Kontaktiere uns jederzeit über %(support_email)s bei Problemen, mit Feedback oder zum Chatten!"
 
+#: templates/zerver/emails/custom/compiled/custom_email_13351dad3bd3972e796012ab305e4a5d.html:66
+#: templates/zerver/emails/custom/compiled/custom_email_1db042280b1efac69028573753f2ebed.html:16
+#: templates/zerver/emails/custom/compiled/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.html:26
+#: templates/zerver/emails/custom/compiled/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.html:18
+#: templates/zerver/emails/custom/compiled/custom_email_d5c63509cf008c626cdcbdde801f814c.html:35
+#: templates/zerver/emails/custom/compiled/custom_email_dab625ae2974493761ac9453f4022481.html:34
+#: templates/zerver/emails/custom/compiled/custom_email_edbafec978446c47ea6c6960a29a245a.html:16
+#: templates/zerver/emails/custom/compiled/custom_email_f25fc427d4e556e25426d5d35b76e470.html:35
+#: templates/zerver/emails/custom/custom_email_13351dad3bd3972e796012ab305e4a5d.source.html:65
+#: templates/zerver/emails/custom/custom_email_1db042280b1efac69028573753f2ebed.source.html:15
+#: templates/zerver/emails/custom/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.source.html:24
+#: templates/zerver/emails/custom/custom_email_3c65b45c31a882a18c94828cdcf2b1cb.source.html:35
+#: templates/zerver/emails/custom/custom_email_3f08f8f8c55fdeb21fd5f42f9b36f5d5.txt:8
+#: templates/zerver/emails/custom/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.source.html:17
+#: templates/zerver/emails/custom/custom_email_d5c63509cf008c626cdcbdde801f814c.source.html:34
+#: templates/zerver/emails/custom/custom_email_dab625ae2974493761ac9453f4022481.source.html:33
+#: templates/zerver/emails/custom/custom_email_edbafec978446c47ea6c6960a29a245a.source.html:15
+#: templates/zerver/emails/custom/custom_email_f25fc427d4e556e25426d5d35b76e470.source.html:34
+#: templates/zerver/emails/custom_email_base.pre.html:15
+msgid "Unsubscribe from marketing emails"
+msgstr ""
+
 #: templates/zerver/emails/digest.subject.txt:1
 #, python-format
 msgid "Zulip digest for %(realm_name)s"
@@ -2540,8 +2511,8 @@ msgid "PMs with %(sender_str)s"
 msgstr "PNs mit %(sender_str)s"
 
 #: templates/zerver/emails/missed_message.subject.txt:7
-msgid "New missed messages"
-msgstr "Neue verpasste Nachrichten"
+msgid "New messages"
+msgstr ""
 
 #: templates/zerver/emails/missed_message.txt:11
 #, python-format
@@ -2715,10 +2686,6 @@ msgstr "Account finden"
 #: templates/zerver/footer.html:31
 msgid "New organization"
 msgstr "Neue Organisation"
-
-#: templates/zerver/footer.html:35
-msgid "Login"
-msgstr "Anmelden"
 
 #: templates/zerver/footer.html:42 templates/zerver/terms.html:16
 msgid "Terms of Service"
@@ -2898,10 +2865,6 @@ msgstr "Kategorien"
 msgid "All"
 msgstr "Alle"
 
-#: templates/zerver/integrations/index.html:133
-msgid "Create your own!"
-msgstr "Erstelle deine eigene!"
-
 #: templates/zerver/invalid_email.html:4
 msgid "Invalid email"
 msgstr "Ungültige E-Mail-Adresse"
@@ -2972,25 +2935,25 @@ msgid "Username"
 msgstr "Nutzername"
 
 #: templates/zerver/login.html:74 templates/zerver/register.html:153
-#: templates/zerver/register.html:165 templates/zerver/reset_confirm.html:27
+#: templates/zerver/register.html:166 templates/zerver/reset_confirm.html:27
 msgid "Password"
 msgstr "Passwort"
 
-#: templates/zerver/login.html:90
+#: templates/zerver/login.html:91
 msgid ""
 "You've already registered with this email address. Please log in below."
 msgstr "Du hast dich bereits mit dieser E-Mail-Addresse registriert. Bitte melde dich weiter unten an."
 
-#: templates/zerver/login.html:117
+#: templates/zerver/login.html:118
 #, python-format
 msgid "Log in with %(identity_provider)s"
 msgstr "Anmelden mit %(identity_provider)s"
 
-#: templates/zerver/login.html:125
+#: templates/zerver/login.html:126
 msgid "Forgot your password?"
 msgstr "Passwort vergessen?"
 
-#: templates/zerver/login.html:137
+#: templates/zerver/login.html:138
 msgid ""
 "Don't have an account yet? You need to be invited to join this organization."
 msgstr "Du hast noch keinen Account? Du musst eingeladen werden, um dieser Organisation beitreten zu können."
@@ -3116,21 +3079,21 @@ msgstr "Vollständiger Name oder 名前"
 msgid "Full name"
 msgstr "Vollständiger Name"
 
-#: templates/zerver/register.html:155
+#: templates/zerver/register.html:156
 msgid "Enter your LDAP/Active Directory password."
 msgstr "Gib dein LDAP/Active Directory Passwort ein."
 
-#: templates/zerver/register.html:168
+#: templates/zerver/register.html:170
 msgid ""
 "This is used for mobile applications and other tools that require a "
 "password."
 msgstr "Dies wird für mobile Anwendungen und andere Programme, die ein Passwort benötigen, verwendet."
 
-#: templates/zerver/register.html:176
+#: templates/zerver/register.html:178
 msgid "Password strength"
 msgstr "Passwortstärke"
 
-#: templates/zerver/register.html:185
+#: templates/zerver/register.html:187
 msgid "What are you interested in?"
 msgstr "Woran bist du interessiert?"
 
@@ -3146,11 +3109,11 @@ msgstr "Reset-Link senden"
 msgid "Set a new password."
 msgstr "Lege ein neues Passwort fest."
 
-#: templates/zerver/reset_confirm.html:47
+#: templates/zerver/reset_confirm.html:48
 msgid "Confirm password"
 msgstr "Passwort bestätigen"
 
-#: templates/zerver/reset_confirm.html:66
+#: templates/zerver/reset_confirm.html:68
 msgid "Sorry, the link you provided is invalid or has already been used."
 msgstr "Entschuldige, der von dir angegebene Link ist ungültig oder wurde schon verwendet."
 
@@ -3228,24 +3191,28 @@ msgid ""
 " us</a> and we'll get this squared away!"
 msgstr "Bitte stelle sicher, dass du die komplette URL eingegeben hast und versuche es nochmal, oder <a href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">schreibe uns eine E-Mail</a> und wir kümmern uns darum!"
 
-#: templates/zerver/unsubscribe_success.html:5
+#: templates/zerver/unsubscribe_success.html:10
 msgid "Email settings updated"
 msgstr "E-Mail-Einstellungen wurden aktualisiert"
 
-#: templates/zerver/unsubscribe_success.html:7
+#: templates/zerver/unsubscribe_success.html:15
 #, python-format
 msgid ""
-"We've updated your email subscription settings, and you won't get "
-"%(subscription_type)s emails anymore."
-msgstr "Wir haben deine E-Mail-Abo-Einstellungen aktualisiert. Du wirst keine Mails zu %(subscription_type)s mehr bekommen."
+"\n"
+"                    You've successfully unsubscribed from Zulip %(subscription_type)s emails.\n"
+"                    "
+msgstr ""
 
-#: templates/zerver/unsubscribe_success.html:9
+#: templates/zerver/unsubscribe_success.html:21
 #, python-format
 msgid ""
-"To undo this change or review your other subscription settings, please visit"
-" your <a href=\"%(realm_uri)s/#settings/notifications\">Zulip Settings "
-"page</a>."
-msgstr "Um diese Änderung rückgängig zu machen oder andere Abonnements zu bearbeiten, gehe bitte zu den <a href=\"%(realm_uri)s/#settings/notifications\">Einstellungen</a>."
+"\n"
+"                    You can undo this change or review your\n"
+"                    preferences in your\n"
+"                    <a href=\"%(realm_uri)s/#settings/notifications\">Zulip notification\n"
+"                    settings</a>.\n"
+"                    "
+msgstr ""
 
 #: templates/zerver/unsupported_browser.html:11
 msgid "Unsupported browser"
@@ -3283,47 +3250,47 @@ msgid ""
 "    "
 msgstr "\n    <p>Diese Organisation ist auf zulip.com umgezogen! Du musst nur noch eine letzte Sache erledigen.</p>\n    <h3>Nutzungsbedingungen von Zulip akzeptieren</h3>\n    "
 
-#: zerver/decorator.py:162
+#: zerver/decorator.py:161
 msgid "Must be a billing administrator or an organization owner"
 msgstr "Muss ein Rechnungs-Administrator oder Eigentümer der Organisation sein."
 
-#: zerver/decorator.py:254
+#: zerver/decorator.py:232
 msgid "Invalid subdomain for push notifications bouncer"
 msgstr "Ungültige Subdomain für Push-Notification-Bouncer"
 
-#: zerver/decorator.py:263
+#: zerver/decorator.py:241
 msgid "This API is not available to incoming webhook bots."
 msgstr "Diese API ist nicht zugänglich für \"Incoming Webhook\"-Bots."
 
-#: zerver/decorator.py:290
+#: zerver/decorator.py:268
 msgid "Account is not associated with this subdomain"
 msgstr "Der Account gehört nicht zu dieser Subdomain"
 
-#: zerver/decorator.py:477 zerver/decorator.py:574
+#: zerver/decorator.py:455 zerver/decorator.py:552
 msgid "This endpoint does not accept bot requests."
 msgstr "Dieser Endpunkt akzeptiert keine Bot-Anfragen."
 
-#: zerver/decorator.py:548
+#: zerver/decorator.py:526
 msgid "Must be an server administrator"
 msgstr "Muss ein Serveradministrator sein"
 
-#: zerver/decorator.py:649
+#: zerver/decorator.py:627
 msgid "This endpoint requires HTTP basic authentication."
 msgstr "Dieser Endpunkt benötigt HTTP Basic Authentication"
 
-#: zerver/decorator.py:652
+#: zerver/decorator.py:630
 msgid "Invalid authorization header for basic auth"
 msgstr "Ungültiger Authorization Header für Basic Auth"
 
-#: zerver/decorator.py:654
+#: zerver/decorator.py:632
 msgid "Missing authorization header for basic auth"
 msgstr "Fehlende Autorisierungs-Header für Basic Auth."
 
-#: zerver/decorator.py:757
+#: zerver/decorator.py:735
 msgid "Webhook bots can only access webhooks"
 msgstr "Webhook-Bots können nur auf Webhooks zugreifen"
 
-#: zerver/decorator.py:823
+#: zerver/decorator.py:801
 msgid "Access denied"
 msgstr "Zugang verweigert"
 
@@ -3393,236 +3360,238 @@ msgstr "Bitte gib höchstens 10 E-Mail-Adressen ein."
 msgid "We couldn't find that Zulip organization."
 msgstr "Wir konnten diese Zulip-Organisation nicht finden."
 
-#: zerver/lib/actions.py:383 zerver/lib/actions.py:395
+#: zerver/lib/actions.py:354 zerver/lib/actions.py:366
 #, python-brace-format
 msgid "{user} just signed up for Zulip. (total: {user_count})"
 msgstr "{user} hat sich gerade bei Zulip angemeldet. (gesamt: {user_count})"
 
-#: zerver/lib/actions.py:386
+#: zerver/lib/actions.py:357
 msgid "signups"
 msgstr "Anmeldungen"
 
-#: zerver/lib/actions.py:506
+#: zerver/lib/actions.py:477
 #, python-brace-format
 msgid "{user} accepted your invitation to join Zulip!"
 msgstr "{user} hat deine Einladung zum Beitritt in Zulip angenommen!"
 
-#: zerver/lib/actions.py:1420
+#: zerver/lib/actions.py:1405
 msgid "Unable to render message"
 msgstr "Kann Nachricht nicht rendern"
 
-#: zerver/lib/actions.py:2226 zerver/views/reactions.py:55
+#: zerver/lib/actions.py:2211 zerver/lib/actions.py:2241
 msgid "Reaction already exists."
 msgstr "Reaktion existiert bereits."
 
-#: zerver/lib/actions.py:2288 zerver/lib/addressee.py:32
+#: zerver/lib/actions.py:2344 zerver/lib/addressee.py:32
 msgid "Invalid user ID {}"
 msgstr "Ungültige Nutzer-ID {}"
 
-#: zerver/lib/actions.py:2337 zerver/lib/actions.py:6741
-#: zerver/views/message_send.py:227 zerver/views/message_send.py:234
-#: zerver/views/message_send.py:257 zerver/views/users.py:572
+#: zerver/lib/actions.py:2413 zerver/lib/actions.py:6853
+#: zerver/lib/streams.py:238 zerver/lib/streams.py:246
+#: zerver/tornado/views.py:105 zerver/views/events_register.py:73
+#: zerver/views/message_send.py:226 zerver/views/message_send.py:232
+#: zerver/views/message_send.py:251 zerver/views/users.py:572
 msgid "User not authorized for this query"
 msgstr "Nutzer nicht autorisiert für diese Anfrage"
 
-#: zerver/lib/actions.py:2374
+#: zerver/lib/actions.py:2450
 #, python-brace-format
 msgid "'{email}' is no longer using Zulip."
 msgstr "'{email}' verwendet Zulip nicht mehr."
 
-#: zerver/lib/actions.py:2381
+#: zerver/lib/actions.py:2457
 msgid "You can't send private messages outside of your organization."
 msgstr "Du kannst keine privaten Nachrichten außerhalb deiner Organisation senden."
 
-#: zerver/lib/actions.py:2447
+#: zerver/lib/actions.py:2523
 msgid "Expected exactly one stream"
 msgstr "Erwarte genau einen Stream"
 
-#: zerver/lib/actions.py:2458
+#: zerver/lib/actions.py:2534
 msgid "Invalid data type for stream"
 msgstr "Ungültiger Datentyp für Stream"
 
-#: zerver/lib/actions.py:2474 zerver/lib/actions.py:2484
+#: zerver/lib/actions.py:2550 zerver/lib/actions.py:2560
 msgid "Invalid data type for recipients"
 msgstr "Ungültiger Datentyp für Empfänger"
 
-#: zerver/lib/actions.py:2492 zerver/lib/actions.py:2500
+#: zerver/lib/actions.py:2568 zerver/lib/actions.py:2576
 msgid "Recipient lists may contain emails or user IDs, but not both."
 msgstr "Empfängerlisten können E-Mail-Adressen oder Nutzer-IDs enthalten, aber nicht beides."
 
-#: zerver/lib/actions.py:2595
+#: zerver/lib/actions.py:2674
 msgid "Reminders can only be set for streams."
 msgstr "Erinnerungen können nur für Streams erstellt werden."
 
-#: zerver/lib/actions.py:2602
+#: zerver/lib/actions.py:2681
 msgid "Invalid default stream group name '{}'"
 msgstr "Ungültiger Standard-Stream-Gruppenname '{}'"
 
-#: zerver/lib/actions.py:2605
+#: zerver/lib/actions.py:2684
 msgid "Default stream group name too long (limit: {} characters)"
 msgstr "Standard-Stream-Gruppenname zu lang (Limit: {} Zeichen)"
 
-#: zerver/lib/actions.py:2612
+#: zerver/lib/actions.py:2691
 msgid "Default stream group name '{}' contains NULL (0x00) characters."
 msgstr "Standard-Stream-Gruppenname '{}' enthält NULL (0x00) Zeichen."
 
-#: zerver/lib/actions.py:2678
+#: zerver/lib/actions.py:2757
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream ID {stream_id}, "
 "but there is no stream with that ID."
 msgstr "Dein Bot {bot_identity} hat versucht, eine Nachricht an den Stream mit der ID {stream_id} zu senden, aber es gibt keinen Stream mit dieser ID."
 
-#: zerver/lib/actions.py:2684
+#: zerver/lib/actions.py:2763
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}, but"
 " that stream does not exist. Click [here]({new_stream_link}) to create it."
 msgstr "Dein Bot {bot_identity} hat versucht, eine Nachricht an den Stream {stream_name} zu senden, aber dieser Stream existiert nicht. Klicke [hier]({new_stream_link}), um ihn zu erstellen."
 
-#: zerver/lib/actions.py:2692
+#: zerver/lib/actions.py:2771
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}. The"
 " stream exists but does not have any subscribers."
 msgstr "Dein Bot {bot_identity} hat versucht, eine Nachricht an den Stream {stream_name} zu senden. Der Stream existiert, hat aber keine Abonnenten."
 
-#: zerver/lib/actions.py:2739
+#: zerver/lib/actions.py:2818
 msgid "Private messages are disabled in this organization."
 msgstr "Private Nachrichten sind in dieser Organisation abgeschaltet."
 
-#: zerver/lib/actions.py:2856
+#: zerver/lib/actions.py:2943
 msgid "Widgets: API programmer sent invalid JSON content"
 msgstr "Widgets: Der API-Programmierer hat ungültiges JSON gesendet"
 
-#: zerver/lib/actions.py:2862
+#: zerver/lib/actions.py:2949
 #, python-brace-format
 msgid "Widgets: {error_msg}"
 msgstr "Widgets: {error_msg}"
 
-#: zerver/lib/actions.py:2880
+#: zerver/lib/actions.py:2967
 msgid "You do not have permission to use wildcard mentions in this stream."
 msgstr "Du hast keine Berechtigung zur Nutzung von Platzhalter-Erwähnungen in diesem Stream."
 
-#: zerver/lib/actions.py:3133
+#: zerver/lib/actions.py:3220
 msgid "Subscriber data is not available for this stream"
 msgstr "Daten zu Mitgliedern dieses Streams nicht verfügbar"
 
-#: zerver/lib/actions.py:3140
+#: zerver/lib/actions.py:3227
 msgid "Unable to retrieve subscribers for private stream"
 msgstr "Kann Abonnenten für den privat Stream nicht laden"
 
-#: zerver/lib/actions.py:4399
+#: zerver/lib/actions.py:4480
 #, python-brace-format
 msgid "{user_name} renamed stream {old_stream_name} to {new_stream_name}."
 msgstr "{user_name} hat den Stream {old_stream_name} in {new_stream_name} umbenannt."
 
-#: zerver/lib/actions.py:4499
+#: zerver/lib/actions.py:4586
 msgid "Signups enabled"
 msgstr "Anmeldungen aktiviert"
 
-#: zerver/lib/actions.py:4613
+#: zerver/lib/actions.py:4700
 msgid "Invalid default stream group {}"
 msgstr "Ungültige Standard-Streamgruppe {}"
 
-#: zerver/lib/actions.py:4659 zerver/lib/actions.py:4686
+#: zerver/lib/actions.py:4746 zerver/lib/actions.py:4773
 #, python-brace-format
 msgid ""
 "'{stream_name}' is a default stream and cannot be added to '{group_name}'"
 msgstr "'{stream_name}' ist ein Standard-Stream und kann nicht zu '{group_name}' hinzugefügt werden"
 
-#: zerver/lib/actions.py:4670
+#: zerver/lib/actions.py:4757
 #, python-brace-format
 msgid "Default stream group '{group_name}' already exists"
 msgstr "Standard-Streamgruppe '{group_name}' existiert bereits"
 
-#: zerver/lib/actions.py:4692
+#: zerver/lib/actions.py:4779
 #, python-brace-format
 msgid ""
 "Stream '{stream_name}' is already present in default stream group "
 "'{group_name}'"
 msgstr "Der Stream '{stream_name}' existiert bereits in der Standard-Streamgruppe '{group_name}'"
 
-#: zerver/lib/actions.py:4708
+#: zerver/lib/actions.py:4795
 #, python-brace-format
 msgid ""
 "Stream '{stream_name}' is not present in default stream group '{group_name}'"
 msgstr "Der Stream '{stream_name}' existiert nicht in der Standard-Streamgruppe '{group_name}'"
 
-#: zerver/lib/actions.py:4722
+#: zerver/lib/actions.py:4809
 msgid "This default stream group is already named '{}'"
 msgstr "Diese Standard-Streamgruppe heißt bereits '{}'"
 
-#: zerver/lib/actions.py:4726
+#: zerver/lib/actions.py:4813
 msgid "Default stream group '{}' already exists"
 msgstr "Standard-Streamgruppe '{}' existiert bereits"
 
-#: zerver/lib/actions.py:5154
+#: zerver/lib/actions.py:5241
 msgid "Invalid flag: '{}'"
 msgstr "Ungültiges Flag: '{}'"
 
-#: zerver/lib/actions.py:5156
+#: zerver/lib/actions.py:5243
 msgid "Flag not editable: '{}'"
 msgstr "Flag nicht änderbar: '{}'"
 
-#: zerver/lib/actions.py:5158
+#: zerver/lib/actions.py:5245
 msgid "Invalid message flag operation: '{}'"
 msgstr "Ungültige Nachrichten-Flag-Operation: '{}'"
 
-#: zerver/lib/actions.py:5172 zerver/lib/actions.py:5174
+#: zerver/lib/actions.py:5259 zerver/lib/actions.py:5261
 #: zerver/lib/message.py:670 zerver/lib/message.py:676
 msgid "Invalid message(s)"
 msgstr "Ungültige Nachricht"
 
-#: zerver/lib/actions.py:5727
+#: zerver/lib/actions.py:5827
 #, python-brace-format
 msgid "This topic was moved by {user} to {new_location}"
 msgstr "Dieses Thema wurde von {user} nach {new_location} verschoben"
 
-#: zerver/lib/actions.py:5732
+#: zerver/lib/actions.py:5832
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}"
 msgstr "Dieses Thema wurde von {user} aus {old_location} hierher verschoben"
 
-#: zerver/lib/actions.py:6224
+#: zerver/lib/actions.py:6325
 #, python-brace-format
 msgid ""
 "You do not have enough remaining invites for today. Please contact {email} "
 "to have your limit raised. No invitations were sent."
 msgstr "Du hast heute nicht mehr genügend Einladungen zur Verfügung. Bitte kontaktiere {email}, um dein Limit zu erhöhen. Es wurden keine Einladungen versandt."
 
-#: zerver/lib/actions.py:6275
+#: zerver/lib/actions.py:6376
 msgid ""
 "Your account is too new to send invites for this organization. Ask an "
 "organization admin, or a more experienced user."
 msgstr "Dein Account ist noch zu neu, um Einladungen für diese Organisation verschicken zu können. Frage einen Administrator der Organisation oder einen erfahreneren Nutzer."
 
-#: zerver/lib/actions.py:6315
+#: zerver/lib/actions.py:6416
 msgid "Some emails did not validate, so we didn't send any invitations."
 msgstr "Einige E-Mail-Adressen konnten nicht validiert werden, deshalb wurden noch keine Einladungen gesendet."
 
-#: zerver/lib/actions.py:6323
+#: zerver/lib/actions.py:6424
 msgid "We weren't able to invite anyone."
 msgstr "Kann niemanden mehr einladen."
 
-#: zerver/lib/actions.py:6354
+#: zerver/lib/actions.py:6455
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
 msgstr "Einige dieser Adressen sind bereits einem Zulip-Konto zugeordnet, deshalb wurden an diese keine Einladungen gesendet. An alle übrigen wurden Einladungen gesendet!"
 
-#: zerver/lib/actions.py:6960
+#: zerver/lib/actions.py:7072
 msgid "Invalid order mapping."
 msgstr "Ungültige Anordungs-Zuweisung"
 
-#: zerver/lib/actions.py:7026 zerver/lib/users.py:334
+#: zerver/lib/actions.py:7138 zerver/lib/users.py:334
 #: zerver/views/custom_profile_fields.py:137
 #: zerver/views/custom_profile_fields.py:157
 #, python-brace-format
 msgid "Field id {id} not found."
 msgstr "Die Feld-ID {id} konnte nicht gefunden werden."
 
-#: zerver/lib/actions.py:7052 zerver/lib/actions.py:7065
+#: zerver/lib/actions.py:7164 zerver/lib/actions.py:7177
 msgid "User group '{}' already exists."
 msgstr "Nutzergruppe '{}' existiert bereits."
 
@@ -3630,16 +3599,17 @@ msgstr "Nutzergruppe '{}' existiert bereits."
 msgid "Invalid email '{}'"
 msgstr "Ungültige E-Mail-Adresse '{}'"
 
-#: zerver/lib/addressee.py:41 zerver/views/message_edit.py:172
+#: zerver/lib/addressee.py:41 zerver/views/message_edit.py:177
 #: zerver/webhooks/ifttt/view.py:26 zerver/webhooks/zapier/view.py:38
 msgid "Topic can't be empty"
 msgstr "Thema kann nicht leer sein"
 
 #: zerver/lib/addressee.py:69 zerver/lib/addressee.py:137
+#: zerver/views/typing.py:38
 msgid "Missing topic"
 msgstr "Thema fehlt"
 
-#: zerver/lib/addressee.py:122
+#: zerver/lib/addressee.py:122 zerver/views/typing.py:35
 msgid "Cannot send to multiple streams"
 msgstr "Kann nicht an mehrere Streams senden"
 
@@ -3651,7 +3621,7 @@ msgstr "Fehlender Stream"
 msgid "Message must have recipients"
 msgstr "Nachricht muss mindestens einen Empfänger haben"
 
-#: zerver/lib/addressee.py:154 zerver/lib/outgoing_webhook.py:188
+#: zerver/lib/addressee.py:154 zerver/lib/outgoing_webhook.py:193
 msgid "Invalid message type"
 msgstr "Ungültiger Nachrichtentyp"
 
@@ -3701,8 +3671,8 @@ msgid "Open Zulip to see the spoiler content"
 msgstr "Öffne Zulip, um den Inhalt des Spoilers zu sehen"
 
 #: zerver/lib/email_notifications.py:505
-msgid "Zulip missed messages"
-msgstr "Verpasste Nachrichten in Zulip"
+msgid "Zulip notifications"
+msgstr ""
 
 #: zerver/lib/email_validation.py:101
 msgid "Invalid address."
@@ -3765,7 +3735,7 @@ msgstr "Ungültiger Emoji-Typ."
 msgid "Must be an organization administrator or emoji author"
 msgstr "Muss ein Organisations-Administrator oder Emoji-Autor sein."
 
-#: zerver/lib/emoji.py:117 zerver/models.py:786
+#: zerver/lib/emoji.py:117 zerver/models.py:834
 msgid "Invalid characters in emoji name"
 msgstr "Der Emoji-Name enthält ungültige Zeichen"
 
@@ -3777,7 +3747,7 @@ msgstr "Emoji-Bezeichnung fehlt"
 msgid "Invalid type parameter"
 msgstr "Ungültiger type-Parameter"
 
-#: zerver/lib/events.py:1116
+#: zerver/lib/events.py:1140
 msgid "Could not allocate event queue"
 msgstr "Kann Ereigniskette nicht zuteilen"
 
@@ -3822,8 +3792,8 @@ msgstr "Fehlerhaftes JSON"
 msgid "Must be an organization member"
 msgstr "Muss ein Mitglied der Organisation sein"
 
-#: zerver/lib/exceptions.py:251 zerver/views/invite.py:53
-#: zerver/views/invite.py:108 zerver/views/invite.py:152
+#: zerver/lib/exceptions.py:251 zerver/views/invite.py:57
+#: zerver/views/invite.py:112 zerver/views/invite.py:156
 msgid "Must be an organization administrator"
 msgstr "Muss ein Administrator der Organisation sein"
 
@@ -3859,8 +3829,8 @@ msgid ""
 msgstr "Das '{event_type}'-Event wird momentan durch den {webhook_name}-Webhook nicht unterstützt."
 
 #: zerver/lib/exceptions.py:355 zerver/views/auth.py:610
-#: zerver/views/auth.py:879 zerver/views/auth.py:932 zerver/views/auth.py:987
-#: zerver/views/auth.py:1049
+#: zerver/views/auth.py:809 zerver/views/auth.py:864 zerver/views/auth.py:926
+#: zerver/views/development/dev_login.py:106
 msgid "Invalid subdomain"
 msgstr "Ungültige Subdomain"
 
@@ -4086,6 +4056,14 @@ msgid ""
 "a         previous message."
 msgstr "[Beginne ein neues Thema]({start_topic_help_url}) immer dann, wenn du nicht auf eine vorhergehende Nachricht antwortest."
 
+#: zerver/lib/outgoing_webhook.py:292
+msgid "Invalid JSON in response"
+msgstr ""
+
+#: zerver/lib/outgoing_webhook.py:295
+msgid "Invalid response format"
+msgstr ""
+
 #: zerver/lib/push_notifications.py:274
 msgid "Invalid GCM option to bouncer: priority {!r}"
 msgstr "Ungültiger GCM Parameter zum Bouncer: Priorität {!r}"
@@ -4136,12 +4114,12 @@ msgstr "Argument \"{}\" ist kein gültiges JSON."
 msgid "Not logged in: API authentication or user session required"
 msgstr "Nicht angemeldet: API-Authentifizierung oder Nutzer-Session benötigt"
 
-#: zerver/lib/send_email.py:60
+#: zerver/lib/send_email.py:66
 msgid "Zulip Account Security"
 msgstr "Zulip Account-Sicherheitsdienst"
 
-#: zerver/lib/streams.py:172 zerver/lib/streams.py:416
-#: zerver/lib/streams.py:500
+#: zerver/lib/streams.py:172 zerver/lib/streams.py:422
+#: zerver/lib/streams.py:542
 msgid "Invalid stream name '{}'"
 msgstr "Ungültiger Stream Name '{}'"
 
@@ -4170,42 +4148,41 @@ msgstr "Gäste dürfen keine Nachrichten an diesen Stream schicken."
 msgid "New members cannot send to this stream."
 msgstr "Neue Mitglieder können nicht an diesen Stream senden."
 
-#: zerver/lib/streams.py:260
+#: zerver/lib/streams.py:271
 msgid "Not authorized to send to stream '{}'"
 msgstr "Nicht berechtigt, um an Stream '{}' zu senden"
 
-#: zerver/lib/streams.py:265
+#: zerver/lib/streams.py:276
 msgid "Please supply 'stream'."
 msgstr "Bitte 'stream' angeben."
 
-#: zerver/lib/streams.py:268
+#: zerver/lib/streams.py:279
 msgid "Please choose one: 'stream' or 'stream_id'."
 msgstr "Bitte wähle eins aus: 'stream' oder 'stream_id'."
 
-#: zerver/lib/streams.py:274 zerver/lib/streams.py:296
-#: zerver/lib/streams.py:367 zerver/lib/streams.py:396
-#: zerver/lib/streams.py:432
+#: zerver/lib/streams.py:285 zerver/lib/streams.py:307
+#: zerver/lib/streams.py:377 zerver/lib/streams.py:438
 msgid "Invalid stream id"
 msgstr "Ungültige Stream-ID"
 
-#: zerver/lib/streams.py:408
+#: zerver/lib/streams.py:414
 msgid "Stream name '{}' is already taken."
 msgstr "Der Streamname '{}' ist bereits vergeben."
 
-#: zerver/lib/streams.py:622 zerver/lib/users.py:239 zerver/lib/users.py:268
+#: zerver/lib/streams.py:664 zerver/lib/users.py:239 zerver/lib/users.py:268
 #: zerver/views/invite.py:45 zerver/views/streams.py:517
 msgid "Insufficient permission"
 msgstr "Unzureichende Berechtigungen"
 
-#: zerver/lib/streams.py:625
+#: zerver/lib/streams.py:667
 msgid "Stream(s) ({}) do not exist"
 msgstr "Steam(s) ({}) nicht vorhanden"
 
-#: zerver/lib/streams.py:631
+#: zerver/lib/streams.py:673
 msgid "User cannot create stream with this settings."
 msgstr "Nutzer kann keinen Stream mit diesen Einstellungen erstellen."
 
-#: zerver/lib/streams.py:651
+#: zerver/lib/streams.py:693
 msgid "Default stream group with id '{}' does not exist."
 msgstr "Standard-Streamgruppe mit ID '{}' existiert nicht"
 
@@ -4217,7 +4194,7 @@ msgstr "Konnte das Bild nicht dekodieren; hast du eine Bilddatei hochgeladen?"
 msgid "Image size exceeds limit."
 msgstr "Bildgröße überschreitet das Limit."
 
-#: zerver/lib/upload.py:344
+#: zerver/lib/upload.py:341
 msgid "Upload would exceed your organization's upload quota."
 msgstr "Dieser Upload würde das Upload-Budget deiner Organisation überschreiten."
 
@@ -4279,7 +4256,7 @@ msgstr "Ungültiger Bottyp"
 msgid "Invalid interface type"
 msgstr "Ungültiger Interface-Typ"
 
-#: zerver/lib/users.py:222 zerver/lib/users.py:227 zerver/models.py:3391
+#: zerver/lib/users.py:222 zerver/lib/users.py:227 zerver/models.py:3445
 msgid "Invalid user ID: {}"
 msgstr "Ungültige Nutzer-ID: {}"
 
@@ -4296,125 +4273,125 @@ msgstr "Nutzer nicht vorhanden"
 msgid "User is deactivated"
 msgstr "Nutzer ist deaktiviert"
 
-#: zerver/lib/validator.py:45 zerver/lib/validator.py:107
+#: zerver/lib/validator.py:57 zerver/lib/validator.py:119
 #, python-brace-format
 msgid "{var_name} is not a string"
 msgstr "{var_name} ist kein String"
 
-#: zerver/lib/validator.py:52
+#: zerver/lib/validator.py:64
 #, python-brace-format
 msgid "{item} cannot be blank."
 msgstr "{item} darf nicht leer sein."
 
-#: zerver/lib/validator.py:60 zerver/lib/validator.py:126
+#: zerver/lib/validator.py:72 zerver/lib/validator.py:138
 #, python-brace-format
 msgid "Invalid {var_name}"
 msgstr "Ungültige {var_name}"
 
-#: zerver/lib/validator.py:75
+#: zerver/lib/validator.py:87
 #, python-brace-format
 msgid "{var_name} is too long (limit: {max_length} characters)"
 msgstr "{var_name} ist zu lang (Limit: {max_length} Zeichen)"
 
-#: zerver/lib/validator.py:90
+#: zerver/lib/validator.py:102
 #, python-brace-format
 msgid "{var_name} has incorrect length {length}; should be {target_length}"
 msgstr "{var_name} hat die ungültige Länge {length}; korrekt ist {target_length}"
 
-#: zerver/lib/validator.py:110 zerver/lib/validator.py:112
+#: zerver/lib/validator.py:122 zerver/lib/validator.py:124
 #, python-brace-format
 msgid "{var_name} is not a date"
 msgstr "{var_name} ist kein Datum"
 
-#: zerver/lib/validator.py:118
+#: zerver/lib/validator.py:130
 #, python-brace-format
 msgid "{var_name} is not an integer"
 msgstr "{var_name} ist kein Integer"
 
-#: zerver/lib/validator.py:134
+#: zerver/lib/validator.py:146
 #, python-brace-format
 msgid "{var_name} is not a float"
 msgstr "{var_name} ist kein Float"
 
-#: zerver/lib/validator.py:140
+#: zerver/lib/validator.py:152
 #, python-brace-format
 msgid "{var_name} is not a boolean"
 msgstr "{var_name} ist kein Boolean"
 
-#: zerver/lib/validator.py:150
+#: zerver/lib/validator.py:162
 #, python-brace-format
 msgid "{var_name} is not a valid hex color code"
 msgstr "{var_name} ist kein gültiger Hex-Farbcode"
 
-#: zerver/lib/validator.py:170
+#: zerver/lib/validator.py:182
 #, python-brace-format
 msgid "{var_name} is not a list"
 msgstr "{var_name} ist keine Liste"
 
-#: zerver/lib/validator.py:174
+#: zerver/lib/validator.py:186
 #, python-brace-format
 msgid "{container} should have exactly {length} items"
 msgstr "{container} sollte genau aus {length} Elementen bestehen"
 
-#: zerver/lib/validator.py:193
+#: zerver/lib/validator.py:205
 #, python-brace-format
 msgid "{var_name} is not a tuple"
 msgstr "{var_name} ist kein Tupel"
 
-#: zerver/lib/validator.py:198
+#: zerver/lib/validator.py:210
 #, python-brace-format
 msgid "{var_name} should have exactly {desired_len} items"
 msgstr "{var_name} sollte genau aus {desired_len} Elementen bestehen"
 
-#: zerver/lib/validator.py:244
+#: zerver/lib/validator.py:256
 #, python-brace-format
 msgid "{var_name} is not a dict"
 msgstr "{var_name} ist kein Dict"
 
-#: zerver/lib/validator.py:252
+#: zerver/lib/validator.py:264
 #, python-brace-format
 msgid "{key_name} key is missing from {var_name}"
 msgstr "Der Key {key_name} fehlt in {var_name}"
 
-#: zerver/lib/validator.py:277
+#: zerver/lib/validator.py:289
 msgid "Unexpected arguments: {}"
 msgstr "Unerwartete Argumente: {}"
 
-#: zerver/lib/validator.py:310
+#: zerver/lib/validator.py:322
 #, python-brace-format
 msgid "{var_name} is not an allowed_type"
 msgstr "{var_name} ist kein allowed_type"
 
-#: zerver/lib/validator.py:319
+#: zerver/lib/validator.py:331
 #, python-brace-format
 msgid "{variable} != {expected_value} ({value} is wrong)"
 msgstr "{variable} != {expected_value} ({value} ist falsch)"
 
-#: zerver/lib/validator.py:346
+#: zerver/lib/validator.py:358
 #, python-brace-format
 msgid "{var_name} is not a URL"
 msgstr "{var_name} ist keine URL"
 
-#: zerver/lib/validator.py:353
+#: zerver/lib/validator.py:365
 msgid "Malformed URL pattern."
 msgstr "Fehlerhaftes URL-Muster."
 
-#: zerver/lib/validator.py:374
+#: zerver/lib/validator.py:386
 #, python-brace-format
 msgid "'{item}' cannot be blank."
 msgstr "'{item}' darf nicht leer sein."
 
-#: zerver/lib/validator.py:390
+#: zerver/lib/validator.py:402
 #, python-brace-format
 msgid "'{value}' is not a valid choice for '{field_name}'."
 msgstr "'{value}' ist keine gültige Option für '{field_name}'."
 
-#: zerver/lib/validator.py:474
+#: zerver/lib/validator.py:486
 #, python-brace-format
 msgid "{var_name} is not a string or an integer list"
 msgstr "{var_name} ist kein String oder Integer-Liste"
 
-#: zerver/lib/validator.py:484
+#: zerver/lib/validator.py:496
 #, python-brace-format
 msgid "{var_name} is not a string or integer"
 msgstr "{var_name} ist kein String oder Integer"
@@ -4436,92 +4413,96 @@ msgstr "Das zcommand sollte einen vorangestellten Schrägstrich enthalten."
 msgid "No such command: {}"
 msgstr "Befehl {} nicht gefunden."
 
-#: zerver/middleware.py:402
+#: zerver/middleware.py:451
 msgid "Internal server error"
 msgstr "Interner Serverfehler"
 
-#: zerver/middleware.py:429
+#: zerver/middleware.py:478
 #, python-brace-format
 msgid "CSRF Error: {reason}"
 msgstr "CSRF Fehler: {reason}"
 
-#: zerver/models.py:366
+#: zerver/models.py:370
 msgid "stream events"
 msgstr "Stream-Ereignisse"
 
-#: zerver/models.py:400
+#: zerver/models.py:404
 msgid "Available on Zulip Standard. Upgrade to access."
 msgstr "Verfügbar ab Zulip Standard. Bitte Upgraden, um Zugriff zu erhalten."
 
-#: zerver/models.py:856
+#: zerver/models.py:904
 msgid "Invalid linkifier pattern.  Valid characters are {}."
-msgstr ""
+msgstr "Ungültiges Linkifier-Muster. Gültige Zeichen sind {}."
 
-#: zerver/models.py:874
+#: zerver/models.py:922
 msgid "Invalid URL format string."
 msgstr "Ungültiger URL-Formatierungs-String."
 
-#: zerver/models.py:981 zerver/views/realm_playgrounds.py:24
+#: zerver/models.py:1029 zerver/views/realm_playgrounds.py:24
 msgid "Invalid characters in pygments language"
 msgstr "Die pygments Sprache enthält ungültige Zeichen"
 
-#: zerver/models.py:1358
+#: zerver/models.py:1409
 msgid "Organization owner"
 msgstr "Eigentümer der Organisation"
 
-#: zerver/models.py:1359
+#: zerver/models.py:1410
 msgid "Organization administrator"
 msgstr "Administrator der Organisation"
 
-#: zerver/models.py:1360
+#: zerver/models.py:1411
+msgid "Moderator"
+msgstr ""
+
+#: zerver/models.py:1412
 msgid "Member"
 msgstr "Mitglied"
 
-#: zerver/models.py:1361
+#: zerver/models.py:1413
 msgid "Guest"
 msgstr "Gast"
 
-#: zerver/models.py:2312
+#: zerver/models.py:2365
 msgid "Unicode emoji"
 msgstr "Unicode Emoji"
 
-#: zerver/models.py:2314
+#: zerver/models.py:2367
 msgid "Zulip extra emoji"
 msgstr "Zulip Extra-Emoji"
 
-#: zerver/models.py:3395
+#: zerver/models.py:3449
 msgid "User with ID {} is deactivated"
 msgstr "Nutzer mit ID {} ist deaktiviert"
 
-#: zerver/models.py:3398
+#: zerver/models.py:3452
 msgid "User with ID {} is a bot"
 msgstr "Nutzer mit ID {} ist ein Bot"
 
-#: zerver/models.py:3431
+#: zerver/models.py:3485
 msgid "List of options"
 msgstr "Liste von Optionen"
 
-#: zerver/models.py:3434
+#: zerver/models.py:3488
 msgid "Person picker"
 msgstr "Personenauswahl"
 
-#: zerver/models.py:3446
+#: zerver/models.py:3500
 msgid "Short text"
 msgstr "Kurzer Text"
 
-#: zerver/models.py:3447
+#: zerver/models.py:3501
 msgid "Long text"
 msgstr "Langer Text"
 
-#: zerver/models.py:3448
+#: zerver/models.py:3502
 msgid "Date picker"
 msgstr "Datumsauswahl"
 
-#: zerver/models.py:3449
+#: zerver/models.py:3503
 msgid "Link"
 msgstr "Link"
 
-#: zerver/models.py:3452
+#: zerver/models.py:3506
 msgid "External account"
 msgstr "Externer Account"
 
@@ -4537,24 +4518,24 @@ msgstr "ein unbekanntes Betriebssystem"
 msgid "An unknown browser"
 msgstr "Ein unbekannter Browser"
 
-#: zerver/tornado/event_queue.py:616
+#: zerver/tornado/event_queue.py:632
 msgid "Missing 'queue_id' argument"
 msgstr "Argument 'query_id' fehlt"
 
-#: zerver/tornado/event_queue.py:619
+#: zerver/tornado/event_queue.py:635
 msgid "Missing 'last_event_id' argument"
 msgstr "Argument 'last_event_id' fehlt"
 
-#: zerver/tornado/event_queue.py:622
+#: zerver/tornado/event_queue.py:638
 msgid "You are not authorized to get events from this queue"
 msgstr "Du bist nicht autorisiert, Events von dieser Warteschlange abzufragen"
 
-#: zerver/tornado/event_queue.py:628
+#: zerver/tornado/event_queue.py:644
 #, python-brace-format
 msgid "An event newer than {event_id} has already been pruned!"
 msgstr "Ein neueres Ereignis als {event_id} ist bereits entfernt worden!"
 
-#: zerver/tornado/event_queue.py:638
+#: zerver/tornado/event_queue.py:654
 #, python-brace-format
 msgid "Event {event_id} was not in this queue"
 msgstr "Ereignis {event_id} war nicht in dieser Warteschlange enthalten."
@@ -4592,35 +4573,23 @@ msgstr "Keine Organisation in JSON Web-Token Claims angegeben"
 msgid "Wrong subdomain"
 msgstr "Falsche Subdomain"
 
-#: zerver/views/auth.py:857
-msgid "Endpoint not available in production."
-msgstr "Dieser Endpunkt ist im Betriebsmodus nicht verfügbar."
-
-#: zerver/views/auth.py:859
-msgid "DevAuthBackend not enabled."
-msgstr "DevAuthBackend ist nicht aktiviert."
-
-#: zerver/views/auth.py:884 zerver/views/auth.py:947
-msgid "This organization has been deactivated."
-msgstr "Diese Organisation wurde deaktiviert."
-
-#: zerver/views/auth.py:890 zerver/views/auth.py:943
+#: zerver/views/auth.py:820 zerver/views/development/dev_login.py:117
 msgid "Your account has been disabled."
 msgstr "Dein Konto wurde deaktiviert"
 
-#: zerver/views/auth.py:894
-msgid "This user is not registered."
-msgstr "Dieser Nutzer ist nicht registriert."
+#: zerver/views/auth.py:824 zerver/views/development/dev_login.py:111
+msgid "This organization has been deactivated."
+msgstr "Diese Organisation wurde deaktiviert."
 
-#: zerver/views/auth.py:953
+#: zerver/views/auth.py:830
 msgid "Password auth is disabled in your team."
 msgstr "Passwort-Authentifizierung ist für dein Team deaktiviert."
 
-#: zerver/views/auth.py:959 zerver/views/auth.py:1054
+#: zerver/views/auth.py:836 zerver/views/auth.py:931
 msgid "Your username or password is incorrect."
 msgstr "Entweder ist dein Nutzername oder dein Passwort falsch."
 
-#: zerver/views/auth.py:993
+#: zerver/views/auth.py:870
 msgid "Subdomain required"
 msgstr "Subdomain benötigt"
 
@@ -4653,6 +4622,18 @@ msgstr "Es gibt schon ein Feld mit dieser Beschriftung."
 msgid "Default custom field cannot be updated."
 msgstr "Nutzerdefiniertes Standard-Feld kann nicht aktualisiert werden."
 
+#: zerver/views/development/dev_login.py:84
+msgid "Endpoint not available in production."
+msgstr "Dieser Endpunkt ist im Betriebsmodus nicht verfügbar."
+
+#: zerver/views/development/dev_login.py:86
+msgid "DevAuthBackend not enabled."
+msgstr "DevAuthBackend ist nicht aktiviert."
+
+#: zerver/views/development/dev_login.py:121
+msgid "This user is not registered."
+msgstr "Dieser Nutzer ist nicht registriert."
+
 #: zerver/views/drafts.py:60
 msgid "Timestamp must not be negative."
 msgstr "Zeitstempel darf nicht negativ sein"
@@ -4677,69 +4658,83 @@ msgstr "Unbekannter Hotspot: {}"
 msgid "Must be invited as an valid type of user"
 msgstr "Muss als ein gültiger Nutzer-Typ eingeladen werden"
 
-#: zerver/views/invite.py:55
+#: zerver/views/invite.py:59
 msgid "You must specify at least one email address."
 msgstr "Du musst mindestens eine E-Mail-Adresse angeben"
 
-#: zerver/views/invite.py:57
+#: zerver/views/invite.py:61
 msgid "You must specify at least one stream for invitees to join."
 msgstr "Du musst mindestens einen Stream angeben, den Eingeladene abonnieren."
 
-#: zerver/views/invite.py:67
+#: zerver/views/invite.py:71
 msgid "Stream does not exist with id: {}. No invites were sent."
 msgstr "Stream mit ID: {} existiert nicht. Es wurden keine Einladungen versendet."
 
-#: zerver/views/invite.py:100 zerver/views/invite.py:103
-#: zerver/views/invite.py:123 zerver/views/invite.py:126
-#: zerver/views/invite.py:142 zerver/views/invite.py:147
+#: zerver/views/invite.py:104 zerver/views/invite.py:107
+#: zerver/views/invite.py:127 zerver/views/invite.py:130
+#: zerver/views/invite.py:146 zerver/views/invite.py:151
 msgid "No such invitation"
 msgstr "Keine solche Einladung"
 
-#: zerver/views/invite.py:173
+#: zerver/views/invite.py:177
 msgid "Invalid stream id {}. No invites were sent."
 msgstr "Ungültige Stream-ID {}. Es wurden keine Einladungen verschickt."
 
-#: zerver/views/message_edit.py:85
+#: zerver/views/message_edit.py:86
 msgid "Message edit history is disabled in this organization"
 msgstr "Die Anzeige des Nachrichten-Editierverlaufs ist in dieser Organisation deaktivert"
 
-#: zerver/views/message_edit.py:117
+#: zerver/views/message_edit.py:118
 msgid "Your organization has turned off message editing"
 msgstr "Das Editieren von Nachrichten ist in Deiner Organisation deaktiviert"
 
-#: zerver/views/message_edit.py:120
+#: zerver/views/message_edit.py:121
 msgid "Invalid propagate_mode without topic edit"
 msgstr "Ungültiger propagate_mode ohne Bearbeitung des Themas"
 
-#: zerver/views/message_edit.py:140
+#: zerver/views/message_edit.py:141
 msgid "You don't have permission to edit this message"
 msgstr "Du hast keine Berechtigung, diese Nachricht zu editieren"
 
-#: zerver/views/message_edit.py:151 zerver/views/message_edit.py:165
+#: zerver/views/message_edit.py:145
+msgid "Widgets cannot be edited."
+msgstr ""
+
+#: zerver/views/message_edit.py:156 zerver/views/message_edit.py:170
 msgid "The time limit for editing this message has passed"
 msgstr "Das Editierlimit für diese Nachricht ist ausgelaufen"
 
-#: zerver/views/message_edit.py:168
+#: zerver/views/message_edit.py:173
 msgid "Nothing to change"
 msgstr "Nichts zu ändern"
 
-#: zerver/views/message_edit.py:210
+#: zerver/views/message_edit.py:215
+msgid "Message must be a stream message"
+msgstr ""
+
+#: zerver/views/message_edit.py:217
 msgid "You don't have permission to move this message"
 msgstr "Du hast keine Berechtigung dazu, diese Nachricht zu verschieben"
 
-#: zerver/views/message_edit.py:212
+#: zerver/views/message_edit.py:223
+msgid ""
+"You don't have permission to move this message due to missing access to its "
+"stream"
+msgstr ""
+
+#: zerver/views/message_edit.py:227
 msgid "Cannot change message content while changing stream"
 msgstr "Kann den Inhalt von Nachrichten nicht ändern, während der Stream geändert wird"
 
-#: zerver/views/message_edit.py:253 zerver/views/message_edit.py:256
+#: zerver/views/message_edit.py:268 zerver/views/message_edit.py:271
 msgid "You don't have permission to delete this message"
 msgstr "Du hast keine Berechtigung dazu, diese Nachricht zu löschen"
 
-#: zerver/views/message_edit.py:264
+#: zerver/views/message_edit.py:279
 msgid "The time limit for deleting this message has passed"
 msgstr "Das Zeitlimit für das Entfernen dieser Nachricht ist überschritten"
 
-#: zerver/views/message_edit.py:279
+#: zerver/views/message_edit.py:294
 msgid "Message already deleted"
 msgstr "Nachricht ist bereits gelöscht"
 
@@ -4764,35 +4759,31 @@ msgstr "Zu viele Nachrichten angefordert (Maximum {})."
 msgid "No such topic '{}'"
 msgstr "Kein Thema '{}' vorhanden"
 
-#: zerver/views/message_send.py:155
+#: zerver/views/message_send.py:154
 msgid "Invalid time format"
 msgstr "Ungültiges Zeitformat"
 
-#: zerver/views/message_send.py:164
+#: zerver/views/message_send.py:163
 msgid "Time must be in the future."
 msgstr "Zeit muss in der Zukunft liegen."
 
-#: zerver/views/message_send.py:238
-msgid "Unknown organization '{}'"
-msgstr "Unbekannte Organisation '{}'"
-
-#: zerver/views/message_send.py:255
+#: zerver/views/message_send.py:249
 msgid "Missing sender"
 msgstr "Fehlender Absender"
 
-#: zerver/views/message_send.py:262
+#: zerver/views/message_send.py:256
 msgid "Mirroring not allowed with recipient user IDs"
 msgstr "Mirroring ist nicht erlaubt mit Empfänger-Nutzer-IDs"
 
-#: zerver/views/message_send.py:272 zerver/views/message_send.py:279
+#: zerver/views/message_send.py:266 zerver/views/message_send.py:273
 msgid "Invalid mirrored message"
 msgstr "Ungültige gespiegelte Nachricht"
 
-#: zerver/views/message_send.py:275
+#: zerver/views/message_send.py:269
 msgid "Zephyr mirroring is not allowed in this organization"
 msgstr "Zephyr-Spiegelung ist in dieser Organisation nicht erlaubt"
 
-#: zerver/views/message_send.py:283
+#: zerver/views/message_send.py:277
 msgid "Missing deliver_at in a request for delayed message delivery"
 msgstr "Fehlendes deliver_at in einer Anfrage für verzögerte Nachrichtenzustellung"
 
@@ -4841,27 +4832,31 @@ msgstr "Token leer oder Länge ungültig"
 msgid "Invalid APNS token"
 msgstr "Ungültiges APNS Token"
 
-#: zerver/views/reactions.py:108
+#: zerver/views/reactions.py:44
 msgid ""
 "At least one of the following arguments must be present: emoji_name, "
 "emoji_code"
 msgstr "Mindestens eines der folgenden Argumente muss gegeben sein: emoji_name, emoji_code"
 
-#: zerver/views/reactions.py:127
+#: zerver/views/reactions.py:63
 msgid "Reaction doesn't exist."
 msgstr "Reaktion existiert nicht."
 
-#: zerver/views/realm.py:123
+#: zerver/views/realm.py:127
 msgid "Invalid language '{}'"
 msgstr "Ungültige Sprache '{}'"
 
-#: zerver/views/realm.py:128
+#: zerver/views/realm.py:132
 msgid "At least one authentication method must be enabled."
 msgstr "Es muss mindestens eine Authentifizierungs-Möglichkeit aktiviert sein."
 
-#: zerver/views/realm.py:132
+#: zerver/views/realm.py:136
 msgid "Invalid video_chat_provider {}"
 msgstr "Ungültiger video_chat_provider {}"
+
+#: zerver/views/realm.py:140
+msgid "Invalid giphy_rating {}"
+msgstr ""
 
 #: zerver/views/realm_domains.py:31
 msgid "Invalid domain: {}"
@@ -4887,7 +4882,7 @@ msgstr "Du musst genau eine Datei hochladen."
 
 #: zerver/views/realm_emoji.py:37 zerver/views/realm_icon.py:24
 #: zerver/views/realm_logo.py:29 zerver/views/upload.py:124
-#: zerver/views/user_settings.py:300
+#: zerver/views/user_settings.py:302
 msgid "Uploaded file is larger than the allowed limit of {} MiB"
 msgstr "Deine hochgeladene Datei ist größer als das Maximum von {} MiB"
 
@@ -4916,9 +4911,9 @@ msgstr "Export ist bereits gelöscht"
 msgid "You must upload exactly one icon."
 msgstr "Du musst genau ein Icon hochladen"
 
-#: zerver/views/realm_linkifiers.py:44
-msgid "Filter not found"
-msgstr "Filter nicht gefunden"
+#: zerver/views/realm_linkifiers.py:44 zerver/views/realm_linkifiers.py:66
+msgid "Linkifier not found."
+msgstr ""
 
 #: zerver/views/realm_logo.py:25
 msgid "You must upload exactly one logo."
@@ -4928,11 +4923,11 @@ msgstr "Du must genau ein Logo hochladen."
 msgid "Invalid playground"
 msgstr "Ungültige Spielwiese"
 
-#: zerver/views/registration.py:551
+#: zerver/views/registration.py:552
 msgid "The organization creation link has expired or is not valid."
 msgstr "Der Link zur Erstellung von Organisationen ist abgelaufen oder nicht länger gültig."
 
-#: zerver/views/registration.py:559
+#: zerver/views/registration.py:560
 msgid "New organization creation disabled"
 msgstr "Das Erstellen einer neuen Organisation ist deaktiviert"
 
@@ -5023,9 +5018,9 @@ msgstr "<p>Du bist nicht dazu autorisiert, auf diese Datei zuzugreifen.</p>"
 msgid "<p>Invalid size.</p>"
 msgstr "<p>Ungültige Größe.</p>"
 
-#: zerver/views/typing.py:27
-msgid "Missing parameter: 'to' (recipient)"
-msgstr "Fehlende Angabe: 'to' (Empfänger)"
+#: zerver/views/typing.py:31
+msgid "Empty 'to' list"
+msgstr ""
 
 #: zerver/views/upload.py:95
 msgid "<p>File not found.</p>"
@@ -5097,11 +5092,11 @@ msgstr "Überprüfe deine E-Mails für einen Bestätigungs-Link."
 msgid "Invalid default_language"
 msgstr "Ungültige default_language"
 
-#: zerver/views/user_settings.py:276
+#: zerver/views/user_settings.py:278
 msgid "Invalid notification sound '{}'"
 msgstr "Ungültiger Benachrichtigungs-Ton: '{}'"
 
-#: zerver/views/user_settings.py:292
+#: zerver/views/user_settings.py:294
 msgid "You must upload exactly one avatar."
 msgstr "Du musst genau einen Avatar hochladen"
 
@@ -5206,8 +5201,8 @@ msgid "Invalid Kerberos cache"
 msgstr "Ungültiger Kerberos-Cache"
 
 #: zerver/views/zephyr.py:74
-msgid "We were unable to setup mirroring for you"
-msgstr "Wir konnten für dich leider kein Mirroring erstellen."
+msgid "We were unable to set up mirroring for you"
+msgstr ""
 
 #: zerver/webhooks/front/view.py:146
 msgid "Unknown webhook request"
@@ -5250,7 +5245,7 @@ msgstr "Unbekannte WordPress Webhook-Action: {}"
 msgid "Invalid payload"
 msgstr "Ungültige Payload"
 
-#: zerver/worker/queue_processors.py:878
+#: zerver/worker/queue_processors.py:900
 #, python-brace-format
 msgid ""
 "Your data export is complete and has been uploaded here:\n"
@@ -5284,14 +5279,14 @@ msgstr "Die Daten sind nicht in Ordnung."
 msgid "Invalid data."
 msgstr "Unzulässige Daten."
 
-#: zproject/backends.py:1872
+#: zproject/backends.py:1909
 msgid "Missing id_token parameter"
 msgstr "Fehlende id_token Parameter"
 
-#: zproject/backends.py:2215
+#: zproject/backends.py:2252
 msgid "Invalid OTP"
 msgstr "Ungültiges OTP"
 
-#: zproject/backends.py:2218
+#: zproject/backends.py:2255
 msgid "Can't use both mobile_flow_otp and desktop_flow_otp together."
 msgstr "Es geht nicht, gleichzeitig sowohl mobile_flow_otp als auch desktop_flow_otp zu benutzen."
