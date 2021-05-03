@@ -302,15 +302,7 @@ async function change_language(page: Page, language_data_code: string): Promise<
 }
 
 async function check_language_setting_status(page: Page): Promise<void> {
-    const language_setting_status_selector = "#language-settings-status";
-    await page.waitForSelector(language_setting_status_selector, {visible: true});
-    const status_text = "Saved. Please reload for the change to take effect.";
-    await page.waitForFunction(
-        (selector: string, status: string) => $(selector).text() === status,
-        {},
-        language_setting_status_selector,
-        status_text,
-    );
+    await page.waitForSelector("#language-settings-status .reload_link", {visible: true});
 }
 
 async function assert_language_changed_to_chinese(page: Page): Promise<void> {
