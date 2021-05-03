@@ -35,12 +35,19 @@ const isaac_item = {
     img_src: `/avatar/${isaac.user_id}&s=50`,
 };
 
-run_test("setup", () => {
-    people.add_active_user(alice);
-    people.add_active_user(isaac);
-});
+let pill_widget = {};
 
-run_test("create_item", () => {
+function test(label, f) {
+    run_test(label, (override) => {
+        people.init();
+        people.add_active_user(alice);
+        people.add_active_user(isaac);
+        pill_widget = {};
+        f(override);
+    });
+}
+
+test("create_item", () => {
     function test_create_item(email, current_items, expected_item) {
         const item = user_pill.create_item_from_email(email, current_items);
         assert.deepEqual(item, expected_item);
@@ -61,11 +68,11 @@ run_test("create_item", () => {
     test_create_item("isaac@example.com", [isaac_item], undefined);
 });
 
-run_test("get_email", () => {
+test("get_email", () => {
     assert.equal(user_pill.get_email_from_item({email: "foo@example.com"}), "foo@example.com");
 });
 
-run_test("append", () => {
+test("append", () => {
     let appended;
     let cleared;
 
@@ -81,10 +88,8 @@ run_test("append", () => {
         cleared = true;
     }
 
-    const pill_widget = {
-        appendValidatedData: fake_append,
-        clear_text: fake_clear,
-    };
+    pill_widget.appendValidatedData = fake_append;
+    pill_widget.clear_text = fake_clear;
 
     user_pill.append_person({
         person: isaac,
@@ -95,26 +100,16 @@ run_test("append", () => {
     assert(cleared);
 });
 
-run_test("get_items", () => {
+test("get_items", () => {
     const items = [isaac_item, bogus_item];
-
-    const pill_widget = {
-        items() {
-            return items;
-        },
-    };
+    pill_widget.items = () => items;
 
     assert.deepEqual(user_pill.get_user_ids(pill_widget), [isaac.user_id]);
 });
 
-run_test("typeahead", () => {
+test("typeahead", () => {
     const items = [isaac_item, bogus_item];
-
-    const pill_widget = {
-        items() {
-            return items;
-        },
-    };
+    pill_widget.items = () => items;
 
     // Both alice and isaac are in our realm, but isaac will be
     // excluded by virtue of already being one of the widget items.
