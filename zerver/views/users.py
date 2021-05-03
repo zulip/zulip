@@ -268,6 +268,8 @@ def get_stream_name(stream: Optional[Stream]) -> Optional[str]:
     return None
 
 
+# Admin bots cannot access this view as @require_member_or_admin
+# permits human users only
 @require_member_or_admin
 @has_request_variables
 def patch_bot_backend(
@@ -371,6 +373,8 @@ def regenerate_bot_api_key(
     return json_success(json_result)
 
 
+# Admin bots cannot access this view as @require_member_or_admin
+# permits human users only
 @require_member_or_admin
 @has_request_variables
 def add_bot_backend(
