@@ -49,6 +49,18 @@ $topic_indent: calc($far_left_gutter_size + $left_col_size + 4px);
     margin-right: 12px;
 }
 
+#stream_filters {
+    .narrow-filter {
+        margin: 2px 0;
+    }
+}
+
+#global_filters {
+    .top_left_row {
+        margin: 1px 0;
+    }
+}
+
 li.show-more-topics {
     a {
         font-size: 12px;
