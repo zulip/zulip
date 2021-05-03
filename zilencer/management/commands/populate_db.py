@@ -31,6 +31,7 @@ from zerver.lib.actions import (
 from zerver.lib.bulk_create import bulk_create_streams
 from zerver.lib.cache import cache_set
 from zerver.lib.generate_test_data import create_test_data, generate_topics
+from zerver.lib.message import TestMessage
 from zerver.lib.onboarding import create_if_missing_realm_internal_bots
 from zerver.lib.push_notifications import logger as push_notifications_logger
 from zerver.lib.server_initialization import create_internal_realm, create_users
@@ -932,7 +933,7 @@ def generate_and_send_messages(
     ) as infile:
         dialog = orjson.loads(infile.read())
     random.shuffle(dialog)
-    texts_with_attachment_paths = itertools.cycle(dialog)
+    test_messages = itertools.cycle(dialog)
 
     # We need to filter out streams from the analytics realm as we don't want to generate
     # messages to its streams - and they might also have no subscribers, which would break
@@ -963,8 +964,8 @@ def generate_and_send_messages(
         message = Message()
         message.sending_client = get_client("populate_db")
 
-        text_with_attachment_path = next(texts_with_attachment_paths)
-        text = text_with_attachment_path[0]
+        test_message = TestMessage.from_dict(next(test_messages))
+        text = test_message.text
 
         randkey = random.randint(1, random_max)
         if (
@@ -1019,8 +1020,7 @@ def generate_and_send_messages(
 
             # given a relative path to a file to be attached, use the
             # `upload` endpoint to create and add a corresponding Attachment
-            for i in range(1, len(text_with_attachment_path)):
-                attachment_path = text_with_attachment_path[i]
+            for attachment_path in test_message.attachment_paths:
                 text += upload_attachment(attachment_path, message.sender)
 
         message.content = text

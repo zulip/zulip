@@ -6,6 +6,7 @@ from typing import Any, Dict, List
 import orjson
 
 from scripts.lib.zulip_tools import get_or_create_dev_uuid_var_path
+from zerver.lib.message import TestMessage
 
 
 def load_config() -> Dict[str, Any]:
@@ -65,19 +66,19 @@ def load_generators(config: Dict[str, Any]) -> Dict[str, Any]:
     return results
 
 
-def parse_file(config: Dict[str, Any], gens: Dict[str, Any], corpus_file: str) -> List[List[str]]:
+def parse_file(config: Dict[str, Any], gens: Dict[str, Any], corpus_file: str) -> List[TestMessage]:
 
     # First, load the entire file into a dictionary,
     # then apply our custom filters to it as needed.
 
-    paragraphs_with_attachment_paths: List[List[str]] = []
+    test_messages: List[TestMessage] = []
 
     with open(corpus_file) as infile:
         # OUR DATA: we need to separate the person talking and what they say
         paragraphs = remove_line_breaks(infile)
-        paragraphs_with_attachment_paths = add_flair(paragraphs, gens)
+        test_messages = add_flair(paragraphs, gens)
 
-    return paragraphs_with_attachment_paths
+    return test_messages
 
 
 def get_flair_gen(length: int) -> List[str]:
@@ -95,7 +96,7 @@ def get_flair_gen(length: int) -> List[str]:
     return result
 
 
-def add_flair(paragraphs: List[str], gens: Dict[str, Any]) -> List[List[str]]:
+def add_flair(paragraphs: List[str], gens: Dict[str, Any]) -> List[TestMessage]:
 
     # roll the dice and see what kind of flair we should add, if any
     results = []
@@ -142,15 +143,16 @@ def add_flair(paragraphs: List[str], gens: Dict[str, Any]) -> List[List[str]]:
         # Similar to images, we can use files already in the project as
         # attachments. However, we must hit the `upload` endpoint, which
         # has to be performed in populate_db.py. Therefore, the attachment
-        # path is not included as part of the message text but appended
-        # after the text.
+        # path is not included as part of the message text but separate
+        # from the text.
+        test_message = TestMessage()
         if txt is not None:
-            txt_with_attachment_path = [txt]
+            test_message.text = txt
         elif key == "attachment":
-            txt_with_attachment_path = [paragraphs[i]]
-            txt_with_attachment_path.append(next(gens["attachment-paths"]))
+            test_message.text = paragraphs[i]
+            test_message.attachment_paths.append(next(gens["attachment-paths"]))
 
-        results.append(txt_with_attachment_path)
+        results.append(test_message)
 
     return results
 
@@ -212,20 +214,20 @@ def remove_line_breaks(fh: Any) -> List[str]:
     return results
 
 
-def write_file(paragraphs_with_attachment_paths: List[List[str]], filename: str) -> None:
+def write_file(test_messages: List[TestMessage], filename: str) -> None:
 
     with open(filename, "wb") as outfile:
-        outfile.write(orjson.dumps(paragraphs_with_attachment_paths))
+        outfile.write(orjson.dumps(test_messages))
 
 
 def create_test_data() -> None:
 
     gens = load_generators(config)  # returns a dictionary of generators
 
-    paragraphs_with_attachment_paths = parse_file(config, gens, config["corpus"]["filename"])
+    test_messages = parse_file(config, gens, config["corpus"]["filename"])
 
     write_file(
-        paragraphs_with_attachment_paths,
+        test_messages,
         os.path.join(get_or_create_dev_uuid_var_path("test-backend"), "test_messages.json"),
     )
 

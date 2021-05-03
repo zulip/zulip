@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
 
 import ahocorasick
 import orjson
+from dataclasses_json import DataClassJsonMixin
 from django.db import connection
 from django.db.models import Max, Sum
 from django.utils.timezone import now as timezone_now
@@ -107,6 +108,18 @@ class SendMessageRequest:
     submessages: List[Dict[str, Any]] = field(default_factory=list)
     deliver_at: Optional[datetime.datetime] = None
     delivery_type: Optional[str] = None
+
+
+@dataclass
+class TestMessage(DataClassJsonMixin):
+    """
+    Class for keeping track of a test message in populate_db.py.
+    The attachment_paths field is a list of relative paths to
+    files in the project which are to be uploaded and attached.
+    """
+
+    text: str = ""
+    attachment_paths: List[str] = field(default_factory=list)
 
 
 # We won't try to fetch more unread message IDs from the database than
