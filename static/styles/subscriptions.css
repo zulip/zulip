@@ -65,10 +65,6 @@
     font-weight: 300;
 }
 
-#add_new_subscription {
-    text-align: left;
-}
-
 .subscription_header {
     min-height: 47px;
 }
@@ -176,10 +172,6 @@
     text-decoration: none;
     background-color: hsl(0, 0%, 92%);
     border: 1px solid hsl(0, 0%, 68%);
-}
-
-form#add_new_subscription {
-    margin: 0;
 }
 
 .create_stream_button {
