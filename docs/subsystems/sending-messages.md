@@ -160,7 +160,7 @@ messages.
   relevant message feed, it updates the (locally echoed) message's
   properties (at the very least, message ID and timestamp) and
   rerenders it in any message lists where it appears.  This is
-  primarily done in `exports.process_from_server` in
+  primarily done in the `process_from_server` function in
   `static/js/echo.js`.
 
 ### Local echo in message editing
