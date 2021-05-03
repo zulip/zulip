@@ -10078,7 +10078,7 @@ paths:
             recipient.)
 
             For 'stream' type it is a single element list containing ID of stream in
-            which the message being typed.
+            which the message is being typed.
 
             **Changes**: Before Zulip 2.0, this parameter accepted only a JSON-encoded
             list of email addresses.  Support for the email address-based format was
@@ -10090,6 +10090,7 @@ paths:
                 items:
                   type: integer
               example: [9, 10]
+          required: true
         - name: topic
           in: query
           description: |
