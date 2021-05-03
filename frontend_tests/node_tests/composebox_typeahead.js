@@ -39,6 +39,7 @@ const typeahead = zrequire("../shared/js/typeahead");
 const compose_state = zrequire("compose_state");
 zrequire("templates");
 const typeahead_helper = zrequire("typeahead_helper");
+const muting = zrequire("muting");
 const people = zrequire("people");
 const user_groups = zrequire("user_groups");
 const stream_data = zrequire("stream_data");
@@ -1542,4 +1543,27 @@ test("message people", (override) => {
     results = get_results("Ha");
     // harry is excluded since it has been deactivated.
     assert.deepEqual(results, [hamletcharacters, hal]);
+});
+
+test("muted users excluded from results", () => {
+    // This logic is common to PM recipients as well as
+    // mentions typeaheads, so we need only test once.
+    let results;
+    const opts = {
+        want_groups: false,
+        want_broadcast: true,
+    };
+
+    // Nobody is muted
+    results = ct.get_person_suggestions("corde", opts);
+    assert.deepEqual(results, [cordelia]);
+
+    // Mute Cordelia, and test that she's excluded from results.
+    muting.add_muted_user(cordelia.user_id);
+    results = ct.get_person_suggestions("corde", opts);
+    assert.deepEqual(results, []);
+
+    // Make sure our muting logic doesn't break wildcard mentions.
+    results = ct.get_person_suggestions("all", opts);
+    assert.deepEqual(results, [mention_all]);
 });
