@@ -147,6 +147,13 @@ export const stream_post_policy_values = {
         code: 3,
         description: $t({defaultMessage: "Only organization full members can post"}),
     },
+    admins_and_user_groups: {
+        code: 5,
+        description: $t({
+            defaultMessage:
+                "Only organization administrators and selected user group members can post",
+        }),
+    },
 };
 
 export function clear_subscriptions() {
