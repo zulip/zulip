@@ -2,13 +2,8 @@
 
 VAGRANTFILE_API_VERSION = "2"
 
-def command?(name)
-  `which #{name} > /dev/null 2>&1`
-  $?.success?
-end
-
 if Vagrant::VERSION == "1.8.7"
-  path = `which curl`
+  path = `command -v curl`
   if path.include?("/opt/vagrant/embedded/bin/curl")
     puts "In Vagrant 1.8.7, curl is broken. Please use Vagrant 2.0.2 " \
          "or run 'sudo rm -f /opt/vagrant/embedded/bin/curl' to fix the " \
