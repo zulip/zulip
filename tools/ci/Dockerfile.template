@@ -59,7 +59,7 @@ RUN set -e \
   && tar -xz -C /tmp -f /tmp/docker.tgz \
   && mv /tmp/docker/* /usr/bin \
   && rm -rf /tmp/docker /tmp/docker.tgz \
-  && which docker \
+  && command -v docker \
   && (docker version 2>/dev/null || true)
 
 # ...docker-compose...
