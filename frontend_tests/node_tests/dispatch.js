@@ -685,7 +685,7 @@ run_test("update_display_settings", (override) => {
 
     event = event_fixtures.update_display_settings__high_contrast_mode;
     page_params.high_contrast_mode = false;
-    let toggled = [];
+    const toggled = [];
     $("body").toggleClass = (cls) => {
         toggled.push(cls);
     };
@@ -695,10 +695,14 @@ run_test("update_display_settings", (override) => {
 
     event = event_fixtures.update_display_settings__dense_mode;
     page_params.dense_mode = false;
-    toggled = [];
+
+    const toggled_html_class = [];
+    $("html").toggleClass = (cls) => {
+        toggled_html_class.push(cls);
+    };
     dispatch(event);
     assert_same(page_params.dense_mode, true);
-    assert_same(toggled, ["less_dense_mode", "more_dense_mode"]);
+    assert_same(toggled_html_class, ["less_dense_mode", "more_dense_mode"]);
 
     $("body").fadeOut = (secs) => {
         assert_same(secs, 300);

@@ -194,9 +194,11 @@ export function initialize_kitchen_sink_stuff() {
     }
 
     if (!page_params.dense_mode) {
-        $("body").addClass("less_dense_mode");
+        $("html").addClass("less_dense_mode");
+        $("html").css("font-size", "15px");
     } else {
-        $("body").addClass("more_dense_mode");
+        $("html").addClass("more_dense_mode");
+        $("html").css("font-size", "14px");
     }
 
     $("#main_div").on("mouseover", ".message_table .message_row", function () {

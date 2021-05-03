@@ -1,15 +1,19 @@
+/* Keep all values related to vertical
+ * dimensions of a component in rem.
 /*
 This is the header, aka the navbar.
+value = 40px / 14
 */
-$header_height: 40px;
+$header_height: 2.85714rem;
 
 /*
 We have a 10px gutter below the header,
 which often needs to be respected by both
 the elements above it and below it on
 the y-axis, due to absolute positioning.
+value = 10px / 14
 */
-$header_padding_bottom: 10px;
+$header_padding_bottom: 0.71428rem;
 
 /*
 Our sidebars (and anything that top-align
@@ -38,6 +42,7 @@ html {
 
 body {
     font-family: "Source Sans 3", sans-serif;
+    font-size: inherit;
 }
 
 /* Common background color */
