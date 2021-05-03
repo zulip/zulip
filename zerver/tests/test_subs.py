@@ -69,6 +69,7 @@ from zerver.lib.test_helpers import (
     reset_emails_in_zulip_realm,
     tornado_redirected_to_list,
 )
+from zerver.lib.user_groups import create_user_group
 from zerver.models import (
     DefaultStream,
     DefaultStreamGroup,
@@ -1293,6 +1294,43 @@ class StreamAdminTest(ZulipTestCase):
         stream = get_stream("stream_name1", realm)
         self.assertEqual(stream.message_retention_days, 2)
 
+    def test_change_allowed_user_groups_to_post(self) -> None:
+        user = self.example_user("iago")
+        othello = self.example_user("othello")
+        hamlet = self.example_user("hamlet")
+        user_group1 = create_user_group("test_group1", [othello], user.realm)
+        user_group2 = create_user_group("test_group2", [hamlet], user.realm)
+        stream_name = ["test_stream"]
+        self.login_user(user)
+        extra_post_data = {
+            "stream_post_policy": orjson.dumps(
+                Stream.STREAM_POST_POLICY_ADMINS_AND_USERGROUPS
+            ).decode(),
+            "allowed_user_groups_to_post": orjson.dumps([user_group1.id]).decode(),
+        }
+        self.common_subscribe_to_streams(user, stream_name, extra_post_data)
+        stream = get_stream("test_stream", user.realm)
+        # test add valid user_group permission:
+        data = dict(add_user_groups=orjson.dumps([user_group2.id]).decode())
+        result = self.client_patch(f"/json/streams/{stream.id}", data)
+        self.assert_json_success(result)
+        # test add invalid valid user_group permission:
+        data = dict(add_user_groups=orjson.dumps([999 * 100]).decode())
+        result = self.client_patch(f"/json/streams/{stream.id}", data)
+        self.assert_json_error(result, "Invalid user group.")
+        # test remove valid user_group permission:
+        data = dict(remove_user_groups=orjson.dumps([user_group2.id]).decode())
+        result = self.client_patch(f"/json/streams/{stream.id}", data)
+        self.assert_json_success(result)
+        # test remove invalid valid user_group permission:
+        data = dict(remove_user_groups=orjson.dumps([999 * 100]).decode())
+        result = self.client_patch(f"/json/streams/{stream.id}", data)
+        self.assert_json_error(result, "Invalid user group.")
+        # test remove user_group who is already not allowed: (succeeds without any effect to allowed user_groups)
+        data = dict(remove_user_groups=orjson.dumps([user_group2.id]).decode())
+        result = self.client_patch(f"/json/streams/{stream.id}", data)
+        self.assert_json_success(result)
+
     def test_stream_message_retention_days_on_stream_creation(self) -> None:
         """
         Only admins can create streams with message_retention_days
@@ -1820,6 +1858,32 @@ class StreamAdminTest(ZulipTestCase):
         # Can successfully create stream now that account is old enough.
         stream_name = ["waiting_period"]
         self.common_subscribe_to_streams(user_profile, stream_name)
+
+    def test_create_stream_with_selected_user_groups_allowed_to_post(self) -> None:
+        user = self.example_user("iago")
+        othello = self.example_user("othello")
+        user_group1 = create_user_group("test_group1", [othello], user.realm)
+        stream_name = ["test_stream"]
+        extra_post_data = {
+            "stream_post_policy": orjson.dumps(
+                Stream.STREAM_POST_POLICY_ADMINS_AND_USERGROUPS
+            ).decode(),
+            "allowed_user_groups_to_post": orjson.dumps([user_group1.id]).decode(),
+        }  # creation of stream with post_policy restricted to selected user groups.
+        # succeeds if user group ids are valid.
+        self.common_subscribe_to_streams(user, stream_name, extra_post_data)
+        # with invalid user_group_ids stream gets created but no user_groups are added and request fails.
+        stream_name = ["test_stream_with_invalid_group"]
+        extra_post_data = {
+            "stream_post_policy": orjson.dumps(
+                Stream.STREAM_POST_POLICY_ADMINS_AND_USERGROUPS
+            ).decode(),
+            "allowed_user_groups_to_post": orjson.dumps([user_group1.id, 999 * 100]).decode(),
+        }
+        result = self.common_subscribe_to_streams(
+            user, stream_name, extra_post_data, allow_fail=True
+        )
+        self.assert_json_error(result, "Invalid user group.")
 
     def test_invite_to_stream_by_invite_period_threshold(self) -> None:
         """

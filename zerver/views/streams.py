@@ -48,6 +48,7 @@ from zerver.lib.exceptions import ErrorCode, JsonableError, OrganizationOwnerReq
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.retention import parse_message_retention_days
+from zerver.lib.stream_user_group_access import update_stream_user_group_access_for_post
 from zerver.lib.streams import (
     StreamDict,
     access_default_stream_group_by_id,
@@ -251,6 +252,8 @@ def update_stream_backend(
     stream_post_policy: Optional[int] = REQ(
         json_validator=check_int_in(Stream.STREAM_POST_POLICY_TYPES), default=None
     ),
+    add_user_groups: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
+    remove_user_groups: Sequence[int] = REQ(json_validator=check_list(check_int), default=[]),
     history_public_to_subscribers: Optional[bool] = REQ(json_validator=check_bool, default=None),
     new_name: Optional[str] = REQ(default=None),
     message_retention_days: Optional[Union[int, str]] = REQ(
@@ -303,6 +306,12 @@ def update_stream_backend(
         if is_private and stream.id in default_stream_ids:
             return json_error(_("Default streams cannot be made private."))
         do_change_stream_invite_only(stream, is_private, history_public_to_subscribers)
+
+    if len(add_user_groups) or len(remove_user_groups):
+        update_stream_user_group_access_for_post(
+            stream, add_user_groups, remove_user_groups, user_profile
+        )
+
     return json_success()
 
 
@@ -454,6 +463,9 @@ def add_subscriptions_backend(
         json_validator=check_int_in(Stream.STREAM_POST_POLICY_TYPES),
         default=Stream.STREAM_POST_POLICY_EVERYONE,
     ),
+    allowed_user_groups_to_post: Sequence[int] = REQ(
+        json_validator=check_list(check_int), default=[]
+    ),
     history_public_to_subscribers: Optional[bool] = REQ(json_validator=check_bool, default=None),
     message_retention_days: Union[str, int] = REQ(
         json_validator=check_string_or_int, default=RETENTION_DEFAULT
@@ -524,6 +536,12 @@ def add_subscriptions_backend(
     (subscribed, already_subscribed) = bulk_add_subscriptions(
         realm, streams, subscribers, acting_user=user_profile, color_map=color_map
     )
+
+    for stream in created_streams:
+        if stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS_AND_USERGROUPS:
+            update_stream_user_group_access_for_post(
+                stream, allowed_user_groups_to_post, [], user_profile
+            )
 
     # We can assume unique emails here for now, but we should eventually
     # convert this function to be more id-centric.

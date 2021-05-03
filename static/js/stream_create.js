@@ -202,7 +202,9 @@ function create_stream() {
         $("#stream_creation_form input[name=stream-post-policy]:checked").val(),
         10,
     );
-
+    data.allowed_user_groups_to_post = JSON.stringify(
+        user_group_pill.get_group_ids(user_group_pill_widget),
+    );
     data.stream_post_policy = JSON.stringify(stream_post_policy);
 
     let message_retention_selection = $(

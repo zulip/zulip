@@ -5783,6 +5783,21 @@ paths:
             type: boolean
             default: false
           example: true
+        - name: allowed_user_groups_to_post
+          in: query
+          description: |
+            While creating new stream if stream_post_policy is set to 4 which means
+            only organization administrators and seleced user groups can post in the
+            newely created stream. Then this is the list of user group ids that will
+            be allowed to post in the newely created stream.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+                default: []
+              example: [1, 2]
         - $ref: "#/components/parameters/HistoryPublicToSubscribers"
         - $ref: "#/components/parameters/StreamPostPolicy"
         - $ref: "#/components/parameters/MessageRetentionDays"
@@ -10115,6 +10130,40 @@ paths:
             type: boolean
           example: true
           required: false
+        - name: add_user_groups
+          in: query
+          description: |
+            List of new user_group ids that are added to give post permission.
+            If post policy of stream is changed to selected admins and user groups from any other
+            option for post policy then this list will include ids of all the user_groups that
+            are added for to allow for post permission to the stream.
+            Note: This is applicable new stream_post_policy is `ADMINS_AND_SELECTED_USER_GROUPS`.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+                default: []
+              example: [1, 2]
+          required: false
+        - name: remove_user_groups
+          in: query
+          description: |
+            List of user_group ids that earlier had post permission to stream earlier but not now.
+            If post policy of stream is changed from selected admins and user groups to any other
+            option for post policy then this list will include ids of all the user_groups that
+            were previously allowed to post.
+            Note: This is applicable new stream_post_policy is `ADMINS_AND_SELECTED_USER_GROUPS`.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: integer
+                default: []
+              example: [1, 2]
+          required: false
         - $ref: "#/components/parameters/StreamPostPolicy"
         - $ref: "#/components/parameters/HistoryPublicToSubscribers"
         - $ref: "#/components/parameters/MessageRetentionDays"
@@ -12383,6 +12432,7 @@ components:
         * 2 => Only administrators can post.
         * 3 => Only full members can post.
         * 4 => Only moderators can post.
+        * 5 => Administrators and selected user group members can post.
 
         **Changes**: New in Zulip 3.0, replacing the previous
         `is_announcement_only` boolean.
