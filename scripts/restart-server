@@ -140,7 +140,7 @@ if action == "start" or args.less_graceful:
 using_sso = subprocess.check_output(["./scripts/get-django-setting", "USING_APACHE_SSO"])
 if using_sso.strip() == b"True":
     logging.info("Restarting Apache WSGI process...")
-    subprocess.check_call(["pkill", "-f", "apache2", "-u", "zulip"])
+    subprocess.check_call(["pkill", "-x", "apache2", "-u", "zulip"])
 
 logging.info("Done!")
 print(OKGREEN + f"Zulip {action}ed successfully!" + ENDC)
