@@ -2261,7 +2261,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
 
         result = self.client_patch(
             "/json/default_stream_groups/12345",
-            {"op": "change", "new_description": orjson.dumps(new_description).decode()},
+            {"op": "change", "new_description": new_description},
         )
         self.assert_json_error(result, "Default stream group with id '12345' does not exist.")
 
@@ -2270,7 +2270,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
             {
                 "group_name": group_name,
                 "op": "change",
-                "new_description": orjson.dumps(new_description).decode(),
+                "new_description": new_description,
             },
         )
         self.assert_json_success(result)
@@ -2284,7 +2284,7 @@ class DefaultStreamGroupTest(ZulipTestCase):
         do_create_default_stream_group(realm, "group2", "", [])
         result = self.client_patch(
             f"/json/default_stream_groups/{group_id}",
-            {"op": "change", "new_group_name": orjson.dumps("group2").decode()},
+            {"op": "change", "new_group_name": "group2"},
         )
         self.assert_json_error(result, "Default stream group 'group2' already exists")
         new_group = lookup_default_stream_groups(["group2"], realm)[0]
@@ -2292,13 +2292,13 @@ class DefaultStreamGroupTest(ZulipTestCase):
 
         result = self.client_patch(
             f"/json/default_stream_groups/{group_id}",
-            {"op": "change", "new_group_name": orjson.dumps(group_name).decode()},
+            {"op": "change", "new_group_name": group_name},
         )
         self.assert_json_error(result, "This default stream group is already named 'group1'")
 
         result = self.client_patch(
             f"/json/default_stream_groups/{group_id}",
-            {"op": "change", "new_group_name": orjson.dumps(new_group_name).decode()},
+            {"op": "change", "new_group_name": new_group_name},
         )
         self.assert_json_success(result)
         default_stream_groups = get_default_stream_groups(realm)

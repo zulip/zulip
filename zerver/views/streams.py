@@ -176,8 +176,8 @@ def update_default_stream_group_info(
     request: HttpRequest,
     user_profile: UserProfile,
     group_id: int,
-    new_group_name: Optional[str] = REQ(json_validator=check_string, default=None),
-    new_description: Optional[str] = REQ(json_validator=check_string, default=None),
+    new_group_name: Optional[str] = REQ(default=None),
+    new_description: Optional[str] = REQ(default=None),
 ) -> None:
     if not new_group_name and not new_description:
         return json_error(_('You must pass "new_description" or "new_group_name".'))
