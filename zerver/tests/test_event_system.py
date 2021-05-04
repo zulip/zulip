@@ -499,7 +499,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
 
         for user in users:
             user.long_term_idle = True
-            user.save()
+            user.save(update_fields=["long_term_idle"])
 
         long_term_idle_users_ids = [user.id for user in users]
 

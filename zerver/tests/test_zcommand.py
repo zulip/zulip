@@ -25,7 +25,7 @@ class ZcommandTest(ZulipTestCase):
         self.login("hamlet")
         user = self.example_user("hamlet")
         user.color_scheme = UserProfile.COLOR_SCHEME_LIGHT
-        user.save()
+        user.save(update_fields=["color_scheme"])
 
         payload = dict(command="/night")
         result = self.client_post("/json/zcommand", payload)
@@ -40,7 +40,7 @@ class ZcommandTest(ZulipTestCase):
         self.login("hamlet")
         user = self.example_user("hamlet")
         user.color_scheme = UserProfile.COLOR_SCHEME_NIGHT
-        user.save()
+        user.save(update_fields=["color_scheme"])
 
         payload = dict(command="/day")
         result = self.client_post("/json/zcommand", payload)
@@ -55,7 +55,7 @@ class ZcommandTest(ZulipTestCase):
         self.login("hamlet")
         user = self.example_user("hamlet")
         user.fluid_layout_width = False
-        user.save()
+        user.save(update_fields=["fluid_layout_width"])
 
         payload = dict(command="/fluid-width")
         result = self.client_post("/json/zcommand", payload)
@@ -70,7 +70,7 @@ class ZcommandTest(ZulipTestCase):
         self.login("hamlet")
         user = self.example_user("hamlet")
         user.fluid_layout_width = True
-        user.save()
+        user.save(update_fields=["fluid_layout_width"])
 
         payload = dict(command="/fixed-width")
         result = self.client_post("/json/zcommand", payload)

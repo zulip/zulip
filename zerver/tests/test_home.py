@@ -415,7 +415,7 @@ class HomeTest(ZulipTestCase):
 
         for user_tos_version in [None, "1.1", "2.0.3.4"]:
             user.tos_version = user_tos_version
-            user.save()
+            user.save(update_fields=["tos_version"])
 
             with self.settings(TERMS_OF_SERVICE="whatever"), self.settings(TOS_VERSION="99.99"):
 
@@ -452,7 +452,7 @@ class HomeTest(ZulipTestCase):
         self.login_user(user)
 
         user.tos_version = None
-        user.save()
+        user.save(update_fields=["tos_version"])
 
         with self.settings(FIRST_TIME_TOS_TEMPLATE="hello.html"), self.settings(
             TOS_VERSION="99.99"
@@ -1082,7 +1082,7 @@ class HomeTest(ZulipTestCase):
     def test_url_language(self) -> None:
         user = self.example_user("hamlet")
         user.default_language = "es"
-        user.save()
+        user.save(update_fields=["default_language"])
         self.login_user(user)
         result = self._get_home_page()
         self.check_rendered_logged_in_app(result)
@@ -1098,7 +1098,7 @@ class HomeTest(ZulipTestCase):
     def test_translation_data(self) -> None:
         user = self.example_user("hamlet")
         user.default_language = "es"
-        user.save()
+        user.save(update_fields=["default_language"])
         self.login_user(user)
         result = self._get_home_page()
         self.check_rendered_logged_in_app(result)

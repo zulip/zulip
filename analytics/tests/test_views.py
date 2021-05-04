@@ -949,7 +949,7 @@ class TestSupportEndpoint(ZulipTestCase):
         update_sponsorship_status(lear_realm, True, acting_user=None)
         king_user = self.lear_user("king")
         king_user.role = UserProfile.ROLE_REALM_OWNER
-        king_user.save()
+        king_user.save(update_fields=["role"])
 
         cordelia = self.example_user("cordelia")
         self.login_user(cordelia)

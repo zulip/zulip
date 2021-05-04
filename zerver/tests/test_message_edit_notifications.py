@@ -558,7 +558,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
     def test_not_clear_notification_when_mention_removed_but_stream_notified(self) -> None:
         mentioned_user = self.example_user("iago")
         mentioned_user.enable_stream_push_notifications = True
-        mentioned_user.save()
+        mentioned_user.save(update_fields=["enable_stream_push_notifications"])
 
         self.assertEqual(get_apns_badge_count(mentioned_user), 0)
         self.assertEqual(get_apns_badge_count_future(mentioned_user), 0)
