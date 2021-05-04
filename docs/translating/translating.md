@@ -40,7 +40,22 @@ progress, reporting problematic strings, etc.
    usually takes less than a day. You should then be able to access
    Zulip's dashboard in Transifex.
 
-1. Translate the strings for your language in Transifex.
+1. Translate the strings for your language in Transifex.  Zulip has
+   several resource files:
+   * `mobile.json` is for the iOS/Android mobile apps.
+   * `desktop.json` is for the parts of the Zulip desktop apps that
+     are not shared with the Zulip webapp.
+   * `django.po` and `translations.json` have strings for the next
+     major release of the Zulip server and webapp (which is what we
+     run on chat.zulip.org and Zulip Cloud).
+   * The variants of `django.po` and `translations.json` with names
+     starting with a version, like, `4-x--`, are strings for Zulip's
+     current [stable release series](../overview/release-lifecycle.md).
+
+   Transifex is smart about only asking you to translate a string once
+   even if it appears in multiple resources.  The `4-x--` type variants
+   allow translators to get a language to 100% translated for the
+   current release.
 
 1. If possible, test your translations (details below).
 
