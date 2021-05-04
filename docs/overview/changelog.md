@@ -71,6 +71,11 @@ in bursts.
   template to be better organized and more readable in this release.
 - The webapp will now display a warning in the UI if the Zulip server
   has not been upgraded in more than 18 months.
+  template to be better organized and more readable.
+- Due to strengthened hash function security settings in Django 3.2, the
+  first time a user logs in using their password, its hash stored in the
+  database will be re-generated with the new settings. This will invalidate
+  old sessions, causing the user to get logged out on some devices.
 
 [docker-zulip-manual]: https://github.com/zulip/docker-zulip#manual-configuration
 [smokescreen]: ../production/deployment.html#using-an-outgoing-http-proxy
