@@ -3535,7 +3535,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
         existing_user = self.example_user("hamlet")
         existing_user.delivery_email = "existing@zulip.com"
         existing_user.email = "whatever@zulip.com"
-        existing_user.save()
+        existing_user.save(update_fields=["delivery_email", "email"])
 
         data: ExternalAuthDataDict = {
             "full_name": "Full Name",
@@ -5863,8 +5863,8 @@ class TestMaybeSendToRegistration(ZulipTestCase):
                 return True
 
         email = self.example_email("hamlet")
-        user = PreregistrationUser(email=email)
-        user.save()
+        prereg_user = PreregistrationUser(email=email)
+        prereg_user.save()
 
         with mock.patch("zerver.views.auth.HomepageForm", return_value=Form()):
             self.assertEqual(PreregistrationUser.objects.all().count(), 1)

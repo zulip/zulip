@@ -243,7 +243,7 @@ python_rules = RuleList(
             "bad_lines": ["@login_required", " @login_required"],
         },
         {
-            "pattern": "^user_profile[.]save[(][)]",
+            "pattern": "^(user_profile|user)[.]save[(][)]",
             "description": "Always pass update_fields when saving user_profile objects",
             "exclude_line": {
                 (

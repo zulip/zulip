@@ -1856,11 +1856,11 @@ class StreamAdminTest(ZulipTestCase):
         """
         hamlet_user = self.example_user("hamlet")
         hamlet_user.date_joined = timezone_now()
-        hamlet_user.save()
+        hamlet_user.save(update_fields=["date_joined"])
 
         cordelia_user = self.example_user("cordelia")
         cordelia_user.date_joined = timezone_now()
-        cordelia_user.save()
+        cordelia_user.save(update_fields=["date_joined"])
 
         do_set_realm_property(
             hamlet_user.realm,
@@ -1902,7 +1902,7 @@ class StreamAdminTest(ZulipTestCase):
         do_set_realm_property(hamlet_user.realm, "waiting_period_threshold", 20, acting_user=None)
         # Make Hamlet's account 21 days old..
         hamlet_user.date_joined = timezone_now() - timedelta(days=21)
-        hamlet_user.save()
+        hamlet_user.save(update_fields=["date_joined"])
         # Unsubscribe Cordelia..
         self.unsubscribe(cordelia_user, stream_name[0])
 
@@ -3197,7 +3197,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         user = self.example_user("AARON")
         user.realm = realm
-        user.save()
+        user.save(update_fields=["realm"])
 
         self.common_subscribe_to_streams(
             user,

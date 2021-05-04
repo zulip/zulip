@@ -1109,7 +1109,7 @@ class InviteUserTest(InviteUserBase):
 
         mirror_user = self.example_user("cordelia")
         mirror_user.is_mirror_dummy = True
-        mirror_user.save()
+        mirror_user.save(update_fields=["is_mirror_dummy"])
         change_user_is_active(mirror_user, False)
 
         self.assertEqual(

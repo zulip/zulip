@@ -34,7 +34,7 @@ class SendLoginEmailTest(ZulipTestCase):
             user.timezone = "US/Pacific"
             user.twenty_four_hour_time = False
             user.date_joined = mock_time - datetime.timedelta(seconds=JUST_CREATED_THRESHOLD + 1)
-            user.save()
+            user.save(update_fields=["timezone", "twenty_four_hour_time", "date_joined"])
             password = initial_password(user.delivery_email)
             login_info = dict(
                 username=user.delivery_email,
@@ -61,7 +61,7 @@ class SendLoginEmailTest(ZulipTestCase):
             # Try again with the 24h time format setting enabled for this user
             self.logout()  # We just logged in, we'd be redirected without this
             user.twenty_four_hour_time = True
-            user.save()
+            user.save(update_fields=["twenty_four_hour_time"])
             with mock.patch("zerver.signals.timezone_now", return_value=mock_time):
                 self.client_post(
                     "/accounts/login/", info=login_info, HTTP_USER_AGENT=firefox_windows
@@ -103,7 +103,7 @@ class SendLoginEmailTest(ZulipTestCase):
 
         user.timezone = "US/Pacific"
         user.date_joined = mock_time - datetime.timedelta(seconds=JUST_CREATED_THRESHOLD + 1)
-        user.save()
+        user.save(update_fields=["timezone", "date_joined"])
 
         do_change_notification_settings(user, "enable_login_emails", False, acting_user=None)
         self.assertFalse(user.enable_login_emails)

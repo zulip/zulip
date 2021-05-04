@@ -426,7 +426,7 @@ class SingleUserPresenceTests(ZulipTestCase):
         other_user = self.example_user("othello")
         other_user.email = "email@zulip.com"
         other_user.delivery_email = "delivery_email@zulip.com"
-        other_user.save()
+        other_user.save(update_fields=["email", "delivery_email"])
 
         # Note that we don't leak any info on delivery emails.
         result = self.client_get("/json/users/delivery_email@zulip.com/presence")

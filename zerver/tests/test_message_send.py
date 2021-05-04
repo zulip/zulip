@@ -446,7 +446,7 @@ class MessagePOSTTest(ZulipTestCase):
         """
         user = self.example_user("hamlet")
         user.default_sending_stream_id = get_stream("Verona", user.realm).id
-        user.save()
+        user.save(update_fields=["default_sending_stream_id"])
         # The `to` field is required according to OpenAPI specification
         result = self.api_post(
             user,
@@ -1139,7 +1139,7 @@ class MessagePOSTTest(ZulipTestCase):
         email = "irc-bot@zulip.testserver"
         user = get_user(email, get_realm("zulip"))
         user.can_forge_sender = True
-        user.save()
+        user.save(update_fields=["can_forge_sender"])
         user = get_user(email, get_realm("zulip"))
         self.subscribe(user, "IRCland")
 

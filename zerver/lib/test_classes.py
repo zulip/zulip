@@ -1219,12 +1219,12 @@ Output:
         new_member_user.date_joined = timezone_now() - timedelta(
             days=(realm.waiting_period_threshold - 1)
         )
-        new_member_user.save()
+        new_member_user.save(update_fields=["date_joined"])
 
         member_user.date_joined = timezone_now() - timedelta(
             days=(realm.waiting_period_threshold + 1)
         )
-        member_user.save()
+        member_user.save(update_fields=["date_joined"])
 
         do_set_realm_property(realm, policy, Realm.POLICY_ADMINS_ONLY, acting_user=None)
         self.assertTrue(validation_func(admin_user))
