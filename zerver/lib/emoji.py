@@ -90,7 +90,7 @@ def check_add_emoji_admin(user_profile: UserProfile) -> None:
     # Realm administrators can always add emoji
     if user_profile.is_realm_admin:
         return
-    if user_profile.realm.add_emoji_by_admins_only:
+    if user_profile.realm.add_custom_emoji_policy == Realm.ADD_CUSTOM_EMOJI_ADMINS_ONLY:
         raise OrganizationAdministratorRequired()
 
 

@@ -47,7 +47,7 @@ class RealmEmojiTest(ZulipTestCase):
         # having no author are also there in the list.
         self.login("othello")
         realm = get_realm("zulip")
-        realm.add_emoji_by_admins_only = True
+        realm.add_custom_emoji_policy = Realm.ADD_CUSTOM_EMOJI_ADMINS_ONLY
         realm.save()
         realm_emoji = self.create_test_emoji_with_no_author("my_emoji", realm)
 
@@ -135,7 +135,7 @@ class RealmEmojiTest(ZulipTestCase):
     def test_upload_admins_only(self) -> None:
         self.login("othello")
         realm = get_realm("zulip")
-        realm.add_emoji_by_admins_only = True
+        realm.add_custom_emoji_policy = Realm.ADD_CUSTOM_EMOJI_ADMINS_ONLY
         realm.save()
         with get_test_image_file("img.png") as fp1:
             emoji_data = {"f1": fp1}
@@ -145,7 +145,7 @@ class RealmEmojiTest(ZulipTestCase):
     def test_upload_anyone(self) -> None:
         self.login("othello")
         realm = get_realm("zulip")
-        realm.add_emoji_by_admins_only = False
+        realm.add_custom_emoji_policy = Realm.ADD_CUSTOM_EMOJI_MEMBERS_ONLY
         realm.save()
         with get_test_image_file("img.png") as fp1:
             emoji_data = {"f1": fp1}

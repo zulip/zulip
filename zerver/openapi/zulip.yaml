@@ -8729,13 +8729,19 @@ paths:
                               type: string
                               description: |
                                 The text describing the emojiset.
-                      realm_add_emoji_by_admins_only:
-                        type: boolean
+                      realm_add_custom_emoji_policy:
+                        type: integer
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          Whether the organization is configured to only allow administrators
-                          to upload new custom emoji.
+                          The policy for which users can upload new custom emoji in this
+                          organization.
+
+                          * 1 = Members only
+                          * 2 = Administrators only
+
+                          **Changes**: New in Zulip 5.0 (feature level 85) replacing the
+                          previous `realm_add_emoji_by_admins_only` boolean.
                       realm_allow_edit_history:
                         type: boolean
                         description: |

@@ -13,6 +13,7 @@ import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as settings_config from "./settings_config";
 import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 import * as upload_widget from "./upload_widget";
@@ -31,7 +32,10 @@ export function can_add_emoji() {
     }
 
     // for normal users, we depend on the setting
-    return !page_params.realm_add_emoji_by_admins_only;
+    return (
+        page_params.realm_add_custom_emoji_policy ===
+        settings_config.add_custom_emoji_policy_values.by_members.code
+    );
 }
 
 function can_delete_emoji(emoji) {
@@ -50,10 +54,15 @@ function can_delete_emoji(emoji) {
 
 export function update_custom_emoji_ui() {
     const rendered_tip = render_settings_emoji_settings_tip({
-        realm_add_emoji_by_admins_only: page_params.realm_add_emoji_by_admins_only,
+        ADD_CUSTOM_EMOJI_POLICY_ADMINS_ONLY:
+            settings_config.add_custom_emoji_policy_values.by_admins_only.code,
     });
     $("#emoji-settings").find(".emoji-settings-tip-container").html(rendered_tip);
-    if (page_params.realm_add_emoji_by_admins_only && !page_params.is_admin) {
+    if (
+        page_params.realm_add_custom_emoji_policy ===
+            settings_config.add_custom_emoji_policy_values.by_admins_only.code &&
+        !page_params.is_admin
+    ) {
         $(".add-emoji-text").hide();
         $(".admin-emoji-form").hide();
     } else {

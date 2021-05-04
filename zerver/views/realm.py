@@ -60,7 +60,9 @@ def update_realm(
     avatar_changes_disabled: Optional[bool] = REQ(json_validator=check_bool, default=None),
     inline_image_preview: Optional[bool] = REQ(json_validator=check_bool, default=None),
     inline_url_embed_preview: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    add_emoji_by_admins_only: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    add_custom_emoji_policy: Optional[int] = REQ(
+        json_validator=check_int_in(Realm.ADD_CUSTOM_EMOJI_POLICY_TYPES), default=None
+    ),
     allow_message_deleting: Optional[bool] = REQ(json_validator=check_bool, default=None),
     message_content_delete_limit_seconds: Optional[int] = REQ(
         converter=to_non_negative_int, default=None

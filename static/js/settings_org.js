@@ -108,6 +108,9 @@ export function get_organization_settings_options() {
     options.invite_to_realm_policy_values = get_sorted_options_list(
         settings_config.invite_to_realm_policy_values,
     );
+    options.add_custom_emoji_policy_values = get_sorted_options_list(
+        settings_config.add_custom_emoji_policy_values,
+    );
     return options;
 }
 
@@ -136,13 +139,6 @@ function get_property_value(property_name) {
             return "three_days";
         }
         return "custom_days";
-    }
-
-    if (property_name === "realm_add_emoji_by_admins_only") {
-        if (page_params.realm_add_emoji_by_admins_only) {
-            return "by_admins_only";
-        }
-        return "by_anyone";
     }
 
     if (property_name === "realm_msg_edit_limit_setting") {
@@ -207,7 +203,7 @@ const simple_dropdown_properties = [
     "realm_invite_to_stream_policy",
     "realm_user_group_edit_policy",
     "realm_private_message_policy",
-    "realm_add_emoji_by_admins_only",
+    "realm_add_custom_emoji_policy",
     "realm_invite_to_realm_policy",
     "realm_wildcard_mention_policy",
     "realm_move_messages_between_streams_policy",
@@ -829,18 +825,6 @@ export function build_page() {
                 const code_block_language_value = default_code_language_widget.value();
                 // No need to JSON-encode, since this value is already a string.
                 data.default_code_block_language = code_block_language_value;
-                break;
-            }
-            case "other_permissions": {
-                const add_emoji_permission = $("#id_realm_add_emoji_by_admins_only").val();
-                switch (add_emoji_permission) {
-                    case "by_admins_only":
-                        data.add_emoji_by_admins_only = true;
-                        break;
-                    case "by_anyone":
-                        data.add_emoji_by_admins_only = false;
-                        break;
-                }
                 break;
             }
             case "org_join": {

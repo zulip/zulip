@@ -1,7 +1,7 @@
 {{#if is_guest}}
     <div class='tip'>{{t "Guests cannot edit custom emoji." }}</div>
 {{else}}
-    {{#if realm_add_emoji_by_admins_only}}
+    {{#if (eq realm_add_custom_emoji_policy ADD_CUSTOM_EMOJI_POLICY_ADMINS_ONLY) }}
     <div class='tip'>{{t "Only organization administrators can add custom emoji in this organization." }}</div>
     {{else}}
     <div class='tip'>{{t "Any member of this organization can add custom emoji." }}</div>

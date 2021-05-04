@@ -1566,7 +1566,7 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
 #id_realm_create_stream_policy,
 #id_realm_invite_to_stream_policy,
 #id_realm_private_message_policy,
-#id_realm_add_emoji_by_admins_only,
+#id_realm_add_custom_emoji_policy,
 #id_realm_user_group_edit_policy,
 #id_realm_email_address_visibility,
 #id_realm_wildcard_mention_policy,

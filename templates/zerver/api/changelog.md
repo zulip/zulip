@@ -11,6 +11,11 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 85**
+
+* [`POST /register`](/api/register-queue), `PATCH /realm`: Replaced `add_emoji_by_admins_only`
+  field with an integer field `add_custom_emoji_policy`.
+
 **Feature level 84**
 
 * [`POST /register`](/api/register-queue): The `enter_sends` setting

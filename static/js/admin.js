@@ -76,8 +76,10 @@ export function build_page() {
         realm_name_changes_disabled: page_params.realm_name_changes_disabled,
         realm_email_changes_disabled: page_params.realm_email_changes_disabled,
         realm_avatar_changes_disabled: page_params.realm_avatar_changes_disabled,
-        realm_add_emoji_by_admins_only: page_params.realm_add_emoji_by_admins_only,
+        realm_add_custom_emoji_policy: page_params.realm_add_custom_emoji_policy,
         can_add_emojis: settings_emoji.can_add_emoji(),
+        ADD_CUSTOM_EMOJI_POLICY_ADMINS_ONLY:
+            settings_config.add_custom_emoji_policy_values.by_admins_only.code,
         realm_message_content_edit_limit_minutes: settings_org.get_realm_time_limits_in_minutes(
             "realm_message_content_edit_limit_seconds",
         ),

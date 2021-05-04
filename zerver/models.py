@@ -245,8 +245,17 @@ class Realm(models.Model):
     send_welcome_emails: bool = models.BooleanField(default=True)
     message_content_allowed_in_email_notifications: bool = models.BooleanField(default=True)
 
+    ADD_CUSTOM_EMOJI_MEMBERS_ONLY = 1
+    ADD_CUSTOM_EMOJI_ADMINS_ONLY = 2
+    ADD_CUSTOM_EMOJI_POLICY_TYPES = [
+        ADD_CUSTOM_EMOJI_MEMBERS_ONLY,
+        ADD_CUSTOM_EMOJI_ADMINS_ONLY,
+    ]
+
     mandatory_topics: bool = models.BooleanField(default=False)
-    add_emoji_by_admins_only: bool = models.BooleanField(default=False)
+    add_custom_emoji_policy: int = models.PositiveSmallIntegerField(
+        default=ADD_CUSTOM_EMOJI_MEMBERS_ONLY
+    )
     name_changes_disabled: bool = models.BooleanField(default=False)
     email_changes_disabled: bool = models.BooleanField(default=False)
     avatar_changes_disabled: bool = models.BooleanField(default=False)
@@ -590,7 +599,7 @@ class Realm(models.Model):
 
     # Define the types of the various automatically managed properties
     property_types: Dict[str, Union[type, Tuple[type, ...]]] = dict(
-        add_emoji_by_admins_only=bool,
+        add_custom_emoji_policy=int,
         allow_edit_history=bool,
         allow_message_deleting=bool,
         bot_creation_policy=int,
