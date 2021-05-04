@@ -3182,7 +3182,7 @@ def get_default_stream_groups(realm: Realm) -> List[DefaultStreamGroup]:
 class AbstractScheduledJob(models.Model):
     scheduled_timestamp: datetime.datetime = models.DateTimeField(db_index=True)
     # JSON representation of arguments to consumer
-    data: str = models.TextField()
+    data: Dict[str, Any] = models.JSONField(default=dict)
     realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
 
     class Meta:
