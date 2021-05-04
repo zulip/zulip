@@ -1024,7 +1024,7 @@ export function build_page() {
         const domain = widget.find(".new-realm-domain").val();
         const allow_subdomains = widget.find(".new-realm-domain-allow-subdomains").prop("checked");
         const data = {
-            domain: JSON.stringify(domain),
+            domain,
             allow_subdomains: JSON.stringify(allow_subdomains),
         };
 

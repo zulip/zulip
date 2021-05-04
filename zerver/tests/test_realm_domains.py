@@ -48,13 +48,13 @@ class RealmDomainTest(ZulipTestCase):
     def test_create_realm_domain(self) -> None:
         self.login("iago")
         data = {
-            "domain": orjson.dumps("").decode(),
+            "domain": "",
             "allow_subdomains": orjson.dumps(True).decode(),
         }
         result = self.client_post("/json/realm/domains", info=data)
         self.assert_json_error(result, "Invalid domain: Domain can't be empty.")
 
-        data["domain"] = orjson.dumps("acme.com").decode()
+        data["domain"] = "acme.com"
         result = self.client_post("/json/realm/domains", info=data)
         self.assert_json_success(result)
         realm = get_realm("zulip")

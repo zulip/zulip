@@ -7,7 +7,7 @@ from zerver.lib.actions import do_add_realm_domain, do_change_realm_domain, do_r
 from zerver.lib.domains import validate_domain
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
-from zerver.lib.validator import check_bool, check_string
+from zerver.lib.validator import check_bool
 from zerver.models import RealmDomain, UserProfile, get_realm_domains
 
 
@@ -21,7 +21,7 @@ def list_realm_domains(request: HttpRequest, user_profile: UserProfile) -> HttpR
 def create_realm_domain(
     request: HttpRequest,
     user_profile: UserProfile,
-    domain: str = REQ(json_validator=check_string),
+    domain: str = REQ(),
     allow_subdomains: bool = REQ(json_validator=check_bool),
 ) -> HttpResponse:
     domain = domain.strip().lower()
