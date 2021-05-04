@@ -143,6 +143,7 @@ from zerver.lib.streams import (
     access_stream_by_id,
     access_stream_for_send_message,
     can_access_stream_user_ids,
+    check_stream_access_based_on_stream_post_policy,
     check_stream_name,
     create_stream_if_needed,
     get_default_value_for_history_public_to_subscribers,
@@ -2816,6 +2817,7 @@ def check_update_message(
             raise JsonableError(_("Cannot change message content while changing stream"))
 
         new_stream = access_stream_by_id(user_profile, stream_id, require_active=True)[0]
+        check_stream_access_based_on_stream_post_policy(user_profile, new_stream)
 
     number_changed = do_update_message(
         user_profile,

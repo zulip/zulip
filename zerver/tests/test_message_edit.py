@@ -1,6 +1,6 @@
 import datetime
 from operator import itemgetter
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from unittest import mock
 
 import orjson
@@ -8,6 +8,7 @@ from django.db import IntegrityError
 from django.http import HttpResponse
 
 from zerver.lib.actions import (
+    do_change_stream_post_policy,
     do_change_user_role,
     do_set_realm_property,
     do_update_message,
@@ -1404,6 +1405,91 @@ class EditMessageTest(ZulipTestCase):
         )
         check_move_message_according_to_policy(UserProfile.ROLE_GUEST, expect_fail=True)
         check_move_message_according_to_policy(UserProfile.ROLE_MEMBER)
+
+    def test_move_message_to_stream_based_on_stream_post_policy(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+            "othello", "old_stream_1", "new_stream_1", "test"
+        )
+        do_set_realm_property(
+            user_profile.realm,
+            "move_messages_between_streams_policy",
+            Realm.POLICY_MEMBERS_ONLY,
+            acting_user=None,
+        )
+
+        def check_move_message_to_stream(role: int, error_msg: Optional[str] = None) -> None:
+            do_change_user_role(user_profile, role, acting_user=None)
+
+            result = self.client_patch(
+                "/json/messages/" + str(msg_id),
+                {
+                    "message_id": msg_id,
+                    "stream_id": new_stream.id,
+                    "propagate_mode": "change_all",
+                },
+            )
+
+            if error_msg is not None:
+                self.assert_json_error(result, error_msg)
+                messages = get_topic_messages(user_profile, old_stream, "test")
+                self.assertEqual(len(messages), 3)
+                messages = get_topic_messages(user_profile, new_stream, "test")
+                self.assertEqual(len(messages), 0)
+            else:
+                self.assert_json_success(result)
+                messages = get_topic_messages(user_profile, old_stream, "test")
+                self.assertEqual(len(messages), 1)
+                messages = get_topic_messages(user_profile, new_stream, "test")
+                self.assertEqual(len(messages), 4)
+
+        # Check when stream_post_policy is STREAM_POST_POLICY_ADMINS.
+        do_change_stream_post_policy(new_stream, Stream.STREAM_POST_POLICY_ADMINS)
+        error_msg = "Only organization administrators can send to this stream."
+        check_move_message_to_stream(UserProfile.ROLE_MODERATOR, error_msg)
+        check_move_message_to_stream(UserProfile.ROLE_REALM_ADMINISTRATOR)
+
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+            "othello", "old_stream_2", "new_stream_2", "test"
+        )
+
+        # Check when stream_post_policy is STREAM_POST_POLICY_MODERATORS.
+        do_change_stream_post_policy(new_stream, Stream.STREAM_POST_POLICY_MODERATORS)
+        error_msg = "Only organization administrators and moderators can send to this stream."
+        check_move_message_to_stream(UserProfile.ROLE_MEMBER, error_msg)
+        check_move_message_to_stream(UserProfile.ROLE_MODERATOR)
+
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+            "othello", "old_stream_3", "new_stream_3", "test"
+        )
+
+        # Check when stream_post_policy is STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS.
+        do_change_stream_post_policy(new_stream, Stream.STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS)
+        error_msg = "New members cannot send to this stream."
+
+        do_set_realm_property(
+            user_profile.realm, "waiting_period_threshold", 100000, acting_user=None
+        )
+        check_move_message_to_stream(UserProfile.ROLE_MEMBER, error_msg)
+
+        do_set_realm_property(user_profile.realm, "waiting_period_threshold", 0, acting_user=None)
+        check_move_message_to_stream(UserProfile.ROLE_MEMBER)
+
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+            "othello", "old_stream_4", "new_stream_4", "test"
+        )
+
+        # Check when stream_post_policy is STREAM_POST_POLICY_EVERYONE.
+        # In this case also, guest is not allowed as we do not allow guest to move
+        # messages between streams in any case, so stream_post_policy of new stream does
+        # not matter.
+        do_change_stream_post_policy(new_stream, Stream.STREAM_POST_POLICY_EVERYONE)
+        do_set_realm_property(
+            user_profile.realm, "waiting_period_threshold", 100000, acting_user=None
+        )
+        check_move_message_to_stream(
+            UserProfile.ROLE_GUEST, "You don't have permission to move this message"
+        )
+        check_move_message_to_stream(UserProfile.ROLE_MEMBER)
 
     def test_move_message_to_stream_with_content(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
