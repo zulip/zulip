@@ -561,6 +561,12 @@ class MissedMessageWorker(QueueProcessingWorker):
     # of the consumer.
     lock = Lock()
 
+    # Because the background `maybe_send_batched_email` thread can
+    # hold the lock for an indeterminate amount of time, the `consume`
+    # can block on that for longer than 30s, the default worker
+    # timeout.  Allow arbitrarily-long worker `consume` calls.
+    MAX_CONSUME_SECONDS = None
+
     def consume(self, event: Dict[str, Any]) -> None:
         with self.lock:
             logging.debug("Received missedmessage_emails event: %s", event)
