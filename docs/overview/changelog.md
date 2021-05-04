@@ -16,7 +16,7 @@ in bursts.
 - Added copy-to-clipboard button on code blocks, making it convenient
   to extract code for external use. Code blocks now have a "View in
   playground" button for certain programming languages.
-- Added a new organization [Moderator role](/help/roles-and-permissions).
+- Added a new organization [Moderator role][roles-and-permissions].
   Many permissions settings for sensitive features now support only
   allowing moderators and above to use the feature.
 - Added a native Giphy integration for sending animated GIFs.
@@ -40,6 +40,9 @@ in bursts.
   better error handling for the mobile and terminal apps.
 - The frontend internationalization library was switched from i18next
   to FormatJS.
+
+
+[roles-and-permissions]: https://zulip.com/help/roles-and-permissions
 
 #### Upgrade notes for 4.0
 
