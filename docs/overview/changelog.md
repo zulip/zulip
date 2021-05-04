@@ -9,6 +9,8 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
+### 4.0-rc1 -- May 3, 2021
+
 #### Highlights
 
 - Added copy-to-clipboard button on code blocks, making it convenient
