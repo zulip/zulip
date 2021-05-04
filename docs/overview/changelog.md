@@ -71,6 +71,12 @@ in bursts.
   template to be better organized and more readable in this release.
 - The webapp will now display a warning in the UI if the Zulip server
   has not been upgraded in more than 18 months.
+  template to be better organized and more readable.
+- The next time users log in to Zulip with their password after
+  upgrading to this release, they will be logged out of all active
+  browser sessions (i.e. the web and desktop apps).  This is a side
+  effect of improved security settings (increasing the minimum entropy
+  used when salting passwords from 71 bits to 128 bits).
 
 [docker-zulip-manual]: https://github.com/zulip/docker-zulip#manual-configuration
 [smokescreen]: ../production/deployment.html#using-an-outgoing-http-proxy
