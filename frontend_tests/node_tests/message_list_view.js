@@ -146,10 +146,10 @@ run_test("muted_message_vars", () => {
         return list;
     }
 
-    function calculate_variables(list, messages) {
-        list.set_calculated_message_container_variables(messages[0]);
-        list.set_calculated_message_container_variables(messages[1]);
-        list.set_calculated_message_container_variables(messages[2]);
+    function calculate_variables(list, messages, is_revealed) {
+        list.set_calculated_message_container_variables(messages[0], is_revealed);
+        list.set_calculated_message_container_variables(messages[1], is_revealed);
+        list.set_calculated_message_container_variables(messages[2], is_revealed);
         return list._message_groups[0].message_containers;
     }
 
@@ -194,6 +194,22 @@ run_test("muted_message_vars", () => {
 
         // Additionally test that, `contains_mention` is false even on that message which has a mention.
         assert.equal(result[1].contains_mention, false);
+
+        // Now, reveal the hidden messages.
+        const is_revealed = true;
+        result = calculate_variables(list, messages, is_revealed);
+
+        // Check that `is_hidden` is false and `include_sender` is true on all messages.
+        assert.equal(result[0].is_hidden, false);
+        assert.equal(result[1].is_hidden, false);
+        assert.equal(result[2].is_hidden, false);
+
+        assert.equal(result[0].include_sender, true);
+        assert.equal(result[1].include_sender, true);
+        assert.equal(result[2].include_sender, true);
+
+        // Additionally test that, `contains_mention` is true on that message which has a mention.
+        assert.equal(result[1].contains_mention, true);
     })();
 });
 

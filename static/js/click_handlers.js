@@ -243,6 +243,13 @@ export function initialize() {
         e.preventDefault();
     });
 
+    $("body").on("click", ".reveal_hidden_message", (e) => {
+        const message_id = rows.id($(e.currentTarget).closest(".message_row"));
+        message_lists.current.view.reveal_hidden_message(message_id);
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
     $("#main_div").on("click", "a.stream", function (e) {
         e.preventDefault();
         // Note that we may have an href here, but we trust the stream id more,

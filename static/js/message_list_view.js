@@ -238,7 +238,7 @@ export class MessageListView {
         }
     }
 
-    set_calculated_message_container_variables(message_container) {
+    set_calculated_message_container_variables(message_container, is_revealed) {
         set_timestr(message_container);
 
         /*
@@ -248,14 +248,24 @@ export class MessageListView {
             2. Hide reactions on that message.
             3. Do not give a background color to that message even if it mentions the
                current user.
+
+            Further, is a hidden message was just revealed, we make sure to show
+            the sender.
         */
 
-        const is_hidden = muting.is_user_muted(message_container.msg.sender_id);
+        const is_hidden = muting.is_user_muted(message_container.msg.sender_id) && !is_revealed;
 
         message_container.is_hidden = is_hidden;
         // Make sure the right thing happens if the message was edited to mention us.
         message_container.contains_mention = message_container.msg.mentioned && !is_hidden;
+
         message_container.include_sender = message_container.include_sender && !is_hidden;
+        if (is_revealed) {
+            // If the message is to be revealed, we show the sender anyways, because the
+            // the first message in the group (which would hold the sender) can still be
+            // hidden.
+            message_container.include_sender = true;
+        }
 
         this._maybe_format_me_message(message_container);
         // Once all other variables are updated
@@ -1153,11 +1163,11 @@ export class MessageListView {
         header.replaceWith(rendered_recipient_row);
     }
 
-    _rerender_message(message_container, message_content_edited) {
+    _rerender_message(message_container, message_content_edited, is_revealed) {
         const row = this.get_row(message_container.msg.id);
         const was_selected = this.list.selected_message() === message_container.msg;
 
-        this.set_calculated_message_container_variables(message_container);
+        this.set_calculated_message_container_variables(message_container, is_revealed);
 
         const rendered_msg = $(this._get_message_template(message_container));
         if (message_content_edited) {
@@ -1169,6 +1179,11 @@ export class MessageListView {
         if (was_selected) {
             this.list.select_id(message_container.msg.id);
         }
+    }
+
+    reveal_hidden_message(message_id) {
+        const message_container = this.message_containers.get(message_id);
+        this._rerender_message(message_container, false, true);
     }
 
     rerender_messages(messages, message_content_edited) {
