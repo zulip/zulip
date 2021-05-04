@@ -14,6 +14,11 @@ in bursts.
 - Added copy-to-clipboard button on code blocks, making it convenient
   to extract code for external use. Code blocks now have a "View in
   playground" button for certain programming languages.
+- Added a new organization [Moderator role](/help/roles-and-permissions).
+  Many permissions settings for sensitive features now support only
+  allowing moderators and above to use the feature.
+- Added a native Giphy integration for sending animated GIFs.
+- Added support for muting another user.
 - Recent topics is no longer beta, no longer an overlay, and is now
   the default landing view. The previous default, "All messages", is
   still available, and the default view can now be configured via
@@ -26,10 +31,13 @@ in bursts.
   help protect against SSRF attacks; outgoing HTTP requests that can
   be triggered by end users are routed through this service.
   We recommend that self-hosted installations configure it.
-- Links to issues or pull requests on GitHub are now automatically
-  converted to have shorter labels for more convenient reading.
-- Over 20 changes to the [Zulip API](https://zulip.com/api/changelog),
-  largely to support new settings or simplify API documentation.
+- This release contains more than 30 independent changes to the [Zulip
+  API](https://zulip.com/api/changelog), largely to support new
+  features or make the API (and thus its documentation) clearer and
+  easier for clients to implement.  Other new API features support
+  better error handling for the mobile and terminal apps.
+- The frontend internationalization library was switched from i18next
+  to FormatJS.
 
 #### Upgrade notes for 4.0
 
@@ -50,10 +58,14 @@ in bursts.
 - Consider enabling [smokescreen][smokescreen]
 - Private streams can no longer be default streams (i.e. the ones new
   users are automatically added to).
+- New `scripts/start-server` and `scripts/stop-server` mean that
+  one no longer needs to use `supervisorctl` directly for these tasks.
 - As this is a major release, we recommend [carefully updating the
   inline documentation in your
   `/etc/zulip/settings.py`][update-settings-docs].  Notably, we rewrote the
-  template to be better organized and more readable.
+  template to be better organized and more readable in this release.
+- The webapp will now display a warning in the UI if the Zulip server
+  has not been upgraded in more than 18 months.
 
 [docker-zulip-manual]: https://github.com/zulip/docker-zulip#manual-configuration
 [smokescreen]: ../production/deployment.html#using-an-outgoing-http-proxy
@@ -81,20 +93,35 @@ in bursts.
 - Added API endpoint to fetch presence details by user ID.
 - Added new LDAP configuration options for servers hosting multiple organizations.
 - Added new `@**|user_id**` mention syntax intended for use in bots.
-- Updated integrations: NewRelic, Bitbucket, Zabbix.
-- New integrations: JotForm.
+- Added a confirmation dialog before unsubscribing from a private stream.
+- Added preliminary support for Zulip on Debian Bullseye; this
+  release is expected to support Bullseye without any further changes.
+- Added support for subscribing all members of a user group to a stream.
+- Updated integrations: ClubHouse, NewRelic, Bitbucket, Zabbix.
+- New integrations: JotForm, and a JSON formatter (which is
+  particularly useful when developing a new integration).
 - Improved formatting of GitHub and GitLab integrations.
 - Improved the user experience for multi-user invitations.
 - Improved several rendered-message styling details.
 - Improved design of `<time>` widgets.
+- The button for opening the compose box was redesigned to be clearer for
+  users who are new to Zulip.
 - Improved format of `nginx` logs to include hostname and request time.
 - Redesigned the left sidebar menu icons (now `\vdots`, not a chevron).
 - The Zoom integration is now stable (no longer beta).
 - Favicon unread counts are more attractive and support large numbers.
+- Zulip now displays the total number of starred messages in the left
+  sidebar by default; over 20% of users had enabled this setting manually.
 - Presence circles for users are now shown in mention typeahead.
+- Email notifications for new messages are now referred to as a
+  "Message notification email", not a "Missed message email".
+- Zulip now sets List-Unsubscribe headers in outgoing emails with
+  unsubscribe links.
+- Password forms now have a "Show password" widget.
 - Fixed performance issues when creating hundreds of new users in
   quick succession (E.g. at the start of a conference or event).
 - Fixed numerous rare exceptions when running Zulip at scale.
+- Fixed several subtle installer bugs.
 - Fixed various UI and accessibility issues in the registration and new
   user invitation flows.
 - Fixed live update and UI bugs with streams being deactivated or renamed.
@@ -105,14 +132,26 @@ in bursts.
 - Fixed a subtle bug with timestamps for messages that take a long
   time to send.
 - Fixed missing horizontal scrollbar for overflowing rendered LaTeX.
+- Fixed visual issues with bottoms areas of both sidebars.
+- Fixed several error handling bugs with outgoing webhooks.
+- Fixed bugs with recipient bar UI for muting and topic editing.
+- Fixed highlighting of adjacent alert words.
 - Increased size of typeahead box for mentions from 5 to 8.
 - Typeahead now always ranks exact string matches first.
+- Tooltips have been migrated from Bootstrap to TippyJS, and added
+  in many places that previously just had `title` attributes.
+- Zulip now consistently uses the Source Code Pro font for code
+  blocks, rather than varying by operating system.
 - Redesigned "Alert words" settings UI.
+- Tables in settings UI now have sticky headers.
+- Confirmation dialogs now consistently use Confirm/Cancel as button labels.
 - Refactored typeahead and emoji components to be shareable with the
   mobile codebase.
-- Replaced the old CasperJS frontend test suite with Puppeteer.
 - Switched to `orjson` for JSON serialization, resulting in better
   performance and more standards-compliant validation.
+- Image previews in a Zulip message are now unconditionally proxied by
+  Camo to improve privacy, rather than only when the URL was not HTTPS.
+- Replaced the old CasperJS frontend test suite with Puppeteer.
 - Split the previous `api_super_user` permission into
   `can_create_user` and `can_forge_sender` (used for mirroring).
 - Various API endpoints creating objects now return the ID of the
@@ -122,6 +161,8 @@ in bursts.
 - Fixed transparency issues uploading some animated GIFs as custom emoji.
 - Improved positioning logic for inline YouTube previews.
 - Improved performance of several high-throughput queue processors.
+- Improved performance of queries that fetch all active subscribers to
+  a stream or set of streams.
 - Upgraded our ancient forked version of bootstrap, on a path towards
   removing the last forked dependencies from the codebase.
 - Upgraded Django to 3.1 (as well as essentially every other dependency).
@@ -129,9 +170,10 @@ in bursts.
 - Upgraded Zulip's core font to Source Sans 3, which supports more languages.
 - Relabeled :smile: and :stuck_out_tongue: emoji to use better codepoints.
 - Reduced the size of Zulip's main JavaScript bundle by removing `moment.js`.
+- Server logs now display the version number for Zulip clients.
 - Simplified logic for responsive UI with different browser sizes.
 - Fixed several subtle bugs in the compose and message-edit UIs.
-  steady-state load for an idle Zulip server.
+- Reduced the steady-state load for an idle Zulip server.
 - Removed HipChat import tool, because HipChat has been long EOL.
 - Reformatted the Python codebase with Black, and the frontend
   codebase with Prettier.
