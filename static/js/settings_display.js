@@ -90,7 +90,7 @@ export function set_up() {
 
         const $link = $(e.target).closest("a[data-code]");
         const setting_value = $link.attr("data-code");
-        const data = {default_language: JSON.stringify(setting_value)};
+        const data = {default_language: setting_value};
 
         const new_language = $link.attr("data-name");
         $("#default_language_name").text(new_language);

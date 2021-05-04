@@ -42,9 +42,9 @@ function rerender_ui() {
     }
 }
 
-function change_notification_setting(setting, setting_data, status_element) {
+function change_notification_setting(setting, value, status_element) {
     const data = {};
-    data[setting] = JSON.stringify(setting_data);
+    data[setting] = value;
     settings_ui.do_settings_change(
         channel.patch,
         "/json/settings/notifications",

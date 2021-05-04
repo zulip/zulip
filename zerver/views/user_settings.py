@@ -42,7 +42,7 @@ from zerver.lib.request import JsonableError
 from zerver.lib.response import json_error, json_success
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.lib.upload import upload_avatar_image
-from zerver.lib.validator import check_bool, check_int, check_int_in, check_string, check_string_in
+from zerver.lib.validator import check_bool, check_int, check_int_in, check_string_in
 from zerver.models import UserProfile, avatar_changes_disabled, name_changes_disabled
 from zproject.backends import check_password_strength, email_belongs_to_ldap
 
@@ -197,7 +197,7 @@ def update_display_settings_backend(
         json_validator=check_int_in(UserProfile.COLOR_SCHEME_CHOICES), default=None
     ),
     translate_emoticons: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    default_language: Optional[str] = REQ(json_validator=check_string, default=None),
+    default_language: Optional[str] = REQ(default=None),
     default_view: Optional[str] = REQ(
         json_validator=check_string_in(default_view_options), default=None
     ),
@@ -243,7 +243,7 @@ def json_change_notify_settings(
         json_validator=check_bool, default=None
     ),
     wildcard_mentions_notify: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    notification_sound: Optional[str] = REQ(json_validator=check_string, default=None),
+    notification_sound: Optional[str] = REQ(default=None),
     enable_desktop_notifications: Optional[bool] = REQ(json_validator=check_bool, default=None),
     enable_sounds: Optional[bool] = REQ(json_validator=check_bool, default=None),
     enable_offline_email_notifications: Optional[bool] = REQ(
