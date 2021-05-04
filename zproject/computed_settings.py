@@ -315,8 +315,6 @@ elif REMOTE_POSTGRES_HOST != "":
 
 POSTGRESQL_MISSING_DICTIONARIES = bool(get_config("postgresql", "missing_dictionaries", None))
 
-DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
-
 ########################################################################
 # RABBITMQ CONFIGURATION
 ########################################################################

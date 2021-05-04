@@ -3,7 +3,7 @@
 # and requirements/prod.txt.
 # See requirements/README.md for more detail.
 # Django itself
-Django[argon2]==3.2.*
+Django[argon2]==3.1.*
 
 # needed for Literal, TypedDict
 typing-extensions
