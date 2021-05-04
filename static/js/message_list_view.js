@@ -223,10 +223,11 @@ export class MessageListView {
         //   * `edited_status_msg`       -- when label appears for a "/me" message.
         const last_edit_timestr = this._get_msg_timestring(message_container);
         const include_sender = message_container.include_sender;
+        const is_hidden = message_container.is_hidden;
         const status_message = Boolean(message_container.status_message);
         if (last_edit_timestr !== undefined) {
             message_container.last_edit_timestr = last_edit_timestr;
-            message_container.edited_in_left_col = !include_sender;
+            message_container.edited_in_left_col = !include_sender && !is_hidden;
             message_container.edited_alongside_sender = include_sender && !status_message;
             message_container.edited_status_msg = include_sender && status_message;
         } else {
@@ -240,8 +241,21 @@ export class MessageListView {
     set_calculated_message_container_variables(message_container) {
         set_timestr(message_container);
 
+        /*
+            If the message needs to be hidden because the sender was muted, we do
+            a few things:
+            1. Hide the sender avatar and name.
+            2. Hide reactions on that message.
+            3. Do not give a background color to that message even if it mentions the
+               current user.
+        */
+
+        const is_hidden = muting.is_user_muted(message_container.msg.sender_id);
+
+        message_container.is_hidden = is_hidden;
         // Make sure the right thing happens if the message was edited to mention us.
-        message_container.contains_mention = message_container.msg.mentioned;
+        message_container.contains_mention = message_container.msg.mentioned && !is_hidden;
+        message_container.include_sender = message_container.include_sender && !is_hidden;
 
         this._maybe_format_me_message(message_container);
         // Once all other variables are updated
@@ -1295,6 +1309,11 @@ export class MessageListView {
     }
 
     _maybe_format_me_message(message_container) {
+        if (message_container.is_hidden) {
+            // If the message is to be hidden anyway, no need to render
+            // it differently.
+            return;
+        }
         if (message_container.msg.is_me_message) {
             // Slice the '<p>/me ' off the front, and '</p>' off the first line
             // 'p' tag is sliced off to get sender in the same line as the

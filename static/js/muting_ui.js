@@ -157,6 +157,11 @@ export function unmute_user(user_id) {
 }
 
 export function rerender_for_muted_user() {
+    message_lists.current.rerender();
+    if (message_lists.current !== message_lists.home) {
+        message_lists.home.rerender();
+    }
+
     if (overlays.settings_open() && settings_muted_users.loaded) {
         settings_muted_users.populate_list();
     }
