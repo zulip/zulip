@@ -360,6 +360,10 @@ function show_subscription_settings(sub) {
     stream_color.set_colorpicker_color(colorpicker, color);
     stream_ui_updates.update_add_subscriptions_elements(sub);
 
+    if (!sub.render_subscribers) {
+        return;
+    }
+
     const container = $(
         `#subscription_overlay .subscription_settings[data-stream-id='${CSS.escape(
             stream_id,
@@ -372,9 +376,6 @@ function show_subscription_settings(sub) {
         get_text_from_item,
     });
 
-    if (!sub.render_subscribers) {
-        return;
-    }
     if (!stream_data.can_toggle_subscription(sub)) {
         stream_ui_updates.initialize_cant_subscribe_popover(sub);
     }
