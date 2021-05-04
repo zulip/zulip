@@ -657,6 +657,27 @@ export function setup_page(callback) {
             throttled_redraw_left_panel();
         });
 
+        // When hitting Enter in the stream creation box, we open the
+        // "create stream" UI with the stream name prepopulated.  This
+        // is only useful if the user has permission to create
+        // streams, either explicitly via user_can_create_streams, or
+        // implicitly because page_params.realm_is_zephyr_mirror_realm.
+        $("#stream_filter input[type='text']").on("keypress", (e) => {
+            if (e.which !== 13) {
+                return;
+            }
+
+            if (
+                settings_data.user_can_create_streams() ||
+                page_params.realm_is_zephyr_mirror_realm
+            ) {
+                open_create_stream();
+                e.preventDefault();
+                e.stopPropagation();
+                return;
+            }
+        });
+
         $("#clear_search_stream_name").on("click", () => {
             $("#stream_filter input[type='text']").val("");
             redraw_left_panel();
