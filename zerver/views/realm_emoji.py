@@ -4,7 +4,12 @@ from django.utils.translation import gettext as _
 
 from zerver.decorator import require_member_or_admin
 from zerver.lib.actions import check_add_realm_emoji, do_remove_realm_emoji
-from zerver.lib.emoji import check_emoji_admin, check_valid_emoji_name, name_to_codepoint
+from zerver.lib.emoji import (
+    check_add_emoji_admin,
+    check_remove_custom_emoji,
+    check_valid_emoji_name,
+    name_to_codepoint,
+)
 from zerver.lib.request import REQ, JsonableError, has_request_variables
 from zerver.lib.response import json_success
 from zerver.models import RealmEmoji, UserProfile
@@ -12,7 +17,7 @@ from zerver.models import RealmEmoji, UserProfile
 
 def list_emoji(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
 
-    # We don't call check_emoji_admin here because the list of realm
+    # We don't do any checks here because the list of realm
     # emoji is public.
     return json_success({"emoji": user_profile.realm.get_emoji()})
 
@@ -25,7 +30,7 @@ def upload_emoji(
     emoji_name = emoji_name.strip().replace(" ", "_")
     valid_built_in_emoji = name_to_codepoint.keys()
     check_valid_emoji_name(emoji_name)
-    check_emoji_admin(user_profile)
+    check_add_emoji_admin(user_profile)
     if RealmEmoji.objects.filter(
         realm=user_profile.realm, name=emoji_name, deactivated=False
     ).exists():
@@ -54,6 +59,6 @@ def delete_emoji(request: HttpRequest, user_profile: UserProfile, emoji_name: st
         realm=user_profile.realm, name=emoji_name, deactivated=False
     ).exists():
         raise JsonableError(_("Emoji '{}' does not exist").format(emoji_name))
-    check_emoji_admin(user_profile, emoji_name)
+    check_remove_custom_emoji(user_profile, emoji_name)
     do_remove_realm_emoji(user_profile.realm, emoji_name)
     return json_success()

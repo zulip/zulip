@@ -180,23 +180,10 @@ class RealmEmojiTest(ZulipTestCase):
         result = self.client_delete("/json/realm/emoji/my_emoji")
         self.assert_json_success(result)
 
-    def test_delete_admins_only(self) -> None:
-        emoji_author = self.example_user("othello")
-        self.login_user(emoji_author)
-        realm = get_realm("zulip")
-        realm.add_emoji_by_admins_only = True
-        realm.save()
-        self.create_test_emoji_with_no_author("my_emoji", realm)
-        result = self.client_delete("/json/realm/emoji/my_emoji")
-        self.assert_json_error(result, "Must be an organization administrator")
-
     def test_delete_admin_or_author(self) -> None:
-        # If any user in a realm can upload the emoji then the user who
-        # uploaded it as well as the admin should be able to delete it.
+        # Admins can delete emoji added by others also.
+        # Non-admins can only delete emoji they added themselves.
         emoji_author = self.example_user("othello")
-        realm = get_realm("zulip")
-        realm.add_emoji_by_admins_only = False
-        realm.save()
 
         self.create_test_emoji("my_emoji_1", emoji_author)
         self.login_user(emoji_author)

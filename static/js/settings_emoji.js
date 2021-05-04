@@ -42,7 +42,7 @@ function can_admin_emoji(emoji) {
         // If we don't have the author information then only admin is allowed to disable that emoji.
         return false;
     }
-    if (!page_params.realm_add_emoji_by_admins_only && people.is_my_user_id(emoji.author_id)) {
+    if (people.is_my_user_id(emoji.author_id)) {
         return true;
     }
     return false;
