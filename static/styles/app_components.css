@@ -191,6 +191,11 @@
         }
     }
 
+    a:hover,
+    a:focus {
+        text-decoration-line: none;
+    }
+
     /* -- tab switcher -- */
 
     .tab-switcher {
