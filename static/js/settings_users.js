@@ -57,16 +57,19 @@ function sort_bot_email(a, b) {
 
 function sort_role(a, b) {
     function role(user) {
-        if (user.is_admin) {
+        if (user.is_owner) {
             return 0;
         }
-        if (user.is_moderator) {
+        if (user.is_admin) {
             return 1;
         }
-        if (user.is_guest) {
-            return 3;
+        if (user.is_moderator) {
+            return 2;
         }
-        return 2; // member
+        if (user.is_guest) {
+            return 4;
+        }
+        return 3; // member
     }
     return compare_a_b(role(a), role(b));
 }
