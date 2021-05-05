@@ -111,10 +111,10 @@ const apps_events = function () {
 
         $(".info .platform").text(version_info.alt);
         $(".info .description").text(version_info.description);
-        $(".info .desktop-download-link").attr("href", version_info.download_link);
-        $(".download-from-google-play-store").attr("href", version_info.play_store_link);
-        $(".download-from-apple-app-store").attr("href", version_info.app_store_link);
-        $("#download-android-apk a").attr("href", version_info.download_link);
+        $desktop_download_link.attr("href", version_info.download_link);
+        $download_from_google_play_store.attr("href", version_info.play_store_link);
+        $download_from_apple_app_store.attr("href", version_info.app_store_link);
+        $download_android_apk.attr("href", version_info.download_link);
         $(".image img").attr("src", version_info.image);
         $download_instructions.find("a").attr("href", version_info.install_guide);
 
