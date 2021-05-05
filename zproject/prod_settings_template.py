@@ -588,6 +588,9 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ################
 ## Miscellaneous settings.
 
+## How long outgoing webhook requests time out after
+# OUTGOING_WEBHOOK_TIMEOUT_SECONDS = 10
+
 ## Support for mobile push notifications.  Setting controls whether
 ## push notifications will be forwarded through a Zulip push
 ## notification bouncer server to the mobile apps.  See

@@ -207,7 +207,7 @@ The webhook got a response with status code *400*.""",
             self.assertEqual(bot_owner_notification.recipient_id, bot_user.bot_owner.recipient_id)
 
         with self.assertLogs(level="INFO") as i:
-            helper(side_effect=timeout_error, error_text="A timeout occurred.")
+            helper(side_effect=timeout_error, error_text="Request timed out after")
             helper(side_effect=connection_error, error_text="A connection error occurred.")
 
             log_output = [
