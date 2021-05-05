@@ -12,7 +12,6 @@ Subsystems documentation
    sending-messages
    notifications
    queuing
-   custom-apps
    pointer
    markdown
    caching
