@@ -4,7 +4,11 @@
 # You can also read
 #   https://www.caktusgroup.com/blog/2016/02/02/writing-unit-tests-django-migrations/
 # to get a tutorial on the framework that inspired this feature.
+from typing import Optional
+
+import orjson
 from django.db.migrations.state import StateApps
+from django.utils.timezone import now as timezone_now
 
 from zerver.lib.test_classes import MigrationsTestCase
 from zerver.lib.test_helpers import use_db_models
@@ -86,3 +90,50 @@ class SubsNotificationSettingsTestCase(MigrationsTestCase):  # nocoverage
         self.assertEqual(iago_sub.desktop_notifications, False)
         self.assertEqual(iago_sub.audible_notifications, False)
         self.assertEqual(iago_sub.push_notifications, True)
+
+
+class EditHistoryMigrationTest(MigrationsTestCase):
+    migrate_from = "0325_edit_history_json"
+    migrate_to = "0326_backfill_edit_history_json"
+
+    msg_id: Optional[int] = None
+
+    @use_db_models
+    def setUpBeforeMigration(self, apps: StateApps) -> None:
+        Message = apps.get_model("zerver", "Message")
+        Recipient = apps.get_model("zerver", "Recipient")
+
+        iago = self.example_user("iago")
+        stream_name = "Denmark"
+        denmark = get_stream(stream_name, iago.realm)
+        denmark_recipient = Recipient.objects.get(type=2, type_id=denmark.id)
+
+        self.msg_id = Message.objects.create(
+            recipient_id=denmark_recipient.id,
+            subject="testing migration",
+            sender_id=iago.id,
+            sending_client_id=1,
+            content="whatever",
+            date_sent=timezone_now(),
+        ).id
+
+        msg = Message.objects.filter(id=self.msg_id).first()
+        msg.edit_history = orjson.dumps(
+            [
+                {
+                    "user_id": 11,
+                    "timestamp": 1618597518,
+                    "prev_content": "test msg",
+                    "prev_rendered_content": "<p>test msg</p>",
+                    "prev_rendered_content_version": 1,
+                }
+            ]
+        ).decode()
+        msg.save(update_fields=["edit_history"])
+
+    def test_backfill_edit_message_array(self) -> None:
+        Message = self.apps.get_model("zerver", "Message")
+        msg = Message.objects.filter(id=self.msg_id).first()
+        edit_history = orjson.loads(msg.edit_history)
+        self.assertEqual(len(msg.edit_history_json), len(edit_history))
+        self.assertEqual(msg.edit_history_json[0], edit_history[0])
