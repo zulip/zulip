@@ -46,6 +46,7 @@ EXEMPT_FILES = {
     "static/js/blueslip_stacktrace.ts",
     "static/js/click_handlers.js",
     "static/js/compose_actions.js",
+    "static/js/compose_closed_ui.js",
     "static/js/composebox_typeahead.js",
     "static/js/compose_fade.js",
     "static/js/compose.js",

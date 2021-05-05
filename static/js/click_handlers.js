@@ -638,28 +638,6 @@ export function initialize() {
         $("#nonexistent_stream_reply_error").stop(true).fadeOut(500);
     });
 
-    $("body").on("click", ".compose_stream_button", () => {
-        popovers.hide_mobile_message_buttons_popover();
-        compose_actions.start("stream", {trigger: "new topic button"});
-    });
-    $("body").on("click", ".compose_private_button", () => {
-        popovers.hide_mobile_message_buttons_popover();
-        compose_actions.start("private");
-    });
-
-    $("body").on("click", ".compose_mobile_stream_button", () => {
-        popovers.hide_mobile_message_buttons_popover();
-        compose_actions.start("stream", {trigger: "new topic button"});
-    });
-    $("body").on("click", ".compose_mobile_private_button", () => {
-        popovers.hide_mobile_message_buttons_popover();
-        compose_actions.start("private");
-    });
-
-    $("body").on("click", ".compose_reply_button", () => {
-        compose_actions.respond_to_message({trigger: "reply button"});
-    });
-
     $("body").on("click", ".empty_feed_compose_stream", (e) => {
         compose_actions.start("stream", {trigger: "empty feed message"});
         e.preventDefault();
