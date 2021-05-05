@@ -32,10 +32,6 @@ body.night-mode {
         background-color: hsl(212, 28%, 18%);
     }
 
-    #compose_buttons .new_message_button .button.small {
-        background-color: hsla(0, 0%, 0%, 0.2);
-    }
-
     #compose_buttons
         .reply_button_container
         .compose_reply_button
