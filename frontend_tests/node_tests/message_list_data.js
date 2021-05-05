@@ -13,6 +13,7 @@ set_global("setTimeout", (f, delay) => {
 
 const muting = zrequire("muting");
 const {MessageListData} = zrequire("../js/message_list_data");
+const {Filter} = zrequire("filter");
 
 function make_msg(msg_id) {
     return {
@@ -108,6 +109,7 @@ run_test("basics", () => {
 run_test("muting", () => {
     let mld = new MessageListData({
         excludes_muted_topics: false,
+        filter: new Filter([{operator: "pm-with", operand: "alice@example.com"}]),
     });
 
     const msgs = [
@@ -140,8 +142,23 @@ run_test("muting", () => {
         },
     );
 
+    // If we are in a 1:1 PM narrow, `messages_filtered_for_user_mutes` should skip
+    // filtering messages.
+    with_field(
+        muting,
+        "is_user_muted",
+        () => {
+            throw new Error("Messages should not be filtered for user mutes in 1:1 PM narrows.");
+        },
+        () => {
+            const res = mld.messages_filtered_for_user_mutes(msgs);
+            assert.deepEqual(res, msgs);
+        },
+    );
+
     // Test actual behaviour of `messages_filtered_for_*` methods.
     mld.excludes_muted_topics = true;
+    mld.filter = new Filter([{operator: "stream", operand: "general"}]);
     muting.add_muted_topic(1, "muted");
     const res = mld.messages_filtered_for_topic_mutes(msgs);
     assert.deepEqual(res, [
