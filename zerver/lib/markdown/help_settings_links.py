@@ -64,7 +64,7 @@ link_mapping = {
     ],
     "playground-settings": [
         "Manage organization",
-        "Playgrounds",
+        "Code playgrounds",
         "/#organization/playground-settings",
     ],
     "profile-field-settings": [

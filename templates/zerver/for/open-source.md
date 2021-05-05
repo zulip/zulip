@@ -128,17 +128,17 @@ Import your existing organization from [Slack](/help/import-from-slack),
 
 ### Collaborate on code and formulas
 
-[Markdown code blocks](/help/format-your-message-using-markdown#code)
+[Markdown code blocks](/help/code-blocks)
 with syntax highlighting make it easy to discuss code, paste an error
 message, or explain a complicated point. Native LaTeX support provides
 the same benefits when talking about math.
 
 You can also instantly copy a code block to your clipboard or transfer
-it to an [external code playground](/help/add-a-custom-playground) to
+it to an [external code playground](/help/code-blocks#code-playgrounds) to
 interactively run and debug the code.
 
 If your community primarily uses a single programming language,
-consider setting a default language for syntax highlighting.
+consider setting a [default code block language](/help/code-blocks#default-code-block-language).
 
 ### Permalink to conversations.
 

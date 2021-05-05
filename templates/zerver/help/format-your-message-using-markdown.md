@@ -109,18 +109,9 @@ def fib(n):
 
 You can also use `~~~` to start codeblocks, or just indent the code 4 or more spaces.
 
-Zulip supports syntax highlighting for hundreds of languages, and a
-typeahead will pop up when you start typing after the ` ``` `. If you can't
-find your language, search for it [here](https://pygments.org/docs/lexers/)
-and try the **short names** listed for the lexers for your language.
-
-Organization administrators can also configure a default syntax
-highlighting language.  In this configuration, one can use ````text`
-to display content without any syntax highlighting.
-
-Hovering over a Zulip code block reveals buttons to copy the code or
-open it in one of the organization's configured [custom code
-playgrounds](/help/add-a-custom-playground).
+See the main [code blocks article](/help/code-blocks) for details on
+[syntax highlighting](/help/code-blocks#language-tagging), [code
+playgrounds](/help/code-blocks#code-playgrounds), and other features.
 
 ## LaTeX
 ~~~

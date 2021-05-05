@@ -188,7 +188,7 @@ help](https://chat.zulip.org/#narrow/stream/31-production-help) in the
 server](../contributing/chat-zulip-org.md) for best-effort help.
 Please include the relevant error output from the above logs in a
 [Markdown code
-block](https://zulip.com/help/format-your-message-using-markdown#code)
+block](https://zulip.com/help/code-blocks)
 in any reports.
 
 ### Rolling back to a prior version

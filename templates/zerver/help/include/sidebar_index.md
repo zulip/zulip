@@ -37,6 +37,7 @@
 * [Mention a user or group](/help/mention-a-user-or-group)
 * [Edit or delete a message](/help/edit-or-delete-a-message)
 * [Message a stream by email](/help/message-a-stream-by-email)
+* [Code blocks](/help/code-blocks)
 * [Add GIFs in your message](/help/animated-gifs-from-giphy)
 * [Create a poll](/help/create-a-poll)
 
@@ -140,7 +141,6 @@
 * [Add custom emoji](/help/add-custom-emoji)
 * [Configure authentication methods](/help/configure-authentication-methods)
 * [Add a custom linkifier](/help/add-a-custom-linkifier)
-* [Add a custom playground](/help/add-a-custom-playground)
 * [Message retention policy](/help/message-retention-policy)
 * [SAML authentication](/help/saml-authentication)
 

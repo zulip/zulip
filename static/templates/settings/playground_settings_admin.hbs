@@ -7,7 +7,7 @@
                 code. Zulip code blocks that are <z-link-markdown-help>tagged with a programming language</z-link-markdown-help> will have
                 a button visible on hover that allows you to open the code block in the code playground site.
                 {{#*inline "z-link-repl"}}<a href="https://replit.com/" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
-                {{#*inline "z-link-markdown-help"}}<a href="/help/format-your-message-using-markdown#code" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+                {{#*inline "z-link-markdown-help"}}<a href="/help/code-blocks" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
             {{/tr}}
         </p>
         <p>
@@ -27,7 +27,7 @@
                 <div class="new-playground-form wrapper">
                     <div class="settings-section-title">
                         {{t "Add a new code playground" }}
-                        {{> ../help_link_widget link="/help/add-a-custom-playground" }}
+                        {{> ../help_link_widget link="/help/code-blocks#code-playgrounds" }}
                     </div>
                     <div class="alert" id="admin-playground-status"></div>
                     <div class="control-group">

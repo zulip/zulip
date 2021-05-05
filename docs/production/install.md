@@ -176,4 +176,4 @@ block][code-block]).
 
 [chat-zulip-org]: ../contributing/chat-zulip-org.md
 [production-help]: https://chat.zulip.org/#narrow/stream/31-production-help
-[code-block]: https://zulip.com/help/format-your-message-using-markdown#code
+[code-block]: https://zulip.com/help/code-blocks
