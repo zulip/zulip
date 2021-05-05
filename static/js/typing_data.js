@@ -1,5 +1,6 @@
 import _ from "lodash";
 
+import * as muting from "./muting";
 import * as util from "./util";
 
 // See docs/subsystems/typing-indicators.md for details on typing indicators.
@@ -48,14 +49,15 @@ export function remove_typist(group, typist) {
 
 export function get_group_typists(group) {
     const key = get_key(group);
-    return typist_dct.get(key) || [];
+    const user_ids = typist_dct.get(key) || [];
+    return muting.filter_muted_user_ids(user_ids);
 }
 
 export function get_all_typists() {
     let typists = [].concat(...Array.from(typist_dct.values()));
     typists = util.sorted_ids(typists);
     typists = _.sortedUniq(typists);
-    return typists;
+    return muting.filter_muted_user_ids(typists);
 }
 
 // The next functions aren't pure data, but it is easy
