@@ -56,7 +56,7 @@ os.chdir("docs")
 # collapse_navigation is set to False in conf.py to improve sidebar navigation for users.
 # However, we must change its value to True before we begin testing links.
 # Otherwise, sphinx would generate a large number of links we don't need to test.
-# The crawler would take a very long time to finish and TravisCI would fail as a result.
+# The crawler would take a very long time to finish and GitHub Actions would fail as a result.
 subprocess.check_call(
     "make clean html O='-D html_theme_options.collapse_navigation=True'", shell=True
 )
