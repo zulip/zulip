@@ -113,6 +113,7 @@ def save_message_for_edit_use_case(message: Message) -> None:
             "rendered_content_version",
             "last_edit_time",
             "edit_history",
+            "edit_history_json",
             "has_attachment",
             "has_image",
             "has_link",
@@ -141,6 +142,7 @@ def update_edit_history(
     else:
         edit_history = [edit_history_event]
     message.edit_history = orjson.dumps(edit_history).decode()
+    message.edit_history_json.insert(0, edit_history_event)
 
 
 def update_messages_for_topic_edit(
@@ -164,7 +166,7 @@ def update_messages_for_topic_edit(
         *Message.DEFAULT_SELECT_RELATED
     )
 
-    update_fields = ["edit_history", "last_edit_time"]
+    update_fields = ["edit_history", "edit_history_json", "last_edit_time"]
 
     if new_stream is not None:
         # If we're moving the messages between streams, only move
