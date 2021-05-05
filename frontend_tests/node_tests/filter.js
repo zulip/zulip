@@ -185,13 +185,20 @@ test("basics", () => {
 
     operators = [{operator: "pm-with", operand: "joe@example.com"}];
     filter = new Filter(operators);
+    assert(filter.is_non_huddle_pm());
     assert(filter.contains_only_private_messages());
     assert(!filter.has_operator("search"));
     assert(filter.can_apply_locally());
     assert(!filter.is_personal_filter());
 
+    operators = [{operator: "pm-with", operand: "joe@example.com,jack@example.com"}];
+    filter = new Filter(operators);
+    assert(!filter.is_non_huddle_pm());
+    assert(filter.contains_only_private_messages());
+
     operators = [{operator: "group-pm-with", operand: "joe@example.com"}];
     filter = new Filter(operators);
+    assert(!filter.is_non_huddle_pm());
     assert(filter.contains_only_private_messages());
     assert(!filter.has_operator("search"));
     assert(filter.can_apply_locally());

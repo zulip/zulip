@@ -412,6 +412,10 @@ export class Filter {
         return this.has_operator("search");
     }
 
+    is_non_huddle_pm() {
+        return this.has_operator("pm-with") && this.operands("pm-with")[0].split(",").length === 1;
+    }
+
     calc_can_mark_messages_read() {
         const term_types = this.sorted_term_types();
 
