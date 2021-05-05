@@ -135,13 +135,8 @@ def update_edit_history(
     message: Message, last_edit_time: datetime, edit_history_event: EditHistoryEvent
 ) -> None:
     message.last_edit_time = last_edit_time
-    if message.edit_history is not None:
-        edit_history: List[EditHistoryEvent] = orjson.loads(message.edit_history)
-        edit_history.insert(0, edit_history_event)
-    else:
-        edit_history = [edit_history_event]
-    message.edit_history = orjson.dumps(edit_history).decode()
-    message.edit_history_entries = edit_history
+    message.edit_history_entries.insert(0, edit_history_event)
+    message.edit_history = orjson.dumps(message.edit_history_entries).decode()
 
 
 def update_messages_for_topic_edit(

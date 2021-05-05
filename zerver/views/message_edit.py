@@ -1,7 +1,6 @@
 import datetime
 from typing import List, Literal, Optional, Union
 
-import orjson
 from django.contrib.auth.models import AnonymousUser
 from django.db import IntegrityError, transaction
 from django.http import HttpRequest, HttpResponse
@@ -99,14 +98,9 @@ def get_message_edit_history(
         raise JsonableError(_("Message edit history is disabled in this organization"))
     message, ignored_user_message = access_message(user_profile, message_id)
 
-    # Extract the message edit history from the message
-    if message.edit_history is not None:
-        raw_edit_history = orjson.loads(message.edit_history)
-    else:
-        raw_edit_history = []
-
+    # Extract the message edit history from the message,
     # Fill in all the extra data that will make it usable
-    message_edit_history = fill_edit_history_entries(raw_edit_history, message)
+    message_edit_history = fill_edit_history_entries(message.edit_history_entries, message)
     return json_success(request, data={"message_history": list(reversed(message_edit_history))})
 
 

@@ -56,7 +56,7 @@ from zerver.lib.topic import (
     TOPIC_NAME,
     messages_for_topic,
 )
-from zerver.lib.types import DisplayRecipientT, EditHistoryEvent, UserDisplayRecipient
+from zerver.lib.types import DisplayRecipientT, UserDisplayRecipient
 from zerver.lib.url_preview.types import UrlEmbedData
 from zerver.lib.user_groups import is_user_in_group
 from zerver.lib.user_topics import build_get_topic_visibility_policy, get_topic_visibility_policy
@@ -480,7 +480,7 @@ class MessageDict:
                 DB_TOPIC_NAME: message.topic_name(),
                 "date_sent": message.date_sent,
                 "last_edit_time": message.last_edit_time,
-                "edit_history": message.edit_history,
+                "edit_history_entries": message.edit_history_entries,
                 "content": message.content,
                 "rendered_content": message.rendered_content,
                 "rendered_content_version": message.rendered_content_version,
@@ -507,7 +507,7 @@ class MessageDict:
             DB_TOPIC_NAME,
             "date_sent",
             "last_edit_time",
-            "edit_history",
+            "edit_history_entries",
             "content",
             "rendered_content",
             "rendered_content_version",
@@ -531,7 +531,7 @@ class MessageDict:
         return MessageDict.build_message_dict(
             message_id=row["id"],
             last_edit_time=row["last_edit_time"],
-            edit_history_json=row["edit_history"],
+            edit_history_entries=row["edit_history_entries"],
             content=row["content"],
             topic_name=row[DB_TOPIC_NAME],
             date_sent=row["date_sent"],
@@ -552,7 +552,7 @@ class MessageDict:
     def build_message_dict(
         message_id: int,
         last_edit_time: Optional[datetime.datetime],
-        edit_history_json: Optional[str],
+        edit_history_entries: Optional[str],
         content: str,
         topic_name: str,
         date_sent: datetime.datetime,
@@ -589,9 +589,8 @@ class MessageDict:
 
         if last_edit_time is not None:
             obj["last_edit_timestamp"] = datetime_to_timestamp(last_edit_time)
-            assert edit_history_json is not None
-            edit_history: List[EditHistoryEvent] = orjson.loads(edit_history_json)
-            obj["edit_history"] = edit_history
+            assert edit_history_entries is not None
+            obj["edit_history"] = edit_history_entries
 
         if Message.need_to_render_content(
             rendered_content, rendered_content_version, markdown_version

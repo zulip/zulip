@@ -198,7 +198,9 @@ This is most often used for legal compliance.
                 "sender": format_sender(message.sender.full_name, message.sender.delivery_email),
                 "recipient": format_full_recipient(message.recipient_id, message.subject),
                 "content": message.content,
-                "edit history": message.edit_history if message.edit_history is not None else "",
+                "edit history": orjson.dumps(message.edit_history_entries).decode()
+                if len(message.edit_history_entries) > 0
+                else "",
             }
             if options["write_attachments"]:
                 if message.has_attachment:

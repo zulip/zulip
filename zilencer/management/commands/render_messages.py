@@ -46,8 +46,8 @@ class Command(BaseCommand):
                 # edited, we always render the original content
                 # version, extracting it from the edit history if
                 # necessary.
-                if message.edit_history:
-                    history = orjson.loads(message.edit_history)
+                if message.edit_history_entries:
+                    history = message.edit_history_entries
                     history = sorted(history, key=lambda i: i["timestamp"])
                     for entry in history:
                         if "prev_content" in entry:
