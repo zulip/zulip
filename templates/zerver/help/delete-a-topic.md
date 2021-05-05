@@ -28,7 +28,7 @@ whereas [archiving a stream](/help/archive-a-stream) does not.
 
 1. Click **Delete topic**.
 
-1. Click **Delete topic** in the confirmation dialog.
+1. Approve by clicking **Confirm**.
 
 {end_tabs}
 

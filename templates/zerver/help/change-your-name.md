@@ -15,7 +15,7 @@ is useful when users' names are managed via LDAP or another data source.
 
 1. Under **User settings**, click on the button with your name in it.
 
-1. Change your name, and click **Save**.
+1. Change your name, and click **Change**.
 
 {end_tabs}
 
