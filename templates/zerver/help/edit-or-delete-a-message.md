@@ -61,6 +61,8 @@ administrator.
 
 1. Select **Delete message**.
 
+1. Approve by clicking **Confirm**.
+
 {end_tabs}
 
 If you don't see the **Delete message** option, it means you don't have

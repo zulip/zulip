@@ -23,7 +23,7 @@ than archiving them.
 
 1. On the right, click **Archive**.
 
-1. Click **Yes, archive this stream**.
+1. Approve by clicking **Confirm**.
 
 {end_tabs}
 
