@@ -4899,6 +4899,30 @@ def do_update_user_activity(
 
 
 def send_presence_changed(user_profile: UserProfile, presence: UserPresence) -> None:
+    # Most presence data is sent to clients in the main presence
+    # endpoint in response to the user's own presence; this results
+    # data that is 1-2 minutes stale for who is online.  The flaw with
+    # this plan is when a user comes back online and then immediately
+    # sends a message, recipients may still see that user as offline!
+    # We solve that by sending an immediate presence update clients.
+    #
+    # See https://zulip.readthedocs.io/en/latest/subsystems/presence.html for
+    # internals documentation on presence.
+    user_ids = active_user_ids(user_profile.realm_id)
+    if len(user_ids) > settings.USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS:
+        # These immediate presence generate quadratic work for Tornado
+        # (linear number of users in each event and the frequency of
+        # users coming online grows linearly with userbase too).  In
+        # organizations with thousands of users, this can overload
+        # Tornado, especially if much of the realm comes online at the
+        # same time.
+        #
+        # The utility of these live-presence updates goes down as
+        # organizations get bigger (since one is much less likely to
+        # be paying attention to the sidebar); so beyond a limit, we
+        # stop sending them at all.
+        return
+
     presence_dict = presence.to_dict()
     event = dict(
         type="presence",
@@ -4907,7 +4931,7 @@ def send_presence_changed(user_profile: UserProfile, presence: UserPresence) -> 
         server_timestamp=time.time(),
         presence={presence_dict["client"]: presence_dict},
     )
-    send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
+    send_event(user_profile.realm, event, user_ids)
 
 
 def consolidate_client(client: Client) -> Client:
@@ -4965,16 +4989,6 @@ def do_update_user_presence(
         presence.save(update_fields=update_fields)
 
     if not user_profile.realm.presence_disabled and (created or became_online):
-        # Push event to all users in the realm so they see the new user
-        # appear in the presence list immediately, or the newly online
-        # user without delay.  Note that we won't send an update here for a
-        # timestamp update, because we rely on the browser to ping us every 50
-        # seconds for realm-wide status updates, and those updates should have
-        # recent timestamps, which means the browser won't think active users
-        # have gone idle.  If we were more aggressive in this function about
-        # sending timestamp updates, we could eliminate the ping responses, but
-        # that's not a high priority for now, considering that most of our non-MIT
-        # realms are pretty small.
         send_presence_changed(user_profile, presence)
 
 

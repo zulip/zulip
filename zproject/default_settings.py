@@ -411,6 +411,10 @@ STAGING_ERROR_NOTIFICATIONS = False
 # default_settings, since it likely isn't usefully user-configurable.
 OFFLINE_THRESHOLD_SECS = 5 * 60
 
+# Specifies the number of active users in the realm
+# above which sending of presence update events will be disabled.
+USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS = 100
+
 # How many days deleted messages data should be kept before being
 # permanently deleted.
 ARCHIVED_DATA_VACUUMING_DELAY_DAYS = 7

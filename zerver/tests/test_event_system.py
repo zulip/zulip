@@ -5,9 +5,15 @@ from unittest import mock
 import orjson
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
+from django.utils.timezone import now as timezone_now
 
 from version import API_FEATURE_LEVEL, ZULIP_VERSION
-from zerver.lib.actions import check_send_message, do_change_user_role, do_set_realm_property
+from zerver.lib.actions import (
+    check_send_message,
+    do_change_user_role,
+    do_set_realm_property,
+    do_update_user_presence,
+)
 from zerver.lib.event_schema import check_restart_event
 from zerver.lib.events import fetch_initial_state_data, get_raw_user_data
 from zerver.lib.test_classes import ZulipTestCase
@@ -16,6 +22,7 @@ from zerver.lib.users import get_api_key
 from zerver.models import (
     Realm,
     UserMessage,
+    UserPresence,
     UserProfile,
     flush_per_request_caches,
     get_client,
@@ -1111,3 +1118,28 @@ class TestGetRawUserDataSystemBotRealm(ZulipTestCase):
             bot_profile = get_system_bot(bot_email)
             self.assertTrue(bot_profile.id in result)
             self.assertTrue(result[bot_profile.id]["is_cross_realm_bot"])
+
+
+class TestUserPresenceUpdatesDisabled(ZulipTestCase):
+    def test_presence_events_diabled_on_larger_realm(self) -> None:
+        # First check that normally the mocked function gets called.
+        with mock.patch("zerver.lib.actions.send_event") as mock_send_event:
+            do_update_user_presence(
+                self.example_user("cordelia"),
+                get_client("website"),
+                timezone_now(),
+                UserPresence.ACTIVE,
+            )
+        mock_send_event.assert_called_once()
+
+        # Now check that if the realm has more than the USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS
+        # amount of active users, send_event doesn't get called.
+        with mock.patch("zerver.lib.actions.send_event") as mock_send_event:
+            with self.settings(USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS=1):
+                do_update_user_presence(
+                    self.example_user("hamlet"),
+                    get_client("website"),
+                    timezone_now(),
+                    UserPresence.ACTIVE,
+                )
+        mock_send_event.assert_not_called()
