@@ -98,6 +98,18 @@ export function is_user_muted(user_id) {
     return muted_users.has(user_id);
 }
 
+export function filter_muted_user_ids(user_ids) {
+    // Returns a copy of the user ID list, after removing muted user IDs.
+    const base_user_ids = [...user_ids];
+    return base_user_ids.filter((user_id) => !is_user_muted(user_id));
+}
+
+export function filter_muted_users(persons) {
+    // Returns a copy of the people list, after removing muted users.
+    const base_users = [...persons];
+    return base_users.filter((person) => !is_user_muted(person.user_id));
+}
+
 export function get_muted_users() {
     const users = [];
     for (const [id, date_muted] of muted_users) {

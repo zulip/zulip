@@ -92,6 +92,30 @@ test("add_and_remove_mutes", () => {
     assert(!muting.is_user_muted(1));
 });
 
+test("get_unmuted_users", () => {
+    const hamlet = {
+        user_id: 1,
+        full_name: "King Hamlet",
+    };
+    const cordelia = {
+        user_id: 2,
+        full_name: "Cordelia, Lear's Daughter",
+    };
+    const othello = {
+        user_id: 3,
+        full_name: "Othello, Moor of Venice",
+    };
+
+    muting.add_muted_user(hamlet.user_id);
+    muting.add_muted_user(cordelia.user_id);
+
+    assert.deepEqual(
+        muting.filter_muted_user_ids([hamlet.user_id, cordelia.user_id, othello.user_id]),
+        [othello.user_id],
+    );
+    assert.deepEqual(muting.filter_muted_users([hamlet, cordelia, othello]), [othello]);
+});
+
 test("get_mutes", () => {
     assert.deepEqual(muting.get_muted_topics(), []);
     muting.add_muted_topic(office.stream_id, "gossip", 1577836800);
