@@ -4,14 +4,15 @@
 # You can also read
 #   https://www.caktusgroup.com/blog/2016/02/02/writing-unit-tests-django-migrations/
 # to get a tutorial on the framework that inspired this feature.
-from datetime import datetime, timezone
-from unittest import skip
+from typing import Optional
 
 import orjson
 from django.db.migrations.state import StateApps
+from django.utils.timezone import now as timezone_now
 
 from zerver.lib.test_classes import MigrationsTestCase
 from zerver.lib.test_helpers import use_db_models
+from zerver.models import get_stream
 
 # Important note: These tests are very expensive, and details of
 # Django's database transaction model mean it does not super work to
@@ -29,76 +30,48 @@ from zerver.lib.test_helpers import use_db_models
 # been tested for a migration being merged.
 
 
-@skip("Cannot be run because there is a non-atomic migration that has been merged after it")
-class ScheduledEmailData(MigrationsTestCase):
-    migrate_from = "0467_rename_extradata_realmauditlog_extra_data_json"
-    migrate_to = "0468_rename_followup_day_email_templates"
+class EditHistoryMigrationTest(MigrationsTestCase):
+    migrate_from = "0478_add_edit_history_entries"
+    migrate_to = "0479_backfill_edit_history"
+
+    msg_id: Optional[int] = None
 
     @use_db_models
     def setUpBeforeMigration(self, apps: StateApps) -> None:
+        Message = apps.get_model("zerver", "Message")
+        Recipient = apps.get_model("zerver", "Recipient")
+
         iago = self.example_user("iago")
-        ScheduledEmail = apps.get_model("zerver", "ScheduledEmail")
-        send_date = datetime(2025, 1, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
+        stream_name = "Denmark"
+        denmark = get_stream(stream_name, iago.realm)
+        denmark_recipient = Recipient.objects.get(type=2, type_id=denmark.id)
 
-        templates = [
-            ["zerver/emails/followup_day1", "a", True, 10],
-            ["zerver/emails/followup_day2", "b", False, 20],
-            ["zerver/emails/onboarding_zulip_guide", "c", True, 30],
-        ]
+        self.msg_id = Message.objects.create(
+            recipient_id=denmark_recipient.id,
+            subject="testing migration",
+            sender_id=iago.id,
+            sending_client_id=1,
+            content="whatever",
+            date_sent=timezone_now(),
+            realm_id=iago.realm_id,
+        ).id
 
-        for template in templates:
-            email_fields = {
-                "template_prefix": template[0],
-                "string_context": template[1],
-                "boolean_context": template[2],
-                "integer_context": template[3],
-            }
+        msg = Message.objects.get(id=self.msg_id)
+        msg.edit_history = orjson.dumps(
+            [
+                {
+                    "user_id": 11,
+                    "timestamp": 1618597518,
+                    "prev_content": "test msg",
+                    "prev_rendered_content": "<p>test msg</p>",
+                    "prev_rendered_content_version": 1,
+                }
+            ]
+        ).decode()
+        msg.save(update_fields=["edit_history"])
 
-            email = ScheduledEmail.objects.create(
-                type=1,
-                realm=iago.realm,
-                scheduled_timestamp=send_date,
-                data=orjson.dumps(email_fields).decode(),
-            )
-            email.users.add(iago.id)
-
-    def test_updated_email_templates(self) -> None:
-        ScheduledEmail = self.apps.get_model("zerver", "ScheduledEmail")
-        send_date = datetime(2025, 1, 1, 1, 0, 0, 0, tzinfo=timezone.utc)
-
-        old_templates = [
-            "zerver/emails/followup_day1",
-            "zerver/emails/followup_day2",
-        ]
-
-        current_templates = [
-            "zerver/emails/account_registered",
-            "zerver/emails/onboarding_zulip_guide",
-            "zerver/emails/onboarding_zulip_topics",
-        ]
-
-        email_data = [
-            ["zerver/emails/account_registered", "a", True, 10],
-            ["zerver/emails/onboarding_zulip_topics", "b", False, 20],
-            ["zerver/emails/onboarding_zulip_guide", "c", True, 30],
-        ]
-
-        scheduled_emails = ScheduledEmail.objects.all()
-        self.assert_length(scheduled_emails, 3)
-
-        checked_emails = []
-        for email in scheduled_emails:
-            self.assertEqual(email.type, 1)
-            self.assertEqual(email.scheduled_timestamp, send_date)
-
-            updated_data = orjson.loads(email.data)
-            template_prefix = updated_data["template_prefix"]
-            self.assertFalse(template_prefix in old_templates)
-            for data in email_data:
-                if template_prefix == data[0]:
-                    self.assertEqual(updated_data["string_context"], data[1])
-                    self.assertEqual(updated_data["boolean_context"], data[2])
-                    self.assertEqual(updated_data["integer_context"], data[3])
-                    checked_emails.append(template_prefix)
-
-        self.assertEqual(current_templates, sorted(checked_emails))
+    def test_backfill_edit_message_array(self) -> None:
+        Message = self.apps.get_model("zerver", "Message")
+        msg = Message.objects.filter(id=self.msg_id).first()
+        edit_history = orjson.loads(msg.edit_history)
+        self.assertListEqual(msg.edit_history_entries, edit_history)
