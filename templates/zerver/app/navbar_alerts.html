@@ -48,9 +48,14 @@
     <div data-process="server-needs-upgrade" class="alert alert-info red">
         <div data-step="1">
             {{ _("This Zulip server is running an old version and should be upgraded.") }}
-            <a class="alert-link" href="https://zulip.readthedocs.io/en/latest/overview/release-lifecycle.html#upgrade-nag" target="_blank" rel="noopener noreferrer">
-                {{ _("Learn more.") }}
-            </a>
+            <span class="buttons">
+                <a class="alert-link" href="https://zulip.readthedocs.io/en/latest/overview/release-lifecycle.html#upgrade-nag" target="_blank" rel="noopener noreferrer">
+                    {{ _("Learn more") }}
+                </a>
+                &bull;
+                <a class="alert-link dismiss-upgrade-nag" role="button" tabindex=0>{{ _("Dismiss for a week") }}</a>
+            </span>
+
         </div>
         <span class="close" data-dismiss="alert" aria-label="{{ _('Close') }}" role="button" tabindex=0>&times;</span>
     </div>

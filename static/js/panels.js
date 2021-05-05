@@ -1,3 +1,4 @@
+import {addDays} from "date-fns";
 import $ from "jquery";
 
 import {localstorage} from "./localstorage";
@@ -53,6 +54,28 @@ function should_show_notifications(ls) {
     );
 }
 
+export function should_show_server_upgrade_notification(ls) {
+    // We do not show the server upgrade nag for a week after the user
+    // clicked "dismiss".
+    if (!localstorage.supported() || ls.get("lastUpgradeNagDismissalTime") === undefined) {
+        return true;
+    }
+
+    const last_notification_dismissal_time = ls.get("lastUpgradeNagDismissalTime");
+
+    const upgrade_nag_dismissal_duration = addDays(new Date(last_notification_dismissal_time), 7);
+
+    // show the notification only if the time duration is completed.
+    return Date.now() > upgrade_nag_dismissal_duration;
+}
+
+export function dismiss_upgrade_nag(ls) {
+    $(".alert[data-process='server-needs-upgrade'").hide();
+    if (localstorage.supported()) {
+        ls.set("lastUpgradeNagDismissalTime", Date.now());
+    }
+}
+
 export function check_profile_incomplete() {
     if (!page_params.is_admin) {
         return false;
@@ -83,7 +106,9 @@ export function initialize() {
     if (page_params.insecure_desktop_app) {
         open($("[data-process='insecure-desktop-app']"));
     } else if (page_params.server_needs_upgrade) {
-        open($("[data-process='server-needs-upgrade']"));
+        if (should_show_server_upgrade_notification(ls)) {
+            open($("[data-process='server-needs-upgrade']"));
+        }
     } else if (page_params.warn_no_email === true && page_params.is_admin) {
         // if email has not been set up and the user is the admin,
         // display a warning to tell them to set up an email server.
@@ -116,6 +141,12 @@ export function initialize() {
         $(".bankruptcy-loader").show();
         setTimeout(unread_ops.mark_all_as_read, 1000);
         $(window).trigger("resize");
+    });
+
+    $(".dismiss-upgrade-nag").on("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dismiss_upgrade_nag(ls);
     });
 
     $("#panels").on("click", ".alert .close, .alert .exit", function (e) {
