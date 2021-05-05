@@ -34,6 +34,16 @@ There are currently two ways to trigger an outgoing webhook:
 2.  **Send a private message** with the bot as one of the recipients.
     If the bot replies, its reply will be sent to that thread.
 
+## Timeouts
+
+The remote server must respond to a `POST` request in a timely manner.
+The default timeout for outgoing webhooks is 10 seconds, though this
+can be configured by the administrator of the Zulip server by setting
+`OUTGOING_WEBHOOKS_TIMEOUT_SECONDS` in the [server's
+settings][settings].
+
+[settings]: https://zulip.readthedocs.io/en/latest/subsystems/settings.html#server-settings
+
 ## Outgoing webhook format
 
 This is an example of the JSON payload that the Zulip server will `POST`
