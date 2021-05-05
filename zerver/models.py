@@ -3025,6 +3025,7 @@ class AbstractMessage(models.Model):
     # A JSON-encoded list of objects describing any past edits to this
     # message, oldest first.
     edit_history = models.TextField(null=True)
+    edit_history_entries = models.JSONField(default=list)
 
     # Whether the message contains a (link to) an uploaded file.
     has_attachment = models.BooleanField(default=False, db_index=True)
