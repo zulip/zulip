@@ -3857,7 +3857,8 @@ nav {
     }
 }
 
-#download-android-apk {
+#download-android-apk,
+#download-mac-arm64 {
     display: inline-block;
     color: hsl(0, 0%, 100%);
     font-size: 13px;
