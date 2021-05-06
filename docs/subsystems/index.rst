@@ -28,7 +28,6 @@ Subsystems documentation
    client
    logging
    typing-indicators
-   users
    django-upgrades
    release-checklist
    api-release-checklist
