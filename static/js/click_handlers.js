@@ -607,13 +607,13 @@ export function initialize() {
 
     // MISC
 
-    (function () {
+    {
         const sel = ["#stream_filters", "#global_filters", "#user_presences"].join(", ");
 
         $(sel).on("click", "a", function () {
             this.blur();
         });
-    })();
+    }
 
     popovers.register_click_handlers();
     emoji_picker.register_click_handlers();
@@ -765,7 +765,7 @@ export function initialize() {
     // Don't focus links on context menu.
     $("body").on("contextmenu", "a", (e) => e.target.blur());
 
-    (function () {
+    {
         const map = {
             ".stream-description-editable": {
                 on_start: stream_edit.set_raw_description,
@@ -841,7 +841,7 @@ export function initialize() {
                 $(`[data-make-editable='${CSS.escape(selector)}']`).html("");
             }
         });
-    })();
+    }
 
     // HOTSPOTS
 

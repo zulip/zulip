@@ -245,7 +245,7 @@ export function create(opts) {
         },
     };
 
-    (function events() {
+    {
         store.$parent.on("keydown", ".input", (e) => {
             const char = e.keyCode || e.charCode;
 
@@ -380,7 +380,7 @@ export function create(opts) {
             );
             e.preventDefault();
         });
-    })();
+    }
 
     // the external, user-accessible prototype.
     const prototype = {

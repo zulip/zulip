@@ -1030,7 +1030,7 @@ export function initialize() {
         $(".subscriptions-header").removeClass("slide-left");
     });
 
-    (function defocus_sub_settings() {
+    {
         const sel = ".search-container, .streams-list, .subscriptions-header";
 
         $("#subscriptions_table").on("click", sel, (e) => {
@@ -1038,5 +1038,5 @@ export function initialize() {
                 stream_edit.open_edit_panel_empty();
             }
         });
-    })();
+    }
 }
