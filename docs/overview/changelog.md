@@ -1,11 +1,9 @@
 # Version History
 
-All notable changes to the Zulip server are documented in this file.
-
-## Unreleased
-
-This section lists notable unreleased changes; it is generally updated
-in bursts.
+This page contains the release history for the Zulip 3.x stable
+release series. See the [current Zulip changelog][latest-changelog]
+for newer release series, or the [commit log][commit-log] for an
+up-to-date list of raw changes.
 
 ### 3.4 -- April 14, 2021
 
@@ -1910,3 +1908,7 @@ easily read them all when upgrading across multiple releases.
 * [Upgrade notes for 1.9.0](#upgrade-notes-for-1-9-0)
 * [Upgrade notes for 1.8.0](#upgrade-notes-for-1-8-0)
 * [Upgrade notes for 1.7.0](#upgrade-notes-for-1-7-0)
+
+[docker-zulip]: https://github.com/zulip/docker-zulip
+[commit-log]: https://github.com/zulip/zulip/commits/master
+[latest-changelog]: https://zulip.readthedocs.io/en/latest/overview/changelog.html
