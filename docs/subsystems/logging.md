@@ -10,10 +10,10 @@ and zero known JavaScript exceptions on the frontend.  While there
 will always be new bugs being introduced, that goal is impossible
 without an efficient and effective error reporting framework.
 
-We expect to in the future integrate a service like [Sentry][sentry]
-to make it easier for very large installations like zulip.com to
-manage their exceptions and ensure they are all tracked down, but our
-default email-based system is great for small installations.
+We provide integration with [Sentry][sentry] to make it easier for
+very large installations like zulip.com to manage their exceptions and
+ensure they are all tracked down, but our default email-based system
+is great for small installations.
 
 ## Backend error reporting
 
@@ -39,6 +39,11 @@ infrastructure needed by our error reporting system:
 Since 500 errors in any Zulip server are usually a problem the server
 administrator should investigate and/or report upstream, we have this
 email reporting system configured to report errors by default.
+
+Zulip's optional [Sentry][sentry] integration will aggregate errors to
+show which users and realms are affected, any logging which happened
+prior to the exception, local variables in each frame of the
+exception, and the full request headers which triggered it.
 
 ### Backend logging
 

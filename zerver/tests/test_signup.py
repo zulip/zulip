@@ -1,6 +1,5 @@
 import datetime
 import re
-import smtplib
 import time
 import urllib
 from typing import Any, List, Optional, Sequence
@@ -61,7 +60,12 @@ from zerver.lib.mobile_auth_otp import (
 )
 from zerver.lib.name_restrictions import is_disposable_domain
 from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
-from zerver.lib.send_email import FromAddress, deliver_email, send_future_email
+from zerver.lib.send_email import (
+    EmailNotDeliveredException,
+    FromAddress,
+    deliver_email,
+    send_future_email,
+)
 from zerver.lib.stream_subscription import get_stream_subscriptions_for_user
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.subdomains import is_root_domain_available
@@ -3164,38 +3168,37 @@ class UserSignUpTest(InviteUserBase):
 
     def test_bad_email_configuration_for_accounts_home(self) -> None:
         """
-        Make sure we redirect for SMTP errors.
+        Make sure we redirect for EmailNotDeliveredException.
         """
         email = self.nonreg_email("newguy")
 
         smtp_mock = patch(
             "zerver.views.registration.send_confirm_registration_email",
-            side_effect=smtplib.SMTPException("uh oh"),
+            side_effect=EmailNotDeliveredException,
         )
 
         with smtp_mock, self.assertLogs(level="ERROR") as m:
             result = self.client_post("/accounts/home/", {"email": email})
 
         self._assert_redirected_to(result, "/config-error/smtp")
-
-        self.assertEqual(m.output, ["ERROR:root:Error in accounts_home: uh oh"])
+        self.assertEqual(m.output, ["ERROR:root:Error in accounts_home"])
 
     def test_bad_email_configuration_for_create_realm(self) -> None:
         """
-        Make sure we redirect for SMTP errors.
+        Make sure we redirect for EmailNotDeliveredException.
         """
         email = self.nonreg_email("newguy")
 
         smtp_mock = patch(
             "zerver.views.registration.send_confirm_registration_email",
-            side_effect=smtplib.SMTPException("uh oh"),
+            side_effect=EmailNotDeliveredException,
         )
 
         with smtp_mock, self.assertLogs(level="ERROR") as m:
             result = self.client_post("/new/", {"email": email})
 
         self._assert_redirected_to(result, "/config-error/smtp")
-        self.assertEqual(m.output, ["ERROR:root:Error in create_realm: uh oh"])
+        self.assertEqual(m.output, ["ERROR:root:Error in create_realm"])
 
     def test_user_default_language_and_timezone(self) -> None:
         """
