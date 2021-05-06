@@ -87,8 +87,6 @@ else:
         worker_status.check_returncode()
     workers = [status_line.split()[0] for status_line in worker_status.stdout.splitlines()]
 
-if os.path.exists("/etc/supervisor/conf.d/zulip/thumbor.conf"):
-    workers.append("zulip-thumbor")
 if os.path.exists("/etc/supervisor/conf.d/zulip/zulip_db.conf"):
     workers.append("process-fts-updates")
 

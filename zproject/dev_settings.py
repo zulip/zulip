@@ -157,7 +157,6 @@ if FAKE_LDAP_MODE:
         }
     AUTHENTICATION_BACKENDS += ("zproject.backends.ZulipLDAPAuthBackend",)
 
-THUMBOR_URL = "http://127.0.0.1:9995"
 THUMBNAIL_IMAGES = True
 
 SEARCH_PILLS_ENABLED = bool(os.getenv("SEARCH_PILLS_ENABLED", False))

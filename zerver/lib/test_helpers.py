@@ -507,6 +507,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             "casper/(?P<path>.+)",
             "static/(?P<path>.+)",
             "flush_caches",
+            "external_content/(?P<digest>[^/]+)/(?P<received_url>[^/]+)",
             *(webhook.url for webhook in WEBHOOK_INTEGRATIONS if not include_webhooks),
         }
 

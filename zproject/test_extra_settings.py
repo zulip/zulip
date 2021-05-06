@@ -204,9 +204,7 @@ BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"
 TWO_FACTOR_AUTHENTICATION_ENABLED = False
 PUSH_NOTIFICATION_BOUNCER_URL = None
 
-THUMBOR_URL = "http://127.0.0.1:9995"
 THUMBNAIL_IMAGES = True
-THUMBOR_SERVES_CAMO = True
 
 # Logging the emails while running the tests adds them
 # to /emails page.

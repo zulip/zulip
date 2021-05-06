@@ -91,7 +91,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /srv/zulip-venv-cache
-          key: v1-venv-${{ matrix.os }}-${{ hashFiles('requirements/thumbor-dev.txt') }}-${{ hashFiles('requirements/dev.txt') }}
+          key: v1-venv-${{ matrix.os }}-${{ hashFiles('requirements/dev.txt') }}
           restore-keys: v1-venv-${{ matrix.os }}
 
       - name: Restore emoji cache

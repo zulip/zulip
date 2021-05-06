@@ -12,4 +12,3 @@
 !/var/puppeteer/test_credentials.d.ts
 /zulip-current-venv
 /zulip-py3-venv
-/zulip-thumbor-venv

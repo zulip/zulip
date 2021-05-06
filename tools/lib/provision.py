@@ -15,11 +15,7 @@ sys.path.append(ZULIP_PATH)
 from typing import TYPE_CHECKING, List
 
 from scripts.lib.node_cache import NODE_MODULES_CACHE_PATH, setup_node_modules
-from scripts.lib.setup_venv import (
-    THUMBOR_VENV_DEPENDENCIES,
-    YUM_THUMBOR_VENV_DEPENDENCIES,
-    get_venv_dependencies,
-)
+from scripts.lib.setup_venv import get_venv_dependencies
 from scripts.lib.zulip_tools import (
     ENDC,
     FAIL,
@@ -159,7 +155,6 @@ UBUNTU_COMMON_APT_DEPENDENCIES = [
     "libxss1",
     "xvfb",
     # Puppeteer dependencies end here.
-    *THUMBOR_VENV_DEPENDENCIES,
 ]
 
 COMMON_YUM_DEPENDENCIES = [
@@ -179,7 +174,6 @@ COMMON_YUM_DEPENDENCIES = [
     "mesa-libgbm",
     "xorg-x11-server-Xvfb",
     # Puppeteer dependencies end here.
-    *YUM_THUMBOR_VENV_DEPENDENCIES,
 ]
 
 BUILD_PGROONGA_FROM_SOURCE = False

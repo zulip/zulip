@@ -242,7 +242,6 @@ expected.
       9992: Django
       9993: Tornado
       9994: webpack
-      9995: Thumbor
    ```
 
    Visit the indicated URL in your web browser.
