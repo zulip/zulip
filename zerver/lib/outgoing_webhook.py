@@ -36,11 +36,7 @@ class OutgoingWebhookServiceInterface(metaclass=abc.ABCMeta):
         self.session: requests.Session = OutgoingSession(
             role="webhook",
             timeout=10,
-        )
-        self.session.headers.update(
-            {
-                "User-Agent": "ZulipOutgoingWebhook/" + ZULIP_VERSION,
-            }
+            headers={"User-Agent": "ZulipOutgoingWebhook/" + ZULIP_VERSION},
         )
 
     @abc.abstractmethod
