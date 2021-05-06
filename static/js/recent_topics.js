@@ -161,20 +161,30 @@ function get_topic_key(stream_id, topic) {
 }
 
 export function process_messages(messages) {
-    // FIX: Currently, we do a complete_rerender every time
-    // we process a new message.
     // While this is inexpensive and handles all the cases itself,
     // the UX can be bad if user wants to scroll down the list as
     // the UI will be returned to the beginning of the list on every
     // update.
+    //
+    // Only rerender if topic_data actually
+    // changed.
+    let topic_data_changed = false;
     for (const msg of messages) {
-        process_message(msg);
+        if (process_message(msg)) {
+            topic_data_changed = true;
+        }
     }
-    complete_rerender();
+
+    if (topic_data_changed) {
+        complete_rerender();
+    }
 }
 
 export function process_message(msg) {
+    // This function returns if topic_data
+    // has changed or not.
     if (msg.type !== "stream") {
+        // We don't process private messages yet.
         return false;
     }
     // Initialize topic data
