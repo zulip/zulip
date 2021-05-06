@@ -6,8 +6,9 @@ All notable changes to the Zulip server are documented in this file.
 
 ### 4.0 -- Unreleased
 
-This section lists notable unreleased changes; it is generally updated
-in bursts.
+This section is an incomplete draft of the release notes for the next
+major release, and is only updated occasionally.  See the [commit
+log][commit-log] for an up-to-date list of raw changes.
 
 ### 4.0-rc1 -- May 3, 2021
 
@@ -40,7 +41,6 @@ in bursts.
   better error handling for the mobile and terminal apps.
 - The frontend internationalization library was switched from i18next
   to FormatJS.
-
 
 [roles-and-permissions]: https://zulip.com/help/roles-and-permissions
 
@@ -2112,3 +2112,4 @@ easily read them all when upgrading across multiple releases.
 * [Upgrade notes for 1.7.0](#upgrade-notes-for-1-7-0)
 
 [docker-zulip]: https://github.com/zulip/docker-zulip
+[commit-log]: https://github.com/zulip/zulip/commits/master
