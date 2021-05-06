@@ -25,9 +25,8 @@ from scripts.lib.zulip_tools import (
 
 config_file = get_config_file()
 deploy_options = get_deploy_options(config_file)
-remote_url = get_config(
-    config_file, "deployment", "git_repo_url", "https://github.com/zulip/zulip.git"
-)
+upstream_url = "https://github.com/zulip/zulip.git"
+remote_url = get_config(config_file, "deployment", "git_repo_url", upstream_url)
 
 assert_running_as_root(strip_lib_from_paths=True)
 
@@ -58,6 +57,8 @@ get_deployment_lock(error_rerun_script)
 
 try:
     deploy_path = make_deploy_path()
+
+    # Populate LOCAL_GIT_CACHE_DIR with both the requested remote and zulip/zulip.
     if not os.path.exists(LOCAL_GIT_CACHE_DIR):
         logging.info("Cloning the repository")
         subprocess.check_call(
@@ -67,13 +68,22 @@ try:
     if os.stat(LOCAL_GIT_CACHE_DIR).st_uid == 0:
         subprocess.check_call(["chown", "-R", "zulip:zulip", LOCAL_GIT_CACHE_DIR])
 
-    logging.info("Fetching the latest commits")
     os.chdir(LOCAL_GIT_CACHE_DIR)
     subprocess.check_call(
         ["git", "remote", "set-url", "origin", remote_url], preexec_fn=su_to_zulip
     )
-    subprocess.check_call(["git", "fetch", "-q", "--tags"], preexec_fn=su_to_zulip)
 
+    # Ensure upstream remote is configured; we need this to make `git describe` accurate.
+    remotes = subprocess.check_output(["git", "remote"], preexec_fn=su_to_zulip).split(b"\n")
+    if b"upstream" not in remotes:
+        subprocess.check_call(
+            ["git", "remote", "add", "upstream", remote_url], preexec_fn=su_to_zulip
+        )
+
+    logging.info("Fetching the latest commits")
+    subprocess.check_call(["git", "fetch", "-q", "--tags", "--all"], preexec_fn=su_to_zulip)
+
+    # Generate the deployment directory via git clone from our local repository.
     subprocess.check_call(
         ["git", "clone", "-q", "-b", refname, LOCAL_GIT_CACHE_DIR, deploy_path],
         stdout=open("/dev/null", "w"),
