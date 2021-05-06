@@ -117,18 +117,40 @@ function set_table_focus(row, col) {
         return true;
     }
 
-    // Setting focus after the render is complete doesn't partially hide the row from view.
-    setTimeout(() => {
-        topic_rows.eq(row).find(".recent_topics_focusable").eq(col).children().trigger("focus");
-    }, 0);
+    const topic_row = topic_rows.eq(row);
+    topic_row.find(".recent_topics_focusable").eq(col).children().trigger("focus");
+
+    // Bring the focused element in view in the smoothest
+    // possible way. Using `block: center` is not a
+    // smooth scrolling experience.
+    // Using {block: "nearest"}, the element:
+    // * is aligned at the top of its ancestor if you're currently below it.
+    // * is aligned at the bottom of its ancestor if you're currently above it.
+    // * stays put, if it's already in view
+    // NOTE: Although, according to
+    // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView#browser_compatibility
+    // `scrollIntoView` is not fully supported on Safari,
+    // it works as intended on Safari v14.0.3 on macOS Big Sur.
+    topic_row.get()[0].scrollIntoView({
+        block: "nearest",
+    });
+
     current_focus_elem = "table";
 
-    const topic_row = topic_rows.eq(row);
     const message = {
         stream: topic_row.find(".recent_topic_stream a").text(),
         topic: topic_row.find(".recent_topic_name a").text(),
     };
     compose_closed_ui.update_reply_recipient_label(message);
+
+    // focused topic can be under table `thead`
+    // or under compose, so, to avoid that
+    // from happening, we bring the element to center.
+    if (!is_topic_visible_to_user(topic_row)) {
+        topic_row.get()[0].scrollIntoView({
+            block: "center",
+        });
+    }
     return true;
 }
 
@@ -500,6 +522,57 @@ function topic_sort(a, b) {
     return -1;
 }
 
+function is_topic_visible_to_user(topic_row) {
+    const scroll_container = $("#recent_topics_table .table_fix_head");
+    const thead_height = 30;
+    const under_closed_compose_region_height = 50;
+
+    const scroll_container_top = $(scroll_container).offset().top + thead_height;
+    const scroll_container_bottom =
+        scroll_container_top + $(scroll_container).height() - under_closed_compose_region_height;
+
+    const topic_row_top = $(topic_row).offset().top;
+    const topic_row_bottom = topic_row_top + $(topic_row).height();
+
+    // check if topic_row is inside the visible part of scroll container.
+    return topic_row_bottom <= scroll_container_bottom && topic_row_top >= scroll_container_top;
+}
+
+function set_focus_to_element_in_center() {
+    const topic_rows = $("#recent_topics_table table tbody tr");
+    if (row_focus > topic_rows.length) {
+        // User used a filter which reduced
+        // the number of visible rows.
+        return;
+    }
+    let topic_row = topic_rows.eq(row_focus);
+    if (!is_topic_visible_to_user(topic_row)) {
+        // Get the element at the center of the table.
+        const position = document
+            .querySelector("#recent_topics_table .table_fix_head")
+            .getBoundingClientRect();
+        const topic_center_x = (position.left + position.right) / 2;
+        const topic_center_y = (position.top + position.bottom) / 2;
+
+        topic_row = $(document.elementFromPoint(topic_center_x, topic_center_y)).closest("tr");
+
+        row_focus = topic_rows.index(topic_row);
+        set_table_focus(row_focus, col_focus);
+    }
+}
+
+function is_scroll_position_for_render(scroll_container) {
+    const table_bottom_margin = 100; // Extra margin at the bottom of table.
+    const table_row_height = 50;
+    return (
+        scroll_container.scrollTop +
+            scroll_container.clientHeight +
+            table_bottom_margin +
+            table_row_height >
+        scroll_container.scrollHeight
+    );
+}
+
 export function complete_rerender() {
     if (!is_visible()) {
         return;
@@ -540,6 +613,8 @@ export function complete_rerender() {
         html_selector: get_topic_row,
         simplebar_container: $("#recent_topics_table .table_fix_head"),
         callback_after_render: revive_current_focus,
+        is_scroll_position_for_render,
+        post_scroll__pre_render_callback: set_focus_to_element_in_center,
     });
 }
 
