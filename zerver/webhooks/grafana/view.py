@@ -10,7 +10,11 @@ from zerver.models import UserProfile
 
 GRAFANA_TOPIC_TEMPLATE = "{alert_title}"
 
-GRAFANA_MESSAGE_TEMPLATE = "[{rule_name}]({rule_url})\n\n{alert_message}{eval_matches}"
+GRAFANA_ALERT_STATUS_TEMPLATE = "{alert_icon} **{alert_state}**\n\n"
+
+GRAFANA_MESSAGE_TEMPLATE = (
+    "{alert_status}[{rule_name}]({rule_url})\n\n{alert_message}{eval_matches}"
+)
 
 
 @webhook_view("Grafana")
@@ -33,8 +37,23 @@ def api_grafana_webhook(
     if payload.get("message") is not None:
         message_text = payload["message"] + "\n\n"
 
+    if payload.get("state") is not None:
+        if payload.get("state") == "alerting":
+            alert_status = GRAFANA_ALERT_STATUS_TEMPLATE.format(
+                alert_icon=":alert:", alert_state=payload["state"].upper()
+            )
+        elif payload.get("state") == "ok":
+            alert_status = GRAFANA_ALERT_STATUS_TEMPLATE.format(
+                alert_icon=":squared_ok:", alert_state=payload["state"].upper()
+            )
+        else:
+            alert_status = GRAFANA_ALERT_STATUS_TEMPLATE.format(
+                alert_icon=":info:", alert_state=payload["state"].upper()
+            )
+
     body = GRAFANA_MESSAGE_TEMPLATE.format(
         alert_message=message_text,
+        alert_status=alert_status,
         rule_name=payload["ruleName"],
         rule_url=payload["ruleUrl"],
         eval_matches=eval_matches_text,
