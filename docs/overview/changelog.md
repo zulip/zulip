@@ -1,6 +1,7 @@
 # Version history
 
-All notable changes to the Zulip server are documented in this file.
+This page the release history for the Zulip server.  See also the
+[Zulip release lifecycle](../overview/release-lifecycle.md).
 
 ## Zulip 4.x series
 

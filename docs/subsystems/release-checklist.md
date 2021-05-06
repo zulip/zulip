@@ -47,6 +47,8 @@ preparing a new release.
   release branch (for minor releases):
   * Copy the Markdown release notes for the release into
     `docs/overview/changelog.md`.
+  * _Except minor releases:_ Adjust the `changelog.md` heading to have
+    the stable release series boilerplate.
   * Update `ZULIP_VERSION` and `LATEST_RELEASE_VERSION` in `version.py`.
   * _Except minor releases:_ Update `API_FEATURE_LEVEL` to a feature
     level for the final release, and document a reserved range.
