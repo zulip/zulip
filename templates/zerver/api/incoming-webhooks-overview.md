@@ -106,6 +106,13 @@ below are for a webhook named `MyWebHook`.
   associate it with the function called `api_mywebhook_webhook` in
   `zerver/webhooks/mywebhook/view.py`.
 
+## Common Helpers
+
+* If your integration will receive a test webhook payload, you can use
+  `get_setup_webhook_message` to create our standard message for test payloads.
+  You can import this from `zerver/lib/webhooks/common.py`, and it will generate
+  a message like this: "GitHub webhook is successfully configured! 🎉"
+
 ## General advice
 
 * Consider using our Zulip markup to make the output from your
