@@ -12,6 +12,13 @@
     {{t "(no description)"}}
     {{/if}}
 </span>
+{{else if user_status}}
+<span>
+    {{> navbar_icon_and_title }}
+</span>
+<span class="narrow_description rendered_markdown">
+    {{user_status}}
+</span>
 {{else}}
 <span>
     {{> navbar_icon_and_title }}
