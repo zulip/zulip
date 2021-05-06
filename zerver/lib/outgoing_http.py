@@ -5,11 +5,13 @@ from urllib3 import HTTPResponse
 
 
 class OutgoingSession(requests.Session):
-    def __init__(self, role: str, timeout: int) -> None:
+    def __init__(self, role: str, timeout: int, headers: Optional[Dict[str, str]] = None) -> None:
         super().__init__()
         outgoing_adapter = OutgoingHTTPAdapter(role=role, timeout=timeout)
         self.mount("http://", outgoing_adapter)
         self.mount("https://", outgoing_adapter)
+        if headers:
+            self.headers.update(headers)
 
 
 class OutgoingHTTPAdapter(requests.adapters.HTTPAdapter):

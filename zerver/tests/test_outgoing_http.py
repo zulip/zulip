@@ -48,14 +48,34 @@ class RequestMockWithTimeoutAsHeader(responses.RequestsMock):
 
 
 class TestOutgoingHttp(ZulipTestCase):
+    def test_headers(self) -> None:
+        with RequestMockWithProxySupport() as mock_requests:
+            mock_requests.add(responses.GET, "http://example.com/")
+            OutgoingSession(role="testing", timeout=1, headers={"X-Foo": "bar"}).get(
+                "http://example.com/"
+            )
+            self.assertEqual(len(mock_requests.calls), 1)
+            headers = mock_requests.calls[0].request.headers
+            # We don't see a proxy header with no proxy set
+            self.assertFalse("X-Smokescreen-Role" in headers)
+            self.assertEqual(headers["X-Foo"], "bar")
+
     @mock.patch.dict(os.environ, {"http_proxy": "http://localhost:4242"})
     def test_proxy_headers(self) -> None:
         with RequestMockWithProxySupport() as mock_requests:
             mock_requests.add(responses.GET, "http://localhost:4242/")
-            OutgoingSession(role="testing", timeout=1).get("http://example.com/")
+            OutgoingSession(role="testing", timeout=1, headers={"X-Foo": "bar"}).get(
+                "http://example.com/"
+            )
             self.assertEqual(len(mock_requests.calls), 1)
             headers = mock_requests.calls[0].request.headers
             self.assertEqual(headers["X-Smokescreen-Role"], "testing")
+
+            # We don't see the request-level headers in the proxy
+            # request.  This isn't a _true_ test because we're
+            # fiddling the headers above, instead of urllib3 actually
+            # setting them.
+            self.assertFalse("X-Foo" in headers)
 
     def test_timeouts(self) -> None:
         with RequestMockWithTimeoutAsHeader() as mock_requests:
