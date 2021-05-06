@@ -279,10 +279,7 @@ export function populate_user_groups() {
             pill_typeahead.set_up(input, pills, opts);
         }
 
-        (function pill_remove() {
-            if (!can_edit(data.id)) {
-                return;
-            }
+        if (can_edit(data.id)) {
             pills.onPillRemove(() => {
                 // onPillRemove is fired before the pill is removed from
                 // the DOM.
@@ -291,7 +288,7 @@ export function populate_user_groups() {
                     input.trigger("focus");
                 }, 100);
             });
-        })();
+        }
     }
 }
 

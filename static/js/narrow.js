@@ -321,7 +321,7 @@ export function activate(raw_operators, opts) {
 
     const select_immediately = id_info.local_select_id !== undefined;
 
-    (function fetch_messages() {
+    {
         let anchor;
 
         // Either we're trying to center the narrow around a
@@ -354,7 +354,7 @@ export function activate(raw_operators, opts) {
                 maybe_report_narrow_time(msg_list);
             },
         });
-    })();
+    }
 
     if (select_immediately) {
         update_selection({

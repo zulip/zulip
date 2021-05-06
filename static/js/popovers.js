@@ -85,21 +85,17 @@ function elem_to_user_id(elem) {
 // and push the $.fn.data($o, "popover") results to an array.
 // this is needed so that when we try to unload popovers, we can kill all dead
 // ones that no longer have valid parents in the DOM.
-(function (popover) {
-    $.fn.popover = function (...args) {
-        // apply the jQuery object as `this`, and popover function arguments.
-        popover.apply(this, args);
+const old_popover = $.fn.popover;
+$.fn.popover = Object.assign(function (...args) {
+    // apply the jQuery object as `this`, and popover function arguments.
+    old_popover.apply(this, args);
 
-        // if there is a valid "popover" key in the jQuery data object then
-        // push it to the array.
-        if (this.data("popover")) {
-            list_of_popovers.push(this.data("popover"));
-        }
-    };
-
-    // add back all shallow properties of $.fn.popover to the new proxied version.
-    Object.assign($.fn.popover, popover);
-})($.fn.popover);
+    // if there is a valid "popover" key in the jQuery data object then
+    // push it to the array.
+    if (this.data("popover")) {
+        list_of_popovers.push(this.data("popover"));
+    }
+}, old_popover);
 
 function copy_email_handler(e) {
     const email_el = $(e.trigger.parentElement);
@@ -1325,7 +1321,7 @@ export function register_click_handlers() {
         e.preventDefault();
     });
 
-    (function () {
+    {
         let last_scroll = 0;
 
         $(".app").on("scroll", () => {
@@ -1346,7 +1342,7 @@ export function register_click_handlers() {
             // retrigger `hide_all` while still scrolling.
             last_scroll = date;
         });
-    })();
+    }
 }
 
 export function any_active() {
