@@ -182,6 +182,55 @@ run_test("scrolling", () => {
     assert.deepEqual(container.appended_data.html(), items.slice(80, 100).join(""));
 });
 
+run_test("not_scrolling", () => {
+    const container = make_container();
+    const scroll_container = make_scroll_container();
+
+    const items = [];
+
+    let get_scroll_element_called = false;
+    ui.get_scroll_element = (element) => {
+        get_scroll_element_called = true;
+        return element;
+    };
+
+    let post_scroll__pre_render_callback_called = false;
+    const post_scroll__pre_render_callback = () => {
+        post_scroll__pre_render_callback_called = true;
+    };
+
+    for (let i = 0; i < 200; i += 1) {
+        items.push("item " + i);
+    }
+
+    const opts = {
+        modifier: (item) => item,
+        simplebar_container: scroll_container,
+        is_scroll_position_for_render: () => false,
+        post_scroll__pre_render_callback,
+    };
+
+    container.html = (html) => {
+        assert.equal(html, "");
+    };
+    ListWidget.create(container, items, opts);
+
+    assert.deepEqual(container.appended_data.html(), items.slice(0, 80).join(""));
+    assert.equal(get_scroll_element_called, true);
+
+    // Set up our fake geometry.
+    scroll_container.scrollTop = 180;
+    scroll_container.clientHeight = 100;
+    scroll_container.scrollHeight = 260;
+
+    // Since `should_render` is always false, no elements will be
+    // added regardless of scrolling.
+    scroll_container.call_scroll();
+    // appended_data remains the same.
+    assert.deepEqual(container.appended_data.html(), items.slice(0, 80).join(""));
+    assert.equal(post_scroll__pre_render_callback_called, true);
+});
+
 run_test("filtering", () => {
     const container = make_container();
     const scroll_container = make_scroll_container();

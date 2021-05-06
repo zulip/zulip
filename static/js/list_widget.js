@@ -121,6 +121,14 @@ export function valid_filter_opts(opts) {
     return true;
 }
 
+function is_scroll_position_for_render(scroll_container) {
+    return (
+        scroll_container.scrollHeight -
+            (scroll_container.scrollTop + scroll_container.clientHeight) <
+        10
+    );
+}
+
 // @params
 // container: jQuery object to append to.
 // list: The list of items to progressively append.
@@ -278,7 +286,16 @@ export function create($container, list, opts) {
         // on scroll of the nearest scrolling container, if it hits the bottom
         // of the container then fetch a new block of items and render them.
         meta.scroll_container.on("scroll.list_widget_container", function () {
-            if (this.scrollHeight - (this.scrollTop + this.clientHeight) < 10) {
+            if (opts.post_scroll__pre_render_callback) {
+                opts.post_scroll__pre_render_callback();
+            }
+
+            if (opts.is_scroll_position_for_render === undefined) {
+                opts.is_scroll_position_for_render = is_scroll_position_for_render;
+            }
+
+            const should_render = opts.is_scroll_position_for_render(this);
+            if (should_render) {
                 widget.render();
             }
         });
