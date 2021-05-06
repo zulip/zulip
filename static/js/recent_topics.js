@@ -108,6 +108,14 @@ export function set_default_focus() {
     current_focus_elem.trigger("focus");
 }
 
+function get_min_load_count(already_rendered_count, load_count) {
+    const extra_rows_for_viewing_pleasure = 15;
+    if (row_focus > already_rendered_count + load_count) {
+        return row_focus + extra_rows_for_viewing_pleasure - already_rendered_count;
+    }
+    return load_count;
+}
+
 function set_table_focus(row, col) {
     const topic_rows = $("#recent_topics_table table tbody tr");
     if (topic_rows.length === 0 || row < 0 || row >= topic_rows.length) {
@@ -615,6 +623,7 @@ export function complete_rerender() {
         callback_after_render: revive_current_focus,
         is_scroll_position_for_render,
         post_scroll__pre_render_callback: set_focus_to_element_in_center,
+        get_min_load_count,
     });
 }
 
