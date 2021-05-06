@@ -31,7 +31,6 @@ Subsystems documentation
    django-upgrades
    release-checklist
    api-release-checklist
-   conversion
    input-pills
    thumbnailing
    presence
