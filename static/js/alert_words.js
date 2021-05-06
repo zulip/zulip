@@ -32,7 +32,7 @@ export function process_message(message) {
 
     for (const word of my_alert_words) {
         const clean = _.escapeRegExp(word);
-        const before_punctuation = "(?<=\\s)|^|>|[\\(\\\".,';\\[]";
+        const before_punctuation = "\\s|^|>|[\\(\\\".,';\\[]";
         const after_punctuation = "(?=\\s)|$|<|[\\)\\\"\\?!:.,';\\]!]";
 
         const regex = new RegExp(`(${before_punctuation})(${clean})(${after_punctuation})`, "ig");
