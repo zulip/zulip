@@ -34,11 +34,11 @@ class OutgoingWebhookServiceInterface(metaclass=abc.ABCMeta):
         self.user_profile: UserProfile = user_profile
         self.service_name: str = service_name
         self.session: requests.Session = OutgoingSession(
+            role="webhook",
             timeout=10,
         )
         self.session.headers.update(
             {
-                "X-Smokescreen-Role": "webhook",
                 "User-Agent": "ZulipOutgoingWebhook/" + ZULIP_VERSION,
             }
         )
