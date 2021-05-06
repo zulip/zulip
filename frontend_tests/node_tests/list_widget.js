@@ -199,6 +199,12 @@ run_test("not_scrolling", () => {
         post_scroll__pre_render_callback_called = true;
     };
 
+    let get_min_load_count_called = false;
+    const get_min_load_count = (offset, load_count) => {
+        get_min_load_count_called = true;
+        return load_count;
+    };
+
     for (let i = 0; i < 200; i += 1) {
         items.push("item " + i);
     }
@@ -208,6 +214,7 @@ run_test("not_scrolling", () => {
         simplebar_container: scroll_container,
         is_scroll_position_for_render: () => false,
         post_scroll__pre_render_callback,
+        get_min_load_count,
     };
 
     container.html = (html) => {
@@ -229,6 +236,7 @@ run_test("not_scrolling", () => {
     // appended_data remains the same.
     assert.deepEqual(container.appended_data.html(), items.slice(0, 80).join(""));
     assert.equal(post_scroll__pre_render_callback_called, true);
+    assert.equal(get_min_load_count_called, true);
 });
 
 run_test("filtering", () => {

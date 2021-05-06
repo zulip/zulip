@@ -194,7 +194,10 @@ export function create($container, list, opts) {
     // and renders the next block of messages automatically
     // into the specified container.
     widget.render = function (how_many) {
-        const load_count = how_many || DEFAULTS.LOAD_COUNT;
+        let load_count = how_many || DEFAULTS.LOAD_COUNT;
+        if (opts.get_min_load_count) {
+            load_count = opts.get_min_load_count(meta.offset, load_count);
+        }
 
         // Stop once the offset reaches the length of the original list.
         if (meta.offset >= meta.filtered_list.length) {
