@@ -188,9 +188,9 @@ def get_bigbluebutton_url(request: HttpRequest, user_profile: UserProfile) -> Ht
         "/calls/bigbluebutton/join",
         urlencode(
             {
-                "meeting_id": '"' + id + '"',
-                "password": '"' + password + '"',
-                "checksum": '"' + checksum + '"',
+                "meeting_id": id,
+                "password": password,
+                "checksum": checksum,
             }
         ),
     )
@@ -207,9 +207,9 @@ def get_bigbluebutton_url(request: HttpRequest, user_profile: UserProfile) -> Ht
 @has_request_variables
 def join_bigbluebutton(
     request: HttpRequest,
-    meeting_id: str = REQ(json_validator=check_string),
-    password: str = REQ(json_validator=check_string),
-    checksum: str = REQ(json_validator=check_string),
+    meeting_id: str = REQ(),
+    password: str = REQ(),
+    checksum: str = REQ(),
 ) -> HttpResponse:
     if settings.BIG_BLUE_BUTTON_URL is None or settings.BIG_BLUE_BUTTON_SECRET is None:
         return json_error(_("Big Blue Button is not configured."))

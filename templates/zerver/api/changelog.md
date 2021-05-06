@@ -10,6 +10,21 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 63**
+
+* `PATCH /settings/notifications`: Removed unnecessary JSON-encoding of string
+  parameter `notification_sound`.
+* `PATCH /settings/display`: Removed unnecessary JSON-encoding of string
+  parameter `default_language`.
+* `POST /users/me/tutorial_status`: Removed unnecessary JSON-encoding of string
+  parameter `status`.
+* `POST /realm/domains`: Removed unnecessary JSON-encoding of string
+  parameter `domain`.
+* `PATCH /default_stream_groups/{user_id}`: Removed unnecessary JSON-encoding of string
+  parameters `new_group_name` and `new_description`.
+* `POST /users/me/hotspots`: Removed unnecessary JSON-encoding of string
+  parameter `hotspot`.
+
 **Feature level 62**
 
 * Added `moderators only` option for `wildcard_mention_policy`.
