@@ -1715,6 +1715,14 @@ class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
         # Silence all the mentions inside blockquotes
         line = re.sub(self.mention_re, lambda m: "@_{}".format(m.group("match")), line)
 
+        # Silence all emoticons inside blockquotes
+        for m in re.finditer(emoticon_regex,line):
+            symbol_re = re.compile(
+                re.escape(m.group(0))
+            )
+            emoticon = m.group(0)
+            line = re.sub(symbol_re, f"@_{emoticon}@_", line)
+
         # And then run the upstream processor's code for removing the '>'
         return super().clean(line)
 
