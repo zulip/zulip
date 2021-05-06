@@ -169,11 +169,6 @@ subprocess.check_call(
     [os.path.join(deploy_path, "scripts", "lib", "create-production-venv"), deploy_path]
 )
 
-# Set up the thumbor venv
-subprocess.check_call(
-    [os.path.join(deploy_path, "scripts", "lib", "create-thumbor-venv"), deploy_path]
-)
-
 # Make sure the right version of node is installed
 subprocess.check_call([os.path.join(deploy_path, "scripts", "lib", "install-node"), deploy_path])
 
@@ -279,7 +274,6 @@ class_renames = {
     "zulip::postgres_appdb_tuned": "zulip::profile::postgresql",
     "zulip::postgres_backups": "zulip::postgresql_backups",
     "zulip::rabbit": "zulip::profile::rabbitmq",
-    "zulip::thumbor": "zulip::profile::thumbor",
     "zulip::voyager": "zulip::profile::standalone",
 }
 classes = re.split(r"\s*,\s*", get_config(config_file, "machine", "puppet_classes"))

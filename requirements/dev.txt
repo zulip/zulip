@@ -627,10 +627,6 @@ libcst==0.3.18 \
     --hash=sha256:30154cd0aaede8f3adfc4bdead23fe022a57e88898b9993cc3fea3bfbaf780d2 \
     --hash=sha256:da89cc1a37702caa6fe7207b1257fad58f0d4643597279733106ca902b4fdbad
     # via pyre-check
-libthumbor==2.0.1 \
-    --hash=sha256:3c4e1a59c019d22f868d225315c06f97fad30fb5e78112d6a230b978e7d24e38 \
-    --hash=sha256:ed4fe5f27f8f90e7285b7e6dce99c1b67d43a140bf370e989080b43d80ce25f0
-    # via -r requirements/common.in
 line-profiler==3.1.0 \
     --hash=sha256:23b074497f196d7dd7bc74386cbba47766162f187ebd78bfbc96238f1ce1202d \
     --hash=sha256:2b937d8b207cee753d175cc65907901bd9ccadfe20ff2038df9aeae2eafcba6b \
@@ -1352,7 +1348,6 @@ six==1.15.0 \
     #   html5lib
     #   isodate
     #   jsonschema
-    #   libthumbor
     #   moto
     #   openapi-core
     #   openapi-schema-validator

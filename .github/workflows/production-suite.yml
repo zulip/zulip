@@ -73,7 +73,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /srv/zulip-venv-cache
-          key: v1-venv-${{ github.job }}-${{ hashFiles('requirements/thumbor-dev.txt') }}-${{ hashFiles('requirements/dev.txt') }}
+          key: v1-venv-${{ github.job }}-${{ hashFiles('requirements/dev.txt') }}
           restore-keys: v1-venv-${{ github.job }}
 
       - name: Restore emoji cache

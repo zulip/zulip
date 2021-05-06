@@ -60,7 +60,6 @@ zulip-git-version
 /zproject/prod_settings.py
 /zulip-current-venv
 /zulip-py3-venv
-/zulip-thumbor-venv
 
 ## Files left by various editors and local environments
 # (Ideally these should be in everyone's respective personal gitignore files.)
@@ -85,5 +84,4 @@ core
 
 ## Miscellaneous
 # (Ideally this section is empty.)
-zthumbor/thumbor_local_settings.py
 .transifexrc

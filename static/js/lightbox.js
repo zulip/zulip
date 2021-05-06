@@ -234,7 +234,6 @@ export function parse_image_data(image) {
         $source = $parent.attr("data-id");
     } else {
         $type = "image";
-        // thumbor supplies the src as thumbnail, data-src-fullsize as full-sized.
         if ($image.attr("data-src-fullsize")) {
             $source = $image.attr("data-src-fullsize");
         } else {
