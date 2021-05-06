@@ -37,7 +37,6 @@ const message_events = zrequire("message_events");
 const message_store = zrequire("message_store");
 const narrow_state = zrequire("narrow_state");
 const people = zrequire("people");
-const recent_topics = zrequire("recent_topics");
 
 const isaac = {
     email: "isaac@example.com",
@@ -77,7 +76,6 @@ run_test("insert_message", (override) => {
     message_store.clear_for_testing();
 
     override(pm_list, "update_private_messages", () => {});
-    override(recent_topics, "is_visible", () => false);
 
     const helper = test_helper(override);
 
