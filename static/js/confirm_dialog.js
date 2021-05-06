@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import render_confirm_dialog from "../templates/confirm_dialog.hbs";
+import render_confirm_dialog_heading from "../templates/confirm_dialog_heading.hbs";
 
 import * as blueslip from "./blueslip";
 import * as overlays from "./overlays";
@@ -59,7 +60,12 @@ export function launch(conf) {
         overlays.close_modal("#confirm_dialog_modal");
     }
 
-    confirm_dialog.find(".confirm_dialog_heading").html(conf.html_heading);
+    confirm_dialog.find(".confirm_dialog_heading").html(
+        render_confirm_dialog_heading({
+            heading_text: conf.html_heading,
+            link: conf.help_link,
+        }),
+    );
     confirm_dialog.find(".confirm_dialog_body").html(conf.html_body);
 
     const yes_button = confirm_dialog.find(".confirm_dialog_yes_button");
