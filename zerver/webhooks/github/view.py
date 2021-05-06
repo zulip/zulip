@@ -11,6 +11,7 @@ from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import (
     check_send_webhook_message,
     get_http_headers_from_filename,
+    get_setup_webhook_message,
     validate_extract_webhook_http_header,
 )
 from zerver.lib.webhooks.git import (
@@ -23,7 +24,6 @@ from zerver.lib.webhooks.git import (
     get_push_commits_event_message,
     get_push_tag_event_message,
     get_release_event_message,
-    get_setup_webhook_message,
 )
 from zerver.models import UserProfile
 

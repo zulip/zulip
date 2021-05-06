@@ -32,8 +32,19 @@ but didn't correctly configure the webhook to send data in the JSON format
 that this integration expects!
 """
 
+SETUP_MESSAGE_TEMPLATE = "{integration} webhook has been successfully configured"
+SETUP_MESSAGE_USER_PART = " by {user_name}"
+
 # Django prefixes all custom HTTP headers with `HTTP_`
 DJANGO_HTTP_PREFIX = "HTTP_"
+
+
+def get_setup_webhook_message(integration: str, user_name: Optional[str] = None) -> str:
+    content = SETUP_MESSAGE_TEMPLATE.format(integration=integration)
+    if user_name:
+        content += SETUP_MESSAGE_USER_PART.format(user_name=user_name)
+    content = f"{content}."
+    return content
 
 
 def notify_bot_owner_about_invalid_json(
