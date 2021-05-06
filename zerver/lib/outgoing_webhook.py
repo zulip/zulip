@@ -7,13 +7,13 @@ from typing import Any, AnyStr, Dict, Optional
 import requests
 from django.conf import settings
 from django.utils.translation import gettext as _
-from requests import Response, Session
-from urllib3 import HTTPResponse
+from requests import Response
 
 from version import ZULIP_VERSION
 from zerver.decorator import JsonableError
 from zerver.lib.actions import check_send_message
 from zerver.lib.message import MessageDict
+from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.queue import retry_event
 from zerver.lib.topic import get_topic_from_message_info
 from zerver.lib.url_encoding import near_message_url
@@ -28,26 +28,14 @@ from zerver.models import (
 )
 
 
-class TimeoutAdapter(requests.adapters.HTTPAdapter):
-    def __init__(self, timeout: Optional[int] = None, *args: Any, **kwargs: Any) -> None:
-        self.timeout = timeout
-        super().__init__(*args, *kwargs)
-
-    def send(self, *args: Any, **kwargs: Any) -> HTTPResponse:
-        if kwargs.get("timeout") is None:
-            kwargs["timeout"] = self.timeout
-        return super().send(*args, **kwargs)
-
-
 class OutgoingWebhookServiceInterface(metaclass=abc.ABCMeta):
     def __init__(self, token: str, user_profile: UserProfile, service_name: str) -> None:
         self.token: str = token
         self.user_profile: UserProfile = user_profile
         self.service_name: str = service_name
-        self.session: Session = Session()
-        timeout_adapter = TimeoutAdapter(timeout=settings.OUTGOING_WEBHOOK_TIMEOUT_SECONDS)
-        self.session.mount("http://", timeout_adapter)
-        self.session.mount("https://", timeout_adapter)
+        self.session: requests.Session = OutgoingSession(
+            timeout=10,
+        )
         self.session.headers.update(
             {
                 "X-Smokescreen-Role": "webhook",
