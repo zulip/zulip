@@ -409,7 +409,17 @@ class EmailAuthBackend(ZulipAuthMixin):
         except PasswordTooWeakError:
             # In some rare cases when password hasher is changed and the user has
             # a weak password, PasswordTooWeakError will be raised.
-            raise JsonableError(_('You need to reset your password.'))
+            self.logger.info(
+                "User %s password can't be rehashed due to being too weak.", user_profile.id
+            )
+            if return_data is not None:
+                return_data["password_reset_needed"] = True
+                return None
+            else:
+                # Since we can't communicate the situation via return_data,
+                # we have to raise an error - a silent failure would not be right
+                # because the password actually is correct, just can't be re-hashed.
+                raise JsonableError(_("You need to reset your password."))
 
         if is_password_correct:
             return user_profile

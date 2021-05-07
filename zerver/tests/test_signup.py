@@ -706,6 +706,28 @@ class LoginTest(ZulipTestCase):
 
         remove_ratelimit_rule(10, 2, domain="authenticate_by_username")
 
+    def test_login_with_old_weak_password_after_hasher_change(self) -> None:
+        user_profile = self.example_user("hamlet")
+        password = "a_password_of_22_chars"
+
+        with self.settings(PASSWORD_HASHERS=("django.contrib.auth.hashers.PBKDF2PasswordHasher",)):
+            user_profile.set_password(password)
+            user_profile.save()
+
+        with self.settings(
+            PASSWORD_HASHERS=(
+                "django.contrib.auth.hashers.Argon2PasswordHasher",
+                "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+            ),
+            PASSWORD_MIN_LENGTH=30,
+        ), self.assertLogs("zulip.auth.email", level="INFO"):
+            result = self.login_with_return(self.example_email("hamlet"), password)
+            self.assertEqual(result.status_code, 200)
+            self.assert_in_response(
+                "Your password has been disabled because it is too weak.", result
+            )
+            self.assert_logged_in_user_id(None)
+
     def test_login_nonexist_user(self) -> None:
         result = self.login_with_return("xxx@zulip.com", "xxx")
         self.assertEqual(result.status_code, 200)

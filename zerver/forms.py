@@ -53,6 +53,10 @@ DEACTIVATED_ACCOUNT_ERROR = (
     "Your account is no longer active. "
     + "Please contact your organization administrator to reactivate it."
 )
+PASSWORD_RESET_NEEDED_ERROR = (
+    "Your password has been disabled because it is too weak. "
+    "Reset your password to create a new one."
+)
 PASSWORD_TOO_WEAK_ERROR = "The password is too weak."
 AUTHENTICATION_RATE_LIMITED_ERROR = (
     "You're making too many attempts to sign in. "
@@ -399,6 +403,9 @@ class OurAuthenticationForm(AuthenticationForm):
 
             if return_data.get("inactive_realm"):
                 raise AssertionError("Programming error: inactive realm in authentication form")
+
+            if return_data.get("password_reset_needed"):
+                raise ValidationError(mark_safe(PASSWORD_RESET_NEEDED_ERROR))
 
             if return_data.get("inactive_user") and not return_data.get("is_mirror_dummy"):
                 # We exclude mirror dummy accounts here. They should be treated as the

@@ -831,6 +831,12 @@ def api_fetch_api_key(
             data={"reason": "password auth disabled"},
             status=403,
         )
+    if return_data.get("password_reset_needed"):
+        return json_error(
+            _("You need to reset your password."),
+            data={"reason": "password reset needed"},
+            status=403,
+        )
     if user_profile is None:
         return json_error(
             _("Your username or password is incorrect."),
