@@ -383,8 +383,8 @@ export class MessageList {
         }
     }
 
-    update_topic_muting_and_rerender() {
-        this.data.update_items_for_topic_muting();
+    update_muting_and_rerender() {
+        this.data.update_items_for_muting();
         // We need to rerender whether or not the narrow hides muted
         // topics, because we need to update recipient bars for topics
         // we've muted when we are displaying those topics.
