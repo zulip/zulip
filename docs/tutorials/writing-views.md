@@ -194,6 +194,11 @@ REQ also helps us with request variable validation. For example:
   integer (`converter` differs from `json_validator` in that it does
   not automatically marshall the input from JSON).
 
+* Since there is no need to JSON-encode strings, usually simply
+  `my_string=REQ()` is correct.  One can pass e.g.
+  `str_validator=check_string_in(...)` where one wants to run a
+  validator on the value of a string.
+
 See
 [zerver/lib/validator.py](https://github.com/zulip/zulip/blob/master/zerver/lib/validator.py)
 for more validators and their documentation.
@@ -261,7 +266,7 @@ For example, in [zerver/views/realm.py](https://github.com/zulip/zulip/blob/mast
 @has_request_variables
 def update_realm(
     request: HttpRequest, user_profile: UserProfile,
-    name: Optional[str]=REQ(json_validator=check_string, default=None),
+    name: Optional[str]=REQ(str_validator=check_string, default=None),
     # ...
 ):
     realm = user_profile.realm
