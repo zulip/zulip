@@ -4,6 +4,16 @@ import * as compose_actions from "./compose_actions";
 import * as message_lists from "./message_lists";
 import * as popovers from "./popovers";
 
+export function hide_reply_button() {
+    $(".reply_button_container").hide();
+    $("#compose_buttons").css("justify-content", "flex-end");
+}
+
+export function show_reply_button() {
+    $(".reply_button_container").show();
+    $("#compose_buttons").css("justify-content", "flex-start");
+}
+
 export function update_reply_recipient_label(message) {
     message = message || message_lists.current.selected_message();
     let recipient_label = "";

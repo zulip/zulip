@@ -106,6 +106,7 @@ export function set_default_focus() {
     // focused element, we switch focus to search.
     current_focus_elem = $("#recent_topics_search");
     current_focus_elem.trigger("focus");
+    compose_closed_ui.hide_reply_button();
 }
 
 function get_min_load_count(already_rendered_count, load_count) {
@@ -149,6 +150,7 @@ function set_table_focus(row, col) {
         stream: topic_row.find(".recent_topic_stream a").text(),
         topic: topic_row.find(".recent_topic_name a").text(),
     };
+    compose_closed_ui.show_reply_button();
     compose_closed_ui.update_reply_recipient_label(message);
 
     // focused topic can be under table `thead`
@@ -754,6 +756,7 @@ export function change_focused_element($elt, input_key) {
                 // go away from the input box when `revive_current_focus` is called
                 // on rerender when user is typing.
                 current_focus_elem = $("#recent_topics_search");
+                compose_closed_ui.hide_reply_button();
                 return true;
             case "escape":
                 if (is_table_focused()) {
@@ -856,6 +859,9 @@ export function change_focused_element($elt, input_key) {
     }
     if (current_focus_elem && input_key !== "escape") {
         current_focus_elem.trigger("focus");
+        if (current_focus_elem.hasClass("btn-recent-filters")) {
+            compose_closed_ui.hide_reply_button();
+        }
         return true;
     }
 
