@@ -55,15 +55,16 @@ let col_focus = 1;
 export const COLUMNS = {
     stream: 0,
     topic: 1,
-    mute: 2,
-    read: 3,
+    reply: 2,
+    mute: 3,
+    read: 4,
 };
 
 // The number of selectable actions in a recent_topics.  Used to
 // implement wraparound of elements with the right/left keys.  Must be
 // increased when we add new actions, or rethought if we add optional
 // actions that only appear in some rows.
-const MAX_SELECTABLE_COLS = 4;
+const MAX_SELECTABLE_COLS = 5;
 
 // we use localstorage to persist the recent topic filters
 const ls_key = "recent_topic_filters";

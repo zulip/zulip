@@ -1316,6 +1316,7 @@ td.pointer {
 }
 
 .on_hover_topic_edit,
+.on_hover_topic_reply,
 .on_hover_topic_read {
     opacity: 0.2;
 }
@@ -1343,6 +1344,7 @@ td.pointer {
 
 .on_hover_topic_edit,
 .always_visible_topic_edit,
+.on_hover_topic_reply,
 .on_hover_topic_read {
     &:hover {
         cursor: pointer;

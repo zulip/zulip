@@ -456,11 +456,14 @@ export function process_enter_key(e) {
         return true;
     }
 
-    // If we got this far, then we're presumably in the message
-    // view, so in that case "Enter" is the hotkey to respond to a message.
-    // Note that "r" has same effect, but that is handled in process_hotkey().
-    compose_actions.respond_to_message({trigger: "hotkey enter"});
-    return true;
+    if (!recent_topics.is_visible()) {
+        // If we got this far, then we're presumably in the message
+        // view, so in that case "Enter" is the hotkey to respond to a message.
+        // Note that "r" has same effect, but that is handled in process_hotkey().
+        compose_actions.respond_to_message({trigger: "hotkey enter"});
+        return true;
+    }
+    return false;
 }
 
 export function process_tab_key() {

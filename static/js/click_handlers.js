@@ -429,6 +429,15 @@ export function initialize() {
 
     $("body").on("keydown", ".on_hover_topic_read", ui_util.convert_enter_to_click);
 
+    $("body").on("click", "#recent_topics_table .on_hover_topic_reply", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        recent_topics.focus_clicked_element($(e.target), recent_topics.COLUMNS.reply);
+        compose_actions.respond_to_message({trigger: "hotkey"});
+    });
+
+    $("body").on("keydown", ".on_hover_topic_reply", ui_util.convert_enter_to_click);
+
     $("body").on("click", ".btn-recent-filters", (e) => {
         e.stopPropagation();
         recent_topics.change_focused_element($(e.target), "click");
