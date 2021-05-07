@@ -11,9 +11,10 @@ import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as channel from "./channel";
 import * as compose_actions from "./compose_actions";
+import * as confirm_dialog from "./confirm_dialog";
 import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget";
 import * as hash_util from "./hash_util";
-import {$t} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as muting from "./muting";
 import * as muting_ui from "./muting_ui";
@@ -600,13 +601,19 @@ export function register_topic_handlers() {
 
         hide_topic_popover();
 
-        $("#delete-topic-modal-holder").html(render_delete_topic_modal(args));
+        const modal_parent = $("#delete-topic-modal-holder");
+        const html_body = render_delete_topic_modal(args);
 
-        $("#do_delete_topic_button").on("click", () => {
-            message_edit.delete_topic(stream_id, topic);
+        confirm_dialog.launch({
+            parent: modal_parent,
+            html_heading: $t_html({defaultMessage: "Delete topic"}),
+            help_link: "/help/delete-a-topic",
+            html_body,
+            html_yes_button: $t_html({defaultMessage: "Confirm"}),
+            on_click: () => {
+                message_edit.delete_topic(stream_id, topic);
+            },
         });
-
-        $("#delete_topic_modal").modal("show");
 
         e.stopPropagation();
     });
