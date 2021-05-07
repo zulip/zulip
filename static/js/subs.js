@@ -478,6 +478,29 @@ export function redraw_left_panel(left_panel_params = get_left_panel_params()) {
         widgets.set(stream_id, $(row).detach());
     }
 
+    let no_search_found = false;
+
+    // hidden_ids size equals stream_ids size then there is no stream match with the searched stream name.
+    if (hidden_ids.size === stream_ids.length) {
+        no_search_found = true;
+    }
+
+    // this is used to show the message on the screen that stream is not found.
+    if (no_search_found) {
+        ui.get_content_element($("#subscriptions_table .streams-list")).html(
+            "No streams match your filter",
+        );
+        ui.get_content_element($("#subscriptions_table .streams-list")).css({
+            textAlign: "center",
+            fontStyle: "italic",
+        });
+    } else {
+        ui.get_content_element($("#subscriptions_table .streams-list")).html("");
+        ui.get_content_element($("#subscriptions_table .streams-list")).css({
+            fontStyle: "normal",
+        });
+    }
+
     ui.reset_scrollbar($("#subscription_overlay .streams-list"));
 
     const all_stream_ids = [...buckets.name, ...buckets.desc, ...buckets.other];
