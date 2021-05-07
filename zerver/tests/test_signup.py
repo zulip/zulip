@@ -710,14 +710,14 @@ class LoginTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         password = "a_password_of_22_chars"
 
-        with self.settings(PASSWORD_HASHERS=("django.contrib.auth.hashers.PBKDF2PasswordHasher",)):
+        with self.settings(PASSWORD_HASHERS=("django.contrib.auth.hashers.SHA1PasswordHasher",)):
             user_profile.set_password(password)
             user_profile.save()
 
         with self.settings(
             PASSWORD_HASHERS=(
-                "django.contrib.auth.hashers.Argon2PasswordHasher",
-                "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+                "django.contrib.auth.hashers.MD5PasswordHasher",
+                "django.contrib.auth.hashers.SHA1PasswordHasher",
             ),
             PASSWORD_MIN_LENGTH=30,
         ), self.assertLogs("zulip.auth.email", level="INFO"):
