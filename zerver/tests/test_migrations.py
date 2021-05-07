@@ -4,8 +4,11 @@
 # You can also read
 #   https://www.caktusgroup.com/blog/2016/02/02/writing-unit-tests-django-migrations/
 # to get a tutorial on the framework that inspired this feature.
+from typing import Optional
 
+import orjson
 from django.db.migrations.state import StateApps
+from django.utils.timezone import now as timezone_now
 
 from zerver.lib.test_classes import MigrationsTestCase
 from zerver.lib.test_helpers import use_db_models
@@ -25,89 +28,121 @@ from zerver.lib.test_helpers import use_db_models
 # As a result, we generally mark these tests as skipped once they have
 # been tested for a migration being merged.
 
+USER_ACTIVATED = 102
+USER_FULL_NAME_CHANGED = 124
+OLD_VALUE = "1"
+NEW_VALUE = "2"
 
-class LinkifierURLFormatString(MigrationsTestCase):
-    migrate_from = "0440_realmfilter_url_template"
-    migrate_to = "0441_backfill_realmfilter_url_template"
+
+class RealmAuditLogExtraData(MigrationsTestCase):
+    migrate_from = "0452_realmauditlog_extra_data_json"
+    migrate_to = "0453_backfill_remote_realmauditlog_extradata_to_json_field"
+
+    full_name_change_log_id: Optional[int] = None
+    valid_json_log_id: Optional[int] = None
+    str_json_log_id: Optional[int] = None
+    # The BATCH_SIZE is defined as 5000 in 0424_backfill_remote_realmauditlog_extradata_to_json_field,
+    # this later is used to test if batching works properly
+    DATA_SIZE = 10005
 
     @use_db_models
     def setUpBeforeMigration(self, apps: StateApps) -> None:
-        RealmFilter = apps.get_model("zerver", "RealmFilter")
+        Realm = apps.get_model("zerver", "Realm")
+        RealmAuditLog = apps.get_model("zerver", "RealmAuditLog")
+        event_time = timezone_now()
+        realm = Realm.objects.get(string_id="zulip")
 
-        iago = self.example_user("iago")
+        full_name_change_log = RealmAuditLog(
+            realm=realm,
+            event_type=USER_FULL_NAME_CHANGED,
+            event_time=event_time,
+            extra_data="foo",
+        )
 
-        urls = [
-            "http://example.com/",
-            "https://example.com/",
-            "https://user:password@example.com/",
-            "https://example.com/@user/thing",
-            "https://example.com/!path",
-            "https://example.com/foo.bar",
-            "https://example.com/foo[bar]",
-            "https://example.com/{foo}",
-            "https://example.com/{foo}{bars}",
-            "https://example.com/{foo}/and/{bar}",
-            "https://example.com/?foo={foo}",
-            "https://example.com/%ab",
-            "https://example.com/%ba",
-            "https://example.com/%21",
-            "https://example.com/words%20with%20spaces",
-            "https://example.com/back%20to%20{back}",
-            "https://example.com/encoded%2fwith%2fletters",
-            "https://example.com/encoded%2Fwith%2Fupper%2Fcase%2Fletters",
-            "https://example.com/%%",
-            "https://example.com/%%(",
-            "https://example.com/%%()",
-            "https://example.com/%%(foo",
-            "https://example.com/%%(foo)",
-            "https://example.com/%%(foo)s",
-            "https://example.com/%(foo)s",
-            "https://example.com/%(foo)s%(bar)s",
-        ]
-        self.linkifier_ids = []
+        new_full_name_change_log = RealmAuditLog(
+            realm=realm,
+            event_type=USER_FULL_NAME_CHANGED,
+            event_time=event_time,
+            extra_data="foo",
+            extra_data_json={OLD_VALUE: "foo", NEW_VALUE: "bar"},
+        )
 
-        for index, url in enumerate(urls):
-            self.linkifier_ids.append(
-                RealmFilter.objects.create(
-                    realm=iago.realm,
-                    pattern=f"dummy{index}",
-                    url_format_string=url,
-                ).id
+        valid_json_log = RealmAuditLog(
+            realm=realm,
+            event_type=USER_ACTIVATED,
+            event_time=event_time,
+            extra_data=orjson.dumps({"key": "value"}).decode(),
+        )
+
+        str_json_log = RealmAuditLog(
+            realm=realm,
+            event_type=USER_ACTIVATED,
+            event_time=event_time,
+            extra_data=str({"key": "value"}),
+        )
+
+        RealmAuditLog.objects.bulk_create(
+            [full_name_change_log, new_full_name_change_log, valid_json_log, str_json_log]
+        )
+        self.full_name_change_log_id = full_name_change_log.id
+        self.new_full_name_change_log_id = new_full_name_change_log.id
+        self.valid_json_log_id = valid_json_log.id
+        self.str_json_log_id = str_json_log.id
+
+        other_logs = []
+        for i in range(self.DATA_SIZE):
+            other_logs.append(
+                RealmAuditLog(
+                    realm=realm,
+                    event_type=USER_ACTIVATED,
+                    event_time=event_time,
+                    extra_data=orjson.dumps({"data": i}).decode(),
+                )
             )
-
-    def test_converted_url_templates(self) -> None:
-        RealmFilter = self.apps.get_model("zerver", "RealmFilter")
-
-        expected_urls = [
-            "http://example.com/",
-            "https://example.com/",
-            "https://user:password@example.com/",
-            "https://example.com/@user/thing",
-            "https://example.com/!path",
-            "https://example.com/foo.bar",
-            "https://example.com/foo[bar]",
-            "https://example.com/%7Bfoo%7D",
-            "https://example.com/%7Bfoo%7D%7Bbars%7D",
-            "https://example.com/%7Bfoo%7D/and/%7Bbar%7D",
-            "https://example.com/?foo=%7Bfoo%7D",
-            "https://example.com/%ab",
-            "https://example.com/%ba",
-            "https://example.com/%21",
-            "https://example.com/words%20with%20spaces",
-            "https://example.com/back%20to%20%7Bback%7D",
-            "https://example.com/encoded%2fwith%2fletters",
-            "https://example.com/encoded%2Fwith%2Fupper%2Fcase%2Fletters",
-            "https://example.com/%",
-            "https://example.com/%(",
-            "https://example.com/%()",
-            "https://example.com/%(foo",
-            "https://example.com/%(foo)",
-            "https://example.com/%(foo)s",
-            "https://example.com/{foo}",
-            "https://example.com/{foo}{bar}",
+        self.other_logs_id = [
+            audit_log.id for audit_log in RealmAuditLog.objects.bulk_create(other_logs)
         ]
 
-        for linkifier_id, expected in zip(self.linkifier_ids, expected_urls):
-            linkifier = RealmFilter.objects.filter(id=linkifier_id).first()
-            self.assertIsNotNone(linkifier)
-            self.assertEqual(linkifier.url_template, expected)
+        # No new audit log entry should have extra_data_json populated as of now
+        self.assert_length(
+            RealmAuditLog.objects.filter(
+                event_time__gte=event_time,
+            )
+            .exclude(
+                extra_data_json={},
+            )
+            .exclude(id=self.new_full_name_change_log_id),
+            0,
+        )
+
+    def test_realmaudit_log_extra_data_to_json(self) -> None:
+        RealmAuditLog = self.apps.get_model("zerver", "RealmAuditLog")
+
+        self.assertIsNotNone(self.full_name_change_log_id)
+        self.assertIsNotNone(self.valid_json_log_id)
+        self.assertIsNotNone(self.str_json_log_id)
+
+        full_name_change_log = RealmAuditLog.objects.filter(id=self.full_name_change_log_id).first()
+        new_full_name_change_log = RealmAuditLog.objects.filter(
+            id=self.new_full_name_change_log_id
+        ).first()
+        valid_json_log = RealmAuditLog.objects.filter(id=self.valid_json_log_id).first()
+        str_json_log = RealmAuditLog.objects.filter(id=self.str_json_log_id).first()
+
+        self.assertIsNotNone(full_name_change_log)
+        self.assertEqual(full_name_change_log.extra_data_json, {"1": "foo", "2": None})
+
+        self.assertIsNotNone(new_full_name_change_log)
+        self.assertEqual(new_full_name_change_log.extra_data_json, {"1": "foo", "2": "bar"})
+
+        self.assertIsNotNone(valid_json_log)
+        self.assertEqual(valid_json_log.extra_data_json, {"key": "value"})
+
+        self.assertIsNotNone(str_json_log)
+        self.assertEqual(str_json_log.extra_data_json, {"key": "value"})
+
+        other_logs = RealmAuditLog.objects.filter(id__in=self.other_logs_id).order_by("id")
+        self.assertIsNotNone(other_logs)
+        self.assert_length(other_logs, self.DATA_SIZE)
+        for index, audit_log in enumerate(other_logs):
+            self.assertEqual(audit_log.extra_data_json, {"data": index})
