@@ -28,6 +28,7 @@ from typing_extensions import TypedDict
 django.setup()
 
 from zerver.lib.avatar_hash import gravatar_hash
+from zerver.lib.github import GithubSession
 from zproject.config import get_secret
 
 duplicate_commits_file = os.path.join(os.path.dirname(__file__), "duplicate_commits.json")
@@ -69,9 +70,13 @@ def fetch_contributors(repo_name: str, max_retries: int) -> List[Contributor]:
     if personal_access_token is not None:
         headers = {"Authorization": f"token {personal_access_token}"}
 
+    session = GithubSession()
     while True:
-        response: requests.Response = requests.get(
-            api_link, {**api_data, "page": f"{page_index}"}, verify=certificates, headers=headers
+        response: requests.Response = session.get(
+            api_link,
+            params={**api_data, "page": f"{page_index}"},
+            verify=certificates,
+            headers=headers,
         )
         if response.status_code == 200:
             data = response.json()

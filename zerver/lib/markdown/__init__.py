@@ -53,6 +53,7 @@ from zerver.lib.exceptions import MarkdownRenderingException
 from zerver.lib.markdown import fenced_code
 from zerver.lib.markdown.fenced_code import FENCE_RE
 from zerver.lib.mention import MentionData, get_stream_name_info
+from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.subdomains import is_static_or_current_realm_url
 from zerver.lib.tex import render_tex
 from zerver.lib.thumbnail import user_uploads_or_external
@@ -468,12 +469,17 @@ def fetch_tweet_data(tweet_id: str) -> Optional[Dict[str, Any]]:
     return res
 
 
+class OpenGraphSession(OutgoingSession):
+    def __init__(self) -> None:
+        super().__init__(role="markdown", timeout=1)
+
+
 def fetch_open_graph_image(url: str) -> Optional[Dict[str, Any]]:
     og = {"image": None, "title": None, "desc": None}
 
     try:
-        with requests.get(
-            url, headers={"Accept": "text/html,application/xhtml+xml"}, stream=True, timeout=1
+        with OpenGraphSession().get(
+            url, headers={"Accept": "text/html,application/xhtml+xml"}, stream=True
         ) as res:
             if res.status_code != requests.codes.ok:
                 return None

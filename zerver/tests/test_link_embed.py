@@ -95,6 +95,7 @@ class OembedTestCase(ZulipTestCase):
             "width": 658,
             "height": 400,
         }
+        # pyoembed.providers.imgur only works with http:// URLs, not https:// (!)
         url = "http://imgur.com/photo/158727223"
         reconstructed_url = reconstruct_url(url)
         responses.add(
@@ -140,10 +141,26 @@ class OembedTestCase(ZulipTestCase):
         self.assertEqual(data["title"], response_data["title"])
 
     @responses.activate
-    def test_error_request(self) -> None:
+    def test_connect_error_request(self) -> None:
+        url = "http://instagram.com/p/BLtI2WdAymy"
+        reconstructed_url = reconstruct_url(url)
+        responses.add(responses.GET, reconstructed_url, body=ConnectionError())
+        data = get_oembed_data(url)
+        self.assertIsNone(data)
+
+    @responses.activate
+    def test_400_error_request(self) -> None:
         url = "http://instagram.com/p/BLtI2WdAymy"
         reconstructed_url = reconstruct_url(url)
         responses.add(responses.GET, reconstructed_url, status=400)
+        data = get_oembed_data(url)
+        self.assertIsNone(data)
+
+    @responses.activate
+    def test_500_error_request(self) -> None:
+        url = "http://instagram.com/p/BLtI2WdAymy"
+        reconstructed_url = reconstruct_url(url)
+        responses.add(responses.GET, reconstructed_url, status=500)
         data = get_oembed_data(url)
         self.assertIsNone(data)
 

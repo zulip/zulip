@@ -8,6 +8,7 @@ from django.core.management.base import CommandError
 from django.utils.crypto import get_random_string
 
 from zerver.lib.management import ZulipBaseCommand, check_config
+from zerver.lib.remote_server import PushBouncerSession
 
 if settings.DEVELOPMENT:
     SECRETS_FILENAME = "zproject/dev-secrets.conf"
@@ -82,8 +83,9 @@ class Command(ZulipBaseCommand):
         registration_url = (
             settings.PUSH_NOTIFICATION_BOUNCER_URL + "/api/v1/remotes/server/register"
         )
+        session = PushBouncerSession()
         try:
-            response = requests.post(registration_url, params=request)
+            response = session.post(registration_url, params=request)
         except requests.RequestException:
             raise CommandError(
                 "Network error connecting to push notifications service "
