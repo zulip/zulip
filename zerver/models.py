@@ -3297,7 +3297,7 @@ class AbstractRealmAuditLog(models.Model):
     ROLE_COUNT_HUMANS = "11"
     ROLE_COUNT_BOTS = "12"
 
-    extra_data_json: Dict[str, Any] = models.JSONField(default=dict)
+    extra_data: Dict[str, Any] = models.JSONField(default=dict)
 
     # Event types
     USER_CREATED = 101
