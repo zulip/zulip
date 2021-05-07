@@ -648,11 +648,9 @@ def do_create_user(
         modified_user=user_profile,
         event_type=RealmAuditLog.USER_CREATED,
         event_time=event_time,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
-            }
-        ).decode(),
+        extra_data={
+            RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
+        },
     )
 
     if realm_creation:
@@ -706,11 +704,9 @@ def do_activate_user(user_profile: UserProfile, *, acting_user: Optional[UserPro
             acting_user=acting_user,
             event_type=RealmAuditLog.USER_ACTIVATED,
             event_time=event_time,
-            extra_data=orjson.dumps(
-                {
-                    RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
-                }
-            ).decode(),
+            extra_data={
+                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
+            },
         )
         do_increment_logging_stat(
             user_profile.realm,
@@ -737,11 +733,9 @@ def do_reactivate_user(user_profile: UserProfile, *, acting_user: Optional[UserP
             acting_user=acting_user,
             event_type=RealmAuditLog.USER_REACTIVATED,
             event_time=event_time,
-            extra_data=orjson.dumps(
-                {
-                    RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
-                }
-            ).decode(),
+            extra_data={
+                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
+            },
         )
         do_increment_logging_stat(
             user_profile.realm,
@@ -791,13 +785,11 @@ def do_set_realm_property(
         event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
         event_time=event_time,
         acting_user=acting_user,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: value,
-                "property": name,
-            }
-        ).decode(),
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: value,
+            "property": name,
+        },
     )
 
     if name == "email_address_visibility":
@@ -833,13 +825,11 @@ def do_set_realm_authentication_methods(
         event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
         event_time=timezone_now(),
         acting_user=acting_user,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: updated_value,
-                "property": "authentication_methods",
-            }
-        ).decode(),
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: updated_value,
+            "property": "authentication_methods",
+        },
     )
     event = dict(
         type="realm",
@@ -883,13 +873,11 @@ def do_set_realm_message_editing(
             event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
             event_time=event_time,
             acting_user=acting_user,
-            extra_data=orjson.dumps(
-                {
-                    RealmAuditLog.OLD_VALUE: old_values[updated_property],
-                    RealmAuditLog.NEW_VALUE: updated_value,
-                    "property": updated_property,
-                }
-            ).decode(),
+            extra_data={
+                RealmAuditLog.OLD_VALUE: old_values[updated_property],
+                RealmAuditLog.NEW_VALUE: updated_value,
+                "property": updated_property,
+            },
         )
 
     realm.save(update_fields=list(updated_properties.keys()))
@@ -915,13 +903,11 @@ def do_set_realm_notifications_stream(
         event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
         event_time=event_time,
         acting_user=acting_user,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: stream_id,
-                "property": "notifications_stream",
-            }
-        ).decode(),
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: stream_id,
+            "property": "notifications_stream",
+        },
     )
 
     event = dict(
@@ -946,13 +932,11 @@ def do_set_realm_signup_notifications_stream(
         event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
         event_time=event_time,
         acting_user=acting_user,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: stream_id,
-                "property": "signup_notifications_stream",
-            }
-        ).decode(),
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: stream_id,
+            "property": "signup_notifications_stream",
+        },
     )
     event = dict(
         type="realm",
@@ -985,11 +969,9 @@ def do_deactivate_realm(realm: Realm, *, acting_user: Optional[UserProfile]) -> 
         event_type=RealmAuditLog.REALM_DEACTIVATED,
         event_time=event_time,
         acting_user=acting_user,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
-            }
-        ).decode(),
+        extra_data={
+            RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
+        },
     )
 
     ScheduledEmail.objects.filter(realm=realm).delete()
@@ -1018,11 +1000,9 @@ def do_reactivate_realm(realm: Realm) -> None:
         realm=realm,
         event_type=RealmAuditLog.REALM_REACTIVATED,
         event_time=event_time,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
-            }
-        ).decode(),
+        extra_data={
+            RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(realm),
+        },
     )
 
 
@@ -1179,11 +1159,9 @@ def do_deactivate_user(
             acting_user=acting_user,
             event_type=RealmAuditLog.USER_DEACTIVATED,
             event_time=event_time,
-            extra_data=orjson.dumps(
-                {
-                    RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
-                }
-            ).decode(),
+            extra_data={
+                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
+            },
         )
         do_increment_logging_stat(
             user_profile.realm,
@@ -3992,13 +3970,11 @@ def do_change_subscription_property(
         modified_user=user_profile,
         acting_user=acting_user,
         modified_stream=stream,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: database_value,
-                "property": database_property_name,
-            }
-        ).decode(),
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: database_value,
+            "property": database_property_name,
+        },
     )
 
     event = dict(
@@ -4038,7 +4014,7 @@ def do_change_full_name(
         modified_user=user_profile,
         event_type=RealmAuditLog.USER_FULL_NAME_CHANGED,
         event_time=event_time,
-        extra_data=old_name,
+        extra_data={"old_name": old_name},
     )
     payload = dict(user_id=user_profile.id, full_name=user_profile.full_name)
     send_event(
@@ -4386,12 +4362,10 @@ def do_change_default_sending_stream(
         event_time=event_time,
         modified_user=user_profile,
         acting_user=acting_user,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: None if stream is None else stream.id,
-            }
-        ).decode(),
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: None if stream is None else stream.id,
+        },
     )
 
     if user_profile.is_bot:
@@ -4427,12 +4401,10 @@ def do_change_default_events_register_stream(
         event_time=event_time,
         modified_user=user_profile,
         acting_user=acting_user,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: None if stream is None else stream.id,
-            }
-        ).decode(),
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: None if stream is None else stream.id,
+        },
     )
 
     if user_profile.is_bot:
@@ -4468,12 +4440,10 @@ def do_change_default_all_public_streams(
         event_time=event_time,
         modified_user=user_profile,
         acting_user=acting_user,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: value,
-            }
-        ).decode(),
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: value,
+        },
     )
 
     if user_profile.is_bot:
@@ -4503,13 +4473,11 @@ def do_change_user_role(
         acting_user=acting_user,
         event_type=RealmAuditLog.USER_ROLE_CHANGED,
         event_time=timezone_now(),
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: value,
-                RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
-            }
-        ).decode(),
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: value,
+            RealmAuditLog.ROLE_COUNT: realm_user_count_by_role(user_profile.realm),
+        },
     )
     event = dict(
         type="realm_user", op="update", person=dict(user_id=user_profile.id, role=user_profile.role)
@@ -4594,12 +4562,10 @@ def do_rename_stream(stream: Stream, new_name: str, user_profile: UserProfile) -
         modified_stream=stream,
         event_type=RealmAuditLog.STREAM_NAME_CHANGED,
         event_time=timezone_now(),
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: old_name,
-                RealmAuditLog.NEW_VALUE: new_name,
-            }
-        ).decode(),
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_name,
+            RealmAuditLog.NEW_VALUE: new_name,
+        },
     )
 
     recipient_id = stream.recipient_id
@@ -4810,13 +4776,11 @@ def do_change_notification_settings(
         event_time=event_time,
         acting_user=acting_user,
         modified_user=user_profile,
-        extra_data=orjson.dumps(
-            {
-                RealmAuditLog.OLD_VALUE: old_value,
-                RealmAuditLog.NEW_VALUE: value,
-                "property": name,
-            }
-        ).decode(),
+        extra_data={
+            RealmAuditLog.OLD_VALUE: old_value,
+            RealmAuditLog.NEW_VALUE: value,
+            "property": name,
+        },
     )
 
     send_event(user_profile.realm, event, [user_profile.id])
@@ -6858,7 +6822,7 @@ def do_mute_user(
         modified_user=user_profile,
         event_type=RealmAuditLog.USER_MUTED,
         event_time=date_muted,
-        extra_data=orjson.dumps({"muted_user_id": muted_user.id}).decode(),
+        extra_data={"muted_user_id": muted_user.id},
     )
 
 
@@ -6875,7 +6839,7 @@ def do_unmute_user(mute_object: MutedUser) -> None:
         modified_user=user_profile,
         event_type=RealmAuditLog.USER_UNMUTED,
         event_time=timezone_now(),
-        extra_data=orjson.dumps({"unmuted_user_id": muted_user.id}).decode(),
+        extra_data={"unmuted_user_id": muted_user.id},
     )
 
 
@@ -7595,8 +7559,8 @@ def do_delete_realm_export(user_profile: UserProfile, export: RealmAuditLog) -> 
     # Give mypy a hint so it knows `orjson.loads`
     # isn't being passed an `Optional[str]`.
     export_extra_data = export.extra_data
-    assert export_extra_data is not None
-    export_data = orjson.loads(export_extra_data)
+    assert export_extra_data
+    export_data = export_extra_data
     export_path = export_data.get("export_path")
 
     if export_path:
@@ -7604,7 +7568,7 @@ def do_delete_realm_export(user_profile: UserProfile, export: RealmAuditLog) -> 
         delete_export_tarball(export_path)
 
     export_data.update(deleted_timestamp=timezone_now().timestamp())
-    export.extra_data = orjson.dumps(export_data).decode()
+    export.extra_data = export_data
     export.save(update_fields=["extra_data"])
     notify_realm_export(user_profile)
 

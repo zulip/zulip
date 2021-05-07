@@ -2029,13 +2029,11 @@ class RealmPropertyActionTest(BaseAction):
                     event_type=RealmAuditLog.REALM_PROPERTY_CHANGED,
                     event_time__gte=now,
                     acting_user=self.user_profile,
-                    extra_data=orjson.dumps(
-                        {
-                            RealmAuditLog.OLD_VALUE: old_value,
-                            RealmAuditLog.NEW_VALUE: val,
-                            "property": name,
-                        }
-                    ).decode(),
+                    extra_data={
+                        RealmAuditLog.OLD_VALUE: old_value,
+                        RealmAuditLog.NEW_VALUE: val,
+                        "property": name,
+                    },
                 ).count(),
                 1,
             )

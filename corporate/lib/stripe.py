@@ -757,7 +757,7 @@ def attach_discount_to_realm(
         acting_user=acting_user,
         event_type=RealmAuditLog.REALM_DISCOUNT_CHANGED,
         event_time=timezone_now(),
-        extra_data={"old_discount": old_discount, "new_discount": discount},
+        extra_data={"old_discount": str(old_discount), "new_discount": str(discount)},
     )
 
 

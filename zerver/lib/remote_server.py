@@ -172,6 +172,9 @@ def send_analytics_to_remote_server() -> None:
     if len(realm_count_data) + len(installation_count_data) + len(realmauditlog_data) == 0:
         return
 
+    for realmauditlog_row in realmauditlog_data:
+        realmauditlog_row["extra_data"] = str(realmauditlog_row["extra_data"])
+
     request = {
         "realm_counts": orjson.dumps(realm_count_data).decode(),
         "installation_counts": orjson.dumps(installation_count_data).decode(),

@@ -547,6 +547,9 @@ class AnalyticsBouncerTest(BouncerTestCase):
         (realm_count_data, installation_count_data, realmauditlog_data) = build_analytics_data(
             RealmCount.objects.all(), InstallationCount.objects.all(), RealmAuditLog.objects.all()
         )
+        for realmauditlog_row in realmauditlog_data:
+            realmauditlog_row["extra_data"] = str(realmauditlog_row["extra_data"])
+
         result = self.uuid_post(
             self.server_uuid,
             "/api/v1/remotes/server/analytics",

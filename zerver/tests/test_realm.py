@@ -207,7 +207,7 @@ class RealmTest(ZulipTestCase):
             event_type=RealmAuditLog.REALM_SUBDOMAIN_CHANGED, acting_user=iago
         ).last()
         expected_extra_data = {"old_subdomain": "zulip", "new_subdomain": "newzulip"}
-        self.assertEqual(realm_audit_log.extra_data, str(expected_extra_data))
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
         self.assertEqual(realm_audit_log.acting_user, iago)
 
     def test_do_deactivate_realm_clears_scheduled_jobs(self) -> None:
@@ -751,7 +751,7 @@ class RealmTest(ZulipTestCase):
             event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED
         ).last()
         expected_extra_data = {"old_value": Realm.SELF_HOSTED, "new_value": Realm.STANDARD}
-        self.assertEqual(realm_audit_log.extra_data, str(expected_extra_data))
+        self.assertEqual(realm_audit_log.extra_data, expected_extra_data)
         self.assertEqual(realm_audit_log.acting_user, iago)
         self.assertEqual(realm.plan_type, Realm.STANDARD)
         self.assertEqual(realm.max_invites, Realm.INVITES_STANDARD_REALM_DAILY_MAX)

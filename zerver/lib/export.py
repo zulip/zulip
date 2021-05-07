@@ -1955,11 +1955,10 @@ def get_realm_exports_serialized(user: UserProfile) -> List[Dict[str, Any]]:
         export_url = None
         deleted_timestamp = None
         failed_timestamp = None
-
-        if export.extra_data is not None:
+        if export.extra_data:
             pending = False
 
-            export_data = orjson.loads(export.extra_data)
+            export_data = export.extra_data
             deleted_timestamp = export_data.get("deleted_timestamp")
             failed_timestamp = export_data.get("failed_timestamp")
             export_path = export_data.get("export_path")

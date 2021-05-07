@@ -2,7 +2,6 @@ import os
 from unittest.mock import patch
 
 import botocore.exceptions
-import orjson
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
@@ -64,7 +63,7 @@ class RealmExportTest(ZulipTestCase):
         self.assertEqual(audit_log_entry.acting_user_id, admin.id)
 
         # Test that the file is hosted, and the contents are as expected.
-        export_path = orjson.loads(audit_log_entry.extra_data)["export_path"]
+        export_path = audit_log_entry.extra_data["export_path"]
         assert export_path.startswith("/")
         path_id = export_path[1:]
         self.assertEqual(bucket.Object(path_id).get()["Body"].read(), b"zulip!")
@@ -95,7 +94,7 @@ class RealmExportTest(ZulipTestCase):
 
         # Try to delete an export with a `deleted_timestamp` key.
         audit_log_entry.refresh_from_db()
-        export_data = orjson.loads(audit_log_entry.extra_data)
+        export_data = audit_log_entry.extra_data
         self.assertIn("deleted_timestamp", export_data)
         result = self.client_delete(f"/json/export/realm/{audit_log_entry.id}")
         self.assert_json_error(result, "Export already deleted")
@@ -129,7 +128,7 @@ class RealmExportTest(ZulipTestCase):
         self.assertEqual(audit_log_entry.acting_user_id, admin.id)
 
         # Test that the file is hosted, and the contents are as expected.
-        export_path = orjson.loads(audit_log_entry.extra_data).get("export_path")
+        export_path = audit_log_entry.extra_data.get("export_path")
         response = self.client_get(export_path)
         self.assertEqual(response.status_code, 200)
         self.assert_url_serves_contents_of_file(export_path, b"zulip!")
@@ -157,7 +156,7 @@ class RealmExportTest(ZulipTestCase):
 
         # Try to delete an export with a `deleted_timestamp` key.
         audit_log_entry.refresh_from_db()
-        export_data = orjson.loads(audit_log_entry.extra_data)
+        export_data = audit_log_entry.extra_data
         self.assertIn("deleted_timestamp", export_data)
         result = self.client_delete(f"/json/export/realm/{audit_log_entry.id}")
         self.assert_json_error(result, "Export already deleted")
