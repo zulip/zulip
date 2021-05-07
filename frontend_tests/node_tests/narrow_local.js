@@ -179,9 +179,9 @@ run_test("is private with no target", () => {
         },
         has_found_newest: true,
         all_messages: [
-            {id: 450, type: "private"},
-            {id: 500, type: "private"},
-            {id: 550, type: "private"},
+            {id: 450, type: "private", to_user_ids: "1,2"},
+            {id: 500, type: "private", to_user_ids: "1,2"},
+            {id: 550, type: "private", to_user_ids: "1,2"},
         ],
         expected_id_info: {
             target_id: undefined,
@@ -244,9 +244,9 @@ run_test("is:private with target and no unreads", () => {
         empty: false,
         all_messages: [
             {id: 350},
-            {id: 400, type: "private"},
-            {id: 450, type: "private"},
-            {id: 500, type: "private"},
+            {id: 400, type: "private", to_user_ids: "1,2"},
+            {id: 450, type: "private", to_user_ids: "1,2"},
+            {id: 500, type: "private", to_user_ids: "1,2"},
         ],
         expected_id_info: {
             target_id: 450,
