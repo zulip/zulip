@@ -356,7 +356,7 @@ class AuthBackendTest(ZulipTestCase):
                 "django.contrib.auth.hashers.PBKDF2PasswordHasher",
             ),
             PASSWORD_MIN_LENGTH=30,
-        ), self.assertRaises(JsonableError) as m:
+        ), self.assertLogs("zulip.auth.email", level="INFO"), self.assertRaises(JsonableError) as m:
             EmailAuthBackend().authenticate(
                 request=mock.MagicMock(),
                 username=self.example_email("hamlet"),
@@ -3930,6 +3930,27 @@ class FetchAPIKeyTest(ZulipTestCase):
             dict(username=self.email, password=initial_password(self.email)),
         )
         self.assert_json_error_contains(result, "This organization has been deactivated", 403)
+
+    def test_old_weak_password_after_hasher_change(self) -> None:
+        user_profile = self.example_user("hamlet")
+        password = "a_password_of_22_chars"
+
+        with self.settings(PASSWORD_HASHERS=("django.contrib.auth.hashers.PBKDF2PasswordHasher",)):
+            user_profile.set_password(password)
+            user_profile.save()
+
+        with self.settings(
+            PASSWORD_HASHERS=(
+                "django.contrib.auth.hashers.Argon2PasswordHasher",
+                "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+            ),
+            PASSWORD_MIN_LENGTH=30,
+        ), self.assertLogs("zulip.auth.email", level="INFO"):
+            result = self.client_post(
+                "/api/v1/fetch_api_key",
+                dict(username=self.email, password=password),
+            )
+            self.assert_json_error(result, "You need to reset your password.", 403)
 
 
 class DevFetchAPIKeyTest(ZulipTestCase):
