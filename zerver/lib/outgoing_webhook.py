@@ -346,7 +346,7 @@ def do_rest_call(
             bot_profile.realm.string_id,
             perf_counter() - start_time,
         )
-        if not response:
+        if response is None:
             return None
         if str(response.status_code).startswith("2"):
             try:

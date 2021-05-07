@@ -343,8 +343,10 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
             full_name="Outgoing Webhook bot",
             bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
             service_name="foo-service",
+            payload_url='"https://bot.example.com/"',
         )
 
+    @responses.activate
     def test_multiple_services(self) -> None:
         bot_owner = self.example_user("othello")
 
@@ -362,7 +364,7 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
             "weather",
             user_profile=bot,
             interface=Service.GENERIC,
-            base_url="weather_url",
+            base_url="https://weather.example.com/",
             token="weather_token",
         )
 
@@ -370,64 +372,64 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
             "qotd",
             user_profile=bot,
             interface=Service.GENERIC,
-            base_url="qotd_url",
+            base_url="https://qotd.example.com/",
             token="qotd_token",
         )
 
         sender = self.example_user("hamlet")
 
-        session = mock.Mock(spec=requests.Session)
-        session.headers = {}
-        session.post.return_value = ResponseMock(200, b"{}")
-        with mock.patch("zerver.lib.outgoing_webhook.Session") as sessionmaker:
-            sessionmaker.return_value = session
-            with self.assertLogs(level="INFO") as logs:
-                self.send_personal_message(
-                    sender,
-                    bot,
-                    content="some content",
-                )
-            self.assertEqual(len(logs.output), 2)
-            self.assertIn(f"Outgoing webhook request from {bot.id}@zulip took ", logs.output[0])
-            self.assertIn(f"Outgoing webhook request from {bot.id}@zulip took ", logs.output[1])
-
-        url_token_tups = set()
-        session.post.assert_called()
-        for item in session.post.call_args_list:
-            args = item[0]
-            base_url = args[0]
-            kwargs = item[1]
-            request_data = kwargs["json"]
-            tup = (base_url, request_data["token"])
-            url_token_tups.add(tup)
-            message_data = request_data["message"]
-            self.assertEqual(message_data["content"], "some content")
-            self.assertEqual(message_data["sender_id"], sender.id)
-
-        self.assertEqual(
-            url_token_tups,
-            {
-                ("weather_url", "weather_token"),
-                ("qotd_url", "qotd_token"),
-            },
+        responses.add(
+            responses.POST,
+            "https://weather.example.com/",
+            json={},
         )
+        responses.add(
+            responses.POST,
+            "https://qotd.example.com/",
+            json={},
+        )
+        with self.assertLogs(level="INFO") as logs:
+            self.send_personal_message(
+                sender,
+                bot,
+                content="some content",
+            )
+        self.assertEqual(len(logs.output), 2)
+        self.assertIn(f"Outgoing webhook request from {bot.id}@zulip took ", logs.output[0])
+        self.assertIn(f"Outgoing webhook request from {bot.id}@zulip took ", logs.output[1])
 
+        self.assertEqual(len(responses.calls), 2)
+
+        calls_by_url = {
+            call.request.url: orjson.loads(call.request.body or b"") for call in responses.calls
+        }
+        weather_req = calls_by_url["https://weather.example.com/"]
+        self.assertEqual(weather_req["token"], "weather_token")
+        self.assertEqual(weather_req["message"]["content"], "some content")
+        self.assertEqual(weather_req["message"]["sender_id"], sender.id)
+
+        qotd_req = calls_by_url["https://qotd.example.com/"]
+        self.assertEqual(qotd_req["token"], "qotd_token")
+        self.assertEqual(qotd_req["message"]["content"], "some content")
+        self.assertEqual(qotd_req["message"]["sender_id"], sender.id)
+
+    @responses.activate
     def test_pm_to_outgoing_webhook_bot(self) -> None:
         bot_owner = self.example_user("othello")
         bot = self.create_outgoing_bot(bot_owner)
         sender = self.example_user("hamlet")
 
-        session = mock.Mock(spec=requests.Session)
-        session.headers = {}
-        session.post.return_value = ResponseMock(
-            200, orjson.dumps({"response_string": "Hidley ho, I'm a webhook responding!"})
+        responses.add(
+            responses.POST,
+            "https://bot.example.com/",
+            json={"response_string": "Hidley ho, I'm a webhook responding!"},
         )
-        with mock.patch("zerver.lib.outgoing_webhook.Session") as sessionmaker:
-            sessionmaker.return_value = session
-            with self.assertLogs(level="INFO") as logs:
-                self.send_personal_message(sender, bot, content="foo")
+        with self.assertLogs(level="INFO") as logs:
+            self.send_personal_message(sender, bot, content="foo")
         self.assertEqual(len(logs.output), 1)
         self.assertIn(f"Outgoing webhook request from {bot.id}@zulip took ", logs.output[0])
+
+        self.assertEqual(len(responses.calls), 1)
 
         last_message = self.get_last_message()
         self.assertEqual(last_message.content, "Hidley ho, I'm a webhook responding!")
@@ -441,22 +443,19 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
             Recipient.PERSONAL,
         )
 
+    @responses.activate
     def test_pm_to_outgoing_webhook_bot_for_407_error_code(self) -> None:
         bot_owner = self.example_user("othello")
         bot = self.create_outgoing_bot(bot_owner)
         sender = self.example_user("hamlet")
         realm = get_realm("zulip")
 
-        session = mock.Mock(spec=requests.Session)
-        session.headers = {}
-        session.post.return_value = ResponseMock(407)
+        responses.add(responses.POST, "https://bot.example.com/", status=407, body="")
         expect_fail = mock.patch("zerver.lib.outgoing_webhook.fail_with_message")
-
-        with mock.patch(
-            "zerver.lib.outgoing_webhook.Session"
-        ) as sessionmaker, expect_fail as mock_fail, self.assertLogs(level="WARNING"):
-            sessionmaker.return_value = session
+        with expect_fail as mock_fail, self.assertLogs(level="WARNING"):
             message_id = self.send_personal_message(sender, bot, content="foo")
+
+            self.assertEqual(len(responses.calls), 1)
 
             # create message dict to get the message url
             message = {
@@ -485,21 +484,24 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
             )
             self.assertTrue(mock_fail.called)
 
+    @responses.activate
     def test_stream_message_to_outgoing_webhook_bot(self) -> None:
         bot_owner = self.example_user("othello")
         bot = self.create_outgoing_bot(bot_owner)
 
-        session = mock.Mock(spec=requests.Session)
-        session.headers = {}
-        session.post.return_value = ResponseMock(
-            200, orjson.dumps({"response_string": "Hidley ho, I'm a webhook responding!"})
+        responses.add(
+            responses.POST,
+            "https://bot.example.com/",
+            json={"response_string": "Hidley ho, I'm a webhook responding!"},
         )
-        with mock.patch("zerver.lib.outgoing_webhook.Session") as sessionmaker:
-            sessionmaker.return_value = session
-            with self.assertLogs(level="INFO") as logs:
-                self.send_stream_message(
-                    bot_owner, "Denmark", content=f"@**{bot.full_name}** foo", topic_name="bar"
-                )
+
+        with self.assertLogs(level="INFO") as logs:
+            self.send_stream_message(
+                bot_owner, "Denmark", content=f"@**{bot.full_name}** foo", topic_name="bar"
+            )
+
+        self.assertEqual(len(responses.calls), 1)
+
         self.assertEqual(len(logs.output), 1)
         self.assertIn(f"Outgoing webhook request from {bot.id}@zulip took ", logs.output[0])
 
