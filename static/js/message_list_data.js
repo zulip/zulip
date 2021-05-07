@@ -11,9 +11,7 @@ import * as util from "./util";
 export class MessageListData {
     constructor({excludes_muted_topics, filter = new Filter()}) {
         this.excludes_muted_topics = excludes_muted_topics;
-        if (this.excludes_muted_topics) {
-            this._all_items = [];
-        }
+        this._all_items = [];
         this._items = [];
         this._hash = new Map();
         this._local_only = new Set();
@@ -109,10 +107,7 @@ export class MessageListData {
     }
 
     clear() {
-        if (this.excludes_muted_topics) {
-            this._all_items = [];
-        }
-
+        this._all_items = [];
         this._items = [];
         this._hash.clear();
     }
@@ -182,14 +177,29 @@ export class MessageListData {
         });
     }
 
+    messages_filtered_for_user_mutes(messages) {
+        return messages.filter((message) => {
+            if (message.type !== "private") {
+                return true;
+            }
+            const recipients = util.extract_pm_recipients(message.to_user_ids);
+            if (recipients.length > 1) {
+                // Huddle message
+                return true;
+            }
+
+            const recipient_id = Number.parseInt(recipients[0], 10);
+            return !muting.is_user_muted(recipient_id) && !muting.is_user_muted(message.sender_id);
+        });
+    }
+
     unmuted_messages(messages) {
-        return this.messages_filtered_for_topic_mutes(messages);
+        return this.messages_filtered_for_topic_mutes(
+            this.messages_filtered_for_user_mutes(messages),
+        );
     }
 
     update_items_for_muting() {
-        if (!this.excludes_muted_topics) {
-            return;
-        }
         this._items = this.unmuted_messages(this._all_items);
     }
 
@@ -264,10 +274,8 @@ export class MessageListData {
 
         const viewable_messages = this.unmuted_messages(messages);
 
-        if (this.excludes_muted_topics) {
-            this._all_items = messages.concat(this._all_items);
-            this._all_items.sort((a, b) => a.id - b.id);
-        }
+        this._all_items = messages.concat(this._all_items);
+        this._all_items.sort((a, b) => a.id - b.id);
 
         this._items = viewable_messages.concat(this._items);
         this._items.sort((a, b) => a.id - b.id);
@@ -280,9 +288,7 @@ export class MessageListData {
         // Caller should have already filtered
         const viewable_messages = this.unmuted_messages(messages);
 
-        if (this.excludes_muted_topics) {
-            this._all_items = this._all_items.concat(messages);
-        }
+        this._all_items = this._all_items.concat(messages);
         this._items = this._items.concat(viewable_messages);
 
         this._add_to_hash(messages);
@@ -293,9 +299,7 @@ export class MessageListData {
         // Caller should have already filtered
         const viewable_messages = this.unmuted_messages(messages);
 
-        if (this.excludes_muted_topics) {
-            this._all_items = messages.concat(this._all_items);
-        }
+        this._all_items = messages.concat(this._all_items);
         this._items = viewable_messages.concat(this._items);
 
         this._add_to_hash(messages);
@@ -310,9 +314,7 @@ export class MessageListData {
         }
 
         this._items = this._items.filter((msg) => !msg_ids_to_remove.has(msg.id));
-        if (this.excludes_muted_topics) {
-            this._all_items = this._all_items.filter((msg) => !msg_ids_to_remove.has(msg.id));
-        }
+        this._all_items = this._all_items.filter((msg) => !msg_ids_to_remove.has(msg.id));
     }
 
     // Returns messages from the given message list in the specified range, inclusive
@@ -501,9 +503,7 @@ export class MessageListData {
         ) {
             blueslip.debug("Changed message ID from server caused out-of-order list, reordering");
             this._items.sort(message_sort_func);
-            if (this.excludes_muted_topics) {
-                this._all_items.sort(message_sort_func);
-            }
+            this._all_items.sort(message_sort_func);
             return true;
         }
 

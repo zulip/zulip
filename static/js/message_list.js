@@ -395,6 +395,9 @@ export class MessageList {
         // to do this is in the message_events.js code path for
         // processing topic edits, since that's the only place we'll
         // call this frequently anyway.
+        //
+        // But in any case, we need to rerender the list for user muting,
+        // to make sure only the right messages are hidden.
         this.rerender();
     }
 
