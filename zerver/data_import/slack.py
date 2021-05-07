@@ -1339,6 +1339,7 @@ def do_convert_data(original_path: str, output_dir: str, token: str, threads: in
     create_converted_data_files(uploads_records, output_dir, "/uploads/records.json")
     create_converted_data_files(attachment, output_dir, "/attachment.json")
     create_converted_data_files(realm_icon_records, output_dir, "/realm_icons/records.json")
+    create_converted_data_files({"service": "slack"}, output_dir, "/meta.json")
 
     # Clean up the directory if we unpacked it ourselves.
     if original_path != slack_data_dir:

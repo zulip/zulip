@@ -27,7 +27,15 @@ from zerver.data_import.sequencer import IdMapper
 from zerver.lib.emoji import name_to_codepoint
 from zerver.lib.import_realm import do_import_realm
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Message, Reaction, Recipient, UserProfile, get_realm, get_user
+from zerver.models import (
+    Message,
+    Reaction,
+    RealmAuditLog,
+    Recipient,
+    UserProfile,
+    get_realm,
+    get_user,
+)
 
 
 class MatterMostImporter(ZulipTestCase):
@@ -842,3 +850,9 @@ class MatterMostImporter(ZulipTestCase):
         messages = Message.objects.filter(sender__in=realm_users)
         for message in messages:
             self.assertIsNotNone(message.rendered_content)
+        extra_data = orjson.loads(
+            RealmAuditLog.objects.get(
+                realm=realm, event_type=RealmAuditLog.REALM_IMPORTED
+            ).extra_data
+        )
+        self.assertEqual(extra_data["from"], "mattermost")

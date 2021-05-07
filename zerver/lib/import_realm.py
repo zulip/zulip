@@ -1225,8 +1225,17 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
     # Import the analytics file.
     import_analytics_data(realm=realm, import_dir=import_dir)
 
+    try:
+        with open(os.path.join(import_dir, "meta.json"), "rb") as f:
+            meta_data = orjson.loads(f.read())
+            extra_data = orjson.dumps({"from": meta_data["service"]}).decode()
+    except FileNotFoundError:
+        extra_data = ""
     RealmAuditLog.objects.create(
-        realm=realm, event_type=RealmAuditLog.REALM_IMPORTED, event_time=timezone_now()
+        realm=realm,
+        event_type=RealmAuditLog.REALM_IMPORTED,
+        event_time=timezone_now(),
+        extra_data=extra_data,
     )
 
     if settings.BILLING_ENABLED:
