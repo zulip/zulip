@@ -14,6 +14,7 @@ const message_lists = mock_esm("../../static/js/message_lists");
 
 // Code we're actually using/testing
 const compose_closed_ui = zrequire("compose_closed_ui");
+const {Filter} = zrequire("filter");
 const {MessageList} = zrequire("message_list");
 
 // Helper test function
@@ -24,9 +25,7 @@ function test_reply_label(expected_label) {
 
 run_test("reply_label", () => {
     // Mocking up a test message list
-    const filter = {
-        predicate: () => () => true,
-    };
+    const filter = new Filter();
     const list = new MessageList({
         filter,
     });
