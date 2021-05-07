@@ -25,9 +25,9 @@ import * as unread_ui from "./unread_ui";
 
 export function rerender_for_muted_topic(old_muted_topics) {
     stream_list.update_streams_sidebar();
-    message_lists.current.update_topic_muting_and_rerender();
+    message_lists.current.update_muting_and_rerender();
     if (message_lists.current !== message_lists.home) {
-        message_lists.home.update_topic_muting_and_rerender();
+        message_lists.home.update_muting_and_rerender();
     }
     if (overlays.settings_open() && settings_muted_topics.loaded) {
         settings_muted_topics.populate_list();
