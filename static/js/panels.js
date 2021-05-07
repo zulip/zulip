@@ -35,7 +35,7 @@ const get_step = function ($process) {
     return $process.find("[data-step]:visible").data("step");
 };
 
-function should_show_notifications(ls) {
+export function should_show_notifications(ls) {
     // if the user said to never show banner on this computer again, it will
     // be stored as `true` so we want to negate that.
     if (localstorage.supported() && ls.get("dontAskForNotifications") === true) {
