@@ -1,8 +1,11 @@
 # Documenting an integration
 
-Every Zulip integration must be documented in
-`zerver/webhooks/mywebhook/doc.md` (or
-`templates/zerver/integrations/<integration_name>.md`, for non-webhook
+In order for a [Zulip
+integration](https://zulip.com/api/integrations-overview) to be useful
+to users, it must be documented. Zulip's common system for documenting
+integrations involves writing Markdown files, either at
+`zerver/webhooks/{webhook_name}/doc.md` (for webhook integrations) or
+`templates/zerver/integrations/{integration_name}.md` (for other
 integrations).
 
 Usually, this involves a few steps:
