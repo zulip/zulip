@@ -96,9 +96,12 @@ To learn more about Zulip's general user documentation,
 
 ### Integrations documentation
 
-To learn more about Zulip's integrations documentation,
-[visit it on zulip.com](https://zulip.com/integrations/) or
+To learn more about Zulip's integrations user documentation,
+[visit it on zulip.com](https://zulip.com/integrations) or
 [read our guide on writing user documentation](integrations.md).
+
+To learn more about Zulip's integrations developer documentation,
+[visit it on zulip.com](https://zulip.com/api/integrations-overview).
 
 ### API documentation
 
