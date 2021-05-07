@@ -56,12 +56,19 @@ class zulip::nginx {
     }
   }
 
-  # Removed 2021-04 in Zulip 4.0; these lines can be removed in Zulip
-  # version 5.0 and later.
+  # TODO/compatibility: Removed 2021-04 in Zulip 4.0; these lines can
+  # be removed once one must have upgraded through Zulip 4.0 or higher
+  # to get to the next release.
   file { '/etc/nginx/zulip-include/uploads.route':
     ensure  => absent,
   }
 
+  # TODO/compatibility: Removed 2021-05 in Zulip 4.0; these lines can
+  # be removed once one must have upgraded through Zulip 4.0 or higher
+  # to get to the next release.
+  file { '/etc/nginx/zulip-include/app.d/thumbor.conf':
+    ensure  => absent,
+  }
 
   file { '/etc/nginx/dhparam.pem':
     ensure  => file,
