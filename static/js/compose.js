@@ -182,8 +182,7 @@ function update_conversation_button(btn_text, title) {
     $("#left_bar_compose_private_button_big").prop("title", title);
 }
 
-export function update_closed_compose_buttons_for_private() {
-    const text_stream = $t({defaultMessage: "New stream message"});
+export function update_closed_compose_buttons(text_stream) {
     const title_stream = text_stream + " (c)";
     const text_conversation = $t({defaultMessage: "New private message"});
     const title_conversation = text_conversation + " (x)";
@@ -191,13 +190,14 @@ export function update_closed_compose_buttons_for_private() {
     update_conversation_button(text_conversation, title_conversation);
 }
 
+export function update_closed_compose_buttons_for_private() {
+    const text_stream = $t({defaultMessage: "New stream message"});
+    update_closed_compose_buttons(text_stream);
+}
+
 export function update_closed_compose_buttons_for_stream() {
     const text_stream = $t({defaultMessage: "New topic"});
-    const title_stream = text_stream + " (c)";
-    const text_conversation = $t({defaultMessage: "New private message"});
-    const title_conversation = text_conversation + " (x)";
-    update_stream_button(text_stream, title_stream);
-    update_conversation_button(text_conversation, title_conversation);
+    update_closed_compose_buttons(text_stream);
 }
 
 function update_fade() {
