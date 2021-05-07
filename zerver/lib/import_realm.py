@@ -679,12 +679,15 @@ def process_avatars(record: Dict[str, Any]) -> None:
             medium_file_path = (
                 os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", avatar_path) + "-medium.png"
             )
-            if os.path.exists(medium_file_path):
+            try:
                 # We remove the image here primarily to deal with
                 # issues when running the import script multiple
                 # times in development (where one might reuse the
                 # same realm ID from a previous iteration).
                 os.remove(medium_file_path)
+            except FileNotFoundError:
+                pass
+
         try:
             upload_backend.ensure_avatar_image(user_profile=user_profile, is_medium=True)
             if record.get("importer_should_thumbnail"):
@@ -871,15 +874,15 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         raise Exception("Missing import directory!")
 
     realm_data_filename = os.path.join(import_dir, "realm.json")
-    if not os.path.exists(realm_data_filename):
+    try:
+        with open(realm_data_filename, "rb") as f:
+            if not server_initialized():
+                create_internal_realm()
+            logging.info("Importing realm data from %s", realm_data_filename)
+            data = orjson.loads(f.read())
+    except FileNotFoundError:
         raise Exception("Missing realm.json file!")
 
-    if not server_initialized():
-        create_internal_realm()
-
-    logging.info("Importing realm data from %s", realm_data_filename)
-    with open(realm_data_filename, "rb") as f:
-        data = orjson.loads(f.read())
     remove_denormalized_recipient_column_from_data(data)
 
     sort_by_date = data.get("sort_by_date", False)
@@ -1212,14 +1215,13 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
 
     # Do attachments AFTER message data is loaded.
     # TODO: de-dup how we read these json files.
-    fn = os.path.join(import_dir, "attachment.json")
-    if not os.path.exists(fn):
+    try:
+        fn = os.path.join(import_dir, "attachment.json")
+        with open(fn, "rb") as f:
+            logging.info("Importing attachment data from %s", fn)
+            data = orjson.loads(f.read())
+    except FileNotFoundError:
         raise Exception("Missing attachment.json file!")
-
-    logging.info("Importing attachment data from %s", fn)
-    with open(fn, "rb") as f:
-        data = orjson.loads(f.read())
-
     import_attachments(data)
 
     # Import the analytics file.
@@ -1309,11 +1311,11 @@ def get_incoming_message_ids(import_dir: Path, sort_by_date: bool) -> List[int]:
     dump_file_id = 1
     while True:
         message_filename = os.path.join(import_dir, f"messages-{dump_file_id:06}.json")
-        if not os.path.exists(message_filename):
+        try:
+            with open(message_filename, "rb") as f:
+                data = orjson.loads(f.read())
+        except FileNotFoundError:
             break
-
-        with open(message_filename, "rb") as f:
-            data = orjson.loads(f.read())
 
         # Aggressively free up memory.
         del data["zerver_usermessage"]
@@ -1351,11 +1353,11 @@ def import_message_data(realm: Realm, sender_map: Dict[int, Record], import_dir:
     dump_file_id = 1
     while True:
         message_filename = os.path.join(import_dir, f"messages-{dump_file_id:06}.json")
-        if not os.path.exists(message_filename):
+        try:
+            with open(message_filename, "rb") as f:
+                data = orjson.loads(f.read())
+        except FileNotFoundError:
             break
-
-        with open(message_filename, "rb") as f:
-            data = orjson.loads(f.read())
 
         logging.info("Importing message dump %s", message_filename)
         re_map_foreign_keys(data, "zerver_message", "sender", related_table="user_profile")
@@ -1475,12 +1477,12 @@ def import_attachments(data: TableData) -> None:
 
 def import_analytics_data(realm: Realm, import_dir: Path) -> None:
     analytics_filename = os.path.join(import_dir, "analytics.json")
-    if not os.path.exists(analytics_filename):
+    try:
+        with open(analytics_filename, "rb") as f:
+            logging.info("Importing analytics data from %s", analytics_filename)
+            data = orjson.loads(f.read())
+    except FileNotFoundError:
         return
-
-    logging.info("Importing analytics data from %s", analytics_filename)
-    with open(analytics_filename, "rb") as f:
-        data = orjson.loads(f.read())
 
     # Process the data through the fixer functions.
     fix_datetime_fields(data, "analytics_realmcount")
