@@ -71,11 +71,11 @@ def check_upgrade_parameters(
     has_stripe_token: bool,
     seat_count: int,
 ) -> None:
-    if billing_modality not in VALID_BILLING_MODALITY_VALUES:
+    if billing_modality not in VALID_BILLING_MODALITY_VALUES:  # nocoverage
         raise BillingError("unknown billing_modality")
-    if schedule not in VALID_BILLING_SCHEDULE_VALUES:
+    if schedule not in VALID_BILLING_SCHEDULE_VALUES:  # nocoverage
         raise BillingError("unknown schedule")
-    if license_management not in VALID_LICENSE_MANAGEMENT_VALUES:
+    if license_management not in VALID_LICENSE_MANAGEMENT_VALUES:  # nocoverage
         raise BillingError("unknown license_management")
 
     if billing_modality == "charge_automatically":
