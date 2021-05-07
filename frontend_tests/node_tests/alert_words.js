@@ -48,7 +48,7 @@ const alertwordboundary_message = {
 };
 const multialert_message = {
     sender_email: "another@zulip.com",
-    content: "<p>another alertthreemessage alertone and then alerttwo</p>",
+    content: "<p>another emoji alertone and then alerttwo</p>",
     alerted: true,
 };
 const unsafe_word_message = {
@@ -128,7 +128,7 @@ run_test("munging", () => {
 
     assert_transform(
         multialert_message,
-        "<p>another alertthreemessage <span class='alert-word'>alertone</span> and then <span class='alert-word'>alerttwo</span></p>",
+        "<p>another <span class='alert-word'>emoji</span> <span class='alert-word'>alertone</span> and then <span class='alert-word'>alerttwo</span></p>",
     );
 
     assert_transform(
