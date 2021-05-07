@@ -2023,33 +2023,17 @@ def create_user_messages(
     mentioned_user_ids: AbstractSet[int],
     mark_as_read_for_users: Set[int],
 ) -> List[UserMessageLite]:
-    ums_to_create = []
-    for user_profile_id in um_eligible_user_ids:
-        um = UserMessageLite(
-            user_profile_id=user_profile_id,
-            message_id=message.id,
-            flags=0,
-        )
-        ums_to_create.append(um)
-
     # These properties on the Message are set via
     # render_markdown by code in the Markdown inline patterns
-    wildcard = message.mentions_wildcard
     ids_with_alert_words = message.user_ids_with_alert_words
+    sender_id = message.sender.id
+    is_stream_message = message.is_stream_message()
 
-    for um in ums_to_create:
-        if (
-            um.user_profile_id == message.sender.id and message.sent_by_human()
-        ) or um.user_profile_id in mark_as_read_for_users:
-            um.flags |= UserMessage.flags.read
-        if wildcard:
-            um.flags |= UserMessage.flags.wildcard_mentioned
-        if um.user_profile_id in mentioned_user_ids:
-            um.flags |= UserMessage.flags.mentioned
-        if um.user_profile_id in ids_with_alert_words:
-            um.flags |= UserMessage.flags.has_alert_word
-        if message.recipient.type in [Recipient.HUDDLE, Recipient.PERSONAL]:
-            um.flags |= UserMessage.flags.is_private
+    base_flags = 0
+    if message.mentions_wildcard:
+        base_flags |= UserMessage.flags.wildcard_mentioned
+    if message.recipient.type in [Recipient.HUDDLE, Recipient.PERSONAL]:
+        base_flags |= UserMessage.flags.is_private
 
     # For long_term_idle (aka soft-deactivated) users, we are allowed
     # to optimize by lazily not creating UserMessage rows that would
@@ -2071,15 +2055,31 @@ def create_user_messages(
     # See https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#soft-deactivation
     # for details on this system.
     user_messages = []
-    for um in ums_to_create:
+    for user_profile_id in um_eligible_user_ids:
+        flags = base_flags
         if (
-            um.user_profile_id in long_term_idle_user_ids
-            and um.user_profile_id not in stream_push_user_ids
-            and um.user_profile_id not in stream_email_user_ids
-            and message.is_stream_message()
-            and int(um.flags) == 0
+            user_profile_id == sender_id and message.sent_by_human()
+        ) or user_profile_id in mark_as_read_for_users:
+            flags |= UserMessage.flags.read
+        if user_profile_id in mentioned_user_ids:
+            flags |= UserMessage.flags.mentioned
+        if user_profile_id in ids_with_alert_words:
+            flags |= UserMessage.flags.has_alert_word
+
+        if (
+            user_profile_id in long_term_idle_user_ids
+            and user_profile_id not in stream_push_user_ids
+            and user_profile_id not in stream_email_user_ids
+            and is_stream_message
+            and int(flags) == 0
         ):
             continue
+
+        um = UserMessageLite(
+            user_profile_id=user_profile_id,
+            message_id=message.id,
+            flags=flags,
+        )
         user_messages.append(um)
 
     return user_messages
