@@ -31,6 +31,7 @@ FILES_WITH_LEGACY_SUBJECT = {
     # This has lots of query data embedded, so it's hard
     # to fix everything until we migrate the DB to "topic".
     "zerver/tests/test_message_fetch.py",
+    "zerver/lib/actions.py",
 }
 
 shebang_rules: List["Rule"] = [

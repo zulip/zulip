@@ -5622,7 +5622,7 @@ def do_update_embedded_data(
     content: Optional[str],
     rendered_content: Optional[str],
 ) -> None:
-    event: Dict[str, Any] = {"type": "update_message", "message_id": message.id}
+    event: UpdateMessagesEvent = {"type": "update_message", "message_id": message.id}
     changed_messages = [message]
 
     ums = UserMessage.objects.filter(message=message.id)
@@ -5658,6 +5658,38 @@ class DeleteMessagesEvent(TypedDict, total=False):
     stream_id: int
 
 
+class UpdateMessagesEvent(TypedDict, total=False):
+    type: str
+    user_id: int
+    message_id: int
+    message_ids: List[int]
+
+    edit_timestamp: Optional[int]
+    propagate_mode: Optional[str]
+    orig_content: Optional[str]
+    orig_rendered_content: Optional[str]
+    prev_rendered_content_version: Optional[int]
+    content: Optional[str]
+    flags: Optional[List[str]]
+    is_me_message: Optional[bool]
+    rendered_content: Optional[str]
+
+    push_notify_user_ids: Optional[List[int]]
+    stream_push_user_ids: Optional[List[int]]
+    stream_email_user_ids: Optional[List[int]]
+    prior_mention_user_ids: Optional[List[int]]
+    mention_user_ids: Optional[List[int]]
+    presence_idle_user_ids: Optional[List[int]]
+    wildcard_mention_user_ids: Optional[List[int]]
+
+    stream_name: Optional[str]
+    stream_id: Optional[int]
+    new_stream_id: Optional[int]
+    orig_subject: Optional[str]
+    subject: Optional[str]
+    topic_links: Optional[List[Dict[str, str]]]
+
+
 # We use transaction.atomic to support select_for_update in the attachment codepath.
 @transaction.atomic
 def do_update_message(
@@ -5688,7 +5720,7 @@ def do_update_message(
     timestamp = timezone_now()
     target_message.last_edit_time = timestamp
 
-    event: Dict[str, Any] = {
+    event: UpdateMessagesEvent = {
         "type": "update_message",
         "user_id": user_profile.id,
         "edit_timestamp": datetime_to_timestamp(timestamp),
@@ -5799,7 +5831,8 @@ def do_update_message(
         assert stream_being_edited is not None
 
         edit_history_event["prev_stream"] = stream_being_edited.id
-        event[ORIG_TOPIC] = orig_topic_name
+        assert ORIG_TOPIC == "orig_subject"
+        event["orig_subject"] = orig_topic_name
         target_message.recipient_id = new_stream.recipient_id
 
         event["new_stream_id"] = new_stream.id
@@ -5854,9 +5887,12 @@ def do_update_message(
         target_message.set_topic_name(topic_name)
 
         # These fields have legacy field names.
-        event[ORIG_TOPIC] = orig_topic_name
-        event[TOPIC_NAME] = topic_name
-        event[TOPIC_LINKS] = topic_links(target_message.sender.realm_id, topic_name)
+        assert ORIG_TOPIC == "orig_subject"
+        assert TOPIC_NAME == "subject"
+        assert TOPIC_LINKS == "topic_links"
+        event["orig_subject"] = orig_topic_name
+        event["subject"] = topic_name
+        event["topic_links"] = topic_links(target_message.sender.realm_id, topic_name)
         edit_history_event[LEGACY_PREV_TOPIC] = orig_topic_name
 
     update_edit_history(target_message, timestamp, edit_history_event)
