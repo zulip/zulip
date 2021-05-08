@@ -32,29 +32,29 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
         return;
     }
 
-    let url = "#reload:send_after_reload=" + Number(send_after_reload);
-    url += "+csrf_token=" + encodeURIComponent(csrf_token);
+    const saved_data = {send_after_reload};
+    saved_data.csrf_token = csrf_token;
 
     if (save_compose) {
         const msg_type = compose_state.get_message_type();
+        const message = {type: msg_type};
         if (msg_type === "stream") {
-            url += "+msg_type=stream";
-            url += "+stream=" + encodeURIComponent(compose_state.stream_name());
-            url += "+topic=" + encodeURIComponent(compose_state.topic());
+            message.stream = compose_state.stream_name();
+            message.topic = compose_state.topic();
         } else if (msg_type === "private") {
-            url += "+msg_type=private";
-            url += "+recipient=" + encodeURIComponent(compose_state.private_message_recipient());
+            message.recipient = compose_state.private_message_recipient();
         }
 
         if (msg_type) {
-            url += "+msg=" + encodeURIComponent(compose_state.message_content());
+            message.content = compose_state.message_content();
         }
+        saved_data.message = message;
     }
 
     if (save_pointer) {
         const pointer = message_lists.home.selected_id();
         if (pointer !== -1) {
-            url += "+pointer=" + pointer;
+            saved_data.pointer = pointer;
         }
     }
 
@@ -62,18 +62,17 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
         const row = message_lists.home.selected_row();
         if (!narrow_state.active()) {
             if (row.length > 0) {
-                url += "+offset=" + row.offset().top;
+                saved_data.offset = row.offset().top;
             }
         } else {
-            url += "+offset=" + message_lists.home.pre_narrow_offset;
-
+            saved_data.offset = message_lists.home.pre_narrow_offset;
             const narrow_pointer = message_list.narrowed.selected_id();
             if (narrow_pointer !== -1) {
-                url += "+narrow_pointer=" + narrow_pointer;
+                saved_data.narrow_pointer = narrow_pointer;
             }
             const narrow_row = message_list.narrowed.selected_row();
             if (narrow_row.length > 0) {
-                url += "+narrow_offset=" + narrow_row.offset().top;
+                saved_data.narrow_offset = narrow_row.offset().top;
             }
         }
     }
@@ -82,7 +81,7 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
     if (oldhash.length !== 0 && oldhash[0] === "#") {
         oldhash = oldhash.slice(1);
     }
-    url += "+oldhash=" + encodeURIComponent(oldhash);
+    saved_data.oldhash = oldhash;
 
     const ls = localstorage();
     // Delete all the previous preserved states.
@@ -92,13 +91,10 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
     // logic uses a random token (to distinct this browser from
     // others) which is passed via the URL to the browser (post
     // reloading).  The token is a key into local storage, where we
-    // marshall and store the URL.
-    //
-    // TODO: Remove the now-unnecessary URL-encoding logic above and
-    // just pass the actual data structures through local storage.
+    // marshall and store the `saved_data`.
     const token = util.random_int(0, 1024 * 1024 * 1024 * 1024);
 
-    ls.set("reload:" + token, url);
+    ls.set("reload:" + token, saved_data);
     window.location.replace("#reload:" + token);
 }
 
@@ -117,8 +113,8 @@ export function initialize() {
     // storage.  Afterwards, we clear the reload entry from local
     // storage to avoid a local storage space leak.
     const ls = localstorage();
-    let fragment = ls.get(hash_fragment);
-    if (fragment === undefined) {
+    const saved_data = ls.get(hash_fragment);
+    if (saved_data === undefined) {
         // Since this can happen sometimes with hand-reloading, it's
         // not really worth throwing an exception if these don't
         // exist, but be log it so that it's available for future
@@ -129,29 +125,19 @@ export function initialize() {
     }
     ls.remove(hash_fragment);
 
-    fragment = fragment.replace(/^reload:/, "");
-    const keyvals = fragment.split("+");
-    const vars = {};
-
-    for (const str of keyvals) {
-        const pair = str.split("=");
-        vars[pair[0]] = decodeURIComponent(pair[1]);
-    }
-
-    if (vars.msg !== undefined) {
-        const send_now = Number.parseInt(vars.send_after_reload, 10);
-
+    const message = saved_data.message;
+    if (message !== undefined && message.content !== undefined) {
         try {
             // TODO: preserve focus
-            const topic = util.get_reload_topic(vars);
+            const topic = util.get_reload_topic(message);
 
-            compose_actions.start(vars.msg_type, {
-                stream: vars.stream || "",
+            compose_actions.start(message.type, {
+                stream: message.stream || "",
                 topic: topic || "",
-                private_message_recipient: vars.recipient || "",
-                content: vars.msg || "",
+                private_message_recipient: message.recipient || "",
+                content: message.content || "",
             });
-            if (send_now) {
+            if (saved_data.send_after_reload) {
                 compose.finish();
             }
         } catch (error) {
@@ -161,27 +147,24 @@ export function initialize() {
         }
     }
 
-    const pointer = Number.parseInt(vars.pointer, 10);
-
-    if (pointer) {
-        page_params.initial_pointer = pointer;
-    }
-    const offset = Number.parseInt(vars.offset, 10);
-    if (offset) {
-        page_params.initial_offset = offset;
+    if (saved_data.pointer) {
+        page_params.initial_pointer = saved_data.pointer;
     }
 
-    const narrow_pointer = Number.parseInt(vars.narrow_pointer, 10);
-    if (narrow_pointer) {
-        page_params.initial_narrow_pointer = narrow_pointer;
+    if (saved_data.offset) {
+        page_params.initial_offset = saved_data.offset;
     }
-    const narrow_offset = Number.parseInt(vars.narrow_offset, 10);
-    if (narrow_offset) {
-        page_params.initial_narrow_offset = narrow_offset;
+
+    if (saved_data.narrow_pointer) {
+        page_params.initial_narrow_pointer = saved_data.narrow_pointer;
+    }
+
+    if (saved_data.narrow_offset) {
+        page_params.initial_narrow_offset = saved_data.narrow_offset;
     }
 
     activity.set_new_user_input(false);
-    hashchange.changehash(vars.oldhash);
+    hashchange.changehash(saved_data.oldhash);
 }
 
 function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compose, message_html) {
