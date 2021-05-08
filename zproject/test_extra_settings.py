@@ -51,6 +51,9 @@ else:
 if PUPPETEER_TESTS:
     # Disable search pills prototype for production use
     SEARCH_PILLS_ENABLED = False
+    # Disable hotspots during puppeteer tests.
+    TUTORIAL_ENABLED = False
+
 
 if "RUNNING_OPENAPI_CURL_TEST" in os.environ:
     RUNNING_OPENAPI_CURL_TEST = True

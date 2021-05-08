@@ -10954,6 +10954,11 @@ components:
           description: |
             The description of the hotspot, as will be displayed to the
             user.
+        has_trigger:
+          type: boolean
+          description: |
+            The has_trigger is used to identify if the hotspot will activate
+            when the specific event occurs.
     RealmEmoji:
       type: object
       additionalProperties: false

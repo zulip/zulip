@@ -43,11 +43,21 @@ INTRO_HOTSPOTS: Dict[str, Dict[str, Promise]] = {
     },
 }
 
+
+NON_INTRO_HOTSPOTS: Dict[str, Dict[str, Promise]] = {}
+
 # We would most likely implement new hotspots in the future that aren't
 # a part of the initial tutorial. To that end, classifying them into
 # categories which are aggregated in ALL_HOTSPOTS, seems like a good start.
 ALL_HOTSPOTS: Dict[str, Dict[str, Promise]] = {
-    **INTRO_HOTSPOTS,
+    **{
+        hotspot_name: {**INTRO_HOTSPOTS[hotspot_name], "has_trigger": False}
+        for hotspot_name in INTRO_HOTSPOTS
+    },
+    **{
+        hotspot_name: {**NON_INTRO_HOTSPOTS[hotspot_name], "has_trigger": True}
+        for hotspot_name in NON_INTRO_HOTSPOTS
+    },
 }
 
 
@@ -63,38 +73,61 @@ def get_next_hotspots(user: UserProfile) -> List[Dict[str, object]]:
     if settings.ALWAYS_SEND_ALL_HOTSPOTS:
         return [
             {
-                "name": hotspot,
-                "title": str(ALL_HOTSPOTS[hotspot]["title"]),
-                "description": str(ALL_HOTSPOTS[hotspot]["description"]),
+                **base_hotspot,
+                "name": name,
+                "title": str(base_hotspot["title"]),
+                "description": str(base_hotspot["description"]),
                 "delay": 0,
             }
-            for hotspot in ALL_HOTSPOTS
+            for name, base_hotspot in ALL_HOTSPOTS.items()
         ]
 
     # If a Zulip server has disabled the tutorial, never send hotspots.
     if not settings.TUTORIAL_ENABLED:
         return []
 
-    if user.tutorial_status == UserProfile.TUTORIAL_FINISHED:
-        return []
-
     seen_hotspots = frozenset(
         UserHotspot.objects.filter(user=user).values_list("hotspot", flat=True)
     )
-    for hotspot in INTRO_HOTSPOTS.keys():
-        if hotspot not in seen_hotspots:
-            return [
-                {
-                    "name": hotspot,
-                    "title": str(INTRO_HOTSPOTS[hotspot]["title"]),
-                    "description": str(INTRO_HOTSPOTS[hotspot]["description"]),
-                    "delay": 0.5,
-                }
-            ]
+
+    hotspots = []
+
+    for name, base_hotspot in NON_INTRO_HOTSPOTS.items():
+        if name in seen_hotspots:
+            continue
+
+        hotspot = {
+            **base_hotspot,
+            "name": name,
+            "title": str(base_hotspot["title"]),
+            "description": str(base_hotspot["description"]),
+            "delay": 0,
+            "has_trigger": True,
+        }
+        hotspots.append(hotspot)
+
+    if user.tutorial_status == UserProfile.TUTORIAL_FINISHED:
+        return hotspots
+
+    for name, base_hotspot in INTRO_HOTSPOTS.items():
+        if name in seen_hotspots:
+            continue
+
+        # Make a copy to set delay and finalize i18n strings.
+        hotspot = {
+            **base_hotspot,
+            "name": name,
+            "title": str(base_hotspot["title"]),
+            "description": str(base_hotspot["description"]),
+            "delay": 0.5,
+            "has_trigger": False,
+        }
+        hotspots.append(hotspot)
+        return hotspots
 
     user.tutorial_status = UserProfile.TUTORIAL_FINISHED
     user.save(update_fields=["tutorial_status"])
-    return []
+    return hotspots
 
 
 def copy_hotspots(source_profile: UserProfile, target_profile: UserProfile) -> None:

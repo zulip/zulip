@@ -1205,7 +1205,8 @@ class UserProfileTest(ZulipTestCase):
         self.assertEqual(hamlet.enter_sends, True)
 
         hotspots = list(UserHotspot.objects.filter(user=iago).values_list("hotspot", flat=True))
-        self.assertEqual(hotspots, hotspots_completed)
+        # Sorting hotspots to avoid an occasional flake where the sequence didn't match.
+        self.assertEqual(sorted(hotspots), hotspots_completed)
 
     def test_get_user_by_id_in_realm_including_cross_realm(self) -> None:
         realm = get_realm("zulip")
