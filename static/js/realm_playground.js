@@ -1,7 +1,7 @@
 import * as typeahead_helper from "./typeahead_helper";
 
 const map_language_to_playground_info = new Map();
-const pygments_pretty_name_list = new Set();
+const map_pygments_pretty_name_to_aliases = new Map();
 
 export function update_playgrounds(playgrounds_data) {
     map_language_to_playground_info.clear();
@@ -28,18 +28,30 @@ export function sort_pygments_pretty_names_by_priority(generated_pygments_data) 
     const priority_sorted_pygments_data = Object.keys(generated_pygments_data.langs).sort(
         typeahead_helper.compare_by_popularity,
     );
-    for (const data of priority_sorted_pygments_data) {
-        const pretty_name = generated_pygments_data.langs[data].pretty_name;
-        // JS maintains the order of insertion in a set so we don't need to worry about
-        // the priority changing.
-        if (!pygments_pretty_name_list.has(pretty_name)) {
-            pygments_pretty_name_list.add(pretty_name);
+    for (const alias of priority_sorted_pygments_data) {
+        const pretty_name = generated_pygments_data.langs[alias].pretty_name;
+        // JS Map remembers the original order of insertion of keys.
+        if (map_pygments_pretty_name_to_aliases.has(pretty_name)) {
+            map_pygments_pretty_name_to_aliases.get(pretty_name).push(alias);
+        } else {
+            map_pygments_pretty_name_to_aliases.set(pretty_name, [alias]);
         }
     }
 }
 
-export function get_pygments_pretty_names_list() {
-    return Array.from(pygments_pretty_name_list);
+export function get_pygments_typeahead_list() {
+    const lookup_table = new Map();
+    const pygments_pretty_name_list = [];
+
+    for (const [key, values] of map_pygments_pretty_name_to_aliases) {
+        lookup_table[key] = key + " (" + Array.from(values).join(", ") + ")";
+        pygments_pretty_name_list.push(key);
+    }
+
+    return {
+        pygments_pretty_name_list,
+        lookup_table,
+    };
 }
 
 export function initialize(playground_data, generated_pygments_data) {
