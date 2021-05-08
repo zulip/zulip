@@ -56,3 +56,27 @@ export function private_message_recipient(value) {
 export function has_message_content() {
     return message_content() !== "";
 }
+
+export function construct_message_data() {
+    let content;
+    const msg_type = get_message_type();
+    if (msg_type) {
+        // message type may not be valid in some cases when it is called in
+        // `reload.js` in such case we wish not to send any message there.
+        content = message_content();
+    }
+
+    const message = {
+        type: msg_type,
+        content,
+    };
+    if (msg_type === "private") {
+        const recipient = private_message_recipient();
+        message.reply_to = recipient;
+        message.private_message_recipient = recipient;
+    } else if (msg_type === "stream") {
+        message.stream = stream_name();
+        message.topic = topic();
+    }
+    return message;
+}

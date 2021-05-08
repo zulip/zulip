@@ -96,18 +96,7 @@ export function snapshot_message() {
     }
 
     // Save what we can.
-    const message = {
-        type: compose_state.get_message_type(),
-        content: compose_state.message_content(),
-    };
-    if (message.type === "private") {
-        const recipient = compose_state.private_message_recipient();
-        message.reply_to = recipient;
-        message.private_message_recipient = recipient;
-    } else {
-        message.stream = compose_state.stream_name();
-        message.topic = compose_state.topic();
-    }
+    const message = compose_state.construct_message_data();
     return message;
 }
 

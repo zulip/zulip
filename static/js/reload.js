@@ -36,19 +36,7 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
     saved_data.csrf_token = csrf_token;
 
     if (save_compose) {
-        const msg_type = compose_state.get_message_type();
-        const message = {type: msg_type};
-        if (msg_type === "stream") {
-            message.stream = compose_state.stream_name();
-            message.topic = compose_state.topic();
-        } else if (msg_type === "private") {
-            message.recipient = compose_state.private_message_recipient();
-        }
-
-        if (msg_type) {
-            message.content = compose_state.message_content();
-        }
-        saved_data.message = message;
+        saved_data.message = compose_state.construct_message_data();
     }
 
     if (save_pointer) {
@@ -134,7 +122,7 @@ export function initialize() {
             compose_actions.start(message.type, {
                 stream: message.stream || "",
                 topic: topic || "",
-                private_message_recipient: message.recipient || "",
+                private_message_recipient: message.private_message_recipient || "",
                 content: message.content || "",
             });
             if (saved_data.send_after_reload) {
