@@ -98,7 +98,6 @@ function test_ui(label, f) {
         page_params.is_admin = false;
         page_params.realm_email_address_visibility = 3;
         page_params.custom_profile_fields = [];
-        page_params.development_environment = false;
         override(popovers, "clipboard_enable", noop);
         popovers.clear_for_testing();
         popovers.register_click_handlers();
@@ -160,7 +159,7 @@ test_ui("sender_hover", (override) => {
                 assert.deepEqual(opts, {
                     can_set_away: false,
                     can_revoke_away: false,
-                    can_mute: false,
+                    can_mute: true,
                     can_unmute: false,
                     user_full_name: "Alice Smith",
                     user_email: "alice@example.com",

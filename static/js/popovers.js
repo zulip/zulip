@@ -235,8 +235,7 @@ function render_user_info_popover(
         }
     }
 
-    const is_dev = page_params.development_environment;
-    const muting_allowed = is_dev && !is_me && !user.is_bot;
+    const muting_allowed = !is_me && !user.is_bot;
     const is_muted = muting.is_user_muted(user.user_id);
 
     const args = {
