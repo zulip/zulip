@@ -45,9 +45,11 @@
             overflow: hidden;
             white-space: nowrap;
             text-overflow: ellipsis;
+            cursor: text;
+            padding: 3px 6px;
 
-            .compose_reply_button_recipient_label {
-                color: hsl(215, 47%, 30%);
+            &:active {
+                background-color: inherit;
             }
         }
     }
