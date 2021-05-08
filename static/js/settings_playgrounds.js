@@ -151,9 +151,10 @@ function build_page() {
             });
         });
 
+    const search_pygments_box = $("#playground_pygments_language");
     let lookup_table = new Map();
 
-    $("#playground_pygments_language").typeahead({
+    search_pygments_box.typeahead({
         source(query) {
             const suggestions = realm_playground.get_pygments_typeahead_list(query);
             lookup_table = suggestions.lookup_table;
@@ -161,6 +162,7 @@ function build_page() {
         },
         items: 5,
         fixed: true,
+        helpOnEmptyStrings: true,
         highlighter(item) {
             return lookup_table[item];
         },
@@ -168,5 +170,11 @@ function build_page() {
             const q = this.query.trim().toLowerCase();
             return item.toLowerCase().startsWith(q);
         },
+    });
+
+    search_pygments_box.on("click", (e) => {
+        search_pygments_box.typeahead("lookup").trigger("select");
+        e.preventDefault();
+        e.stopPropagation();
     });
 }

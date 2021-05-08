@@ -49,11 +49,13 @@ export function get_pygments_typeahead_list(query) {
     // Adds a typeahead that allows selecting a custom language, by adding a
     // "Custom language" label in the first position of the typeahead list.
     const clean_query = typeahead.clean_query_lowercase(query);
-    pygments_pretty_name_list.push(clean_query);
-    lookup_table[clean_query] = $t(
-        {defaultMessage: "Custom language: {query}"},
-        {query: clean_query},
-    );
+    if (clean_query !== "") {
+        pygments_pretty_name_list.push(clean_query);
+        lookup_table[clean_query] = $t(
+            {defaultMessage: "Custom language: {query}"},
+            {query: clean_query},
+        );
+    }
 
     for (const [key, values] of map_pygments_pretty_name_to_aliases) {
         lookup_table[key] = key + " (" + Array.from(values).join(", ") + ")";
