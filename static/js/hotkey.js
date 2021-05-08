@@ -427,7 +427,7 @@ export function process_enter_key(e) {
         return false;
     }
 
-    // This handles when pressing Rnter while looking at drafts.
+    // This handles when pressing Enter while looking at drafts.
     // It restores draft that is focused.
     if (overlays.drafts_open()) {
         drafts.drafts_handle_events(e, "enter");
