@@ -2,7 +2,7 @@ from typing_extensions import override
 
 from zerver.actions.create_user import do_create_user
 from zerver.actions.hotspots import do_mark_hotspot_as_read
-from zerver.lib.hotspots import ALL_HOTSPOTS, INTRO_HOTSPOTS, get_next_hotspots
+from zerver.lib.hotspots import ALL_HOTSPOTS, INTRO_HOTSPOTS, NON_INTRO_HOTSPOTS, get_next_hotspots
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import UserHotspot, UserProfile, get_realm
 
@@ -22,6 +22,22 @@ class TestGetNextHotspots(ZulipTestCase):
         self.assert_length(hotspots, 1)
         self.assertEqual(hotspots[0]["name"], "intro_streams")
 
+    # Remove this test once we have a non-intro hotspot.
+    def test_non_intro_hotspots(self) -> None:
+        NON_INTRO_HOTSPOTS["dummy_hotspot"] = {
+            "title": "Dummy Hotspot",
+            "description": "This is a dummy hotspot",
+        }
+        hotspots = get_next_hotspots(self.user)
+        self.assert_length(hotspots, 2)
+        self.assertEqual(hotspots[0]["name"], "dummy_hotspot")
+        self.assertEqual(hotspots[1]["name"], "intro_streams")
+        do_mark_hotspot_as_read(self.user, "dummy_hotspot")
+        hotspots = get_next_hotspots(self.user)
+        self.assert_length(hotspots, 1)
+        self.assertEqual(hotspots[0]["name"], "intro_streams")
+        NON_INTRO_HOTSPOTS.pop("dummy_hotspot")
+
     def test_some_done_some_not(self) -> None:
         do_mark_hotspot_as_read(self.user, "intro_streams")
         do_mark_hotspot_as_read(self.user, "intro_compose")
@@ -29,11 +45,16 @@ class TestGetNextHotspots(ZulipTestCase):
         self.assert_length(hotspots, 1)
         self.assertEqual(hotspots[0]["name"], "intro_topics")
 
-    def test_all_intro_hotspots_done(self) -> None:
+    def test_all_hotspots_done(self) -> None:
         with self.settings(TUTORIAL_ENABLED=True):
+            self.assertNotEqual(self.user.tutorial_status, UserProfile.TUTORIAL_FINISHED)
+            for hotspot in NON_INTRO_HOTSPOTS:
+                do_mark_hotspot_as_read(self.user, hotspot)
+
             self.assertNotEqual(self.user.tutorial_status, UserProfile.TUTORIAL_FINISHED)
             for hotspot in INTRO_HOTSPOTS:
                 do_mark_hotspot_as_read(self.user, hotspot)
+
             self.assertEqual(self.user.tutorial_status, UserProfile.TUTORIAL_FINISHED)
             self.assertEqual(get_next_hotspots(self.user), [])
 

@@ -2058,6 +2058,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):  # type
     avatar_version = models.PositiveSmallIntegerField(default=1)
     avatar_hash = models.CharField(null=True, max_length=64)
 
+    # TODO: TUTORIAL_STATUS was originally an optimization designed to
+    # allow us to skip querying the UserHotspot table when loading
+    # /. This optimization is no longer effective, so it's possible we
+    # should delete it.
     TUTORIAL_WAITING = "W"
     TUTORIAL_STARTED = "S"
     TUTORIAL_FINISHED = "F"
