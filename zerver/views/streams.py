@@ -244,7 +244,7 @@ def update_stream_backend(
     user_profile: UserProfile,
     stream_id: int,
     description: Optional[str] = REQ(
-        json_validator=check_capped_string(Stream.MAX_DESCRIPTION_LENGTH), default=None
+        str_validator=check_capped_string(Stream.MAX_DESCRIPTION_LENGTH), default=None
     ),
     is_private: Optional[bool] = REQ(json_validator=check_bool, default=None),
     is_announcement_only: Optional[bool] = REQ(json_validator=check_bool, default=None),
@@ -252,7 +252,7 @@ def update_stream_backend(
         json_validator=check_int_in(Stream.STREAM_POST_POLICY_TYPES), default=None
     ),
     history_public_to_subscribers: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    new_name: Optional[str] = REQ(json_validator=check_string, default=None),
+    new_name: Optional[str] = REQ(default=None),
     message_retention_days: Optional[Union[int, str]] = REQ(
         json_validator=check_string_or_int, default=None
     ),

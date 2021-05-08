@@ -9323,11 +9323,11 @@ paths:
           in: query
           description: |
             Notification sound name.
-          content:
-            application/json:
-              schema:
-                type: string
-              example: ding
+
+            **Changes**: Removed unnecessary JSON-encoding of parameter in Zulip 4.0 (feature level 63).
+          schema:
+            type: string
+          example: ding
         - name: enable_desktop_notifications
           in: query
           description: |
@@ -9598,12 +9598,12 @@ paths:
             This controls both the Zulip UI as well as email notifications sent to the user.
 
             The value needs to be a standard language code that the Zulip server has
-            translation data for; for example, `"en"` for English` or `"de"` for German.
-          content:
-            application/json:
-              schema:
-                type: string
-              example: "en"
+            translation data for; for example, `"en"` for English or `"de"` for German.
+
+            **Changes**: Removed unnecessary JSON-encoding of parameter in Zulip 4.0 (feature level 63).
+          schema:
+            type: string
+          example: en
         - name: default_view
           in: query
           description: |
@@ -9612,9 +9612,11 @@ paths:
 
             * "recent_topics" - Recent topics view
             * "all_messages" - All messages view
+
+            **Changes**: Removed unnecessary JSON-encoding of parameter in Zulip 4.0 (feature level 64).
           schema:
             type: string
-          example: '"all_messages"'
+          example: all_messages
         - name: left_side_userlist
           in: query
           description: |
@@ -9634,6 +9636,8 @@ paths:
             * "google-blob" - Google classic
             * "twitter" - Twitter
             * "text" - Plain text
+
+            **Changes**: Removed unnecessary JSON-encoding of parameter in Zulip 4.0 (feature level 64).
           schema:
             type: string
           example: "google"
@@ -9661,11 +9665,11 @@ paths:
 
             Timezone values supported by the server are served at
             [/static/generated/timezones.json](/static/generated/timezones.json).
-          content:
-            application/json:
-              schema:
-                type: string
-              example: "Asia/Kolkata"
+
+            **Changes**: Removed unnecessary JSON-encoding of parameter in Zulip 4.0 (feature level 64).
+          schema:
+            type: string
+          example: "Asia/Kolkata"
       responses:
         "200":
           description: Success
@@ -9950,22 +9954,25 @@ paths:
         - name: description
           in: query
           description: |
-            The new description for the stream.
-          content:
-            application/json:
-              schema:
-                type: string
-              example: This stream is related to football dicsussions.
+            The new description for the stream. Limited Zulip markdown is allowed in this
+            field.
+
+            **Changes**: Removed unnecessary JSON-encoding of this parameter in
+            Zulip 4.0 (feature level 64).
+          schema:
+            type: string
+          example: "Discuss Italian history and travel destinations."
           required: false
         - name: new_name
           in: query
           description: |
             The new name for the stream.
-          content:
-            application/json:
-              schema:
-                type: string
-              example: Italy
+
+            **Changes**: Removed unnecessary JSON-encoding of this parameter in
+            Zulip 4.0 (feature level 64).
+          schema:
+            type: string
+          example: Italy
           required: false
         - name: is_private
           in: query

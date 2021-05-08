@@ -759,31 +759,21 @@ class StreamAdminTest(ZulipTestCase):
         stream = self.subscribe(user_profile, "stream_name1")
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
 
-        result = self.client_patch(
-            f"/json/streams/{stream.id}", {"new_name": orjson.dumps("stream_name1").decode()}
-        )
+        result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "stream_name1"})
         self.assert_json_error(result, "Stream already has that name!")
-        result = self.client_patch(
-            f"/json/streams/{stream.id}", {"new_name": orjson.dumps("Denmark").decode()}
-        )
+        result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "Denmark"})
         self.assert_json_error(result, "Stream name 'Denmark' is already taken.")
-        result = self.client_patch(
-            f"/json/streams/{stream.id}", {"new_name": orjson.dumps("denmark ").decode()}
-        )
+        result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "denmark "})
         self.assert_json_error(result, "Stream name 'denmark' is already taken.")
 
         # Do a rename that is case-only--this should succeed.
-        result = self.client_patch(
-            f"/json/streams/{stream.id}", {"new_name": orjson.dumps("sTREAm_name1").decode()}
-        )
+        result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "sTREAm_name1"})
         self.assert_json_success(result)
 
         events: List[Mapping[str, Any]] = []
         with tornado_redirected_to_list(events):
             stream_id = get_stream("stream_name1", user_profile.realm).id
-            result = self.client_patch(
-                f"/json/streams/{stream_id}", {"new_name": orjson.dumps("stream_name2").decode()}
-            )
+            result = self.client_patch(f"/json/streams/{stream_id}", {"new_name": "stream_name2"})
         self.assert_json_success(result)
         event = events[1]["event"]
         self.assertEqual(
@@ -813,9 +803,7 @@ class StreamAdminTest(ZulipTestCase):
         # *NOTE: Here encoding is needed when Unicode string is passed as an argument*
         with tornado_redirected_to_list(events):
             stream_id = stream_name2_exists.id
-            result = self.client_patch(
-                f"/json/streams/{stream_id}", {"new_name": orjson.dumps("नया नाम").decode()}
-            )
+            result = self.client_patch(f"/json/streams/{stream_id}", {"new_name": "नया नाम"})
         self.assert_json_success(result)
         # While querying, system can handle Unicode strings.
         stream_name_uni_exists = get_stream("नया नाम", realm)
@@ -828,7 +816,7 @@ class StreamAdminTest(ZulipTestCase):
             stream_id = stream_name_uni_exists.id
             result = self.client_patch(
                 f"/json/streams/{stream_id}",
-                {"new_name": orjson.dumps("नाम में क्या रक्खा हे").decode()},
+                {"new_name": "नाम में क्या रक्खा हे"},
             )
         self.assert_json_success(result)
         # While querying, system can handle Unicode strings.
@@ -840,9 +828,7 @@ class StreamAdminTest(ZulipTestCase):
         # Test case to change name from one language to other.
         with tornado_redirected_to_list(events):
             stream_id = stream_name_new_uni_exists.id
-            result = self.client_patch(
-                f"/json/streams/{stream_id}", {"new_name": orjson.dumps("français").decode()}
-            )
+            result = self.client_patch(f"/json/streams/{stream_id}", {"new_name": "français"})
         self.assert_json_success(result)
         stream_name_fr_exists = get_stream("français", realm)
         self.assertTrue(stream_name_fr_exists)
@@ -850,9 +836,7 @@ class StreamAdminTest(ZulipTestCase):
         # Test case to change name to mixed language name.
         with tornado_redirected_to_list(events):
             stream_id = stream_name_fr_exists.id
-            result = self.client_patch(
-                f"/json/streams/{stream_id}", {"new_name": orjson.dumps("français name").decode()}
-            )
+            result = self.client_patch(f"/json/streams/{stream_id}", {"new_name": "français name"})
         self.assert_json_success(result)
         stream_name_mixed_exists = get_stream("français name", realm)
         self.assertTrue(stream_name_mixed_exists)
@@ -867,7 +851,7 @@ class StreamAdminTest(ZulipTestCase):
             stream_id = get_stream("stream_private_name1", realm).id
             result = self.client_patch(
                 f"/json/streams/{stream_id}",
-                {"new_name": orjson.dumps("stream_private_name2").decode()},
+                {"new_name": "stream_private_name2"},
             )
         self.assert_json_success(result)
         notified_user_ids = set(events[1]["users"])
@@ -896,7 +880,7 @@ class StreamAdminTest(ZulipTestCase):
         with tornado_redirected_to_list(events):
             result = self.client_patch(
                 f"/json/streams/{new_stream.id}",
-                {"new_name": orjson.dumps("stream_rename").decode()},
+                {"new_name": "stream_rename"},
             )
         self.assert_json_success(result)
         self.assertEqual(len(events), 3)
@@ -914,9 +898,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assertFalse(sub.is_stream_admin)
 
         stream_id = get_stream("stream_name1", user_profile.realm).id
-        result = self.client_patch(
-            f"/json/streams/{stream_id}", {"new_name": orjson.dumps("stream_name2").decode()}
-        )
+        result = self.client_patch(f"/json/streams/{stream_id}", {"new_name": "stream_name2"})
         self.assert_json_error(result, "Must be an organization or stream administrator")
 
     def test_notify_on_stream_rename(self) -> None:
@@ -926,9 +908,7 @@ class StreamAdminTest(ZulipTestCase):
 
         stream = self.subscribe(user_profile, "stream_name1")
         do_change_user_role(user_profile, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
-        result = self.client_patch(
-            f"/json/streams/{stream.id}", {"new_name": orjson.dumps("stream_name2").decode()}
-        )
+        result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "stream_name2"})
         self.assert_json_success(result)
 
         # Inspect the notification message sent
@@ -956,9 +936,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_json_success(result)
 
         stream_id = get_stream("private_stream", iago.realm).id
-        result = self.client_patch(
-            f"/json/streams/{stream_id}", {"new_name": orjson.dumps("new_private_stream").decode()}
-        )
+        result = self.client_patch(f"/json/streams/{stream_id}", {"new_name": "new_private_stream"})
         self.assert_json_success(result)
 
         result = self.client_patch(
@@ -992,9 +970,7 @@ class StreamAdminTest(ZulipTestCase):
 
         stream_id = get_stream("private_stream_1", hamlet.realm).id
 
-        result = self.client_patch(
-            f"/json/streams/{stream_id}", {"new_name": orjson.dumps("private_stream_2").decode()}
-        )
+        result = self.client_patch(f"/json/streams/{stream_id}", {"new_name": "private_stream_2"})
         self.assert_json_error(result, "Invalid stream id")
 
         result = self.client_patch(

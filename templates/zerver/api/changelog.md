@@ -10,6 +10,13 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 64**
+
+* `PATCH /streams/{stream_id}`: Removed unnecessary JSON-encoding of string
+  parameters `new_name` and `description`.
+* `PATCH /settings/display`: Removed unnecessary JSON-encoding of string
+  parameters `default_view`, `emojiset` and `timezone`.
+
 **Feature level 63**
 
 * `PATCH /settings/notifications`: Removed unnecessary JSON-encoding of string
