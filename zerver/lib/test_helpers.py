@@ -15,7 +15,6 @@ from typing import (
     Iterable,
     Iterator,
     List,
-    Mapping,
     Optional,
     Tuple,
     TypeVar,
@@ -55,7 +54,6 @@ from zerver.models import (
     get_realm,
     get_stream,
 )
-from zerver.tornado import django_api as django_tornado_api
 from zerver.tornado.handlers import AsyncDjangoHandler, allocate_handler_id
 from zerver.worker import queue_processors
 from zproject.backends import ExternalAuthDataDict, ExternalAuthResult
@@ -92,19 +90,6 @@ def stub_event_queue_user_events(
 def simulated_queue_client(client: Callable[[], object]) -> Iterator[None]:
     with mock.patch.object(queue_processors, "SimpleQueueClient", client):
         yield
-
-
-@contextmanager
-def tornado_redirected_to_list(lst: List[Mapping[str, Any]]) -> Iterator[None]:
-    real_event_queue_process_notification = django_tornado_api.process_notification
-    django_tornado_api.process_notification = lambda notice: lst.append(notice)
-    # process_notification takes a single parameter called 'notice'.
-    # lst.append takes a single argument called 'object'.
-    # Some code might call process_notification using keyword arguments,
-    # so mypy doesn't allow assigning lst.append to process_notification
-    # So explicitly change parameter name to 'notice' to work around this problem
-    yield
-    django_tornado_api.process_notification = real_event_queue_process_notification
 
 
 class EventInfo:

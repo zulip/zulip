@@ -17,12 +17,7 @@ from zerver.lib.bot_config import ConfigError, get_bot_config
 from zerver.lib.bot_lib import get_bot_handler
 from zerver.lib.integrations import EMBEDDED_BOTS, WebhookIntegration
 from zerver.lib.test_classes import UploadSerializeMixin, ZulipTestCase
-from zerver.lib.test_helpers import (
-    avatar_disk_path,
-    get_test_image_file,
-    queries_captured,
-    tornado_redirected_to_list,
-)
+from zerver.lib.test_helpers import avatar_disk_path, get_test_image_file, queries_captured
 from zerver.models import (
     Realm,
     Service,
@@ -171,7 +166,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login("hamlet")
         self.assert_num_bots_equal(0)
         events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events):
             result = self.create_bot()
         self.assert_num_bots_equal(1)
 
@@ -337,7 +332,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login_user(user)
         self.assert_num_bots_equal(0)
         events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events):
             result = self.create_bot()
         self.assert_num_bots_equal(1)
 
@@ -391,7 +386,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "principals": '["' + iago.email + '"]',
         }
         events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events):
             result = self.common_subscribe_to_streams(hamlet, ["Rome"], request_data)
             self.assert_json_success(result)
 
@@ -408,7 +403,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             "principals": '["hambot-bot@zulip.testserver"]',
         }
         events_bot: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events_bot):
+        with self.tornado_redirected_to_list(events_bot):
             result = self.common_subscribe_to_streams(hamlet, ["Rome"], bot_request_data)
             self.assert_json_success(result)
 
@@ -429,7 +424,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         self.assert_num_bots_equal(0)
         events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events):
             result = self.create_bot(default_sending_stream="Denmark")
         self.assert_num_bots_equal(1)
         self.assertEqual(result["default_sending_stream"], "Denmark")
@@ -501,7 +496,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         self.assert_num_bots_equal(0)
         events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events):
             result = self.create_bot(default_events_register_stream="Denmark")
         self.assert_num_bots_equal(1)
         self.assertEqual(result["default_events_register_stream"], "Denmark")

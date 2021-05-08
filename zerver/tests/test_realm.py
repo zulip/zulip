@@ -22,7 +22,6 @@ from zerver.lib.realm_description import get_realm_rendered_description, get_rea
 from zerver.lib.send_email import send_future_email
 from zerver.lib.streams import create_stream_if_needed
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import tornado_redirected_to_list
 from zerver.models import (
     Attachment,
     CustomProfileField,
@@ -70,7 +69,7 @@ class RealmTest(ZulipTestCase):
         realm = get_realm("zulip")
         new_name = "Puliz"
         events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events):
             do_set_realm_property(realm, "name", new_name, acting_user=None)
         event = events[0]["event"]
         self.assertEqual(
@@ -87,7 +86,7 @@ class RealmTest(ZulipTestCase):
         realm = get_realm("zulip")
         new_description = "zulip dev group"
         events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events):
             do_set_realm_property(realm, "description", new_description, acting_user=None)
         event = events[0]["event"]
         self.assertEqual(
@@ -105,7 +104,7 @@ class RealmTest(ZulipTestCase):
         new_description = "zulip dev group"
         data = dict(description=new_description)
         events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events):
             result = self.client_patch("/json/realm", data)
             self.assert_json_success(result)
             realm = get_realm("zulip")
