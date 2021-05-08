@@ -2286,6 +2286,7 @@ paths:
                                         "title": "Catch up on a stream",
                                         "description": "Messages sent to a stream are seen by everyone subscribed to that stream. Try clicking on one of the stream links below.",
                                         "delay": 0.5,
+                                        "has_trigger": false,
                                       },
                                     ],
                                   "id": 0,
@@ -18496,6 +18497,13 @@ components:
           description: |
             The description of the hotspot, as will be displayed to the
             user.
+        has_trigger:
+          type: boolean
+          description: |
+            The has_trigger is used to identify if the hotspot will activate
+            only when some specific event occurs.
+
+            **Changes**: New in Zulip 8.0 (feature level 230).
     RealmEmoji:
       type: object
       additionalProperties: false

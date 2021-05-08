@@ -20,6 +20,12 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 8.0
 
+**Feature level 230**
+
+* [`GET /events`](/api/get-events): Added `has_trigger` field in
+  hotspots events to identify if a hotspot will activate only when
+  some specific event occurs.
+
 **Feature level 229**
 
 * [`PATCH /messages/{message_id}`](/api/update-message), [`POST
