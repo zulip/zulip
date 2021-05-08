@@ -391,6 +391,11 @@ input.recipient_box {
     &:focus {
         box-shadow: 0 0 10px hsl(170, 48%, 54%), 0 0 5px hsl(170, 48%, 54%);
     }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
 }
 
 #send_controls {
