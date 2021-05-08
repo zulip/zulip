@@ -14,6 +14,7 @@ from typing import (
     Iterable,
     Iterator,
     List,
+    Mapping,
     Optional,
     Sequence,
     Set,
@@ -89,6 +90,7 @@ from zerver.models import (
     get_user_by_delivery_email,
 )
 from zerver.openapi.openapi import validate_against_openapi_schema, validate_request
+from zerver.tornado import django_api as django_tornado_api
 from zerver.tornado.event_queue import clear_client_event_queues_for_testing
 
 if settings.ZILENCER_ENABLED:
@@ -1253,6 +1255,18 @@ Output:
         self.assertTrue(validation_func(member_user))
         self.assertTrue(validation_func(new_member_user))
         self.assertFalse(validation_func(guest_user))
+
+    @contextmanager
+    def tornado_redirected_to_list(self, lst: List[Mapping[str, Any]]) -> Iterator[None]:
+        real_event_queue_process_notification = django_tornado_api.process_notification
+        django_tornado_api.process_notification = lambda notice: lst.append(notice)
+        # process_notification takes a single parameter called 'notice'.
+        # lst.append takes a single argument called 'object'.
+        # Some code might call process_notification using keyword arguments,
+        # so mypy doesn't allow assigning lst.append to process_notification
+        # So explicitly change parameter name to 'notice' to work around this problem
+        yield
+        django_tornado_api.process_notification = real_event_queue_process_notification
 
 
 class WebhookTestCase(ZulipTestCase):

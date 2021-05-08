@@ -38,7 +38,6 @@ from zerver.lib.test_helpers import (
     queries_captured,
     reset_emails_in_zulip_realm,
     simulated_empty_cache,
-    tornado_redirected_to_list,
 )
 from zerver.lib.topic_mutes import add_topic_mute
 from zerver.lib.upload import upload_avatar_image
@@ -181,7 +180,7 @@ class PermissionTest(ZulipTestCase):
 
         req = dict(role=UserProfile.ROLE_REALM_OWNER)
         events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events):
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         owner_users = realm.get_human_owner_users()
@@ -192,7 +191,7 @@ class PermissionTest(ZulipTestCase):
 
         req = dict(role=UserProfile.ROLE_MEMBER)
         events = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events):
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         owner_users = realm.get_human_owner_users()
@@ -205,7 +204,7 @@ class PermissionTest(ZulipTestCase):
         self.login("desdemona")
         req = dict(role=UserProfile.ROLE_MEMBER)
         events = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events):
             result = self.client_patch(f"/json/users/{iago.id}", req)
         self.assert_json_success(result)
         owner_users = realm.get_human_owner_users()
@@ -213,7 +212,7 @@ class PermissionTest(ZulipTestCase):
         person = events[0]["event"]["person"]
         self.assertEqual(person["user_id"], iago.id)
         self.assertEqual(person["role"], UserProfile.ROLE_MEMBER)
-        with tornado_redirected_to_list([]):
+        with self.tornado_redirected_to_list([]):
             result = self.client_patch(f"/json/users/{desdemona.id}", req)
         self.assert_json_error(
             result, "The owner permission cannot be removed from the only organization owner."
@@ -221,7 +220,7 @@ class PermissionTest(ZulipTestCase):
 
         do_change_user_role(iago, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         self.login("iago")
-        with tornado_redirected_to_list([]):
+        with self.tornado_redirected_to_list([]):
             result = self.client_patch(f"/json/users/{desdemona.id}", req)
         self.assert_json_error(result, "Must be an organization owner")
 
@@ -246,7 +245,7 @@ class PermissionTest(ZulipTestCase):
         req = dict(role=orjson.dumps(UserProfile.ROLE_REALM_ADMINISTRATOR).decode())
 
         events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events):
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         admin_users = realm.get_human_admin_users()
@@ -258,7 +257,7 @@ class PermissionTest(ZulipTestCase):
         # Taketh away
         req = dict(role=orjson.dumps(UserProfile.ROLE_MEMBER).decode())
         events = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events):
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
         admin_users = realm.get_human_admin_users()
@@ -494,7 +493,7 @@ class PermissionTest(ZulipTestCase):
 
         req = dict(role=orjson.dumps(new_role).decode())
         events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events):
             result = self.client_patch(f"/json/users/{user_profile.id}", req)
         self.assert_json_success(result)
 
@@ -760,7 +759,7 @@ class QueryCountTest(ZulipTestCase):
 
         with queries_captured() as queries:
             with cache_tries_captured() as cache_tries:
-                with tornado_redirected_to_list(events):
+                with self.tornado_redirected_to_list(events):
                     fred = do_create_user(
                         email="fred@zulip.com",
                         password="password",
@@ -1162,7 +1161,7 @@ class UserProfileTest(ZulipTestCase):
             UserHotspot.objects.create(user=cordelia, hotspot=hotspot)
 
         events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events):
             copy_user_settings(cordelia, iago)
 
         # Check that we didn't send an realm_user update events to

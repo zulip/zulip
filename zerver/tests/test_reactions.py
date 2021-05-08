@@ -10,7 +10,7 @@ from zerver.lib.emoji import emoji_name_to_emoji_code
 from zerver.lib.message import extract_message_dict
 from zerver.lib.request import JsonableError
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import tornado_redirected_to_list, zulip_reaction_info
+from zerver.lib.test_helpers import zulip_reaction_info
 from zerver.models import Message, Reaction, RealmEmoji, UserMessage, get_realm
 
 
@@ -418,7 +418,7 @@ class ReactionEventTest(ZulipTestCase):
         }
 
         events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events):
             result = self.api_post(
                 reaction_sender, f"/api/v1/messages/{pm_id}/reactions", reaction_info
             )
@@ -463,7 +463,7 @@ class ReactionEventTest(ZulipTestCase):
         self.assert_json_success(add)
 
         events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events):
             result = self.api_delete(
                 reaction_sender, f"/api/v1/messages/{pm_id}/reactions", reaction_info
             )
@@ -502,7 +502,7 @@ class ReactionEventTest(ZulipTestCase):
         # Hamlet and Polonius joined after the message was sent, and
         # so only Iago should receive the event.
         events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events):
             result = self.api_post(
                 iago, f"/api/v1/messages/{message_before_id}/reactions", reaction_info
             )
@@ -523,7 +523,7 @@ class ReactionEventTest(ZulipTestCase):
             iago, "test_reactions_stream", "after subscription history private"
         )
         events = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events):
             result = self.api_post(
                 iago, f"/api/v1/messages/{message_after_id}/reactions", reaction_info
             )
@@ -544,7 +544,7 @@ class ReactionEventTest(ZulipTestCase):
         # message_before_id should notify all subscribers:
         # Iago and Hamlet.
         events = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events):
             result = self.api_post(
                 iago, f"/api/v1/messages/{message_before_id}/reactions", reaction_info
             )
@@ -564,7 +564,7 @@ class ReactionEventTest(ZulipTestCase):
         # For is_web_public streams, events even on old messages
         # should go to all subscribers, including guests like polonius.
         events = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events):
             result = self.api_post(
                 iago, f"/api/v1/messages/{message_before_id}/reactions", reaction_info
             )
@@ -586,7 +586,7 @@ class ReactionEventTest(ZulipTestCase):
             "hello to single receiver",
         )
         events = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events):
             result = self.api_post(
                 hamlet, f"/api/v1/messages/{private_message_id}/reactions", reaction_info
             )
@@ -604,7 +604,7 @@ class ReactionEventTest(ZulipTestCase):
             "hello message to muliple receiver",
         )
         events = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events):
             result = self.api_post(
                 polonius, f"/api/v1/messages/{huddle_message_id}/reactions", reaction_info
             )
@@ -1035,7 +1035,7 @@ class ReactionAPIEventTest(EmojiReactionBase):
             "reaction_type": "unicode_emoji",
         }
         events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events):
             self.api_post(reaction_sender, f"/api/v1/messages/{pm_id}/reactions", reaction_info)
 
         self.assertEqual(len(events), 1)
@@ -1077,7 +1077,7 @@ class ReactionAPIEventTest(EmojiReactionBase):
         self.assert_json_success(add)
 
         events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events):
             result = self.api_delete(
                 reaction_sender,
                 f"/api/v1/messages/{pm_id}/reactions",

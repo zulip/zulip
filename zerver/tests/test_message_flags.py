@@ -16,7 +16,7 @@ from zerver.lib.message import (
     get_raw_unread_data,
 )
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import get_subscription, tornado_redirected_to_list
+from zerver.lib.test_helpers import get_subscription
 from zerver.lib.topic_mutes import add_topic_mute
 from zerver.models import (
     Message,
@@ -225,7 +225,7 @@ class UnreadCountTests(ZulipTestCase):
         )
 
         events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events):
             result = self.client_post(
                 "/json/mark_stream_as_read",
                 {
@@ -296,7 +296,7 @@ class UnreadCountTests(ZulipTestCase):
             self.example_user("hamlet"), "Denmark", "hello", "Denmark2"
         )
         events: List[Mapping[str, Any]] = []
-        with tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events):
             result = self.client_post(
                 "/json/mark_topic_as_read",
                 {
