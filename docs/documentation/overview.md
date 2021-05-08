@@ -90,24 +90,33 @@ to do the things one does a lot in each type of documentation.
 
 ### General user documentation
 
-To learn more about Zulip's general user documentation,
-[visit it on zulip.com](https://zulip.com/help/) or
-[read our guide on writing user documentation](user.md).
+Zulip's [help center](https://zulip.com/help/) documentation is
+designed to explain how the product works to end users.  We aim for
+this to be clear, concise, correct, and readable to nontechnical
+audiences where possible.  See our guide on [writing user
+documentation](user.md).
 
 ### Integrations documentation
 
-To learn more about Zulip's integrations user documentation,
-[visit it on zulip.com](https://zulip.com/integrations) or
-[read our guide on writing user documentation](integrations.md).
+Zulip's [integrations documentation](https://zulip.com/integrations)
+is user-facing documentation explaining to end users how to setup each
+of Zulip's more than 100 integrations.  There is a detailed [guide on
+documenting integrations](integrations.md), including style guidelines
+to ensure that the documentation is high quality and consistent.
 
-To learn more about Zulip's integrations developer documentation,
-[visit it on zulip.com](https://zulip.com/api/integrations-overview).
+See also our broader [integrations developer
+guide](https://zulip.com/api/integrations-overview).
 
 ### API documentation
 
-To learn more about Zulip's API documentation,
-[visit it on zulip.com](https://zulip.com/api/) or
-[read our tutorial on writing user documentation](../documentation/api.md).
+Zulip's [API documentation](https://zulip.com/api/) is intended to make
+it easy for a technical user to write automation tools that interact
+with Zulip.  This documentation also serves as our main mechanism for
+Zulip server developers to communicate with client developers about
+how the Zulip API works.
+
+See the [API documentation tutorial](../documentation/api.md) for
+details on how to contribute to this documentation.
 
 ## Automated testing
 
