@@ -6,7 +6,7 @@
 -r docs.in
 
 # moto s3 mock
-moto
+moto[s3]
 
 # Needed for running tools/run-dev.py
 Twisted
@@ -27,7 +27,7 @@ responses
 isort
 
 # For doing highly usable Python profiling
-line-profiler
+line-profiler<3.2  # https://github.com/pyutils/line_profiler/issues/77
 
 # for pep8 linter
 pycodestyle
@@ -54,7 +54,7 @@ snakeviz
 python-digitalocean
 
 # Needed for updating the locked pip dependencies
-pip-tools==5.*  # 6.0.0 requires pip>=20.3
+pip-tools
 
 # zulip's linting framework - zulint
 https://github.com/zulip/zulint/archive/6cc46d23906757895e917cc75e231f81f824a31d.zip#egg=zulint==0.0.1
