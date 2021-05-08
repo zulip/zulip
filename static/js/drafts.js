@@ -471,13 +471,13 @@ export function drafts_handle_events(e, event_key) {
 
     // This detects up arrow key presses when the draft overlay
     // is open and scrolls through the drafts.
-    if (event_key === "up_arrow") {
+    if (event_key === "up_arrow" || event_key === "vim_up") {
         drafts_scroll(row_before_focus());
     }
 
     // This detects down arrow key presses when the draft overlay
     // is open and scrolls through the drafts.
-    if (event_key === "down_arrow") {
+    if (event_key === "down_arrow" || event_key === "vim_down") {
         drafts_scroll(row_after_focus());
     }
 

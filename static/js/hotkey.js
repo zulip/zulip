@@ -569,6 +569,8 @@ export function process_hotkey(e, hotkey) {
     switch (event_name) {
         case "up_arrow":
         case "down_arrow":
+        case "vim_up":
+        case "vim_down":
         case "backspace":
         case "delete":
             if (overlays.drafts_open()) {
