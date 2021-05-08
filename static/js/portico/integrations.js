@@ -102,8 +102,8 @@ function update_categories() {
 const update_integrations = _.debounce(() => {
     const max_scrollY = window.scrollY;
 
-    for (const integration of $(".integration-lozenges").children()) {
-        const $integration = $(integration).find(".integration-lozenge");
+    for (const integration of $(".integration-lozenges").find(".integration-lozenge")) {
+        const $integration = $(integration);
         const $integration_category = $integration.find(".integration-category");
 
         if (state.category !== "all") {
