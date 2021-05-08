@@ -35,6 +35,8 @@ export function convert_enter_to_click(e) {
     const key = e.which;
     if (key === 13) {
         // Enter
+        e.preventDefault();
+        e.stopPropagation();
         $(e.currentTarget).trigger("click");
     }
 }
