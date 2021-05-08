@@ -1,0 +1,11 @@
+[WIP] development: Have external links opening in a new tab
+
+Add href attributes for external sites (download and external instructions)
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# On branch issue-18286
+# Changes to be committed:
+#	modified:   docs/development/setup-advanced.md
+#	modified:   docs/development/setup-vagrant.md
+#

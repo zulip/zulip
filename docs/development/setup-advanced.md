@@ -58,8 +58,7 @@ ignoring the parts about `vagrant` (since you're not using it).
 
 ## Installing directly on Windows 10 (experimental)
 
-We will be using Microsoft's new feature [WSL
-2](https://docs.microsoft.com/en-us/windows/wsl/wsl2-about) for
+We will be using Microsoft's new feature <a href="https://docs.microsoft.com/en-us/windows/wsl/wsl2-about" target="_blank">WSL 2</a> for
 installation.
 
 WSL 2 can be uninstalled by following the instructions [here from Microsoft](https://docs.microsoft.com/en-us/windows/wsl/faq#how-do-i-uninstall-a-wsl-distribution-).
