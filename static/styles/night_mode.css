@@ -2,6 +2,16 @@ body.night-mode {
     background-color: hsl(212, 28%, 18%);
     color: hsl(236, 33%, 90%);
 
+    .placeholder {
+        color: hsl(0, 0%, 55%);
+        opacity: 1;
+    }
+
+    textarea::placeholder,
+    input::placeholder {
+        @extend .placeholder;
+    }
+
     a:hover {
         color: hsl(200, 79%, 66%);
     }
