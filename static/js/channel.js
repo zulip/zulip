@@ -145,3 +145,15 @@ export function xhr_error_message(message, xhr) {
     }
     return message;
 }
+
+export function is_server_unreachable(xhr) {
+    // There is no HTTP status code 0. Status 0 is
+    // returned by the library when the API is unreachable.
+    // The possible cases when status 0 is returned are:
+    // 1. user is offline.
+    // 2. server is down.
+    if (xhr.status === 0) {
+        return true;
+    }
+    return false;
+}

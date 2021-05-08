@@ -57,10 +57,15 @@ export function has_message_content() {
     return message_content() !== "";
 }
 
-export function construct_message_data() {
+export function construct_message_data(saved_message_content) {
     let content;
     const msg_type = get_message_type();
-    if (msg_type) {
+    if (saved_message_content !== undefined) {
+        // If we have `saved_message_content` then this implies that
+        // `message_content()` is empty and this value was saved
+        // at a point back in time.
+        content = saved_message_content;
+    } else if (msg_type) {
         // message type may not be valid in some cases when it is called in
         // `reload.js` in such case we wish not to send any message there.
         content = message_content();
