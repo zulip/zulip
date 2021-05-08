@@ -42,13 +42,6 @@ body.night-mode {
         background-color: hsl(212, 28%, 18%);
     }
 
-    #compose_buttons
-        .reply_button_container
-        .compose_reply_button
-        .compose_reply_button_recipient_label {
-        color: hsl(215, 47%, 80%);
-    }
-
     .compose-send-status-close {
         color: hsl(0, 0%, 100%);
         opacity: 1;
