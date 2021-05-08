@@ -1131,7 +1131,7 @@ def update_display_settings(client: Client) -> None:
     # Change emoji set used for display to Google modern.
     request = {
         "left_side_userlist": True,
-        "emojiset": '"google"',
+        "emojiset": "google",
     }
     result = client.call_endpoint("settings/display", method="PATCH", request=request)
     # {code_example|end}

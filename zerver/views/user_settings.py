@@ -199,15 +199,15 @@ def update_display_settings_backend(
     translate_emoticons: Optional[bool] = REQ(json_validator=check_bool, default=None),
     default_language: Optional[str] = REQ(default=None),
     default_view: Optional[str] = REQ(
-        json_validator=check_string_in(default_view_options), default=None
+        str_validator=check_string_in(default_view_options), default=None
     ),
     left_side_userlist: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    emojiset: Optional[str] = REQ(json_validator=check_string_in(emojiset_choices), default=None),
+    emojiset: Optional[str] = REQ(str_validator=check_string_in(emojiset_choices), default=None),
     demote_inactive_streams: Optional[int] = REQ(
         json_validator=check_int_in(UserProfile.DEMOTE_STREAMS_CHOICES), default=None
     ),
     timezone: Optional[str] = REQ(
-        json_validator=check_string_in(pytz.all_timezones_set), default=None
+        str_validator=check_string_in(pytz.all_timezones_set), default=None
     ),
 ) -> HttpResponse:
 

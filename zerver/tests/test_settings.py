@@ -354,7 +354,7 @@ class ChangeSettingsTest(ZulipTestCase):
         else:
             invalid_value = "invalid_" + setting_name
 
-        if setting_name == "default_language":
+        if setting_name not in ["demote_inactive_streams", "color_scheme"]:
             data = {setting_name: test_value}
         else:
             data = {setting_name: orjson.dumps(test_value).decode()}
@@ -366,7 +366,7 @@ class ChangeSettingsTest(ZulipTestCase):
 
         # Test to make sure invalid settings are not accepted
         # and saved in the db.
-        if setting_name == "default_language":
+        if setting_name not in ["demote_inactive_streams", "color_scheme"]:
             data = {setting_name: invalid_value}
         else:
             data = {setting_name: orjson.dumps(invalid_value).decode()}
@@ -389,7 +389,7 @@ class ChangeSettingsTest(ZulipTestCase):
 
     def do_change_emojiset(self, emojiset: str) -> HttpResponse:
         self.login("hamlet")
-        data = {"emojiset": orjson.dumps(emojiset).decode()}
+        data = {"emojiset": emojiset}
         result = self.client_patch("/json/settings/display", data)
         return result
 

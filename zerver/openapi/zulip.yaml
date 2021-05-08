@@ -9636,7 +9636,7 @@ paths:
             * "text" - Plain text
           schema:
             type: string
-          example: '"google"'
+          example: "google"
         - name: demote_inactive_streams
           in: query
           description: |

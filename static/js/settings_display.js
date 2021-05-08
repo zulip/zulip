@@ -126,7 +126,7 @@ export function set_up() {
     });
 
     $("#default_view").on("change", function () {
-        const data = {default_view: JSON.stringify(this.value)};
+        const data = {default_view: this.value};
         change_display_setting(data, "#display-settings-status");
     });
 
@@ -140,12 +140,12 @@ export function set_up() {
     });
 
     $("#user_timezone").on("change", function () {
-        const data = {timezone: JSON.stringify(this.value)};
+        const data = {timezone: this.value};
         change_display_setting(data, "#time-settings-status");
     });
     $(".emojiset_choice").on("click", function () {
-        const data = {emojiset: JSON.stringify($(this).val())};
-        const current_emojiset = JSON.stringify(page_params.emojiset);
+        const data = {emojiset: $(this).val()};
+        const current_emojiset = page_params.emojiset;
         if (current_emojiset === data.emojiset) {
             return;
         }
