@@ -6,9 +6,11 @@ import {$t} from "./i18n";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
+import * as people from "./people";
 import * as recent_topics from "./recent_topics";
 import * as rendered_markdown from "./rendered_markdown";
 import * as search from "./search";
+import * as user_status from "./user_status";
 
 function get_formatted_sub_count(sub_count) {
     if (sub_count >= 1000) {
@@ -40,6 +42,18 @@ function make_message_view_header(filter) {
         message_view_header.rendered_narrow_description = $t({
             defaultMessage: "This stream does not exist or is private.",
         });
+        return message_view_header;
+    }
+    if (filter.has_operator("pm-with")) {
+        const user_email = filter.operands("pm-with")[0];
+        // We dont fetch user status if the following is a group pm.
+        if (
+            user_email.split(",").length < 2 && // Verify that this is a valid email
+            people.get_by_email(user_email) !== undefined
+        ) {
+            const user_id = people.get_user_id(user_email);
+            message_view_header.user_status = user_status.get_status_text(user_id);
+        }
         return message_view_header;
     }
     if (filter._sub) {
