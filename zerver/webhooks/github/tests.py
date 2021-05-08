@@ -320,24 +320,8 @@ class GitHubWebhookTest(WebhookTestCase):
             expected_message,
         )
 
-    def test_pull_request_review_requested_singular_key_msg(self) -> None:
-        expected_message = "**eeshangarg** requested [rishig](https://github.com/rishig) for a review on [PR #6](https://github.com/eeshangarg/Scheduler/pull/6)."
-        self.check_webhook(
-            "pull_request__review_requested_singular_key",
-            "Scheduler / PR #6 Mention how awesome this project is in ...",
-            expected_message,
-        )
-
-    def test_pull_request_review_requested_multiple_reviwers_msg(self) -> None:
-        expected_message = "**eeshangarg** requested [showell](https://github.com/showell) and [timabbott](https://github.com/timabbott) for a review on [PR #1](https://github.com/eeshangarg/Scheduler/pull/1)."
-        self.check_webhook(
-            "pull_request__review_requested_multiple_reviewers",
-            "Scheduler / PR #1 This is just a test commit",
-            expected_message,
-        )
-
     def test_pull_request__review_requested_team_reviewer_msg(self) -> None:
-        expected_message = "**singhsourabh** requested [shreyaskargit](https://github.com/shreyaskargit), [bajaj99prashant](https://github.com/bajaj99prashant), [review-team](https://github.com/orgs/test-org965/teams/review-team), [authority](https://github.com/orgs/test-org965/teams/authority) and [management](https://github.com/orgs/test-org965/teams/management) for a review on [PR #4](https://github.com/test-org965/webhook-test/pull/4)."
+        expected_message = "**singhsourabh** requested [authority](https://github.com/orgs/test-org965/teams/authority) for a review on [PR #4](https://github.com/test-org965/webhook-test/pull/4)."
         self.check_webhook(
             "pull_request__review_requested_team_reviewer",
             "webhook-test / PR #4 testing webhook",

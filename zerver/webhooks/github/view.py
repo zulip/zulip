@@ -466,10 +466,8 @@ def get_pull_request_review_requested_body(helper: Helper) -> str:
     payload = helper.payload
     include_title = helper.include_title
     requested_reviewer = [payload["requested_reviewer"]] if "requested_reviewer" in payload else []
-    requested_reviewers = payload["pull_request"]["requested_reviewers"] or requested_reviewer
 
     requested_team = [payload["requested_team"]] if "requested_team" in payload else []
-    requested_team_reviewers = payload["pull_request"]["requested_teams"] or requested_team
 
     sender = get_sender_name(payload)
     pr_number = payload["pull_request"]["number"]
@@ -482,17 +480,14 @@ def get_pull_request_review_requested_body(helper: Helper) -> str:
 
     all_reviewers = []
 
-    for reviewer in requested_reviewers:
+    for reviewer in requested_reviewer:
         all_reviewers.append("[{login}]({html_url})".format(**reviewer))
 
-    for team_reviewer in requested_team_reviewers:
+    for team_reviewer in requested_team:
         all_reviewers.append("[{name}]({html_url})".format(**team_reviewer))
 
     reviewers = ""
-    if len(all_reviewers) == 1:
-        reviewers = all_reviewers[0]
-    else:
-        reviewers = "{} and {}".format(", ".join(all_reviewers[:-1]), all_reviewers[-1])
+    reviewers = all_reviewers[0]
 
     return body.format(
         sender=sender,
