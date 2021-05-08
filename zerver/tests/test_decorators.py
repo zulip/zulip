@@ -1,4 +1,5 @@
 import base64
+import json
 import os
 import re
 from collections import defaultdict
@@ -555,10 +556,144 @@ class DecoratorLoggingTestCase(ZulipTestCase):
             result, "Invalid authorization header for basic auth", status_code=401
         )
 
-        result = self.client_post("/api/v1/external/zendesk", {})
-        self.assert_json_error(
-            result, "Missing authorization header for basic auth", status_code=401
+        with self.assertLogs("zerver.middleware.json_error_handler", "ERROR"):
+            with self.assertLogs("django.request", "ERROR") as error_log:
+                result = self.client_post("/api/v1/external/zendesk", {})
+            self.assertTrue(
+                "ERROR:django.request:Internal Server Error: /api/v1/external/zendesk"
+                in error_log.output[0]
+            )
+
+
+class OAuthTest(ZulipTestCase):
+
+    OAUTH_APPLICATION_NAME = "OZulip"
+    CLIENT_ID = "abcdef123456"
+    INITIAL_CLIENT_ID = "abcdef1234567"
+    CLIENT_SECRET = "abcdefghi"
+    INITIAL_CLIENT_SECRET = "abcdefghi"
+    CLIENT_TYPE = "confidential"
+    AUTH_GRANT_TYPE = "authorization-code"
+    REDIRECT_URI = "http://localhost:3000/o/callback"
+    NUM_OAUTH_APPS = 0
+
+    def setUp(self) -> None:
+        super().setUp()
+        iago = self.example_user("iago")
+        self.login_user(iago)
+        # Let iago create a new OAuth application
+        result = self.client_post(
+            "/o/applications/register/",
+            {
+                "name": OAuthTest.OAUTH_APPLICATION_NAME,
+                "client_id": OAuthTest.CLIENT_ID,
+                "initial-client_id": OAuthTest.INITIAL_CLIENT_ID,
+                "client_secret": OAuthTest.CLIENT_SECRET,
+                "initial-client_secret": OAuthTest.INITIAL_CLIENT_SECRET,
+                "client_type": OAuthTest.CLIENT_TYPE,
+                "authorization_grant_type": OAuthTest.AUTH_GRANT_TYPE,
+                "redirect_uris": OAuthTest.REDIRECT_URI,
+            },
         )
+        OAuthTest.NUM_OAUTH_APPS += 1
+        self.assertEqual(result.url, f"/o/applications/{OAuthTest.NUM_OAUTH_APPS}/")
+        self.logout()
+
+    def start_oauth_code_flow(self) -> None:
+        result = self.client_get(
+            "/o/authorize/",
+            {
+                "approval_prompt": "auto",
+                "response_type": "code",
+                "client_id": "test",
+                "scope": "write",
+                "redirect_uri": OAuthTest.REDIRECT_URI,
+            },
+        )
+        self.assertIn("/accounts/login/?next=/o/authorize/%3Fapproval_prompt", result.url)
+
+    def authorize_the_web_app(self) -> str:
+        result = self.client_post(
+            "/o/authorize/",
+            {
+                "redirect_uri": OAuthTest.REDIRECT_URI,
+                "scope": "write",
+                "client_id": OAuthTest.CLIENT_ID,
+                "state": "",
+                "response_type": "code",
+                "code_challenge": "",
+                "code_challenge_method": "",
+                "allow": "Authorize",
+            },
+        )
+        self.assertIn("http://localhost:3000/o/callback?code=", result.url)
+        code = re.search("=[a-zA-z0-9]+", result.url)
+        assert code is not None
+        code = code.group(0)[1:]
+        return str(code)
+
+    def get_access_token(self, *, code: str) -> str:
+        result = self.client_post(
+            "/o/token/",
+            {
+                "code": code,
+                "client_id": self.CLIENT_ID,
+                "client_secret": self.CLIENT_SECRET,
+                "redirect_uri": self.REDIRECT_URI,
+                "grant_type": "authorization_code",
+            },
+        )
+        access_token = json.loads(result.content)["access_token"]
+        return access_token
+
+    def test_validate_oauth_key(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.start_oauth_code_flow()
+        self.login_user(hamlet)
+
+        code = self.authorize_the_web_app()
+        access_token = self.get_access_token(code=code)
+
+        # Now use the access token to verify the login
+        result = self.client_get("/api/v1/users/me", {}, HTTP_BEARER=access_token)
+
+        # assert that hamlet has logged in!
+        result = json.loads(result.content.decode("utf-8"))
+        self.assertEqual(hamlet.id, result["user_id"])
+        self.assertEqual(hamlet.email, result["email"])
+        self.assertEqual(result["result"], "success")
+
+    def test_oauth_fails_on_invalid_access_token(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.start_oauth_code_flow()
+        self.login_user(hamlet)
+
+        code = self.authorize_the_web_app()
+        access_token = self.get_access_token(code=code)
+        access_token = access_token + "somejunk"
+        # Now use the access token to verify the login
+        result = self.client_get("/api/v1/users/me", {}, HTTP_BEARER=access_token)
+        # assert that hamlet has logged in!
+        result = json.loads(result.content.decode("utf-8"))
+        self.assertEqual(result["msg"], "oauth failed")
+
+    def test_oauth_fails_for_incoming_webhooks(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.start_oauth_code_flow()
+        self.login_user(hamlet)
+
+        hamlet.bot_type = UserProfile.INCOMING_WEBHOOK_BOT
+        hamlet.save(update_fields=["bot_type"])
+
+        code = self.authorize_the_web_app()
+        access_token = self.get_access_token(code=code)
+        access_token = access_token
+
+        # Now use the access token to verify the login
+        result = self.client_get("/api/v1/users/me", {}, HTTP_BEARER=access_token)
+        # assert that hamlet has logged in!
+        result = json.loads(result.content.decode("utf-8"))
+        self.assertEqual(result["msg"], "This API is not available to incoming webhook bots.")
 
 
 class RateLimitTestCase(ZulipTestCase):

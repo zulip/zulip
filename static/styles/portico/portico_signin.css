@@ -242,6 +242,26 @@ html {
     }
 }
 
+.oauth-account {
+    .terms-of-service .input-group,
+    .default-stream-groups .input-group,
+    .default-stream-groups p {
+        width: 330px;
+        margin: 0 auto 10px;
+    }
+
+    .terms-of-service .text-error {
+        position: relative;
+        display: block;
+        top: -5px;
+        padding: 0;
+        height: 0;
+
+        font-size: 0.7em;
+        font-weight: 600;
+    }
+}
+
 .register-form {
     &.new-style {
         text-align: left;
@@ -794,6 +814,16 @@ button#register_auth_button_gitlab {
         font-weight: normal !important;
     }
 
+    .oauth-button-box {
+        text-align: center;
+    }
+
+    .oauth-button {
+        margin: 25px auto 30px;
+        width: 330px;
+        border-radius: 4px;
+    }
+
     .register-button-box {
         text-align: center;
     }
@@ -918,6 +948,14 @@ button#register_auth_button_gitlab {
         font-size: 1.2rem;
         font-weight: 400;
     }
+}
+
+#client_type_section,
+#authorization_grant_type_section {
+    position: relative;
+    top: 15px;
+    margin-bottom: 20px;
+    font-size: 22px;
 }
 
 #source_realm_select_section {

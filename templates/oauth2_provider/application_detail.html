@@ -1,0 +1,64 @@
+{% extends "oauth2_provider/base.html" %}
+
+{% block portico_content %}
+<div class="oauth-account flex full-page">
+    <div class="center-block new-style">
+
+        <div class="pitch">
+            <h1>{{ application.name }}</h1>
+        </div>
+
+        <div class="block-center white-box">
+            <ul class="unstyled">
+                <li>
+                    <div class="block-center input-box">
+                        <input class=required  type="text" value="{{ application.client_id }}" readonly />
+                        <label class="inline-block label-title" for="id_client_id">{{ _('Client ID') }}</label>
+                    </div>
+                </li>
+
+                <li>
+                    <div class="block-center input-box">
+                        <input class=required  type="text" value="{{ application.client_secret }}" readonly />
+                        <label class="inline-block label-title" for="id_client_secret">{{ _('Client Secret') }}</label>
+                    </div>
+                </li>
+
+                <li>
+                    <div class="block-center input-box">
+                        <input class=required  type="text" value="{{ application.client_type }}" readonly />
+                        <label class="inline-block label-title" for="id_client_type">{{ _('Client Type') }}</label>
+                    </div>
+                </li>
+
+                <li>
+                    <div class="block-center input-box">
+                        <input class=required  type="text" value="{{ application.authorization_grant_type }}" readonly />
+                        <label class="inline-block label-title" for="id_authorization_grant_type">{{ _('Authorization Grant Type') }}</label>
+                    </div>
+                </li>
+
+                <li>
+                    <div class="block-center input-box">
+                        <input class=required  type="text" value="{{ application.redirect_uris }}" readonly />
+                        <label class="inline-block label-title" for="id_redirect_uris">{{ _('Redirect uris') }}</label>
+                    </div>
+                </li>
+            </ul>
+
+            <a class="oauth-button" href="{{ url('oauth2_provider:list') }}">
+                <button type="submit">{{ _("Go Back") }}</button>
+            </a>
+            <a class="oauth-button" href="{{ url('oauth2_provider:update', args=[application.id]) }}">
+                <button type="submit">{{ _("Edit") }}</button>
+            </a>
+            <a class="oauth-button" href="{{ url('oauth2_provider:delete', args=[application.id]) }}">
+                <button type="submit">{{ _("Delete") }}</button>
+            </a>
+
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

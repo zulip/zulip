@@ -1,0 +1,22 @@
+{% extends "oauth2_provider/base.html" %}
+
+{% block portico_content %}
+<div class="oauth-account flex full-page">
+    <div class="center-block new-style">
+
+        <form class="white-box" method="post" action="{{ url('oauth2_provider:delete', args=[application.pk]) }}">
+            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+            <h3 class="block-center-heading">{{_("Are you sure to delete the application")}} {{ application.name }}?</h3>
+
+            <div class="block-center">
+                <a class="oauth-button" href="{{ url('oauth2_provider:list') }}">{{ _("Cancel") }}</a>
+                <button type="submit" class="oauth-button" value="Delete">{{ _("Delete") }}</button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

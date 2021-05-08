@@ -45,6 +45,7 @@ import * as settings_invites from "./settings_invites";
 import * as settings_linkifiers from "./settings_linkifiers";
 import * as settings_notifications from "./settings_notifications";
 import * as settings_org from "./settings_org";
+import * as settings_oauth from "./settings_oauth";
 import * as settings_playgrounds from "./settings_playgrounds";
 import * as settings_profile_fields from "./settings_profile_fields";
 import * as settings_streams from "./settings_streams";
@@ -140,6 +141,11 @@ export function dispatch_normal_event(event) {
         case "muted_users":
             muting_ui.handle_user_updates(event.muted_users);
             break;
+
+        case "oauth2":
+              page_params.oauth2 = event.oauth2;
+              settings_oauth.populate_oauth2(page_params.oauth2);
+              break;
 
         case "presence":
             activity.update_presence_info(event.user_id, event.presence, event.server_timestamp);
