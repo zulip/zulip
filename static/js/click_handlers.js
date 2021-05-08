@@ -891,6 +891,9 @@ export function initialize() {
 
         overlays.close_overlay(overlay_name);
         $(`#hotspot_${CSS.escape(hotspot_name)}_icon`).remove();
+        // We are removing the hotspot overlay after it's read as it will help us avoid
+        // multiple copies of the hotspots when ALWAYS_SEND_ALL_HOTSPOTS is set to true.
+        $(`#${overlay_name}`).remove();
     });
 
     $("body").on("click", ".hotspot-button", (e) => {

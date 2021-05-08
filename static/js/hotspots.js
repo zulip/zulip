@@ -230,9 +230,11 @@ function insert_hotspot_into_DOM(hotspot) {
     });
 
     setTimeout(() => {
-        $("body").prepend(hotspot_icon_HTML);
+        if (!hotspot.has_trigger) {
+            $("body").prepend(hotspot_icon_HTML);
+        }
         $("body").prepend(hotspot_overlay_HTML);
-        if (place_icon(hotspot)) {
+        if (hotspot.has_trigger || place_icon(hotspot)) {
             place_popover(hotspot);
         }
 
@@ -241,7 +243,7 @@ function insert_hotspot_into_DOM(hotspot) {
             window.addEventListener(
                 event_name,
                 _.debounce(() => {
-                    if (place_icon(hotspot)) {
+                    if (hotspot.has_trigger || place_icon(hotspot)) {
                         place_popover(hotspot);
                     }
                 }, 10),
@@ -253,6 +255,10 @@ function insert_hotspot_into_DOM(hotspot) {
 
 export function is_open() {
     return $(".hotspot.overlay").hasClass("show");
+}
+
+function is_hotspot_exist(hotspot_name) {
+    return $(`#hotspot_${hotspot_name}_overlay`).length;
 }
 
 export function close_hotspot_icon(elem) {
@@ -275,6 +281,7 @@ function close_read_hotspots(new_hotspots) {
 
     for (const hotspot_name of unwanted_hotspots) {
         close_hotspot_icon($(`#hotspot_${CSS.escape(hotspot_name)}_icon`));
+        $(`#hotspot_${CSS.escape(hotspot_name)}_overlay`).remove();
     }
 }
 
@@ -282,7 +289,9 @@ export function load_new(new_hotspots) {
     close_read_hotspots(new_hotspots);
     for (const hotspot of new_hotspots) {
         hotspot.location = HOTSPOT_LOCATIONS.get(hotspot.name);
-        insert_hotspot_into_DOM(hotspot);
+        if (!is_hotspot_exist(hotspot.name)) {
+            insert_hotspot_into_DOM(hotspot);
+        }
     }
 }
 
