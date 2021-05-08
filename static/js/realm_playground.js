@@ -1,3 +1,6 @@
+import * as typeahead from "../shared/js/typeahead";
+
+import {$t} from "./i18n";
 import * as typeahead_helper from "./typeahead_helper";
 
 const map_language_to_playground_info = new Map();
@@ -39,9 +42,18 @@ export function sort_pygments_pretty_names_by_priority(generated_pygments_data) 
     }
 }
 
-export function get_pygments_typeahead_list() {
+export function get_pygments_typeahead_list(query) {
     const lookup_table = new Map();
     const pygments_pretty_name_list = [];
+
+    // Adds a typeahead that allows selecting a custom language, by adding a
+    // "Custom language" label in the first position of the typeahead list.
+    const clean_query = typeahead.clean_query_lowercase(query);
+    pygments_pretty_name_list.push(clean_query);
+    lookup_table[clean_query] = $t(
+        {defaultMessage: "Custom language: {query}"},
+        {query: clean_query},
+    );
 
     for (const [key, values] of map_pygments_pretty_name_to_aliases) {
         lookup_table[key] = key + " (" + Array.from(values).join(", ") + ")";

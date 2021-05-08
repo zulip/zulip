@@ -154,8 +154,8 @@ function build_page() {
     let lookup_table = new Map();
 
     $("#playground_pygments_language").typeahead({
-        source() {
-            const suggestions = realm_playground.get_pygments_typeahead_list();
+        source(query) {
+            const suggestions = realm_playground.get_pygments_typeahead_list(query);
             lookup_table = suggestions.lookup_table;
             return suggestions.pygments_pretty_name_list;
         },
