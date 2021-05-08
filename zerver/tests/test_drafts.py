@@ -189,7 +189,7 @@ class DraftCreationTests(ZulipTestCase):
         self.create_and_check_drafts_for_error(draft_dicts, "Timestamp must not be negative.")
 
     def test_create_non_stream_draft_with_no_recipient(self) -> None:
-        """ When "to" is an empty list, the type should become "" as well. """
+        """When "to" is an empty list, the type should become "" as well."""
         draft_dicts = [
             {
                 "type": "private",
