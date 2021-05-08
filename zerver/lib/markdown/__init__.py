@@ -1570,7 +1570,7 @@ def sanitize_url(url: str) -> Optional[str]:
     if not scheme:
         return sanitize_url("http://" + url)
 
-    locless_schemes = ["mailto", "news", "file", "bitcoin"]
+    locless_schemes = ["mailto", "news", "file", "bitcoin", "sms", "tel"]
     if netloc == "" and scheme not in locless_schemes:
         # This fails regardless of anything else.
         # Return immediately to save additional processing
@@ -1580,7 +1580,7 @@ def sanitize_url(url: str) -> Optional[str]:
     # appears to have a netloc.  Additionally there are plenty of other
     # schemes that do weird things like launch external programs.  To be
     # on the safe side, we whitelist the scheme.
-    if scheme not in ("http", "https", "ftp", "mailto", "file", "bitcoin"):
+    if scheme not in ("http", "https", "ftp", "mailto", "file", "bitcoin", "sms", "tel"):
         return None
 
     # Upstream code scans path, parameters, and query for colon characters

@@ -948,6 +948,11 @@
       "input": "<h1>*<h1>[<h2>Static types in Python</h2>](https://blog.zulip.com/2016/10/13/static-types-in-python-oh-mypy)</h1>*</h1>",
       "expected_output": "<p>&lt;h1&gt;<em>&lt;h1&gt;<a href=\"https://blog.zulip.com/2016/10/13/static-types-in-python-oh-mypy\">&lt;h2&gt;Static types in Python&lt;/h2&gt;</a>&lt;/h1&gt;</em>&lt;/h1&gt;</p>",
       "marked_expected_output": "<p>&lt;h1&gt;<em>&lt;h1&gt;<a href=\"https://blog.zulip.com/2016/10/13/static-types-in-python-oh-mypy\">&lt;h2&gt;Static types in Python&lt;/h2&gt;</a>&lt;/h1&gt;</em>&lt;/h1&gt;\n\n</p>"
+    },
+    {
+        "name": "telephone_sms_link",
+        "input": "[call me](tel:+14155551234) [or maybe not](sms:+14155551234)",
+        "expected_output": "<p><a href=\"tel:+14155551234\">call me</a> <a href=\"sms:+14155551234\">or maybe not</a></p>"
     }
   ],
   "linkify_tests": [
