@@ -90,6 +90,17 @@ migrations.
   shouldn't be used for accessing properties like `Realm.subdomain` or
   anything not related to the Django ORM.
 
+  Another important note is that making changes to the data in a table
+  via `RunPython` code and `ALTER TABLE` operations within a single,
+  atomic migration don't mix well. If you encounter an error such as
+  ```
+  django.db.utils.OperationalError: cannot ALTER TABLE "table_name" because it has pending trigger events
+  ```
+  when testing the migration, the reason is often that these operations
+  were incorrectly mixed. To resolve this, consider making the migration
+  non-atomic, splitting it into two migration files (recommended), or replacing the
+  `RunPython` logic with pure SQL (though this can generally be difficult).
+
 * **Making large migrations work**.  Major migrations should have a
 few properties:
 
