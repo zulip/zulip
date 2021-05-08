@@ -6829,7 +6829,7 @@ def do_remove_realm_playground(realm: Realm, realm_playground: RealmPlayground) 
 
 def get_occupied_streams(realm: Realm) -> QuerySet:
     # TODO: Make a generic stub for QuerySet
-    """ Get streams with subscribers """
+    """Get streams with subscribers"""
     exists_expression = Exists(
         Subscription.objects.filter(
             active=True,

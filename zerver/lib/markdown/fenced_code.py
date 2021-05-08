@@ -157,7 +157,7 @@ class FencedCodeExtension(Extension):
             self.setConfig(key, value)
 
     def extendMarkdown(self, md: Markdown) -> None:
-        """ Add FencedBlockPreprocessor to the Markdown instance. """
+        """Add FencedBlockPreprocessor to the Markdown instance."""
         md.registerExtension(self)
         processor = FencedBlockPreprocessor(
             md, run_content_validators=self.config["run_content_validators"][0]
@@ -379,7 +379,7 @@ class FencedBlockPreprocessor(Preprocessor):
         self.handlers.pop()
 
     def run(self, lines: Iterable[str]) -> List[str]:
-        """ Match and store Fenced Code Blocks in the HtmlStash. """
+        """Match and store Fenced Code Blocks in the HtmlStash."""
 
         output: List[str] = []
 
@@ -502,7 +502,7 @@ class FencedBlockPreprocessor(Preprocessor):
         return self.md.htmlStash.store(code)
 
     def _escape(self, txt: str) -> str:
-        """ basic html escaping """
+        """basic html escaping"""
         txt = txt.replace("&", "&amp;")
         txt = txt.replace("<", "&lt;")
         txt = txt.replace(">", "&gt;")

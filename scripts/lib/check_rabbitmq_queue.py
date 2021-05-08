@@ -110,7 +110,7 @@ CRITICAL_COUNT_THRESHOLD_DEFAULT = 50
 
 
 def check_other_queues(queue_counts_dict: Dict[str, int]) -> List[Dict[str, Any]]:
-    """ Do a simple queue size check for queues whose workers don't publish stats files."""
+    """Do a simple queue size check for queues whose workers don't publish stats files."""
 
     results = []
     for queue, count in queue_counts_dict.items():
