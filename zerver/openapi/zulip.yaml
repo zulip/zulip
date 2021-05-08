@@ -6004,8 +6004,8 @@ paths:
       operationId: mute_user
       tags: ["users"]
       description: |
-        This endpoint mutes a user.  Messages sent by users you've muted will
-        be automatically marked as read and hidden.
+        This endpoint [mutes a user](/help/mute-a-user).  Messages sent by users
+        you've muted will be automatically marked as read and hidden.
 
         `POST {{ api_url }}/v1/users/me/muted_users/{muted_user_id}`
 

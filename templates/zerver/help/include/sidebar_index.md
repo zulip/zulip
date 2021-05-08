@@ -78,6 +78,7 @@
 * [PMs, mentions, and alerts](/help/pm-mention-alert-notifications)
 * [Mute a stream](/help/mute-a-stream)
 * [Mute a topic](/help/mute-a-topic)
+* [Mute a user](/help/mute-a-user)
 * [Alert words](/help/add-an-alert-word)
 * [Disable new login emails](/help/disable-new-login-emails)
 * [Configure message notification emails](/help/configure-message-notification-emails)

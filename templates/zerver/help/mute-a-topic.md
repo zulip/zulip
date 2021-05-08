@@ -51,3 +51,5 @@ From there, you can also unmute any muted topics.
 ## Related articles
 
 * [Mute a stream](/help/mute-a-stream)
+
+* [Mute a user](/help/mute-a-user)
