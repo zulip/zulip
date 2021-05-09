@@ -4,9 +4,11 @@ import os
 from typing import Any, Callable, Dict, Optional
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
 
 from zerver.lib.actions import (
+    do_add_reaction,
     internal_send_huddle_message,
     internal_send_private_message,
     internal_send_stream_message_by_name,
@@ -18,9 +20,11 @@ from zerver.lib.bot_storage import (
     remove_bot_storage,
     set_bot_storage,
 )
+from zerver.lib.emoji import emoji_name_to_emoji_code
 from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.topic import get_topic_from_message_info
-from zerver.models import UserProfile, get_active_user
+from zerver.lib.validator import check_dict, check_string_or_int
+from zerver.models import Message, UserProfile, get_active_user
 
 our_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -70,6 +74,10 @@ class EmbeddedBotEmptyRecipientsList(Exception):
     pass
 
 
+class EmbeddedBotValueError(Exception):
+    pass
+
+
 class EmbeddedBotHandler:
     def __init__(self, user_profile: UserProfile) -> None:
         # Only expose a subset of our UserProfile's functionality
@@ -84,7 +92,24 @@ class EmbeddedBotHandler:
         return BotIdentity(self.full_name, self.email)
 
     def react(self, message: Dict[str, Any], emoji_name: str) -> Dict[str, Any]:
-        return {}  # Not implemented
+        try:
+            check_dict(required_keys=[("id", check_string_or_int)])("message", message)
+        except ValidationError as error:
+            raise EmbeddedBotValueError(error.message)
+
+        emoji_code, reaction_type = emoji_name_to_emoji_code(self.user_profile.realm, emoji_name)
+
+        try:
+            do_add_reaction(
+                self.user_profile,
+                Message.objects.get(id=int(message["id"])),
+                emoji_name,
+                emoji_code,
+                reaction_type,
+            )
+        except Message.DoesNotExist:
+            raise EmbeddedBotValueError("Message with the given ID does not exist")
+        return {"msg": "", "result": "success"}
 
     def send_message(self, message: Dict[str, Any]) -> Dict[str, Any]:
         if not self._rate_limit.is_legal():

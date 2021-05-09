@@ -2,9 +2,11 @@ from unittest.mock import patch
 
 import orjson
 
-from zerver.lib.bot_lib import EmbeddedBotQuitException
+from zerver.lib.bot_lib import EmbeddedBotHandler, EmbeddedBotQuitException, EmbeddedBotValueError
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
+    Reaction,
     UserProfile,
     get_display_recipient,
     get_realm,
@@ -25,6 +27,7 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
             service_name="helloworld",
             config_data=orjson.dumps({"foo": "bar"}).decode(),
         )
+        self.mock_bot_handler = EmbeddedBotHandler(self.bot_profile)
 
     def test_pm_to_embedded_bot(self) -> None:
         assert self.bot_profile is not None
@@ -56,6 +59,56 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
         self.send_stream_message(self.user_profile, "Denmark", content="foo", topic_name="bar")
         last_message = self.get_last_message()
         self.assertEqual(last_message.content, "foo")
+
+    def test_embedded_bot_react_to_stream_message(self) -> None:
+        # For this test and the tests below for reaction, we expect receiving a reaction.
+        # Because the helloworld bot is implemented to add an reaction to the message
+        # we sent to the bot.
+        assert self.bot_profile is not None
+        self.send_stream_message(
+            self.user_profile,
+            "Denmark",
+            content=f"@**{self.bot_profile.full_name}** foo",
+            topic_name="bar",
+        )
+        user_message = self.get_second_to_last_message()
+        self.assertTrue(
+            Reaction.objects.filter(
+                message=user_message,
+            ).exists()
+        )
+
+    def test_embedded_bot_react_to_pm(self) -> None:
+        assert self.bot_profile is not None
+        self.send_personal_message(self.user_profile, self.bot_profile, content="help")
+        user_message = self.get_second_to_last_message()
+        self.assertTrue(
+            Reaction.objects.filter(
+                message=user_message,
+            ).exists()
+        )
+
+    def test_embedded_bot_react_without_id(self) -> None:
+        assert self.mock_bot_handler is not None
+        with self.assertRaises(EmbeddedBotValueError) as err:
+            self.mock_bot_handler.react({"content": "test"}, "wave")
+        self.assertEqual(str(err.exception), 'id key is missing from message')
+
+    def test_embedded_bot_react_does_not_exist(self) -> None:
+        assert self.mock_bot_handler is not None
+        self.send_stream_message(self.user_profile, "Denmark", content="foo", topic_name="bar")
+        last_message = self.get_last_message()
+        message_id = last_message.id
+        last_message.delete()
+        with self.assertRaises(EmbeddedBotValueError) as err:
+            self.mock_bot_handler.react({"id": message_id}, "wave")
+        self.assertEqual(str(err.exception), 'Message with the given ID does not exist')
+
+    def test_embedded_bot_react_invalid_emoji(self) -> None:
+        assert self.mock_bot_handler is not None
+        with self.assertRaises(JsonableError) as err:
+            self.mock_bot_handler.react({"id": 1}, "invalid_emoji")
+        self.assertEqual(str(err.exception), "Emoji 'invalid_emoji' does not exist")
 
     def test_message_to_embedded_bot_with_initialize(self) -> None:
         assert self.bot_profile is not None
