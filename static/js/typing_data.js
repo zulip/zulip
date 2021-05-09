@@ -54,7 +54,7 @@ export function get_group_typists(group) {
 }
 
 export function get_all_typists() {
-    let typists = [].concat(...Array.from(typist_dct.values()));
+    let typists = Array.from(typist_dct.values()).flat();
     typists = util.sorted_ids(typists);
     typists = _.sortedUniq(typists);
     return muting.filter_muted_user_ids(typists);

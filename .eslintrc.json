@@ -99,7 +99,6 @@
         "unicorn/no-useless-undefined": "off",
         "unicorn/number-literal-case": "off",
         "unicorn/numeric-separators-style": "off",
-        "unicorn/prefer-array-flat": "off",
         "unicorn/prefer-module": "off",
         "unicorn/prefer-node-protocol": "off",
         "unicorn/prefer-spread": "off",
