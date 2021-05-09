@@ -69,35 +69,42 @@ function message_in_home(message) {
 function message_matches_search_term(message, operator, operand) {
     switch (operator) {
         case "has":
-            if (operand === "image") {
-                return message_parser.message_has_image(message);
-            } else if (operand === "link") {
-                return message_parser.message_has_link(message);
-            } else if (operand === "attachment") {
-                return message_parser.message_has_attachment(message);
+            switch (operand) {
+                case "image":
+                    return message_parser.message_has_image(message);
+                case "link":
+                    return message_parser.message_has_link(message);
+                case "attachment":
+                    return message_parser.message_has_attachment(message);
+                default:
+                    return false; // has:something_else returns false
             }
-            return false; // has:something_else returns false
+
         case "is":
-            if (operand === "private") {
-                return message.type === "private";
-            } else if (operand === "starred") {
-                return message.starred;
-            } else if (operand === "mentioned") {
-                return message.mentioned;
-            } else if (operand === "alerted") {
-                return message.alerted;
-            } else if (operand === "unread") {
-                return unread.message_unread(message);
+            switch (operand) {
+                case "private":
+                    return message.type === "private";
+                case "starred":
+                    return message.starred;
+                case "mentioned":
+                    return message.mentioned;
+                case "alerted":
+                    return message.alerted;
+                case "unread":
+                    return unread.message_unread(message);
+                default:
+                    return false; // is:whatever returns false
             }
-            return false; // is:whatever returns false
 
         case "in":
-            if (operand === "home") {
-                return message_in_home(message);
-            } else if (operand === "all") {
-                return true;
+            switch (operand) {
+                case "home":
+                    return message_in_home(message);
+                case "all":
+                    return true;
+                default:
+                    return false; // in:whatever returns false
             }
-            return false; // in:whatever returns false
 
         case "near":
             // this is all handled server side

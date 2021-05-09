@@ -328,17 +328,21 @@ export function activate(raw_operators, opts) {
         // particular message ID (which could be max_int), or we're
         // asking the server to figure out for us what the first
         // unread message is, and center the narrow around that.
-        if (id_info.final_select_id === undefined) {
-            anchor = "first_unread";
-        } else if (id_info.final_select_id === -1) {
-            // This case should never happen in this code path; it's
-            // here in case we choose to extract this as an
-            // independent reusable function.
-            anchor = "oldest";
-        } else if (id_info.final_select_id === LARGER_THAN_MAX_MESSAGE_ID) {
-            anchor = "newest";
-        } else {
-            anchor = id_info.final_select_id;
+        switch (id_info.final_select_id) {
+            case undefined:
+                anchor = "first_unread";
+                break;
+            case -1:
+                // This case should never happen in this code path; it's
+                // here in case we choose to extract this as an
+                // independent reusable function.
+                anchor = "oldest";
+                break;
+            case LARGER_THAN_MAX_MESSAGE_ID:
+                anchor = "newest";
+                break;
+            default:
+                anchor = id_info.final_select_id;
         }
 
         message_fetch.load_messages_for_narrow({
