@@ -1265,7 +1265,10 @@ Output:
         # Some code might call process_notification using keyword arguments,
         # so mypy doesn't allow assigning lst.append to process_notification
         # So explicitly change parameter name to 'notice' to work around this problem
-        yield
+
+        with self.captureOnCommitCallbacks(execute=True):
+            yield
+
         django_tornado_api.process_notification = real_event_queue_process_notification
 
 
