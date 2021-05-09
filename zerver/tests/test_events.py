@@ -275,7 +275,10 @@ class BaseAction(ZulipTestCase):
             include_subscribers=include_subscribers,
             include_streams=include_streams,
         )
-        action()
+
+        with self.captureOnCommitCallbacks(execute=True):
+            action()
+
         events = client.event_queue.contents()
         content = {
             "queue_id": "123.12",
