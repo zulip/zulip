@@ -18,12 +18,12 @@ async function delete_message_test(page: Page): Promise<void> {
     const messages_quantitiy = await page.evaluate(() => $("#zhome .message_row").length);
     const last_message_id = await click_delete_and_return_last_msg_id(page);
 
-    await page.waitForSelector("#delete_message_modal", {visible: true});
-    await page.click("#do_delete_message_button");
-    await page.waitForSelector("#do_delete_message_spinner .loading_indicator_spinner", {
+    await page.waitForSelector("#confirm_dialog_modal", {visible: true});
+    await page.click(".confirm_dialog_yes_button");
+    await page.waitForSelector("#confirm_dialog_spinner .loading_indicator_spinner", {
         visible: true,
     });
-    await page.waitForSelector("#do_delete_message_button", {hidden: true});
+    await page.waitForSelector(".confirm_dialog_yes_button", {hidden: true});
 
     await page.waitForFunction(
         (expected_length: number) => $("#zhome .message_row").length === expected_length,
@@ -32,7 +32,7 @@ async function delete_message_test(page: Page): Promise<void> {
     );
 
     await page.waitForSelector(`#${CSS.escape(last_message_id!)}`, {hidden: true});
-    await page.waitForSelector("#do_delete_message_spinner .loading_indicator_spinner", {
+    await page.waitForSelector("#confirm_dialog_spinner .loading_indicator_spinner", {
         hidden: true,
     });
 }
