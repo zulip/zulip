@@ -401,38 +401,44 @@ function edit_message(row, raw_content) {
         stream_bar.decorate(stream_name, stream_header_colorblock, false);
     });
 
-    if (editability === editability_types.NO) {
-        message_edit_content.attr("readonly", "readonly");
-        message_edit_topic.attr("readonly", "readonly");
-        create_copy_to_clipboard_handler(copy_message[0], message.id);
-    } else if (editability === editability_types.NO_LONGER) {
-        // You can currently only reach this state in non-streams. If that
-        // changes (e.g. if we stop allowing topics to be modified forever
-        // in streams), then we'll need to disable
-        // row.find('input.message_edit_topic') as well.
-        message_edit_content.attr("readonly", "readonly");
-        message_edit_countdown_timer.text($t({defaultMessage: "View source"}));
-        create_copy_to_clipboard_handler(copy_message[0], message.id);
-    } else if (editability === editability_types.TOPIC_ONLY) {
-        message_edit_content.attr("readonly", "readonly");
-        // Hint why you can edit the topic but not the message content
-        message_edit_countdown_timer.text($t({defaultMessage: "Topic editing only"}));
-        create_copy_to_clipboard_handler(copy_message[0], message.id);
-    } else if (editability === editability_types.FULL) {
-        copy_message.remove();
-        const edit_id = `#edit_form_${CSS.escape(rows.id(row))} .message_edit_content`;
-        const listeners = resize.watch_manual_resize(edit_id);
-        if (listeners) {
-            currently_editing_messages.get(rows.id(row)).listeners = listeners;
+    switch (editability) {
+        case editability_types.NO:
+            message_edit_content.attr("readonly", "readonly");
+            message_edit_topic.attr("readonly", "readonly");
+            create_copy_to_clipboard_handler(copy_message[0], message.id);
+            break;
+        case editability_types.NO_LONGER:
+            // You can currently only reach this state in non-streams. If that
+            // changes (e.g. if we stop allowing topics to be modified forever
+            // in streams), then we'll need to disable
+            // row.find('input.message_edit_topic') as well.
+            message_edit_content.attr("readonly", "readonly");
+            message_edit_countdown_timer.text($t({defaultMessage: "View source"}));
+            create_copy_to_clipboard_handler(copy_message[0], message.id);
+            break;
+        case editability_types.TOPIC_ONLY:
+            message_edit_content.attr("readonly", "readonly");
+            // Hint why you can edit the topic but not the message content
+            message_edit_countdown_timer.text($t({defaultMessage: "Topic editing only"}));
+            create_copy_to_clipboard_handler(copy_message[0], message.id);
+            break;
+        case editability_types.FULL: {
+            copy_message.remove();
+            const edit_id = `#edit_form_${CSS.escape(rows.id(row))} .message_edit_content`;
+            const listeners = resize.watch_manual_resize(edit_id);
+            if (listeners) {
+                currently_editing_messages.get(rows.id(row)).listeners = listeners;
+            }
+            composebox_typeahead.initialize_compose_typeahead(edit_id);
+            compose.handle_keyup(null, $(edit_id).expectOne());
+            $(edit_id).on("keydown", function (event) {
+                compose.handle_keydown(event, $(this).expectOne());
+            });
+            $(edit_id).on("keyup", function (event) {
+                compose.handle_keyup(event, $(this).expectOne());
+            });
+            break;
         }
-        composebox_typeahead.initialize_compose_typeahead(edit_id);
-        compose.handle_keyup(null, $(edit_id).expectOne());
-        $(edit_id).on("keydown", function (event) {
-            compose.handle_keydown(event, $(this).expectOne());
-        });
-        $(edit_id).on("keyup", function (event) {
-            compose.handle_keyup(event, $(this).expectOne());
-        });
     }
 
     // Add tooltip

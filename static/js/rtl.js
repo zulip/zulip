@@ -130,20 +130,27 @@ export function get_direction(str) {
         }
 
         const bidi_class = get_bidi_class(ch);
-        if (bidi_class === "I") {
-            // LRI, RLI, FSI
-            isolations += 1;
-        } else if (bidi_class === "PDI") {
-            if (isolations > 0) {
-                isolations -= 1;
-            }
-        } else if (bidi_class === "R") {
-            // R, AL
-            if (isolations === 0) {
-                return "rtl";
-            }
-        } else if (bidi_class === "L" && isolations === 0) {
-            return "ltr";
+        switch (bidi_class) {
+            case "I":
+                // LRI, RLI, FSI
+                isolations += 1;
+                break;
+            case "PDI":
+                if (isolations > 0) {
+                    isolations -= 1;
+                }
+                break;
+            case "R":
+                // R, AL
+                if (isolations === 0) {
+                    return "rtl";
+                }
+                break;
+            case "L":
+                if (isolations === 0) {
+                    return "ltr";
+                }
+                break;
         }
     }
     return "ltr";

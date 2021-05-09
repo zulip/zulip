@@ -680,21 +680,29 @@ export function process_hotkey(e, hotkey) {
         ) {
             compose_actions.cancel();
             // don't return, as we still want it to be picked up by the code below
-        } else if (event_name === "page_up") {
-            $(":focus").caret(0).animate({scrollTop: 0}, "fast");
-            return true;
-        } else if (event_name === "page_down") {
-            // so that it always goes to the end of the text box.
-            const height = $(":focus")[0].scrollHeight;
-            $(":focus").caret(Number.POSITIVE_INFINITY).animate({scrollTop: height}, "fast");
-            return true;
-        } else if (event_name === "search_with_k") {
-            // Do nothing; this allows one to use Ctrl+K inside compose.
-        } else if (event_name === "star_message") {
-            // Do nothing; this allows one to use Ctrl+S inside compose.
         } else {
-            // Let the browser handle the key normally.
-            return false;
+            switch (event_name) {
+                case "page_up":
+                    $(":focus").caret(0).animate({scrollTop: 0}, "fast");
+                    return true;
+                case "page_down": {
+                    // so that it always goes to the end of the text box.
+                    const height = $(":focus")[0].scrollHeight;
+                    $(":focus")
+                        .caret(Number.POSITIVE_INFINITY)
+                        .animate({scrollTop: height}, "fast");
+                    return true;
+                }
+                case "search_with_k":
+                    // Do nothing; this allows one to use Ctrl+K inside compose.
+                    break;
+                case "star_message":
+                    // Do nothing; this allows one to use Ctrl+S inside compose.
+                    break;
+                default:
+                    // Let the browser handle the key normally.
+                    return false;
+            }
         }
     }
 

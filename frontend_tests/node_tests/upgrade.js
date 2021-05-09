@@ -38,20 +38,24 @@ run_test("initialize", (override) => {
     let create_ajax_request_form_call_count = 0;
     helpers.__Rewire__("create_ajax_request", (url, form_name, stripe_token, redirect_to) => {
         create_ajax_request_form_call_count += 1;
-        if (form_name === "autopay") {
-            assert.equal(url, "/json/billing/upgrade");
-            assert.equal(stripe_token, "stripe_add_card_token");
-            assert.equal(redirect_to, undefined);
-        } else if (form_name === "invoice") {
-            assert.equal(url, "/json/billing/upgrade");
-            assert.equal(stripe_token, undefined);
-            assert.equal(redirect_to, undefined);
-        } else if (form_name === "sponsorship") {
-            assert.equal(url, "/json/billing/sponsorship");
-            assert.equal(stripe_token, undefined);
-            assert.equal(redirect_to, "/");
-        } else {
-            throw new Error("Unhandled case");
+        switch (form_name) {
+            case "autopay":
+                assert.equal(url, "/json/billing/upgrade");
+                assert.equal(stripe_token, "stripe_add_card_token");
+                assert.equal(redirect_to, undefined);
+                break;
+            case "invoice":
+                assert.equal(url, "/json/billing/upgrade");
+                assert.equal(stripe_token, undefined);
+                assert.equal(redirect_to, undefined);
+                break;
+            case "sponsorship":
+                assert.equal(url, "/json/billing/sponsorship");
+                assert.equal(stripe_token, undefined);
+                assert.equal(redirect_to, "/");
+                break;
+            default:
+                throw new Error("Unhandled case");
         }
     });
 

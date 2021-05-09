@@ -79,18 +79,22 @@ function display_video(payload) {
     ).hide();
 
     let source;
-    if (payload.type === "youtube-video") {
-        source = "https://www.youtube.com/embed/" + payload.source;
-    } else if (payload.type === "vimeo-video") {
-        source = "https://player.vimeo.com/video/" + payload.source;
-    } else if (payload.type === "embed-video") {
-        // Use data: to load the player in a unique origin for security.
-        source =
-            "data:text/html," +
-            window.encodeURIComponent(
-                "<!DOCTYPE html><style>iframe{position:absolute;left:0;top:0;width:100%;height:100%;box-sizing:border-box}</style>" +
-                    payload.source,
-            );
+    switch (payload.type) {
+        case "youtube-video":
+            source = "https://www.youtube.com/embed/" + payload.source;
+            break;
+        case "vimeo-video":
+            source = "https://player.vimeo.com/video/" + payload.source;
+            break;
+        case "embed-video":
+            // Use data: to load the player in a unique origin for security.
+            source =
+                "data:text/html," +
+                window.encodeURIComponent(
+                    "<!DOCTYPE html><style>iframe{position:absolute;left:0;top:0;width:100%;height:100%;box-sizing:border-box}</style>" +
+                        payload.source,
+                );
+            break;
     }
 
     const iframe = $("<iframe></iframe>");

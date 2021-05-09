@@ -316,18 +316,23 @@ export function create(opts) {
 
             const $pill = store.$parent.find(".pill:focus");
 
-            if (char === KEY.LEFT_ARROW) {
-                $pill.prev().trigger("focus");
-            } else if (char === KEY.RIGHT_ARROW) {
-                $pill.next().trigger("focus");
-            } else if (char === KEY.BACKSPACE) {
-                const $next = $pill.next();
-                const id = $pill.data("id");
-                funcs.removePill(id);
-                $next.trigger("focus");
-                // the "Backspace" key in Firefox will go back a page if you do
-                // not prevent it.
-                e.preventDefault();
+            switch (char) {
+                case KEY.LEFT_ARROW:
+                    $pill.prev().trigger("focus");
+                    break;
+                case KEY.RIGHT_ARROW:
+                    $pill.next().trigger("focus");
+                    break;
+                case KEY.BACKSPACE: {
+                    const $next = $pill.next();
+                    const id = $pill.data("id");
+                    funcs.removePill(id);
+                    $next.trigger("focus");
+                    // the "Backspace" key in Firefox will go back a page if you do
+                    // not prevent it.
+                    e.preventDefault();
+                    break;
+                }
             }
         });
 

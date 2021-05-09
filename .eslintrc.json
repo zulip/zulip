@@ -102,7 +102,6 @@
         "unicorn/prefer-module": "off",
         "unicorn/prefer-node-protocol": "off",
         "unicorn/prefer-spread": "off",
-        "unicorn/prefer-switch": "off",
         "unicorn/prefer-ternary": "off",
         "unicorn/prevent-abbreviations": "off",
         "valid-typeof": ["error", {"requireStringLiterals": true}],

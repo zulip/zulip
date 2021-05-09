@@ -441,7 +441,6 @@ export function navigate(event_name, e) {
 
     const selected_emoji = get_rendered_emoji(current_section, current_index);
     const is_filter_focused = $(".emoji-popover-filter").is(":focus");
-    let next_section = 0;
     // special cases
     if (is_filter_focused) {
         // Move down into emoji map.
@@ -481,42 +480,32 @@ export function navigate(event_name, e) {
             reset_emoji_showcase();
             return true;
         }
-    } else if (event_name === "tab") {
-        change_focus_to_filter();
-        return true;
-    } else if (event_name === "shift_tab") {
-        if (!is_filter_focused) {
-            change_focus_to_filter();
-        }
-        return true;
-    } else if (event_name === "page_up") {
-        next_section = current_section - 1;
-        maybe_change_active_section(next_section);
-        return true;
-    } else if (event_name === "page_down") {
-        next_section = current_section + 1;
-        maybe_change_active_section(next_section);
-        return true;
-    } else if (!is_filter_focused) {
-        let next_coord = {};
-        switch (event_name) {
-            case "down_arrow":
-                next_coord = get_next_emoji_coordinates(6);
-                break;
-            case "up_arrow":
-                next_coord = get_next_emoji_coordinates(-6);
-                break;
-            case "left_arrow":
-                next_coord = get_next_emoji_coordinates(-1);
-                break;
-            case "right_arrow":
-                next_coord = get_next_emoji_coordinates(1);
-                break;
-        }
-
-        return maybe_change_focused_emoji($emoji_map, next_coord.section, next_coord.index);
+        return false;
     }
-    return false;
+
+    switch (event_name) {
+        case "tab":
+        case "shift_tab":
+            change_focus_to_filter();
+            return true;
+        case "page_up":
+            maybe_change_active_section(current_section - 1);
+            return true;
+        case "page_down":
+            maybe_change_active_section(current_section + 1);
+            return true;
+        case "down_arrow":
+        case "up_arrow":
+        case "left_arrow":
+        case "right_arrow": {
+            const next_coord = get_next_emoji_coordinates(
+                {down_arrow: 6, up_arrow: -6, left_arrow: -1, right_arrow: 1}[event_name],
+            );
+            return maybe_change_focused_emoji($emoji_map, next_coord.section, next_coord.index);
+        }
+        default:
+            return false;
+    }
 }
 
 function process_keypress(e) {
