@@ -276,7 +276,13 @@ class BaseAction(ZulipTestCase):
             include_subscribers=include_subscribers,
             include_streams=include_streams,
         )
-        action()
+
+        # We want even those `send_event` calls which have been hooked to
+        # `transaction.on_commit` to execute in tests.
+        # See the comment in `ZulipTestCase.tornado_redirected_to_list`.
+        with self.captureOnCommitCallbacks(execute=True):
+            action()
+
         events = client.event_queue.contents()
         content = {
             "queue_id": "123.12",
