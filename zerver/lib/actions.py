@@ -139,6 +139,7 @@ from zerver.lib.stream_subscription import (
 )
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.streams import (
+    access_stream_by_id,
     access_stream_for_send_message,
     can_access_stream_user_ids,
     check_stream_name,
@@ -182,7 +183,7 @@ from zerver.lib.users import (
 )
 from zerver.lib.utils import generate_api_key, log_statsd_event
 from zerver.lib.validator import check_widget_content
-from zerver.lib.widget import do_widget_post_save_actions
+from zerver.lib.widget import do_widget_post_save_actions, is_widget_message
 from zerver.models import (
     MAX_MESSAGE_LENGTH,
     Attachment,
@@ -2674,6 +2675,165 @@ def check_schedule_message(
         raise JsonableError(_("Reminders can only be set for streams."))
 
     return do_schedule_messages([send_request])[0]
+
+
+def check_update_message(
+    user_profile: UserProfile,
+    message_id: int,
+    stream_id: Optional[int] = None,
+    topic_name: Optional[str] = None,
+    propagate_mode: Optional[str] = "change_one",
+    send_notification_to_old_thread: bool = True,
+    send_notification_to_new_thread: bool = True,
+    content: Optional[str] = None,
+) -> int:
+    """This will update a message given the message id and user profile.
+    It checks whether the user profile has the permission to edit the message
+    and raises a JsonableError if otherwise.
+    It returns the number changed.
+    """
+    if not user_profile.realm.allow_message_editing:
+        raise JsonableError(_("Your organization has turned off message editing"))
+
+    if propagate_mode != "change_one" and topic_name is None and stream_id is None:
+        raise JsonableError(_("Invalid propagate_mode without topic edit"))
+
+    message, ignored_user_message = access_message(user_profile, message_id)
+    is_no_topic_msg = message.topic_name() == "(no topic)"
+
+    # You only have permission to edit a message if:
+    # you change this value also change those two parameters in message_edit.js.
+    # 1. You sent it, OR:
+    # 2. This is a topic-only edit for a (no topic) message, OR:
+    # 3. This is a topic-only edit and you are an admin, OR:
+    # 4. This is a topic-only edit and your realm allows users to edit topics.
+    if message.sender == user_profile:
+        pass
+    elif (content is None) and (
+        is_no_topic_msg
+        or user_profile.is_realm_admin
+        or user_profile.realm.allow_community_topic_editing
+    ):
+        pass
+    else:
+        raise JsonableError(_("You don't have permission to edit this message"))
+
+    # Right now, we prevent users from editing widgets.
+    if content is not None and is_widget_message(message):
+        raise JsonableError(_("Widgets cannot be edited."))
+
+    # If there is a change to the content, check that it hasn't been too long
+    # Allow an extra 20 seconds since we potentially allow editing 15 seconds
+    # past the limit, and in case there are network issues, etc. The 15 comes
+    # from (min_seconds_to_edit + seconds_left_buffer) in message_edit.js; if
+    # you change this value also change those two parameters in message_edit.js.
+    edit_limit_buffer = 20
+    if content is not None and user_profile.realm.message_content_edit_limit_seconds > 0:
+        deadline_seconds = user_profile.realm.message_content_edit_limit_seconds + edit_limit_buffer
+        if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
+            raise JsonableError(_("The time limit for editing this message has passed"))
+
+    # If there is a change to the topic, check that the user is allowed to
+    # edit it and that it has not been too long. If this is not the user who
+    # sent the message, they are not the admin, and the time limit for editing
+    # topics is passed, raise an error.
+    if (
+        content is None
+        and message.sender != user_profile
+        and not user_profile.is_realm_admin
+        and not is_no_topic_msg
+    ):
+        deadline_seconds = Realm.DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS + edit_limit_buffer
+        if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
+            raise JsonableError(_("The time limit for editing this message has passed"))
+
+    if topic_name is None and content is None and stream_id is None:
+        raise JsonableError(_("Nothing to change"))
+    if topic_name is not None:
+        topic_name = topic_name.strip()
+        if topic_name == "":
+            raise JsonableError(_("Topic can't be empty"))
+    rendered_content = None
+    links_for_embed: Set[str] = set()
+    prior_mention_user_ids: Set[int] = set()
+    mention_user_ids: Set[int] = set()
+    mention_data: Optional[MentionData] = None
+    if content is not None:
+        if content.rstrip() == "":
+            content = "(deleted)"
+        content = normalize_body(content)
+
+        mention_data = MentionData(
+            realm_id=user_profile.realm.id,
+            content=content,
+        )
+        user_info = get_user_info_for_message_updates(message.id)
+        prior_mention_user_ids = user_info["mention_user_ids"]
+
+        # We render the message using the current user's realm; since
+        # the cross-realm bots never edit messages, this should be
+        # always correct.
+        # Note: If rendering fails, the called code will raise a JsonableError.
+        rendered_content = render_incoming_message(
+            message,
+            content,
+            user_info["message_user_ids"],
+            user_profile.realm,
+            mention_data=mention_data,
+        )
+        links_for_embed |= message.links_for_preview
+
+        mention_user_ids = message.mentions_user_ids
+
+    new_stream = None
+    number_changed = 0
+
+    if stream_id is not None:
+        if not message.is_stream_message():
+            raise JsonableError(_("Message must be a stream message"))
+        if not user_profile.is_realm_admin:
+            raise JsonableError(_("You don't have permission to move this message"))
+        try:
+            access_stream_by_id(user_profile, message.recipient.type_id)
+        except JsonableError:
+            raise JsonableError(
+                _(
+                    "You don't have permission to move this message due to missing access to its stream"
+                )
+            )
+        if content is not None:
+            raise JsonableError(_("Cannot change message content while changing stream"))
+
+        new_stream = access_stream_by_id(user_profile, stream_id, require_active=True)[0]
+
+    number_changed = do_update_message(
+        user_profile,
+        message,
+        new_stream,
+        topic_name,
+        propagate_mode,
+        send_notification_to_old_thread,
+        send_notification_to_new_thread,
+        content,
+        rendered_content,
+        prior_mention_user_ids,
+        mention_user_ids,
+        mention_data,
+    )
+
+    if links_for_embed:
+        event_data = {
+            "message_id": message.id,
+            "message_content": message.content,
+            # The choice of `user_profile.realm_id` rather than
+            # `sender.realm_id` must match the decision made in the
+            # `render_incoming_message` call earlier in this function.
+            "message_realm_id": user_profile.realm_id,
+            "urls": list(links_for_embed),
+        }
+        queue_json_publish("embed_links", event_data)
+
+    return number_changed
 
 
 def check_default_stream_group_name(group_name: str) -> None:

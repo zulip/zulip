@@ -320,7 +320,7 @@ class PreviewTestCase(ZulipTestCase):
         url = "http://test.org/"
         mocked_response = mock.Mock(side_effect=self.create_mock_response(url))
 
-        with mock_queue_publish("zerver.views.message_edit.queue_json_publish") as patched:
+        with mock_queue_publish("zerver.lib.actions.queue_json_publish") as patched:
             result = self.client_patch(
                 "/json/messages/" + str(msg_id),
                 {
@@ -452,7 +452,7 @@ class PreviewTestCase(ZulipTestCase):
             )
 
         with mock_queue_publish(
-            "zerver.views.message_edit.queue_json_publish", wraps=wrapped_queue_json_publish
+            "zerver.lib.actions.queue_json_publish", wraps=wrapped_queue_json_publish
         ):
             result = self.client_patch(
                 "/json/messages/" + str(msg_id),
