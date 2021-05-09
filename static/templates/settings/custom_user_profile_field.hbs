@@ -1,6 +1,7 @@
 <div class="user-name-section custom_user_field" name="{{ field.name }}" data-field-id="{{ field.id }}">
     <label class="inline-block" for="{{ field.name }}" class="title">{{ field.name }}</label>
     <div class="alert-notification custom-field-status"></div>
+    <div class="field_hint">{{ field.hint }}</div>
     <div class="field">
         {{#if is_long_text_field}}
         <textarea maxlength="500" class="custom_user_field_value">{{ field_value.value }}</textarea>
@@ -23,5 +24,4 @@
         <input class="custom_user_field_value" type="{{ field_type }}" value="{{ field_value.value }}" maxlength="50" />
         {{/if}}
     </div>
-    <div class="field_hint">{{ field.hint }}</div>
 </div>
