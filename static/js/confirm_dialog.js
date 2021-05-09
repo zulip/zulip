@@ -4,6 +4,7 @@ import render_confirm_dialog from "../templates/confirm_dialog.hbs";
 import render_confirm_dialog_heading from "../templates/confirm_dialog_heading.hbs";
 
 import * as blueslip from "./blueslip";
+import * as loading from "./loading";
 import * as overlays from "./overlays";
 
 /*
@@ -29,7 +30,22 @@ import * as overlays from "./overlays";
            only ever have one confirm dialog active at any
            time.
 
+        6) If a modal wants a loading spinner, it should pass loading_spinner: true
+           and manage the spinner via calling the functions hide_confirm_dialog_spinner
+           and show_confirm_dialog_spinner via its callback hooks.
 */
+
+export function hide_confirm_dialog_spinner() {
+    const spinner = $("#confirm_dialog_spinner");
+    loading.destroy_indicator(spinner);
+    $("#confirm_dialog_modal > div.modal-footer > button").show();
+}
+
+export function show_confirm_dialog_spinner() {
+    const spinner = $("#confirm_dialog_spinner");
+    $("#confirm_dialog_modal > div.modal-footer > button").hide();
+    loading.make_indicator(spinner);
+}
 
 export function launch(conf) {
     const html = render_confirm_dialog({fade: conf.fade});
@@ -74,7 +90,11 @@ export function launch(conf) {
 
     // Set up handlers.
     yes_button.on("click", () => {
-        overlays.close_modal("#confirm_dialog_modal");
+        if (conf.loading_spinner) {
+            show_confirm_dialog_spinner();
+        } else {
+            overlays.close_modal("#confirm_dialog_modal");
+        }
         conf.on_click();
     });
 
