@@ -42,6 +42,13 @@
                             {{#*inline "z-link"}}<a href="/help/getting-your-organization-started-with-zulip#create-streams" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
                         {{/tr}}
                     </span>
+                    {{else}}
+                    <button type="button" class="create_stream_button button small rounded sea-green" disabled>{{t 'Create stream disabled' }}</button>
+                    <span>
+                        {{#tr}}
+                        User do not have permission to create streams.
+                        {{/tr}}
+                    </span>
                     {{/if}}
                 </div>
                 <div class="settings" data-simplebar data-simplebar-auto-hide="false">
