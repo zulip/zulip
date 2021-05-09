@@ -547,7 +547,8 @@ test("notifications", () => {
     antarctica.push_notifications = null;
     antarctica.wildcard_mentions_notify = null;
 
-    const unmatched_streams = stream_settings_data.get_unmatched_streams_for_notification_settings();
+    const unmatched_streams =
+        stream_settings_data.get_unmatched_streams_for_notification_settings();
     const expected_streams = [
         {
             desktop_notifications: true,

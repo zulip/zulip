@@ -89,7 +89,7 @@ export async function display_stacktrace(error: string, stack: string): Promise<
         ErrorStackParser.parse(ex).map(async (stack_frame: ErrorStackParser.StackFrame) => {
             // Work around mistake in ErrorStackParser.StackFrame definition
             // https://github.com/stacktracejs/error-stack-parser/pull/54
-            let location = (stack_frame as unknown) as StackFrame;
+            let location = stack_frame as unknown as StackFrame;
             try {
                 location = await stack_trace_gps.getMappedLocation(location);
             } catch {

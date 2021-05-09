@@ -105,8 +105,8 @@ export function build_page() {
         general_settings: settings_config.all_notifications().general_settings,
         notification_settings: settings_config.all_notifications().settings,
         desktop_icon_count_display_values: settings_config.desktop_icon_count_display_values,
-        show_push_notifications_tooltip: settings_config.all_notifications()
-            .show_push_notifications_tooltip,
+        show_push_notifications_tooltip:
+            settings_config.all_notifications().show_push_notifications_tooltip,
         display_settings: settings_config.get_all_display_settings(),
         user_can_change_name: settings_data.user_can_change_name(),
         user_can_change_avatar: settings_data.user_can_change_avatar(),

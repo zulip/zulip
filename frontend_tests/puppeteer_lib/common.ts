@@ -414,33 +414,27 @@ class CommonUtils {
     async get_rendered_messages(page: Page, table = "zhome"): Promise<[string, string[]][]> {
         const recipient_rows = await page.$$(`#${CSS.escape(table)} .recipient_row`);
         return Promise.all(
-            recipient_rows.map(
-                async (element): Promise<[string, string[]]> => {
-                    const stream_label = await element.$(".stream_label");
-                    const stream_name = (await this.get_element_text(stream_label!)).trim();
-                    const topic_label = await element.$(".stream_topic a");
-                    const topic_name =
-                        topic_label === null
-                            ? ""
-                            : (await this.get_element_text(topic_label)).trim();
-                    let key = stream_name;
-                    if (topic_name !== "") {
-                        // If topic_name is '' then this is PMs, so only
-                        // append > topic_name if we are not in PMs or Group PMs.
-                        key = `${stream_name} > ${topic_name}`;
-                    }
+            recipient_rows.map(async (element): Promise<[string, string[]]> => {
+                const stream_label = await element.$(".stream_label");
+                const stream_name = (await this.get_element_text(stream_label!)).trim();
+                const topic_label = await element.$(".stream_topic a");
+                const topic_name =
+                    topic_label === null ? "" : (await this.get_element_text(topic_label)).trim();
+                let key = stream_name;
+                if (topic_name !== "") {
+                    // If topic_name is '' then this is PMs, so only
+                    // append > topic_name if we are not in PMs or Group PMs.
+                    key = `${stream_name} > ${topic_name}`;
+                }
 
-                    const messages = await Promise.all(
-                        (
-                            await element.$$(".message_row .message_content")
-                        ).map(async (message_row) =>
-                            (await this.get_element_text(message_row)).trim(),
-                        ),
-                    );
+                const messages = await Promise.all(
+                    (
+                        await element.$$(".message_row .message_content")
+                    ).map(async (message_row) => (await this.get_element_text(message_row)).trim()),
+                );
 
-                    return [key, messages];
-                },
-            ),
+                return [key, messages];
+            }),
         );
     }
 
@@ -552,7 +546,7 @@ class CommonUtils {
             console_ready = (async () => {
                 const frames = await Promise.all(
                     ErrorStackParser.parse(error1).map(async (frame1) => {
-                        let frame = (frame1 as unknown) as StackFrame;
+                        let frame = frame1 as unknown as StackFrame;
                         try {
                             frame = await this.gps.getMappedLocation(frame);
                         } catch {

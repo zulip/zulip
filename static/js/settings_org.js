@@ -783,9 +783,10 @@ export function build_page() {
                 data.allow_message_editing = Boolean(data.message_content_edit_limit_seconds);
             } else {
                 data.allow_message_editing = true;
-                data.message_content_edit_limit_seconds = settings_config.msg_edit_limit_dropdown_values.get(
-                    edit_limit_setting_value,
-                ).seconds;
+                data.message_content_edit_limit_seconds =
+                    settings_config.msg_edit_limit_dropdown_values.get(
+                        edit_limit_setting_value,
+                    ).seconds;
             }
             const delete_limit_setting_value = $("#id_realm_msg_delete_limit_setting").val();
             if (delete_limit_setting_value === "never") {
@@ -798,9 +799,10 @@ export function build_page() {
                 data.allow_message_deleting = Boolean(data.message_content_delete_limit_seconds);
             } else {
                 data.allow_message_deleting = true;
-                data.message_content_delete_limit_seconds = settings_config.msg_delete_limit_dropdown_values.get(
-                    delete_limit_setting_value,
-                ).seconds;
+                data.message_content_delete_limit_seconds =
+                    settings_config.msg_delete_limit_dropdown_values.get(
+                        delete_limit_setting_value,
+                    ).seconds;
             }
         } else if (subsection === "notifications") {
             data.notifications_stream_id = Number.parseInt(notifications_stream_widget.value(), 10);

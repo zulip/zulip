@@ -55,8 +55,7 @@ run_test("clean_function_name", () => {
             "Function.../zulip-npm-cache/de76fb6f582a29b053274f…es/underscore/underscore.js?3817._.each._.forEach",
         ),
         {
-            scope:
-                "Function.../zulip-npm-cache/de76fb6f582a29b053274f…es/underscore/underscore.js?3817._.each._.",
+            scope: "Function.../zulip-npm-cache/de76fb6f582a29b053274f…es/underscore/underscore.js?3817._.each._.",
             name: "forEach",
         },
     );

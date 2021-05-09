@@ -302,8 +302,7 @@ test("marked", () => {
                 '<div class="codehilite"><pre><span></span><code>fenced code\n</code></pre></div>\n<p>and then after</p>',
         },
         {
-            input:
-                "\n```\n    fenced code trailing whitespace            \n```\n\nand then after\n",
+            input: "\n```\n    fenced code trailing whitespace            \n```\n\nand then after\n",
             expected:
                 '<div class="codehilite"><pre><span></span><code>    fenced code trailing whitespace\n</code></pre></div>\n<p>and then after</p>',
         },
@@ -401,8 +400,7 @@ test("marked", () => {
                 '<p>Silent mention: <span class="user-mention silent" data-user-id="101">Cordelia, Lear&#39;s daughter</span></p>',
         },
         {
-            input:
-                "> Mention in quote: @**Cordelia, Lear's daughter**\n\nMention outside quote: @**Cordelia, Lear's daughter**",
+            input: "> Mention in quote: @**Cordelia, Lear's daughter**\n\nMention outside quote: @**Cordelia, Lear's daughter**",
             expected:
                 '<blockquote>\n<p>Mention in quote: <span class="user-mention silent" data-user-id="101">Cordelia, Lear&#39;s daughter</span></p>\n</blockquote>\n<p>Mention outside quote: <span class="user-mention" data-user-id="101">@Cordelia, Lear&#39;s daughter</span></p>',
         },

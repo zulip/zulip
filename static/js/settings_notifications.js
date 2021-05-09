@@ -20,7 +20,8 @@ function rerender_ui() {
         return;
     }
 
-    const unmatched_streams = stream_settings_data.get_unmatched_streams_for_notification_settings();
+    const unmatched_streams =
+        stream_settings_data.get_unmatched_streams_for_notification_settings();
 
     unmatched_streams_table.find(".stream-row").remove();
 

@@ -293,13 +293,8 @@ function test_submit_settings_form(override, submit_form) {
 }
 
 function test_change_save_button_state() {
-    const {
-        save_button_controls,
-        save_button_text,
-        save_button,
-        discard_button,
-        props,
-    } = createSaveButtons("msg-editing");
+    const {save_button_controls, save_button_text, save_button, discard_button, props} =
+        createSaveButtons("msg-editing");
     save_button.attr("id", "org-submit-msg-editing");
 
     {

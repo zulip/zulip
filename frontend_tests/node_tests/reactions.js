@@ -216,8 +216,7 @@ test("basics", () => {
             local_id: "unicode_emoji,1f680",
             count: 3,
             user_ids: [5, 6, 7],
-            label:
-                "translated: You (click to remove), Bob van Roberts and Cali reacted with :rocket:",
+            label: "translated: You (click to remove), Bob van Roberts and Cali reacted with :rocket:",
             emoji_alt_code: false,
             class: "message_reaction reacted",
         },
