@@ -542,10 +542,6 @@ ul {
         color: hsl(0, 100%, 50%);
     }
 
-    .inline_topic_edit {
-        margin-left: 5px !important;
-    }
-
     .topic_stream_edit_header {
         display: flex;
         flex-wrap: wrap;
