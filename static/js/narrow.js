@@ -5,6 +5,7 @@ import * as blueslip from "./blueslip";
 import * as channel from "./channel";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
+import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
 import * as condense from "./condense";
@@ -388,6 +389,7 @@ export function activate(raw_operators, opts) {
     } else {
         compose.update_closed_compose_buttons_for_stream();
     }
+    compose_closed_ui.update_reply_recipient_label();
 
     search.update_button_visibility();
 

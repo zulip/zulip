@@ -6,6 +6,7 @@ import * as fenced_code from "../shared/js/fenced_code";
 import * as channel from "./channel";
 import * as common from "./common";
 import * as compose from "./compose";
+import * as compose_actions from "./compose_actions";
 import * as compose_fade from "./compose_fade";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as compose_state from "./compose_state";
@@ -314,7 +315,7 @@ export function respond_to_message(opts) {
                 !narrow_state.narrowed_by_stream_reply() &&
                 !narrow_state.narrowed_by_topic_reply()
             ) {
-                compose.nonexistent_stream_reply_error();
+                start("stream", {trigger: "empty_narrow_compose"});
                 return;
             }
             const current_filter = narrow_state.filter();
@@ -323,7 +324,7 @@ export function respond_to_message(opts) {
             const first_operand = first_term.operand;
 
             if (first_operator === "stream" && !stream_data.is_subscribed(first_operand)) {
-                compose.nonexistent_stream_reply_error();
+                start("stream", {trigger: "empty_narrow_compose"});
                 return;
             }
 

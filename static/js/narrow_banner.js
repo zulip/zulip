@@ -187,15 +187,8 @@ function pick_empty_narrow_banner() {
 export function show_empty_narrow_message() {
     $(".empty_feed_notice").hide();
     pick_empty_narrow_banner().show();
-    $("#left_bar_compose_reply_button_big").attr(
-        "title",
-        $t({defaultMessage: "There are no messages to reply to."}),
-    );
-    $("#left_bar_compose_reply_button_big").prop("disabled", true);
 }
 
 export function hide_empty_narrow_message() {
     $(".empty_feed_notice").hide();
-    $("#left_bar_compose_reply_button_big").attr("title", $t({defaultMessage: "Reply (r)"}));
-    $("#left_bar_compose_reply_button_big").prop("disabled", false);
 }

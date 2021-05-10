@@ -15,6 +15,7 @@ const all_messages_data = mock_esm("../../static/js/all_messages_data");
 const channel = mock_esm("../../static/js/channel");
 const compose = mock_esm("../../static/js/compose");
 const compose_actions = mock_esm("../../static/js/compose_actions");
+const compose_closed_ui = mock_esm("../../static/js/compose_closed_ui");
 const hashchange = mock_esm("../../static/js/hashchange");
 const message_fetch = mock_esm("../../static/js/message_fetch");
 const message_list = mock_esm("../../static/js/message_list", {
@@ -79,6 +80,7 @@ function test_helper() {
     }
 
     stub(compose_actions, "on_narrow");
+    stub(compose_closed_ui, "update_reply_recipient_label");
     stub(hashchange, "save_narrow");
     stub(message_scroll, "hide_indicators");
     stub(message_scroll, "show_loading_older");
@@ -202,6 +204,7 @@ run_test("basics", () => {
         [unread_ops, "process_visible"],
         [hashchange, "save_narrow"],
         [compose, "update_closed_compose_buttons_for_stream"],
+        [compose_closed_ui, "update_reply_recipient_label"],
         [search, "update_button_visibility"],
         [compose_actions, "on_narrow"],
         [top_left_corner, "handle_narrow_activated"],
