@@ -134,6 +134,10 @@ whenever a template is changed.
 All user-facing strings (excluding pages only visible to sysadmins or
 developers) should be tagged for [translation][].
 
+### Tooltips
+
+Zulip uses [TippyJS](https://atomiks.github.io/tippyjs/) for its tooltips.
+
 ## Static asset pipeline
 
 This section documents additional information that may be useful when
