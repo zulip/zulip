@@ -8,6 +8,7 @@ import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
 import {$t} from "./i18n";
 import * as message_user_ids from "./message_user_ids";
+import * as muting from "./muting";
 import * as reload_state from "./reload_state";
 import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
@@ -314,6 +315,10 @@ export function get_display_full_names(user_ids) {
         if (!person) {
             blueslip.error("Unknown user id " + user_id);
             return "?";
+        }
+
+        if (muting.is_user_muted(user_id)) {
+            return $t({defaultMessage: "Muted user"});
         }
 
         return person.full_name;

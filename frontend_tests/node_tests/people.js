@@ -14,6 +14,7 @@ const {page_params} = require("../zjsunit/zpage_params");
 
 const message_user_ids = mock_esm("../../static/js/message_user_ids");
 
+const muting = zrequire("muting");
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");
 const visibility = settings_config.email_address_visibility_values;
@@ -57,6 +58,7 @@ function initialize() {
     people.add_active_user({...me});
     people.initialize_current_user(me.user_id);
     set_email_visibility(admins_only);
+    muting.set_muted_users([]);
 }
 
 function test_people(label, f) {
@@ -410,16 +412,16 @@ test_people("get_display_full_names", () => {
     people.add_active_user(steven);
     people.add_active_user(bob);
     people.add_active_user(charles);
-    const names = people.get_display_full_names([
-        me.user_id,
-        steven.user_id,
-        bob.user_id,
-        charles.user_id,
-    ]);
+    const user_ids = [me.user_id, steven.user_id, bob.user_id, charles.user_id];
+    let names = people.get_display_full_names(user_ids);
 
     // This doesn't do anything special for the current user. The caller has
     // to take care of such cases and do the appropriate.
     assert.deepEqual(names, ["Me Myself", "Steven", "Bob van Roberts", "Charles Dickens"]);
+
+    muting.add_muted_user(charles.user_id);
+    names = people.get_display_full_names(user_ids);
+    assert.deepEqual(names, ["Me Myself", "Steven", "Bob van Roberts", "translated: Muted user"]);
 });
 
 test_people("my_custom_profile_data", () => {
