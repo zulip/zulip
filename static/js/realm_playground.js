@@ -43,29 +43,23 @@ export function sort_pygments_pretty_names_by_priority(generated_pygments_data) 
 }
 
 export function get_pygments_typeahead_list(query) {
-    const lookup_table = new Map();
-    const pygments_pretty_name_list = [];
+    const language_labels = new Map();
 
     // Adds a typeahead that allows selecting a custom language, by adding a
     // "Custom language" label in the first position of the typeahead list.
     const clean_query = typeahead.clean_query_lowercase(query);
     if (clean_query !== "") {
-        pygments_pretty_name_list.push(clean_query);
-        lookup_table[clean_query] = $t(
-            {defaultMessage: "Custom language: {query}"},
-            {query: clean_query},
+        language_labels.set(
+            clean_query,
+            $t({defaultMessage: "Custom language: {query}"}, {query: clean_query}),
         );
     }
 
     for (const [key, values] of map_pygments_pretty_name_to_aliases) {
-        lookup_table[key] = key + " (" + Array.from(values).join(", ") + ")";
-        pygments_pretty_name_list.push(key);
+        language_labels.set(key, key + " (" + Array.from(values).join(", ") + ")");
     }
 
-    return {
-        pygments_pretty_name_list,
-        lookup_table,
-    };
+    return language_labels;
 }
 
 export function initialize(playground_data, generated_pygments_data) {

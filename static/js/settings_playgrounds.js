@@ -152,19 +152,18 @@ function build_page() {
         });
 
     const search_pygments_box = $("#playground_pygments_language");
-    let lookup_table = new Map();
+    let language_labels = new Map();
 
     search_pygments_box.typeahead({
         source(query) {
-            const suggestions = realm_playground.get_pygments_typeahead_list(query);
-            lookup_table = suggestions.lookup_table;
-            return suggestions.pygments_pretty_name_list;
+            language_labels = realm_playground.get_pygments_typeahead_list(query);
+            return Array.from(language_labels.keys());
         },
         items: 5,
         fixed: true,
         helpOnEmptyStrings: true,
         highlighter(item) {
-            return lookup_table[item];
+            return language_labels.get(item);
         },
         matcher(item) {
             const q = this.query.trim().toLowerCase();
