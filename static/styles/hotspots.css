@@ -286,7 +286,7 @@
     }
 }
 
-#hotspot_intro_reply_icon {
+#hotspot_intro_reply_overlay {
     position: relative;
     background-color: hsl(0, 0%, 100%);
     top: 50%;

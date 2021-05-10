@@ -898,8 +898,8 @@ export function initialize() {
         e.stopPropagation();
 
         hotspots.post_hotspot_as_read("intro_reply");
-        hotspots.close_hotspot_icon($("#hotspot_intro_reply_icon"));
-        $("#hotspot_intro_reply_icon").remove();
+        hotspots.close_hotspot_icon($("#hotspot_intro_reply_overlay"));
+        $("#hotspot_intro_reply_overlay").remove();
     });
 
     // stop propagation
