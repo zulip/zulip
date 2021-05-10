@@ -42,7 +42,7 @@ function get_new_heights() {
     const res = {};
     const viewport_height = message_viewport.height();
     const top_navbar_height = $("#top_navbar").safeOuterHeight(true);
-    const invite_user_link_height = $("#invite-user-link").safeOuterHeight(true) || 0;
+    const right_sidebar_shorcuts_height = $(".right-sidebar-shortcuts").safeOuterHeight(true) || 0;
     const add_streams_link_height = $("#add-stream-link").safeOuterHeight(true) || 0;
 
     res.bottom_whitespace_height = viewport_height * 0.4;
@@ -68,7 +68,7 @@ function get_new_heights() {
         Number.parseInt($("#right-sidebar").css("marginTop"), 10) -
         $("#userlist-header").safeOuterHeight(true) -
         $("#user_search_section").safeOuterHeight(true) -
-        invite_user_link_height;
+        right_sidebar_shorcuts_height;
 
     res.buddy_list_wrapper_max_height = Math.max(80, usable_height);
 
