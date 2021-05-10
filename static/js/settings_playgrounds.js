@@ -108,17 +108,21 @@ function build_page() {
 
     $(".organization form.admin-playground-form")
         .off("submit")
-        .on("submit", function (e) {
+        .on("submit", (e) => {
             e.preventDefault();
             e.stopPropagation();
             const playground_status = $("#admin-playground-status");
             const add_playground_button = $(".new-playground-form button");
             add_playground_button.prop("disabled", true);
             playground_status.hide();
-
+            const data = {
+                name: $("#playground_name").val(),
+                pygments_language: $("#playground_pygments_language").val(),
+                url_prefix: $("#playground_url_prefix").val(),
+            };
             channel.post({
                 url: "/json/realm/playgrounds",
-                data: $(this).serialize(),
+                data,
                 success() {
                     $("#playground_pygments_language").val("");
                     $("#playground_name").val("");
