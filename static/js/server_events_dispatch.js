@@ -581,8 +581,15 @@ export function dispatch_normal_event(event) {
                 stream_data.set_filter_out_inactives();
             }
             if (event.setting_name === "dense_mode") {
-                $("body").toggleClass("less_dense_mode");
-                $("body").toggleClass("more_dense_mode");
+                $("html").toggleClass("less_dense_mode");
+                $("html").toggleClass("more_dense_mode");
+
+                if ($("html").hasClass("less_dense_mode")) {
+                    $("html").css("font-size", "15px");
+                } else {
+                    $("html").css("font-size", "14px");
+                }
+
             }
             if (event.setting_name === "color_scheme") {
                 $("body").fadeOut(300);

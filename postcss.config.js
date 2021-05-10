@@ -1,17 +1,19 @@
 "use strict";
 
 const {media_breakpoints} = require("./static/js/css_variables.js");
+const vertical_px_to_rem = require("./postcss/vertical_px_to_rem");
 
 module.exports = {
-    plugins: {
+    plugins: [
         // Warning: despite appearances, order is significant
-        "postcss-nested": {},
-        "postcss-extend-rule": {},
-        "postcss-simple-vars": {
+        [vertical_px_to_rem, {}],
+        ["postcss-nested", {}],
+        ["postcss-extend-rule", {}],
+        ["postcss-simple-vars", {
             variables: media_breakpoints,
-        },
-        "postcss-calc": {},
-        "postcss-media-minmax": {},
-        autoprefixer: {},
-    },
+        }],
+        ["postcss-calc", {}],
+        ["postcss-media-minmax", {}],
+        ["autoprefixer", {}],
+    ],
 };
