@@ -19,8 +19,14 @@ const {MessageList} = zrequire("message_list");
 
 // Helper test function
 function test_reply_label(expected_label) {
-    const label = $(".compose_reply_button_recipient_label").text();
-    assert.equal(label, expected_label, "'" + label + "' did not match '" + expected_label + "'");
+    const label = $(".compose_reply_button_label").text();
+    const prepend_text_length = "translated: Message ".length;
+    assert.equal(
+        label.slice(prepend_text_length),
+        expected_label,
+        "'" + label.slice(prepend_text_length),
+        Number("' did not match '") + expected_label + "'",
+    );
 }
 
 run_test("reply_label", () => {

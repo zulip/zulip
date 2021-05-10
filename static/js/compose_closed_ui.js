@@ -1,8 +1,13 @@
 import $ from "jquery";
 
 import * as compose_actions from "./compose_actions";
+import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as popovers from "./popovers";
+
+function set_reply_button_label(label) {
+    $(".compose_reply_button_label").text(label);
+}
 
 export function hide_reply_button() {
     $(".reply_button_container").hide();
@@ -24,7 +29,7 @@ export function update_reply_recipient_label(message) {
             recipient_label = message.display_reply_to;
         }
     }
-    $(".compose_reply_button_recipient_label").text(recipient_label);
+    set_reply_button_label($t({defaultMessage: "Message {recipient_label}"}, {recipient_label}));
 }
 
 export function initialize() {
