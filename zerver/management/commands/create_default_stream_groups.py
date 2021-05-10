@@ -14,7 +14,7 @@ Create default stream groups which the users can choose during sign up.
 """
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        self.add_realm_args(parser, True)
+        self.add_realm_args(parser, required=True)
 
         parser.add_argument(
             "-n",

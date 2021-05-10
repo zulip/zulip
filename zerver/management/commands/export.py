@@ -110,7 +110,7 @@ class Command(ZulipBaseCommand):
             action="store_true",
             help="Automatically delete the local tarball after a successful export",
         )
-        self.add_realm_args(parser, True)
+        self.add_realm_args(parser, required=True)
 
     def handle(self, *args: Any, **options: Any) -> None:
         realm = self.get_realm(options)

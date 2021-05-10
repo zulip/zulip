@@ -12,7 +12,7 @@ class Command(ZulipBaseCommand):
         parser.add_argument(
             "--redirect_url", metavar="<redirect_url>", help="URL to which the realm has moved"
         )
-        self.add_realm_args(parser, True)
+        self.add_realm_args(parser, required=True)
 
     def handle(self, *args: Any, **options: str) -> None:
         realm = self.get_realm(options)

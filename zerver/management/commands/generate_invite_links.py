@@ -24,7 +24,7 @@ class Command(ZulipBaseCommand):
             nargs="*",
             help="email of users to generate an activation link for",
         )
-        self.add_realm_args(parser, True)
+        self.add_realm_args(parser, required=True)
 
     def handle(self, *args: Any, **options: Any) -> None:
         duplicates = False

@@ -53,7 +53,7 @@ Omit both <email> and <full name> for interactive user creation.
             help="full name of new user",
         )
         self.add_realm_args(
-            parser, True, "The name of the existing realm to which to add the user."
+            parser, required=True, help="The name of the existing realm to which to add the user."
         )
 
     def handle(self, *args: Any, **options: Any) -> None:

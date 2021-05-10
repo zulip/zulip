@@ -35,7 +35,7 @@ Example: ./manage.py realm_filters --realm=zulip --op=show
             nargs="?",
             help="format string to substitute",
         )
-        self.add_realm_args(parser, True)
+        self.add_realm_args(parser, required=True)
 
     def handle(self, *args: Any, **options: str) -> None:
         realm = self.get_realm(options)

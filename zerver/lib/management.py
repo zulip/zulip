@@ -45,7 +45,7 @@ class ZulipBaseCommand(BaseCommand):
         return parser
 
     def add_realm_args(
-        self, parser: ArgumentParser, required: bool = False, help: Optional[str] = None
+        self, parser: ArgumentParser, *, required: bool = False, help: Optional[str] = None
     ) -> None:
         if help is None:
             help = """The numeric or string ID (subdomain) of the Zulip organization to modify.

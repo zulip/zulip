@@ -40,7 +40,7 @@ ONLY perform this on customer request from an authorized person.
             action="store_false",
             help="Remove can_forge_sender or can_create_users permission.",
         )
-        self.add_realm_args(parser, True)
+        self.add_realm_args(parser, required=True)
 
     def handle(self, *args: Any, **options: Any) -> None:
         email = options["email"]

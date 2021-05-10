@@ -12,7 +12,7 @@ class Command(ZulipBaseCommand):
 realms used for testing; consider using deactivate_realm instead."""
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        self.add_realm_args(parser, True)
+        self.add_realm_args(parser, required=True)
 
     def handle(self, *args: Any, **options: str) -> None:
         realm = self.get_realm(options)
