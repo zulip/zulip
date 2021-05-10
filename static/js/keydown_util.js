@@ -8,6 +8,10 @@ const keys = {
     38: "up_arrow",
     39: "right_arrow",
     40: "down_arrow",
+    72: "vim_left",
+    74: "vim_down",
+    75: "vim_up",
+    76: "vim_right",
 };
 
 export function handle(opts) {

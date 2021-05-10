@@ -70,6 +70,12 @@ export class SettingsPanelMenu {
                 enter_key: () => this.enter_panel(),
                 up_arrow: () => this.prev(),
                 down_arrow: () => this.next(),
+
+                // Binding vim keys as well
+                vim_left: toggler.maybe_go_left,
+                vim_right: toggler.maybe_go_right,
+                vim_up: () => this.prev(),
+                vim_down: () => this.next(),
             },
         });
     }
