@@ -308,6 +308,18 @@ export function safe_full_names(user_ids) {
     return names.join(", ");
 }
 
+export function get_display_full_names(user_ids) {
+    return user_ids.map((user_id) => {
+        const person = get_by_user_id(user_id);
+        if (!person) {
+            blueslip.error("Unknown user id " + user_id);
+            return "?";
+        }
+
+        return person.full_name;
+    });
+}
+
 export function get_full_name(user_id) {
     return people_by_user_id_dict.get(user_id).full_name;
 }

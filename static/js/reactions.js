@@ -154,9 +154,9 @@ export function process_reaction_click(message_id, local_id) {
 }
 
 function generate_title(emoji_name, user_ids) {
-    const usernames = user_ids
-        .filter((user_id) => user_id !== page_params.user_id)
-        .map((user_id) => people.get_by_user_id(user_id).full_name);
+    const usernames = people.get_display_full_names(
+        user_ids.filter((user_id) => user_id !== page_params.user_id),
+    );
     const current_user_reacted = user_ids.length !== usernames.length;
 
     const context = {

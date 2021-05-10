@@ -405,6 +405,23 @@ test_people("safe_full_names", () => {
     assert.equal(names, "Me Myself, Isaac Newton");
 });
 
+test_people("get_display_full_names", () => {
+    people.initialize_current_user(me.user_id);
+    people.add_active_user(steven);
+    people.add_active_user(bob);
+    people.add_active_user(charles);
+    const names = people.get_display_full_names([
+        me.user_id,
+        steven.user_id,
+        bob.user_id,
+        charles.user_id,
+    ]);
+
+    // This doesn't do anything special for the current user. The caller has
+    // to take care of such cases and do the appropriate.
+    assert.deepEqual(names, ["Me Myself", "Steven", "Bob van Roberts", "Charles Dickens"]);
+});
+
 test_people("my_custom_profile_data", () => {
     const person = people.get_by_email(me.email);
     person.profile_data = {3: "My address", 4: "My phone number"};
