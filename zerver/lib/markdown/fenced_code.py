@@ -168,7 +168,7 @@ class FencedCodeExtension(Extension):
 class ZulipBaseHandler:
     def __init__(
         self,
-        processor: Any,
+        processor: "FencedBlockPreprocessor",
         output: MutableSequence[str],
         fence: Optional[str] = None,
     ) -> None:
@@ -202,7 +202,7 @@ class ZulipBaseHandler:
 
 
 def generic_handler(
-    processor: Any,
+    processor: "FencedBlockPreprocessor",
     output: MutableSequence[str],
     fence: str,
     lang: str,
@@ -222,7 +222,7 @@ def generic_handler(
 
 
 def check_for_new_fence(
-    processor: Any,
+    processor: "FencedBlockPreprocessor",
     output: MutableSequence[str],
     line: str,
     run_content_validators: bool = False,
@@ -246,7 +246,7 @@ def check_for_new_fence(
 class OuterHandler(ZulipBaseHandler):
     def __init__(
         self,
-        processor: Any,
+        processor: "FencedBlockPreprocessor",
         output: MutableSequence[str],
         run_content_validators: bool = False,
         default_language: Optional[str] = None,
@@ -264,7 +264,7 @@ class OuterHandler(ZulipBaseHandler):
 class CodeHandler(ZulipBaseHandler):
     def __init__(
         self,
-        processor: Any,
+        processor: "FencedBlockPreprocessor",
         output: MutableSequence[str],
         fence: str,
         lang: str,
@@ -288,7 +288,7 @@ class CodeHandler(ZulipBaseHandler):
 class QuoteHandler(ZulipBaseHandler):
     def __init__(
         self,
-        processor: Any,
+        processor: "FencedBlockPreprocessor",
         output: MutableSequence[str],
         fence: str,
         default_language: Optional[str] = None,
@@ -318,7 +318,11 @@ class QuoteHandler(ZulipBaseHandler):
 
 class SpoilerHandler(ZulipBaseHandler):
     def __init__(
-        self, processor: Any, output: MutableSequence[str], fence: str, spoiler_header: str
+        self,
+        processor: "FencedBlockPreprocessor",
+        output: MutableSequence[str],
+        fence: str,
+        spoiler_header: str,
     ) -> None:
         self.spoiler_header = spoiler_header
         super().__init__(processor, output, fence)
