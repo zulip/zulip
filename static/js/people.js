@@ -1339,6 +1339,13 @@ export function is_my_user_id(user_id) {
     return user_id === my_user_id;
 }
 
+export function is_user_faded(elem) {
+    if (elem.closest("li").hasClass("user-fade")) {
+        return true;
+    }
+    return false;
+}
+
 export function initialize(my_user_id, params) {
     for (const person of params.realm_users) {
         add_active_user(person);

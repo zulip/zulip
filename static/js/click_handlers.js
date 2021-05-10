@@ -589,7 +589,7 @@ export function initialize() {
         e.stopPropagation();
         const elem = $(e.currentTarget).closest(".user_sidebar_entry").find(".user-presence-link");
         const user_id_string = elem.attr("data-user-id");
-        const title_data = buddy_data.get_title_data(user_id_string, false);
+        const title_data = buddy_data.get_title_data(user_id_string, false, elem);
         do_render_buddy_list_tooltip(elem.parent(), title_data);
     });
 
@@ -601,7 +601,7 @@ export function initialize() {
         // This converts from 'true' in the DOM to true.
         const is_group = JSON.parse(elem.attr("data-is-group"));
 
-        const title_data = buddy_data.get_title_data(user_ids_string, is_group);
+        const title_data = buddy_data.get_title_data(user_ids_string, is_group, elem);
         do_render_buddy_list_tooltip(elem, title_data);
     });
 

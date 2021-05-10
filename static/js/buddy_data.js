@@ -190,7 +190,7 @@ function get_last_seen(active_status, last_seen) {
     return last_seen_text;
 }
 
-export function get_title_data(user_ids_string, is_group) {
+export function get_title_data(user_ids_string, is_group, elem) {
     if (is_group === true) {
         // For groups, just return a string with recipient names.
         return {
@@ -233,6 +233,7 @@ export function get_title_data(user_ids_string, is_group) {
     const active_status = presence.get_status(user_id);
     const last_seen = user_last_seen_time_status(user_id);
     const is_my_user = people.is_my_user_id(user_id);
+    const is_user_faded = people.is_user_faded(elem);
 
     // Users has a status.
     if (user_status.get_status_text(user_id)) {
@@ -241,6 +242,7 @@ export function get_title_data(user_ids_string, is_group) {
             second_line: user_status.get_status_text(user_id),
             third_line: get_last_seen(active_status, last_seen),
             show_you: is_my_user,
+            show_tooltip: is_user_faded,
         };
     }
 
@@ -250,6 +252,7 @@ export function get_title_data(user_ids_string, is_group) {
         second_line: get_last_seen(active_status, last_seen),
         third_line: "",
         show_you: is_my_user,
+        show_tooltip: is_user_faded,
     };
 }
 
