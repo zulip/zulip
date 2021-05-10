@@ -1,9 +1,11 @@
 import datetime
 from typing import List
 
+import responses
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import get_active_presence_idle_user_ids
+from zerver.lib.actions import get_active_presence_idle_user_ids, get_client
+from zerver.lib.message import access_message
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import (
     Message,
@@ -120,3 +122,86 @@ class TestBulkGetHuddleUserIds(ZulipTestCase):
 
     def test_bulk_get_huddle_user_ids_empty_list(self) -> None:
         self.assertEqual(bulk_get_huddle_user_ids([]), {})
+
+
+class TestServiceBotAccessMessage(ZulipTestCase):
+    def create_outgoing_webhook_bot(self, bot_owner: UserProfile) -> UserProfile:
+        return self.create_test_bot(
+            "outgoing-webhook",
+            bot_owner,
+            "Outgoing Webhook Bot",
+            bot_type=UserProfile.OUTGOING_WEBHOOK_BOT,
+            service_name="foo-service",
+            payload_url='"https://bot.example.com"',
+        )
+
+    def create_embedded_bot(self, bot_owner: UserProfile) -> UserProfile:
+        return self.create_test_bot(
+            "embedded-bot",
+            bot_owner,
+            "Embedded Bot",
+            bot_type=UserProfile.EMBEDDED_BOT,
+            service_name="helloworld",
+        )
+
+    @responses.activate
+    def test_outgoing_webhook_bot_access_private_message(self) -> None:
+        bot_owner = self.example_user("othello")
+        bot = self.create_outgoing_webhook_bot(bot_owner)
+
+        responses.add("POST", "https://bot.example.com", json={"content": "beep boop"})
+
+        with self.assertLogs(level="INFO") as logs:
+            self.send_personal_message(bot_owner, bot, content="foo")
+
+        self.assert_length(responses.calls, 1)
+        self.assert_length(logs.output, 1)
+        self.assertIn(f"Outgoing webhook request from {bot.id}@zulip took ", logs.output[0])
+
+        last_message = self.get_last_message()
+        self.assertIsNotNone(access_message(bot, last_message.id))
+        second_to_last_message = self.get_second_to_last_message()
+        self.assertIsNotNone(access_message(bot, second_to_last_message.id))
+
+    @responses.activate
+    def test_outgoing_webhook_bot_access_huddle_message(self) -> None:
+        bot_owner = self.example_user("othello")
+        bot = self.create_outgoing_webhook_bot(bot_owner)
+        other_user = self.example_user("hamlet")
+
+        responses.add("POST", "https://bot.example.com", json={"content": "beep boop"})
+
+        with self.assertLogs(level="INFO") as logs:
+            self.send_huddle_message(bot_owner, [bot, other_user], "bar")
+
+        self.assert_length(responses.calls, 1)
+        self.assert_length(logs.output, 1)
+        self.assertIn(f"Outgoing webhook request from {bot.id}@zulip took ", logs.output[0])
+
+        last_message = self.get_last_message()
+        self.assertIsNotNone(access_message(bot, last_message.id))
+        second_to_last_message = self.get_second_to_last_message()
+        self.assertIsNotNone(access_message(bot, second_to_last_message.id))
+
+    def test_embedded_bot_access_private_message(self) -> None:
+        bot_owner = self.example_user("othello")
+        bot = self.create_embedded_bot(bot_owner)
+
+        self.send_personal_message(bot_owner, bot, content="foo")
+
+        last_message = self.get_last_message()
+        self.assertIsNotNone(access_message(bot, last_message.id))
+        second_to_last_message = self.get_second_to_last_message()
+        self.assertIsNotNone(access_message(bot, second_to_last_message.id))
+
+    def test_embedded_bot_access_huddle_message(self) -> None:
+        bot_owner = self.example_user("othello")
+        bot = self.create_embedded_bot(bot_owner)
+        other_user = self.example_user("hamlet")
+
+        self.send_huddle_message(bot_owner, [bot, other_user], "bar")
+
+        last_message = self.get_last_message()
+        self.assertIsNotNone(access_message(bot, last_message.id))
+        second_to_last_message = self.get_second_to_last_message()
+        self.assertIsNotNone(access_message(bot, second_to_last_message.id))

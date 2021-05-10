@@ -51,6 +51,7 @@ from zerver.models import (
     UserMessage,
     UserProfile,
     get_display_recipient_by_id,
+    get_huddle_user_ids,
     get_usermessage_by_message_id,
     query_for_ids,
 )
@@ -683,6 +684,7 @@ def access_message(
     (1) You received or have previously accessed via starring
         (aka have a UserMessage row for).
     (2) Was sent to a public stream in your realm.
+    (3) You received/sent the PM or group PM as a service bot.
 
     We produce consistent, boring error messages to avoid leaking any
     information from a security perspective.
@@ -772,6 +774,21 @@ def has_message_access(
     # If you have a user_message object, you have access.
     if has_user_message:
         return True
+    elif (
+        user_profile.bot_type == UserProfile.EMBEDDED_BOT
+        or user_profile.bot_type == UserProfile.OUTGOING_WEBHOOK_BOT
+    ):
+        #  For service bots that don't have UserMessage rows, we handle access to private message differently
+        if message.recipient.type == Recipient.PERSONAL:
+            # Bots can access a message that is directly sent to/by the bot
+            return (
+                message.recipient_id == user_profile.recipient.id
+                or message.sender_id == user_profile.id
+            )
+
+        if message.recipient.type == Recipient.HUDDLE:
+            # Bots can access a message that is sent in a private group
+            return user_profile.id in get_huddle_user_ids(message.recipient)
 
     if message.recipient.type != Recipient.STREAM:
         # You can't access private messages you didn't receive
