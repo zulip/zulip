@@ -2144,7 +2144,7 @@ nav {
     vertical-align: top;
 
     width: 50px;
-    padding: 20px 30px;
+    padding: 18px 30px;
     border-radius: 70px;
 
     color: hsl(0, 0%, 80%);
@@ -2162,7 +2162,11 @@ nav {
 
 .portico-landing.apps .other-apps .apps .icon.fa-mobile-phone {
     font-size: 4em;
-    padding: 11.5px 27px;
+    padding: 14px 30px;
+}
+
+.portico-landing.apps .other-apps .apps .icon.fa-terminal {
+    padding: 12px 30px;
 }
 
 .portico-landing.apps .other-apps .apps .icon.fa-mobile-phone::after {
