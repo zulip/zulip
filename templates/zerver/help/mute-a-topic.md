@@ -38,15 +38,33 @@ Follow the same procedure to unmute the topic.
 
 Follow the same procedure to unmute the topic.
 
+### From the slashed bell icon
+
+{start_tabs}
+
+1. Go to the **Recent topics** or find the recipient bar of the topic that you wish
+   to mute.
+
+2. Hover over the slashed bell icon (<i class="fa fa-bell-slash"></i>)
+   and click on it.
+
+{end_tabs}
+
+Follow the same procedure to unmute the topic through the recipient bar.
+
+Mark **Include muted** as checked and follow the same procedure to
+unmute the topic through **Recent topics**.
+
 ### See your list of muted topics
 
 {start_tabs}
 
 {settings_tab|muted-topics}
 
-{end_tabs}
+!!! tip ""
+    Click **Unmute** to unmute any muted topics under the **Actions** column.
 
-From there, you can also unmute any muted topics.
+{end_tabs}
 
 ## Related articles
 
