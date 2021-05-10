@@ -5,7 +5,7 @@ import type {Page} from "puppeteer";
 import common from "../puppeteer_lib/common";
 
 type Playground = {
-    name: string;
+    playground_name: string;
     pygments_language: string;
     url_prefix: string;
 };
@@ -34,7 +34,7 @@ async function _add_playground_and_return_status(page: Page, payload: Playground
 async function test_successful_playground_creation(page: Page): Promise<void> {
     const payload = {
         pygments_language: "Python",
-        name: "Python3 playground",
+        playground_name: "Python3 playground",
         url_prefix: "https://python.example.com",
     };
     const status = await _add_playground_and_return_status(page, payload);
@@ -60,7 +60,7 @@ async function test_successful_playground_creation(page: Page): Promise<void> {
 async function test_invalid_playground_parameters(page: Page): Promise<void> {
     const payload = {
         pygments_language: "Python",
-        name: "Python3 playground",
+        playground_name: "Python3 playground",
         url_prefix: "not_a_url",
     };
     let status = await _add_playground_and_return_status(page, payload);
