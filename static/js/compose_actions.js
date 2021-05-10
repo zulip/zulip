@@ -299,6 +299,9 @@ export function respond_to_message(opts) {
     if (recent_topics.is_visible()) {
         message = recent_topics.get_focused_row_message();
         if (message === undefined) {
+            // Open empty compose with nothing pre-filled since
+            // user is not focused on any table row.
+            compose_actions.start("stream", {trigger: "recent_topics_nofocus"});
             return;
         }
     } else {

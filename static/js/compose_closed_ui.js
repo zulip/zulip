@@ -9,14 +9,8 @@ function set_reply_button_label(label) {
     $(".compose_reply_button_label").text(label);
 }
 
-export function hide_reply_button() {
-    $(".reply_button_container").hide();
-    $("#compose_buttons").css("justify-content", "flex-end");
-}
-
-export function show_reply_button() {
-    $(".reply_button_container").show();
-    $("#compose_buttons").css("justify-content", "flex-start");
+export function set_standard_text_for_reply_button() {
+    set_reply_button_label($t({defaultMessage: "Compose message"}));
 }
 
 export function update_reply_recipient_label(message) {
