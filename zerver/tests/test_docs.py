@@ -179,7 +179,7 @@ class DocPageTest(ZulipTestCase):
 
         # Features
         url = "/features/"
-        title = '<meta property="og:title" content="Zulip Features" />'
+        title = '<meta property="og:title" content="Zulip features" />'
         description = '<meta property="og:description" content="First class threading'
         self._test(url, title, doc_html_str=True)
         self._test(url, description, doc_html_str=True)

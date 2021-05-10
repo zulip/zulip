@@ -13,10 +13,10 @@ from scrapy.utils.url import url_has_any_extension
 from twisted.python.failure import Failure
 
 EXCLUDED_DOMAINS = [
-    # Returns 429 Rate-Limited Errors
+    # Returns 429 rate-limiting errors
     "github.com",
     "gist.github.com",
-    # Returns 503 Errors
+    # Returns 503 errors
     "www.amazon.com",
     "gitlab.com",
 ]

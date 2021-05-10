@@ -350,7 +350,7 @@ def reorder_realm_profile_fields(client: Client) -> None:
 def create_realm_profile_field(client: Client) -> None:
     # {code_example|start}
     # Create a custom profile field in the user's organization.
-    request = {"name": "Phone", "hint": "Contact No.", "field_type": 1}
+    request = {"name": "Phone", "hint": "Contact no.", "field_type": 1}
 
     result = client.call_endpoint(url="/realm/profile_fields", method="POST", request=request)
     # {code_example|end}

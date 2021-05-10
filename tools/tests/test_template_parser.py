@@ -106,7 +106,7 @@ class ParserTest(unittest.TestCase):
             {{# foo
         """
         self._assert_validate_error(
-            '''Tag missing "}}" at Line 2 Col 13:"{{# foo
+            '''Tag missing "}}" at line 2 col 13:"{{# foo
         "''',
             text=my_html,
         )
@@ -115,14 +115,14 @@ class ParserTest(unittest.TestCase):
         my_html = """
             {{# foo }
         """
-        self._assert_validate_error('Tag missing "}}" at Line 2 Col 13:"{{# foo }\n"', text=my_html)
+        self._assert_validate_error('Tag missing "}}" at line 2 col 13:"{{# foo }\n"', text=my_html)
 
     def test_validate_incomplete_django_tag_1(self) -> None:
         my_html = """
             {% foo
         """
         self._assert_validate_error(
-            '''Tag missing "%}" at Line 2 Col 13:"{% foo
+            '''Tag missing "%}" at line 2 col 13:"{% foo
         "''',
             text=my_html,
         )
@@ -131,14 +131,14 @@ class ParserTest(unittest.TestCase):
         my_html = """
             {% foo %
         """
-        self._assert_validate_error('Tag missing "%}" at Line 2 Col 13:"{% foo %\n"', text=my_html)
+        self._assert_validate_error('Tag missing "%}" at line 2 col 13:"{% foo %\n"', text=my_html)
 
     def test_validate_incomplete_html_tag_1(self) -> None:
         my_html = """
             <b
         """
         self._assert_validate_error(
-            '''Tag missing ">" at Line 2 Col 13:"<b
+            '''Tag missing ">" at line 2 col 13:"<b
         "''',
             text=my_html,
         )
@@ -151,12 +151,12 @@ class ParserTest(unittest.TestCase):
             <a href=""
         """
         self._assert_validate_error(
-            '''Tag missing ">" at Line 2 Col 13:"<a href=""
+            '''Tag missing ">" at line 2 col 13:"<a href=""
         "''',
             text=my_html1,
         )
         self._assert_validate_error(
-            '''Unbalanced Quotes at Line 2 Col 13:"<a href="
+            '''Unbalanced quotes at line 2 col 13:"<a href="
         "''',
             text=my_html,
         )

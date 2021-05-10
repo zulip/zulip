@@ -137,7 +137,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
 
         log_output = []
         for user in users:
-            log_output.append(f"INFO:{logger_string}:Soft Reactivated user {user.id}")
+            log_output.append(f"INFO:{logger_string}:Soft reactivated user {user.id}")
 
         self.assertEqual(m.output, log_output)
 
@@ -332,7 +332,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
             ],
         )
 
-        message = "Test Message 1"
+        message = "Test message 1"
         message_id = self.send_stream_message(sender, stream_name, message, topic_name)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         idle_user_msg_count = len(idle_user_msg_list)
@@ -390,7 +390,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
 
         # Test that add_missing_messages() in simplest case of adding a
         # message for which UserMessage row doesn't exist for this user.
-        sent_message = send_fake_message("Test Message 1", stream)
+        sent_message = send_fake_message("Test message 1", stream)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         idle_user_msg_count = len(idle_user_msg_list)
         self.assertNotEqual(idle_user_msg_list[-1], sent_message)
@@ -407,7 +407,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         # already present in the UserMessage table. This test works on the
         # fact that previous test just above this added a message but didn't
         # updated the last_active_message_id field for the user.
-        sent_message = send_fake_message("Test Message 2", stream)
+        sent_message = send_fake_message("Test message 2", stream)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         idle_user_msg_count = len(idle_user_msg_list)
         self.assertNotEqual(idle_user_msg_list[-1], sent_message)
@@ -425,12 +425,12 @@ class SoftDeactivationMessageTest(ZulipTestCase):
 
         # Test for a public stream.
         sent_message_list = []
-        sent_message_list.append(send_fake_message("Test Message 3", stream))
+        sent_message_list.append(send_fake_message("Test message 3", stream))
         # Alter subscription to stream.
         self.unsubscribe(long_term_idle_user, stream_name)
-        send_fake_message("Test Message 4", stream)
+        send_fake_message("Test message 4", stream)
         self.subscribe(long_term_idle_user, stream_name)
-        sent_message_list.append(send_fake_message("Test Message 5", stream))
+        sent_message_list.append(send_fake_message("Test message 5", stream))
         sent_message_list.reverse()
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         idle_user_msg_count = len(idle_user_msg_list)
@@ -449,16 +449,16 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         # Test consecutive subscribe/unsubscribe in a public stream
         sent_message_list = []
 
-        sent_message_list.append(send_fake_message("Test Message 6", stream))
+        sent_message_list.append(send_fake_message("Test message 6", stream))
         # Unsubscribe from stream and then immediately subscribe back again.
         self.unsubscribe(long_term_idle_user, stream_name)
         self.subscribe(long_term_idle_user, stream_name)
-        sent_message_list.append(send_fake_message("Test Message 7", stream))
+        sent_message_list.append(send_fake_message("Test message 7", stream))
         # Again unsubscribe from stream and send a message.
         # This will make sure that if initially in a unsubscribed state
         # a consecutive subscribe/unsubscribe doesn't misbehave.
         self.unsubscribe(long_term_idle_user, stream_name)
-        send_fake_message("Test Message 8", stream)
+        send_fake_message("Test message 8", stream)
         # Do a subscribe and unsubscribe immediately.
         self.subscribe(long_term_idle_user, stream_name)
         self.unsubscribe(long_term_idle_user, stream_name)
@@ -484,7 +484,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         do_soft_activate_users([long_term_idle_user])
         self.subscribe(long_term_idle_user, stream_name)
         # Send a real message to update last_active_message_id
-        sent_message_id = self.send_stream_message(sender, stream_name, "Test Message 9")
+        sent_message_id = self.send_stream_message(sender, stream_name, "Test message 9")
         self.unsubscribe(long_term_idle_user, stream_name)
         # Soft deactivate and send another message to the unsubscribed stream.
         with self.assertLogs(logger_string, level="INFO") as info_logs:
@@ -496,7 +496,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
                 f"INFO:{logger_string}:Soft-deactivated batch of 1 users; 0 remain to process",
             ],
         )
-        send_fake_message("Test Message 10", stream)
+        send_fake_message("Test message 10", stream)
 
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         idle_user_msg_count = len(idle_user_msg_list)
@@ -513,18 +513,18 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         # Note: At this point in this test we have long_term_idle_user
         # unsubscribed from the 'Denmark' stream.
 
-        # Test for a Private Stream.
+        # Test for a private stream.
         stream_name = "Core"
         private_stream = self.make_stream("Core", invite_only=True)
         self.subscribe(self.example_user("iago"), stream_name)
         sent_message_list = []
-        send_fake_message("Test Message 11", private_stream)
+        send_fake_message("Test message 11", private_stream)
         self.subscribe(self.example_user("hamlet"), stream_name)
-        sent_message_list.append(send_fake_message("Test Message 12", private_stream))
+        sent_message_list.append(send_fake_message("Test message 12", private_stream))
         self.unsubscribe(long_term_idle_user, stream_name)
-        send_fake_message("Test Message 13", private_stream)
+        send_fake_message("Test message 13", private_stream)
         self.subscribe(long_term_idle_user, stream_name)
-        sent_message_list.append(send_fake_message("Test Message 14", private_stream))
+        sent_message_list.append(send_fake_message("Test message 14", private_stream))
         sent_message_list.reverse()
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         idle_user_msg_count = len(idle_user_msg_list)
@@ -626,7 +626,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         # doesn't end up creating UserMessage row for deactivated user.
         general_user_msg_count = len(get_user_messages(cordelia))
         soft_deactivated_user_msg_count = len(get_user_messages(long_term_idle_user))
-        message = "Test Message 1"
+        message = "Test message 1"
         send_stream_message(message)
         assert_last_um_content(long_term_idle_user, message, negate=True)
         assert_um_count(long_term_idle_user, soft_deactivated_user_msg_count)

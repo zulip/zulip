@@ -475,7 +475,7 @@ class CsrfFailureError(JsonableError):
 
     @staticmethod
     def msg_format() -> str:
-        return _("CSRF Error: {reason}")
+        return _("CSRF error: {reason}")
 
 
 def csrf_failure(request: HttpRequest, reason: str = "") -> HttpResponse:

@@ -5,7 +5,7 @@ from zerver.webhooks.bitbucket2.view import get_user_info
 
 TOPIC = "Repository name"
 TOPIC_PR_EVENTS = "Repository name / PR #1 new commit"
-TOPIC_ISSUE_EVENTS = "Repository name / Issue #1 Bug"
+TOPIC_ISSUE_EVENTS = "Repository name / issue #1 Bug"
 TOPIC_BRANCH_EVENTS = "Repository name / master"
 
 
@@ -91,27 +91,27 @@ class Bitbucket2HookTests(WebhookTestCase):
         self.check_webhook("commit_status_changed", TOPIC, expected_message)
 
     def test_bitbucket2_on_issue_created_event(self) -> None:
-        expected_message = "Tomasz created [Issue #1](https://bitbucket.org/kolaszek/repository-name/issues/2/bug) (assigned to Tomasz):\n\n~~~ quote\nSuch a bug\n~~~"
+        expected_message = "Tomasz created [issue #1](https://bitbucket.org/kolaszek/repository-name/issues/2/bug) (assigned to Tomasz):\n\n~~~ quote\nSuch a bug\n~~~"
         self.check_webhook("issue_created", TOPIC_ISSUE_EVENTS, expected_message)
 
     def test_bitbucket2_on_issue_created_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic = "notifications"
-        expected_message = "Tomasz created [Issue #1 Bug](https://bitbucket.org/kolaszek/repository-name/issues/2/bug) (assigned to Tomasz):\n\n~~~ quote\nSuch a bug\n~~~"
+        expected_message = "Tomasz created [issue #1 Bug](https://bitbucket.org/kolaszek/repository-name/issues/2/bug) (assigned to Tomasz):\n\n~~~ quote\nSuch a bug\n~~~"
         self.check_webhook("issue_created", expected_topic, expected_message)
 
     def test_bitbucket2_on_issue_updated_event(self) -> None:
-        expected_message = "Tomasz updated [Issue #1](https://bitbucket.org/kolaszek/repository-name/issues/2/bug)."
+        expected_message = "Tomasz updated [issue #1](https://bitbucket.org/kolaszek/repository-name/issues/2/bug)."
         self.check_webhook("issue_updated", TOPIC_ISSUE_EVENTS, expected_message)
 
     def test_bitbucket2_on_issue_commented_event(self) -> None:
-        expected_message = "Tomasz [commented](https://bitbucket.org/kolaszek/repository-name/issues/2#comment-28973596) on [Issue #1](https://bitbucket.org/kolaszek/repository-name/issues/2/bug)."
+        expected_message = "Tomasz [commented](https://bitbucket.org/kolaszek/repository-name/issues/2#comment-28973596) on [issue #1](https://bitbucket.org/kolaszek/repository-name/issues/2/bug)."
         self.check_webhook("issue_commented", TOPIC_ISSUE_EVENTS, expected_message)
 
     def test_bitbucket2_on_issue_commented_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic = "notifications"
-        expected_message = "Tomasz [commented](https://bitbucket.org/kolaszek/repository-name/issues/2#comment-28973596) on [Issue #1 Bug](https://bitbucket.org/kolaszek/repository-name/issues/2/bug)."
+        expected_message = "Tomasz [commented](https://bitbucket.org/kolaszek/repository-name/issues/2#comment-28973596) on [issue #1 Bug](https://bitbucket.org/kolaszek/repository-name/issues/2/bug)."
         self.check_webhook("issue_commented", expected_topic, expected_message)
 
     def test_bitbucket2_on_pull_request_created_event(self) -> None:

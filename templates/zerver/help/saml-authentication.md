@@ -4,7 +4,7 @@ Zulip supports using SAML authentication for single sign-on, both when
 self-hosting or on the Zulip Cloud Plus plan.
 
 This page documents details on how to set up SAML authentication with
-Zulip with various common SAML Identity Providers.
+Zulip with various common SAML identity providers.
 
 ## Configure SAML with Okta
 

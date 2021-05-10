@@ -75,7 +75,7 @@ class SemaphoreHookTests(WebhookTestCase):
         expected_topic = "notifications/test-notifications"
         expected_message = """
 [Notifications](https://semaphore.semaphoreci.com/workflows/84383f37-d025-4811-b719-61c6acc92a1e) pipeline **failed**:
-* **Pull Request**: [Testing PR notifications](https://github.com/renderedtext/notifications/pull/3)
+* **Pull request**: [Testing PR notifications](https://github.com/renderedtext/notifications/pull/3)
 * **Branch**: test-notifications
 * **Author**: [radwo](https://github.com/radwo)
 """.strip()
@@ -87,7 +87,7 @@ class SemaphoreHookTests(WebhookTestCase):
         expected_topic = "notifications/test-notifications"
         expected_message = """
 [Notifications](https://semaphore.semaphoreci.com/workflows/84383f37-d025-4811-b719-61c6acc92a1e) pipeline **failed**:
-* **Pull Request**: Testing PR notifications (#3)
+* **Pull request**: Testing PR notifications (#3)
 * **Branch**: test-notifications
 * **Author**: radwo
 """.strip()

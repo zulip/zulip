@@ -828,7 +828,7 @@ export function deactivate(coming_from_recent_topics = false) {
       message_lists.home in it.
      */
     search.clear_search_form();
-    // Both All messages and Recent Topics have `undefined` filter.
+    // Both All messages and Recent topics have `undefined` filter.
     // Return if already in the All message narrow.
     if (narrow_state.filter() === undefined && !coming_from_recent_topics) {
         return;

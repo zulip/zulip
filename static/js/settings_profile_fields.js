@@ -114,7 +114,7 @@ function create_choice_row(container) {
 function clear_form_data() {
     $("#profile_field_name").val("").closest(".control-group").show();
     $("#profile_field_hint").val("").closest(".control-group").show();
-    // Set default type "Short Text" in field type dropdown
+    // Set default type "Short text" in field type dropdown
     $("#profile_field_type").val(field_types.SHORT_TEXT.id);
     // Clear data from select field form
     $("#profile_field_choices").html("");

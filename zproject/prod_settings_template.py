@@ -294,7 +294,7 @@ AUTH_LDAP_USER_ATTR_MAP = {
 ## based on your value for EXTERNAL_HOST.
 ## (3) For "scopes", select only "read_user", and create the application.
 ## (4) You'll end up on a page with the Application ID and Secret for
-## your new GitLab Application. Use the Application ID as
+## your new GitLab application. Use the Application ID as
 ## `SOCIAL_AUTH_GITLAB_KEY` here, and put the Secret in
 ## zulip-secrets.conf as `social_auth_gitlab_secret`.
 ## (5) If you are self-hosting GitLab, provide the URL of the
@@ -341,10 +341,10 @@ AUTH_LDAP_USER_ATTR_MAP = {
 # SOCIAL_AUTH_SUBDOMAIN = 'auth'
 
 ########
-## SAML Authentication
+## SAML authentication
 ##
 ## For SAML authentication, you will need to configure the settings
-## below using information from your SAML Identity Provider, as
+## below using information from your SAML identity provider, as
 ## explained in:
 ##
 ##     https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#saml
@@ -572,7 +572,7 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
 ## Controls the Zoom video call integration.  See:
 ## https://zulip.readthedocs.io/en/latest/production/video-calls.html
 #
-# VIDEO_ZOOM_CLIENT_ID = <your Zoom Client ID>
+# VIDEO_ZOOM_CLIENT_ID = <your Zoom client ID>
 
 ## Controls the Jitsi Meet video call integration.  By default, the
 ## integration uses the SaaS https://meet.jit.si server.  You can specify

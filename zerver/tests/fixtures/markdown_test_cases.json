@@ -112,8 +112,8 @@
     },
     {
       "name": "multiple_blockquote",
-      "input": "> Hello World!\n\n> Hello Universe!",
-      "expected_output": "<blockquote>\n<p>Hello World!</p>\n</blockquote>\n<blockquote>\n<p>Hello Universe!</p>\n</blockquote>"
+      "input": "> Hello world!\n\n> Hello universe!",
+      "expected_output": "<blockquote>\n<p>Hello world!</p>\n</blockquote>\n<blockquote>\n<p>Hello universe!</p>\n</blockquote>"
     },
     {
       "name": "multiple_blockquote",
@@ -165,28 +165,28 @@
     },
     {
       "name": "hashheading_enabled",
-      "input": "# Hello World",
-      "expected_output": "<h1>Hello World</h1>"
+      "input": "# Hello world",
+      "expected_output": "<h1>Hello world</h1>"
     },
     {
       "name": "hashheading_needs_spaces",
-      "input": "#Hello World",
-      "expected_output": "<p>#Hello World</p>"
+      "input": "#Hello world",
+      "expected_output": "<p>#Hello world</p>"
     },
     {
       "name": "hashheading_multiple_spaces",
-      "input": "#  Hello World",
-      "expected_output": "<h1>Hello World</h1>"
+      "input": "#  Hello world",
+      "expected_output": "<h1>Hello world</h1>"
     },
     {
       "name": "hashheading_6_levels",
-      "input": "###### Hello World",
-      "expected_output": "<h6>Hello World</h6>"
+      "input": "###### Hello world",
+      "expected_output": "<h6>Hello world</h6>"
     },
     {
       "name": "hashheading_7_levels",
-      "input": "####### Hello World",
-      "expected_output": "<p>####### Hello World</p>"
+      "input": "####### Hello world",
+      "expected_output": "<p>####### Hello world</p>"
     },
     {
       "name": "reference_links_disabled",
@@ -255,9 +255,9 @@
     },
     {
       "name": "ulist_hanging_multi",
-      "input": "Plain list\n* Alpha\n* Beta\n\nAnd Again:\n* A\n* B\n* C\n\nOnce more for feeling:\n* Q\n* E\n* D",
-      "expected_output": "<p>Plain list</p>\n<ul>\n<li>Alpha</li>\n<li>Beta</li>\n</ul>\n<p>And Again:</p>\n<ul>\n<li>A</li>\n<li>B</li>\n<li>C</li>\n</ul>\n<p>Once more for feeling:</p>\n<ul>\n<li>Q</li>\n<li>E</li>\n<li>D</li>\n</ul>",
-      "text_content": "Plain list\n\nAlpha\nBeta\n\nAnd Again:\n\nA\nB\nC\n\nOnce more for feeling:\n\nQ\nE\nD\n"
+      "input": "Plain list\n* Alpha\n* Beta\n\nAnd again:\n* A\n* B\n* C\n\nOnce more for feeling:\n* Q\n* E\n* D",
+      "expected_output": "<p>Plain list</p>\n<ul>\n<li>Alpha</li>\n<li>Beta</li>\n</ul>\n<p>And again:</p>\n<ul>\n<li>A</li>\n<li>B</li>\n<li>C</li>\n</ul>\n<p>Once more for feeling:</p>\n<ul>\n<li>Q</li>\n<li>E</li>\n<li>D</li>\n</ul>",
+      "text_content": "Plain list\n\nAlpha\nBeta\n\nAnd again:\n\nA\nB\nC\n\nOnce more for feeling:\n\nQ\nE\nD\n"
     },
     {
       "name": "ulist_hanging_quoted",
@@ -338,8 +338,8 @@
     },
     {
       "name": "emphasis_with_html",
-      "input": "*<h1>Hello World</h1>*",
-      "expected_output": "<p><em>&lt;h1&gt;Hello World&lt;/h1&gt;</em></p>"
+      "input": "*<h1>Hello world</h1>*",
+      "expected_output": "<p><em>&lt;h1&gt;Hello world&lt;/h1&gt;</em></p>"
     },
     {
       "name": "underscore_strong_disabled",
@@ -366,8 +366,8 @@
     },
     {
       "name": "strong_with_html",
-      "input": "**<h1>Hello World</h1>**",
-      "expected_output": "<p><strong>&lt;h1&gt;Hello World&lt;/h1&gt;</strong></p>"
+      "input": "**<h1>Hello world</h1>**",
+      "expected_output": "<p><strong>&lt;h1&gt;Hello world&lt;/h1&gt;</strong></p>"
     },
     {
       "name": "numbered_list",
@@ -492,9 +492,9 @@
     },
     {
       "name": "tables",
-      "input": "This is a table:\n\nFirst Header  | Second Header\n------------- | -------------\nContent Cell  | Content Cell\nContent Cell  | Content Cell\n",
-      "expected_output": "<p>This is a table:</p>\n<table>\n<thead>\n<tr>\n<th>First Header</th>\n<th>Second Header</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>Content Cell</td>\n<td>Content Cell</td>\n</tr>\n<tr>\n<td>Content Cell</td>\n<td>Content Cell</td>\n</tr>\n</tbody>\n</table>",
-      "text_content": "This is a table:\n\n\n\nFirst Header\nSecond Header\n\n\n\n\nContent Cell\nContent Cell\n\n\nContent Cell\nContent Cell\n\n\n"
+      "input": "This is a table:\n\nFirst header  | Second header\n------------- | -------------\nContent cell  | Content cell\nContent cell  | Content cell\n",
+      "expected_output": "<p>This is a table:</p>\n<table>\n<thead>\n<tr>\n<th>First header</th>\n<th>Second header</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>Content cell</td>\n<td>Content cell</td>\n</tr>\n<tr>\n<td>Content cell</td>\n<td>Content cell</td>\n</tr>\n</tbody>\n</table>",
+      "text_content": "This is a table:\n\n\n\nFirst header\nSecond header\n\n\n\n\nContent cell\nContent cell\n\n\nContent cell\nContent cell\n\n\n"
     },
     {
       "name": "multiline_strong",

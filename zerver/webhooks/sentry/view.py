@@ -230,7 +230,7 @@ def transform_webhook_payload(payload: Dict[str, Any]) -> Optional[Dict[str, Any
     """Attempt to use webhook payload for the notification.
 
     When the integration is configured as a webhook, instead of being added as
-    an Internal Integration, the payload is slightly different, but has all the
+    an internal integration, the payload is slightly different, but has all the
     required information for sending a notification. We transform this payload to
     look like the payload from a "properly configured" integration.
     """

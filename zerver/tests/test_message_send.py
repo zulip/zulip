@@ -1675,7 +1675,7 @@ class StreamMessagesTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
         hamlet = self.example_user("hamlet")
 
-        stream_name = "Test Stream"
+        stream_name = "Test stream"
 
         self.subscribe(hamlet, stream_name)
 
@@ -1715,7 +1715,7 @@ class StreamMessagesTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         realm = hamlet.realm
 
-        stream_name = "Test Stream"
+        stream_name = "Test stream"
 
         self.subscribe(hamlet, stream_name)
 

@@ -18,14 +18,14 @@ class GlobalPublicStreamTest(ZulipTestCase):
         self.assert_in_success_response(["This stream does not exist."], result)
 
     def test_non_web_public_stream(self) -> None:
-        test_stream = self.make_stream("Test Public Archives")
+        test_stream = self.make_stream("Test public archives")
         result = self.client_get(
             "/archive/streams/" + str(test_stream.id) + "/topics/notpublicglobalstream",
         )
         self.assert_in_success_response(["This stream does not exist."], result)
 
     def test_non_existant_topic(self) -> None:
-        test_stream = self.make_stream("Test Public Archives")
+        test_stream = self.make_stream("Test public archives")
         do_change_stream_web_public(test_stream, True)
         result = self.client_get(
             "/archive/streams/" + str(test_stream.id) + "/topics/nonexistenttopic",
@@ -33,13 +33,13 @@ class GlobalPublicStreamTest(ZulipTestCase):
         self.assert_in_success_response(["This topic does not exist."], result)
 
     def test_web_public_stream_topic(self) -> None:
-        test_stream = self.make_stream("Test Public Archives")
+        test_stream = self.make_stream("Test public archives")
         do_change_stream_web_public(test_stream, True)
 
         def send_msg_and_get_result(msg: str) -> HttpResponse:
             self.send_stream_message(
                 self.example_user("iago"),
-                "Test Public Archives",
+                "Test public archives",
                 msg,
                 "TopicGlobal",
             )
@@ -47,8 +47,8 @@ class GlobalPublicStreamTest(ZulipTestCase):
                 "/archive/streams/" + str(test_stream.id) + "/topics/TopicGlobal",
             )
 
-        result = send_msg_and_get_result("Test Message 1")
-        self.assert_in_success_response(["Test Message 1"], result)
+        result = send_msg_and_get_result("Test message 1")
+        self.assert_in_success_response(["Test message 1"], result)
         result = send_msg_and_get_result("/me goes testing.")
         self.assert_in_success_response(["goes testing."], result)
 
@@ -66,7 +66,7 @@ class GlobalPublicStreamTest(ZulipTestCase):
         self.assert_length(info.never_subscribed, 0)
 
         # Now add a second public stream
-        test_stream = self.make_stream("Test Public Archives")
+        test_stream = self.make_stream("Test public archives")
         do_change_stream_web_public(test_stream, True)
         public_streams = get_web_public_streams(realm)
         self.assert_length(public_streams, 2)
@@ -93,12 +93,12 @@ class WebPublicTopicHistoryTest(ZulipTestCase):
         self.assertEqual(history, [])
 
     def test_non_web_public_stream(self) -> None:
-        test_stream = self.make_stream("Test Public Archives")
+        test_stream = self.make_stream("Test public archives")
 
         self.send_stream_message(
             self.example_user("iago"),
-            "Test Public Archives",
-            "Test Message",
+            "Test public archives",
+            "Test message",
             "TopicGlobal",
         )
 
@@ -110,37 +110,37 @@ class WebPublicTopicHistoryTest(ZulipTestCase):
         self.assertEqual(history, [])
 
     def test_web_public_stream(self) -> None:
-        test_stream = self.make_stream("Test Public Archives")
+        test_stream = self.make_stream("Test public archives")
         do_change_stream_web_public(test_stream, True)
 
         self.send_stream_message(
             self.example_user("iago"),
-            "Test Public Archives",
-            "Test Message 3",
+            "Test public archives",
+            "Test message 3",
             topic_name="first_topic",
         )
         self.send_stream_message(
             self.example_user("iago"),
-            "Test Public Archives",
-            "Test Message",
+            "Test public archives",
+            "Test message",
             topic_name="TopicGlobal",
         )
         self.send_stream_message(
             self.example_user("iago"),
-            "Test Public Archives",
-            "Test Message 2",
+            "Test public archives",
+            "Test message 2",
             topic_name="topicglobal",
         )
         self.send_stream_message(
             self.example_user("iago"),
-            "Test Public Archives",
-            "Test Message 3",
+            "Test public archives",
+            "Test message 3",
             topic_name="second_topic",
         )
         self.send_stream_message(
             self.example_user("iago"),
-            "Test Public Archives",
-            "Test Message 4",
+            "Test public archives",
+            "Test message 4",
             topic_name="TopicGlobal",
         )
 

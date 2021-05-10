@@ -63,8 +63,8 @@ to understand when implementing an internationalized application:
   find your string.
 
 There's a lot of other interesting differences that are important for
-i18n (e.g. Zulip has a "Full Name" field rather than "First Name" and
-"Last Name" because different cultures order the surnames and given
+i18n (e.g. Zulip has a "full name" field rather than "first name" and
+"last name" because different cultures order the surnames and given
 names differently), but the above issues are likely to be relevant to
 most people working on Zulip.
 
@@ -175,8 +175,8 @@ ensure this, the error message passed to `json_error` and
 function, e.g.:
 
 ```
-json_error(_('English Text'))
-JsonableError(_('English Text'))
+json_error(_('English text'))
+JsonableError(_('English text'))
 ```
 
 If you're declaring a user-facing string at top level or in a class, you need to
@@ -215,7 +215,7 @@ To mark a string translatable in JavaScript files, pass it to the
 `intl.formatMessage` function, which we alias to `$t` in `intl.js`:
 
 ```js
-$t({defaultMessage: "English Text"})
+$t({defaultMessage: "English text"})
 ```
 
 The string to be translated must be a constant literal string, but
@@ -258,14 +258,14 @@ For translations in Handlebars templates we also use FormatJS, through two
 Handlebars [helpers][] that Zulip registers.  The syntax for simple strings is:
 
 ```
-{{t 'English Text' }}
+{{t 'English text' }}
 ```
 
 If you are passing a translated string to a Handlebars partial, you can use:
 
 ```
 {{> template_name
-    variable_name=(t 'English Text')
+    variable_name=(t 'English text')
     }}
 ```
 

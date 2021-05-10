@@ -21,7 +21,7 @@ class FreshpingHookTests(WebhookTestCase):
         expected_topic = "Test Check"
         expected_message = """
 https://example.com has just become unreachable.
-Error Code: 521.
+Error code: 521.
 """.strip()
         self.check_webhook("freshping_check_unreachable", expected_topic, expected_message)
 

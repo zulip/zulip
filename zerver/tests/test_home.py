@@ -980,7 +980,7 @@ class HomeTest(ZulipTestCase):
         # messages before deactivation they remain same way after activation.
         long_term_idle_user = self.example_user("hamlet")
         self.login_user(long_term_idle_user)
-        message = "Test Message 1"
+        message = "Test message 1"
         self.send_test_message(message)
         with queries_captured() as queries:
             self.assertEqual(self.soft_activate_and_get_unread_count(), 1)
@@ -1000,7 +1000,7 @@ class HomeTest(ZulipTestCase):
         )
 
         self.login_user(long_term_idle_user)
-        message = "Test Message 2"
+        message = "Test message 2"
         self.send_test_message(message)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assertNotEqual(idle_user_msg_list[-1].content, message)
@@ -1027,7 +1027,7 @@ class HomeTest(ZulipTestCase):
             ],
         )
 
-        message = "Test Message 1"
+        message = "Test message 1"
         self.send_test_message(message)
         self.login_user(long_term_idle_user)
         with queries_captured() as queries:
@@ -1038,7 +1038,7 @@ class HomeTest(ZulipTestCase):
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assertEqual(idle_user_msg_list[-1].content, message)
 
-        message = "Test Message 2"
+        message = "Test message 2"
         self.send_test_message(message)
         with queries_captured() as queries:
             self.assertEqual(self.soft_activate_and_get_unread_count(), 3)
@@ -1059,7 +1059,7 @@ class HomeTest(ZulipTestCase):
             ],
         )
 
-        message = "Test Message 3"
+        message = "Test message 3"
         self.send_test_message(message)
         self.login_user(long_term_idle_user)
         with queries_captured() as queries:
@@ -1070,7 +1070,7 @@ class HomeTest(ZulipTestCase):
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assertEqual(idle_user_msg_list[-1].content, message)
 
-        message = "Test Message 4"
+        message = "Test message 4"
         self.send_test_message(message)
         with queries_captured() as queries:
             self.assertEqual(self.soft_activate_and_get_unread_count(), 5)

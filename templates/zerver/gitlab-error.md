@@ -3,7 +3,7 @@ properly configured. To configure, please check the following:
 
 * You have added `{{ root_domain_uri }}/complete/gitlab/` as the callback
 URL in the OAuth application in GitLab. You can register OAuth apps at
-[GitLab Applications](https://gitlab.com/profile/applications).
+[GitLab applications](https://gitlab.com/profile/applications).
 
 * You have set `{{ client_id_key_name }}` in `{{ settings_path }}` and
 `social_auth_gitlab_secret` in `{{ secrets_path }}` with the values

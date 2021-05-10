@@ -157,7 +157,7 @@ your organization.
 
 ### Hundreds of integrations.
 
-Get events from GitHub, Travis CI, JIRA, and
+Get events from GitHub, Travis CI, Jira, and
 [hundreds of other tools](/integrations) right in Zulip. Topics give each
 issue its own place for discussion.
 

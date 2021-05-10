@@ -3059,7 +3059,7 @@ def check_message(
 
         check_private_message_policy(realm, sender, user_profiles)
 
-        # API Super-users who set the `forged` flag are allowed to
+        # API super-users who set the `forged` flag are allowed to
         # forge messages sent by any user, so we disable the
         # `forwarded_mirror_message` security check in that case.
         forwarded_mirror_message = mirror_message and not forged
@@ -3651,7 +3651,7 @@ def bulk_add_subs_to_db_with_logging(
     sub_ids = [info.sub.id for info in subs_to_activate]
     Subscription.objects.filter(id__in=sub_ids).update(active=True)
 
-    # Log Subscription Activities in RealmAuditLog
+    # Log subscription activities in RealmAuditLog
     event_time = timezone_now()
     event_last_message_id = get_last_message_id()
 
@@ -3888,7 +3888,7 @@ def bulk_remove_subscriptions(
         ).update(active=False)
         occupied_streams_after = list(get_occupied_streams(our_realm))
 
-        # Log Subscription Activities in RealmAuditLog
+        # Log subscription activities in RealmAuditLog
         event_time = timezone_now()
         event_last_message_id = get_last_message_id()
         all_subscription_logs = [

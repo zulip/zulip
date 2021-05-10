@@ -434,7 +434,7 @@ def get_pull_request_review_body(helper: Helper) -> str:
         get_sender_name(payload),
         "submitted",
         payload["review"]["html_url"],
-        type="PR Review",
+        type="PR review",
         title=title if include_title else None,
     )
 
@@ -457,7 +457,7 @@ def get_pull_request_review_comment_body(helper: Helper) -> str:
         action,
         payload["comment"]["html_url"],
         message=message,
-        type="PR Review Comment",
+        type="PR review comment",
         title=title if include_title else None,
     )
 
@@ -574,7 +574,7 @@ def get_subject_based_on_type(payload: Dict[str, Any], event: str) -> str:
     elif event.startswith("issue"):
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repository_name(payload),
-            type="Issue",
+            type="issue",
             id=payload["issue"]["number"],
             title=payload["issue"]["title"],
         )
@@ -595,7 +595,7 @@ def get_subject_based_on_type(payload: Dict[str, Any], event: str) -> str:
     elif event == "gollum":
         return TOPIC_WITH_BRANCH_TEMPLATE.format(
             repo=get_repository_name(payload),
-            branch="Wiki Pages",
+            branch="wiki pages",
         )
     elif event == "ping":
         if payload.get("repository") is None:

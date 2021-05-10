@@ -717,7 +717,7 @@ class PushNotificationTest(BouncerTestCase):
             date_sent=now(),
             sending_client=self.sending_client,
         )
-        message.set_topic_name("Test Topic")
+        message.set_topic_name("Test topic")
         message.save()
 
         return message
@@ -1525,7 +1525,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         payload = get_message_payload_apns(self.sender, message)
         expected = {
             "alert": {
-                "title": "#Verona > Test Topic",
+                "title": "#Verona > Test topic",
                 "subtitle": "King Hamlet:",
                 "body": message.content,
             },
@@ -1557,7 +1557,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         payload = get_message_payload_apns(user_profile, message)
         expected = {
             "alert": {
-                "title": "#Verona > Test Topic",
+                "title": "#Verona > Test topic",
                 "subtitle": "King Hamlet mentioned you:",
                 "body": message.content,
             },
@@ -1589,7 +1589,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         payload = get_message_payload_apns(user_profile, message)
         expected = {
             "alert": {
-                "title": "#Verona > Test Topic",
+                "title": "#Verona > Test topic",
                 "subtitle": "King Hamlet mentioned everyone:",
                 "body": message.content,
             },
@@ -1745,7 +1745,7 @@ class TestGetGCMPayload(PushNotificationTest):
                 "sender_full_name": "King Hamlet",
                 "sender_avatar_url": absolute_avatar_url(message.sender),
                 "recipient_type": "stream",
-                "topic": "Test Topic",
+                "topic": "Test topic",
                 "stream": "Denmark",
             },
         )
@@ -1781,7 +1781,7 @@ class TestGetGCMPayload(PushNotificationTest):
                 "sender_full_name": "King Hamlet",
                 "sender_avatar_url": absolute_avatar_url(message.sender),
                 "recipient_type": "stream",
-                "topic": "Test Topic",
+                "topic": "Test topic",
                 "stream": "Denmark",
             },
         )

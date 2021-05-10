@@ -397,7 +397,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         realm = cordelia.realm
 
         group_name = "support"
-        stream_name = "Dev Help"
+        stream_name = "Dev help"
 
         content_with_group_mention = "hey @*support* can you help us with this?"
 

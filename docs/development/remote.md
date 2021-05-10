@@ -133,7 +133,7 @@ don't have a favorite, here are some suggestions:
 * [sublime](https://www.sublimetext.com/)
 * [PyCharm](https://www.jetbrains.com/pycharm/)
 
-Next, follow our [Git and GitHub Guide](../git/index.md) to clone and configure
+Next, follow our [Git and GitHub guide](../git/index.md) to clone and configure
 your fork of zulip on your local computer.
 
 Once you have cloned your code locally, you can get to work.
@@ -145,7 +145,7 @@ is to **push them to GitHub** and then **fetch and merge** them from
 the remote server.
 
 For more detailed instructions about how to do this, see our [Git & GitHub
-Guide][rtd-git-guide]. In brief, the steps are as follows.
+guide][rtd-git-guide]. In brief, the steps are as follows.
 
 On your **local computer**:
 
@@ -184,7 +184,7 @@ you prefer for development in general.
 
 If you use [TextMate](https://macromates.com), Atom, VS Code, or a
 similar GUI editor, tools like
-[VSCode Remote - SSH](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh) and
+[Visual Studio Code Remote - SSH](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh) and
 [rmate](https://github.com/textmate/rmate) that are designed to
 integrate that editor with remote development over SSH allow you to
 develop remotely from the comfort of your local machine.
@@ -264,7 +264,7 @@ Now your workspace should look similar this:
 
 Next, read the following to learn more about developing for Zulip:
 
-* [Git & GitHub Guide][rtd-git-guide]
+* [Git & GitHub guide][rtd-git-guide]
 * [Using the development environment][rtd-using-dev-env]
 * [Testing][rtd-testing]
 

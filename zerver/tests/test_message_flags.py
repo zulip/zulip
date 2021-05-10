@@ -830,12 +830,12 @@ class GetUnreadMsgsTest(ZulipTestCase):
         pm1_message_id = self.send_personal_message(sender, user_profile, "hello1")
         pm2_message_id = self.send_personal_message(sender, user_profile, "hello2")
 
-        muted_stream = self.subscribe(user_profile, "Muted Stream")
+        muted_stream = self.subscribe(user_profile, "Muted stream")
         self.mute_stream(user_profile, muted_stream)
         self.mute_topic(user_profile, "Denmark", "muted-topic")
 
         stream_message_id = self.send_stream_message(sender, "Denmark", "hello")
-        muted_stream_message_id = self.send_stream_message(sender, "Muted Stream", "hello")
+        muted_stream_message_id = self.send_stream_message(sender, "Muted stream", "hello")
         muted_topic_message_id = self.send_stream_message(
             sender,
             "Denmark",
@@ -886,7 +886,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
 
         unread_stream = result["streams"][2]
         self.assertEqual(
-            unread_stream["stream_id"], get_stream("Muted Stream", user_profile.realm).id
+            unread_stream["stream_id"], get_stream("Muted stream", user_profile.realm).id
         )
         self.assertEqual(unread_stream["topic"], "test")
         self.assertEqual(unread_stream["unread_message_ids"], [muted_stream_message_id])

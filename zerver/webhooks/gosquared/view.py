@@ -48,7 +48,7 @@ def api_gosquared_webhook(
         # Only support non-private messages
         if not payload["message"]["private"]:
             session_title = payload["message"]["session"]["title"]
-            topic = f"Live Chat Session - {session_title}"
+            topic = f"Live chat session - {session_title}"
             body = CHAT_MESSAGE_TEMPLATE.format(
                 status=payload["person"]["status"],
                 name=payload["person"]["_anon"]["name"],

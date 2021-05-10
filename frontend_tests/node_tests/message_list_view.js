@@ -226,8 +226,8 @@ run_test("merge_message_groups", () => {
             id: _.uniqueId("test_message_"),
             status_message: false,
             type: "stream",
-            stream: "Test Stream 1",
-            topic: "Test Subject 1",
+            stream: "Test stream 1",
+            topic: "Test subject 1",
             sender_email: "test@example.com",
             timestamp: (next_timestamp += 1),
             ...message,
@@ -431,7 +431,7 @@ run_test("merge_message_groups", () => {
         const message1 = build_message_context();
         const message_group1 = build_message_group([message1]);
 
-        const message2 = build_message_context({topic: "Test Subject 2"});
+        const message2 = build_message_context({topic: "Test subject 2"});
         const message_group2 = build_message_group([message2]);
 
         const list = build_list([message_group1]);
@@ -449,7 +449,7 @@ run_test("merge_message_groups", () => {
         const message1 = build_message_context({timestamp: 900000});
         const message_group1 = build_message_group([message1]);
 
-        const message2 = build_message_context({topic: "Test Subject 2", timestamp: 1000});
+        const message2 = build_message_context({topic: "Test subject 2", timestamp: 1000});
         const message_group2 = build_message_group([message2]);
 
         const list = build_list([message_group1]);

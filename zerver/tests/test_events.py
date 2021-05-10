@@ -1021,7 +1021,7 @@ class NormalActionsTest(BaseAction):
 
         events = self.verify_action(
             lambda: do_change_default_stream_group_name(
-                self.user_profile.realm, group, "New Group Name"
+                self.user_profile.realm, group, "New group name"
             )
         )
         check_default_stream_groups("events[0]", events[0])

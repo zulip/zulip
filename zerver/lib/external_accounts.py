@@ -1,5 +1,5 @@
 """
-    This module stores data for "External Account" custom profile field.
+    This module stores data for "external account" custom profile field.
 """
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _

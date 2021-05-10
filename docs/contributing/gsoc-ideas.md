@@ -222,7 +222,7 @@ skills needed, and try to emphasize where strong skills with
 particular tools are likely to be important for a given project.
 
 For all of our projects, an important skill to develop is a good
-command of Git; read [our Git Guide](../git/overview.md) in full to
+command of Git; read [our Git guide](../git/overview.md) in full to
 learn how to use it well.  Of particular importance is mastering using
 Git rebase so that you can construct commits that are clearly correct
 and explain why they are correct. We highly recommend investing in

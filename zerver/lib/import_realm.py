@@ -864,7 +864,7 @@ def import_uploads(
 #
 # Because the Python object => JSON conversion process is not fully
 # faithful, we have to use a set of fixers (e.g. on DateTime objects
-# and Foreign Keys) to do the import correctly.
+# and foreign keys) to do the import correctly.
 def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Realm:
     logging.info("Importing realm dump %s", import_dir)
     if not os.path.exists(import_dir):

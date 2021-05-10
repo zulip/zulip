@@ -82,7 +82,7 @@ async function test_get_api_key(page: Page): Promise<void> {
     });
 
     // When typing the password in Firefox, it shows "Not Secure" warning
-    // which was hiding the Get API Key button.
+    // which was hiding the Get API key button.
     // You can see the screenshot of it in https://github.com/zulip/zulip/pull/17136.
     // Focusing on it will remove the warning.
     await page.focus(get_api_key_button_selector);

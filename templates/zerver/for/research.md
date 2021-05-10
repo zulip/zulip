@@ -5,7 +5,7 @@ describes academic research better than any of our other use cases.
 Zulip has long been popular with individual research groups, but
 during the pandemic has started being used for large distributed
 communities focused around research topics like category theory or the
-Lean Theorem Prover.  We enthusiastically provide free hosting for
+Lean theorem prover.  We enthusiastically provide free hosting for
 both use cases.
 
 If you haven’t read [why Zulip](/why-zulip), read that first.  The
@@ -162,12 +162,12 @@ hosting to your own servers.
 
 ### Free and open source.
 
-Unlike many modern "open source" applications that are actually Open
-Core, Zulip is 100% Free and Open Source software.  All code,
+Unlike many modern "open source" applications that are actually open
+core, Zulip is 100% free and open source software.  All code,
 including for the [server](https://github.com/zulip/zulip),
 [desktop](https://github.com/zulip/zulip-desktop),
 [mobile](https://github.com/zulip/zulip-mobile), and beta
-[terminal](https://github.com/zulip/zulip-terminal) apps is available
+[terminal](https://github.com/zulip/zulip-terminal) apps, is available
 under the Apache 2 license.
 
 ### Created by former academics

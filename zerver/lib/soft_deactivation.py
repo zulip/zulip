@@ -147,7 +147,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
         ).values("recipient_id", "recipient__type_id")
     )
 
-    # For Stream messages we need to check messages against data from
+    # For stream messages we need to check messages against data from
     # RealmAuditLog for visibility to user. So we fetch the subscription logs.
     stream_ids = [sub["recipient__type_id"] for sub in all_stream_subs]
     events = [
@@ -305,7 +305,7 @@ def reactivate_user_if_soft_deactivated(user_profile: UserProfile) -> Union[User
             event_type=RealmAuditLog.USER_SOFT_ACTIVATED,
             event_time=timezone_now(),
         )
-        logger.info("Soft Reactivated user %s", user_profile.id)
+        logger.info("Soft reactivated user %s", user_profile.id)
         return user_profile
     return None
 

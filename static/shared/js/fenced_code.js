@@ -9,7 +9,7 @@ import _ from "lodash";
 
 // See backend fenced_code.py:71 for associated regexp
 const fencestr =
-    "^(~{3,}|`{3,})" + // Opening Fence
+    "^(~{3,}|`{3,})" + // Opening fence
     "[ ]*" + // Spaces
     "(" +
     "\\{?\\.?" +

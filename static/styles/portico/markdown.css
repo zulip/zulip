@@ -256,7 +256,7 @@
 
     .keyboard_tip::before {
         display: inline;
-        content: "\f11c   Keyboard Shortcut:  ";
+        content: "\f11c   Keyboard shortcut:  ";
         font-family: FontAwesome, "Source Sans 3", sans-serif;
         font-weight: 600;
     }

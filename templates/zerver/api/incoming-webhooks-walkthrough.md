@@ -219,7 +219,7 @@ These configuration options are declared as follows:
 
 ```
     WebhookIntegration('helloworld', ['misc'], display_name='Hello World',
-                       config_options=[('HelloWorld API Key', 'hw_api_key', check_string)])
+                       config_options=[('HelloWorld API key', 'hw_api_key', check_string)])
 ```
 
 `config_options` is a list describing the parameters the user should
@@ -251,7 +251,7 @@ After running the above command, you should see something similar to:
 {"msg":"","result":"success"}
 ```
 
-### Management Command: send_webhook_fixture_message
+### Management command: send_webhook_fixture_message
 
 Using `manage.py` from within the Zulip development environment:
 
@@ -471,7 +471,7 @@ request:
    https://zulip.readthedocs.io/en/latest/contributing/code-style.html) and take a look
    through your code to double-check that you've followed Zulip's guidelines.
 3. Take a look at your Git history to ensure your commits have been clear and
-   logical (see [Version Control](
+   logical (see [Version control](
    https://zulip.readthedocs.io/en/latest/contributing/version-control.html) for tips). If not,
    consider revising them with `git rebase --interactive`. For most incoming webhooks,
    you'll want to squash your changes into a single commit and include a good,
@@ -519,7 +519,7 @@ def test_unknown_action_no_data(self) -> None:
     result = self.client_post(self.url, 'unknown_action', **post_params)
 
     # check that we got the expected error message
-    self.assert_json_error(result, "Unknown WordPress webhook action: WordPress Action")
+    self.assert_json_error(result, "Unknown WordPress webhook action: WordPress action")
 ```
 
 In a normal test, `check_webhook` would handle all the setup
@@ -572,17 +572,17 @@ attribute `TOPIC` as a keyword argument to `build_webhook_url`, like so:
 class QuerytestHookTests(WebhookTestCase):
 
     STREAM_NAME = 'querytest'
-    TOPIC = "Default Topic"
+    TOPIC = "Default topic"
     URL_TEMPLATE = "/api/v1/external/querytest?api_key={api_key}&stream={stream}"
     FIXTURE_DIR_NAME = 'querytest'
 
     def test_querytest_test_one(self) -> None:
         # construct the URL used for this test
-        self.TOPIC = "Query Test"
+        self.TOPIC = "Query test"
         self.url = self.build_webhook_url(topic=self.TOPIC)
 
         # define the expected message contents
-        expected_topic = "Query Test"
+        expected_topic = "Query test"
         expected_message = "This is a test of custom query parameters."
 
         self.check_webhook('test_one', expected_topic, expected_message,

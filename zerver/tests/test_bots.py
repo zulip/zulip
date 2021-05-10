@@ -47,7 +47,7 @@ stripe_sample_config_options = [
         "stripe",
         ["financial"],
         display_name="Stripe",
-        config_options=[("Stripe API Key", "stripe_api_key", _check_string)],
+        config_options=[("Stripe API key", "stripe_api_key", _check_string)],
     ),
 ]
 

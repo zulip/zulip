@@ -1692,7 +1692,7 @@ class PreregistrationUser(models.Model):
     email: str = models.EmailField()
 
     # If the pre-registration process provides a suggested full name for this user,
-    # store it here to use it to prepopulate the Full Name field in the registration form:
+    # store it here to use it to prepopulate the full name field in the registration form:
     full_name: Optional[str] = models.CharField(max_length=UserProfile.MAX_NAME_LENGTH, null=True)
     full_name_validated: bool = models.BooleanField(default=False)
     referred_by: Optional[UserProfile] = models.ForeignKey(
@@ -3502,7 +3502,7 @@ class CustomProfileField(models.Model):
     }
 
     FIELD_TYPE_DATA: List[FieldElement] = [
-        # Type, Display Name, Validator, Converter, Keyword
+        # Type, display name, validator, converter, keyword
         (SHORT_TEXT, gettext_lazy("Short text"), check_short_string, str, "SHORT_TEXT"),
         (LONG_TEXT, gettext_lazy("Long text"), check_long_string, str, "LONG_TEXT"),
         (DATE, gettext_lazy("Date picker"), check_date, str, "DATE"),

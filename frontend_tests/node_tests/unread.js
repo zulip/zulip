@@ -249,7 +249,7 @@ test("num_unread_for_topic", (override) => {
 
     override(sub_store, "get", (arg) => {
         if (arg === stream_id) {
-            return {name: "Some Stream"};
+            return {name: "Some stream"};
         }
         throw new Error(`Unknown stream ${arg}`);
     });

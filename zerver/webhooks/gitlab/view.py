@@ -229,7 +229,7 @@ def get_commented_issue_event_body(payload: Dict[str, Any], include_title: bool 
         url,
         payload["issue"].get("iid"),
         message=comment["note"],
-        type="Issue",
+        type="issue",
         title=payload["issue"].get("title") if include_title else None,
     )
 
@@ -248,13 +248,13 @@ def get_commented_snippet_event_body(payload: Dict[str, Any], include_title: boo
         url,
         payload["snippet"].get("id"),
         message=comment["note"],
-        type="Snippet",
+        type="snippet",
         title=payload["snippet"].get("title") if include_title else None,
     )
 
 
 def get_wiki_page_event_body(payload: Dict[str, Any], action: str) -> str:
-    return '{} {} [Wiki Page "{}"]({}).'.format(
+    return '{} {} [wiki page "{}"]({}).'.format(
         get_issue_user_name(payload),
         action,
         payload["object_attributes"].get("title"),
@@ -448,14 +448,14 @@ def get_subject_based_on_event(
     elif event.startswith("Issue Hook") or event.startswith("Confidential Issue Hook"):
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
-            type="Issue",
+            type="issue",
             id=payload["object_attributes"].get("iid"),
             title=payload["object_attributes"].get("title"),
         )
     elif event == "Note Hook Issue" or event == "Confidential Note Hook Issue":
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
-            type="Issue",
+            type="issue",
             id=payload["issue"].get("iid"),
             title=payload["issue"].get("title"),
         )
@@ -470,7 +470,7 @@ def get_subject_based_on_event(
     elif event == "Note Hook Snippet":
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repo_name(payload),
-            type="Snippet",
+            type="snippet",
             id=payload["snippet"].get("id"),
             title=payload["snippet"].get("title"),
         )

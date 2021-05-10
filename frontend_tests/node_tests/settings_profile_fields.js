@@ -16,7 +16,7 @@ const SHORT_TEXT_ID = 1;
 const SELECT_ID = 3;
 const EXTERNAL_ACCOUNT_ID = 7;
 
-const SHORT_TEXT_NAME = "Short Text";
+const SHORT_TEXT_NAME = "Short text";
 const SELECT_NAME = "Select";
 const EXTERNAL_ACCOUNT_NAME = "External account";
 

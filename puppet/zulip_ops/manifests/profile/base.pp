@@ -8,7 +8,7 @@ class zulip_ops::profile::base {
     'mosh',
     # package management
     'aptitude',
-    # SSL Certificates
+    # SSL certificates
     'certbot',
     # Security
     'iptables-persistent',

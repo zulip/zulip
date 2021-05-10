@@ -184,11 +184,11 @@ def report_csp_violations(
         return csp_report.get(csp_report_attr, "")
 
     logging.warning(
-        "CSP Violation in Document('%s'). "
-        "Blocked URI('%s'), Original Policy('%s'), "
-        "Violated Directive('%s'), Effective Directive('%s'), "
-        "Disposition('%s'), Referrer('%s'), "
-        "Status Code('%s'), Script Sample('%s')",
+        "CSP violation in document('%s'). "
+        "blocked URI('%s'), original policy('%s'), "
+        "violated directive('%s'), effective directive('%s'), "
+        "disposition('%s'), referrer('%s'), "
+        "status code('%s'), script sample('%s')",
         get_attr("document-uri"),
         get_attr("blocked-uri"),
         get_attr("original-policy"),

@@ -37,7 +37,7 @@ async function test_empty_drafts(page: Page): Promise<void> {
 }
 
 async function create_stream_message_draft(page: Page): Promise<void> {
-    console.log("Creating Stream Message Draft");
+    console.log("Creating stream message draft");
     await page.keyboard.press("KeyC");
     await page.waitForSelector("#stream-message", {visible: true});
     await common.fill_form(page, "form#send_message_form", {
@@ -116,7 +116,7 @@ async function test_previously_created_drafts_rendered(page: Page): Promise<void
 }
 
 async function test_restore_message_draft(page: Page): Promise<void> {
-    console.log("Restoring Stream Message Draft");
+    console.log("Restoring stream message draft");
     await page.click("#drafts_table .message_row:not(.private-message) .restore-draft");
     await wait_for_drafts_to_dissapear(page);
     await page.waitForSelector("#stream-message", {visible: true});
@@ -137,7 +137,7 @@ async function edit_stream_message_draft(page: Page): Promise<void> {
     await common.fill_form(page, "form#send_message_form", {
         stream_message_recipient_stream: "all",
         stream_message_recipient_topic: "tests",
-        content: "Updated Stream Message",
+        content: "Updated stream message",
     });
     await page.click("#compose_close");
 }
@@ -166,7 +166,7 @@ async function test_edited_draft_message(page: Page): Promise<void> {
             page,
             ".draft-row:nth-last-child(2) .rendered_markdown.restore-draft",
         ),
-        "Updated Stream Message",
+        "Updated stream message",
     );
 }
 

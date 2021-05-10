@@ -930,7 +930,7 @@ class ValidatorTestCase(ZulipTestCase):
         x = {
             "names": ["alice", "bob"],
             "city": "Boston",
-            "food": ["Lobster Spaghetti"],
+            "food": ["Lobster spaghetti"],
         }
 
         check_dict(keys)("x", x)  # since _allow_only_listed_keys is False
@@ -943,7 +943,7 @@ class ValidatorTestCase(ZulipTestCase):
         x = {
             "names": ["alice", "bob"],
             "city": "Boston",
-            "food": "Lobster Spaghetti",
+            "food": "Lobster spaghetti",
         }
         with self.assertRaisesRegex(ValidationError, r'x\["food"\] is not a list'):
             check_dict_only(keys, optional_keys)("x", x)

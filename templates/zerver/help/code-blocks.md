@@ -91,7 +91,7 @@ prefix**.
 {end_tabs}
 
 For example, to configure code playgrounds for languages like Python or
-JavaScript, you could specify the Language and URL Prefix fields as:
+JavaScript, you could specify the language and URL prefix fields as:
 
 * `Python` and `https://replit.com/languages/python3/?code=`
 * `JavaScript` and `https://replit.com/languages/javascript/?code=`
@@ -105,7 +105,7 @@ in the speficied code playground.
 * You can configure multiple playgrounds for a given language; if you do that,
 the user will get to choose which playground to open the code in.
 
-* The `Language` field is the human-readable Pygments language name for that
+* The **Language** field is the human-readable Pygments language name for that
 programming language. The language tag for a code block is internally mapped
 to these human-readable Pygments names. E.g: `py3` and `py` are mapped to
 `Python`. One can use the typeahead (which appears when you type something

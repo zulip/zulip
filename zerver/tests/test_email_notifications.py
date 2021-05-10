@@ -62,7 +62,7 @@ class TestCustomEmails(ZulipTestCase):
         )
         self.assertEqual(len(mail.outbox), 1)
         msg = mail.outbox[0]
-        self.assertEqual(msg.subject, "Test Subject")
+        self.assertEqual(msg.subject, "Test subject")
         self.assertFalse(msg.reply_to)
         self.assertEqual("Test body", msg.body)
 

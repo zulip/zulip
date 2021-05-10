@@ -558,12 +558,12 @@ class ImportExportTest(ZulipTestCase):
         create_stream_if_needed(realm, "Private A", invite_only=True)
         self.subscribe(self.example_user("iago"), "Private A")
         self.subscribe(self.example_user("othello"), "Private A")
-        self.send_stream_message(self.example_user("iago"), "Private A", "Hello Stream A")
+        self.send_stream_message(self.example_user("iago"), "Private A", "Hello stream A")
 
         create_stream_if_needed(realm, "Private B", invite_only=True)
         self.subscribe(self.example_user("prospero"), "Private B")
         stream_b_message_id = self.send_stream_message(
-            self.example_user("prospero"), "Private B", "Hello Stream B"
+            self.example_user("prospero"), "Private B", "Hello stream B"
         )
         self.subscribe(self.example_user("hamlet"), "Private B")
 
@@ -571,7 +571,7 @@ class ImportExportTest(ZulipTestCase):
         self.subscribe(self.example_user("othello"), "Private C")
         self.subscribe(self.example_user("prospero"), "Private C")
         stream_c_message_id = self.send_stream_message(
-            self.example_user("othello"), "Private C", "Hello Stream C"
+            self.example_user("othello"), "Private C", "Hello stream C"
         )
 
         # Create huddles
@@ -676,7 +676,7 @@ class ImportExportTest(ZulipTestCase):
             recipient__in=public_stream_recipients
         ).values_list("id", flat=True)
 
-        # Messages from Private Stream C are not exported since no member gave consent
+        # Messages from Private stream C are not exported since no member gave consent
         private_stream_ids = Stream.objects.filter(name__in=["Private A", "Private B"]).values_list(
             "id", flat=True
         )

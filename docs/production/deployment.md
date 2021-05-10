@@ -45,7 +45,7 @@ extremely reliable for years, whereas the Docker image is new and has
 rough edges, so we recommend the normal installer unless you have a
 specific reason to prefer Docker.
 
-## Advanced Installer Options
+## Advanced installer options
 
 The Zulip installer supports the following advanced installer options
 as well as those mentioned in the

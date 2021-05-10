@@ -98,7 +98,7 @@ client.  This approach is reasonably efficient and works everywhere
 (unlike websockets, which have a decreasing but nonzero level of
 client compatibility problems).
 
-For each connected client, the **Event Queue Server** maintains an
+For each connected client, the **event queue server** maintains an
 **event queue**, which contains any events that are to be delivered to
 that client which have not yet been acknowledged by that client.
 Ignoring the subtle details around error handling, the protocol is
@@ -156,15 +156,15 @@ requesting events; its handler for this case should just restart the
 client / reload the browser so that it refetches initial data the same
 way it would on startup.  Since clients have to implement their
 startup process anyway, this approach adds minimal technical
-complexity to clients.  A nice side effect is that if the Event Queue
-Server (which stores queues in memory) were to crash and lose
+complexity to clients.  A nice side effect is that if the event queue
+server (which stores queues in memory) were to crash and lose
 its data, clients would recover, just as if they had lost Internet
 access briefly (there is some DoS risk to manage, though).
 
 Note that the garbage-collection system has hooks that are important
 for the implementation of [notifications](../subsystems/notifications.md).
 
-(The Event Queue Server is designed to save any event queues to disk
+(The event queue server is designed to save any event queues to disk
 and reload them when the server is restarted, and catches exceptions
 carefully, so such incidents are very rare, but it's nice to have a
 design that handles them without leaving broken out-of-date clients

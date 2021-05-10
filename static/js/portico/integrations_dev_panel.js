@@ -4,7 +4,7 @@ import * as channel from "../channel";
 // Main JavaScript file for the integrations development panel at
 // /devtools/integrations.
 
-// Data Segment: We lazy load the requested fixtures from the backend
+// Data segment: We lazy load the requested fixtures from the backend
 // as and when required and then cache them here.
 
 const loaded_fixtures = new Map();
@@ -106,9 +106,9 @@ function set_results(response) {
     for (const response of responses) {
         if (response.fixture_name !== undefined) {
             data += "Fixture:            " + response.fixture_name;
-            data += "\nStatus Code:    " + response.status_code;
+            data += "\nStatus code:    " + response.status_code;
         } else {
-            data += "Status Code:    " + response.status_code;
+            data += "Status code:    " + response.status_code;
         }
         data += "\nResponse:       " + response.message + "\n\n";
     }
@@ -184,7 +184,7 @@ function update_url() {
     return;
 }
 
-// API Callers: These methods handle communicating with the Python backend API.
+// API callers: These methods handle communicating with the Python backend API.
 function handle_unsuccessful_response(response) {
     try {
         const status_code = response.statusCode().status;
@@ -337,7 +337,7 @@ $(() => {
     ]);
 
     $("#stream_name")[0].value = "Denmark";
-    $("#topic_name")[0].value = "Integrations Testing";
+    $("#topic_name")[0].value = "Integrations testing";
 
     const potential_default_bot = $("#bot_name")[0][1];
     if (potential_default_bot !== undefined) {

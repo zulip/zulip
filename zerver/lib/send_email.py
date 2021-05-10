@@ -447,7 +447,7 @@ def send_custom_email(users: List[UserProfile], options: Dict[str, Any]) -> None
     Can be used directly with from a management shell with
     send_custom_email(user_profile_list, dict(
         markdown_template_path="/path/to/markdown/file.md",
-        subject="Email Subject",
+        subject="Email subject",
         from_name="Sender Name")
     )
     """

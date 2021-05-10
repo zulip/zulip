@@ -12,7 +12,7 @@ Moved to [Troubleshooting](../production/troubleshooting.html#monitoring).
 
 ### Securing your Zulip server
 
-Moved to [Security Model](../production/security-model.md).
+Moved to [Security model](../production/security-model.md).
 
 ### Upgrading
 

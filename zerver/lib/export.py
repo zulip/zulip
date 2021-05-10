@@ -1184,7 +1184,7 @@ def write_message_partial_for_query(
         # Figure out the name of our shard file.
         message_filename = os.path.join(output_dir, f"messages-{dump_file_id:06}.json")
         message_filename += ".partial"
-        logging.info("Fetched Messages for %s", message_filename)
+        logging.info("Fetched messages for %s", message_filename)
 
         # Clean up our messages.
         table_data: TableData = {}
@@ -1538,7 +1538,7 @@ def export_emoji_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> 
 
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         shutil.copy2(local_path, output_path)
-        # Realm Emoji author is optional.
+        # Realm emoji author is optional.
         author = realm_emoji.author
         author_id = None
         if author:
@@ -1830,7 +1830,7 @@ def export_messages_single_user(
             message_chunk.append(item)
 
         message_filename = os.path.join(output_dir, f"messages-{dump_file_id:06}.json")
-        logging.info("Fetched Messages for %s", message_filename)
+        logging.info("Fetched messages for %s", message_filename)
 
         output = {"zerver_message": message_chunk}
         floatify_datetime_fields(output, "zerver_message")

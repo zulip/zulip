@@ -240,7 +240,7 @@ def get_issue_event_message(
         message=message,
         assignee=assignee,
         assignees=assignees,
-        type="Issue",
+        type="issue",
         title=title,
     )
 

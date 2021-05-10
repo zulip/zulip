@@ -254,7 +254,7 @@ run_test("spoiler-header", () => {
     $content.set_find_results("div.spoiler-header", $array([$header]));
 
     // Test that the show/hide button gets added to a spoiler header.
-    const label = "My Spoiler Header";
+    const label = "My spoiler header";
     const toggle_button_html =
         '<span class="spoiler-button" aria-expanded="false"><span class="spoiler-arrow"></span></span>';
     $header.html(label);

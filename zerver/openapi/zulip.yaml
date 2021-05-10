@@ -5489,7 +5489,7 @@ paths:
                   - $ref: "#/components/schemas/JsonSuccess"
                   - example: {"msg": "", "result": "success"}
         "400":
-          description: Bad Request.
+          description: Bad request.
           content:
             application/json:
               schema:
@@ -6824,7 +6824,7 @@ paths:
                   - $ref: "#/components/schemas/JsonSuccess"
                   - example: {"msg": "", "result": "success"}
         "400":
-          description: Bad Request
+          description: Bad request
           content:
             application/json:
               schema:

@@ -49,7 +49,7 @@ run_test("get_unread_ids", () => {
     let terms;
 
     const sub = {
-        name: "My Stream",
+        name: "My stream",
         stream_id: 55,
     };
 

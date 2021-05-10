@@ -51,7 +51,7 @@ to future versions. <!-- TODO fact check -->
 
 {tab|linux}
 
-#### apt (Ubuntu or Debian 8+)
+#### APT (Ubuntu or Debian 8+)
 
 1. Enter the following commands into a terminal:
 
@@ -62,7 +62,7 @@ to future versions. <!-- TODO fact check -->
         sudo apt update
         sudo apt install zulip
 
-    These commands set up the Zulip Desktop apt repository and its signing
+    These commands set up the Zulip Desktop APT repository and its signing
     key, and then install the Zulip client.
 
 1. Run Zulip from your app launcher, or with `zulip` from a terminal.

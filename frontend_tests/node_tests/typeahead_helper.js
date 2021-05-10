@@ -224,7 +224,7 @@ test("sort_streams", (override) => {
         {
             stream_id: 304,
             name: "Derp",
-            description: "Always Derping",
+            description: "Always derping",
             subscribed: false,
         },
         {
@@ -344,24 +344,24 @@ test("sort_recipients", () => {
     recent_senders.process_message_for_senders({
         sender_id: 7,
         stream_id: 1,
-        topic: "Dev Topic",
+        topic: "Dev topic",
         id: (next_id += 1),
     });
     recent_senders.process_message_for_senders({
         sender_id: 5,
         stream_id: 1,
-        topic: "Dev Topic",
+        topic: "Dev topic",
         id: (next_id += 1),
     });
     recent_senders.process_message_for_senders({
         sender_id: 6,
         stream_id: 1,
-        topic: "Dev Topic",
+        topic: "Dev topic",
         id: (next_id += 1),
     });
 
     // Typeahead for stream message [query, stream-name, topic-name]
-    assert.deepEqual(get_typeahead_result("b", "Dev", "Dev Topic"), [
+    assert.deepEqual(get_typeahead_result("b", "Dev", "Dev topic"), [
         subscriber_email_3,
         subscriber_email_2,
         subscriber_email_1,
@@ -374,18 +374,18 @@ test("sort_recipients", () => {
     recent_senders.process_message_for_senders({
         sender_id: 5,
         stream_id: 2,
-        topic: "Linux Topic",
+        topic: "Linux topic",
         id: (next_id += 1),
     });
     recent_senders.process_message_for_senders({
         sender_id: 7,
         stream_id: 2,
-        topic: "Linux Topic",
+        topic: "Linux topic",
         id: (next_id += 1),
     });
 
     // No match
-    assert.deepEqual(get_typeahead_result("h", "Linux", "Linux Topic"), [
+    assert.deepEqual(get_typeahead_result("h", "Linux", "Linux topic"), [
         "zman@test.net",
         "b_user_3@zulip.net",
         "a_user@zulip.org",
@@ -405,7 +405,7 @@ test("sort_recipients all mention", () => {
     // Test person email is "all" or "everyone"
     const test_objs = matches.concat([all_obj]);
 
-    const results = th.sort_recipients(test_objs, "a", "Linux", "Linux Topic");
+    const results = th.sort_recipients(test_objs, "a", "Linux", "Linux topic");
 
     assertSameEmails(results, [all_obj, a_bot, a_user, b_user_1, b_user_2, b_user_3, b_bot, zman]);
 });
@@ -433,7 +433,7 @@ test("sort_recipients pm counts", () => {
     const linux_sub = stream_data.get_sub("Linux");
     peer_data.add_subscriber(linux_sub.stream_id, b_user_3.user_id);
 
-    assert.deepEqual(get_typeahead_result("b", "Linux", "Linux Topic"), [
+    assert.deepEqual(get_typeahead_result("b", "Linux", "Linux topic"), [
         "b_user_3@zulip.net",
         "b_user_1@zulip.net",
         "b_user_2@zulip.net",
@@ -482,7 +482,7 @@ test("sort_recipients dup alls", () => {
     // full_name starts with same character but emails are 'all'
     const test_objs = [all_obj, a_user, all_obj];
 
-    const recipients = th.sort_recipients(test_objs, "a", "Linux", "Linux Topic");
+    const recipients = th.sort_recipients(test_objs, "a", "Linux", "Linux topic");
 
     const expected = [all_obj, all_obj, a_user];
     assertSameEmails(recipients, expected);
@@ -491,7 +491,7 @@ test("sort_recipients dup alls", () => {
 test("sort_recipients subscribers", () => {
     // b_user_2 is a subscriber and b_user_1 is not.
     const small_matches = [b_user_2, b_user_1];
-    const recipients = th.sort_recipients(small_matches, "b", "Dev", "Dev Topic");
+    const recipients = th.sort_recipients(small_matches, "b", "Dev", "Dev topic");
     const recipients_email = recipients.map((person) => person.email);
     const expected = ["b_user_2@zulip.net", "b_user_1@zulip.net"];
     assert.deepEqual(recipients_email, expected);
@@ -501,7 +501,7 @@ test("sort_recipients pm partners", () => {
     // b_user_3 is a pm partner and b_user_2 is not and
     // both are not subscribered to the stream Linux.
     const small_matches = [b_user_3, b_user_2];
-    const recipients = th.sort_recipients(small_matches, "b", "Linux", "Linux Topic");
+    const recipients = th.sort_recipients(small_matches, "b", "Linux", "Linux topic");
     const recipients_email = recipients.map((person) => person.email);
     const expected = ["b_user_3@zulip.net", "b_user_2@zulip.net"];
     assert.deepEqual(recipients_email, expected);
@@ -629,7 +629,7 @@ test("render_stream", () => {
     const stream = {
         description: "This is a short description.",
         stream_id: 42,
-        name: "Short Description",
+        name: "Short description",
     };
 
     stub_templates((template_name, args) => {
@@ -649,7 +649,7 @@ test("render_stream w/long description", () => {
     const stream = {
         description: "This is a very very very very very long description.",
         stream_id: 43,
-        name: "Long Description",
+        name: "Long description",
     };
 
     stub_templates((template_name, args) => {

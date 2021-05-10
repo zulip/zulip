@@ -240,9 +240,9 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         stream_to_address = encode_email_address(stream)
 
         incoming_valid_message = EmailMessage()
-        incoming_valid_message.set_content("TestStreamEmailMessages Body")
+        incoming_valid_message.set_content("TestStreamEmailMessages body")
 
-        incoming_valid_message["Subject"] = "TestStreamEmailMessages Subject"
+        incoming_valid_message["Subject"] = "TestStreamEmailMessages subject"
         incoming_valid_message["From"] = self.example_email("hamlet")
         incoming_valid_message["To"] = stream_to_address
         incoming_valid_message["Reply-to"] = self.example_email("othello")
@@ -252,7 +252,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         # Hamlet is subscribed to this stream so should see the email message from Othello.
         message = most_recent_message(user_profile)
 
-        self.assertEqual(message.content, "TestStreamEmailMessages Body")
+        self.assertEqual(message.content, "TestStreamEmailMessages body")
         self.assertEqual(get_display_recipient(message.recipient), stream.name)
         self.assertEqual(message.topic_name(), incoming_valid_message["Subject"])
 
@@ -268,9 +268,9 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         stream_to_address = encode_email_address(stream)
 
         incoming_valid_message = EmailMessage()
-        incoming_valid_message.set_content("TestStreamEmailMessages Body")
+        incoming_valid_message.set_content("TestStreamEmailMessages body")
 
-        incoming_valid_message["Subject"] = "TestStreamEmailMessages Subject"
+        incoming_valid_message["Subject"] = "TestStreamEmailMessages subject"
         incoming_valid_message["From"] = self.example_email("hamlet")
         # Simulate a mailing list
         incoming_valid_message["To"] = "foo-mailinglist@example.com"
@@ -282,7 +282,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         # Hamlet is subscribed to this stream so should see the email message from Othello.
         message = most_recent_message(user_profile)
 
-        self.assertEqual(message.content, "TestStreamEmailMessages Body")
+        self.assertEqual(message.content, "TestStreamEmailMessages body")
         self.assertEqual(get_display_recipient(message.recipient), stream.name)
         self.assertEqual(message.topic_name(), incoming_valid_message["Subject"])
 
@@ -295,7 +295,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         stream_to_address = encode_email_address(stream)
 
         incoming_valid_message = EmailMessage()
-        incoming_valid_message.set_content("TestStreamEmailMessages Body")
+        incoming_valid_message.set_content("TestStreamEmailMessages body")
 
         incoming_valid_message["Subject"] = ""
         incoming_valid_message["From"] = self.example_email("hamlet")
@@ -307,7 +307,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         # Hamlet is subscribed to this stream so should see the email message from Othello.
         message = most_recent_message(user_profile)
 
-        self.assertEqual(message.content, "TestStreamEmailMessages Body")
+        self.assertEqual(message.content, "TestStreamEmailMessages body")
         self.assertEqual(get_display_recipient(message.recipient), stream.name)
         self.assertEqual(message.topic_name(), "(no topic)")
 
@@ -321,9 +321,9 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         stream_to_address = encode_email_address(stream)
 
         incoming_valid_message = EmailMessage()
-        incoming_valid_message.set_content("TestStreamEmailMessages Body")
+        incoming_valid_message.set_content("TestStreamEmailMessages body")
 
-        incoming_valid_message["Subject"] = "TestStreamEmailMessages Subject"
+        incoming_valid_message["Subject"] = "TestStreamEmailMessages subject"
         incoming_valid_message["From"] = self.example_email("hamlet")
         incoming_valid_message["To"] = stream_to_address
         incoming_valid_message["Reply-to"] = self.example_email("othello")
@@ -333,7 +333,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         # Hamlet is subscribed to this stream so should see the email message from Othello.
         message = most_recent_message(user_profile)
 
-        self.assertEqual(message.content, "TestStreamEmailMessages Body")
+        self.assertEqual(message.content, "TestStreamEmailMessages body")
         self.assertEqual(get_display_recipient(message.recipient), stream.name)
         self.assertEqual(message.topic_name(), incoming_valid_message["Subject"])
 
@@ -350,9 +350,9 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         ]
 
         incoming_valid_message = EmailMessage()
-        incoming_valid_message.set_content("TestStreamEmailMessages Body")
+        incoming_valid_message.set_content("TestStreamEmailMessages body")
 
-        incoming_valid_message["Subject"] = "TestStreamEmailMessages Subject"
+        incoming_valid_message["Subject"] = "TestStreamEmailMessages subject"
         incoming_valid_message["From"] = self.example_email("hamlet")
         incoming_valid_message["To"] = ", ".join(stream_to_addresses)
         incoming_valid_message["Reply-to"] = self.example_email("othello")
@@ -362,7 +362,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         # Hamlet is subscribed to this stream so should see the email message from Othello.
         message = most_recent_message(user_profile)
 
-        self.assertEqual(message.content, "TestStreamEmailMessages Body")
+        self.assertEqual(message.content, "TestStreamEmailMessages body")
         self.assertEqual(get_display_recipient(message.recipient), stream.name)
         self.assertEqual(message.topic_name(), incoming_valid_message["Subject"])
 
@@ -378,8 +378,8 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         stream_to_address = "@".join(parts)
 
         incoming_valid_message = EmailMessage()
-        incoming_valid_message.set_content("TestStreamEmailMessages Body")
-        incoming_valid_message["Subject"] = "TestStreamEmailMessages Subject"
+        incoming_valid_message.set_content("TestStreamEmailMessages body")
+        incoming_valid_message["Subject"] = "TestStreamEmailMessages subject"
         incoming_valid_message["From"] = self.example_email("hamlet")
         incoming_valid_message["To"] = stream_to_address
         incoming_valid_message["Reply-to"] = self.example_email("othello")
@@ -389,7 +389,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
 
         self.assertEqual(
             message.content,
-            "From: {}\n{}".format(self.example_email("hamlet"), "TestStreamEmailMessages Body"),
+            "From: {}\n{}".format(self.example_email("hamlet"), "TestStreamEmailMessages body"),
         )
         self.assertEqual(get_display_recipient(message.recipient), stream.name)
         self.assertEqual(message.topic_name(), incoming_valid_message["Subject"])
@@ -406,8 +406,8 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         stream_to_address = "@".join(parts)
 
         incoming_valid_message = EmailMessage()
-        incoming_valid_message.set_content("TestStreamEmailMessages Body")
-        incoming_valid_message["Subject"] = "TestStreamEmailMessages Subject"
+        incoming_valid_message.set_content("TestStreamEmailMessages body")
+        incoming_valid_message["Subject"] = "TestStreamEmailMessages subject"
         incoming_valid_message[
             "From"
         ] = "Test =?utf-8?b?VXNlcsOzxIXEmQ==?= <=?utf-8?q?hamlet=5F=C4=99?=@zulip.com>"
@@ -420,7 +420,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
         self.assertEqual(
             message.content,
             "From: {}\n{}".format(
-                "Test Useróąę <hamlet_ę@zulip.com>", "TestStreamEmailMessages Body"
+                "Test Useróąę <hamlet_ę@zulip.com>", "TestStreamEmailMessages body"
             ),
         )
         self.assertEqual(get_display_recipient(message.recipient), stream.name)
@@ -443,7 +443,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
 
         incoming_valid_message = EmailMessage()
         incoming_valid_message.set_content(text)
-        incoming_valid_message["Subject"] = "TestStreamEmailMessages Subject"
+        incoming_valid_message["Subject"] = "TestStreamEmailMessages subject"
         incoming_valid_message["From"] = self.example_email("hamlet")
         incoming_valid_message["To"] = stream_to_address
         incoming_valid_message["Reply-to"] = self.example_email("othello")
@@ -474,7 +474,7 @@ class TestStreamEmailMessagesSuccess(ZulipTestCase):
 
         incoming_valid_message = EmailMessage()
         incoming_valid_message.set_content(text)
-        incoming_valid_message["Subject"] = "TestStreamEmailMessages Subject"
+        incoming_valid_message["Subject"] = "TestStreamEmailMessages subject"
         incoming_valid_message["From"] = self.example_email("hamlet")
         incoming_valid_message["To"] = stream_to_address
         incoming_valid_message["Reply-to"] = self.example_email("othello")
@@ -509,7 +509,7 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
             filename="image.png",
         )
 
-        incoming_valid_message["Subject"] = "TestStreamEmailMessages Subject"
+        incoming_valid_message["Subject"] = "TestStreamEmailMessages subject"
         incoming_valid_message["From"] = self.example_email("hamlet")
         incoming_valid_message["To"] = stream_to_address
         incoming_valid_message["Reply-to"] = self.example_email("othello")
@@ -552,7 +552,7 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
             filename=utf8_filename,
         )
 
-        incoming_valid_message["Subject"] = "TestStreamEmailMessages Subject"
+        incoming_valid_message["Subject"] = "TestStreamEmailMessages subject"
         incoming_valid_message["From"] = self.example_email("hamlet")
         incoming_valid_message["To"] = stream_to_address
         incoming_valid_message["Reply-to"] = self.example_email("othello")
@@ -633,7 +633,7 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
         attachment_msg.add_header("Content-Disposition", "attachment", filename="some_attachment")
         incoming_valid_message.add_attachment(attachment_msg)
 
-        incoming_valid_message["Subject"] = "TestStreamEmailMessages Subject"
+        incoming_valid_message["Subject"] = "TestStreamEmailMessages subject"
         incoming_valid_message["From"] = self.example_email("hamlet")
         incoming_valid_message["To"] = stream_to_address
         incoming_valid_message["Reply-to"] = self.example_email("othello")
@@ -664,7 +664,7 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
         incoming_valid_message.add_alternative(text)
         incoming_valid_message.add_alternative(html, subtype="html")
 
-        incoming_valid_message["Subject"] = "TestStreamEmailMessages Subject"
+        incoming_valid_message["Subject"] = "TestStreamEmailMessages subject"
         incoming_valid_message["From"] = self.example_email("hamlet")
         incoming_valid_message["To"] = stream_address
         incoming_valid_message["Reply-to"] = self.example_email("othello")
@@ -697,7 +697,7 @@ class TestEmailMirrorMessagesWithAttachments(ZulipTestCase):
         incoming_valid_message.add_alternative(text)
         incoming_valid_message.add_alternative(html, subtype="html")
 
-        incoming_valid_message["Subject"] = "TestStreamEmailMessages Subject"
+        incoming_valid_message["Subject"] = "TestStreamEmailMessages subject"
         incoming_valid_message["From"] = self.example_email("hamlet")
         incoming_valid_message["To"] = stream_address_prefer_html
         incoming_valid_message["Reply-to"] = self.example_email("othello")
@@ -723,7 +723,7 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         incoming_valid_message = EmailMessage()
         incoming_valid_message.set_content("")
 
-        incoming_valid_message["Subject"] = "TestStreamEmailMessages Subject"
+        incoming_valid_message["Subject"] = "TestStreamEmailMessages subject"
         incoming_valid_message["From"] = self.example_email("hamlet")
         incoming_valid_message["To"] = stream_to_address
         incoming_valid_message["Reply-to"] = self.example_email("othello")
@@ -751,7 +751,7 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
                 subtype="png",
             )
 
-        incoming_valid_message["Subject"] = "TestStreamEmailMessages Subject"
+        incoming_valid_message["Subject"] = "TestStreamEmailMessages subject"
         incoming_valid_message["From"] = self.example_email("hamlet")
         incoming_valid_message["To"] = stream_to_address
         incoming_valid_message["Reply-to"] = self.example_email("othello")
@@ -780,7 +780,7 @@ class TestStreamEmailMessagesEmptyBody(ZulipTestCase):
         incoming_valid_message = EmailMessage()
         incoming_valid_message.set_content("-- \nFooter")
 
-        incoming_valid_message["Subject"] = "TestStreamEmailMessages Subject"
+        incoming_valid_message["Subject"] = "TestStreamEmailMessages subject"
         incoming_valid_message["From"] = self.example_email("hamlet")
         incoming_valid_message["To"] = stream_to_address
         incoming_valid_message["Reply-to"] = self.example_email("othello")
@@ -818,9 +818,9 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         mm_address = create_missed_message_address(user_profile, usermessage.message)
 
         incoming_valid_message = EmailMessage()
-        incoming_valid_message.set_content("TestMissedMessageEmailMessages Body")
+        incoming_valid_message.set_content("TestMissedMessageEmailMessages body")
 
-        incoming_valid_message["Subject"] = "TestMissedMessageEmailMessages Subject"
+        incoming_valid_message["Subject"] = "TestMissedMessageEmailMessages subject"
         incoming_valid_message["From"] = self.example_email("othello")
         incoming_valid_message["To"] = mm_address
         incoming_valid_message["Reply-to"] = self.example_email("othello")
@@ -831,7 +831,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         message = most_recent_message(user_profile)
 
-        self.assertEqual(message.content, "TestMissedMessageEmailMessages Body")
+        self.assertEqual(message.content, "TestMissedMessageEmailMessages body")
         self.assertEqual(message.sender, self.example_user("othello"))
         self.assertEqual(message.recipient.type_id, user_profile.id)
         self.assertEqual(message.recipient.type, Recipient.PERSONAL)
@@ -863,9 +863,9 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         mm_address = create_missed_message_address(user_profile, usermessage.message)
 
         incoming_valid_message = EmailMessage()
-        incoming_valid_message.set_content("TestMissedHuddleMessageEmailMessages Body")
+        incoming_valid_message.set_content("TestMissedHuddleMessageEmailMessages body")
 
-        incoming_valid_message["Subject"] = "TestMissedHuddleMessageEmailMessages Subject"
+        incoming_valid_message["Subject"] = "TestMissedHuddleMessageEmailMessages subject"
         incoming_valid_message["From"] = self.example_email("cordelia")
         incoming_valid_message["To"] = mm_address
         incoming_valid_message["Reply-to"] = self.example_email("cordelia")
@@ -876,7 +876,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         user_profile = self.example_user("iago")
         message = most_recent_message(user_profile)
 
-        self.assertEqual(message.content, "TestMissedHuddleMessageEmailMessages Body")
+        self.assertEqual(message.content, "TestMissedHuddleMessageEmailMessages body")
         self.assertEqual(message.sender, self.example_user("cordelia"))
         self.assertEqual(message.recipient.type, Recipient.HUDDLE)
 
@@ -884,7 +884,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         user_profile = self.example_user("othello")
         message = most_recent_message(user_profile)
 
-        self.assertEqual(message.content, "TestMissedHuddleMessageEmailMessages Body")
+        self.assertEqual(message.content, "TestMissedHuddleMessageEmailMessages body")
         self.assertEqual(message.sender, self.example_user("cordelia"))
         self.assertEqual(message.recipient.type, Recipient.HUDDLE)
 
@@ -915,9 +915,9 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         mm_address = create_missed_message_address(user_profile, usermessage.message)
 
         incoming_valid_message = EmailMessage()
-        incoming_valid_message.set_content("TestMissedMessageEmailMessages Body")
+        incoming_valid_message.set_content("TestMissedMessageEmailMessages body")
 
-        incoming_valid_message["Subject"] = "TestMissedMessageEmailMessages Subject"
+        incoming_valid_message["Subject"] = "TestMissedMessageEmailMessages subject"
         incoming_valid_message["From"] = user_profile.delivery_email
         incoming_valid_message["To"] = mm_address
         incoming_valid_message["Reply-to"] = user_profile.delivery_email
@@ -928,7 +928,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         message = most_recent_message(user_profile)
 
-        self.assertEqual(message.content, "TestMissedMessageEmailMessages Body")
+        self.assertEqual(message.content, "TestMissedMessageEmailMessages body")
         self.assertEqual(message.sender, self.example_user("othello"))
         self.assertEqual(message.recipient.type, Recipient.STREAM)
         self.assertEqual(message.recipient.id, usermessage.message.recipient.id)
@@ -957,9 +957,9 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         mm_address = create_missed_message_address(user_profile, usermessage.message)
 
         incoming_valid_message = EmailMessage()
-        incoming_valid_message.set_content("TestMissedMessageEmailMessages Body")
+        incoming_valid_message.set_content("TestMissedMessageEmailMessages body")
 
-        incoming_valid_message["Subject"] = "TestMissedMessageEmailMessages Subject"
+        incoming_valid_message["Subject"] = "TestMissedMessageEmailMessages subject"
         incoming_valid_message["From"] = user_profile.delivery_email
         incoming_valid_message["To"] = mm_address
         incoming_valid_message["Reply-to"] = user_profile.delivery_email
@@ -1001,9 +1001,9 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         usermessage.message.save(update_fields=["subject"])
 
         incoming_valid_message = EmailMessage()
-        incoming_valid_message.set_content("TestMissedMessageEmailMessages Body")
+        incoming_valid_message.set_content("TestMissedMessageEmailMessages body")
 
-        incoming_valid_message["Subject"] = "TestMissedMessageEmailMessages Subject"
+        incoming_valid_message["Subject"] = "TestMissedMessageEmailMessages subject"
         incoming_valid_message["From"] = user_profile.delivery_email
         incoming_valid_message["To"] = mm_address
         incoming_valid_message["Reply-to"] = user_profile.delivery_email
@@ -1015,7 +1015,7 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         message = most_recent_message(user_profile)
 
         self.assertEqual(message.subject, "updated topic")
-        self.assertEqual(message.content, "TestMissedMessageEmailMessages Body")
+        self.assertEqual(message.content, "TestMissedMessageEmailMessages body")
         self.assertEqual(message.sender, self.example_user("othello"))
         self.assertEqual(message.recipient.type, Recipient.STREAM)
         self.assertEqual(message.recipient.id, usermessage.message.recipient.id)
@@ -1044,9 +1044,9 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         do_deactivate_user(user_profile, acting_user=None)
 
         incoming_valid_message = EmailMessage()
-        incoming_valid_message.set_content("TestMissedMessageEmailMessages Body")
+        incoming_valid_message.set_content("TestMissedMessageEmailMessages body")
 
-        incoming_valid_message["Subject"] = "TestMissedMessageEmailMessages Subject"
+        incoming_valid_message["Subject"] = "TestMissedMessageEmailMessages subject"
         incoming_valid_message["From"] = user_profile.delivery_email
         incoming_valid_message["To"] = mm_address
         incoming_valid_message["Reply-to"] = user_profile.delivery_email
@@ -1081,9 +1081,9 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
         do_deactivate_realm(user_profile.realm, acting_user=None)
 
         incoming_valid_message = EmailMessage()
-        incoming_valid_message.set_content("TestMissedMessageEmailMessages Body")
+        incoming_valid_message.set_content("TestMissedMessageEmailMessages body")
 
-        incoming_valid_message["Subject"] = "TestMissedMessageEmailMessages Subject"
+        incoming_valid_message["Subject"] = "TestMissedMessageEmailMessages subject"
         incoming_valid_message["From"] = user_profile.delivery_email
         incoming_valid_message["To"] = mm_address
         incoming_valid_message["Reply-to"] = user_profile.delivery_email
@@ -1116,9 +1116,9 @@ class TestMissedMessageEmailMessages(ZulipTestCase):
 
         mm_address = create_missed_message_address(user_profile, message)
         incoming_valid_message = EmailMessage()
-        incoming_valid_message.set_content("TestMissedMessageEmailMessages Body")
+        incoming_valid_message.set_content("TestMissedMessageEmailMessages body")
 
-        incoming_valid_message["Subject"] = "TestMissedMessageEmailMessages Subject"
+        incoming_valid_message["Subject"] = "TestMissedMessageEmailMessages subject"
         incoming_valid_message["From"] = user_profile.delivery_email
         incoming_valid_message["To"] = mm_address
         incoming_valid_message["Reply-to"] = user_profile.delivery_email
@@ -1189,7 +1189,7 @@ class TestReplyExtraction(ZulipTestCase):
         incoming_valid_message = EmailMessage()
         incoming_valid_message.set_content(text)
 
-        incoming_valid_message["Subject"] = "TestStreamEmailMessages Subject"
+        incoming_valid_message["Subject"] = "TestStreamEmailMessages subject"
         incoming_valid_message["From"] = user_profile.delivery_email
         incoming_valid_message["To"] = stream_to_address
         incoming_valid_message["Reply-to"] = user_profile.delivery_email
@@ -1203,7 +1203,7 @@ class TestReplyExtraction(ZulipTestCase):
 
         # Don't extract if Subject indicates the email has been forwarded into the mirror:
         del incoming_valid_message["Subject"]
-        incoming_valid_message["Subject"] = "FWD: TestStreamEmailMessages Subject"
+        incoming_valid_message["Subject"] = "FWD: TestStreamEmailMessages subject"
         process_message(incoming_valid_message)
         message = most_recent_message(user_profile)
         self.assertEqual(message.content, text)
@@ -1240,7 +1240,7 @@ class TestReplyExtraction(ZulipTestCase):
         incoming_valid_message = EmailMessage()
         incoming_valid_message.set_content(html, subtype="html")
 
-        incoming_valid_message["Subject"] = "TestStreamEmailMessages Subject"
+        incoming_valid_message["Subject"] = "TestStreamEmailMessages subject"
         incoming_valid_message["From"] = user_profile.delivery_email
         incoming_valid_message["To"] = stream_to_address
         incoming_valid_message["Reply-to"] = user_profile.delivery_email
@@ -1254,7 +1254,7 @@ class TestReplyExtraction(ZulipTestCase):
 
         # Don't extract if Subject indicates the email has been forwarded into the mirror:
         del incoming_valid_message["Subject"]
-        incoming_valid_message["Subject"] = "FWD: TestStreamEmailMessages Subject"
+        incoming_valid_message["Subject"] = "FWD: TestStreamEmailMessages subject"
         process_message(incoming_valid_message)
         message = most_recent_message(user_profile)
         self.assertEqual(message.content, convert_html_to_markdown(html))
@@ -1408,7 +1408,7 @@ class TestStreamEmailMessagesSubjectStripping(ZulipTestCase):
         stream = get_stream("Denmark", user_profile.realm)
         stream_to_address = encode_email_address(stream)
         incoming_valid_message = EmailMessage()
-        incoming_valid_message.set_content("TestStreamEmailMessages Body")
+        incoming_valid_message.set_content("TestStreamEmailMessages body")
         incoming_valid_message["Subject"] = "Re: Fwd: Re: Test"
         incoming_valid_message["From"] = self.example_email("hamlet")
         incoming_valid_message["To"] = stream_to_address
@@ -1461,8 +1461,8 @@ class TestContentTypeUnspecifiedCharset(ZulipTestCase):
 class TestEmailMirrorProcessMessageNoValidRecipient(ZulipTestCase):
     def test_process_message_no_valid_recipient(self) -> None:
         incoming_valid_message = EmailMessage()
-        incoming_valid_message.set_content("Test Body")
-        incoming_valid_message["Subject"] = "Test Subject"
+        incoming_valid_message.set_content("Test body")
+        incoming_valid_message["Subject"] = "Test subject"
         incoming_valid_message["From"] = self.example_email("hamlet")
         incoming_valid_message["To"] = "address@wrongdomain, address@notzulip"
         incoming_valid_message["Reply-to"] = self.example_email("othello")
@@ -1486,8 +1486,8 @@ class TestEmailMirrorLogAndReport(ZulipTestCase):
         scrubbed_address = "X" * len(address_parts[0]) + "@" + address_parts[1]
 
         incoming_valid_message = EmailMessage()
-        incoming_valid_message.set_content("Test Body")
-        incoming_valid_message["Subject"] = "Test Subject"
+        incoming_valid_message.set_content("Test body")
+        incoming_valid_message["Subject"] = "Test subject"
         incoming_valid_message["From"] = self.example_email("hamlet")
         incoming_valid_message["To"] = stream_to_address
         with self.assertLogs("zerver.lib.email_mirror", "ERROR") as error_log:
@@ -1528,8 +1528,8 @@ class TestEmailMirrorLogAndReport(ZulipTestCase):
     def test_log_and_report_no_errorbot(self) -> None:
         with self.settings(ERROR_BOT=None):
             incoming_valid_message = EmailMessage()
-            incoming_valid_message.set_content("Test Body")
-            incoming_valid_message["Subject"] = "Test Subject"
+            incoming_valid_message.set_content("Test body")
+            incoming_valid_message["Subject"] = "Test subject"
             incoming_valid_message["From"] = self.example_email("hamlet")
             with self.assertLogs(logger_name, level="ERROR") as m:
                 log_and_report(incoming_valid_message, "test error message", None)

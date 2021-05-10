@@ -614,7 +614,7 @@ test("uppy_events", (override) => {
 
     state = {
         type: "error",
-        details: "Some Error",
+        details: "Some error",
         message: "Some error message",
     };
     const on_info_visible_callback = callbacks["info-visible"];

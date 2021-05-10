@@ -31,7 +31,7 @@ These three systems are documented in detail.
 What you are reading right now is part of the collection of
 documentation targeted at developers and people running their own
 Zulip servers.  These docs are written in
-[Commonmark Markdown](https://commonmark.org/) with a small bit of rST.
+[CommonMark Markdown](https://commonmark.org/) with a small bit of rST.
 We've chosen Markdown because it is
 [easy to write](https://commonmark.org/help/).  The source for Zulip's
 developer documentation is at `docs/` in the Zulip Git repository, and

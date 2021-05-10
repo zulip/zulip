@@ -25,7 +25,7 @@ const stream4 = 4;
 const stream5 = 5; // Deleted stream
 
 // Topics in the stream, all unread except topic1 & stream1.
-const topic1 = "topic-1"; // No Other sender & read.
+const topic1 = "topic-1"; // No other sender & read.
 const topic2 = "topic-2"; // Other sender
 const topic3 = "topic-3"; // User not present
 const topic4 = "topic-4"; // User not present
@@ -786,31 +786,31 @@ test("test_topic_edit", (override) => {
 
 test("test_search", () => {
     rt.clear_for_tests();
-    assert.equal(rt.topic_in_search_results("t", "general", "Recent Topic"), true);
-    assert.equal(rt.topic_in_search_results("T", "general", "Recent Topic"), true);
-    assert.equal(rt.topic_in_search_results("to", "general", "Recent Topic"), true);
-    assert.equal(rt.topic_in_search_results("top", "general", "Recent Topic"), true);
-    assert.equal(rt.topic_in_search_results("ToP", "general", "Recent Topic"), true);
-    assert.equal(rt.topic_in_search_results("Topi", "general", "Recent Topic"), true);
-    assert.equal(rt.topic_in_search_results("tOpi", "general", "Recent Topic"), true);
-    assert.equal(rt.topic_in_search_results("toPic", "general", "Recent Topic"), true);
-    assert.equal(rt.topic_in_search_results("Topic", "general", "Recent Topic"), true);
-    assert.equal(rt.topic_in_search_results("topic", "general", "Recent Topic"), true);
-    assert.equal(rt.topic_in_search_results("recent", "general", "Recent Topic"), true);
-    assert.equal(rt.topic_in_search_results("RECENT", "general", "Recent Topic"), true);
+    assert.equal(rt.topic_in_search_results("t", "general", "Recent topic"), true);
+    assert.equal(rt.topic_in_search_results("T", "general", "Recent topic"), true);
+    assert.equal(rt.topic_in_search_results("to", "general", "Recent topic"), true);
+    assert.equal(rt.topic_in_search_results("top", "general", "Recent topic"), true);
+    assert.equal(rt.topic_in_search_results("ToP", "general", "Recent topic"), true);
+    assert.equal(rt.topic_in_search_results("Topi", "general", "Recent topic"), true);
+    assert.equal(rt.topic_in_search_results("tOpi", "general", "Recent topic"), true);
+    assert.equal(rt.topic_in_search_results("toPic", "general", "Recent topic"), true);
+    assert.equal(rt.topic_in_search_results("Topic", "general", "Recent topic"), true);
+    assert.equal(rt.topic_in_search_results("topic", "general", "Recent topic"), true);
+    assert.equal(rt.topic_in_search_results("recent", "general", "Recent topic"), true);
+    assert.equal(rt.topic_in_search_results("RECENT", "general", "Recent topic"), true);
 
     // match in any order of words
-    assert.equal(rt.topic_in_search_results("topic recent", "general", "Recent Topic"), true);
+    assert.equal(rt.topic_in_search_results("topic recent", "general", "Recent topic"), true);
 
     // Matches any sequence of words.
-    assert.equal(rt.topic_in_search_results("o", "general", "Recent Topic"), true);
-    assert.equal(rt.topic_in_search_results("nt to", "general", "Recent Topic"), true);
-    assert.equal(rt.topic_in_search_results("z", "general", "Recent Topic"), false);
+    assert.equal(rt.topic_in_search_results("o", "general", "Recent topic"), true);
+    assert.equal(rt.topic_in_search_results("nt to", "general", "Recent topic"), true);
+    assert.equal(rt.topic_in_search_results("z", "general", "Recent topic"), false);
 
-    assert.equal(rt.topic_in_search_results("?", "general", "Recent Topic"), false);
+    assert.equal(rt.topic_in_search_results("?", "general", "Recent topic"), false);
 
     // Test special character match
-    assert.equal(rt.topic_in_search_results(".*+?^${}()[]\\", "general", "Recent Topic"), false);
+    assert.equal(rt.topic_in_search_results(".*+?^${}()[]\\", "general", "Recent topic"), false);
     assert.equal(rt.topic_in_search_results("?", "general", "not-at-start?"), true);
 
     assert.equal(rt.topic_in_search_results("?", "general", "?"), true);

@@ -33,8 +33,8 @@ class WordPressHookTests(WebhookTestCase):
     def test_publish_post_no_data_provided(self) -> None:
 
         # Note: the fixture includes 'hook=publish_post' because it's always added by HookPress
-        expected_topic = "WordPress Notification"
-        expected_message = "New post published:\n* [New WordPress Post](WordPress Post URL)"
+        expected_topic = "WordPress notification"
+        expected_message = "New post published:\n* [New WordPress post](WordPress post URL)"
 
         self.check_webhook(
             "publish_post_no_data_provided",
@@ -99,7 +99,7 @@ class WordPressHookTests(WebhookTestCase):
         result = self.client_post(self.url, "unknown_action", **post_params)
 
         # check that we got the expected error message
-        self.assert_json_error(result, "Unknown WordPress webhook action: WordPress Action")
+        self.assert_json_error(result, "Unknown WordPress webhook action: WordPress action")
 
     def test_unknown_action_no_hook_provided(self) -> None:
 
@@ -113,7 +113,7 @@ class WordPressHookTests(WebhookTestCase):
         }
         result = self.client_post(self.url, "unknown_action", **post_params)
 
-        self.assert_json_error(result, "Unknown WordPress webhook action: WordPress Action")
+        self.assert_json_error(result, "Unknown WordPress webhook action: WordPress action")
 
     def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data("wordpress", fixture_name, file_type="txt")

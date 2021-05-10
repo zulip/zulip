@@ -328,7 +328,7 @@ class TestRealmAuditLog(ZulipTestCase):
             realm,
             "test",
             invite_only=False,
-            stream_description="Test Description",
+            stream_description="Test description",
             acting_user=user,
         )[0]
         self.assertEqual(

@@ -308,7 +308,7 @@ provisioning if your Internet connection is unreliable.  To retry, you
 can use `vagrant provision` (`vagrant up` will just boot the guest
 without provisioning after the first time).  Other common issues are
 documented in the
-[Troubleshooting and Common Errors](#troubleshooting-and-common-errors)
+[Troubleshooting and common errors](#troubleshooting-and-common-errors)
 section.  If that doesn't help, please visit
 [#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
 in the [Zulip development community server](../contributing/chat-zulip-org.md) for
@@ -432,7 +432,7 @@ running Git commands in Terminal (macOS/Ubuntu) or Git BASH (Windows) in the
 directory where you cloned Zulip on your main machine.
 
 If you're new to working with Git/GitHub, check out our [Git & GitHub
-Guide][rtd-git-guide].
+guide][rtd-git-guide].
 
 #### Maintaining the development environment
 
@@ -533,7 +533,7 @@ $ ./tools/run-dev.py
 
 Next, read the following to learn more about developing for Zulip:
 
-* [Git & GitHub Guide][rtd-git-guide]
+* [Git & GitHub guide][rtd-git-guide]
 * [Using the development environment][rtd-using-dev-env]
 * [Testing][rtd-testing] (and [Configuring CI][ci] to
 run the full test suite against any branches you push to your fork,

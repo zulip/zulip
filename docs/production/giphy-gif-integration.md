@@ -11,7 +11,7 @@ To enable this integration, you need to get a production API key from
 
 1. [Create a GIPHY account](https://giphy.com/join).
 
-1. Create a GIPHY API Key by clicking “Create an App” on the
+1. Create a GIPHY API key by clicking “Create an App” on the
    [Developer Dashboard][giphy-dashboard].
 
 1. Choose **SDK** as product type and click **Next Step**.

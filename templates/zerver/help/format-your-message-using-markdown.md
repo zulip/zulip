@@ -156,7 +156,7 @@ the user interacts with it.
 ~~~
 Normal content in message
 
-```spoiler Spoiler Header
+```spoiler Spoiler header
 Spoiler content. These lines won't be visible until the user expands the spoiler.
 ```
 ~~~
@@ -197,7 +197,7 @@ the variant that only contains the user ID).
 
 ![Markdown mentions](/static/images/help/markdown-mentions.png)
 
-## Status Messages
+## Status messages
 
 ```
 /me is away

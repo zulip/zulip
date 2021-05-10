@@ -128,7 +128,7 @@ const backend = {
 const edgecase_group = {
     name: "Bobby <h1>Tables</h1>",
     id: 3,
-    description: "HTML Syntax to check for Markdown edge cases.",
+    description: "HTML syntax to check for Markdown edge cases.",
     members: [],
 };
 

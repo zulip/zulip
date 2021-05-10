@@ -99,38 +99,38 @@ class GogsHookTests(WebhookTestCase):
         self.check_webhook("pull_request__synchronized", expected_topic, expected_message)
 
     def test_issues_opened(self) -> None:
-        expected_topic = "test / Issue #3 New test issue"
-        expected_message = """kostekIV opened [Issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n~~~ quote\nTest\n~~~"""
+        expected_topic = "test / issue #3 New test issue"
+        expected_message = """kostekIV opened [issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n~~~ quote\nTest\n~~~"""
         self.check_webhook("issues__opened", expected_topic, expected_message)
 
     def test_issues_reopened(self) -> None:
-        expected_topic = "test / Issue #3 New test issue"
-        expected_message = """kostekIV reopened [Issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n~~~ quote\nTest\n~~~"""
+        expected_topic = "test / issue #3 New test issue"
+        expected_message = """kostekIV reopened [issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n~~~ quote\nTest\n~~~"""
         self.check_webhook("issues__reopened", expected_topic, expected_message)
 
     def test_issues_edited(self) -> None:
-        expected_topic = "test / Issue #3 New test issue"
-        expected_message = """kostekIV edited [Issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n~~~ quote\nTest edit\n~~~"""
+        expected_topic = "test / issue #3 New test issue"
+        expected_message = """kostekIV edited [issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n~~~ quote\nTest edit\n~~~"""
         self.check_webhook("issues__edited", expected_topic, expected_message)
 
     def test_issues_assignee(self) -> None:
-        expected_topic = "test / Issue #3 New test issue"
-        expected_message = """kostekIV assigned [Issue #3](https://try.gogs.io/kostekIV/test/issues/3) (assigned to kostekIV):\n\n~~~ quote\nTest\n~~~"""
+        expected_topic = "test / issue #3 New test issue"
+        expected_message = """kostekIV assigned [issue #3](https://try.gogs.io/kostekIV/test/issues/3) (assigned to kostekIV):\n\n~~~ quote\nTest\n~~~"""
         self.check_webhook("issues__assigned", expected_topic, expected_message)
 
     def test_issues_closed(self) -> None:
-        expected_topic = "test / Issue #3 New test issue"
-        expected_message = """kostekIV closed [Issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n~~~ quote\nClosed #3\n~~~"""
+        expected_topic = "test / issue #3 New test issue"
+        expected_message = """kostekIV closed [issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n~~~ quote\nClosed #3\n~~~"""
         self.check_webhook("issues__closed", expected_topic, expected_message)
 
     def test_issue_comment_new(self) -> None:
-        expected_topic = "test / Issue #3 New test issue"
-        expected_message = """kostekIV [commented](https://try.gogs.io/kostekIV/test/issues/3#issuecomment-3635) on [Issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n~~~ quote\nTest comment\n~~~"""
+        expected_topic = "test / issue #3 New test issue"
+        expected_message = """kostekIV [commented](https://try.gogs.io/kostekIV/test/issues/3#issuecomment-3635) on [issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n~~~ quote\nTest comment\n~~~"""
         self.check_webhook("issue_comment__new", expected_topic, expected_message)
 
     def test_issue_comment_edited(self) -> None:
-        expected_topic = "test / Issue #3 New test issue"
-        expected_message = """kostekIV edited a [comment](https://try.gogs.io/kostekIV/test/issues/3#issuecomment-3634) on [Issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n~~~ quote\nedit comment\n~~~"""
+        expected_topic = "test / issue #3 New test issue"
+        expected_message = """kostekIV edited a [comment](https://try.gogs.io/kostekIV/test/issues/3#issuecomment-3634) on [issue #3](https://try.gogs.io/kostekIV/test/issues/3):\n\n~~~ quote\nedit comment\n~~~"""
         self.check_webhook("issue_comment__edited", expected_topic, expected_message)
 
     def test_release_published(self) -> None:

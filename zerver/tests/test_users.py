@@ -1239,11 +1239,11 @@ class UserProfileTest(ZulipTestCase):
         iago = self.example_user("iago")
         stream = get_stream("Rome", iago.realm)
 
-        # Invalid User ID.
+        # Invalid user ID.
         result = self.client_get(f"/json/users/25/subscriptions/{stream.id}")
         self.assert_json_error(result, "No such user")
 
-        # Invalid Stream ID.
+        # Invalid stream ID.
         result = self.client_get(f"/json/users/{iago.id}/subscriptions/25")
         self.assert_json_error(result, "Invalid stream id")
 
@@ -1491,7 +1491,7 @@ class RecipientInfoTest(ZulipTestCase):
 
         realm = hamlet.realm
 
-        stream_name = "Test Stream"
+        stream_name = "Test stream"
         topic_name = "test topic"
 
         for user in [hamlet, cordelia, othello]:

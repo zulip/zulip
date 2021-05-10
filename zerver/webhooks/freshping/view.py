@@ -12,7 +12,7 @@ FRESHPING_TOPIC_TEMPLATE = "{check_name}"
 
 FRESHPING_MESSAGE_TEMPLATE_UNREACHABLE = """
 {request_url} has just become unreachable.
-Error Code: {http_status_code}.
+Error code: {http_status_code}.
 """.strip()
 FRESHPING_MESSAGE_TEMPLATE_UP = "{request_url} is back up and no longer unreachable."
 

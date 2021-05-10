@@ -375,7 +375,7 @@ CacheItemT = TypeVar("CacheItemT")
 # serializable objects, will be the object; if encoded, bytes.
 CompressedItemT = TypeVar("CompressedItemT")
 
-# Required Arguments are as follows:
+# Required arguments are as follows:
 # * object_ids: The list of object ids to look up
 # * cache_key_function: object_id => cache key
 # * query_function: [object_ids] => [objects from database]

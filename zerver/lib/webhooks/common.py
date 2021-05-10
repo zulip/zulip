@@ -84,7 +84,7 @@ def check_send_webhook_message(
         assert user_profile.bot_owner is not None
         check_send_private_message(user_profile, request.client, user_profile.bot_owner, body)
     else:
-        # Some third-party websites (such as Atlassian's JIRA), tend to
+        # Some third-party websites (such as Atlassian's Jira), tend to
         # double escape their URLs in a manner that escaped space characters
         # (%20) are never properly decoded. We work around that by making sure
         # that the URL parameters are decoded on our end.

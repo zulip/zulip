@@ -67,7 +67,7 @@ urls = [
     path("emails/clear/", clear_emails),
     # Listing of useful URLs and various tools for development
     path("devtools/", TemplateView.as_view(template_name="zerver/development/dev_tools.html")),
-    # Register New User and Realm
+    # Register new user and realm
     path("devtools/register_user/", register_development_user, name="register_dev_user"),
     path("devtools/register_realm/", register_development_realm, name="register_dev_realm"),
     # Have easy access for error pages

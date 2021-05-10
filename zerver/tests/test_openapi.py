@@ -405,7 +405,7 @@ The types for the request parameters in zerver/openapi/zulip.yaml
 do not match the types declared in the implementation of {function.__name__}.\n"""
         msg += "=" * 65 + "\n"
         msg += "{:<10s}{:^30s}{:>10s}\n".format(
-            "Parameter", "OpenAPI Type", "Function Declaration Type"
+            "parameter", "OpenAPI type", "function declaration type"
         )
         msg += "=" * 65 + "\n"
         opvtype = None

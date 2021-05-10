@@ -126,9 +126,9 @@ Response: 12.0 meter = 13.12336 yard
 
 > zulip-terminal -b ~/followup.conf followup
 
-Enter your message: "Task Completed"
+Enter your message: "Task completed"
 Response: stream: followup topic: foo_sender@zulip.com
-          from foo_sender@zulip.com: Task Completed
+          from foo_sender@zulip.com: Task completed
 
 ```
 

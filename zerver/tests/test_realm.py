@@ -227,7 +227,7 @@ class RealmTest(ZulipTestCase):
         rendered_description = get_realm_rendered_description(realm)
         text_description = get_realm_text_description(realm)
 
-        realm.description = "New Description"
+        realm.description = "New description"
         realm.save(update_fields=["description"])
 
         new_rendered_description = get_realm_rendered_description(realm)

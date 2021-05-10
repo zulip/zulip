@@ -25,7 +25,7 @@ More examples and documentation can be found [here](https://github.com/zulip/zul
 
 {generate_api_arguments_table|zulip.yaml|/messages/flags:post}
 
-## Available Flags
+## Available flags
 <div>
     <table>
         <thead>

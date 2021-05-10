@@ -1,7 +1,7 @@
-*If you are running JIRA version 5.2 or greater, or using the hosted
-JIRA provided by Atlassian, we recommend using the
+*If you are running Jira version 5.2 or greater, or using the hosted
+Jira provided by Atlassian, we recommend using the
 [web-hook method](./jira) above instead. This plugin supports older
-versions of JIRA.*
+versions of Jira.*
 
 {!create-stream.md!}
 
@@ -11,9 +11,9 @@ versions of JIRA.*
 
 #### Plugin installation
 
-The JIRA integration plugin requires two JIRA plugins. Please install
+The Jira integration plugin requires two Jira plugins. Please install
 the following plugins using the **Universal Plugin Manager** in your
-JIRA installation:
+Jira installation:
 
 * [Script Runner Plugin][script-runner]
 * [SSL Plugin][ssl-plugin]
@@ -24,21 +24,21 @@ JIRA installation:
 #### SSL setup
 
 As Zulip is using a StartCOM SSL certificate that is not recognized by
-default in the Java installation shipped with JIRA, you will need to
-tell JIRA about the certificate.
+default in the Java installation shipped with Jira, you will need to
+tell Jira about the certificate.
 
 1. Navigate to **Administration > System > Configure SSL** and in the
    **Import SSL Certificates** field, enter `{{ api_url }}`.
 
 2. After clicking **Save Certificates**, follow the on-screen
-   instructions and restart JIRA for it to recognize the proper
+   instructions and restart Jira for it to recognize the proper
    certificates.
 
 #### Zulip integration
 
 1. Copy the folder `integrations/jira/org/` (from the tarball you
-   downloaded above) to your JIRA `classes` folder.  For self-contained
-   JIRA installations, this will be `atlassian-jira/WEB-INF/classes/`,
+   downloaded above) to your Jira `classes` folder.  For self-contained
+   Jira installations, this will be `atlassian-jira/WEB-INF/classes/`,
    but this may be different in your deployment.
 
 2. Edit the constants at the top of
@@ -62,10 +62,10 @@ String issueBaseUrl = "https://jira.COMPANY.com/browse/"
 5. In the **Name of groovy class** field, enter
    `org.zulip.jira.ZulipListener`.
 
-6. Click **Add Listener**, and JIRA will now notify your Zulip of
-   changes to your issues! Updates from JIRA will be sent to the stream
+6. Click **Add Listener**, and Jira will now notify your Zulip of
+   changes to your issues! Updates from Jira will be sent to the stream
    you've configured.
 
 {!congrats.md!}
 
-![JIRA bot message](/static/images/integrations/jira/001.png)
+![Jira bot message](/static/images/integrations/jira/001.png)

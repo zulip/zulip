@@ -164,7 +164,7 @@ def tokenize(text: str) -> List[Token]:
                 continue
         except TokenizationException as e:
             raise FormattedException(
-                f'''{e.message} at Line {state.line} Col {state.col}:"{e.line_content}"''',
+                f'''{e.message} at line {state.line} col {state.col}:"{e.line_content}"''',
             )
 
         line_span = len(s.split("\n"))
@@ -401,9 +401,9 @@ def get_html_tag(text: str, i: int) -> str:
         end += 1
     if quote_count % 2 != 0:
         if unclosed_end:
-            raise TokenizationException("Unbalanced Quotes", text[i:unclosed_end])
+            raise TokenizationException("Unbalanced quotes", text[i:unclosed_end])
         else:
-            raise TokenizationException("Unbalanced Quotes", text[i : end + 1])
+            raise TokenizationException("Unbalanced quotes", text[i : end + 1])
     if end == len(text) or text[end] != ">":
         raise TokenizationException('Tag missing ">"', text[i : end + 1])
     s = text[i : end + 1]
