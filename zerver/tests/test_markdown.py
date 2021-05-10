@@ -1907,6 +1907,19 @@ class MarkdownTest(ZulipTestCase):
         )
         self.assertEqual(msg.mentions_user_ids, set())
 
+    def test_silent_wildcard_mention(self) -> None:
+        user_profile = self.example_user("othello")
+        msg = Message(sender=user_profile, sending_client=get_client("test"))
+
+        wildcards = ["all", "everyone", "stream"]
+        for wildcard in wildcards:
+            content = f"@_**{wildcard}**"
+            self.assertEqual(
+                render_markdown(msg, content),
+                f'<p><span class="user-mention silent" data-user-id="*">{wildcard}</span></p>',
+            )
+            self.assertFalse(msg.mentions_wildcard)
+
     def test_mention_invalid_followed_by_valid(self) -> None:
         sender_user_profile = self.example_user("othello")
         user_profile = self.example_user("hamlet")
@@ -2041,6 +2054,26 @@ class MarkdownTest(ZulipTestCase):
         content = "> @_**King Hamlet**"
         self.assertEqual(render_markdown(msg, content), expected)
         self.assertEqual(msg.mentions_user_ids, set())
+
+    def test_wildcard_mention_in_quotes(self) -> None:
+        user_profile = self.example_user("othello")
+        msg = Message(sender=user_profile, sending_client=get_client("test"))
+
+        def assert_silent_mention(content: str, wildcard: str) -> None:
+            expected = (
+                "<blockquote>\n<p>"
+                f'<span class="user-mention silent" data-user-id="*">{wildcard}</span>'
+                "</p>\n</blockquote>"
+            )
+            self.assertEqual(render_markdown(msg, content), expected)
+            self.assertFalse(msg.mentions_wildcard)
+
+        wildcards = ["all", "everyone", "stream"]
+        for wildcard in wildcards:
+            assert_silent_mention(f"> @**{wildcard}**", wildcard)
+            assert_silent_mention(f"> @_**{wildcard}**", wildcard)
+            assert_silent_mention(f"```quote\n@**{wildcard}**\n```", wildcard)
+            assert_silent_mention(f"```quote\n@_**{wildcard}**\n```", wildcard)
 
     def test_mention_duplicate_full_name(self) -> None:
         realm = get_realm("zulip")

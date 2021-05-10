@@ -1848,7 +1848,8 @@ class UserMentionPattern(markdown.inlinepatterns.InlineProcessor):
                 user = db_data["mention_data"].get_user_by_name(name)
 
             if wildcard:
-                self.md.zulip_message.mentions_wildcard = True
+                if not silent:
+                    self.md.zulip_message.mentions_wildcard = True
                 user_id = "*"
             elif user:
                 if not silent:
