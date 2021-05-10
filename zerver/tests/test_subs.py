@@ -732,9 +732,7 @@ class StreamAdminTest(ZulipTestCase):
         events = []
         with tornado_redirected_to_list(events):
             stream_id = get_stream("private_stream", user_profile.realm).id
-            result = self.client_patch(
-                f"/json/streams/{stream_id}", {"new_name": orjson.dumps("whatever").decode()}
-            )
+            result = self.client_patch(f"/json/streams/{stream_id}", {"new_name": "whatever"})
         self.assert_json_success(result)
         # Should be a name event, an email address event and a notification event
         self.assert_length(events, 3)
@@ -975,14 +973,14 @@ class StreamAdminTest(ZulipTestCase):
 
         result = self.client_patch(
             f"/json/streams/{stream_id}",
-            {"new_description": orjson.dumps("new description").decode()},
+            {"new_description": "new description"},
         )
         self.assert_json_error(result, "Invalid stream id")
 
         result = self.client_patch(
             f"/json/streams/{stream_id}",
             {
-                "stream_name": orjson.dumps("private_stream_1").decode(),
+                "stream_name": "private_stream_1",
                 "is_private": orjson.dumps(True).decode(),
             },
         )
@@ -1002,7 +1000,7 @@ class StreamAdminTest(ZulipTestCase):
             stream_id = get_stream("stream_name1", realm).id
             result = self.client_patch(
                 f"/json/streams/{stream_id}",
-                {"description": orjson.dumps("Test description").decode()},
+                {"description": "Test description"},
             )
         self.assert_json_success(result)
 
@@ -1029,9 +1027,7 @@ class StreamAdminTest(ZulipTestCase):
 
         self.assertEqual("Test description", stream.description)
 
-        result = self.client_patch(
-            f"/json/streams/{stream_id}", {"description": orjson.dumps("a" * 1025).decode()}
-        )
+        result = self.client_patch(f"/json/streams/{stream_id}", {"description": "a" * 1025})
         self.assert_json_error(
             result,
             f"description is too long (limit: {Stream.MAX_DESCRIPTION_LENGTH} characters)",
@@ -1039,7 +1035,7 @@ class StreamAdminTest(ZulipTestCase):
 
         result = self.client_patch(
             f"/json/streams/{stream_id}",
-            {"description": orjson.dumps("a\nmulti\nline\ndescription").decode()},
+            {"description": "a\nmulti\nline\ndescription"},
         )
         self.assert_json_success(result)
         stream = get_stream("stream_name1", realm)
@@ -1049,7 +1045,7 @@ class StreamAdminTest(ZulipTestCase):
         with self.settings(INLINE_URL_EMBED_PREVIEW=True):
             result = self.client_patch(
                 f"/json/streams/{stream_id}",
-                {"description": orjson.dumps("See https://zulip.com/team").decode()},
+                {"description": "See https://zulip.com/team"},
             )
         self.assert_json_success(result)
         stream = get_stream("stream_name1", realm)
@@ -1074,7 +1070,7 @@ class StreamAdminTest(ZulipTestCase):
             stream_id = get_stream("stream_name1", realm).id
             result = self.client_patch(
                 f"/json/streams/{stream_id}",
-                {"description": orjson.dumps("Test description").decode()},
+                {"description": "Test description"},
             )
         self.assert_json_success(result)
         stream = get_stream("stream_name1", realm)
@@ -1094,7 +1090,7 @@ class StreamAdminTest(ZulipTestCase):
 
         stream_id = get_stream("stream_name1", user_profile.realm).id
         result = self.client_patch(
-            f"/json/streams/{stream_id}", {"description": orjson.dumps("Test description").decode()}
+            f"/json/streams/{stream_id}", {"description": "Test description"}
         )
         self.assert_json_error(result, "Must be an organization or stream administrator")
 
