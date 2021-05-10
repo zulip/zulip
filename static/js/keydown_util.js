@@ -2,16 +2,19 @@
     See hotkey.js for handlers that are more app-wide.
 */
 
+// Note that these keycodes differ from those in hotkey.js, because
+// we're using keydown rather than keypress.  It's unclear whether
+// there's a good reason for this difference.
 const keys = {
-    13: "enter_key",
-    37: "left_arrow",
-    38: "up_arrow",
-    39: "right_arrow",
-    40: "down_arrow",
-    72: "vim_left",
-    74: "vim_down",
-    75: "vim_up",
-    76: "vim_right",
+    13: "enter_key", // Enter
+    37: "left_arrow", // // Left arrow
+    38: "up_arrow", // Up arrow
+    39: "right_arrow", // Right arrow
+    40: "down_arrow", // Down arrow
+    72: "vim_left", // 'H'
+    74: "vim_down", // 'J'
+    75: "vim_up", // 'K'
+    76: "vim_right", // 'L'
 };
 
 export function handle(opts) {
