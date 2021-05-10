@@ -368,6 +368,7 @@ async function test_stream_search_filters_stream_list(page: Page): Promise<void>
     await page.click("#streams_header .sidebar-title");
     await page.type(".stream-list-filter", "ver");
     await page.waitForSelector(await get_stream_li(page, "Denmark"), {hidden: true});
+    await page.waitForSelector(await get_stream_li(page, "Venice"), {hidden: true});
     await page.click(await get_stream_li(page, "Verona"));
     await expect_verona_stream(page);
     assert.strictEqual(
