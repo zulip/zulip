@@ -5649,7 +5649,7 @@ class DeleteMessagesEvent(TypedDict, total=False):
 @transaction.atomic
 def do_update_message(
     user_profile: UserProfile,
-    message: Message,
+    target_message: Message,
     new_stream: Optional[Stream],
     topic_name: Optional[str],
     propagate_mode: str,
@@ -5673,13 +5673,13 @@ def do_update_message(
     also have their topics edited.
     """
     timestamp = timezone_now()
-    message.last_edit_time = timestamp
+    target_message.last_edit_time = timestamp
 
     event: Dict[str, Any] = {
         "type": "update_message",
         "user_id": user_profile.id,
         "edit_timestamp": datetime_to_timestamp(timestamp),
-        "message_id": message.id,
+        "message_id": target_message.id,
     }
 
     edit_history_event: Dict[str, Any] = {
@@ -5687,15 +5687,15 @@ def do_update_message(
         "timestamp": event["edit_timestamp"],
     }
 
-    changed_messages = [message]
+    changed_messages = [target_message]
 
     stream_being_edited = None
-    if message.is_stream_message():
-        stream_id = message.recipient.type_id
+    if target_message.is_stream_message():
+        stream_id = target_message.recipient.type_id
         stream_being_edited = get_stream_by_id_in_realm(stream_id, user_profile.realm)
         event["stream_name"] = stream_being_edited.name
 
-    ums = UserMessage.objects.filter(message=message.id)
+    ums = UserMessage.objects.filter(message=target_message.id)
 
     if content is not None:
         assert rendered_content is not None
@@ -5704,11 +5704,11 @@ def do_update_message(
         assert mention_data is not None
 
         # add data from group mentions to mentions_user_ids.
-        for group_id in message.mentions_user_group_ids:
+        for group_id in target_message.mentions_user_group_ids:
             members = mention_data.get_group_members(group_id)
-            message.mentions_user_ids.update(members)
+            target_message.mentions_user_ids.update(members)
 
-        update_user_message_flags(message, ums)
+        update_user_message_flags(target_message, ums)
 
         # One could imagine checking realm.allow_edit_history here and
         # modifying the events based on that setting, but doing so
@@ -5718,28 +5718,30 @@ def do_update_message(
         # setting must be enforced on the client side, and making a
         # change here simply complicates the logic for clients parsing
         # edit history events.
-        event["orig_content"] = message.content
-        event["orig_rendered_content"] = message.rendered_content
-        edit_history_event["prev_content"] = message.content
-        edit_history_event["prev_rendered_content"] = message.rendered_content
-        edit_history_event["prev_rendered_content_version"] = message.rendered_content_version
-        message.content = content
-        message.rendered_content = rendered_content
-        message.rendered_content_version = markdown_version
+        event["orig_content"] = target_message.content
+        event["orig_rendered_content"] = target_message.rendered_content
+        edit_history_event["prev_content"] = target_message.content
+        edit_history_event["prev_rendered_content"] = target_message.rendered_content
+        edit_history_event[
+            "prev_rendered_content_version"
+        ] = target_message.rendered_content_version
+        target_message.content = content
+        target_message.rendered_content = rendered_content
+        target_message.rendered_content_version = markdown_version
         event["content"] = content
         event["rendered_content"] = rendered_content
-        event["prev_rendered_content_version"] = message.rendered_content_version
+        event["prev_rendered_content_version"] = target_message.rendered_content_version
         event["is_me_message"] = Message.is_status_message(content, rendered_content)
 
-        # message.has_image and message.has_link will have been
+        # target_message.has_image and target_message.has_link will have been
         # already updated by Markdown rendering in the caller.
-        message.has_attachment = check_attachment_reference_change(message)
+        target_message.has_attachment = check_attachment_reference_change(target_message)
 
-        if message.is_stream_message():
+        if target_message.is_stream_message():
             if topic_name is not None:
                 new_topic_name = topic_name
             else:
-                new_topic_name = message.topic_name()
+                new_topic_name = target_message.topic_name()
 
             stream_topic: Optional[StreamTopicTarget] = StreamTopicTarget(
                 stream_id=stream_id,
@@ -5749,8 +5751,8 @@ def do_update_message(
             stream_topic = None
 
         info = get_recipient_info(
-            recipient=message.recipient,
-            sender_id=message.sender_id,
+            recipient=target_message.recipient,
+            sender_id=target_message.sender_id,
             stream_topic=stream_topic,
             possible_wildcard_mention=mention_data.message_has_wildcards(),
         )
@@ -5761,30 +5763,30 @@ def do_update_message(
         event["prior_mention_user_ids"] = list(prior_mention_user_ids)
         event["mention_user_ids"] = list(mention_user_ids)
         event["presence_idle_user_ids"] = filter_presence_idle_user_ids(info["active_user_ids"])
-        if message.mentions_wildcard:
+        if target_message.mentions_wildcard:
             event["wildcard_mention_user_ids"] = list(info["wildcard_mention_user_ids"])
         else:
             event["wildcard_mention_user_ids"] = []
 
         do_update_mobile_push_notification(
-            message, prior_mention_user_ids, info["stream_push_user_ids"]
+            target_message, prior_mention_user_ids, info["stream_push_user_ids"]
         )
 
     if topic_name is not None or new_stream is not None:
-        orig_topic_name = message.topic_name()
+        orig_topic_name = target_message.topic_name()
         event["propagate_mode"] = propagate_mode
-        event["stream_id"] = message.recipient.type_id
+        event["stream_id"] = target_message.recipient.type_id
 
     old_recipient_id = None
     if new_stream is not None:
         assert content is None
-        assert message.is_stream_message()
+        assert target_message.is_stream_message()
         assert stream_being_edited is not None
 
         edit_history_event["prev_stream"] = stream_being_edited.id
         event[ORIG_TOPIC] = orig_topic_name
-        old_recipient_id = message.recipient_id
-        message.recipient_id = new_stream.recipient_id
+        old_recipient_id = target_message.recipient_id
+        target_message.recipient_id = new_stream.recipient_id
 
         event["new_stream_id"] = new_stream.id
         event["propagate_mode"] = propagate_mode
@@ -5835,15 +5837,15 @@ def do_update_message(
 
     if topic_name is not None:
         topic_name = truncate_topic(topic_name)
-        message.set_topic_name(topic_name)
+        target_message.set_topic_name(topic_name)
 
         # These fields have legacy field names.
         event[ORIG_TOPIC] = orig_topic_name
         event[TOPIC_NAME] = topic_name
-        event[TOPIC_LINKS] = topic_links(message.sender.realm_id, topic_name)
+        event[TOPIC_LINKS] = topic_links(target_message.sender.realm_id, topic_name)
         edit_history_event[LEGACY_PREV_TOPIC] = orig_topic_name
 
-    update_edit_history(message, timestamp, edit_history_event)
+    update_edit_history(target_message, timestamp, edit_history_event)
 
     delete_event_notify_user_ids: List[int] = []
     if propagate_mode in ["change_later", "change_all"]:
@@ -5861,7 +5863,7 @@ def do_update_message(
         }
 
         messages_list = update_messages_for_topic_edit(
-            edited_message=message,
+            edited_message=target_message,
             propagate_mode=propagate_mode,
             orig_topic_name=orig_topic_name,
             topic_name=topic_name,
@@ -5914,7 +5916,7 @@ def do_update_message(
             send_event(user_profile.realm, delete_event, delete_event_notify_user_ids)
 
     # This does message.save(update_fields=[...])
-    save_message_for_edit_use_case(message=message)
+    save_message_for_edit_use_case(message=target_message)
 
     realm_id: Optional[int] = None
     if stream_being_edited is not None:

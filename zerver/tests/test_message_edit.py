@@ -803,7 +803,7 @@ class EditMessageTest(ZulipTestCase):
         ) -> None:
             do_update_message(
                 user_profile=user_profile,
-                message=message,
+                target_message=message,
                 new_stream=None,
                 topic_name=topic_name,
                 propagate_mode="change_later",
