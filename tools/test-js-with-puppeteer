@@ -113,11 +113,13 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
                     response = input('Tests failed. Press Enter to re-run tests, "q" to quit: ')
         else:
             ret = 1
-            ret = run_tests()[0]
+            ret, current_test_num = run_tests()
     if ret != 0:
+        failed_test_file_name = os.path.basename(test_files[current_test_num])
         print(
             f"""
-{FAIL}The Puppeteer frontend tests failed!{ENDC}
+{FAIL}The Puppeteer frontend tests failed! The failing test was:
+    ./tools/test-js-with-puppeteer {"--firefox " if options.firefox else ""}{failed_test_file_name}{ENDC}
 For help debugging, read:
   https://zulip.readthedocs.io/en/latest/testing/testing-with-puppeteer.html
 or report and ask for help in chat.zulip.org""",
