@@ -1,10 +1,9 @@
 from argparse import ArgumentParser
 from typing import Any
 
-from zerver.lib.actions import do_deactivate_user
+from zerver.lib.actions import do_deactivate_user, get_active_bots_owned_by_user
 from zerver.lib.management import CommandError, ZulipBaseCommand
 from zerver.lib.sessions import user_sessions
-from zerver.models import UserProfile
 
 
 class Command(ZulipBaseCommand):
@@ -34,11 +33,7 @@ class Command(ZulipBaseCommand):
         print(
             "{} has {} active bots that will also be deactivated.".format(
                 user_profile.delivery_email,
-                UserProfile.objects.filter(
-                    is_bot=True,
-                    is_active=True,
-                    bot_owner=user_profile,
-                ).count(),
+                get_active_bots_owned_by_user(user_profile).count(),
             )
         )
 

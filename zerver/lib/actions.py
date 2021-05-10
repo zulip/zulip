@@ -1137,6 +1137,10 @@ def change_user_is_active(user_profile: UserProfile, value: bool) -> None:
         Subscription.objects.filter(user_profile=user_profile).update(is_user_active=value)
 
 
+def get_active_bots_owned_by_user(user_profile: UserProfile) -> QuerySet:
+    return UserProfile.objects.filter(is_bot=True, is_active=True, bot_owner=user_profile)
+
+
 def do_deactivate_user(
     user_profile: UserProfile, _cascade: bool = True, *, acting_user: Optional[UserProfile]
 ) -> None:
@@ -1147,9 +1151,7 @@ def do_deactivate_user(
         # We need to deactivate bots before the target user, to ensure
         # that a failure partway through this function cannot result
         # in only the user being deactivated.
-        bot_profiles = UserProfile.objects.filter(
-            is_bot=True, is_active=True, bot_owner=user_profile
-        )
+        bot_profiles = get_active_bots_owned_by_user(user_profile)
         for profile in bot_profiles:
             do_deactivate_user(profile, _cascade=False, acting_user=acting_user)
 
