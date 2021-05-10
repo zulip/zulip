@@ -208,6 +208,7 @@
     margin-right: 10px;
 }
 
+.compose-unsent-message,
 .compose_invite_user,
 .compose_private_stream_alert,
 .compose-all-everyone,
@@ -232,6 +233,7 @@
     width: 10px;
 }
 
+.compose-unsent-message-controls,
 .compose-all-everyone-controls,
 .compose-announce-controls,
 .compose_invite_user_controls,
@@ -390,6 +392,11 @@ input.recipient_box {
 
     &:focus {
         box-shadow: 0 0 10px hsl(170, 48%, 54%), 0 0 5px hsl(170, 48%, 54%);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
     }
 }
 

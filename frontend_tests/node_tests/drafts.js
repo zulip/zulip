@@ -26,7 +26,6 @@ const localStorage = set_global("localStorage", {
     },
 });
 mock_cjs("jquery", $);
-const compose_state = mock_esm("../../static/js/compose_state");
 mock_esm("../../static/js/markdown", {
     apply_markdown: noop,
 });
@@ -37,6 +36,7 @@ mock_esm("../../static/js/stream_data", {
 });
 page_params.twenty_four_hour_time = false;
 
+const compose_state = zrequire("compose_state");
 const {localstorage} = zrequire("localstorage");
 const drafts = zrequire("drafts");
 const timerender = zrequire("timerender");

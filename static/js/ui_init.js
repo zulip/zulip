@@ -74,6 +74,7 @@ import * as typing from "./typing";
 import * as ui from "./ui";
 import * as unread from "./unread";
 import * as unread_ui from "./unread_ui";
+import * as unsent_messages from "./unsent_messages";
 import * as user_groups from "./user_groups";
 import * as user_status from "./user_status";
 import * as user_status_ui from "./user_status_ui";
@@ -529,6 +530,7 @@ export function initialize_everything() {
     starred_messages.initialize();
     user_status_ui.initialize();
     fenced_code.initialize(generated_pygments_data);
+    unsent_messages.initialize();
 }
 
 $(() => {

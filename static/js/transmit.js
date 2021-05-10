@@ -1,12 +1,24 @@
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
+import * as compose_state from "./compose_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as reload from "./reload";
 import * as reload_state from "./reload_state";
 import * as sent_messages from "./sent_messages";
+import * as unsent_messages from "./unsent_messages";
+
+const max_unsent_msg_count = 4;
+let current_unsent_msg_count = 0;
 
 export function send_message(request, on_success, error) {
+    // We need to store the message content here as - when a message
+    // is echoed locally then it is removed from the compose box, but
+    // if the message is not sent to the server (because of some possible
+    // issues like server is down) then it will be lost during the server
+    // reload. Hence, here we are storing that message content, in the
+    // localStorage, when there is connection problem or server is unreachable.
+    const saved_message_content = compose_state.message_content();
     channel.post({
         url: "/json/messages",
         data: request,
@@ -28,6 +40,15 @@ export function send_message(request, on_success, error) {
                     save_compose: true,
                     send_after_reload: true,
                 });
+                return;
+            }
+
+            if (
+                channel.is_server_unreachable(xhr) &&
+                current_unsent_msg_count < max_unsent_msg_count
+            ) {
+                unsent_messages.store_unsent_message(saved_message_content);
+                current_unsent_msg_count += 1;
                 return;
             }
 
