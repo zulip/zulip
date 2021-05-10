@@ -116,6 +116,7 @@ There are dozens of useful management commands under
   users.
 * `./manage.py send_password_reset_email`: Sends password reset email(s)
   to one or more users.
+* `./manage.py change_realm_subdomain`: Change subdomain of a realm.
 * `./manage.py change_user_email`: Change a user's email address.
 * `./manage.py change_user_role`: Can change are user's role
   (easier done [via the

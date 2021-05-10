@@ -24,23 +24,9 @@ for paid plans.
 If you're self-hosting, you can change the root domain of your Zulip
 server by changing the `EXTERNAL_HOST` [setting][zulip-settings].  If
 you're [hosting multiple organizations][zulip-multiple-organizations]
-and want to change the subdomain for one of them, you can follow these
-steps:
-
-{start_tabs}
-
-1. Get the `string_id` for your organization as [described here][find-string-id]
-
-2. Run the following commands in a [management shell][management-shell]:
-
-    ```
-    realm = get_realm("string_id")
-    do_change_realm_subdomain(realm, "new_subdomain")
-    ```
-
-{end_tabs}
+and want to change the subdomain for one of them, you can do this
+using the `change_realm_subdomain` [management command][management-commands].
 
 [zulip-settings]: https://zulip.readthedocs.io/en/stable/production/settings.html
 [zulip-multiple-organizations]: https://zulip.readthedocs.io/en/stable/production/multiple-organizations.html
-[management-shell]: https://zulip.readthedocs.io/en/stable/production/management-commands.html#manage-py-shell
-[find-string-id]: https://zulip.readthedocs.io/en/stable/production/management-commands.html#accessing-an-organization-s-string-id
+[management-commands]: https://zulip.readthedocs.io/en/latest/production/management-commands.html#other-useful-manage-py-commands
