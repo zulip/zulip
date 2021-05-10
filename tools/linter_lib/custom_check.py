@@ -745,6 +745,10 @@ handlebars_rules = RuleList(
             "pattern": '{{t "[^"]+ " }}',
             "description": "Translatable strings should not have trailing spaces.",
         },
+        {
+            "pattern": r'"{{t "',
+            "description": "Invalid quoting for HTML element with translated string.",
+        },
     ],
 )
 
