@@ -695,6 +695,9 @@ export function focus_clicked_element($elt, col) {
     current_focus_elem = "table";
     col_focus = col;
     row_focus = $elt.closest("tr").index();
+    // Set compose_closed_ui reply button text.  The rest of the table
+    // focus logic should be a noop.
+    set_table_focus(row_focus, col_focus);
 }
 
 export function change_focused_element($elt, input_key) {
