@@ -273,23 +273,6 @@ class AuthBackendTest(ZulipTestCase):
                 return_data={},
             ),
         )
-        self.verify_backend(
-            EmailAuthBackend(),
-            good_kwargs=dict(
-                request=mock.MagicMock(),
-                password=password,
-                username=username,
-                realm=get_realm("zulip"),
-                return_data={},
-            ),
-            bad_kwargs=dict(
-                request=mock.MagicMock(),
-                password=password,
-                username=username,
-                realm=get_realm("zephyr"),
-                return_data={},
-            ),
-        )
 
     def test_email_auth_backend_empty_password(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -434,21 +417,6 @@ class AuthBackendTest(ZulipTestCase):
             )
         )
 
-        self.verify_backend(
-            backend,
-            bad_kwargs=dict(
-                request=mock.MagicMock(),
-                username=username,
-                password=password,
-                realm=get_realm("zephyr"),
-            ),
-            good_kwargs=dict(
-                request=mock.MagicMock(),
-                username=username,
-                password=password,
-                realm=get_realm("zulip"),
-            ),
-        )
         self.verify_backend(
             backend,
             bad_kwargs=dict(
