@@ -7,10 +7,15 @@
     <div class="modal-body">
         <p>
             {{#tr}}
-                The following is a few of the languages we have started to
-                support or are hoping to support in the near future. We would
-                love help translating; if you're interested in helping, follow
-                <z-link>the guidelines</z-link>. You can also request any language we don't currently have.
+            A language is marked as 100% translated only if every string in the web, desktop,
+            and mobile apps is translated, including administrative UI and error messages.
+            {{/tr}}
+        </p>
+        <p>
+            {{#tr}}
+                Zulip's translations are contributed by our amazing community of volunteer
+                translators. If you'd like to help, see the
+                <z-link>Zulip translation guidelines</z-link>.
                 {{#*inline "z-link"}}<a target="_blank" href="{{guidelines_link}}">{{> @partial-block}}</a>{{/inline}}
             {{/tr}}
         </p>

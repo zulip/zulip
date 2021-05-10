@@ -2,7 +2,9 @@
 
 Zulip's has full support for Unicode (and partial support for RTL
 languages), so you can use your preferred language everywhere in
-Zulip.  We also translate the Zulip UI into more than a dozen major
+Zulip.
+
+Additionally, the Zulip UI is translated into more than a dozen major
 languages, including Spanish, German, Hindi, French, Chinese, Russian,
 and Japanese, and we're always excited to add more.  If you speak a
 language other than English, your help with translating Zulip is be
@@ -18,6 +20,11 @@ Developers](../translating/internationalization.md).
 These are the steps you should follow if you want to help translate
 Zulip:
 
+1. Join [#translation][translation-stream] in the [Zulip development
+community server](../contributing/chat-zulip-org.md), and say hello.
+That stream is also the right place for any questions, updates on your
+progress, reporting problematic strings, etc.
+
 1. Sign up for [Transifex](https://www.transifex.com) and ask to join the [Zulip
 project on Transifex](https://www.transifex.com/zulip/zulip/), requesting access
 to any languages that you'd like to contribute to (or add new ones).
@@ -30,11 +37,6 @@ to any languages that you'd like to contribute to (or add new ones).
        into UK English, but select **Russian** rather than **Russian (Russia)** for
        general Russian translations.
    ```
-
-1. Join [#translation][translation-stream] in the [Zulip development
-community server](../contributing/chat-zulip-org.md), and say hello.
-That stream is also the right place for any questions, updates on your
-progress, reporting problematic strings, etc.
 
 1. Wait for a maintainer to approve your Transifex access; this
    usually takes less than a day. You should then be able to access
