@@ -526,24 +526,37 @@ ul {
     padding: 2px 0 3px 0;
 }
 
-#topic_stream_edit_form_error {
-    background-color: hsla(0, 70%, 87%, 0.7);
-    color: hsl(0, 100%, 50%);
-}
-
-.topic_stream_edit_header {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-start;
-
-    #select_stream_id {
-        border-left: 0;
-        padding-left: 0;
-        border-radius: 3px;
-        margin: 0 5px 5px -10px;
-        text-indent: 10px;
+#move_topic_modal {
+    /* Ensure that the dropdown can overflow the modal. */
+    overflow: visible;
+    .modal-body {
+        overflow: visible;
     }
+
+    .stream_header_colorblock {
+        margin-bottom: 20px;
+    }
+
+    #topic_stream_edit_form_error {
+        background-color: hsla(0, 70%, 87%, 0.7);
+        color: hsl(0, 100%, 50%);
+    }
+
     .inline_topic_edit {
         margin-left: 5px !important;
+    }
+
+    .topic_stream_edit_header {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+
+        #select_stream_id {
+            border-left: 0;
+            padding-left: 0;
+            border-radius: 3px;
+            margin: 0 5px 5px -10px;
+            text-indent: 10px;
+        }
     }
 }
