@@ -16,10 +16,10 @@ NOTE: Regexes must be simple enough that they can be easily translated to JavaSc
       * Named groups will be converted to numbered groups automatically
       * Inline-regex flags will be stripped, and where possible translated to RegExp-wide flags
 
-Example: ./manage.py realm_filters --realm=zulip --op=add '#(?P<id>[0-9]{2,8})' \
+Example: ./manage.py edit_linkifiers --realm=zulip --op=add '#(?P<id>[0-9]{2,8})' \
     'https://support.example.com/ticket/%(id)s'
-Example: ./manage.py realm_filters --realm=zulip --op=remove '#(?P<id>[0-9]{2,8})'
-Example: ./manage.py realm_filters --realm=zulip --op=show
+Example: ./manage.py edit_linkifiers --realm=zulip --op=remove '#(?P<id>[0-9]{2,8})'
+Example: ./manage.py edit_linkifiers --realm=zulip --op=show
 """
 
     def add_arguments(self, parser: ArgumentParser) -> None:
@@ -46,13 +46,13 @@ Example: ./manage.py realm_filters --realm=zulip --op=show
 
         pattern = options["pattern"]
         if not pattern:
-            self.print_help("./manage.py", "realm_filters")
+            self.print_help("./manage.py", "edit_linkifiers")
             raise CommandError
 
         if options["op"] == "add":
             url_format_string = options["url_format_string"]
             if not url_format_string:
-                self.print_help("./manage.py", "realm_filters")
+                self.print_help("./manage.py", "edit_linkifiers")
                 raise CommandError
             do_add_linkifier(realm, pattern, url_format_string)
             sys.exit(0)
@@ -60,5 +60,5 @@ Example: ./manage.py realm_filters --realm=zulip --op=show
             do_remove_linkifier(realm, pattern=pattern)
             sys.exit(0)
         else:
-            self.print_help("./manage.py", "realm_filters")
+            self.print_help("./manage.py", "edit_linkifiers")
             raise CommandError
