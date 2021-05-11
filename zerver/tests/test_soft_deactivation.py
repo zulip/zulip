@@ -642,15 +642,49 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         # doesn't end up creating UserMessage row for deactivated user.
         assert_stream_message_not_sent_to_idle_user("Test message 1")
 
-        # Test that sending a message to a stream with soft deactivated user
-        # and push/email notifications on creates a UserMessage row for the
-        # deactivated user.
         sub = get_subscription(stream_name, long_term_idle_user)
+
+        # Sub settings override user settings.
         sub.push_notifications = True
         sub.save()
-        assert_stream_message_sent_to_idle_user("Test stream message")
+        assert_stream_message_sent_to_idle_user("Sub push")
+
         sub.push_notifications = False
         sub.save()
+        assert_stream_message_not_sent_to_idle_user("Sub no push")
+
+        # Let user defaults take over
+        sub.push_notifications = None
+        sub.save()
+
+        long_term_idle_user.enable_stream_push_notifications = True
+        long_term_idle_user.save()
+        assert_stream_message_sent_to_idle_user("User push")
+
+        long_term_idle_user.enable_stream_push_notifications = False
+        long_term_idle_user.save()
+        assert_stream_message_not_sent_to_idle_user("User no push")
+
+        # Sub settings override user settings.
+        sub.email_notifications = True
+        sub.save()
+        assert_stream_message_sent_to_idle_user("Sub email")
+
+        sub.email_notifications = False
+        sub.save()
+        assert_stream_message_not_sent_to_idle_user("Sub no email")
+
+        # Let user defaults take over
+        sub.email_notifications = None
+        sub.save()
+
+        long_term_idle_user.enable_stream_email_notifications = True
+        long_term_idle_user.save()
+        assert_stream_message_sent_to_idle_user("User email")
+
+        long_term_idle_user.enable_stream_email_notifications = False
+        long_term_idle_user.save()
+        assert_stream_message_not_sent_to_idle_user("User no email")
 
         # Test sending a private message to soft deactivated user creates
         # UserMessage row.
