@@ -1,4 +1,4 @@
-from smtplib import SMTP, SMTPDataError, SMTPException
+from smtplib import SMTP, SMTPDataError, SMTPException, SMTPRecipientsRefused
 from unittest import mock
 
 from django.core.mail.backends.locmem import EmailBackend
@@ -60,11 +60,39 @@ class TestBuildEmail(ZulipTestCase):
                     )
         self.assertEqual(len(info_log.records), 2)
         self.assertEqual(
-            info_log.output,
-            [
-                f"INFO:{logger.name}:Sending password_reset email to {mail.to}",
-                f"ERROR:{logger.name}:Error sending password_reset email to {mail.to}",
-            ],
+            info_log.output[0], f"INFO:{logger.name}:Sending password_reset email to {mail.to}"
+        )
+        self.assertTrue(
+            info_log.output[1].startswith(
+                f"ERROR:{logger.name}:Error sending password_reset email to {mail.to} with error code 242: From field too long."
+            )
+        )
+
+    def test_build_and_send_refused(self) -> None:
+        hamlet = self.example_user("hamlet")
+        address = "zulip@example.com"
+        with mock.patch.object(
+            EmailBackend,
+            "send_messages",
+            side_effect=SMTPRecipientsRefused(recipients={address: (550, b"User unknown")}),
+        ):
+            with self.assertLogs(logger=logger) as info_log:
+                with self.assertRaises(EmailNotDeliveredException):
+                    send_email(
+                        "zerver/emails/password_reset",
+                        to_emails=[hamlet],
+                        from_name="Zulip",
+                        from_address=address,
+                        language="en",
+                    )
+        self.assertEqual(len(info_log.records), 2)
+        self.assertEqual(
+            info_log.output[0], f"INFO:{logger.name}:Sending password_reset email to {[hamlet]}"
+        )
+        self.assertFalse(
+            info_log.output[1].startswith(
+                f"ERROR:{logger.name}:Error sending password_reset email to {[hamlet]}: {{'{address}': (550, 'User unknown')}}"
+            )
         )
 
 
@@ -119,10 +147,13 @@ class TestSendEmail(ZulipTestCase):
         )
 
         # We test the two cases that should raise an EmailNotDeliveredException
-        side_effect = [0, SMTPException]
+        errors = {
+            f"Unknown error sending password_reset email to {mail.to}": [0],
+            f"Error sending password_reset email to {mail.to}": [SMTPException()],
+        }
 
-        with mock.patch.object(EmailBackend, "send_messages", side_effect=side_effect):
-            for i in range(len(side_effect)):
+        for message, side_effect in errors.items():
+            with mock.patch.object(EmailBackend, "send_messages", side_effect=side_effect):
                 with self.assertLogs(logger=logger) as info_log:
                     with self.assertRaises(EmailNotDeliveredException):
                         send_email(
@@ -134,9 +165,7 @@ class TestSendEmail(ZulipTestCase):
                         )
                 self.assertEqual(len(info_log.records), 2)
                 self.assertEqual(
-                    info_log.output,
-                    [
-                        f"INFO:{logger.name}:Sending password_reset email to {mail.to}",
-                        f"ERROR:{logger.name}:Error sending password_reset email to {mail.to}",
-                    ],
+                    info_log.output[0],
+                    f"INFO:{logger.name}:Sending password_reset email to {mail.to}",
                 )
+                self.assertTrue(info_log.output[1].startswith(f"ERROR:zulip.send_email:{message}"))
