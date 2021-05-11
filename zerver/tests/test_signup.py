@@ -63,7 +63,7 @@ from zerver.lib.rate_limiter import add_ratelimit_rule, remove_ratelimit_rule
 from zerver.lib.send_email import (
     EmailNotDeliveredException,
     FromAddress,
-    deliver_email,
+    deliver_scheduled_emails,
     send_future_email,
 )
 from zerver.lib.stream_subscription import get_stream_subscriptions_for_user
@@ -1814,7 +1814,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.assertEqual(len(email_jobs_to_deliver), 1)
         email_count = len(outbox)
         for job in email_jobs_to_deliver:
-            deliver_email(job)
+            deliver_scheduled_emails(job)
         self.assertEqual(len(outbox), email_count + 1)
         self.assertEqual(self.email_envelope_from(outbox[-1]), settings.NOREPLY_EMAIL_ADDRESS)
         self.assertIn(FromAddress.NOREPLY, self.email_display_from(outbox[-1]))

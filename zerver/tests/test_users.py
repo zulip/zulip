@@ -28,7 +28,11 @@ from zerver.lib.avatar import avatar_url, get_gravatar_url
 from zerver.lib.create_user import copy_user_settings
 from zerver.lib.events import do_events_register
 from zerver.lib.exceptions import JsonableError
-from zerver.lib.send_email import clear_scheduled_emails, deliver_email, send_future_email
+from zerver.lib.send_email import (
+    clear_scheduled_emails,
+    deliver_scheduled_emails,
+    send_future_email,
+)
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
@@ -1420,7 +1424,7 @@ class ActivateTest(ZulipTestCase):
         self.assertEqual(ScheduledEmail.objects.filter(users=hamlet).count(), 0)
         self.assertEqual(ScheduledEmail.objects.filter(users=iago).count(), 1)
 
-    def test_deliver_email(self) -> None:
+    def test_deliver_scheduled_emails(self) -> None:
         iago = self.example_user("iago")
         hamlet = self.example_user("hamlet")
         send_future_email(
@@ -1431,7 +1435,7 @@ class ActivateTest(ZulipTestCase):
         )
         self.assertEqual(ScheduledEmail.objects.count(), 1)
         email = ScheduledEmail.objects.all().first()
-        deliver_email(email)
+        deliver_scheduled_emails(email)
         from django.core.mail import outbox
 
         self.assertEqual(len(outbox), 1)
@@ -1445,7 +1449,7 @@ class ActivateTest(ZulipTestCase):
             )
         self.assertEqual(ScheduledEmail.objects.count(), 0)
 
-    def test_deliver_email_no_addressees(self) -> None:
+    def test_deliver_scheduled_emails_no_addressees(self) -> None:
         iago = self.example_user("iago")
         hamlet = self.example_user("hamlet")
         to_user_ids = [hamlet.id, iago.id]
@@ -1460,7 +1464,7 @@ class ActivateTest(ZulipTestCase):
         email.users.remove(*to_user_ids)
 
         with self.assertLogs("zulip.send_email", level="INFO") as info_log:
-            deliver_email(email)
+            deliver_scheduled_emails(email)
         from django.core.mail import outbox
 
         self.assertEqual(len(outbox), 0)
