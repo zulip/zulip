@@ -325,7 +325,7 @@ REGISTER_LINK_DISABLED: Optional[bool] = None
 LOGIN_LINK_DISABLED = False
 FIND_TEAM_LINK_DISABLED = True
 
-# Controls if the server should run certain jobs like deliver_email or
+# Controls if the server should run certain jobs like deliver_scheduled_emails or
 # deliver_scheduled_messages. This setting in long term is meant for
 # handling jobs for which we don't have a means of establishing a locking
 # mechanism that works with multiple servers running these jobs.

@@ -14,7 +14,7 @@ class Command(BaseCommand):
     help = """Shows backlog count of ScheduledEmail
 (The number of currently overdue (by at least a minute) email jobs)
 
-This is run as part of the nagios health check for the deliver_email command.
+This is run as part of the nagios health check for the deliver_scheduled_emails command.
 
 Usage: ./manage.py print_email_delivery_backlog
 """

@@ -23,7 +23,7 @@ with only a few things you need to know to get started.
   are several other functions in `zerver.lib.send_email`, but all of them
   eventually call the `send_email` function. The most interesting one is
   `send_future_email`. The `ScheduledEmail` entries are eventually processed
-  by a supervisor job that runs `zerver/management/commands/deliver_email.py`.
+  by a supervisor job that runs `zerver/management/commands/deliver_scheduled_emails.py`.
 * Always use `user_profile.delivery_email`, not `user_profile.email`,
   when passing data into the `send_email` library.  The
   `user_profile.email` field may not always be valid.

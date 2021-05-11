@@ -911,7 +911,7 @@ LOGGING: Dict[str, Any] = {
         "zerver.lib.digest": {
             "level": "DEBUG",
         },
-        "zerver.management.commands.deliver_email": {
+        "zerver.management.commands.deliver_scheduled_emails": {
             "level": "DEBUG",
         },
         "zerver.management.commands.enqueue_digest_emails": {

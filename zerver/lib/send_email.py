@@ -415,7 +415,7 @@ def handle_send_email_format_changes(job: Dict[str, Any]) -> None:
         del job["to_user_id"]
 
 
-def deliver_email(email: ScheduledEmail) -> None:
+def deliver_scheduled_emails(email: ScheduledEmail) -> None:
     data = orjson.loads(email.data)
     user_ids = list(email.users.values_list("id", flat=True))
     if not user_ids and not email.address:
