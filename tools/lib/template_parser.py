@@ -361,7 +361,9 @@ def is_django_block_tag(tag: str) -> bool:
         "macro",
         "verbatim",
         "blocktrans",
+        "blocktranslate",
         "trans",
+        "translate",
         "raw",
         "with",
     ]
