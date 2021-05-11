@@ -87,6 +87,7 @@ document.location.host = "foo.com";
 const fake_now = 555;
 MockDate.set(new Date(fake_now * 1000));
 
+const compose_closed_ui = zrequire("compose_closed_ui");
 const compose_fade = zrequire("compose_fade");
 const peer_data = zrequire("peer_data");
 const util = zrequire("util");
@@ -1767,7 +1768,7 @@ test_ui("create_message_object", (override) => {
 test_ui("narrow_button_titles", () => {
     util.is_mobile = () => false;
 
-    compose.update_closed_compose_buttons_for_private();
+    compose_closed_ui.update_buttons_for_private();
     assert.equal(
         $("#left_bar_compose_stream_button_big").text(),
         $t({defaultMessage: "New stream message"}),
@@ -1777,7 +1778,7 @@ test_ui("narrow_button_titles", () => {
         $t({defaultMessage: "New private message"}),
     );
 
-    compose.update_closed_compose_buttons_for_stream();
+    compose_closed_ui.update_buttons_for_stream();
     assert.equal(
         $("#left_bar_compose_stream_button_big").text(),
         $t({defaultMessage: "New topic"}),

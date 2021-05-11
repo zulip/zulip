@@ -4,7 +4,6 @@ import render_recent_topic_row from "../templates/recent_topic_row.hbs";
 import render_recent_topics_filters from "../templates/recent_topics_filters.hbs";
 import render_recent_topics_body from "../templates/recent_topics_table.hbs";
 
-import * as compose from "./compose";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_state from "./compose_state";
 import * as hash_util from "./hash_util";
@@ -646,7 +645,7 @@ export function show() {
     // We want to show `new stream message` instead of
     // `new topic`, which we are already doing in this
     // function. So, we reuse it here.
-    compose.update_closed_compose_buttons_for_recent_topics();
+    compose_closed_ui.update_buttons_for_recent_topics();
 
     narrow_state.reset_current_filter();
     narrow.set_narrow_title("Recent topics");

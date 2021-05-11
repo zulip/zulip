@@ -172,39 +172,6 @@ export function clear_preview_area() {
     $("#compose .markdown_preview").show();
 }
 
-function update_stream_button(btn_text, title) {
-    $("#left_bar_compose_stream_button_big").text(btn_text);
-    $("#left_bar_compose_stream_button_big").prop("title", title);
-}
-
-function update_conversation_button(btn_text, title) {
-    $("#left_bar_compose_private_button_big").text(btn_text);
-    $("#left_bar_compose_private_button_big").prop("title", title);
-}
-
-export function update_closed_compose_buttons(text_stream) {
-    const title_stream = text_stream + " (c)";
-    const text_conversation = $t({defaultMessage: "New private message"});
-    const title_conversation = text_conversation + " (x)";
-    update_stream_button(text_stream, title_stream);
-    update_conversation_button(text_conversation, title_conversation);
-}
-
-export function update_closed_compose_buttons_for_private() {
-    const text_stream = $t({defaultMessage: "New stream message"});
-    update_closed_compose_buttons(text_stream);
-}
-
-export function update_closed_compose_buttons_for_stream() {
-    const text_stream = $t({defaultMessage: "New topic"});
-    update_closed_compose_buttons(text_stream);
-}
-
-export function update_closed_compose_buttons_for_recent_topics() {
-    const text_stream = $t({defaultMessage: "Compose message"});
-    update_closed_compose_buttons(text_stream);
-}
-
 function update_fade() {
     if (!compose_state.composing()) {
         return;

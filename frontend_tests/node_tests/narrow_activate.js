@@ -13,7 +13,6 @@ mock_esm("../../static/js/resize", {
 
 const all_messages_data = mock_esm("../../static/js/all_messages_data");
 const channel = mock_esm("../../static/js/channel");
-const compose = mock_esm("../../static/js/compose");
 const compose_actions = mock_esm("../../static/js/compose_actions");
 const compose_closed_ui = mock_esm("../../static/js/compose_closed_ui");
 const hashchange = mock_esm("../../static/js/hashchange");
@@ -94,8 +93,8 @@ function test_helper() {
     stub(typing_events, "render_notifications_for_narrow");
     stub(ui_util, "change_tab_to");
     stub(unread_ops, "process_visible");
-    stub(compose, "update_closed_compose_buttons_for_stream");
-    stub(compose, "update_closed_compose_buttons_for_private");
+    stub(compose_closed_ui, "update_buttons_for_stream");
+    stub(compose_closed_ui, "update_buttons_for_private");
 
     return {
         clear: () => {
@@ -203,7 +202,7 @@ run_test("basics", () => {
         [ui_util, "change_tab_to"],
         [unread_ops, "process_visible"],
         [hashchange, "save_narrow"],
-        [compose, "update_closed_compose_buttons_for_stream"],
+        [compose_closed_ui, "update_buttons_for_stream"],
         [compose_closed_ui, "update_reply_recipient_label"],
         [search, "update_button_visibility"],
         [compose_actions, "on_narrow"],

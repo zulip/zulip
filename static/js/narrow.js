@@ -3,7 +3,6 @@ import $ from "jquery";
 import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
-import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_fade from "./compose_fade";
@@ -385,9 +384,9 @@ export function activate(raw_operators, opts) {
     }
 
     if (filter.contains_only_private_messages()) {
-        compose.update_closed_compose_buttons_for_private();
+        compose_closed_ui.update_buttons_for_private();
     } else {
-        compose.update_closed_compose_buttons_for_stream();
+        compose_closed_ui.update_buttons_for_stream();
     }
     compose_closed_ui.update_reply_recipient_label();
 
@@ -806,7 +805,7 @@ function handle_post_narrow_deactivate_processes() {
 
     top_left_corner.handle_narrow_deactivated();
     stream_list.handle_narrow_deactivated();
-    compose.update_closed_compose_buttons_for_stream();
+    compose_closed_ui.update_buttons_for_stream();
     message_edit.handle_narrow_deactivated();
     widgetize.set_widgets_for_list();
     typing_events.render_notifications_for_narrow();

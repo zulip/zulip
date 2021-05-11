@@ -65,8 +65,9 @@ const ListWidget = mock_esm("../../static/js/list_widget", {
     render_item: (item) => ListWidget.modifier(item),
 });
 
-mock_esm("../../static/js/compose", {
-    update_closed_compose_buttons_for_recent_topics: noop,
+mock_esm("../../static/js/compose_closed_ui", {
+    set_standard_text_for_reply_button: noop,
+    update_buttons_for_recent_topics: noop,
 });
 mock_esm("../../static/js/hash_util", {
     by_stream_uri: () => "https://www.example.com",

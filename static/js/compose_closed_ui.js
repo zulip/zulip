@@ -9,6 +9,39 @@ import * as people from "./people";
 import * as popovers from "./popovers";
 import * as recent_topics from "./recent_topics";
 
+function update_stream_button(btn_text, title) {
+    $("#left_bar_compose_stream_button_big").text(btn_text);
+    $("#left_bar_compose_stream_button_big").prop("title", title);
+}
+
+function update_conversation_button(btn_text, title) {
+    $("#left_bar_compose_private_button_big").text(btn_text);
+    $("#left_bar_compose_private_button_big").prop("title", title);
+}
+
+function update_buttons(text_stream) {
+    const title_stream = text_stream + " (c)";
+    const text_conversation = $t({defaultMessage: "New private message"});
+    const title_conversation = text_conversation + " (x)";
+    update_stream_button(text_stream, title_stream);
+    update_conversation_button(text_conversation, title_conversation);
+}
+
+export function update_buttons_for_private() {
+    const text_stream = $t({defaultMessage: "New stream message"});
+    update_buttons(text_stream);
+}
+
+export function update_buttons_for_stream() {
+    const text_stream = $t({defaultMessage: "New topic"});
+    update_buttons(text_stream);
+}
+
+export function update_buttons_for_recent_topics() {
+    const text_stream = $t({defaultMessage: "Compose message"});
+    update_buttons(text_stream);
+}
+
 function set_reply_button_label(label) {
     $(".compose_reply_button_label").text(label);
 }
