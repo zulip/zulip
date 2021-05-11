@@ -38,7 +38,7 @@ export function update_buttons_for_stream() {
 }
 
 export function update_buttons_for_recent_topics() {
-    const text_stream = $t({defaultMessage: "Compose message"});
+    const text_stream = $t({defaultMessage: "New stream message"});
     update_buttons(text_stream);
 }
 
