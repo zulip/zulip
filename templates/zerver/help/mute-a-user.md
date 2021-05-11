@@ -24,8 +24,8 @@ have the following effects:
 * All stream messages and group private messages sent by muted users
   are hidden behind a **Click to reveal** banner. This allows you to
   understand whether other users' messages are responses to messages
-  sent by a muted user, while only seeing the muted user's name,
-  profile picture, or message content for messages you have not opted
+  sent by a muted user, while seeing the muted user's name, profile
+  picture, or message content only for those messages which you have opted
   into reading.
 
 * Muted users have their name displayed as "Muted user" for [emoji
