@@ -305,14 +305,6 @@ export function compose_error(error_html, bad_input) {
     }
 }
 
-export function nonexistent_stream_reply_error() {
-    $("#nonexistent_stream_reply_error").show();
-    $("#compose-reply-error-msg").html("There are no messages to reply to yet.");
-    setTimeout(() => {
-        $("#nonexistent_stream_reply_error").hide();
-    }, 5000);
-}
-
 function compose_not_subscribed_error(error_html, bad_input) {
     $("#compose-send-status")
         .removeClass(common.status_classes)

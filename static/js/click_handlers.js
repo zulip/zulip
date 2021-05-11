@@ -641,9 +641,6 @@ export function initialize() {
     $("body").on("click", "#compose-send-status .compose-send-status-close", () => {
         $("#compose-send-status").stop(true).fadeOut(500);
     });
-    $("body").on("click", "#nonexistent_stream_reply_error .compose-send-status-close", () => {
-        $("#nonexistent_stream_reply_error").stop(true).fadeOut(500);
-    });
 
     $("body").on("click", ".empty_feed_compose_stream", (e) => {
         compose_actions.start("stream", {trigger: "empty feed message"});

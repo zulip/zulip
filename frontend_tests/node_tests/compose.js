@@ -1764,22 +1764,6 @@ test_ui("create_message_object", (override) => {
     people.email_list_to_user_ids_string = email_list_to_user_ids_string;
 });
 
-test_ui("nonexistent_stream_reply_error", () => {
-    reset_jquery();
-
-    const actions = [];
-    $("#nonexistent_stream_reply_error").show = () => {
-        actions.push("show");
-    };
-    $("#nonexistent_stream_reply_error").hide = () => {
-        actions.push("hide");
-    };
-
-    compose.nonexistent_stream_reply_error();
-    assert.equal($("#compose-reply-error-msg").html(), "There are no messages to reply to yet.");
-    assert.deepEqual(actions, ["show", "hide"]);
-});
-
 test_ui("narrow_button_titles", () => {
     util.is_mobile = () => false;
 
