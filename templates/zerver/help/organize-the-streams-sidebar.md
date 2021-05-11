@@ -43,7 +43,7 @@ To learn more about pinning a stream, see [here](/help/pin-a-stream).
  (<i class="fa fa-search" aria-hidden="true"></i>) icon in the top
  right-hand corner.
 
-    !!! tip ""
+    !!! keyboard_tip ""
         You can also use the hotkey "w" to open the search box directly
 
 2. A text box entitled **Filter streams** will appear. You can type the

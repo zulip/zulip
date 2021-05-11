@@ -17,7 +17,7 @@ compose box, or click on an empty part of the app.
 To **view your drafts**, click on `Drafts` at the bottom of the screen.
 From there, you can **delete** or **restore** any of your drafts.
 
-!!! tip ""
+!!! keyboard_tip ""
     Use `d` to bring up the list of drafts. From there you can use the arrow
     keys, `Backspace`/`Delete`, or `Enter` to restore. A common pattern is `d` +
     `Enter` to restore the last draft.

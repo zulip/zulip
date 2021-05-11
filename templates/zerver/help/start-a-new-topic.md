@@ -11,8 +11,8 @@ start a new topic whenever you're not replying to an existing message.
 
 1. Click **New topic** at the bottom of the screen.
 
-!!! warn ""
-    **Keyboard tip**: Use `c` to start a new topic.
+!!! keyboard_tip ""
+    Use `c` to start a new topic.
 
 {end_tabs}
 
