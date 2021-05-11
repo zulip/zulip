@@ -251,10 +251,11 @@ def notify_bot_owner(
         )
     elif status_code:
         notification_message += f"\nThe webhook got a response with status code *{status_code}*."
-        if response_content:
-            notification_message += (
-                f"\nThe response contains the following payload:\n```\n{response_content!r}\n```"
-            )
+
+    if response_content:
+        notification_message += (
+            f"\nThe response contains the following payload:\n```\n{response_content!r}\n```"
+        )
 
     message_info = dict(
         type="private",
@@ -340,7 +341,9 @@ def do_rest_call(
                 logging.info("Outhook trigger failed:", stack_info=True)
                 fail_with_message(event, response_message)
                 response_message = f"The outgoing webhook server attempted to send a message in Zulip, but that request resulted in the following error:\n> {e}"
-                notify_bot_owner(event, failure_message=response_message)
+                notify_bot_owner(
+                    event, response_content=response.text, failure_message=response_message
+                )
                 return None
         else:
             logging.warning(

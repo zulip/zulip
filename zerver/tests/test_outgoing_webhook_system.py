@@ -272,7 +272,7 @@ I'm a generic exception :(
                 bot_owner_notification.content,
                 """[A message](http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/) to your bot @_**Outgoing Webhook** triggered an outgoing webhook.
 The outgoing webhook server attempted to send a message in Zulip, but that request resulted in the following error:
-> Widgets: API programmer sent invalid JSON content""",
+> Widgets: API programmer sent invalid JSON content\nThe response contains the following payload:\n```\n'{"content": "whatever", "widget_content": "test"}'\n```""",
             )
         assert bot_user.bot_owner is not None
         self.assertEqual(bot_owner_notification.recipient_id, bot_user.bot_owner.recipient_id)
@@ -299,7 +299,7 @@ The outgoing webhook server attempted to send a message in Zulip, but that reque
                 bot_owner_notification.content,
                 """[A message](http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/) to your bot @_**Outgoing Webhook** triggered an outgoing webhook.
 The outgoing webhook server attempted to send a message in Zulip, but that request resulted in the following error:
-> Invalid response format""",
+> Invalid response format\nThe response contains the following payload:\n```\n'true'\n```""",
             )
         assert bot_user.bot_owner is not None
         self.assertEqual(bot_owner_notification.recipient_id, bot_user.bot_owner.recipient_id)
@@ -328,7 +328,7 @@ The outgoing webhook server attempted to send a message in Zulip, but that reque
                 bot_owner_notification.content,
                 """[A message](http://zulip.testserver/#narrow/stream/999-Verona/topic/Foo/near/) to your bot @_**Outgoing Webhook** triggered an outgoing webhook.
 The outgoing webhook server attempted to send a message in Zulip, but that request resulted in the following error:
-> Invalid JSON in response""",
+> Invalid JSON in response\nThe response contains the following payload:\n```\n"this isn't valid json"\n```""",
             )
         assert bot_user.bot_owner is not None
         self.assertEqual(bot_owner_notification.recipient_id, bot_user.bot_owner.recipient_id)
