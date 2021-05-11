@@ -252,10 +252,22 @@ def send_email(
         # This will call .open() for us, which is a no-op if it's already open;
         # it will only call .close() if it was not open to begin with
         if connection.send_messages([mail]) == 0:
-            logger.error("Error sending %s email to %s", template, mail.to)
+            logger.error("Unknown error sending %s email to %s", template, mail.to)
             raise EmailNotDeliveredException
-    except smtplib.SMTPException:
-        logger.error("Error sending %s email to %s", template, mail.to)
+    except smtplib.SMTPResponseException as e:
+        logger.exception(
+            "Error sending %s email to %s with error code %s: %s",
+            template,
+            mail.to,
+            e.smtp_code,
+            e.smtp_error,
+            stack_info=True,
+        )
+        raise EmailNotDeliveredException
+    except smtplib.SMTPException as e:
+        logger.exception(
+            "Error sending %s email to %s: %s", template, mail.to, str(e), stack_info=True
+        )
         raise EmailNotDeliveredException
 
 
