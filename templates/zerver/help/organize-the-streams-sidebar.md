@@ -44,7 +44,7 @@ To learn more about pinning a stream, see [here](/help/pin-a-stream).
  right-hand corner.
 
     !!! keyboard_tip ""
-        You can also use the hotkey "w" to open the search box directly
+        You can also use the hotkey `w` to open the search box directly.
 
 2. A text box entitled **Filter streams** will appear. You can type the
  name of a stream into this box and the **Streams** section will be filtered

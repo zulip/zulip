@@ -14,7 +14,7 @@ compose box.
 1. Click on the link in the message to start or join the call.
 
 !!! tip ""
-    You can replace "Click to join video call" with anything you want.
+    You can replace `Click to join video call` with anything you want.
 
 {end_tabs}
 
@@ -32,7 +32,7 @@ supported by zulip are:
 
 !!! tip ""
     It is also possible to disable the video call button for your organization by
-    setting the provider to "None".
+    setting the provider to `None`.
 
 ### Change your organization's video call provider
 
