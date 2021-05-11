@@ -57,7 +57,8 @@ export function compute_show_video_chat_button() {
 
     if (
         page_params.realm_video_chat_provider === available_providers.jitsi_meet.id &&
-        !page_params.jitsi_server_url
+        !page_params.jitsi_server_url &&
+        !page_params.realm_jitsi_server_url
     ) {
         return false;
     }
@@ -560,7 +561,6 @@ export function initialize() {
             $target_textarea = $(`#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`);
         }
 
-        let video_call_link;
         const available_providers = page_params.realm_available_video_chat_providers;
         const show_video_chat_button = compute_show_video_chat_button();
 
@@ -629,7 +629,11 @@ export function initialize() {
             });
         } else {
             const video_call_id = util.random_int(100000000000000, 999999999999999);
-            video_call_link = page_params.jitsi_server_url + "/" + video_call_id;
+            let video_call_url = page_params.jitsi_server_url;
+            if (page_params.realm_jitsi_server_url !== null) {
+                video_call_url = page_params.realm_jitsi_server_url;
+            }
+            const video_call_link = video_call_url + "/" + video_call_id;
             insert_video_call_url(video_call_link, $target_textarea);
         }
     });

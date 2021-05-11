@@ -2359,6 +2359,7 @@ class RealmPropertyActionTest(BaseAction):
             video_chat_provider=[
                 Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"],
             ],
+            jitsi_server_url=["https://example1.meet.jit.si", "https://example2.meet.jit.si"],
             giphy_rating=[
                 Realm.GIPHY_RATING_OPTIONS["disabled"]["id"],
             ],

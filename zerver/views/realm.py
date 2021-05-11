@@ -35,10 +35,13 @@ from zerver.lib.validator import (
     check_int_in,
     check_string_in,
     check_string_or_int,
+    check_union,
+    check_url,
     to_non_negative_int,
 )
 from zerver.models import Realm, RealmUserDefault, UserProfile
 from zerver.views.user_settings import check_settings_values
+from zerver.views.video_calls import parse_jitsi_server_url
 
 
 @require_realm_admin
@@ -129,6 +132,12 @@ def update_realm(
         json_validator=check_int_in(Realm.EMAIL_ADDRESS_VISIBILITY_TYPES), default=None
     ),
     video_chat_provider: Optional[int] = REQ(json_validator=check_int, default=None),
+    jitsi_server_url: Optional[str] = REQ(
+        json_validator=check_union(
+            [check_string_in(list(Realm.JITSI_SERVER_SPECIAL_VALUES_MAP.keys())), check_url]
+        ),
+        default=None,
+    ),
     giphy_rating: Optional[int] = REQ(json_validator=check_int, default=None),
     default_code_block_language: Optional[str] = REQ(default=None),
     digest_weekday: Optional[int] = REQ(
@@ -188,6 +197,11 @@ def update_realm(
         )
         data["message_content_delete_limit_seconds"] = message_content_delete_limit_seconds
 
+    if jitsi_server_url is not None:
+        jitsi_server_url = parse_jitsi_server_url(
+            jitsi_server_url, Realm.JITSI_SERVER_SPECIAL_VALUES_MAP
+        )
+        do_set_realm_property(realm, "jitsi_server_url", jitsi_server_url, acting_user=user_profile)
     # The user of `locals()` here is a bit of a code smell, but it's
     # restricted to the elements present in realm.property_types.
     #

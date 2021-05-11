@@ -81,6 +81,8 @@ export function build_page() {
         custom_profile_field_types: page_params.custom_profile_field_types,
         realm_name: page_params.realm_name,
         realm_available_video_chat_providers: page_params.realm_available_video_chat_providers,
+        jitsi_server_url: page_params.jitsi_server_url,
+        realm_jitsi_server_url: page_params.realm_jitsi_server_url,
         giphy_rating_options: page_params.giphy_rating_options,
         giphy_api_key_empty: page_params.giphy_api_key === "",
         realm_description: page_params.realm_description,

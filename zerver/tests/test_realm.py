@@ -1028,6 +1028,29 @@ class RealmTest(ZulipTestCase):
             ).exists()
         )
 
+    def test_jitsi_server_url(self) -> None:
+        # We need an admin user
+        self.login("iago")
+        realm = get_realm("zulip")
+        self.assertEqual(realm.video_chat_provider, Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"])
+        self.assertEqual(realm.jitsi_server_url, Realm.JITSI_SERVER_SPECIAL_VALUES_MAP["default"])
+
+        req = dict(jitsi_server_url=orjson.dumps("default").decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+
+        req = dict(jitsi_server_url=orjson.dumps("https://example1.meet.jit.si").decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+
+        req = dict(jitsi_server_url=orjson.dumps("").decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_error(result, "jitsi_server_url is not an allowed_type")
+
+        req = dict(jitsi_server_url=orjson.dumps(1).decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_error(result, "jitsi_server_url is not an allowed_type")
+
 
 class RealmAPITest(ZulipTestCase):
     def setUp(self) -> None:
@@ -1040,7 +1063,7 @@ class RealmAPITest(ZulipTestCase):
         realm.save(update_fields=[attr])
 
     def update_with_api(self, name: str, value: Union[int, str]) -> Realm:
-        if not isinstance(value, str):
+        if not isinstance(value, str) or name == "jitsi_server_url":
             value = orjson.dumps(value).decode()
         result = self.client_patch("/json/realm", {name: value})
         self.assert_json_success(result)
@@ -1083,6 +1106,10 @@ class RealmAPITest(ZulipTestCase):
                         Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"]
                     ).decode(),
                 ),
+            ],
+            jitsi_server_url=[
+                "https://example1.meet.jit.si",
+                "https://example2.meet.jit.si",
             ],
             giphy_rating=[
                 Realm.GIPHY_RATING_OPTIONS["y"]["id"],

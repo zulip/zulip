@@ -20,6 +20,13 @@ format used by the Zulip server that they are interacting with.
 
 ## Changes in Zulip 6.0
 
+**Feature level 125**
+
+* [`POST /register`](/api/register-queue), `PATCH /realm`:
+  Added realm setting `realm_jitsi_server_url` to allow organizations to
+  configure a custom Jitsi organization. Previously, this was only
+  configurable for an entire Zulip installation.
+
 Feature levels 123-124 are reserved for future use in 5.x maintenance
 releases.
 

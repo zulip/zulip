@@ -4,7 +4,7 @@ import random
 import secrets
 from base64 import b32encode
 from functools import partial
-from typing import Dict
+from typing import Dict, Mapping, Optional
 from urllib.parse import quote, urlencode, urljoin
 
 import requests
@@ -45,6 +45,15 @@ class InvalidZoomTokenError(JsonableError):
 
     def __init__(self) -> None:
         super().__init__(_("Invalid Zoom access token"))
+
+
+def parse_jitsi_server_url(
+    value: str, special_values_map: Mapping[str, Optional[str]]
+) -> Optional[str]:
+    if value in special_values_map.keys():
+        return special_values_map[value]
+
+    return value
 
 
 def get_zoom_session(user: UserProfile) -> OAuth2Session:

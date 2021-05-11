@@ -198,6 +198,13 @@ function get_property_value(property_name, for_realm_default_settings) {
         return "no_restriction";
     }
 
+    if (property_name === "realm_jitsi_server_setting") {
+        if (page_params.realm_jitsi_server_url === null) {
+            return "default";
+        }
+        return "custom_url";
+    }
+
     return page_params[property_name];
 }
 
@@ -265,6 +272,10 @@ function set_realm_waiting_period_dropdown() {
 function set_video_chat_provider_dropdown() {
     const chat_provider_id = page_params.realm_video_chat_provider;
     $("#id_realm_video_chat_provider").val(chat_provider_id);
+    change_element_block_display_property(
+        "id_realm_jitsi_server_setting",
+        chat_provider_id === page_params.realm_available_video_chat_providers.jitsi_meet.id,
+    );
 }
 
 function set_giphy_rating_dropdown() {
@@ -335,6 +346,15 @@ function set_message_retention_setting_dropdown() {
         settings_config.retain_message_forever
     ) {
         $("#id_realm_message_retention_days").val("");
+    }
+}
+
+function set_jitsi_server_setting_dropdown() {
+    const value = get_property_value("realm_jitsi_server_setting");
+    $("#id_realm_jitsi_server_setting").val(value);
+    change_element_block_display_property("id_realm_jitsi_server_url", value === "custom_url");
+    if (get_property_value("realm_jitsi_server_url") === null) {
+        $("#id_realm_jitsi_server_url").val("");
     }
 }
 
@@ -434,6 +454,9 @@ function update_dependent_subsettings(property_name) {
             break;
         case "realm_video_chat_provider":
             set_video_chat_provider_dropdown();
+            break;
+        case "realm_jitsi_server_url":
+            set_jitsi_server_setting_dropdown();
             break;
         case "realm_msg_edit_limit_setting":
         case "realm_message_content_edit_limit_minutes":
@@ -918,6 +941,19 @@ export function register_save_discard_widget_handlers(
                 break;
             }
             case "other_settings": {
+                const jitsi_server_setting_value = $("#id_realm_jitsi_server_setting").val();
+                if (jitsi_server_setting_value === "custom_url") {
+                    const jitsi_server_url_value = get_input_element_value(
+                        $("#id_realm_jitsi_server_url"),
+                    );
+                    if (jitsi_server_url_value === "") {
+                        data.jitsi_server_url = JSON.stringify("default");
+                    } else {
+                        data.jitsi_server_url = JSON.stringify(jitsi_server_url_value);
+                    }
+                } else {
+                    data.jitsi_server_url = JSON.stringify("default");
+                }
                 const code_block_language_value = default_code_language_widget.value();
                 // No need to JSON-encode, since this value is already a string.
                 data.default_code_block_language = code_block_language_value;
@@ -1043,6 +1079,7 @@ export function build_page() {
 
     set_realm_waiting_period_dropdown();
     set_video_chat_provider_dropdown();
+    set_jitsi_server_setting_dropdown();
     set_giphy_rating_dropdown();
     set_msg_edit_limit_dropdown();
     set_msg_delete_limit_dropdown();
@@ -1087,6 +1124,23 @@ export function build_page() {
         change_element_block_display_property(
             "id_realm_message_retention_days",
             message_retention_setting_dropdown_value === "retain_for_period",
+        );
+    });
+
+    $("#id_realm_video_chat_provider").on("change", (e) => {
+        const video_chat_provider_dropdown_value = Number.parseInt(e.target.value, 10);
+        change_element_block_display_property(
+            "id_realm_jitsi_server_setting",
+            video_chat_provider_dropdown_value ===
+                page_params.realm_available_video_chat_providers.jitsi_meet.id,
+        );
+    });
+
+    $("#id_realm_jitsi_server_setting").on("change", (e) => {
+        const jitsi_server_setting_dropdown_value = e.target.value;
+        change_element_block_display_property(
+            "id_realm_jitsi_server_url",
+            jitsi_server_setting_dropdown_value === "custom_url",
         );
     });
 

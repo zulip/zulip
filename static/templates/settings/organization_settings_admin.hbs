@@ -123,6 +123,27 @@
                     </select>
                 </div>
                 <div class="input-group">
+                    <label for="id_realm_jitsi_server_setting" class="dropdown-title">
+                        {{t "Jitsi server URL" }}
+                    </label>
+                    <select name="realm_jitsi_server_setting" id="id_realm_jitsi_server_setting" class="prop-element">
+                        {{#if jitsi_server_url}}<option value="default">{{ jitsi_server_url }}</option>{{/if}}
+                        <option value="custom_url" {{#unless jitsi_server_url}}selected{{/unless}}>{{t 'Custom URL' }}</option>
+                    </select>
+
+                    <div class="dependent-inline-block">
+                        <label for="id_realm_jitsi_server_url" class="inline-block">
+                            {{t 'URL' }}:
+                        </label>
+                        <input type="text" id="id_realm_jitsi_server_url" autocomplete="off"
+                          name="realm_jitsi_server_url"
+                          class="prop-element"
+                          value="{{ realm_jitsi_server_url }}"
+                          data-setting-widget-type="string"
+                          />
+                    </div>
+                </div>
+                <div class="input-group">
                     <label for="realm_giphy_rating" class="dropdown-title">
                         {{t 'GIPHY integration' }}
                         {{> ../help_link_widget link=giphy_help_link }}

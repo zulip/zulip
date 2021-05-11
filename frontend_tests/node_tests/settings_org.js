@@ -677,6 +677,8 @@ test("set_up", ({override, override_rewire, mock_template}) => {
         $.create("<stub delete limit parent>"),
     );
     $("#id_realm_message_retention_days").set_parent($.create("<stub retention period parent>"));
+    $("#id_realm_jitsi_server_setting").set_parent($.create("<stub video call provider parent>"));
+    $("#id_realm_jitsi_server_url").set_parent($.create("<stub jitsi setting parent>"));
     $("#message_content_in_email_notifications_label").set_parent(
         $.create("<stub in-content setting checkbox>"),
     );

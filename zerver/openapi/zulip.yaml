@@ -10968,6 +10968,18 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           The configured video call provider for the organization.
+                      realm_jitsi_server_url:
+                        type: string
+                        nullable: true
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          The configured Jitsi server URL for the organization.
+
+                          Default is set to be None, which encode server-
+                          level default.
+
+                          **Changes**: New in Zulip 6.0 (feature level 125).
                       realm_giphy_rating:
                         type: integer
                         description: |
