@@ -298,15 +298,8 @@ export function email_list_to_user_ids_string(emails) {
     return user_ids.join(",");
 }
 
-export function safe_full_names(user_ids) {
-    let names = user_ids.map((user_id) => {
-        const person = people_by_user_id_dict.get(user_id);
-        return person && person.full_name;
-    });
-
-    names = names.filter(Boolean);
-
-    return names.join(", ");
+export function get_full_names_for_poll_option(user_ids) {
+    return get_display_full_names(user_ids).join(", ");
 }
 
 export function get_display_full_names(user_ids) {

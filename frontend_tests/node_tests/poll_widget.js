@@ -39,7 +39,7 @@ run_test("PollData my question", () => {
         is_my_poll,
         question,
         options: [],
-        comma_separated_names: people.safe_full_names,
+        comma_separated_names: people.get_full_names_for_poll_option,
         report_error_function: blueslip.warn,
     });
 
