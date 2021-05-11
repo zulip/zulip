@@ -679,43 +679,31 @@ def access_message(
 def has_message_access(
     user_profile: UserProfile, message: Message, user_message: Optional[UserMessage]
 ) -> bool:
-    if user_message is None:
-        if message.recipient.type != Recipient.STREAM:
-            # You can't access private messages you didn't receive
-            return False
+    # If you have a user_message object, you have access.
+    if user_message is not None:
+        return True
 
-        stream = Stream.objects.get(id=message.recipient.type_id)
-        if stream.realm != user_profile.realm:
-            # You can't access public stream messages in other realms
-            return False
+    if message.recipient.type != Recipient.STREAM:
+        # You can't access private messages you didn't receive
+        return False
 
-        if not stream.is_history_public_to_subscribers():
-            # You can't access messages you didn't directly receive
-            # unless history is public to subscribers.
-            return False
+    stream = Stream.objects.get(id=message.recipient.type_id)
+    if stream.realm != user_profile.realm:
+        # You can't access public stream messages in other realms
+        return False
 
-        if not stream.is_public():
-            # This stream is an invite-only stream where message
-            # history is available to subscribers.  So we check if
-            # you're subscribed.
-            if not Subscription.objects.filter(
-                user_profile=user_profile, active=True, recipient=message.recipient
-            ).exists():
-                return False
+    if not stream.is_history_public_to_subscribers():
+        # You can't access messages you didn't directly receive
+        # unless history is public to subscribers.
+        return False
 
-            # You are subscribed, so let this fall through to the public stream case.
-        elif user_profile.is_guest:
-            # Guest users don't get automatic access to public stream messages
-            if not Subscription.objects.filter(
-                user_profile=user_profile, active=True, recipient=message.recipient
-            ).exists():
-                return False
-        else:
-            # Otherwise, the message was sent to a public stream in
-            # your realm, so return the message, user_message pair
-            pass
+    if stream.is_public() and user_profile.can_access_public_streams():
+        return True
 
-    return True
+    # is_history_public_to_subscribers, so check if you're subscribed
+    return Subscription.objects.filter(
+        user_profile=user_profile, active=True, recipient=message.recipient
+    ).exists()
 
 
 def bulk_access_messages(user_profile: UserProfile, messages: Sequence[Message]) -> List[Message]:
