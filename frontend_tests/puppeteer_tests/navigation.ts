@@ -36,6 +36,7 @@ async function navigate_to_settings(page: Page): Promise<void> {
     await page.click(settings_selector);
 
     await page.waitForSelector("#settings_page", {visible: true});
+    await page.waitForFunction(() => location.href.includes("/#settings/")); // eslint-disable-line no-undef
 
     await page.click("#settings_page .content-wrapper .exit");
     // Wait until the overlay is completely closed.
