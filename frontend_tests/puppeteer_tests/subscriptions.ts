@@ -129,8 +129,13 @@ async function test_user_filter_ui(
     // Desdemona should be checked by default
     await wait_for_checked(page, "desdemona", true);
 
-    await common.fill_form(page, "form#stream_creation_form", {user_list_filter: "ot"});
+    await page.type(`form#stream_creation_form [name="user_list_filter"]`, "ot", {delay: 100});
     await page.waitForSelector("#user-checkboxes", {visible: true});
+    // Wait until filtering is completed.
+    await page.waitForFunction(
+        () => document.querySelectorAll("#user-checkboxes label").length === 1,
+    );
+
     await page.waitForSelector(cordelia_checkbox, {hidden: true});
     await page.waitForSelector(othello_checkbox, {visible: true});
 
