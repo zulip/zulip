@@ -19,7 +19,7 @@ fill them out.
 {end_tabs}
 
 !!! warn ""
-    Note: The **Profile** section will only appear if an organization
+    **Note**: The **Profile** section will only appear if an organization
     administrator has added custom profile fields.
 
 ## Related articles

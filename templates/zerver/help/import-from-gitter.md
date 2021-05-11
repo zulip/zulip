@@ -3,9 +3,10 @@
 Zulip supports importing data from Gitter, including users, channels,
 messages, attachments, and avatars.
 
-**Note:** You can only import a Gitter room as a new Zulip organization. In
-particular, this tool you cannot use this tool to import from Gitter into an
-existing Zulip organization.
+!!! warn ""
+    **Note:** You can only import a Gitter room as a new Zulip organization. In
+    particular, this tool you cannot use this tool to import from Gitter into an
+    existing Zulip organization.
 
 ## Import from Gitter
 

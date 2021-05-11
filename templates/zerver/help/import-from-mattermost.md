@@ -4,9 +4,10 @@ Starting with Zulip 2.1, Zulip supports importing data from Mattermost,
 including users, channels, messages, and custom emoji.
 
 
-**Note:** You can only import a Mattermost team as a new Zulip
-organization. In particular, you cannot use this tool to import data
-into an existing Zulip organization.
+!!! warn ""
+    **Note:** You can only import a Mattermost team as a new Zulip
+    organization. In particular, you cannot use this tool to import data
+    into an existing Zulip organization.
 
 ## Import from Mattermost
 

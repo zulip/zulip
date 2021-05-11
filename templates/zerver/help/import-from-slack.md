@@ -9,9 +9,10 @@ and millions of messages. If you're planning on doing an import much
 larger than that, or run into performance issues when importing,
 [contact us](/help/contact-support) for help.
 
-**Note:** You can only import a Slack workspace as a new Zulip
-organization. In particular, you cannot use this tool to import from Slack
-into an existing Zulip organization.
+!!! warn ""
+    **Note:** You can only import a Slack workspace as a new Zulip
+    organization. In particular, you cannot use this tool to import from Slack
+    into an existing Zulip organization.
 
 ## Import from Slack
 
