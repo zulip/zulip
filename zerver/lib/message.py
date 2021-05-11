@@ -677,8 +677,21 @@ def access_message(
 
 
 def has_message_access(
-    user_profile: UserProfile, message: Message, user_message: Optional[UserMessage]
+    user_profile: UserProfile,
+    message: Message,
+    user_message: Optional[UserMessage],
+    *,
+    stream: Optional[Stream] = None,
+    is_subscribed: Optional[bool] = None,
 ) -> bool:
+    """
+    Returns whether a user has access to a given message.
+
+    * The user_message parameter must be provded if the user has a UserMessage
+      row for the target message.
+    * The optional stream parameter is validated; is_subscribed is not.
+    """
+
     # If you have a user_message object, you have access.
     if user_message is not None:
         return True
@@ -687,7 +700,11 @@ def has_message_access(
         # You can't access private messages you didn't receive
         return False
 
-    stream = Stream.objects.get(id=message.recipient.type_id)
+    if stream is None:
+        stream = Stream.objects.get(id=message.recipient.type_id)
+    else:
+        assert stream.recipient_id == message.recipient_id
+
     if stream.realm != user_profile.realm:
         # You can't access public stream messages in other realms
         return False
@@ -701,6 +718,9 @@ def has_message_access(
         return True
 
     # is_history_public_to_subscribers, so check if you're subscribed
+    if is_subscribed is not None:
+        return is_subscribed
+
     return Subscription.objects.filter(
         user_profile=user_profile, active=True, recipient=message.recipient
     ).exists()
