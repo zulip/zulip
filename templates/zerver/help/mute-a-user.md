@@ -36,9 +36,10 @@ have the following effects:
 * Muted users are excluded from the autocomplete for composing a
   private message or [mentioning a user](/help/mention-a-user-or-group).
 
-* To avoid interfering with administration, settings UI, such as the
-  list of subscribers to a stream or members of the organization,
-  display muted users name and other details as normal.
+* To avoid interfering with administration tasks, parts of the
+  settings UI (such as the list of subscribers to a stream, or members
+  of the organization) will display muted users' names and other
+  details as normal.
 
 !!! tip ""
     Zulip offers no way to distinguish a user
