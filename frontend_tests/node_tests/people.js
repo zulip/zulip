@@ -401,9 +401,9 @@ test_people("get_recipients", () => {
     assert.equal(people.get_recipients("30,32"), "Isaac Newton");
 });
 
-test_people("safe_full_names", () => {
+test_people("get_full_names_for_poll_option", () => {
     people.add_active_user(isaac);
-    const names = people.safe_full_names([me.user_id, isaac.user_id]);
+    const names = people.get_full_names_for_poll_option([me.user_id, isaac.user_id]);
     assert.equal(names, "Me Myself, Isaac Newton");
 });
 
