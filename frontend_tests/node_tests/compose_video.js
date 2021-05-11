@@ -108,6 +108,7 @@ test("videos", (override) => {
     (function test_jitsi_video_link_compose_clicked() {
         let syntax_to_insert;
         let called = false;
+        let video_link_regex;
 
         const textarea = $.create("jitsi-target-stub");
         textarea.set_parents_result(".message_edit_form", []);
@@ -133,11 +134,21 @@ test("videos", (override) => {
         handler(ev);
         assert(!called);
 
-        page_params.jitsi_server_url = "https://meet.jit.si";
+        page_params.realm_jitsi_server_url = "";
+        page_params.jitsi_server_url = "https://example1.meet.jit.si";
         handler(ev);
         // video link ids consist of 15 random digits
-        const video_link_regex =
-            /\[translated: Click to join video call]\(https:\/\/meet.jit.si\/\d{15}\)/;
+        video_link_regex =
+            /\[translated: Click to join video call]\(https:\/\/example1.meet.jit.si\/\d{15}\)/;
+        assert(called);
+        assert.match(syntax_to_insert, video_link_regex);
+
+        page_params.realm_jitsi_server_url = "https://example2.meet.jit.si";
+        page_params.jitsi_server_url = "https://example1.meet.jit.si";
+        handler(ev);
+        // video link ids consist of 15 random digits
+        video_link_regex =
+            /\[translated: Click to join video call]\(https:\/\/example2.meet.jit.si\/\d{15}\)/;
         assert(called);
         assert.match(syntax_to_insert, video_link_regex);
     })();
