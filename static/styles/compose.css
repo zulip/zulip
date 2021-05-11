@@ -24,14 +24,6 @@
         .message-control-link {
             float: left;
         }
-
-        .alert-draft {
-            font-size: 14px;
-            color: hsl(170, 48%, 54%);
-            padding: 0 12px;
-            font-weight: 400;
-            display: none;
-        }
     }
 
     .reply_button_container {

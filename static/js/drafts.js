@@ -1,6 +1,7 @@
 import {subDays} from "date-fns";
 import Handlebars from "handlebars/runtime";
 import $ from "jquery";
+import tippy from "tippy.js";
 
 import render_draft_table_body from "../templates/draft_table_body.hbs";
 
@@ -137,8 +138,17 @@ export function restore_message(draft) {
 }
 
 function draft_notify() {
-    $(".alert-draft").css("display", "inline-block");
-    $(".alert-draft").delay(1000).fadeOut(500);
+    // Display a tooltip to notify the user about the saved draft.
+    const instance = tippy(".compose_drafts_button", {
+        content: $t({defaultMessage: "Saved as draft"}),
+        arrow: true,
+        placement: "top",
+    })[0];
+    instance.show();
+    function remove_instance() {
+        instance.destroy();
+    }
+    setTimeout(remove_instance, 1500);
 }
 
 export function update_draft() {
