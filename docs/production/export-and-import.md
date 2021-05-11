@@ -51,7 +51,7 @@ service (or back):
   replication](#postgresql-streaming-replication) and the [S3 file
   upload
   backend](../production/upload-backends.html#s3-backend-configuration)
-  as part of a high evailability environment.
+  as part of a high availability environment.
 
 ## Backups
 
