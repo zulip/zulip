@@ -1364,6 +1364,12 @@ class EditMessageTest(ZulipTestCase):
             True,
         )
         self.assertEqual(
+            has_message_access(
+                guest_user, Message.objects.get(id=msg_id_to_test_acesss), None, stream=old_stream
+            ),
+            True,
+        )
+        self.assertEqual(
             has_message_access(non_guest_user, Message.objects.get(id=msg_id_to_test_acesss), None),
             True,
         )
@@ -1387,6 +1393,32 @@ class EditMessageTest(ZulipTestCase):
             has_message_access(non_guest_user, Message.objects.get(id=msg_id_to_test_acesss), None),
             True,
         )
+        self.assertEqual(
+            # If the guest user were subscribed to the new stream,
+            # they'd have access; has_message_access does not validate
+            # the is_subscribed parameter.
+            has_message_access(
+                guest_user,
+                Message.objects.get(id=msg_id_to_test_acesss),
+                None,
+                stream=new_stream,
+                is_subscribed=True,
+            ),
+            True,
+        )
+
+        self.assertEqual(
+            has_message_access(
+                guest_user, Message.objects.get(id=msg_id_to_test_acesss), None, stream=new_stream
+            ),
+            False,
+        )
+        with self.assertRaises(AssertionError):
+            # Raises assertion if you pass an invalid stream.
+            has_message_access(
+                guest_user, Message.objects.get(id=msg_id_to_test_acesss), None, stream=old_stream
+            )
+
         self.assertEqual(
             UserMessage.objects.filter(
                 user_profile_id=non_guest_user.id,
