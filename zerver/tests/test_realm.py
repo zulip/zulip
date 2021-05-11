@@ -782,6 +782,29 @@ class RealmTest(ZulipTestCase):
         result = self.client_patch("/json/realm", req)
         self.assert_json_success(result)
 
+    def test_jitsi_server_url(self) -> None:
+        # We need an admin user
+        self.login("iago")
+        realm = get_realm("zulip")
+        self.assertEqual(realm.video_chat_provider, Realm.VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"])
+        self.assertEqual(realm.jitsi_server_url, Realm.JITSI_SERVER_SPECIAL_VALUES_MAP["default"])
+
+        req = dict(jitsi_server_url=orjson.dumps("default").decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+
+        req = dict(jitsi_server_url=orjson.dumps("https://example1.meet.jit.si").decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_success(result)
+
+        req = dict(jitsi_server_url=orjson.dumps("").decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_error(result, "jitsi_server_url is not a URL")
+
+        req = dict(jitsi_server_url=orjson.dumps(1).decode())
+        result = self.client_patch("/json/realm", req)
+        self.assert_json_error(result, "jitsi_server_url is not a string")
+
 
 class RealmAPITest(ZulipTestCase):
     def setUp(self) -> None:
@@ -865,6 +888,10 @@ class RealmAPITest(ZulipTestCase):
                     ).decode(),
                 ),
             ],
+            jitsi_server_url=[
+                orjson.dumps("https://example1.meet.jit.si").decode(),
+                orjson.dumps("https://example2.meet.jit.si").decode(),
+            ],
             giphy_rating=[
                 Realm.GIPHY_RATING_OPTIONS["y"]["id"],
                 Realm.GIPHY_RATING_OPTIONS["r"]["id"],
@@ -894,6 +921,12 @@ class RealmAPITest(ZulipTestCase):
             self.set_up_db(name, vals[0][name])
             realm = self.update_with_api_multiple_value(vals[0])
             self.assertEqual(getattr(realm, name), orjson.loads(vals[0][name]))
+        elif name == "jitsi_server_url":
+            self.set_up_db(name, vals[0])
+            realm = self.update_with_api(name, vals[1])
+            self.assertEqual(getattr(realm, name), orjson.loads(vals[1]))
+            realm = self.update_with_api(name, vals[0])
+            self.assertEqual(getattr(realm, name), orjson.loads(vals[0]))
         else:
             self.set_up_db(name, vals[0])
             realm = self.update_with_api(name, vals[1])

@@ -5,7 +5,7 @@ import re
 import secrets
 from itertools import zip_longest
 from time import sleep
-from typing import Any, Callable, Iterator, List, Optional, Sequence, Set, Tuple, TypeVar
+from typing import Any, Callable, Iterator, List, Mapping, Optional, Sequence, Set, Tuple, TypeVar
 
 from django.conf import settings
 
@@ -202,3 +202,10 @@ def split_by(array: List[Any], group_size: int, filler: Any) -> List[List[Any]]:
     """
     args = [iter(array)] * group_size
     return list(map(list, zip_longest(*args, fillvalue=filler)))
+
+
+def parse_jitsi_server_url(value: str, special_values_map: Mapping[str, str]) -> str:
+    if value in special_values_map.keys():
+        return special_values_map[value]
+
+    return value

@@ -460,6 +460,10 @@ class Realm(models.Model):
         default=VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"]
     )
 
+    JITSI_SERVER_SPECIAL_VALUES_MAP = {"default": ""}
+
+    jitsi_server_url: str = models.TextField(default="")
+
     GIPHY_RATING_OPTIONS = {
         "disabled": {
             "name": "GIPHY integration disabled",
@@ -523,6 +527,7 @@ class Realm(models.Model):
         send_welcome_emails=bool,
         message_content_allowed_in_email_notifications=bool,
         video_chat_provider=int,
+        jitsi_server_url=str,
         waiting_period_threshold=int,
         digest_weekday=int,
         private_message_policy=int,

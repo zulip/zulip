@@ -24,13 +24,17 @@ from zerver.lib.request import REQ, JsonableError, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.retention import parse_message_retention_days
 from zerver.lib.streams import access_stream_by_id
+from zerver.lib.utils import parse_jitsi_server_url
 from zerver.lib.validator import (
     check_bool,
     check_capped_string,
     check_dict,
     check_int,
     check_int_in,
+    check_or,
+    check_string_in,
     check_string_or_int,
+    check_url,
     to_non_negative_int,
 )
 from zerver.models import Realm, UserProfile
@@ -113,6 +117,12 @@ def update_realm(
     ),
     default_twenty_four_hour_time: Optional[bool] = REQ(json_validator=check_bool, default=None),
     video_chat_provider: Optional[int] = REQ(json_validator=check_int, default=None),
+    jitsi_server_url: Optional[str] = REQ(
+        json_validator=check_or(
+            check_string_in(list(Realm.JITSI_SERVER_SPECIAL_VALUES_MAP.keys())), check_url
+        ),
+        default=None,
+    ),
     giphy_rating: Optional[int] = REQ(json_validator=check_int, default=None),
     default_code_block_language: Optional[str] = REQ(default=None),
     digest_weekday: Optional[int] = REQ(
@@ -146,6 +156,11 @@ def update_realm(
         realm.ensure_not_on_limited_plan()
         message_retention_days = parse_message_retention_days(
             message_retention_days_raw, Realm.MESSAGE_RETENTION_SPECIAL_VALUES_MAP
+        )
+
+    if jitsi_server_url is not None:
+        jitsi_server_url = parse_jitsi_server_url(
+            jitsi_server_url, Realm.JITSI_SERVER_SPECIAL_VALUES_MAP
         )
 
     # The user of `locals()` here is a bit of a code smell, but it's
