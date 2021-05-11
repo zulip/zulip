@@ -402,8 +402,7 @@ function update_dependent_subsettings(property_name) {
     } else if (property_name === "realm_waiting_period_threshold") {
         set_realm_waiting_period_dropdown();
     } else if (
-        property_name === "realm_video_chat_provider" ||
-        property_name.startsWith("realm_zoom")
+        property_name === "realm_video_chat_provider"
     ) {
         set_video_chat_provider_dropdown();
     } else if (
