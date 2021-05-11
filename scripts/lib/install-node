@@ -45,6 +45,10 @@ if [ "$current_node_version" != "v$node_version" ] || ! [ -L "$node_wrapper_path
         . "$NVM_DIR/nvm.sh"
     fi
 
+    # Tell NVM that we don't want it messing around with $PATH; we'll
+    # adjust which npm to use by symlinks below.
+    nvm alias default system
+
     nvm install "$node_version"
     NODE_BIN="$(nvm which $node_version)"
 
@@ -57,12 +61,6 @@ if [ "$current_node_version" != "v$node_version" ] || ! [ -L "$node_wrapper_path
     ln -nsf "$NODE_BIN" /usr/local/bin/node
     ln -nsf "$(dirname "$NODE_BIN")/npm" /usr/local/bin/npm
     ln -nsf "$(dirname "$NODE_BIN")/npx" /usr/local/bin/npx
-
-    # Tell NVM that we don't want it messing around with $PATH, which
-    # can get us into trouble, if we've just upgraded but our parent
-    # env still has the old version first in its PATH.  Tell it to use
-    # the newly-symlinked one that it will find in /usr/local/bin
-    nvm alias default system
 fi
 
 # Work around the fact that apparently sudo doesn't clear the HOME
