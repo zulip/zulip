@@ -133,6 +133,7 @@ from zerver.lib.stream_subscription import (
     get_stream_subscriptions_for_user,
     get_stream_subscriptions_for_users,
     get_subscribed_stream_ids_for_user,
+    get_subscriptions_for_send_message,
     get_user_ids_for_streams,
     num_subscribers_for_stream_id,
     subscriber_ids_with_stream_history_access,
@@ -1422,6 +1423,8 @@ class RecipientInfoResult(TypedDict):
 
 
 def get_recipient_info(
+    *,
+    realm_id: int,
     recipient: Recipient,
     sender_id: int,
     stream_topic: Optional[StreamTopicTarget],
@@ -1446,7 +1449,12 @@ def get_recipient_info(
         user_ids_muting_topic = stream_topic.user_ids_muting_topic()
 
         subscription_rows = (
-            stream_topic.get_active_subscriptions()
+            get_subscriptions_for_send_message(
+                realm_id=realm_id,
+                stream_id=stream_topic.stream_id,
+                possible_wildcard_mention=possible_wildcard_mention,
+                possibly_mentioned_user_ids=possibly_mentioned_user_ids,
+            )
             .annotate(
                 user_profile_email_notifications=F(
                     "user_profile__enable_stream_email_notifications"
@@ -1732,6 +1740,7 @@ def build_message_send_dict(
         stream_topic = None
 
     info = get_recipient_info(
+        realm_id=realm.id,
         recipient=message_dict["message"].recipient,
         sender_id=message_dict["message"].sender_id,
         stream_topic=stream_topic,
@@ -5691,10 +5700,12 @@ def do_update_message(
 
     changed_messages = [target_message]
 
+    realm = user_profile.realm
+
     stream_being_edited = None
     if target_message.is_stream_message():
         stream_id = target_message.recipient.type_id
-        stream_being_edited = get_stream_by_id_in_realm(stream_id, user_profile.realm)
+        stream_being_edited = get_stream_by_id_in_realm(stream_id, realm)
         event["stream_name"] = stream_being_edited.name
 
     ums = UserMessage.objects.filter(message=target_message.id)
@@ -5753,6 +5764,7 @@ def do_update_message(
             stream_topic = None
 
         info = get_recipient_info(
+            realm_id=realm.id,
             recipient=target_message.recipient,
             sender_id=target_message.sender_id,
             stream_topic=stream_topic,

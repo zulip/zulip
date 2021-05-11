@@ -1,3 +1,4 @@
+from typing import AbstractSet
 from unittest import mock
 
 from django.utils.timezone import now as timezone_now
@@ -14,6 +15,7 @@ from zerver.lib.soft_deactivation import (
     get_users_for_soft_deactivation,
     reactivate_user_if_soft_deactivated,
 )
+from zerver.lib.stream_subscription import get_subscriptions_for_send_message
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     get_subscription,
@@ -22,6 +24,7 @@ from zerver.lib.test_helpers import (
     queries_captured,
 )
 from zerver.models import (
+    AlertWord,
     Client,
     Message,
     RealmAuditLog,
@@ -580,15 +583,20 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         # In this test we are basically testing out the logic used out in
         # do_send_messages() in action.py for filtering the messages for which
         # UserMessage rows should be created for a soft-deactivated user.
+        AlertWord.objects.all().delete()
+
         long_term_idle_user = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
         sender = self.example_user("iago")
-        stream_name = "Denmark"
+        stream_name = "Brand New Stream"
         topic_name = "foo"
+        realm_id = cordelia.realm_id
 
         self.subscribe(long_term_idle_user, stream_name)
         self.subscribe(cordelia, stream_name)
         self.subscribe(sender, stream_name)
+
+        stream_id = get_stream(stream_name, cordelia.realm).id
 
         def send_stream_message(content: str) -> None:
             self.send_stream_message(sender, stream_name, content, topic_name)
@@ -620,7 +628,35 @@ class SoftDeactivationMessageTest(ZulipTestCase):
             else:
                 self.assertEqual(user_messages[-1].content, content)
 
-        def assert_stream_message_sent_to_idle_user(content: str) -> None:
+        def assert_num_possible_users(
+            expected_count: int,
+            *,
+            possible_wildcard_mention: bool = False,
+            possibly_mentioned_user_ids: AbstractSet[int] = set(),
+        ) -> None:
+            self.assertEqual(
+                len(
+                    get_subscriptions_for_send_message(
+                        realm_id=realm_id,
+                        stream_id=stream_id,
+                        possible_wildcard_mention=possible_wildcard_mention,
+                        possibly_mentioned_user_ids=possibly_mentioned_user_ids,
+                    )
+                ),
+                expected_count,
+            )
+
+        def assert_stream_message_sent_to_idle_user(
+            content: str,
+            *,
+            possible_wildcard_mention: bool = False,
+            possibly_mentioned_user_ids: AbstractSet[int] = set(),
+        ) -> None:
+            assert_num_possible_users(
+                expected_count=3,
+                possible_wildcard_mention=possible_wildcard_mention,
+                possibly_mentioned_user_ids=possibly_mentioned_user_ids,
+            )
             general_user_msg_count = len(get_user_messages(cordelia))
             soft_deactivated_user_msg_count = len(get_user_messages(long_term_idle_user))
             send_stream_message(content)
@@ -629,7 +665,22 @@ class SoftDeactivationMessageTest(ZulipTestCase):
             assert_last_um_content(long_term_idle_user, content)
             assert_last_um_content(cordelia, content)
 
-        def assert_stream_message_not_sent_to_idle_user(content: str) -> None:
+        def assert_stream_message_not_sent_to_idle_user(
+            content: str,
+            *,
+            possibly_mentioned_user_ids: AbstractSet[int] = set(),
+            false_alarm_row: bool = False,
+        ) -> None:
+            if false_alarm_row:
+                # We will query for our idle user if he has **ANY** alert
+                # words, but we won't actually write a UserMessage row until
+                # we truly parse the message. We also get false alarms for
+                # messages with quoted mentions.
+                assert_num_possible_users(
+                    3, possibly_mentioned_user_ids=possibly_mentioned_user_ids
+                )
+            else:
+                assert_num_possible_users(2)
             general_user_msg_count = len(get_user_messages(cordelia))
             soft_deactivated_user_msg_count = len(get_user_messages(long_term_idle_user))
             send_stream_message(content)
@@ -696,7 +747,16 @@ class SoftDeactivationMessageTest(ZulipTestCase):
 
         # Test UserMessage row is created while user is deactivated if
         # user itself is mentioned.
-        assert_stream_message_sent_to_idle_user("Test @**King Hamlet** mention")
+        assert_stream_message_sent_to_idle_user(
+            "Test @**King Hamlet** mention",
+            possibly_mentioned_user_ids={long_term_idle_user.id},
+        )
+
+        assert_stream_message_not_sent_to_idle_user(
+            "Test `@**King Hamlet**` mention",
+            possibly_mentioned_user_ids={long_term_idle_user.id},
+            false_alarm_row=True,
+        )
 
         # Test UserMessage row is not created while user is deactivated if
         # anyone is mentioned but the user.
@@ -704,9 +764,15 @@ class SoftDeactivationMessageTest(ZulipTestCase):
 
         # Test UserMessage row is created while user is deactivated if
         # there is a wildcard mention such as @all or @everyone
-        assert_stream_message_sent_to_idle_user("Test @**all** mention")
-        assert_stream_message_sent_to_idle_user("Test @**everyone** mention")
-        assert_stream_message_sent_to_idle_user("Test @**stream** mention")
+        assert_stream_message_sent_to_idle_user(
+            "Test @**all** mention", possible_wildcard_mention=True
+        )
+        assert_stream_message_sent_to_idle_user(
+            "Test @**everyone** mention", possible_wildcard_mention=True
+        )
+        assert_stream_message_sent_to_idle_user(
+            "Test @**stream** mention", possible_wildcard_mention=True
+        )
         assert_stream_message_not_sent_to_idle_user("Test @**bogus** mention")
 
         # Test UserMessage row is created while user is deactivated if there
@@ -714,6 +780,13 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         do_add_alert_words(long_term_idle_user, ["test_alert_word"])
         assert_stream_message_sent_to_idle_user("Testing test_alert_word")
 
+        do_add_alert_words(cordelia, ["cordelia"])
+        assert_stream_message_not_sent_to_idle_user("cordelia", false_alarm_row=True)
+
         # Test UserMessage row is not created while user is deactivated if
         # message is a me message.
-        assert_stream_message_not_sent_to_idle_user("/me says test")
+        assert_stream_message_not_sent_to_idle_user("/me says test", false_alarm_row=True)
+
+        # Sanity check after removing the alert word for Hamlet.
+        AlertWord.objects.filter(user_profile=long_term_idle_user).delete()
+        assert_stream_message_not_sent_to_idle_user("no alert words")

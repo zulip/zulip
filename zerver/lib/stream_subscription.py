@@ -2,11 +2,11 @@ import itertools
 from collections import defaultdict
 from dataclasses import dataclass
 from operator import itemgetter
-from typing import Any, Dict, List, Optional, Set
+from typing import AbstractSet, Any, Dict, List, Optional, Set
 
-from django.db.models.query import QuerySet
+from django.db.models import Q, QuerySet
 
-from zerver.models import Realm, Recipient, Stream, Subscription, UserProfile
+from zerver.models import AlertWord, Realm, Recipient, Stream, Subscription, UserProfile
 
 
 @dataclass
@@ -274,3 +274,62 @@ def subscriber_ids_with_stream_history_access(stream: Stream) -> Set[int]:
             stream.id, include_deactivated_users=False
         ).values_list("user_profile_id", flat=True)
     )
+
+
+def get_subscriptions_for_send_message(
+    *,
+    realm_id: int,
+    stream_id: int,
+    possible_wildcard_mention: bool,
+    possibly_mentioned_user_ids: AbstractSet[int],
+) -> QuerySet:
+    """This function optimizes an important use case for large
+    streams. Open realms often have many long_term_idle users, which
+    can result in 10,000s of long_term_idle recipients in default
+    streams. do_send_messages has an optimization to avoid doing work
+    for long_term_idle unless message flags or notifications should be
+    generated.
+
+    However, it's expensive even to fetch and process them all in
+    Python at all. This function returns all recipients of a stream
+    message that could possibly require action in the send-message
+    codepath.
+
+    Basically, it returns all subscribers, excluding all long-term
+    idle users who it can prove will not receive a UserMessage row or
+    notification for the message (i.e. no alert words, mentions, or
+    email/push notifications are configured) and thus are not needed
+    for processing the message send.
+
+    Critically, this function is called before the Markdown
+    processor. As a result, it returns all subscribers who have ANY
+    configured alert words, even if their alert words aren't present
+    in the message. Similarly, it returns all subscribers who match
+    the "possible mention" parameters.
+
+    Downstream logic, which runs after the Markdown processor has
+    parsed the message, will do the precise determination.
+    """
+
+    query = get_active_subscriptions_for_stream_id(
+        stream_id,
+        include_deactivated_users=False,
+    )
+
+    if possible_wildcard_mention:
+        return query
+
+    query = query.filter(
+        Q(user_profile__long_term_idle=False)
+        | Q(push_notifications=True)
+        | (Q(push_notifications=None) & Q(user_profile__enable_stream_push_notifications=True))
+        | Q(email_notifications=True)
+        | (Q(email_notifications=None) & Q(user_profile__enable_stream_email_notifications=True))
+        | Q(user_profile_id__in=possibly_mentioned_user_ids)
+        | Q(
+            user_profile_id__in=AlertWord.objects.filter(realm_id=realm_id).values_list(
+                "user_profile_id"
+            )
+        )
+    )
+    return query

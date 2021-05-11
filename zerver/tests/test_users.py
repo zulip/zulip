@@ -1510,6 +1510,7 @@ class RecipientInfoTest(ZulipTestCase):
         )
 
         info = get_recipient_info(
+            realm_id=realm.id,
             recipient=recipient,
             sender_id=hamlet.id,
             stream_topic=stream_topic,
@@ -1537,6 +1538,7 @@ class RecipientInfoTest(ZulipTestCase):
         hamlet.enable_stream_push_notifications = True
         hamlet.save()
         info = get_recipient_info(
+            realm_id=realm.id,
             recipient=recipient,
             sender_id=hamlet.id,
             stream_topic=stream_topic,
@@ -1546,6 +1548,7 @@ class RecipientInfoTest(ZulipTestCase):
         self.assertEqual(info["wildcard_mention_user_ids"], set())
 
         info = get_recipient_info(
+            realm_id=realm.id,
             recipient=recipient,
             sender_id=hamlet.id,
             stream_topic=stream_topic,
@@ -1557,6 +1560,7 @@ class RecipientInfoTest(ZulipTestCase):
         sub.push_notifications = False
         sub.save()
         info = get_recipient_info(
+            realm_id=realm.id,
             recipient=recipient,
             sender_id=hamlet.id,
             stream_topic=stream_topic,
@@ -1569,6 +1573,7 @@ class RecipientInfoTest(ZulipTestCase):
         sub.push_notifications = True
         sub.save()
         info = get_recipient_info(
+            realm_id=realm.id,
             recipient=recipient,
             sender_id=hamlet.id,
             stream_topic=stream_topic,
@@ -1584,6 +1589,7 @@ class RecipientInfoTest(ZulipTestCase):
         )
 
         info = get_recipient_info(
+            realm_id=realm.id,
             recipient=recipient,
             sender_id=hamlet.id,
             stream_topic=stream_topic,
@@ -1593,6 +1599,7 @@ class RecipientInfoTest(ZulipTestCase):
         self.assertEqual(info["wildcard_mention_user_ids"], set())
 
         info = get_recipient_info(
+            realm_id=realm.id,
             recipient=recipient,
             sender_id=hamlet.id,
             stream_topic=stream_topic,
@@ -1608,6 +1615,7 @@ class RecipientInfoTest(ZulipTestCase):
         sub.save()
 
         info = get_recipient_info(
+            realm_id=realm.id,
             recipient=recipient,
             sender_id=hamlet.id,
             stream_topic=stream_topic,
@@ -1623,6 +1631,7 @@ class RecipientInfoTest(ZulipTestCase):
         sub.save()
 
         info = get_recipient_info(
+            realm_id=realm.id,
             recipient=recipient,
             sender_id=hamlet.id,
             stream_topic=stream_topic,
@@ -1642,6 +1651,7 @@ class RecipientInfoTest(ZulipTestCase):
         )
 
         info = get_recipient_info(
+            realm_id=realm.id,
             recipient=recipient,
             sender_id=hamlet.id,
             stream_topic=stream_topic,
@@ -1665,6 +1675,7 @@ class RecipientInfoTest(ZulipTestCase):
         )
 
         info = get_recipient_info(
+            realm_id=realm.id,
             recipient=recipient,
             sender_id=hamlet.id,
             stream_topic=stream_topic,
@@ -1686,6 +1697,7 @@ class RecipientInfoTest(ZulipTestCase):
         with self.assertRaisesRegex(ValueError, "Bad recipient type"):
             invalid_recipient = Recipient(type=999)  # 999 is not a valid type
             get_recipient_info(
+                realm_id=realm.id,
                 recipient=invalid_recipient,
                 sender_id=hamlet.id,
                 stream_topic=stream_topic,

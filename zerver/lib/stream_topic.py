@@ -1,8 +1,5 @@
 from typing import Set
 
-from django.db.models.query import QuerySet
-
-from zerver.lib.stream_subscription import get_active_subscriptions_for_stream_id
 from zerver.models import MutedTopic
 
 
@@ -26,8 +23,3 @@ class StreamTopicTarget:
             "user_profile_id",
         )
         return {row["user_profile_id"] for row in query}
-
-    def get_active_subscriptions(self) -> QuerySet:
-        return get_active_subscriptions_for_stream_id(
-            self.stream_id, include_deactivated_users=True
-        )
