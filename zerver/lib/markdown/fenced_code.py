@@ -87,6 +87,7 @@ from markdown.preprocessors import Preprocessor
 from pygments.lexers import get_lexer_by_name
 from pygments.util import ClassNotFound
 
+from zerver.lib.emoji import emoticon_regex
 from zerver.lib.exceptions import MarkdownRenderingException
 from zerver.lib.tex import render_tex
 
@@ -472,7 +473,18 @@ class FencedBlockPreprocessor(Preprocessor):
         for paragraph in paragraphs:
             lines = paragraph.split("\n")
             quoted_paragraphs.append("\n".join("> " + line for line in lines))
+            quoted_paragraphs = [self.format_quoted_emoji(quote) for quote in quoted_paragraphs]
         return "\n".join(quoted_paragraphs)
+
+    # Used when quoting a message with an emoticon
+    # to prevent its translation to an emoji
+    # and preserve the original message context
+    def format_quoted_emoji(self, text: str) -> str:
+        for m in re.finditer(emoticon_regex, text):
+            symbol_re = re.compile(re.escape(m.group("emoticon")))
+            emoticon = m.group("emoticon")
+            text = re.sub(symbol_re, f"&#8203;{emoticon}", text)
+        return text
 
     def format_spoiler(self, header: str, text: str) -> str:
         output = []
