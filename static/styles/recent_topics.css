@@ -151,7 +151,7 @@
             flex-flow: row nowrap;
         }
 
-        .recent_avatars {
+        .recent_topics_participants {
             display: inline-flex; /* Causes LI items to display in row. */
             list-style-type: none;
             margin: auto; /* Centers vertically / horizontally in flex container. */
@@ -170,7 +170,7 @@
             flex-direction: row-reverse;
         }
 
-        .recent_avatars_item {
+        .recent_topics_participant_item {
             height: 24px;
             margin: 0;
             padding: 0 1.5px 0 1.5px;
@@ -178,8 +178,8 @@
             min-width: 24px;
         }
 
-        .recent_avatars_img,
-        .recent_avatars_others {
+        .recent_topics_participant_avatar,
+        .recent_topics_participant_overflow {
             border: 0;
             border-radius: 6px;
             color: hsl(0, 0%, 100%);
@@ -189,7 +189,7 @@
             background-color: hsl(0, 0%, 88%);
         }
 
-        .recent_avatars_others {
+        .recent_topics_participant_overflow {
             color: hsl(0, 0%, 0%);
             line-height: 24px;
         }
