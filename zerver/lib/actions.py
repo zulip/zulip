@@ -5791,7 +5791,6 @@ def do_update_message(
         event["propagate_mode"] = propagate_mode
         event["stream_id"] = target_message.recipient.type_id
 
-    old_recipient_id = None
     if new_stream is not None:
         assert content is None
         assert target_message.is_stream_message()
@@ -5799,7 +5798,6 @@ def do_update_message(
 
         edit_history_event["prev_stream"] = stream_being_edited.id
         event[ORIG_TOPIC] = orig_topic_name
-        old_recipient_id = target_message.recipient_id
         target_message.recipient_id = new_stream.recipient_id
 
         event["new_stream_id"] = new_stream.id
@@ -5864,6 +5862,8 @@ def do_update_message(
     delete_event_notify_user_ids: List[int] = []
     if propagate_mode in ["change_later", "change_all"]:
         assert topic_name is not None or new_stream is not None
+        assert stream_being_edited is not None
+
         # Other messages should only get topic/stream fields in their edit history.
         topic_only_edit_history_event = {
             k: v
@@ -5883,7 +5883,7 @@ def do_update_message(
             orig_topic_name=orig_topic_name,
             topic_name=topic_name,
             new_stream=new_stream,
-            old_recipient_id=old_recipient_id,
+            old_stream=stream_being_edited,
             edit_history_event=topic_only_edit_history_event,
             last_edit_time=timestamp,
         )
