@@ -468,9 +468,9 @@ li,
 }
 
 .copy_message {
-    position: relative;
-    top: 27px;
-    left: -10px;
+    position: absolute;
+    top: 62px;
+    right: 6px;
     margin-top: -24px;
 }
 
@@ -1440,9 +1440,7 @@ div.focused_table {
 }
 
 .message-edit-timer-control-group {
-    float: right;
-    display: none;
-    margin-top: 5px;
+    margin-left: auto;
 }
 
 .message-edit-feature-group {
@@ -2510,8 +2508,9 @@ div.topic_edit_spinner .loading_indicator_spinner {
     cursor: default;
 
     .edit-controls {
-        margin-left: 0;
-        margin-top: 0;
+        display: flex;
+        margin: auto;
+        align-items: baseline;
 
         .message-control-link {
             position: relative;
