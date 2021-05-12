@@ -715,7 +715,7 @@ class StreamAdminTest(ZulipTestCase):
             stream_id = get_stream("private_stream", user_profile.realm).id
             result = self.client_patch(
                 f"/json/streams/{stream_id}",
-                {"description": orjson.dumps("Test description").decode()},
+                {"description": "Test description"},
             )
         self.assert_json_success(result)
         # Should be just a description change event
@@ -939,7 +939,7 @@ class StreamAdminTest(ZulipTestCase):
 
         result = self.client_patch(
             f"/json/streams/{stream_id}",
-            {"new_description": orjson.dumps("new description").decode()},
+            {"description": "new description"},
         )
         self.assert_json_success(result)
 
@@ -973,7 +973,7 @@ class StreamAdminTest(ZulipTestCase):
 
         result = self.client_patch(
             f"/json/streams/{stream_id}",
-            {"new_description": "new description"},
+            {"description": "new description"},
         )
         self.assert_json_error(result, "Invalid stream id")
 
