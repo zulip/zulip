@@ -5982,7 +5982,7 @@ def do_update_message(
 
             # All users that are subscribed to the stream must be
             # notified when a message is edited
-            subscriber_ids = [user.user_profile_id for user in subscriptions]
+            subscriber_ids = set(subscriptions.values_list("user_profile_id", flat=True))
 
             if new_stream is not None:
                 # TODO: Guest users don't see the new moved topic
@@ -6004,9 +6004,9 @@ def do_update_message(
                 subscriptions = subscriptions.exclude(
                     user_profile_id__in=[sub.user_profile_id for sub in old_stream_unsubbed_guests]
                 )
-                subscriber_ids = [user.user_profile_id for user in subscriptions]
+                subscriber_ids = set(subscriptions.values_list("user_profile_id", flat=True))
 
-            users_to_be_notified += list(map(subscriber_info, subscriber_ids))
+            users_to_be_notified += list(map(subscriber_info, sorted(list(subscriber_ids))))
 
     send_event(user_profile.realm, event, users_to_be_notified)
 
