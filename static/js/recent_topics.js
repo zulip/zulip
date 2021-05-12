@@ -584,8 +584,19 @@ export function complete_rerender() {
     if (!is_visible()) {
         return;
     }
-    // Prepare header
+
+    // Update header
     load_filters();
+    show_selected_filters();
+
+    // Show topics list
+    const mapped_topic_values = Array.from(get().values()).map((value) => value);
+
+    if (topics_widget) {
+        topics_widget.replace_list_data(mapped_topic_values);
+        return;
+    }
+
     const rendered_body = render_recent_topics_body({
         filter_participated: filters.has("participated"),
         filter_unread: filters.has("unread"),
@@ -593,13 +604,8 @@ export function complete_rerender() {
         search_val: $("#recent_topics_search").val() || "",
     });
     $("#recent_topics_table").html(rendered_body);
-    show_selected_filters();
-
-    // Show topics list
     const container = $("#recent_topics_table table tbody");
     container.empty();
-    const mapped_topic_values = Array.from(get().values()).map((value) => value);
-
     topics_widget = ListWidget.create(container, mapped_topic_values, {
         name: "recent_topics_table",
         parent_container: $("#recent_topics_table"),
