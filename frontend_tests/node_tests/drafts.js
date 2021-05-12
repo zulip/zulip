@@ -174,10 +174,6 @@ test("initialize", (override) => {
     };
 
     drafts.initialize();
-
-    const message_content = $("#compose-textarea");
-    assert.equal(message_content.get_on_handler("focusout"), drafts.update_draft);
-    message_content.trigger("focusout");
 });
 
 test("remove_old_drafts", () => {

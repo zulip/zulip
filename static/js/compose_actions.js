@@ -31,6 +31,8 @@ export function blur_compose_inputs() {
 }
 
 function hide_box() {
+    // This is the main hook for saving drafts when closing the compose box.
+    drafts.update_draft();
     blur_compose_inputs();
     $("#stream-message").hide();
     $("#private-message").hide();
