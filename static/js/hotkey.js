@@ -332,7 +332,7 @@ export function process_escape_key(e) {
         return true;
     }
 
-    hashchange.show_default_view();
+    hashchange.set_hash_to_default_view();
     return true;
 }
 

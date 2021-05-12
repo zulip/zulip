@@ -94,7 +94,14 @@ function show_all_message_view() {
     setTimeout(navigate.maybe_scroll_to_selected, 0);
 }
 
-export function show_default_view() {
+export function set_hash_to_default_view() {
+    window.location.hash = "";
+}
+
+function show_default_view() {
+    // This function should only be called from the hashchange
+    // handlers, as it does not set the hash to "".
+    //
     // We only allow all_messages and recent_topics
     // to be rendered without a hash.
     if (page_params.default_view === "recent_topics") {
