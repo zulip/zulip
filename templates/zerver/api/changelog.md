@@ -1,6 +1,7 @@
-# Changelog
+# API Changelog
 
-This page documents changes to the Zulip Server API over time.
+This page documents changes to the Zulip Server API over time. See also
+the [Zulip server changelog][server-changelog].
 
 The recommended way for a client like the Zulip mobile or desktop apps
 that needs to support interaction with a wide range of different Zulip
@@ -579,3 +580,5 @@ No changes; feature level used for Zulip 3.0 release.
 * [`POST /register`](/api/register-queue): Added `slim_presence`
   parameter.  Changes the format of presence events, but is still
   being changed and should not be used by clients.
+
+[server-changelog]: https://zulip.readthedocs.io/en/latest/overview/changelog.html
