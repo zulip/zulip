@@ -38,6 +38,8 @@ const topic10 = "topic-10";
 
 mock_cjs("jquery", $);
 
+let expected_data_to_replace_in_list_widget;
+
 const ListWidget = mock_esm("../../static/js/list_widget", {
     modifier: noop,
 
@@ -63,6 +65,13 @@ const ListWidget = mock_esm("../../static/js/list_widget", {
 
     hard_redraw: noop,
     render_item: (item) => ListWidget.modifier(item),
+    replace_list_data: (data) => {
+        if (expected_data_to_replace_in_list_widget === undefined) {
+            throw new Error("You must set expected_data_to_replace_in_list_widget");
+        }
+        assert.deepEqual(data, expected_data_to_replace_in_list_widget);
+        expected_data_to_replace_in_list_widget = undefined;
+    },
 });
 
 mock_esm("../../static/js/compose_closed_ui", {
@@ -397,6 +406,11 @@ test("test_filter_all", (override) => {
     rt.set_filter("all");
     rt.process_messages([messages[0]]);
 
+    expected_data_to_replace_in_list_widget = [
+        {last_msg_id: 10, participated: true},
+        {last_msg_id: 1, participated: true},
+    ];
+
     row_data = row_data.concat(generate_topic_data([[1, "topic-7", 1, true, true]]));
     i = row_data.length;
     // topic is muted (=== hidden)
@@ -463,6 +477,42 @@ test("test_filter_unread", (override) => {
         }
         return "<recent_topics row stub>";
     });
+
+    expected_data_to_replace_in_list_widget = [
+        {
+            last_msg_id: 11,
+            participated: true,
+        },
+        {
+            last_msg_id: 10,
+            participated: true,
+        },
+        {
+            last_msg_id: 9,
+            participated: true,
+        },
+        {
+            last_msg_id: 7,
+            participated: true,
+        },
+        {
+            last_msg_id: 5,
+            participated: false,
+        },
+        {
+            last_msg_id: 4,
+            participated: false,
+        },
+        {
+            last_msg_id: 3,
+            participated: true,
+        },
+        {
+            last_msg_id: 1,
+            participated: true,
+        },
+    ];
+
     rt.process_messages([messages[0]]);
 
     // Unselect "unread" filter by clicking twice.
@@ -536,6 +586,41 @@ test("test_filter_participated", (override) => {
         }
         return "<recent_topics row stub>";
     });
+    expected_data_to_replace_in_list_widget = [
+        {
+            last_msg_id: 11,
+            participated: true,
+        },
+        {
+            last_msg_id: 10,
+            participated: true,
+        },
+        {
+            last_msg_id: 9,
+            participated: true,
+        },
+        {
+            last_msg_id: 7,
+            participated: true,
+        },
+        {
+            last_msg_id: 5,
+            participated: false,
+        },
+        {
+            last_msg_id: 4,
+            participated: false,
+        },
+        {
+            last_msg_id: 3,
+            participated: true,
+        },
+        {
+            last_msg_id: 1,
+            participated: true,
+        },
+    ];
+
     rt.process_messages([messages[4]]);
 
     expected.filter_participated = false;
@@ -571,6 +656,41 @@ test("basic assertions", (override) => {
     // update a message
     generate_topic_data([[1, "topic-7", 1, false, true]]);
     stub_out_filter_buttons();
+    expected_data_to_replace_in_list_widget = [
+        {
+            last_msg_id: 11,
+            participated: true,
+        },
+        {
+            last_msg_id: 10,
+            participated: true,
+        },
+        {
+            last_msg_id: 9,
+            participated: true,
+        },
+        {
+            last_msg_id: 7,
+            participated: true,
+        },
+        {
+            last_msg_id: 5,
+            participated: false,
+        },
+        {
+            last_msg_id: 4,
+            participated: false,
+        },
+        {
+            last_msg_id: 3,
+            participated: true,
+        },
+        {
+            last_msg_id: 1,
+            participated: true,
+        },
+    ];
+
     rt.process_messages([messages[9]]);
     // Check for expected lengths.
     // total 8 topics, 1 muted
