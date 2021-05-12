@@ -18,6 +18,12 @@
         border-width: 0 1px;
         border-radius: 0;
         margin-top: 40px;
+        /* To make the table span full height
+         * when rows don't reach bottom of the
+         * window. This makes the border span
+         * fully to bottom in that case.
+         */
+        min-height: 100vw;
 
         td {
             vertical-align: middle;
