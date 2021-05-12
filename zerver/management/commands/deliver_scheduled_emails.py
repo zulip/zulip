@@ -19,7 +19,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.management import sleep_forever
-from zerver.lib.send_email import EmailNotDeliveredException, deliver_scheduled_emails
+from zerver.lib.send_email import deliver_scheduled_emails
 from zerver.models import ScheduledEmail
 
 ## Setup ##
@@ -47,10 +47,7 @@ Usage: ./manage.py deliver_scheduled_emails
             )
             if email_jobs_to_deliver:
                 for job in email_jobs_to_deliver:
-                    try:
-                        deliver_scheduled_emails(job)
-                    except EmailNotDeliveredException:
-                        logger.warning("%r not delivered", job)
+                    deliver_scheduled_emails(job)
                 time.sleep(10)
             else:
                 # Less load on the db during times of activity,
