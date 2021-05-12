@@ -31,6 +31,7 @@ from zerver.lib.markdown import version as markdown_version
 from zerver.lib.request import JsonableError
 from zerver.lib.stream_subscription import (
     get_stream_subscriptions_for_user,
+    get_subscribed_stream_recipient_ids_for_user,
     num_subscribers_for_stream_id,
 )
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -729,6 +730,14 @@ def has_message_access(
 def bulk_access_messages(
     user_profile: UserProfile, messages: Sequence[Message], *, stream: Optional[Stream] = None
 ) -> List[Message]:
+    """This function does the full has_message_access check for each
+    message.  If stream is provided, it is used to avoid unnecessary
+    database queries, and will use exactly 2 bulk queries instead.
+
+    Throws AssertionError if stream is passed and any of the messages
+    were not sent to that stream.
+
+    """
     filtered_messages = []
 
     user_message_set = set(
@@ -737,10 +746,20 @@ def bulk_access_messages(
         )
     )
 
+    # TODO: Ideally, we'd do a similar bulk-stream-fetch if stream is
+    # None, so that this function is fast with
+
+    subscribed_recipient_ids = set(get_subscribed_stream_recipient_ids_for_user(user_profile))
+
     for message in messages:
         has_user_message = message.id in user_message_set
+        is_subscribed = message.recipient_id in subscribed_recipient_ids
         if has_message_access(
-            user_profile, message, has_user_message=has_user_message, stream=stream
+            user_profile,
+            message,
+            has_user_message=has_user_message,
+            stream=stream,
+            is_subscribed=is_subscribed,
         ):
             filtered_messages.append(message)
     return filtered_messages
