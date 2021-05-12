@@ -671,7 +671,7 @@ def access_message(
 
     user_message = get_usermessage_by_message_id(user_profile, message_id)
 
-    if has_message_access(user_profile, message, user_message):
+    if has_message_access(user_profile, message, has_user_message=user_message is not None):
         return (message, user_message)
     raise JsonableError(_("Invalid message(s)"))
 
@@ -679,8 +679,8 @@ def access_message(
 def has_message_access(
     user_profile: UserProfile,
     message: Message,
-    user_message: Optional[UserMessage],
     *,
+    has_user_message: bool,
     stream: Optional[Stream] = None,
     is_subscribed: Optional[bool] = None,
 ) -> bool:
@@ -693,7 +693,7 @@ def has_message_access(
     """
 
     # If you have a user_message object, you have access.
-    if user_message is not None:
+    if has_user_message:
         return True
 
     if message.recipient.type != Recipient.STREAM:
@@ -731,7 +731,7 @@ def bulk_access_messages(user_profile: UserProfile, messages: Sequence[Message])
 
     for message in messages:
         user_message = get_usermessage_by_message_id(user_profile, message.id)
-        if has_message_access(user_profile, message, user_message):
+        if has_message_access(user_profile, message, has_user_message=user_message is not None):
             filtered_messages.append(message)
     return filtered_messages
 

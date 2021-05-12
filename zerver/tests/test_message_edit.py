@@ -1360,17 +1360,26 @@ class EditMessageTest(ZulipTestCase):
         )
 
         self.assertEqual(
-            has_message_access(guest_user, Message.objects.get(id=msg_id_to_test_acesss), None),
-            True,
-        )
-        self.assertEqual(
             has_message_access(
-                guest_user, Message.objects.get(id=msg_id_to_test_acesss), None, stream=old_stream
+                guest_user, Message.objects.get(id=msg_id_to_test_acesss), has_user_message=False
             ),
             True,
         )
         self.assertEqual(
-            has_message_access(non_guest_user, Message.objects.get(id=msg_id_to_test_acesss), None),
+            has_message_access(
+                guest_user,
+                Message.objects.get(id=msg_id_to_test_acesss),
+                has_user_message=False,
+                stream=old_stream,
+            ),
+            True,
+        )
+        self.assertEqual(
+            has_message_access(
+                non_guest_user,
+                Message.objects.get(id=msg_id_to_test_acesss),
+                has_user_message=False,
+            ),
             True,
         )
 
@@ -1386,11 +1395,19 @@ class EditMessageTest(ZulipTestCase):
         self.assert_json_success(result)
 
         self.assertEqual(
-            has_message_access(guest_user, Message.objects.get(id=msg_id_to_test_acesss), None),
+            has_message_access(
+                guest_user,
+                Message.objects.get(id=msg_id_to_test_acesss),
+                has_user_message=False,
+            ),
             False,
         )
         self.assertEqual(
-            has_message_access(non_guest_user, Message.objects.get(id=msg_id_to_test_acesss), None),
+            has_message_access(
+                non_guest_user,
+                Message.objects.get(id=msg_id_to_test_acesss),
+                has_user_message=False,
+            ),
             True,
         )
         self.assertEqual(
@@ -1400,7 +1417,7 @@ class EditMessageTest(ZulipTestCase):
             has_message_access(
                 guest_user,
                 Message.objects.get(id=msg_id_to_test_acesss),
-                None,
+                has_user_message=False,
                 stream=new_stream,
                 is_subscribed=True,
             ),
@@ -1409,14 +1426,20 @@ class EditMessageTest(ZulipTestCase):
 
         self.assertEqual(
             has_message_access(
-                guest_user, Message.objects.get(id=msg_id_to_test_acesss), None, stream=new_stream
+                guest_user,
+                Message.objects.get(id=msg_id_to_test_acesss),
+                has_user_message=False,
+                stream=new_stream,
             ),
             False,
         )
         with self.assertRaises(AssertionError):
             # Raises assertion if you pass an invalid stream.
             has_message_access(
-                guest_user, Message.objects.get(id=msg_id_to_test_acesss), None, stream=old_stream
+                guest_user,
+                Message.objects.get(id=msg_id_to_test_acesss),
+                has_user_message=False,
+                stream=old_stream,
             )
 
         self.assertEqual(
@@ -1428,7 +1451,9 @@ class EditMessageTest(ZulipTestCase):
         )
         self.assertEqual(
             has_message_access(
-                self.example_user("iago"), Message.objects.get(id=msg_id_to_test_acesss), None
+                self.example_user("iago"),
+                Message.objects.get(id=msg_id_to_test_acesss),
+                has_user_message=False,
             ),
             True,
         )
