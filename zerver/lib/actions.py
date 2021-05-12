@@ -5877,6 +5877,7 @@ def do_update_message(
         }
 
         messages_list = update_messages_for_topic_edit(
+            acting_user=user_profile,
             edited_message=target_message,
             propagate_mode=propagate_mode,
             orig_topic_name=orig_topic_name,
