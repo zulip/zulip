@@ -726,7 +726,9 @@ def has_message_access(
     ).exists()
 
 
-def bulk_access_messages(user_profile: UserProfile, messages: Sequence[Message]) -> List[Message]:
+def bulk_access_messages(
+    user_profile: UserProfile, messages: Sequence[Message], *, stream: Optional[Stream] = None
+) -> List[Message]:
     filtered_messages = []
 
     user_message_set = set(
@@ -737,7 +739,9 @@ def bulk_access_messages(user_profile: UserProfile, messages: Sequence[Message])
 
     for message in messages:
         has_user_message = message.id in user_message_set
-        if has_message_access(user_profile, message, has_user_message=has_user_message):
+        if has_message_access(
+            user_profile, message, has_user_message=has_user_message, stream=stream
+        ):
             filtered_messages.append(message)
     return filtered_messages
 
