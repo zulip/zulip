@@ -2,10 +2,7 @@
 
 !!! tip ""
     This feature mutes a user from your personal perspective, and does not
-    automatically notify anyone. Consider also reporting abusive behavior to
-    organization [owners and administrators](/help/roles-and-permissions),
-    who can take organization-level actions like
-    [deactivating a user](/help/deactivate-or-reactivate-a-user).
+    automatically notify anyone.
 
 You can mute any user you do not wish to interact with. Muting someone will
 have the following effects:
@@ -90,5 +87,7 @@ From there, you can also search for and **unmute** users.
 
 ## Related articles
 
+* [Deactivate a user](/help/deactivate-or-reactivate-a-user)
+* [Moderating open organizations](/help/moderating-open-organizations)
 * [Mute a stream](/help/mute-a-stream)
 * [Mute a topic](/help/mute-a-topic)
