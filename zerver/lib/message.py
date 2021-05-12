@@ -729,9 +729,15 @@ def has_message_access(
 def bulk_access_messages(user_profile: UserProfile, messages: Sequence[Message]) -> List[Message]:
     filtered_messages = []
 
+    user_message_set = set(
+        bulk_access_messages_expect_usermessage(
+            user_profile.id, [message.id for message in messages]
+        )
+    )
+
     for message in messages:
-        user_message = get_usermessage_by_message_id(user_profile, message.id)
-        if has_message_access(user_profile, message, has_user_message=user_message is not None):
+        has_user_message = message.id in user_message_set
+        if has_message_access(user_profile, message, has_user_message=has_user_message):
             filtered_messages.append(message)
     return filtered_messages
 
