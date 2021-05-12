@@ -662,6 +662,7 @@ export function sender_info_for_recent_topics_row(sender_ids) {
     for (const id of sender_ids) {
         const sender = {...get_by_user_id(id)};
         sender.avatar_url_small = small_avatar_url_for_person(sender);
+        sender.is_muted = muting.is_user_muted(id);
         senders_info.push(sender);
     }
     return senders_info;

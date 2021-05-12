@@ -37,9 +37,15 @@
             </li>
             {{/if}}
             {{#each senders}}
-            <li class="recent_avatars_item" title="{{this.full_name}}">
-                <img src="{{this.avatar_url_small}}" class="recent_avatars_img" />
-            </li>
+                {{#if this.is_muted}}
+                <li class="recent_avatars_item" title="{{t 'Muted user'}}">
+                    <span><i class="fa fa-user recent_avatars_others"></i></span>
+                </li>
+                {{else}}
+                <li class="recent_avatars_item" title="{{this.full_name}}">
+                    <img src="{{this.avatar_url_small}}" class="recent_avatars_img" />
+                </li>
+                {{/if}}
             {{/each}}
         </ul>
     </td>

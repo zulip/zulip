@@ -36,6 +36,9 @@ have the following effects:
 * Muted users are excluded from the autocomplete for composing a
   private message or [mentioning a user](/help/mention-a-user-or-group).
 
+* Areas in Zulip which show users' avatars will now show a generic user symbol
+  in place of a muted user's profile picture.
+
 * To avoid interfering with administration tasks, parts of the
   settings UI (such as the list of subscribers to a stream, or members
   of the organization) will display muted users' names and other

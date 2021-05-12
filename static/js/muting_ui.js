@@ -169,6 +169,10 @@ export function rerender_for_muted_user() {
 
     activity.redraw();
     pm_list.update_private_messages();
+
+    // If a user is (un)muted, we want to update their avatars on the recent topics
+    // participants column.
+    recent_topics.complete_rerender();
 }
 
 export function handle_user_updates(muted_user_ids) {
