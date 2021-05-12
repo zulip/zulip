@@ -631,6 +631,11 @@ export function is_visible() {
 }
 
 export function show() {
+    if (is_visible()) {
+        // If we're already visible, E.g. because the user hit Esc
+        // while already in the recent topics view, do nothing.
+        return;
+    }
     // Hide selected elements in the left sidebar.
     top_left_corner.narrow_to_recent_topics();
     stream_list.handle_narrow_deactivated();
