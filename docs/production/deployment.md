@@ -209,13 +209,13 @@ behind reverse proxies.
 ## Using an outgoing HTTP proxy
 
 Zulip supports routing all of its outgoing HTTP and HTTPS traffic
-through an HTTP `CONNECT` proxy, such as [`smokescreen`][smokescreen];
+through an HTTP `CONNECT` proxy, such as [Smokescreen][smokescreen];
 this includes outgoing webhooks, image and website previews, and
 mobile push notifications.  You may wish to enable this feature to
 provide a consistent egress point, or enforce access control on URLs
 to prevent [SSRF][ssrf] against internal resources.
 
-To use `smokescreen`:
+To use Smokescreen:
 
 1. Add `, zulip::profile::smokescreen` to the list of `puppet_classes`
    in `/etc/zulip/zulip.conf`.  A typical value after this change is:
@@ -234,7 +234,7 @@ To use `smokescreen`:
 
 1. As root, run
    `/home/zulip/deployments/current/scripts/zulip-puppet-apply`.  This
-   will compile and install `smokescreen`, reconfigure services to use
+   will compile and install Smokescreen, reconfigure services to use
    it, and restart Zulip.
 
 If you would like to use an already-installed HTTP proxy, omit the
