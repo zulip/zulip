@@ -20,7 +20,7 @@ gear_info = {
     "settings": ["Settings", "/#settings/your-account"],
     "manage-organization": ["Manage organization", "/#organization/organization-profile"],
     "integrations": ["Integrations", "/integrations"],
-    "stats": ["Statistics", "/stats"],
+    "stats": ["Usage statistics", "/stats"],
     "plans": ["Plans and pricing", "/plans"],
     "billing": ["Billing", "/billing"],
     "invite": ["Invite users", "/#invite"],

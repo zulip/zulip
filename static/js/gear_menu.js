@@ -21,6 +21,7 @@ Our gear menu has these choices:
 hash:  Manage streams
 hash:  Settings
 hash:  Organization settings
+link:  Usage statistics
 ---
 link:  Help center
 info:  Keyboard shortcuts
@@ -31,7 +32,8 @@ hash:  About Zulip
 link:  Desktop & mobile apps
 link:  Integrations
 link:  API documentation
-link:  Statistics
+link:  Sponsor Zulip
+link:  Plans and pricing
 ---
 hash:   Invite users
 ---
