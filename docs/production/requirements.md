@@ -92,7 +92,7 @@ on hardware requirements for larger organizations.
   configuration).
 * Zulip supports [running behind a reverse proxy][reverse-proxy].
 * Zulip servers running inside a private network should configure the
-  [`smokescreen` integration][smokescreen-proxy] to protect against
+  [Smokescreen integration][smokescreen-proxy] to protect against
   [SSRF attacks][SSRF], where users could make the Zulip server make
   requests to private resources.
 

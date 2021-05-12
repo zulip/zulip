@@ -248,9 +248,9 @@ strength allowed is controlled by two settings in
   outgoing webhooks and embedded video previews. End users have
   (limited) control the content of these HTTP requests. As a result,
   Zulip supports routing these outgoing requests [through
-  `smokescreen`][smokescreen-setup] to ensure that Zulip cannot be
+  Smokescreen][smokescreen-setup] to ensure that Zulip cannot be
   used to execute [SSRF attacks][SSRF] against other systems on an
-  internal corporate network.  The default `smokescreen` configuration
+  internal corporate network.  The default Smokescreen configuration
   denies access to all non-public IP addresses, including 127.0.0.1.
 
 [SSRF]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery

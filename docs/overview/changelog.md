@@ -31,7 +31,7 @@ log][commit-log] for an up-to-date list of raw changes.
   is now possible to write a decent Zulip client with minimal
   interaction with the Zulip server development team.
 - Added new organization settings: wildcard mention policy.
-- Integrated [smokescreen][smokescreen], an outgoing proxy designed to
+- Integrated [Smokescreen][smokescreen], an outgoing proxy designed to
   help protect against SSRF attacks; outgoing HTTP requests that can
   be triggered by end users are routed through this service.
   We recommend that self-hosted installations configure it.
@@ -61,7 +61,7 @@ log][commit-log] for an up-to-date list of raw changes.
   [docker-zulip][docker-zulip]), you'll want to manually update the
   `puppet_classes` variable.
 - Zulip's supervisord configuration now lives in `/etc/supervisor/conf.d/zulip/`
-- Consider enabling [smokescreen][smokescreen]
+- Consider enabling [Smokescreen][smokescreen]
 - Private streams can no longer be default streams (i.e. the ones new
   users are automatically added to).
 - New `scripts/start-server` and `scripts/stop-server` mean that
