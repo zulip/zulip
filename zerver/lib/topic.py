@@ -159,8 +159,18 @@ def update_messages_for_topic_edit(
 
     update_fields = ["edit_history", "last_edit_time"]
 
-    # Evaluate the query before running the update
-    messages_list = list(messages)
+    if new_stream is not None:
+        # If we're moving the messages between streams, only move
+        # messages that the acting user can access, so that one cannot
+        # gain access to messages through moving them.
+        from zerver.lib.message import bulk_access_messages
+
+        messages_list = bulk_access_messages(acting_user, messages, stream=old_stream)
+    else:
+        # For single-message edits or topic moves within a stream, we
+        # allow moving history the user may not have access in order
+        # to keep topics together.
+        messages_list = list(messages)
 
     # The cached ORM objects are not changed by the upcoming
     # messages.update(), and the remote cache update (done by the
