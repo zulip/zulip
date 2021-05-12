@@ -1307,7 +1307,7 @@ class MessageAccessTests(ZulipTestCase):
 
         with queries_captured() as queries:
             filtered_messages = bulk_access_messages(later_subscribed_user, messages)
-        self.assert_length(queries, 4)
+        self.assert_length(queries, 3)
 
         # Message sent before subscribing wouldn't be accessible by later
         # subscribed user as stream has protected history
@@ -1318,7 +1318,7 @@ class MessageAccessTests(ZulipTestCase):
 
         with queries_captured() as queries:
             filtered_messages = bulk_access_messages(later_subscribed_user, messages)
-        self.assert_length(queries, 5)
+        self.assert_length(queries, 4)
 
         # Message sent before subscribing are accessible by 8user as stream
         # don't have protected history
@@ -1329,7 +1329,7 @@ class MessageAccessTests(ZulipTestCase):
 
         with queries_captured() as queries:
             filtered_messages = bulk_access_messages(unsubscribed_user, messages)
-        self.assert_length(queries, 8)
+        self.assert_length(queries, 7)
 
         self.assertEqual(len(filtered_messages), 0)
 
