@@ -139,6 +139,7 @@ def update_edit_history(
 
 
 def update_messages_for_topic_edit(
+    acting_user: UserProfile,
     edited_message: Message,
     propagate_mode: str,
     orig_topic_name: str,
