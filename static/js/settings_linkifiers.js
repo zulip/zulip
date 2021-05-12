@@ -187,6 +187,8 @@ export function build_page() {
                         ui_report.error($t_html({defaultMessage: "Failed"}), xhr, linkifier_status);
                     }
                 },
+                // Show the error message only on edit linkifier modal.
+                error_msg_element: $(),
             };
             settings_ui.do_settings_change(
                 channel.patch,

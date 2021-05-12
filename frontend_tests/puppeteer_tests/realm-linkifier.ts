@@ -113,11 +113,6 @@ async function test_edit_invalid_linkifier(page: Page): Promise<void> {
     await page.click(".cancel-linkifier-info-change");
     await page.waitForSelector("#linkifier-edit-form-modal", {hidden: true});
 
-    await page.waitForFunction(
-        () =>
-            $(".edit-linkifier-status").text().trim() ===
-            "Save failed: Invalid linkifier pattern.  Valid characters are [ a-zA-Z_#=/:+!-].",
-    );
     await page.waitForSelector(".linkifier_row", {visible: true});
     assert.strictEqual(
         await common.get_text_from_selector(page, ".linkifier_row span.linkifier_pattern"),
