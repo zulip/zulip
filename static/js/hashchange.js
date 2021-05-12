@@ -177,12 +177,9 @@ function do_hashchange_normal(from_reload) {
 
 function do_hashchange_overlay(old_hash) {
     if (old_hash === undefined) {
-        // User directly requested to open an overlay.
-        // We need to show recent topics in the background.
-        // Even though recent topics may not be the default view
-        // here, we show it because we need to show a view in
-        // background and recent topics seems preferable for that.
-        recent_topics.show();
+        // The user opened the app with an overlay hash; we need to
+        // show the user's default view behind it.
+        show_default_view();
     }
     const base = hash_util.get_current_hash_category();
     const old_base = hash_util.get_hash_category(old_hash);
