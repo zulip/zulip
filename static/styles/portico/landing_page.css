@@ -2147,7 +2147,8 @@ nav {
     padding: 18px 30px;
     border-radius: 70px;
 
-    color: hsl(0, 0%, 80%);
+    /* Reset color since we don't want default link styling. */
+    color: hsl(0, 0%, 27%);
 
     font-size: 3em;
     text-align: center;
@@ -2156,7 +2157,6 @@ nav {
 }
 
 .portico-landing.apps .other-apps .apps .icon:hover {
-    color: hsl(0, 0%, 47%);
     background: linear-gradient(-45deg, hsl(0, 0%, 83%), hsl(0, 0%, 98%));
 }
 
