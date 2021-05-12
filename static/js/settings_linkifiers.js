@@ -166,7 +166,7 @@ export function build_page() {
             const data = {pattern, url_format_string};
             const pattern_status = modal.find("#edit-linkifier-pattern-status").expectOne();
             const format_status = modal.find("#edit-linkifier-format-status").expectOne();
-            const linkifier_status = modal.find(".edit-linkifier-status").expectOne();
+            const linkifier_status = modal.find("#edit-linkifier-status").expectOne();
             const opts = {
                 success_continuation() {
                     change_linkifier_button.prop("disabled", false);

@@ -1933,10 +1933,19 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     }
 }
 
-.linkifier-edit-form {
+#linkifier-edit-form-modal {
     #edit-linkifier-pattern,
     #edit-linkifier-url-format-string {
         width: 400px;
+    }
+
+    #edit-linkifier-status {
+        margin-top: 6px;
+        margin-bottom: 8px;
+    }
+
+    label {
+        margin-bottom: 4px;
     }
 
     #edit-linkifier-pattern-status,
