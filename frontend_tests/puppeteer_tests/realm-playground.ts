@@ -72,6 +72,11 @@ async function test_invalid_playground_parameters(page: Page): Promise<void> {
     assert.strictEqual(status, "Failed: Invalid characters in pygments language");
 }
 
+async function test_successful_playground_deletion(page: Page): Promise<void> {
+    await page.click(".playground_row button.delete");
+    await page.waitForSelector(".playground_row", {hidden: true});
+}
+
 async function playground_test(page: Page): Promise<void> {
     await common.log_in(page);
     await common.manage_organization(page);
@@ -79,6 +84,7 @@ async function playground_test(page: Page): Promise<void> {
 
     await test_successful_playground_creation(page);
     await test_invalid_playground_parameters(page);
+    await test_successful_playground_deletion(page);
 }
 
 common.run_test(playground_test);
