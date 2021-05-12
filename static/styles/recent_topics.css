@@ -176,6 +176,10 @@
             padding: 0 1.5px 0 1.5px;
             position: relative;
             min-width: 24px;
+
+            .fa-user {
+                opacity: 0.7;
+            }
         }
 
         .recent_topics_participant_avatar,
