@@ -139,10 +139,8 @@ export function build_page() {
             error(xhr) {
                 ui_report.generic_row_button_error(xhr, btn);
             },
-            success() {
-                const row = btn.parents("tr");
-                row.remove();
-            },
+            // There is no need for an on-success action here since the row is removed by
+            // the `realm_linkifiers` event handler which builds the linkifier list again.
         });
     });
 
