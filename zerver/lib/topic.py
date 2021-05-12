@@ -145,18 +145,11 @@ def update_messages_for_topic_edit(
     orig_topic_name: str,
     topic_name: Optional[str],
     new_stream: Optional[Stream],
-    old_recipient_id: Optional[int],
+    old_stream: Stream,
     edit_history_event: Dict[str, Any],
     last_edit_time: datetime,
 ) -> List[Message]:
-    assert (new_stream and old_recipient_id) or (not new_stream and not old_recipient_id)
-
-    if old_recipient_id is not None:
-        recipient_id = old_recipient_id
-    else:
-        recipient_id = edited_message.recipient_id
-
-    propagate_query = Q(recipient_id=recipient_id, subject__iexact=orig_topic_name)
+    propagate_query = Q(recipient_id=old_stream.recipient_id, subject__iexact=orig_topic_name)
     if propagate_mode == "change_all":
         propagate_query = propagate_query & ~Q(id=edited_message.id)
     if propagate_mode == "change_later":
