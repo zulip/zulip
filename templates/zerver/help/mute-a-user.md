@@ -11,39 +11,33 @@ have the following effects:
   read](/help/marking-messages-as-read) for you, and will never
   generate any desktop, email, or mobile push notifications.
 
+* All messages sent by muted users, including the name, profile
+  picture, and message content, are hidden behind a **Click here to
+  reveal** banner.
+
 * Muted users are hidden from [**Private
   messages**](/help/private-messages) in the left sidebar and the list
   of users in the right sidebar. Private messages between you and a
-  muted user will only be visible if you [explicitly
-  search](/help/search-for-messages) for your private messages with
-  the user.
-
-* All stream messages and group private messages sent by muted users
-  are hidden behind a **Click to reveal** banner. This allows you to
-  understand whether other users' messages are responses to messages
-  sent by a muted user, while seeing the muted user's name, profile
-  picture, or message content only for those messages which you have opted
-  into reading.
+  muted user are excluded from all views, including search, unless you
+  [explicitly search](/help/search-for-messages) for `pm-with:<that
+  user>`.
 
 * Muted users have their name displayed as "Muted user" for [emoji
   reactions][view-emoji-reactions], [polls](/help/create-a-poll), and
-  when displaying the recipients of group private messages sent by
-  unmuted users.
+  when displaying the recipients of group private messages.
 
 * Muted users are excluded from the autocomplete for composing a
   private message or [mentioning a user](/help/mention-a-user-or-group).
 
-* Areas in Zulip which show users' avatars will now show a generic user symbol
-  in place of a muted user's profile picture.
+* Recent topics and other features that display avatars will show a
+  generic user symbol in place of a muted user's profile picture.
 
-* To avoid interfering with administration tasks, parts of the
-  settings UI (such as the list of subscribers to a stream, or members
-  of the organization) will display muted users' names and other
-  details as normal.
+* To avoid interfering with administration tasks, stream and
+  organization settings display muted users' names and other details.
 
 !!! tip ""
     Zulip offers no way to distinguish a user
-    that has muted you from a user that is ignoring you.
+    who has muted you from a user who is ignoring you.
 
 
 [view-emoji-reactions]: /help/emoji-reactions#see-who-reacted-to-a-message
