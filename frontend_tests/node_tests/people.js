@@ -681,7 +681,7 @@ test_people("message_methods", () => {
         "https://secure.gravatar.com/avatar/6dbdd7946b58d8b11351fcb27e5cdd55?d=identicon&s=50",
     );
 
-    assert.deepEqual(people.sender_info_with_small_avatar_urls_for_sender_ids([30]), [
+    assert.deepEqual(people.sender_info_for_recent_topics_row([30]), [
         {
             avatar_url_small: "/avatar/30&s=50",
             email: "me@example.com",

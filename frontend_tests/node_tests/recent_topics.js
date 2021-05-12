@@ -166,7 +166,7 @@ const people = zrequire("people");
 const rt = zrequire("recent_topics");
 
 people.is_my_user_id = (id) => id === 1;
-people.sender_info_with_small_avatar_urls_for_sender_ids = (ids) => ids;
+people.sender_info_for_recent_topics_row = (ids) => ids;
 
 let id = 0;
 

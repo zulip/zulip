@@ -315,7 +315,7 @@ function format_topic(topic_data) {
     // Display in most recent sender first order
     const all_senders = recent_senders.get_topic_recent_senders(stream_id, topic);
     const senders = all_senders.slice(-MAX_AVATAR);
-    const senders_info = people.sender_info_with_small_avatar_urls_for_sender_ids(senders);
+    const senders_info = people.sender_info_for_recent_topics_row(senders);
 
     return {
         // stream info

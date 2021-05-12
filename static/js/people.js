@@ -657,7 +657,7 @@ export function small_avatar_url_for_person(person) {
     return format_small_avatar_url("/avatar/" + person.user_id);
 }
 
-export function sender_info_with_small_avatar_urls_for_sender_ids(sender_ids) {
+export function sender_info_for_recent_topics_row(sender_ids) {
     const senders_info = [];
     for (const id of sender_ids) {
         const sender = {...get_by_user_id(id)};
