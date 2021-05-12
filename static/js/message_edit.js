@@ -14,6 +14,7 @@ import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
 import * as confirm_dialog from "./confirm_dialog";
 import * as dialog_widget from "./dialog_widget";
+import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget";
 import * as echo from "./echo";
 import * as giphy from "./giphy";
 import {$t, $t_html} from "./i18n";
@@ -35,6 +36,7 @@ import * as upload from "./upload";
 const currently_editing_messages = new Map();
 let currently_deleting_messages = [];
 let currently_topic_editing_messages = [];
+let stream_widget;
 const currently_echoing_messages = new Map();
 export const RESOLVED_TOPIC_PREFIX = "✔ ";
 
@@ -387,8 +389,21 @@ function edit_message(row, raw_content) {
         is_stream_editable;
     // current message's stream has been already been added and selected in handlebar
     const available_streams = is_stream_editable
-        ? stream_data.subscribed_subs().filter((s) => s.stream_id !== message.stream_id)
+        ? stream_data.subscribed_subs().map((stream) => ({
+              name: stream.name,
+              value: stream.stream_id.toString(),
+          }))
         : null;
+
+    const select_move_stream_widget_name = `select_move_stream_${message.id}`;
+    const opts = {
+        widget_name: select_move_stream_widget_name,
+        data: available_streams,
+        default_text: $t({defaultMessage: "No streams"}),
+        include_current_item: true,
+        value: message.stream_id,
+        on_update: set_propagate_selector_display,
+    };
 
     const form = $(
         render_message_edit_form({
@@ -403,9 +418,7 @@ function edit_message(row, raw_content) {
             file_upload_enabled,
             minutes_to_edit: Math.floor(page_params.realm_message_content_edit_limit_seconds / 60),
             is_stream_editable,
-            available_streams,
-            stream_id: message.stream_id,
-            stream_name: message.stream,
+            select_move_stream_widget_name,
             notify_new_thread: notify_new_thread_default,
             notify_old_thread: notify_old_thread_default,
             giphy_enabled: giphy.is_giphy_enabled(),
@@ -424,7 +437,6 @@ function edit_message(row, raw_content) {
     );
     upload.feature_check($(`#edit_form_${CSS.escape(rows.id(row))} .compose_upload_file`));
 
-    const message_edit_stream = row.find(`#select_stream_id_${CSS.escape(message.id)}`);
     const stream_header_colorblock = row.find(".stream_header_colorblock");
     const message_edit_content = row.find("textarea.message_edit_content");
     const message_edit_topic = row.find("input.message_edit_topic");
@@ -433,11 +445,10 @@ function edit_message(row, raw_content) {
     const message_edit_countdown_timer = row.find(".message_edit_countdown_timer");
     const copy_message = row.find(".copy_message");
 
+    if (is_stream_editable) {
+        stream_widget = dropdown_list_widget(opts);
+    }
     stream_bar.decorate(message.stream, stream_header_colorblock, false);
-    message_edit_stream.on("change", function () {
-        const stream_name = stream_data.maybe_get_stream_name(Number.parseInt(this.value, 10));
-        stream_bar.decorate(stream_name, stream_header_colorblock, false);
-    });
 
     switch (editability) {
         case editability_types.NO:
@@ -555,21 +566,34 @@ function edit_message(row, raw_content) {
 
     const original_stream_id = message.stream_id;
     const original_topic = message.topic;
+
+    // Change the `stream_header_colorblock` when clicked on any dropdown item.
+    function update_stream_header_colorblock() {
+        // Stop the execution if stream_widget is undefined.
+        if (!stream_widget) {
+            return;
+        }
+        const stream_name = stream_data.maybe_get_stream_name(
+            Number.parseInt(stream_widget.value(), 10),
+        );
+
+        stream_bar.decorate(stream_name, stream_header_colorblock, false);
+    }
+
     function set_propagate_selector_display() {
+        update_stream_header_colorblock();
         const new_topic = message_edit_topic.val();
-        const new_stream_id = Number.parseInt(message_edit_stream.val(), 10);
+        const new_stream_id = is_stream_editable
+            ? Number.parseInt(stream_widget.value(), 10)
+            : null;
         const is_topic_edited = new_topic !== original_topic && new_topic !== "";
-        const is_stream_edited = new_stream_id !== original_stream_id;
+        const is_stream_edited = is_stream_editable ? new_stream_id !== original_stream_id : false;
         message_edit_topic_propagate.toggle(is_topic_edited || is_stream_edited);
         message_edit_breadcrumb_messages.toggle(is_stream_edited);
     }
 
     if (!message.locally_echoed) {
         message_edit_topic.on("keyup", () => {
-            set_propagate_selector_display();
-        });
-
-        message_edit_stream.on("change", () => {
             set_propagate_selector_display();
         });
     }
@@ -767,6 +791,8 @@ export function save_message_row_edit(row) {
     const msg_list = message_lists.current;
     let message_id = rows.id(row);
     const message = message_lists.current.get(message_id);
+    const can_edit_stream =
+        message.is_stream && settings_data.user_can_move_messages_between_streams();
     let changed = false;
     let edit_locally_echoed = false;
 
@@ -785,8 +811,10 @@ export function save_message_row_edit(row) {
         new_topic = row.find(".message_edit_topic").val();
         topic_changed = new_topic !== old_topic && new_topic.trim() !== "";
 
-        new_stream_id = Number.parseInt($(`#select_stream_id_${CSS.escape(message_id)}`).val(), 10);
-        stream_changed = new_stream_id !== old_stream_id;
+        if (can_edit_stream) {
+            new_stream_id = Number.parseInt(stream_widget.value(), 10);
+            stream_changed = new_stream_id !== old_stream_id;
+        }
     }
     // Editing a not-yet-acked message (because the original send attempt failed)
     // just results in the in-memory message being changed
