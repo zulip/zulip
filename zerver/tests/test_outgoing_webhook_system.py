@@ -510,3 +510,35 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         self.assertEqual(last_message.topic_name(), "bar")
         display_recipient = get_display_recipient(last_message.recipient)
         self.assertEqual(display_recipient, "Denmark")
+
+    @responses.activate
+    def test_empty_string_json_as_response_to_outgoing_webhook_request(self) -> None:
+        """
+        Verifies that if the response to the request triggered by mentioning the bot
+        is the json representation of the empty string, the outcome is the same
+        as {"response_not_required": True} - since this behavior is kept for
+        backwards-compatibility.
+        """
+        bot_owner = self.example_user("othello")
+        bot = self.create_outgoing_bot(bot_owner)
+
+        responses.add(
+            responses.POST,
+            "https://bot.example.com/",
+            json="",
+        )
+
+        with self.assertLogs(level="INFO") as logs:
+            stream_message_id = self.send_stream_message(
+                bot_owner, "Denmark", content=f"@**{bot.full_name}** foo", topic_name="bar"
+            )
+
+        self.assertEqual(len(responses.calls), 1)
+
+        self.assertEqual(len(logs.output), 1)
+        self.assertIn(f"Outgoing webhook request from {bot.id}@zulip took ", logs.output[0])
+
+        # We verify that no new message was sent, since that's the behavior implied
+        # by the response_not_required option.
+        last_message = self.get_last_message()
+        self.assertEqual(last_message.id, stream_message_id)

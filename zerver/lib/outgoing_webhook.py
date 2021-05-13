@@ -292,6 +292,12 @@ def process_success_response(
     except json.JSONDecodeError:
         raise JsonableError(_("Invalid JSON in response"))
 
+    if response_json == "":
+        # Versions of zulip_botserver before 2021-05 used
+        # json.dumps("") as their "no response required" success
+        # response; handle that for backwards-compatibility.
+        return
+
     if not isinstance(response_json, dict):
         raise JsonableError(_("Invalid response format"))
 
