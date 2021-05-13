@@ -155,11 +155,10 @@ def get_usable_missed_message_address(address: str) -> MissedMessageEmailAddress
 
 
 def create_missed_message_address(user_profile: UserProfile, message: Message) -> str:
+    # If the email gateway isn't configured, we specify a reply
+    # address, since there's no useful way for the user to reply into
+    # Zulip.
     if settings.EMAIL_GATEWAY_PATTERN == "":
-        logger.warning(
-            "EMAIL_GATEWAY_PATTERN is an empty string, using "
-            "NOREPLY_EMAIL_ADDRESS in the 'from' field."
-        )
         return FromAddress.NOREPLY
 
     mm_address = MissedMessageEmailAddress.objects.create(
