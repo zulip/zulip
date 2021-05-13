@@ -11,22 +11,20 @@ This section is an incomplete draft of the release notes for the next
 major release, and is only updated occasionally.  See the [commit
 log][commit-log] for an up-to-date list of raw changes.
 
-### 4.0-rc1 -- May 3, 2021
-
 #### Highlights
 
-- Added copy-to-clipboard button on code blocks, making it convenient
-  to extract code for external use. Code blocks now have a "View in
-  playground" button for certain programming languages.
+- Code blocks now have a copy-to-clipboard button and can be
+  integrated with external code playgrounds, making it convenient to
+  work with code while discussing it in Zulip.
 - Added a new organization [Moderator role][roles-and-permissions].
   Many permissions settings for sensitive features now support only
   allowing moderators and above to use the feature.
 - Added a native Giphy integration for sending animated GIFs.
 - Added support for muting another user.
-- Recent topics is no longer beta, no longer an overlay, and is now
-  the default landing view. The previous default, "All messages", is
-  still available, and the default view can now be configured via
-  "Display settings".
+- Recent topics is no longer beta, no longer an overlay, supports
+  composing messages, and is now the default view. The previous
+  default view, "All messages", is still available, and the default
+  view can now be configured via "Display settings".
 - Completed API documentation for Zulip's real-time events system.  It
   is now possible to write a decent Zulip client with minimal
   interaction with the Zulip server development team.
@@ -42,6 +40,10 @@ log][commit-log] for an up-to-date list of raw changes.
   better error handling for the mobile and terminal apps.
 - The frontend internationalization library was switched from i18next
   to FormatJS.
+- The button for replying was redesigned to show the reply recipient
+  and be more obvious to users coming from other chat apps.
+- Added support for moving topics to private streams, and for configuring
+  which roles can move topics between streams.
 
 [roles-and-permissions]: https://zulip.com/help/roles-and-permissions
 
@@ -78,6 +80,11 @@ log][commit-log] for an up-to-date list of raw changes.
   browser sessions (i.e. the web and desktop apps).  This is a side
   effect of improved security settings (increasing the minimum entropy
   used when salting passwords from 71 bits to 128 bits).
+- We've removed the partial Thumbor integration from Zulip. The
+  Thumbor project appears to be dead upstream, and we no longer feel
+  comfortable including it in Zulip from a security perspective. We
+  hope to introduce a fully supported thumbnailing integration in our next
+  major release.
 
 [docker-zulip-manual]: https://github.com/zulip/docker-zulip#manual-configuration
 [smokescreen]: ../production/deployment.html#using-an-outgoing-http-proxy
@@ -85,8 +92,7 @@ log][commit-log] for an up-to-date list of raw changes.
 
 #### Full feature changelog
 
-- Community topic editing time limit increased to 3 days for members.
-- Added support for moving topics to private streams.
+- Added new [release lifecycle documentation](../production/release-lifecycle.md).
 - Added support for subscribing another stream's membership to a stream.
 - Added RealmAuditLog for most settings state changes in Zulip; this
   data will fascilitate future features showing a log of activity by
@@ -97,27 +103,30 @@ log][commit-log] for an up-to-date list of raw changes.
 - Added live update of compose placeholder text when recipients change.
 - Added keyboard navigation for popover menus that were missing it.
 - Added documentation for all [zulip.conf settings][zulip-conf-settings].
-- Added types for all parameters in the API documentation.
 - Added dozens of new notification sound options.
 - Added menu option to unstar all messages in a topic.
+- Added confirmation dialog before unsubscribing from a private stream.
 - Added confirmation dialog before deleting your profile picture.
+- Added types for all parameters in the API documentation.
 - Added API endpoint to fetch user details by email address.
 - Added API endpoint to fetch presence details by user ID.
 - Added new LDAP configuration options for servers hosting multiple organizations.
 - Added new `@**|user_id**` mention syntax intended for use in bots.
-- Added a confirmation dialog before unsubscribing from a private stream.
 - Added preliminary support for Zulip on Debian Bullseye; this
   release is expected to support Bullseye without any further changes.
+- Added several useful new management commands, including
+  `change_realm_subdomain` and `delete_user`.
 - Added support for subscribing all members of a user group to a stream.
+- Added support for sms: and tel: links.
+- Community topic editing time limit increased to 3 days for members.
+- New integrations: Freshping, JotForm, Uptime Robot, and a JSON
+  formatter (which is particularly useful when developing a new
+  integration).
 - Updated integrations: ClubHouse, NewRelic, Bitbucket, Zabbix.
-- New integrations: JotForm, and a JSON formatter (which is
-  particularly useful when developing a new integration).
 - Improved formatting of GitHub and GitLab integrations.
 - Improved the user experience for multi-user invitations.
 - Improved several rendered-message styling details.
 - Improved design of `<time>` widgets.
-- The button for opening the compose box was redesigned to be clearer for
-  users who are new to Zulip.
 - Improved format of `nginx` logs to include hostname and request time.
 - Redesigned the left sidebar menu icons (now `\vdots`, not a chevron).
 - The Zoom integration is now stable (no longer beta).
@@ -132,6 +141,7 @@ log][commit-log] for an up-to-date list of raw changes.
 - Password forms now have a "Show password" widget.
 - Fixed performance issues when creating hundreds of new users in
   quick succession (E.g. at the start of a conference or event).
+- Fixed performance issues in organizations with thousands of online users.
 - Fixed numerous rare exceptions when running Zulip at scale.
 - Fixed several subtle installer bugs.
 - Fixed various UI and accessibility issues in the registration and new
@@ -148,6 +158,8 @@ log][commit-log] for an up-to-date list of raw changes.
 - Fixed several error handling bugs with outgoing webhooks.
 - Fixed bugs with recipient bar UI for muting and topic editing.
 - Fixed highlighting of adjacent alert words.
+- Fixed many settings API endpoints with unusual string encoding.
+- Fixed wildcard mentions in blockquotes not being treated as silent.
 - Increased size of typeahead box for mentions from 5 to 8.
 - Typeahead now always ranks exact string matches first.
 - Tooltips have been migrated from Bootstrap to TippyJS, and added
@@ -155,12 +167,14 @@ log][commit-log] for an up-to-date list of raw changes.
 - Zulip now consistently uses the Source Code Pro font for code
   blocks, rather than varying by operating system.
 - Redesigned "Alert words" settings UI.
+- Linkifiers can now be edited in their settings page.
 - Tables in settings UI now have sticky headers.
 - Confirmation dialogs now consistently use Confirm/Cancel as button labels.
 - Refactored typeahead and emoji components to be shareable with the
   mobile codebase.
 - Switched to `orjson` for JSON serialization, resulting in better
   performance and more standards-compliant validation.
+- Outgoing webhooks now enforce a 10 second timeout.
 - Image previews in a Zulip message are now unconditionally proxied by
   Camo to improve privacy, rather than only when the URL was not HTTPS.
 - Replaced the old CasperJS frontend test suite with Puppeteer.
@@ -175,6 +189,8 @@ log][commit-log] for an up-to-date list of raw changes.
 - Improved performance of several high-throughput queue processors.
 - Improved performance of queries that fetch all active subscribers to
   a stream or set of streams.
+- Improved performance of sending messages to streams with thousands
+  of subscribers.
 - Upgraded our ancient forked version of bootstrap, on a path towards
   removing the last forked dependencies from the codebase.
 - Upgraded Django to 3.1 (as well as essentially every other dependency).
