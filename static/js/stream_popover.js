@@ -20,6 +20,7 @@ import * as muting_ui from "./muting_ui";
 import {page_params} from "./page_params";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
+import * as settings_data from "./settings_data";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_bar from "./stream_bar";
@@ -240,12 +241,16 @@ function build_topic_popover(opts) {
 
     const topic_muted = muting.is_topic_muted(sub.stream_id, topic_name);
     const has_starred_messages = starred_messages.get_count_in_topic(sub.stream_id, topic_name) > 0;
+    // Arguably, we could offer the "Move topic" option even if users
+    // can only edit the name within a stream.
+    const can_move_topic = settings_data.user_can_move_messages_between_streams();
 
     const content = render_topic_sidebar_actions({
         stream_name: sub.name,
         stream_id: sub.stream_id,
         topic_name,
         topic_muted,
+        can_move_topic,
         is_realm_admin: page_params.is_admin,
         color: sub.color,
         has_starred_messages,

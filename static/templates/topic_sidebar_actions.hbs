@@ -40,19 +40,9 @@
         </a>
     </li>
 
-    {{#if is_realm_admin}}
+    {{#if can_move_topic}}
+    <hr />
 
-    <div class="admin-separator">{{#tr}}ADMIN ACTIONS{{/tr}}</div>
-
-    <li>
-        <a tabindex="0" class="sidebar-popover-delete-topic-messages" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
-            <i class="fa fa-trash" aria-hidden="true"></i>
-            {{t "Delete topic"}}
-        </a>
-    </li>
-    {{/if}}
-
-    {{#if is_realm_admin}}
     <li>
         <a tabindex="0" class="sidebar-popover-move-topic-messages" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
             <i class="fa fa-arrows" aria-hidden="true"></i>
@@ -61,4 +51,12 @@
     </li>
     {{/if}}
 
+    {{#if is_realm_admin}}
+    <li>
+        <a tabindex="0" class="sidebar-popover-delete-topic-messages" data-stream-id="{{ stream_id }}" data-topic-name="{{ topic_name }}">
+            <i class="fa fa-trash" aria-hidden="true"></i>
+            {{t "Delete topic"}}
+        </a>
+    </li>
+    {{/if}}
 </ul>
