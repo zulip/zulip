@@ -640,6 +640,7 @@ paths:
                                   type: array
                                   description: |
                                     The IDs of the users who subscribed.
+                                    Changed to plural version in Zulip 4.0(feature level 35).
                                   items:
                                     type: integer
                               additionalProperties: false
