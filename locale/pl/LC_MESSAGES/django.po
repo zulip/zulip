@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-05-13 16:37+0000\n"
+"POT-Creation-Date: 2021-05-13 22:30+0000\n"
 "PO-Revision-Date: 2021-05-12 23:29+0000\n"
 "Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
 "Language-Team: Polish (http://www.transifex.com/zulip/zulip/language/pl/)\n"
@@ -268,7 +268,7 @@ msgid ""
 "encountering this page, it's probably our fault. We're sorry."
 msgstr ""
 
-#: templates/corporate/billing.html:21 templates/zerver/app/navbar.html:142
+#: templates/corporate/billing.html:21 templates/zerver/app/navbar.html:140
 msgid "Billing"
 msgstr "Rozliczenie"
 
@@ -408,7 +408,7 @@ msgstr "Email nie doszedł? Możemy go <a href=\"#\" id=\"resend_email_link\">wy
 msgid "Just in case, take a look at your Spam folder."
 msgstr "Na wszelki wypadek sprawdź folder ze spamem."
 
-#: templates/zerver/app/about-zulip.html:4
+#: templates/zerver/app/about-zulip.html:3
 #: templates/zerver/app/delete_message.html:3
 #: templates/zerver/app/deprecation_notice.html:5
 #: templates/zerver/app/invite_user.html:5
@@ -423,6 +423,16 @@ msgstr "Na wszelki wypadek sprawdź folder ze spamem."
 #: templates/zerver/app/navbar_alerts.html:73
 msgid "Close"
 msgstr "Zamknij"
+
+#: templates/zerver/app/about-zulip.html:6 templates/zerver/billing_nav.html:4
+#: templates/zerver/development/integrations_dev_panel.html:15
+#: templates/zerver/emails/compiled/followup_day2.html:28
+#: templates/zerver/emails/followup_day2.source.html:27
+#: templates/zerver/emails/followup_day2.txt:17
+#: templates/zerver/landing_nav.html:13 templates/zerver/portico-header.html:5
+#: templates/zerver/portico-header.html:8
+msgid "Zulip"
+msgstr "Zulip"
 
 #: templates/zerver/app/delete_message.html:5
 msgid "Delete message"
@@ -1034,49 +1044,49 @@ msgstr "Formatowanie wiadomości"
 msgid "Search operators"
 msgstr "Operatory wyszukiwania"
 
-#: templates/zerver/app/navbar.html:112 templates/zerver/footer.html:3
+#: templates/zerver/app/navbar.html:111 templates/zerver/footer.html:3
 msgid "About Zulip"
 msgstr "O Zulip"
 
-#: templates/zerver/app/navbar.html:119
+#: templates/zerver/app/navbar.html:117
 msgid "Contact support"
 msgstr "Skontaktuj się ze wsparciem"
 
-#: templates/zerver/app/navbar.html:126
+#: templates/zerver/app/navbar.html:124
 msgid "Desktop & mobile apps"
 msgstr "Aplikacje komputerowe i mobilne"
 
-#: templates/zerver/app/navbar.html:131 templates/zerver/footer.html:50
+#: templates/zerver/app/navbar.html:129 templates/zerver/footer.html:50
 msgid "Integrations"
 msgstr "Integracje"
 
-#: templates/zerver/app/navbar.html:136
+#: templates/zerver/app/navbar.html:134
 msgid "API documentation"
 msgstr "Dokumentacja API"
 
-#: templates/zerver/app/navbar.html:149
+#: templates/zerver/app/navbar.html:147
 msgid "Support Zulip"
 msgstr ""
 
-#: templates/zerver/app/navbar.html:156
+#: templates/zerver/app/navbar.html:154
 msgid "Plans and pricing"
 msgstr "Plany i cennik"
 
-#: templates/zerver/app/navbar.html:164
+#: templates/zerver/app/navbar.html:162
 msgid "Invite users"
 msgstr "Zaproś użytkowników"
 
-#: templates/zerver/app/navbar.html:170
+#: templates/zerver/app/navbar.html:168
 msgid ""
 "Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via "
 "Webathena"
 msgstr "Nadaj Zulipowi tickety Kerberos wymagane do uruchomienia twojego mirroru Zephyr przez Webathena"
 
-#: templates/zerver/app/navbar.html:172
+#: templates/zerver/app/navbar.html:170
 msgid "Link with Webathena"
 msgstr "Połącz z Webathena"
 
-#: templates/zerver/app/navbar.html:178
+#: templates/zerver/app/navbar.html:176
 msgid "Log out"
 msgstr "Wyloguj się"
 
@@ -1413,16 +1423,6 @@ msgstr "Eksportowane dane"
 #: templates/zerver/app/settings_overlay.html:169
 msgid "Show more"
 msgstr "Pokaż więcej"
-
-#: templates/zerver/billing_nav.html:4
-#: templates/zerver/development/integrations_dev_panel.html:15
-#: templates/zerver/emails/compiled/followup_day2.html:28
-#: templates/zerver/emails/followup_day2.source.html:27
-#: templates/zerver/emails/followup_day2.txt:17
-#: templates/zerver/landing_nav.html:13 templates/zerver/portico-header.html:5
-#: templates/zerver/portico-header.html:8
-msgid "Zulip"
-msgstr "Zulip"
 
 #: templates/zerver/config_error.html:14
 msgid ""

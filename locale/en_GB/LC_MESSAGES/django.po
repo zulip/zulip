@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-05-13 16:37+0000\n"
+"POT-Creation-Date: 2021-05-13 22:30+0000\n"
 "PO-Revision-Date: 2021-05-13 09:05+0000\n"
 "Last-Translator: David Wood <ZXFEIIKBVHB0Y6EIYWUMV68EL@david.davidtw.co>\n"
 "Language-Team: English (United Kingdom) (http://www.transifex.com/zulip/zulip/language/en_GB/)\n"
@@ -260,7 +260,7 @@ msgid ""
 "encountering this page, it's probably our fault. We're sorry."
 msgstr "Make sure you copied the link correctly in to your browser. If you're still encountering this page, it's probably our fault. We're sorry."
 
-#: templates/corporate/billing.html:21 templates/zerver/app/navbar.html:142
+#: templates/corporate/billing.html:21 templates/zerver/app/navbar.html:140
 msgid "Billing"
 msgstr "Billing"
 
@@ -400,7 +400,7 @@ msgstr "Still no email? We can <a href=\"#\" id=\"resend_email_link\">resend it<
 msgid "Just in case, take a look at your Spam folder."
 msgstr "Just in case, take a look at your Spam folder."
 
-#: templates/zerver/app/about-zulip.html:4
+#: templates/zerver/app/about-zulip.html:3
 #: templates/zerver/app/delete_message.html:3
 #: templates/zerver/app/deprecation_notice.html:5
 #: templates/zerver/app/invite_user.html:5
@@ -415,6 +415,16 @@ msgstr "Just in case, take a look at your Spam folder."
 #: templates/zerver/app/navbar_alerts.html:73
 msgid "Close"
 msgstr "Close"
+
+#: templates/zerver/app/about-zulip.html:6 templates/zerver/billing_nav.html:4
+#: templates/zerver/development/integrations_dev_panel.html:15
+#: templates/zerver/emails/compiled/followup_day2.html:28
+#: templates/zerver/emails/followup_day2.source.html:27
+#: templates/zerver/emails/followup_day2.txt:17
+#: templates/zerver/landing_nav.html:13 templates/zerver/portico-header.html:5
+#: templates/zerver/portico-header.html:8
+msgid "Zulip"
+msgstr "Zulip"
 
 #: templates/zerver/app/delete_message.html:5
 msgid "Delete message"
@@ -1026,49 +1036,49 @@ msgstr "Message formatting"
 msgid "Search operators"
 msgstr "Search operators"
 
-#: templates/zerver/app/navbar.html:112 templates/zerver/footer.html:3
+#: templates/zerver/app/navbar.html:111 templates/zerver/footer.html:3
 msgid "About Zulip"
 msgstr "About Zulip"
 
-#: templates/zerver/app/navbar.html:119
+#: templates/zerver/app/navbar.html:117
 msgid "Contact support"
 msgstr "Contact support"
 
-#: templates/zerver/app/navbar.html:126
+#: templates/zerver/app/navbar.html:124
 msgid "Desktop & mobile apps"
 msgstr "Desktop & mobile apps"
 
-#: templates/zerver/app/navbar.html:131 templates/zerver/footer.html:50
+#: templates/zerver/app/navbar.html:129 templates/zerver/footer.html:50
 msgid "Integrations"
 msgstr "Integrations"
 
-#: templates/zerver/app/navbar.html:136
+#: templates/zerver/app/navbar.html:134
 msgid "API documentation"
 msgstr "API documentation"
 
-#: templates/zerver/app/navbar.html:149
+#: templates/zerver/app/navbar.html:147
 msgid "Support Zulip"
 msgstr "Support Zulip"
 
-#: templates/zerver/app/navbar.html:156
+#: templates/zerver/app/navbar.html:154
 msgid "Plans and pricing"
 msgstr "Plans and pricing"
 
-#: templates/zerver/app/navbar.html:164
+#: templates/zerver/app/navbar.html:162
 msgid "Invite users"
 msgstr "Invite users"
 
-#: templates/zerver/app/navbar.html:170
+#: templates/zerver/app/navbar.html:168
 msgid ""
 "Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via "
 "Webathena"
 msgstr "Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via Webathena"
 
-#: templates/zerver/app/navbar.html:172
+#: templates/zerver/app/navbar.html:170
 msgid "Link with Webathena"
 msgstr "Link with Webathena"
 
-#: templates/zerver/app/navbar.html:178
+#: templates/zerver/app/navbar.html:176
 msgid "Log out"
 msgstr "Log out"
 
@@ -1405,16 +1415,6 @@ msgstr "Data exports"
 #: templates/zerver/app/settings_overlay.html:169
 msgid "Show more"
 msgstr "Show more"
-
-#: templates/zerver/billing_nav.html:4
-#: templates/zerver/development/integrations_dev_panel.html:15
-#: templates/zerver/emails/compiled/followup_day2.html:28
-#: templates/zerver/emails/followup_day2.source.html:27
-#: templates/zerver/emails/followup_day2.txt:17
-#: templates/zerver/landing_nav.html:13 templates/zerver/portico-header.html:5
-#: templates/zerver/portico-header.html:8
-msgid "Zulip"
-msgstr "Zulip"
 
 #: templates/zerver/config_error.html:14
 msgid ""
