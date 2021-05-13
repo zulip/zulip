@@ -2562,8 +2562,9 @@ div.topic_edit_spinner .loading_indicator_spinner {
             top: -1px;
         }
 
-        .compose_gif_icon {
+        a.compose_gif_icon {
             top: 6px;
+            font-size: 23px;
         }
     }
 
