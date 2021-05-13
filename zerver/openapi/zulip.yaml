@@ -11783,6 +11783,7 @@ components:
             Version for the user's avatar.  Used for cache-busting requests
             for the user's avatar.  Clients generally shouldn't need to use this;
             most avatar URLs sent by Zulip will already end with `?v={avatar_version}`.
+            **Changes**: New in Zulip 3.0(feature level 6)
         full_name:
           type: string
           description: |
