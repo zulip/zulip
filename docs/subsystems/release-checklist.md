@@ -86,9 +86,10 @@ preparing a new release.
     update commit with a `-dev` suffix, e.g. `5.0-dev`.  Push the tag
     to both zulip.git and zulip-internal.git to get a correct version
     number for future Cloud deployments.
-* Following a minor release (e.g. 3.2):
-  * On the release branch, update `ZULIP_VERSION` to the present
-    release with a `+git` suffix, e.g. `3.2+git`.
+  * Consider removing a few old releases from ReadTheDocs; we keep about
+    two years of back-versions.
+* Following a minor release (e.g. 3.2), on the release branch:
+  * Update `ZULIP_VERSION` to the present release with a `+git`
+    suffix, e.g. `3.2+git`.
+  * Update `LATEST_RELEASE_VERSION` with the released version.
   * Cherry-pick the changelog changes back to `master`.
-* Consider removing a few old releases from ReadTheDocs; we keep about
-  two years of back-versions.
