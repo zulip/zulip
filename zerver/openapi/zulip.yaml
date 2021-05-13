@@ -5137,6 +5137,7 @@ paths:
         Create a new user account via the API.
 
         `POST {{ api_url }}/v1/users`
+        **Changes**: Consisted of `short_name` field prior to Zulip 3.1(feature level 27).
       parameters:
         - name: email
           in: query
