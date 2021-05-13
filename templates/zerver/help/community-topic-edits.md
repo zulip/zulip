@@ -28,3 +28,4 @@ for details.
 ## Related articles
 
 * [Message and topic editing](/help/configure-message-editing-and-deletion)
+* [Rename a topic](/help/rename-a-topic)

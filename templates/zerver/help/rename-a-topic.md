@@ -34,10 +34,11 @@ for the details on when topic editing is allowed.
 
 ## Move a topic to another stream
 
-{!admin-only.md!}
+Organizations can configure which roles have permission to [move
+topics between streams][move-permission-setting].
 
-Organization administrators can move a topic from one stream to
-another.
+To move a topic, you must have access to both the source and
+destination streams.
 
 {start_tabs}
 
@@ -64,9 +65,10 @@ another.
 
 ## Move message(s) in a topic to another stream
 
-{!admin-only.md!}
+Organizations can configure which roles have permission to [move
+topics between streams][move-permission-setting].
 
-Organization administrators can also move only a subset of messages
+Roles that have permission can also move only a subset of messages
 from a topic to another stream.
 
 {start_tabs}
@@ -95,5 +97,6 @@ option.
 !!! warn ""
     **Note**: You cannot edit content of a message while changing its stream.
 
-
 {end_tabs}
+
+[move-permission-setting]: /help/configure-message-editing-and-deletion#configure-who-can-move-topics-between-streams
