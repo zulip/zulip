@@ -9,6 +9,11 @@ server versions is to check the `zulip_feature_level` parameter in the
 `/register` and `/server_settings` responses to determine which of the
 below features are supported.
 
+## Changes in Zulip 5.0
+
+Feature levels 66-69 are reserved for future use in 4.x maintenance
+releases.
+
 ## Changes in Zulip 4.0
 
 **Feature level 65**
