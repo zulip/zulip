@@ -1747,12 +1747,13 @@ class MarkdownListPreprocessor(markdown.preprocessors.Preprocessor):
             m = FENCE_RE.match(lines[i])
             if m:
                 fence_str = m.group("fence")
-                is_code = not m.group("lang") in ("quote", "quoted")
+                lang: Optional[str] = m.group("lang")
+                is_code = lang not in ("quote", "quoted")
                 has_open_fences = not len(open_fences) == 0
                 matches_last_fence = (
                     fence_str == open_fences[-1].fence_str if has_open_fences else False
                 )
-                closes_last_fence = not m.group("lang") and matches_last_fence
+                closes_last_fence = not lang and matches_last_fence
 
                 if closes_last_fence:
                     open_fences.pop()

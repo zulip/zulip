@@ -69,8 +69,8 @@ from zerver.models import (
 class SimulatedFencedBlockPreprocessor(FencedBlockPreprocessor):
     # Simulate code formatting.
 
-    def format_code(self, lang: str, code: str) -> str:
-        return lang + ":" + code
+    def format_code(self, lang: Optional[str], code: str) -> str:
+        return (lang or "") + ":" + code
 
     def placeholder(self, s: str) -> str:
         return "**" + s.strip("\n") + "**"
