@@ -1215,6 +1215,58 @@ class EditMessageTest(ZulipTestCase):
             "You don't have permission to move this message due to missing access to its stream",
         )
 
+    def test_move_message_from_private_stream_message_access_checks(
+        self,
+    ) -> None:
+        hamlet = self.example_user("hamlet")
+        user_profile = self.example_user("iago")
+        self.assertEqual(user_profile.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
+        self.login("iago")
+
+        private_stream = self.make_stream(
+            "privatestream", invite_only=True, history_public_to_subscribers=False
+        )
+        self.subscribe(hamlet, "privatestream")
+        original_msg_id = self.send_stream_message(hamlet, "privatestream", topic_name="test123")
+        self.subscribe(user_profile, "privatestream")
+        new_msg_id = self.send_stream_message(user_profile, "privatestream", topic_name="test123")
+
+        # Now we unsub and hamlet sends a new message (we won't have access to it even after re-subbing!)
+        self.unsubscribe(user_profile, "privatestream")
+        new_inaccessible_msg_id = self.send_stream_message(
+            hamlet, "privatestream", topic_name="test123"
+        )
+
+        # Re-subscribe and send another message:
+        self.subscribe(user_profile, "privatestream")
+        newest_msg_id = self.send_stream_message(
+            user_profile, "privatestream", topic_name="test123"
+        )
+
+        verona = get_stream("Verona", user_profile.realm)
+
+        result = self.client_patch(
+            "/json/messages/" + str(new_msg_id),
+            {
+                "message_id": new_msg_id,
+                "stream_id": verona.id,
+                "propagate_mode": "change_all",
+            },
+        )
+
+        self.assert_json_success(result)
+        self.assertEqual(Message.objects.get(id=new_msg_id).recipient_id, verona.recipient_id)
+        self.assertEqual(Message.objects.get(id=newest_msg_id).recipient_id, verona.recipient_id)
+        # The original message and the new, inaccessible message weren't moved,
+        # because user_profile doesn't have access to them.
+        self.assertEqual(
+            Message.objects.get(id=original_msg_id).recipient_id, private_stream.recipient_id
+        )
+        self.assertEqual(
+            Message.objects.get(id=new_inaccessible_msg_id).recipient_id,
+            private_stream.recipient_id,
+        )
+
     def test_move_message_cant_move_private_message(
         self,
     ) -> None:
