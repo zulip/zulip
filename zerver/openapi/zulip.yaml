@@ -10845,6 +10845,8 @@ components:
             The user id of the bot's owner.
 
             Null if the bot has no owner.
+            **Changes**: Changed in Zulip 3.0, replacing `owner` field which
+            was an email address(feature level 5)
         services:
           type: array
           description: |
