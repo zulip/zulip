@@ -4055,6 +4055,8 @@ paths:
         avoid generating very large HTTP responses. A maximum of 5000 messages
         can be obtained per request; attempting to exceed this will result in an
         error.
+        **Changes**: Consisted of `sender_sort_name` and `short_name` field in `display_recipients`
+        prior to Zulip 3.1(feature level 26).
       parameters:
         - name: anchor
           in: query
