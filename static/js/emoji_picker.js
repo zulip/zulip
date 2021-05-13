@@ -10,7 +10,6 @@ import render_emoji_showcase from "../templates/emoji_showcase.hbs";
 
 import * as blueslip from "./blueslip";
 import * as compose_ui from "./compose_ui";
-import {$t} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as popovers from "./popovers";
@@ -190,9 +189,7 @@ export function reactions_popped() {
 export function hide_emoji_popover() {
     $(".has_popover").removeClass("has_popover has_emoji_popover");
     if (reactions_popped()) {
-        const orig_title = current_message_emoji_popover_elem.data("original-title");
         current_message_emoji_popover_elem.popover("destroy");
-        current_message_emoji_popover_elem.prop("title", orig_title);
         current_message_emoji_popover_elem.removeClass("reaction_button_visible");
         current_message_emoji_popover_elem = undefined;
     }
@@ -620,7 +617,6 @@ export function build_emoji_popover(elt, id) {
         trigger: "manual",
     });
     elt.popover("show");
-    elt.prop("title", $t({defaultMessage: "Add emoji reaction (:)"}));
 
     const popover = elt.data("popover").$tip;
     popover.find(".emoji-popover-filter").trigger("focus");
