@@ -1692,6 +1692,8 @@ paths:
                                     has to be muted, the second element is the topic name to be muted
                                     and the third element is an integer UNIX timestamp representing
                                     when the topic was muted.
+                                    **Changes**: Made a 3-item tuple in Zulip 3.0(feature level 1). Previously
+                                    they were a 2-item tuple.
                                   items:
                                     type: array
                                     items:
@@ -3391,6 +3393,7 @@ paths:
                                       type: integer
                                       description: |
                                         The configured video call provider for the organization.
+                                        **Changes**: Added None as an option in Zulip 3.0(feature level 1).
                                     waiting_period_threshold:
                                       type: integer
                                       description: |
@@ -4925,6 +4928,7 @@ paths:
 
         [uploaded-files]: /help/manage-your-uploaded-files
         [send-message]: /api/send-message
+        **Changes**: New in Zulip 3.0(feature level 1).
       requestBody:
         content:
           multipart/form-data:
@@ -7191,10 +7195,13 @@ paths:
                         type: integer
                         description: |
                           The server's current [Zulip feature level](/api/changelog).
+                          **Changes**: New in Zulip 3.0(feature level 1).
                       zulip_version:
                         type: string
                         description: |
                           The server's version.
+                          **Changes**: Prior to Zulip 3.0, this was only returned if `event_types`
+                          included `zulip_version`(feature level 3)
                       alert_words:
                         type: array
                         description: |
@@ -8276,6 +8283,7 @@ paths:
                           * 2 = members only
                           * 3 = administrators only
                           * 4 = nobody (though note that administrators can change this setting).
+                          **Changes**: Added nobody value in Zulip 3.0(feature level 1).
                       realm_email_changes_disabled:
                         type: boolean
                         description: |
@@ -8402,6 +8410,7 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           The configured video call provider for the organization.
+                          **Changes**: Added None as an option in Zulip 3.0(feature level 1).
                       realm_giphy_rating:
                         type: integer
                         description: |
@@ -8436,6 +8445,7 @@ paths:
 
                           * 1 = Everyone
                           * 2 = Nobody
+                          **Changes**: New in Zulip 3.0(feature level 1).
                       realm_user_group_edit_policy:
                         type: integer
                         description: |
@@ -9203,7 +9213,7 @@ paths:
                           details on what each feature level means.
 
                           **Changes**.  New in Zulip 3.0.  We recommend using an implied value
-                          of 0 for Zulip servers that do not send this field.
+                          of 0 for Zulip servers that do not send this field(feature level 1).
                       push_notifications_enabled:
                         type: boolean
                         description: |
