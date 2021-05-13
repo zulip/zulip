@@ -8983,6 +8983,7 @@ paths:
                           Present if `realm_user` is present in `fetch_event_types`.
 
                           Whether the current user is an [organization owner](/help/roles-and-permissions).
+                          **Changes**: Added in Zulip 3.0(feature level 11).
                       is_moderator:
                         type: boolean
                         description: |
