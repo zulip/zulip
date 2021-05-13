@@ -339,6 +339,7 @@ paths:
                                           description: |
                                             The version number for the user's avatar.  This is useful
                                             for cache-busting.
+                                            **Changes**: New in Zulip 3.0(feature level 4)
                                       additionalProperties: false
                                     - type: object
                                       additionalProperties: false
@@ -3726,6 +3727,7 @@ paths:
                                         Whether the server allows name changes.  Similar to
                                         `realm_name_changes_disabled` but based on the `NAME_CHANGES_DISABLED`
                                         Zulip server level setting.
+                                        **Changes**: New in Zulip 3.0(feature level 4)
                                     notifications_stream_id:
                                       type: integer
                                       description: |
@@ -8761,6 +8763,7 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           The base URL the organization uses to create Jitsi video calls.
+                          **Changes**: New in Zulip 3.0(feature level 4)
                       development_environment:
                         type: boolean
                         description: |
@@ -8770,6 +8773,7 @@ paths:
                           to control certain features or UI (such as error popups)
                           that should only apply when connected to a Zulip development
                           environment.
+                          **Changes**: New in Zulip 3.0(feature level 4)
                       server_generation:
                         type: integer
                         description: |
@@ -8778,6 +8782,7 @@ paths:
                           A timestamp indicating when the process hosting this
                           event queue was started.  Clients will likely only find
                           this value useful for inclusion in detailed error reports.
+                          **Changes**: New in Zulip 3.0(feature level 4)
                       password_min_length:
                         type: integer
                         description: |
@@ -8786,6 +8791,7 @@ paths:
                           This Zulip server's configured minimum required length for passwords.
                           Necessary for password change UI to show whether the password
                           will be accepted.
+                          **Changes**: New in Zulip 3.0(feature level 4)
                       password_min_guesses:
                         type: integer
                         description: |
@@ -8794,6 +8800,7 @@ paths:
                           This Zulip server's configured minimum `zxcvbn` minimum guesses.
                           Necessary for password change UI to show whether the password
                           will be accepted.
+                          **Changes**: New in Zulip 3.0(feature level 4)
                       giphy_rating_options:
                         type: object
                         description: |
@@ -8825,12 +8832,14 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           The maximum file size that can be uploaded to this Zulip server.
+                          **Changes**: New in Zulip 3.0(feature level 4)
                       max_avatar_file_size_mib:
                         type: integer
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
                           The maximum avatar size that can be uploaded to this Zulip server.
+                          **Changes**: New in Zulip 3.0(feature level 4)
                       server_inline_image_preview:
                         type: boolean
                         description: |
@@ -8840,6 +8849,7 @@ paths:
                           Clients containing administrative UI for changing
                           `realm_inline_image_preview` should consult this field before offering
                           that feature.
+                          **Changes**: New in Zulip 3.0(feature level 4)
                       server_inline_url_embed_preview:
                         type: boolean
                         description: |
@@ -8849,6 +8859,7 @@ paths:
                           Clients containing administrative UI for changing
                           `realm_inline_url_embed_preview` should consult this field before offering
                           that feature.
+                          **Changes**: New in Zulip 3.0(feature level 4)
                       server_avatar_changes_disabled:
                         type: boolean
                         description: |
@@ -8857,6 +8868,7 @@ paths:
                           Whether the server allows avatar changes.  Similar to
                           `realm_avatar_changes_disabled` but based on the `AVATAR_CHANGES_DISABLED`
                           Zulip server level setting.
+                          **Changes**: New in Zulip 3.0(feature level 4)
                       server_name_changes_disabled:
                         type: boolean
                         description: |
@@ -8865,6 +8877,7 @@ paths:
                           Whether the server allows name changes.  Similar to
                           `realm_name_changes_disabled` but based on the `NAME_CHANGES_DISABLED`
                           Zulip server level setting.
+                          **Changes**: New in Zulip 3.0(feature level 4)
                       realm_notifications_stream_id:
                         type: integer
                         description: |
