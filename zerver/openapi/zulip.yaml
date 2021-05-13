@@ -6118,7 +6118,7 @@ paths:
 
         `GET {{ api_url }}/v1/users/{user_id}/subscriptions/{stream_id}`
 
-        **Changes**: New in Zulip 3.0 (feature level 11).
+        **Changes**: New in Zulip 3.0 (feature level 12).
       parameters:
         - $ref: "#/components/parameters/UserId"
         - $ref: "#/components/parameters/StreamIdInPath"
