@@ -18,7 +18,7 @@ releases.
 
 **Feature level 65**
 
-No changes; feature level used for Zulip 3.0 release.
+No changes; feature level used for Zulip 4.0 release.
 
 **Feature level 64**
 
