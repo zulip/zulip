@@ -333,7 +333,7 @@ export function get_recipients(user_ids_string) {
         return my_full_name();
     }
 
-    const names = other_ids.map((user_id) => get_full_name(user_id)).sort();
+    const names = get_display_full_names(other_ids).sort();
     return names.join(", ");
 }
 
