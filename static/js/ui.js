@@ -82,8 +82,8 @@ export function update_starred_view(message_id, new_value) {
             star_container.addClass("empty-star");
         }
         const title_state = starred ? $t({defaultMessage: "Unstar"}) : $t({defaultMessage: "Star"});
-        elt.attr(
-            "title",
+        star_container.attr(
+            "data-tippy-content",
             $t(
                 {defaultMessage: "{starred_status} this message (Ctrl + s)"},
                 {starred_status: title_state},

@@ -70,4 +70,29 @@ export function initialize() {
         // them unless they want to.
         delay: [300, 20],
     });
+
+    delegate("body", {
+        target: ".message_control_button",
+        placement: "top",
+        // Add some additional delay when they open
+        // so that regular users don't have to see
+        // them unless they want to.
+        delay: [300, 20],
+        onShow(instance) {
+            // Handle dynamic "starred messages" and "edit" widgets.
+            const elem = $(instance.reference);
+            let content = elem.attr("data-tippy-content");
+            if (content === undefined) {
+                // Tippy cannot get the content for message edit button
+                // as it is dynamically inserted based on editability.
+                // So, we have to manually get the i element to get the
+                // content from it.
+                //
+                // TODO: Change the template structure so logic is unnecessary.
+                const edit_button = elem.find("i.edit_content_button").expectOne();
+                content = edit_button.attr("data-tippy-content");
+            }
+            instance.setContent(content);
+        },
+    });
 }
