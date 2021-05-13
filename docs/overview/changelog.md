@@ -92,7 +92,7 @@ log][commit-log] for an up-to-date list of raw changes.
 
 #### Full feature changelog
 
-- Added new [release lifecycle documentation](../production/release-lifecycle.md).
+- Added new [release lifecycle documentation](../overview/release-lifecycle.md).
 - Added support for subscribing another stream's membership to a stream.
 - Added RealmAuditLog for most settings state changes in Zulip; this
   data will fascilitate future features showing a log of activity by
