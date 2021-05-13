@@ -10672,7 +10672,7 @@ components:
                   Time when the message was sent as a UNIX timestamp
                   multiplied by 1000 (matching the format of getTime() in JavaScript).
 
-                  **Changes**: Changed in Zulip 2.2 (feature level 22).  This
+                  **Changes**: Changed in Zulip 3.0 (feature level 22).  This
                   field was previously strangely called `name` and was a floating
                   point number.
               id:
