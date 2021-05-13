@@ -223,6 +223,11 @@ To use Smokescreen:
     puppet_classes = zulip::profile::standalone, zulip::profile::smokescreen
     ```
 
+1. Optionally, configure the [smokescreen ACLs][smokescreen-acls]. By
+  default, Smokescreen denies access to all [non-public IP
+  addresses](https://en.wikipedia.org/wiki/Private_network), including
+  127.0.0.1.
+
 1. Add the following block to `/etc/zulip/zulip.conf`, substituting in
    your proxy's hostname/IP and port:
 
@@ -242,6 +247,7 @@ first step, and adjust the IP address and port in the second step
 accordingly.
 
 [smokescreen]: https://github.com/stripe/smokescreen
+[smokescreen-acls]: https://github.com/stripe/smokescreen#acls
 [ssrf]: https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
 
 ## Putting the Zulip application behind a reverse proxy
