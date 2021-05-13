@@ -11,6 +11,13 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 65**
+
+* [`POST /messages`]: Add option `add_messages_to_history`
+  to control whether the messages should be added
+  to the history of subscribers to the destination stream
+  when moving messages to a private stream with protected history.
+
 **Feature level 64**
 
 * `PATCH /streams/{stream_id}`: Removed unnecessary JSON-encoding of string

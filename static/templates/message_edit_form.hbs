@@ -31,6 +31,10 @@
                     </label>
                     <label for="send_notification_to_old_thread">{{t "Send notification to old topic" }}</label>
                 </div>
+                <select name="add_messages_to_history" class='add_messages_to_history' style='display:none;'>
+                    <option selected="selected" value="not_add_messages_to_history"> {{t "Users who can view the messages remain same" }}</option>
+                    <option value="add_messages_to_history"> {{t "All subscribers can view the messages." }}</option>
+                </select>
                 <select class='message_edit_topic_propagate' style='display:none;'>
                     <option selected="selected" value="change_later"> {{t "Change later messages to this topic" }}</option>
                     <option value="change_one"> {{t "Change only this message topic" }}</option>

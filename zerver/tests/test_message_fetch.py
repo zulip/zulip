@@ -3721,6 +3721,7 @@ class MessageHasKeywordsTest(ZulipTestCase):
             "change_one",
             False,
             False,
+            False,
             content,
             rendered_content,
             set(),

@@ -360,6 +360,29 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
     stream_header_colorblock = $("#move_topic_modal .topic_stream_edit_header").find(
         ".stream_header_colorblock",
     );
+    const add_messages_to_history = $(".topic_stream_edit_header").find(
+        "select.add_messages_to_history",
+    );
+
+    function set_add_messages_to_history(stream_id) {
+        if (
+            stream_data.get_stream_privacy_policy(stream_id) ===
+            stream_data.stream_privacy_policy_values.private.code
+        ) {
+            add_messages_to_history.show();
+        } else {
+            add_messages_to_history.hide();
+        }
+    }
+
+    stream_bar.decorate(current_stream_name, stream_header_colorblock, false);
+    add_messages_to_history.hide();
+    $("#select_stream_id").on("change", function () {
+        const new_stream_id = Number.parseInt(this.value, 10);
+        const stream_name = stream_data.maybe_get_stream_name(new_stream_id);
+        stream_bar.decorate(stream_name, stream_header_colorblock, false);
+        set_add_messages_to_history(new_stream_id);
+    });
 
     stream_bar.decorate(current_stream_name, stream_header_colorblock, false);
     $("#move_topic_modal").modal("show");
@@ -646,10 +669,12 @@ export function register_topic_handlers() {
             new_topic_name,
             send_notification_to_new_thread,
             send_notification_to_old_thread,
+            add_messages_to_history,
         } = params;
         new_topic_name = new_topic_name.trim();
         send_notification_to_new_thread = send_notification_to_new_thread === "on";
         send_notification_to_old_thread = send_notification_to_old_thread === "on";
+        add_messages_to_history = add_messages_to_history === "add_messages_to_history";
         current_stream_id = Number.parseInt(current_stream_id, 10);
 
         if (
@@ -705,6 +730,7 @@ export function register_topic_handlers() {
                         new_topic_name,
                         send_notification_to_new_thread,
                         send_notification_to_old_thread,
+                        add_messages_to_history,
                     );
                 }
             },
