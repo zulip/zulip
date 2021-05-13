@@ -11,6 +11,10 @@ below features are supported.
 
 ## Changes in Zulip 4.0
 
+**Feature level 65**
+
+No changes; feature level used for Zulip 3.0 release.
+
 **Feature level 64**
 
 * `PATCH /streams/{stream_id}`: Removed unnecessary JSON-encoding of string

@@ -1,15 +1,13 @@
 # Version history
 
-This page the release history for the Zulip server.  See also the
-[Zulip release lifecycle](../overview/release-lifecycle.md).
+This page contains the release history for the Zulip 4.x stable
+release series. See the [current Zulip changelog][latest-changelog]
+for newer release series, or the [commit log][commit-log] for an
+up-to-date list of raw changes.
 
 ## Zulip 4.x series
 
-### 4.0 -- Unreleased
-
-This section is an incomplete draft of the release notes for the next
-major release, and is only updated occasionally.  See the [commit
-log][commit-log] for an up-to-date list of raw changes.
+### 4.0 -- 2021-05-13
 
 #### Highlights
 
@@ -2119,7 +2117,7 @@ Zulip apps.
 This section links to the upgrade notes from past releases, so you can
 easily read them all when upgrading across multiple releases.
 
-* [Draft upgrade notes for 4.0](#upgrade-notes-for-4-0)
+* [Upgrade notes for 4.0](#upgrade-notes-for-4-0)
 * [Upgrade notes for 3.0](#upgrade-notes-for-3-0)
 * [Upgrade notes for 2.1.5](#upgrade-notes-for-2-1-5)
 * [Upgrade notes for 2.1.0](#upgrade-notes-for-2-1-0)
