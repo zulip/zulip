@@ -2130,3 +2130,4 @@ easily read them all when upgrading across multiple releases.
 
 [docker-zulip]: https://github.com/zulip/docker-zulip
 [commit-log]: https://github.com/zulip/zulip/commits/master
+[latest-changelog]: https://zulip.readthedocs.io/en/latest/overview/changelog.html

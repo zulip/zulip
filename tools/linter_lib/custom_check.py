@@ -836,6 +836,12 @@ markdown_rules = RuleList(
                 "docs/README.md",
                 "docs/subsystems/email.md",
             },
+            "exclude_line": {
+                (
+                    "docs/overview/changelog.md",
+                    "[latest-changelog]: https://zulip.readthedocs.io/en/latest/overview/changelog.html",
+                ),
+            },
             "include_only": {"docs/"},
             "description": "Use relative links (../foo/bar.html) to other documents in docs/",
         },
