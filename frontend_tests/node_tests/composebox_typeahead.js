@@ -307,6 +307,8 @@ function test(label, f) {
         user_groups.add(backend);
         user_groups.add(call_center);
 
+        muting.set_muted_users([]);
+
         f(override);
     });
 }
