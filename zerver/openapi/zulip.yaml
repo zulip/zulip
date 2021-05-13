@@ -8962,6 +8962,7 @@ paths:
 
                           Whether the current user is allowed to create streams with
                           the organization's [stream creation policy](/help/configure-who-can-create-streams).
+                          **Changes**: Added in Zulip 4.0(feature level 36).
                       can_subscribe_other_users:
                         type: boolean
                         description: |
