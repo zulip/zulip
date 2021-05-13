@@ -3273,7 +3273,7 @@ paths:
                                         All users will receive a warning/reminder when using
                                         mentions in large streams, even when permitted to do so.
 
-                                        **Changes**: New in Zulip 4.0 (feature level 33). Moderators option added in
+                                        **Changes**: New in Zulip 4.0 (feature level 34). Moderators option added in
                                         Zulip 4.0 (feature level 62).
                                     default_language:
                                       type: string
@@ -8247,7 +8247,7 @@ paths:
                           All users will receive a warning/reminder when using
                           mentions in large streams, even when permitted to do so.
 
-                          **Changes**: New in Zulip 4.0 (feature level 33). Moderators option added in
+                          **Changes**: New in Zulip 4.0 (feature level 34). Moderators option added in
                           Zulip 4.0 (feature level 62).
                       realm_default_language:
                         type: string
