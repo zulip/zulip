@@ -568,6 +568,7 @@ paths:
                                 subscription to a stream has been updated.  This event is used
                                 only for personal properties like `is_muted`; see the `stream` event
                                 for global properties of a stream.
+                                **Changes**: Consisted of `email`(feature level 40) and `name`(feature level 41) fields prior to Zulip 4.0.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
