@@ -632,6 +632,8 @@ paths:
                                   type: array
                                   description: |
                                     The IDs of the streams to which the user has subscribed.
+                                    **Changes**: Replaces the old `name` field in Zulip 3.0(feature level 19).
+                                    Changed to plural version in Zulip 4.0(feature level 35).
                                   items:
                                     type: integer
                                 user_ids:
@@ -671,6 +673,7 @@ paths:
                                   description: |
                                     The IDs of the streams from which the users have been
                                     unsubscribed from.
+                                    **Changes**: Replaces the old `name` field in Zulip 3.0(feature level 19)
                                   items:
                                     type: integer
                                 user_ids:
