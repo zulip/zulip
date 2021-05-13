@@ -133,6 +133,7 @@ export const DropdownListWidget = function ({
                 return;
             }
             e.preventDefault();
+            e.stopPropagation();
             const custom_event = new $.Event("keydown.dropdown.data-api", {
                 keyCode: e.keyCode,
                 which: e.keyCode,
