@@ -3,14 +3,12 @@
         <button type="button" class="exit" aria-label="{{ _('Close') }}"><span aria-hidden="true">&times;</span></button>
         <div class="modal-body">
             <div class="about-zulip-logo">
-                <img src="/static/images/logo/zulip-org-logo.svg" alt="" />
+                <a target="_blank" rel="noopener noreferrer" href="https://zulip.com"><img src="/static/images/logo/zulip-org-logo.svg" alt="{{ _('Zulip') }}" /></a>
             </div>
             <p>
-                This is an installation of <a target="_blank" rel="noopener noreferrer"
-                                             href="https://zulip.com">Zulip</a>.
-            </p>
-            <p>
-                Zulip Server version {{zulip_version}}
+                <strong>Zulip Server</strong>
+                <br />
+                Version {{zulip_version}}
                 <i class="fa fa-copy tippy-zulip-tooltip" data-tippy-content="Copy version" data-tippy-placement="right" data-clipboard-text="{{zulip_version}}"></i>
                 {% if zulip_merge_base and zulip_version != zulip_merge_base %}
                 <br />
