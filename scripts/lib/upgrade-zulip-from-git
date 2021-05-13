@@ -63,7 +63,7 @@ try:
         logging.info("Cloning the repository")
         subprocess.check_call(
             ["git", "clone", "-q", remote_url, "--mirror", LOCAL_GIT_CACHE_DIR],
-            stdout=open("/dev/null", "w"),
+            stdout=subprocess.DEVNULL,
         )
     if os.stat(LOCAL_GIT_CACHE_DIR).st_uid == 0:
         subprocess.check_call(["chown", "-R", "zulip:zulip", LOCAL_GIT_CACHE_DIR])
@@ -83,13 +83,17 @@ try:
     logging.info("Fetching the latest commits")
     subprocess.check_call(["git", "fetch", "-q", "--tags", "--all"], preexec_fn=su_to_zulip)
 
-    # Generate the deployment directory via git clone from our local repository.
+    # Generate the deployment directory via git worktree from our local repository.
     subprocess.check_call(
-        ["git", "clone", "-q", "-b", refname, LOCAL_GIT_CACHE_DIR, deploy_path],
-        stdout=open("/dev/null", "w"),
+        ["git", "worktree", "add", "--detach", deploy_path, refname],
+        stdout=subprocess.DEVNULL,
         preexec_fn=su_to_zulip,
     )
     os.chdir(deploy_path)
+    subprocess.check_call(
+        ["git", "checkout", "-qtb", "deployment-" + os.path.basename(deploy_path), refname],
+        preexec_fn=su_to_zulip,
+    )
 
     overwrite_symlink("/etc/zulip/settings.py", "zproject/prod_settings.py")
 
