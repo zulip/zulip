@@ -8010,6 +8010,7 @@ paths:
                           The current value of this global notification setting for the user.
                           See [update-notification-settings](/api/update-notification-settings)
                           for details on notification settings.
+                          **Changes**: New in Zulip 3.0. Previously, presence was always enabled.(feature level 3)
                       available_notification_sounds:
                         type: array
                         items:
