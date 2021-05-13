@@ -141,7 +141,7 @@ Some examples of this philosophy:
   run, and produce this output".
 
 In the Zulip context:
-* Zulip uses the same API for our webapp as for our mobile clients and
+* Zulip uses the same API for our web app as for our mobile clients and
   third-party API clients, and most of our server tests are written
   against the Zulip API.
 * The tests for Zulip's incoming webhooks work by sending actual

@@ -46,7 +46,7 @@ def get_extra_data_from_widget_type(content: str, widget_type: Optional[str]) ->
 
 def do_widget_post_save_actions(send_request: SendMessageRequest) -> None:
     """
-    This code works with the webapp; mobile and other
+    This code works with the web app; mobile and other
     clients should also start supporting this soon.
     """
     message_content = send_request.message.content

@@ -199,7 +199,7 @@ Output:
             # An API request; use mobile as the default user agent
             default_user_agent = "ZulipMobile/26.22.145 (iOS 10.3.1)"
         else:
-            # A webapp request; use a browser User-Agent string.
+            # A web app request; use a browser User-Agent string.
             default_user_agent = (
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                 + "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -494,7 +494,7 @@ Output:
         self.assert_json_error(result, assert_json_error_msg)
 
     def _get_page_params(self, result: HttpResponse) -> Dict[str, Any]:
-        """Helper for parsing page_params after fetching the webapp's home view."""
+        """Helper for parsing page_params after fetching the web app's home view."""
         doc = lxml.html.document_fromstring(result.content)
         [div] = doc.xpath("//div[@id='page-params']")
         page_params_json = div.get("data-params")

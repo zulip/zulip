@@ -142,7 +142,7 @@ def maybe_send_to_registration(
     # result in being logged into the app to persist if the user makes
     # mistakes while trying to authenticate (E.g. clicks the wrong
     # Google account, hits back, etc.) during a given browser session,
-    # rather than just logging into the webapp in the target browser.
+    # rather than just logging into the web app in the target browser.
     #
     # We can't use our usual pre-account-creation state storage
     # approach of putting something in PreregistrationUser, because

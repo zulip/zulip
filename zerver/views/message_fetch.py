@@ -918,7 +918,7 @@ def parse_anchor_value(anchor_val: Optional[str], use_first_unread_anchor: bool)
         # We don't use `.isnumeric()` to support negative numbers for
         # anchor.  We don't recommend it in the API (if you want the
         # very first message, use 0 or 1), but it used to be supported
-        # and was used by the webapp, so we need to continue
+        # and was used by the web app, so we need to continue
         # supporting it for backwards-compatibility
         anchor = int(anchor_val)
         if anchor < 0:

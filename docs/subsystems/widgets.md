@@ -92,7 +92,7 @@ invoke, and they may share validation code.)
 ### Availability
 
 The above commands are available for all Zulip servers
-that use 1.9 or above.  You must use the webapp client to
+that use 1.9 or above.  You must use the web app client to
 get the features; other clients will send the messages
 without any translation (e.g. "/day" will just be a message
 that says "/day" if you use the mobile app).
@@ -106,7 +106,7 @@ launch widgets by sending one of the following messages:
 - /poll
 - /todo
 
-The webapp client provides the "widget experience" by
+The web app client provides the "widget experience" by
 default. Other clients just show raw messages like
 "/poll", and should be adding support
 for widgets soon.
@@ -133,11 +133,11 @@ to the database).  This data will also be included
 in the normal Zulip message event payload.  Clients
 can choose to ignore the submessage-related data, in
 which case they'll gracefully degrade to seeing "/poll".
-Of course, the webapp client actually recognizes the
+Of course, the web app client actually recognizes the
 appropriate widgets.
 
-The webapp client will next collect poll options and votes
-from users.  The webapp client has
+The web app client will next collect poll options and votes
+from users.  The web app client has
 code in `submessage.js` that dispatches events
 to `widgetize.js`, which in turns sends events to
 individual widgets.  The widgets know how to render

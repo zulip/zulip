@@ -72,7 +72,7 @@ log][commit-log] for an up-to-date list of raw changes.
   inline documentation in your
   `/etc/zulip/settings.py`][update-settings-docs].  Notably, we rewrote the
   template to be better organized and more readable in this release.
-- The webapp will now display a warning in the UI if the Zulip server
+- The web app will now display a warning in the UI if the Zulip server
   has not been upgraded in more than 18 months.
   template to be better organized and more readable.
 - The next time users log in to Zulip with their password after
@@ -194,7 +194,7 @@ log][commit-log] for an up-to-date list of raw changes.
 - Upgraded our ancient forked version of bootstrap, on a path towards
   removing the last forked dependencies from the codebase.
 - Upgraded Django to 3.1 (as well as essentially every other dependency).
-- Updated webapp codebase to use many modern ES6 patterns.
+- Updated web app codebase to use many modern ES6 patterns.
 - Upgraded Zulip's core font to Source Sans 3, which supports more languages.
 - Relabeled :smile: and :stuck_out_tongue: emoji to use better codepoints.
 - Reduced the size of Zulip's main JavaScript bundle by removing `moment.js`.
@@ -706,10 +706,10 @@ lose the setting and need to re-enable it.
   verify whether your configuration is working correctly.
 - The Zulip web and desktop apps have been converted to directly count
   all unread messages, replacing an old system that just counted the
-  (recent) messages fully fetched by the webapp.  This one-time
+  (recent) messages fully fetched by the web app.  This one-time
   transition may cause some users to notice old messages that were
   sent months or years ago "just became unread".  What actually
-  happened is the user never read these messages, and the Zulip webapp
+  happened is the user never read these messages, and the Zulip web app
   was not displaying that.  Generally, the fix is for users to simply
   mark those messages as read as usual.
 - Previous versions of Zulip's installer would generate the secrets
@@ -735,7 +735,7 @@ lose the setting and need to re-enable it.
 
 #### Full feature changelog
 - Added sortable columns to all tables in settings pages.
-- Added webapp support for self-service public data exports.
+- Added web app support for self-service public data exports.
 - Added 'e' keyboard shortcut for editing currently selected message.
 - Added support for unstarring all starred messages.
 - Added support for using `|` as an OR operator in sidebar search features.
@@ -753,7 +753,7 @@ lose the setting and need to re-enable it.
   convenient to link to profiles on GitHub, Twitter, and other tools.
 - Added support for choosing which email address to use in GitHub auth.
 - Added a new setting to control whether inactive streams are demoted.
-- Added webapp support for new desktop app features: inline reply
+- Added web app support for new desktop app features: inline reply
   from notifications, and detecting user presence from OS APIs.
 - Added Markdown support for headings, implemented using `# heading`,
   and removed several other unnecessary differences from CommonMark.
@@ -848,7 +848,7 @@ lose the setting and need to re-enable it.
 - Fixed guest users seeing UI widgets they can't use.
 - Fixed several issues with click handlers incorrectly closing compose.
 - Fixed buggy behavior of /me messages not ending with a paragraph.
-- Fixed several major UI issues with the mobile webapp.
+- Fixed several major UI issues with the mobile web app.
 - Fixed HTML styling when copy-pasting content out of Zulip's night theme.
 - Fixed obscure traceback with Virtualenv 16.0.0 unexpectedly installed.
 - Added a new visual tool for testing webhook integrations.
@@ -1148,7 +1148,7 @@ Zulip installations; it has minimal changes for existing servers.
 - Fixed several bugs with progress bars when uploading files.
 - Fixed several bugs in `manage.py register_server`.
 - Fixed several minor real-time sync issues with stream settings.
-- Fixed some tricky corner cases with the webapp's caching model and
+- Fixed some tricky corner cases with the web app's caching model and
   narrowing to the first unread message.
 - Fixed confusing intermediate states of group PMs online indicators.
 - Fixed several subtle unread count corner case bugs.

@@ -1,7 +1,7 @@
 # Change default view
 
 The default view in Zulip (i.e. what view you reach after logging in
-to the Zulip webapp or hitting the `Esc` keyboard shortcut repeatedly)
+to the Zulip web app or hitting the `Esc` keyboard shortcut repeatedly)
 can be configured.  By default, **Recent topics** is the default view;
 the previous default, **All messages**, is also supported.
 

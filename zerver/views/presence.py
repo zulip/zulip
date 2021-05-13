@@ -25,7 +25,7 @@ from zerver.models import (
 def get_presence_backend(
     request: HttpRequest, user_profile: UserProfile, user_id_or_email: str
 ) -> HttpResponse:
-    # This isn't used by the webapp; it's available for API use by
+    # This isn't used by the web app; it's available for API use by
     # bots and other clients.  We may want to add slim_presence
     # support for it (or just migrate its API wholesale) later.
 
@@ -127,7 +127,7 @@ def update_active_status_backend(
 
 
 def get_statuses_for_realm(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-    # This isn't used by the webapp; it's available for API use by
+    # This isn't used by the web app; it's available for API use by
     # bots and other clients.  We may want to add slim_presence
     # support for it (or just migrate its API wholesale) later.
     return json_success(get_presence_response(user_profile, slim_presence=False))

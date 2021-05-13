@@ -124,7 +124,7 @@ export function build_display_recipient(message) {
             // where the server might dynamically create users in
             // response to messages being sent to their email address.
             //
-            // TODO: It might be cleaner for the webapp for such
+            // TODO: It might be cleaner for the web app for such
             // dynamic user creation to happen inside a separate API
             // call when the pill is constructed, and then enforcing
             // the requirement that we have an actual user object in

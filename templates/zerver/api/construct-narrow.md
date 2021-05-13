@@ -7,7 +7,7 @@ API (most importantly, in the API for fetching messages).
 
 It is simplest to explain the algorithm for encoding a search as a
 narrow using a single example.  Consider the following search query
-(written as it would be entered in the Zulip webapp's search box).  It
+(written as it would be entered in the Zulip web app's search box).  It
 filters for messages sent on stream `announce`, not sent by
 `iago@zulip.com`, and containing the phrase `cool sunglasses`:
 

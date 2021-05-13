@@ -398,7 +398,7 @@ v1_api_and_json_patterns = [
         POST=(
             mark_hotspot_as_read,
             # This endpoint is low priority for documentation as
-            # it is part of the webapp-specific tutorial.
+            # it is part of the web app-specific tutorial.
             {"intentionally_undocumented"},
         ),
     ),
@@ -472,7 +472,7 @@ v1_api_and_json_patterns = [
     # report -> zerver.views.report
     #
     # These endpoints are for internal error/performance reporting
-    # from the browser to the webapp, and we don't expect to ever
+    # from the browser to the web app, and we don't expect to ever
     # include in our API documentation.
     rest_path(
         "report/error",

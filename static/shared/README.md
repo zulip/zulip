@@ -3,7 +3,7 @@ and are also incorporated by the Zulip mobile app.
 
 Note that the deployment cycles are different:
 
- * In the webapp, this code is deployed in the same way as the rest of
+ * In the web app, this code is deployed in the same way as the rest of
    the web frontend: it's part of the server tree, and the browser
    gets it from the server, so the client is always running the same
    version the server just gave it.

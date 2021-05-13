@@ -1757,7 +1757,7 @@ paths:
                                 the current user have changed (E.g. because the user dismissed one).
 
                                 Clients that feature a similar tutorial experience to the Zulip
-                                webapp may want to handle these events.
+                                web app may want to handle these events.
                               properties:
                                 id:
                                   $ref: "#/components/schemas/EventIdSchema"
@@ -1873,7 +1873,7 @@ paths:
                                     navigation and compose box state in response to the edit.  For
                                     example, if the user was previously in topic narrow, and the
                                     topic was edited with `change_later` or `change_all`, the Zulip
-                                    webapp will automatically navigate to the new topic narrow.
+                                    web app will automatically navigate to the new topic narrow.
                                     Similarly, a message being composed to the old topic should
                                     have its recipient changed to the new topic.
 
@@ -8085,7 +8085,7 @@ paths:
                           Present if `update_display_settings` is present in `fetch_event_types`.
 
                           Whether the user has chosen for the userlist to be displayed
-                          on the left side of the screen (for desktop app and webapp) in narrow
+                          on the left side of the screen (for desktop app and web app) in narrow
                           windows.
 
                           See [PATCH /settings/display](/api/update-display-settings)
@@ -9550,7 +9550,7 @@ paths:
           in: query
           description: |
             Whether to use the [maximum available screen width](/help/enable-full-width-display)
-            for the webapp's center panel (message feed, recent topics) on wide screens.
+            for the web app's center panel (message feed, recent topics) on wide screens.
           schema:
             type: boolean
           example: true
@@ -9608,7 +9608,7 @@ paths:
           in: query
           description: |
             The [default view](/help/change-default-view) used when opening a new
-            Zulip webapp window or hitting the `Esc` keyboard shortcut repeatedly.
+            Zulip web app window or hitting the `Esc` keyboard shortcut repeatedly.
 
             * "recent_topics" - Recent topics view
             * "all_messages" - All messages view

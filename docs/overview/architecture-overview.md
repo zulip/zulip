@@ -6,7 +6,7 @@ Key codebases
 
 The main Zulip codebase is at <https://github.com/zulip/zulip>.  It
 contains the Zulip backend (written in Python 3.x and Django), the
-webapp (written in JavaScript and TypeScript) and our library of
+web app (written in JavaScript and TypeScript) and our library of
 incoming webhook [integrations](https://zulip.com/integrations)
 with other services and applications (see [the directory structure
 guide](../overview/directory-structure.md)).
@@ -105,7 +105,7 @@ the code is in `zerver/tornado`.
 
 Zulip's HTML is primarily implemented using two types of HTML
 templates: backend templates (powered by the [Jinja2][] template
-engine used for logged-out ("portico") pages and the webapp's base
+engine used for logged-out ("portico") pages and the web app's base
 content) and frontend templates (powered by [Handlebars][]) used for
 live-rendering HTML from JavaScript for things like the main message
 feed.
