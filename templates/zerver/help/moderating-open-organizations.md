@@ -46,7 +46,8 @@ organization's policy choices.
   user.
 * Delete messages, [archive streams](/help/archive-a-stream), and
   [unsubscribe users from streams](/help/add-or-remove-users-from-a-stream).
-* [Rename topics](/help/rename-a-topic).
+* [Move topics](/help/rename-a-topic), including between streams, when
+  users start conversations in the wrong place.
 * [Change users' names](/help/change-a-users-name) (e.g. to "Name (Spammer)")
   for users who sent spam private messages to many community members.
 * [Deactivate bots](/help/deactivate-or-reactivate-a-bot) or
