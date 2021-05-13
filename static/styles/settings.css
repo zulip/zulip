@@ -1577,15 +1577,24 @@ body:not(.night-mode) #settings_page .custom_user_field .datepicker {
     top: calc(50% - 120px);
 }
 
-#id_realm_giphy_rating,
+/* These have enough space for "Admins and full members" in German. */
 #desktop_icon_count_display,
 #id_realm_waiting_period_setting,
 #id_realm_create_stream_policy,
 #id_realm_invite_to_stream_policy,
-#id_realm_org_join_restrictions,
+#id_realm_private_message_policy,
+#id_realm_add_emoji_by_admins_only,
+#id_realm_user_group_edit_policy,
+#id_realm_email_address_visibility,
+#id_realm_wildcard_mention_policy,
+#id_realm_move_messages_between_streams_policy {
+    width: 250px;
+}
+
 #id_realm_bot_creation_policy,
-#id_realm_user_invite_restriction,
-#id_realm_wildcard_mention_policy {
+#id_realm_giphy_rating,
+#id_realm_org_join_restrictions,
+#id_realm_user_invite_restriction {
     width: 100%;
 }
 
