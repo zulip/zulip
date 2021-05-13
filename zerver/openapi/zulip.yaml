@@ -7232,6 +7232,7 @@ paths:
                            details of a single custom profile field that is available to users
                            in this Zulip organization.  This must be combined with the custom profile
                            field values on individual user objects to display users' full profiles.
+                           **Changes**: Consisted of a useless `op` field prior to Zulip 4.0(feature level 45).
                         items:
                           $ref: "#/components/schemas/CustomProfileField"
                       custom_profile_field_types:
@@ -7246,6 +7247,7 @@ paths:
 
                            This attribute is only useful for clients containing UI for changing
                            the set of configured custom profile fields in a Zulip organization.
+                           **Changes**: Consisted of a useless `op` field prior to Zulip 4.0(feature level 45).
                         additionalProperties:
                           type: object
                           description: |
