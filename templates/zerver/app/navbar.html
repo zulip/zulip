@@ -105,14 +105,12 @@
                                     <i class="fa fa-search" aria-hidden="true"></i> {{ _('Search operators') }}
                                 </a>
                             </li>
-                            {% if development_environment %}
                             <li role="presentation" id="gear_menu_about_zulip">
                                 <a href="#about-zulip" role="menuitem" class="menuitem-version">
                                     <span class="white_zulip_icon_without_text"></span>
                                     <span class="about_zulip_text">{{ _("About Zulip") }}</span>
                                 </a>
                             </li>
-                            {% endif %}
                             {% if corporate_enabled %}
                             <li role="presentation">
                                 <a href="/help/contact-support" target="_blank" rel="noopener noreferrer" role="menuitem">
