@@ -92,7 +92,7 @@ from zerver.lib.tex import render_tex
 
 # Global vars
 FENCE_RE = re.compile(
-    """
+    r"""
     # ~~~ or ```
     (?P<fence>
         ^(?:~{3,}|`{3,})
@@ -101,19 +101,19 @@ FENCE_RE = re.compile(
     [ ]* # spaces
 
     (
-        \\{?\\.?
+        \{?\.?
         (?P<lang>
             [a-zA-Z0-9_+-./#]*
         ) # "py" or "javascript"
-        \\}?
+        \}?
     ) # language, like ".py" or "{javascript}"
     [ ]* # spaces
     (
-        \\{?\\.?
+        \{?\.?
         (?P<header>
             [^~`]*
         )
-        \\}?
+        \}?
     ) # header for features that use fenced block header syntax (like spoilers)
     $
     """,
