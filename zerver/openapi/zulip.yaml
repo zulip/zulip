@@ -3231,11 +3231,13 @@ paths:
                                       type: integer
                                       description: |
                                         The policy for which users can create streams in this organization.
+                                        **Changes**: New in Zulip 2.1.
                                     invite_to_stream_policy:
                                       type: integer
                                       description: |
                                         The policy for which users can add other users to streams in this
                                         organization.
+                                        **Changes**: New in Zulip 2.1.
                                     move_messages_between_streams_policy:
                                       type: integer
                                       description: |
@@ -3288,6 +3290,7 @@ paths:
                                       type: boolean
                                       description: |
                                         Whether the organization has enabled [weekly digest emails](/help/digest-emails).
+                                        **Changes**: New in Zulip 2.1.
                                     disallow_disposable_email_addresses:
                                       type: boolean
                                       description: |
@@ -3366,6 +3369,7 @@ paths:
                                         via the Zulip UI in this organization.  Typically disabled
                                         in organizations syncing this this type of account information
                                         an external user database like LDAP.
+                                        **Changes**: New in Zulip 2.1.
                                     emails_restricted_to_domains:
                                       type: boolean
                                       description: |
@@ -3398,6 +3402,7 @@ paths:
                                       description: |
                                         The day of the week when the organization will send
                                         its weekly digest email to inactive users.
+                                        **Changes**: New in Zulip 2.1.
                                     private_message_policy:
                                       type: integer
                                       description: |
@@ -3414,6 +3419,7 @@ paths:
 
                                         * 1 = All members can create and edit user groups
                                         * 2 = Only organization administrators can create and edit user groups
+                                        **Changes**: New in Zulip 2.1.
                                     default_code_block_language:
                                       type: string
                                       nullable: true
@@ -3710,6 +3716,7 @@ paths:
                                         Whether the server allows avatar changes.  Similar to
                                         `realm_avatar_changes_disabled` but based on the `AVATAR_CHANGES_DISABLED`
                                         Zulip server level setting.
+                                        **Changes**: New in Zulip 2.1.
                                     server_name_changes_disabled:
                                       type: boolean
                                       description: |
@@ -7233,6 +7240,7 @@ paths:
                             * `URL` for links.
                             * `EXTERNAL_ACCOUNT` for external accounts.
                             * `USER` for selecting a user for the field.
+                            **Changes**: `EXTERNAL_ACCOUNT` field was added in Zulip 2.1.
                           additionalProperties: false
                           properties:
                             id:
@@ -7945,6 +7953,7 @@ paths:
                           The current value of this global notification setting for the user.
                           See [update-notification-settings](/api/update-notification-settings)
                           for details on notification settings.
+                          **Changes**: New in Zulip 2.1.
                       message_content_in_email_notifications:
                         type: boolean
                         description: |
@@ -7977,6 +7986,7 @@ paths:
                           The current value of this global notification setting for the user.
                           See [update-notification-settings](/api/update-notification-settings)
                           for details on notification settings.
+                          **Changes**: New in Zulip 2.1.
                       realm_name_in_notifications:
                         type: boolean
                         description: |
@@ -8030,6 +8040,7 @@ paths:
 
                           See [PATCH /settings/display](/api/update-display-settings)
                           for api details on display settings.
+                          **Changes**: New in Zulip 2.1.
                       dense_mode:
                         type: boolean
                         description: |
@@ -8058,6 +8069,7 @@ paths:
 
                           See [PATCH /settings/display](/api/update-display-settings)
                           for api details on display settings.
+                          **Changes**: New in Zulip 2.1.
                       default_view:
                         type: string
                         description: |
@@ -8190,6 +8202,7 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           The policy for which users can create streams in this organization.
+                          **Changes**: New in Zulip 2.1.
                       realm_invite_to_stream_policy:
                         type: integer
                         description: |
@@ -8197,6 +8210,7 @@ paths:
 
                           The policy for which users can add other users to streams in this
                           organization.
+                          **Changes**: New in Zulip 2.1.
                       realm_wildcard_mention_policy:
                         type: integer
                         description: |
@@ -8242,6 +8256,7 @@ paths:
                           Present if `realm` is present in `fetch_event_types`.
 
                           Whether the organization has enabled [weekly digest emails](/help/digest-emails).
+                          **Changes**: New in Zulip 2.1.
                       realm_disallow_disposable_email_addresses:
                         type: boolean
                         description: |
@@ -8357,6 +8372,7 @@ paths:
                           via the Zulip UI in this organization.  Typically disabled
                           in organizations syncing this this type of account information
                           an external user database like LDAP.
+                          **Changes**: New in Zulip 2.1.
                       realm_emails_restricted_to_domains:
                         type: boolean
                         description: |
@@ -8409,6 +8425,7 @@ paths:
 
                           The day of the week when the organization will send
                           its weekly digest email to inactive users.
+                          **Changes**: New in Zulip 2.1.
                       realm_private_message_policy:
                         type: integer
                         description: |
@@ -8429,6 +8446,7 @@ paths:
 
                           * 1 = All members can create and edit user groups
                           * 2 = Only organization administrators can create and edit user groups
+                          **Changes**: New in Zulip 2.1.
                       realm_default_code_block_language:
                         type: string
                         nullable: true
@@ -9316,6 +9334,7 @@ paths:
           in: query
           description: |
             Enable audible desktop notifications for stream messages.
+            **Changes**: Prior to Zulip 2.1, was named as `enable_stream_sounds`.
           schema:
             type: boolean
           example: true
@@ -9418,6 +9437,7 @@ paths:
             * 1 - All unreads
             * 2 - Private messages and mentions
             * 3 - None
+            **Changes**: New in Zulip 2.1.
           content:
             application/json:
               schema:
@@ -9551,6 +9571,7 @@ paths:
           description: |
             Whether to use the [maximum available screen width](/help/enable-full-width-display)
             for the webapp's center panel (message feed, recent topics) on wide screens.
+            **Changes**: New in Zulip 2.1.
           schema:
             type: boolean
           example: true
@@ -9649,6 +9670,7 @@ paths:
             * 1 - Automatic
             * 2 - Always
             * 3 - Never
+            **Changes**: New in Zulip 2.1.
           content:
             application/json:
               schema:
@@ -9737,6 +9759,7 @@ paths:
                         type: integer
                         description: |
                           The numerical key corresponding to new `demote_inactive_streams` setting if it was changed in this request.
+                          **Changes**: New in Zulip 2.1.
                       timezone:
                         type: string
                         description: |
@@ -10689,6 +10712,7 @@ components:
           description: |
             Whether the stream has been configured to allow unauthenticated
             access to its message history from the web.
+            **Changes**: New in Zulip 2.1.
         stream_post_policy:
           type: integer
           description: |
@@ -11162,6 +11186,7 @@ components:
             should be inherited from the user-level default
             setting, enable_stream_desktop_notifications, for
             this stream.
+            **Changes**: This was made nullable along with true/false in Zulip 2.1.
         email_notifications:
           type: boolean
           nullable: true
@@ -11173,6 +11198,7 @@ components:
             should be inherited from the user-level default
             setting, enable_stream_email_notifications, for
             this stream.
+            **Changes**: This was made nullable along with true/false in Zulip 2.1.
         wildcard_mentions_notify:
           type: boolean
           nullable: true
@@ -11185,6 +11211,7 @@ components:
             should be inherited from the user-level default
             setting, wildcard_mentions_notify, for
             this stream.
+            **Changes**: New in Zulip 2.1.
         push_notifications:
           type: boolean
           nullable: true
@@ -11196,6 +11223,7 @@ components:
             should be inherited from the user-level default
             setting, enable_stream_push_notifications, for
             this stream.
+            **Changes**: This was made nullable along with true/false in Zulip 2.1.
         audible_notifications:
           type: boolean
           nullable: true
@@ -11207,6 +11235,7 @@ components:
             should be inherited from the user-level default
             setting, enable_stream_audible_notifications, for
             this stream.
+            **Changes**: This was made nullable along with true/false in Zulip 2.1.
         pin_to_top:
           type: boolean
           description: |
