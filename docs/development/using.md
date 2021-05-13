@@ -5,7 +5,7 @@ This page describes the basic edit/refresh workflows for working with
 the Zulip development environment.  Generally, the development
 environment will automatically update as soon as you save changes
 using your editor.  Details for work on the [server](#server),
-[webapp](#web), and [mobile apps](#mobile) are below.
+[web app](#web), and [mobile apps](#mobile) are below.
 
 If you're working on authentication methods or need to use the [Zulip
 REST API][rest-api], which requires an API key, see [authentication in
@@ -80,7 +80,7 @@ the development environment][authentication-dev-server].
     reloaded automatically.
   * For Jinja2 backend templates (`templates/*`), you'll need to reload
     the browser window to see your changes.
-* Any JavaScript exceptions encountered while using the webapp in a
+* Any JavaScript exceptions encountered while using the web app in a
   development environment will be displayed as a large notice, so you
   don't need to watch the JavaScript console for exceptions.
 * Both Chrome and Firefox have great debuggers, inspectors, and

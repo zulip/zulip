@@ -46,9 +46,9 @@ to any languages that you'd like to contribute to (or add new ones).
    several resource files:
    * `mobile.json` is for the iOS/Android mobile apps.
    * `desktop.json` is for the parts of the Zulip desktop apps that
-     are not shared with the Zulip webapp.
+     are not shared with the Zulip web app.
    * `django.po` and `translations.json` have strings for the next
-     major release of the Zulip server and webapp (which is what we
+     major release of the Zulip server and web app (which is what we
      run on chat.zulip.org and Zulip Cloud).
    * The variants of `django.po` and `translations.json` with names
      starting with a version, like, `4-x--`, are strings for Zulip's
@@ -121,7 +121,7 @@ There are a few ways to see your translations in the Zulip UI:
   can view the login page in German using
   `http://localhost:9991/de/login/`.  This works for any part of the
   Zulip UI, including portico (logged-out) pages.
-* For Zulip's logged-in UI (i.e. the actual webapp), you can [pick the
+* For Zulip's logged-in UI (i.e. the actual web app), you can [pick the
   language](https://zulip.com/help/change-your-language) in the
   Zulip UI.
 * If your system has languages configured in your OS/browser, Zulip's
@@ -193,7 +193,7 @@ capitalization in general.  This means that:
     - Incorrect: "Url"
 
 The Zulip test suite enforces these capitalization guidelines in the
-webapp codebase [in our test
+web app codebase [in our test
 suite](../testing/testing.html#other-test-suites)
 (`./tools/check-capitalization`; `tools/lib/capitalization.py` has
 some exclude lists, e.g. `IGNORED_PHRASES`).

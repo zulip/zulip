@@ -18,12 +18,12 @@ security support policies. In short:
   highly recommend subscribing so that you are notified about new
   security releases.
 * Zulip Cloud runs the branch that will become the next major
-  server/webapp release, so it is always "newer" than the latest
+  server/web app release, so it is always "newer" than the latest
   stable release.
 
-## Server and webapp
+## Server and web app
 
-The Zulip server and webapp are developed together in the [Zulip
+The Zulip server and web app are developed together in the [Zulip
 server repository][zulip-server].
 
 ### Stable releases
@@ -44,7 +44,7 @@ server repository][zulip-server].
   upgrading to the latest maintenance release in that series, so that
   you use the latest version of the upgrade code.
 
-Starting with Zulip 4.0, the Zulip webapp displays the current server
+Starting with Zulip 4.0, the Zulip web app displays the current server
 version in the gear menu.  With older releases, the server version is
 available [via the API](https://zulip.com/api/get-server-settings).
 
@@ -126,7 +126,7 @@ See also our [security model][security-model] documentation.
 
 ### Upgrade nag
 
-Starting with Zulip 4.0, the Zulip webapp will display a banner
+Starting with Zulip 4.0, the Zulip web app will display a banner
 warning users of a server running a Zulip release that is more than 18
 months old. We do this for a few reasons:
 
@@ -210,7 +210,7 @@ of our [upgrade nag](#upgrade-nag).
   upgrade all users after a new security release.
 
   New desktop app releases rarely contain new features, because the
-  desktop app tab inherits its features from the Zulip server/webapp.
+  desktop app tab inherits its features from the Zulip server/web app.
   However, it is important to upgrade because they often contain
   important security or OS compatibility fixes from the upstream
   Chromium project.

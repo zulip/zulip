@@ -3,7 +3,7 @@
 Zulip takes pride in its extensive, carefully designed test suites.
 For example, `test-backend` runs a complete test suite (~98% test
 coverage; 100% on core code) for the Zulip server in under a minute on
-a fast laptop; very few webapps of similar scope can say something
+a fast laptop; very few web apps of similar scope can say something
 similar.
 
 This page focused on the mechanics of running automated tests in a

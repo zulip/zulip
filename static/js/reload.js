@@ -243,7 +243,7 @@ export function initiate({
     reload_state.set_state_to_pending();
 
     // We're now planning to execute a reload of the browser, usually
-    // to get an updated version of the Zulip webapp code.  Because in
+    // to get an updated version of the Zulip web app code.  Because in
     // most cases all browsers will be receiving this notice at the
     // same or similar times, we need to randomize the time that we do
     // this in order to avoid a thundering herd overloading the server.

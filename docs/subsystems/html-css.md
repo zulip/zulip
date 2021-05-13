@@ -76,7 +76,7 @@ context is defined and where it can be found.
 ### Backend templates
 
 For text generated in the backend, including logged-out ("portico")
-pages and the webapp's base content, we use the [Jinja2][] template
+pages and the web app's base content, we use the [Jinja2][] template
 engine (files in `templates/zerver`).
 
 The syntax for using conditionals and other common structures can be

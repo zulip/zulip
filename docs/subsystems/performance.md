@@ -9,10 +9,10 @@ First, a few notes on philosophy.
 
 * We consider it an important technical goal for Zulip to be fast,
   because that's an important part of user experience for a real-time
-  collaboration tool like Zulip.  Many UI features in the Zulip webapp
+  collaboration tool like Zulip.  Many UI features in the Zulip web app
   are designed to load instantly, because all the data required for
   them is present in the initial HTTP response, and both the Zulip
-  API and webapp are architected around that strategy.
+  API and web app are architected around that strategy.
 * The Zulip database model and server implementation are carefully
   designed to ensure that every common operation is efficient, with
   automated tests designed to prevent the accidental introductions of
@@ -177,9 +177,9 @@ The request to generate the `page_params` portion of `GET /`
 /api/v1/register](https://zulip.com/api/register-queue) used by
 mobile/terminal apps) is one of Zulip's most complex and expensive.
 
-Zulip is somewhat unusual among webapps in sending essentially all of the
-data required for the entire Zulip webapp in this single request,
-which is part of why the Zulip webapp loads very quickly -- one only
+Zulip is somewhat unusual among web apps in sending essentially all of the
+data required for the entire Zulip web app in this single request,
+which is part of why the Zulip web app loads very quickly -- one only
 needs a single round trip aside from cacheable assets (avatars, images, JS,
 CSS).  Data on other users in the organization, streams, supported
 emoji, custom profile fields, etc., is all included.  The nice thing
@@ -191,7 +191,7 @@ who have a lot of latency to the server.
 There are only a few exceptions where we fetch data in a separate AJAX
 request after page load:
 
-* Message history is managed separately; this is why the Zulip webapp will
+* Message history is managed separately; this is why the Zulip web app will
   first render the entire site except for the middle panel, and then a
   moment later render the middle panel (showing the message history).
 * A few very rarely accessed data sets like [message edit
@@ -219,7 +219,7 @@ We consider any organization having normal `page_params` fetch times
 greater than a second to be a bug, and there is ongoing work to fix that.
 
 It can help when thinking about this to imagine `page_params` as what
-in another webapp would have been 25 or so HTTP GET requests, each
+in another web app would have been 25 or so HTTP GET requests, each
 fetching data of a given type (users, streams, custom emoji, etc.); in
 Zulip, we just do all of those in a single API request.  In the
 future, we will likely move to a design that does much of the database
@@ -234,14 +234,14 @@ of active optimization work.
 
 Bulk requests for message content and metadata ([`GET
 /messages`](https://zulip.com/api/get-messages)) account for ~3% of
-total HTTP requests.  The zulip webapp has a few major reasons it does
+total HTTP requests.  The zulip web app has a few major reasons it does
 a large number of these requests:
 
 * Most of these requests are from users clicking into different views
-  -- to avoid certain subtle bugs, Zulip's webapp currently fetches
+  -- to avoid certain subtle bugs, Zulip's web app currently fetches
   content from the server even when it has the history for the
   relevant stream/topic cached locally.
-* When a browser opens the Zulip webapp, it will eventually fetch and
+* When a browser opens the Zulip web app, it will eventually fetch and
   cache in the browser all messages newer than the oldest unread
   message in a non-muted context.  This can be in total extremely
   expensive for users with 10,000s of unread messages, resulting in a

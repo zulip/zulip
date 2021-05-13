@@ -28,7 +28,7 @@ Once the server garbage-collects your event queue, the server will
 with a code of `BAD_EVENT_QUEUE_ID` if you try to fetch events from
 the event queue.  Your software will need to handle that error
 condition by re-initializing itself (e.g. this is what triggers your
-browser reloading the Zulip webapp when your laptop comes back online
+browser reloading the Zulip web app when your laptop comes back online
 after being offline for more than 10 minutes).
 
 When prototyping with this API, we recommend first calling `register`

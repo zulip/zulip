@@ -456,7 +456,7 @@ IdP.
 ### IdP-initiated SSO
 
 The above configuration is sufficient for Service Provider initialized
-SSO, i.e. you can visit the Zulip webapp and click "Sign in with
+SSO, i.e. you can visit the Zulip web app and click "Sign in with
 {IdP}" and it'll correctly start the authentication flow.  If you are
 not hosting multiple organizations, with Zulip 3.0+, the above
 configuration is also sufficient for Identity Provider initiated SSO,

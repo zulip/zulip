@@ -386,7 +386,7 @@ coverage data.
 
 #### page_params
 
-In the Zulip webapp, the data returned by the `register` API is
+In the Zulip web app, the data returned by the `register` API is
 available via the `page_params` parameter.
 
 ### Messages

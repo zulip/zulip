@@ -81,7 +81,7 @@ no longer had time for them.
 
 One case where we apply added scrutiny to third-party dependencies is
 JS libraries.  They are a particularly important concern because we
-want to keep the Zulip webapp's JS bundle small, so that Zulip
+want to keep the Zulip web app's JS bundle small, so that Zulip
 continues to load quickly on systems with low network bandwidth.
 We'll look at large JS libraries with much greater scrutiny for
 whether their functionality justifies their size than Python

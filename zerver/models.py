@@ -545,7 +545,7 @@ class Realm(models.Model):
     )
     icon_version: int = models.PositiveSmallIntegerField(default=1)
 
-    # Logo is the horizontal logo we show in top-left of webapp navbar UI.
+    # Logo is the horizontal logo we show in top-left of web app navbar UI.
     LOGO_DEFAULT = "D"
     LOGO_UPLOADED = "U"
     LOGO_SOURCES = (
@@ -1300,7 +1300,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # UI setting controlling Zulip's behavior of demoting in the sort
     # order and graying out streams with no recent traffic.  The
     # default behavior, automatic, enables this behavior once a user
-    # is subscribed to 30+ streams in the webapp.
+    # is subscribed to 30+ streams in the web app.
     DEMOTE_STREAMS_AUTOMATIC = 1
     DEMOTE_STREAMS_ALWAYS = 2
     DEMOTE_STREAMS_NEVER = 3
@@ -3080,7 +3080,7 @@ class UserPresence(models.Model):
 
     # The user was actively using this Zulip client as of `timestamp` (i.e.,
     # they had interacted with the client recently).  When the timestamp is
-    # itself recent, this is the green "active" status in the webapp.
+    # itself recent, this is the green "active" status in the web app.
     ACTIVE = 1
 
     # There had been no user activity (keyboard/mouse/etc.) on this client

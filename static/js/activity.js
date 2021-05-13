@@ -138,7 +138,7 @@ export function compute_active_status() {
     // computer, and IDLE (aka orange circle) if the user might not
     // be:
     //
-    // * For the webapp, we just know whether this window has focus.
+    // * For the web app, we just know whether this window has focus.
     // * For the electron desktop app, we also know whether the
     //   user is active or idle elsewhere on their system.
     //

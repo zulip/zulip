@@ -918,7 +918,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
           "Continue to registration" if you try to log in using an
           account that doesn't exist but is allowed to sign up.
         * next: Parameter passed through in production authentication
-          to redirect the user to (e.g.) the specific page in the webapp
+          to redirect the user to (e.g.) the specific page in the web app
           that they clicked a link to before being presented with the login
           page.
         * expect_choose_email_screen: Some social auth backends, like

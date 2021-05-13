@@ -107,7 +107,7 @@ def fetch_initial_state_data(
     include_streams: bool = True,
 ) -> Dict[str, Any]:
     """When `event_types` is None, fetches the core data powering the
-    webapp's `page_params` and `/api/v1/register` (for mobile/terminal
+    web app's `page_params` and `/api/v1/register` (for mobile/terminal
     apps).  Can also fetch a subset as determined by `event_types`.
 
     The user_profile=None code path is used for logged-out public
@@ -422,7 +422,7 @@ def fetch_initial_state_data(
 
     if want("stream"):
         if include_streams:
-            # The webapp doesn't use the data from here; instead,
+            # The web app doesn't use the data from here; instead,
             # it uses data from state["subscriptions"] and other
             # places.
             if user_profile is not None:
@@ -430,7 +430,7 @@ def fetch_initial_state_data(
                     user_profile, include_all_active=user_profile.is_realm_admin
                 )
             else:
-                # TODO: This line isn't used by the webapp because it
+                # TODO: This line isn't used by the web app because it
                 # gets these data via the `subscriptions` key; it will
                 # be used when the mobile apps support logged-out
                 # access.
