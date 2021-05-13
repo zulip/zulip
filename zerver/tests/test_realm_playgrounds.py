@@ -77,7 +77,9 @@ class RealmPlaygroundTests(ZulipTestCase):
         self.assert_json_success(resp)
 
         resp = self.api_post(iago, "/json/realm/playgrounds", payload)
-        self.assert_json_error(resp, "Realm playground with this Realm and Name already exists.")
+        self.assert_json_error(
+            resp, "Realm playground with this Realm, Pygments language and Name already exists."
+        )
 
     def test_not_realm_admin(self) -> None:
         hamlet = self.example_user("hamlet")

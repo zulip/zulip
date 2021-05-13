@@ -1038,7 +1038,7 @@ class RealmPlayground(models.Model):
     )
 
     class Meta:
-        unique_together = (("realm", "name"),)
+        unique_together = (("realm", "pygments_language", "name"),)
 
     def __str__(self) -> str:
         return f"<RealmPlayground({self.realm.string_id}): {self.pygments_language} {self.name}>"
