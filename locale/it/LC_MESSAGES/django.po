@@ -14,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-05-12 23:28+0000\n"
+"POT-Creation-Date: 2021-05-13 16:37+0000\n"
 "PO-Revision-Date: 2021-05-12 23:29+0000\n"
 "Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
 "Language-Team: Italian (http://www.transifex.com/zulip/zulip/language/it/)\n"
@@ -4097,7 +4097,7 @@ msgstr "[Comincia un nuovo argomento]({start_topic_help_url}) ogni volta che non
 msgid "Invalid JSON in response"
 msgstr "JSON non valido nella risposta"
 
-#: zerver/lib/outgoing_webhook.py:296
+#: zerver/lib/outgoing_webhook.py:302
 msgid "Invalid response format"
 msgstr "Formato della risposta non valido"
 

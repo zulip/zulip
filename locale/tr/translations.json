@@ -37,7 +37,6 @@
   "A stream with this name already exists": "Bu adla bir kanal hali hazırda mevcut.",
   "A unicode emoji with name <b>{emoji_name}</b> already exists. Uploading a custom emoji with this name will override the unicode emoji with this name.": "",
   "A wide image for the upper left corner of the app.": "Uygulamanın sol üst köşesi için geniş bir resim.",
-  "ADMIN ACTIONS": "YÖNETİCİ EYLEMLERİ",
   "API key": "API anahtarı (key)",
   "Action": "Eylem",
   "Actions": "Eylemler",

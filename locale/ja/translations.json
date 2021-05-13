@@ -37,7 +37,6 @@
   "A stream with this name already exists": "このストリーム名はすでに存在します",
   "A unicode emoji with name <b>{emoji_name}</b> already exists. Uploading a custom emoji with this name will override the unicode emoji with this name.": "",
   "A wide image for the upper left corner of the app.": "ページ左上のロゴを変更することができます。",
-  "ADMIN ACTIONS": "管理者アクション",
   "API key": "APIキー",
   "Action": "アクション",
   "Actions": "アクション",

@@ -37,7 +37,6 @@
   "A stream with this name already exists": "Tämän niminen kanava on jo olemassa",
   "A unicode emoji with name <b>{emoji_name}</b> already exists. Uploading a custom emoji with this name will override the unicode emoji with this name.": "",
   "A wide image for the upper left corner of the app.": "Laajakuva sovelluksen vasempaan yläkulmaan.",
-  "ADMIN ACTIONS": "YLLÄPITOTOIMINNOT",
   "API key": "API-avain",
   "Action": "Toiminto",
   "Actions": "Toiminnot",

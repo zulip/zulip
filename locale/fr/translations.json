@@ -37,7 +37,6 @@
   "A stream with this name already exists": "Ce nom de canal existe déjà",
   "A unicode emoji with name <b>{emoji_name}</b> already exists. Uploading a custom emoji with this name will override the unicode emoji with this name.": "Un emoji unicode nommé <b>{emoji_name}</b> existe déjà. Si vous téléversez un emoji personnalisé avec ce nom, celui-ci écrasera l'ancien.",
   "A wide image for the upper left corner of the app.": "Une image large pour le coin supérieur gauche de l'application.",
-  "ADMIN ACTIONS": "ACTIONS ADMIN",
   "API key": "Clé API",
   "Action": "Action",
   "Actions": "Actions",

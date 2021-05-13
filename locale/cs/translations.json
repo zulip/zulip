@@ -37,7 +37,6 @@
   "A stream with this name already exists": "Kanál s tímto názvem již existuje",
   "A unicode emoji with name <b>{emoji_name}</b> already exists. Uploading a custom emoji with this name will override the unicode emoji with this name.": "Obrázeček Unicode nazvaný <b>{emoji_name}</b> již existuje. Nahráním vlastních obrázečků s tímto názvem přepíšete emoji Unicode s tímto názvem.",
   "A wide image for the upper left corner of the app.": "Široký obrázek pro horní levý roh aplikace.",
-  "ADMIN ACTIONS": "ČINNOSTI SPRÁVCE",
   "API key": "API klíč",
   "Action": "Akce",
   "Actions": "Akce",
