@@ -167,7 +167,7 @@ def fix_spoilers_in_text(content: str, language: str) -> str:
         m = FENCE_RE.match(line)
         if m:
             fence = m.group("fence")
-            lang = m.group("lang")
+            lang: Optional[str] = m.group("lang")
             if lang == "spoiler":
                 open_fence = fence
                 output.append(line)

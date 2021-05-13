@@ -76,7 +76,7 @@ Dependencies:
 
 """
 import re
-from typing import Any, Iterable, List, Mapping, MutableSequence, Optional, Sequence
+from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableSequence, Optional, Sequence
 
 import lxml.html
 from django.utils.html import escape
@@ -100,21 +100,21 @@ FENCE_RE = re.compile(
 
     [ ]* # spaces
 
-    (
+    (?:
+        # language, like ".py" or "{javascript}"
         \{?\.?
         (?P<lang>
-            [a-zA-Z0-9_+-./#]*
+            [a-zA-Z0-9_+-./#]+
         ) # "py" or "javascript"
-        \}?
-    ) # language, like ".py" or "{javascript}"
-    [ ]* # spaces
-    (
-        \{?\.?
+
+        [ ]* # spaces
+
+        # header for features that use fenced block header syntax (like spoilers)
         (?P<header>
-            [^~`]*
-        )
+            [^ ~`][^~`]*
+        )?
         \}?
-    ) # header for features that use fenced block header syntax (like spoilers)
+    )?
     $
     """,
     re.VERBOSE,
@@ -139,7 +139,7 @@ Missing required -X argument in curl command:
                 raise MarkdownRenderingException(error_msg.format(command=line.strip()))
 
 
-CODE_VALIDATORS = {
+CODE_VALIDATORS: Dict[Optional[str], Callable[[List[str]], None]] = {
     "curl": validate_curl_content,
 }
 
@@ -215,12 +215,13 @@ def generic_handler(
     processor: "FencedBlockPreprocessor",
     output: MutableSequence[str],
     fence: str,
-    lang: str,
-    header: str,
+    lang: Optional[str],
+    header: Optional[str],
     run_content_validators: bool = False,
     default_language: Optional[str] = None,
 ) -> ZulipBaseHandler:
-    lang = lang.lower()
+    if lang is not None:
+        lang = lang.lower()
     if lang in ("quote", "quoted"):
         return QuoteHandler(processor, output, fence, default_language)
     elif lang == "math":
@@ -241,8 +242,8 @@ def check_for_new_fence(
     m = FENCE_RE.match(line)
     if m:
         fence = m.group("fence")
-        lang = m.group("lang")
-        header = m.group("header")
+        lang: Optional[str] = m.group("lang")
+        header: Optional[str] = m.group("header")
         if not lang and default_language:
             lang = default_language
         handler = generic_handler(
@@ -277,7 +278,7 @@ class CodeHandler(ZulipBaseHandler):
         processor: "FencedBlockPreprocessor",
         output: MutableSequence[str],
         fence: str,
-        lang: str,
+        lang: Optional[str],
         run_content_validators: bool = False,
     ) -> None:
         self.lang = lang
@@ -324,7 +325,7 @@ class SpoilerHandler(ZulipBaseHandler):
         processor: "FencedBlockPreprocessor",
         output: MutableSequence[str],
         fence: str,
-        spoiler_header: str,
+        spoiler_header: Optional[str],
     ) -> None:
         self.spoiler_header = spoiler_header
         super().__init__(processor, output, fence, process_contents=True)
@@ -437,7 +438,7 @@ class FencedBlockPreprocessor(Preprocessor):
             output.append("")
         return output
 
-    def format_code(self, lang: str, text: str) -> str:
+    def format_code(self, lang: Optional[str], text: str) -> str:
         if lang:
             langclass = LANG_TAG.format(lang)
         else:
@@ -504,14 +505,15 @@ class FencedBlockPreprocessor(Preprocessor):
             quoted_paragraphs.append("\n".join("> " + line for line in lines))
         return "\n".join(quoted_paragraphs)
 
-    def format_spoiler(self, header: str, text: str) -> str:
+    def format_spoiler(self, header: Optional[str], text: str) -> str:
         output = []
         header_div_open_html = '<div class="spoiler-block"><div class="spoiler-header">'
         end_header_start_content_html = '</div><div class="spoiler-content" aria-hidden="true">'
         footer_html = "</div></div>"
 
         output.append(self.placeholder(header_div_open_html))
-        output.append(header)
+        if header is not None:
+            output.append(header)
         output.append(self.placeholder(end_header_start_content_html))
         output.append(text)
         output.append(self.placeholder(footer_html))
