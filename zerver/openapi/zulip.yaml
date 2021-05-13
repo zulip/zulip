@@ -8823,6 +8823,7 @@ paths:
 
                           Useful for administrative settings UI that allows changing the
                           allowed rating of GIFs.
+                          **Changes**: New in Zulip 4.0(feature level 55).
                         additionalProperties:
                           description: |
                             `{rating_name}`: Dictionary containing the details of the
