@@ -335,12 +335,6 @@ on a dark background, and don't change the dark labels dark either. */
         opacity: 0.2;
     }
 
-    #about-zulip {
-        .about-zulip-version {
-            color: hsl(212, 17%, 81%);
-        }
-    }
-
     #gear_menu_about_zulip {
         .white_zulip_icon_without_text {
             filter: invert(10%) sepia(16%) saturate(175%) hue-rotate(194deg)

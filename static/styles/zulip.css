@@ -2720,41 +2720,17 @@ select.inline_select_topic_edit {
     }
 
     .overlay-content {
-        position: relative;
-        width: 300px;
+        width: 440px;
         border-radius: 4px;
     }
 
-    .modal-body {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
     .about-zulip-logo {
-        padding-top: 20px;
-        height: 70px;
+        text-align: center;
+        margin: 30px;
     }
 
-    .about-zulip-title {
-        font-weight: 600;
-        padding: 10px;
-    }
-
-    .about-zulip-version {
-        color: hsl(222, 8%, 28%);
-
-        .fa-copy {
-            padding-left: 3px;
-        }
-
-        :hover {
-            cursor: pointer;
-
-            .fa-copy {
-                color: hsl(0, 0%, 0%);
-            }
-        }
+    .about-zulip-logo img {
+        height: 40px;
     }
 }
 

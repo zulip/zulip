@@ -1,15 +1,17 @@
 import os
 
 ZULIP_VERSION = "4.0-rc1+git"
+
 # Add information on number of commits and commit hash to version, if available
 zulip_git_version_file = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "zulip-git-version"
 )
+lines = [ZULIP_VERSION, ""]
 if os.path.exists(zulip_git_version_file):
     with open(zulip_git_version_file) as f:
-        version = f.read().strip()
-        if version:
-            ZULIP_VERSION = version
+        lines = f.readlines() + ["", ""]
+ZULIP_VERSION = lines.pop(0).strip()
+ZULIP_MERGE_BASE = lines.pop(0).strip()
 
 LATEST_MAJOR_VERSION = "3.0"
 LATEST_RELEASE_VERSION = "3.0"
