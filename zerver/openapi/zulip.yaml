@@ -9673,7 +9673,8 @@ paths:
             * "recent_topics" - Recent topics view
             * "all_messages" - All messages view
 
-            **Changes**: Removed unnecessary JSON-encoding of parameter in Zulip 4.0 (feature level 64).
+            **Changes**: New in Zulip 4.0(feature level 42).
+            Removed unnecessary JSON-encoding of parameter in Zulip 4.0 (feature level 64).
           schema:
             type: string
           example: all_messages
