@@ -388,6 +388,8 @@ paths:
                                           type: integer
                                           description: |
                                             The new role of the user in integer.
+                                            **Changes**: This replaces the earlier
+                                            `is_guest` and `is_admin` booleans(feature level 7).
                                           enum:
                                             - 100
                                             - 200
@@ -6775,7 +6777,7 @@ paths:
 
             The owner role cannot be removed from the only organization owner.
 
-            **Changes**: New in Zulip 3.0 (feature level 8), replacing the previous
+            **Changes**: New in Zulip 3.0 (feature level 7), replacing the previous
             pair of `is_admin` and `is_guest` boolean parameters. Organization moderator
             role added in Zulip 4.0 (feature level 60).
           schema:
@@ -11148,6 +11150,8 @@ components:
           description: |
             Array containing the id of the users who are
             members of this user group.
+            **Changes**: Prior to Zulip 3.0, email field was used
+            to identify the user(feature level 7)
         id:
           type: integer
           description: |
