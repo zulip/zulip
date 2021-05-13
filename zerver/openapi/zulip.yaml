@@ -9624,6 +9624,8 @@ paths:
 
             Automatic detection is implementing using the standard `prefers-color-scheme`
             media query.
+            **Changes**: Replaces the `night_mode` boolean as part of supporting automatic
+            night theme detection in Zulip 3.0(feature level 21).
           content:
             application/json:
               schema:
