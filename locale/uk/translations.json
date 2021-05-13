@@ -824,6 +824,7 @@
   "Who can add users to streams": "Хто може додавати користувачів до каналів",
   "Who can create and manage user groups": "Хто може створювати та керувати групами користувачів",
   "Who can create streams": "Хто може створювати канали",
+  "Who can move messages between streams": "",
   "Who can post to the stream?": "Хто може надсилати повідомлення до каналу?",
   "Who can use @all/@everyone mentions in large streams": "Хто може використовувати згадки @all/@everyone у великих каналах",
   "Who can use private messages": "Хто може використовувати приватні повідомлення",

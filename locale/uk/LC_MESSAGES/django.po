@@ -11,8 +11,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-05-11 20:47+0000\n"
-"PO-Revision-Date: 2021-05-11 20:48+0000\n"
+"POT-Creation-Date: 2021-05-12 23:28+0000\n"
+"PO-Revision-Date: 2021-05-12 23:29+0000\n"
 "Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
 "Language-Team: Ukrainian (http://www.transifex.com/zulip/zulip/language/uk/)\n"
 "MIME-Version: 1.0\n"
@@ -262,7 +262,7 @@ msgid ""
 "encountering this page, it's probably our fault. We're sorry."
 msgstr "Переконайтеся, що ви правильно скопіювали посилання у браузер. Якщо ви все ще стикаєтесь із цією сторінкою, мабуть, це наша провина. Нам шкода."
 
-#: templates/corporate/billing.html:21 templates/zerver/app/navbar.html:149
+#: templates/corporate/billing.html:21 templates/zerver/app/navbar.html:142
 msgid "Billing"
 msgstr "Платежі"
 
@@ -659,7 +659,7 @@ msgid "Invite"
 msgstr "Запросити"
 
 #: templates/zerver/app/keyboard_shortcuts.html:2
-#: templates/zerver/app/navbar.html:87
+#: templates/zerver/app/navbar.html:95
 #: templates/zerver/app/right_sidebar.html:24
 msgid "Keyboard shortcuts"
 msgstr "Комбінації клавіш"
@@ -1011,62 +1011,66 @@ msgstr "Налаштування"
 msgid "Manage organization"
 msgstr "Управління організацією"
 
-#: templates/zerver/app/navbar.html:82 templates/zerver/footer.html:16
+#: templates/zerver/app/navbar.html:83
+msgid "Usage statistics"
+msgstr ""
+
+#: templates/zerver/app/navbar.html:90 templates/zerver/footer.html:16
 msgid "Help center"
 msgstr "Центр довідки"
 
-#: templates/zerver/app/navbar.html:92
+#: templates/zerver/app/navbar.html:100
 msgid "Message formatting"
 msgstr "Форматування повідомлення"
 
-#: templates/zerver/app/navbar.html:97
+#: templates/zerver/app/navbar.html:105
 #: templates/zerver/app/search_operators.html:2
 msgid "Search operators"
 msgstr "Оператори пошуку"
 
-#: templates/zerver/app/navbar.html:103
-msgid "Contact support"
-msgstr "Звернутися в службу підтримки"
-
-#: templates/zerver/app/navbar.html:111 templates/zerver/footer.html:3
+#: templates/zerver/app/navbar.html:112 templates/zerver/footer.html:3
 msgid "About Zulip"
 msgstr "Про Zulip"
 
-#: templates/zerver/app/navbar.html:118
+#: templates/zerver/app/navbar.html:119
+msgid "Contact support"
+msgstr "Звернутися в службу підтримки"
+
+#: templates/zerver/app/navbar.html:126
 msgid "Desktop & mobile apps"
 msgstr "Настільні та мобільні додатки"
 
-#: templates/zerver/app/navbar.html:123 templates/zerver/footer.html:50
+#: templates/zerver/app/navbar.html:131 templates/zerver/footer.html:50
 msgid "Integrations"
 msgstr "Інтеграції"
 
-#: templates/zerver/app/navbar.html:128
+#: templates/zerver/app/navbar.html:136
 msgid "API documentation"
 msgstr "Документація API"
 
-#: templates/zerver/app/navbar.html:135
-msgid "Statistics"
-msgstr "Статистика"
+#: templates/zerver/app/navbar.html:149
+msgid "Support Zulip"
+msgstr ""
 
-#: templates/zerver/app/navbar.html:142
+#: templates/zerver/app/navbar.html:156
 msgid "Plans and pricing"
 msgstr "Плани та ціни"
 
-#: templates/zerver/app/navbar.html:157
+#: templates/zerver/app/navbar.html:164
 msgid "Invite users"
 msgstr "Запросити користувачів"
 
-#: templates/zerver/app/navbar.html:163
+#: templates/zerver/app/navbar.html:170
 msgid ""
 "Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via "
 "Webathena"
 msgstr "Необхідно надати Zulip тікет Kerberos, щоб запустити ваше дзеркало Zephyr через Webathena"
 
-#: templates/zerver/app/navbar.html:165
+#: templates/zerver/app/navbar.html:172
 msgid "Link with Webathena"
 msgstr "Зв'язати з Webathena"
 
-#: templates/zerver/app/navbar.html:171
+#: templates/zerver/app/navbar.html:178
 msgid "Log out"
 msgstr "Вийти"
 
@@ -3348,33 +3352,33 @@ msgstr "Будь ласка, введіть не більше 10 електро�
 msgid "We couldn't find that Zulip organization."
 msgstr "Ми не змогли знайти цю організацію Zulip."
 
-#: zerver/lib/actions.py:355 zerver/lib/actions.py:367
+#: zerver/lib/actions.py:357 zerver/lib/actions.py:369
 #, python-brace-format
 msgid "{user} just signed up for Zulip. (total: {user_count})"
 msgstr "{user} щойно зареєструвався в Zulip. (всього: {user_count})"
 
-#: zerver/lib/actions.py:358
+#: zerver/lib/actions.py:360
 msgid "signups"
 msgstr "реєстрації"
 
-#: zerver/lib/actions.py:478
+#: zerver/lib/actions.py:480
 #, python-brace-format
 msgid "{user} accepted your invitation to join Zulip!"
 msgstr "{user} прийняв ваше запрошення приєднатися до Zulip!"
 
-#: zerver/lib/actions.py:1408
+#: zerver/lib/actions.py:1410
 msgid "Unable to render message"
 msgstr "Неможливо відобразити повідомлення"
 
-#: zerver/lib/actions.py:2214 zerver/lib/actions.py:2244
+#: zerver/lib/actions.py:2224 zerver/lib/actions.py:2254
 msgid "Reaction already exists."
 msgstr "Реакція вже існує."
 
-#: zerver/lib/actions.py:2347 zerver/lib/addressee.py:32
+#: zerver/lib/actions.py:2357 zerver/lib/addressee.py:32
 msgid "Invalid user ID {}"
 msgstr "Недійсний ID користувача {}"
 
-#: zerver/lib/actions.py:2416 zerver/lib/actions.py:7031
+#: zerver/lib/actions.py:2426 zerver/lib/actions.py:7046
 #: zerver/lib/streams.py:238 zerver/lib/streams.py:246
 #: zerver/tornado/views.py:105 zerver/views/events_register.py:73
 #: zerver/views/message_send.py:226 zerver/views/message_send.py:232
@@ -3382,251 +3386,251 @@ msgstr "Недійсний ID користувача {}"
 msgid "User not authorized for this query"
 msgstr "Користувач не авторизований для цього запиту"
 
-#: zerver/lib/actions.py:2453
+#: zerver/lib/actions.py:2463
 #, python-brace-format
 msgid "'{email}' is no longer using Zulip."
 msgstr "'{email}' більше не використовує Zulip."
 
-#: zerver/lib/actions.py:2460
+#: zerver/lib/actions.py:2470
 msgid "You can't send private messages outside of your organization."
 msgstr "Ви не можете надсилати приватні повідомлення за межами вашої організації."
 
-#: zerver/lib/actions.py:2526
+#: zerver/lib/actions.py:2536
 msgid "Expected exactly one stream"
 msgstr "Очікується рівно один канал"
 
-#: zerver/lib/actions.py:2537
+#: zerver/lib/actions.py:2547
 msgid "Invalid data type for stream"
 msgstr "Недійсний тип даних для каналу"
 
-#: zerver/lib/actions.py:2553 zerver/lib/actions.py:2563
+#: zerver/lib/actions.py:2563 zerver/lib/actions.py:2573
 msgid "Invalid data type for recipients"
 msgstr "Недійсний тип даних для одержувачів"
 
-#: zerver/lib/actions.py:2571 zerver/lib/actions.py:2579
+#: zerver/lib/actions.py:2581 zerver/lib/actions.py:2589
 msgid "Recipient lists may contain emails or user IDs, but not both."
 msgstr "Списки одержувачів можуть містити електронні адреси або ID користувачів, але не обидва разом."
 
-#: zerver/lib/actions.py:2677
+#: zerver/lib/actions.py:2687
 msgid "Reminders can only be set for streams."
 msgstr "Нагадування можуть бути тільки встановленні для каналів."
 
-#: zerver/lib/actions.py:2698
+#: zerver/lib/actions.py:2708
 msgid "Your organization has turned off message editing"
 msgstr "Ваша організація вимкнула редагування повідомлень"
 
-#: zerver/lib/actions.py:2701
+#: zerver/lib/actions.py:2711
 msgid "Invalid propagate_mode without topic edit"
 msgstr ""
 
-#: zerver/lib/actions.py:2721
+#: zerver/lib/actions.py:2731
 msgid "You don't have permission to edit this message"
 msgstr "Ви не маєте права редагувати це повідомлення"
 
-#: zerver/lib/actions.py:2725
+#: zerver/lib/actions.py:2735
 msgid "Widgets cannot be edited."
 msgstr ""
 
-#: zerver/lib/actions.py:2736 zerver/lib/actions.py:2750
+#: zerver/lib/actions.py:2746 zerver/lib/actions.py:2760
 msgid "The time limit for editing this message has passed"
 msgstr "Термін для редагування цього повідомлення минув"
 
-#: zerver/lib/actions.py:2753
+#: zerver/lib/actions.py:2763
 msgid "Nothing to change"
 msgstr "Нема що змінювати"
 
-#: zerver/lib/actions.py:2757 zerver/lib/addressee.py:41
+#: zerver/lib/actions.py:2767 zerver/lib/addressee.py:41
 #: zerver/webhooks/ifttt/view.py:26 zerver/webhooks/zapier/view.py:38
 msgid "Topic can't be empty"
 msgstr "Тема не може бути порожньою"
 
-#: zerver/lib/actions.py:2795
+#: zerver/lib/actions.py:2805
 msgid "Message must be a stream message"
 msgstr ""
 
-#: zerver/lib/actions.py:2797
+#: zerver/lib/actions.py:2807
 msgid "You don't have permission to move this message"
 msgstr "Ви не маєте дозволу на переміщення цього повідомлення"
 
-#: zerver/lib/actions.py:2803
+#: zerver/lib/actions.py:2813
 msgid ""
 "You don't have permission to move this message due to missing access to its "
 "stream"
 msgstr ""
 
-#: zerver/lib/actions.py:2807
+#: zerver/lib/actions.py:2817
 msgid "Cannot change message content while changing stream"
 msgstr "Не вдається змінити вміст повідомлення під час зміни каналу"
 
-#: zerver/lib/actions.py:2843
+#: zerver/lib/actions.py:2854
 msgid "Invalid default stream group name '{}'"
 msgstr "Недійсне ім'я стандартної групи каналу '{}'"
 
-#: zerver/lib/actions.py:2846
+#: zerver/lib/actions.py:2857
 msgid "Default stream group name too long (limit: {} characters)"
 msgstr "Ім'я стандартної групи каналу надто довге (обмеження: {} символів)"
 
-#: zerver/lib/actions.py:2853
+#: zerver/lib/actions.py:2864
 msgid "Default stream group name '{}' contains NULL (0x00) characters."
 msgstr "Ім'я стандартної групи каналу '{}' містить символи NULL (0x00)."
 
-#: zerver/lib/actions.py:2919
+#: zerver/lib/actions.py:2930
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream ID {stream_id}, "
 "but there is no stream with that ID."
 msgstr "Ваш бот {bot_identity} намагався надіслати повідомлення в ID каналу {stream_id}, але каналу з цим ID немає."
 
-#: zerver/lib/actions.py:2925
+#: zerver/lib/actions.py:2936
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}, but"
 " that stream does not exist. Click [here]({new_stream_link}) to create it."
 msgstr "Ваш бот {bot_identity} намагався надіслати повідомлення в канал {stream_name}, але такого каналу немає. Клацніть [тут]({new_stream_link}) щоб створити його."
 
-#: zerver/lib/actions.py:2933
+#: zerver/lib/actions.py:2944
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}. The"
 " stream exists but does not have any subscribers."
 msgstr "Ваш бот {bot_identity} намагався надіслати повідомлення в канал {stream_name}. Канал існує, але не має підписників."
 
-#: zerver/lib/actions.py:2980
+#: zerver/lib/actions.py:2991
 msgid "Private messages are disabled in this organization."
 msgstr "Приватні повідомлення відключені в цій організації."
 
-#: zerver/lib/actions.py:3105
+#: zerver/lib/actions.py:3116
 msgid "Widgets: API programmer sent invalid JSON content"
 msgstr "Віджети: API розробник надіслав JSON з помилковим вмістом"
 
-#: zerver/lib/actions.py:3111
+#: zerver/lib/actions.py:3122
 #, python-brace-format
 msgid "Widgets: {error_msg}"
 msgstr "Віджети: {error_msg}"
 
-#: zerver/lib/actions.py:3129
+#: zerver/lib/actions.py:3140
 msgid "You do not have permission to use wildcard mentions in this stream."
 msgstr "Ви не маєте дозволу на використання масових згадувань у цьому каналі."
 
-#: zerver/lib/actions.py:3382
+#: zerver/lib/actions.py:3393
 msgid "Subscriber data is not available for this stream"
 msgstr "Дані підписника недоступні для цього каналу"
 
-#: zerver/lib/actions.py:3389
+#: zerver/lib/actions.py:3400
 msgid "Unable to retrieve subscribers for private stream"
 msgstr "Не вдається отримати підписників для приватного каналу"
 
-#: zerver/lib/actions.py:4642
+#: zerver/lib/actions.py:4653
 #, python-brace-format
 msgid "{user_name} renamed stream {old_stream_name} to {new_stream_name}."
 msgstr "{user_name} перейменував канал {old_stream_name} на {new_stream_name}."
 
-#: zerver/lib/actions.py:4748
+#: zerver/lib/actions.py:4759
 msgid "Signups enabled"
 msgstr "Реєстрація увімкнена"
 
-#: zerver/lib/actions.py:4862
+#: zerver/lib/actions.py:4873
 msgid "Invalid default stream group {}"
 msgstr "Недійсна група основних каналів {}"
 
-#: zerver/lib/actions.py:4908 zerver/lib/actions.py:4935
+#: zerver/lib/actions.py:4919 zerver/lib/actions.py:4946
 #, python-brace-format
 msgid ""
 "'{stream_name}' is a default stream and cannot be added to '{group_name}'"
 msgstr "'{stream_name}' є основним каналом і не може бути доданий до '{group_name}'"
 
-#: zerver/lib/actions.py:4919
+#: zerver/lib/actions.py:4930
 #, python-brace-format
 msgid "Default stream group '{group_name}' already exists"
 msgstr "Група основних каналів '{group_name}' вже існує"
 
-#: zerver/lib/actions.py:4941
+#: zerver/lib/actions.py:4952
 #, python-brace-format
 msgid ""
 "Stream '{stream_name}' is already present in default stream group "
 "'{group_name}'"
 msgstr "Канал '{stream_name}' вже присутній у групі основних каналів '{group_name}'"
 
-#: zerver/lib/actions.py:4957
+#: zerver/lib/actions.py:4968
 #, python-brace-format
 msgid ""
 "Stream '{stream_name}' is not present in default stream group '{group_name}'"
 msgstr "Канал '{stream_name}' не присутній у групі основних каналів '{group_name}'"
 
-#: zerver/lib/actions.py:4971
+#: zerver/lib/actions.py:4982
 msgid "This default stream group is already named '{}'"
 msgstr "Ця група основних каналів вже названа '{}'"
 
-#: zerver/lib/actions.py:4975
+#: zerver/lib/actions.py:4986
 msgid "Default stream group '{}' already exists"
 msgstr "Група основних каналів '{}' вже існує"
 
-#: zerver/lib/actions.py:5417
+#: zerver/lib/actions.py:5428
 msgid "Invalid flag: '{}'"
 msgstr "Недійсний прапор: '{}'"
 
-#: zerver/lib/actions.py:5419
+#: zerver/lib/actions.py:5430
 msgid "Flag not editable: '{}'"
 msgstr "Прапорець не можна редагувати: '{}'"
 
-#: zerver/lib/actions.py:5421
+#: zerver/lib/actions.py:5432
 msgid "Invalid message flag operation: '{}'"
 msgstr ""
 
-#: zerver/lib/actions.py:5435 zerver/lib/actions.py:5437
-#: zerver/lib/message.py:670 zerver/lib/message.py:676
+#: zerver/lib/actions.py:5446 zerver/lib/actions.py:5448
+#: zerver/lib/message.py:671 zerver/lib/message.py:677
 msgid "Invalid message(s)"
 msgstr "Недійсне(і) повідомлення"
 
-#: zerver/lib/actions.py:6005
+#: zerver/lib/actions.py:6020
 #, python-brace-format
 msgid "This topic was moved by {user} to {new_location}"
 msgstr "Ця тема переміщена користувачем {user} до {new_location}"
 
-#: zerver/lib/actions.py:6010
+#: zerver/lib/actions.py:6025
 #, python-brace-format
 msgid "This topic was moved here from {old_location} by {user}"
 msgstr "Ця тема переміщена сюди з {old_location} користувачем {user}"
 
-#: zerver/lib/actions.py:6503
+#: zerver/lib/actions.py:6518
 #, python-brace-format
 msgid ""
 "You do not have enough remaining invites for today. Please contact {email} "
 "to have your limit raised. No invitations were sent."
 msgstr "У вас залишились недостатньо запрошень на сьогодні. Будь ласка, зв’яжіться з {email} щоб збільшити ліміт. Запрошення не надіслано."
 
-#: zerver/lib/actions.py:6554
+#: zerver/lib/actions.py:6569
 msgid ""
 "Your account is too new to send invites for this organization. Ask an "
 "organization admin, or a more experienced user."
 msgstr "Ваш обліковий запис занадто новий для надсилання запрошень для цієї організації. Попросіть адміністратора організації або досвідченого користувача."
 
-#: zerver/lib/actions.py:6594
+#: zerver/lib/actions.py:6609
 msgid "Some emails did not validate, so we didn't send any invitations."
 msgstr "Деякі електронні листи не підтверджені, тому ми не надсилали жодних запрошень."
 
-#: zerver/lib/actions.py:6602
+#: zerver/lib/actions.py:6617
 msgid "We weren't able to invite anyone."
 msgstr "Ми не змогли запросити когось."
 
-#: zerver/lib/actions.py:6633
+#: zerver/lib/actions.py:6648
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
 msgstr "Деякі з цих адрес вже використовують Zulip, тому ми не надіслали їм запрошення. Ми надіслали запрошення всім іншим!"
 
-#: zerver/lib/actions.py:7250
+#: zerver/lib/actions.py:7265
 msgid "Invalid order mapping."
 msgstr "Недійсне відображення порядку."
 
-#: zerver/lib/actions.py:7316 zerver/lib/users.py:344
+#: zerver/lib/actions.py:7331 zerver/lib/users.py:344
 #: zerver/views/custom_profile_fields.py:137
 #: zerver/views/custom_profile_fields.py:157
 #, python-brace-format
 msgid "Field id {id} not found."
 msgstr "Ідентифікатор поля {id} не знайдено."
 
-#: zerver/lib/actions.py:7342 zerver/lib/actions.py:7355
+#: zerver/lib/actions.py:7357 zerver/lib/actions.py:7370
 msgid "User group '{}' already exists."
 msgstr "Група користувачів '{}' вже існує."
 
@@ -3966,11 +3970,11 @@ msgstr "Продуктивність"
 msgid "Version control"
 msgstr "Контроль версій"
 
-#: zerver/lib/message.py:128
+#: zerver/lib/message.py:129
 msgid "Message must not be empty"
 msgstr "Повідомлення не може бути порожнім"
 
-#: zerver/lib/message.py:130
+#: zerver/lib/message.py:131
 msgid "Message must not contain null bytes"
 msgstr "Повідомлення не повинно містити нульових байтів"
 
@@ -4086,11 +4090,11 @@ msgid ""
 "a         previous message."
 msgstr "[Почніть нову тему]({start_topic_help_url}) будь-коли, коли ви не відповідаєте на попереднє повідомлення."
 
-#: zerver/lib/outgoing_webhook.py:292
+#: zerver/lib/outgoing_webhook.py:293
 msgid "Invalid JSON in response"
 msgstr ""
 
-#: zerver/lib/outgoing_webhook.py:295
+#: zerver/lib/outgoing_webhook.py:296
 msgid "Invalid response format"
 msgstr ""
 

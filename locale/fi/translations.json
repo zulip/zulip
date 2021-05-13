@@ -824,6 +824,7 @@
   "Who can add users to streams": "Kenellä on oikeus lisätä käyttäjiä kanaville",
   "Who can create and manage user groups": "Kuka voi luoda ja hallinnoida käyttäjäryhmiä",
   "Who can create streams": "Kuka voi luoda kanavia",
+  "Who can move messages between streams": "",
   "Who can post to the stream?": "Kuka voi julkaista kanavalla?",
   "Who can use @all/@everyone mentions in large streams": "Kenellä on oikeus tehdä  @all/@everyone mainintoja isoilla kanavilla",
   "Who can use private messages": "Kuka voi käyttää yksityisviestejä",

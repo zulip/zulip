@@ -824,6 +824,7 @@
   "Who can add users to streams": "Qui peut abonner des utilisateurs aux canaux",
   "Who can create and manage user groups": "Qui peut créer et gérer les groupes d'utilisateurs",
   "Who can create streams": "Qui peut créer des canaux",
+  "Who can move messages between streams": "Qui peut déplacer des messages entre les canaux",
   "Who can post to the stream?": "Qui peut envoyer des messages sur ce canal?",
   "Who can use @all/@everyone mentions in large streams": "Qui peut utiliser les mentions @all/@everyone dans les canaux avec beaucoup d'abonnés",
   "Who can use private messages": "Qui peut utiliser les messages privés",

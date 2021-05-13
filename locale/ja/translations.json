@@ -824,6 +824,7 @@
   "Who can add users to streams": "ストリームの招待",
   "Who can create and manage user groups": "ユーザーグループの管理",
   "Who can create streams": "ストリームの作成",
+  "Who can move messages between streams": "",
   "Who can post to the stream?": "ストリームに投稿できるユーザー",
   "Who can use @all/@everyone mentions in large streams": "",
   "Who can use private messages": "プライベートメッセージの使用",

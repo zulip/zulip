@@ -824,6 +824,7 @@
   "Who can add users to streams": "誰可新增串流使用者",
   "Who can create and manage user groups": "誰可創建跟管理使用者群組",
   "Who can create streams": "誰可創建串流",
+  "Who can move messages between streams": "",
   "Who can post to the stream?": "誰可在此串流發表？",
   "Who can use @all/@everyone mentions in large streams": "",
   "Who can use private messages": "誰可使用私人訊息",

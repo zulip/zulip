@@ -824,6 +824,7 @@
   "Who can add users to streams": "Kim kanallara kullanıcı ekleyebilir",
   "Who can create and manage user groups": "Kullanıcı gruplarını kim oluşturabilir ve düzenleyebilir",
   "Who can create streams": "Kimler kanal oluşturabilir",
+  "Who can move messages between streams": "",
   "Who can post to the stream?": "Kanala kimler yazabilir?",
   "Who can use @all/@everyone mentions in large streams": "Büyük kanallarda @all/@everyone bahsetmelerini kim kullanabilir",
   "Who can use private messages": "Kimler özel mesajları kullanabilir",
