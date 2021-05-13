@@ -397,8 +397,18 @@ test_people("pm_lookup_key", () => {
 
 test_people("get_recipients", () => {
     people.add_active_user(isaac);
+    people.add_active_user(linus);
     assert.equal(people.get_recipients("30"), "Me Myself");
     assert.equal(people.get_recipients("30,32"), "Isaac Newton");
+
+    muting.add_muted_user(304);
+    assert.equal(people.get_recipients("304,32"), "Isaac Newton, translated: Muted user");
+});
+
+test_people("get_full_name", () => {
+    people.add_active_user(isaac);
+    const names = people.get_full_name(isaac.user_id);
+    assert.equal(names, "Isaac Newton");
 });
 
 test_people("get_full_names_for_poll_option", () => {
