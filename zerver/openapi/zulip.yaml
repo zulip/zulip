@@ -6959,6 +6959,7 @@ paths:
         in messages and topics.
 
         `DELETE {{ api_url }}/v1/realm/filters/{filter_id}`
+        **Changes**: New in Zulip 4.0(feature level 57).
       parameters:
         - name: filter_id
           in: path
