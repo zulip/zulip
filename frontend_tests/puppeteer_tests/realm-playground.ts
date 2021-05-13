@@ -14,7 +14,7 @@ async function _add_playground_and_return_status(page: Page, payload: Playground
     await page.waitForSelector(".admin-playground-form", {visible: true});
     // Let's first ensure that the success/failure status from an earlier step has disappeared.
     const admin_playground_status_selector = "div#admin-playground-status";
-    await page.waitForSelector(admin_playground_status_selector, {hidden: true, timeout: 4000});
+    await page.waitForSelector(admin_playground_status_selector, {hidden: true});
 
     // Now we can fill and click the submit button.
     await common.fill_form(page, "form.admin-playground-form", payload);
