@@ -253,12 +253,12 @@ test("sort_streams", (override) => {
 test("sort_languages", () => {
     Object.assign(pygments_data, {
         langs: {
-            python: {priority: 40},
-            javscript: {priority: 50},
-            php: {priority: 38},
-            pascal: {priority: 29},
-            perl: {priority: 22},
-            css: {priority: 0},
+            python: {priority: 26},
+            javscript: {priority: 27},
+            php: {priority: 16},
+            pascal: {priority: 15},
+            perl: {priority: 3},
+            css: {priority: 21},
         },
     });
 
@@ -269,7 +269,7 @@ test("sort_languages", () => {
     assert.deepEqual(test_langs, ["python", "php", "pascal", "perl", "javascript"]);
 
     // Test if popularity between two languages are the same
-    pygments_data.langs.php = {priority: 40};
+    pygments_data.langs.php = {priority: 26};
     test_langs = ["pascal", "perl", "php", "python", "javascript"];
     test_langs = th.sort_languages(test_langs, "p");
 
@@ -291,7 +291,7 @@ test("sort_languages", () => {
     test_langs = th.sort_languages(test_langs, "java");
     assert.deepEqual(test_langs, ["java", "javascript", "js", "j"]);
     test_langs = th.sort_languages(test_langs, "j");
-    assert.deepEqual(test_langs, ["j", "javascript", "java", "js"]);
+    assert.deepEqual(test_langs, ["j", "javascript", "js", "java"]);
 });
 
 function get_typeahead_result(query, current_stream, current_topic) {
