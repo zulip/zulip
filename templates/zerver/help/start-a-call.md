@@ -28,6 +28,7 @@ supported by zulip are:
 
 * [Jitsi Meet](/integrations/doc/jitsi)
 * [Zoom integration](/integrations/doc/zoom)
+* [Webex integration](/integrations/doc/webex)
 * [Big Blue Button integration](/integrations/doc/big-blue-button)
 
 !!! tip ""
@@ -48,3 +49,4 @@ supported by zulip are:
 
 [big-blue-button-configuration]: https://zulip.readthedocs.io/en/latest/production/video-calls.html#big-blue-button
 [zoom-configuration]: https://zulip.readthedocs.io/en/latest/production/video-calls.html#zoom
+[webex-configuration]: https://zulip.readthedocs.io/en/latest/production/video-calls.html#webex

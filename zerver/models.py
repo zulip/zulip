@@ -442,9 +442,14 @@ class Realm(models.Model):
         # ID 2 was used for the now-deleted Google Hangouts.
         # ID 3 reserved for optional Zoom, see below.
         # ID 4 reserved for optional Big Blue Button, see below.
+        # ID 5 reserved for optional Webex, see below.
     }
 
-    if settings.VIDEO_ZOOM_CLIENT_ID is not None and settings.VIDEO_ZOOM_CLIENT_SECRET is not None:
+    if (
+        settings.VIDEO_ZOOM_API_URL is not None
+        and settings.VIDEO_ZOOM_CLIENT_ID is not None
+        and settings.VIDEO_ZOOM_CLIENT_SECRET is not None
+    ):
         VIDEO_CHAT_PROVIDERS["zoom"] = {
             "name": "Zoom",
             "id": 3,
@@ -452,6 +457,13 @@ class Realm(models.Model):
 
     if settings.BIG_BLUE_BUTTON_SECRET is not None and settings.BIG_BLUE_BUTTON_URL is not None:
         VIDEO_CHAT_PROVIDERS["big_blue_button"] = {"name": "Big Blue Button", "id": 4}
+
+    if (
+        settings.VIDEO_WEBEX_API_URL is not None
+        and settings.VIDEO_WEBEX_CLIENT_ID is not None
+        and settings.VIDEO_WEBEX_CLIENT_SECRET is not None
+    ):
+        VIDEO_CHAT_PROVIDERS["webex"] = {"name": "Webex", "id": 5}
 
     video_chat_provider: int = models.PositiveSmallIntegerField(
         default=VIDEO_CHAT_PROVIDERS["jitsi_meet"]["id"]
@@ -1369,6 +1381,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     onboarding_steps: str = models.TextField(default="[]")
 
     zoom_token: Optional[object] = models.JSONField(default=None, null=True)
+    webex_token: Optional[object] = models.JSONField(default=None, null=True)
 
     objects: UserManager = UserManager()
 

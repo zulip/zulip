@@ -1,4 +1,5 @@
 import os
+import string
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from scripts.lib.zulip_tools import deport
@@ -100,8 +101,26 @@ SOCIAL_AUTH_APPLE_EMAIL_AS_USERNAME = True
 # Other auth
 SSO_APPEND_DOMAIN: Optional[str] = None
 
+VIDEO_ZOOM_API_URL: str = "https://api.zoom.us/"
 VIDEO_ZOOM_CLIENT_ID = get_secret("video_zoom_client_id", development_only=True)
 VIDEO_ZOOM_CLIENT_SECRET = get_secret("video_zoom_client_secret")
+
+# Webex Video Call Settings
+VIDEO_WEBEX_API_URL: str = "https://webexapis.com/"
+VIDEO_WEBEX_CLIENT_ID = get_secret("video_webex_client_id", development_only=True)
+VIDEO_WEBEX_CLIENT_SECRET = get_secret("video_webex_client_secret")
+# Content and Length of password generated when a Webex meeting is created
+# Defaults to the Webex standard of 11 character alphanumeric
+VIDEO_WEBEX_PASSWORD_CHARACTERS = string.ascii_letters + string.digits
+VIDEO_WEBEX_PASSWORD_LENGTH = 11
+# The following settings control the defaults for creating a Webex meeting.
+# Currently they are the only way to configure meeting the meetings but it
+# would be nice to eventually have a prompt for configuring meeting start
+# and end time, etc.
+# Length of Webex Meeting in minutes
+VIDEO_WEBEX_MEETING_LENGTH = 60
+VIDEO_WEBEX_AUTO_RECORD_MEETING = False
+VIDEO_WEBEX_ANY_USER_CAN_COHOST = False
 
 # Email gateway
 EMAIL_GATEWAY_PATTERN = ""

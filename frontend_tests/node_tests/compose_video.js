@@ -58,6 +58,10 @@ const realm_available_video_chat_providers = {
         id: 4,
         name: "Big Blue Button",
     },
+    webex: {
+        id: 5,
+        name: "Webex",
+    },
 };
 
 function test(label, f) {
@@ -184,6 +188,60 @@ test("videos", (override) => {
         handler(ev);
         const video_link_regex = /\[translated: Click to join video call]\(example\.zoom\.com\)/;
         assert(called);
+        assert.match(syntax_to_insert, video_link_regex);
+    })();
+
+    (function test_webex_video_link_compose_clicked() {
+        let syntax_to_insert = "";
+        let called = false;
+
+        const textarea = $.create("webex-target-stub");
+        textarea.set_parents_result(".message_edit_form", []);
+
+        const ev = {
+            preventDefault: () => {},
+            target: {
+                to_$: () => textarea,
+            },
+        };
+
+        override(compose_ui, "insert_syntax_and_focus", (syntax) => {
+            syntax_to_insert = syntax;
+            called = true;
+        });
+
+        const handler = $("body").get_on_handler("click", ".video_link");
+        $("#compose-textarea").val("");
+
+        page_params.realm_video_chat_provider =
+            page_params.realm_available_video_chat_providers.webex.id;
+        page_params.has_webex_token = false;
+
+        window.open = function (url) {
+            assert(url.endsWith("/calls/webex/register"));
+
+            // The event here has value=true.  We keep it in events.js to
+            // allow our tooling to verify its schema.
+            server_events_dispatch.dispatch_normal_event(events.fixtures.has_webex_token);
+        };
+
+        channel.post = function (payload) {
+            assert.equal(payload.url, "/json/calls/webex/create");
+            payload.success({
+                url: "example.webex.com",
+                startTime: new Date(2020, 10, 18, 12, 30, 30),
+                endTime: new Date(2020, 10, 18, 13, 30, 30),
+                title: "Test Meeting",
+                meetingNumber: 1234,
+                password: "testPassword",
+            });
+            return {abort: () => {}};
+        };
+
+        handler(ev);
+        assert(called);
+
+        const video_link_regex = /\[translated: Click to join video call]\(example\.webex\.com\)/;
         assert.match(syntax_to_insert, video_link_regex);
     })();
 

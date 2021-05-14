@@ -193,8 +193,13 @@ APPLE_ID_TOKEN_GENERATION_KEY = get_from_file_if_exists(
     "zerver/tests/fixtures/apple/token_gen_private_key"
 )
 
-VIDEO_ZOOM_CLIENT_ID = "client_id"
-VIDEO_ZOOM_CLIENT_SECRET = "client_secret"
+VIDEO_ZOOM_API_URL = "https://zoom.example.com/"
+VIDEO_ZOOM_CLIENT_ID = "zoom_id"
+VIDEO_ZOOM_CLIENT_SECRET = "zoom_secret"
+
+VIDEO_WEBEX_API_URL = "https://webex.example.com/"
+VIDEO_WEBEX_CLIENT_ID = "webex_id"
+VIDEO_WEBEX_CLIENT_SECRET = "webex_secret"
 
 BIG_BLUE_BUTTON_SECRET = "123"
 BIG_BLUE_BUTTON_URL = "https://bbb.example.com/bigbluebutton/"

@@ -277,6 +277,8 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/realm/subdomain/{subdomain}",
         # API for Zoom video calls.  Unclear if this can support other apps.
         "/calls/zoom/create",
+        # API for Webex video calls.
+        "/calls/webex/create",
         #### The following are fake endpoints that live in our zulip.yaml
         #### for tooling convenience reasons, and should eventually be moved.
         # Real-time-events endpoint

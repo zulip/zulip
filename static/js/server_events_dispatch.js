@@ -120,6 +120,16 @@ export function dispatch_normal_event(event) {
             }
             break;
 
+        case "has_webex_token":
+            page_params.has_webex_token = event.value;
+            if (event.value) {
+                for (const callback of compose.webex_token_callbacks.values()) {
+                    callback();
+                }
+                compose.webex_token_callbacks.clear();
+            }
+            break;
+
         case "hotspots":
             hotspots.load_new(event.hotspots);
             page_params.hotspots = page_params.hotspots

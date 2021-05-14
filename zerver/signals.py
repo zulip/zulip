@@ -9,7 +9,7 @@ from django.utils.timezone import now as timezone_now
 from django.utils.translation import gettext as _
 
 from confirmation.models import one_click_unsubscribe_link
-from zerver.lib.actions import do_set_zoom_token
+from zerver.lib.actions import do_set_webex_token, do_set_zoom_token
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.send_email import FromAddress
 from zerver.models import UserProfile
@@ -104,8 +104,11 @@ def email_on_new_login(sender: Any, user: UserProfile, request: Any, **kwargs: A
 
 
 @receiver(user_logged_out)
-def clear_zoom_token_on_logout(
+def clear_video_call_tokens_on_logout(
     sender: object, *, user: Optional[UserProfile], **kwargs: object
 ) -> None:
-    if user is not None and user.zoom_token is not None:
-        do_set_zoom_token(user, None)
+    if user is not None:
+        if user.zoom_token is not None:
+            do_set_zoom_token(user, None)
+        if user.webex_token is not None:
+            do_set_webex_token(user, None)
