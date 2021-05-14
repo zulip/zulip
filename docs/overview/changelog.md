@@ -7,6 +7,10 @@ up-to-date list of raw changes.
 
 ## Zulip 4.x series
 
+### 4.1 -- 2021-05-13
+
+- Fix exception upgrading to the 4.x series from older releases.
+
 ### 4.0 -- 2021-05-13
 
 #### Highlights
