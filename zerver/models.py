@@ -2426,16 +2426,28 @@ class ArchivedReaction(AbstractReaction):
 
 
 # Whenever a message is sent, for each user subscribed to the
-# corresponding Recipient object, we add a row to the UserMessage
-# table indicating that that user received that message.  This table
-# allows us to quickly query any user's last 1000 messages to generate
-# the home view.
+# corresponding Recipient object (that is not long-term idle), we add
+# a row to the UserMessage table indicating that that user received
+# that message.  This table allows us to quickly query any user's last
+# 1000 messages to generate the home view and search exactly the
+# user's message history.
 #
-# Additionally, the flags field stores metadata like whether the user
-# has read the message, starred or collapsed the message, was
-# mentioned in the message, etc.
+# The long-term idle optimization is extremely important for large,
+# open organizations, and is described in detail here:
+# https://zulip.readthedocs.io/en/latest/subsystems/sending-messages.html#soft-deactivation
 #
-# UserMessage is the largest table in a Zulip installation, even
+# In particular, new messages to public streams will only generate
+# UserMessage rows for Members who are long_term_idle if they would
+# have nonzero flags for the message (E.g. a mention, alert word, or
+# mobile push notification).
+#
+# The flags field stores metadata like whether the user has read the
+# message, starred or collapsed the message, was mentioned in the
+# message, etc. We use of postgres partial indexes on flags to make
+# queries for "User X's messages with flag Y" extremely fast without
+# consuming much storage space.
+#
+# UserMessage is the largest table in many Zulip installations, even
 # though each row is only 4 integers.
 class AbstractUserMessage(models.Model):
     id: int = models.BigAutoField(primary_key=True)
