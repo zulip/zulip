@@ -1,5 +1,10 @@
 # Animated GIFs from GIPHY
 
+!!! tip ""
+    This feature is not available on self-hosted Zulip servers where
+    the [GIPHY integration][configure-giphy] has not been configured
+    by a system administrator.
+
 Zulip integrates with [GIPHY](https://giphy.com), allowing you to
 conveniently search for animated GIFs and include them in your
 messages.
@@ -18,6 +23,9 @@ they can also distract from the content of a conversation.
 You can [preview the
 message](/help/preview-your-message-before-sending) before sending to
 see what the message will look like.
+
+Note that some organizations disable [previews of linked
+images](/help/allow-image-link-previews).
 
 ## Restrict maximum rating of GIFs retrieved from GIPHY
 
@@ -50,14 +58,5 @@ Zulip proxies all external images in messages through the server,
 including those from GIPHY, to prevent images from being used to track
 recipients of GIFs from GIPHY.
 
-## Troubleshooting
+[configure-giphy]: https://zulip.readthedocs.io/en/stable/production/giphy-gif-integration.html
 
-* If you don't see the GIPHY icon, this is likely because you are
-  using a self-hosted Zulip server that has not [configured the GIPHY
-  integration][configure-giphy].
-
-[configure-giphy]: https://zulip.readthedocs.io/en/latest/production/giphy-gif-integration.html
-
-* If your GIFs only appear as links after sending them, this is likely
-because the organization has disabled [previews of linked
-images](/help/allow-image-link-previews).
