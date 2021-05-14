@@ -7,7 +7,13 @@ import sys
 import time
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
-from scripts.lib.zulip_tools import ENDC, OKGREEN, WARNING, has_application_server
+from scripts.lib.zulip_tools import (
+    ENDC,
+    OKGREEN,
+    WARNING,
+    has_application_server,
+    has_process_fts_updates,
+)
 
 deploy_path = os.path.realpath(os.path.join(os.path.dirname(__file__), ".."))
 os.chdir(deploy_path)
@@ -22,7 +28,7 @@ logging.basicConfig(format="%(asctime)s stop-server: %(message)s", level=logging
 services = []
 
 # Start with the least-critical services:
-if os.path.exists("/etc/supervisor/conf.d/zulip/zulip_db.conf"):
+if has_process_fts_updates():
     services.append("process-fts-updates")
 
 if has_application_server():

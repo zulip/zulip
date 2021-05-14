@@ -17,6 +17,7 @@ from scripts.lib.zulip_tools import (
     get_config_file,
     get_tornado_ports,
     has_application_server,
+    has_process_fts_updates,
     overwrite_symlink,
 )
 
@@ -90,7 +91,7 @@ if has_application_server():
             worker_status.check_returncode()
         workers.extend(status_line.split()[0] for status_line in worker_status.stdout.splitlines())
 
-if os.path.exists("/etc/supervisor/conf.d/zulip/zulip_db.conf"):
+if has_process_fts_updates():
     workers.append("process-fts-updates")
 
 if action == "restart" and len(workers) > 0:

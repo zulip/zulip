@@ -600,7 +600,21 @@ def is_vagrant_env_host(path: str) -> bool:
 
 
 def has_application_server() -> bool:
-    return os.path.exists("/etc/supervisor/conf.d/zulip/zulip.conf")
+    return (
+        # Current path
+        os.path.exists("/etc/supervisor/conf.d/zulip/zulip.conf")
+        # Old path, relevant for upgrades
+        or os.path.exists("/etc/supervisor/conf.d/zulip.conf")
+    )
+
+
+def has_process_fts_updates() -> bool:
+    return (
+        # Current path
+        os.path.exists("/etc/supervisor/conf.d/zulip/zulip_db.conf")
+        # Old path, relevant for upgrades
+        or os.path.exists("/etc/supervisor/conf.d/zulip_db.conf")
+    )
 
 
 def deport(netloc: str) -> str:
