@@ -4,7 +4,9 @@
 set -e
 set -x
 
-ZULIP_PATH=/home/github/zulip
+ZULIP_PATH=/root/zulip-latest
+mkdir -p "$ZULIP_PATH"
+tar -xf /tmp/zulip-server-test.tar.gz -C "$ZULIP_PATH" --strip-components=1
 
 # Do an apt upgrade to start with an up-to-date machine
 APT_OPTIONS=(-o 'Dpkg::Options::=--force-confdef' -o 'Dpkg::Options::=--force-confold')

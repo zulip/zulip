@@ -3,11 +3,9 @@
 set -e
 set -x
 
-cd /home/github/zulip
-
-su zulip -c ./scripts/stop-server
-./scripts/setup/upgrade-postgresql
-su zulip -c ./scripts/start-server
+su zulip -c /home/zulip/deployments/current/scripts/stop-server
+/home/zulip/deployments/current/scripts/setup/upgrade-postgresql
+su zulip -c /home/zulip/deployments/current/scripts/start-server
 
 echo "Upgrade of PostgreSQL complete!"
 exit 0

@@ -151,12 +151,8 @@ jobs:
           # cache action to work. It is owned by root currently.
           sudo chmod -R 0777 /__w/_temp/
 
-          # Create the zulip directory that the tools/ci/ scripts needs
-          mkdir -p /home/github/zulip
-
           # Since actions/download-artifact@v2 loses all the permissions
           # of the tarball uploaded by the upload artifact fix those.
-          chmod +x /tmp/production-extract-tarball
           chmod +x /tmp/production-upgrade-pg
           chmod +x /tmp/production-install
           chmod +x /tmp/production-verify
@@ -181,9 +177,6 @@ jobs:
           # Temporary hack till `sudo service redis-server start` gets fixes in Bionic. See
           # https://chat.zulip.org/#narrow/stream/3-backend/topic/Ubuntu.20bionic.20CircleCI
           sudo sed -i '/^bind/s/bind.*/bind 0.0.0.0/' /etc/redis/redis.conf
-
-      - name: Production extract tarball
-        run: /tmp/production-extract-tarball
 
       - name: Install production
         run: |
