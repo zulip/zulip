@@ -37,6 +37,19 @@ this configure or disable GIPHY integration entirely:
 
 {end_tabs}
 
+## Privacy
+
+GIPHY is a third-party service owned by Facebook, and any text you
+enter into Zulip's GIPHY search box will be sent by your browser to
+GIPHY's servers via the GIPHY API. Because this request is done
+directly by your browser, GIPHY will be able to see your IP address,
+and may use that data to track you, similar to if you visited the
+GIPHY website and typed the same search keywords there.
+
+Zulip proxies all external images in messages through the server,
+including those from GIPHY, to prevent images from being used to track
+recipients of GIFs from GIPHY.
+
 ## Troubleshooting
 
 * If you don't see the GIPHY icon, this is likely because you are
