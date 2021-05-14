@@ -633,6 +633,7 @@ class StripeTest(StripeTestCase):
             "Your plan will renew on",
             "January 2, 2013",
             f"${80 * self.seat_count}.00",
+            f"Billing email: <strong>{user.email}</strong>",
             "Visa ending in 4242",
             "Update card",
         ]:
@@ -761,6 +762,7 @@ class StripeTest(StripeTestCase):
             "Your plan will renew on",
             "January 2, 2013",
             "$9,840.00",  # 9840 = 80 * 123
+            f"Billing email: <strong>{user.email}</strong>",
             "Billed by invoice",
         ]:
             self.assert_in_response(substring, response)
@@ -865,6 +867,7 @@ class StripeTest(StripeTestCase):
                 "Your plan will be upgraded to",
                 "March 2, 2012",
                 f"${80 * self.seat_count}.00",
+                f"Billing email: <strong>{user.email}</strong>",
                 "Visa ending in 4242",
                 "Update card",
             ]:
@@ -1065,6 +1068,7 @@ class StripeTest(StripeTestCase):
                 "Your plan will be upgraded to",
                 "March 2, 2012",
                 f"{80 * 123:,.2f}",
+                f"Billing email: <strong>{user.email}</strong>",
                 "Billed by invoice",
             ]:
                 self.assert_in_response(substring, response)
