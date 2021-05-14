@@ -14,6 +14,8 @@ from scripts.lib.zulip_tools import (
     su_to_zulip,
 )
 
+LOCAL_GIT_CACHE_DIR = "/srv/zulip.git"
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -75,9 +77,10 @@ def main() -> None:
     )
 
     if not args.dry_run:
-        subprocess.check_call(
-            ["git", "worktree", "prune"], cwd="/srv/zulip.git", preexec_fn=su_to_zulip
-        )
+        if os.path.exists(LOCAL_GIT_CACHE_DIR):
+            subprocess.check_call(
+                ["git", "worktree", "prune"], cwd=LOCAL_GIT_CACHE_DIR, preexec_fn=su_to_zulip
+            )
 
         print("Deployments cleaned successfully...")
         print("Cleaning orphaned/unused caches...")
