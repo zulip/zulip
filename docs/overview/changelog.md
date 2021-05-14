@@ -17,6 +17,12 @@ log][commit-log] for an up-to-date list of raw changes.
 
 ## Zulip 4.x series
 
+### 4.2 -- 2021-05-13
+
+- Fix exception in purge-old-deployments when upgrading on
+  a system that has never upgraded using Git.
+- Fix installation from a directory readable only by root.
+
 ### 4.1 -- 2021-05-13
 
 - Fix exception upgrading to the 4.x series from older releases.
