@@ -36,8 +36,7 @@ have the following effects:
   organization settings display muted users' names and other details.
 
 !!! tip ""
-    Zulip offers no way to distinguish a user
-    who has muted you from a user who is ignoring you.
+    Muting someone does not affect their Zulip experience in any way.
 
 
 [view-emoji-reactions]: /help/emoji-reactions#see-who-reacted-to-a-message
