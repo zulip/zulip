@@ -3,7 +3,7 @@ import $ from "jquery";
 import _ from "lodash";
 
 import render_bot_avatar_row from "../templates/settings/bot_avatar_row.hbs";
-import render_edit_bot from "../templates/edit_bot.hbs";
+import render_edit_bot from "../templates/settings/edit_bot.hbs";
 import render_settings_edit_embedded_bot_service from "../templates/settings/edit_embedded_bot_service.hbs";
 import render_settings_edit_outgoing_webhook_service from "../templates/settings/edit_outgoing_webhook_service.hbs";
 
