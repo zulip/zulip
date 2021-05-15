@@ -34,7 +34,7 @@ export function can_add_emoji() {
     return !page_params.realm_add_emoji_by_admins_only;
 }
 
-function can_admin_emoji(emoji) {
+function can_delete_emoji(emoji) {
     if (page_params.is_admin) {
         return true;
     }
@@ -118,7 +118,7 @@ export function populate_emoji() {
                         display_name: item.name.replace(/_/g, " "),
                         source_url: item.source_url,
                         author: item.author || "",
-                        can_admin_emoji: can_admin_emoji(item),
+                        can_delete_emoji: can_delete_emoji(item),
                     },
                 });
             }
