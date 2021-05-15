@@ -3,7 +3,7 @@ from typing import Optional, Set, Tuple
 
 # Match multi-word string between @** ** or match any one-word
 # sequences after @
-find_mentions = r"(?<![^\s\'\"\(,:<])@(?P<silent>_?)(?P<match>\*\*[^\*]+\*\*|all|everyone|stream)"
+MENTIONS_RE = r"(?<![^\s\'\"\(,:<])@(?P<silent>_?)(?P<match>\*\*[^\*]+\*\*|all|everyone|stream)"
 user_group_mentions = r"(?<![^\s\'\"\(,:<])@(\*[^\*]+\*)"
 
 wildcards = ["all", "everyone", "stream"]
@@ -26,7 +26,7 @@ def extract_mention_text(m: Tuple[str, str]) -> Tuple[Optional[str], bool]:
 
 
 def possible_mentions(content: str) -> Tuple[Set[str], bool]:
-    matches = re.findall(find_mentions, content)
+    matches = re.findall(MENTIONS_RE, content)
     # mention texts can either be names, or an extended name|id syntax.
     texts = set()
     message_has_wildcards = False

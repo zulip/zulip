@@ -1683,7 +1683,7 @@ class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
 
     # Original regex for blockquote is RE = re.compile(r'(^|\n)[ ]{0,3}>[ ]?(.*)')
     RE = re.compile(r"(^|\n)(?!(?:[ ]{0,3}>\s*(?:$|\n))*(?:$|\n))" r"[ ]{0,3}>[ ]?(.*)")
-    mention_re = re.compile(mention.find_mentions)
+    mention_re = re.compile(mention.MENTIONS_RE)
 
     # run() is very slightly forked from the base class; see notes below.
     def run(self, parent: Element, blocks: List[str]) -> None:
@@ -2223,7 +2223,7 @@ class Markdown(markdown.Markdown):
         reg.register(
             markdown.inlinepatterns.DoubleTagPattern(STRONG_EM_RE, "strong,em"), "strong_em", 100
         )
-        reg.register(UserMentionPattern(mention.find_mentions, self), "usermention", 95)
+        reg.register(UserMentionPattern(mention.MENTIONS_RE, self), "usermention", 95)
         reg.register(
             Tex(r"\B(?<!\$)\$\$(?P<body>[^\n_$](\\\$|[^$\n])*)\$\$(?!\$)\B", self), "tex", 90
         )
