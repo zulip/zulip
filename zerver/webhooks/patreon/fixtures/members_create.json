@@ -1,0 +1,384 @@
+{
+  "data": {
+    "attributes": {
+      "access_expires_at": null,
+      "campaign_currency": "USD",
+      "campaign_lifetime_support_cents": 12345,
+      "campaign_pledge_amount_cents": 550,
+      "full_name": "Zulip",
+      "is_follower": false,
+      "last_charge_date": "2014-04-01T00:00:00.000+00:00",
+      "last_charge_status": "Paid",
+      "lifetime_support_cents": 12345,
+      "patron_status": "active_patron",
+      "pledge_amount_cents": 550,
+      "pledge_relationship_start": "2014-03-14T00:00:00.000+00:00"
+    },
+    "id": null,
+    "relationships": {
+      "address": {
+        "data": null
+      },
+      "campaign": {
+        "data": {
+          "id": "1194966",
+          "type": "campaign"
+        },
+        "links": {
+          "related": "https://www.patreon.com/api/campaigns/1194966"
+        }
+      },
+      "user": {
+        "data": {
+          "id": "7498102",
+          "type": "user"
+        },
+        "links": {
+          "related": "https://www.patreon.com/api/user/7498102"
+        }
+      }
+    },
+    "type": "member"
+  },
+  "included": [
+    {
+      "attributes": {
+        "avatar_photo_url": "https://c10.patreonusercontent.com/3/eyJ3IjoyMDB9/patreon-media/p/campaign/1194966/6be11021eddb4ef5bf7bcaf9e7ca38a5/2.png?token-time=2145916800&token-hash=FcUXcH7RSH-t8OQvEkwJzyPd8LfHRwrC41Af-7Uj6FU%3D",
+        "campaign_pledge_sum": 2315,
+        "cover_photo_url": "https://c10.patreonusercontent.com/3/eyJ3IjoxOTIwLCJ3ZSI6MX0%3D/patreon-media/p/campaign/1194966/f1b1bf3fd9c7423992a69e66c069b8cb/10.jpg?token-time=1622764800&token-hash=VOVqM5by-7LVRwW-xm9ZBEI9uHLSz4FWj5sfL4w9ts8%3D",
+        "cover_photo_url_sizes": {
+          "large": "https://c10.patreonusercontent.com/3/eyJ3IjoxOTIwLCJ3ZSI6MX0%3D/patreon-media/p/campaign/1194966/f1b1bf3fd9c7423992a69e66c069b8cb/10.jpg?token-time=1622764800&token-hash=VOVqM5by-7LVRwW-xm9ZBEI9uHLSz4FWj5sfL4w9ts8%3D",
+          "medium": "https://c10.patreonusercontent.com/3/eyJ3Ijo5NjAsIndlIjoxfQ%3D%3D/patreon-media/p/campaign/1194966/f1b1bf3fd9c7423992a69e66c069b8cb/10.jpg?token-time=1622764800&token-hash=NXiiqnTxmTnhYERKN5hC9WOwYU23YzZmh6M7MpCB6ek%3D",
+          "small": "https://c10.patreonusercontent.com/3/eyJ3Ijo2MjAsIndlIjoxfQ%3D%3D/patreon-media/p/campaign/1194966/f1b1bf3fd9c7423992a69e66c069b8cb/10.jpg?token-time=1622764800&token-hash=mKF6tQJhkGZikY08IIi5t6nsVeG7izGzlTVbHGivhok%3D"
+        },
+        "created_at": "2017-08-29T23:33:39.000+00:00",
+        "creation_count": 0,
+        "creation_name": "open source team chat software",
+        "currency": "USD",
+        "discord_server_id": null,
+        "display_patron_goals": false,
+        "earnings_visibility": "public",
+        "image_small_url": "https://c10.patreonusercontent.com/3/eyJ3IjoxOTIwLCJ3ZSI6MX0%3D/patreon-media/p/campaign/1194966/f1b1bf3fd9c7423992a69e66c069b8cb/10.jpg?token-time=1622764800&token-hash=VOVqM5by-7LVRwW-xm9ZBEI9uHLSz4FWj5sfL4w9ts8%3D",
+        "image_url": "https://c10.patreonusercontent.com/3/eyJ3IjoxOTIwLCJ3ZSI6MX0%3D/patreon-media/p/campaign/1194966/f1b1bf3fd9c7423992a69e66c069b8cb/10.jpg?token-time=1622764800&token-hash=VOVqM5by-7LVRwW-xm9ZBEI9uHLSz4FWj5sfL4w9ts8%3D",
+        "is_charge_upfront": false,
+        "is_charged_immediately": false,
+        "is_monthly": true,
+        "is_nsfw": false,
+        "is_plural": false,
+        "main_video_embed": null,
+        "main_video_url": null,
+        "name": "Zulip",
+        "one_liner": null,
+        "outstanding_payment_amount_cents": 0,
+        "patron_count": 5,
+        "pay_per_name": "month",
+        "pledge_sum": 2315,
+        "pledge_sum_currency": "USD",
+        "pledge_url": "/join/zulip",
+        "published_at": "2021-04-06T23:14:07.000+00:00",
+        "summary": "At <a href=\"https://zulip.com/\">Zulip</a>, we\u2019re out to build the world\u2019s best collaboration platform, and we\u2019re committed to keeping it 100% open source. If you\u2019ve been using Zulip, love the product and its <a href=\"https://zulip.com/why-zulip/\">innovative threading model</a>, and want to help share it with the world, please consider <a href=\"https://github.com/sponsors/zulip\">supporting us</a>.<br>\n<br>\nAn important part of Zulip\u2019s mission is ensuring that worthy organizations, from <a href=\"https://forge.rust-lang.org/platforms/zulip.html\">programming-language developers</a> to <a href=\"https://www.quantamagazine.org/building-the-mathematical-library-of-the-future-20201001/\">research communities</a>, are able to use Zulip whether or not they have funding.  For this reason, we sponsor <a href=\"https://zulip.com/plans/\">Zulip </a><a href=\"https://zulip.com/plans/\">C</a><a href=\"https://zulip.com/plans/\">loud</a><a href=\"https://zulip.com/plans/\"> Standard</a><a href=\"https://zulip.com/plans/\"> hosting</a> for open source projects, non-profits, education, and academic research. This program has grown exponentially since its inception; today we are proud to fully sponsor Zulip hosting for several hundred organizations. Support from the community will help us continue to afford these programs as their popularity grows.<br>\n<br>\n<h2>Who we are</h2>\nZulip is built by an incredible distributed community of developers from all around the world. Guiding that community in developing a world-class team chat product with apps for every major desktop and mobile platform requires leadership from a talented, dedicated team. The only sustainable model is for our core team to be compensated fairly for their time, not <a href=\"https://nolanlawson.com/2017/03/05/what-it-feels-like-to-be-an-open-source-maintainer/\">burned out because they are effectively working two full-time jobs</a>.<br><br>\nTo fund Zulip, we have created a mission-driven for-profit company, Kandra Labs. Incorporating as a business rather than a non-profit helps us attract top talent by offering a stake in the company, so that employees can benefit if Zulip is highly successful. It also makes us eligible for <a href=\"https://seedfund.nsf.gov/\">innovation grants from the US National Science Foundation</a>, which have been an important part of funding Zulip.<br><br>\n<h2>Our values</h2>\nMeanwhile, we have purposefully chosen not to take venture capital funding. This choice allows us to live by our values, without investor pressure to compromise them when doing so might be &quot;good business&quot; or &quot;what everyone does&quot;. <br>\n<br>To learn more about some of the principle-based choices we make day after day, check out our <a href=\"https://blog.zulip.com/2021/04/28/why-zulip-is-on-github-sponsors/\">blog post</a>! And please consider promoting Zulip and other free and open-source applications in your community, at your job, and on social media. We greatly appreciate your support!<br>",
+        "thanks_embed": null,
+        "thanks_msg": null,
+        "thanks_video_url": null,
+        "url": "https://www.patreon.com/zulip"
+      },
+      "id": "1194966",
+      "relationships": {
+        "creator": {
+          "data": {
+            "id": "7498102",
+            "type": "user"
+          },
+          "links": {
+            "related": "https://www.patreon.com/api/user/7498102"
+          }
+        },
+        "goals": {
+          "data": []
+        },
+        "rewards": {
+          "data": [
+            {
+              "id": "-1",
+              "type": "reward"
+            },
+            {
+              "id": "0",
+              "type": "reward"
+            },
+            {
+              "id": "7027346",
+              "type": "reward"
+            },
+            {
+              "id": "7027366",
+              "type": "reward"
+            },
+            {
+              "id": "7027376",
+              "type": "reward"
+            },
+            {
+              "id": "7027398",
+              "type": "reward"
+            }
+          ]
+        }
+      },
+      "type": "campaign"
+    },
+    {
+      "attributes": {
+        "about": null,
+        "apple_id": null,
+        "can_see_nsfw": null,
+        "created": "2017-08-29T23:33:28.000+00:00",
+        "default_country_code": null,
+        "discord_id": null,
+        "email": "patreon@zulip.com",
+        "facebook": null,
+        "facebook_id": null,
+        "first_name": "Zulip",
+        "full_name": "Zulip",
+        "gender": 0,
+        "google_id": "109741564096988987897",
+        "has_password": true,
+        "image_url": "https://c10.patreonusercontent.com/3/eyJ3IjoyMDB9/patreon-media/p/user/7498102/94558813b9354e71a0b4273dc640cc4a/2.png?token-time=2145916800&token-hash=ltapYDjt9zAtefjX41OSe_tCBRarAI24QBf2eMHnjs8%3D",
+        "is_deleted": false,
+        "is_email_verified": true,
+        "is_nuked": false,
+        "is_suspended": false,
+        "last_name": "",
+        "patron_currency": "USD",
+        "social_connections": {
+          "deviantart": null,
+          "discord": null,
+          "facebook": null,
+          "google": null,
+          "instagram": null,
+          "reddit": null,
+          "spotify": null,
+          "twitch": null,
+          "twitter": null,
+          "youtube": null
+        },
+        "thumb_url": "https://c10.patreonusercontent.com/3/eyJ3IjoyMDB9/patreon-media/p/user/7498102/94558813b9354e71a0b4273dc640cc4a/2.png?token-time=2145916800&token-hash=ltapYDjt9zAtefjX41OSe_tCBRarAI24QBf2eMHnjs8%3D",
+        "twitch": null,
+        "twitter": "zulip",
+        "url": "https://www.patreon.com/zulip",
+        "vanity": "zulip",
+        "youtube": null
+      },
+      "id": "7498102",
+      "relationships": {
+        "campaign": {
+          "data": {
+            "id": "1194966",
+            "type": "campaign"
+          },
+          "links": {
+            "related": "https://www.patreon.com/api/campaigns/1194966"
+          }
+        }
+      },
+      "type": "user"
+    },
+    {
+      "attributes": {
+        "amount": 0,
+        "amount_cents": 0,
+        "created_at": null,
+        "description": "Everyone",
+        "patron_currency": "USD",
+        "remaining": 0,
+        "requires_shipping": false,
+        "url": null,
+        "user_limit": null
+      },
+      "id": "-1",
+      "type": "reward"
+    },
+    {
+      "attributes": {
+        "amount": 1,
+        "amount_cents": 1,
+        "created_at": null,
+        "description": "Patrons Only",
+        "patron_currency": "USD",
+        "remaining": 0,
+        "requires_shipping": false,
+        "url": null,
+        "user_limit": null
+      },
+      "id": "0",
+      "type": "reward"
+    },
+    {
+      "attributes": {
+        "amount": 500,
+        "amount_cents": 500,
+        "created_at": "2021-04-07T22:29:15.334+00:00",
+        "currency": "USD",
+        "description": "Contribute to Zulip's development and free hosting for open source projects and other worthy organizations!",
+        "discord_role_ids": null,
+        "edited_at": "2021-04-07T22:29:15.334+00:00",
+        "image_url": null,
+        "patron_amount_cents": 500,
+        "patron_count": 3,
+        "patron_currency": "USD",
+        "post_count": 0,
+        "published": true,
+        "published_at": "2021-04-07T22:29:15.334+00:00",
+        "remaining": null,
+        "requires_shipping": false,
+        "title": "Backer",
+        "unpublished_at": null,
+        "url": "/join/zulip/checkout?rid=7027346",
+        "user_limit": null,
+        "welcome_message": null,
+        "welcome_message_unsafe": null,
+        "welcome_video_embed": null,
+        "welcome_video_url": null
+      },
+      "id": "7027346",
+      "relationships": {
+        "campaign": {
+          "data": {
+            "id": "1194966",
+            "type": "campaign"
+          },
+          "links": {
+            "related": "https://www.patreon.com/api/campaigns/1194966"
+          }
+        }
+      },
+      "type": "reward"
+    },
+    {
+      "attributes": {
+        "amount": 1000,
+        "amount_cents": 1000,
+        "created_at": "2021-04-07T22:32:19.565+00:00",
+        "currency": "USD",
+        "description": "Contribute to Zulip's development and free hosting for open source projects and other worthy organizations!",
+        "discord_role_ids": null,
+        "edited_at": "2021-04-07T22:32:19.565+00:00",
+        "image_url": null,
+        "patron_amount_cents": 1000,
+        "patron_count": 1,
+        "patron_currency": "USD",
+        "post_count": 0,
+        "published": true,
+        "published_at": "2021-04-07T22:32:19.565+00:00",
+        "remaining": null,
+        "requires_shipping": false,
+        "title": "Backer",
+        "unpublished_at": null,
+        "url": "/join/zulip/checkout?rid=7027366",
+        "user_limit": null,
+        "welcome_message": null,
+        "welcome_message_unsafe": null,
+        "welcome_video_embed": null,
+        "welcome_video_url": null
+      },
+      "id": "7027366",
+      "relationships": {
+        "campaign": {
+          "data": {
+            "id": "1194966",
+            "type": "campaign"
+          },
+          "links": {
+            "related": "https://www.patreon.com/api/campaigns/1194966"
+          }
+        }
+      },
+      "type": "reward"
+    },
+    {
+      "attributes": {
+        "amount": 2500,
+        "amount_cents": 2500,
+        "created_at": "2021-04-07T22:34:13.712+00:00",
+        "currency": "USD",
+        "description": "Contribute to Zulip's development and free hosting for open source projects and other worthy organizations!",
+        "discord_role_ids": null,
+        "edited_at": "2021-04-07T22:44:46.348+00:00",
+        "image_url": null,
+        "patron_amount_cents": 2500,
+        "patron_count": 0,
+        "patron_currency": "USD",
+        "post_count": 0,
+        "published": false,
+        "published_at": null,
+        "remaining": null,
+        "requires_shipping": false,
+        "title": "Backer",
+        "unpublished_at": "2021-04-07T22:44:46.348+00:00",
+        "url": "/join/zulip/checkout?rid=7027376",
+        "user_limit": null,
+        "welcome_message": null,
+        "welcome_message_unsafe": null,
+        "welcome_video_embed": null,
+        "welcome_video_url": null
+      },
+      "id": "7027376",
+      "relationships": {
+        "campaign": {
+          "data": {
+            "id": "1194966",
+            "type": "campaign"
+          },
+          "links": {
+            "related": "https://www.patreon.com/api/campaigns/1194966"
+          }
+        }
+      },
+      "type": "reward"
+    },
+    {
+      "attributes": {
+        "amount": 10000,
+        "amount_cents": 10000,
+        "created_at": "2021-04-07T22:39:29.948+00:00",
+        "currency": "USD",
+        "description": "Contribute to Zulip's development and free hosting for open source projects and other worthy organizations!<br><br>Join a monthly call with Zulip project leads to provide feedback and learn what's on our minds!",
+        "discord_role_ids": null,
+        "edited_at": "2021-04-07T22:42:03.743+00:00",
+        "image_url": null,
+        "patron_amount_cents": 10000,
+        "patron_count": 0,
+        "patron_currency": "USD",
+        "post_count": 0,
+        "published": true,
+        "published_at": "2021-04-07T22:42:03.728+00:00",
+        "remaining": null,
+        "requires_shipping": false,
+        "title": "Sponsor",
+        "unpublished_at": null,
+        "url": "/join/zulip/checkout?rid=7027398",
+        "user_limit": null,
+        "welcome_message": null,
+        "welcome_message_unsafe": null,
+        "welcome_video_embed": null,
+        "welcome_video_url": null
+      },
+      "id": "7027398",
+      "relationships": {
+        "campaign": {
+          "data": {
+            "id": "1194966",
+            "type": "campaign"
+          },
+          "links": {
+            "related": "https://www.patreon.com/api/campaigns/1194966"
+          }
+        }
+      },
+      "type": "reward"
+    }
+  ],
+  "links": {
+    "self": "https://www.patreon.com/api/members/None"
+  }
+}
