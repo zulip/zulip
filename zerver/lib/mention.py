@@ -4,7 +4,7 @@ from typing import Optional, Set, Tuple
 # Match multi-word string between @** ** or match any one-word
 # sequences after @
 MENTIONS_RE = r"(?<![^\s\'\"\(,:<])@(?P<silent>_?)(?P<match>\*\*[^\*]+\*\*|all|everyone|stream)"
-user_group_mentions = r"(?<![^\s\'\"\(,:<])@(\*[^\*]+\*)"
+USER_GROUP_MENTIONS_RE = r"(?<![^\s\'\"\(,:<])@(\*[^\*]+\*)"
 
 wildcards = ["all", "everyone", "stream"]
 
@@ -44,5 +44,5 @@ def extract_user_group(matched_text: str) -> str:
 
 
 def possible_user_group_mentions(content: str) -> Set[str]:
-    matches = re.findall(user_group_mentions, content)
+    matches = re.findall(USER_GROUP_MENTIONS_RE, content)
     return {extract_user_group(match) for match in matches}

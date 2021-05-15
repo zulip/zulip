@@ -2231,7 +2231,7 @@ class Markdown(markdown.Markdown):
         reg.register(StreamPattern(get_compiled_stream_link_regex(), self), "stream", 85)
         reg.register(Timestamp(r"<time:(?P<time>[^>]*?)>"), "timestamp", 75)
         reg.register(
-            UserGroupMentionPattern(mention.user_group_mentions, self), "usergroupmention", 65
+            UserGroupMentionPattern(mention.USER_GROUP_MENTIONS_RE, self), "usergroupmention", 65
         )
         reg.register(LinkInlineProcessor(markdown.inlinepatterns.LINK_RE, self), "link", 60)
         reg.register(AutoLink(get_web_link_regex(), self), "autolink", 55)
