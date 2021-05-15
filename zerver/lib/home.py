@@ -157,7 +157,6 @@ def build_page_params_for_home_page_load(
     user_profile: Optional[UserProfile],
     realm: Realm,
     insecure_desktop_app: bool,
-    has_mobile_devices: bool,
     narrow: List[List[str]],
     narrow_stream: Optional[Stream],
     narrow_topic: Optional[str],
@@ -243,7 +242,6 @@ def build_page_params_for_home_page_load(
         first_in_realm=first_in_realm,
         prompt_for_invites=prompt_for_invites,
         furthest_read_time=furthest_read_time,
-        has_mobile_devices=has_mobile_devices,
         bot_types=get_bot_types(user_profile),
         two_fa_enabled=two_fa_enabled,
         # Adding two_fa_enabled as condition saves us 3 queries when
