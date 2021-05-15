@@ -48,12 +48,7 @@ from typing_extensions import TypedDict
 from zerver.lib import mention as mention
 from zerver.lib.cache import NotFoundInCache, cache_with_key
 from zerver.lib.camo import get_camo_url
-from zerver.lib.emoji import (
-    codepoint_to_name,
-    emoticon_regex,
-    name_to_codepoint,
-    translate_emoticons,
-)
+from zerver.lib.emoji import EMOTICON_RE, codepoint_to_name, name_to_codepoint, translate_emoticons
 from zerver.lib.exceptions import MarkdownRenderingException
 from zerver.lib.markdown import fenced_code
 from zerver.lib.markdown.fenced_code import FENCE_RE
@@ -2247,7 +2242,7 @@ class Markdown(markdown.Markdown):
             markdown.inlinepatterns.SimpleTextInlineProcessor(NOT_STRONG_RE), "not_strong", 20
         )
         reg.register(Emoji(EMOJI_REGEX, self), "emoji", 15)
-        reg.register(EmoticonTranslation(emoticon_regex, self), "translate_emoticons", 10)
+        reg.register(EmoticonTranslation(EMOTICON_RE, self), "translate_emoticons", 10)
         # We get priority 5 from 'nl2br' extension
         reg.register(UnicodeEmoji(unicode_emoji_regex), "unicodeemoji", 0)
         return reg
