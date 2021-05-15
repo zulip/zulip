@@ -1678,7 +1678,6 @@ class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
 
     # Original regex for blockquote is RE = re.compile(r'(^|\n)[ ]{0,3}>[ ]?(.*)')
     RE = re.compile(r"(^|\n)(?!(?:[ ]{0,3}>\s*(?:$|\n))*(?:$|\n))" r"[ ]{0,3}>[ ]?(.*)")
-    mention_re = re.compile(mention.MENTIONS_RE)
 
     # run() is very slightly forked from the base class; see notes below.
     def run(self, parent: Element, blocks: List[str]) -> None:
@@ -1708,7 +1707,7 @@ class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
 
     def clean(self, line: str) -> str:
         # Silence all the mentions inside blockquotes
-        line = re.sub(self.mention_re, lambda m: "@_{}".format(m.group("match")), line)
+        line = mention.MENTIONS_RE.sub(lambda m: "@_**{}**".format(m.group("match")), line)
 
         # And then run the upstream processor's code for removing the '>'
         return super().clean(line)
@@ -1809,19 +1808,20 @@ class LinkifierPattern(markdown.inlinepatterns.Pattern):
 
 
 class UserMentionPattern(markdown.inlinepatterns.InlineProcessor):
+    def __init__(self, compiled_re: Pattern[str], md: markdown.Markdown) -> None:
+        # This is similar to the superclass's small __init__ function,
+        # but we skip the compilation step and let the caller give us
+        # a compiled regex.
+        self.compiled_re = compiled_re
+        self.md = md
+
     def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
         self, m: Match[str], data: str
     ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
-        match = m.group("match")
+        name = m.group("match")
         silent = m.group("silent") == "_"
-
         db_data = self.md.zulip_db_data
         if self.md.zulip_message and db_data is not None:
-            if match.startswith("**") and match.endswith("**"):
-                name = match[2:-2]
-            else:
-                return None, None, None
-
             wildcard = mention.user_mention_matches_wildcard(name)
 
             # For @**|id** and @**name|id** mention syntaxes.
