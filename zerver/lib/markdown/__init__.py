@@ -909,7 +909,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
 
         This works by using the URLs, user_mentions and media data from
         the twitter API and searching for Unicode emojis in the text using
-        `unicode_emoji_regex`.
+        `UNICODE_EMOJI_RE`.
 
         The first step is finding the locations of the URLs, mentions, media and
         emoji in the text. For each match we build a dictionary with type, the start
@@ -968,7 +968,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                     }
                 )
         # Build dicts for emojis
-        for match in re.finditer(unicode_emoji_regex, text, re.IGNORECASE):
+        for match in re.finditer(UNICODE_EMOJI_RE, text, re.IGNORECASE):
             orig_syntax = match.group("syntax")
             codepoint = unicode_emoji_to_codepoint(orig_syntax)
             if codepoint in codepoint_to_name:
@@ -1417,7 +1417,7 @@ class Timestamp(markdown.inlinepatterns.Pattern):
 # \u2b00-\u2bff         - Miscellaneous Symbols and Arrows
 # \u3000-\u303f         - CJK Symbols and Punctuation
 # \u3200-\u32ff         - Enclosed CJK Letters and Months
-unicode_emoji_regex = (
+UNICODE_EMOJI_RE = (
     "(?P<syntax>["
     "\U0001F100-\U0001F64F"
     "\U0001F680-\U0001F6FF"
@@ -2244,7 +2244,7 @@ class Markdown(markdown.Markdown):
         reg.register(Emoji(EMOJI_REGEX, self), "emoji", 15)
         reg.register(EmoticonTranslation(EMOTICON_RE, self), "translate_emoticons", 10)
         # We get priority 5 from 'nl2br' extension
-        reg.register(UnicodeEmoji(unicode_emoji_regex), "unicodeemoji", 0)
+        reg.register(UnicodeEmoji(UNICODE_EMOJI_RE), "unicodeemoji", 0)
         return reg
 
     def register_linkifiers(self, inlinePatterns: markdown.util.Registry) -> markdown.util.Registry:
