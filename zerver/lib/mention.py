@@ -4,7 +4,7 @@ from typing import Match, Optional, Set, Tuple
 # Match multi-word string between @** ** or match any one-word
 # sequences after @
 MENTIONS_RE = re.compile(r"(?<![^\s\'\"\(,:<])@(?P<silent>_?)(\*\*(?P<match>[^\*]+)\*\*)")
-USER_GROUP_MENTIONS_RE = r"(?<![^\s\'\"\(,:<])@(\*[^\*]+\*)"
+USER_GROUP_MENTIONS_RE = re.compile(r"(?<![^\s\'\"\(,:<])@(\*(?P<match>[^\*]+)\*)")
 
 wildcards = ["all", "everyone", "stream"]
 
@@ -33,10 +33,5 @@ def possible_mentions(content: str) -> Tuple[Set[str], bool]:
     return texts, message_has_wildcards
 
 
-def extract_user_group(matched_text: str) -> str:
-    return matched_text[1:-1]
-
-
 def possible_user_group_mentions(content: str) -> Set[str]:
-    matches = re.findall(USER_GROUP_MENTIONS_RE, content)
-    return {extract_user_group(match) for match in matches}
+    return {m.group("match") for m in USER_GROUP_MENTIONS_RE.finditer(content)}

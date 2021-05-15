@@ -52,7 +52,7 @@ from zerver.lib.emoji import EMOTICON_RE, codepoint_to_name, name_to_codepoint, 
 from zerver.lib.exceptions import MarkdownRenderingException
 from zerver.lib.markdown import fenced_code
 from zerver.lib.markdown.fenced_code import FENCE_RE
-from zerver.lib.mention import extract_user_group, possible_mentions, possible_user_group_mentions
+from zerver.lib.mention import possible_mentions, possible_user_group_mentions
 from zerver.lib.subdomains import is_static_or_current_realm_url
 from zerver.lib.tex import render_tex
 from zerver.lib.thumbnail import user_uploads_or_external
@@ -1869,14 +1869,20 @@ class UserMentionPattern(markdown.inlinepatterns.InlineProcessor):
 
 
 class UserGroupMentionPattern(markdown.inlinepatterns.InlineProcessor):
+    def __init__(self, compiled_re: Pattern[str], md: markdown.Markdown) -> None:
+        # This is similar to the superclass's small __init__ function,
+        # but we skip the compilation step and let the caller give us
+        # a compiled regex.
+        self.compiled_re = compiled_re
+        self.md = md
+
     def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
         self, m: Match[str], data: str
     ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
-        match = m.group(1)
+        name = m.group("match")
         db_data = self.md.zulip_db_data
 
         if self.md.zulip_message and db_data is not None:
-            name = extract_user_group(match)
             user_group = db_data["mention_data"].get_user_group(name)
             if user_group:
                 self.md.zulip_message.mentions_user_group_ids.add(user_group.id)
