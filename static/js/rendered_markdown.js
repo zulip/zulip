@@ -118,7 +118,7 @@ export const update_elements = (content) => {
         if (user_group_id && !$(this).find(".highlight").length) {
             // Edit the mention to show the current name for the
             // user group, if its not in search.
-            $(this).text("@" + user_group.name);
+            set_name_in_mention_element(this, user_group.name);
         }
     });
 
