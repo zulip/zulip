@@ -155,23 +155,36 @@ function set_presence(user_id, status) {
     });
 }
 
-test("user_circle", () => {
+test("user_circle, level, status_description", () => {
     add_canned_users();
 
     set_presence(selma.user_id, "active");
-    set_presence(me.user_id, "active");
-
     assert.equal(buddy_data.get_user_circle_class(selma.user_id), "user_circle_green");
     user_status.set_away(selma.user_id);
+    assert.equal(buddy_data.level(selma.user_id), 3);
+
     assert.equal(buddy_data.get_user_circle_class(selma.user_id), "user_circle_empty_line");
     user_status.revoke_away(selma.user_id);
     assert.equal(buddy_data.get_user_circle_class(selma.user_id), "user_circle_green");
+    assert.equal(buddy_data.status_description(selma.user_id), "translated: Active");
 
+    set_presence(me.user_id, "active");
     assert.equal(buddy_data.get_user_circle_class(me.user_id), "user_circle_green");
     user_status.set_away(me.user_id);
+    assert.equal(buddy_data.status_description(me.user_id), "translated: Unavailable");
+    assert.equal(buddy_data.level(me.user_id), 0);
+
     assert.equal(buddy_data.get_user_circle_class(me.user_id), "user_circle_empty_line");
     user_status.revoke_away(me.user_id);
     assert.equal(buddy_data.get_user_circle_class(me.user_id), "user_circle_green");
+
+    set_presence(fred.user_id, "idle");
+    assert.equal(buddy_data.get_user_circle_class(fred.user_id), "user_circle_orange");
+    assert.equal(buddy_data.level(fred.user_id), 2);
+    assert.equal(buddy_data.status_description(fred.user_id), "translated: Idle");
+
+    set_presence(fred.user_id, undefined);
+    assert.equal(buddy_data.status_description(fred.user_id), "translated: Offline");
 });
 
 test("compose fade interactions (streams)", () => {
