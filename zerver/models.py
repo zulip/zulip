@@ -56,6 +56,7 @@ from zerver.lib.cache import (
     flush_user_profile,
     get_realm_used_upload_space_cache_key,
     get_stream_cache_key,
+    get_stream_cache_key_for_stream_id,
     realm_alert_words_automaton_cache_key,
     realm_alert_words_cache_key,
     realm_user_dict_fields,
@@ -94,6 +95,7 @@ MAX_TOPIC_NAME_LENGTH = 60
 MAX_LANGUAGE_ID_LENGTH: int = 50
 
 STREAM_NAMES = TypeVar("STREAM_NAMES", Sequence[str], AbstractSet[str])
+STREAM_IDS = TypeVar("STREAM_IDS", Sequence[int], AbstractSet[int])
 
 
 def query_for_ids(query: QuerySet, user_ids: List[int], field: str) -> QuerySet:
@@ -2249,6 +2251,24 @@ def bulk_get_streams(realm: Realm, stream_names: STREAM_NAMES) -> Dict[str, Any]
         fetch_streams_by_name,
         [stream_name.lower() for stream_name in stream_names],
         id_fetcher=stream_to_lower_name,
+    )
+
+
+def bulk_get_streams_by_ids(realm: Realm, stream_ids: STREAM_IDS) -> Dict[int, Any]:
+    def fetch_streams_by_id(stream_ids: List[int]) -> Sequence[Stream]:
+        return get_active_streams(realm).select_related().filter(id__in=stream_ids)
+
+    def stream_id_to_cache_key(stream_id: int) -> str:
+        return get_stream_cache_key_for_stream_id(stream_id, realm.id)
+
+    def stream_to_stream_id(stream: Stream) -> int:
+        return stream.id
+
+    return bulk_cached_fetch(
+        stream_id_to_cache_key,
+        fetch_streams_by_id,
+        [int(stream_id) for stream_id in stream_ids],
+        id_fetcher=stream_to_stream_id,
     )
 
 
