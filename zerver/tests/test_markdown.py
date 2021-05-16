@@ -2308,6 +2308,7 @@ class MarkdownTest(ZulipTestCase):
         update_message_and_check_flag("@*support* edited", True)
         update_message_and_check_flag("edited", False)
         update_message_and_check_flag("@*support*", True)
+        update_message_and_check_flag("@_*support*", False)
 
     def test_user_group_mention_invalid(self) -> None:
         sender_user_profile = self.example_user("othello")
@@ -2315,6 +2316,21 @@ class MarkdownTest(ZulipTestCase):
 
         content = "Hey @*Nonexistent group*"
         self.assertEqual(render_markdown(msg, content), "<p>Hey @<em>Nonexistent group</em></p>")
+        self.assertEqual(msg.mentions_user_group_ids, set())
+
+    def test_user_group_silent_mention(self) -> None:
+        sender_user_profile = self.example_user("othello")
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        support = self.create_user_group_for_test("support")
+
+        content = "We'll add you to @_*support* user group."
+        self.assertEqual(
+            render_markdown(msg, content),
+            "<p>We'll add you to "
+            f'<span class="user-group-mention silent" data-user-group-id="{support.id}">support</span>'
+            " user group.</p>",
+        )
+
         self.assertEqual(msg.mentions_user_group_ids, set())
 
     def test_stream_single(self) -> None:

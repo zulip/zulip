@@ -1880,12 +1880,14 @@ class UserGroupMentionPattern(markdown.inlinepatterns.InlineProcessor):
         self, m: Match[str], data: str
     ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
         name = m.group("match")
+        silent = m.group("silent") == "_"
         db_data = self.md.zulip_db_data
 
         if self.md.zulip_message and db_data is not None:
             user_group = db_data["mention_data"].get_user_group(name)
             if user_group:
-                self.md.zulip_message.mentions_user_group_ids.add(user_group.id)
+                if not silent:
+                    self.md.zulip_message.mentions_user_group_ids.add(user_group.id)
                 name = user_group.name
                 user_group_id = str(user_group.id)
             else:
@@ -1894,9 +1896,13 @@ class UserGroupMentionPattern(markdown.inlinepatterns.InlineProcessor):
                 return None, None, None
 
             el = Element("span")
-            el.set("class", "user-group-mention")
             el.set("data-user-group-id", user_group_id)
-            text = f"@{name}"
+            if silent:
+                el.set("class", "user-group-mention silent")
+                text = f"{name}"
+            else:
+                el.set("class", "user-group-mention")
+                text = f"@{name}"
             el.text = markdown.util.AtomicString(text)
             return el, m.start(), m.end()
         return None, None, None

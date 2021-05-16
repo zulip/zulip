@@ -4,7 +4,7 @@ from typing import Match, Optional, Set, Tuple
 # Match multi-word string between @** ** or match any one-word
 # sequences after @
 MENTIONS_RE = re.compile(r"(?<![^\s\'\"\(,:<])@(?P<silent>_?)(\*\*(?P<match>[^\*]+)\*\*)")
-USER_GROUP_MENTIONS_RE = re.compile(r"(?<![^\s\'\"\(,:<])@(\*(?P<match>[^\*]+)\*)")
+USER_GROUP_MENTIONS_RE = re.compile(r"(?<![^\s\'\"\(,:<])@(?P<silent>_?)(\*(?P<match>[^\*]+)\*)")
 
 wildcards = ["all", "everyone", "stream"]
 
