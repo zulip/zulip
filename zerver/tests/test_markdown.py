@@ -2333,6 +2333,25 @@ class MarkdownTest(ZulipTestCase):
 
         self.assertEqual(msg.mentions_user_group_ids, set())
 
+    def test_user_group_mention_in_quotes(self) -> None:
+        user_profile = self.example_user("othello")
+        msg = Message(sender=user_profile, sending_client=get_client("test"))
+        backend = self.create_user_group_for_test("backend")
+
+        def assert_silent_mention(content: str) -> None:
+            expected = (
+                "<blockquote>\n<p>"
+                f'<span class="user-group-mention silent" data-user-group-id="{backend.id}">backend</span>'
+                "</p>\n</blockquote>"
+            )
+            self.assertEqual(render_markdown(msg, content), expected)
+            self.assertEqual(msg.mentions_user_group_ids, set())
+
+        assert_silent_mention("> @*backend*")
+        assert_silent_mention("> @_*backend*")
+        assert_silent_mention("```quote\n@*backend*\n```")
+        assert_silent_mention("```quote\n@_*backend*\n```")
+
     def test_stream_single(self) -> None:
         denmark = get_stream("Denmark", get_realm("zulip"))
         sender_user_profile = self.example_user("othello")
