@@ -520,6 +520,49 @@ test("user_last_seen_time_status", (override) => {
     assert.equal(buddy_data.user_last_seen_time_status(old_user.user_id), "May 12");
 });
 
+test("get_items_for_users", () => {
+    people.add_active_user(alice);
+    people.add_active_user(fred);
+    user_status.set_away(alice.user_id);
+
+    const user_ids = [me.user_id, alice.user_id, fred.user_id];
+    assert.deepEqual(buddy_data.get_items_for_users(user_ids), [
+        {
+            faded: false,
+            href: "#narrow/pm-with/1001-self",
+            is_current_user: true,
+            my_user_status: "translated: (you)",
+            name: "Human Myself",
+            num_unread: 0,
+            user_circle_class: "user_circle_green",
+            user_circle_status: "translated: Active",
+            user_id: 1001,
+        },
+        {
+            faded: false,
+            href: "#narrow/pm-with/1002-alice",
+            is_current_user: false,
+            my_user_status: undefined,
+            name: "Alice Smith",
+            num_unread: 0,
+            user_circle_class: "user_circle_empty_line",
+            user_circle_status: "translated: Unavailable",
+            user_id: 1002,
+        },
+        {
+            faded: false,
+            href: "#narrow/pm-with/1003-fred",
+            is_current_user: false,
+            my_user_status: undefined,
+            name: "Fred Flintstone",
+            num_unread: 0,
+            user_circle_class: "user_circle_empty",
+            user_circle_status: "translated: Offline",
+            user_id: 1003,
+        },
+    ]);
+});
+
 test("error handling", (override) => {
     override(presence, "get_user_ids", () => [42]);
     blueslip.expect("error", "Unknown user_id in get_by_user_id: 42");
