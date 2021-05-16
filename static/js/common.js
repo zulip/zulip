@@ -110,6 +110,24 @@ function toggle_password_visibility(password_field_id, password_selector, tippy_
     set_password_toggle_label(password_selector, label, tippy_tooltips);
 }
 
+// Function to hide the visibility toggle for MS Browsers
+function check_if_show_password_to_hide() {
+    const user_agent = window.navigator.userAgent.toLowerCase();
+
+    // Internet Explorer
+    const is_IE = false || user_agent.includes("trident");
+
+    // MS Edge
+    const is_edge = false || user_agent.includes("edge");
+
+    // Edge (based on chromium)
+    const is_edge_chromium = false || user_agent.includes("edg");
+
+    if (is_IE || is_edge || is_edge_chromium) {
+        $(".password_visibility_toggle").css("display", "none");
+    }
+}
+
 export function reset_password_toggle_icons(password_field, password_selector) {
     $(password_field).attr("type", "password");
     $(password_selector).removeClass("fa-eye").addClass("fa-eye-slash");
@@ -126,4 +144,6 @@ export function setup_password_visibility_toggle(password_field_id, password_sel
         e.stopPropagation();
         toggle_password_visibility(password_field_id, password_selector, opts.tippy_tooltips);
     });
+
+    check_if_show_password_to_hide();
 }
