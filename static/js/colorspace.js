@@ -30,28 +30,3 @@ export function luminance_to_lightness(luminance) {
 
     return 116 * v - 16;
 }
-
-export function getDecimalColor(hexcolor) {
-    return {
-        r: Number.parseInt(hexcolor.slice(1, 3), 16),
-        g: Number.parseInt(hexcolor.slice(3, 5), 16),
-        b: Number.parseInt(hexcolor.slice(5, 7), 16),
-    };
-}
-
-export function getLighterColor(rgb, lightness) {
-    return {
-        r: Math.round(lightness * 255 + (1 - lightness) * rgb.r),
-        g: Math.round(lightness * 255 + (1 - lightness) * rgb.g),
-        b: Math.round(lightness * 255 + (1 - lightness) * rgb.b),
-    };
-}
-
-export function getHexColor(rgb) {
-    return (
-        "#" +
-        Number.parseInt(rgb.r, 10).toString(16) +
-        Number.parseInt(rgb.g, 10).toString(16) +
-        Number.parseInt(rgb.b, 10).toString(16)
-    );
-}
