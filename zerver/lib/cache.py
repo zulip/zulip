@@ -576,6 +576,10 @@ def get_stream_cache_key(stream_name: str, realm_id: int) -> str:
     return f"stream_by_realm_and_name:{realm_id}:{make_safe_digest(stream_name.strip().lower())}"
 
 
+def get_stream_cache_key_for_stream_id(stream_id: int, realm_id: int) -> str:
+    return f"stream_by_realm_and_id:{realm_id}:{stream_id}"
+
+
 def delete_user_profile_caches(user_profiles: Iterable["UserProfile"]) -> None:
     # Imported here to avoid cyclic dependency.
     from zerver.lib.users import get_all_api_keys
