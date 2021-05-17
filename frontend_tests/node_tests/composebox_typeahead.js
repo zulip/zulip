@@ -421,6 +421,20 @@ test("content_typeahead_selected", (override) => {
     expected_value = "@**Othello, the Moor of Venice** ";
     assert.equal(actual_value, expected_value);
 
+    fake_this.query = "@back";
+    fake_this.token = "back";
+    with_field(compose, "warn_if_mentioning_unsubscribed_user", unexpected_warn, () => {
+        actual_value = ct.content_typeahead_selected.call(fake_this, backend);
+    });
+    expected_value = "@*Backend* ";
+    assert.equal(actual_value, expected_value);
+
+    fake_this.query = "@*back";
+    fake_this.token = "back";
+    actual_value = ct.content_typeahead_selected.call(fake_this, backend);
+    expected_value = "@*Backend* ";
+    assert.equal(actual_value, expected_value);
+
     // silent mention
     fake_this.completing = "silent_mention";
     function unexpected_warn() {
@@ -454,18 +468,18 @@ test("content_typeahead_selected", (override) => {
     expected_value = "@_**King Hamlet** ";
     assert.equal(actual_value, expected_value);
 
-    fake_this.query = "@back";
+    fake_this.query = "@_back";
     fake_this.token = "back";
     with_field(compose, "warn_if_mentioning_unsubscribed_user", unexpected_warn, () => {
         actual_value = ct.content_typeahead_selected.call(fake_this, backend);
     });
-    expected_value = "@*Backend* ";
+    expected_value = "@_*Backend* ";
     assert.equal(actual_value, expected_value);
 
-    fake_this.query = "@*back";
+    fake_this.query = "@_*back";
     fake_this.token = "back";
     actual_value = ct.content_typeahead_selected.call(fake_this, backend);
-    expected_value = "@*Backend* ";
+    expected_value = "@_*Backend* ";
     assert.equal(actual_value, expected_value);
 
     fake_this.query = "/m";
@@ -1431,7 +1445,7 @@ test("filter_and_sort_mentions (silent)", () => {
 
     const suggestions = ct.filter_and_sort_mentions(is_silent, "al");
 
-    assert.deepEqual(suggestions, [alice, hal]);
+    assert.deepEqual(suggestions, [alice, hal, call_center]);
 });
 
 test("typeahead_results", () => {
@@ -1561,7 +1575,6 @@ test("muted users excluded from results", () => {
     // mentions typeaheads, so we need only test once.
     let results;
     const opts = {
-        want_groups: false,
         want_broadcast: true,
     };
 
@@ -1574,7 +1587,8 @@ test("muted users excluded from results", () => {
     results = ct.get_person_suggestions("corde", opts);
     assert.deepEqual(results, []);
 
-    // Make sure our muting logic doesn't break wildcard mentions.
+    // Make sure our muting logic doesn't break wildcard mentions
+    // or user group mentions.
     results = ct.get_person_suggestions("all", opts);
-    assert.deepEqual(results, [mention_all]);
+    assert.deepEqual(results, [mention_all, call_center]);
 });

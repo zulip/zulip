@@ -423,7 +423,6 @@ export const slash_commands = [
 export function filter_and_sort_mentions(is_silent, query, opts) {
     opts = {
         want_broadcast: !is_silent,
-        want_groups: !is_silent,
         filter_pills: false,
         ...opts,
     };
@@ -433,7 +432,6 @@ export function filter_and_sort_mentions(is_silent, query, opts) {
 export function get_pm_people(query) {
     const opts = {
         want_broadcast: false,
-        want_groups: true,
         filter_pills: true,
     };
     return get_person_suggestions(query, opts);
@@ -460,13 +458,7 @@ export function get_person_suggestions(query, opts) {
         return persons.filter((item) => query_matches_person(query, item));
     }
 
-    let groups;
-
-    if (opts.want_groups) {
-        groups = user_groups.get_realm_user_groups();
-    } else {
-        groups = [];
-    }
+    const groups = user_groups.get_realm_user_groups();
 
     const filtered_groups = groups.filter((item) => query_matches_name_description(query, item));
 
@@ -827,7 +819,9 @@ export function content_typeahead_selected(item, event) {
                 beginning = beginning.slice(0, -1);
             }
             if (user_groups.is_user_group(item)) {
-                beginning += "@*" + item.name + "* ";
+                let user_group_mention_text = is_silent ? "@_*" : "@*";
+                user_group_mention_text += item.name + "* ";
+                beginning += user_group_mention_text;
                 // We could theoretically warn folks if they are
                 // mentioning a user group that literally has zero
                 // members where we are posting to, but we don't have
@@ -1005,7 +999,7 @@ function get_header_html() {
             tip_text = $t({defaultMessage: "Press > for list of topics"});
             break;
         case "silent_mention":
-            tip_text = $t({defaultMessage: "User will not be notified"});
+            tip_text = $t({defaultMessage: "Silent mentions do not trigger notifications."});
             break;
         case "syntax":
             if (page_params.realm_default_code_block_language !== null) {
