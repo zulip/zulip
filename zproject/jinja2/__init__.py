@@ -1,5 +1,6 @@
 from typing import Any
 
+import orjson
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.template.defaultfilters import pluralize, slugify
 from django.urls import reverse
@@ -10,6 +11,10 @@ from two_factor.templatetags.two_factor import device_action
 
 from zerver.context_processors import DEFAULT_PAGE_PARAMS
 from zerver.templatetags.app_filters import display_list, render_markdown_path, webpack_entry
+
+
+def json_dumps(obj: object) -> str:
+    return orjson.dumps(obj).decode()
 
 
 def environment(**options: Any) -> Environment:
@@ -32,5 +37,8 @@ def environment(**options: Any) -> Environment:
     env.filters["display_list"] = display_list
     env.filters["device_action"] = device_action
     env.filters["timesince"] = timesince
+
+    env.policies["json.dumps_function"] = json_dumps  # type: ignore[attr-defined] # type annotation will be fixed in Jinja2 3.0.0
+    env.policies["json.dumps_kwargs"] = {}  # type: ignore[attr-defined] # type annotation will be fixed in Jinja2 3.0.0
 
     return env
