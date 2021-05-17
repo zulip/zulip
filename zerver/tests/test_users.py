@@ -1173,7 +1173,7 @@ class UserProfileTest(ZulipTestCase):
         # users; this work is happening before the user account is
         # created, so any changes will be reflected in the "add" event
         # introducing the user to clients.
-        self.assertEqual(len(events), 0)
+        self.assert_length(events, 0)
 
         # We verify that cordelia and iago match, but hamlet has the defaults.
         self.assertEqual(iago.full_name, "Cordelia, Lear's daughter")
@@ -1438,7 +1438,7 @@ class ActivateTest(ZulipTestCase):
         deliver_scheduled_emails(email)
         from django.core.mail import outbox
 
-        self.assertEqual(len(outbox), 1)
+        self.assert_length(outbox, 1)
         for message in outbox:
             self.assertEqual(
                 set(message.to),
@@ -1467,7 +1467,7 @@ class ActivateTest(ZulipTestCase):
             deliver_scheduled_emails(email)
         from django.core.mail import outbox
 
-        self.assertEqual(len(outbox), 0)
+        self.assert_length(outbox, 0)
         self.assertEqual(ScheduledEmail.objects.count(), 1)
         self.assertEqual(
             info_log.output,

@@ -725,7 +725,7 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
         content = result.json()
-        self.assertEqual(len(content["custom_fields"]), self.original_count)
+        self.assert_length(content["custom_fields"], self.original_count)
 
     def test_list_order(self) -> None:
         self.login("iago")
@@ -753,7 +753,7 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
                 "/json/users", {"client_gravatar": "false", "include_custom_profile_fields": "true"}
             )
 
-        self.assertEqual(len(queries), 4)
+        self.assert_length(queries, 4)
 
         self.assertEqual(response.status_code, 200)
         raw_users_data = response.json()["members"]

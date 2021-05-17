@@ -1009,7 +1009,7 @@ Output:
         streams = sorted(streams, key=lambda x: x.name)
         subscribed_streams = gather_subscriptions(self.nonreg_user(user_name))[0]
 
-        self.assertEqual(len(subscribed_streams), len(streams))
+        self.assert_length(subscribed_streams, len(streams))
 
         for x, y in zip(subscribed_streams, streams):
             self.assertEqual(x["name"], y.name)

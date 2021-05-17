@@ -335,7 +335,7 @@ class GetEventsTest(ZulipTestCase):
         )
         recipient_events = orjson.loads(recipient_result.content)["events"]
         self.assert_json_success(recipient_result)
-        self.assertEqual(len(recipient_events), 2)
+        self.assert_length(recipient_events, 2)
         self.assertEqual(recipient_events[0]["type"], "message")
         self.assertEqual(recipient_events[0]["message"]["sender_email"], email)
         self.assertTrue("local_message_id" not in recipient_events[0])
@@ -574,7 +574,7 @@ class ClientDescriptorsTest(ZulipTestCase):
             users=[],
         )
 
-        self.assertEqual(len(client_info), 1)
+        self.assert_length(client_info, 1)
 
         dct = client_info[client.event_queue.id]
         self.assertEqual(dct["client"].apply_markdown, True)
@@ -629,7 +629,7 @@ class ClientDescriptorsTest(ZulipTestCase):
                 ],
             )
 
-            self.assertEqual(len(client_info), 0)
+            self.assert_length(client_info, 0)
 
             client_info = get_client_info_for_message_event(
                 message_event,
@@ -638,7 +638,7 @@ class ClientDescriptorsTest(ZulipTestCase):
                     dict(id=hamlet.id, flags=["mentioned"]),
                 ],
             )
-            self.assertEqual(len(client_info), 1)
+            self.assert_length(client_info, 1)
 
             dct = client_info[client.event_queue.id]
             self.assertEqual(dct["client"].apply_markdown, apply_markdown)
@@ -877,7 +877,7 @@ class RestartEventsTest(ZulipTestCase):
         # may decide to write a deeper test in the future
         # that exercises the finish_handler.
         virtual_events = client.event_queue.virtual_events
-        self.assertEqual(len(virtual_events), 1)
+        self.assert_length(virtual_events, 1)
         restart_event = virtual_events["restart"]
 
         check_restart_event("restart_event", restart_event)

@@ -637,7 +637,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             data = b"".join(response.streaming_content)
             self.assertEqual(b"zulip!", data)
         self.logout()
-        self.assertEqual(len(queries), 5)
+        self.assert_length(queries, 5)
 
         # Subscribed user who received the message should be able to view file
         self.login_user(cordelia)
@@ -647,7 +647,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             data = b"".join(response.streaming_content)
             self.assertEqual(b"zulip!", data)
         self.logout()
-        self.assertEqual(len(queries), 6)
+        self.assert_length(queries, 6)
 
         def assert_cannot_access_file(user: UserProfile) -> None:
             response = self.api_get(user, uri)
@@ -702,7 +702,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             data = b"".join(response.streaming_content)
             self.assertEqual(b"zulip!", data)
         self.logout()
-        self.assertEqual(len(queries), 5)
+        self.assert_length(queries, 5)
 
         # Originally subscribed user should be able to view file
         self.login_user(polonius)
@@ -712,7 +712,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             data = b"".join(response.streaming_content)
             self.assertEqual(b"zulip!", data)
         self.logout()
-        self.assertEqual(len(queries), 6)
+        self.assert_length(queries, 6)
 
         # Subscribed user who did not receive the message should also be able to view file
         self.login_user(late_subscribed_user)
@@ -723,7 +723,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             self.assertEqual(b"zulip!", data)
         self.logout()
         # It takes a few extra queries to verify access because of shared history.
-        self.assertEqual(len(queries), 9)
+        self.assert_length(queries, 9)
 
         def assert_cannot_access_file(user: UserProfile) -> None:
             self.login_user(user)
@@ -731,7 +731,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
                 response = self.client_get(uri)
             self.assertEqual(response.status_code, 403)
             # It takes a few extra queries to verify lack of access with shared history.
-            self.assertEqual(len(queries), 8)
+            self.assert_length(queries, 8)
             self.assert_in_response("You are not authorized to view this file.", response)
             self.logout()
 
@@ -774,7 +774,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             response = self.client_get(uri)
             self.assertEqual(response.status_code, 403)
             self.assert_in_response("You are not authorized to view this file.", response)
-        self.assertEqual(len(queries), 8)
+        self.assert_length(queries, 8)
 
         self.subscribe(user, "test-subscribe 1")
         self.subscribe(user, "test-subscribe 2")
@@ -785,11 +785,11 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             data = b"".join(response.streaming_content)
             self.assertEqual(b"zulip!", data)
         # If we were accidentally one query per message, this would be 20+
-        self.assertEqual(len(queries), 9)
+        self.assert_length(queries, 9)
 
         with queries_captured() as queries:
             self.assertTrue(validate_attachment_request(user, fp_path_id))
-        self.assertEqual(len(queries), 6)
+        self.assert_length(queries, 6)
 
         self.logout()
 
@@ -1631,7 +1631,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         self.assertTrue(os.path.isfile(file_path))
 
         uploaded_file = Attachment.objects.get(owner=user_profile, path_id=path_id)
-        self.assertEqual(len(b"zulip!"), uploaded_file.size)
+        self.assert_length(b"zulip!", uploaded_file.size)
 
     def test_delete_message_image_local(self) -> None:
         self.login("hamlet")
@@ -1753,7 +1753,7 @@ class S3Test(ZulipTestCase):
         self.assertEqual(b"zulip!", content)
 
         uploaded_file = Attachment.objects.get(owner=user_profile, path_id=path_id)
-        self.assertEqual(len(b"zulip!"), uploaded_file.size)
+        self.assert_length(b"zulip!", uploaded_file.size)
 
         self.subscribe(self.example_user("hamlet"), "Denmark")
         body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
@@ -1769,7 +1769,7 @@ class S3Test(ZulipTestCase):
         path_id = re.sub("/user_uploads/", "", uri)
         self.assertEqual(b"zulip!", bucket.Object(path_id).get()["Body"].read())
         uploaded_file = Attachment.objects.get(owner=user_profile, path_id=path_id)
-        self.assertEqual(len(b"zulip!"), uploaded_file.size)
+        self.assert_length(b"zulip!", uploaded_file.size)
 
     @use_s3_backend
     def test_message_image_delete_s3(self) -> None:
@@ -2127,8 +2127,8 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
         upload_message_file("dummy.txt", len(data), "text/plain", data, self.user_profile)
         # notify_attachment_update function calls currently_used_upload_space_bytes which
         # updates the cache.
-        self.assertEqual(len(data), cache_get(get_realm_used_upload_space_cache_key(self.realm))[0])
-        self.assertEqual(len(data), self.realm.currently_used_upload_space_bytes())
+        self.assert_length(data, cache_get(get_realm_used_upload_space_cache_key(self.realm))[0])
+        self.assert_length(data, self.realm.currently_used_upload_space_bytes())
 
         data2 = b"more-data!"
         upload_message_file("dummy2.txt", len(data2), "text/plain", data2, self.user_profile)
@@ -2147,7 +2147,7 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
 
         attachment.delete()
         self.assertEqual(None, cache_get(get_realm_used_upload_space_cache_key(self.realm)))
-        self.assertEqual(len(data2), self.realm.currently_used_upload_space_bytes())
+        self.assert_length(data2, self.realm.currently_used_upload_space_bytes())
 
 
 class ExifRotateTests(ZulipTestCase):

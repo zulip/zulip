@@ -613,7 +613,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
             ]
             all_message_ids |= set(message_ids[topic_name])
 
-        self.assertEqual(len(all_message_ids), 12)  # sanity check on test setup
+        self.assert_length(all_message_ids, 12)  # sanity check on test setup
 
         self.mute_stream(
             user_profile=hamlet,
@@ -1311,7 +1311,7 @@ class MessageAccessTests(ZulipTestCase):
 
         # Message sent before subscribing wouldn't be accessible by later
         # subscribed user as stream has protected history
-        self.assertEqual(len(filtered_messages), 1)
+        self.assert_length(filtered_messages, 1)
         self.assertEqual(filtered_messages[0].id, message_two_id)
 
         do_change_stream_invite_only(stream, True, history_public_to_subscribers=True)
@@ -1322,7 +1322,7 @@ class MessageAccessTests(ZulipTestCase):
 
         # Message sent before subscribing are accessible by 8user as stream
         # don't have protected history
-        self.assertEqual(len(filtered_messages), 2)
+        self.assert_length(filtered_messages, 2)
 
         # Testing messages accessiblity for an unsubscribed user
         unsubscribed_user = self.example_user("ZOE")
@@ -1331,7 +1331,7 @@ class MessageAccessTests(ZulipTestCase):
             filtered_messages = bulk_access_messages(unsubscribed_user, messages, stream=stream)
         self.assert_length(queries, 2)
 
-        self.assertEqual(len(filtered_messages), 0)
+        self.assert_length(filtered_messages, 0)
 
         # Verify an exception is thrown if called where the passed
         # stream not matching the messages.
@@ -1363,14 +1363,14 @@ class MessageAccessTests(ZulipTestCase):
         # All public stream messages are always accessible
         with queries_captured() as queries:
             filtered_messages = bulk_access_messages(later_subscribed_user, messages, stream=stream)
-        self.assertEqual(len(filtered_messages), 2)
+        self.assert_length(filtered_messages, 2)
         self.assert_length(queries, 2)
 
         unsubscribed_user = self.example_user("ZOE")
         with queries_captured() as queries:
             filtered_messages = bulk_access_messages(unsubscribed_user, messages, stream=stream)
 
-        self.assertEqual(len(filtered_messages), 2)
+        self.assert_length(filtered_messages, 2)
         self.assert_length(queries, 2)
 
 

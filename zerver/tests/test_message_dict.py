@@ -182,7 +182,7 @@ class MessageDictTest(ZulipTestCase):
             MessageDict.post_process_dicts(objs, apply_markdown=False, client_gravatar=False)
 
         self.assert_length(queries, 7)
-        self.assertEqual(len(rows), num_ids)
+        self.assert_length(rows, num_ids)
 
     def test_applying_markdown(self) -> None:
         sender = self.example_user("othello")
@@ -420,7 +420,7 @@ class MessageHydrationTest(ZulipTestCase):
             allow_edit_history=False,
         )
 
-        self.assertEqual(len(messages), 2)
+        self.assert_length(messages, 2)
 
         for message in messages:
             if message["id"] == old_message_id:
@@ -640,7 +640,7 @@ class SewMessageAndReactionTest(ZulipTestCase):
         reactions = Reaction.get_raw_db_rows(needed_ids)
         tied_data = sew_messages_and_reactions(messages, reactions)
         for data in tied_data:
-            self.assertEqual(len(data["reactions"]), 1)
+            self.assert_length(data["reactions"], 1)
             self.assertEqual(data["reactions"][0]["emoji_name"], "simple_smile")
             self.assertTrue(data["id"])
             self.assertTrue(data["content"])

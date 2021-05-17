@@ -26,10 +26,10 @@ class UserGroupTestCase(ZulipTestCase):
 
     def test_user_groups_in_realm(self) -> None:
         realm = get_realm("zulip")
-        self.assertEqual(len(user_groups_in_realm(realm)), 1)
+        self.assert_length(user_groups_in_realm(realm), 1)
         self.create_user_group_for_test("support")
         user_groups = user_groups_in_realm(realm)
-        self.assertEqual(len(user_groups), 2)
+        self.assert_length(user_groups, 2)
         names = {ug.name for ug in user_groups}
         self.assertEqual(names, {"hamletcharacters", "support"})
 
@@ -41,7 +41,7 @@ class UserGroupTestCase(ZulipTestCase):
         empty_user_group = create_user_group("newgroup", [], realm)
 
         user_groups = user_groups_in_realm_serialized(realm)
-        self.assertEqual(len(user_groups), 2)
+        self.assert_length(user_groups, 2)
         self.assertEqual(user_groups[0]["id"], user_group.id)
         self.assertEqual(user_groups[0]["name"], "hamletcharacters")
         self.assertEqual(user_groups[0]["description"], "Characters of Hamlet")
@@ -56,7 +56,7 @@ class UserGroupTestCase(ZulipTestCase):
         othello = self.example_user("othello")
         self.create_user_group_for_test("support")
         user_groups = get_user_groups(othello)
-        self.assertEqual(len(user_groups), 1)
+        self.assert_length(user_groups, 1)
         self.assertEqual(user_groups[0].name, "support")
 
     def test_check_add_user_to_user_group(self) -> None:
@@ -310,14 +310,14 @@ class UserGroupAPITestCase(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(UserGroupMembership.objects.count(), 4)
         members = get_memberships_of_users(user_group, [hamlet, othello])
-        self.assertEqual(len(members), 2)
+        self.assert_length(members, 2)
 
         # Test adding a member already there.
         result = self.client_post(f"/json/user_groups/{user_group.id}/members", info=params)
         self.assert_json_error(result, f"User {othello.id} is already a member of this group")
         self.assertEqual(UserGroupMembership.objects.count(), 4)
         members = get_memberships_of_users(user_group, [hamlet, othello])
-        self.assertEqual(len(members), 2)
+        self.assert_length(members, 2)
 
         self.logout()
         # Test when user not a member of user group tries to add members to it
@@ -342,7 +342,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(UserGroupMembership.objects.count(), 5)
         members = get_memberships_of_users(user_group, [hamlet, othello, aaron])
-        self.assertEqual(len(members), 3)
+        self.assert_length(members, 3)
 
         # For normal testing we again log in with hamlet
         self.logout()
@@ -353,7 +353,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(UserGroupMembership.objects.count(), 4)
         members = get_memberships_of_users(user_group, [hamlet, othello, aaron])
-        self.assertEqual(len(members), 2)
+        self.assert_length(members, 2)
 
         # Test remove a member that's already removed
         params = {"delete": orjson.dumps([othello.id]).decode()}
@@ -361,7 +361,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         self.assert_json_error(result, f"There is no member '{othello.id}' in this user group")
         self.assertEqual(UserGroupMembership.objects.count(), 4)
         members = get_memberships_of_users(user_group, [hamlet, othello, aaron])
-        self.assertEqual(len(members), 2)
+        self.assert_length(members, 2)
 
         # Test when nothing is provided
         result = self.client_post(f"/json/user_groups/{user_group.id}/members", info={})
@@ -386,7 +386,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(UserGroupMembership.objects.count(), 3)
         members = get_memberships_of_users(user_group, [hamlet, othello, aaron])
-        self.assertEqual(len(members), 1)
+        self.assert_length(members, 1)
 
     def test_mentions(self) -> None:
         cordelia = self.example_user("cordelia")

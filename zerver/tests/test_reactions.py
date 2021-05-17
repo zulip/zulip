@@ -423,7 +423,7 @@ class ReactionEventTest(ZulipTestCase):
                 reaction_sender, f"/api/v1/messages/{pm_id}/reactions", reaction_info
             )
         self.assert_json_success(result)
-        self.assertEqual(len(events), 1)
+        self.assert_length(events, 1)
 
         event = events[0]["event"]
         event_user_ids = set(events[0]["users"])
@@ -468,7 +468,7 @@ class ReactionEventTest(ZulipTestCase):
                 reaction_sender, f"/api/v1/messages/{pm_id}/reactions", reaction_info
             )
         self.assert_json_success(result)
-        self.assertEqual(len(events), 1)
+        self.assert_length(events, 1)
 
         event = events[0]["event"]
         event_user_ids = set(events[0]["users"])
@@ -977,7 +977,7 @@ class RealmEmojiReactionTests(EmojiReactionBase):
         reactions = self.get_message_reactions(
             1, self.default_reaction_info["emoji_code"], "realm_emoji"
         )
-        self.assertEqual(len(reactions), 2)
+        self.assert_length(reactions, 2)
 
     def test_remove_realm_emoji_reaction(self) -> None:
         result = self.post_reaction(self.default_reaction_info)
@@ -1038,7 +1038,7 @@ class ReactionAPIEventTest(EmojiReactionBase):
         with tornado_redirected_to_list(events):
             self.api_post(reaction_sender, f"/api/v1/messages/{pm_id}/reactions", reaction_info)
 
-        self.assertEqual(len(events), 1)
+        self.assert_length(events, 1)
 
         event = events[0]["event"]
         event_user_ids = set(events[0]["users"])
@@ -1085,7 +1085,7 @@ class ReactionAPIEventTest(EmojiReactionBase):
             )
 
         self.assert_json_success(result)
-        self.assertEqual(len(events), 1)
+        self.assert_length(events, 1)
 
         event = events[0]["event"]
         event_user_ids = set(events[0]["users"])

@@ -153,8 +153,8 @@ class TypingHappyPathTestPMs(ZulipTestCase):
                 result = self.api_post(sender, "/api/v1/typing", params)
 
         self.assert_json_success(result)
-        self.assertEqual(len(events), 1)
-        self.assertEqual(len(queries), 4)
+        self.assert_length(events, 1)
+        self.assert_length(queries, 4)
 
         event = events[0]["event"]
         event_recipient_emails = {user["email"] for user in event["recipients"]}
@@ -189,8 +189,8 @@ class TypingHappyPathTestPMs(ZulipTestCase):
             with tornado_redirected_to_list(events):
                 result = self.api_post(sender, "/api/v1/typing", params)
         self.assert_json_success(result)
-        self.assertEqual(len(events), 1)
-        self.assertEqual(len(queries), 5)
+        self.assert_length(events, 1)
+        self.assert_length(queries, 5)
 
         # We should not be adding new Huddles just because
         # a user started typing in the compose box.  Let's
@@ -229,7 +229,7 @@ class TypingHappyPathTestPMs(ZulipTestCase):
                 },
             )
         self.assert_json_success(result)
-        self.assertEqual(len(events), 1)
+        self.assert_length(events, 1)
 
         event = events[0]["event"]
         event_recipient_emails = {user["email"] for user in event["recipients"]}
@@ -264,7 +264,7 @@ class TypingHappyPathTestPMs(ZulipTestCase):
             result = self.api_post(sender, "/api/v1/typing", params)
 
         self.assert_json_success(result)
-        self.assertEqual(len(events), 1)
+        self.assert_length(events, 1)
 
         event = events[0]["event"]
         event_recipient_emails = {user["email"] for user in event["recipients"]}
@@ -297,7 +297,7 @@ class TypingHappyPathTestPMs(ZulipTestCase):
             result = self.api_post(user, "/api/v1/typing", params)
 
         self.assert_json_success(result)
-        self.assertEqual(len(events), 1)
+        self.assert_length(events, 1)
 
         event = events[0]["event"]
         event_recipient_emails = {user["email"] for user in event["recipients"]}
@@ -331,7 +331,7 @@ class TypingHappyPathTestPMs(ZulipTestCase):
             result = self.api_post(sender, "/api/v1/typing", params)
 
         self.assert_json_success(result)
-        self.assertEqual(len(events), 1)
+        self.assert_length(events, 1)
 
         event = events[0]["event"]
         event_recipient_emails = {user["email"] for user in event["recipients"]}
@@ -370,8 +370,8 @@ class TypingHappyPathTestStreams(ZulipTestCase):
             with tornado_redirected_to_list(events):
                 result = self.api_post(sender, "/api/v1/typing", params)
         self.assert_json_success(result)
-        self.assertEqual(len(events), 1)
-        self.assertEqual(len(queries), 5)
+        self.assert_length(events, 1)
+        self.assert_length(queries, 5)
 
         event = events[0]["event"]
         event_user_ids = set(events[0]["users"])
@@ -406,8 +406,8 @@ class TypingHappyPathTestStreams(ZulipTestCase):
             with tornado_redirected_to_list(events):
                 result = self.api_post(sender, "/api/v1/typing", params)
         self.assert_json_success(result)
-        self.assertEqual(len(events), 1)
-        self.assertEqual(len(queries), 5)
+        self.assert_length(events, 1)
+        self.assert_length(queries, 5)
 
         event = events[0]["event"]
         event_user_ids = set(events[0]["users"])

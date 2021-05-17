@@ -82,7 +82,7 @@ class DoRestCallTests(ZulipTestCase):
             session.post.return_value = ResponseMock(200, orjson.dumps(dict(content="whatever")))
             with self.assertLogs(level="INFO") as logs:
                 do_rest_call("", mock_event, service_handler)
-            self.assertEqual(len(logs.output), 1)
+            self.assert_length(logs.output, 1)
             self.assertIn(
                 f"Outgoing webhook request from {bot_user.id}@zulip took ", logs.output[0]
             )
@@ -95,7 +95,7 @@ class DoRestCallTests(ZulipTestCase):
                 session.post.return_value = ResponseMock(200, b"{}")
                 with self.assertLogs(level="INFO") as logs:
                     do_rest_call("", mock_event, handler)
-                self.assertEqual(len(logs.output), 1)
+                self.assert_length(logs.output, 1)
                 self.assertIn(
                     f"Outgoing webhook request from {bot_user.id}@zulip took ", logs.output[0]
                 )
@@ -174,7 +174,7 @@ The webhook got a response with status code *400*.""",
                 final_response = do_rest_call("https://example.com/", mock_event, service_handler)
             assert final_response is not None
 
-            self.assertEqual(len(logs.output), 1)
+            self.assert_length(logs.output, 1)
             self.assertIn(
                 f"Outgoing webhook request from {bot_user.id}@zulip took ", logs.output[0]
             )
@@ -393,11 +393,11 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
                 bot,
                 content="some content",
             )
-        self.assertEqual(len(logs.output), 2)
+        self.assert_length(logs.output, 2)
         self.assertIn(f"Outgoing webhook request from {bot.id}@zulip took ", logs.output[0])
         self.assertIn(f"Outgoing webhook request from {bot.id}@zulip took ", logs.output[1])
 
-        self.assertEqual(len(responses.calls), 2)
+        self.assert_length(responses.calls, 2)
 
         calls_by_url = {
             call.request.url: orjson.loads(call.request.body or b"") for call in responses.calls
@@ -425,10 +425,10 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         )
         with self.assertLogs(level="INFO") as logs:
             self.send_personal_message(sender, bot, content="foo")
-        self.assertEqual(len(logs.output), 1)
+        self.assert_length(logs.output, 1)
         self.assertIn(f"Outgoing webhook request from {bot.id}@zulip took ", logs.output[0])
 
-        self.assertEqual(len(responses.calls), 1)
+        self.assert_length(responses.calls, 1)
 
         last_message = self.get_last_message()
         self.assertEqual(last_message.content, "Hidley ho, I'm a webhook responding!")
@@ -454,7 +454,7 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         with expect_fail as mock_fail, self.assertLogs(level="WARNING"):
             message_id = self.send_personal_message(sender, bot, content="foo")
 
-            self.assertEqual(len(responses.calls), 1)
+            self.assert_length(responses.calls, 1)
 
             # create message dict to get the message url
             message = {
@@ -499,9 +499,9 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
                 bot_owner, "Denmark", content=f"@**{bot.full_name}** foo", topic_name="bar"
             )
 
-        self.assertEqual(len(responses.calls), 1)
+        self.assert_length(responses.calls, 1)
 
-        self.assertEqual(len(logs.output), 1)
+        self.assert_length(logs.output, 1)
         self.assertIn(f"Outgoing webhook request from {bot.id}@zulip took ", logs.output[0])
 
         last_message = self.get_last_message()
@@ -533,9 +533,9 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
                 bot_owner, "Denmark", content=f"@**{bot.full_name}** foo", topic_name="bar"
             )
 
-        self.assertEqual(len(responses.calls), 1)
+        self.assert_length(responses.calls, 1)
 
-        self.assertEqual(len(logs.output), 1)
+        self.assert_length(logs.output, 1)
         self.assertIn(f"Outgoing webhook request from {bot.id}@zulip took ", logs.output[0])
 
         # We verify that no new message was sent, since that's the behavior implied

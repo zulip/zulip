@@ -52,7 +52,7 @@ class SendLoginEmailTest(ZulipTestCase):
                 )
 
             # email is sent and correct subject
-            self.assertEqual(len(mail.outbox), 1)
+            self.assert_length(mail.outbox, 1)
             subject = "New login from Firefox on Windows"
             self.assertEqual(mail.outbox[0].subject, subject)
             # local time is correct and in email's body
@@ -75,7 +75,7 @@ class SendLoginEmailTest(ZulipTestCase):
         user = self.example_user("hamlet")
         self.login_user(user)
 
-        self.assertEqual(len(mail.outbox), 0)
+        self.assert_length(mail.outbox, 0)
 
     def test_dont_send_login_emails_for_new_user_registration_logins(self) -> None:
         with self.settings(SEND_LOGIN_EMAILS=True):
@@ -83,7 +83,7 @@ class SendLoginEmailTest(ZulipTestCase):
 
             # Verify that there's just 1 email for new user registration.
             self.assertEqual(mail.outbox[0].subject, "Activate your Zulip account")
-            self.assertEqual(len(mail.outbox), 1)
+            self.assert_length(mail.outbox, 1)
 
     def test_without_path_info_dont_send_login_emails_for_new_user_registration_logins(
         self,
@@ -109,13 +109,13 @@ class SendLoginEmailTest(ZulipTestCase):
         self.assertFalse(user.enable_login_emails)
         with mock.patch("zerver.signals.timezone_now", return_value=mock_time):
             self.login_user(user)
-        self.assertEqual(len(mail.outbox), 0)
+        self.assert_length(mail.outbox, 0)
 
         do_change_notification_settings(user, "enable_login_emails", True, acting_user=None)
         self.assertTrue(user.enable_login_emails)
         with mock.patch("zerver.signals.timezone_now", return_value=mock_time):
             self.login_user(user)
-        self.assertEqual(len(mail.outbox), 1)
+        self.assert_length(mail.outbox, 1)
 
 
 class TestBrowserAndOsUserAgentStrings(ZulipTestCase):

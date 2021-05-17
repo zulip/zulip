@@ -95,7 +95,7 @@ class WorkerTest(ZulipTestCase):
                 user_profile=user.id,
                 client=get_client("ios"),
             )
-            self.assertEqual(len(activity_records), 1)
+            self.assert_length(activity_records, 1)
             self.assertEqual(activity_records[0].count, 2)
 
         # Now process the event a second time and confirm count goes
@@ -110,7 +110,7 @@ class WorkerTest(ZulipTestCase):
                 user_profile=user.id,
                 client=get_client("ios"),
             )
-            self.assertEqual(len(activity_records), 1)
+            self.assert_length(activity_records, 1)
             self.assertEqual(activity_records[0].count, 3)
 
     def test_missed_message_worker(self) -> None:
