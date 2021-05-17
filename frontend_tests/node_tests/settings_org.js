@@ -165,8 +165,7 @@ function test_submit_settings_form(override, submit_form) {
         realm_bot_creation_policy: settings_bots.bot_creation_policy_values.restricted.code,
         realm_email_address_visibility:
             settings_config.email_address_visibility_values.admins_only.code,
-        realm_add_custom_emoji_policy:
-            settings_config.add_custom_emoji_policy_values.by_admins_only.code,
+        realm_add_custom_emoji_policy: settings_config.common_policy_values.by_admins_only.code,
         realm_create_stream_by_admins_only: true,
         realm_waiting_period_threshold: 1,
         realm_default_language: '"es"',

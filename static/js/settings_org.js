@@ -108,9 +108,6 @@ export function get_organization_settings_options() {
     options.invite_to_realm_policy_values = get_sorted_options_list(
         settings_config.invite_to_realm_policy_values,
     );
-    options.add_custom_emoji_policy_values = get_sorted_options_list(
-        settings_config.add_custom_emoji_policy_values,
-    );
     return options;
 }
 

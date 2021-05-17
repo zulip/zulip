@@ -166,6 +166,10 @@ export function user_can_edit_user_groups() {
     return user_has_permission(page_params.realm_user_group_edit_policy);
 }
 
+export function user_can_add_custom_emoji() {
+    return user_has_permission(page_params.realm_add_custom_emoji_policy);
+}
+
 export function user_can_edit_topic_of_any_message() {
     if (
         page_params.realm_edit_topic_policy ===

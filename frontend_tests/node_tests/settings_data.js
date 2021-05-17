@@ -192,6 +192,11 @@ test_policy(
     "realm_user_group_edit_policy",
     settings_data.user_can_edit_user_groups,
 );
+test_policy(
+    "user_can_add_custom_emoji",
+    "realm_add_custom_emoji_policy",
+    settings_data.user_can_add_custom_emoji,
+);
 
 function test_message_policy(label, policy, validation_func) {
     run_test(label, () => {

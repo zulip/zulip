@@ -14,6 +14,7 @@ import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
+import * as settings_data from "./settings_data";
 import * as ui from "./ui";
 import * as ui_report from "./ui_report";
 import * as upload_widget from "./upload_widget";
@@ -21,22 +22,6 @@ import * as upload_widget from "./upload_widget";
 const meta = {
     loaded: false,
 };
-
-export function can_add_emoji() {
-    if (page_params.is_guest) {
-        return false;
-    }
-
-    if (page_params.is_admin) {
-        return true;
-    }
-
-    // for normal users, we depend on the setting
-    return (
-        page_params.realm_add_custom_emoji_policy ===
-        settings_config.add_custom_emoji_policy_values.by_members.code
-    );
-}
 
 function can_delete_emoji(emoji) {
     if (page_params.is_admin) {
@@ -54,15 +39,11 @@ function can_delete_emoji(emoji) {
 
 export function update_custom_emoji_ui() {
     const rendered_tip = render_settings_emoji_settings_tip({
-        ADD_CUSTOM_EMOJI_POLICY_ADMINS_ONLY:
-            settings_config.add_custom_emoji_policy_values.by_admins_only.code,
+        realm_add_custom_emoji_policy: page_params.realm_add_custom_emoji_policy,
+        policy_values: settings_config.common_policy_values,
     });
     $("#emoji-settings").find(".emoji-settings-tip-container").html(rendered_tip);
-    if (
-        page_params.realm_add_custom_emoji_policy ===
-            settings_config.add_custom_emoji_policy_values.by_admins_only.code &&
-        !page_params.is_admin
-    ) {
+    if (!settings_data.user_can_add_custom_emoji()) {
         $(".add-emoji-text").hide();
         $(".admin-emoji-form").hide();
     } else {
