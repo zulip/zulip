@@ -326,13 +326,6 @@ REGISTER_LINK_DISABLED: Optional[bool] = None
 LOGIN_LINK_DISABLED = False
 FIND_TEAM_LINK_DISABLED = True
 
-# Controls if the server should run certain jobs like deliver_scheduled_emails or
-# deliver_scheduled_messages. This setting in long term is meant for
-# handling jobs for which we don't have a means of establishing a locking
-# mechanism that works with multiple servers running these jobs.
-# TODO: We should rename this setting so that it reflects its purpose actively.
-EMAIL_DELIVERER_DISABLED = False
-
 # What domains to treat like the root domain
 # "auth" is by default a reserved subdomain for the use by python-social-auth.
 ROOT_SUBDOMAIN_ALIASES = ["www", "auth"]

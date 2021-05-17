@@ -3,11 +3,7 @@ Send email messages that have been queued for later delivery by
 various things (at this time invitation reminders and day1/day2
 followup emails).
 
-This management command is run via supervisor.  Do not run on multiple
-machines, as you may encounter multiple sends in a specific race
-condition.  (Alternatively, you can set `EMAIL_DELIVERER_DISABLED=True`
-on all but one machine to make the command have no effect.)
-
+This management command is run via supervisor.
 """
 import logging
 import time
@@ -19,7 +15,6 @@ from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.logging_util import log_to_file
-from zerver.lib.management import sleep_forever
 from zerver.lib.send_email import EmailNotDeliveredException, deliver_scheduled_emails
 from zerver.models import ScheduledEmail
 
@@ -38,10 +33,6 @@ Usage: ./manage.py deliver_scheduled_emails
 """
 
     def handle(self, *args: Any, **options: Any) -> None:
-
-        if settings.EMAIL_DELIVERER_DISABLED:
-            sleep_forever()
-
         while True:
             found_rows = False
             with transaction.atomic():

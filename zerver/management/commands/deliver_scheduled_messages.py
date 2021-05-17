@@ -10,7 +10,6 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import build_message_send_dict, do_send_messages
 from zerver.lib.logging_util import log_to_file
-from zerver.lib.management import sleep_forever
 from zerver.lib.message import SendMessageRequest
 from zerver.models import Message, ScheduledMessage, get_user_by_delivery_email
 
@@ -23,10 +22,7 @@ class Command(BaseCommand):
     help = """Deliver scheduled messages from the ScheduledMessage table.
 Run this command under supervisor.
 
-This management command is run via supervisor.  Do not run on multiple
-machines, as you may encounter multiple sends in a specific race
-condition.  (Alternatively, you can set `EMAIL_DELIVERER_DISABLED=True`
-on all but one machine to make the command have no effect.)
+This management command is run via supervisor.
 
 Usage: ./manage.py deliver_scheduled_messages
 """
@@ -57,14 +53,6 @@ Usage: ./manage.py deliver_scheduled_messages
 
     def handle(self, *args: Any, **options: Any) -> None:
         try:
-            if settings.EMAIL_DELIVERER_DISABLED:
-                # Here doing a check and sleeping indefinitely on this setting might
-                # not sound right. Actually we do this check to avoid running this
-                # process on every server that might be in service to a realm. See
-                # the comment in zproject/default_settings.py file about renaming this
-                # setting.
-                sleep_forever()
-
             while True:
                 with transaction.atomic():
                     messages_to_deliver = ScheduledMessage.objects.filter(
