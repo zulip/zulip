@@ -193,7 +193,7 @@ class Realm(models.Model)
   # ...
   # Define the types of the various automatically managed properties
     property_types = dict(
-        add_emoji_by_admins_only=bool,
+        add_custom_emoji_policy=int,
         allow_edit_history=bool,
         # ...
 +       mandatory_topics=bool,
@@ -590,7 +590,7 @@ function dispatch_normal_event(event) {
     // ...
     case 'realm':
       var realm_settings = {
-          add_emoji_by_admins_only: settings_emoji.update_custom_emoji_ui,
+          add_custom_emoji_policy: settings_emoji.update_custom_emoji_ui,
           allow_edit_history: noop,
           // ...
 +         mandatory_topics: noop,
