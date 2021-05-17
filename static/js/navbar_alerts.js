@@ -11,13 +11,13 @@ import * as util from "./util";
 /* This is called by resize.js, and thus indirectly when we trigger
  * resize events in the logic below. */
 export function resize_app() {
-    const panels_height = $("#panels").height();
-    $("body > .app").height("calc(100% - " + panels_height + "px)");
+    const navbar_alerts_wrapper_height = $("#navbar_alerts_wrapper").height();
+    $("body > .app").height("calc(100% - " + navbar_alerts_wrapper_height + "px)");
 
     // the floating recipient bar is usually positioned right below
     // the `.header` element (including padding).
     const frb_top =
-        panels_height +
+        navbar_alerts_wrapper_height +
         $(".header").height() +
         Number.parseInt($(".header").css("paddingBottom"), 10);
     $("#floating_recipient_bar").css("top", frb_top + "px");
@@ -149,7 +149,7 @@ export function initialize() {
         dismiss_upgrade_nag(ls);
     });
 
-    $("#panels").on("click", ".alert .close, .alert .exit", function (e) {
+    $("#navbar_alerts_wrapper").on("click", ".alert .close, .alert .exit", function (e) {
         e.stopPropagation();
         const $process = $(e.target).closest("[data-process]");
         if (get_step($process) === 1 && $process.data("process") === "notifications") {
@@ -160,8 +160,8 @@ export function initialize() {
         $(window).trigger("resize");
     });
 
-    // Treat Enter with links in the panels UI focused like a click.,
-    $("#panels").on("keyup", ".alert-link[role=button]", function (e) {
+    // Treat Enter with links in the navbar alerts UI focused like a click.,
+    $("#navbar_alerts_wrapper").on("keyup", ".alert-link[role=button]", function (e) {
         e.stopPropagation();
         if (e.key === "Enter") {
             $(this).trigger("click");

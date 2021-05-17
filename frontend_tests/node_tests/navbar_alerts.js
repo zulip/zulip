@@ -35,7 +35,7 @@ set_global("document", {
 });
 
 const {localstorage} = zrequire("localstorage");
-const panels = zrequire("panels");
+const navbar_alerts = zrequire("navbar_alerts");
 const notifications = zrequire("notifications");
 const util = zrequire("util");
 
@@ -54,45 +54,45 @@ test("allow_notification_alert", () => {
     util.is_mobile = () => false;
     notifications.granted_desktop_notifications_permission = () => false;
     notifications.permission_state = () => "granted";
-    assert.equal(panels.should_show_notifications(ls), true);
+    assert.equal(navbar_alerts.should_show_notifications(ls), true);
 
     // Avoid showing if the user said to never show alert on this computer again.
     ls.set("dontAskForNotifications", true);
-    assert.equal(panels.should_show_notifications(ls), false);
+    assert.equal(navbar_alerts.should_show_notifications(ls), false);
 
     // Avoid showing if device is mobile.
     ls.set("dontAskForNotifications", undefined);
-    assert.equal(panels.should_show_notifications(ls), true);
+    assert.equal(navbar_alerts.should_show_notifications(ls), true);
     util.is_mobile = () => true;
-    assert.equal(panels.should_show_notifications(ls), false);
+    assert.equal(navbar_alerts.should_show_notifications(ls), false);
 
     // Avoid showing if notification permission is denied.
     util.is_mobile = () => false;
-    assert.equal(panels.should_show_notifications(ls), true);
+    assert.equal(navbar_alerts.should_show_notifications(ls), true);
     notifications.permission_state = () => "denied";
-    assert.equal(panels.should_show_notifications(ls), false);
+    assert.equal(navbar_alerts.should_show_notifications(ls), false);
 
     // Avoid showing if notification is already granted.
     notifications.permission_state = () => "granted";
     notifications.granted_desktop_notifications_permission = () => "granted";
-    assert.equal(panels.should_show_notifications(ls), false);
+    assert.equal(navbar_alerts.should_show_notifications(ls), false);
 });
 
 test("profile_incomplete_alert", () => {
     // Show alert.
     page_params.is_admin = true;
     page_params.realm_description = "Organization imported from Slack!";
-    assert.equal(panels.check_profile_incomplete(), true);
+    assert.equal(navbar_alerts.check_profile_incomplete(), true);
 
     // Avoid showing if the user is not admin.
     page_params.is_admin = false;
-    assert.equal(panels.check_profile_incomplete(), false);
+    assert.equal(navbar_alerts.check_profile_incomplete(), false);
 
     // Avoid showing if the realm description is already updated.
     page_params.is_admin = true;
-    assert.equal(panels.check_profile_incomplete(), true);
+    assert.equal(navbar_alerts.check_profile_incomplete(), true);
     page_params.realm_description = "Organization description already set!";
-    assert.equal(panels.check_profile_incomplete(), false);
+    assert.equal(navbar_alerts.check_profile_incomplete(), false);
 });
 
 test("server_upgrade_alert hide_duration_expired", (override) => {
@@ -101,12 +101,12 @@ test("server_upgrade_alert hide_duration_expired", (override) => {
 
     override(Date, "now", () => start_time);
     assert.equal(ls.get("lastUpgradeNagDismissalTime"), undefined);
-    assert.equal(panels.should_show_server_upgrade_notification(ls), true);
-    panels.dismiss_upgrade_nag(ls);
-    assert.equal(panels.should_show_server_upgrade_notification(ls), false);
+    assert.equal(navbar_alerts.should_show_server_upgrade_notification(ls), true);
+    navbar_alerts.dismiss_upgrade_nag(ls);
+    assert.equal(navbar_alerts.should_show_server_upgrade_notification(ls), false);
 
     override(Date, "now", () => addDays(start_time, 8)); // Friday 14/5/2021 07:02:27 AM (UTC+0)
-    assert.equal(panels.should_show_server_upgrade_notification(ls), true);
-    panels.dismiss_upgrade_nag(ls);
-    assert.equal(panels.should_show_server_upgrade_notification(ls), false);
+    assert.equal(navbar_alerts.should_show_server_upgrade_notification(ls), true);
+    navbar_alerts.dismiss_upgrade_nag(ls);
+    assert.equal(navbar_alerts.should_show_server_upgrade_notification(ls), false);
 });

@@ -15,9 +15,9 @@ import * as message_view_header from "./message_view_header";
 import * as muting from "./muting";
 import * as narrow from "./narrow";
 import * as narrow_state from "./narrow_state";
+import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
 import * as overlays from "./overlays";
-import * as panels from "./panels";
 import * as people from "./people";
 import * as popovers from "./popovers";
 import * as recent_senders from "./recent_senders";
@@ -689,7 +689,7 @@ export function hide() {
 
     // Fixes misaligned message_view and hidden
     // floating_recipient_bar.
-    panels.resize_app();
+    navbar_alerts.resize_app();
 
     // This makes sure user lands on the selected message
     // and not always at the top of the narrow.
