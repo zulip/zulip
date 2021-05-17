@@ -15,6 +15,7 @@ from typing import Any
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
+from django.db import transaction
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.logging_util import log_to_file
@@ -42,17 +43,20 @@ Usage: ./manage.py deliver_scheduled_emails
             sleep_forever()
 
         while True:
-            email_jobs_to_deliver = ScheduledEmail.objects.filter(
-                scheduled_timestamp__lte=timezone_now()
-            )
-            if email_jobs_to_deliver:
-                for job in email_jobs_to_deliver:
-                    try:
-                        deliver_scheduled_emails(job)
-                    except EmailNotDeliveredException:
-                        logger.warning("%r not delivered", job)
+            found_rows = False
+            with transaction.atomic():
+                email_jobs_to_deliver = ScheduledEmail.objects.filter(
+                    scheduled_timestamp__lte=timezone_now()
+                ).select_for_update()
+                if email_jobs_to_deliver:
+                    for job in email_jobs_to_deliver:
+                        try:
+                            deliver_scheduled_emails(job)
+                        except EmailNotDeliveredException:
+                            logger.warning("%r not delivered", job)
+            # Less load on the db during times of activity,
+            # and more responsiveness when the load is low
+            if found_rows:
                 time.sleep(10)
             else:
-                # Less load on the db during times of activity,
-                # and more responsiveness when the load is low
                 time.sleep(2)
