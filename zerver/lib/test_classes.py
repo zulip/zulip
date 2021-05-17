@@ -10,6 +10,7 @@ from datetime import timedelta
 from typing import (
     Any,
     Callable,
+    Collection,
     Dict,
     Iterable,
     Iterator,
@@ -864,14 +865,14 @@ Output:
         """
         self.assertEqual(self.get_json_error(result, status_code=status_code), msg)
 
-    def assert_length(self, items: List[Any], count: int) -> None:
+    def assert_length(self, items: Collection[Any], count: int) -> None:
         actual_count = len(items)
         if actual_count != count:  # nocoverage
-            print("ITEMS:\n")
+            print("\nITEMS:\n")
             for item in items:
                 print(item)
             print(f"\nexpected length: {count}\nactual length: {actual_count}")
-            raise AssertionError("List is unexpected size!")
+            raise AssertionError(f"{str(type(items))} is of unexpected size!")
 
     def assert_json_error_contains(
         self, result: HttpResponse, msg_substring: str, status_code: int = 400
