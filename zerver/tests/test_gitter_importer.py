@@ -42,7 +42,7 @@ class GitterImporter(ZulipTestCase):
         self.assertIn("username2@users.noreply.github.com", exported_user_email)
 
         # test stream
-        self.assertEqual(len(realm["zerver_stream"]), 1)
+        self.assert_length(realm["zerver_stream"], 1)
         self.assertEqual(realm["zerver_stream"][0]["name"], "from gitter")
         self.assertEqual(realm["zerver_stream"][0]["deactivated"], False)
         self.assertEqual(realm["zerver_stream"][0]["realm"], realm["zerver_realm"][0]["id"])
@@ -62,7 +62,7 @@ class GitterImporter(ZulipTestCase):
         )
         self.assertEqual({0, 1}, exported_subscription_userprofile)
         exported_subscription_recipient = self.get_set(realm["zerver_subscription"], "recipient")
-        self.assertEqual(len(exported_subscription_recipient), 3)
+        self.assert_length(exported_subscription_recipient, 3)
         self.assertIn(realm["zerver_subscription"][1]["recipient"], exported_recipient_id)
 
         messages = read_file("messages-000001.json")

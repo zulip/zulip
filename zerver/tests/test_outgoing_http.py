@@ -54,7 +54,7 @@ class TestOutgoingHttp(ZulipTestCase):
             OutgoingSession(role="testing", timeout=1, headers={"X-Foo": "bar"}).get(
                 "http://example.com/"
             )
-            self.assertEqual(len(mock_requests.calls), 1)
+            self.assert_length(mock_requests.calls, 1)
             headers = mock_requests.calls[0].request.headers
             # We don't see a proxy header with no proxy set
             self.assertFalse("X-Smokescreen-Role" in headers)
@@ -67,7 +67,7 @@ class TestOutgoingHttp(ZulipTestCase):
             OutgoingSession(role="testing", timeout=1, headers={"X-Foo": "bar"}).get(
                 "http://example.com/"
             )
-            self.assertEqual(len(mock_requests.calls), 1)
+            self.assert_length(mock_requests.calls, 1)
             headers = mock_requests.calls[0].request.headers
             self.assertEqual(headers["X-Smokescreen-Role"], "testing")
 
@@ -81,11 +81,11 @@ class TestOutgoingHttp(ZulipTestCase):
         with RequestMockWithTimeoutAsHeader() as mock_requests:
             mock_requests.add(responses.GET, "http://example.com/")
             OutgoingSession(role="testing", timeout=17).get("http://example.com/")
-            self.assertEqual(len(mock_requests.calls), 1)
+            self.assert_length(mock_requests.calls, 1)
             self.assertEqual(mock_requests.calls[0].request.headers["X-Timeout"], 17)
 
         with RequestMockWithTimeoutAsHeader() as mock_requests:
             mock_requests.add(responses.GET, "http://example.com/")
             OutgoingSession(role="testing", timeout=17).get("http://example.com/", timeout=42)
-            self.assertEqual(len(mock_requests.calls), 1)
+            self.assert_length(mock_requests.calls, 1)
             self.assertEqual(mock_requests.calls[0].request.headers["X-Timeout"], 42)

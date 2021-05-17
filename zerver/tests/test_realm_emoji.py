@@ -28,7 +28,7 @@ class RealmEmojiTest(ZulipTestCase):
         result = self.client_get("/json/realm/emoji")
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
-        self.assertEqual(len(result.json()["emoji"]), 2)
+        self.assert_length(result.json()["emoji"], 2)
 
     def test_list_no_author(self) -> None:
         self.login("iago")
@@ -38,7 +38,7 @@ class RealmEmojiTest(ZulipTestCase):
         result = self.client_get("/json/realm/emoji")
         self.assert_json_success(result)
         content = result.json()
-        self.assertEqual(len(content["emoji"]), 2)
+        self.assert_length(content["emoji"], 2)
         test_emoji = content["emoji"][str(realm_emoji.id)]
         self.assertIsNone(test_emoji["author_id"])
 
@@ -54,7 +54,7 @@ class RealmEmojiTest(ZulipTestCase):
         result = self.client_get("/json/realm/emoji")
         self.assert_json_success(result)
         content = result.json()
-        self.assertEqual(len(content["emoji"]), 2)
+        self.assert_length(content["emoji"], 2)
         test_emoji = content["emoji"][str(realm_emoji.id)]
         self.assertIsNone(test_emoji["author_id"])
 
@@ -73,7 +73,7 @@ class RealmEmojiTest(ZulipTestCase):
         result = self.client_get("/json/realm/emoji")
         content = result.json()
         self.assert_json_success(result)
-        self.assertEqual(len(content["emoji"]), 2)
+        self.assert_length(content["emoji"], 2)
         test_emoji = content["emoji"][str(realm_emoji.id)]
         self.assertIn("author_id", test_emoji)
         author = UserProfile.objects.get(id=test_emoji["author_id"])
@@ -147,7 +147,7 @@ class RealmEmojiTest(ZulipTestCase):
         self.assert_json_success(result)
         # We only mark an emoji as deactivated instead of
         # removing it from the database.
-        self.assertEqual(len(emojis), 2)
+        self.assert_length(emojis, 2)
         test_emoji = emojis[str(realm_emoji.id)]
         self.assertEqual(test_emoji["deactivated"], True)
 
@@ -237,7 +237,7 @@ class RealmEmojiTest(ZulipTestCase):
         result = self.client_get("/json/realm/emoji")
         emojis = result.json()["emoji"]
         self.assert_json_success(result)
-        self.assertEqual(len(emojis), 3)
+        self.assert_length(emojis, 3)
 
     def test_failed_file_upload(self) -> None:
         self.login("iago")

@@ -1138,7 +1138,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
     def test_social_auth_mobile_success(self) -> None:
         mobile_flow_otp = "1234abcd" * 8
         account_data_dict = self.get_account_data_dict(email=self.email, name="Full Name")
-        self.assertEqual(len(mail.outbox), 0)
+        self.assert_length(mail.outbox, 0)
         self.user_profile.date_joined = timezone_now() - datetime.timedelta(
             seconds=JUST_CREATED_THRESHOLD + 1
         )
@@ -1172,7 +1172,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
         hamlet_api_keys = get_all_api_keys(self.example_user("hamlet"))
         self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), hamlet_api_keys)
-        self.assertEqual(len(mail.outbox), 1)
+        self.assert_length(mail.outbox, 1)
         self.assertIn("Zulip on Android", mail.outbox[0].body)
 
     def test_social_auth_desktop_success(self) -> None:
@@ -3401,7 +3401,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
     def test_social_auth_mobile_success_legacy_url(self) -> None:
         mobile_flow_otp = "1234abcd" * 8
         account_data_dict = self.get_account_data_dict(email=self.email, name="Full Name")
-        self.assertEqual(len(mail.outbox), 0)
+        self.assert_length(mail.outbox, 0)
         self.user_profile.date_joined = timezone_now() - datetime.timedelta(
             seconds=JUST_CREATED_THRESHOLD + 1
         )
@@ -3442,7 +3442,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
         hamlet_api_keys = get_all_api_keys(self.example_user("hamlet"))
         self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), hamlet_api_keys)
-        self.assertEqual(len(mail.outbox), 1)
+        self.assert_length(mail.outbox, 1)
         self.assertIn("Zulip on Android", mail.outbox[0].body)
 
     def test_google_auth_enabled(self) -> None:
@@ -4525,7 +4525,7 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
         hamlet_api_keys = get_all_api_keys(self.example_user("hamlet"))
         self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), hamlet_api_keys)
-        self.assertEqual(len(mail.outbox), 1)
+        self.assert_length(mail.outbox, 1)
         self.assertIn("Zulip on Android", mail.outbox[0].body)
 
     @override_settings(SEND_LOGIN_EMAILS=True)
@@ -4574,7 +4574,7 @@ class TestZulipRemoteUserBackend(DesktopFlowTestingLib, ZulipTestCase):
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
         hamlet_api_keys = get_all_api_keys(self.example_user("hamlet"))
         self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), hamlet_api_keys)
-        self.assertEqual(len(mail.outbox), 1)
+        self.assert_length(mail.outbox, 1)
         self.assertIn("Zulip on Android", mail.outbox[0].body)
 
     @override_settings(SEND_LOGIN_EMAILS=True)
@@ -4944,7 +4944,7 @@ class ZulipLDAPTestCase(ZulipTestCase):
 class TestLDAP(ZulipLDAPTestCase):
     def test_generate_dev_ldap_dir(self) -> None:
         ldap_dir = generate_dev_ldap_dir("A", 10)
-        self.assertEqual(len(ldap_dir), 10)
+        self.assert_length(ldap_dir, 10)
         regex = re.compile(
             r"(uid\=)+[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+(\,ou\=users\,dc\=zulip\,dc\=com)"
         )
@@ -4956,14 +4956,14 @@ class TestLDAP(ZulipLDAPTestCase):
             )
 
         ldap_dir = generate_dev_ldap_dir("b", 9)
-        self.assertEqual(len(ldap_dir), 9)
+        self.assert_length(ldap_dir, 9)
         regex = re.compile(r"(uid\=)+[a-zA-Z0-9_.+-]+(\,ou\=users\,dc\=zulip\,dc\=com)")
         for key, value in ldap_dir.items():
             self.assertTrue(regex.match(key))
             self.assertCountEqual(list(value.keys()), [*common_attrs, "uid", "jpegPhoto"])
 
         ldap_dir = generate_dev_ldap_dir("c", 8)
-        self.assertEqual(len(ldap_dir), 8)
+        self.assert_length(ldap_dir, 8)
         regex = re.compile(r"(uid\=)+[a-zA-Z0-9_.+-]+(\,ou\=users\,dc\=zulip\,dc\=com)")
         for key, value in ldap_dir.items():
             self.assertTrue(regex.match(key))
@@ -5754,7 +5754,7 @@ class TestQueryLDAP(ZulipLDAPTestCase):
             }
         ):
             values = query_ldap(self.example_email("hamlet"))
-        self.assertEqual(len(values), 4)
+        self.assert_length(values, 4)
         self.assertIn("full_name: King Hamlet", values)
         self.assertIn("avatar: (An avatar image file)", values)
         self.assertIn("custom_profile_field__birthday: 1900-09-08", values)
@@ -5766,7 +5766,7 @@ class TestQueryLDAP(ZulipLDAPTestCase):
             # This will look up the user by email in our test dictionary,
             # should successfully find hamlet's LDAP entry.
             values = query_ldap(self.example_email("hamlet"))
-        self.assertEqual(len(values), 2)
+        self.assert_length(values, 2)
         self.assertIn("full_name: King Hamlet", values)
         self.assertIn("email: hamlet@zulip.com", values)
 

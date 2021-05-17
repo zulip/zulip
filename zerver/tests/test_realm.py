@@ -291,7 +291,7 @@ class RealmTest(ZulipTestCase):
         do_send_realm_reactivation_email(realm, acting_user=iago)
         from django.core.mail import outbox
 
-        self.assertEqual(len(outbox), 1)
+        self.assert_length(outbox, 1)
         self.assertEqual(self.email_envelope_from(outbox[0]), settings.NOREPLY_EMAIL_ADDRESS)
         self.assertRegex(
             self.email_display_from(outbox[0]),

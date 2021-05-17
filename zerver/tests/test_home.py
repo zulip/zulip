@@ -607,7 +607,7 @@ class HomeTest(ZulipTestCase):
         self.assertNotIn(defunct_user.id, active_ids)
 
         cross_bots = page_params["cross_realm_bots"]
-        self.assertEqual(len(cross_bots), 3)
+        self.assert_length(cross_bots, 3)
         cross_bots.sort(key=lambda d: d["email"])
         for cross_bot in cross_bots:
             # These are either nondeterministic or boring

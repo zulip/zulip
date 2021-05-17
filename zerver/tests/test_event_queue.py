@@ -319,7 +319,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
 
         self.send_stream_message(cordelia, stream_name)
 
-        self.assertEqual(len(client.event_queue.contents()), 1)
+        self.assert_length(client.event_queue.contents(), 1)
 
         # This next line of code should silently succeed and basically do
         # nothing under the covers.  This test is here to prevent a bug
@@ -826,7 +826,7 @@ class PruneInternalDataTest(ZulipTestCase):
         self.send_personal_message(self.example_user("iago"), user_profile)
 
         events = client.event_queue.contents()
-        self.assertEqual(len(events), 3)
+        self.assert_length(events, 3)
         self.assertFalse("internal_data" in events[0])
         self.assertFalse("internal_data" in events[1])
         self.assertFalse("internal_data" in events[2])

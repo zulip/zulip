@@ -286,7 +286,7 @@ class BaseAction(ZulipTestCase):
             "result": "success",
         }
         validate_against_openapi_schema(content, "/events", "get", "200", display_brief_error=True)
-        self.assertEqual(len(events), num_events)
+        self.assert_length(events, num_events)
         initial_state = copy.deepcopy(hybrid_state)
         post_process_state(self.user_profile, initial_state, notification_settings_null)
         before = orjson.dumps(initial_state)
@@ -2139,7 +2139,7 @@ class SubscribeActionTest(BaseAction):
             action, include_subscribers=include_subscribers, include_streams=False, num_events=2
         )
         check_subscription_remove("events[0]", events[0])
-        self.assertEqual(len(events[0]["subscriptions"]), 1)
+        self.assert_length(events[0]["subscriptions"], 1)
         self.assertEqual(
             events[0]["subscriptions"][0]["name"],
             "test_stream",

@@ -106,7 +106,7 @@ class AlertWordTests(ZulipTestCase):
         do_add_alert_words(user2, ["another"])
 
         realm_words = alert_words_in_realm(user2.realm)
-        self.assertEqual(len(realm_words), 2)
+        self.assert_length(realm_words, 2)
         self.assertEqual(set(realm_words.keys()), {user1.id, user2.id})
         self.assertEqual(set(realm_words[user1.id]), set(self.interesting_alert_word_list))
         self.assertEqual(set(realm_words[user2.id]), {"another"})

@@ -415,10 +415,10 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         # No notification message event or invitation email is sent because of bot.
         msg_event = [e for e in events_bot if e["event"]["type"] == "message"]
         self.assert_length(msg_event, 0)
-        self.assertEqual(len(events_bot), len(events) - 1)
+        self.assert_length(events_bot, len(events) - 1)
 
         # Test runner automatically redirects all sent email to a dummy 'outbox'.
-        self.assertEqual(len(mail.outbox), 0)
+        self.assert_length(mail.outbox, 0)
 
     def test_add_bot_with_default_sending_stream_private_allowed(self) -> None:
         self.login("hamlet")

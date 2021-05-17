@@ -257,7 +257,7 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
             remote_tokens = RemotePushDeviceToken.objects.filter(token=payload["token"])
             token_count = 1 if method == "register" else 0
-            self.assertEqual(len(remote_tokens), token_count)
+            self.assert_length(remote_tokens, token_count)
 
             # Try adding/removing tokens that are too big...
             broken_token = "x" * 5000  # too big
@@ -273,14 +273,14 @@ class PushBouncerNotificationTest(BouncerTestCase):
         self.assert_json_success(result)
 
         remote_tokens = RemotePushDeviceToken.objects.filter(token=payload["token"])
-        self.assertEqual(len(remote_tokens), 1)
+        self.assert_length(remote_tokens, 1)
         result = self.uuid_post(
             self.server_uuid, "/api/v1/remotes/push/unregister/all", dict(user_id=10)
         )
         self.assert_json_success(result)
 
         remote_tokens = RemotePushDeviceToken.objects.filter(token=payload["token"])
-        self.assertEqual(len(remote_tokens), 0)
+        self.assert_length(remote_tokens, 0)
 
     def test_invalid_apns_token(self) -> None:
         endpoints = [
@@ -373,12 +373,12 @@ class PushBouncerNotificationTest(BouncerTestCase):
             tokens = list(
                 RemotePushDeviceToken.objects.filter(user_id=user.id, token=token, server=server)
             )
-            self.assertEqual(len(tokens), 1)
+            self.assert_length(tokens, 1)
             self.assertEqual(tokens[0].token, token)
 
         # User should have tokens for both devices now.
         tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id, server=server))
-        self.assertEqual(len(tokens), 2)
+        self.assert_length(tokens, 2)
 
         # Remove tokens
         for endpoint, token, kind in endpoints:
@@ -389,14 +389,14 @@ class PushBouncerNotificationTest(BouncerTestCase):
             tokens = list(
                 RemotePushDeviceToken.objects.filter(user_id=user.id, token=token, server=server)
             )
-            self.assertEqual(len(tokens), 0)
+            self.assert_length(tokens, 0)
 
         # Re-add copies of those tokens
         for endpoint, token, kind in endpoints:
             result = self.client_post(endpoint, {"token": token}, subdomain="zulip")
             self.assert_json_success(result)
         tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id, server=server))
-        self.assertEqual(len(tokens), 2)
+        self.assert_length(tokens, 2)
 
         # Now we want to remove them using the bouncer after an API key change.
         # First we test error handling in case of issues with the bouncer:
@@ -409,12 +409,12 @@ class PushBouncerNotificationTest(BouncerTestCase):
 
             # We didn't manage to communicate with the bouncer, to the tokens are still there:
             tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id, server=server))
-            self.assertEqual(len(tokens), 2)
+            self.assert_length(tokens, 2)
 
         # Now we successfully remove them:
         do_regenerate_api_key(user, user)
         tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id, server=server))
-        self.assertEqual(len(tokens), 0)
+        self.assert_length(tokens, 0)
 
 
 class AnalyticsBouncerTest(BouncerTestCase):
@@ -1935,7 +1935,7 @@ class TestPushApi(BouncerTestCase):
             self.assert_json_success(result)
 
             tokens = list(PushDeviceToken.objects.filter(user=user, token=token))
-            self.assertEqual(len(tokens), 1)
+            self.assert_length(tokens, 1)
             self.assertEqual(tokens[0].token, token)
 
         with self.settings(
@@ -1951,11 +1951,11 @@ class TestPushApi(BouncerTestCase):
                 self.assert_json_success(result)
 
                 tokens = list(PushDeviceToken.objects.filter(user=user, token=token))
-                self.assertEqual(len(tokens), 1)
+                self.assert_length(tokens, 1)
                 self.assertEqual(tokens[0].token, token)
 
                 tokens = list(RemotePushDeviceToken.objects.filter(user_id=user.id, token=token))
-                self.assertEqual(len(tokens), 1)
+                self.assert_length(tokens, 1)
                 self.assertEqual(tokens[0].token, token)
 
         # PushDeviceToken will include all the device tokens.
@@ -1974,7 +1974,7 @@ class TestPushApi(BouncerTestCase):
             result = self.client_delete(endpoint, {"token": token})
             self.assert_json_success(result)
             tokens = list(PushDeviceToken.objects.filter(user=user, token=token))
-            self.assertEqual(len(tokens), 0)
+            self.assert_length(tokens, 0)
 
         # Use push notification bouncer and test removing device tokens.
         # Tokens will be removed both locally and remotely.
@@ -1988,8 +1988,8 @@ class TestPushApi(BouncerTestCase):
                 remote_tokens = list(
                     RemotePushDeviceToken.objects.filter(user_id=user.id, token=token)
                 )
-                self.assertEqual(len(tokens), 0)
-                self.assertEqual(len(remote_tokens), 0)
+                self.assert_length(tokens, 0)
+                self.assert_length(remote_tokens, 0)
 
         # Verify that the above process indeed removed all the tokens we created.
         self.assertEqual(RemotePushDeviceToken.objects.all().count(), 0)

@@ -15,14 +15,14 @@ class TestGetNextHotspots(ZulipTestCase):
 
     def test_first_hotspot(self) -> None:
         hotspots = get_next_hotspots(self.user)
-        self.assertEqual(len(hotspots), 1)
+        self.assert_length(hotspots, 1)
         self.assertEqual(hotspots[0]["name"], "intro_reply")
 
     def test_some_done_some_not(self) -> None:
         do_mark_hotspot_as_read(self.user, "intro_reply")
         do_mark_hotspot_as_read(self.user, "intro_compose")
         hotspots = get_next_hotspots(self.user)
-        self.assertEqual(len(hotspots), 1)
+        self.assert_length(hotspots, 1)
         self.assertEqual(hotspots[0]["name"], "intro_streams")
 
     def test_all_intro_hotspots_done(self) -> None:
@@ -35,7 +35,7 @@ class TestGetNextHotspots(ZulipTestCase):
 
     def test_send_all(self) -> None:
         with self.settings(DEVELOPMENT=True, ALWAYS_SEND_ALL_HOTSPOTS=True):
-            self.assertEqual(len(ALL_HOTSPOTS), len(get_next_hotspots(self.user)))
+            self.assert_length(ALL_HOTSPOTS, len(get_next_hotspots(self.user)))
 
     def test_tutorial_disabled(self) -> None:
         with self.settings(TUTORIAL_ENABLED=False):

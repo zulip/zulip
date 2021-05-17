@@ -40,7 +40,7 @@ class SlackMessageConversion(ZulipTestCase):
 
         for name, test in format_tests.items():
             # Check that there aren't any unexpected keys as those are often typos
-            self.assertEqual(len(set(test.keys()) - valid_keys), 0)
+            self.assert_length(set(test.keys()) - valid_keys, 0)
             slack_user_map: Dict[str, int] = {}
             users: List[Dict[str, Any]] = [{}]
             channel_map: Dict[str, Tuple[str, int]] = {}

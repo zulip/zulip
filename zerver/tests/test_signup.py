@@ -292,7 +292,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
             .exclude(message_id=race_message_id)
             .order_by("-message_id")[0:ONBOARDING_UNREAD_MESSAGES]
         )
-        self.assertEqual(len(latest_messages), 2)
+        self.assert_length(latest_messages, 2)
         for msg in latest_messages:
             self.assertFalse(msg.flags.read.is_set)
 
@@ -489,7 +489,7 @@ class PasswordResetTest(ZulipTestCase):
         # Check that the password reset email is from a noreply address.
         from django.core.mail import outbox
 
-        self.assertEqual(len(outbox), 0)
+        self.assert_length(outbox, 0)
 
     @override_settings(RATE_LIMITING=True)
     def test_rate_limiting(self) -> None:
@@ -564,7 +564,7 @@ class PasswordResetTest(ZulipTestCase):
 
         from django.core.mail import outbox
 
-        self.assertEqual(len(outbox), 0)
+        self.assert_length(outbox, 0)
 
     @override_settings(
         AUTHENTICATION_BACKENDS=(
@@ -593,7 +593,7 @@ class PasswordResetTest(ZulipTestCase):
 
         from django.core.mail import outbox
 
-        self.assertEqual(len(outbox), 0)
+        self.assert_length(outbox, 0)
 
     @override_settings(
         AUTHENTICATION_BACKENDS=(
@@ -615,7 +615,7 @@ class PasswordResetTest(ZulipTestCase):
                 )
         from django.core.mail import outbox
 
-        self.assertEqual(len(outbox), 0)
+        self.assert_length(outbox, 0)
 
         # If the domain doesn't match, we do generate an email
         with self.settings(LDAP_APPEND_DOMAIN="example.com"):
@@ -773,13 +773,13 @@ class LoginTest(ZulipTestCase):
         with queries_captured() as queries, cache_tries_captured() as cache_tries:
             self.register(self.nonreg_email("test"), "test")
         # Ensure the number of queries we make is not O(streams)
-        self.assertEqual(len(queries), 70)
+        self.assert_length(queries, 70)
 
         # We can probably avoid a couple cache hits here, but there doesn't
         # seem to be any O(N) behavior.  Some of the cache hits are related
         # to sending messages, such as getting the welcome bot, looking up
         # the alert words for a realm, etc.
-        self.assertEqual(len(cache_tries), 16)
+        self.assert_length(cache_tries, 16)
 
         user_profile = self.nonreg_user("test")
         self.assert_logged_in_user_id(user_profile.id)
@@ -933,7 +933,7 @@ class InviteUserBase(ZulipTestCase):
     ) -> None:
         from django.core.mail import outbox
 
-        self.assertEqual(len(outbox), len(correct_recipients))
+        self.assert_length(outbox, len(correct_recipients))
         email_recipients = [email.recipients()[0] for email in outbox]
         self.assertEqual(sorted(email_recipients), sorted(correct_recipients))
         if len(outbox) == 0:
@@ -1811,11 +1811,11 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         email_jobs_to_deliver = ScheduledEmail.objects.filter(
             scheduled_timestamp__lte=timezone_now()
         )
-        self.assertEqual(len(email_jobs_to_deliver), 1)
+        self.assert_length(email_jobs_to_deliver, 1)
         email_count = len(outbox)
         for job in email_jobs_to_deliver:
             deliver_scheduled_emails(job)
-        self.assertEqual(len(outbox), email_count + 1)
+        self.assert_length(outbox, email_count + 1)
         self.assertEqual(self.email_envelope_from(outbox[-1]), settings.NOREPLY_EMAIL_ADDRESS)
         self.assertIn(FromAddress.NOREPLY, self.email_display_from(outbox[-1]))
 
@@ -1833,13 +1833,13 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         email_jobs_to_deliver = ScheduledEmail.objects.filter(
             scheduled_timestamp__lte=timezone_now(), type=ScheduledEmail.INVITATION_REMINDER
         )
-        self.assertEqual(len(email_jobs_to_deliver), 1)
+        self.assert_length(email_jobs_to_deliver, 1)
 
         self.register(invitee_email, "test")
         email_jobs_to_deliver = ScheduledEmail.objects.filter(
             scheduled_timestamp__lte=timezone_now(), type=ScheduledEmail.INVITATION_REMINDER
         )
-        self.assertEqual(len(email_jobs_to_deliver), 0)
+        self.assert_length(email_jobs_to_deliver, 0)
 
     def test_no_invitation_reminder_when_link_expires_quickly(self) -> None:
         self.login("hamlet")
@@ -1919,7 +1919,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         do_invite_users(lear_user, ["foo@zulip.com"], [], False)
 
         invites = PreregistrationUser.objects.filter(email__iexact="foo@zulip.com")
-        self.assertEqual(len(invites), 4)
+        self.assert_length(invites, 4)
 
         do_create_user(
             "foo@zulip.com",
@@ -1938,7 +1938,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         )
         # If a user was invited more than once, when it accepts one invite and register
         # the others must be canceled.
-        self.assertEqual(len(accepted_invite), 1)
+        self.assert_length(accepted_invite, 1)
         self.assertEqual(accepted_invite[0].id, prereg_user.id)
 
         expected_revoked_invites = set(invites.exclude(id=prereg_user.id).exclude(realm=lear))
@@ -2032,9 +2032,9 @@ class InvitationsTestCase(InviteUserBase):
             referred_by=user_profile, realm=user_profile.realm
         )
         create_confirmation_link(multiuse_invite, Confirmation.MULTIUSE_INVITE)
-        self.assertEqual(len(do_get_user_invites(user_profile)), 5)
-        self.assertEqual(len(do_get_user_invites(hamlet)), 1)
-        self.assertEqual(len(do_get_user_invites(othello)), 1)
+        self.assert_length(do_get_user_invites(user_profile), 5)
+        self.assert_length(do_get_user_invites(hamlet), 1)
+        self.assert_length(do_get_user_invites(othello), 1)
 
     def test_successful_get_open_invitations(self) -> None:
         """
@@ -2077,7 +2077,7 @@ class InvitationsTestCase(InviteUserBase):
         result = self.client_get("/json/invites")
         self.assertEqual(result.status_code, 200)
         invites = orjson.loads(result.content)["invites"]
-        self.assertEqual(len(invites), 2)
+        self.assert_length(invites, 2)
 
         self.assertFalse(invites[0]["is_multiuse"])
         self.assertEqual(invites[0]["email"], "TestOne@zulip.com")
@@ -2276,7 +2276,7 @@ class InvitationsTestCase(InviteUserBase):
         self.assert_json_success(self.invite(invitee, ["Denmark"]))
         # Verify hamlet has only one invitation (Member can resend invitations only sent by him).
         invitation = PreregistrationUser.objects.filter(referred_by=user_profile)
-        self.assertEqual(len(invitation), 1)
+        self.assert_length(invitation, 1)
         prereg_user = PreregistrationUser.objects.get(email=invitee)
 
         # Verify and then clear from the outbox the original invite email
@@ -2807,13 +2807,13 @@ class RealmCreationTest(ZulipTestCase):
             stream = get_stream(stream_name, realm)
             recipient = stream.recipient
             messages = Message.objects.filter(recipient=recipient).order_by("date_sent")
-            self.assertEqual(len(messages), message_count)
+            self.assert_length(messages, message_count)
             self.assertIn(text, messages[0].content)
 
         # Check signup messages
         recipient = signups_stream.recipient
         messages = Message.objects.filter(recipient=recipient).order_by("id")
-        self.assertEqual(len(messages), 2)
+        self.assert_length(messages, 2)
         self.assertIn("Signups enabled", messages[0].content)
         self.assertIn("signed up", messages[1].content)
         self.assertEqual("zuliptest", messages[1].topic_name())
@@ -4578,7 +4578,7 @@ class UserSignUpTest(InviteUserBase):
         user_profile = UserProfile.objects.get(delivery_email=self.nonreg_email("newuser"))
         self.assertTrue(user_profile.is_realm_admin)
         sub = get_stream_subscriptions_for_user(user_profile).filter(recipient__type_id=stream.id)
-        self.assertEqual(len(sub), 1)
+        self.assert_length(sub, 1)
 
     def test_registration_when_name_changes_are_disabled(self) -> None:
         """
@@ -4937,7 +4937,7 @@ class TestFindMyTeam(ZulipTestCase):
         from django.core.mail import outbox
 
         # 3 = 1 + 2 -- Cordelia gets an email each for the "zulip" and "lear" realms.
-        self.assertEqual(len(outbox), 3)
+        self.assert_length(outbox, 3)
 
     def test_find_team_ignore_invalid_email(self) -> None:
         result = self.client_post(
@@ -4954,7 +4954,7 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertIn("invalid_email@", content)
         from django.core.mail import outbox
 
-        self.assertEqual(len(outbox), 1)
+        self.assert_length(outbox, 1)
 
     def test_find_team_reject_invalid_email(self) -> None:
         result = self.client_post("/accounts/find/", dict(emails="invalid_string"))
@@ -4962,7 +4962,7 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertIn(b"Enter a valid email", result.content)
         from django.core.mail import outbox
 
-        self.assertEqual(len(outbox), 0)
+        self.assert_length(outbox, 0)
 
         # Just for coverage on perhaps-unnecessary validation code.
         result = self.client_get("/accounts/find/", {"emails": "invalid"})
@@ -4975,7 +4975,7 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
         from django.core.mail import outbox
 
-        self.assertEqual(len(outbox), 0)
+        self.assert_length(outbox, 0)
 
     def test_find_team_one_email(self) -> None:
         data = {"emails": self.example_email("hamlet")}
@@ -4984,7 +4984,7 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertEqual(result.url, "/accounts/find/?emails=hamlet%40zulip.com")
         from django.core.mail import outbox
 
-        self.assertEqual(len(outbox), 1)
+        self.assert_length(outbox, 1)
 
     def test_find_team_deactivated_user(self) -> None:
         do_deactivate_user(self.example_user("hamlet"), acting_user=None)
@@ -4994,7 +4994,7 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertEqual(result.url, "/accounts/find/?emails=hamlet%40zulip.com")
         from django.core.mail import outbox
 
-        self.assertEqual(len(outbox), 0)
+        self.assert_length(outbox, 0)
 
     def test_find_team_deactivated_realm(self) -> None:
         do_deactivate_realm(get_realm("zulip"), acting_user=None)
@@ -5004,7 +5004,7 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertEqual(result.url, "/accounts/find/?emails=hamlet%40zulip.com")
         from django.core.mail import outbox
 
-        self.assertEqual(len(outbox), 0)
+        self.assert_length(outbox, 0)
 
     def test_find_team_bot_email(self) -> None:
         data = {"emails": self.example_email("webhook_bot")}
@@ -5013,7 +5013,7 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertEqual(result.url, "/accounts/find/?emails=webhook-bot%40zulip.com")
         from django.core.mail import outbox
 
-        self.assertEqual(len(outbox), 0)
+        self.assert_length(outbox, 0)
 
     def test_find_team_more_than_ten_emails(self) -> None:
         data = {"emails": ",".join(f"hamlet-{i}@zulip.com" for i in range(11))}
@@ -5022,7 +5022,7 @@ class TestFindMyTeam(ZulipTestCase):
         self.assertIn("Please enter at most 10", result.content.decode("utf8"))
         from django.core.mail import outbox
 
-        self.assertEqual(len(outbox), 0)
+        self.assert_length(outbox, 0)
 
 
 class ConfirmationKeyTest(ZulipTestCase):

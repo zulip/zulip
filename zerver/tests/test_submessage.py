@@ -137,7 +137,7 @@ class TestBasics(ZulipTestCase):
         self.assertIn(hamlet.id, users)
 
         rows = SubMessage.get_raw_db_rows([message_id])
-        self.assertEqual(len(rows), 1)
+        self.assert_length(rows, 1)
         row = rows[0]
 
         expected_data = dict(

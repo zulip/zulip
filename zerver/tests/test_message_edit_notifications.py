@@ -109,12 +109,12 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         ]
 
         if expect_short_circuit:
-            self.assertEqual(len(cordelia_calls), 0)
+            self.assert_length(cordelia_calls, 0)
             return {}
 
         # Normally we expect maybe_enqueue_notifications to be
         # called for Cordelia, so continue on.
-        self.assertEqual(len(cordelia_calls), 1)
+        self.assert_length(cordelia_calls, 1)
         enqueue_kwargs = cordelia_calls[0][1]
 
         queue_messages = []
@@ -202,7 +202,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
         queue_messages = info["queue_messages"]
 
-        self.assertEqual(len(queue_messages), 2)
+        self.assert_length(queue_messages, 2)
 
         self.assertEqual(queue_messages[0]["queue_name"], "missedmessage_mobile_notifications")
         mobile_event = queue_messages[0]["event"]
@@ -335,7 +335,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
         queue_messages = info["queue_messages"]
 
-        self.assertEqual(len(queue_messages), 1)
+        self.assert_length(queue_messages, 1)
 
     def test_always_push_notify_for_fully_present_boring_user(self) -> None:
         cordelia = self.example_user("cordelia")
@@ -376,7 +376,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         # Even though Cordelia has enable_online_push_notifications set
         # to True, we don't send her any offline notifications, since she
         # was not mentioned.
-        self.assertEqual(len(queue_messages), 0)
+        self.assert_length(queue_messages, 0)
 
     def test_updates_with_stream_mention_of_sorta_present_user(self) -> None:
         cordelia = self.example_user("cordelia")
@@ -412,7 +412,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
         # She will get messages enqueued.  (Other tests drill down on the
         # actual content of these messages.)
-        self.assertEqual(len(info["queue_messages"]), 2)
+        self.assert_length(info["queue_messages"], 2)
 
     def test_updates_with_wildcard_mention(self) -> None:
         cordelia = self.example_user("cordelia")
@@ -447,7 +447,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         self.assertEqual(info["enqueue_kwargs"], expected_enqueue_kwargs)
 
         # She will get messages enqueued.
-        self.assertEqual(len(info["queue_messages"]), 2)
+        self.assert_length(info["queue_messages"], 2)
 
     def test_updates_with_upgrade_wildcard_mention(self) -> None:
         # If there was a previous wildcard mention delivered to the
@@ -509,7 +509,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
         # Because Cordelia is FULLY present, we don't need to send any offline
         # push notifications or message notification emails.
-        self.assertEqual(len(info["queue_messages"]), 0)
+        self.assert_length(info["queue_messages"], 0)
 
     def test_clear_notification_when_mention_removed(self) -> None:
         mentioned_user = self.example_user("iago")

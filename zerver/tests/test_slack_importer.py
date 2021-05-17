@@ -174,7 +174,7 @@ class SlackImporter(ZulipTestCase):
         fetch_shared_channel_users(users, slack_data_dir, "token")
 
         # Normal users
-        self.assertEqual(len(users), 5)
+        self.assert_length(users, 5)
         self.assertEqual(users[0]["id"], "U061A1R2R")
         self.assertEqual(users[0]["is_mirror_dummy"], False)
         self.assertFalse("team_domain" in users[0])
@@ -386,7 +386,7 @@ class SlackImporter(ZulipTestCase):
         for name in cpf_name:
             self.assertTrue(name.startswith("Slack custom field "))
 
-        self.assertEqual(len(customprofilefield_value), 6)
+        self.assert_length(customprofilefield_value, 6)
         self.assertEqual(customprofilefield_value[0]["field"], 0)
         self.assertEqual(customprofilefield_value[0]["user_profile"], 1)
         self.assertEqual(customprofilefield_value[3]["user_profile"], 0)
@@ -394,9 +394,9 @@ class SlackImporter(ZulipTestCase):
 
         # test that the primary owner should always be imported first
         self.assertDictEqual(slack_user_id_to_zulip_user_id, test_slack_user_id_to_zulip_user_id)
-        self.assertEqual(len(avatar_list), 8)
+        self.assert_length(avatar_list, 8)
 
-        self.assertEqual(len(zerver_userprofile), 8)
+        self.assert_length(zerver_userprofile, 8)
 
         self.assertEqual(zerver_userprofile[0]["is_staff"], False)
         self.assertEqual(zerver_userprofile[0]["is_bot"], False)
@@ -664,14 +664,14 @@ class SlackImporter(ZulipTestCase):
             passed_realm["zerver_realm"][0]["description"], "Organization imported from Slack!"
         )
         self.assertEqual(passed_realm["zerver_userpresence"], [])
-        self.assertEqual(len(passed_realm.keys()), 15)
+        self.assert_length(passed_realm.keys(), 15)
 
         self.assertEqual(realm["zerver_stream"], [])
         self.assertEqual(realm["zerver_userprofile"], [])
         self.assertEqual(realm["zerver_realmemoji"], [])
         self.assertEqual(realm["zerver_customprofilefield"], [])
         self.assertEqual(realm["zerver_customprofilefieldvalue"], [])
-        self.assertEqual(len(realm.keys()), 5)
+        self.assert_length(realm.keys(), 5)
 
     def test_get_message_sending_user(self) -> None:
         message_with_file = {"subtype": "file", "type": "message", "file": {"user": "U064KUGRJ"}}
@@ -865,7 +865,7 @@ class SlackImporter(ZulipTestCase):
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
-        self.assertEqual(len(zerver_message), 9)
+        self.assert_length(zerver_message, 9)
 
         self.assertEqual(uploads, [])
         self.assertEqual(attachment, [])
@@ -1050,7 +1050,7 @@ class SlackImporter(ZulipTestCase):
         self.assertTrue(os.path.exists(realm_icon_records_path))
         with open(realm_icon_records_path, "rb") as f:
             records = orjson.loads(f.read())
-            self.assertEqual(len(records), 2)
+            self.assert_length(records, 2)
             self.assertEqual(records[0]["path"], "0/icon.original")
             self.assertTrue(os.path.exists(os.path.join(realm_icons_path, records[0]["path"])))
 
@@ -1133,8 +1133,8 @@ class SlackImporter(ZulipTestCase):
             zerver_attachment=zerver_attachment,
             uploads_list=uploads_list,
         )
-        self.assertEqual(len(zerver_attachment), 1)
-        self.assertEqual(len(uploads_list), 1)
+        self.assert_length(zerver_attachment, 1)
+        self.assert_length(uploads_list, 1)
 
         image_path = zerver_attachment[0]["path_id"]
         self.assertIn("/SlackImportAttachment/", image_path)

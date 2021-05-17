@@ -426,7 +426,7 @@ class MarkdownTest(ZulipTestCase):
         for name, test in format_tests.items():
             with self.subTest(markdown_test_case=name):
                 # Check that there aren't any unexpected keys as those are often typos
-                self.assertEqual(len(set(test.keys()) - valid_keys), 0)
+                self.assert_length(set(test.keys()) - valid_keys, 0)
                 # Ignore tests if specified
                 if test.get("ignore", False):
                     continue  # nocoverage
@@ -1344,14 +1344,14 @@ class MarkdownTest(ZulipTestCase):
             converted_topic = topic_links(realm.id, content)
             if should_have_converted:
                 self.assertTrue("https://trac.example.com" in converted)
-                self.assertEqual(len(converted_topic), 1)
+                self.assert_length(converted_topic, 1)
                 self.assertEqual(
                     converted_topic[0],
                     {"url": "https://trac.example.com/ticket/123", "text": "#123"},
                 )
             else:
                 self.assertTrue("https://trac.example.com" not in converted)
-                self.assertEqual(len(converted_topic), 0)
+                self.assert_length(converted_topic, 0)
 
         assert_conversion("Hello #123 World")
         assert_conversion("Hello #123World", False)
