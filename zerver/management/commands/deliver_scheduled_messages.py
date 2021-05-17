@@ -15,7 +15,7 @@ from zerver.models import Message, ScheduledMessage, get_user_by_delivery_email
 
 ## Setup ##
 logger = logging.getLogger(__name__)
-log_to_file(logger, settings.SCHEDULED_MESSAGE_DELIVERER_LOG_PATH)
+log_to_file(logger, settings.DELIVER_SCHEDULED_MESSAGES_LOG_PATH)
 
 
 class Command(BaseCommand):
