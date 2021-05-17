@@ -120,11 +120,13 @@ function clear_box() {
 }
 
 export function autosize_message_content() {
-    autosize($("#compose-textarea"), {
-        callback() {
-            maybe_scroll_up_selected_message();
-        },
-    });
+    if (!compose_ui.is_full_size()) {
+        autosize($("#compose-textarea"), {
+            callback() {
+                maybe_scroll_up_selected_message();
+            },
+        });
+    }
 }
 
 export function expand_compose_box() {
@@ -281,6 +283,9 @@ export function start(msg_type, opts) {
 }
 
 export function cancel() {
+    // As user closes the compose box, restore the compose box max height
+    compose_ui.make_compose_box_original_size();
+
     $("#compose-textarea").height(40 + "px");
 
     if (page_params.narrow !== undefined) {

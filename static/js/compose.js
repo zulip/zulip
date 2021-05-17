@@ -830,6 +830,16 @@ export function initialize() {
         clear_preview_area();
     });
 
+    $("#compose").on("click", ".expand_composebox_button", (e) => {
+        e.preventDefault();
+        compose_ui.make_compose_box_full_size();
+    });
+
+    $("#compose").on("click", ".collapse_composebox_button", (e) => {
+        e.preventDefault();
+        compose_ui.make_compose_box_original_size();
+    });
+
     uppy = upload.setup_upload({
         mode: "compose",
     });

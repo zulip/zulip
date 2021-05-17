@@ -406,3 +406,19 @@ run_test("quote_and_reply", ({override}) => {
         "translated: @_**Steve Stephenson|90** [said](https://chat.zulip.org/#narrow/stream/92-learning/topic/Tornado):\n```quote\nTesting with compose-box containing whitespaces and newlines only.\n```\n%",
     );
 });
+
+run_test("test_compose_height_changes", ({override}) => {
+    let autosize_destroyed = false;
+    override(autosize, "destroy", () => {
+        autosize_destroyed = true;
+    });
+
+    compose_ui.make_compose_box_full_size();
+    assert.ok($("#compose").hasClass("compose-fullscreen"));
+    assert.ok(compose_ui.is_full_size());
+    assert.ok(autosize_destroyed);
+
+    compose_ui.make_compose_box_original_size();
+    assert.ok(!$("#compose").hasClass("compose-fullscreen"));
+    assert.ok(!compose_ui.is_full_size());
+});

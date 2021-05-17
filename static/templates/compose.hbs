@@ -55,7 +55,11 @@
         <div id="compose_private_stream_alert" class="alert home-error-bar"></div>
         <div id="out-of-view-notification" class="notification-alert"></div>
         <div class="composition-area">
-            <button type="button" class="close" id='compose_close' title="{{t 'Cancel compose' }} (Esc)">&times;</button>
+            <div id="compose_top_right">
+                <button type="button" class="expand_composebox_button fa fa-angle-up" aria-label="{{t 'Expand compose' }}" tabindex=0 title="{{t 'Expand compose' }}"></button>
+                <button type="button" class="collapse_composebox_button fa fa-angle-down" aria-label="{{t 'Collapse compose' }}" tabindex=0 title="{{t 'Collapse compose' }}"></button>
+                <button type="button" class="close" id='compose_close' title="{{t 'Cancel compose' }} (Esc)">&times;</button>
+            </div>
             <form id="send_message_form" action="/json/messages" method="post">
                 {{ csrf_input }}
                 <div class="compose_table">
@@ -82,7 +86,7 @@
                             </div>
                         </div>
                     </div>
-                    <div>
+                    <div class="messagebox-wrapper">
                         <div class="messagebox">
                             <textarea class="new_message_textarea" name="content" id='compose-textarea' placeholder="{{t 'Compose your message here' }}" tabindex="0" aria-label="{{t 'Compose your message here...' }}"></textarea>
                             <div class="scrolling_list preview_message_area" data-simplebar id="preview_message_area" style="display:none;">

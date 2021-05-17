@@ -65,6 +65,9 @@
     padding: 4px 4px 8px 4px;
     border-left: 1px solid hsl(0, 0%, 93%);
     border-right: 1px solid hsl(0, 0%, 93%);
+    height: 100%;
+    display: flex;
+    flex-flow: column;
 }
 
 .ztable_comp_col1 {
@@ -85,6 +88,10 @@
 }
 
 .compose_table {
+    height: 100%;
+    display: flex;
+    flex-flow: column;
+
     .stream-selection-header-colorblock {
         &.message_header_private_message {
             border-radius: 3px 0 0 3px;
@@ -147,6 +154,11 @@
 
 #send_message_form {
     margin: 0;
+    height: 100%;
+
+    .messagebox-wrapper {
+        flex: 1;
+    }
 
     .messagebox {
         /* normally 5px 14px; pull in the right and bottom a bit */
@@ -155,6 +167,9 @@
         background: none;
         box-shadow: none;
         border: none;
+        height: 100%;
+        display: flex;
+        flex-flow: column;
     }
 
     .message_content {
@@ -198,11 +213,30 @@
     margin: auto;
 }
 
-#compose_close {
-    display: none;
+#compose_top_right {
     position: absolute;
     right: 0;
-    opacity: 0.7;
+    float: right;
+
+    button {
+        background: transparent;
+        font-size: 20px;
+        font-weight: bold;
+        line-height: 20px;
+        opacity: 0.6;
+        border: 0;
+        padding: 0;
+        margin-left: 4px;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+}
+
+.collapse_composebox_button,
+#compose_close {
+    display: none;
 }
 
 .compose_invite_user,
@@ -306,6 +340,7 @@ div[id^="message-edit-send-status"],
 
 .composition-area {
     position: relative;
+    flex: 1;
 }
 
 textarea.new_message_textarea {
@@ -541,5 +576,26 @@ a.compose_control_button.hide {
     #compose-content {
         margin-right: 5px;
         margin-left: 5px;
+    }
+}
+
+#compose.compose-fullscreen {
+    height: 100%;
+    z-index: 99;
+
+    #compose-container {
+        margin-top: 50px;
+        height: calc(100% - 50px);
+    }
+
+    .message_comp {
+        flex: 1;
+        display: flex !important;
+        flex-flow: column;
+    }
+
+    #compose-textarea {
+        max-height: none !important;
+        flex: 1;
     }
 }
