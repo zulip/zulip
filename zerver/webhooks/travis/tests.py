@@ -50,6 +50,93 @@ Details: [changes](https://github.com/hl7-fhir/fhir-svn/compare/6dccb98bcfd9...6
             content_type="application/x-www-form-urlencoded",
         )
 
+    def test_travis_only_push_event(self) -> None:
+        self.subscribe(self.test_user, self.STREAM_NAME)
+        self.url = f'{self.build_webhook_url()}&only_events=["push"]'
+
+        self.check_webhook(
+            "build",
+            self.TOPIC,
+            self.EXPECTED_MESSAGE,
+            content_type="application/x-www-form-urlencoded",
+        )
+
+    def test_travis_only_push_event_not_sent(self) -> None:
+        self.subscribe(self.test_user, self.STREAM_NAME)
+        self.url = f'{self.build_webhook_url()}&only_events=["push"]&ignore_pull_requests=false'
+
+        result = self.client_post(
+            self.url,
+            self.get_body("pull_request"),
+            content_type="application/x-www-form-urlencoded",
+        )
+        self.assert_json_success(result)
+        msg = self.get_last_message()
+        self.assertNotEqual(msg.topic_name(), self.TOPIC)
+
+    def test_travis_exclude_push_event(self) -> None:
+        self.subscribe(self.test_user, self.STREAM_NAME)
+        self.url = f'{self.build_webhook_url()}&exclude_events=["push"]'
+
+        result = self.client_post(
+            self.url,
+            self.get_body("build"),
+            content_type="application/x-www-form-urlencoded",
+        )
+        self.assert_json_success(result)
+        msg = self.get_last_message()
+        self.assertNotEqual(msg.topic_name(), self.TOPIC)
+
+    def test_travis_exlude_push_event_sent(self) -> None:
+        self.subscribe(self.test_user, self.STREAM_NAME)
+        self.url = f'{self.build_webhook_url()}&exclude_events=["push"]&ignore_pull_requests=false'
+
+        self.check_webhook(
+            "pull_request",
+            self.TOPIC,
+            self.EXPECTED_MESSAGE,
+            content_type="application/x-www-form-urlencoded",
+        )
+
+    def test_travis_include_glob_events(self) -> None:
+        self.subscribe(self.test_user, self.STREAM_NAME)
+        self.url = f'{self.build_webhook_url()}&include_events=["*"]&ignore_pull_requests=false'
+
+        self.check_webhook(
+            "pull_request",
+            self.TOPIC,
+            self.EXPECTED_MESSAGE,
+            content_type="application/x-www-form-urlencoded",
+        )
+
+        self.check_webhook(
+            "build",
+            self.TOPIC,
+            self.EXPECTED_MESSAGE,
+            content_type="application/x-www-form-urlencoded",
+        )
+
+    def test_travis_exclude_glob_events(self) -> None:
+        self.subscribe(self.test_user, self.STREAM_NAME)
+        self.url = f'{self.build_webhook_url()}&exclude_events=["*"]&ignore_pull_requests=false'
+
+        result = self.client_post(
+            self.url,
+            self.get_body("pull_request"),
+            content_type="application/x-www-form-urlencoded",
+        )
+        self.assert_json_success(result)
+
+        result = self.client_post(
+            self.url,
+            self.get_body("build"),
+            content_type="application/x-www-form-urlencoded",
+        )
+        self.assert_json_success(result)
+
+        msg = self.get_last_message()
+        self.assertNotEqual(msg.topic_name(), self.TOPIC)
+
     def get_body(self, fixture_name: str) -> str:
         return urllib.parse.urlencode(
             {"payload": self.webhook_fixture_data("travis", fixture_name, file_type="json")}

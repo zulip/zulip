@@ -1,6 +1,7 @@
+import fnmatch
 import importlib
 from datetime import datetime
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 from urllib.parse import unquote
 
 from django.http import HttpRequest
@@ -15,6 +16,7 @@ from zerver.lib.exceptions import ErrorCode, JsonableError, StreamDoesNotExistEr
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.send_email import FromAddress
 from zerver.lib.timestamp import timestamp_to_datetime
+from zerver.lib.validator import check_list, check_string
 from zerver.models import UserProfile
 
 MISSING_EVENT_HEADER_MESSAGE = """
@@ -75,10 +77,34 @@ def check_send_webhook_message(
     user_profile: UserProfile,
     topic: str,
     body: str,
+    complete_event_type: Optional[str] = None,
     stream: Optional[str] = REQ(default=None),
     user_specified_topic: Optional[str] = REQ("topic", default=None),
+    only_events: Optional[List[str]] = REQ(default=None, json_validator=check_list(check_string)),
+    exclude_events: Optional[List[str]] = REQ(
+        default=None, json_validator=check_list(check_string)
+    ),
     unquote_url_parameters: bool = False,
 ) -> None:
+    if complete_event_type is not None:
+        # Here, we implement Zulip's generic support for filtering
+        # events sent by the third-party service.
+        #
+        # If complete_event_type is passed to this function, we will check the event
+        # type against user configured lists of only_events and exclude events.
+        # If the event does not satisfy the configuration, the function will return
+        # without sending any messages.
+        #
+        # We match items in only_events and exclude_events using Unix
+        # shell-style wildcards.
+        if (
+            only_events is not None
+            and all([not fnmatch.fnmatch(complete_event_type, pattern) for pattern in only_events])
+        ) or (
+            exclude_events is not None
+            and any([fnmatch.fnmatch(complete_event_type, pattern) for pattern in exclude_events])
+        ):
+            return
 
     if stream is None:
         assert user_profile.bot_owner is not None
