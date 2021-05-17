@@ -5,9 +5,9 @@ import * as blueslip from "./blueslip";
 import * as condense from "./condense";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
+import * as navbar_alerts from "./navbar_alerts";
 import * as navigate from "./navigate";
 import {page_params} from "./page_params";
-import * as panels from "./panels";
 import * as popovers from "./popovers";
 import * as ui from "./ui";
 import * as util from "./util";
@@ -209,7 +209,7 @@ export function resize_sidebars() {
 }
 
 export function resize_page_components() {
-    panels.resize_app();
+    navbar_alerts.resize_app();
     const h = resize_sidebars();
     resize_bottom_whitespace(h);
 }

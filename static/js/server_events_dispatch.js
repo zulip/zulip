@@ -22,11 +22,11 @@ import * as message_list from "./message_list";
 import * as message_lists from "./message_lists";
 import * as muting_ui from "./muting_ui";
 import * as narrow_state from "./narrow_state";
+import * as navbar_alerts from "./navbar_alerts";
 import * as night_mode from "./night_mode";
 import * as notifications from "./notifications";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
-import * as panels from "./panels";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
 import * as reactions from "./reactions";
@@ -290,7 +290,7 @@ export function dispatch_normal_event(event) {
             if (page_params.is_admin) {
                 // Update the UI notice about the user's profile being
                 // incomplete, as we might have filled in the missing field(s).
-                panels.show_profile_incomplete(panels.check_profile_incomplete());
+                navbar_alerts.show_profile_incomplete(navbar_alerts.check_profile_incomplete());
             }
             break;
         }

@@ -275,7 +275,7 @@ p.n-margin {
     border-bottom: 1px solid hsla(0, 0%, 0%, 0.2);
 }
 
-#panels {
+#navbar_alerts_wrapper {
     font-size: 1rem;
     position: relative;
 
