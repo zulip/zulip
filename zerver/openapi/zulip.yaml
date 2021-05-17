@@ -8739,6 +8739,8 @@ paths:
 
                           * 1 = Members only
                           * 2 = Administrators only
+                          * 3 = Full members only
+                          * 4 = Moderators only
 
                           **Changes**: New in Zulip 5.0 (feature level 85) replacing the
                           previous `realm_add_emoji_by_admins_only` boolean.

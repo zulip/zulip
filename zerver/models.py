@@ -245,17 +245,8 @@ class Realm(models.Model):
     send_welcome_emails: bool = models.BooleanField(default=True)
     message_content_allowed_in_email_notifications: bool = models.BooleanField(default=True)
 
-    ADD_CUSTOM_EMOJI_MEMBERS_ONLY = 1
-    ADD_CUSTOM_EMOJI_ADMINS_ONLY = 2
-    ADD_CUSTOM_EMOJI_POLICY_TYPES = [
-        ADD_CUSTOM_EMOJI_MEMBERS_ONLY,
-        ADD_CUSTOM_EMOJI_ADMINS_ONLY,
-    ]
-
     mandatory_topics: bool = models.BooleanField(default=False)
-    add_custom_emoji_policy: int = models.PositiveSmallIntegerField(
-        default=ADD_CUSTOM_EMOJI_MEMBERS_ONLY
-    )
+
     name_changes_disabled: bool = models.BooleanField(default=False)
     email_changes_disabled: bool = models.BooleanField(default=False)
     avatar_changes_disabled: bool = models.BooleanField(default=False)
@@ -291,6 +282,9 @@ class Realm(models.Model):
     ]
 
     DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS = 259200
+
+    # Who in the organization is allowed to add custom emojis.
+    add_custom_emoji_policy: int = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
 
     # Who in the organization is allowed to create streams.
     create_stream_policy: int = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)

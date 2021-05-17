@@ -781,7 +781,7 @@ class RealmAPITest(ZulipTestCase):
             message_content_delete_limit_seconds=[1000, 1100, 1200],
             invite_to_realm_policy=Realm.INVITE_TO_REALM_POLICY_TYPES,
             move_messages_between_streams_policy=Realm.COMMON_POLICY_TYPES,
-            add_custom_emoji_policy=Realm.ADD_CUSTOM_EMOJI_POLICY_TYPES,
+            add_custom_emoji_policy=Realm.COMMON_POLICY_TYPES,
         )
 
         vals = test_values.get(name)

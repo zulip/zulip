@@ -4,12 +4,7 @@ from django.utils.translation import gettext as _
 
 from zerver.decorator import require_member_or_admin
 from zerver.lib.actions import check_add_realm_emoji, do_remove_realm_emoji
-from zerver.lib.emoji import (
-    check_add_emoji_admin,
-    check_remove_custom_emoji,
-    check_valid_emoji_name,
-    name_to_codepoint,
-)
+from zerver.lib.emoji import check_remove_custom_emoji, check_valid_emoji_name, name_to_codepoint
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
@@ -31,7 +26,10 @@ def upload_emoji(
     emoji_name = emoji_name.strip().replace(" ", "_")
     valid_built_in_emoji = name_to_codepoint.keys()
     check_valid_emoji_name(emoji_name)
-    check_add_emoji_admin(user_profile)
+
+    if not user_profile.can_add_custom_emoji():
+        raise JsonableError(_("Insufficient permission"))
+
     if RealmEmoji.objects.filter(
         realm=user_profile.realm, name=emoji_name, deactivated=False
     ).exists():

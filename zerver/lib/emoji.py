@@ -5,7 +5,7 @@ from typing import Tuple
 import orjson
 from django.utils.translation import gettext as _
 
-from zerver.lib.exceptions import JsonableError, OrganizationAdministratorRequired
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.storage import static_path
 from zerver.lib.upload import upload_backend
 from zerver.models import Reaction, Realm, RealmEmoji, UserProfile
@@ -82,16 +82,6 @@ def check_emoji_request(realm: Realm, emoji_name: str, emoji_code: str, emoji_ty
     else:
         # The above are the only valid emoji types
         raise JsonableError(_("Invalid emoji type."))
-
-
-def check_add_emoji_admin(user_profile: UserProfile) -> None:
-    """Raises an exception if the user cannot add the emoji in their organization."""
-
-    # Realm administrators can always add emoji
-    if user_profile.is_realm_admin:
-        return
-    if user_profile.realm.add_custom_emoji_policy == Realm.ADD_CUSTOM_EMOJI_ADMINS_ONLY:
-        raise OrganizationAdministratorRequired()
 
 
 def check_remove_custom_emoji(user_profile: UserProfile, emoji_name: str) -> None:
