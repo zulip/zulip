@@ -1753,6 +1753,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
 
     def has_permission(self, policy_name: str) -> bool:
         if policy_name not in [
+            "add_custom_emoji_policy",
             "create_stream_policy",
             "edit_topic_policy",
             "invite_to_stream_policy",
@@ -1806,6 +1807,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
         if self.realm.edit_topic_policy == Realm.POLICY_EVERYONE:
             return True
         return self.has_permission("edit_topic_policy")
+
+    def can_add_custom_emoji(self) -> bool:
+        return self.has_permission("add_custom_emoji_policy")
 
     def can_access_public_streams(self) -> bool:
         return not (self.is_guest or self.realm.is_zephyr_mirror_realm)

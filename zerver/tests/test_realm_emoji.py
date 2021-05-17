@@ -132,6 +132,13 @@ class RealmEmojiTest(ZulipTestCase):
             result = self.client_post("/json/realm/emoji/%20", info=emoji_data)
         self.assert_json_error(result, "Emoji name is missing")
 
+    def test_can_add_custom_emoji(self) -> None:
+        def validation_func(user_profile: UserProfile) -> bool:
+            user_profile.refresh_from_db()
+            return user_profile.can_add_custom_emoji()
+
+        self.check_has_permission_policies("add_custom_emoji_policy", validation_func)
+
     def test_upload_admins_only(self) -> None:
         self.login("othello")
         realm = get_realm("zulip")
