@@ -469,6 +469,7 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             "help/community-topic-edits",
             "help/delete-a-stream",
             "for/working-groups-and-communities/",
+            "/help/only-allow-admins-to-add-emoji",
             "api/delete-stream",
             "casper/(?P<path>.+)",
             "static/(?P<path>.+)",

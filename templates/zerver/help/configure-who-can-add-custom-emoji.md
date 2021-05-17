@@ -3,8 +3,13 @@
 {!admin-only.md!}
 
 By default, anyone other than guests can [add custom emoji](/help/add-custom-emoji) to the
-organization. However, you can change your organization's settings to only
-allow administrators to add new emoji.
+organization. However, you can restrict the permission to add custom emoji to other sets of
+roles:
+
+* Organization administrators
+* Organization administrators and moderators
+* Organization administrators and all members
+* Organization administrators and [full members](/help/restrict-permissions-of-new-members)
 
 ### Change who can add custom emoji
 

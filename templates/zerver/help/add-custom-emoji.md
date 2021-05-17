@@ -4,7 +4,7 @@ By default, anyone other than guests can add custom emoji to a Zulip organizatio
 are available to all users.
 
 Organization administrators can also
-[change who can add custom emoji](/help/only-allow-admins-to-add-emoji).
+[change who can add custom emoji](/help/configure-who-can-add-custom-emoji).
 
 ## Add custom emoji
 
@@ -57,4 +57,4 @@ administrators can delete anyone's custom emoji.
 
 ## Related articles
 
-* [Change who can add custom emoji](/help/only-allow-admins-to-add-emoji)
+* [Change who can add custom emoji](/help/configure-who-can-add-custom-emoji)
