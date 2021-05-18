@@ -24,7 +24,7 @@ function init_simulated_scrolling() {
         scrollHeight: 0,
     };
 
-    $("#buddy_list_wrapper")[0] = elem;
+    $.create("#buddy_list_wrapper", {children: [elem]});
 
     $("#buddy_list_wrapper_padding").set_height(0);
 

@@ -428,6 +428,11 @@ function make_new_elem(selector, opts) {
                 yield child;
             }
         };
+
+        for (const [i, child] of opts.children.entries()) {
+            self[i] = child;
+        }
+
         self.length = opts.children.length;
     }
 
