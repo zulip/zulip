@@ -122,11 +122,16 @@ function test(label, f) {
 
         clear_buddy_list();
         muting.set_muted_users([]);
+
+        activity.clear_for_testing();
+        activity.set_cursor_and_filter();
+
         f(override);
     });
 }
 
-test("reload_defaults", () => {
+run_test("reload_defaults", () => {
+    activity.clear_for_testing();
     blueslip.expect("warn", "get_filter_text() is called before initialization");
     assert.equal(activity.get_filter_text(), "");
 });
@@ -201,8 +206,6 @@ test("huddle_data.process_loaded_messages", () => {
 });
 
 test("presence_list_full_update", (override) => {
-    activity.set_cursor_and_filter();
-
     override(padded_widget, "update_padding", () => {});
 
     $(".user-list-filter").trigger("focus");
@@ -467,8 +470,6 @@ test("insert_unfiltered_user_with_filter", () => {
     // This test only tests that we do not explode when
     // try to insert Fred into a list where he does not
     // match the search filter.
-    activity.set_cursor_and_filter();
-
     const user_filter = $(".user-list-filter");
     user_filter.val("do-not-match-filter");
     activity.redraw_user(fred.user_id);
@@ -557,7 +558,10 @@ test("initialize", (override) => {
 
     $(window).off("focus");
     activity.initialize();
-    payload.success({});
+    payload.success({
+        zephyr_mirror_active: true,
+        presences: {},
+    });
     $(window).trigger("focus");
     clear();
 
