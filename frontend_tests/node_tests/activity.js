@@ -89,18 +89,13 @@ people.add_active_user(zoe);
 people.add_active_user(me);
 people.initialize_current_user(me.user_id);
 
-const presence_info = new Map();
-presence_info.set(alice.user_id, {status: "inactive"});
-presence_info.set(fred.user_id, {status: "active"});
-presence_info.set(jill.user_id, {status: "active"});
-
-presence.__Rewire__("presence_info", presence_info);
-
 function clear_buddy_list() {
     buddy_list.populate({
         keys: [],
     });
 }
+
+let presence_info;
 
 function test(label, f) {
     run_test(label, (override) => {
@@ -113,6 +108,17 @@ function test(label, f) {
                 chunk_size: 100,
             });
         });
+
+        presence_info = new Map();
+        presence.__Rewire__("presence_info", presence_info);
+
+        presence_info.set(alice.user_id, {status: "active"});
+        presence_info.set(fred.user_id, {status: "active"});
+        presence_info.set(jill.user_id, {status: "active"});
+        presence_info.set(mark.user_id, {status: "idle"});
+        presence_info.set(norbert.user_id, {status: "active"});
+        presence_info.set(zoe.user_id, {status: "active"});
+        presence_info.set(me.user_id, {status: "active"});
 
         clear_buddy_list();
         muting.set_muted_users([]);
@@ -130,13 +136,21 @@ test("get_status", () => {
     page_params.user_id = 999;
 
     assert.equal(presence.get_status(page_params.user_id), "active");
-    assert.equal(presence.get_status(alice.user_id), "inactive");
+    assert.equal(presence.get_status(alice.user_id), "active");
+    assert.equal(presence.get_status(mark.user_id), "idle");
     assert.equal(presence.get_status(fred.user_id), "active");
+
+    presence_info.delete(zoe.user_id);
     assert.equal(presence.get_status(zoe.user_id), "offline");
+
+    presence_info.set(alice.user_id, {status: "whatever"});
+    assert.equal(presence.get_status(alice.user_id), "whatever");
 });
 
 test("sort_users", () => {
     const user_ids = [alice.user_id, fred.user_id, jill.user_id];
+
+    presence_info.delete(alice.user_id);
 
     buddy_data.sort_users(user_ids);
 
@@ -186,15 +200,6 @@ test("huddle_data.process_loaded_messages", () => {
     assert.deepEqual(huddle_data.get_huddles(), [user_ids_string2, user_ids_string1]);
 });
 
-presence.__Rewire__("presence_info", new Map());
-presence.presence_info.set(alice.user_id, {status: activity.IDLE});
-presence.presence_info.set(fred.user_id, {status: activity.ACTIVE});
-presence.presence_info.set(jill.user_id, {status: activity.ACTIVE});
-presence.presence_info.set(mark.user_id, {status: activity.IDLE});
-presence.presence_info.set(norbert.user_id, {status: activity.ACTIVE});
-presence.presence_info.set(zoe.user_id, {status: activity.ACTIVE});
-presence.presence_info.set(me.user_id, {status: activity.ACTIVE});
-
 test("presence_list_full_update", (override) => {
     override(keydown_util, "handle", () => {});
 
@@ -210,11 +215,11 @@ test("presence_list_full_update", (override) => {
 
     assert.deepEqual(user_ids, [
         me.user_id,
+        alice.user_id,
         fred.user_id,
         jill.user_id,
         norbert.user_id,
         zoe.user_id,
-        alice.user_id,
         mark.user_id,
     ]);
 });
@@ -357,14 +362,6 @@ test("handlers", (override) => {
         handler(e);
     })();
 });
-
-presence.__Rewire__("presence_info", new Map());
-presence.presence_info.set(alice.user_id, {status: activity.ACTIVE});
-presence.presence_info.set(fred.user_id, {status: activity.ACTIVE});
-presence.presence_info.set(jill.user_id, {status: activity.ACTIVE});
-presence.presence_info.set(mark.user_id, {status: activity.IDLE});
-presence.presence_info.set(norbert.user_id, {status: activity.ACTIVE});
-presence.presence_info.set(zoe.user_id, {status: activity.ACTIVE});
 
 test("first/prev/next", (override) => {
     override(padded_widget, "update_padding", () => {});
