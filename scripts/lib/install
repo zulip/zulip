@@ -524,11 +524,13 @@ if has_class "zulip::app_frontend_base"; then
 fi
 
 # Set up a basic .gitconfig for the 'zulip' user
-(
-    cd / # Make sure the current working directory is readable by zulip
-    su zulip -c "git config --global user.email $ZULIP_ADMINISTRATOR"
-    su zulip -c "git config --global user.name 'Zulip Server ($EXTERNAL_HOST)'"
-)
+if [ -n "$ZULIP_ADMINISTRATOR" ]; then
+    (
+        cd / # Make sure the current working directory is readable by zulip
+        su zulip -c "git config --global user.email $ZULIP_ADMINISTRATOR"
+        su zulip -c "git config --global user.name 'Zulip Server ($EXTERNAL_HOST)'"
+    )
+fi
 
 if [ -n "$NO_INIT_DB" ]; then
     set +x
