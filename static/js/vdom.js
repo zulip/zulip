@@ -141,7 +141,7 @@ export function update(replace_content, find, new_dom, old_dom) {
 
     if (new_opts.keyed_nodes === undefined) {
         // We generally want to use vdom on lists, and
-        // adding keys for childrens lets us avoid unnecessary
+        // adding keys for children lets us avoid unnecessary
         // redraws (or lets us know we should just rebuild
         // the dom).
         blueslip.error("We need keyed_nodes for updates.");

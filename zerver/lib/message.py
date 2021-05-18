@@ -688,7 +688,7 @@ def has_message_access(
     """
     Returns whether a user has access to a given message.
 
-    * The user_message parameter must be provded if the user has a UserMessage
+    * The user_message parameter must be provided if the user has a UserMessage
       row for the target message.
     * The optional stream parameter is validated; is_subscribed is not.
     """
