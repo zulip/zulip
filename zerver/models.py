@@ -2755,6 +2755,11 @@ class Subscription(models.Model):
                 name="zerver_subscription_recipient_id_user_profile_id_idx",
                 condition=Q(active=True, is_user_active=True),
             ),
+            models.Index(
+                fields=("role", "recipient"),
+                name="zerver_subscription_role_recipient_id_idx",
+                condition=Q(active=True, is_user_active=True),
+            ),
         ]
 
     def __str__(self) -> str:
