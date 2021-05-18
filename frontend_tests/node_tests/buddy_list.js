@@ -11,13 +11,8 @@ const $ = require("../zjsunit/zjquery");
 
 mock_cjs("jquery", $);
 
-mock_esm("../../static/js/padded_widget", {
-    update_padding: () => {},
-});
-
-mock_esm("../../static/js/message_viewport", {
-    height: () => 550,
-});
+const padded_widget = mock_esm("../../static/js/padded_widget");
+const message_viewport = mock_esm("../../static/js/message_viewport");
 
 const people = zrequire("people");
 const {BuddyList} = zrequire("buddy_list");
@@ -76,6 +71,9 @@ run_test("basics", (override) => {
         return "html-stub";
     });
 
+    override(message_viewport, "height", () => 550);
+    override(padded_widget, "update_padding", () => {});
+
     let appended;
     $("#user_presences").append = (html) => {
         assert.equal(html, "html-stub");
@@ -114,6 +112,7 @@ run_test("big_list", (override) => {
         elem.scrollHeight += 100;
         chunks_inserted += 1;
     });
+    override(message_viewport, "height", () => 550);
 
     // We will have more than enough users, but still
     // only do 6 chunks of data.
@@ -212,6 +211,8 @@ run_test("find_li w/bad key", (override) => {
 run_test("scrolling", (override) => {
     const buddy_list = new BuddyList();
     init_simulated_scrolling();
+
+    override(message_viewport, "height", () => 550);
 
     buddy_list.populate({
         keys: [],
