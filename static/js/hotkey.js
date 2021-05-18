@@ -804,7 +804,7 @@ export function process_hotkey(e, hotkey) {
             compose_actions.start("private", {trigger: "compose_hotkey"});
             return true;
         case "open_drafts":
-            drafts.launch();
+            browser_history.go_to_location("drafts");
             return true;
         case "C_deprecated":
             ui.maybe_show_deprecation_notice("C");
