@@ -561,7 +561,7 @@ test_ui("initialize", (override) => {
         scroll_handler_started = true;
     };
 
-    activity.__Rewire__("client_is_active", false);
+    activity.mark_client_idle();
 
     $(window).off("focus");
     activity.initialize();
@@ -572,7 +572,8 @@ test_ui("initialize", (override) => {
     assert(scroll_handler_started);
     assert(!activity.new_user_input);
     assert(!$("#zephyr-mirror-error").hasClass("show"));
-    assert(activity.client_is_active);
+    assert.equal(activity.compute_active_status(), "active");
+
     $(window).idle = (params) => {
         params.onIdle();
     };
@@ -588,7 +589,7 @@ test_ui("initialize", (override) => {
 
     assert($("#zephyr-mirror-error").hasClass("show"));
     assert(!activity.new_user_input);
-    assert(!activity.client_is_active);
+    assert.equal(activity.compute_active_status(), "idle");
 
     // Exercise the mousemove handler, which just
     // sets a flag.
@@ -607,26 +608,31 @@ run_test("away_status", (override) => {
     assert(!user_status.is_away(alice.user_id));
 });
 
-test_ui("electron_bridge", () => {
-    activity.__Rewire__("client_is_active", false);
+test_ui("electron_bridge", (override) => {
+    override(activity, "send_presence_to_server", () => {});
+
+    activity.mark_client_idle();
     window.electron_bridge = undefined;
     assert.equal(activity.compute_active_status(), activity.IDLE);
 
-    activity.__Rewire__("client_is_active", true);
+    activity.mark_client_active();
     assert.equal(activity.compute_active_status(), activity.ACTIVE);
 
     window.electron_bridge = {
         get_idle_on_system: () => true,
     };
     assert.equal(activity.compute_active_status(), activity.IDLE);
-    activity.__Rewire__("client_is_active", false);
+
+    activity.mark_client_idle();
+    window.electron_bridge = undefined;
     assert.equal(activity.compute_active_status(), activity.IDLE);
 
     window.electron_bridge = {
         get_idle_on_system: () => false,
     };
     assert.equal(activity.compute_active_status(), activity.ACTIVE);
-    activity.__Rewire__("client_is_active", true);
+
+    activity.mark_client_active();
     assert.equal(activity.compute_active_status(), activity.ACTIVE);
 });
 

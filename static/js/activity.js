@@ -76,7 +76,7 @@ export function update_dom_with_unread_counts(counts) {
     }
 }
 
-function mark_client_idle() {
+export function mark_client_idle() {
     // When we become idle, we don't immediately send anything to the
     // server; instead, we wait for our next periodic update, since
     // this data is fundamentally not timely.
@@ -210,7 +210,8 @@ export function send_presence_to_server(want_redraw) {
     });
 }
 
-function mark_client_active() {
+export function mark_client_active() {
+    // exported for testing
     if (!client_is_active) {
         client_is_active = true;
         send_presence_to_server(false);
