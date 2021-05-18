@@ -91,6 +91,7 @@ else
         --image-id "$AMI_ID"
         --instance-type "$INSTANCE_TYPE"
         --security-group-ids "$SECURITY_GROUPS"
+        --monitoring Enabled=true
     )
 fi
 
