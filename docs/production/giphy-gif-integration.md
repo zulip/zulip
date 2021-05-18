@@ -26,7 +26,7 @@ You can then configure your Zulip server to use GIPHY API as
 follows:
 
 1. In `/etc/zulip/settings.py`, enter your GIPHY API key as
-   `GIPHY_API_KEY`.
+   `GIPHY_API_KEY = "<Your API key from GIPHY>"`.
 
    GIPHY API keys are not secrets -- GIPHY expects every browser or
    other client connecting to your Zulip server will receive a copy --
