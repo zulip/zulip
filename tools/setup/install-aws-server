@@ -38,16 +38,23 @@ if [ ! -f "$zulip_install_config_file" ]; then
     echo "No configuration file found in $zulip_install_config_file"
     exit 1
 fi
+
 REPO_URL=$(crudini --get "$zulip_install_config_file" repo repo_url)
 if [ -z "$BRANCH" ]; then
     BRANCH=$(crudini --get "$zulip_install_config_file" repo default_branch)
 fi
 
-AWS_ZONE_ID=$(crudini --get "$zulip_install_config_file" aws zone_id)
-SECURITY_GROUPS=$(crudini --get "$zulip_install_config_file" aws security_groups)
-AMI_ID=$(crudini --get "$zulip_install_config_file" aws image_id)
-INSTANCE_TYPE=$(crudini --get "$zulip_install_config_file" aws instance_type)
-SSH_SECRET_ID=$(crudini --get "$zulip_install_config_file" aws ssh_secret_id)
+function lookup() {
+    KEY="$1"
+    crudini --get "$zulip_install_config_file" "aws-$ROLES" "$KEY" 2>/dev/null \
+        || crudini --get "$zulip_install_config_file" aws "$KEY"
+}
+
+AWS_ZONE_ID=$(lookup zone_id)
+SECURITY_GROUPS=$(lookup security_groups)
+AMI_ID=$(lookup image_id)
+INSTANCE_TYPE=$(lookup instance_type)
+SSH_SECRET_ID=$(lookup ssh_secret_id)
 
 # Verify it doesn't exist already
 ZONE_NAME=$($AWS route53 get-hosted-zone --id "$AWS_ZONE_ID" | jq -r '.HostedZone.Name')
