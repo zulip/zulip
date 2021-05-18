@@ -96,16 +96,6 @@ presence_info.set(jill.user_id, {status: "active"});
 
 presence.__Rewire__("presence_info", presence_info);
 
-// Simulate a small window by having the
-// fill_screen_with_content render the entire
-// list in one pass.  We will do more refined
-// testing in the buddy_list node tests.
-buddy_list.fill_screen_with_content = () => {
-    buddy_list.render_more({
-        chunk_size: 100,
-    });
-};
-
 run_test("reload_defaults", () => {
     blueslip.expect("warn", "get_filter_text() is called before initialization");
     assert.equal(activity.get_filter_text(), "");
@@ -189,6 +179,16 @@ function clear_buddy_list() {
 
 function test_ui(label, f) {
     run_test(label, (override) => {
+        // Simulate a small window by having the
+        // fill_screen_with_content render the entire
+        // list in one pass.  We will do more refined
+        // testing in the buddy_list node tests.
+        override(buddy_list, "fill_screen_with_content", () => {
+            buddy_list.render_more({
+                chunk_size: 100,
+            });
+        });
+
         clear_buddy_list();
         muting.set_muted_users([]);
         f(override);
