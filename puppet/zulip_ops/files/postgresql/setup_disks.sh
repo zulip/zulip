@@ -13,7 +13,12 @@ fi
 
 if ! mountpoint -q /srv; then
     mkfs.xfs "$LOCALDISK"
+    # Move any existing files/directories out of the way
+    TMPDIR=$(mktemp -d)
+    mv /srv/* "$TMPDIR"
     mount /srv
+    mv "$TMPDIR/"* /srv
+    rmdir "$TMPDIR"
 fi
 
 if [ ! -L /var/lib/postgresql ]; then
