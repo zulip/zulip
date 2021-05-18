@@ -21,7 +21,6 @@ const _document = {
 
 const channel = mock_esm("../../static/js/channel");
 const compose_state = mock_esm("../../static/js/compose_state");
-const keydown_util = mock_esm("../../static/js/keydown_util");
 const padded_widget = mock_esm("../../static/js/padded_widget");
 const pm_list = mock_esm("../../static/js/pm_list");
 const popovers = mock_esm("../../static/js/popovers");
@@ -33,6 +32,7 @@ set_global("document", _document);
 
 const huddle_data = zrequire("huddle_data");
 const compose_fade = zrequire("compose_fade");
+const keydown_util = zrequire("keydown_util");
 const muting = zrequire("muting");
 const narrow = zrequire("narrow");
 const presence = zrequire("presence");
@@ -201,8 +201,6 @@ test("huddle_data.process_loaded_messages", () => {
 });
 
 test("presence_list_full_update", (override) => {
-    override(keydown_util, "handle", () => {});
-
     activity.set_cursor_and_filter();
 
     override(padded_widget, "update_padding", () => {});
@@ -465,9 +463,7 @@ test("insert_fred_then_alice_then_rename", (override) => {
     people.add_active_user(fred);
 });
 
-test("insert_unfiltered_user_with_filter", (override) => {
-    override(keydown_util, "handle", () => {});
-
+test("insert_unfiltered_user_with_filter", () => {
     // This test only tests that we do not explode when
     // try to insert Fred into a list where he does not
     // match the search filter.
@@ -533,7 +529,6 @@ test("update_presence_info", (override) => {
 });
 
 test("initialize", (override) => {
-    override(keydown_util, "handle", () => {});
     override(padded_widget, "update_padding", () => {});
     override(pm_list, "update_private_messages", () => {});
     override(watchdog, "check_for_unsuspend", () => {});
