@@ -76,6 +76,12 @@ export function update_dom_with_unread_counts(counts) {
     }
 }
 
+export function clear_for_testing() {
+    user_cursor = undefined;
+    user_filter = undefined;
+    client_is_active = false;
+}
+
 export function mark_client_idle() {
     // When we become idle, we don't immediately send anything to the
     // server; instead, we wait for our next periodic update, since
