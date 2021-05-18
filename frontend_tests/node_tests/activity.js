@@ -510,9 +510,9 @@ test("update_presence_info", (override) => {
     buddy_list_add(alice.user_id, alice_li);
 
     let inserted;
-    buddy_list.insert_or_move = () => {
+    override(buddy_list, "insert_or_move", () => {
         inserted = true;
-    };
+    });
 
     presence.presence_info.delete(me.user_id);
     activity.update_presence_info(me.user_id, info, server_time);
@@ -594,6 +594,7 @@ test("initialize", (override) => {
 
 test("away_status", (override) => {
     override(pm_list, "update_private_messages", () => {});
+    override(buddy_list, "insert_or_move", () => {});
 
     assert(!user_status.is_away(alice.user_id));
     activity.on_set_away(alice.user_id);
