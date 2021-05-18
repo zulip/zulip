@@ -367,13 +367,11 @@ test("handlers", (override) => {
 test("first/prev/next", (override) => {
     override(padded_widget, "update_padding", () => {});
 
-    clear_buddy_list();
-
     assert.equal(buddy_list.first_key(), undefined);
     assert.equal(buddy_list.prev_key(alice.user_id), undefined);
     assert.equal(buddy_list.next_key(alice.user_id), undefined);
 
-    buddy_list.container.append = () => {};
+    override(buddy_list.container, "append", () => {});
 
     activity.redraw_user(alice.user_id);
     activity.redraw_user(fred.user_id);
