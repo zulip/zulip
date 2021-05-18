@@ -13,13 +13,13 @@ run_test("config errors", () => {
     new ListCursor({});
 });
 
-function basic_conf() {
+function basic_conf({first_key, prev_key, next_key}) {
     const list = {
         scroll_container_sel: "whatever",
         find_li: () => {},
-        first_key: () => {},
-        prev_key: () => {},
-        next_key: () => {},
+        first_key,
+        prev_key,
+        next_key,
     };
 
     const conf = {
@@ -30,18 +30,22 @@ function basic_conf() {
     return conf;
 }
 
-run_test("misc errors", () => {
-    const conf = basic_conf();
+run_test("misc errors", (override) => {
+    const conf = basic_conf({
+        first_key: () => undefined,
+        prev_key: () => undefined,
+        next_key: () => undefined,
+    });
 
     const cursor = new ListCursor(conf);
 
     // Test that we just ignore empty
     // lists for unknown keys.
-    conf.list.find_li = (opts) => {
-        assert.equal(opts.key, "nada");
-        assert.equal(opts.force_render, true);
+    override(conf.list, "find_li", ({key, force_render}) => {
+        assert.equal(key, "nada");
+        assert.equal(force_render, true);
         return [];
-    };
+    });
 
     cursor.get_row("nada");
 
@@ -55,24 +59,27 @@ run_test("misc errors", () => {
     cursor.next();
 });
 
-run_test("single item list", () => {
-    const conf = basic_conf();
+run_test("single item list", (override) => {
+    const valid_key = "42";
+
+    const conf = basic_conf({
+        first_key: () => valid_key,
+        next_key: () => undefined,
+        prev_key: () => undefined,
+    });
     const cursor = new ListCursor(conf);
 
-    const valid_key = "42";
     const li_stub = {
         length: 1,
         addClass: () => {},
     };
 
-    cursor.adjust_scroll = () => {};
-
-    conf.list.find_li = () => li_stub;
+    override(conf.list, "find_li", () => li_stub);
+    override(cursor, "adjust_scroll", () => {});
 
     cursor.go_to(valid_key);
 
     // Test prev/next, which should just silently do nothing.
-    // (Our basic_conf() has prev_key and next_key return undefined.)
     cursor.prev();
     cursor.next();
 
