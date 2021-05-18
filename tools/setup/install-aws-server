@@ -74,7 +74,8 @@ BOOTDATA=$(mktemp)
     sed '/^AWS=/ r ./bootstrap-awscli' bootstrap-aws-installer
 } >>"$BOOTDATA"
 
-TAGS="[{Key=Name,Value=$SERVER},{Key=role,Value=\"$ROLES\"}]"
+TAG_ROLE_NAMES=$(echo "$ROLES" | perl -pe 's/\w+::profile::(\w+)/$1/g')
+TAGS="[{Key=Name,Value=$SERVER},{Key=role,Value=\"$TAG_ROLE_NAMES\"}]"
 INSTANCE_DATA=$($AWS ec2 run-instances \
     --iam-instance-profile 'Name="EC2ProdInstance"' \
     --image-id "$AMI_ID" \
