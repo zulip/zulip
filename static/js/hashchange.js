@@ -112,7 +112,7 @@ function show_default_view() {
         // NOTE: Setting a hash which is not rendered on
         // empty hash (like a stream narrow) will
         // introduce a bug that user will not be able to
-        // go back in broswer history. See
+        // go back in browser history. See
         // https://chat.zulip.org/#narrow/stream/9-issues/topic/Browser.20back.20button.20on.20RT
         // for detailed description of the issue.
         window.location.hash = page_params.default_view;

@@ -57,7 +57,7 @@
 
         button.user-status-value:hover {
             /* Important is required for generic night them styling to not
-               have precendence over this. */
+               have precedence over this. */
             color: hsl(200, 100%, 40%) !important;
         }
 

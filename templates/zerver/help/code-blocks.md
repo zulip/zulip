@@ -98,7 +98,7 @@ JavaScript, you could specify the language and URL prefix fields as:
 
 When a code block is labeled as Python or JavaScript (either explicitly or by
 organization default), users would get a on-hover option to open the code block
-in the speficied code playground.
+in the specified code playground.
 
 ### Technical details
 

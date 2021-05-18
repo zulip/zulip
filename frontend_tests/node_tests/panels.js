@@ -66,7 +66,7 @@ test("allow_notification_alert", () => {
     util.is_mobile = () => true;
     assert.equal(panels.should_show_notifications(ls), false);
 
-    // Avoid showing if notificaiton permission is denied.
+    // Avoid showing if notification permission is denied.
     util.is_mobile = () => false;
     assert.equal(panels.should_show_notifications(ls), true);
     notifications.permission_state = () => "denied";

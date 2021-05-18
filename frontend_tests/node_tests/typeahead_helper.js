@@ -283,7 +283,7 @@ test("sort_languages", () => {
     Object.assign(pygments_data, actual_pygments_data);
     test_langs = ["j", "java", "javascript", "js"];
 
-    // Sort acccording to priority only.
+    // Sort according to priority only.
     test_langs = th.sort_languages(test_langs, "jav");
     assert.deepEqual(test_langs, ["javascript", "java", "js", "j"]);
 
