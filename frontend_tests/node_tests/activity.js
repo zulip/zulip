@@ -24,18 +24,10 @@ const compose_state = mock_esm("../../static/js/compose_state");
 const keydown_util = mock_esm("../../static/js/keydown_util");
 const padded_widget = mock_esm("../../static/js/padded_widget");
 const pm_list = mock_esm("../../static/js/pm_list");
+const popovers = mock_esm("../../static/js/popovers");
+const resize = mock_esm("../../static/js/resize");
 const scroll_util = mock_esm("../../static/js/scroll_util");
 const watchdog = mock_esm("../../static/js/watchdog");
-
-mock_esm("../../static/js/popovers", {
-    hide_all_except_sidebars() {},
-    hide_all() {},
-    show_userlist_sidebar() {},
-});
-mock_esm("../../static/js/resize", {
-    resize_sidebars: () => {},
-    resize_page_components: () => {},
-});
 
 set_global("document", _document);
 
@@ -234,13 +226,6 @@ function simulate_right_column_buddy_list() {
     };
 }
 
-function simulate_left_column_buddy_list() {
-    $(".user-list-filter").closest = (selector) => {
-        assert.equal(selector, ".app-main [class^='column-']");
-        return $.create("left-sidebar").addClass("column-left");
-    };
-}
-
 function buddy_list_add(user_id, stub) {
     if (stub.attr) {
         stub.attr("data-user-id", user_id);
@@ -279,6 +264,10 @@ test_ui("handlers", (override) => {
     });
     override(scroll_util, "scroll_element_into_container", () => {});
     override(padded_widget, "update_padding", () => {});
+    override(popovers, "hide_all", () => {});
+    override(popovers, "hide_all_except_sidebars", () => {});
+    override(popovers, "show_userlist_sidebar", () => {});
+    override(resize, "resize_sidebars", () => {});
 
     // This is kind of weak coverage; we are mostly making sure that
     // keys and clicks got mapped to functions that don't crash.
@@ -399,74 +388,6 @@ test_ui("first/prev/next", (override) => {
     assert.equal(buddy_list.next_key(fred.user_id), undefined);
 });
 
-test_ui("filter_user_ids", (override) => {
-    override(keydown_util, "handle", () => {});
-
-    const user_filter = $(".user-list-filter");
-    user_filter.val(""); // no search filter
-    activity.set_cursor_and_filter();
-
-    function get_user_ids() {
-        const filter_text = activity.get_filter_text();
-        const user_ids = buddy_data.get_filtered_and_sorted_user_ids(filter_text);
-        return user_ids;
-    }
-
-    let user_ids = buddy_data.get_filtered_and_sorted_user_ids();
-    assert.deepEqual(user_ids, [
-        alice.user_id,
-        fred.user_id,
-        jill.user_id,
-        norbert.user_id,
-        zoe.user_id,
-        mark.user_id,
-    ]);
-
-    muting.add_muted_user(jill.user_id);
-    muting.add_muted_user(mark.user_id);
-
-    // Test no match for muted user when there is no filter.
-    user_ids = get_user_ids();
-    assert.deepEqual(user_ids, [alice.user_id, fred.user_id, norbert.user_id, zoe.user_id]);
-
-    // Test no match for muted users even with filter text.
-    user_filter.val("ji,ma");
-    user_ids = get_user_ids();
-    assert.deepEqual(user_ids, []);
-
-    muting.remove_muted_user(jill.user_id);
-    muting.remove_muted_user(mark.user_id);
-
-    user_filter.val("abc"); // no match
-    user_ids = get_user_ids();
-    assert.deepEqual(user_ids, []);
-
-    user_filter.val("fred"); // match fred
-    user_ids = get_user_ids();
-    assert.deepEqual(user_ids, [fred.user_id]);
-
-    user_filter.val("fred,alice"); // match fred and alice
-    user_ids = get_user_ids();
-    assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
-
-    user_filter.val("fr,al"); // match fred and alice partials
-    user_ids = get_user_ids();
-    assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
-
-    user_filter.val("fr|al"); // test | as OR-operator
-    user_ids = get_user_ids();
-    assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
-
-    presence.presence_info.set(alice.user_id, {status: activity.IDLE});
-    user_filter.val("fr,al"); // match fred and alice partials and idle user
-    user_ids = get_user_ids();
-    assert.deepEqual(user_ids, [fred.user_id, alice.user_id]);
-
-    presence.presence_info.set(alice.user_id, {status: activity.ACTIVE});
-    user_ids = get_user_ids();
-    assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
-});
-
 test_ui("insert_one_user_into_empty_list", (override) => {
     override(padded_widget, "update_padding", () => {});
 
@@ -576,76 +497,6 @@ test_ui("redraw_muted_user", () => {
 
     activity.redraw_user(mark.user_id);
     assert(appended_html === undefined);
-});
-
-test_ui("clear_search", (override) => {
-    override(keydown_util, "handle", () => {});
-    override(padded_widget, "update_padding", () => {});
-
-    activity.set_cursor_and_filter();
-
-    $(".user-list-filter").val("somevalue");
-    $("#clear_search_people_button").trigger("click");
-    assert.equal($(".user-list-filter").val(), "");
-    $("#clear_search_people_button").trigger("click");
-    assert($("#user_search_section").hasClass("notdisplayed"));
-});
-
-test_ui("escape_search", (override) => {
-    override(keydown_util, "handle", () => {});
-
-    page_params.realm_presence_disabled = true;
-
-    activity.set_cursor_and_filter();
-
-    $(".user-list-filter").val("somevalue");
-    activity.escape_search();
-    assert.equal($(".user-list-filter").val(), "");
-    activity.escape_search();
-    assert($("#user_search_section").hasClass("notdisplayed"));
-});
-
-test_ui("initiate_search", (override) => {
-    override(keydown_util, "handle", () => {});
-
-    activity.set_cursor_and_filter();
-
-    $(".user-list-filter").trigger("blur");
-    simulate_right_column_buddy_list();
-    activity.initiate_search();
-    assert.equal($(".user-list-filter").is_focused(), true);
-
-    simulate_left_column_buddy_list();
-    activity.initiate_search();
-    assert.equal($(".user-list-filter").is_focused(), true);
-});
-
-test_ui("toggle_filter_display", (override) => {
-    override(keydown_util, "handle", () => {});
-
-    page_params.realm_presence_disabled = true;
-
-    activity.set_cursor_and_filter();
-
-    activity.user_filter.toggle_filter_displayed();
-    assert($("#user_search_section").hasClass("notdisplayed"));
-    $(".user-list-filter").closest = (selector) => {
-        assert.equal(selector, ".app-main [class^='column-']");
-        return $.create("sidebar").addClass("column-right");
-    };
-    activity.user_filter.toggle_filter_displayed();
-    assert.equal($("#user_search_section").hasClass("notdisplayed"), false);
-});
-
-test_ui("searching", (override) => {
-    override(keydown_util, "handle", () => {});
-
-    activity.set_cursor_and_filter();
-
-    $(".user-list-filter").trigger("focus");
-    assert.equal(activity.searching(), true);
-    $(".user-list-filter").trigger("blur");
-    assert.equal(activity.searching(), false);
 });
 
 test_ui("update_presence_info", (override) => {
