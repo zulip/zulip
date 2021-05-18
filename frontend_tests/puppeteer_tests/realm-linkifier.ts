@@ -64,11 +64,9 @@ async function test_edit_linkifier(page: Page): Promise<void> {
     await page.click(".submit-linkifier-info-change");
 
     await page.waitForSelector("#linkifier-edit-form-modal", {hidden: true});
-    await page.waitForFunction(() => $(".edit-linkifier-status").text().trim() === "Saved");
     await page.waitForSelector(".linkifier_row", {visible: true});
-    assert.strictEqual(
-        await common.get_text_from_selector(page, ".linkifier_row span.linkifier_pattern"),
-        "(?P<num>[0-9a-f]{40})",
+    await page.waitForFunction(
+        () => document.querySelector(".linkifier_pattern")?.textContent === "(?P<num>[0-9a-f]{40})",
     );
     assert.strictEqual(
         await common.get_text_from_selector(
