@@ -3,7 +3,10 @@ class zulip_ops::profile::base {
   include zulip_ops::munin_node
   include zulip_ops::ksplice_uptrack
 
-  $org_base_packages = [# Management for our systems
+  $org_base_packages = [
+    # Standard kernel, not AWS', so ksplice works
+    'linux-image-virtual',
+    # Management for our systems
     'openssh-server',
     'mosh',
     # package management
@@ -30,6 +33,12 @@ class zulip_ops::profile::base {
     'nagios-plugins-contrib',
   ]
   zulip::safepackage { $org_base_packages: ensure => 'installed' }
+
+  # Uninstall the AWS kernel, but only after we install the usual one
+  package { 'linux-image-aws':
+    ensure  => absent,
+    require => Package['linux-image-virtual'],
+  }
 
   # Add system users here
   $users = []
