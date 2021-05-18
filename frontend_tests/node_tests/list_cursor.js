@@ -5,6 +5,7 @@ const {strict: assert} = require("assert");
 const {zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
+const $ = require("../zjsunit/zjquery");
 
 const {ListCursor} = zrequire("list_cursor");
 
@@ -86,4 +87,55 @@ run_test("single item list", (override) => {
     // The next line is also a noop designed to just give us test
     // coverage.
     cursor.go_to(valid_key);
+});
+
+run_test("multiple item list", (override) => {
+    const conf = basic_conf({
+        first_key: () => 1,
+        next_key: (key) => (key < 3 ? key + 1 : undefined),
+        prev_key: (key) => (key > 1 ? key - 1 : undefined),
+    });
+    const cursor = new ListCursor(conf);
+    override(cursor, "adjust_scroll", () => {});
+
+    function li(key) {
+        return $.create(`item-${key}`, {children: ["stub"]});
+    }
+
+    const list_items = {
+        1: li(1),
+        2: li(2),
+        3: li(3),
+    };
+
+    override(conf.list, "find_li", ({key}) => list_items[key]);
+
+    cursor.go_to(2);
+    assert.equal(cursor.get_key(), 2);
+    assert(!list_items[1].hasClass("highlight"));
+    assert(list_items[2].hasClass("highlight"));
+    assert(!list_items[3].hasClass("highlight"));
+
+    cursor.next();
+    cursor.next();
+    cursor.next();
+
+    assert.equal(cursor.get_key(), 3);
+    assert(!list_items[1].hasClass("highlight"));
+    assert(!list_items[2].hasClass("highlight"));
+    assert(list_items[3].hasClass("highlight"));
+
+    cursor.prev();
+    cursor.prev();
+    cursor.prev();
+
+    assert.equal(cursor.get_key(), 1);
+    assert(list_items[1].hasClass("highlight"));
+    assert(!list_items[2].hasClass("highlight"));
+    assert(!list_items[3].hasClass("highlight"));
+
+    cursor.clear();
+    assert.equal(cursor.get_key(), undefined);
+    cursor.redraw();
+    assert(!list_items[1].hasClass("highlight"));
 });
