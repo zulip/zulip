@@ -56,7 +56,7 @@ async function test_add_invalid_linkifier_pattern(page: Page): Promise<void> {
 
 async function test_edit_linkifier(page: Page): Promise<void> {
     await page.click(".linkifier_row .edit");
-    await page.waitForFunction(() => document.activeElement === $("#linkifier-edit-form-modal")[0]);
+    await page.waitForFunction(() => document.activeElement?.id === "linkifier-edit-form-modal");
     await common.fill_form(page, "form.linkifier-edit-form", {
         pattern: "(?P<num>[0-9a-f]{40})",
         url_format_string: "https://trac.example.com/commit/%(num)s",
@@ -81,7 +81,7 @@ async function test_edit_linkifier(page: Page): Promise<void> {
 
 async function test_edit_invalid_linkifier(page: Page): Promise<void> {
     await page.click(".linkifier_row .edit");
-    await page.waitForFunction(() => document.activeElement === $("#linkifier-edit-form-modal")[0]);
+    await page.waitForFunction(() => document.activeElement?.id === "linkifier-edit-form-modal");
     await common.fill_form(page, "form.linkifier-edit-form", {
         pattern: "####",
         url_format_string: "####",
