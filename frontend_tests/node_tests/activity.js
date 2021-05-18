@@ -13,28 +13,20 @@ const window_stub = $.create("window-stub");
 set_global("to_$", () => window_stub);
 $(window).idle = () => {};
 
-let filter_key_handlers;
-
 const _document = {
     hasFocus() {
         return true;
     },
 };
 
-const compose_state = mock_esm("../../static/js/compose_state");
 const channel = mock_esm("../../static/js/channel");
+const compose_state = mock_esm("../../static/js/compose_state");
+const keydown_util = mock_esm("../../static/js/keydown_util");
+const padded_widget = mock_esm("../../static/js/padded_widget");
+const pm_list = mock_esm("../../static/js/pm_list");
+const scroll_util = mock_esm("../../static/js/scroll_util");
+const watchdog = mock_esm("../../static/js/watchdog");
 
-mock_esm("../../static/js/padded_widget", {
-    update_padding: () => {},
-});
-mock_esm("../../static/js/keydown_util", {
-    handle: (opts) => {
-        filter_key_handlers = opts.handlers;
-    },
-});
-mock_esm("../../static/js/pm_list", {
-    update_private_messages: () => {},
-});
 mock_esm("../../static/js/popovers", {
     hide_all_except_sidebars() {},
     hide_all() {},
@@ -44,15 +36,7 @@ mock_esm("../../static/js/resize", {
     resize_sidebars: () => {},
     resize_page_components: () => {},
 });
-mock_esm("../../static/js/scroll_util", {
-    scroll_element_into_container: () => {},
-});
-mock_esm("../../static/js/stream_popover", {
-    show_streamlist_sidebar() {},
-});
-mock_esm("../../static/js/watchdog", {
-    check_for_unsuspend() {},
-});
+
 set_global("document", _document);
 
 const huddle_data = zrequire("huddle_data");
@@ -219,8 +203,12 @@ function test_ui(label, f) {
     });
 }
 
-test_ui("presence_list_full_update", () => {
+test_ui("presence_list_full_update", (override) => {
+    override(keydown_util, "handle", () => {});
+
     activity.set_cursor_and_filter();
+
+    override(padded_widget, "update_padding", () => {});
 
     $(".user-list-filter").trigger("focus");
     compose_state.private_message_recipient = () => fred.email;
@@ -284,6 +272,14 @@ test_ui("PM_update_dom_counts", () => {
 });
 
 test_ui("handlers", (override) => {
+    let filter_key_handlers;
+
+    override(keydown_util, "handle", (opts) => {
+        filter_key_handlers = opts.handlers;
+    });
+    override(scroll_util, "scroll_element_into_container", () => {});
+    override(padded_widget, "update_padding", () => {});
+
     // This is kind of weak coverage; we are mostly making sure that
     // keys and clicks got mapped to functions that don't crash.
     let me_li;
@@ -381,7 +377,9 @@ presence.presence_info.set(mark.user_id, {status: activity.IDLE});
 presence.presence_info.set(norbert.user_id, {status: activity.ACTIVE});
 presence.presence_info.set(zoe.user_id, {status: activity.ACTIVE});
 
-test_ui("first/prev/next", () => {
+test_ui("first/prev/next", (override) => {
+    override(padded_widget, "update_padding", () => {});
+
     clear_buddy_list();
 
     assert.equal(buddy_list.first_key(), undefined);
@@ -401,7 +399,9 @@ test_ui("first/prev/next", () => {
     assert.equal(buddy_list.next_key(fred.user_id), undefined);
 });
 
-test_ui("filter_user_ids", () => {
+test_ui("filter_user_ids", (override) => {
+    override(keydown_util, "handle", () => {});
+
     const user_filter = $(".user-list-filter");
     user_filter.val(""); // no search filter
     activity.set_cursor_and_filter();
@@ -468,6 +468,8 @@ test_ui("filter_user_ids", () => {
 });
 
 test_ui("insert_one_user_into_empty_list", (override) => {
+    override(padded_widget, "update_padding", () => {});
+
     let appended_html;
     override(buddy_list.container, "append", (html) => {
         appended_html = html;
@@ -483,6 +485,7 @@ test_ui("insert_alice_then_fred", (override) => {
     override(buddy_list.container, "append", (html) => {
         appended_html = html;
     });
+    override(padded_widget, "update_padding", () => {});
 
     activity.redraw_user(alice.user_id);
     assert(appended_html.indexOf('data-user-id="1"') > 0);
@@ -498,6 +501,7 @@ test_ui("insert_fred_then_alice_then_rename", (override) => {
     override(buddy_list.container, "append", (html) => {
         appended_html = html;
     });
+    override(padded_widget, "update_padding", () => {});
 
     activity.redraw_user(fred.user_id);
     assert(appended_html.indexOf('data-user-id="2"') > 0);
@@ -543,7 +547,9 @@ test_ui("insert_fred_then_alice_then_rename", (override) => {
     people.add_active_user(fred);
 });
 
-test_ui("insert_unfiltered_user_with_filter", () => {
+test_ui("insert_unfiltered_user_with_filter", (override) => {
+    override(keydown_util, "handle", () => {});
+
     // This test only tests that we do not explode when
     // try to insert Fred into a list where he does not
     // match the search filter.
@@ -572,7 +578,10 @@ test_ui("redraw_muted_user", () => {
     assert(appended_html === undefined);
 });
 
-test_ui("clear_search", () => {
+test_ui("clear_search", (override) => {
+    override(keydown_util, "handle", () => {});
+    override(padded_widget, "update_padding", () => {});
+
     activity.set_cursor_and_filter();
 
     $(".user-list-filter").val("somevalue");
@@ -582,7 +591,9 @@ test_ui("clear_search", () => {
     assert($("#user_search_section").hasClass("notdisplayed"));
 });
 
-test_ui("escape_search", () => {
+test_ui("escape_search", (override) => {
+    override(keydown_util, "handle", () => {});
+
     page_params.realm_presence_disabled = true;
 
     activity.set_cursor_and_filter();
@@ -594,7 +605,9 @@ test_ui("escape_search", () => {
     assert($("#user_search_section").hasClass("notdisplayed"));
 });
 
-test_ui("initiate_search", () => {
+test_ui("initiate_search", (override) => {
+    override(keydown_util, "handle", () => {});
+
     activity.set_cursor_and_filter();
 
     $(".user-list-filter").trigger("blur");
@@ -607,7 +620,9 @@ test_ui("initiate_search", () => {
     assert.equal($(".user-list-filter").is_focused(), true);
 });
 
-test_ui("toggle_filter_display", () => {
+test_ui("toggle_filter_display", (override) => {
+    override(keydown_util, "handle", () => {});
+
     page_params.realm_presence_disabled = true;
 
     activity.set_cursor_and_filter();
@@ -622,7 +637,9 @@ test_ui("toggle_filter_display", () => {
     assert.equal($("#user_search_section").hasClass("notdisplayed"), false);
 });
 
-test_ui("searching", () => {
+test_ui("searching", (override) => {
+    override(keydown_util, "handle", () => {});
+
     activity.set_cursor_and_filter();
 
     $(".user-list-filter").trigger("focus");
@@ -632,6 +649,8 @@ test_ui("searching", () => {
 });
 
 test_ui("update_presence_info", (override) => {
+    override(pm_list, "update_private_messages", () => {});
+
     page_params.realm_presence_disabled = false;
 
     const server_time = 500;
@@ -666,6 +685,11 @@ test_ui("update_presence_info", (override) => {
 });
 
 test_ui("initialize", (override) => {
+    override(keydown_util, "handle", () => {});
+    override(padded_widget, "update_padding", () => {});
+    override(pm_list, "update_private_messages", () => {});
+    override(watchdog, "check_for_unsuspend", () => {});
+
     let payload;
     override(channel, "post", (arg) => {
         payload = arg;
@@ -722,7 +746,9 @@ test_ui("initialize", (override) => {
     clear();
 });
 
-run_test("away_status", () => {
+run_test("away_status", (override) => {
+    override(pm_list, "update_private_messages", () => {});
+
     assert(!user_status.is_away(alice.user_id));
     activity.on_set_away(alice.user_id);
     assert(user_status.is_away(alice.user_id));
