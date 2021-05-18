@@ -151,59 +151,48 @@ test("filter_user_ids", (override) => {
     override(presence, "get_status", (user_id) => user_presence[user_id]);
     override(presence, "get_user_ids", () => all_user_ids);
 
-    const user_filter = $(".user-list-filter");
-    user_filter.val(""); // no search filter
-
-    function get_user_ids() {
+    function test_filter(search_text, expected_users) {
+        const expected_user_ids = expected_users.map((user) => user.user_id);
+        $(".user-list-filter").val(search_text);
         const filter_text = activity.get_filter_text();
-        const user_ids = buddy_data.get_filtered_and_sorted_user_ids(filter_text);
-        return user_ids;
+        assert.deepEqual(
+            buddy_data.get_filtered_and_sorted_user_ids(filter_text),
+            expected_user_ids,
+        );
+
+        override(fake_buddy_list, "populate", ({keys: user_ids}) => {
+            assert.deepEqual(user_ids, expected_user_ids);
+        });
+
+        activity.build_user_sidebar();
     }
 
-    let user_ids = buddy_data.get_filtered_and_sorted_user_ids();
-    assert.deepEqual(user_ids, [me.user_id, alice.user_id, fred.user_id, jill.user_id]);
-
-    muting.add_muted_user(jill.user_id);
-
-    // Test no match for muted user when there is no filter.
-    user_ids = get_user_ids();
-    assert.deepEqual(user_ids, [me.user_id, alice.user_id, fred.user_id]);
+    // Sanity check data setup.
+    assert.deepEqual(buddy_data.get_filtered_and_sorted_user_ids(), [
+        me.user_id,
+        alice.user_id,
+        fred.user_id,
+        jill.user_id,
+    ]);
 
     // Test no match for muted users even with filter text.
-    user_filter.val("ji");
-    user_ids = get_user_ids();
-    assert.deepEqual(user_ids, []);
+    test_filter("ji", [jill]);
+    muting.add_muted_user(jill.user_id);
+    test_filter("ji", []);
 
     muting.remove_muted_user(jill.user_id);
 
-    user_filter.val("abc"); // no match
-    user_ids = get_user_ids();
-    assert.deepEqual(user_ids, []);
-
-    user_filter.val("fred"); // match fred
-    user_ids = get_user_ids();
-    assert.deepEqual(user_ids, [fred.user_id]);
-
-    user_filter.val("fred,alice"); // match fred and alice
-    user_ids = get_user_ids();
-    assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
-
-    user_filter.val("fr,al"); // match fred and alice partials
-    user_ids = get_user_ids();
-    assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
-
-    user_filter.val("fr|al"); // test | as OR-operator
-    user_ids = get_user_ids();
-    assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
+    test_filter("abc", []); // no match
+    test_filter("fred", [fred]);
+    test_filter("fred,alice", [alice, fred]);
+    test_filter("fr,al", [alice, fred]); // partials
+    test_filter("fr|al", [alice, fred]); // | as OR-operator
 
     user_presence[alice.user_id] = "idle";
-    user_filter.val("fr,al"); // match fred and alice partials and idle user
-    user_ids = get_user_ids();
-    assert.deepEqual(user_ids, [fred.user_id, alice.user_id]);
+    test_filter("fr,al", [fred, alice]);
 
     user_presence[alice.user_id] = "active";
-    user_ids = get_user_ids();
-    assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
+    test_filter("fr,al", [alice, fred]);
 });
 
 test("click on user header to toggle display", (override) => {
