@@ -208,10 +208,10 @@ def fetch_initial_state_data(
         # fit into that framework.
         state["realm_authentication_methods"] = realm.authentication_methods_dict()
 
-        # We pretend these features are disabled because guests can't
-        # access them.  In the future, we may want to move this logic
-        # to the frontends, so that we can correctly display what
-        # these fields are in the settings.
+        # We pretend these features are disabled because anonymous
+        # users can't access them.  In the future, we may want to move
+        # this logic to the frontends, so that we can correctly
+        # display what these fields are in the settings.
         state["realm_allow_message_editing"] = (
             False if user_profile is None else realm.allow_message_editing
         )
@@ -222,6 +222,7 @@ def fetch_initial_state_data(
             False if user_profile is None else realm.allow_message_deleting
         )
 
+        # TODO: Can we delete these lines?  They seem to be in property_types...
         state["realm_message_content_edit_limit_seconds"] = realm.message_content_edit_limit_seconds
         state[
             "realm_message_content_delete_limit_seconds"
@@ -236,38 +237,47 @@ def fetch_initial_state_data(
         # future choose to move this logic to the frontend.
         state["realm_presence_disabled"] = True if user_profile is None else realm.presence_disabled
 
+        # Important: Encode units in the client-facing API name.
+        state["max_avatar_file_size_mib"] = settings.MAX_AVATAR_FILE_SIZE
+        state["max_file_upload_size_mib"] = settings.MAX_FILE_UPLOAD_SIZE
+        # TODO: This should have units in its name
+        state["max_icon_file_size"] = settings.MAX_ICON_FILE_SIZE
+        # TODO: This should have units in its name
+        state["realm_upload_quota"] = realm.upload_quota_bytes()
+
         state["realm_icon_url"] = realm_icon_url(realm)
         state["realm_icon_source"] = realm.icon_source
-        state["max_icon_file_size"] = settings.MAX_ICON_FILE_SIZE
         add_realm_logo_fields(state, realm)
-        state["realm_bot_domain"] = realm.get_bot_domain()
+
         state["realm_uri"] = realm.uri
+        state["realm_bot_domain"] = realm.get_bot_domain()
         state["realm_available_video_chat_providers"] = realm.VIDEO_CHAT_PROVIDERS
         state["settings_send_digest_emails"] = settings.SEND_DIGEST_EMAILS
+
         state["realm_digest_emails_enabled"] = (
             realm.digest_emails_enabled and settings.SEND_DIGEST_EMAILS
         )
-        state["realm_is_zephyr_mirror_realm"] = realm.is_zephyr_mirror_realm
         state["realm_email_auth_enabled"] = email_auth_enabled(realm)
         state["realm_password_auth_enabled"] = password_auth_enabled(realm)
-        state["realm_push_notifications_enabled"] = push_notifications_enabled()
-        state["realm_upload_quota"] = realm.upload_quota_bytes()
+
+        state["server_generation"] = settings.SERVER_GENERATION
+        state["realm_is_zephyr_mirror_realm"] = realm.is_zephyr_mirror_realm
+        state["development_environment"] = settings.DEVELOPMENT
         state["realm_plan_type"] = realm.plan_type
         state["zulip_plan_is_not_limited"] = realm.plan_type != Realm.LIMITED
         state["upgrade_text_for_wide_organization_logo"] = str(Realm.UPGRADE_TEXT_STANDARD)
-        state["realm_default_external_accounts"] = DEFAULT_EXTERNAL_ACCOUNTS
-        state["development_environment"] = settings.DEVELOPMENT
-        state["server_generation"] = settings.SERVER_GENERATION
+
         state["password_min_length"] = settings.PASSWORD_MIN_LENGTH
         state["password_min_guesses"] = settings.PASSWORD_MIN_GUESSES
-        # Important: Encode units in the client-facing API name.
-        state["max_file_upload_size_mib"] = settings.MAX_FILE_UPLOAD_SIZE
-        state["max_avatar_file_size_mib"] = settings.MAX_AVATAR_FILE_SIZE
         state["server_inline_image_preview"] = settings.INLINE_IMAGE_PREVIEW
         state["server_inline_url_embed_preview"] = settings.INLINE_URL_EMBED_PREVIEW
         state["server_avatar_changes_disabled"] = settings.AVATAR_CHANGES_DISABLED
         state["server_name_changes_disabled"] = settings.NAME_CHANGES_DISABLED
         state["giphy_rating_options"] = realm.GIPHY_RATING_OPTIONS
+
+        # TODO: Should these have the realm prefix replaced with server_?
+        state["realm_push_notifications_enabled"] = push_notifications_enabled()
+        state["realm_default_external_accounts"] = DEFAULT_EXTERNAL_ACCOUNTS
 
         if settings.JITSI_SERVER_URL is not None:
             state["jitsi_server_url"] = settings.JITSI_SERVER_URL.rstrip("/")
