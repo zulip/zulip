@@ -2,7 +2,7 @@
 
 const {strict: assert} = require("assert");
 
-const {mock_cjs, mock_esm, set_global, zrequire} = require("../zjsunit/namespace");
+const {mock_cjs, mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
@@ -606,29 +606,39 @@ test("away_status", (override) => {
 test("electron_bridge", (override) => {
     override(activity, "send_presence_to_server", () => {});
 
-    activity.mark_client_idle();
-    window.electron_bridge = undefined;
-    assert.equal(activity.compute_active_status(), activity.IDLE);
+    function with_bridge_idle(bridge_idle, f) {
+        with_field(
+            window,
+            "electron_bridge",
+            {
+                get_idle_on_system: () => bridge_idle,
+            },
+            () => {
+                f();
+            },
+        );
+    }
 
-    activity.mark_client_active();
-    assert.equal(activity.compute_active_status(), activity.ACTIVE);
+    with_bridge_idle(true, () => {
+        activity.mark_client_idle();
+        assert.equal(activity.compute_active_status(), "idle");
+        activity.mark_client_active();
+        assert.equal(activity.compute_active_status(), "idle");
+    });
 
-    window.electron_bridge = {
-        get_idle_on_system: () => true,
-    };
-    assert.equal(activity.compute_active_status(), activity.IDLE);
+    with_field(window, "electron_bridge", undefined, () => {
+        activity.mark_client_idle();
+        assert.equal(activity.compute_active_status(), "idle");
+        activity.mark_client_active();
+        assert.equal(activity.compute_active_status(), "active");
+    });
 
-    activity.mark_client_idle();
-    window.electron_bridge = undefined;
-    assert.equal(activity.compute_active_status(), activity.IDLE);
-
-    window.electron_bridge = {
-        get_idle_on_system: () => false,
-    };
-    assert.equal(activity.compute_active_status(), activity.ACTIVE);
-
-    activity.mark_client_active();
-    assert.equal(activity.compute_active_status(), activity.ACTIVE);
+    with_bridge_idle(false, () => {
+        activity.mark_client_idle();
+        assert.equal(activity.compute_active_status(), "active");
+        activity.mark_client_active();
+        assert.equal(activity.compute_active_status(), "active");
+    });
 });
 
 test("test_send_or_receive_no_presence_for_web_public_visitor", () => {
