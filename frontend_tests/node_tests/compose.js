@@ -68,7 +68,6 @@ const people = zrequire("people");
 const settings_config = zrequire("settings_config");
 const stream_data = zrequire("stream_data");
 const upload = zrequire("upload");
-const util = zrequire("util");
 
 function reset_jquery() {
     // Avoid leaks.
@@ -124,6 +123,7 @@ function initialize_handlers(override) {
     override(compose, "compute_show_video_chat_button", () => false);
     override(compose, "render_compose_box", () => {});
     override(upload, "setup_upload", () => undefined);
+    override(resize, "watch_manual_resize", () => {});
     compose.initialize();
 }
 
@@ -199,7 +199,7 @@ test_ui("right-to-left", () => {
     assert.equal(textarea.hasClass("rtl"), false);
 });
 
-test_ui("markdown_shortcuts", () => {
+test_ui("markdown_shortcuts", (override) => {
     let queryCommandEnabled = true;
     const event = {
         keyCode: 66,
@@ -215,8 +215,9 @@ test_ui("markdown_shortcuts", () => {
     let compose_value = $("#compose_textarea").val();
     let selected_word = "";
 
-    document.queryCommandEnabled = () => queryCommandEnabled;
-    document.execCommand = (cmd, bool, markdown) => {
+    override(document, "queryCommandEnabled", () => queryCommandEnabled);
+
+    override(document, "execCommand", (cmd, bool, markdown) => {
         const compose_textarea = $("#compose-textarea");
         const value = compose_textarea.val();
         $("#compose-textarea").val(
@@ -224,7 +225,7 @@ test_ui("markdown_shortcuts", () => {
                 markdown +
                 value.slice(compose_textarea.range().end),
         );
-    };
+    });
 
     $("#compose-textarea")[0] = {};
     $("#compose-textarea").range = () => ({
@@ -369,11 +370,11 @@ test_ui("send_message_success", (override) => {
     $("#sending-indicator").show();
 
     let reify_message_id_checked;
-    echo.reify_message_id = (local_id, message_id) => {
+    override(echo, "reify_message_id", (local_id, message_id) => {
         assert.equal(local_id, "1001");
         assert.equal(message_id, 12);
         reify_message_id_checked = true;
-    };
+    });
 
     compose.send_message_success("1001", 12, false);
 
@@ -423,14 +424,15 @@ test_ui("send_message", (override) => {
             assert.equal(message.timestamp, fake_now);
         });
 
-        markdown.apply_markdown = () => {};
-        markdown.add_topic_links = () => {};
+        override(markdown, "apply_markdown", () => {});
+        override(markdown, "add_topic_links", () => {});
 
-        echo.try_deliver_locally = (message_request) => {
+        override(echo, "try_deliver_locally", (message_request) => {
             const local_id_float = 123.04;
             return echo.insert_local_message(message_request, local_id_float);
-        };
-        transmit.send_message = (payload, success) => {
+        });
+
+        override(transmit, "send_message", (payload, success) => {
             const single_msg = {
                 type: "private",
                 content: "[foobar](/user_uploads/123456)",
@@ -450,13 +452,14 @@ test_ui("send_message", (override) => {
             payload.id = server_message_id;
             success(payload);
             stub_state.send_msg_called += 1;
-        };
-        echo.reify_message_id = (local_id, message_id) => {
+        });
+
+        override(echo, "reify_message_id", (local_id, message_id) => {
             assert.equal(typeof local_id, "string");
             assert.equal(typeof message_id, "number");
             assert.equal(message_id, server_message_id);
             stub_state.reify_message_id_checked += 1;
-        };
+        });
 
         // Setting message content with a host server link and we will assert
         // later that this has been converted to a relative link.
@@ -482,18 +485,18 @@ test_ui("send_message", (override) => {
     })();
 
     // This is the additional setup which is common to both the tests below.
-    transmit.send_message = (payload, success, error) => {
+    override(transmit, "send_message", (payload, success, error) => {
         stub_state.send_msg_called += 1;
         error("Error sending message: Server says 408");
-    };
+    });
 
     let echo_error_msg_checked;
 
-    echo.message_send_error = (local_id, error_response) => {
+    override(echo, "message_send_error", (local_id, error_response) => {
         assert.equal(local_id, 123.04);
         assert.equal(error_response, "Error sending message: Server says 408");
         echo_error_msg_checked = true;
-    };
+    });
 
     // Tests start here.
     (function test_param_error_function_passed_from_send_message() {
@@ -519,9 +522,9 @@ test_ui("send_message", (override) => {
         $("#sending-indicator").show();
         $("#compose-textarea").off("select");
         echo_error_msg_checked = false;
-        echo.try_deliver_locally = () => {};
+        override(echo, "try_deliver_locally", () => {});
 
-        sent_messages.get_new_local_id = () => "loc-55";
+        override(sent_messages, "get_new_local_id", () => "loc-55");
 
         compose.send_message();
 
@@ -731,10 +734,11 @@ test_ui("initialize", (override) => {
     override(compose, "compute_show_video_chat_button", () => false);
 
     let resize_watch_manual_resize_checked = false;
-    resize.watch_manual_resize = (elem) => {
+    override(resize, "watch_manual_resize", (elem) => {
         assert.equal("#compose-textarea", elem);
         resize_watch_manual_resize_checked = true;
-    };
+    });
+
     let xmlhttprequest_checked = false;
     set_global("XMLHttpRequest", function () {
         this.upload = true;
@@ -1098,13 +1102,14 @@ test_ui("on_events", (override) => {
             user_id: 34,
         };
         people.add_active_user(mentioned);
+
         let invite_user_to_stream_called = false;
-        stream_edit.invite_user_to_stream = (user_ids, sub, success) => {
+        override(stream_edit, "invite_user_to_stream", (user_ids, sub, success) => {
             invite_user_to_stream_called = true;
             assert.deepEqual(user_ids, [mentioned.user_id]);
             assert.equal(sub, subscription);
             success(); // This will check success callback path.
-        };
+        });
 
         const helper = setup_parents_and_mock_remove(
             "compose_invite_users",
@@ -1249,17 +1254,17 @@ test_ui("on_events", (override) => {
         }
 
         function setup_mock_markdown_contains_backend_only_syntax(msg_content, return_val) {
-            markdown.contains_backend_only_syntax = (msg) => {
+            override(markdown, "contains_backend_only_syntax", (msg) => {
                 assert.equal(msg, msg_content);
                 return return_val;
-            };
+            });
         }
 
         function setup_mock_markdown_is_status_message(msg_content, return_val) {
-            markdown.is_status_message = (content) => {
+            override(markdown, "is_status_message", (content) => {
                 assert.equal(content, msg_content);
                 return return_val;
-            };
+            });
         }
 
         function test_post_success(success_callback) {
@@ -1323,10 +1328,12 @@ test_ui("on_events", (override) => {
         setup_visibilities();
         setup_mock_markdown_contains_backend_only_syntax("```foobarfoobar```", true);
         setup_mock_markdown_is_status_message("```foobarfoobar```", false);
-        loading.make_indicator = (spinner) => {
+
+        override(loading, "make_indicator", (spinner) => {
             assert.equal(spinner.selector, "#compose .markdown_preview_spinner");
             make_indicator_called = true;
-        };
+        });
+
         mock_channel_post("```foobarfoobar```");
 
         handler(event);
@@ -1340,11 +1347,11 @@ test_ui("on_events", (override) => {
         setup_mock_markdown_contains_backend_only_syntax("foobarfoobar", false);
         setup_mock_markdown_is_status_message("foobarfoobar", false);
         mock_channel_post("foobarfoobar");
-        markdown.apply_markdown = (msg) => {
+        override(markdown, "apply_markdown", (msg) => {
             assert.equal(msg.raw_content, "foobarfoobar");
             apply_markdown_called = true;
             return msg;
-        };
+        });
 
         handler(event);
 
@@ -1406,15 +1413,13 @@ test_ui("create_message_object", (override) => {
     assert.equal(message.content, "burrito");
 
     const {email_list_to_user_ids_string} = people;
-    people.email_list_to_user_ids_string = () => undefined;
+    override(people, "email_list_to_user_ids_string", () => undefined);
     message = compose.create_message_object();
     assert.deepEqual(message.to, [alice.email, bob.email]);
     people.email_list_to_user_ids_string = email_list_to_user_ids_string;
 });
 
 test_ui("narrow_button_titles", () => {
-    util.is_mobile = () => false;
-
     compose_closed_ui.update_buttons_for_private();
     assert.equal(
         $("#left_bar_compose_stream_button_big").text(),
