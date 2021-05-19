@@ -1337,6 +1337,9 @@ class NormalActionsTest(BaseAction):
             self.assertEqual(events[0]["person"]["role"], role)
 
     def test_change_is_guest(self) -> None:
+        stream = Stream.objects.get(name="Denmark")
+        do_add_default_stream(stream)
+
         reset_emails_in_zulip_realm()
 
         # Important: We need to refresh from the database here so that

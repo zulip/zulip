@@ -679,6 +679,13 @@ def apply_event(
                             user_profile, include_all_active=user_profile.is_realm_admin
                         )
 
+                    if state["is_guest"]:
+                        state["realm_default_streams"] = []
+                    else:
+                        state["realm_default_streams"] = streams_to_dicts_sorted(
+                            get_default_streams_for_realm(user_profile.realm_id)
+                        )
+
                 for field in ["delivery_email", "email", "full_name", "is_billing_admin"]:
                     if field in person and field in state:
                         state[field] = person[field]
