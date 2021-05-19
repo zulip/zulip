@@ -218,7 +218,7 @@ export function apply_markdown(message) {
         },
         silencedMentionHandler(quote) {
             // Silence quoted mentions.
-            const user_mention_re = /<span.*user-mention.*data-user-id="(\d+|\*)"[^>]*>@/gm;
+            const user_mention_re = /<span[^>]*user-mention[^>]*data-user-id="(\d+|\*)"[^>]*>@/gm;
             quote = quote.replace(user_mention_re, (match) => {
                 match = match.replace(/"user-mention"/g, '"user-mention silent"');
                 match = match.replace(/>@/g, ">");
