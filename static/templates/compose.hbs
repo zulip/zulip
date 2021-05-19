@@ -31,7 +31,12 @@
                 </button>
             </span>
             {{/unless}}
-            <span class="new_message_button">
+            <span class="new_message_button hide only-visible-for-spectators">
+                <a class="no-underline button small rounded float-left" href="/login">
+                    {{t 'Log in to send messages' }}
+                </a>
+            </span>
+            <span class="new_message_button hidden-for-spectators">
                 <a class="drafts-link no-underline button small rounded compose_drafts_button" href="#drafts" title="{{t 'Drafts' }} (d)">
                     {{t 'Drafts' }}
                 </a>
