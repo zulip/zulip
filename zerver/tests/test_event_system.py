@@ -1,12 +1,19 @@
 import time
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Optional
 from unittest import mock
 
 import orjson
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
+from django.utils.timezone import now as timezone_now
 
-from zerver.lib.actions import check_send_message, do_change_user_role, do_set_realm_property
+from version import API_FEATURE_LEVEL, ZULIP_VERSION
+from zerver.lib.actions import (
+    check_send_message,
+    do_change_user_role,
+    do_set_realm_property,
+    do_update_user_presence,
+)
 from zerver.lib.event_schema import check_restart_event
 from zerver.lib.events import fetch_initial_state_data, get_raw_user_data
 from zerver.lib.test_classes import ZulipTestCase
@@ -15,6 +22,7 @@ from zerver.lib.users import get_api_key
 from zerver.models import (
     Realm,
     UserMessage,
+    UserPresence,
     UserProfile,
     flush_per_request_caches,
     get_client,
@@ -29,8 +37,12 @@ from zerver.tornado.event_queue import (
     process_message_event,
     send_restart_events,
 )
-from zerver.tornado.views import get_events
-from zerver.views.events_register import _default_all_public_streams, _default_narrow
+from zerver.tornado.views import get_events, get_events_backend
+from zerver.views.events_register import (
+    _default_all_public_streams,
+    _default_narrow,
+    events_register_backend,
+)
 
 
 class EventsEndpointTest(ZulipTestCase):
@@ -131,6 +143,35 @@ class EventsEndpointTest(ZulipTestCase):
         self.assertIn("realm_emoji", result_dict)
         self.assertEqual(result_dict["realm_emoji"], [])
         self.assertEqual(result_dict["queue_id"], "15:13")
+
+    def test_events_register_endpoint_all_public_streams_access(self) -> None:
+        guest_user = self.example_user("polonius")
+        normal_user = self.example_user("hamlet")
+        self.assertEqual(guest_user.role, UserProfile.ROLE_GUEST)
+        self.assertEqual(normal_user.role, UserProfile.ROLE_MEMBER)
+
+        with mock.patch("zerver.views.events_register.do_events_register", return_value={}):
+            result = self.api_post(normal_user, "/json/register", dict(all_public_streams="true"))
+        self.assert_json_success(result)
+
+        with mock.patch("zerver.views.events_register.do_events_register", return_value={}):
+            result = self.api_post(guest_user, "/json/register", dict(all_public_streams="true"))
+        self.assert_json_error(result, "User not authorized for this query")
+
+    def test_events_get_events_endpoint_guest_cant_use_all_public_streams_param(self) -> None:
+        """
+        This test is meant to execute the very beginning of the codepath
+        to ensure guest users are immediately disallowed to use the
+        all_public_streams param. Deeper testing is hard (and not necessary for this case)
+        due to the codepath expecting AsyncDjangoHandler to be attached to the request,
+        which doesn't happen in our test setup.
+        """
+
+        guest_user = self.example_user("polonius")
+        self.assertEqual(guest_user.role, UserProfile.ROLE_GUEST)
+
+        result = self.api_get(guest_user, "/api/v1/events", dict(all_public_streams="true"))
+        self.assert_json_error(result, "User not authorized for this query")
 
     def test_tornado_endpoint(self) -> None:
 
@@ -800,6 +841,16 @@ class ClientDescriptorsTest(ZulipTestCase):
 
 
 class RestartEventsTest(ZulipTestCase):
+    def tornado_call(
+        self,
+        view_func: Callable[[HttpRequest, UserProfile], HttpResponse],
+        user_profile: UserProfile,
+        post_data: Dict[str, Any],
+        client_name: Optional[str] = None,
+    ) -> HttpResponse:
+        request = HostRequestMock(post_data, user_profile, client_name=client_name)
+        return view_func(request, user_profile)
+
     def test_restart(self) -> None:
         hamlet = self.example_user("hamlet")
         realm = hamlet.realm
@@ -834,11 +885,85 @@ class RestartEventsTest(ZulipTestCase):
             restart_event,
             dict(
                 type="restart",
+                zulip_version=ZULIP_VERSION,
+                zulip_feature_level=API_FEATURE_LEVEL,
                 server_generation=settings.SERVER_GENERATION,
                 immediate=True,
                 id=0,
             ),
         )
+
+    def test_restart_event_recursive_call_logic(self) -> None:
+        # This is a test for a subtle corner case; see the comments
+        # around RestartEventError for details.
+        hamlet = self.example_user("hamlet")
+        realm = hamlet.realm
+
+        # Setup an empty event queue
+        clear_client_event_queues_for_testing()
+
+        queue_data = dict(
+            all_public_streams=False,
+            apply_markdown=True,
+            client_gravatar=True,
+            client_type_name="website",
+            event_types=None,
+            last_connection_time=time.time(),
+            queue_timeout=0,
+            realm_id=realm.id,
+            user_profile_id=hamlet.id,
+        )
+        client = allocate_client_descriptor(queue_data)
+
+        # Add a restart event to it.
+        send_restart_events(immediate=True)
+
+        # Make a second queue after the restart events were sent.
+        second_client = allocate_client_descriptor(queue_data)
+
+        # Fetch the restart event just sent above, without removing it
+        # from the queue. We will use this as a mock return value in
+        # get_user_events.
+        restart_event = orjson.loads(
+            self.tornado_call(
+                get_events_backend,
+                hamlet,
+                post_data={
+                    "queue_id": client.event_queue.id,
+                    "last_event_id": -1,
+                    "dont_block": "true",
+                    "user_profile_id": hamlet.id,
+                    "secret": settings.SHARED_SECRET,
+                    "client": "internal",
+                },
+                client_name="internal",
+            ).content
+        )["events"]
+
+        # Now the tricky part: We call events_register_backend,
+        # arranging it so that the first `get_user_events` call
+        # returns our restart event (triggering the recursive
+        # behavior), but the second (with a new queue) returns no
+        # events.
+        #
+        # Because get_user_events always returns [] in tests, we need
+        # to mock its return value as well; in an ideal world, we
+        # would only need to mock client / second_client.
+        with mock.patch(
+            "zerver.lib.events.request_event_queue",
+            side_effect=[client.event_queue.id, second_client.event_queue.id],
+        ), mock.patch("zerver.lib.events.get_user_events", side_effect=[restart_event, []]):
+            self.tornado_call(
+                events_register_backend,
+                hamlet,
+                {
+                    "queue_id": client.event_queue.id,
+                    "user_client": "website",
+                    "last_event_id": -1,
+                    "dont_block": orjson.dumps(True).decode(),
+                },
+                client_name="website",
+            )
 
 
 class FetchQueriesTest(ZulipTestCase):
@@ -852,7 +977,7 @@ class FetchQueriesTest(ZulipTestCase):
             with mock.patch("zerver.lib.events.always_want") as want_mock:
                 fetch_initial_state_data(user)
 
-        self.assert_length(queries, 29)
+        self.assert_length(queries, 31)
 
         expected_counts = dict(
             alert_words=1,
@@ -862,6 +987,7 @@ class FetchQueriesTest(ZulipTestCase):
             hotspots=0,
             message=1,
             muted_topics=1,
+            muted_users=1,
             presence=1,
             realm=0,
             realm_bot=1,
@@ -870,6 +996,8 @@ class FetchQueriesTest(ZulipTestCase):
             realm_incoming_webhook_bots=0,
             realm_emoji=1,
             realm_filters=1,
+            realm_linkifiers=1,
+            realm_playgrounds=1,
             realm_user=3,
             realm_user_groups=2,
             recent_private_conversations=1,
@@ -882,6 +1010,7 @@ class FetchQueriesTest(ZulipTestCase):
             update_message_flags=5,
             user_status=1,
             video_calls=0,
+            giphy=0,
         )
 
         wanted_event_types = {item[0][0] for item in want_mock.call_args_list}
@@ -989,3 +1118,28 @@ class TestGetRawUserDataSystemBotRealm(ZulipTestCase):
             bot_profile = get_system_bot(bot_email)
             self.assertTrue(bot_profile.id in result)
             self.assertTrue(result[bot_profile.id]["is_cross_realm_bot"])
+
+
+class TestUserPresenceUpdatesDisabled(ZulipTestCase):
+    def test_presence_events_diabled_on_larger_realm(self) -> None:
+        # First check that normally the mocked function gets called.
+        with mock.patch("zerver.lib.actions.send_event") as mock_send_event:
+            do_update_user_presence(
+                self.example_user("cordelia"),
+                get_client("website"),
+                timezone_now(),
+                UserPresence.ACTIVE,
+            )
+        mock_send_event.assert_called_once()
+
+        # Now check that if the realm has more than the USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS
+        # amount of active users, send_event doesn't get called.
+        with mock.patch("zerver.lib.actions.send_event") as mock_send_event:
+            with self.settings(USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS=1):
+                do_update_user_presence(
+                    self.example_user("hamlet"),
+                    get_client("website"),
+                    timezone_now(),
+                    UserPresence.ACTIVE,
+                )
+        mock_send_event.assert_not_called()

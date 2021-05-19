@@ -1,12 +1,12 @@
 import $ from "jquery";
 import _ from "lodash";
 
-import render_admin_user_group_list from "../templates/admin_user_group_list.hbs";
 import render_confirm_delete_user from "../templates/confirm_delete_user.hbs";
+import render_admin_user_group_list from "../templates/settings/admin_user_group_list.hbs";
 
 import * as channel from "./channel";
 import * as confirm_dialog from "./confirm_dialog";
-import {i18n} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import {page_params} from "./page_params";
 import * as people from "./people";
 import * as pill_typeahead from "./pill_typeahead";
@@ -208,7 +208,7 @@ export function populate_user_groups() {
                 error(xhr) {
                     const errors = JSON.parse(xhr.responseText).msg;
                     xhr.responseText = JSON.stringify({msg: errors});
-                    ui_report.error(i18n.t("Failed"), xhr, user_group_status);
+                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, user_group_status);
                     update_cancel_button();
                     $(`#user-groups #${CSS.escape(data.id)} .name`).text(group_data.name);
                     $(`#user-groups #${CSS.escape(data.id)} .description`).text(
@@ -279,10 +279,7 @@ export function populate_user_groups() {
             pill_typeahead.set_up(input, pills, opts);
         }
 
-        (function pill_remove() {
-            if (!can_edit(data.id)) {
-                return;
-            }
+        if (can_edit(data.id)) {
             pills.onPillRemove(() => {
                 // onPillRemove is fired before the pill is removed from
                 // the DOM.
@@ -291,7 +288,7 @@ export function populate_user_groups() {
                     input.trigger("focus");
                 }, 100);
             });
-        })();
+        }
     }
 }
 
@@ -323,14 +320,17 @@ export function set_up() {
                 data: group,
                 success() {
                     user_group_status.hide();
-                    ui_report.success(i18n.t("User group added!"), user_group_status);
+                    ui_report.success(
+                        $t_html({defaultMessage: "User group added!"}),
+                        user_group_status,
+                    );
                     $("form.admin-user-group-form input[type='text']").val("");
                 },
                 error(xhr) {
                     user_group_status.hide();
                     const errors = JSON.parse(xhr.responseText).msg;
                     xhr.responseText = JSON.stringify({msg: errors});
-                    ui_report.error(i18n.t("Failed"), xhr, user_group_status);
+                    ui_report.error($t_html({defaultMessage: "Failed"}), xhr, user_group_status);
                 },
             });
         });
@@ -350,7 +350,7 @@ export function set_up() {
                     id: group_id,
                 },
                 error() {
-                    btn.text(i18n.t("Failed!"));
+                    btn.text($t({defaultMessage: "Failed!"}));
                 },
             });
         }
@@ -364,9 +364,9 @@ export function set_up() {
 
         confirm_dialog.launch({
             parent: modal_parent,
-            html_heading: i18n.t("Delete user group"),
+            html_heading: $t_html({defaultMessage: "Delete user group"}),
             html_body,
-            html_yes_button: i18n.t("Delete"),
+            html_yes_button: $t_html({defaultMessage: "Confirm"}),
             on_click: delete_user_group,
         });
     });

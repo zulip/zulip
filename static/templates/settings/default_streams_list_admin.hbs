@@ -1,6 +1,6 @@
 <div id="admin-default-streams-list" class="settings-section" data-name="default-streams-list">
     <div class="side-padded-container">
-        <p>{{#tr this}}Configure the default streams new users are subscribed to when joining your organization.{{/tr}}</p>
+        <p>{{#tr}}Configure the default streams new users are subscribed to when joining your organization.{{/tr}}</p>
     </div>
 
     {{#if is_admin}}
@@ -11,7 +11,7 @@
                 <div class="settings-section-title">{{t "Add new default stream" }}</div>
                 <div class="inline-block" id="default_stream_inputs">
                     <label for="default_stream_name">{{t "Stream name" }}</label>
-                    <input class="create_default_stream" type="text" placeholder="{{t "Stream name" }}" name="stream_name" autocomplete="off" aria-label="{{t "Stream name" }}">
+                    <input class="create_default_stream" type="text" placeholder="{{t 'Stream name' }}" name="stream_name" autocomplete="off" />
                 </div>
                 <div class="inline-block">
                     <button type="submit" id="do_submit_stream" class="button rounded sea-green">{{t "Add stream" }}</button>
@@ -26,7 +26,7 @@
 
     <div class="progressive-table-wrapper" data-simplebar>
         <table class="table table-condensed table-striped wrapped-table">
-            <thead>
+            <thead class="table-sticky-headers">
                 <th class="active" data-sort="alphabetic" data-sort-prop="name">{{t "Name" }}</th>
                 {{#if is_admin}}
                 <th class="actions">{{t "Actions" }}</th>

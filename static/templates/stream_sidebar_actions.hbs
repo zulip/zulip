@@ -11,7 +11,7 @@
         </p>
     </li>
 
-    <hr>
+    <hr />
 
     {{! tabindex="0" Makes anchor tag focusable. Needed for keyboard support. }}
     <li>
@@ -45,6 +45,12 @@
             <i class="fa fa-bell-slash" aria-hidden="true"></i>
             {{t "Mute stream"}}
             {{/if}}
+        </a>
+    </li>
+    <li>
+        <a tabindex="0" class="popover_new_topic_button">
+            <i class="fa fa-plus" aria-hidden="true"></i>
+            {{t "New topic" }}
         </a>
     </li>
     <li>

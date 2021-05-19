@@ -16,7 +16,7 @@ class Command(ZulipBaseCommand):
             metavar="<data file>",
             help="file containing rows of the form <email>,<desired name>",
         )
-        self.add_realm_args(parser, True)
+        self.add_realm_args(parser, required=True)
 
     def handle(self, *args: Any, **options: str) -> None:
         data_file = options["data_file"]

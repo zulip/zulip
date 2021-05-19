@@ -644,7 +644,7 @@ const $ = new Proxy(make_zjquery(), {
             Or you can do this if you don't actually
             need zjquery and just want to simulate one function.
 
-                set_global("$", {
+                mock_cjs("jquery", {
                     ${prop}(...) {...},
                 });
 

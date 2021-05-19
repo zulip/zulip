@@ -101,14 +101,20 @@ const funcs = {
             if (!overlays.lightbox_open()) {
                 return;
             }
-            if (e.key === "Z" || e.key === "+") {
-                funcs.setZoom(meta, "+");
-                funcs.displayImage(canvas, context, meta);
-            } else if (e.key === "z" || e.key === "-") {
-                funcs.setZoom(meta, "-");
-                funcs.displayImage(canvas, context, meta);
-            } else if (e.key === "v") {
-                overlays.close_overlay("lightbox");
+            switch (e.key) {
+                case "Z":
+                case "+":
+                    funcs.setZoom(meta, "+");
+                    funcs.displayImage(canvas, context, meta);
+                    break;
+                case "z":
+                case "-":
+                    funcs.setZoom(meta, "-");
+                    funcs.displayImage(canvas, context, meta);
+                    break;
+                case "v":
+                    overlays.close_overlay("lightbox");
+                    break;
             }
             e.preventDefault();
             e.stopPropagation();

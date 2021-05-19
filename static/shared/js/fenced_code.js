@@ -9,7 +9,7 @@ import _ from "lodash";
 
 // See backend fenced_code.py:71 for associated regexp
 const fencestr =
-    "^(~{3,}|`{3,})" + // Opening Fence
+    "^(~{3,}|`{3,})" + // Opening fence
     "[ ]*" + // Spaces
     "(" +
     "\\{?\\.?" +
@@ -72,11 +72,9 @@ function wrap_quote(text) {
 
 function wrap_tex(tex) {
     try {
-        return katex.renderToString(tex, {
-            displayMode: true,
-        });
+        return "<p>" + katex.renderToString(tex, {displayMode: true}) + "</p>";
     } catch {
-        return '<span class="tex-error">' + _.escape(tex) + "</span>";
+        return '<p><span class="tex-error">' + _.escape(tex) + "</span></p>";
     }
 }
 
@@ -108,81 +106,79 @@ export function process_fenced_code(content) {
     function handler_for_fence(output_lines, fence, lang, header) {
         // lang is ignored except for 'quote', as we
         // don't do syntax highlighting yet
-        return (function () {
-            const lines = [];
-            if (lang === "quote") {
-                return {
-                    handle_line(line) {
-                        if (line === fence) {
-                            this.done();
-                        } else {
-                            consume_line(lines, line);
-                        }
-                    },
-
-                    done() {
-                        const text = wrap_quote(lines.join("\n"));
-                        output_lines.push("", text, "");
-                        handler_stack.pop();
-                    },
-                };
-            }
-
-            if (lang === "math") {
-                return {
-                    handle_line(line) {
-                        if (line === fence) {
-                            this.done();
-                        } else {
-                            lines.push(line);
-                        }
-                    },
-
-                    done() {
-                        const text = wrap_tex(lines.join("\n"));
-                        const placeholder = stash_func(text, true);
-                        output_lines.push("", placeholder, "");
-                        handler_stack.pop();
-                    },
-                };
-            }
-
-            if (lang === "spoiler") {
-                return {
-                    handle_line(line) {
-                        if (line === fence) {
-                            this.done();
-                        } else {
-                            lines.push(line);
-                        }
-                    },
-
-                    done() {
-                        const text = wrap_spoiler(header, lines.join("\n"), stash_func);
-                        output_lines.push("", text, "");
-                        handler_stack.pop();
-                    },
-                };
-            }
-
+        const lines = [];
+        if (lang === "quote") {
             return {
                 handle_line(line) {
                     if (line === fence) {
                         this.done();
                     } else {
-                        lines.push(line.trimEnd());
+                        consume_line(lines, line);
                     }
                 },
 
                 done() {
-                    const text = wrap_code(lines.join("\n"), lang);
-                    // insert safe HTML that is passed through the parsing
+                    const text = wrap_quote(lines.join("\n"));
+                    output_lines.push("", text, "");
+                    handler_stack.pop();
+                },
+            };
+        }
+
+        if (lang === "math") {
+            return {
+                handle_line(line) {
+                    if (line === fence) {
+                        this.done();
+                    } else {
+                        lines.push(line);
+                    }
+                },
+
+                done() {
+                    const text = wrap_tex(lines.join("\n"));
                     const placeholder = stash_func(text, true);
                     output_lines.push("", placeholder, "");
                     handler_stack.pop();
                 },
             };
-        })();
+        }
+
+        if (lang === "spoiler") {
+            return {
+                handle_line(line) {
+                    if (line === fence) {
+                        this.done();
+                    } else {
+                        lines.push(line);
+                    }
+                },
+
+                done() {
+                    const text = wrap_spoiler(header, lines.join("\n"), stash_func);
+                    output_lines.push("", text, "");
+                    handler_stack.pop();
+                },
+            };
+        }
+
+        return {
+            handle_line(line) {
+                if (line === fence) {
+                    this.done();
+                } else {
+                    lines.push(line.trimEnd());
+                }
+            },
+
+            done() {
+                const text = wrap_code(lines.join("\n"), lang);
+                // insert safe HTML that is passed through the parsing
+                const placeholder = stash_func(text, true);
+                output_lines.push("", placeholder, "");
+                handler_stack.pop();
+            },
+        };
     }
 
     function default_hander() {

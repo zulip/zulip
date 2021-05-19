@@ -1,14 +1,14 @@
 import $ from "jquery";
 
-import render_admin_bot_form from "../templates/admin_bot_form.hbs";
-import render_admin_human_form from "../templates/admin_human_form.hbs";
-import render_admin_user_list from "../templates/admin_user_list.hbs";
+import render_admin_bot_form from "../templates/settings/admin_bot_form.hbs";
+import render_admin_human_form from "../templates/settings/admin_human_form.hbs";
+import render_admin_user_list from "../templates/settings/admin_user_list.hbs";
 
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
 import * as channel from "./channel";
 import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget";
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
@@ -57,13 +57,19 @@ function sort_bot_email(a, b) {
 
 function sort_role(a, b) {
     function role(user) {
-        if (user.is_admin) {
+        if (user.is_owner) {
             return 0;
         }
-        if (user.is_guest) {
+        if (user.is_admin) {
+            return 1;
+        }
+        if (user.is_moderator) {
             return 2;
         }
-        return 1; // member
+        if (user.is_guest) {
+            return 4;
+        }
+        return 3; // member
     }
     return compare_a_b(role(a), role(b));
 }
@@ -87,18 +93,6 @@ function get_user_info_row(user_id) {
     return $(`tr.user_row[data-user-id='${CSS.escape(user_id)}']`);
 }
 
-function set_user_role_dropdown(person) {
-    let role_value = settings_config.user_role_values.member.code;
-    if (person.is_owner) {
-        role_value = settings_config.user_role_values.owner.code;
-    } else if (person.is_admin) {
-        role_value = settings_config.user_role_values.admin.code;
-    } else if (person.is_guest) {
-        role_value = settings_config.user_role_values.guest.code;
-    }
-    $("#user-role-select").val(role_value);
-}
-
 function update_view_on_deactivate(row) {
     const button = row.find("button.deactivate");
     const user_role = row.find(".user_role");
@@ -115,7 +109,7 @@ function update_view_on_deactivate(row) {
         const user_id = row.data("user-id");
         user_role.text(
             "%state (%role)"
-                .replace("%state", i18n.t("Deactivated"))
+                .replace("%state", $t({defaultMessage: "Deactivated"}))
                 .replace("%role", people.get_user_type(user_id)),
         );
     }
@@ -202,8 +196,6 @@ function bot_info(bot_user_id) {
     const info = {};
 
     info.is_bot = true;
-    info.is_admin = false;
-    info.is_guest = false;
     info.is_active = bot_user.is_active;
     info.user_id = bot_user.user_id;
     info.full_name = bot_user.full_name;
@@ -216,7 +208,7 @@ function bot_info(bot_user_id) {
 
     if (!info.bot_owner_full_name) {
         info.no_owner = true;
-        info.bot_owner_full_name = i18n.t("No owner");
+        info.bot_owner_full_name = $t({defaultMessage: "No owner"});
     }
 
     info.is_current_user = false;
@@ -232,7 +224,7 @@ function get_last_active(user) {
     const last_active_date = presence.last_active_date(user.user_id);
 
     if (!last_active_date) {
-        return i18n.t("Unknown");
+        return $t({defaultMessage: "Unknown"});
     }
     return timerender.render_now(last_active_date).time_str;
 }
@@ -241,9 +233,7 @@ function human_info(person) {
     const info = {};
 
     info.is_bot = false;
-    info.is_admin = person.is_admin;
-    info.is_guest = person.is_guest;
-    info.is_owner = person.is_owner;
+    info.user_role_text = people.get_user_type(person.user_id);
     info.is_active = people.is_person_active(person.user_id);
     info.user_id = person.user_id;
     info.full_name = person.full_name;
@@ -418,7 +408,7 @@ function open_human_form(person) {
     const modal_container = $("#user-info-form-modal-container");
     modal_container.empty().append(div);
     overlays.open_modal("#admin-human-form");
-    set_user_role_dropdown(person);
+    $("#user-role-select").val(person.role);
     if (!page_params.is_owner) {
         $("#user-role-select")
             .find(`option[value="${CSS.escape(settings_config.user_role_values.owner.code)}"]`)
@@ -500,7 +490,7 @@ function open_bot_form(person) {
     const opts = {
         widget_name: "edit_bot_owner",
         data: users_list,
-        default_text: i18n.t("No owner"),
+        default_text: $t({defaultMessage: "No owner"}),
         value: owner_id,
     };
     const owner_widget = dropdown_list_widget(opts);
@@ -525,24 +515,23 @@ function confirm_deactivation(row, user_id, status_field) {
 
         modal_elem.modal("hide");
         const row_deactivate_button = row.find("button.deactivate");
-        row_deactivate_button.prop("disabled", true).text(i18n.t("Working…"));
+        row_deactivate_button.prop("disabled", true).text($t({defaultMessage: "Working…"}));
         const opts = {
             success_continuation() {
                 update_view_on_deactivate(row);
             },
             error_continuation() {
-                row_deactivate_button.text(i18n.t("Deactivate"));
+                row_deactivate_button.text($t({defaultMessage: "Deactivate"}));
             },
         };
         const url = "/json/users/" + encodeURIComponent(user_id);
         settings_ui.do_settings_change(channel.del, url, {}, status_field, opts);
     }
 
-    modal_elem.modal("hide");
     modal_elem.off("click", ".do_deactivate_button");
     set_fields();
     modal_elem.on("click", ".do_deactivate_button", handle_confirm);
-    modal_elem.modal("show");
+    overlays.open_modal("#deactivation_user_modal");
 }
 
 function handle_deactivation(tbody, status_field) {

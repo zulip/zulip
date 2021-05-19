@@ -9,18 +9,24 @@ There are several possible roles in a Zulip organization.
   and organization settings.  Cannot create or demote organization
   owners.
 
+* **Moderator**: Have the permissions of full members; additionally,
+  many "Organization permissions" settings allow moderators to be
+  given additional privileges or do so by default.
+
 * **Member**: Has access to all public streams.  Member is the default
   role for most users.  [Some organization
   settings](/help/restrict-permissions-of-new-members) allow an
-  organization to restrict the permissions of **New Members**; Members
-  who do not have those restrictions are called **Full Members**.
+  organization to restrict the permissions of **new members**; Members
+  who do not have those restrictions are called **full members**.
 
-* **Guest**: Can only access streams they've been added to. Cannot create
-  new streams or invite other users.
+* **Guest**: Can only view or access streams they've been added to.
+  Guest users interact with public streams as though they were private
+  streams with shared history.  Cannot create new streams or invite
+  other users.
 
-* **Billing Administrator**: The user who upgrades the organization to
-  a paid plan is, in addition to their normal role, a Billing
-  Administrator.  Can manage billing in addition to the existing
+* **Billing administrator**: The user who upgrades the organization to
+  a paid plan is, in addition to their normal role, a billing
+  administrator.  Can manage billing in addition to the existing
   privileges.  This allows someone from the billing department to
   manage billing without needing organization administrator
   permissions.

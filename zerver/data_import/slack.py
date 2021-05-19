@@ -738,7 +738,7 @@ def convert_slack_workspace_messages(
         message_json = dict(zerver_message=zerver_message, zerver_usermessage=zerver_usermessage)
 
         message_file = f"/messages-{dump_file_id:06}.json"
-        logging.info("Writing Messages to %s\n", output_dir + message_file)
+        logging.info("Writing messages to %s\n", output_dir + message_file)
         create_converted_data_files(message_json, output_dir, message_file)
 
         total_reactions += reactions

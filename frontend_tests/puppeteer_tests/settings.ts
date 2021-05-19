@@ -8,7 +8,8 @@ import common from "../puppeteer_lib/common";
 const OUTGOING_WEBHOOK_BOT_TYPE = "3";
 const GENERIC_BOT_TYPE = "1";
 
-const zuliprc_regex = /^data:application\/octet-stream;charset=utf-8,\[api]\nemail=.+\nkey=.+\nsite=.+\n$/;
+const zuliprc_regex =
+    /^data:application\/octet-stream;charset=utf-8,\[api]\nemail=.+\nkey=.+\nsite=.+\n$/;
 
 async function get_decoded_url_in_selector(page: Page, selector: string): Promise<string> {
     return await page.evaluate(
@@ -82,7 +83,7 @@ async function test_get_api_key(page: Page): Promise<void> {
     });
 
     // When typing the password in Firefox, it shows "Not Secure" warning
-    // which was hiding the Get API Key button.
+    // which was hiding the Get API key button.
     // You can see the screenshot of it in https://github.com/zulip/zulip/pull/17136.
     // Focusing on it will remove the warning.
     await page.focus(get_api_key_button_selector);
@@ -115,7 +116,8 @@ async function test_webhook_bot_creation(page: Page): Promise<void> {
     const download_zuliprc_selector = `.download_bot_zuliprc[data-email="${CSS.escape(
         bot_email,
     )}"]`;
-    const outgoing_webhook_zuliprc_regex = /^data:application\/octet-stream;charset=utf-8,\[api]\nemail=.+\nkey=.+\nsite=.+\ntoken=.+\n$/;
+    const outgoing_webhook_zuliprc_regex =
+        /^data:application\/octet-stream;charset=utf-8,\[api]\nemail=.+\nkey=.+\nsite=.+\ntoken=.+\n$/;
 
     await page.waitForSelector(download_zuliprc_selector, {visible: true});
     await page.click(download_zuliprc_selector);
@@ -157,7 +159,8 @@ async function test_botserverrc(page: Page): Promise<void> {
         page,
         "#download_botserverrc",
     );
-    const botserverrc_regex = /^data:application\/octet-stream;charset=utf-8,\[]\nemail=.+\nkey=.+\nsite=.+\ntoken=.+\n$/;
+    const botserverrc_regex =
+        /^data:application\/octet-stream;charset=utf-8,\[]\nemail=.+\nkey=.+\nsite=.+\ntoken=.+\n$/;
     assert(botserverrc_regex.test(botserverrc_decoded_url), "Incorrect botserverrc format.");
 }
 
@@ -186,12 +189,45 @@ async function test_edit_bot_form(page: Page): Promise<void> {
     await page.waitForFunction(() => $(".overlay.show").attr("style") === undefined);
 }
 
+async function test_invalid_edit_bot_form(page: Page): Promise<void> {
+    const bot1_email = "1-bot@zulip.testserver";
+    const bot1_edit_btn = `.open_edit_bot_form[data-email="${CSS.escape(bot1_email)}"]`;
+    await page.click(bot1_edit_btn);
+
+    const edit_form_selector = `.edit_bot_form[data-email="${CSS.escape(bot1_email)}"]`;
+    await page.waitForSelector(edit_form_selector, {visible: true});
+    const name_field_selector = edit_form_selector + " [name=bot_name]";
+    assert(common.get_text_from_selector(page, name_field_selector), "Bot one");
+
+    await common.fill_form(page, edit_form_selector, {bot_name: "Bot 2"});
+    const save_btn_selector = edit_form_selector + " .edit_bot_button";
+    await page.click(save_btn_selector);
+
+    // The form should not get closed on saving. Errors should be visible on the form.
+    await page.waitForSelector("#edit_bot_modal", {visible: true});
+    await page.waitForSelector(".bot_edit_errors", {visible: true});
+    assert.strictEqual(
+        await common.get_text_from_selector(page, "div.bot_edit_errors"),
+        "Name is already in use!",
+    );
+    await page.click("button.cancel_bot_button");
+    await page.waitForSelector("#edit_bot_modal", {hidden: true});
+
+    await page.waitForXPath(
+        `//*[@class="btn open_edit_bot_form" and @data-email="${bot1_email}"]/ancestor::*[@class="details"]/*[@class="name" and text()="Bot one"]`,
+    );
+
+    // Ensure that the mouse events are enabled for the background for further tests.
+    await page.waitForFunction(() => $(".overlay.show").attr("style") === undefined);
+}
+
 async function test_your_bots_section(page: Page): Promise<void> {
     await page.click('[data-section="your-bots"]');
     await test_webhook_bot_creation(page);
     await test_normal_bot_creation(page);
     await test_botserverrc(page);
     await test_edit_bot_form(page);
+    await test_invalid_edit_bot_form(page);
 }
 
 const alert_word_status_selector = "#alert_word_status";
@@ -269,15 +305,7 @@ async function change_language(page: Page, language_data_code: string): Promise<
 }
 
 async function check_language_setting_status(page: Page): Promise<void> {
-    const language_setting_status_selector = "#language-settings-status";
-    await page.waitForSelector(language_setting_status_selector, {visible: true});
-    const status_text = "Saved. Please reload for the change to take effect.";
-    await page.waitForFunction(
-        (selector: string, status: string) => $(selector).text() === status,
-        {},
-        language_setting_status_selector,
-        status_text,
-    );
+    await page.waitForSelector("#language-settings-status .reload_link", {visible: true});
 }
 
 async function assert_language_changed_to_chinese(page: Page): Promise<void> {

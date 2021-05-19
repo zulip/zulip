@@ -23,6 +23,7 @@ external_host_env = os.getenv("EXTERNAL_HOST")
 if external_host_env is None:
     if IS_DEV_DROPLET:
         # For our droplets, we use the hostname (eg github_username.zulipdev.org) by default.
+        # Note that this code is duplicated in run-dev.py.
         EXTERNAL_HOST = os.uname()[1].lower() + ":9991"
     else:
         # For local development environments, we use localhost by
@@ -101,7 +102,7 @@ ALWAYS_SEND_ALL_HOTSPOTS = False
 # FAKE_LDAP_MODE supports using a fake LDAP database in the
 # development environment, without needing an LDAP server!
 #
-# Three modes are allowed, and each will setup Zulip and the fake LDAP
+# Three modes are allowed, and each will set up Zulip and the fake LDAP
 # database in a way appropriate for the corresponding mode described
 # in https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#ldap-including-active-directory
 #   (A) If users' email addresses are in LDAP and used as username.
@@ -156,7 +157,6 @@ if FAKE_LDAP_MODE:
         }
     AUTHENTICATION_BACKENDS += ("zproject.backends.ZulipLDAPAuthBackend",)
 
-THUMBOR_URL = "http://127.0.0.1:9995"
 THUMBNAIL_IMAGES = True
 
 SEARCH_PILLS_ENABLED = bool(os.getenv("SEARCH_PILLS_ENABLED", False))

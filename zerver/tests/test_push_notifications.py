@@ -717,7 +717,7 @@ class PushNotificationTest(BouncerTestCase):
             date_sent=now(),
             sending_client=self.sending_client,
         )
-        message.set_topic_name("Test Topic")
+        message.set_topic_name("Test topic")
         message.save()
 
         return message
@@ -1176,6 +1176,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                 "Could not find UserMessage with message_id %s and user_id %s",
                 message_id,
                 self.user_profile.id,
+                exc_info=True,
             )
             mock_push_notifications.assert_called_once()
 
@@ -1490,7 +1491,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         payload = get_message_payload_apns(user_profile, message)
         expected = {
             "alert": {
-                "title": "Cordelia Lear, King Hamlet, Othello, the Moor of Venice",
+                "title": "Cordelia, Lear's daughter, King Hamlet, Othello, the Moor of Venice",
                 "subtitle": "King Hamlet:",
                 "body": message.content,
             },
@@ -1524,7 +1525,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         payload = get_message_payload_apns(self.sender, message)
         expected = {
             "alert": {
-                "title": "#Verona > Test Topic",
+                "title": "#Verona > Test topic",
                 "subtitle": "King Hamlet:",
                 "body": message.content,
             },
@@ -1556,7 +1557,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         payload = get_message_payload_apns(user_profile, message)
         expected = {
             "alert": {
-                "title": "#Verona > Test Topic",
+                "title": "#Verona > Test topic",
                 "subtitle": "King Hamlet mentioned you:",
                 "body": message.content,
             },
@@ -1588,7 +1589,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         payload = get_message_payload_apns(user_profile, message)
         expected = {
             "alert": {
-                "title": "#Verona > Test Topic",
+                "title": "#Verona > Test topic",
                 "subtitle": "King Hamlet mentioned everyone:",
                 "body": message.content,
             },
@@ -1622,7 +1623,7 @@ class TestGetAPNsPayload(PushNotificationTest):
         payload = get_message_payload_apns(user_profile, message)
         expected = {
             "alert": {
-                "title": "Cordelia Lear, King Hamlet, Othello, the Moor of Venice",
+                "title": "Cordelia, Lear's daughter, King Hamlet, Othello, the Moor of Venice",
                 "subtitle": "King Hamlet:",
                 "body": "***REDACTED***",
             },
@@ -1744,7 +1745,7 @@ class TestGetGCMPayload(PushNotificationTest):
                 "sender_full_name": "King Hamlet",
                 "sender_avatar_url": absolute_avatar_url(message.sender),
                 "recipient_type": "stream",
-                "topic": "Test Topic",
+                "topic": "Test topic",
                 "stream": "Denmark",
             },
         )
@@ -1780,7 +1781,7 @@ class TestGetGCMPayload(PushNotificationTest):
                 "sender_full_name": "King Hamlet",
                 "sender_avatar_url": absolute_avatar_url(message.sender),
                 "recipient_type": "stream",
-                "topic": "Test Topic",
+                "topic": "Test topic",
                 "stream": "Denmark",
             },
         )
@@ -2298,8 +2299,8 @@ class TestPushNotificationsContent(ZulipTestCase):
             },
             {
                 "name": "mentions",
-                "rendered_content": f'<p>Mentioning <span class="user-mention" data-user-id="{cordelia.id}">@Cordelia Lear</span>.</p>',
-                "expected_output": "Mentioning @Cordelia Lear.",
+                "rendered_content": f'<p>Mentioning <span class="user-mention" data-user-id="{cordelia.id}">@Cordelia, Lear\'s daughter</span>.</p>',
+                "expected_output": "Mentioning @Cordelia, Lear's daughter.",
             },
             {
                 "name": "stream_names",

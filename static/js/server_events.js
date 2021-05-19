@@ -308,7 +308,7 @@ export function initialize() {
 }
 
 export function cleanup_event_queue() {
-    // Submit a request to the server to cleanup our event queue
+    // Submit a request to the server to clean up our event queue
     if (page_params.event_queue_expired === true || page_params.no_event_queue === true) {
         return;
     }

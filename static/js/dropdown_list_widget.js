@@ -11,6 +11,7 @@ export const DropdownListWidget = function ({
     default_text,
     render_text = (item_name) => item_name,
     null_value = null,
+    include_current_item = true,
     value,
     on_update = () => {},
 }) {
@@ -86,8 +87,14 @@ export const DropdownListWidget = function ({
         ).expectOne();
         const search_input = $(`#${CSS.escape(container_id)} .dropdown-search > input[type=text]`);
         const dropdown_toggle = $(`#${CSS.escape(container_id)} .dropdown-toggle`);
+        const get_data = (data) => {
+            if (include_current_item) {
+                return data;
+            }
+            return data.filter((x) => x.value !== value.toString());
+        };
 
-        ListWidget.create(dropdown_list_body, data, {
+        ListWidget.create(dropdown_list_body, get_data(data), {
             name: `${CSS.escape(widget_name)}_list`,
             modifier(item) {
                 return render_dropdown_list({item});
@@ -112,7 +119,13 @@ export const DropdownListWidget = function ({
             // On opening a Bootstrap Dropdown, the parent element receives focus.
             // Here, we want our search input to have focus instead.
             e.preventDefault();
-            search_input.trigger("focus");
+            // This function gets called twice when focusing the
+            // dropdown, and only in the second call is the input
+            // field visible in the DOM; so the following visibility
+            // check ensures we wait for the second call to focus.
+            if (dropdown_list_body.is(":visible")) {
+                search_input.trigger("focus");
+            }
         });
 
         search_input.on("keydown", (e) => {
@@ -120,6 +133,7 @@ export const DropdownListWidget = function ({
                 return;
             }
             e.preventDefault();
+            e.stopPropagation();
             const custom_event = new $.Event("keydown.dropdown.data-api", {
                 keyCode: e.keyCode,
                 which: e.keyCode,

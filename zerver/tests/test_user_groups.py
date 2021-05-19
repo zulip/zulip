@@ -344,7 +344,7 @@ class UserGroupAPITestCase(ZulipTestCase):
         members = get_memberships_of_users(user_group, [hamlet, othello, aaron])
         self.assertEqual(len(members), 3)
 
-        # For normal testing we again login with hamlet
+        # For normal testing we again log in with hamlet
         self.logout()
         self.login_user(hamlet)
         # Test remove members
@@ -397,11 +397,11 @@ class UserGroupAPITestCase(ZulipTestCase):
         realm = cordelia.realm
 
         group_name = "support"
-        stream_name = "Dev Help"
+        stream_name = "Dev help"
 
         content_with_group_mention = "hey @*support* can you help us with this?"
 
-        ensure_stream(realm, stream_name)
+        ensure_stream(realm, stream_name, acting_user=None)
 
         all_users = {cordelia, hamlet, othello, zoe}
         support_team = {hamlet, zoe}

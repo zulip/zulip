@@ -19,17 +19,17 @@ const StripeCheckout = set_global("StripeCheckout", {
     configure: noop,
 });
 
-page_params.annual_price = 8000;
-page_params.monthly_price = 800;
-page_params.seat_count = 8;
-page_params.percent_off = 20;
-
 mock_cjs("jquery", $);
 
 const helpers = zrequire("../js/billing/helpers");
 zrequire("../js/billing/upgrade");
 
 run_test("initialize", (override) => {
+    page_params.annual_price = 8000;
+    page_params.monthly_price = 800;
+    page_params.seat_count = 8;
+    page_params.percent_off = 20;
+
     let token_func;
     override(helpers, "set_tab", (page_name) => {
         assert.equal(page_name, "upgrade");
@@ -38,25 +38,29 @@ run_test("initialize", (override) => {
     let create_ajax_request_form_call_count = 0;
     helpers.__Rewire__(
         "create_ajax_request",
-        (url, form_name, stripe_token, numeric_inputs, redirect_to) => {
+        (url, form_name, stripe_token, ignored_inputs, redirect_to) => {
             create_ajax_request_form_call_count += 1;
-            if (form_name === "autopay") {
-                assert.equal(url, "/json/billing/upgrade");
-                assert.equal(stripe_token, "stripe_add_card_token");
-                assert.deepEqual(numeric_inputs, ["licenses"]);
-                assert.equal(redirect_to, undefined);
-            } else if (form_name === "invoice") {
-                assert.equal(url, "/json/billing/upgrade");
-                assert.equal(stripe_token, undefined);
-                assert.deepEqual(numeric_inputs, ["licenses"]);
-                assert.equal(redirect_to, undefined);
-            } else if (form_name === "sponsorship") {
-                assert.equal(url, "/json/billing/sponsorship");
-                assert.equal(stripe_token, undefined);
-                assert.equal(numeric_inputs, undefined);
-                assert.equal(redirect_to, "/");
-            } else {
-                throw new Error("Unhandled case");
+            switch (form_name) {
+                case "autopay":
+                    assert.equal(url, "/json/billing/upgrade");
+                    assert.equal(stripe_token, "stripe_add_card_token");
+                    assert.equal(ignored_inputs, undefined);
+                    assert.equal(redirect_to, undefined);
+                    break;
+                case "invoice":
+                    assert.equal(url, "/json/billing/upgrade");
+                    assert.equal(stripe_token, undefined);
+                    assert.equal(ignored_inputs, undefined);
+                    assert.equal(redirect_to, undefined);
+                    break;
+                case "sponsorship":
+                    assert.equal(url, "/json/billing/sponsorship");
+                    assert.equal(stripe_token, undefined);
+                    assert.equal(ignored_inputs, undefined);
+                    assert.equal(redirect_to, "/");
+                    break;
+                default:
+                    throw new Error("Unhandled case");
             }
         },
     );

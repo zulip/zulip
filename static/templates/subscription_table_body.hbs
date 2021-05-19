@@ -10,17 +10,16 @@
             </div>
             <div class="left">
                 <div class="search-container">
-                    <form id="add_new_subscription" class="form-inline" action="">
+                    <div id="add_new_subscription">
                         {{#if can_create_streams}}
-                        <input type="submit" class="create_stream_button"
-                          value="+" title="{{t 'Create new stream' }} (n)"/>
+                        <button class="create_stream_button" title="{{t 'Create new stream' }} (n)">+</button>
                         {{/if}}
                         <div class="float-clear"></div>
-                    </form>
+                    </div>
                 </div>
                 <div class="input-append stream_name_search_section" id="stream_filter">
                     <input type="text" name="stream_name" id="search_stream_name" autocomplete="off"
-                      placeholder="{{t 'Filter streams' }}" value="" form="add_new_subscription" />
+                      placeholder="{{t 'Filter streams' }}" value=""/>
                     <button type="button" class="btn clear_search_button" id="clear_search_stream_name">
                         <i class="fa fa-remove" aria-hidden="true"></i>
                     </button>
@@ -35,8 +34,13 @@
                 </div>
                 <div class="nothing-selected">
                     {{#if can_create_streams}}
-                    <button type="button" class="create_stream_button button small rounded">{{t 'Create stream' }}</button>
-                    <span>{{t 'First time? Read our <a href="/help/getting-your-organization-started-with-zulip#create-streams" target="_blank" rel="noopener noreferrer">guidelines</a> for creating and naming streams.' }}</span>
+                    <button type="button" class="create_stream_button button small rounded sea-green">{{t 'Create stream' }}</button>
+                    <span>
+                        {{#tr}}
+                            First time? Read our <z-link>guidelines</z-link> for creating and naming streams.
+                            {{#*inline "z-link"}}<a href="/help/getting-your-organization-started-with-zulip#create-streams" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
+                        {{/tr}}
+                    </span>
                     {{/if}}
                 </div>
                 <div class="settings" data-simplebar data-simplebar-auto-hide="false">

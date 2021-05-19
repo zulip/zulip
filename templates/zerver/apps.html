@@ -2,7 +2,7 @@
 {% set entrypoint = "landing-page" %}
 
 {% block customhead %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <style media="screen">
     .app.portico-page { padding-bottom: 0px; }
 </style>
@@ -25,7 +25,8 @@
                         <a class="desktop-download-link no-action" hidden href=""><span class="button green">Download Zulip for <span class="platform"></span></span></a>
                         <a class="download-from-google-play-store" hidden href=""><img src='/static/images/store-badges/google-play-badge.png' alt=""/></a>
                         <a class="download-from-apple-app-store" hidden href=""><img src='/static/images/store-badges/app-store-badge.svg' alt=""/></a>
-                        <span id="download-android-apk" hidden><a href="https://github.com/zulip/zulip-mobile/releases/latest">or manually download APK</a></span>
+                        <span><a id="download-android-apk" hidden href="https://github.com/zulip/zulip-mobile/releases/latest">or manually download APK</a></span>
+                        <span><a id="download-mac-arm64" hidden href="">or download Apple silicon native build</a></span>
                     </div>
                 </div>
             </div>
@@ -55,6 +56,9 @@
             </a>
             <a class="" href="/apps/ios">
                 <i class="icon fa fa-mobile-phone" data-label="iOS"></i>
+            </a>
+            <a href="https://github.com/zulip/zulip-terminal#zulip-terminal---zulips-official-terminal-client">
+                <i class="icon fa fa-terminal" data-label="Terminal (beta)"></i>
             </a>
         </div>
         <div id="third-party-apps">

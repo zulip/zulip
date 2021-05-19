@@ -7,7 +7,7 @@ from django.template import loader
 from zerver.lib.avatar import get_gravatar_url
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.response import json_success
-from zerver.lib.streams import get_stream_by_id
+from zerver.lib.streams import access_web_public_stream
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import get_topic_history_for_public_stream, messages_for_topic
 from zerver.models import Message, UserProfile
@@ -29,11 +29,8 @@ def archive(request: HttpRequest, stream_id: int, topic_name: str) -> HttpRespon
         )
 
     try:
-        stream = get_stream_by_id(stream_id)
+        stream = access_web_public_stream(stream_id, request.realm)
     except JsonableError:
-        return get_response([], False, "")
-
-    if not stream.is_web_public:
         return get_response([], False, "")
 
     all_messages = list(
@@ -78,11 +75,8 @@ def archive(request: HttpRequest, stream_id: int, topic_name: str) -> HttpRespon
 
 def get_web_public_topics_backend(request: HttpRequest, stream_id: int) -> HttpResponse:
     try:
-        stream = get_stream_by_id(stream_id)
+        stream = access_web_public_stream(stream_id, request.realm)
     except JsonableError:
-        return json_success(dict(topics=[]))
-
-    if not stream.is_web_public:
         return json_success(dict(topics=[]))
 
     result = get_topic_history_for_public_stream(recipient_id=stream.recipient_id)

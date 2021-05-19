@@ -39,6 +39,7 @@ const notifications = mock_esm("../../static/js/notifications");
 const reactions = mock_esm("../../static/js/reactions");
 const realm_icon = mock_esm("../../static/js/realm_icon");
 const realm_logo = mock_esm("../../static/js/realm_logo");
+const realm_playground = mock_esm("../../static/js/realm_playground");
 const reload = mock_esm("../../static/js/reload");
 const scroll_bar = mock_esm("../../static/js/scroll_bar");
 const settings_account = mock_esm("../../static/js/settings_account");
@@ -48,6 +49,7 @@ const settings_emoji = mock_esm("../../static/js/settings_emoji");
 const settings_exports = mock_esm("../../static/js/settings_exports");
 const settings_invites = mock_esm("../../static/js/settings_invites");
 const settings_linkifiers = mock_esm("../../static/js/settings_linkifiers");
+const settings_playgrounds = mock_esm("../../static/js/settings_playgrounds");
 const settings_notifications = mock_esm("../../static/js/settings_notifications");
 const settings_org = mock_esm("../../static/js/settings_org");
 const settings_profile_fields = mock_esm("../../static/js/settings_profile_fields");
@@ -63,6 +65,7 @@ const unread_ops = mock_esm("../../static/js/unread_ops");
 const user_events = mock_esm("../../static/js/user_events");
 const user_groups = mock_esm("../../static/js/user_groups");
 mock_esm("../../static/js/compose");
+mock_esm("../../static/js/giphy");
 
 const electron_bridge = set_global("electron_bridge", {});
 
@@ -239,6 +242,17 @@ run_test("muted_topics", (override) => {
     assert_same(args.muted_topics, event.muted_topics);
 });
 
+run_test("muted_users", (override) => {
+    const event = event_fixtures.muted_users;
+
+    const stub = make_stub();
+    override(muting_ui, "handle_user_updates", stub.f);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
+    const args = stub.get_args("muted_users");
+    assert_same(args.muted_users, event.muted_users);
+});
+
 run_test("presence", (override) => {
     const event = event_fixtures.presence;
 
@@ -277,6 +291,8 @@ run_test("reaction", (override) => {
 });
 
 run_test("realm settings", (override) => {
+    page_params.is_admin = true;
+
     override(settings_org, "sync_realm_settings", noop);
     override(settings_bots, "update_bot_permissions_ui", noop);
     override(notifications, "redraw_title", noop);
@@ -334,6 +350,9 @@ run_test("realm settings", (override) => {
 
     event = event_fixtures.realm__update__invite_required;
     test_realm_boolean(event, "realm_invite_required");
+
+    event = event_fixtures.realm__update__invite_to_realm_policy;
+    test_realm_integer(event, "realm_invite_to_realm_policy");
 
     event = event_fixtures.realm__update__name;
 
@@ -500,13 +519,22 @@ run_test("realm_emoji", (override) => {
     }
 });
 
-run_test("linkifier", (override) => {
-    const event = event_fixtures.realm_filters;
-    page_params.realm_filters = [];
+run_test("realm_linkifiers", (override) => {
+    const event = event_fixtures.realm_linkifiers;
+    page_params.realm_linkifiers = [];
     override(settings_linkifiers, "populate_linkifiers", noop);
     override(markdown, "update_linkifier_rules", noop);
     dispatch(event);
-    assert_same(page_params.realm_filters, event.realm_filters);
+    assert_same(page_params.realm_linkifiers, event.realm_linkifiers);
+});
+
+run_test("realm_playgrounds", (override) => {
+    const event = event_fixtures.realm_playgrounds;
+    page_params.realm_playgrounds = [];
+    override(settings_playgrounds, "populate_playgrounds", noop);
+    override(realm_playground, "update_playgrounds", noop);
+    dispatch(event);
+    assert_same(page_params.realm_playgrounds, event.realm_playgrounds);
 });
 
 run_test("realm_domains", (override) => {
@@ -815,9 +843,10 @@ run_test("update_message (remove star)", (override) => {
 
 run_test("update_message (wrong data)", (override) => {
     override(starred_messages, "rerender_ui", noop);
-    const event = event_fixtures.update_message_flags__starred_add;
-    // message does not exist
-    event.messages = [0];
+    const event = {
+        ...event_fixtures.update_message_flags__starred_add,
+        messages: [0], // message does not exist
+    };
     dispatch(event);
     // update_starred_view never gets invoked, early return is successful
 });

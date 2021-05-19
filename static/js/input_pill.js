@@ -94,6 +94,11 @@ export function create(opts) {
                 return;
             }
 
+            if (!item.type) {
+                blueslip.error("no type defined for the item");
+                return;
+            }
+
             const payload = {
                 id,
                 item,
@@ -240,7 +245,7 @@ export function create(opts) {
         },
     };
 
-    (function events() {
+    {
         store.$parent.on("keydown", ".input", (e) => {
             const char = e.keyCode || e.charCode;
 
@@ -311,18 +316,23 @@ export function create(opts) {
 
             const $pill = store.$parent.find(".pill:focus");
 
-            if (char === KEY.LEFT_ARROW) {
-                $pill.prev().trigger("focus");
-            } else if (char === KEY.RIGHT_ARROW) {
-                $pill.next().trigger("focus");
-            } else if (char === KEY.BACKSPACE) {
-                const $next = $pill.next();
-                const id = $pill.data("id");
-                funcs.removePill(id);
-                $next.trigger("focus");
-                // the "Backspace" key in Firefox will go back a page if you do
-                // not prevent it.
-                e.preventDefault();
+            switch (char) {
+                case KEY.LEFT_ARROW:
+                    $pill.prev().trigger("focus");
+                    break;
+                case KEY.RIGHT_ARROW:
+                    $pill.next().trigger("focus");
+                    break;
+                case KEY.BACKSPACE: {
+                    const $next = $pill.next();
+                    const id = $pill.data("id");
+                    funcs.removePill(id);
+                    $next.trigger("focus");
+                    // the "Backspace" key in Firefox will go back a page if you do
+                    // not prevent it.
+                    e.preventDefault();
+                    break;
+                }
             }
         });
 
@@ -375,7 +385,7 @@ export function create(opts) {
             );
             e.preventDefault();
         });
-    })();
+    }
 
     // the external, user-accessible prototype.
     const prototype = {

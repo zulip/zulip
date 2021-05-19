@@ -1,3 +1,4 @@
+import time
 from typing import Any, List, Mapping, Optional
 
 import markdown
@@ -5,6 +6,9 @@ import markdown.extensions.admonition
 import markdown.extensions.codehilite
 import markdown.extensions.extra
 import markdown.extensions.toc
+import orjson
+from django.conf import settings
+from django.contrib.staticfiles.storage import staticfiles_storage
 from django.template import Library, engines
 from django.utils.safestring import mark_safe
 from jinja2.exceptions import TemplateNotFound
@@ -167,3 +171,22 @@ def render_markdown_path(
     rendered_html = jinja.from_string(html).render(context)
 
     return mark_safe(rendered_html)
+
+
+def webpack_entry(entrypoint: str) -> List[str]:
+    while True:
+        with open(settings.WEBPACK_STATS_FILE, "rb") as f:
+            stats = orjson.loads(f.read())
+        status = stats["status"]
+        if not settings.DEBUG or status != "compile":
+            break
+        time.sleep(0.2)
+
+    if status != "done":
+        raise RuntimeError("Webpack compilation was not successful")
+
+    return [
+        staticfiles_storage.url(settings.WEBPACK_BUNDLES + filename)
+        for filename in stats["chunks"][entrypoint]
+        if filename.endswith((".css", ".js")) and not filename.endswith(".hot-update.js")
+    ]

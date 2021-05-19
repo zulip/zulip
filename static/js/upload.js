@@ -8,7 +8,7 @@ import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
 import {csrf_token} from "./csrf";
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import {page_params} from "./page_params";
 
 export function make_upload_absolute(uri) {
@@ -27,7 +27,7 @@ export function feature_check(upload_button) {
 }
 
 export function get_translated_status(file) {
-    const status = i18n.t("Uploading __filename__…", {filename: file.name});
+    const status = $t({defaultMessage: "Uploading {filename}…"}, {filename: file.name});
     return "[" + status + "]()";
 }
 
@@ -50,13 +50,13 @@ export function get_item(key, config) {
             case "send_status_message":
                 return $("#compose-error-msg");
             case "file_input_identifier":
-                return "#file_input";
+                return "#compose .file_input";
             case "source":
                 return "compose-file-input";
             case "drag_drop_container":
                 return $("#compose");
             case "markdown_preview_hide_button":
-                return $("#undo_markdown_preview");
+                return $("#compose .undo_markdown_preview");
             default:
                 throw new Error(`Invalid key name for mode "${config.mode}"`);
         }
@@ -66,10 +66,10 @@ export function get_item(key, config) {
         }
         switch (key) {
             case "textarea":
-                return $(`#message_edit_content_${CSS.escape(config.row)}`);
+                return $(`#edit_form_${CSS.escape(config.row)} .message_edit_content`);
             case "send_button":
-                return $(`#message_edit_content_${CSS.escape(config.row)}`)
-                    .closest("#message_edit_form")
+                return $(`#edit_form_${CSS.escape(config.row)} .message_edit_content`)
+                    .closest(".message_edit_form")
                     .find(".message_edit_save");
             case "send_status_identifier":
                 return `#message-edit-send-status-${CSS.escape(config.row)}`;
@@ -82,13 +82,13 @@ export function get_item(key, config) {
             case "send_status_message":
                 return $(`#message-edit-send-status-${CSS.escape(config.row)}`).find(".error-msg");
             case "file_input_identifier":
-                return `#message_edit_file_input_${CSS.escape(config.row)}`;
+                return `#edit_form_${CSS.escape(config.row)} .file_input`;
             case "source":
                 return "message-edit-file-input";
             case "drag_drop_container":
-                return $("#message_edit_form");
+                return $(".message_edit_form");
             case "markdown_preview_hide_button":
-                return $(`#undo_markdown_preview_${CSS.escape(config.row)}`);
+                return $(`#edit_form_${CSS.escape(config.row)} .undo_markdown_preview`);
             default:
                 throw new Error(`Invalid key name for mode "${config.mode}"`);
         }
@@ -102,7 +102,10 @@ export function hide_upload_status(config) {
     get_item("send_status", config).removeClass("alert-info").hide();
 }
 
-export function show_error_message(config, message = i18n.t("An unknown error occurred.")) {
+export function show_error_message(
+    config,
+    message = $t({defaultMessage: "An unknown error occurred."}),
+) {
     get_item("send_button", config).prop("disabled", false);
     get_item("send_status", config).addClass("alert-error").removeClass("alert-info").show();
     get_item("send_status_message", config).text(message);
@@ -115,7 +118,9 @@ export function upload_files(uppy, config, files) {
     if (page_params.max_file_upload_size_mib === 0) {
         show_error_message(
             config,
-            i18n.t("File and image uploads have been disabled for this organization."),
+            $t({
+                defaultMessage: "File and image uploads have been disabled for this organization.",
+            }),
         );
         return;
     }
@@ -133,7 +138,7 @@ export function upload_files(uppy, config, files) {
 
     get_item("send_button", config).prop("disabled", true);
     get_item("send_status", config).addClass("alert-info").removeClass("alert-error").show();
-    get_item("send_status_message", config).html($("<p>").text(i18n.t("Uploading…")));
+    get_item("send_status_message", config).html($("<p>").text($t({defaultMessage: "Uploading…"})));
     get_item("send_status_close_button", config).one("click", () => {
         for (const file of uppy.getFiles()) {
             compose_ui.replace_syntax(
@@ -179,8 +184,8 @@ export function setup_upload(config) {
         },
         locale: {
             strings: {
-                exceedsSize: i18n.t("This file exceeds maximum allowed size of"),
-                failedToUpload: i18n.t("Failed to upload %{file}"),
+                exceedsSize: $t({defaultMessage: "This file exceeds maximum allowed size of"}),
+                failedToUpload: $t({defaultMessage: "Failed to upload %'{file}'"}),
             },
         },
     });
@@ -195,7 +200,9 @@ export function setup_upload(config) {
         limit: 5,
         locale: {
             strings: {
-                timedOut: i18n.t("Upload stalled for %{seconds} seconds, aborting."),
+                timedOut: $t({
+                    defaultMessage: "Upload stalled for %'{seconds}' seconds, aborting.",
+                }),
             },
         },
     });

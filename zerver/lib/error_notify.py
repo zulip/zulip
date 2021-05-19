@@ -5,7 +5,7 @@ from typing import Any, Dict
 from django.conf import settings
 from django.core.mail import mail_admins
 from django.http import HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.filters import clean_data_from_query_parameters
 from zerver.lib.actions import internal_send_stream_message

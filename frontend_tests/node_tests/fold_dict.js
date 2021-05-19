@@ -54,8 +54,8 @@ run_test("case insensitivity", () => {
     assert.deepEqual(Array.from(d.keys()), []);
 
     assert(!d.has("foo"));
-    d.set("fOO", "Hello World");
-    assert.equal(d.get("foo"), "Hello World");
+    d.set("fOO", "Hello world");
+    assert.equal(d.get("foo"), "Hello world");
     assert(d.has("foo"));
     assert(d.has("FOO"));
     assert(!d.has("not_a_key"));

@@ -109,6 +109,8 @@ class CompatibilityTest(ZulipTestCase):
             else:
                 assert False  # nocoverage
 
+    @mock.patch("zerver.views.compatibility.DESKTOP_MINIMUM_VERSION", "5.0.0")
+    @mock.patch("zerver.views.compatibility.DESKTOP_WARNING_VERSION", "5.2.0")
     def test_insecure_desktop_app(self) -> None:
         self.assertEqual(is_outdated_desktop_app("ZulipDesktop/0.5.2 (Mac)"), (True, True, True))
         self.assertEqual(

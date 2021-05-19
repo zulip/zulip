@@ -136,7 +136,7 @@ def get_subject_based_on_type(payload: Dict[str, Any], type: str) -> Any:
     if type.startswith("issue"):
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repository_name(payload["repository"]),
-            type="Issue",
+            type="issue",
             id=payload["issue"]["id"],
             title=payload["issue"]["title"],
         )

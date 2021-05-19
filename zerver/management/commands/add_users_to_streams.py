@@ -10,7 +10,7 @@ class Command(ZulipBaseCommand):
     help = """Add some or all users in a realm to a set of streams."""
 
     def add_arguments(self, parser: CommandParser) -> None:
-        self.add_realm_args(parser, True)
+        self.add_realm_args(parser, required=True)
         self.add_user_list_args(parser, all_users_help="Add all users in realm to these streams.")
 
         parser.add_argument(
@@ -28,7 +28,7 @@ class Command(ZulipBaseCommand):
             for user_profile in user_profiles:
                 stream = ensure_stream(realm, stream_name, acting_user=None)
                 _ignore, already_subscribed = bulk_add_subscriptions(
-                    realm, [stream], [user_profile]
+                    realm, [stream], [user_profile], acting_user=None
                 )
                 was_there_already = user_profile.id in (info.user.id for info in already_subscribed)
                 print(

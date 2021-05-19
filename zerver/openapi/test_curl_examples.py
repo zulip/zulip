@@ -17,13 +17,13 @@ from zulip import Client
 from zerver.models import get_realm
 from zerver.openapi import markdown_extension
 from zerver.openapi.curl_param_value_generators import (
-    CALLED_GENERATOR_FUNCTIONS,
-    REGISTERED_GENERATOR_FUNCTIONS,
+    AUTHENTICATION_LINE,
+    assert_all_helper_functions_called,
 )
 
 
-def test_generated_curl_examples_for_success(client: Client, owner_client: Client) -> None:
-    authentication_line = f"{client.email}:{client.api_key}"
+def test_generated_curl_examples_for_success(client: Client) -> None:
+    default_authentication_line = f"{client.email}:{client.api_key}"
     # A limited Markdown engine that just processes the code example syntax.
     realm = get_realm("zulip")
     md_engine = markdown.Markdown(
@@ -38,6 +38,10 @@ def test_generated_curl_examples_for_success(client: Client, owner_client: Clien
     for file_name in sorted(glob.glob("templates/zerver/api/*.md")):
         with open(file_name) as f:
             for line in f:
+                # Set AUTHENTICATION_LINE to default_authentication_line.
+                # Set this every iteration, because deactivate_own_user
+                # will override this for its test.
+                AUTHENTICATION_LINE[0] = default_authentication_line
                 # A typical example from the Markdown source looks like this:
                 #     {generate_code_example(curl, ...}
                 if not line.startswith("{generate_code_example(curl"):
@@ -50,20 +54,8 @@ def test_generated_curl_examples_for_success(client: Client, owner_client: Clien
                 unescaped_html = html.unescape(curl_command_html)
                 curl_command_text = unescaped_html[len("<p><code>curl\n") : -len("</code></p>")]
                 curl_command_text = curl_command_text.replace(
-                    "BOT_EMAIL_ADDRESS:BOT_API_KEY", authentication_line
+                    "BOT_EMAIL_ADDRESS:BOT_API_KEY", AUTHENTICATION_LINE[0]
                 )
-
-                # TODO: This needs_reactivation block is a hack.
-                # However, it's awkward to test the "deactivate
-                # myself" endpoint with how this system tries to use
-                # the same account for all tests without some special
-                # logic for that endpoint; and the hack is better than
-                # just not documenting the endpoint.
-                needs_reactivation = False
-                user_id = 0
-                if file_name == "templates/zerver/api/deactivate-own-user.md":
-                    needs_reactivation = True
-                    user_id = client.get_profile()["user_id"]
 
                 print("Testing {} ...".format(curl_command_text.split("\n")[0]))
 
@@ -80,8 +72,6 @@ def test_generated_curl_examples_for_success(client: Client, owner_client: Clien
                     )
                     response = json.loads(response_json)
                     assert response["result"] == "success"
-                    if needs_reactivation:
-                        owner_client.reactivate_user_by_id(user_id)
                 except (AssertionError, Exception):
                     error_template = """
 Error verifying the success of the API documentation curl example.
@@ -117,8 +107,4 @@ To learn more about the test itself, see zerver/openapi/test_curl_examples.py.
                     )
                     raise
 
-    if REGISTERED_GENERATOR_FUNCTIONS != CALLED_GENERATOR_FUNCTIONS:
-        raise Exception(
-            "Some registered generator functions were not called:\n"
-            " " + str(REGISTERED_GENERATOR_FUNCTIONS - CALLED_GENERATOR_FUNCTIONS)
-        )
+    assert_all_helper_functions_called()

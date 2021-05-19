@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
-set -e
+set -eu
 
 cd "$(dirname "$0")/.."
-git describe --tags --match='[0-9]*' >zulip-git-version || true
+remote="$(git config zulip.zulipRemote)" || remote=upstream
+{
+    git describe --always --tags --match='[0-9]*'
+    branches="$(git for-each-ref --format='%(objectname)' "refs/remotes/$remote/master" "refs/remotes/$remote/*.x")"
+    mapfile -t branches <<<"$branches"
+    if merge_base="$(git merge-base -- HEAD "${branches[@]}")"; then
+        git describe --always --tags --match='[0-9]*' -- "$merge_base"
+    fi
+} >zulip-git-version

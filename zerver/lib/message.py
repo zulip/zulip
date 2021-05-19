@@ -9,7 +9,7 @@ import orjson
 from django.db import connection
 from django.db.models import Max, Sum
 from django.utils.timezone import now as timezone_now
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from psycopg2.sql import SQL
 from typing_extensions import TypedDict
 
@@ -31,6 +31,7 @@ from zerver.lib.markdown import version as markdown_version
 from zerver.lib.request import JsonableError
 from zerver.lib.stream_subscription import (
     get_stream_subscriptions_for_user,
+    get_subscribed_stream_recipient_ids_for_user,
     num_subscribers_for_stream_id,
 )
 from zerver.lib.timestamp import datetime_to_timestamp
@@ -63,7 +64,7 @@ class RawReactionRow(TypedDict):
     reaction_type: str
     user_profile__email: str
     user_profile__full_name: str
-    user_profile__id: int
+    user_profile_id: int
 
 
 class RawUnreadMessagesResult(TypedDict):
@@ -646,10 +647,10 @@ class ReactionDict:
             # as a small performance optimization.
             "user": {
                 "email": row["user_profile__email"],
-                "id": row["user_profile__id"],
+                "id": row["user_profile_id"],
                 "full_name": row["user_profile__full_name"],
             },
-            "user_id": row["user_profile__id"],
+            "user_id": row["user_profile_id"],
         }
 
 
@@ -671,59 +672,95 @@ def access_message(
 
     user_message = get_usermessage_by_message_id(user_profile, message_id)
 
-    if has_message_access(user_profile, message, user_message):
+    if has_message_access(user_profile, message, has_user_message=user_message is not None):
         return (message, user_message)
     raise JsonableError(_("Invalid message(s)"))
 
 
 def has_message_access(
-    user_profile: UserProfile, message: Message, user_message: Optional[UserMessage]
+    user_profile: UserProfile,
+    message: Message,
+    *,
+    has_user_message: bool,
+    stream: Optional[Stream] = None,
+    is_subscribed: Optional[bool] = None,
 ) -> bool:
-    if user_message is None:
-        if message.recipient.type != Recipient.STREAM:
-            # You can't access private messages you didn't receive
-            return False
+    """
+    Returns whether a user has access to a given message.
 
+    * The user_message parameter must be provded if the user has a UserMessage
+      row for the target message.
+    * The optional stream parameter is validated; is_subscribed is not.
+    """
+
+    # If you have a user_message object, you have access.
+    if has_user_message:
+        return True
+
+    if message.recipient.type != Recipient.STREAM:
+        # You can't access private messages you didn't receive
+        return False
+
+    if stream is None:
         stream = Stream.objects.get(id=message.recipient.type_id)
-        if stream.realm != user_profile.realm:
-            # You can't access public stream messages in other realms
-            return False
+    else:
+        assert stream.recipient_id == message.recipient_id
 
-        if not stream.is_history_public_to_subscribers():
-            # You can't access messages you didn't directly receive
-            # unless history is public to subscribers.
-            return False
+    if stream.realm != user_profile.realm:
+        # You can't access public stream messages in other realms
+        return False
 
-        if not stream.is_public():
-            # This stream is an invite-only stream where message
-            # history is available to subscribers.  So we check if
-            # you're subscribed.
-            if not Subscription.objects.filter(
-                user_profile=user_profile, active=True, recipient=message.recipient
-            ).exists():
-                return False
+    if not stream.is_history_public_to_subscribers():
+        # You can't access messages you didn't directly receive
+        # unless history is public to subscribers.
+        return False
 
-            # You are subscribed, so let this fall through to the public stream case.
-        elif user_profile.is_guest:
-            # Guest users don't get automatic access to public stream messages
-            if not Subscription.objects.filter(
-                user_profile=user_profile, active=True, recipient=message.recipient
-            ).exists():
-                return False
-        else:
-            # Otherwise, the message was sent to a public stream in
-            # your realm, so return the message, user_message pair
-            pass
+    if stream.is_public() and user_profile.can_access_public_streams():
+        return True
 
-    return True
+    # is_history_public_to_subscribers, so check if you're subscribed
+    if is_subscribed is not None:
+        return is_subscribed
+
+    return Subscription.objects.filter(
+        user_profile=user_profile, active=True, recipient=message.recipient
+    ).exists()
 
 
-def bulk_access_messages(user_profile: UserProfile, messages: Sequence[Message]) -> List[Message]:
+def bulk_access_messages(
+    user_profile: UserProfile, messages: Sequence[Message], *, stream: Optional[Stream] = None
+) -> List[Message]:
+    """This function does the full has_message_access check for each
+    message.  If stream is provided, it is used to avoid unnecessary
+    database queries, and will use exactly 2 bulk queries instead.
+
+    Throws AssertionError if stream is passed and any of the messages
+    were not sent to that stream.
+
+    """
     filtered_messages = []
 
+    user_message_set = set(
+        bulk_access_messages_expect_usermessage(
+            user_profile.id, [message.id for message in messages]
+        )
+    )
+
+    # TODO: Ideally, we'd do a similar bulk-stream-fetch if stream is
+    # None, so that this function is fast with
+
+    subscribed_recipient_ids = set(get_subscribed_stream_recipient_ids_for_user(user_profile))
+
     for message in messages:
-        user_message = get_usermessage_by_message_id(user_profile, message.id)
-        if has_message_access(user_profile, message, user_message):
+        has_user_message = message.id in user_message_set
+        is_subscribed = message.recipient_id in subscribed_recipient_ids
+        if has_message_access(
+            user_profile,
+            message,
+            has_user_message=has_user_message,
+            stream=stream,
+            is_subscribed=is_subscribed,
+        ):
             filtered_messages.append(message)
     return filtered_messages
 
@@ -1009,6 +1046,9 @@ def extract_unread_data_from_um_rows(
 
         if topic_mute_checker(recipient_id, topic):
             return True
+
+        # Messages sent by muted users are never unread, so we don't
+        # need any logic related to muted users here.
 
         return False
 
@@ -1394,6 +1434,9 @@ def wildcard_mention_allowed(sender: UserProfile, stream: Stream) -> bool:
 
     if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_ADMINS:
         return sender.is_realm_admin
+
+    if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_MODERATORS:
+        return sender.is_realm_admin or sender.is_moderator
 
     if realm.wildcard_mention_policy == Realm.WILDCARD_MENTION_POLICY_STREAM_ADMINS:
         # TODO: Change this when we implement stream administrators

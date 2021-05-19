@@ -1,8 +1,7 @@
 import {all_messages_data} from "./all_messages_data";
-import * as channel from "./channel";
 import {FoldDict} from "./fold_dict";
 import * as message_util from "./message_util";
-import * as stream_data from "./stream_data";
+import * as sub_store from "./sub_store";
 import * as unread from "./unread";
 
 const stream_dict = new Map(); // stream_id -> PerStreamHistory object
@@ -46,7 +45,7 @@ export function is_complete_for_stream_id(stream_id) {
         return true;
     }
 
-    const sub = stream_data.get_sub_by_id(stream_id);
+    const sub = sub_store.get(stream_id);
     const in_cache = all_topics_in_cache(sub);
 
     if (in_cache) {
@@ -291,23 +290,8 @@ export function add_history(stream_id, server_history) {
     fetched_stream_ids.add(stream_id);
 }
 
-export function get_server_history(stream_id, on_success) {
-    if (fetched_stream_ids.has(stream_id)) {
-        on_success();
-        return;
-    }
-
-    const url = "/json/users/me/" + stream_id + "/topics";
-
-    channel.get({
-        url,
-        data: {},
-        success(data) {
-            const server_history = data.topics;
-            add_history(stream_id, server_history);
-            on_success();
-        },
-    });
+export function has_history_for(stream_id) {
+    return fetched_stream_ids.has(stream_id);
 }
 
 export function get_recent_topic_names(stream_id) {

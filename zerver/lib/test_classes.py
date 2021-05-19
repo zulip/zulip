@@ -6,7 +6,20 @@ import subprocess
 import tempfile
 import urllib
 from contextlib import contextmanager
-from typing import Any, Dict, Iterable, Iterator, List, Optional, Sequence, Set, Tuple, Union
+from datetime import timedelta
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+    Union,
+)
 from unittest import TestResult, mock
 
 import lxml.html
@@ -24,6 +37,7 @@ from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
 from django.test.testcases import SerializeMixin
 from django.urls import resolve
 from django.utils import translation
+from django.utils.timezone import now as timezone_now
 from fakeldap import MockLDAP
 from two_factor.models import PhoneDevice
 
@@ -33,6 +47,7 @@ from zerver.lib.actions import (
     bulk_remove_subscriptions,
     check_send_message,
     check_send_stream_message,
+    do_set_realm_property,
     gather_subscriptions,
 )
 from zerver.lib.cache import bounce_key_prefix_for_testing
@@ -184,7 +199,7 @@ Output:
             # An API request; use mobile as the default user agent
             default_user_agent = "ZulipMobile/26.22.145 (iOS 10.3.1)"
         else:
-            # A webapp request; use a browser User-Agent string.
+            # A web app request; use a browser User-Agent string.
             default_user_agent = (
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
                 + "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -479,7 +494,7 @@ Output:
         self.assert_json_error(result, assert_json_error_msg)
 
     def _get_page_params(self, result: HttpResponse) -> Dict[str, Any]:
-        """Helper for parsing page_params after fetching the webapp's home view."""
+        """Helper for parsing page_params after fetching the web app's home view."""
         doc = lxml.html.document_fromstring(result.content)
         [div] = doc.xpath("//div[@id='page-params']")
         page_params_json = div.get("data-params")
@@ -596,7 +611,7 @@ Output:
         timezone: str = "",
         realm_in_root_domain: Optional[str] = None,
         default_stream_groups: Sequence[str] = [],
-        source_realm: str = "",
+        source_realm_id: str = "",
         key: Optional[str] = None,
         **kwargs: Any,
     ) -> HttpResponse:
@@ -620,7 +635,7 @@ Output:
             "terms": True,
             "from_confirmation": from_confirmation,
             "default_stream_group": default_stream_groups,
-            "source_realm": source_realm,
+            "source_realm_id": source_realm_id,
         }
         if realm_in_root_domain is not None:
             payload["realm_in_root_domain"] = realm_in_root_domain
@@ -833,7 +848,7 @@ Output:
         self.assertNotEqual(json["msg"], "Error parsing JSON in response!")
         return json
 
-    def get_json_error(self, result: HttpResponse, status_code: int = 400) -> Dict[str, Any]:
+    def get_json_error(self, result: HttpResponse, status_code: int = 400) -> str:
         try:
             json = orjson.loads(result.content)
         except orjson.JSONDecodeError:  # nocoverage
@@ -959,13 +974,13 @@ Output:
             stream = get_stream(stream_name, user_profile.realm)
         except Stream.DoesNotExist:
             stream, from_stream_creation = create_stream_if_needed(realm, stream_name)
-        bulk_add_subscriptions(realm, [stream], [user_profile])
+        bulk_add_subscriptions(realm, [stream], [user_profile], acting_user=None)
         return stream
 
     def unsubscribe(self, user_profile: UserProfile, stream_name: str) -> None:
         client = get_client("website")
         stream = get_stream(stream_name, user_profile.realm)
-        bulk_remove_subscriptions([user_profile], [stream], client)
+        bulk_remove_subscriptions([user_profile], [stream], client, acting_user=None)
 
     # Subscribe to a stream by making an API request
     def common_subscribe_to_streams(
@@ -1150,6 +1165,15 @@ Output:
 
         self.mock_ldap.directory[dn][attr_name] = [data]
 
+    def remove_ldap_user_attr(self, username: str, attr_name: str) -> None:
+        """
+        Method for removing the value of an attribute of a user entry in the mock
+        directory. This changes the attribute only for the specific test function
+        that calls this method, and is isolated from other tests.
+        """
+        dn = f"uid={username},ou=users,dc=zulip,dc=com"
+        self.mock_ldap.directory[dn].pop(attr_name, None)
+
     def ldap_username(self, username: str) -> str:
         """
         Maps Zulip username to the name of the corresponding LDAP user
@@ -1179,6 +1203,56 @@ Output:
         """
         # See email_display_from, above.
         return email_message.from_email
+
+    def check_has_permission_policies(
+        self, policy: str, validation_func: Callable[[UserProfile], bool]
+    ) -> None:
+
+        realm = get_realm("zulip")
+        admin_user = self.example_user("iago")
+        moderator_user = self.example_user("shiva")
+        member_user = self.example_user("hamlet")
+        new_member_user = self.example_user("othello")
+        guest_user = self.example_user("polonius")
+
+        do_set_realm_property(realm, "waiting_period_threshold", 1000, acting_user=None)
+        new_member_user.date_joined = timezone_now() - timedelta(
+            days=(realm.waiting_period_threshold - 1)
+        )
+        new_member_user.save()
+
+        member_user.date_joined = timezone_now() - timedelta(
+            days=(realm.waiting_period_threshold + 1)
+        )
+        member_user.save()
+
+        do_set_realm_property(realm, policy, Realm.POLICY_ADMINS_ONLY, acting_user=None)
+        self.assertTrue(validation_func(admin_user))
+        self.assertFalse(validation_func(moderator_user))
+        self.assertFalse(validation_func(member_user))
+        self.assertFalse(validation_func(new_member_user))
+        self.assertFalse(validation_func(guest_user))
+
+        do_set_realm_property(realm, policy, Realm.POLICY_MODERATORS_ONLY, acting_user=None)
+        self.assertTrue(validation_func(admin_user))
+        self.assertTrue(validation_func(moderator_user))
+        self.assertFalse(validation_func(member_user))
+        self.assertFalse(validation_func(new_member_user))
+        self.assertFalse(validation_func(guest_user))
+
+        do_set_realm_property(realm, policy, Realm.POLICY_FULL_MEMBERS_ONLY, acting_user=None)
+        self.assertTrue(validation_func(admin_user))
+        self.assertTrue(validation_func(moderator_user))
+        self.assertTrue(validation_func(member_user))
+        self.assertFalse(validation_func(new_member_user))
+        self.assertFalse(validation_func(guest_user))
+
+        do_set_realm_property(realm, policy, Realm.POLICY_MEMBERS_ONLY, acting_user=None)
+        self.assertTrue(validation_func(admin_user))
+        self.assertTrue(validation_func(moderator_user))
+        self.assertTrue(validation_func(member_user))
+        self.assertTrue(validation_func(new_member_user))
+        self.assertFalse(validation_func(guest_user))
 
 
 class WebhookTestCase(ZulipTestCase):

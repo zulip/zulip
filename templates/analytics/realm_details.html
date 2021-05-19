@@ -1,15 +1,37 @@
 <span class="label">realm</span>
-<h3><img src="{{ realm_icon_url(realm) }}" class="support-realm-icon"> {{ realm.name }}</h3>
+<h3><img src="{{ realm_icon_url(realm) }}" class="support-realm-icon" /> {{ realm.name }}</h3>
 <b>URL</b>: <a target="_blank" rel="noopener noreferrer" href="{{ realm.uri }}">{{ realm.uri }}</a> |
 <a target="_blank" rel="noopener noreferrer" href="/stats/realm/{{ realm.string_id }}/">stats</a> |
-<a target="_blank" rel="noopener noreferrer" href="/realm_activity/{{ realm.string_id }}/">activity</a><br>
-<b>Date created</b>: {{ realm.date_created|timesince }} ago<br>
-<b>Admins</b>: {{ realm_admin_emails(realm) }}
-<a title="Copy emails" class="copy-button" data-copytext="{{ realm_admin_emails(realm) }}">
+<a target="_blank" rel="noopener noreferrer" href="/realm_activity/{{ realm.string_id }}/">activity</a><br />
+<b>Date created</b>: {{ realm.date_created|timesince }} ago<br />
+{% set owner_emails_string = get_realm_owner_emails_as_string(realm) %}
+<b>Owners</b>: {{ owner_emails_string }}
+{% if owner_emails_string %}
+<a title="Copy emails" class="copy-button" data-copytext="{{ owner_emails_string }}">
     <i class="fa fa-copy"></i>
 </a>
-<form method="POST">
-    <b>Status</b>:<br>
+{% endif %}
+<br />
+{% set admin_emails_string = get_realm_admin_emails_as_string(realm) %}
+<b>Admins</b>: {{ admin_emails_string }}
+{% if admin_emails_string %}
+<a title="Copy emails" class="copy-button" data-copytext="{{ admin_emails_string }}">
+    <i class="fa fa-copy"></i>
+</a>
+{% endif %}
+<br />
+{% set first_human_user = realm.get_first_human_user() %}
+{% if first_human_user %}
+<b>First human user</b>: {{ first_human_user.delivery_email  }}
+<a title="Copy emails" class="copy-button" data-copytext="{{ first_human_user.delivery_email }}">
+    <i class="fa fa-copy"></i>
+</a>
+{% else %}
+<b>First human user</b>:
+{% endif %}
+
+<form method="POST" class="support-realm-status-form">
+    <b>Status</b>:<br />
     {{ csrf_input }}
     <input type="hidden" name="realm_id" value="{{ realm.id }}" />
     <select name="status">
@@ -19,14 +41,14 @@
     <button type="submit" class="button rounded small support-submit-button">Update</button>
 </form>
 <form method="POST">
-    <b>New subdomain</b>:<br>
+    <b>New subdomain</b>:<br />
     {{ csrf_input }}
     <input type="hidden" name="realm_id" value="{{ realm.id }}" />
-    <input type="text" name="new_subdomain" required>
+    <input type="text" name="new_subdomain" required />
     <button type="submit" class="button rounded small support-submit-button">Update</button>
 </form>
 <form method="POST" class="support-plan-type-form">
-    <b>Plan type</b>:<br>
+    <b>Plan type</b>:<br />
     {{ csrf_input }}
     <input type="hidden" name="realm_id" value="{{ realm.id }}" />
     <select name="plan_type">
@@ -38,7 +60,7 @@
     <button type="submit" class="button rounded small support-submit-button">Update</button>
 </form>
 <form method="POST" class="sponsorship-pending-form">
-    <b>Sponsorship pending</b>:<br>
+    <b>Sponsorship pending</b>:<br />
     {{ csrf_input }}
     <input type="hidden" name="realm_id" value="{{ realm.id }}" />
     <select name="sponsorship_pending">
@@ -61,35 +83,35 @@
 {% endif %}
 
 <form method="POST" class="support-discount-form">
-    <b>Discount (use 85 for nonprofits)</b>:<br>
+    <b>Discount (use 85 for nonprofits)</b>:<br />
     {{ csrf_input }}
     <input type="hidden" name="realm_id" value="{{ realm.id }}" />
     {% if realm.current_plan and realm.current_plan.fixed_price %}
-    <input type="number" name="discount" value="{{ get_discount_for_realm(realm) }}" disabled>
+    <input type="number" name="discount" value="{{ get_discount_for_realm(realm) }}" disabled />
     <button type="submit" class="button rounded small support-submit-button" disabled>Update</button>
     {% else %}
-    <input type="number" name="discount" value="{{ get_discount_for_realm(realm) }}" required>
+    <input type="number" name="discount" value="{{ get_discount_for_realm(realm) }}" required />
     <button type="submit" class="button rounded small support-submit-button">Update</button>
     {% endif %}
 </form>
 {% if realm.current_plan %}
 <div class="current-plan-details">
     <h3>📅 Current plan</h3>
-    <b>Name</b>: {{ realm.current_plan.name }}<br>
-    <b>Status</b>: {{realm.current_plan.get_plan_status_as_text()}}<br>
-    <b>Billing schedule</b>: {% if realm.current_plan.billing_schedule == realm.current_plan.ANNUAL %}Annual{% else %}Monthly{% endif %}<br>
-    <b>Licenses</b>: {{ realm.current_plan.licenses_used }}/{{ realm.current_plan.licenses }} ({% if realm.current_plan.automanage_licenses %}Automatic{% else %}Manual{% endif %})<br>
+    <b>Name</b>: {{ realm.current_plan.name }}<br />
+    <b>Status</b>: {{realm.current_plan.get_plan_status_as_text()}}<br />
+    <b>Billing schedule</b>: {% if realm.current_plan.billing_schedule == realm.current_plan.ANNUAL %}Annual{% else %}Monthly{% endif %}<br />
+    <b>Licenses</b>: {{ realm.current_plan.licenses_used }}/{{ realm.current_plan.licenses }} ({% if realm.current_plan.automanage_licenses %}Automatic{% else %}Manual{% endif %})<br />
     {% if realm.current_plan.price_per_license %}
-    <b>Price per license</b>: ${{ realm.current_plan.price_per_license/100 }}<br>
+    <b>Price per license</b>: ${{ realm.current_plan.price_per_license/100 }}<br />
     {% else %}
-    <b>Fixed price</b>: ${{ realm.current_plan.fixed_price/100 }}<br>
+    <b>Fixed price</b>: ${{ realm.current_plan.fixed_price/100 }}<br />
     {% endif %}
-    <b>Next invoice date</b>: {{ realm.current_plan.next_invoice_date.strftime('%d %B %Y') }}<br>
+    <b>Next invoice date</b>: {{ realm.current_plan.next_invoice_date.strftime('%d %B %Y') }}<br />
 </div>
 
 <form method="POST" class="billing-method-form">
-    <br>
-    <b>Billing method</b><br>
+    <br />
+    <b>Billing method</b><br />
     {{ csrf_input }}
     <input type="hidden" name="realm_id" value="{{ realm.id }}" />
     <select name="billing_method" class="billing-method-select" required>
@@ -100,8 +122,8 @@
 </form>
 
 <form method="POST" class="downgrade-plan-form">
-    <br>
-    <b>Downgrade plan</b><br>
+    <br />
+    <b>Downgrade plan</b><br />
     {{ csrf_input }}
     <input type="hidden" name="realm_id" value="{{ realm.id }}" />
     <select name="downgrade_method" class="downgrade-plan-method-select" required>

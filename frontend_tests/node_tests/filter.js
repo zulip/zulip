@@ -185,13 +185,20 @@ test("basics", () => {
 
     operators = [{operator: "pm-with", operand: "joe@example.com"}];
     filter = new Filter(operators);
+    assert(filter.is_non_huddle_pm());
     assert(filter.contains_only_private_messages());
     assert(!filter.has_operator("search"));
     assert(filter.can_apply_locally());
     assert(!filter.is_personal_filter());
 
+    operators = [{operator: "pm-with", operand: "joe@example.com,jack@example.com"}];
+    filter = new Filter(operators);
+    assert(!filter.is_non_huddle_pm());
+    assert(filter.contains_only_private_messages());
+
     operators = [{operator: "group-pm-with", operand: "joe@example.com"}];
     filter = new Filter(operators);
+    assert(!filter.is_non_huddle_pm());
     assert(filter.contains_only_private_messages());
     assert(!filter.has_operator("search"));
     assert(filter.can_apply_locally());
@@ -1118,7 +1125,7 @@ test("describe", () => {
 });
 
 test("can_bucket_by", () => {
-    let terms = [{operator: "stream", operand: "My Stream"}];
+    let terms = [{operator: "stream", operand: "My stream"}];
     let filter = new Filter(terms);
     assert.equal(filter.can_bucket_by("stream"), true);
     assert.equal(filter.can_bucket_by("stream", "topic"), false);
@@ -1126,8 +1133,8 @@ test("can_bucket_by", () => {
 
     terms = [
         // try a non-orthodox ordering
-        {operator: "topic", operand: "My Topic"},
-        {operator: "stream", operand: "My Stream"},
+        {operator: "topic", operand: "My topic"},
+        {operator: "stream", operand: "My stream"},
     ];
     filter = new Filter(terms);
     assert.equal(filter.can_bucket_by("stream"), true);
@@ -1135,8 +1142,8 @@ test("can_bucket_by", () => {
     assert.equal(filter.can_bucket_by("pm-with"), false);
 
     terms = [
-        {operator: "stream", operand: "My Stream", negated: true},
-        {operator: "topic", operand: "My Topic"},
+        {operator: "stream", operand: "My stream", negated: true},
+        {operator: "topic", operand: "My topic"},
     ];
     filter = new Filter(terms);
     assert.equal(filter.can_bucket_by("stream"), false);

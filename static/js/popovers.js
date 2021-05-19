@@ -1,5 +1,5 @@
 import ClipboardJS from "clipboard";
-import {parseISO, formatISO, add, set} from "date-fns";
+import {add, formatISO, parseISO, set} from "date-fns";
 import ConfirmDatePlugin from "flatpickr/dist/plugins/confirmDate/confirmDate";
 import $ from "jquery";
 
@@ -23,8 +23,9 @@ import * as compose_ui from "./compose_ui";
 import * as condense from "./condense";
 import * as emoji_picker from "./emoji_picker";
 import * as feature_flags from "./feature_flags";
+import * as giphy from "./giphy";
 import * as hash_util from "./hash_util";
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_lists from "./message_lists";
@@ -36,11 +37,11 @@ import * as narrow_state from "./narrow_state";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as people from "./people";
+import * as realm_playground from "./realm_playground";
 import * as reminder from "./reminder";
 import * as resize from "./resize";
 import * as rows from "./rows";
 import * as settings_account from "./settings_account";
-import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_profile_fields from "./settings_profile_fields";
 import * as stream_popover from "./stream_popover";
@@ -84,21 +85,17 @@ function elem_to_user_id(elem) {
 // and push the $.fn.data($o, "popover") results to an array.
 // this is needed so that when we try to unload popovers, we can kill all dead
 // ones that no longer have valid parents in the DOM.
-(function (popover) {
-    $.fn.popover = function (...args) {
-        // apply the jQuery object as `this`, and popover function arguments.
-        popover.apply(this, args);
+const old_popover = $.fn.popover;
+$.fn.popover = Object.assign(function (...args) {
+    // apply the jQuery object as `this`, and popover function arguments.
+    old_popover.apply(this, args);
 
-        // if there is a valid "popover" key in the jQuery data object then
-        // push it to the array.
-        if (this.data("popover")) {
-            list_of_popovers.push(this.data("popover"));
-        }
-    };
-
-    // add back all shallow properties of $.fn.popover to the new proxied version.
-    Object.assign($.fn.popover, popover);
-})($.fn.popover);
+    // if there is a valid "popover" key in the jQuery data object then
+    // push it to the array.
+    if (this.data("popover")) {
+        list_of_popovers.push(this.data("popover"));
+    }
+}, old_popover);
 
 function copy_email_handler(e) {
     const email_el = $(e.trigger.parentElement);
@@ -109,7 +106,7 @@ function copy_email_handler(e) {
     const email_textnode = email_el[0].childNodes[2];
 
     email_el.addClass("email_copied");
-    email_textnode.nodeValue = i18n.t("Email copied");
+    email_textnode.nodeValue = $t({defaultMessage: "Email copied"});
 
     setTimeout(() => {
         email_el.removeClass("email_copied");
@@ -238,9 +235,14 @@ function render_user_info_popover(
         }
     }
 
+    const muting_allowed = !is_me && !user.is_bot;
+    const is_muted = muting.is_user_muted(user.user_id);
+
     const args = {
         can_revoke_away,
         can_set_away,
+        can_mute: muting_allowed && !is_muted,
+        can_unmute: muting_allowed && is_muted,
         has_message_context,
         is_active: people.is_active_user_for_popover(user.user_id),
         is_bot: user.is_bot,
@@ -527,13 +529,13 @@ export function toggle_actions_popover(element, id) {
         let editability_menu_item;
         if (editability === message_edit.editability_types.FULL) {
             use_edit_icon = true;
-            editability_menu_item = i18n.t("Edit");
+            editability_menu_item = $t({defaultMessage: "Edit"});
         } else if (editability === message_edit.editability_types.TOPIC_ONLY) {
             use_edit_icon = false;
-            editability_menu_item = i18n.t("View source / Edit topic");
+            editability_menu_item = $t({defaultMessage: "View source / Edit topic"});
         } else {
             use_edit_icon = false;
-            editability_menu_item = i18n.t("View source");
+            editability_menu_item = $t({defaultMessage: "View source"});
         }
         const topic = message.topic;
         const can_mute_topic =
@@ -927,11 +929,11 @@ export function register_click_handlers() {
         }
     });
 
-    $("#main_div, #preview_content").on("click", ".code_external_link", function (e) {
+    $("#main_div, #compose .preview_content").on("click", ".code_external_link", function (e) {
         const view_in_playground_button = $(this);
         const codehilite_div = $(this).closest(".codehilite");
         e.stopPropagation();
-        const playground_info = settings_config.get_playground_info_for_languages(
+        const playground_info = realm_playground.get_playground_info_for_languages(
             codehilite_div.data("code-language"),
         );
         // We do the code extraction here and set the target href combining the url_prefix
@@ -1063,6 +1065,24 @@ export function register_click_handlers() {
 
         user_status_ui.open_overlay();
 
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $("body").on("click", ".info_popover_actions .sidebar-popover-mute-user", (e) => {
+        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        hide_message_info_popover();
+        hide_user_sidebar_popover();
+        e.stopPropagation();
+        e.preventDefault();
+        muting_ui.confirm_mute_user(user_id);
+    });
+
+    $("body").on("click", ".info_popover_actions .sidebar-popover-unmute-user", (e) => {
+        const user_id = elem_to_user_id($(e.target).parents("ul"));
+        hide_message_info_popover();
+        hide_user_sidebar_popover();
+        muting_ui.unmute_user(user_id);
         e.stopPropagation();
         e.preventDefault();
     });
@@ -1277,7 +1297,7 @@ export function register_click_handlers() {
         const message_id = $(this).attr("data-message-id");
         const row = $(`[zid='${CSS.escape(message_id)}']`);
         row.find(".alert-msg")
-            .text(i18n.t("Copied!"))
+            .text($t({defaultMessage: "Copied!"}))
             .css("display", "block")
             .delay(1000)
             .fadeOut(300);
@@ -1300,7 +1320,7 @@ export function register_click_handlers() {
         e.preventDefault();
     });
 
-    (function () {
+    {
         let last_scroll = 0;
 
         $(".app").on("scroll", () => {
@@ -1321,7 +1341,7 @@ export function register_click_handlers() {
             // retrigger `hide_all` while still scrolling.
             last_scroll = date;
         });
-    })();
+    }
 }
 
 export function any_active() {
@@ -1347,6 +1367,7 @@ export function hide_all_except_sidebars() {
     hide_actions_popover();
     hide_message_info_popover();
     emoji_picker.hide_emoji_popover();
+    giphy.hide_giphy_popover();
     stream_popover.hide_stream_popover();
     stream_popover.hide_topic_popover();
     stream_popover.hide_all_messages_popover();

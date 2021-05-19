@@ -4,10 +4,9 @@ import render_recent_topic_row from "../templates/recent_topic_row.hbs";
 import render_recent_topics_filters from "../templates/recent_topics_filters.hbs";
 import render_recent_topics_body from "../templates/recent_topics_table.hbs";
 
-import * as compose_actions from "./compose_actions";
-import * as drafts from "./drafts";
+import * as compose_closed_ui from "./compose_closed_ui";
+import * as compose_state from "./compose_state";
 import * as hash_util from "./hash_util";
-import * as hashchange from "./hashchange";
 import * as ListWidget from "./list_widget";
 import {localstorage} from "./localstorage";
 import * as message_store from "./message_store";
@@ -24,6 +23,7 @@ import * as popovers from "./popovers";
 import * as recent_senders from "./recent_senders";
 import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
+import * as sub_store from "./sub_store";
 import * as timerender from "./timerender";
 import * as top_left_corner from "./top_left_corner";
 import * as unread from "./unread";
@@ -73,7 +73,8 @@ export function is_in_focus() {
     // Check if user is focused on
     // recent topics.
     return (
-        hashchange.in_recent_topics_hash() &&
+        is_visible() &&
+        !compose_state.composing() &&
         !popovers.any_active() &&
         !overlays.is_active() &&
         !$(".home-page-input").is(":focus")
@@ -94,11 +95,24 @@ export function load_filters() {
     filters = new Set(ls.get(ls_key));
 }
 
+function is_table_focused() {
+    return current_focus_elem === "table";
+}
+
 export function set_default_focus() {
     // If at any point we are confused about the currently
     // focused element, we switch focus to search.
     current_focus_elem = $("#recent_topics_search");
     current_focus_elem.trigger("focus");
+    compose_closed_ui.set_standard_text_for_reply_button();
+}
+
+function get_min_load_count(already_rendered_count, load_count) {
+    const extra_rows_for_viewing_pleasure = 15;
+    if (row_focus > already_rendered_count + load_count) {
+        return row_focus + extra_rows_for_viewing_pleasure - already_rendered_count;
+    }
+    return load_count;
 }
 
 function set_table_focus(row, col) {
@@ -110,12 +124,53 @@ function set_table_focus(row, col) {
         return true;
     }
 
-    // Setting focus after the render is complete doesn't partially hide the row from view.
-    setTimeout(() => {
-        topic_rows.eq(row).find(".recent_topics_focusable").eq(col).children().trigger("focus");
-    }, 0);
+    const topic_row = topic_rows.eq(row);
+    topic_row.find(".recent_topics_focusable").eq(col).children().trigger("focus");
+
+    // Bring the focused element in view in the smoothest
+    // possible way. Using `block: center` is not a
+    // smooth scrolling experience.
+    // Using {block: "nearest"}, the element:
+    // * is aligned at the top of its ancestor if you're currently below it.
+    // * is aligned at the bottom of its ancestor if you're currently above it.
+    // * stays put, if it's already in view
+    // NOTE: Although, according to
+    // https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView#browser_compatibility
+    // `scrollIntoView` is not fully supported on Safari,
+    // it works as intended on Safari v14.0.3 on macOS Big Sur.
+    topic_row.get()[0].scrollIntoView({
+        block: "nearest",
+    });
+
     current_focus_elem = "table";
+
+    const message = {
+        stream: topic_row.find(".recent_topic_stream a").text(),
+        topic: topic_row.find(".recent_topic_name a").text(),
+    };
+    compose_closed_ui.update_reply_recipient_label(message);
+
+    // focused topic can be under table `thead`
+    // or under compose, so, to avoid that
+    // from happening, we bring the element to center.
+    if (!is_topic_visible_to_user(topic_row)) {
+        topic_row.get()[0].scrollIntoView({
+            block: "center",
+        });
+    }
     return true;
+}
+
+export function get_focused_row_message() {
+    if (is_table_focused()) {
+        const recent_topic_id_prefix_len = "recent_topic:".length;
+        const topic_rows = $("#recent_topics_table table tbody tr");
+        const topic_row = topic_rows.eq(row_focus);
+        const topic_id = topic_row.attr("id").slice(recent_topic_id_prefix_len);
+        const topic_last_msg_id = topics.get(topic_id).last_msg_id;
+        return message_store.get(topic_last_msg_id);
+    }
+    return undefined;
 }
 
 function revive_current_focus() {
@@ -134,7 +189,7 @@ function revive_current_focus() {
         return false;
     }
 
-    if (current_focus_elem === "table") {
+    if (is_table_focused()) {
         set_table_focus(row_focus, col_focus);
         return true;
     }
@@ -156,20 +211,30 @@ function get_topic_key(stream_id, topic) {
 }
 
 export function process_messages(messages) {
-    // FIX: Currently, we do a complete_rerender every time
-    // we process a new message.
     // While this is inexpensive and handles all the cases itself,
     // the UX can be bad if user wants to scroll down the list as
     // the UI will be returned to the beginning of the list on every
     // update.
+    //
+    // Only rerender if topic_data actually
+    // changed.
+    let topic_data_changed = false;
     for (const msg of messages) {
-        process_message(msg);
+        if (process_message(msg)) {
+            topic_data_changed = true;
+        }
     }
-    complete_rerender();
+
+    if (topic_data_changed) {
+        complete_rerender();
+    }
 }
 
 export function process_message(msg) {
+    // This function returns if topic_data
+    // has changed or not.
     if (msg.type !== "stream") {
+        // We don't process private messages yet.
         return false;
     }
     // Initialize topic data
@@ -228,7 +293,7 @@ function format_topic(topic_data) {
     const last_msg = message_store.get(topic_data.last_msg_id);
     const stream = last_msg.stream;
     const stream_id = last_msg.stream_id;
-    const stream_info = stream_data.get_sub_by_id(stream_id);
+    const stream_info = sub_store.get(stream_id);
     if (stream_info === undefined) {
         // stream was deleted
         return {};
@@ -250,7 +315,7 @@ function format_topic(topic_data) {
     // Display in most recent sender first order
     const all_senders = recent_senders.get_topic_recent_senders(stream_id, topic);
     const senders = all_senders.slice(-MAX_AVATAR);
-    const senders_info = people.sender_info_with_small_avatar_urls_for_sender_ids(senders);
+    const senders_info = people.sender_info_for_recent_topics_row(senders);
 
     return {
         // stream info
@@ -315,7 +380,7 @@ export function update_topics_of_deleted_message_ids(message_ids) {
 
 export function filters_should_hide_topic(topic_data) {
     const msg = message_store.get(topic_data.last_msg_id);
-    const sub = stream_data.get_sub_by_id(msg.stream_id);
+    const sub = sub_store.get(msg.stream_id);
 
     if (sub === undefined || !sub.subscribed) {
         // Never try to process deactivated & unsubscribed stream msgs.
@@ -464,12 +529,74 @@ function topic_sort(a, b) {
     return -1;
 }
 
+function is_topic_visible_to_user(topic_row) {
+    const scroll_container = $("#recent_topics_table .table_fix_head");
+    const thead_height = 30;
+    const under_closed_compose_region_height = 50;
+
+    const scroll_container_top = $(scroll_container).offset().top + thead_height;
+    const scroll_container_bottom =
+        scroll_container_top + $(scroll_container).height() - under_closed_compose_region_height;
+
+    const topic_row_top = $(topic_row).offset().top;
+    const topic_row_bottom = topic_row_top + $(topic_row).height();
+
+    // check if topic_row is inside the visible part of scroll container.
+    return topic_row_bottom <= scroll_container_bottom && topic_row_top >= scroll_container_top;
+}
+
+function set_focus_to_element_in_center() {
+    const topic_rows = $("#recent_topics_table table tbody tr");
+    if (row_focus > topic_rows.length) {
+        // User used a filter which reduced
+        // the number of visible rows.
+        return;
+    }
+    let topic_row = topic_rows.eq(row_focus);
+    if (!is_topic_visible_to_user(topic_row)) {
+        // Get the element at the center of the table.
+        const position = document
+            .querySelector("#recent_topics_table .table_fix_head")
+            .getBoundingClientRect();
+        const topic_center_x = (position.left + position.right) / 2;
+        const topic_center_y = (position.top + position.bottom) / 2;
+
+        topic_row = $(document.elementFromPoint(topic_center_x, topic_center_y)).closest("tr");
+
+        row_focus = topic_rows.index(topic_row);
+        set_table_focus(row_focus, col_focus);
+    }
+}
+
+function is_scroll_position_for_render(scroll_container) {
+    const table_bottom_margin = 100; // Extra margin at the bottom of table.
+    const table_row_height = 50;
+    return (
+        scroll_container.scrollTop +
+            scroll_container.clientHeight +
+            table_bottom_margin +
+            table_row_height >
+        scroll_container.scrollHeight
+    );
+}
+
 export function complete_rerender() {
     if (!is_visible()) {
         return;
     }
-    // Prepare header
+
+    // Update header
     load_filters();
+    show_selected_filters();
+
+    // Show topics list
+    const mapped_topic_values = Array.from(get().values()).map((value) => value);
+
+    if (topics_widget) {
+        topics_widget.replace_list_data(mapped_topic_values);
+        return;
+    }
+
     const rendered_body = render_recent_topics_body({
         filter_participated: filters.has("participated"),
         filter_unread: filters.has("unread"),
@@ -477,13 +604,8 @@ export function complete_rerender() {
         search_val: $("#recent_topics_search").val() || "",
     });
     $("#recent_topics_table").html(rendered_body);
-    show_selected_filters();
-
-    // Show topics list
     const container = $("#recent_topics_table table tbody");
     container.empty();
-    const mapped_topic_values = Array.from(get().values()).map((value) => value);
-
     topics_widget = ListWidget.create(container, mapped_topic_values, {
         name: "recent_topics_table",
         parent_container: $("#recent_topics_table"),
@@ -504,6 +626,9 @@ export function complete_rerender() {
         html_selector: get_topic_row,
         simplebar_container: $("#recent_topics_table .table_fix_head"),
         callback_after_render: revive_current_focus,
+        is_scroll_position_for_render,
+        post_scroll__pre_render_callback: set_focus_to_element_in_center,
+        get_min_load_count,
     });
 }
 
@@ -512,6 +637,11 @@ export function is_visible() {
 }
 
 export function show() {
+    if (is_visible()) {
+        // If we're already visible, E.g. because the user hit Esc
+        // while already in the recent topics view, do nothing.
+        return;
+    }
     // Hide selected elements in the left sidebar.
     top_left_corner.narrow_to_recent_topics();
     stream_list.handle_narrow_deactivated();
@@ -523,13 +653,10 @@ export function show() {
     $("#message_view_header_underpadding").hide();
     $(".header").css("padding-bottom", "0px");
 
-    // Save text in compose box if open.
-    drafts.update_draft();
-    // Close the compose box, this removes
-    // any arbitrary bug for compose box in recent topics.
-    // This is required since, Recent Topics is the only view
-    // with no compose box.
-    compose_actions.cancel();
+    // We want to show `new stream message` instead of
+    // `new topic`, which we are already doing in this
+    // function. So, we reuse it here.
+    compose_closed_ui.update_buttons_for_recent_topics();
 
     narrow_state.reset_current_filter();
     narrow.set_narrow_title("Recent topics");
@@ -578,6 +705,9 @@ export function focus_clicked_element($elt, col) {
     current_focus_elem = "table";
     col_focus = col;
     row_focus = $elt.closest("tr").index();
+    // Set compose_closed_ui reply button text.  The rest of the table
+    // focus logic should be a noop.
+    set_table_focus(row_focus, col_focus);
 }
 
 export function change_focused_element($elt, input_key) {
@@ -600,7 +730,7 @@ export function change_focused_element($elt, input_key) {
         }
 
         switch (input_key) {
-            //  Allow broswer to handle all
+            //  Allow browser to handle all
             //  character keypresses.
             case "vim_left":
             case "vim_right":
@@ -637,9 +767,10 @@ export function change_focused_element($elt, input_key) {
                 // go away from the input box when `revive_current_focus` is called
                 // on rerender when user is typing.
                 current_focus_elem = $("#recent_topics_search");
+                compose_closed_ui.set_standard_text_for_reply_button();
                 return true;
             case "escape":
-                if (current_focus_elem === "table") {
+                if (is_table_focused()) {
                     return false;
                 }
                 set_table_focus(row_focus, col_focus);
@@ -673,13 +804,13 @@ export function change_focused_element($elt, input_key) {
                 set_table_focus(row_focus, col_focus);
                 return true;
             case "escape":
-                if (current_focus_elem === "table") {
+                if (is_table_focused()) {
                     return false;
                 }
                 set_table_focus(row_focus, col_focus);
                 return true;
         }
-    } else if (current_focus_elem === "table") {
+    } else if (is_table_focused()) {
         // For arrowing around the table of topics, we implement left/right
         // wraparound.  Going off the top or the bottom takes one
         // to the navigation at the top (see set_table_focus).
@@ -739,6 +870,9 @@ export function change_focused_element($elt, input_key) {
     }
     if (current_focus_elem && input_key !== "escape") {
         current_focus_elem.trigger("focus");
+        if (current_focus_elem.hasClass("btn-recent-filters")) {
+            compose_closed_ui.set_standard_text_for_reply_button();
+        }
         return true;
     }
 

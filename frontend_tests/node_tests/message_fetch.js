@@ -92,7 +92,7 @@ function config_fake_channel(conf) {
     channel.get = (opts) => {
         assert.equal(opts.url, "/json/messages");
         // There's a separate call with anchor="newest" that happens
-        // unconditionally; do basic verfication of that call.
+        // unconditionally; do basic verification of that call.
         if (opts.data.anchor === "newest") {
             if (!called_with_newest_flag) {
                 called_with_newest_flag = true;
@@ -301,10 +301,7 @@ run_test("initialize", () => {
 });
 
 function simulate_narrow() {
-    const filter = {
-        predicate: () => () => false,
-        public_operators: () => [{operator: "pm-with", operand: alice.email}],
-    };
+    const filter = new Filter([{operator: "pm-with", operand: alice.email}]);
 
     const msg_list = new message_list.MessageList({
         table_name: "zfilt",
@@ -372,7 +369,7 @@ run_test("loading_newer", () => {
                 anchor: "444",
                 num_before: 0,
                 num_after: 100,
-                narrow: `[{"operator":"pm-with","operand":[${alice.user_id}]}]`,
+                narrow: `[{"negated":false,"operator":"pm-with","operand":[${alice.user_id}]}]`,
                 client_gravatar: true,
             },
             resp: {

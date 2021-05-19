@@ -69,6 +69,11 @@ tr.admin td:first-child {
     top: -2px;
 }
 
+.support-realm-status-form {
+    position: relative;
+    top: 20px;
+}
+
 .support-discount-form {
     position: relative;
     top: -50px;

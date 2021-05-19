@@ -22,9 +22,9 @@ import * as pm_list from "./pm_list";
 import * as recent_senders from "./recent_senders";
 import * as recent_topics from "./recent_topics";
 import * as resize from "./resize";
-import * as stream_data from "./stream_data";
 import * as stream_list from "./stream_list";
 import * as stream_topic_history from "./stream_topic_history";
+import * as sub_store from "./sub_store";
 import * as unread from "./unread";
 import * as unread_ops from "./unread_ops";
 import * as unread_ui from "./unread_ui";
@@ -142,6 +142,7 @@ export function update_messages(events) {
     let changed_compose = false;
     let message_content_edited = false;
     let stream_changed = false;
+    let stream_archived = false;
 
     for (const event of events) {
         const msg = message_store.get(event.message_id);
@@ -176,17 +177,20 @@ export function update_messages(events) {
 
         const new_stream_id = event.new_stream_id;
 
+        const old_stream = sub_store.get(event.stream_id);
+
         // A topic edit may affect multiple messages, listed in
         // event.message_ids. event.message_id is still the first message
         // where the user initiated the edit.
         topic_edited = new_topic !== undefined;
         stream_changed = new_stream_id !== undefined;
+        stream_archived = old_stream === undefined;
         if (topic_edited || stream_changed) {
             const going_forward_change = ["change_later", "change_all"].includes(
                 event.propagate_mode,
             );
 
-            const stream_name = stream_data.get_sub_by_id(event.stream_id).name;
+            const stream_name = stream_archived ? undefined : old_stream.name;
             const compose_stream_name = compose_state.stream_name();
             const orig_topic = util.get_edit_event_orig_topic(event);
 
@@ -245,7 +249,7 @@ export function update_messages(events) {
                     msg.topic_links = event.topic_links;
                 }
                 if (stream_changed) {
-                    const new_stream_name = stream_data.get_sub_by_id(new_stream_id).name;
+                    const new_stream_name = sub_store.get(new_stream_id).name;
                     msg.stream_id = event.new_stream_id;
                     msg.stream = new_stream_name;
                     msg.display_recipient = new_stream_name;
@@ -287,7 +291,7 @@ export function update_messages(events) {
                     // stream_data lookup here to fail.
                     //
                     // The fix is likely somewhat involved, so punting for now.
-                    const new_stream_name = stream_data.get_sub_by_id(new_stream_id).name;
+                    const new_stream_name = sub_store.get(new_stream_id).name;
                     new_filter = new_filter.filter_with_new_params({
                         operator: "stream",
                         operand: new_stream_name,
@@ -384,7 +388,13 @@ export function update_messages(events) {
                 post_edit_topic = pre_edit_topic;
             }
             const args = [event.stream_id, pre_edit_topic, post_edit_topic, new_stream_id];
-            recent_senders.process_topic_edit(...args);
+            recent_senders.process_topic_edit({
+                message_ids: event.message_ids,
+                old_stream_id: event.stream_id,
+                old_topic: pre_edit_topic,
+                new_stream_id,
+                new_topic: post_edit_topic,
+            });
             recent_topics.process_topic_edit(...args);
         }
 
@@ -404,6 +414,13 @@ export function update_messages(events) {
         message_lists.home.update_muting_and_rerender();
         // However, we don't need to rerender message_list.narrowed if
         // we just changed the narrow earlier in this function.
+        //
+        // TODO: We can potentially optimize this logic to avoid
+        // calling `update_muting_and_rerender` if the muted
+        // messages would not match the view before or after this
+        // edit.  Doing so could save significant work, since most
+        // topic edits will not match the current topic narrow in
+        // large organizations.
         if (!changed_narrow && message_lists.current === message_list.narrowed) {
             message_list.narrowed.update_muting_and_rerender();
         }

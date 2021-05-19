@@ -2,7 +2,7 @@ import $ from "jquery";
 
 import * as channel from "./channel";
 import * as emojisets from "./emojisets";
-import {i18n} from "./i18n";
+import {$t_html} from "./i18n";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
 import {page_params} from "./page_params";
@@ -14,18 +14,20 @@ const meta = {
     loaded: false,
 };
 
-function change_display_setting(data, status_element, success_msg, sticky) {
+function change_display_setting(data, status_element, success_msg_html, sticky) {
     const $status_el = $(status_element);
     const status_is_sticky = $status_el.data("is_sticky");
-    const display_message = status_is_sticky ? $status_el.data("sticky_msg") : success_msg;
+    const display_message_html = status_is_sticky
+        ? $status_el.data("sticky_msg_html")
+        : success_msg_html;
     const opts = {
-        success_msg: display_message,
+        success_msg_html: display_message_html,
         sticky: status_is_sticky || sticky,
     };
 
     if (sticky) {
         $status_el.data("is_sticky", true);
-        $status_el.data("sticky_msg", success_msg);
+        $status_el.data("sticky_msg_html", success_msg_html);
     }
     settings_ui.do_settings_change(
         channel.patch,
@@ -66,8 +68,12 @@ export function set_up() {
                 change_display_setting(
                     data,
                     "#display-settings-status",
-                    i18n.t(
-                        "Saved. Please <a class='reload_link'>reload</a> for the change to take effect.",
+                    $t_html(
+                        {
+                            defaultMessage:
+                                "Saved. Please <z-link>reload</z-link> for the change to take effect.",
+                        },
+                        {"z-link": (content_html) => `<a class='reload_link'>${content_html}</a>`},
                     ),
                     true,
                 );
@@ -84,7 +90,7 @@ export function set_up() {
 
         const $link = $(e.target).closest("a[data-code]");
         const setting_value = $link.attr("data-code");
-        const data = {default_language: JSON.stringify(setting_value)};
+        const data = {default_language: setting_value};
 
         const new_language = $link.attr("data-name");
         $("#default_language_name").text(new_language);
@@ -92,8 +98,12 @@ export function set_up() {
         change_display_setting(
             data,
             "#language-settings-status",
-            i18n.t(
-                "Saved. Please <a class='reload_link'>reload</a> for the change to take effect.",
+            $t_html(
+                {
+                    defaultMessage:
+                        "Saved. Please <z-link>reload</z-link> for the change to take effect.",
+                },
+                {"z-link": (content_html) => `<a class='reload_link'>${content_html}</a>`},
             ),
             true,
         );
@@ -116,7 +126,7 @@ export function set_up() {
     });
 
     $("#default_view").on("change", function () {
-        const data = {default_view: JSON.stringify(this.value)};
+        const data = {default_view: this.value};
         change_display_setting(data, "#display-settings-status");
     });
 
@@ -130,12 +140,12 @@ export function set_up() {
     });
 
     $("#user_timezone").on("change", function () {
-        const data = {timezone: JSON.stringify(this.value)};
+        const data = {timezone: this.value};
         change_display_setting(data, "#time-settings-status");
     });
     $(".emojiset_choice").on("click", function () {
-        const data = {emojiset: JSON.stringify($(this).val())};
-        const current_emojiset = JSON.stringify(page_params.emojiset);
+        const data = {emojiset: $(this).val()};
+        const current_emojiset = page_params.emojiset;
         if (current_emojiset === data.emojiset) {
             return;
         }
@@ -148,7 +158,7 @@ export function set_up() {
             success() {},
             error(xhr) {
                 ui_report.error(
-                    settings_ui.strings.failure,
+                    settings_ui.strings.failure_html,
                     xhr,
                     $("#emoji-settings-status").expectOne(),
                 );
@@ -176,7 +186,7 @@ export async function report_emojiset_change() {
         loading.destroy_indicator($("#emojiset_spinner"));
         $("#emojiset_select").val(page_params.emojiset);
         ui_report.success(
-            i18n.t("Emojiset changed successfully!"),
+            $t_html({defaultMessage: "Emojiset changed successfully!"}),
             $("#emoji-settings-status").expectOne(),
         );
         const spinner = $("#emoji-settings-status").expectOne();

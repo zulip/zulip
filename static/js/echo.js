@@ -30,6 +30,29 @@ import * as util from "./util";
 const waiting_for_id = new Map();
 let waiting_for_ack = new Map();
 
+// These retry spinner functions return true if and only if the
+// spinner already is in the requested state, which can be used to
+// avoid sending duplicate requests.
+function show_retry_spinner(row) {
+    const retry_spinner = row.find(".refresh-failed-message");
+
+    if (!retry_spinner.hasClass("rotating")) {
+        retry_spinner.toggleClass("rotating", true);
+        return false;
+    }
+    return true;
+}
+
+function hide_retry_spinner(row) {
+    const retry_spinner = row.find(".refresh-failed-message");
+
+    if (retry_spinner.hasClass("rotating")) {
+        retry_spinner.toggleClass("rotating", false);
+        return false;
+    }
+    return true;
+}
+
 function insert_message(message) {
     // It is a little bit funny to go through the message_events
     // codepath, but it's sort of the idea behind local echo that
@@ -44,8 +67,10 @@ function failed_message_success(message_id) {
 
 function resend_message(message, row) {
     message.content = message.raw_content;
-    const retry_spinner = row.find(".refresh-failed-message");
-    retry_spinner.toggleClass("rotating", true);
+    if (show_retry_spinner(row)) {
+        // retry already in in progress
+        return;
+    }
 
     // Always re-set queue_id if we've gotten a new one
     // since the time when the message object was initially created
@@ -57,7 +82,7 @@ function resend_message(message, row) {
         const message_id = data.id;
         const locally_echoed = true;
 
-        retry_spinner.toggleClass("rotating", false);
+        hide_retry_spinner(row);
 
         compose.send_message_success(local_id, message_id, locally_echoed);
 
@@ -68,7 +93,7 @@ function resend_message(message, row) {
     function on_error(response) {
         message_send_error(message.id, response);
         setTimeout(() => {
-            retry_spinner.toggleClass("rotating", false);
+            hide_retry_spinner(row);
         }, 300);
         blueslip.log("Manual resend of message failed");
     }
@@ -99,7 +124,7 @@ export function build_display_recipient(message) {
             // where the server might dynamically create users in
             // response to messages being sent to their email address.
             //
-            // TODO: It might be cleaner for the webapp for such
+            // TODO: It might be cleaner for the web app for such
             // dynamic user creation to happen inside a separate API
             // call when the pill is constructed, and then enforcing
             // the requirement that we have an actual user object in

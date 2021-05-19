@@ -4,9 +4,9 @@ Receive GitLab notifications in Zulip!
 
 1. {!create-bot-construct-url-indented.md!}
 
-    By default, the Zulip topics for Merge Requests will contain the
-    title of the GitLab Merge Request.  You can change the topic format to
-    just contain the Merge Request ID by adding
+    By default, the Zulip topics for merge requests will contain the
+    title of the GitLab merge request.  You can change the topic format to
+    just contain the merge request ID by adding
     `&use_merge_request_title=false` at the end of the URL.
     {!git-webhook-url-with-branches-indented.md!}
 

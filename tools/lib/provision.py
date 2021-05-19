@@ -15,11 +15,7 @@ sys.path.append(ZULIP_PATH)
 from typing import TYPE_CHECKING, List
 
 from scripts.lib.node_cache import NODE_MODULES_CACHE_PATH, setup_node_modules
-from scripts.lib.setup_venv import (
-    THUMBOR_VENV_DEPENDENCIES,
-    YUM_THUMBOR_VENV_DEPENDENCIES,
-    get_venv_dependencies,
-)
+from scripts.lib.setup_venv import get_venv_dependencies
 from scripts.lib.zulip_tools import (
     ENDC,
     FAIL,
@@ -97,6 +93,8 @@ vendor = distro_info["ID"]
 os_version = distro_info["VERSION_ID"]
 if vendor == "debian" and os_version == "10":  # buster
     POSTGRESQL_VERSION = "11"
+elif vendor == "debian" and os_version == "11":  # bullseye
+    POSTGRESQL_VERSION = "13"
 elif vendor == "ubuntu" and os_version in ["18.04", "18.10"]:  # bionic, cosmic
     POSTGRESQL_VERSION = "10"
 elif vendor == "ubuntu" and os_version in ["19.04", "19.10"]:  # disco, eoan
@@ -157,7 +155,6 @@ UBUNTU_COMMON_APT_DEPENDENCIES = [
     "libxss1",
     "xvfb",
     # Puppeteer dependencies end here.
-    *THUMBOR_VENV_DEPENDENCIES,
 ]
 
 COMMON_YUM_DEPENDENCIES = [
@@ -177,7 +174,6 @@ COMMON_YUM_DEPENDENCIES = [
     "mesa-libgbm",
     "xorg-x11-server-Xvfb",
     # Puppeteer dependencies end here.
-    *YUM_THUMBOR_VENV_DEPENDENCIES,
 ]
 
 BUILD_PGROONGA_FROM_SOURCE = False
@@ -197,8 +193,17 @@ if vendor == "debian" and os_version in [] or vendor == "ubuntu" and os_version 
         *VENV_DEPENDENCIES,
     ]
 elif "debian" in os_families():
+    DEBIAN_DEPENDECIES = UBUNTU_COMMON_APT_DEPENDENCIES
+    # The below condition is required since libappindicator is
+    # not available for bullseye (sid). "libgroonga1" is an
+    # additional dependency for postgresql-13-pgdg-pgroonga.
+    #
+    # See https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=895037
+    if distro_info["VERSION_CODENAME"] == "bullseye":
+        DEBIAN_DEPENDECIES.remove("libappindicator1")
+        DEBIAN_DEPENDECIES.append("libgroonga0")
     SYSTEM_DEPENDENCIES = [
-        *UBUNTU_COMMON_APT_DEPENDENCIES,
+        *DEBIAN_DEPENDECIES,
         f"postgresql-{POSTGRESQL_VERSION}",
         f"postgresql-{POSTGRESQL_VERSION}-pgdg-pgroonga",
         *VENV_DEPENDENCIES,

@@ -5,7 +5,6 @@ import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as message_viewport from "./message_viewport";
 import * as notifications from "./notifications";
-import * as overlays from "./overlays";
 import * as recent_topics from "./recent_topics";
 import * as reload from "./reload";
 import * as unread from "./unread";
@@ -104,11 +103,8 @@ export function notify_server_message_read(message, options) {
 // If we ever materially change the algorithm for this function, we
 // may need to update notifications.received_messages as well.
 export function process_visible() {
-    if (overlays.is_active() || !notifications.is_window_focused()) {
-        return;
-    }
-
     if (
+        message_viewport.is_visible_and_focused() &&
         message_viewport.bottom_message_visible() &&
         message_lists.current.can_mark_messages_read()
     ) {

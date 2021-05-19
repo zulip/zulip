@@ -13,7 +13,7 @@ class Command(ZulipBaseCommand):
 
     def add_arguments(self, parser: CommandParser) -> None:
         default_cutoff = time.time() - 60 * 60 * 24 * 30  # 30 days.
-        self.add_realm_args(parser, True)
+        self.add_realm_args(parser, required=True)
         parser.add_argument(
             "--since",
             type=int,

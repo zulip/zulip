@@ -12,7 +12,7 @@ change who is allowed to add bots.
 
 {settings_tab|organization-permissions}
 
-2. Under **Organization permissions**, configure **Who can add bots**.
+2. Under **Other permissions**, configure **Who can add bots**.
 
 {!save-changes.md!}
 

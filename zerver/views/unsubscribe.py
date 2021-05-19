@@ -2,6 +2,7 @@ from typing import Callable
 
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
 
 from confirmation.models import Confirmation, ConfirmationKeyException, get_object_from_key
 from zerver.context_processors import common_context
@@ -53,6 +54,12 @@ def do_login_unsubscribe(user_profile: UserProfile) -> None:
     )
 
 
+def do_marketing_unsubscribe(user_profile: UserProfile) -> None:
+    do_change_notification_settings(
+        user_profile, "enable_marketing_emails", False, acting_user=user_profile
+    )
+
+
 # The keys are part of the URL for the unsubscribe link and must be valid
 # without encoding.
 # The values are a tuple of (display name, unsubscribe function), where the
@@ -62,9 +69,11 @@ email_unsubscribers = {
     "welcome": ("welcome", do_welcome_unsubscribe),
     "digest": ("digest", do_digest_unsubscribe),
     "login": ("login", do_login_unsubscribe),
+    "marketing": ("marketing", do_marketing_unsubscribe),
 }
 
 # Login NOT required. These are for one-click unsubscribes.
+@csrf_exempt
 def email_unsubscribe(request: HttpRequest, email_type: str, confirmation_key: str) -> HttpResponse:
     if email_type in email_unsubscribers:
         display_name, unsubscribe_function = email_unsubscribers[email_type]

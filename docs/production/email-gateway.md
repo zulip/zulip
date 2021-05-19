@@ -4,8 +4,8 @@ Zulip's incoming email gateway integration makes it possible to send
 messages into Zulip by sending an email.  It's highly recommended
 because it enables:
 
-* When users reply to one of Zulip's missed message email
-  notifications from their email client, the reply can go directly
+* When users reply to one of Zulip's message notification emails
+  from their email client, the reply can go directly
   into Zulip.
 * Integrating third-party services that can send email notifications
   into Zulip.  See the [integration

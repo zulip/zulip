@@ -126,9 +126,9 @@ Response: 12.0 meter = 13.12336 yard
 
 > zulip-terminal -b ~/followup.conf followup
 
-Enter your message: "Task Completed"
+Enter your message: "Task completed"
 Response: stream: followup topic: foo_sender@zulip.com
-          from foo_sender@zulip.com: Task Completed
+          from foo_sender@zulip.com: Task completed
 
 ```
 
@@ -450,7 +450,7 @@ system and gives your test "dummy data" instead.
 
 Some bots, such as [Giphy](
 https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots/giphy),
-depend on a third-party service, such as the Giphy webapp, in order to work. Because
+depend on a third-party service, such as the Giphy web app, in order to work. Because
 we want our test suite to be reliable and not add load to these third-party APIs, tests
 for these services need to have "test fixtures": sample HTTP request/response pairs to
 be used by the tests. You can specify which one to use in your test code using the

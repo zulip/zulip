@@ -2,11 +2,11 @@ import itertools
 from collections import defaultdict
 from dataclasses import dataclass
 from operator import itemgetter
-from typing import Any, Dict, List, Optional, Set
+from typing import AbstractSet, Any, Dict, List, Optional, Set
 
-from django.db.models.query import QuerySet
+from django.db.models import Q, QuerySet
 
-from zerver.models import Realm, Recipient, Stream, Subscription, UserProfile
+from zerver.models import AlertWord, Realm, Recipient, Stream, Subscription, UserProfile
 
 
 @dataclass
@@ -22,13 +22,22 @@ class SubscriberPeerInfo:
     private_peer_dict: Dict[int, Set[int]]
 
 
-def get_active_subscriptions_for_stream_id(stream_id: int) -> QuerySet:
+def get_active_subscriptions_for_stream_id(
+    stream_id: int, *, include_deactivated_users: bool
+) -> QuerySet:
     # TODO: Change return type to QuerySet[Subscription]
-    return Subscription.objects.filter(
+    query = Subscription.objects.filter(
         recipient__type=Recipient.STREAM,
         recipient__type_id=stream_id,
         active=True,
     )
+    if not include_deactivated_users:
+        # Note that non-active users may still have "active" subscriptions, because we
+        # want to be able to easily reactivate them with their old subscriptions.  This
+        # is why the query here has to look at the is_user_active flag.
+        query = query.filter(is_user_active=True)
+
+    return query
 
 
 def get_active_subscriptions_for_stream_ids(stream_ids: Set[int]) -> QuerySet:
@@ -37,6 +46,7 @@ def get_active_subscriptions_for_stream_ids(stream_ids: Set[int]) -> QuerySet:
         recipient__type=Recipient.STREAM,
         recipient__type_id__in=stream_ids,
         active=True,
+        is_user_active=True,
     )
 
 
@@ -46,6 +56,14 @@ def get_subscribed_stream_ids_for_user(user_profile: UserProfile) -> QuerySet:
         recipient__type=Recipient.STREAM,
         active=True,
     ).values_list("recipient__type_id", flat=True)
+
+
+def get_subscribed_stream_recipient_ids_for_user(user_profile: UserProfile) -> QuerySet:
+    return Subscription.objects.filter(
+        user_profile_id=user_profile,
+        recipient__type=Recipient.STREAM,
+        active=True,
+    ).values_list("recipient_id", flat=True)
 
 
 def get_stream_subscriptions_for_user(user_profile: UserProfile) -> QuerySet:
@@ -100,21 +118,14 @@ def get_bulk_stream_subscriber_info(
 
 
 def num_subscribers_for_stream_id(stream_id: int) -> int:
-    return (
-        get_active_subscriptions_for_stream_id(stream_id)
-        .filter(
-            user_profile__is_active=True,
-        )
-        .count()
-    )
+    return get_active_subscriptions_for_stream_id(
+        stream_id, include_deactivated_users=False
+    ).count()
 
 
 def get_user_ids_for_streams(stream_ids: Set[int]) -> Dict[int, Set[int]]:
     all_subs = (
         get_active_subscriptions_for_stream_ids(stream_ids)
-        .filter(
-            user_profile__is_active=True,
-        )
         .values(
             "recipient__type_id",
             "user_profile_id",
@@ -246,3 +257,87 @@ def handle_stream_notifications_compatibility(
         stream_dict[notification_type] = (
             False if user_profile is None else getattr(user_profile, target_attr)
         )
+
+
+def subscriber_ids_with_stream_history_access(stream: Stream) -> Set[int]:
+    """Returns the set of active user IDs who can access any message
+    history on this stream (regardless of whether they have a
+    UserMessage) based on the stream's configuration.
+
+    1. if !history_public_to_subscribers:
+          History is not available to anyone
+    2. if history_public_to_subscribers:
+          All subscribers can access the history including guests
+
+    The results of this function need to be kept consistent with
+    what can_access_stream_history would dictate.
+
+    """
+
+    if not stream.is_history_public_to_subscribers():
+        return set()
+
+    return set(
+        get_active_subscriptions_for_stream_id(
+            stream.id, include_deactivated_users=False
+        ).values_list("user_profile_id", flat=True)
+    )
+
+
+def get_subscriptions_for_send_message(
+    *,
+    realm_id: int,
+    stream_id: int,
+    possible_wildcard_mention: bool,
+    possibly_mentioned_user_ids: AbstractSet[int],
+) -> QuerySet:
+    """This function optimizes an important use case for large
+    streams. Open realms often have many long_term_idle users, which
+    can result in 10,000s of long_term_idle recipients in default
+    streams. do_send_messages has an optimization to avoid doing work
+    for long_term_idle unless message flags or notifications should be
+    generated.
+
+    However, it's expensive even to fetch and process them all in
+    Python at all. This function returns all recipients of a stream
+    message that could possibly require action in the send-message
+    codepath.
+
+    Basically, it returns all subscribers, excluding all long-term
+    idle users who it can prove will not receive a UserMessage row or
+    notification for the message (i.e. no alert words, mentions, or
+    email/push notifications are configured) and thus are not needed
+    for processing the message send.
+
+    Critically, this function is called before the Markdown
+    processor. As a result, it returns all subscribers who have ANY
+    configured alert words, even if their alert words aren't present
+    in the message. Similarly, it returns all subscribers who match
+    the "possible mention" parameters.
+
+    Downstream logic, which runs after the Markdown processor has
+    parsed the message, will do the precise determination.
+    """
+
+    query = get_active_subscriptions_for_stream_id(
+        stream_id,
+        include_deactivated_users=False,
+    )
+
+    if possible_wildcard_mention:
+        return query
+
+    query = query.filter(
+        Q(user_profile__long_term_idle=False)
+        | Q(push_notifications=True)
+        | (Q(push_notifications=None) & Q(user_profile__enable_stream_push_notifications=True))
+        | Q(email_notifications=True)
+        | (Q(email_notifications=None) & Q(user_profile__enable_stream_email_notifications=True))
+        | Q(user_profile_id__in=possibly_mentioned_user_ids)
+        | Q(
+            user_profile_id__in=AlertWord.objects.filter(realm_id=realm_id).values_list(
+                "user_profile_id"
+            )
+        )
+    )
+    return query

@@ -122,8 +122,8 @@ def setup_one_click_app_installer(droplet: digitalocean.Droplet) -> None:
 def send_message(content: str) -> None:
     request = {
         "type": "stream",
-        "to": os.environ["ZULIP_STREAM_TO_SEND_BOT_MESSAGES"],
-        "topic": "DigitalOcean One Click App",
+        "to": os.environ["ONE_CLICK_ACTION_STREAM"],
+        "topic": "digitalocean installer",
         "content": content,
     }
     zulip_client.send_message(request)

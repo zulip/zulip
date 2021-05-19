@@ -89,7 +89,7 @@ export function contains_backend_only_syntax(content) {
     // then don't render it locally. It is workaround for the fact that
     // javascript regex doesn't support lookbehind.
     const false_linkifier_match = linkifier_list.find((re) => {
-        const pattern = /[^\s"'(,:<]/.source + re[0].source + /(?!\w)/.source;
+        const pattern = /[^\s"'(,:<]/.source + re.pattern.source + /(?!\w)/.source;
         const regex = new RegExp(pattern);
         return regex.test(content);
     });
@@ -211,7 +211,7 @@ export function apply_markdown(message) {
             return quote;
         },
     };
-    // Our python-markdown processor appends two \n\n to input
+    // Our Python-Markdown processor appends two \n\n to input
     message.content = marked(message.raw_content + "\n\n", options).trim();
     message.is_me_message = is_status_message(message.raw_content);
 }
@@ -225,8 +225,8 @@ export function add_topic_links(message) {
     const links = [];
 
     for (const linkifier of linkifier_list) {
-        const pattern = linkifier[0];
-        const url = linkifier[1];
+        const pattern = linkifier.pattern;
+        const url = linkifier.url_format;
         let match;
         while ((match = pattern.exec(topic)) !== null) {
             let link_url = url;
@@ -239,8 +239,8 @@ export function add_topic_links(message) {
                 link_url = link_url.replace(back_ref, matched_group);
                 i += 1;
             }
-            // We store the starting index as well, to sort the order of occurence of the links
-            // in the topic, similar to the logic implemeted in zerver/lib/markdown/__init__.py
+            // We store the starting index as well, to sort the order of occurrence of the links
+            // in the topic, similar to the logic implemented in zerver/lib/markdown/__init__.py
             links.push({url: link_url, text: match[0], index: topic.indexOf(match[0])});
         }
     }
@@ -320,7 +320,7 @@ function handleTimestamp(time) {
     }
 
     const escaped_time = _.escape(time);
-    if (timeobject === null || !isValid(timeobject)) {
+    if (!isValid(timeobject)) {
         // Unsupported time format: rerender accordingly.
 
         // We do not show an error on these formats in local echo because
@@ -451,15 +451,18 @@ export function update_linkifier_rules(linkifiers) {
 
     const marked_rules = [];
 
-    for (const [pattern, url] of linkifiers) {
-        const [regex, final_url] = python_to_js_linkifier(pattern, url);
+    for (const linkifier of linkifiers) {
+        const [regex, final_url] = python_to_js_linkifier(linkifier.pattern, linkifier.url_format);
         if (!regex) {
             // Skip any linkifiers that could not be converted
             continue;
         }
 
         linkifier_map.set(regex, final_url);
-        linkifier_list.push([regex, final_url]);
+        linkifier_list.push({
+            pattern: regex,
+            url_format: final_url,
+        });
         marked_rules.push(regex);
     }
 

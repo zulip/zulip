@@ -32,7 +32,9 @@ def email_page(request: HttpRequest) -> HttpResponse:
     except FileNotFoundError:
         content = ""
     return render(
-        request, "zerver/email_log.html", {"log": content, "forward_address": get_forward_address()}
+        request,
+        "zerver/development/email_log.html",
+        {"log": content, "forward_address": get_forward_address()},
     )
 
 
@@ -134,6 +136,6 @@ def generate_all_emails(request: HttpRequest) -> HttpResponse:
     enqueue_welcome_emails(get_user_by_delivery_email("iago@zulip.com", realm), realm_creation=True)
 
     # Realm reactivation email
-    do_send_realm_reactivation_email(realm)
+    do_send_realm_reactivation_email(realm, acting_user=None)
 
     return redirect(email_page)

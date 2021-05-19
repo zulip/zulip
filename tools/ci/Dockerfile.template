@@ -40,19 +40,10 @@ RUN apt-get update \
     unzip zip jq \
     python3-pip \
   && ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime \
-  && {{ locale-gen en_US.UTF-8 || true; }} \
-  && echo "LC_ALL=en_US.UTF-8" | sudo tee -a /etc/default/locale
+  && echo "LC_ALL=C.UTF-8" | sudo tee -a /etc/default/locale
 
 # Set the locale, together with the locale-related steps above.
-# It's not entirely clear why, but alternatives that don't work include
-#  * using `C.UTF-8` instead of `en_US.UTF-8`, here and above
-#    (causes mysterious failures in zerver.tests.test_message_fetch)
-#  * skipping the /etc/default/locale step above (ditto)
-#  * skipping this ENV instruction (causes provision to fail,
-#    because Python tries to use the `ascii` codec)
-# Details in https://github.com/zulip/zulip/pull/7762#issuecomment-353197289
-# and particularly https://circleci.com/gh/hackerkid/zulip/80 .
-ENV LC_ALL en_US.UTF-8
+ENV LC_ALL C.UTF-8
 
 # Install Docker.  This logic comes from Circle's Dockerfile; it's probably
 # faster than the upstream-recommended approach of using their apt repo,
@@ -68,7 +59,7 @@ RUN set -e \
   && tar -xz -C /tmp -f /tmp/docker.tgz \
   && mv /tmp/docker/* /usr/bin \
   && rm -rf /tmp/docker /tmp/docker.tgz \
-  && which docker \
+  && command -v docker \
   && (docker version 2>/dev/null || true)
 
 # ...docker-compose...
@@ -103,6 +94,14 @@ RUN export git_version=$(git --version | cut -d ' ' -f3 | cut -d 'v' -f2) && \
       sudo add-apt-repository ppa:git-core/ppa -y && \
       sudo apt-get update && \
       sudo apt-get install -y git; \
+    fi
+
+# Remove systemd package as it is not required and hinders with install
+RUN if [ ! "$(dpkg-query -f='$(Version)' --show systemd)" = "" ]; then \
+      apt-get remove --purge --auto-remove systemd -y && \
+      echo 'Package: systemd\nPin: release *\nPin-Priority: -1' | sudo tee -a /etc/apt/preferences.d/systemd && \
+      echo '\n\nPackage: *systemd*\nPin: release *\nPin-Priority: -1' | sudo tee -a /etc/apt/preferences.d/systemd && \
+      echo '\nPackage: systemd:amd64\nPin: release *\nPin-Priority: -1' | sudo tee -a /etc/apt/preferences.d/systemd; \
     fi
 
 ARG USERNAME=github

@@ -109,14 +109,9 @@ def fib(n):
 
 You can also use `~~~` to start codeblocks, or just indent the code 4 or more spaces.
 
-Zulip supports syntax highlighting for hundreds of languages, and a
-typeahead will pop up when you start typing after the ` ``` `. If you can't
-find your language, search for it [here](https://pygments.org/docs/lexers/)
-and try the **short names** listed for the lexers for your language.
-
-Organization administrators can also configure a default syntax
-highlighting language.  In this configuration, one can use ````text`
-to display content without any syntax highlighting.
+See the main [code blocks article](/help/code-blocks) for details on
+[syntax highlighting](/help/code-blocks#language-tagging), [code
+playgrounds](/help/code-blocks#code-playgrounds), and other features.
 
 ## LaTeX
 ~~~
@@ -161,7 +156,7 @@ the user interacts with it.
 ~~~
 Normal content in message
 
-```spoiler Spoiler Header
+```spoiler Spoiler header
 Spoiler content. These lines won't be visible until the user expands the spoiler.
 ```
 ~~~
@@ -202,7 +197,7 @@ the variant that only contains the user ID).
 
 ![Markdown mentions](/static/images/help/markdown-mentions.png)
 
-## Status Messages
+## Status messages
 
 ```
 /me is away

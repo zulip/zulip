@@ -23,7 +23,7 @@ from django.core.files import File
 from django.core.signing import BadSignature, TimestampSigner
 from django.http import HttpRequest
 from django.urls import reverse
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from jinja2 import Markup as mark_safe
 from PIL import ExifTags, Image, ImageOps
 from PIL.GifImagePlugin import GifImageFile
@@ -87,11 +87,12 @@ def sanitize_name(value: str) -> str:
 
     This implementation is based on django.utils.text.slugify; it is
     modified by:
-    * adding '.' and '_' to the list of allowed characters.
+    * adding '.' to the list of allowed characters.
     * preserving the case of the value.
+    * not stripping trailing dashes and underscores.
     """
     value = unicodedata.normalize("NFKC", value)
-    value = re.sub(r"[^\w\s._-]", "", value, flags=re.U).strip()
+    value = re.sub(r"[^\w\s.-]", "", value, flags=re.U).strip()
     value = re.sub(r"[-\s]+", "-", value, flags=re.U)
     assert value not in {"", ".", ".."}
     return mark_safe(value)
@@ -247,10 +248,7 @@ class ZulipUploadBackend:
     def copy_avatar(self, source_profile: UserProfile, target_profile: UserProfile) -> None:
         raise NotImplementedError()
 
-    def ensure_medium_avatar_image(self, user_profile: UserProfile) -> None:
-        raise NotImplementedError()
-
-    def ensure_basic_avatar_image(self, user_profile: UserProfile) -> None:
+    def ensure_avatar_image(self, user_profile: UserProfile, is_medium: bool = False) -> None:
         raise NotImplementedError()
 
     def upload_realm_icon_image(self, icon_file: File, user_profile: UserProfile) -> None:
@@ -590,35 +588,23 @@ class S3UploadBackend(ZulipUploadBackend):
             file_name = "night_logo.png"
         return f"{self.avatar_bucket_url}/{realm_id}/realm/{file_name}?version={version}"
 
-    def ensure_medium_avatar_image(self, user_profile: UserProfile) -> None:
+    def ensure_avatar_image(self, user_profile: UserProfile, is_medium: bool = False) -> None:
+        # BUG: The else case should be user_avatar_path(user_profile) + ".png".
+        # See #12852 for details on this bug and how to migrate it.
+        file_extension = "-medium.png" if is_medium else ""
         file_path = user_avatar_path(user_profile)
         s3_file_name = file_path
 
         key = self.avatar_bucket.Object(file_path + ".original")
         image_data = key.get()["Body"].read()
 
-        resized_medium = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
+        if is_medium:
+            resized_avatar = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
+        else:
+            resized_avatar = resize_avatar(image_data)
         upload_image_to_s3(
             self.avatar_bucket,
-            s3_file_name + "-medium.png",
-            "image/png",
-            user_profile,
-            resized_medium,
-        )
-
-    def ensure_basic_avatar_image(self, user_profile: UserProfile) -> None:  # nocoverage
-        # TODO: Refactor this to share code with ensure_medium_avatar_image
-        file_path = user_avatar_path(user_profile)
-        # Also TODO: Migrate to user_avatar_path(user_profile) + ".png".
-        s3_file_name = file_path
-
-        key = self.avatar_bucket.Object(file_path + ".original")
-        image_data = key.get()["Body"].read()
-
-        resized_avatar = resize_avatar(image_data)
-        upload_image_to_s3(
-            self.avatar_bucket,
-            s3_file_name,
+            s3_file_name + file_extension,
             "image/png",
             user_profile,
             resized_avatar,
@@ -859,32 +845,24 @@ class LocalUploadBackend(ZulipUploadBackend):
             file_name = "logo.png"
         return f"/user_avatars/{realm_id}/realm/{file_name}?version={version}"
 
-    def ensure_medium_avatar_image(self, user_profile: UserProfile) -> None:
+    def ensure_avatar_image(self, user_profile: UserProfile, is_medium: bool = False) -> None:
+        file_extension = "-medium.png" if is_medium else ".png"
         file_path = user_avatar_path(user_profile)
 
-        output_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", file_path + "-medium.png")
+        output_path = os.path.join(
+            settings.LOCAL_UPLOADS_DIR, "avatars", file_path + file_extension
+        )
         if os.path.isfile(output_path):
             return
 
         image_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", file_path + ".original")
         with open(image_path, "rb") as f:
             image_data = f.read()
-        resized_medium = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
-        write_local_file("avatars", file_path + "-medium.png", resized_medium)
-
-    def ensure_basic_avatar_image(self, user_profile: UserProfile) -> None:  # nocoverage
-        # TODO: Refactor this to share code with ensure_medium_avatar_image
-        file_path = user_avatar_path(user_profile)
-
-        output_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", file_path + ".png")
-        if os.path.isfile(output_path):
-            return
-
-        image_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", file_path + ".original")
-        with open(image_path, "rb") as f:
-            image_data = f.read()
-        resized_avatar = resize_avatar(image_data)
-        write_local_file("avatars", file_path + ".png", resized_avatar)
+        if is_medium:
+            resized_avatar = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
+        else:
+            resized_avatar = resize_avatar(image_data)
+        write_local_file("avatars", file_path + file_extension, resized_avatar)
 
     def upload_emoji_image(
         self, emoji_file: File, emoji_file_name: str, user_profile: UserProfile

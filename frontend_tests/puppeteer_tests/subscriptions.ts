@@ -6,11 +6,11 @@ import common from "../puppeteer_lib/common";
 
 async function user_checkbox(page: Page, name: string): Promise<string> {
     const user_id = await common.get_user_id_from_name(page, name);
-    return `#user-checkboxes [data-user-id="${CSS.escape(user_id.toString())}"]`;
+    return `#user_checkbox_${CSS.escape(user_id.toString())}`;
 }
 
 async function user_span(page: Page, name: string): Promise<string> {
-    return (await user_checkbox(page, name)) + " input ~ span";
+    return (await user_checkbox(page, name)) + " span";
 }
 
 async function stream_checkbox(page: Page, stream_name: string): Promise<string> {
@@ -26,7 +26,7 @@ async function wait_for_checked(page: Page, user_name: string, is_checked: boole
     const selector = await user_checkbox(page, user_name);
     await page.waitForFunction(
         (selector: string, is_checked: boolean) =>
-            $(selector).find("input")[0].checked === is_checked,
+            $(selector).find("input").prop("checked") === is_checked,
         {},
         selector,
         is_checked,
@@ -98,15 +98,9 @@ async function open_copy_from_stream_dropdown(
     await page.waitForSelector(rome_checkbox, {visible: true});
 }
 
-async function test_check_all_only_affects_visible_users(page: Page): Promise<void> {
-    await page.click(".subs_set_all_users");
+async function verify_check_all_only_affects_visible_users(page: Page): Promise<void> {
     await wait_for_checked(page, "cordelia", false);
     await wait_for_checked(page, "othello", true);
-}
-
-async function test_uncheck_all(page: Page): Promise<void> {
-    await page.click(".subs_unset_all_users");
-    await wait_for_checked(page, "othello", false);
 }
 
 async function clear_ot_filter_with_backspace(page: Page): Promise<void> {
@@ -132,9 +126,16 @@ async function test_user_filter_ui(
     rome_checkbox: string,
 ): Promise<void> {
     await page.waitForSelector("form#stream_creation_form", {visible: true});
+    // Desdemona should be checked by default
+    await wait_for_checked(page, "desdemona", true);
 
-    await common.fill_form(page, "form#stream_creation_form", {user_list_filter: "ot"});
+    await page.type(`form#stream_creation_form [name="user_list_filter"]`, "ot", {delay: 100});
     await page.waitForSelector("#user-checkboxes", {visible: true});
+    // Wait until filtering is completed.
+    await page.waitForFunction(
+        () => document.querySelectorAll("#user-checkboxes label").length === 1,
+    );
+
     await page.waitForSelector(cordelia_checkbox, {hidden: true});
     await page.waitForSelector(othello_checkbox, {visible: true});
 
@@ -142,11 +143,18 @@ async function test_user_filter_ui(
     await page.waitForSelector(scotland_checkbox, {visible: true});
     await page.waitForSelector(rome_checkbox, {visible: true});
 
-    await test_check_all_only_affects_visible_users(page);
-    await test_uncheck_all(page);
-
+    // Test check all
+    await page.click(".subs_set_all_users");
+    await wait_for_checked(page, "othello", true);
     await clear_ot_filter_with_backspace(page);
     await verify_filtered_users_are_visible_again(page, cordelia_checkbox, othello_checkbox);
+    await verify_check_all_only_affects_visible_users(page);
+
+    // Test unset all
+    await page.click(".subs_unset_all_users");
+    await verify_filtered_users_are_visible_again(page, cordelia_checkbox, othello_checkbox);
+    await wait_for_checked(page, "cordelia", false);
+    await wait_for_checked(page, "othello", false);
 }
 
 async function create_stream(page: Page): Promise<void> {
@@ -157,8 +165,10 @@ async function create_stream(page: Page): Promise<void> {
     });
     await page.click(await stream_span(page, "Scotland")); //  Subscribes all users from Scotland
     await page.click(await user_span(page, "cordelia")); // Add cordelia.
-    await wait_for_checked(page, "cordelia", true);
+    await page.click(await user_span(page, "desdemona")); // Add cordelia.
     await page.click(await user_span(page, "othello")); // Remove othello who was selected from Scotland.
+    await wait_for_checked(page, "cordelia", true);
+    await wait_for_checked(page, "desdemona", true); // Add desdemona back as we did unset all in last test.
     await wait_for_checked(page, "othello", false);
     await page.click("form#stream_creation_form button.button.sea-green");
     await page.waitForFunction(() => $(".stream-name").is(':contains("Puppeteer")'));

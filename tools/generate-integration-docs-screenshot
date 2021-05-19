@@ -24,11 +24,12 @@ django.setup()
 import argparse
 import base64
 import subprocess
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 from urllib.parse import parse_qsl, urlencode
 
 import orjson
 import requests
+import zulip
 
 from scripts.lib.zulip_tools import BOLDRED, ENDC
 from tools.lib.test_script import prepare_puppeteer_run
@@ -41,6 +42,8 @@ from zerver.lib.actions import (
 from zerver.lib.integrations import (
     DOC_SCREENSHOT_CONFIG,
     INTEGRATIONS,
+    BaseScreenshotConfig,
+    Integration,
     ScreenshotConfig,
     WebhookIntegration,
     get_fixture_and_image_paths,
@@ -53,9 +56,7 @@ from zerver.lib.webhooks.common import get_fixture_http_headers
 from zerver.models import Message, UserProfile, get_realm, get_user_by_delivery_email
 
 
-def create_integration_bot(
-    integration: WebhookIntegration, bot_name: Optional[str] = None
-) -> UserProfile:
+def create_integration_bot(integration: Integration, bot_name: Optional[str] = None) -> UserProfile:
     realm = get_realm("zulip")
     owner = get_user_by_delivery_email("iago@zulip.com", realm)
     bot_email = f"{integration.name}-bot@example.com"
@@ -86,16 +87,32 @@ def create_integration_bot(
     return bot
 
 
-def create_integration_stream(integration: WebhookIntegration, bot: UserProfile) -> None:
+def create_integration_stream(integration: Integration, bot: UserProfile) -> None:
     assert isinstance(bot.bot_owner, UserProfile)
     realm = bot.bot_owner.realm
     stream, created = create_stream_if_needed(realm, integration.stream_name)
-    bulk_add_subscriptions(realm, [stream], [bot, bot.bot_owner])
+    bulk_add_subscriptions(realm, [stream], [bot, bot.bot_owner], acting_user=bot)
 
 
-def get_integration(integration_name: str) -> WebhookIntegration:
+def get_fixture_info(fixture_path: str) -> Tuple[Any, bool, str]:
+    json_fixture = fixture_path.endswith(".json")
+    _, fixture_name = split_fixture_path(fixture_path)
+
+    if fixture_name:
+        if json_fixture:
+            with open(fixture_path, "rb") as fb:
+                data = orjson.loads(fb.read())
+        else:
+            with open(fixture_path) as f:
+                data = f.read().strip()
+    else:
+        data = ""
+
+    return data, json_fixture, fixture_name
+
+
+def get_integration(integration_name: str) -> Integration:
     integration = INTEGRATIONS[integration_name]
-    assert isinstance(integration, WebhookIntegration), "Not a WebhookIntegration"
     return integration
 
 
@@ -121,23 +138,41 @@ def custom_headers(headers_json: str) -> Dict[str, str]:
         )
 
 
+def send_bot_mock_message(
+    bot: UserProfile, integration: Integration, fixture_path: str, config: BaseScreenshotConfig
+) -> None:
+    # Delete all messages, so new message is the only one it's message group
+    Message.objects.filter(sender=bot).delete()
+    data, _, _ = get_fixture_info(fixture_path)
+
+    assert bot.bot_owner is not None
+    url = f"{bot.bot_owner.realm.uri}"
+    client = zulip.Client(email=bot.email, api_key=bot.api_key, site=url)
+
+    try:
+        request = {
+            "type": "stream",
+            "to": integration.stream_name,
+            "topic": data["subject"],
+            "content": data["body"],
+        }
+        client.send_message(request)
+    except KeyError:
+        print(
+            "{} contains invalid configuration. "
+            'Fields "subject" and "body" are required for non-webhook integrations.'.format(
+                fixture_path
+            )
+        )
+        sys.exit(1)
+
+
 def send_bot_payload_message(
     bot: UserProfile, integration: WebhookIntegration, fixture_path: str, config: ScreenshotConfig
 ) -> bool:
     # Delete all messages, so new message is the only one it's message group
     Message.objects.filter(sender=bot).delete()
-    json_fixture = fixture_path.endswith(".json")
-    _, fixture_name = split_fixture_path(fixture_path)
-
-    if fixture_name:
-        if json_fixture:
-            with open(fixture_path, "rb") as fb:
-                data = orjson.loads(fb.read())
-        else:
-            with open(fixture_path) as f:
-                data = f.read().strip()
-    else:
-        data = ""
+    data, json_fixture, fixture_name = get_fixture_info(fixture_path)
 
     headers = get_requests_headers(integration.name, fixture_name)
     headers.update(config.custom_headers)
@@ -156,6 +191,7 @@ def send_bot_payload_message(
     if not json_fixture and data:
         # We overwrite any params in fixture with our params. stream name, for
         # example, may be defined in the fixture.
+        assert isinstance(data, str)
         parsed_params = dict(parse_qsl(data))
         parsed_params.update(params)
         params = parsed_params
@@ -187,22 +223,30 @@ def send_bot_payload_message(
 
 def capture_last_message_screenshot(bot: UserProfile, image_path: str) -> None:
     message = Message.objects.filter(sender=bot).last()
+    realm = get_realm("zulip")
     if message is None:
         print(f"No message found for {bot.full_name}")
         return
     message_id = str(message.id)
     screenshot_script = os.path.join(TOOLS_DIR, "message-screenshot.js")
-    subprocess.check_call(["node", screenshot_script, message_id, image_path])
+    subprocess.check_call(["node", screenshot_script, message_id, image_path, realm.uri])
 
 
 def generate_screenshot_from_config(
-    integration_name: str, screenshot_config: ScreenshotConfig
+    integration_name: str, screenshot_config: BaseScreenshotConfig
 ) -> None:
     integration = get_integration(integration_name)
     fixture_path, image_path = get_fixture_and_image_paths(integration, screenshot_config)
     bot = create_integration_bot(integration, screenshot_config.bot_name)
     create_integration_stream(integration, bot)
-    message_sent = send_bot_payload_message(bot, integration, fixture_path, screenshot_config)
+    if isinstance(integration, WebhookIntegration):
+        assert isinstance(
+            screenshot_config, ScreenshotConfig
+        ), "Webhook integrations require ScreenshotConfig"
+        message_sent = send_bot_payload_message(bot, integration, fixture_path, screenshot_config)
+    else:
+        send_bot_mock_message(bot, integration, fixture_path, screenshot_config)
+        message_sent = True
     if message_sent:
         capture_last_message_screenshot(bot, image_path)
         print(f"Screenshot captured to: {BOLDRED}{image_path}{ENDC}")

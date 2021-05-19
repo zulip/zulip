@@ -37,6 +37,9 @@
 * [Mention a user or group](/help/mention-a-user-or-group)
 * [Edit or delete a message](/help/edit-or-delete-a-message)
 * [Message a stream by email](/help/message-a-stream-by-email)
+* [Code blocks](/help/code-blocks)
+* [Add GIFs in your message](/help/animated-gifs-from-giphy)
+* [Create a poll](/help/create-a-poll)
 
 ## Reading messages
 * [Reading strategies](/help/reading-strategies)
@@ -75,9 +78,10 @@
 * [PMs, mentions, and alerts](/help/pm-mention-alert-notifications)
 * [Mute a stream](/help/mute-a-stream)
 * [Mute a topic](/help/mute-a-topic)
+* [Mute a user](/help/mute-a-user)
 * [Alert words](/help/add-an-alert-word)
 * [Disable new login emails](/help/disable-new-login-emails)
-* [Configure missed message emails](/help/configure-missed-message-emails)
+* [Configure message notification emails](/help/configure-message-notification-emails)
 * [Change notification sound](/help/change-notification-sound)
 * [Troubleshoot desktop notifications](/help/troubleshooting-desktop-notifications)
 * [Test mobile notifications](/help/test-mobile-notifications)
@@ -85,7 +89,7 @@
 ## Tools & customization
 * [Bots and integrations](/help/bots-and-integrations)
 * [Add a bot or integration](/help/add-a-bot-or-integration)
-* [Create a poll](/help/create-a-poll)
+* [Request an integration](/help/request-an-integration)
 * [Night mode](/help/night-mode)
 * [Enable emoticon translations](/help/enable-emoticon-translations)
 * [Manage your uploaded files](/help/manage-your-uploaded-files)
@@ -157,7 +161,7 @@
 
 ## Stream management
 * [Stream permissions](/help/stream-permissions)
-* [Delete or archive a stream](/help/delete-a-stream)
+* [Delete or archive a stream](/help/archive-a-stream)
 * [Delete a topic](/help/delete-a-topic)
 * [Set default streams for new users](/help/set-default-streams-for-new-users)
 * [Rename a stream](/help/rename-a-stream)

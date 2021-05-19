@@ -2,7 +2,7 @@
 
 {!admin-only.md!}
 
-Users join as [owners, administrators, members, or
+Users join as [owners, administrators, moderators, members, or
 guests](/help/roles-and-permissions), depending on how they were
 invited.
 
@@ -29,7 +29,7 @@ automatically converted during the upgrade to Zulip 3.0 into owners
 1. Find the user you would like to manage. Click the **pencil**
 (<i class="fa fa-pencil"></i>) to the right of their name.
 
-1. Under **User role**, select **Owner**, **Administrator**, **Member** or **Guest**.
+1. Under **User role**, select **Owner**, **Administrator**, **Moderators**, **Member** or **Guest**.
 
 1. Click **Save changes**. The new rights will take effect immediately.
 

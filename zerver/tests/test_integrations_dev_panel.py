@@ -39,7 +39,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
 
     def test_check_send_webhook_fixture_message_for_success_without_headers(self) -> None:
         bot = get_user("webhook-bot@zulip.com", self.zulip_realm)
-        url = f"/api/v1/external/airbrake?api_key={bot.api_key}&stream=Denmark&topic=Airbrake Notifications"
+        url = f"/api/v1/external/airbrake?api_key={bot.api_key}&stream=Denmark&topic=Airbrake notifications"
         target_url = "/devtools/integrations/check_send_webhook_fixture_message"
         with open("zerver/webhooks/airbrake/fixtures/error_message.json") as f:
             body = f.read()
@@ -68,11 +68,11 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         expected_message = '[ZeroDivisionError](https://zulip.airbrake.io/projects/125209/groups/1705190192091077626): "Error message from logger" occurred.'
         self.assertEqual(latest_msg.content, expected_message)
         self.assertEqual(Stream.objects.get(id=latest_msg.recipient.type_id).name, "Denmark")
-        self.assertEqual(latest_msg.topic_name(), "Airbrake Notifications")
+        self.assertEqual(latest_msg.topic_name(), "Airbrake notifications")
 
     def test_check_send_webhook_fixture_message_for_success_with_headers(self) -> None:
         bot = get_user("webhook-bot@zulip.com", self.zulip_realm)
-        url = f"/api/v1/external/github?api_key={bot.api_key}&stream=Denmark&topic=GitHub Notifications"
+        url = f"/api/v1/external/github?api_key={bot.api_key}&stream=Denmark&topic=GitHub notifications"
         target_url = "/devtools/integrations/check_send_webhook_fixture_message"
         with open("zerver/webhooks/github/fixtures/ping__organization.json") as f:
             body = f.read()
@@ -91,13 +91,13 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         expected_message = "GitHub webhook has been successfully configured by eeshangarg."
         self.assertEqual(latest_msg.content, expected_message)
         self.assertEqual(Stream.objects.get(id=latest_msg.recipient.type_id).name, "Denmark")
-        self.assertEqual(latest_msg.topic_name(), "GitHub Notifications")
+        self.assertEqual(latest_msg.topic_name(), "GitHub notifications")
 
     def test_check_send_webhook_fixture_message_for_success_with_headers_and_non_json_fixtures(
         self,
     ) -> None:
         bot = get_user("webhook-bot@zulip.com", self.zulip_realm)
-        url = f"/api/v1/external/wordpress?api_key={bot.api_key}&stream=Denmark&topic=WordPress Notifications"
+        url = f"/api/v1/external/wordpress?api_key={bot.api_key}&stream=Denmark&topic=WordPress notifications"
         target_url = "/devtools/integrations/check_send_webhook_fixture_message"
         with open("zerver/webhooks/wordpress/fixtures/publish_post_no_data_provided.txt") as f:
             body = f.read()
@@ -115,10 +115,10 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         self.assertEqual(response.status_code, 200)
 
         latest_msg = Message.objects.latest("id")
-        expected_message = "New post published:\n* [New WordPress Post](WordPress Post URL)"
+        expected_message = "New post published:\n* [New WordPress post](WordPress post URL)"
         self.assertEqual(latest_msg.content, expected_message)
         self.assertEqual(Stream.objects.get(id=latest_msg.recipient.type_id).name, "Denmark")
-        self.assertEqual(latest_msg.topic_name(), "WordPress Notifications")
+        self.assertEqual(latest_msg.topic_name(), "WordPress notifications")
 
     def test_get_fixtures_for_nonexistant_integration(self) -> None:
         target_url = "/devtools/integrations/somerandomnonexistantintegration/fixtures"
@@ -158,7 +158,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
 
     def test_send_all_webhook_fixture_messages_for_success(self) -> None:
         bot = get_user("webhook-bot@zulip.com", self.zulip_realm)
-        url = f"/api/v1/external/appfollow?api_key={bot.api_key}&stream=Denmark&topic=Appfollow Bulk Notifications"
+        url = f"/api/v1/external/appfollow?api_key={bot.api_key}&stream=Denmark&topic=Appfollow bulk notifications"
         target_url = "/devtools/integrations/send_all_webhook_fixture_messages"
 
         data = {
@@ -201,11 +201,11 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             self.assertTrue(msg.content in expected_messages)
             expected_messages.remove(msg.content)
             self.assertEqual(Stream.objects.get(id=msg.recipient.type_id).name, "Denmark")
-            self.assertEqual(msg.topic_name(), "Appfollow Bulk Notifications")
+            self.assertEqual(msg.topic_name(), "Appfollow bulk notifications")
 
     def test_send_all_webhook_fixture_messages_for_success_with_non_json_fixtures(self) -> None:
         bot = get_user("webhook-bot@zulip.com", self.zulip_realm)
-        url = f"/api/v1/external/wordpress?api_key={bot.api_key}&stream=Denmark&topic=WordPress Bulk Notifications"
+        url = f"/api/v1/external/wordpress?api_key={bot.api_key}&stream=Denmark&topic=WordPress bulk notifications"
         target_url = "/devtools/integrations/send_all_webhook_fixture_messages"
 
         data = {
@@ -218,7 +218,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
         expected_responses = [
             {
                 "message": {
-                    "msg": "Unknown WordPress webhook action: WordPress Action",
+                    "msg": "Unknown WordPress webhook action: WordPress action",
                     "result": "error",
                 },
                 "fixture_name": "user_register.txt",
@@ -226,7 +226,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             },
             {
                 "message": {
-                    "msg": "Unknown WordPress webhook action: WordPress Action",
+                    "msg": "Unknown WordPress webhook action: WordPress action",
                     "result": "error",
                 },
                 "fixture_name": "publish_post_no_data_provided.txt",
@@ -234,7 +234,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             },
             {
                 "message": {
-                    "msg": "Unknown WordPress webhook action: WordPress Action",
+                    "msg": "Unknown WordPress webhook action: WordPress action",
                     "result": "error",
                 },
                 "fixture_name": "unknown_action_no_data.txt",
@@ -242,7 +242,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             },
             {
                 "message": {
-                    "msg": "Unknown WordPress webhook action: WordPress Action",
+                    "msg": "Unknown WordPress webhook action: WordPress action",
                     "result": "error",
                 },
                 "fixture_name": "publish_page.txt",
@@ -250,7 +250,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             },
             {
                 "message": {
-                    "msg": "Unknown WordPress webhook action: WordPress Action",
+                    "msg": "Unknown WordPress webhook action: WordPress action",
                     "result": "error",
                 },
                 "fixture_name": "unknown_action_no_hook_provided.txt",
@@ -258,7 +258,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             },
             {
                 "message": {
-                    "msg": "Unknown WordPress webhook action: WordPress Action",
+                    "msg": "Unknown WordPress webhook action: WordPress action",
                     "result": "error",
                 },
                 "fixture_name": "publish_post_type_not_provided.txt",
@@ -266,7 +266,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             },
             {
                 "message": {
-                    "msg": "Unknown WordPress webhook action: WordPress Action",
+                    "msg": "Unknown WordPress webhook action: WordPress action",
                     "result": "error",
                 },
                 "fixture_name": "wp_login.txt",
@@ -274,7 +274,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
             },
             {
                 "message": {
-                    "msg": "Unknown WordPress webhook action: WordPress Action",
+                    "msg": "Unknown WordPress webhook action: WordPress action",
                     "result": "error",
                 },
                 "fixture_name": "publish_post.txt",
@@ -301,7 +301,7 @@ class TestIntegrationsDevPanel(ZulipTestCase):
     ) -> None:
         os_path_exists_mock.return_value = False
         bot = get_user("webhook-bot@zulip.com", self.zulip_realm)
-        url = f"/api/v1/external/appfollow?api_key={bot.api_key}&stream=Denmark&topic=Appfollow Bulk Notifications"
+        url = f"/api/v1/external/appfollow?api_key={bot.api_key}&stream=Denmark&topic=Appfollow bulk notifications"
         data = {
             "url": url,
             "custom_headers": "{}",

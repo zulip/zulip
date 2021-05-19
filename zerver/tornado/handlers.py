@@ -9,6 +9,7 @@ from django.core.handlers import base
 from django.core.handlers.wsgi import WSGIRequest, get_script_name
 from django.http import HttpRequest, HttpResponse
 from django.urls import set_script_prefix
+from django.utils.cache import patch_vary_headers
 from tornado.wsgi import WSGIContainer
 
 from zerver.lib.response import json_response
@@ -230,6 +231,8 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
             request._requestor_for_logs = old_request._requestor_for_logs
         request.user = old_request.user
         request.client = old_request.client
+        request.client_name = old_request.client_name
+        request.client_version = old_request.client_version
 
         # The saved_response attribute, if present, causes
         # rest_dispatch to return the response immediately before
@@ -243,6 +246,9 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
 
         try:
             response = self.get_response(request)
+            # Explicitly mark requests as varying by cookie, since the
+            # middleware will not have seen a session access
+            patch_vary_headers(response, ("Cookie",))
         finally:
             # Tell Django we're done processing this request
             #

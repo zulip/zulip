@@ -58,6 +58,7 @@ from zerver.lib.upload import (
     upload_emoji_image,
     upload_export_tarball,
     upload_message_file,
+    write_local_file,
 )
 from zerver.lib.users import get_api_key
 from zerver.models import (
@@ -1129,14 +1130,14 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
             # Verify that ensure_medium_avatar_url does not overwrite this file if it exists
             with mock.patch("zerver.lib.upload.write_local_file") as mock_write_local_file:
-                zerver.lib.upload.upload_backend.ensure_medium_avatar_image(user_profile)
+                zerver.lib.upload.upload_backend.ensure_avatar_image(user_profile, is_medium=True)
                 self.assertFalse(mock_write_local_file.called)
 
             # Confirm that ensure_medium_avatar_url works to recreate
             # medium size avatars from the original if needed
             os.remove(medium_avatar_disk_path)
             self.assertFalse(os.path.exists(medium_avatar_disk_path))
-            zerver.lib.upload.upload_backend.ensure_medium_avatar_image(user_profile)
+            zerver.lib.upload.upload_backend.ensure_avatar_image(user_profile, is_medium=True)
             self.assertTrue(os.path.exists(medium_avatar_disk_path))
 
             # Verify whether the avatar_version gets incremented with every new upload
@@ -1331,7 +1332,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
     def test_get_gravatar_icon(self) -> None:
         self.login("hamlet")
         realm = get_realm("zulip")
-        do_change_icon_source(realm, Realm.ICON_FROM_GRAVATAR)
+        do_change_icon_source(realm, Realm.ICON_FROM_GRAVATAR, acting_user=None)
         with self.settings(ENABLE_GRAVATAR=True):
             response = self.client_get("/json/realm/icon", {"foo": "bar"})
             redirect_url = response["Location"]
@@ -1346,7 +1347,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         self.login("hamlet")
 
         realm = get_realm("zulip")
-        do_change_icon_source(realm, Realm.ICON_UPLOADED)
+        do_change_icon_source(realm, Realm.ICON_UPLOADED, acting_user=None)
         response = self.client_get("/json/realm/icon", {"foo": "bar"})
         redirect_url = response["Location"]
         self.assertTrue(redirect_url.endswith(realm_icon_url(realm) + "&foo=bar"))
@@ -1392,7 +1393,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         """
         self.login("iago")
         realm = get_realm("zulip")
-        do_change_icon_source(realm, Realm.ICON_UPLOADED)
+        do_change_icon_source(realm, Realm.ICON_UPLOADED, acting_user=None)
 
         result = self.client_delete("/json/realm/icon")
 
@@ -1468,7 +1469,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_upload_limited_plan_type(self) -> None:
         user_profile = self.example_user("iago")
-        do_change_plan_type(user_profile.realm, Realm.LIMITED)
+        do_change_plan_type(user_profile.realm, Realm.LIMITED, acting_user=None)
         self.login_user(user_profile)
         with get_test_image_file(self.correct_files[0][0]) as fp:
             result = self.client_post(
@@ -1512,7 +1513,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
             f"/user_avatars/{realm.id}/realm/{file_name}?version=2&night={is_night_str}",
         )
 
-        do_change_plan_type(realm, Realm.LIMITED)
+        do_change_plan_type(realm, Realm.LIMITED, acting_user=user_profile)
         if self.night:
             self.assertEqual(realm.night_logo_source, Realm.LOGO_UPLOADED)
         else:
@@ -1640,6 +1641,29 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
 
         path_id = re.sub("/user_uploads/", "", result.json()["uri"])
         self.assertTrue(delete_message_image(path_id))
+
+    def test_ensure_avatar_image_local(self) -> None:
+        user_profile = self.example_user("hamlet")
+        file_path = user_avatar_path(user_profile)
+
+        with get_test_image_file("img.png") as image_file:
+            write_local_file("avatars", file_path + ".original", image_file.read())
+
+        image_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", file_path + ".original")
+        with open(image_path, "rb") as f:
+            image_data = f.read()
+
+        resized_avatar = resize_avatar(image_data)
+        zerver.lib.upload.upload_backend.ensure_avatar_image(user_profile)
+        output_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", file_path + ".png")
+        with open(output_path, "rb") as original_file:
+            self.assertEqual(resized_avatar, original_file.read())
+
+        resized_avatar = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
+        zerver.lib.upload.upload_backend.ensure_avatar_image(user_profile, is_medium=True)
+        output_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", file_path + "-medium.png")
+        with open(output_path, "rb") as original_file:
+            self.assertEqual(resized_avatar, original_file.read())
 
     def test_emoji_upload_local(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -1842,7 +1866,7 @@ class S3Test(ZulipTestCase):
         self.assertEqual(medium_image_data, test_medium_image_data)
 
         bucket.Object(medium_image_key.key).delete()
-        zerver.lib.upload.upload_backend.ensure_medium_avatar_image(user_profile)
+        zerver.lib.upload.upload_backend.ensure_avatar_image(user_profile, is_medium=True)
         medium_image_key = bucket.Object(medium_path_id)
         self.assertEqual(medium_image_key.key, medium_path_id)
 
@@ -1990,6 +2014,35 @@ class S3Test(ZulipTestCase):
         resized_data = bucket.Object(emoji_path).get()["Body"].read()
         resized_image = Image.open(io.BytesIO(resized_data))
         self.assertEqual(resized_image.size, (DEFAULT_EMOJI_SIZE, DEFAULT_EMOJI_SIZE))
+
+    @use_s3_backend
+    def test_ensure_avatar_image(self) -> None:
+        bucket = create_s3_buckets(settings.S3_AVATAR_BUCKET)[0]
+
+        user_profile = self.example_user("hamlet")
+        base_file_path = user_avatar_path(user_profile)
+        # Bug: This should have + ".png", but the implementation is wrong.
+        file_path = base_file_path
+        original_file_path = base_file_path + ".original"
+        medium_file_path = base_file_path + "-medium.png"
+
+        with get_test_image_file("img.png") as image_file:
+            zerver.lib.upload.upload_backend.upload_avatar_image(
+                image_file, user_profile, user_profile
+            )
+
+        key = bucket.Object(original_file_path)
+        image_data = key.get()["Body"].read()
+
+        zerver.lib.upload.upload_backend.ensure_avatar_image(user_profile)
+        resized_avatar = resize_avatar(image_data)
+        key = bucket.Object(file_path)
+        self.assertEqual(resized_avatar, key.get()["Body"].read())
+
+        zerver.lib.upload.upload_backend.ensure_avatar_image(user_profile, is_medium=True)
+        resized_avatar = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
+        key = bucket.Object(medium_file_path)
+        self.assertEqual(resized_avatar, key.get()["Body"].read())
 
     @use_s3_backend
     def test_get_emoji_url(self) -> None:

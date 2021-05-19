@@ -23,13 +23,14 @@
                     </div>
                 </div>
 
-                <div class="input-box">
+                <div class="input-box password-div">
                     <label for="id_new_password1" class="">{{ _('Password') }}</label>
-                    <input id="id_new_password1" class="required" type="password" name="new_password1"
+                    <input id="id_new_password1" class="required" type="password" name="new_password1" autocomplete="new-password"
                       value="{% if form.new_password1.value() %}{{ form.new_password1.value() }}{% endif %}"
                       maxlength="100"
                       data-min-length="{{password_min_length}}"
                       data-min-guesses="{{password_min_guesses}}" autofocus required />
+                    <i class="fa fa-eye-slash password_visibility_toggle" role="button"></i>
                     {% if form.new_password1.errors %}
                         {% for error in form.new_password1.errors %}
                         <div class="alert alert-error">{{ error }}</div>
@@ -43,11 +44,12 @@
                         </div>
                     </div>
                 </div>
-                <div class="input-box">
+                <div class="input-box password-div">
                     <label for="id_new_password2" class="">{{ _('Confirm password') }}</label>
-                    <input id="id_new_password2" class="required" type="password" name="new_password2"
+                    <input id="id_new_password2" class="required" type="password" name="new_password2" autocomplete="off"
                       value="{% if form.new_password2.value() %}{{ form.new_password2.value() }}{% endif %}"
                       maxlength="100" required />
+                    <i class="fa fa-eye-slash password_visibility_toggle" role="button"></i>
                     {% if form.new_password2.errors %}
                         {% for error in form.new_password2.errors %}
                         <div class="alert alert-error">{{ error }}</div>

@@ -13,7 +13,6 @@ set_global("document", {
 set_global("navigator", {
     userAgent: "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)",
 });
-page_params.max_file_upload_size = 25;
 
 // Setting these up so that we can test that links to uploads within messages are
 // automatically converted to server relative links.
@@ -39,7 +38,14 @@ const compose_ui = zrequire("compose_ui");
 const compose_actions = zrequire("compose_actions");
 const upload = zrequire("upload");
 
-run_test("feature_check", (override) => {
+function test(label, f) {
+    run_test(label, (override) => {
+        page_params.max_file_upload_size_mib = 25;
+        f(override);
+    });
+}
+
+test("feature_check", (override) => {
     const upload_button = $.create("upload-button-stub");
     upload_button.addClass("notdisplayed");
     upload.feature_check(upload_button);
@@ -50,7 +56,7 @@ run_test("feature_check", (override) => {
     assert(!upload_button.hasClass("notdisplayed"));
 });
 
-run_test("make_upload_absolute", () => {
+test("make_upload_absolute", () => {
     let uri = "/user_uploads/5/d4/6lSlfIPIg9nDI2Upj0Mq_EbE/kerala.png";
     const expected_uri = "https://foo.com/user_uploads/5/d4/6lSlfIPIg9nDI2Upj0Mq_EbE/kerala.png";
     assert.equal(upload.make_upload_absolute(uri), expected_uri);
@@ -59,28 +65,31 @@ run_test("make_upload_absolute", () => {
     assert.equal(upload.make_upload_absolute(uri), uri);
 });
 
-run_test("get_item", () => {
+test("get_item", () => {
     assert.equal(upload.get_item("textarea", {mode: "compose"}), $("#compose-textarea"));
     assert.equal(
         upload.get_item("send_status_message", {mode: "compose"}),
         $("#compose-error-msg"),
     );
-    assert.equal(upload.get_item("file_input_identifier", {mode: "compose"}), "#file_input");
+    assert.equal(
+        upload.get_item("file_input_identifier", {mode: "compose"}),
+        "#compose .file_input",
+    );
     assert.equal(upload.get_item("source", {mode: "compose"}), "compose-file-input");
     assert.equal(upload.get_item("drag_drop_container", {mode: "compose"}), $("#compose"));
     assert.equal(
         upload.get_item("markdown_preview_hide_button", {mode: "compose"}),
-        $("#undo_markdown_preview"),
+        $("#compose .undo_markdown_preview"),
     );
 
     assert.equal(
         upload.get_item("textarea", {mode: "edit", row: 1}),
-        $(`#message_edit_content_${CSS.escape(1)}`),
+        $(`#edit_form_${CSS.escape(1)} .message_edit_content`),
     );
 
-    $(`#message_edit_content_${CSS.escape(2)}`).closest = () => {
-        $("#message_edit_form").set_find_results(".message_edit_save", $(".message_edit_save"));
-        return $("#message_edit_form");
+    $(`#edit_form_${CSS.escape(2)} .message_edit_content`).closest = () => {
+        $(".message_edit_form").set_find_results(".message_edit_save", $(".message_edit_save"));
+        return $(".message_edit_form");
     };
     assert.equal(upload.get_item("send_button", {mode: "edit", row: 2}), $(".message_edit_save"));
 
@@ -110,16 +119,16 @@ run_test("get_item", () => {
 
     assert.equal(
         upload.get_item("file_input_identifier", {mode: "edit", row: 123}),
-        `#message_edit_file_input_${CSS.escape(123)}`,
+        `#edit_form_${CSS.escape(123)} .file_input`,
     );
     assert.equal(upload.get_item("source", {mode: "edit", row: 123}), "message-edit-file-input");
     assert.equal(
         upload.get_item("drag_drop_container", {mode: "edit", row: 1}),
-        $("#message_edit_form"),
+        $(".message_edit_form"),
     );
     assert.equal(
         upload.get_item("markdown_preview_hide_button", {mode: "edit", row: 65}),
-        $(`#undo_markdown_preview_${CSS.escape(65)}`),
+        $(`#edit_form_${CSS.escape(65)} .undo_markdown_preview`),
     );
 
     assert.throws(
@@ -169,7 +178,7 @@ run_test("get_item", () => {
     );
 });
 
-run_test("hide_upload_status", () => {
+test("hide_upload_status", () => {
     $("#compose-send-button").prop("disabled", true);
     $("#compose-send-status").addClass("alert-info").show();
 
@@ -180,7 +189,7 @@ run_test("hide_upload_status", () => {
     assert.equal($("#compose-send-button").visible(), false);
 });
 
-run_test("show_error_message", () => {
+test("show_error_message", () => {
     $("#compose-send-button").prop("disabled", true);
     $("#compose-send-status").addClass("alert-info").removeClass("alert-error").hide();
     $("#compose-error-msg").text("");
@@ -197,7 +206,7 @@ run_test("show_error_message", () => {
     assert.equal($("#compose-error-msg").text(), "translated: An unknown error occurred.");
 });
 
-run_test("upload_files", (override) => {
+test("upload_files", (override) => {
     let uppy_cancel_all_called = false;
     let files = [
         {
@@ -259,12 +268,12 @@ run_test("upload_files", (override) => {
         compose_ui_autosize_textarea_called = true;
     });
     let markdown_preview_hide_button_clicked = false;
-    $("#undo_markdown_preview").on("click", () => {
+    $("#compose .undo_markdown_preview").on("click", () => {
         markdown_preview_hide_button_clicked = true;
     });
     $("#compose-send-button").prop("disabled", false);
     $("#compose-send-status").removeClass("alert-info").hide();
-    $("#undo_markdown_preview").show();
+    $("#compose .undo_markdown_preview").show();
     upload.upload_files(uppy, config, files);
     assert($("#compose-send-button").prop("disabled"));
     assert($("#compose-send-status").hasClass("alert-info"));
@@ -327,7 +336,7 @@ run_test("upload_files", (override) => {
     assert($("#compose-textarea").val(), "user modified text");
 });
 
-run_test("uppy_config", () => {
+test("uppy_config", () => {
     let uppy_stub_called = false;
     let uppy_set_meta_called = false;
     let uppy_used_xhrupload = false;
@@ -376,10 +385,10 @@ run_test("uppy_config", () => {
     assert.equal(uppy_used_progressbar, true);
 });
 
-run_test("file_input", (override) => {
+test("file_input", (override) => {
     upload.setup_upload({mode: "compose"});
 
-    const change_handler = $("body").get_on_handler("change", "#file_input");
+    const change_handler = $("body").get_on_handler("change", "#compose .file_input");
     const files = ["file1", "file2"];
     const event = {
         target: {
@@ -397,7 +406,7 @@ run_test("file_input", (override) => {
     assert(upload_files_called);
 });
 
-run_test("file_drop", (override) => {
+test("file_drop", (override) => {
     upload.setup_upload({mode: "compose"});
 
     let prevent_default_counter = 0;
@@ -435,7 +444,7 @@ run_test("file_drop", (override) => {
     assert.equal(upload_files_called, true);
 });
 
-run_test("copy_paste", (override) => {
+test("copy_paste", (override) => {
     upload.setup_upload({mode: "compose"});
 
     const paste_handler = $("#compose").get_on_handler("paste");
@@ -474,7 +483,7 @@ run_test("copy_paste", (override) => {
     assert.equal(upload_files_called, false);
 });
 
-run_test("uppy_events", (override) => {
+test("uppy_events", (override) => {
     const callbacks = {};
     let uppy_cancel_all_called = false;
     let state = {};
@@ -605,7 +614,7 @@ run_test("uppy_events", (override) => {
 
     state = {
         type: "error",
-        details: "Some Error",
+        details: "Some error",
         message: "Some error message",
     };
     const on_info_visible_callback = callbacks["info-visible"];

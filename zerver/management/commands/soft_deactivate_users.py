@@ -76,7 +76,7 @@ class Command(ZulipBaseCommand):
 
             users_to_activate = get_users_from_emails(user_emails, filter_kwargs)
             users_activated = do_soft_activate_users(users_to_activate)
-            logger.info("Soft Reactivated %d user(s)", len(users_activated))
+            logger.info("Soft reactivated %d user(s)", len(users_activated))
 
         elif deactivate:
             if user_emails:

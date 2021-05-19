@@ -15,6 +15,7 @@ from zerver.lib.actions import (
     do_change_plan_type,
     do_create_user,
     do_deactivate_user,
+    do_mute_user,
     do_update_user_presence,
 )
 from zerver.lib.avatar_hash import user_avatar_path
@@ -43,6 +44,7 @@ from zerver.models import (
     Huddle,
     Message,
     MutedTopic,
+    MutedUser,
     Reaction,
     Realm,
     RealmAuditLog,
@@ -284,7 +286,7 @@ class ImportExportTest(ZulipTestCase):
 
         with get_test_image_file("img.png") as img_file:
             upload.upload_backend.upload_realm_icon_image(img_file, user_profile)
-            do_change_icon_source(realm, Realm.ICON_UPLOADED)
+            do_change_icon_source(realm, Realm.ICON_UPLOADED, acting_user=None)
 
         with get_test_image_file("img.png") as img_file:
             upload.upload_backend.upload_realm_logo_image(img_file, user_profile, night=False)
@@ -556,12 +558,12 @@ class ImportExportTest(ZulipTestCase):
         create_stream_if_needed(realm, "Private A", invite_only=True)
         self.subscribe(self.example_user("iago"), "Private A")
         self.subscribe(self.example_user("othello"), "Private A")
-        self.send_stream_message(self.example_user("iago"), "Private A", "Hello Stream A")
+        self.send_stream_message(self.example_user("iago"), "Private A", "Hello stream A")
 
         create_stream_if_needed(realm, "Private B", invite_only=True)
         self.subscribe(self.example_user("prospero"), "Private B")
         stream_b_message_id = self.send_stream_message(
-            self.example_user("prospero"), "Private B", "Hello Stream B"
+            self.example_user("prospero"), "Private B", "Hello stream B"
         )
         self.subscribe(self.example_user("hamlet"), "Private B")
 
@@ -569,7 +571,7 @@ class ImportExportTest(ZulipTestCase):
         self.subscribe(self.example_user("othello"), "Private C")
         self.subscribe(self.example_user("prospero"), "Private C")
         stream_c_message_id = self.send_stream_message(
-            self.example_user("othello"), "Private C", "Hello Stream C"
+            self.example_user("othello"), "Private C", "Hello stream C"
         )
 
         # Create huddles
@@ -674,7 +676,7 @@ class ImportExportTest(ZulipTestCase):
             recipient__in=public_stream_recipients
         ).values_list("id", flat=True)
 
-        # Messages from Private Stream C are not exported since no member gave consent
+        # Messages from Private stream C are not exported since no member gave consent
         private_stream_ids = Stream.objects.filter(name__in=["Private A", "Private B"]).values_list(
             "id", flat=True
         )
@@ -810,6 +812,14 @@ class ImportExportTest(ZulipTestCase):
             topic_name="Verona2",
         )
 
+        # data to test import of muted users
+        hamlet = self.example_user("hamlet")
+        cordelia = self.example_user("cordelia")
+        othello = self.example_user("othello")
+        do_mute_user(hamlet, cordelia)
+        do_mute_user(cordelia, hamlet)
+        do_mute_user(cordelia, othello)
+
         do_update_user_presence(
             sample_user, get_client("website"), timezone_now(), UserPresence.ACTIVE
         )
@@ -939,7 +949,7 @@ class ImportExportTest(ZulipTestCase):
 
         assert_realm_values(get_realm_audit_log_event_type)
 
-        cordelia_full_name = "Cordelia Lear"
+        cordelia_full_name = "Cordelia, Lear's daughter"
         hamlet_full_name = "King Hamlet"
         othello_full_name = "Othello, the Moor of Venice"
 
@@ -992,6 +1002,16 @@ class ImportExportTest(ZulipTestCase):
             return topic_names
 
         assert_realm_values(get_muted_topics)
+
+        def get_muted_users(r: Realm) -> Set[Tuple[int, int]]:
+            mute_objects = MutedUser.objects.all()
+            muter_mutee_pairs = {
+                (mute_object.user_profile.id, mute_object.muted_user.id)
+                for mute_object in mute_objects
+            }
+            return muter_mutee_pairs
+
+        assert_realm_values(get_muted_users)
 
         # test usergroups
         assert_realm_values(
@@ -1287,7 +1307,7 @@ class ImportExportTest(ZulipTestCase):
 
     def test_plan_type(self) -> None:
         realm = get_realm("zulip")
-        do_change_plan_type(realm, Realm.LIMITED)
+        do_change_plan_type(realm, Realm.LIMITED, acting_user=None)
 
         self._setup_export_files(realm)
         self._export_realm(realm)

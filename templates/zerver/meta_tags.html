@@ -1,28 +1,28 @@
-<!-- Google / Search Engine Tags -->
+<!-- Google / search engine tags -->
 {% if allow_search_engine_indexing %}
     {% if OPEN_GRAPH_DESCRIPTION %}
-    <meta name="description" content="{{ OPEN_GRAPH_DESCRIPTION }}">
+    <meta name="description" content="{{ OPEN_GRAPH_DESCRIPTION }}" />
     {% else %}
-    <meta name="description" content="Zulip combines the immediacy of real-time chat with an email threading model. With Zulip, you can catch up on important conversations while ignoring irrelevant ones.">
+    <meta name="description" content="Zulip combines the immediacy of real-time chat with an email threading model. With Zulip, you can catch up on important conversations while ignoring irrelevant ones." />
     {% endif %}
 {% else %}
-    <meta name="robots" content="noindex,nofollow">
+    <meta name="robots" content="noindex,nofollow" />
 {% endif %}
 
-<!-- Open Graph / Facebook / Twitter Meta Tags -->
-<meta property="og:url" content="{{ OPEN_GRAPH_URL }}">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="Zulip">
+<!-- Open Graph / Facebook / Twitter meta tags -->
+<meta property="og:url" content="{{ OPEN_GRAPH_URL }}" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Zulip" />
 {% if OPEN_GRAPH_TITLE %}
-<meta property="og:title" content="{{ OPEN_GRAPH_TITLE }}">
-<meta property="og:description" content="{{ OPEN_GRAPH_DESCRIPTION }}">
+<meta property="og:title" content="{{ OPEN_GRAPH_TITLE }}" />
+<meta property="og:description" content="{{ OPEN_GRAPH_DESCRIPTION }}" />
 {% else %}
-<meta property="og:title" content="Chat for distributed teams">
-<meta property="og:description" content="Zulip combines the immediacy of real-time chat with an email threading model. With Zulip, you can catch up on important conversations while ignoring irrelevant ones.">
+<meta property="og:title" content="Chat for distributed teams" />
+<meta property="og:description" content="Zulip combines the immediacy of real-time chat with an email threading model. With Zulip, you can catch up on important conversations while ignoring irrelevant ones." />
 {% endif %}
 {% if OPEN_GRAPH_IMAGE %}
-<meta property="og:image" content="{{ OPEN_GRAPH_IMAGE }}">
+<meta property="og:image" content="{{ OPEN_GRAPH_IMAGE }}" />
 {% else %}
-<meta property="og:image" content="{{ realm_uri }}/static/images/logo/zulip-icon-128x128.png">
+<meta property="og:image" content="{{ realm_uri }}/static/images/logo/zulip-icon-128x128.png" />
 {% endif %}
-<meta name="twitter:card" content="summary">
+<meta name="twitter:card" content="summary" />

@@ -28,7 +28,7 @@ Options:
       install process; used when this command is run once in a highly-controlled
       environment to produce an image which is used elsewhere.  Uncommon.
 
-  --postgresql-version=12
+  --postgresql-version=13
       Sets the version of PostgreSQL that will be installed.
   --postgresql-missing-dictionaries
       Set postgresql.missing_dictionaries, which alters the initial database.  Use with
@@ -127,7 +127,7 @@ read -r -a ADDITIONAL_PACKAGES <<<"${ADDITIONAL_PACKAGES:-}"
 # e.g. zulip::profile::app_frontend for a Zulip frontend server.
 PUPPET_CLASSES="${PUPPET_CLASSES:-zulip::profile::standalone}"
 VIRTUALENV_NEEDED="${VIRTUALENV_NEEDED:-yes}"
-POSTGRESQL_VERSION="${POSTGRESQL_VERSION:-12}"
+POSTGRESQL_VERSION="${POSTGRESQL_VERSION:-13}"
 
 if [ -n "$SELF_SIGNED_CERT" ] && [ -n "$USE_CERTBOT" ]; then
     set +x
@@ -168,10 +168,13 @@ set -x
 ZULIP_PATH="$(readlink -f "$(dirname "$0")"/../..)"
 
 # Force a known locale.  Some packages on PyPI fail to install in some locales.
-localedef -i en_US -f UTF-8 en_US.UTF-8
-export LC_ALL="en_US.UTF-8"
-export LANG="en_US.UTF-8"
-export LANGUAGE="en_US.UTF-8"
+export LC_ALL="C.UTF-8"
+export LANG="C.UTF-8"
+export LANGUAGE="C.UTF-8"
+
+# Force a known path; this fixes problems on Debian where `su` from
+# non-root may not adjust `$PATH` to root's.
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
 # Check for a supported OS release.
 if [ -f /etc/os-release ]; then
@@ -196,7 +199,7 @@ if [ -f /etc/os-release ]; then
 fi
 
 case "$os_id$os_version_id" in
-    debian10 | ubuntu18.04 | ubuntu20.04) ;;
+    debian10 | debian11 | ubuntu18.04 | ubuntu20.04) ;;
     *)
         set +x
         cat <<EOF
@@ -204,6 +207,7 @@ case "$os_id$os_version_id" in
 Unsupported OS release: $os_id $os_version_id
 
 Zulip in production is supported only on:
+ - Debian 11 "bullseye" (beta)
  - Debian 10 "buster"
  - Ubuntu 18.04 LTS "bionic"
  - Ubuntu 20.04 LTS "focal"
@@ -361,7 +365,6 @@ fi
 # Create and activate a virtualenv
 if [ "$VIRTUALENV_NEEDED" = "yes" ]; then
     "$ZULIP_PATH"/scripts/lib/create-production-venv "$ZULIP_PATH"
-    "$ZULIP_PATH"/scripts/lib/create-thumbor-venv "$ZULIP_PATH"
 fi
 
 "$ZULIP_PATH"/scripts/lib/install-node
@@ -519,6 +522,13 @@ if has_class "zulip::app_frontend_base"; then
         su zulip -c '/home/zulip/deployments/current/tools/update-prod-static'
     fi
 fi
+
+# Set up a basic .gitconfig for the 'zulip' user
+(
+    cd / # Make sure the current working directory is readable by zulip
+    su zulip -c "git config --global user.email $ZULIP_ADMINISTRATOR"
+    su zulip -c "git config --global user.name 'Zulip Server ($EXTERNAL_HOST)'"
+)
 
 if [ -n "$NO_INIT_DB" ]; then
     set +x

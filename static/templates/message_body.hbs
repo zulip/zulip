@@ -6,7 +6,7 @@
             {{> message_avatar}}
             <span class="sender_name auto-select" role="button" tabindex="0">{{msg/sender_full_name}}</span>
             {{#if sender_is_bot}}
-            <i class="zulip-icon bot" aria-label="{{t 'Bot' }}"></i>
+            <i class="zulip-icon zulip-icon-bot" aria-label="{{t 'Bot' }}"></i>
             {{/if}}
         </span>
         {{/if}}
@@ -35,7 +35,11 @@
 </div>
 
 {{#unless status_message}}
-<div class="message_content rendered_markdown">{{#if use_match_properties}}{{rendered_markdown msg/match_content}}{{else}}{{rendered_markdown msg/content}}{{/if}}</div>
+    {{#unless is_hidden}}
+    <div class="message_content rendered_markdown">{{#if use_match_properties}}{{rendered_markdown msg/match_content}}{{else}}{{rendered_markdown msg/content}}{{/if}}</div>
+    {{else}}
+    {{> message_hidden_dialog}}
+    {{/unless}}
 {{/unless}}
 
 {{#if edited_in_left_col}}
@@ -45,6 +49,9 @@
 <div class="message_edit">
     <div class="message_edit_form"></div>
 </div>
-<div class="message_expander message_length_controller" title="{{t 'Expand message (-)' }}">{{t "[More...]" }}</div>
+<div class="message_expander message_length_controller" title="{{t 'Expand message (-)' }}">{{t "[More…]" }}</div>
 <div class="message_condenser message_length_controller" title="{{t 'Condense message (-)' }}">{{t "[Condense message]" }}</div>
+
+{{#unless is_hidden}}
 <div class="message_reactions">{{> message_reactions }}</div>
+{{/unless}}

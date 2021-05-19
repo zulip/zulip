@@ -21,13 +21,13 @@ def get_status_dicts_for_rows(
     # here prevents us from having to assume the caller is playing nice.
     all_rows = sorted(
         all_rows,
-        key=lambda row: (row["user_profile__id"], row["timestamp"]),
+        key=lambda row: (row["user_profile_id"], row["timestamp"]),
     )
 
     if slim_presence:
         # Stringify user_id here, since it's gonna be turned
         # into a string anyway by JSON, and it keeps mypy happy.
-        get_user_key = lambda row: str(row["user_profile__id"])
+        get_user_key = lambda row: str(row["user_profile_id"])
         get_user_info = get_modern_user_info
     else:
         get_user_key = lambda row: row["user_profile__email"]
@@ -88,7 +88,7 @@ def get_legacy_user_info(
         dt = row["timestamp"]
         timestamp = datetime_to_timestamp(dt)
         push_enabled = row["user_profile__enable_offline_push_notifications"]
-        has_push_devices = row["user_profile__id"] in mobile_user_ids
+        has_push_devices = row["user_profile_id"] in mobile_user_ids
         pushable = push_enabled and has_push_devices
 
         info = dict(
@@ -129,7 +129,7 @@ def get_presence_for_user(
         "status",
         "timestamp",
         "user_profile__email",
-        "user_profile__id",
+        "user_profile_id",
         "user_profile__enable_offline_push_notifications",
     )
     presence_rows = list(query)
@@ -156,7 +156,7 @@ def get_status_dict_by_realm(
         "status",
         "timestamp",
         "user_profile__email",
-        "user_profile__id",
+        "user_profile_id",
         "user_profile__enable_offline_push_notifications",
     )
 
@@ -167,7 +167,7 @@ def get_status_dict_by_realm(
         flat=True,
     )
 
-    user_profile_ids = [presence_row["user_profile__id"] for presence_row in presence_rows]
+    user_profile_ids = [presence_row["user_profile_id"] for presence_row in presence_rows]
     if len(user_profile_ids) == 0:
         # This conditional is necessary because query_for_ids
         # throws an exception if passed an empty list.

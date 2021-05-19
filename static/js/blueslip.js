@@ -99,7 +99,7 @@ function report_error(
 
     last_report_attempt.set(key, Date.now());
 
-    // TODO: If an exception gets thrown before we setup ajax calls
+    // TODO: If an exception gets thrown before we set up ajax calls
     // to include the CSRF token, our ajax call will fail.  The
     // elegant thing to do in that case is to either wait until that
     // setup is done or do it ourselves and then retry.

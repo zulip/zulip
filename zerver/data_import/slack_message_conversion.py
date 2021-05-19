@@ -27,8 +27,8 @@ SLACK_MAILTO_REGEX = r"""
 SLACK_USERMENTION_REGEX = r"""
                            (<@)                  # Start with '<@'
                                ([a-zA-Z0-9]+)    # Here we have the Slack id
-                           (\|)?                 # We not always have a Vertical line in mention
-                               ([a-zA-Z0-9]+)?   # If Vertical line is present, this is short name
+                           (\|)?                 # We not always have a vertical line in mention
+                               ([a-zA-Z0-9]+)?   # If vertical line is present, this is short name
                            (>)                   # ends with '>'
                            """
 # Slack doesn't have mid-word message-formatting like Zulip.

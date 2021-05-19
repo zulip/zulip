@@ -68,7 +68,7 @@ async function test_edit_private_message(page: Page): Promise<void> {
     await common.wait_for_fully_processed_message(page, "test edited pm");
 
     await common.check_messages_sent(page, "zhome", [
-        ["You and Cordelia Lear", ["test edited pm"]],
+        ["You and Cordelia, Lear's daughter", ["test edited pm"]],
     ]);
 }
 

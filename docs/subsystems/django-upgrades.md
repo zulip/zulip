@@ -21,7 +21,6 @@ new major versions of Django.  Here are the steps:
 * Look at the pieces of Django code that we've copied and then
   adapted, and confirm whether Django has any updates to the modified
   code we should apply.  Partial list:
-  * SessionMiddleware in `django.contrib.sessions.middleware` (we fork `get_response`).
   * `CursorDebugWrapper`, which we have a modified version of in
     `zerver/lib/db.py`.  See
     [the issue for contributing this upstream](https://github.com/zulip/zulip/issues/974)

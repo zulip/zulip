@@ -13,7 +13,6 @@ const {
 const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
-const {page_params} = require("../zjsunit/zpage_params");
 
 // Important note on these tests:
 
@@ -74,19 +73,9 @@ const popovers = mock_esm("../../static/js/popovers", {
 });
 const reactions = mock_esm("../../static/js/reactions");
 const search = mock_esm("../../static/js/search");
+const settings_data = mock_esm("../../static/js/settings_data");
 const stream_list = mock_esm("../../static/js/stream_list");
 const subs = mock_esm("../../static/js/subs");
-
-mock_esm("../../static/js/hashchange", {
-    in_recent_topics_hash: () => false,
-});
-
-mock_esm("../../static/js/stream_popover", {
-    stream_popped: () => false,
-    topic_popped: () => false,
-    all_messages_popped: () => false,
-    starred_messages_popped: () => false,
-});
 
 mock_esm("../../static/js/hotspots", {
     is_open: () => false,
@@ -95,6 +84,13 @@ mock_esm("../../static/js/hotspots", {
 mock_esm("../../static/js/recent_topics", {
     is_visible: () => false,
     is_in_focus: () => false,
+});
+
+mock_esm("../../static/js/stream_popover", {
+    stream_popped: () => false,
+    topic_popped: () => false,
+    all_messages_popped: () => false,
+    starred_messages_popped: () => false,
 });
 
 message_lists.current = {
@@ -285,13 +281,13 @@ run_test("allow normal typing when processing text", (override) => {
 });
 
 run_test("streams", (override) => {
-    page_params.can_create_streams = true;
+    settings_data.user_can_create_streams = () => true;
     override(overlays, "streams_open", () => true);
     override(overlays, "is_active", () => true);
     assert_mapping("S", subs, "keyboard_sub");
     assert_mapping("V", subs, "view_stream");
     assert_mapping("n", subs, "open_create_stream");
-    page_params.can_create_streams = false;
+    settings_data.user_can_create_streams = () => false;
     assert_unmapped("n");
 });
 

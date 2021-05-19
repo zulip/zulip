@@ -39,7 +39,7 @@ different flows:
   another part of the overlay, which should update the hash but not
   re-trigger loading the overlay (which would result in a confusing
   animation experience).
-* The user is in a part of the webapp, and reloads their browser window.
+* The user is in a part of the web app, and reloads their browser window.
   Ideally the reloaded browser window should return them to their
   original state.
 * A server-initiated browser reload (done after a new version is

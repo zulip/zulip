@@ -5,7 +5,7 @@
             {{ label }}
         </label>
         {{/if}}
-        <button class="button small rounded dropdown-toggle" data-toggle="dropdown">
+        <button class="button small rounded dropdown-toggle" type="button" data-toggle="dropdown">
             <span id="{{widget_name}}_name"></span>
             <i class="fa fa-pencil"></i>
         </button>
@@ -19,7 +19,7 @@
         </ul>
     </span>
     {{#if reset_button_text}}
-    <button class="button small dropdown_list_reset_button">
+    <button class="button small dropdown_list_reset_button" type="button">
         <a>{{reset_button_text}}</a>
     </button>
     {{/if}}

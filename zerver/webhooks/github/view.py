@@ -11,6 +11,7 @@ from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import (
     check_send_webhook_message,
     get_http_headers_from_filename,
+    get_setup_webhook_message,
     validate_extract_webhook_http_header,
 )
 from zerver.lib.webhooks.git import (
@@ -23,7 +24,6 @@ from zerver.lib.webhooks.git import (
     get_push_commits_event_message,
     get_push_tag_event_message,
     get_release_event_message,
-    get_setup_webhook_message,
 )
 from zerver.models import UserProfile
 
@@ -434,7 +434,7 @@ def get_pull_request_review_body(helper: Helper) -> str:
         get_sender_name(payload),
         "submitted",
         payload["review"]["html_url"],
-        type="PR Review",
+        type="PR review",
         title=title if include_title else None,
     )
 
@@ -457,7 +457,7 @@ def get_pull_request_review_comment_body(helper: Helper) -> str:
         action,
         payload["comment"]["html_url"],
         message=message,
-        type="PR Review Comment",
+        type="PR review comment",
         title=title if include_title else None,
     )
 
@@ -466,10 +466,8 @@ def get_pull_request_review_requested_body(helper: Helper) -> str:
     payload = helper.payload
     include_title = helper.include_title
     requested_reviewer = [payload["requested_reviewer"]] if "requested_reviewer" in payload else []
-    requested_reviewers = payload["pull_request"]["requested_reviewers"] or requested_reviewer
 
     requested_team = [payload["requested_team"]] if "requested_team" in payload else []
-    requested_team_reviewers = payload["pull_request"]["requested_teams"] or requested_team
 
     sender = get_sender_name(payload)
     pr_number = payload["pull_request"]["number"]
@@ -482,17 +480,14 @@ def get_pull_request_review_requested_body(helper: Helper) -> str:
 
     all_reviewers = []
 
-    for reviewer in requested_reviewers:
+    for reviewer in requested_reviewer:
         all_reviewers.append("[{login}]({html_url})".format(**reviewer))
 
-    for team_reviewer in requested_team_reviewers:
+    for team_reviewer in requested_team:
         all_reviewers.append("[{name}]({html_url})".format(**team_reviewer))
 
     reviewers = ""
-    if len(all_reviewers) == 1:
-        reviewers = all_reviewers[0]
-    else:
-        reviewers = "{} and {}".format(", ".join(all_reviewers[:-1]), all_reviewers[-1])
+    reviewers = all_reviewers[0]
 
     return body.format(
         sender=sender,
@@ -579,7 +574,7 @@ def get_subject_based_on_type(payload: Dict[str, Any], event: str) -> str:
     elif event.startswith("issue"):
         return TOPIC_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repository_name(payload),
-            type="Issue",
+            type="issue",
             id=payload["issue"]["number"],
             title=payload["issue"]["title"],
         )
@@ -600,7 +595,7 @@ def get_subject_based_on_type(payload: Dict[str, Any], event: str) -> str:
     elif event == "gollum":
         return TOPIC_WITH_BRANCH_TEMPLATE.format(
             repo=get_repository_name(payload),
-            branch="Wiki Pages",
+            branch="wiki pages",
         )
     elif event == "ping":
         if payload.get("repository") is None:

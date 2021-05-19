@@ -49,7 +49,7 @@
     "help": [
         "./static/js/bundles/portico",
         "simplebar/dist/simplebar.css",
-        "simplebar/dist/simplebar",
+        "simplebar",
         "./static/js/portico/help",
         "./static/js/portico/tabbed-instructions"
     ],
@@ -64,17 +64,8 @@
         "./static/styles/portico/landing_page.css",
         "./static/styles/portico/integrations.css"
     ],
-    "signup": [
-        "./static/js/bundles/portico",
-        "jquery-validation/dist/jquery.validate.min",
-        "./static/js/portico/signup"
-    ],
-    "register": [
-        "./static/js/bundles/portico",
-        "jquery-validation/dist/jquery.validate.min",
-        "./static/js/portico/signup",
-        "zxcvbn/dist/zxcvbn"
-    ],
+    "signup": ["./static/js/bundles/portico", "jquery-validation", "./static/js/portico/signup"],
+    "register": ["./static/js/bundles/portico", "jquery-validation", "./static/js/portico/signup"],
     "confirm-preregistrationuser": [
         "./static/js/bundles/common",
         "./static/js/portico/confirm-preregistrationuser"
@@ -87,26 +78,13 @@
         "./static/js/analytics/support",
         "./static/styles/app_components.css"
     ],
-    "dev-login": ["./static/js/bundles/portico", "./static/js/portico/dev-login"],
     "desktop-login": ["./static/js/bundles/portico", "./static/js/portico/desktop-login"],
     "desktop-redirect": ["./static/js/bundles/portico", "./static/js/portico/desktop-redirect"],
-    "integrations-dev-panel": [
-        "./static/js/bundles/portico",
-        "./static/js/portico/integrations_dev_panel",
-        "./static/styles/portico/integrations_dev_panel.css",
-        "./static/js/reload_state",
-        "./static/js/channel"
-    ],
-    "email-log": [
-        "./static/js/bundles/common",
-        "./static/js/portico/email_log",
-        "./static/js/reload_state",
-        "./static/js/channel"
-    ],
     "stats": [
         "./static/js/bundles/portico",
         "./static/styles/portico/stats.css",
-        "./static/js/stats/stats"
+        "./static/js/stats/stats",
+        "tippy.js/dist/tippy.css"
     ],
     "app": ["./static/js/bundles/app"],
     "digest": ["./static/js/bundles/portico"]

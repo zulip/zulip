@@ -25,7 +25,7 @@ check_header() {
     if ! diff -ur /tmp/http-headers-processed "$success_header_file"; then
         set +x
         echo
-        echo "FAILURE: The HTTP Headers returned from loading the homepage on the server do not match the contents of tools/ci/success-http-headers.template.txt.  Typically, this means that the server threw a 500 when trying to load the homepage."
+        echo "FAILURE: The HTTP headers returned from loading the homepage on the server do not match the contents of tools/ci/success-http-headers.template.txt.  Typically, this means that the server threw a 500 when trying to load the homepage."
         echo "Displaying the contents of the server's error log:"
         echo
         cat /var/log/zulip/errors.log
@@ -71,7 +71,7 @@ nginx_version="$(nginx -v 2>&1 | awk '{print $3, $4}' | xargs)"
 
 # Simplify the diff by getting replacing 4-5 digit length numbers with <Length>.
 sed -i 's|Length: [0-9]\+\( [(][0-9]\+[.][0-9]K[)]\)\?|Length: <Length>|' /tmp/http-headers-processed
-if [ "$os_version_codename" = "buster" ]; then
+if [ "$os_version_codename" = "buster" ] || [ "$os_version_codename" = "bullseye" ]; then
     success_header_file="/tmp/success-http-headers.template.debian.txt"
     check_header
 else

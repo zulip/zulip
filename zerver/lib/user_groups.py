@@ -1,7 +1,7 @@
 from typing import Any, Dict, List
 
 from django.db import transaction
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.lib.exceptions import JsonableError
 from zerver.models import Realm, UserGroup, UserGroupMembership, UserProfile

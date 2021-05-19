@@ -2,7 +2,6 @@ import Handlebars from "handlebars/runtime";
 import _ from "lodash";
 
 import pygments_data from "../generated/pygments_data.json";
-import * as emoji from "../shared/js/emoji";
 import * as typeahead from "../shared/js/typeahead";
 import render_typeahead_list_item from "../templates/typeahead_list_item.hbs";
 
@@ -130,11 +129,13 @@ export function render_emoji(item) {
         is_emoji: true,
         primary: item.emoji_name.split("_").join(" "),
     };
-    if (emoji.active_realm_emojis.has(item.emoji_name)) {
+
+    if (item.emoji_url) {
         args.img_src = item.emoji_url;
     } else {
         args.emoji_code = item.emoji_code;
     }
+
     return render_typeahead_item(args);
 }
 
@@ -378,11 +379,4 @@ export function sort_streams(matches, query) {
     desc_results.rest = desc_results.rest.sort(compare_by_activity);
 
     return name_results.matches.concat(desc_results.matches.concat(desc_results.rest));
-}
-
-export function sort_recipientbox_typeahead(query, matches, current_stream) {
-    // input_text may be one or more pm recipients
-    const cleaned = get_cleaned_pm_recipients(query);
-    query = cleaned[cleaned.length - 1];
-    return sort_recipients(matches, query, current_stream);
 }

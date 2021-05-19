@@ -65,10 +65,6 @@
     font-weight: 300;
 }
 
-#add_new_subscription {
-    text-align: left;
-}
-
 .subscription_header {
     min-height: 47px;
 }
@@ -99,7 +95,7 @@
 }
 
 .stream-email {
-    font-family: Monaco, Menlo, Consolas, "Courier New", monospace;
+    font-family: "Source Code Pro", monospace;
     padding: 5px;
     font-size: 0.9em;
     background-color: hsl(0, 0%, 98%);
@@ -176,10 +172,6 @@
     text-decoration: none;
     background-color: hsl(0, 0%, 92%);
     border: 1px solid hsl(0, 0%, 68%);
-}
-
-form#add_new_subscription {
-    margin: 0;
 }
 
 .create_stream_button {
@@ -802,6 +794,7 @@ form#add_new_subscription {
             position: absolute;
             bottom: 0;
             width: calc(100% - 27px);
+            padding-top: 9px;
         }
 
         .stream-creation-body {

@@ -17,34 +17,30 @@ import * as scroll_util from "./scroll_util";
 import * as stream_data from "./stream_data";
 import * as stream_popover from "./stream_popover";
 import * as stream_sort from "./stream_sort";
+import * as sub_store from "./sub_store";
 import * as topic_list from "./topic_list";
 import * as topic_zoom from "./topic_zoom";
 import * as ui from "./ui";
+import * as ui_util from "./ui_util";
 import * as unread from "./unread";
 
 export let stream_cursor;
 
 let has_scrolled = false;
 
-export function update_count_in_dom(unread_count_elem, count) {
-    const count_span = unread_count_elem.find(".count");
-    const value_span = count_span.find(".value");
+export function update_count_in_dom(stream_li, count) {
+    // The subsription_block properly excludes the topic list,
+    // and it also has sensitive margins related to whether the
+    // count is there or not.
+    const subscription_block = stream_li.find(".subscription_block");
+
+    ui_util.update_unread_count_in_dom(subscription_block, count);
 
     if (count === 0) {
-        count_span.hide();
-        if (count_span.parent().hasClass("subscription_block")) {
-            count_span.parent(".subscription_block").removeClass("stream-with-count");
-        }
-        value_span.text("");
-        return;
+        subscription_block.removeClass("stream-with-count");
+    } else {
+        subscription_block.addClass("stream-with-count");
     }
-
-    count_span.show();
-
-    if (count_span.parent().hasClass("subscription_block")) {
-        count_span.parent(".subscription_block").addClass("stream-with-count");
-    }
-    value_span.text(count);
 }
 
 class StreamSidebar {
@@ -323,14 +319,14 @@ export function redraw_stream_privacy(sub) {
 }
 
 function set_stream_unread_count(stream_id, count) {
-    const unread_count_elem = get_stream_li(stream_id);
-    if (!unread_count_elem) {
+    const stream_li = get_stream_li(stream_id);
+    if (!stream_li) {
         // This can happen for legitimate reasons, but we warn
         // just in case.
         blueslip.warn("stream id no longer in sidebar: " + stream_id);
         return;
     }
-    update_count_in_dom(unread_count_elem, count);
+    update_count_in_dom(stream_li, count);
 }
 
 export function update_streams_sidebar(force_rerender) {
@@ -476,7 +472,7 @@ function keydown_enter_key() {
         return;
     }
 
-    const sub = stream_data.get_sub_by_id(stream_id);
+    const sub = sub_store.get(stream_id);
 
     if (sub === undefined) {
         blueslip.error("Unknown stream_id for search/enter: " + stream_id);
@@ -510,7 +506,7 @@ export function set_event_handlers() {
             return;
         }
         const stream_id = stream_id_for_elt($(e.target).parents("li"));
-        const sub = stream_data.get_sub_by_id(stream_id);
+        const sub = sub_store.get(stream_id);
         popovers.hide_all();
         narrow.by("stream", sub.name, {trigger: "sidebar"});
 

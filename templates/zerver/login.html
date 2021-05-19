@@ -42,7 +42,7 @@ page can be easily identified in it's respective JavaScript file. -->
                     {% if password_auth_enabled %}
                         <form name="login_form" id="login_form" method="post" class="login-form"
                           action="{{ url('login') }}">
-                            <input type="hidden" name="next" value="{{ next }}">
+                            <input type="hidden" name="next" value="{{ next }}" />
 
                             {% if two_factor_authentication_enabled %}
                             {{ wizard.management_form }}
@@ -67,11 +67,12 @@ page can be easily identified in it's respective JavaScript file. -->
                                 </label>
                             </div>
 
-                            <div class="input-box no-validation">
-                                <input id="id_password" name="password" class="required" type="password"
+                            <div class="input-box no-validation password-div">
+                                <input id="id_password" name="password" class="required" type="password" autocomplete="off"
                                   {% if email %} autofocus {% endif %}
                                   required />
                                 <label for="id_password" class="control-label">{{ _('Password') }}</label>
+                                <i class="fa fa-eye-slash password_visibility_toggle" role="button"></i>
                             </div>
                             {% else %}
                             {% include "two_factor/_wizard_forms.html" %}
@@ -112,7 +113,7 @@ page can be easily identified in it's respective JavaScript file. -->
                     {% for backend in page_params.external_authentication_methods %}
                     <div class="login-social">
                         <form class="social_login_form form-inline" action="{{ backend.login_url }}" method="get">
-                            <input type="hidden" name="next" value="{{ next }}">
+                            <input type="hidden" name="next" value="{{ next }}" />
                             <button id="login_{{ backend.button_id_suffix }}" class="login-social-button"
                               {% if backend.display_icon %} style="background-image:url({{ backend.display_icon }})"  {% endif %}>                                {{ _('Log in with %(identity_provider)s', identity_provider=backend.display_name) }}
                             </button>

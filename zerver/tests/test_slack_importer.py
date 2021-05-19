@@ -664,7 +664,7 @@ class SlackImporter(ZulipTestCase):
             passed_realm["zerver_realm"][0]["description"], "Organization imported from Slack!"
         )
         self.assertEqual(passed_realm["zerver_userpresence"], [])
-        self.assertEqual(len(passed_realm.keys()), 14)
+        self.assertEqual(len(passed_realm.keys()), 15)
 
         self.assertEqual(realm["zerver_stream"], [])
         self.assertEqual(realm["zerver_userprofile"], [])
@@ -675,7 +675,7 @@ class SlackImporter(ZulipTestCase):
 
     def test_get_message_sending_user(self) -> None:
         message_with_file = {"subtype": "file", "type": "message", "file": {"user": "U064KUGRJ"}}
-        message_without_file = {"subtype": "file", "type": "messge", "user": "U064KUGRJ"}
+        message_without_file = {"subtype": "file", "type": "message", "user": "U064KUGRJ"}
 
         user_file = get_message_sending_user(message_with_file)
         self.assertEqual(user_file, "U064KUGRJ")
@@ -1069,7 +1069,11 @@ class SlackImporter(ZulipTestCase):
         realmauditlog_event_type = {log.event_type for log in realmauditlog}
         self.assertEqual(
             realmauditlog_event_type,
-            {RealmAuditLog.SUBSCRIPTION_CREATED, RealmAuditLog.REALM_PLAN_TYPE_CHANGED},
+            {
+                RealmAuditLog.SUBSCRIPTION_CREATED,
+                RealmAuditLog.REALM_PLAN_TYPE_CHANGED,
+                RealmAuditLog.REALM_CREATED,
+            },
         )
 
         Realm.objects.filter(name=test_realm_subdomain).delete()

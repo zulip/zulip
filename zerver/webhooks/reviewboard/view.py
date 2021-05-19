@@ -1,4 +1,4 @@
-from typing import Any, Dict, Iterable
+from typing import Any, Dict, Sequence
 
 from django.http import HttpRequest, HttpResponse
 
@@ -178,7 +178,7 @@ RB_MESSAGE_FUNCTIONS = {
 def api_reviewboard_webhook(
     request: HttpRequest,
     user_profile: UserProfile,
-    payload: Dict[str, Iterable[Dict[str, Any]]] = REQ(argument_type="body"),
+    payload: Dict[str, Sequence[Dict[str, Any]]] = REQ(argument_type="body"),
 ) -> HttpResponse:
     event_type = validate_extract_webhook_http_header(request, "X_REVIEWBOARD_EVENT", "ReviewBoard")
     assert event_type is not None

@@ -54,7 +54,6 @@ const message_list = mock_esm("../../static/js/message_list");
 const message_lists = mock_esm("../../static/js/message_lists");
 const message_viewport = mock_esm("../../static/js/message_viewport");
 const notifications = mock_esm("../../static/js/notifications");
-const overlays = mock_esm("../../static/js/overlays");
 const unread_ui = mock_esm("../../static/js/unread_ui");
 
 message_lists.current = {};
@@ -90,14 +89,17 @@ run_test("unread_ops", (override) => {
         },
     ];
 
+    // We don't want recent topics to process message for this test.
     override(recent_topics, "is_visible", () => false);
+    // Show message_viewport as not visible so that messages will be stored as unread.
+    override(message_viewport, "is_visible_and_focused", () => false);
 
     // Make our test message appear to be unread, so that
     // we then need to subsequently process them as read.
     unread.process_loaded_messages(test_messages);
 
-    // Make our window appear visible.
-    override(notifications, "is_window_focused", () => true);
+    // Make our message_viewport appear visible.
+    override(message_viewport, "is_visible_and_focused", () => true);
 
     // Make our "test" message appear visible.
     override(message_viewport, "bottom_message_visible", () => true);
@@ -118,9 +120,6 @@ run_test("unread_ops", (override) => {
     override(channel, "post", (opts) => {
         channel_post_opts = opts;
     });
-
-    // Let the real code skip over details related to active overlays.
-    override(overlays, "is_active", () => false);
 
     let can_mark_messages_read;
 

@@ -2,7 +2,9 @@
 
 Zulip's has full support for Unicode (and partial support for RTL
 languages), so you can use your preferred language everywhere in
-Zulip.  We also translate the Zulip UI into more than a dozen major
+Zulip.
+
+Additionally, the Zulip UI is translated into more than a dozen major
 languages, including Spanish, German, Hindi, French, Chinese, Russian,
 and Japanese, and we're always excited to add more.  If you speak a
 language other than English, your help with translating Zulip is be
@@ -18,21 +20,44 @@ Developers](../translating/internationalization.md).
 These are the steps you should follow if you want to help translate
 Zulip:
 
-1. Sign up for [Transifex](https://www.transifex.com) and ask to join
-the [Zulip project on
-Transifex](https://www.transifex.com/zulip/zulip/), requesting access
-to any languages that you'd like to contribute to (or add new ones).
-
 1. Join [#translation][translation-stream] in the [Zulip development
 community server](../contributing/chat-zulip-org.md), and say hello.
 That stream is also the right place for any questions, updates on your
 progress, reporting problematic strings, etc.
 
+1. Sign up for [Transifex](https://www.transifex.com) and ask to join the [Zulip
+project on Transifex](https://www.transifex.com/zulip/zulip/), requesting access
+to any languages that you'd like to contribute to (or add new ones).
+
+   ```eval_rst
+   .. note::
+       Unless you plan to contribute country-specific translations, do not
+       select a country-specific language in the **Languages** menu when you sign
+       up. E.g. use **English (United Kingdom)** if you plan to translate Zulip
+       into UK English, but select **Russian** rather than **Russian (Russia)** for
+       general Russian translations.
+   ```
+
 1. Wait for a maintainer to approve your Transifex access; this
    usually takes less than a day. You should then be able to access
    Zulip's dashboard in Transifex.
 
-1. Translate the strings for your language in Transifex.
+1. Translate the strings for your language in Transifex.  Zulip has
+   several resource files:
+   * `mobile.json` is for the iOS/Android mobile apps.
+   * `desktop.json` is for the parts of the Zulip desktop apps that
+     are not shared with the Zulip web app.
+   * `django.po` and `translations.json` have strings for the next
+     major release of the Zulip server and web app (which is what we
+     run on chat.zulip.org and Zulip Cloud).
+   * The variants of `django.po` and `translations.json` with names
+     starting with a version, like, `4-x--`, are strings for Zulip's
+     current [stable release series](../overview/release-lifecycle.md).
+
+   Transifex is smart about only asking you to translate a string once
+   even if it appears in multiple resources.  The `4-x--` type variants
+   allow translators to get a language to 100% translated for the
+   current release.
 
 1. If possible, test your translations (details below).
 
@@ -47,15 +72,15 @@ Some useful tips for your translating journey:
   doesn't exist one, write one as you go; they're easiest to write as
   you go along and will help any future translators a lot.
 
-- Don't translate variables or code (usually preceded by a `%`, or inside
-  HTML tags `<...>` or enclosed like `__variable__` or
-  `{{ variable }}`); just keep them verbatim.
+- Don't translate variables or code (usually preceded by a `%`, inside
+  HTML tags `<...>`, or enclosed in braces like `{variable}`); just
+  keep them verbatim.
 
 - When context is unclear, you may find [GitHub
   search](https://github.com/search?q=org%3Azulip+%22alert+word+already+exists%22&type=code)
   helpful for finding the code using a given string (ignore `.po` and
   `.json` matches, and note the search box is semi-invisible in the
-  upper-left corner of the page), or looking at the "Occurences"
+  upper-left corner of the page), or looking at the "Occurrences"
   section in the Transifex UI, browsing to the file on
   [GitHub](https://github.com/zulip/zulip/), and then searching for
   the string with `Ctrl+F` in your browser.
@@ -96,7 +121,7 @@ There are a few ways to see your translations in the Zulip UI:
   can view the login page in German using
   `http://localhost:9991/de/login/`.  This works for any part of the
   Zulip UI, including portico (logged-out) pages.
-* For Zulip's logged-in UI (i.e. the actual webapp), you can [pick the
+* For Zulip's logged-in UI (i.e. the actual web app), you can [pick the
   language](https://zulip.com/help/change-your-language) in the
   Zulip UI.
 * If your system has languages configured in your OS/browser, Zulip's
@@ -168,7 +193,7 @@ capitalization in general.  This means that:
     - Incorrect: "Url"
 
 The Zulip test suite enforces these capitalization guidelines in the
-webapp codebase [in our test
+web app codebase [in our test
 suite](../testing/testing.html#other-test-suites)
 (`./tools/check-capitalization`; `tools/lib/capitalization.py` has
 some exclude lists, e.g. `IGNORED_PHRASES`).

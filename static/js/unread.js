@@ -5,6 +5,7 @@ import {page_params} from "./page_params";
 import * as people from "./people";
 import * as settings_config from "./settings_config";
 import * as stream_data from "./stream_data";
+import * as sub_store from "./sub_store";
 import * as util from "./util";
 
 // The unread module tracks the message IDs and locations of the
@@ -242,7 +243,7 @@ class UnreadTopicCounter {
             // unsubscribed.  Since users may re-subscribe, we don't
             // completely throw away the data.  But we do ignore it here,
             // so that callers have a view of the **current** world.
-            const sub = stream_data.get_sub_by_id(stream_id);
+            const sub = sub_store.get(stream_id);
             if (!sub || !stream_data.is_subscribed(sub.name)) {
                 continue;
             }
@@ -297,7 +298,7 @@ class UnreadTopicCounter {
             return 0;
         }
 
-        const sub = stream_data.get_sub_by_id(stream_id);
+        const sub = sub_store.get(stream_id);
         for (const [topic, msgs] of per_stream_bucketer) {
             if (sub && !muting.is_topic_muted(stream_id, topic)) {
                 stream_count += msgs.size;
@@ -329,7 +330,7 @@ class UnreadTopicCounter {
         }
 
         const ids = [];
-        const sub = stream_data.get_sub_by_id(stream_id);
+        const sub = sub_store.get(stream_id);
         for (const [topic, id_set] of per_stream_bucketer) {
             if (sub && !muting.is_topic_muted(stream_id, topic)) {
                 for (const id of id_set) {

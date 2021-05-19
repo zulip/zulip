@@ -6,7 +6,7 @@
 
 1. Under **Deactivate account**, click **Deactivate account**.
 
-1. Confirm by clicking **Deactivate now**.
+1. Approve by clicking **Confirm**.
 
 {end_tabs}
 

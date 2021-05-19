@@ -3,7 +3,7 @@ and are also incorporated by the Zulip mobile app.
 
 Note that the deployment cycles are different:
 
- * In the webapp, this code is deployed in the same way as the rest of
+ * In the web app, this code is deployed in the same way as the rest of
    the web frontend: it's part of the server tree, and the browser
    gets it from the server, so the client is always running the same
    version the server just gave it.
@@ -18,3 +18,8 @@ Note that the deployment cycles are different:
    The mobile app always refers to a specific version of this code;
    changes to this code will appear in the mobile app only after a
    commit in the mobile app pulls them in.
+
+To update the version of @zulip/shared on NPM, see the
+[instructions][publishing-shared] in the mobile repo.
+
+[publishing-shared]: https://github.com/zulip/zulip-mobile/blob/master/docs/howto/shared.md#publishing-zulipshared-to-npm

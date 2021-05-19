@@ -43,11 +43,8 @@ run_test("get starred ids in topic", () => {
         starred_messages.starred_ids.add(id);
     }
 
-    assert.deepEqual(
-        starred_messages.get_starred_message_ids_in_topic(undefined, "topic name"),
-        [],
-    );
-    assert.deepEqual(starred_messages.get_starred_message_ids_in_topic(3, undefined), []);
+    assert.deepEqual(starred_messages.get_count_in_topic(undefined, "topic name"), 0);
+    assert.deepEqual(starred_messages.get_count_in_topic(3, undefined), 0);
 
     // id: 1 isn't inserted, to test handling the case
     // when message_store.get() returns undefined
@@ -77,7 +74,7 @@ run_test("get starred ids in topic", () => {
         topic: "topic",
     });
 
-    assert.deepEqual(starred_messages.get_starred_message_ids_in_topic(20, "topic"), [5]);
+    assert.deepEqual(starred_messages.get_count_in_topic(20, "topic"), 1);
 });
 
 run_test("initialize", (override) => {

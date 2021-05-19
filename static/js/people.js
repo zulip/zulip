@@ -6,9 +6,11 @@ import * as typeahead from "../shared/js/typeahead";
 
 import * as blueslip from "./blueslip";
 import {FoldDict} from "./fold_dict";
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import * as message_user_ids from "./message_user_ids";
+import * as muting from "./muting";
 import * as reload_state from "./reload_state";
+import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as util from "./util";
 
@@ -163,6 +165,10 @@ export function is_known_user_id(user_id) {
     return people_by_user_id_dict.has(user_id);
 }
 
+export function is_known_user(user) {
+    return user && is_known_user_id(user.user_id);
+}
+
 function sort_numerically(user_ids) {
     user_ids.sort((a, b) => a - b);
 
@@ -264,17 +270,11 @@ export function get_user_time(user_id) {
 
 export function get_user_type(user_id) {
     const user_profile = get_by_user_id(user_id);
-
-    if (user_profile.is_owner) {
-        return i18n.t("Owner");
-    } else if (user_profile.is_admin) {
-        return i18n.t("Administrator");
-    } else if (user_profile.is_guest) {
-        return i18n.t("Guest");
-    } else if (user_profile.is_bot) {
-        return i18n.t("Bot");
+    if (user_profile.is_bot) {
+        return $t({defaultMessage: "Bot"});
     }
-    return i18n.t("Member");
+
+    return settings_config.user_role_map.get(user_profile.role);
 }
 
 export function emails_strings_to_user_ids_string(emails_string) {
@@ -298,15 +298,24 @@ export function email_list_to_user_ids_string(emails) {
     return user_ids.join(",");
 }
 
-export function safe_full_names(user_ids) {
-    let names = user_ids.map((user_id) => {
-        const person = people_by_user_id_dict.get(user_id);
-        return person && person.full_name;
+export function get_full_names_for_poll_option(user_ids) {
+    return get_display_full_names(user_ids).join(", ");
+}
+
+export function get_display_full_names(user_ids) {
+    return user_ids.map((user_id) => {
+        const person = get_by_user_id(user_id);
+        if (!person) {
+            blueslip.error("Unknown user id " + user_id);
+            return "?";
+        }
+
+        if (muting.is_user_muted(user_id)) {
+            return $t({defaultMessage: "Muted user"});
+        }
+
+        return person.full_name;
     });
-
-    names = names.filter(Boolean);
-
-    return names.join(", ");
 }
 
 export function get_full_name(user_id) {
@@ -324,7 +333,7 @@ export function get_recipients(user_ids_string) {
         return my_full_name();
     }
 
-    const names = other_ids.map((user_id) => get_full_name(user_id)).sort();
+    const names = get_display_full_names(other_ids).sort();
     return names.join(", ");
 }
 
@@ -648,11 +657,12 @@ export function small_avatar_url_for_person(person) {
     return format_small_avatar_url("/avatar/" + person.user_id);
 }
 
-export function sender_info_with_small_avatar_urls_for_sender_ids(sender_ids) {
+export function sender_info_for_recent_topics_row(sender_ids) {
     const senders_info = [];
     for (const id of sender_ids) {
         const sender = {...get_by_user_id(id)};
         sender.avatar_url_small = small_avatar_url_for_person(sender);
+        sender.is_muted = muting.is_user_muted(id);
         senders_info.push(sender);
     }
     return senders_info;
@@ -1057,6 +1067,8 @@ export function get_people_for_stream_create() {
                 email: person.email,
                 user_id: person.user_id,
                 full_name: person.full_name,
+                checked: false,
+                disabled: false,
             });
         }
     }
@@ -1109,6 +1121,10 @@ export function _add_user(person) {
         users who may be deactivated or outside
         our realm (like cross-realm bots).
     */
+    person.is_moderator = false;
+    if (person.role === settings_config.user_role_values.moderator.code) {
+        person.is_moderator = true;
+    }
     if (person.user_id) {
         people_by_user_id_dict.set(person.user_id, person);
     } else {

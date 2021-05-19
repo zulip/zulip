@@ -1,13 +1,15 @@
 import $ from "jquery";
 
-import render_admin_default_streams_list from "../templates/admin_default_streams_list.hbs";
+import render_admin_default_streams_list from "../templates/settings/admin_default_streams_list.hbs";
 
 import * as channel from "./channel";
-import {i18n} from "./i18n";
+import * as hash_util from "./hash_util";
+import {$t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as stream_data from "./stream_data";
+import * as sub_store from "./sub_store";
 import * as typeahead_helper from "./typeahead_helper";
 import * as ui from "./ui";
 import * as ui_report from "./ui_report";
@@ -34,7 +36,7 @@ export function build_default_stream_table() {
     const table = $("#admin_default_streams_table").expectOne();
 
     const stream_ids = stream_data.get_default_stream_ids();
-    const subs = stream_ids.map((stream_id) => stream_data.get_sub_by_id(stream_id));
+    const subs = stream_ids.map((stream_id) => sub_store.get(stream_id));
 
     ListWidget.create(table, subs, {
         name: "default_streams_list",
@@ -62,7 +64,7 @@ export function build_default_stream_table() {
 }
 
 export function update_default_streams_table() {
-    if (/#*organization/.test(window.location.hash) || /#*settings/.test(window.location.hash)) {
+    if (["organization", "settings"].includes(hash_util.get_current_hash_category())) {
         $("#admin_default_streams_table").expectOne().find("tr.default_stream_row").remove();
         build_default_stream_table();
     }
@@ -79,11 +81,7 @@ function make_stream_default(stream_id) {
         url: "/json/default_streams",
         data,
         error(xhr) {
-            if (xhr.status.toString().charAt(0) === "4") {
-                ui_report.error(i18n.t("Failed"), xhr, default_stream_status);
-            } else {
-                ui_report.error(i18n.t("Failed"), default_stream_status);
-            }
+            ui_report.error($t_html({defaultMessage: "Failed"}), xhr, default_stream_status);
             default_stream_status.show();
         },
     });

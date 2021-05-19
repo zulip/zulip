@@ -17,7 +17,7 @@ teammates know when you were last active.
 
 1. Hover over your name in the right sidebar.
 
-1. Click the ellipsis (<i class="zulip-icon ellipsis-v-solid"></i>) to the right.
+1. Click the ellipsis (<i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>) to the right.
 
 1. Click **Set a status message**.
 
@@ -46,12 +46,6 @@ There are four possible availabilities:
 * **Unavailable** (<span class="indicator grey-line"></span>): You can
   always manually set your availability to unavailable.
 
-For [Group PMs](/help/private-messages), a green circle
-(<span class="indicator green solid"></span>)
-means all users in the group are active. A pale green circle (<span
-class="indicator green"></span>) means that some are active and some are
-not. A white circle (<span class="indicator grey"></span>) means that none
-are active.
 
 You can see when someone was last recorded as active by hovering over
 their name in the left or right sidebar (even if the user is marked as
@@ -63,7 +57,7 @@ unavailable).
 
 1. Hover over your name in the right sidebar.
 
-1. Click the ellipsis (<i class="zulip-icon ellipsis-v-solid"></i>) to the right.
+1. Click the ellipsis (<i class="zulip-icon zulip-icon-ellipsis-v-solid"></i>) to the right.
 
 1. Click **Set yourself as unavailable**.
 

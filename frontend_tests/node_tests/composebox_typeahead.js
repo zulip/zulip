@@ -18,6 +18,7 @@ const message_user_ids = mock_esm("../../static/js/message_user_ids", {
     user_ids: () => [],
 });
 const stream_topic_history = mock_esm("../../static/js/stream_topic_history");
+const stream_topic_history_util = mock_esm("../../static/js/stream_topic_history_util");
 
 let autosize_called;
 
@@ -39,6 +40,7 @@ const typeahead = zrequire("../shared/js/typeahead");
 const compose_state = zrequire("compose_state");
 zrequire("templates");
 const typeahead_helper = zrequire("typeahead_helper");
+const muting = zrequire("muting");
 const people = zrequire("people");
 const user_groups = zrequire("user_groups");
 const stream_data = zrequire("stream_data");
@@ -49,7 +51,6 @@ const settings_config = zrequire("settings_config");
 const pygments_data = zrequire("../generated/pygments_data.json");
 
 // To be eliminated in next commit:
-stream_data.__Rewire__("update_calculated_fields", () => {});
 stream_data.__Rewire__("set_filter_out_inactives", () => false);
 
 const ct = composebox_typeahead;
@@ -172,7 +173,6 @@ const sweden_stream = {
     description: "Cold, mountains and home decor.",
     stream_id: 1,
     subscribed: true,
-    can_access_subscribers: true,
 };
 const denmark_stream = {
     name: "Denmark",
@@ -215,7 +215,7 @@ const othello = {
 const cordelia = {
     email: "cordelia@zulip.com",
     user_id: 102,
-    full_name: "Cordelia Lear",
+    full_name: "Cordelia, Lear's daughter",
 };
 const deactivated_user = {
     email: "other@zulip.com",
@@ -307,6 +307,8 @@ function test(label, f) {
         user_groups.add(backend);
         user_groups.add(call_center);
 
+        muting.set_muted_users([]);
+
         f(override);
     });
 }
@@ -315,6 +317,10 @@ test("topics_seen_for", (override) => {
     override(stream_topic_history, "get_recent_topic_names", (stream_id) => {
         assert.equal(stream_id, denmark_stream.stream_id);
         return ["With Twisted Metal", "acceptance", "civil fears"];
+    });
+
+    override(stream_topic_history_util, "get_server_history", (stream_id) => {
+        assert.equal(stream_id, denmark_stream.stream_id);
     });
 
     assert.deepEqual(ct.topics_seen_for("Denmark"), [
@@ -559,6 +565,8 @@ function sorted_names_from(subs) {
 test("initialize", (override) => {
     let expected_value;
 
+    override(stream_topic_history_util, "get_server_history", () => {});
+
     let stream_typeahead_called = false;
     $("#stream_message_recipient_stream").typeahead = (options) => {
         // options.source()
@@ -765,7 +773,7 @@ test("initialize", (override) => {
         // Adds a `no break-space` at the end. This should fail
         // if there wasn't any logic replacing `no break-space`
         // with normal space.
-        query = "cordelia" + String.fromCharCode(160);
+        query = "cordelia, lear's" + String.fromCharCode(160);
         assert.equal(matcher(query, cordelia), true);
         assert.equal(matcher(query, othello), false);
 
@@ -785,7 +793,7 @@ test("initialize", (override) => {
 
         options.query = "othello@zulip.com, cor";
         actual_value = options.updater(cordelia, event);
-        assert.equal(appended_name, "Cordelia Lear");
+        assert.equal(appended_name, "Cordelia, Lear's daughter");
 
         const click_event = {type: "click", target: "#doesnotmatter"};
         options.query = "othello";
@@ -1110,6 +1118,8 @@ test("initialize", (override) => {
 });
 
 test("begins_typeahead", (override) => {
+    override(stream_topic_history_util, "get_server_history", () => {});
+
     const begin_typehead_this = {
         options: {
             completions: {
@@ -1470,8 +1480,8 @@ test("typeahead_results", () => {
     assert_emoji_matches("notaemoji", []);
     // Autocomplete user mentions by user name.
     assert_mentions_matches("cordelia", [cordelia]);
-    assert_mentions_matches("cordelia le", [cordelia]);
-    assert_mentions_matches("cordelia le ", []);
+    assert_mentions_matches("cordelia, le", [cordelia]);
+    assert_mentions_matches("cordelia, le ", []);
     assert_mentions_matches("King ", [hamlet, lear]);
     assert_mentions_matches("King H", [hamlet]);
     assert_mentions_matches("King L", [lear]);
@@ -1544,4 +1554,27 @@ test("message people", (override) => {
     results = get_results("Ha");
     // harry is excluded since it has been deactivated.
     assert.deepEqual(results, [hamletcharacters, hal]);
+});
+
+test("muted users excluded from results", () => {
+    // This logic is common to PM recipients as well as
+    // mentions typeaheads, so we need only test once.
+    let results;
+    const opts = {
+        want_groups: false,
+        want_broadcast: true,
+    };
+
+    // Nobody is muted
+    results = ct.get_person_suggestions("corde", opts);
+    assert.deepEqual(results, [cordelia]);
+
+    // Mute Cordelia, and test that she's excluded from results.
+    muting.add_muted_user(cordelia.user_id);
+    results = ct.get_person_suggestions("corde", opts);
+    assert.deepEqual(results, []);
+
+    // Make sure our muting logic doesn't break wildcard mentions.
+    results = ct.get_person_suggestions("all", opts);
+    assert.deepEqual(results, [mention_all]);
 });

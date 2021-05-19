@@ -13,9 +13,10 @@ integration.
 The first step in creating an incoming webhook is to examine the data that the
 service you want to integrate will be sending to Zulip.
 
-Use <https://webhook.site/> or a similar tool to capture
-webhook payload(s) from the service you are integrating. Examining this
-data allows you to do two things:
+* Use [Zulip's JSON integration](/integrations/doc/json),
+<https://webhook.site/>, or a similar tool to capture webhook
+payload(s) from the service you are integrating. Examining this data
+allows you to do two things:
 
 1. Determine how you will need to structure your webhook code, including what
    message types your integration should support and how.
@@ -81,30 +82,32 @@ python file, `zerver/webhooks/mywebhook/view.py`.
 The Hello World integration is in `zerver/webhooks/helloworld/view.py`:
 
 ```
-from typing import Any, Dict, Iterable, Optional
+from typing import Any, Dict, Sequence
 
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
 
 from zerver.decorator import webhook_view
-from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.lib.request import REQ, has_request_variables
-from zerver.lib.response import json_error, json_success
-from zerver.lib.validator import check_dict, check_string
+from zerver.lib.response import json_success
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
-@webhook_view('HelloWorld')
+
+@webhook_view("HelloWorld")
 @has_request_variables
 def api_helloworld_webhook(
-        request: HttpRequest, user_profile: UserProfile,
-        payload: Dict[str, Iterable[Dict[str, Any]]]=REQ(argument_type='body')
+    request: HttpRequest,
+    user_profile: UserProfile,
+    payload: Dict[str, Sequence[Dict[str, Any]]] = REQ(argument_type="body"),
 ) -> HttpResponse:
 
     # construct the body of the message
-    body = 'Hello! I am happy to be here! :smile:'
+    body = "Hello! I am happy to be here! :smile:"
 
     # try to add the Wikipedia article of the day
-    body_template = '\nThe Wikipedia featured article for today is **[{featured_title}]({featured_url})**'
+    body_template = (
+        "\nThe Wikipedia featured article for today is **[{featured_title}]({featured_url})**"
+    )
     body += body_template.format(**payload)
 
     topic = "Hello World"
@@ -216,7 +219,7 @@ These configuration options are declared as follows:
 
 ```
     WebhookIntegration('helloworld', ['misc'], display_name='Hello World',
-                       config_options=[('HelloWorld API Key', 'hw_api_key', check_string)])
+                       config_options=[('HelloWorld API key', 'hw_api_key', check_string)])
 ```
 
 `config_options` is a list describing the parameters the user should
@@ -248,7 +251,7 @@ After running the above command, you should see something similar to:
 {"msg":"","result":"success"}
 ```
 
-### Management Command: send_webhook_fixture_message
+### Management command: send_webhook_fixture_message
 
 Using `manage.py` from within the Zulip development environment:
 
@@ -468,7 +471,7 @@ request:
    https://zulip.readthedocs.io/en/latest/contributing/code-style.html) and take a look
    through your code to double-check that you've followed Zulip's guidelines.
 3. Take a look at your Git history to ensure your commits have been clear and
-   logical (see [Version Control](
+   logical (see [Version control](
    https://zulip.readthedocs.io/en/latest/contributing/version-control.html) for tips). If not,
    consider revising them with `git rebase --interactive`. For most incoming webhooks,
    you'll want to squash your changes into a single commit and include a good,
@@ -516,7 +519,7 @@ def test_unknown_action_no_data(self) -> None:
     result = self.client_post(self.url, 'unknown_action', **post_params)
 
     # check that we got the expected error message
-    self.assert_json_error(result, "Unknown WordPress webhook action: WordPress Action")
+    self.assert_json_error(result, "Unknown WordPress webhook action: WordPress action")
 ```
 
 In a normal test, `check_webhook` would handle all the setup
@@ -569,17 +572,17 @@ attribute `TOPIC` as a keyword argument to `build_webhook_url`, like so:
 class QuerytestHookTests(WebhookTestCase):
 
     STREAM_NAME = 'querytest'
-    TOPIC = "Default Topic"
+    TOPIC = "Default topic"
     URL_TEMPLATE = "/api/v1/external/querytest?api_key={api_key}&stream={stream}"
     FIXTURE_DIR_NAME = 'querytest'
 
     def test_querytest_test_one(self) -> None:
         # construct the URL used for this test
-        self.TOPIC = "Query Test"
+        self.TOPIC = "Query test"
         self.url = self.build_webhook_url(topic=self.TOPIC)
 
         # define the expected message contents
-        expected_topic = "Query Test"
+        expected_topic = "Query test"
         expected_message = "This is a test of custom query parameters."
 
         self.check_webhook('test_one', expected_topic, expected_message,

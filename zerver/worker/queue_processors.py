@@ -8,7 +8,6 @@ import functools
 import logging
 import os
 import signal
-import smtplib
 import socket
 import tempfile
 import time
@@ -27,6 +26,7 @@ from typing import (
     Mapping,
     MutableSequence,
     Optional,
+    Sequence,
     Set,
     Tuple,
     Type,
@@ -36,11 +36,12 @@ from typing import (
 import orjson
 import sentry_sdk
 from django.conf import settings
+from django.core.mail.backends.smtp import EmailBackend
 from django.db import connection
 from django.db.models import F
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
-from django.utils.translation import ugettext as _
 from sentry_sdk import add_breadcrumb, configure_scope
 from zulip_bots.lib import extract_query_without_mention
 
@@ -81,7 +82,8 @@ from zerver.lib.send_email import (
     EmailNotDeliveredException,
     FromAddress,
     handle_send_email_format_changes,
-    send_email_from_dict,
+    initialize_connection,
+    send_email,
     send_future_email,
 )
 from zerver.lib.timestamp import timestamp_to_datetime
@@ -168,6 +170,9 @@ def check_and_send_restart_signal() -> None:
         pass
 
 
+# If you change the function on which this decorator is used be careful that the new
+# function doesn't delete the "failed_tries" attribute of "data" which is needed for
+# "retry_event" to work correctly; see EmailSendingWorker for an example with deepcopy.
 def retry_send_email_failures(
     func: Callable[[ConcreteQueueWorker, Dict[str, Any]], None],
 ) -> Callable[[ConcreteQueueWorker, Dict[str, Any]], None]:
@@ -176,7 +181,6 @@ def retry_send_email_failures(
         try:
             func(worker, data)
         except (
-            smtplib.SMTPServerDisconnected,
             socket.gaierror,
             socket.timeout,
             EmailNotDeliveredException,
@@ -481,7 +485,9 @@ class UserActivityWorker(LoopQueueProcessingWorker):
                 # This is for compatibility with older events still stuck in the queue,
                 # that used the client name in event["client"] instead of having
                 # event["client_id"] directly.
-                # TODO: This can be deleted for release >= 4.0.
+                #
+                # TODO/compatibility: We can delete this once it is no
+                # longer possible to directly upgrade from 2.1 to master.
                 if event["client"] not in self.client_id_map:
                     client = get_client(event["client"])
                     self.client_id_map[event["client"]] = client.id
@@ -553,6 +559,12 @@ class MissedMessageWorker(QueueProcessingWorker):
     # of the consumer.
     lock = Lock()
 
+    # Because the background `maybe_send_batched_email` thread can
+    # hold the lock for an indeterminate amount of time, the `consume`
+    # can block on that for longer than 30s, the default worker
+    # timeout.  Allow arbitrarily-long worker `consume` calls.
+    MAX_CONSUME_SECONDS = None
+
     def consume(self, event: Dict[str, Any]) -> None:
         with self.lock:
             logging.debug("Received missedmessage_emails event: %s", event)
@@ -606,17 +618,32 @@ class MissedMessageWorker(QueueProcessingWorker):
 
 
 @assign_queue("email_senders")
-class EmailSendingWorker(QueueProcessingWorker):
+class EmailSendingWorker(LoopQueueProcessingWorker):
+    def __init__(self) -> None:
+        super().__init__()
+        self.connection: EmailBackend = initialize_connection(None)
+
     @retry_send_email_failures
-    def consume(self, event: Dict[str, Any]) -> None:
+    def send_email(self, event: Dict[str, Any]) -> None:
         # Copy the event, so that we don't pass the `failed_tries'
-        # data to send_email_from_dict (which neither takes that
+        # data to send_email (which neither takes that
         # argument nor needs that data).
         copied_event = copy.deepcopy(event)
         if "failed_tries" in copied_event:
             del copied_event["failed_tries"]
         handle_send_email_format_changes(copied_event)
-        send_email_from_dict(copied_event)
+        self.connection = initialize_connection(self.connection)
+        send_email(**copied_event, connection=self.connection)
+
+    def consume_batch(self, events: List[Dict[str, Any]]) -> None:
+        for event in events:
+            self.send_email(event)
+
+    def stop(self) -> None:
+        try:
+            self.connection.close()
+        finally:
+            super().stop()
 
 
 @assign_queue("missedmessage_mobile_notifications")
@@ -713,7 +740,7 @@ class FetchLinksEmbedData(QueueProcessingWorker):
 
         message = Message.objects.get(id=event["message_id"])
         # If the message changed, we will run this task after updating the message
-        # in zerver.views.message_edit.update_message_backend
+        # in zerver.lib.actions.check_update_message
         if message.content != event["message_content"]:
             return
         if message.content is not None:
@@ -913,10 +940,10 @@ class TestWorker(QueueProcessingWorker):
 class NoopWorker(QueueProcessingWorker):
     """Used to profile the queue processing framework, in zilencer's queue_rate."""
 
-    def __init__(self, max_consume: int = 1000, slow_queries: Optional[List[int]] = None) -> None:
+    def __init__(self, max_consume: int = 1000, slow_queries: Sequence[int] = []) -> None:
         self.consumed = 0
         self.max_consume = max_consume
-        self.slow_queries: Set[int] = set(slow_queries or [])
+        self.slow_queries: Set[int] = set(slow_queries)
 
     def consume(self, event: Mapping[str, Any]) -> None:
         self.consumed += 1
@@ -934,10 +961,10 @@ class BatchNoopWorker(LoopQueueProcessingWorker):
 
     batch_size = 500
 
-    def __init__(self, max_consume: int = 1000, slow_queries: Optional[List[int]] = None) -> None:
+    def __init__(self, max_consume: int = 1000, slow_queries: Sequence[int] = []) -> None:
         self.consumed = 0
         self.max_consume = max_consume
-        self.slow_queries: Set[int] = set(slow_queries or [])
+        self.slow_queries: Set[int] = set(slow_queries)
 
     def consume_batch(self, events: List[Dict[str, Any]]) -> None:
         event_numbers = set(range(self.consumed + 1, self.consumed + 1 + len(events)))

@@ -2,15 +2,13 @@
 
 const {strict: assert} = require("assert");
 
-const {with_field, zrequire} = require("../zjsunit/namespace");
+const {mock_esm, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const {page_params} = require("../zjsunit/zpage_params");
 
-page_params.search_pills_enabled = true;
+const stream_topic_history_util = mock_esm("../../static/js/stream_topic_history_util");
 
 const settings_config = zrequire("settings_config");
-page_params.realm_email_address_visibility =
-    settings_config.email_address_visibility_values.admins_only.code;
 
 const huddle_data = zrequire("huddle_data");
 
@@ -55,6 +53,11 @@ const jeff = {
 const noop = () => {};
 
 function init() {
+    page_params.is_admin = true;
+    page_params.search_pills_enabled = true;
+    page_params.realm_email_address_visibility =
+        settings_config.email_address_visibility_values.admins_only.code;
+
     people.init();
     people.add_active_user(bob);
     people.add_active_user(me);
@@ -67,8 +70,6 @@ function init() {
     stream_topic_history.reset();
     huddle_data.clear_for_testing();
 }
-
-page_params.is_admin = true;
 
 function get_suggestions(base_query, query) {
     return search.get_suggestions(base_query, query);
@@ -630,8 +631,8 @@ test("topic_suggestions", (override) => {
     let suggestions;
     let expected;
 
+    override(stream_topic_history_util, "get_server_history", () => {});
     override(stream_data, "subscribed_streams", () => ["office"]);
-
     override(narrow_state, "stream", () => "office");
 
     const devel_id = 44;

@@ -4,7 +4,7 @@
     {{/if}}
     <a data-user-id="{{user_id}}" class="view_user_profile">{{full_name}}</a>{{#unless @last}},{{else}}.{{/unless}}
 {{/each}}
-<br>
+<br />
 {{#each already_subscribed_users}}
     {{#if @first}}
     {{t "Already subscribed users:" }}

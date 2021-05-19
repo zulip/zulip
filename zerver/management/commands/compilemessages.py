@@ -10,8 +10,8 @@ from django.conf import settings
 from django.conf.locale import LANG_INFO
 from django.core.management.base import CommandParser
 from django.core.management.commands import compilemessages
+from django.utils.translation import gettext as _
 from django.utils.translation import override as override_language
-from django.utils.translation import ugettext as _
 from django.utils.translation.trans_real import to_language
 from pyuca import Collator
 

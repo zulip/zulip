@@ -23,6 +23,7 @@ link_mapping = {
     "alert-words": ["Settings", "Alert words", "/#settings/alert-words"],
     "uploaded-files": ["Settings", "Uploaded files", "/#settings/uploaded-files"],
     "muted-topics": ["Settings", "Muted topics", "/#settings/muted-topics"],
+    "muted-users": ["Settings", "Muted users", "/#settings/muted-users"],
     "organization-profile": [
         "Manage organization",
         "Organization profile",
@@ -62,6 +63,11 @@ link_mapping = {
         "Linkifiers",
         "/#organization/linkifier-settings",
     ],
+    "playground-settings": [
+        "Manage organization",
+        "Code playgrounds",
+        "/#organization/playground-settings",
+    ],
     "profile-field-settings": [
         "Manage organization",
         "Custom profile fields",
@@ -91,7 +97,7 @@ settings_markdown = """
 
 class SettingHelpExtension(Extension):
     def extendMarkdown(self, md: Markdown) -> None:
-        """ Add SettingHelpExtension to the Markdown instance. """
+        """Add SettingHelpExtension to the Markdown instance."""
         md.registerExtension(self)
         md.preprocessors.register(Setting(), "setting", 515)
 

@@ -6,7 +6,7 @@ import * as user_groups from "./user_groups";
 
 /*
     This config is in a separate file for partly
-    tactical reasons.  We want the webapp to
+    tactical reasons.  We want the web app to
     configure this one way, but we don't want to
     share this code with mobile.
 

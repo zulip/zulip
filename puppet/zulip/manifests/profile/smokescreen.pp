@@ -4,10 +4,10 @@ class zulip::profile::smokescreen {
   include zulip::profile::base
   include zulip::supervisor
 
-  $golang_version = '1.14.10'
+  $golang_version = '1.16.4'
   zulip::sha256_tarball_to { 'golang':
     url     => "https://golang.org/dl/go${golang_version}.linux-amd64.tar.gz",
-    sha256  => '66eb6858f375731ba07b0b33f5c813b141a81253e7e74071eec3ae85e9b37098',
+    sha256  => '7154e88f5a8047aad4b80ebace58a059e36e7e2e4eb3b383127a28c711b4ff59',
     install => {
       'go/' => "/srv/golang-${golang_version}/",
     },
@@ -18,10 +18,10 @@ class zulip::profile::smokescreen {
     require => Zulip::Sha256_tarball_to['golang'],
   }
 
-  $version = '0.0.2'
+  $version = 'bfca45c5e61f3587eaaf1dcc89a0c4116501cba3'
   zulip::sha256_tarball_to { 'smokescreen':
-    url     => "https://github.com/stripe/smokescreen/archive/v${version}.tar.gz",
-    sha256  => '7255744f89a62a103fde97d28e3586644d30191b4e3d1f62c9a99e13d732a012',
+    url     => "https://github.com/stripe/smokescreen/archive/${version}.tar.gz",
+    sha256  => '7aa2719abd282930b01394e5e748885a8e8cb8121fe97a15446f93623ec13f59',
     install => {
       "smokescreen-${version}/" => "/srv/smokescreen-src-${version}/",
     },
@@ -42,7 +42,7 @@ class zulip::profile::smokescreen {
     notify  => Service[supervisor],
   }
 
-  file { '/etc/supervisor/conf.d/smokescreen.conf':
+  file { '/etc/supervisor/conf.d/zulip/smokescreen.conf':
     ensure  => file,
     require => [
       Package[supervisor],
@@ -53,5 +53,10 @@ class zulip::profile::smokescreen {
     mode    => '0644',
     content => template('zulip/supervisor/smokescreen.conf.erb'),
     notify  => Service[supervisor],
+  }
+  # Removed 2021-03 in version 4.0; these lines can be removed in
+  # Zulip version 5.0 and later.
+  file { '/etc/supervisor/conf.d/smokescreen.conf':
+    ensure  => absent,
   }
 }

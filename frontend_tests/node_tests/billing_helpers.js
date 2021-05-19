@@ -114,7 +114,7 @@ run_test("create_ajax_request", (override) => {
 
     $("#autopay-form").serializeArray = () => jquery("#autopay-form").serializeArray();
 
-    override($, "post", ({url, data, success, error}) => {
+    override($, "ajax", ({type, url, data, success, error}) => {
         assert.equal(state.form_input_section_hide, 1);
         assert.equal(state.form_error_hide, 1);
         assert.equal(state.form_loading_show, 1);
@@ -124,17 +124,19 @@ run_test("create_ajax_request", (override) => {
         assert.equal(state.free_trial_alert_message_show, 0);
         assert.equal(state.make_indicator, 1);
 
+        assert.equal(type, "PATCH");
         assert.equal(url, "/json/billing/upgrade");
 
-        assert.equal(Object.keys(data).length, 8);
-        assert.equal(data.stripe_token, '"stripe_token_id"');
-        assert.equal(data.seat_count, '"{{ seat_count }}"');
-        assert.equal(data.signed_seat_count, '"{{ signed_seat_count }}"');
-        assert.equal(data.salt, '"{{ salt }}"');
-        assert.equal(data.billing_modality, '"charge_automatically"');
-        assert.equal(data.schedule, '"monthly"');
-        assert.equal(data.license_management, '"automatic"');
+        assert.equal(Object.keys(data).length, 7);
+        assert.equal(data.stripe_token, "stripe_token_id");
+        assert.equal(data.seat_count, "{{ seat_count }}");
+        assert.equal(data.signed_seat_count, "{{ signed_seat_count }}");
+        assert.equal(data.salt, "{{ salt }}");
+        assert.equal(data.billing_modality, "charge_automatically");
+        assert.equal(data.schedule, "monthly");
         assert.equal(data.licenses, "");
+
+        assert(!("license_management" in data));
 
         history.pushState = (state_object, title, path) => {
             state.pushState += 1;
@@ -174,9 +176,14 @@ run_test("create_ajax_request", (override) => {
         assert.equal(state.free_trial_alert_message_show, 1);
     });
 
-    helpers.create_ajax_request("/json/billing/upgrade", "autopay", {id: "stripe_token_id"}, [
-        "licenses",
-    ]);
+    helpers.create_ajax_request(
+        "/json/billing/upgrade",
+        "autopay",
+        {id: "stripe_token_id"},
+        ["license_management"],
+        undefined,
+        "PATCH",
+    );
 });
 
 run_test("format_money", () => {

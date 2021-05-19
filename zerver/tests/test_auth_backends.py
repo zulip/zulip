@@ -182,7 +182,7 @@ class AuthBackendTest(ZulipTestCase):
         self.assertEqual(user_profile, result)
 
         # Verify auth fails with a deactivated realm
-        do_deactivate_realm(user_profile.realm)
+        do_deactivate_realm(user_profile.realm, acting_user=None)
         self.assertIsNone(backend.authenticate(**good_kwargs))
 
         # Verify auth works again after reactivating the realm
@@ -273,23 +273,6 @@ class AuthBackendTest(ZulipTestCase):
                 return_data={},
             ),
         )
-        self.verify_backend(
-            EmailAuthBackend(),
-            good_kwargs=dict(
-                request=mock.MagicMock(),
-                password=password,
-                username=username,
-                realm=get_realm("zulip"),
-                return_data={},
-            ),
-            bad_kwargs=dict(
-                request=mock.MagicMock(),
-                password=password,
-                username=username,
-                realm=get_realm("zephyr"),
-                return_data={},
-            ),
-        )
 
     def test_email_auth_backend_empty_password(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -341,6 +324,29 @@ class AuthBackendTest(ZulipTestCase):
                     realm=get_realm("zulip"),
                 )
             )
+
+    def test_email_auth_backend_password_hasher_change(self) -> None:
+        user_profile = self.example_user("hamlet")
+        password = "a_password_of_22_chars"
+
+        with self.settings(PASSWORD_HASHERS=("django.contrib.auth.hashers.SHA1PasswordHasher",)):
+            user_profile.set_password(password)
+            user_profile.save()
+
+        with self.settings(
+            PASSWORD_HASHERS=(
+                "django.contrib.auth.hashers.MD5PasswordHasher",
+                "django.contrib.auth.hashers.SHA1PasswordHasher",
+            ),
+            PASSWORD_MIN_LENGTH=30,
+        ), self.assertLogs("zulip.auth.email", level="INFO"), self.assertRaises(JsonableError) as m:
+            EmailAuthBackend().authenticate(
+                request=mock.MagicMock(),
+                username=self.example_email("hamlet"),
+                password=password,
+                realm=get_realm("zulip"),
+            )
+        self.assertEqual(str(m.exception), "You need to reset your password.")
 
     def test_login_preview(self) -> None:
         # Test preview=true displays organization login page
@@ -411,21 +417,6 @@ class AuthBackendTest(ZulipTestCase):
             )
         )
 
-        self.verify_backend(
-            backend,
-            bad_kwargs=dict(
-                request=mock.MagicMock(),
-                username=username,
-                password=password,
-                realm=get_realm("zephyr"),
-            ),
-            good_kwargs=dict(
-                request=mock.MagicMock(),
-                username=username,
-                password=password,
-                realm=get_realm("zulip"),
-            ),
-        )
         self.verify_backend(
             backend,
             bad_kwargs=dict(
@@ -927,7 +918,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
           "Continue to registration" if you try to log in using an
           account that doesn't exist but is allowed to sign up.
         * next: Parameter passed through in production authentication
-          to redirect the user to (e.g.) the specific page in the webapp
+          to redirect the user to (e.g.) the specific page in the web app
           that they clicked a link to before being presented with the login
           page.
         * expect_choose_email_screen: Some social auth backends, like
@@ -1460,7 +1451,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         stream_names = ["new_stream_1", "new_stream_2"]
         streams = []
         for stream_name in set(stream_names):
-            stream = ensure_stream(realm, stream_name)
+            stream = ensure_stream(realm, stream_name, acting_user=None)
             streams.append(stream)
 
         referrer = self.example_user("hamlet")
@@ -3628,7 +3619,7 @@ class GoogleAuthBackendTest(SocialAuthBase):
         stream_names = ["new_stream_1", "new_stream_2"]
         streams = []
         for stream_name in set(stream_names):
-            stream = ensure_stream(realm, stream_name)
+            stream = ensure_stream(realm, stream_name, acting_user=None)
             streams.append(stream)
 
         # Without the invite link, we can't create an account due to invite_required
@@ -3812,6 +3803,86 @@ class FetchAPIKeyTest(ZulipTestCase):
         )
         self.assert_json_success(result)
 
+    @override_settings(
+        AUTHENTICATION_BACKENDS=("zproject.backends.ZulipLDAPAuthBackend",),
+        AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn", "org_membership": "department"},
+        AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL={
+            "zulip": [{"test1": "test", "test2": "testing"}, {"test1": "test2"}],
+            "anotherRealm": [{"test2": "test2"}],
+        },
+    )
+    def test_ldap_auth_email_auth_advanced_organization_restriction(self) -> None:
+        self.init_default_ldap_database()
+
+        # The first user has no attribute set
+        result = self.client_post(
+            "/api/v1/fetch_api_key",
+            dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+        )
+        self.assert_json_error(result, "Your username or password is incorrect.", 403)
+
+        self.change_ldap_user_attr("hamlet", "test2", "testing")
+        # Check with only one set
+        result = self.client_post(
+            "/api/v1/fetch_api_key",
+            dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+        )
+        self.assert_json_error(result, "Your username or password is incorrect.", 403)
+
+        self.change_ldap_user_attr("hamlet", "test1", "test")
+        # Setting org_membership to not cause django_ldap_auth to warn, when synchronising
+        self.change_ldap_user_attr("hamlet", "department", "wrongDepartment")
+        result = self.client_post(
+            "/api/v1/fetch_api_key",
+            dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+        )
+        self.assert_json_success(result)
+        self.remove_ldap_user_attr("hamlet", "test2")
+        self.remove_ldap_user_attr("hamlet", "test1")
+
+        # Using the OR value
+        self.change_ldap_user_attr("hamlet", "test1", "test2")
+        result = self.client_post(
+            "/api/v1/fetch_api_key",
+            dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+        )
+        self.assert_json_success(result)
+
+        # Testing without org_membership
+        with override_settings(AUTH_LDAP_USER_ATTR_MAP={"full_name": "cn"}):
+            result = self.client_post(
+                "/api/v1/fetch_api_key",
+                dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+            )
+            self.assert_json_success(result)
+
+        # Setting test1 to wrong value
+        self.change_ldap_user_attr("hamlet", "test1", "invalid")
+        result = self.client_post(
+            "/api/v1/fetch_api_key",
+            dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+        )
+        self.assert_json_error(result, "Your username or password is incorrect.", 403)
+
+        # Override access with `org_membership`
+        self.change_ldap_user_attr("hamlet", "department", "zulip")
+        result = self.client_post(
+            "/api/v1/fetch_api_key",
+            dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+        )
+        self.assert_json_success(result)
+        self.remove_ldap_user_attr("hamlet", "department")
+
+        # Test wrong configuration
+        with override_settings(
+            AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL={"not_zulip": [{"department": "zulip"}]}
+        ):
+            result = self.client_post(
+                "/api/v1/fetch_api_key",
+                dict(username=self.example_email("hamlet"), password=self.ldap_password("hamlet")),
+            )
+            self.assert_json_error(result, "Your username or password is incorrect.", 403)
+
     def test_inactive_user(self) -> None:
         do_deactivate_user(self.user_profile, acting_user=None)
         result = self.client_post(
@@ -3821,12 +3892,33 @@ class FetchAPIKeyTest(ZulipTestCase):
         self.assert_json_error_contains(result, "Your account has been disabled", 403)
 
     def test_deactivated_realm(self) -> None:
-        do_deactivate_realm(self.user_profile.realm)
+        do_deactivate_realm(self.user_profile.realm, acting_user=None)
         result = self.client_post(
             "/api/v1/fetch_api_key",
             dict(username=self.email, password=initial_password(self.email)),
         )
         self.assert_json_error_contains(result, "This organization has been deactivated", 403)
+
+    def test_old_weak_password_after_hasher_change(self) -> None:
+        user_profile = self.example_user("hamlet")
+        password = "a_password_of_22_chars"
+
+        with self.settings(PASSWORD_HASHERS=("django.contrib.auth.hashers.SHA1PasswordHasher",)):
+            user_profile.set_password(password)
+            user_profile.save()
+
+        with self.settings(
+            PASSWORD_HASHERS=(
+                "django.contrib.auth.hashers.MD5PasswordHasher",
+                "django.contrib.auth.hashers.SHA1PasswordHasher",
+            ),
+            PASSWORD_MIN_LENGTH=30,
+        ), self.assertLogs("zulip.auth.email", level="INFO"):
+            result = self.client_post(
+                "/api/v1/fetch_api_key",
+                dict(username=self.email, password=password),
+            )
+            self.assert_json_error(result, "You need to reset your password.", 403)
 
 
 class DevFetchAPIKeyTest(ZulipTestCase):
@@ -3859,17 +3951,19 @@ class DevFetchAPIKeyTest(ZulipTestCase):
         self.assert_json_error_contains(result, "Your account has been disabled", 403)
 
     def test_deactivated_realm(self) -> None:
-        do_deactivate_realm(self.user_profile.realm)
+        do_deactivate_realm(self.user_profile.realm, acting_user=None)
         result = self.client_post("/api/v1/dev_fetch_api_key", dict(username=self.email))
         self.assert_json_error_contains(result, "This organization has been deactivated", 403)
 
     def test_dev_auth_disabled(self) -> None:
-        with mock.patch("zerver.views.auth.dev_auth_enabled", return_value=False):
+        with mock.patch("zerver.views.development.dev_login.dev_auth_enabled", return_value=False):
             result = self.client_post("/api/v1/dev_fetch_api_key", dict(username=self.email))
             self.assert_json_error_contains(result, "DevAuthBackend not enabled.", 400)
 
     def test_invalid_subdomain(self) -> None:
-        with mock.patch("zerver.views.auth.get_realm_from_request", return_value=None):
+        with mock.patch(
+            "zerver.views.development.dev_login.get_realm_from_request", return_value=None
+        ):
             result = self.client_post(
                 "/api/v1/dev_fetch_api_key",
                 dict(username=self.email, password=initial_password(self.email)),
@@ -3885,7 +3979,7 @@ class DevGetEmailsTest(ZulipTestCase):
         self.assert_in_response("direct_users", result)
 
     def test_dev_auth_disabled(self) -> None:
-        with mock.patch("zerver.views.auth.dev_auth_enabled", return_value=False):
+        with mock.patch("zerver.views.development.dev_login.dev_auth_enabled", return_value=False):
             result = self.client_get("/api/v1/dev_list_users")
             self.assert_json_error_contains(result, "DevAuthBackend not enabled.", 400)
 
@@ -5073,7 +5167,7 @@ class TestLDAP(ZulipLDAPTestCase):
         with self.settings(AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map):
             backend = self.backend
             email = "nonexisting@zulip.com"
-            do_deactivate_realm(backend._realm)
+            do_deactivate_realm(backend._realm, acting_user=None)
             with self.assertRaisesRegex(Exception, "Realm has been deactivated"):
                 backend.get_or_build_user(email, _LDAPUser())
 

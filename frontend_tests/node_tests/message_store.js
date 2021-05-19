@@ -90,6 +90,7 @@ function convert_recipients(people) {
 function test(label, f) {
     run_test(label, (override) => {
         message_store.clear_for_testing();
+        message_user_ids.clear_for_testing();
         f(override);
     });
 }

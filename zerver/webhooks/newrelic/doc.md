@@ -20,6 +20,6 @@ New Relic can send messages to a Zulip stream for incidents.
 
 {!congrats.md!}
 
-![](/static/images/integrations/newrelic/opened.png)
-![](/static/images/integrations/newrelic/ack.png)
-![](/static/images/integrations/newrelic/closed.png)
+![](/static/images/integrations/newrelic/001.png)
+![](/static/images/integrations/newrelic/002.png)
+![](/static/images/integrations/newrelic/003.png)

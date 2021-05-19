@@ -5,6 +5,7 @@ from unittest import mock
 import requests
 
 from zerver.lib.avatar import get_gravatar_url
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.message import MessageDict
 from zerver.lib.outgoing_webhook import get_service_interface_class, process_success_response
 from zerver.lib.test_classes import ZulipTestCase
@@ -18,10 +19,10 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
 
-        bot_user = get_user("outgoing-webhook@zulip.com", get_realm("zulip"))
+        self.bot_user = get_user("outgoing-webhook@zulip.com", get_realm("zulip"))
         service_class = get_service_interface_class("whatever")  # GenericOutgoingWebhookService
         self.handler = service_class(
-            service_name="test-service", token="abcdef", user_profile=bot_user
+            service_name="test-service", token="abcdef", user_profile=self.bot_user
         )
 
     def test_process_success_response(self) -> None:
@@ -47,13 +48,12 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
         response.status_code = 200
         response.text = "unparsable text"
 
-        with mock.patch("zerver.lib.outgoing_webhook.fail_with_message") as m:
+        with self.assertRaisesRegex(JsonableError, "Invalid JSON in response"):
             process_success_response(
                 event=event,
                 service_handler=service_handler,
                 response=response,
             )
-        self.assertTrue(m.called)
 
     def test_make_request(self) -> None:
         othello = self.example_user("othello")
@@ -113,6 +113,7 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
             request_data = session.post.call_args[1]["json"]
 
         validate_against_openapi_schema(request_data, "/zulip-outgoing-webhook", "post", "200")
+        self.assertEqual(request_data["bot_full_name"], self.bot_user.full_name)
         self.assertEqual(request_data["data"], "@**test**")
         self.assertEqual(request_data["token"], "abcdef")
         self.assertEqual(request_data["message"], expected_message_data)

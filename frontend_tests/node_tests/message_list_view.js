@@ -47,6 +47,7 @@ mock_esm("../../static/js/rows", {
 const {Filter} = zrequire("../js/filter");
 const {MessageListView} = zrequire("../js/message_list_view");
 const message_list = zrequire("message_list");
+const muting = zrequire("muting");
 
 let next_timestamp = 1500000000;
 
@@ -121,6 +122,97 @@ run_test("msg_edited_vars", () => {
     })();
 });
 
+run_test("muted_message_vars", () => {
+    // This verifies that the variables for muted/hidden messages are set
+    // correctly.
+
+    function build_message_context(message = {}, message_context = {}) {
+        message_context = {
+            ...message_context,
+        };
+        message_context.msg = {
+            ...message,
+        };
+        return message_context;
+    }
+
+    function build_message_group(messages) {
+        return {message_containers: messages};
+    }
+
+    function build_list(message_groups) {
+        const list = new MessageListView(undefined, undefined, true);
+        list._message_groups = message_groups;
+        return list;
+    }
+
+    function calculate_variables(list, messages, is_revealed) {
+        list.set_calculated_message_container_variables(messages[0], is_revealed);
+        list.set_calculated_message_container_variables(messages[1], is_revealed);
+        list.set_calculated_message_container_variables(messages[2], is_revealed);
+        return list._message_groups[0].message_containers;
+    }
+
+    (function test_hidden_message_variables() {
+        // Make a representative message group of three messages.
+        const messages = [
+            build_message_context({sender_id: 10}, {include_sender: true}),
+            build_message_context({mentioned: true, sender_id: 10}, {include_sender: false}),
+            build_message_context({sender_id: 10}, {include_sender: false}),
+        ];
+        const message_group = build_message_group(messages);
+        const list = build_list([message_group]);
+        list._add_msg_edited_vars = noop;
+
+        // Sender is not muted.
+        let result = calculate_variables(list, messages);
+
+        // Check that `is_hidden` is false on all messages, and `include_sender` has not changed.
+        assert.equal(result[0].is_hidden, false);
+        assert.equal(result[1].is_hidden, false);
+        assert.equal(result[2].is_hidden, false);
+
+        assert.equal(result[0].include_sender, true);
+        assert.equal(result[1].include_sender, false);
+        assert.equal(result[2].include_sender, false);
+
+        // Additionally test that, `contains_mention` is true on that message has a mention.
+        assert.equal(result[1].contains_mention, true);
+
+        // Now, mute the sender.
+        muting.add_muted_user(10);
+        result = calculate_variables(list, messages);
+
+        // Check that `is_hidden` is true and `include_sender` is false on all messages.
+        assert.equal(result[0].is_hidden, true);
+        assert.equal(result[1].is_hidden, true);
+        assert.equal(result[2].is_hidden, true);
+
+        assert.equal(result[0].include_sender, false);
+        assert.equal(result[1].include_sender, false);
+        assert.equal(result[2].include_sender, false);
+
+        // Additionally test that, `contains_mention` is false even on that message which has a mention.
+        assert.equal(result[1].contains_mention, false);
+
+        // Now, reveal the hidden messages.
+        const is_revealed = true;
+        result = calculate_variables(list, messages, is_revealed);
+
+        // Check that `is_hidden` is false and `include_sender` is true on all messages.
+        assert.equal(result[0].is_hidden, false);
+        assert.equal(result[1].is_hidden, false);
+        assert.equal(result[2].is_hidden, false);
+
+        assert.equal(result[0].include_sender, true);
+        assert.equal(result[1].include_sender, true);
+        assert.equal(result[2].include_sender, true);
+
+        // Additionally test that, `contains_mention` is true on that message which has a mention.
+        assert.equal(result[1].contains_mention, true);
+    })();
+});
+
 run_test("merge_message_groups", () => {
     // MessageListView has lots of DOM code, so we are going to test the message
     // group mearging logic on its own.
@@ -134,8 +226,8 @@ run_test("merge_message_groups", () => {
             id: _.uniqueId("test_message_"),
             status_message: false,
             type: "stream",
-            stream: "Test Stream 1",
-            topic: "Test Subject 1",
+            stream: "Test stream 1",
+            topic: "Test subject 1",
             sender_email: "test@example.com",
             timestamp: (next_timestamp += 1),
             ...message,
@@ -339,7 +431,7 @@ run_test("merge_message_groups", () => {
         const message1 = build_message_context();
         const message_group1 = build_message_group([message1]);
 
-        const message2 = build_message_context({topic: "Test Subject 2"});
+        const message2 = build_message_context({topic: "Test subject 2"});
         const message_group2 = build_message_group([message2]);
 
         const list = build_list([message_group1]);
@@ -357,7 +449,7 @@ run_test("merge_message_groups", () => {
         const message1 = build_message_context({timestamp: 900000});
         const message_group1 = build_message_group([message1]);
 
-        const message2 = build_message_context({topic: "Test Subject 2", timestamp: 1000});
+        const message2 = build_message_context({topic: "Test subject 2", timestamp: 1000});
         const message_group2 = build_message_group([message2]);
 
         const list = build_list([message_group1]);

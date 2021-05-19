@@ -56,7 +56,9 @@
         padding: 0 20px 3px;
 
         button.user-status-value:hover {
-            color: hsl(200, 100%, 40%);
+            /* Important is required for generic night them styling to not
+               have precendence over this. */
+            color: hsl(200, 100%, 40%) !important;
         }
 
         .user-status-value {

@@ -30,7 +30,7 @@ from django.dispatch import Signal, receiver
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from django_auth_ldap.backend import LDAPBackend, LDAPReverseEmailSearch, _LDAPUser, ldap_error
 from lxml.etree import XMLSyntaxError
 from onelogin.saml2.errors import OneLogin_Saml2_Error
@@ -64,7 +64,6 @@ from zerver.lib.actions import (
 )
 from zerver.lib.avatar import avatar_url, is_avatar_new
 from zerver.lib.avatar_hash import user_avatar_content_hash
-from zerver.lib.create_user import get_role_for_new_user
 from zerver.lib.dev_ldap_directory import init_fakeldap
 from zerver.lib.email_validation import email_allowed_for_realm, validate_email_not_already_in_realm
 from zerver.lib.mobile_auth_otp import is_valid_otp
@@ -78,6 +77,7 @@ from zerver.models import (
     DisposableEmailError,
     DomainNotAllowedForRealmError,
     EmailContainsPlusError,
+    PasswordTooWeakError,
     PreregistrationUser,
     Realm,
     UserProfile,
@@ -378,14 +378,14 @@ class EmailAuthBackend(ZulipAuthMixin):
     @rate_limit_auth
     def authenticate(
         self,
-        request: Optional[HttpRequest] = None,
+        request: HttpRequest,
         *,
         username: str,
         password: str,
         realm: Realm,
         return_data: Optional[Dict[str, Any]] = None,
     ) -> Optional[UserProfile]:
-        """ Authenticate a user based on email address as the user name. """
+        """Authenticate a user based on email address as the user name."""
         if not password_auth_enabled(realm):
             if return_data is not None:
                 return_data["password_auth_disabled"] = True
@@ -403,7 +403,25 @@ class EmailAuthBackend(ZulipAuthMixin):
         user_profile = common_get_active_user(username, realm, return_data=return_data)
         if user_profile is None:
             return None
-        if user_profile.check_password(password):
+
+        try:
+            is_password_correct = user_profile.check_password(password)
+        except PasswordTooWeakError:
+            # In some rare cases when password hasher is changed and the user has
+            # a weak password, PasswordTooWeakError will be raised.
+            self.logger.info(
+                "User %s password can't be rehashed due to being too weak.", user_profile.id
+            )
+            if return_data is not None:
+                return_data["password_reset_needed"] = True
+                return None
+            else:
+                # Since we can't communicate the situation via return_data,
+                # we have to raise an error - a silent failure would not be right
+                # because the password actually is correct, just can't be re-hashed.
+                raise JsonableError(_("You need to reset your password."))
+
+        if is_password_correct:
             return user_profile
         return None
 
@@ -632,12 +650,46 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         return ldap_disabled
 
     def is_account_realm_access_forbidden(self, ldap_user: _LDAPUser, realm: Realm) -> bool:
-        if "org_membership" not in settings.AUTH_LDAP_USER_ATTR_MAP:
+        # org_membership takes priority over AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL.
+        if "org_membership" in settings.AUTH_LDAP_USER_ATTR_MAP:
+            org_membership_attr = settings.AUTH_LDAP_USER_ATTR_MAP["org_membership"]
+            allowed_orgs: List[str] = ldap_user.attrs.get(org_membership_attr, [])
+            if is_subdomain_in_allowed_subdomains_list(realm.subdomain, allowed_orgs):
+                return False
+            # If Advanced is not configured, forbid access
+            if settings.AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL is None:
+                return True
+
+        # If neither setting is configured, allow access.
+        if settings.AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL is None:
             return False
 
-        org_membership_attr = settings.AUTH_LDAP_USER_ATTR_MAP["org_membership"]
-        allowed_orgs: List[str] = ldap_user.attrs.get(org_membership_attr, [])
-        return not is_subdomain_in_allowed_subdomains_list(realm.subdomain, allowed_orgs)
+        # With settings.AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL, we
+        # allow access if and only if one of the entries for the
+        # target subdomain matches the user's LDAP attributes.
+        realm_access_control = settings.AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL
+        if not (
+            isinstance(realm_access_control, dict)
+            and realm.subdomain in realm_access_control
+            and isinstance(realm_access_control[realm.subdomain], list)
+            and len(realm_access_control[realm.subdomain]) > 0
+        ):
+            # If configuration is wrong, do not allow access
+            return True
+
+        # Go through every "or" check
+        for attribute_group in realm_access_control[realm.subdomain]:
+            access = True
+            for attribute in attribute_group:
+                if not (
+                    attribute in ldap_user.attrs
+                    and attribute_group[attribute] in ldap_user.attrs[attribute]
+                ):
+                    access = False
+            if access:
+                return False
+
+        return True
 
     @classmethod
     def get_mapped_name(cls, ldap_user: _LDAPUser) -> str:
@@ -829,7 +881,11 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             invited_as = self._prereg_user.invited_as
             realm_creation = self._prereg_user.realm_creation
             opts["prereg_user"] = self._prereg_user
-            opts["role"] = get_role_for_new_user(invited_as, realm_creation)
+
+            opts["role"] = invited_as
+            if realm_creation:
+                opts["role"] = UserProfile.ROLE_REALM_OWNER
+
             opts["realm_creation"] = realm_creation
             # TODO: Ideally, we should add a mechanism for the user
             # entering which default stream groups they've selected in
@@ -1825,7 +1881,7 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
 
     def get_user_details(self, response: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Overriden to correctly grab the user's name from the request params,
+        Overridden to correctly grab the user's name from the request params,
         as current upstream code expects it in the id_token and Apple changed
         the API.
         Taken from https://github.com/python-social-auth/social-core/pull/483

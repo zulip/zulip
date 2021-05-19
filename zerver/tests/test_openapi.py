@@ -3,19 +3,7 @@ import os
 import re
 import sys
 from collections import abc
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    Iterable,
-    List,
-    Mapping,
-    Optional,
-    Sequence,
-    Set,
-    Tuple,
-    Union,
-)
+from typing import Any, Callable, Dict, List, Mapping, Optional, Sequence, Set, Tuple, Union
 from unittest.mock import MagicMock, patch
 
 import yaml
@@ -224,6 +212,14 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/users/me/presence",
         "/users/me/alert_words",
         "/users/me/status",
+        # These are a priority to document but don't match our normal URL schemes
+        # and thus may be complicated to document with our current tooling.
+        # (No /api/v1/ or /json prefix).
+        "/avatar/{email_or_id}",
+        ## This one is in zulip.yaml, but not the actual docs.
+        # "/api/v1/user_uploads/{realm_id_str}/{filename}",
+        ## And this one isn't, and isn't really representable
+        # "/user_uploads/{realm_id_str}/{filename}",
         #### These realm administration settings are valuable to document:
         # Delete a file uploaded by current user.
         "/attachments/{attachment_id}",
@@ -246,12 +242,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         # users/me/subscriptions/properties; probably should just be a
         # section of the same page.
         "/users/me/subscriptions/{stream_id}",
-        # Real-time-events endpoint
-        "/real-time",
-        # Rest error handling endpoint
-        "/rest-error-handling",
-        # Zulip outgoing webhook payload
-        "/zulip-outgoing-webhook",
         #### Mobile-app only endpoints; important for mobile developers.
         # Mobile interface for fetching API keys
         "/fetch_api_key",
@@ -266,8 +256,6 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/settings",
         "/users/me/avatar",
         "/users/me/api_key/regenerate",
-        # Not very useful outside the UI
-        "/settings/display",
         # Much more valuable would be an org admin bulk-upload feature.
         "/users/me/profile_data",
         #### Should be documented as part of interactive bots documentation
@@ -287,13 +275,16 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         "/realm/logo",
         "/realm/deactivate",
         "/realm/subdomain/{subdomain}",
-        #### Other low value endpoints
-        # Used for dead desktop app to test connectivity.  To delete.
-        "/generate_204",
-        # Used for failed approach with dead Android app.
-        "/fetch_google_client_id",
-        # API for video calls we're planning to remove/replace.
+        # API for Zoom video calls.  Unclear if this can support other apps.
         "/calls/zoom/create",
+        #### The following are fake endpoints that live in our zulip.yaml
+        #### for tooling convenience reasons, and should eventually be moved.
+        # Real-time-events endpoint
+        "/real-time",
+        # Rest error handling endpoint
+        "/rest-error-handling",
+        # Zulip outgoing webhook payload
+        "/zulip-outgoing-webhook",
     }
 
     # Endpoints where the documentation is currently failing our
@@ -380,8 +371,6 @@ so maybe we shouldn't mark it as intentionally undocumented in the URLs.
                 origin = list
             elif origin == Dict:
                 origin = dict
-            elif origin == Iterable:
-                origin = abc.Iterable
             elif origin == Mapping:
                 origin = abc.Mapping
             elif origin == Sequence:
@@ -394,7 +383,7 @@ so maybe we shouldn't mark it as intentionally undocumented in the URLs.
         elif origin == Union:
             subtypes = [self.get_standardized_argument_type(st) for st in t.__args__]
             return self.get_type_by_priority(subtypes)
-        elif origin in [list, abc.Iterable, abc.Sequence]:
+        elif origin in [list, abc.Sequence]:
             [st] = t.__args__
             return (list, self.get_standardized_argument_type(st))
         elif origin in [dict, abc.Mapping]:
@@ -416,7 +405,7 @@ The types for the request parameters in zerver/openapi/zulip.yaml
 do not match the types declared in the implementation of {function.__name__}.\n"""
         msg += "=" * 65 + "\n"
         msg += "{:<10s}{:^30s}{:>10s}\n".format(
-            "Parameter", "OpenAPI Type", "Function Declaration Type"
+            "parameter", "OpenAPI type", "function declaration type"
         )
         msg += "=" * 65 + "\n"
         opvtype = None

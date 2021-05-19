@@ -48,7 +48,7 @@ const alertwordboundary_message = {
 };
 const multialert_message = {
     sender_email: "another@zulip.com",
-    content: "<p>another alertthreemessage alertone and then alerttwo</p>",
+    content: "<p>another emoji alertone and then alerttwo</p>",
     alerted: true,
 };
 const unsafe_word_message = {
@@ -64,6 +64,12 @@ const alert_in_url_message = {
 const question_word_message = {
     sender_email: "another@zulip.com",
     content: "<p>still alertone? me</p>",
+    alerted: true,
+};
+
+const typo_word_message = {
+    sender_email: "another@zulip.com",
+    content: "<p>alertones alerttwo alerttwo alertthreez</p>",
     alerted: true,
 };
 
@@ -122,7 +128,7 @@ run_test("munging", () => {
 
     assert_transform(
         multialert_message,
-        "<p>another alertthreemessage <span class='alert-word'>alertone</span> and then <span class='alert-word'>alerttwo</span></p>",
+        "<p>another <span class='alert-word'>emoji</span> <span class='alert-word'>alertone</span> and then <span class='alert-word'>alerttwo</span></p>",
     );
 
     assert_transform(
@@ -135,6 +141,11 @@ run_test("munging", () => {
     assert_transform(
         question_word_message,
         "<p>still <span class='alert-word'>alertone</span>? me</p>",
+    );
+
+    assert_transform(
+        typo_word_message,
+        "<p>alertones <span class='alert-word'>alerttwo</span> <span class='alert-word'>alerttwo</span> alertthreez</p>",
     );
 
     assert_transform(

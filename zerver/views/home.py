@@ -8,6 +8,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.cache import patch_cache_control
 
+from version import ZULIP_MERGE_BASE, ZULIP_VERSION
 from zerver.context_processors import get_valid_realm_from_request
 from zerver.decorator import web_public_view, zulip_login_required
 from zerver.forms import ToSForm
@@ -16,6 +17,7 @@ from zerver.lib.home import (
     build_page_params_for_home_page_load,
     get_billing_info,
     get_user_permission_info,
+    promote_sponsoring_zulip_in_realm,
 )
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.lib.streams import access_stream_by_name
@@ -231,6 +233,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
             "search_pills_enabled": settings.SEARCH_PILLS_ENABLED,
             "show_invites": show_invites,
             "show_add_streams": show_add_streams,
+            "promote_sponsoring_zulip": promote_sponsoring_zulip_in_realm(realm),
             "show_billing": billing_info.show_billing,
             "corporate_enabled": settings.CORPORATE_ENABLED,
             "show_plans": billing_info.show_plans,
@@ -238,6 +241,8 @@ def home_real(request: HttpRequest) -> HttpResponse:
             "is_admin": user_permission_info.is_realm_admin,
             "is_guest": user_permission_info.is_guest,
             "color_scheme": user_permission_info.color_scheme,
+            "zulip_version": ZULIP_VERSION,
+            "zulip_merge_base": ZULIP_MERGE_BASE,
             "navbar_logo_url": navbar_logo_url,
             "show_webathena": user_permission_info.show_webathena,
             "embedded": narrow_stream is not None,

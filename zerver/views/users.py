@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Union
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.decorator import require_member_or_admin, require_realm_admin
 from zerver.forms import PASSWORD_TOO_WEAK_ERROR, CreateUserForm
@@ -157,16 +157,16 @@ def update_user_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     user_id: int,
-    full_name: Optional[str] = REQ(default=None, validator=check_string),
+    full_name: Optional[str] = REQ(default=None, json_validator=check_string),
     role: Optional[int] = REQ(
         default=None,
-        validator=check_int_in(
+        json_validator=check_int_in(
             UserProfile.ROLE_TYPES,
         ),
     ),
     profile_data: Optional[List[Dict[str, Optional[Union[int, str, List[int]]]]]] = REQ(
         default=None,
-        validator=check_profile_data,
+        json_validator=check_profile_data,
     ),
 ) -> HttpResponse:
     target = access_user_by_id(
@@ -260,15 +260,15 @@ def patch_bot_backend(
     user_profile: UserProfile,
     bot_id: int,
     full_name: Optional[str] = REQ(default=None),
-    bot_owner_id: Optional[int] = REQ(validator=check_int, default=None),
+    bot_owner_id: Optional[int] = REQ(json_validator=check_int, default=None),
     config_data: Optional[Dict[str, str]] = REQ(
-        default=None, validator=check_dict(value_validator=check_string)
+        default=None, json_validator=check_dict(value_validator=check_string)
     ),
-    service_payload_url: Optional[str] = REQ(validator=check_url, default=None),
-    service_interface: int = REQ(validator=check_int, default=1),
+    service_payload_url: Optional[str] = REQ(json_validator=check_url, default=None),
+    service_interface: int = REQ(json_validator=check_int, default=1),
     default_sending_stream: Optional[str] = REQ(default=None),
     default_events_register_stream: Optional[str] = REQ(default=None),
-    default_all_public_streams: Optional[bool] = REQ(default=None, validator=check_bool),
+    default_all_public_streams: Optional[bool] = REQ(default=None, json_validator=check_bool),
 ) -> HttpResponse:
     bot = access_bot_by_id(user_profile, bot_id)
 
@@ -363,18 +363,18 @@ def add_bot_backend(
     user_profile: UserProfile,
     full_name_raw: str = REQ("full_name"),
     short_name_raw: str = REQ("short_name"),
-    bot_type: int = REQ(validator=check_int, default=UserProfile.DEFAULT_BOT),
-    payload_url: str = REQ(validator=check_url, default=""),
+    bot_type: int = REQ(json_validator=check_int, default=UserProfile.DEFAULT_BOT),
+    payload_url: str = REQ(json_validator=check_url, default=""),
     service_name: Optional[str] = REQ(default=None),
     config_data: Dict[str, str] = REQ(
-        default={}, validator=check_dict(value_validator=check_string)
+        default={}, json_validator=check_dict(value_validator=check_string)
     ),
-    interface_type: int = REQ(validator=check_int, default=Service.GENERIC),
+    interface_type: int = REQ(json_validator=check_int, default=Service.GENERIC),
     default_sending_stream_name: Optional[str] = REQ("default_sending_stream", default=None),
     default_events_register_stream_name: Optional[str] = REQ(
         "default_events_register_stream", default=None
     ),
-    default_all_public_streams: Optional[bool] = REQ(validator=check_bool, default=None),
+    default_all_public_streams: Optional[bool] = REQ(json_validator=check_bool, default=None),
 ) -> HttpResponse:
     short_name = check_short_name(short_name_raw)
     if bot_type != UserProfile.INCOMING_WEBHOOK_BOT:
@@ -522,8 +522,8 @@ def get_members_backend(
     request: HttpRequest,
     user_profile: UserProfile,
     user_id: Optional[int] = None,
-    include_custom_profile_fields: bool = REQ(validator=check_bool, default=False),
-    client_gravatar: bool = REQ(validator=check_bool, default=False),
+    include_custom_profile_fields: bool = REQ(json_validator=check_bool, default=False),
+    client_gravatar: bool = REQ(json_validator=check_bool, default=False),
 ) -> HttpResponse:
     """
     The client_gravatar field here is set to True if clients can compute
@@ -629,8 +629,8 @@ def get_profile_backend(request: HttpRequest, user_profile: UserProfile) -> Http
 def get_subscription_backend(
     request: HttpRequest,
     user_profile: UserProfile,
-    user_id: int = REQ(validator=check_int, path_only=True),
-    stream_id: int = REQ(validator=check_int, path_only=True),
+    user_id: int = REQ(json_validator=check_int, path_only=True),
+    stream_id: int = REQ(json_validator=check_int, path_only=True),
 ) -> HttpResponse:
     target_user = access_user_by_id(user_profile, user_id, for_admin=False)
     (stream, sub) = access_stream_by_id(user_profile, stream_id)
@@ -645,8 +645,8 @@ def get_user_by_email(
     request: HttpRequest,
     user_profile: UserProfile,
     email: str,
-    include_custom_profile_fields: bool = REQ(validator=check_bool, default=False),
-    client_gravatar: bool = REQ(validator=check_bool, default=False),
+    include_custom_profile_fields: bool = REQ(json_validator=check_bool, default=False),
+    client_gravatar: bool = REQ(json_validator=check_bool, default=False),
 ) -> HttpResponse:
     realm = user_profile.realm
 

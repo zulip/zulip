@@ -1,16 +1,19 @@
 import abc
 import json
 import logging
+from time import perf_counter
 from typing import Any, AnyStr, Dict, Optional
 
 import requests
-from django.utils.translation import ugettext as _
-from requests import Response, Session
+from django.conf import settings
+from django.utils.translation import gettext as _
+from requests import Response
 
 from version import ZULIP_VERSION
 from zerver.decorator import JsonableError
 from zerver.lib.actions import check_send_message
 from zerver.lib.message import MessageDict
+from zerver.lib.outgoing_http import OutgoingSession
 from zerver.lib.queue import retry_event
 from zerver.lib.topic import get_topic_from_message_info
 from zerver.lib.url_encoding import near_message_url
@@ -30,12 +33,10 @@ class OutgoingWebhookServiceInterface(metaclass=abc.ABCMeta):
         self.token: str = token
         self.user_profile: UserProfile = user_profile
         self.service_name: str = service_name
-        self.session: Session = Session()
-        self.session.headers.update(
-            {
-                "X-Smokescreen-Role": "webhook",
-                "User-Agent": "ZulipOutgoingWebhook/" + ZULIP_VERSION,
-            }
+        self.session: requests.Session = OutgoingSession(
+            role="webhook",
+            timeout=10,
+            headers={"User-Agent": "ZulipOutgoingWebhook/" + ZULIP_VERSION},
         )
 
     @abc.abstractmethod
@@ -69,6 +70,7 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
             "data": event["command"],
             "message": message_dict,
             "bot_email": self.user_profile.email,
+            "bot_full_name": self.user_profile.full_name,
             "token": self.token,
             "trigger": event["trigger"],
         }
@@ -161,6 +163,10 @@ def send_response_message(
 
     response_data is what the bot wants to send back and has these fields:
         content - raw Markdown content for Zulip to render
+
+    WARNING: This function sends messages bypassing the stream access check
+    for the bot - so use with caution to not call this in codepaths
+    that might let someone send arbitrary messages to any stream through this.
     """
 
     message_type = message_info["type"]
@@ -195,6 +201,7 @@ def send_response_message(
         message_content=content,
         widget_content=widget_content,
         realm=realm,
+        skip_stream_access_check=True,
     )
 
 
@@ -244,10 +251,11 @@ def notify_bot_owner(
         )
     elif status_code:
         notification_message += f"\nThe webhook got a response with status code *{status_code}*."
-        if response_content:
-            notification_message += (
-                f"\nThe response contains the following payload:\n```\n{response_content!r}\n```"
-            )
+
+    if response_content:
+        notification_message += (
+            f"\nThe response contains the following payload:\n```\n{response_content!r}\n```"
+        )
 
     message_info = dict(
         type="private",
@@ -282,8 +290,16 @@ def process_success_response(
     try:
         response_json = json.loads(response.text)
     except json.JSONDecodeError:
-        fail_with_message(event, "Invalid JSON in response")
+        raise JsonableError(_("Invalid JSON in response"))
+
+    if response_json == "":
+        # Versions of zulip_botserver before 2021-05 used
+        # json.dumps("") as their "no response required" success
+        # response; handle that for backwards-compatibility.
         return
+
+    if not isinstance(response_json, dict):
+        raise JsonableError(_("Invalid response format"))
 
     success_data = service_handler.process_success(response_json)
 
@@ -309,11 +325,19 @@ def do_rest_call(
 ) -> Optional[Response]:
     """Returns response of call if no exception occurs."""
     try:
+        start_time = perf_counter()
         response = service_handler.make_request(
             base_url,
             event,
         )
-        if not response:
+        bot_profile = service_handler.user_profile
+        logging.info(
+            "Outgoing webhook request from %s@%s took %f seconds",
+            bot_profile.id,
+            bot_profile.realm.string_id,
+            perf_counter() - start_time,
+        )
+        if response is None:
             return None
         if str(response.status_code).startswith("2"):
             try:
@@ -323,7 +347,9 @@ def do_rest_call(
                 logging.info("Outhook trigger failed:", stack_info=True)
                 fail_with_message(event, response_message)
                 response_message = f"The outgoing webhook server attempted to send a message in Zulip, but that request resulted in the following error:\n> {e}"
-                notify_bot_owner(event, failure_message=response_message)
+                notify_bot_owner(
+                    event, response_content=response.text, failure_message=response_message
+                )
                 return None
         else:
             logging.warning(
@@ -346,7 +372,9 @@ def do_rest_call(
             event["command"],
             event["service_name"],
         )
-        failure_message = "A timeout occurred."
+        failure_message = (
+            f"Request timed out after {settings.OUTGOING_WEBHOOK_TIMEOUT_SECONDS} seconds."
+        )
         request_retry(event, failure_message=failure_message)
         return None
 

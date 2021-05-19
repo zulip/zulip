@@ -1,5 +1,5 @@
 import $ from "jquery";
-import TurndownService from "turndown/lib/turndown.cjs";
+import TurndownService from "turndown";
 
 import * as compose_ui from "./compose_ui";
 import * as message_lists from "./message_lists";
@@ -336,5 +336,5 @@ export function paste_handler(event) {
 
 export function initialize() {
     $("#compose-textarea").on("paste", paste_handler);
-    $("body").on("paste", "#message_edit_form", paste_handler);
+    $("body").on("paste", ".message_edit_form", paste_handler);
 }

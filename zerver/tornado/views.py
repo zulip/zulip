@@ -1,9 +1,9 @@
 import time
-from typing import Iterable, Optional, Sequence
+from typing import Optional, Sequence
 
 import orjson
 from django.http import HttpRequest, HttpResponse
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from zerver.decorator import REQ, has_request_variables, internal_notify_view, process_client
 from zerver.lib.response import json_error, json_success
@@ -43,7 +43,7 @@ def cleanup_event_queue(
 @internal_notify_view(True)
 @has_request_variables
 def get_events_internal(
-    request: HttpRequest, user_profile_id: int = REQ(validator=check_int)
+    request: HttpRequest, user_profile_id: int = REQ(json_validator=check_int)
 ) -> HttpResponse:
     user_profile = get_user_profile_by_id(user_profile_id)
     request._requestor_for_logs = user_profile.format_requestor_for_logs()
@@ -71,29 +71,39 @@ def get_events_backend(
     # endpoint.  This is a feature used primarily by get_events_internal
     # and not expected to be used by third-party clients.
     apply_markdown: bool = REQ(
-        default=False, validator=check_bool, intentionally_undocumented=True
+        default=False, json_validator=check_bool, intentionally_undocumented=True
     ),
     client_gravatar: bool = REQ(
-        default=False, validator=check_bool, intentionally_undocumented=True
+        default=False, json_validator=check_bool, intentionally_undocumented=True
     ),
-    slim_presence: bool = REQ(default=False, validator=check_bool, intentionally_undocumented=True),
+    slim_presence: bool = REQ(
+        default=False, json_validator=check_bool, intentionally_undocumented=True
+    ),
     all_public_streams: bool = REQ(
-        default=False, validator=check_bool, intentionally_undocumented=True
+        default=False, json_validator=check_bool, intentionally_undocumented=True
     ),
     event_types: Optional[Sequence[str]] = REQ(
-        default=None, validator=check_list(check_string), intentionally_undocumented=True
+        default=None, json_validator=check_list(check_string), intentionally_undocumented=True
     ),
-    dont_block: bool = REQ(default=False, validator=check_bool),
-    narrow: Iterable[Sequence[str]] = REQ(
-        default=[], validator=check_list(check_list(check_string)), intentionally_undocumented=True
+    dont_block: bool = REQ(default=False, json_validator=check_bool),
+    narrow: Sequence[Sequence[str]] = REQ(
+        default=[],
+        json_validator=check_list(check_list(check_string)),
+        intentionally_undocumented=True,
     ),
     lifespan_secs: int = REQ(
         default=0, converter=to_non_negative_int, intentionally_undocumented=True
     ),
     bulk_message_deletion: bool = REQ(
-        default=False, validator=check_bool, intentionally_undocumented=True
+        default=False, json_validator=check_bool, intentionally_undocumented=True
+    ),
+    stream_typing_notifications: bool = REQ(
+        default=False, json_validator=check_bool, intentionally_undocumented=True
     ),
 ) -> HttpResponse:
+    if all_public_streams and not user_profile.can_access_public_streams():
+        return json_error(_("User not authorized for this query"))
+
     # Extract the Tornado handler from the request
     handler: AsyncDjangoHandler = request._tornado_handler
 
@@ -129,6 +139,7 @@ def get_events_backend(
             last_connection_time=time.time(),
             narrow=narrow,
             bulk_message_deletion=bulk_message_deletion,
+            stream_typing_notifications=stream_typing_notifications,
         )
 
     result = fetch_events(events_query)

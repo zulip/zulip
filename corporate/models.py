@@ -88,6 +88,16 @@ class CustomerPlan(models.Model):
             self.NEVER_STARTED: "Never started",
         }[self.status]
 
+    def licenses(self) -> int:
+        return LicenseLedger.objects.filter(plan=self).order_by("id").last().licenses
+
+    def licenses_at_next_renewal(self) -> Optional[int]:
+        if self.status == CustomerPlan.DOWNGRADE_AT_END_OF_CYCLE:
+            return None
+        return (
+            LicenseLedger.objects.filter(plan=self).order_by("id").last().licenses_at_next_renewal
+        )
+
 
 def get_current_plan_by_customer(customer: Customer) -> Optional[CustomerPlan]:
     return CustomerPlan.objects.filter(

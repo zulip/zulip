@@ -2,7 +2,18 @@ import cProfile
 import logging
 import time
 import traceback
-from typing import Any, AnyStr, Callable, Dict, Iterable, List, MutableMapping, Optional, Union
+from typing import (
+    Any,
+    AnyStr,
+    Callable,
+    Dict,
+    Iterable,
+    List,
+    MutableMapping,
+    Optional,
+    Tuple,
+    Union,
+)
 
 from django.conf import settings
 from django.conf.urls.i18n import is_language_prefix_patterns_used
@@ -15,7 +26,7 @@ from django.shortcuts import render
 from django.utils import translation
 from django.utils.cache import patch_vary_headers
 from django.utils.deprecation import MiddlewareMixin
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from django.views.csrf import csrf_failure as html_csrf_failure
 from sentry_sdk import capture_exception
 from sentry_sdk.integrations.logging import ignore_logger
@@ -31,6 +42,7 @@ from zerver.lib.request import set_request, unset_request
 from zerver.lib.response import json_error, json_response_from_error, json_unauthorized
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.types import ViewFuncT
+from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.utils import statsd
 from zerver.models import Realm, flush_per_request_caches, get_realm
 
@@ -138,6 +150,7 @@ def write_log_line(
     remote_ip: str,
     requestor_for_logs: str,
     client_name: str,
+    client_version: Optional[str] = None,
     status_code: int = 200,
     error_content: Optional[AnyStr] = None,
     error_content_iter: Optional[Iterable[AnyStr]] = None,
@@ -244,7 +257,10 @@ def write_log_line(
         extra_request_data = " {}".format(log_data["extra"])
     else:
         extra_request_data = ""
-    logger_client = f"({requestor_for_logs} via {client_name})"
+    if client_version is None:
+        logger_client = f"({requestor_for_logs} via {client_name})"
+    else:
+        logger_client = f"({requestor_for_logs} via {client_name}/{client_version})"
     logger_timing = f"{format_timedelta(time_delta):>5}{optional_orig_delta}{remote_cache_output}{markdown_output}{db_time_output}{startup_output} {path}"
     logger_line = f"{remote_ip:<15} {method:<7} {status_code:3} {logger_timing}{extra_request_data} {logger_client}"
     if status_code in [200, 304] and method == "GET" and path.startswith("/static"):
@@ -284,6 +300,37 @@ class RequestContext(MiddlewareMixin):
             unset_request()
 
 
+def parse_client(request: HttpRequest) -> Tuple[str, Optional[str]]:
+    # If the API request specified a client in the request content,
+    # that has priority.  Otherwise, extract the client from the
+    # User-Agent.
+    if "client" in request.GET:  # nocoverage
+        return request.GET["client"], None
+    if "client" in request.POST:
+        return request.POST["client"], None
+    if "HTTP_USER_AGENT" in request.META:
+        user_agent: Optional[Dict[str, str]] = parse_user_agent(request.META["HTTP_USER_AGENT"])
+    else:
+        user_agent = None
+    if user_agent is None:
+        # In the future, we will require setting USER_AGENT, but for
+        # now we just want to tag these requests so we can review them
+        # in logs and figure out the extent of the problem
+        return "Unspecified", None
+
+    client_name = user_agent["name"]
+    if client_name.startswith("Zulip"):
+        return client_name, user_agent.get("version")
+
+    # We could show browser versions in logs, and it'd probably be a
+    # good idea, but the current parsing will just get you Mozilla/5.0.
+    #
+    # Fixing this probably means using a third-party library, and
+    # making sure it's fast enough that we're happy to do it even on
+    # hot-path cases.
+    return client_name, None
+
+
 class LogRequests(MiddlewareMixin):
     # We primarily are doing logging using the process_view hook, but
     # for some views, process_view isn't run, so we call the start
@@ -299,6 +346,7 @@ class LogRequests(MiddlewareMixin):
             # Avoid re-initializing request._log_data if it's already there.
             return
 
+        request.client_name, request.client_version = parse_client(request)
         request._log_data = {}
         record_request_start_data(request._log_data)
 
@@ -343,7 +391,7 @@ class LogRequests(MiddlewareMixin):
         try:
             client = request.client.name
         except Exception:
-            client = "?"
+            client = request.client_name
 
         if response.streaming:
             content_iter = response.streaming_content
@@ -359,6 +407,7 @@ class LogRequests(MiddlewareMixin):
             remote_ip,
             requestor_for_logs,
             client,
+            client_version=request.client_version,
             status_code=response.status_code,
             error_content=content,
             error_content_iter=content_iter,
@@ -426,7 +475,7 @@ class CsrfFailureError(JsonableError):
 
     @staticmethod
     def msg_format() -> str:
-        return _("CSRF Error: {reason}")
+        return _("CSRF error: {reason}")
 
 
 def csrf_failure(request: HttpRequest, reason: str = "") -> HttpResponse:

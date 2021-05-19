@@ -415,7 +415,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
         realm = get_realm("zulip")
         result = self.client_patch(
             "/json/realm/profile_fields/100",
-            info={"name": "Phone Number", "field_type": CustomProfileField.SHORT_TEXT},
+            info={"name": "Phone number", "field_type": CustomProfileField.SHORT_TEXT},
         )
         self.assert_json_error(result, "Field id 100 not found.")
 
@@ -782,6 +782,7 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
             "is_guest",
             "is_bot",
             "is_owner",
+            "role",
             "full_name",
             "timezone",
             "is_active",
@@ -801,6 +802,7 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
             "is_guest",
             "is_bot",
             "is_owner",
+            "role",
             "full_name",
             "timezone",
             "is_active",
@@ -832,6 +834,7 @@ class ListCustomProfileFieldTest(CustomProfileFieldTestCase):
             "is_bot",
             "is_admin",
             "is_owner",
+            "role",
             "profile_data",
             "avatar_version",
             "timezone",

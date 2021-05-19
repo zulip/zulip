@@ -107,18 +107,18 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
 
                 {% if accounts %}
                 <div class="input-box">
-                    <label for="source_realm" class="inline-block">{{ _('Import settings from existing Zulip account') }}</label>
+                    <label for="source_realm_id" class="inline-block">{{ _('Import settings from existing Zulip account') }}</label>
                 </div>
                 <div id="source_realm_select_section" class="input-group m-10 inline-block">
-                    <select class="select" name="source_realm" id="source_realm_select">
-                        <option value="on"
-                          {% if "source_realm" in form.data and form.data["source_realm"] == "on" %}selected {% endif %}>
+                    <select class="select" name="source_realm_id" id="source_realm_select">
+                        <option value=""
+                          {% if "source_realm_id" in form.data and form.data["source_realm_id"] == "" %}selected {% endif %}>
                             {{ _('Don&rsquo;t import settings') }}
                         </option>
                         {% for account in accounts %}
-                        <option value="{{ account.string_id }}" data-full-name="{{account.full_name}}" data-avatar="{{account.avatar}}"
-                          {% if ("source_realm" in form.data and account.string_id == form.data["source_realm"])
-                          or ("source_realm" not in form.data and loop.index0 == 0) %} selected {% endif %}>
+                        <option value="{{ account.realm_id }}" data-full-name="{{account.full_name}}" data-avatar="{{account.avatar}}"
+                          {% if ("source_realm_id" in form.data and account.realm_id == form.data["source_realm_id"]|int)
+                          or ("source_realm_id" not in form.data and loop.index0 == 0) %} selected {% endif %}>
                             {{ account.realm_name }}
                         </option>
                         {% endfor %}
@@ -148,21 +148,23 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 </div>
 
                 {% if require_ldap_password %}
-                <div class="input-box">
-                    <input id="ldap-password" class="required" type="password" name="password" required />
+                <div class="input-box password-div">
+                    <input id="ldap-password" class="required" type="password" name="password" autocomplete="off" required />
                     <label for="ldap-password" class="inline-block">{{ _('Password') }}</label>
+                    <i class="fa fa-eye-slash password_visibility_toggle" role="button"></i>
                     <span class="help-inline">
                         {{ _('Enter your LDAP/Active Directory password.') }}
                     </span>
                 </div>
                 {% elif password_required %}
-                <div class="input-box">
-                    <input id="id_password" class="required" type="password" name="password"
+                <div class="input-box password-div">
+                    <input id="id_password" class="required" type="password" name="password" autocomplete="new-password"
                       value="{% if form.password.value() %}{{ form.password.value() }}{% endif %}"
                       maxlength="{{ MAX_PASSWORD_LENGTH }}"
                       data-min-length="{{password_min_length}}"
                       data-min-guesses="{{password_min_guesses}}" required />
                     <label for="id_password" class="inline-block">{{ _('Password') }}</label>
+                    <i class="fa fa-eye-slash password_visibility_toggle" role="button"></i>
                     {% if full_name %}
                     <span class="help-inline">
                         {{ _('This is used for mobile applications and other tools that require a password.') }}
@@ -180,7 +182,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 {% endif %}
             </fieldset>
             {% if default_stream_groups %}
-            <hr>
+            <hr />
             <div class="default-stream-groups">
                 <p class="margin">{{ _('What are you interested in?') }}</p>
                 {% for default_stream_group in default_stream_groups %}
@@ -206,7 +208,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 </div>
                 {% endfor %}
             </div>
-            <hr>
+            <hr />
             {% endif %}
 
             <div class="input-group margin terms-of-service">

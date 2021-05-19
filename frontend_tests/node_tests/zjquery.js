@@ -62,8 +62,8 @@ run_test("basics", () => {
     widget.html("<b>hello</b>");
     assert.equal(widget.html(), "<b>hello</b>");
 
-    widget.prop("title", "My Widget");
-    assert.equal(widget.prop("title"), "My Widget");
+    widget.prop("title", "My widget");
+    assert.equal(widget.prop("title"), "My widget");
 
     widget.val("42");
     assert.equal(widget.val(), "42");

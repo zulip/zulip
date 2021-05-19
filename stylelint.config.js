@@ -5,9 +5,12 @@ module.exports = {
     rules: {
         // Add some exceptions for recommended rules
         "at-rule-no-unknown": [true, {ignoreAtRules: ["extend"]}],
+        "font-family-no-missing-generic-family-keyword": [
+            true,
+            {ignoreFontFamilies: ["FontAwesome"]},
+        ],
 
         // Disable recommended rules we don't comply with yet
-        "font-family-no-missing-generic-family-keyword": null,
         "no-descending-specificity": null,
 
         // Disable standard rules we don't comply with yet

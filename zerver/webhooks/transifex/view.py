@@ -20,8 +20,8 @@ def api_transifex_webhook(
     project: str = REQ(),
     resource: str = REQ(),
     language: str = REQ(),
-    translated: Optional[int] = REQ(validator=check_int, default=None),
-    reviewed: Optional[int] = REQ(validator=check_int, default=None),
+    translated: Optional[int] = REQ(json_validator=check_int, default=None),
+    reviewed: Optional[int] = REQ(json_validator=check_int, default=None),
 ) -> HttpResponse:
     subject = f"{project} in {language}"
     if translated:

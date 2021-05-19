@@ -59,7 +59,7 @@ class zulip::profile::rabbitmq {
   # running and exits if so.
   exec { 'epmd':
     command => 'epmd -daemon',
-    unless  => 'pgrep -f epmd >/dev/null',
+    unless  => 'which pgrep && pgrep -x epmd >/dev/null',
     require => Package[$erlang],
     path    => '/usr/bin/:/bin/',
   }

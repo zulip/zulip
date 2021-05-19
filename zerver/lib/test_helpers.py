@@ -51,6 +51,7 @@ from zerver.models import (
     Subscription,
     UserMessage,
     UserProfile,
+    get_client,
     get_realm,
     get_stream,
 )
@@ -327,10 +328,13 @@ class HostRequestMock:
         post_data: Dict[str, Any] = {},
         user_profile: Optional[UserProfile] = None,
         host: str = settings.EXTERNAL_HOST,
+        client_name: Optional[str] = None,
     ) -> None:
         self.host = host
         self.GET: Dict[str, Any] = {}
         self.method = ""
+        if client_name is not None:
+            self.client = get_client(client_name)
 
         # Convert any integer parameters passed into strings, even
         # though of course the HTTP API would do so.  Ideally, we'd
@@ -348,6 +352,7 @@ class HostRequestMock:
         self.user = user_profile
         self.body = ""
         self.content_type = ""
+        self.client_name = ""
 
     def get_host(self) -> str:
         return self.host
@@ -496,9 +501,13 @@ def write_instrumentation_reports(full_suite: bool, include_webhooks: bool) -> N
             "confirmation_key/",
             "node-coverage/(?P<path>.+)",
             "docs/(?P<path>.+)",
+            "help/configure-missed-message-emails",
+            "help/delete-a-stream",
+            "api/delete-stream",
             "casper/(?P<path>.+)",
             "static/(?P<path>.+)",
             "flush_caches",
+            "external_content/(?P<digest>[^/]+)/(?P<received_url>[^/]+)",
             *(webhook.url for webhook in WEBHOOK_INTEGRATIONS if not include_webhooks),
         }
 
@@ -687,6 +696,9 @@ def mock_queue_publish(
 ) -> Iterator[mock.MagicMock]:
     inner = mock.MagicMock(**kwargs)
 
+    # This helper ensures that events published to the queues are
+    # serializable as JSON; unserializable events would make RabbitMQ
+    # crash in production.
     def verify_serialize(
         queue_name: str,
         event: Dict[str, object],

@@ -13,6 +13,7 @@ set_global("setTimeout", (f, delay) => {
 
 const muting = zrequire("muting");
 const {MessageListData} = zrequire("../js/message_list_data");
+const {Filter} = zrequire("filter");
 
 function make_msg(msg_id) {
     return {
@@ -42,7 +43,6 @@ function assert_msg_ids(messages, msg_ids) {
 run_test("basics", () => {
     const mld = new MessageListData({
         excludes_muted_topics: false,
-        filter: undefined,
     });
 
     assert.equal(mld.is_search(), false);
@@ -109,69 +109,132 @@ run_test("basics", () => {
 run_test("muting", () => {
     let mld = new MessageListData({
         excludes_muted_topics: false,
-        filter: undefined,
+        filter: new Filter([{operator: "pm-with", operand: "alice@example.com"}]),
     });
 
     const msgs = [
         {id: 1, type: "stream", stream_id: 1, topic: "muted"},
         {id: 2, type: "stream", stream_id: 1, topic: "whatever"},
         {id: 3, type: "stream", stream_id: 1, topic: "muted", mentioned: true}, // mentions override muting
+
+        // 10 = muted user, 9 = non-muted user, 11 = you
+        {id: 4, type: "private", to_user_ids: "9,10,11", sender_id: 10}, // muted to huddle
+        {id: 5, type: "private", to_user_ids: "9,10,11", sender_id: 9}, // non-muted to huddle
+        {id: 6, type: "private", to_user_ids: "11", sender_id: 10}, // muted to 1:1 PM
+        {id: 7, type: "private", to_user_ids: "11", sender_id: 9}, // non-muted to 1:1 PM
+        {id: 8, type: "private", to_user_ids: "10", sender_id: 11}, // 1:1 PM to muted
+        {id: 9, type: "private", to_user_ids: "9", sender_id: 11}, // 1:1 PM to non-muted
     ];
 
     // `messages_filtered_for_topic_mutes` should skip filtering
     // messages if `excludes_muted_topics` is false.
-    let is_topic_muted_calls = 0;
-
     with_field(
         muting,
         "is_topic_muted",
         () => {
-            is_topic_muted_calls = is_topic_muted_calls + 1;
+            throw new Error(
+                "Messages should not be filtered for topic mutes if excludes_muted_topics is false.",
+            );
         },
         () => {
             const res = mld.messages_filtered_for_topic_mutes(msgs);
-            assert.equal(is_topic_muted_calls, 0);
             assert.deepEqual(res, msgs);
         },
     );
 
-    // Test actual behaviour of `messages_filtered_for_topic_mutes`
+    // If we are in a 1:1 PM narrow, `messages_filtered_for_user_mutes` should skip
+    // filtering messages.
+    with_field(
+        muting,
+        "is_user_muted",
+        () => {
+            throw new Error("Messages should not be filtered for user mutes in 1:1 PM narrows.");
+        },
+        () => {
+            const res = mld.messages_filtered_for_user_mutes(msgs);
+            assert.deepEqual(res, msgs);
+        },
+    );
+
+    // Test actual behaviour of `messages_filtered_for_*` methods.
     mld.excludes_muted_topics = true;
+    mld.filter = new Filter([{operator: "stream", operand: "general"}]);
     muting.add_muted_topic(1, "muted");
     const res = mld.messages_filtered_for_topic_mutes(msgs);
     assert.deepEqual(res, [
         {id: 2, type: "stream", stream_id: 1, topic: "whatever"},
         {id: 3, type: "stream", stream_id: 1, topic: "muted", mentioned: true}, // mentions override muting
+
+        // `messages_filtered_for_topic_mutes` does not affect private messages
+        {id: 4, type: "private", to_user_ids: "9,10,11", sender_id: 10},
+        {id: 5, type: "private", to_user_ids: "9,10,11", sender_id: 9},
+        {id: 6, type: "private", to_user_ids: "11", sender_id: 10},
+        {id: 7, type: "private", to_user_ids: "11", sender_id: 9},
+        {id: 8, type: "private", to_user_ids: "10", sender_id: 11},
+        {id: 9, type: "private", to_user_ids: "9", sender_id: 11},
     ]);
 
+    muting.add_muted_user(10);
+    const res_user = mld.messages_filtered_for_user_mutes(msgs);
+    assert.deepEqual(res_user, [
+        // `messages_filtered_for_user_mutes` does not affect stream messages
+        {id: 1, type: "stream", stream_id: 1, topic: "muted"},
+        {id: 2, type: "stream", stream_id: 1, topic: "whatever"},
+        {id: 3, type: "stream", stream_id: 1, topic: "muted", mentioned: true},
+
+        {id: 4, type: "private", to_user_ids: "9,10,11", sender_id: 10}, // muted to huddle
+        {id: 5, type: "private", to_user_ids: "9,10,11", sender_id: 9}, // non-muted to huddle
+        {id: 7, type: "private", to_user_ids: "11", sender_id: 9}, // non-muted to 1:1 PM
+        {id: 9, type: "private", to_user_ids: "9", sender_id: 11}, // 1:1 PM to non-muted
+    ]);
+
+    // Output filtered based on both topic and user muting.
+    mld._all_items = msgs;
+    const filtered_messages = mld.unmuted_messages(mld._all_items);
+    assert.deepEqual(filtered_messages, [
+        {id: 2, type: "stream", stream_id: 1, topic: "whatever"},
+        {id: 3, type: "stream", stream_id: 1, topic: "muted", mentioned: true},
+        {id: 4, type: "private", to_user_ids: "9,10,11", sender_id: 10},
+        {id: 5, type: "private", to_user_ids: "9,10,11", sender_id: 9},
+        {id: 7, type: "private", to_user_ids: "11", sender_id: 9},
+        {id: 9, type: "private", to_user_ids: "9", sender_id: 11},
+    ]);
+
+    // Also verify that, the correct set of messages is stored in `_items`
+    // once we update the list for muting.
+    mld.update_items_for_muting();
+    assert.deepEqual(filtered_messages, mld._items);
+
     // MessageListData methods should always attempt to filter messages,
-    // and update `_all_items` when `excludes_muted_topics` is true.
+    // and keep `_all_items` up-to-date.
     mld = new MessageListData({
         excludes_muted_topics: true,
-        filter: undefined,
     });
     assert.deepEqual(mld._all_items, []);
 
-    let messages_filtered_for_topic_mutes_calls = 0;
-    mld.messages_filtered_for_topic_mutes = (messages) => {
-        messages_filtered_for_topic_mutes_calls = messages_filtered_for_topic_mutes_calls + 1;
+    let unmuted_messages_calls = 0;
+    mld.unmuted_messages = (messages) => {
+        unmuted_messages_calls = unmuted_messages_calls + 1;
         return messages;
     };
 
-    mld.add_anywhere([{id: 10}]);
-    assert.equal(messages_filtered_for_topic_mutes_calls, 1);
-    assert_msg_ids(mld._all_items, [10]);
+    mld.add_anywhere([{id: 10}, {id: 20}]);
+    assert.equal(unmuted_messages_calls, 1);
+    assert_msg_ids(mld._all_items, [10, 20]);
 
-    mld.prepend([{id: 9}]);
-    assert.equal(messages_filtered_for_topic_mutes_calls, 2);
-    assert_msg_ids(mld._all_items, [9, 10]);
+    mld.prepend([{id: 9}, {id: 19}]);
+    assert.equal(unmuted_messages_calls, 2);
+    assert_msg_ids(mld._all_items, [9, 19, 10, 20]);
 
-    mld.append([{id: 11}]);
-    assert.equal(messages_filtered_for_topic_mutes_calls, 3);
-    assert_msg_ids(mld._all_items, [9, 10, 11]);
+    mld.append([{id: 11}, {id: 21}]);
+    assert.equal(unmuted_messages_calls, 3);
+    assert_msg_ids(mld._all_items, [9, 19, 10, 20, 11, 21]);
 
     mld.remove([9]);
-    assert_msg_ids(mld._all_items, [10, 11]);
+    assert_msg_ids(mld._all_items, [19, 10, 20, 11, 21]);
+
+    mld.reorder_messages(20);
+    assert_msg_ids(mld._all_items, [10, 11, 19, 20, 21]);
 
     mld.clear();
     assert_msg_ids(mld._all_items, []);
@@ -180,7 +243,6 @@ run_test("muting", () => {
     // filtering the messages.
     mld = new MessageListData({
         excludes_muted_topics: true,
-        filter: undefined,
     });
 
     const orig_messages = [
@@ -228,7 +290,6 @@ run_test("muting", () => {
 run_test("errors", () => {
     const mld = new MessageListData({
         excludes_muted_topics: false,
-        filter: undefined,
     });
     assert.equal(mld.get("bogus-id"), undefined);
 

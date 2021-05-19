@@ -87,16 +87,16 @@ class GitlabHookTests(WebhookTestCase):
         self.check_webhook("tag_push_hook__remove_tag", expected_topic, expected_message)
 
     def test_create_issue_without_assignee_event_message(self) -> None:
-        expected_topic = "my-awesome-project / Issue #1 Issue title"
-        expected_message = "Tomasz Kolek created [Issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1):\n\n~~~ quote\nIssue description\n~~~"
+        expected_topic = "my-awesome-project / issue #1 Issue title"
+        expected_message = "Tomasz Kolek created [issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1):\n\n~~~ quote\nIssue description\n~~~"
 
         self.check_webhook(
             "issue_hook__issue_created_without_assignee", expected_topic, expected_message
         )
 
     def test_create_confidential_issue_without_assignee_event_message(self) -> None:
-        expected_subject = "testing / Issue #1 Testing"
-        expected_message = "Joe Bloggs created [Issue #1](https://gitlab.example.co.uk/joe.bloggs/testing/issues/1):\n\n~~~ quote\nTesting\n~~~"
+        expected_subject = "testing / issue #1 Testing"
+        expected_message = "Joe Bloggs created [issue #1](https://gitlab.example.co.uk/joe.bloggs/testing/issues/1):\n\n~~~ quote\nTesting\n~~~"
 
         self.check_webhook(
             "issue_hook__confidential_issue_created_without_assignee",
@@ -107,39 +107,39 @@ class GitlabHookTests(WebhookTestCase):
     def test_create_issue_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic = "notifications"
-        expected_message = "[[my-awesome-project](https://gitlab.com/tomaszkolek0/my-awesome-project)] Tomasz Kolek created [Issue #1 Issue title](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1):\n\n~~~ quote\nIssue description\n~~~"
+        expected_message = "[[my-awesome-project](https://gitlab.com/tomaszkolek0/my-awesome-project)] Tomasz Kolek created [issue #1 Issue title](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1):\n\n~~~ quote\nIssue description\n~~~"
 
         self.check_webhook(
             "issue_hook__issue_created_without_assignee", expected_topic, expected_message
         )
 
     def test_create_issue_with_assignee_event_message(self) -> None:
-        expected_topic = "my-awesome-project / Issue #1 Issue title"
-        expected_message = "Tomasz Kolek created [Issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1) (assigned to Tomasz Kolek):\n\n~~~ quote\nIssue description\n~~~"
+        expected_topic = "my-awesome-project / issue #1 Issue title"
+        expected_message = "Tomasz Kolek created [issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1) (assigned to Tomasz Kolek):\n\n~~~ quote\nIssue description\n~~~"
 
         self.check_webhook(
             "issue_hook__issue_created_with_assignee", expected_topic, expected_message
         )
 
     def test_create_issue_with_two_assignees_event_message(self) -> None:
-        expected_subject = "Zulip GitLab Test / Issue #2 Zulip Test Issue 2"
-        expected_message = "Adam Birds created [Issue #2](https://gitlab.com/adambirds/zulip-gitlab-test/issues/2) (assigned to Adam Birds and Eeshan Garg):\n\n~~~ quote\nZulip Test Issue 2\n~~~"
+        expected_subject = "Zulip GitLab Test / issue #2 Zulip Test Issue 2"
+        expected_message = "Adam Birds created [issue #2](https://gitlab.com/adambirds/zulip-gitlab-test/issues/2) (assigned to Adam Birds and Eeshan Garg):\n\n~~~ quote\nZulip Test Issue 2\n~~~"
 
         self.check_webhook(
             "issue_hook__issue_created_with_two_assignees", expected_subject, expected_message
         )
 
     def test_create_issue_with_three_assignees_event_message(self) -> None:
-        expected_subject = "Zulip GitLab Test / Issue #2 Zulip Test Issue 2"
-        expected_message = "Adam Birds created [Issue #2](https://gitlab.com/adambirds/zulip-gitlab-test/issues/2) (assigned to Adam Birds, Eeshan Garg and Tim Abbott):\n\n~~~ quote\nZulip Test Issue 2\n~~~"
+        expected_subject = "Zulip GitLab Test / issue #2 Zulip Test Issue 2"
+        expected_message = "Adam Birds created [issue #2](https://gitlab.com/adambirds/zulip-gitlab-test/issues/2) (assigned to Adam Birds, Eeshan Garg and Tim Abbott):\n\n~~~ quote\nZulip Test Issue 2\n~~~"
 
         self.check_webhook(
             "issue_hook__issue_created_with_three_assignees", expected_subject, expected_message
         )
 
     def test_create_confidential_issue_with_assignee_event_message(self) -> None:
-        expected_subject = "testing / Issue #2 Testing"
-        expected_message = "Joe Bloggs created [Issue #2](https://gitlab.example.co.uk/joe.bloggs/testing/issues/2) (assigned to Joe Bloggs):\n\n~~~ quote\nTesting\n~~~"
+        expected_subject = "testing / issue #2 Testing"
+        expected_message = "Joe Bloggs created [issue #2](https://gitlab.example.co.uk/joe.bloggs/testing/issues/2) (assigned to Joe Bloggs):\n\n~~~ quote\nTesting\n~~~"
 
         self.check_webhook(
             "issue_hook__confidential_issue_created_with_assignee",
@@ -148,8 +148,8 @@ class GitlabHookTests(WebhookTestCase):
         )
 
     def test_create_issue_with_hidden_comment_in_description(self) -> None:
-        expected_topic = "public-repo / Issue #3 New Issue with hidden comment"
-        expected_message = "Eeshan Garg created [Issue #3](https://gitlab.com/eeshangarg/public-repo/issues/3):\n\n~~~ quote\nThis description actually has a hidden comment in it!\n~~~"
+        expected_topic = "public-repo / issue #3 New Issue with hidden comment"
+        expected_message = "Eeshan Garg created [issue #3](https://gitlab.com/eeshangarg/public-repo/issues/3):\n\n~~~ quote\nThis description actually has a hidden comment in it!\n~~~"
 
         self.check_webhook(
             "issue_hook__issue_created_with_hidden_comment_in_description",
@@ -158,8 +158,8 @@ class GitlabHookTests(WebhookTestCase):
         )
 
     def test_create_confidential_issue_with_hidden_comment_in_description(self) -> None:
-        expected_subject = "testing / Issue #1 Testing"
-        expected_message = "Joe Bloggs created [Issue #1](https://gitlab.example.co.uk/joe.bloggs/testing/issues/1):\n\n~~~ quote\nThis description actually has a hidden comment in it!\n~~~"
+        expected_subject = "testing / issue #1 Testing"
+        expected_message = "Joe Bloggs created [issue #1](https://gitlab.example.co.uk/joe.bloggs/testing/issues/1):\n\n~~~ quote\nThis description actually has a hidden comment in it!\n~~~"
 
         self.check_webhook(
             "issue_hook__confidential_issue_created_with_hidden_comment_in_description",
@@ -168,21 +168,21 @@ class GitlabHookTests(WebhookTestCase):
         )
 
     def test_create_issue_with_null_description(self) -> None:
-        expected_topic = "my-awesome-project / Issue #7 Issue without description"
-        expected_message = "Eeshan Garg created [Issue #7](https://gitlab.com/eeshangarg/my-awesome-project/issues/7)."
+        expected_topic = "my-awesome-project / issue #7 Issue without description"
+        expected_message = "Eeshan Garg created [issue #7](https://gitlab.com/eeshangarg/my-awesome-project/issues/7)."
         self.check_webhook(
             "issue_hook__issue_opened_with_null_description", expected_topic, expected_message
         )
 
     def test_update_issue_event_message(self) -> None:
-        expected_topic = "my-awesome-project / Issue #1 Issue title_new"
-        expected_message = "Tomasz Kolek updated [Issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)."
+        expected_topic = "my-awesome-project / issue #1 Issue title_new"
+        expected_message = "Tomasz Kolek updated [issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)."
 
         self.check_webhook("issue_hook__issue_updated", expected_topic, expected_message)
 
     def test_update_confidential_issue_event_message(self) -> None:
-        expected_subject = "testing / Issue #1 Testing"
-        expected_message = "Joe Bloggs updated [Issue #1](https://gitlab.example.co.uk/joe.bloggs/testing/issues/1)."
+        expected_subject = "testing / issue #1 Testing"
+        expected_message = "Joe Bloggs updated [issue #1](https://gitlab.example.co.uk/joe.bloggs/testing/issues/1)."
 
         self.check_webhook(
             "issue_hook__confidential_issue_updated", expected_subject, expected_message
@@ -191,33 +191,33 @@ class GitlabHookTests(WebhookTestCase):
     def test_update_issue_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic = "notifications"
-        expected_message = "[[my-awesome-project](https://gitlab.com/tomaszkolek0/my-awesome-project)] Tomasz Kolek updated [Issue #1 Issue title_new](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)."
+        expected_message = "[[my-awesome-project](https://gitlab.com/tomaszkolek0/my-awesome-project)] Tomasz Kolek updated [issue #1 Issue title_new](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)."
 
         self.check_webhook("issue_hook__issue_updated", expected_topic, expected_message)
 
     def test_close_issue_event_message(self) -> None:
-        expected_topic = "my-awesome-project / Issue #1 Issue title_new"
-        expected_message = "Tomasz Kolek closed [Issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)."
+        expected_topic = "my-awesome-project / issue #1 Issue title_new"
+        expected_message = "Tomasz Kolek closed [issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)."
 
         self.check_webhook("issue_hook__issue_closed", expected_topic, expected_message)
 
     def test_close_confidential_issue_event_message(self) -> None:
-        expected_subject = "testing / Issue #1 Testing Test"
-        expected_message = "Joe Bloggs closed [Issue #1](https://gitlab.example.co.uk/joe.bloggs/testing/issues/1)."
+        expected_subject = "testing / issue #1 Testing Test"
+        expected_message = "Joe Bloggs closed [issue #1](https://gitlab.example.co.uk/joe.bloggs/testing/issues/1)."
 
         self.check_webhook(
             "issue_hook__confidential_issue_closed", expected_subject, expected_message
         )
 
     def test_reopen_issue_event_message(self) -> None:
-        expected_topic = "my-awesome-project / Issue #1 Issue title_new"
-        expected_message = "Tomasz Kolek reopened [Issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)."
+        expected_topic = "my-awesome-project / issue #1 Issue title_new"
+        expected_message = "Tomasz Kolek reopened [issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)."
 
         self.check_webhook("issue_hook__issue_reopened", expected_topic, expected_message)
 
     def test_reopen_confidential_issue_event_message(self) -> None:
-        expected_subject = "testing / Issue #1 Testing Test"
-        expected_message = "Joe Bloggs reopened [Issue #1](https://gitlab.example.co.uk/joe.bloggs/testing/issues/1)."
+        expected_subject = "testing / issue #1 Testing Test"
+        expected_message = "Joe Bloggs reopened [issue #1](https://gitlab.example.co.uk/joe.bloggs/testing/issues/1)."
 
         self.check_webhook(
             "issue_hook__confidential_issue_reopened", expected_subject, expected_message
@@ -250,34 +250,34 @@ class GitlabHookTests(WebhookTestCase):
         self.check_webhook("note_hook__merge_request_note", expected_topic, expected_message)
 
     def test_note_issue_event_message(self) -> None:
-        expected_topic = "my-awesome-project / Issue #2 abc"
-        expected_message = "Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/2#note_14172057) on [Issue #2](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/2):\n\n~~~ quote\nNice issue\n~~~"
+        expected_topic = "my-awesome-project / issue #2 abc"
+        expected_message = "Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/2#note_14172057) on [issue #2](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/2):\n\n~~~ quote\nNice issue\n~~~"
 
         self.check_webhook("note_hook__issue_note", expected_topic, expected_message)
 
     def test_note_confidential_issue_event_message(self) -> None:
-        expected_subject = "Test / Issue #3 Test"
-        expected_message = "Joe Bloggs [commented](https://gitlab.com/joebloggs/test/issues/3#note_101638770) on [Issue #3](https://gitlab.com/joebloggs/test/issues/3):\n\n~~~ quote\nTest\n~~~"
+        expected_subject = "Test / issue #3 Test"
+        expected_message = "Joe Bloggs [commented](https://gitlab.com/joebloggs/test/issues/3#note_101638770) on [issue #3](https://gitlab.com/joebloggs/test/issues/3):\n\n~~~ quote\nTest\n~~~"
 
         self.check_webhook("note_hook__confidential_issue_note", expected_subject, expected_message)
 
     def test_note_issue_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic = "notifications"
-        expected_message = "[[my-awesome-project](https://gitlab.com/tomaszkolek0/my-awesome-project)] Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/2#note_14172057) on [Issue #2 abc](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/2):\n\n~~~ quote\nNice issue\n~~~"
+        expected_message = "[[my-awesome-project](https://gitlab.com/tomaszkolek0/my-awesome-project)] Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/2#note_14172057) on [issue #2 abc](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/2):\n\n~~~ quote\nNice issue\n~~~"
 
         self.check_webhook("note_hook__issue_note", expected_topic, expected_message)
 
     def test_note_snippet_event_message(self) -> None:
-        expected_topic = "my-awesome-project / Snippet #2 test"
-        expected_message = "Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/snippets/2#note_14172058) on [Snippet #2](https://gitlab.com/tomaszkolek0/my-awesome-project/snippets/2):\n\n~~~ quote\nNice snippet\n~~~"
+        expected_topic = "my-awesome-project / snippet #2 test"
+        expected_message = "Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/snippets/2#note_14172058) on [snippet #2](https://gitlab.com/tomaszkolek0/my-awesome-project/snippets/2):\n\n~~~ quote\nNice snippet\n~~~"
 
         self.check_webhook("note_hook__snippet_note", expected_topic, expected_message)
 
     def test_note_snippet_with_custom_topic_in_url(self) -> None:
         self.url = self.build_webhook_url(topic="notifications")
         expected_topic = "notifications"
-        expected_message = "[[my-awesome-project](https://gitlab.com/tomaszkolek0/my-awesome-project)] Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/snippets/2#note_14172058) on [Snippet #2 test](https://gitlab.com/tomaszkolek0/my-awesome-project/snippets/2):\n\n~~~ quote\nNice snippet\n~~~"
+        expected_message = "[[my-awesome-project](https://gitlab.com/tomaszkolek0/my-awesome-project)] Tomasz Kolek [commented](https://gitlab.com/tomaszkolek0/my-awesome-project/snippets/2#note_14172058) on [snippet #2 test](https://gitlab.com/tomaszkolek0/my-awesome-project/snippets/2):\n\n~~~ quote\nNice snippet\n~~~"
 
         self.check_webhook("note_hook__snippet_note", expected_topic, expected_message)
 
@@ -391,13 +391,13 @@ A trivial change that should probably be ignored.
 
     def test_wiki_page_opened_event_message(self) -> None:
         expected_topic = "my-awesome-project"
-        expected_message = 'Tomasz Kolek created [Wiki Page "how to"](https://gitlab.com/tomaszkolek0/my-awesome-project/wikis/how-to).'
+        expected_message = 'Tomasz Kolek created [wiki page "how to"](https://gitlab.com/tomaszkolek0/my-awesome-project/wikis/how-to).'
 
         self.check_webhook("wiki_page_hook__wiki_page_opened", expected_topic, expected_message)
 
     def test_wiki_page_edited_event_message(self) -> None:
         expected_topic = "my-awesome-project"
-        expected_message = 'Tomasz Kolek updated [Wiki Page "how to"](https://gitlab.com/tomaszkolek0/my-awesome-project/wikis/how-to).'
+        expected_message = 'Tomasz Kolek updated [wiki page "how to"](https://gitlab.com/tomaszkolek0/my-awesome-project/wikis/how-to).'
 
         self.check_webhook("wiki_page_hook__wiki_page_edited", expected_topic, expected_message)
 

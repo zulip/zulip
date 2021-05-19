@@ -1,6 +1,6 @@
 import logging
 import sys
-from typing import Any, Iterable
+from typing import Any, Collection
 
 from django.core.management.base import CommandParser
 from django.db import models
@@ -48,7 +48,7 @@ class Command(ZulipBaseCommand):
         if all_until:
             filt = models.Q(id__lte=all_until)
         else:
-            filt = models.Q(message__id__in=[mid.strip() for mid in sys.stdin.read().split(",")])
+            filt = models.Q(message_id__in=[mid.strip() for mid in sys.stdin.read().split(",")])
         mids = [
             m.id
             for m in UserMessage.objects.filter(filt, user_profile=user_profile).order_by("-id")
@@ -59,7 +59,7 @@ class Command(ZulipBaseCommand):
             sys.stdout.close()
             sys.stderr.close()
 
-        def do_update(batch: Iterable[int]) -> None:
+        def do_update(batch: Collection[int]) -> None:
             msgs = UserMessage.objects.filter(id__in=batch)
             if op == "add":
                 msgs.update(flags=models.F("flags").bitor(flag))

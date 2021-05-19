@@ -3,7 +3,7 @@ from typing import Any
 
 from zerver.lib.management import CommandError, ZulipBaseCommand
 from zerver.lib.send_email import send_custom_email
-from zerver.models import UserProfile
+from zerver.models import Realm, UserProfile
 
 
 class Command(ZulipBaseCommand):
@@ -18,6 +18,11 @@ class Command(ZulipBaseCommand):
     def add_arguments(self, parser: ArgumentParser) -> None:
         parser.add_argument(
             "--entire-server", action="store_true", help="Send to every user on the server."
+        )
+        parser.add_argument(
+            "--all-sponsored-org-admins",
+            action="store_true",
+            help="Send to all organization administrators of sponsored organizations.",
         )
         parser.add_argument(
             "--markdown-template-path",
@@ -37,6 +42,11 @@ class Command(ZulipBaseCommand):
         parser.add_argument(
             "--admins-only", help="Send only to organization administrators", action="store_true"
         )
+        parser.add_argument(
+            "--dry-run",
+            action="store_true",
+            help="Prints emails of the recipients and text of the email.",
+        )
 
         self.add_user_list_args(
             parser,
@@ -47,7 +57,24 @@ class Command(ZulipBaseCommand):
 
     def handle(self, *args: Any, **options: str) -> None:
         if options["entire_server"]:
-            users = UserProfile.objects.filter(is_active=True, is_bot=False, is_mirror_dummy=False)
+            users = UserProfile.objects.filter(
+                is_active=True, is_bot=False, is_mirror_dummy=False, realm__deactivated=False
+            )
+        elif options["all_sponsored_org_admins"]:
+            # Sends at most one copy to each email address, even if it
+            # is an administrator in several organizations.
+            sponsored_realms = Realm.objects.filter(
+                plan_type=Realm.STANDARD_FREE, deactivated=False
+            )
+            admin_roles = [UserProfile.ROLE_REALM_ADMINISTRATOR, UserProfile.ROLE_REALM_OWNER]
+            users = UserProfile.objects.filter(
+                is_active=True,
+                is_bot=False,
+                is_mirror_dummy=False,
+                role__in=admin_roles,
+                realm__deactivated=False,
+                realm__in=sponsored_realms,
+            ).distinct("delivery_email")
         else:
             realm = self.get_realm(options)
             try:
@@ -60,3 +87,8 @@ class Command(ZulipBaseCommand):
                 raise error
 
         send_custom_email(users, options)
+
+        if options["dry_run"]:
+            print("Would send the above email to:")
+            for user in users:
+                print(f"  {user.delivery_email} ({user.realm.string_id})")

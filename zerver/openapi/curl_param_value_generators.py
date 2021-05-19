@@ -5,26 +5,30 @@
 # based on Zulip's OpenAPI definitions, as well as test setup and
 # fetching of appropriate parameter values to use when running the
 # cURL examples as part of the tools/test-api test suite.
-
 from functools import wraps
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import (
+    do_add_linkifier,
     do_add_reaction,
-    do_add_realm_filter,
+    do_add_realm_playground,
     do_create_user,
     update_user_presence,
 )
 from zerver.lib.events import do_events_register
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Client, Message, UserGroup, UserPresence, get_realm
+from zerver.lib.users import get_api_key
+from zerver.models import Client, Message, UserGroup, UserPresence, get_realm, get_user
 
 GENERATOR_FUNCTIONS: Dict[str, Callable[[], Dict[str, object]]] = {}
 REGISTERED_GENERATOR_FUNCTIONS: Set[str] = set()
 CALLED_GENERATOR_FUNCTIONS: Set[str] = set()
+# This is a List rather than just a string in order to make it easier
+# to write to it from another module.
+AUTHENTICATION_LINE: List[str] = [""]
 
 helpers = ZulipTestCase()
 
@@ -52,6 +56,16 @@ def openapi_param_value_generator(
         return _record_calls_wrapper
 
     return wrapper
+
+
+def assert_all_helper_functions_called() -> None:
+    """Throws an exception if any registered helpers were not called by tests"""
+    if REGISTERED_GENERATOR_FUNCTIONS == CALLED_GENERATOR_FUNCTIONS:
+        return
+
+    uncalled_functions = str(REGISTERED_GENERATOR_FUNCTIONS - CALLED_GENERATOR_FUNCTIONS)
+
+    raise Exception(f"Registered curl API generators were not called: {uncalled_functions}")
 
 
 def patch_openapi_example_values(
@@ -253,7 +267,7 @@ def get_temp_user_group_id() -> Dict[str, object]:
 
 @openapi_param_value_generator(["/realm/filters/{filter_id}:delete"])
 def remove_realm_filters() -> Dict[str, object]:
-    filter_id = do_add_realm_filter(
+    filter_id = do_add_linkifier(
         get_realm("zulip"), "#(?P<id>[0-9]{2,8})", "https://github.com/zulip/zulip/pull/%(id)s"
     )
     return {
@@ -268,6 +282,28 @@ def upload_custom_emoji() -> Dict[str, object]:
     }
 
 
+@openapi_param_value_generator(["/realm/playgrounds:post"])
+def add_realm_playground() -> Dict[str, object]:
+    return {
+        "name": "Python2 playground",
+        "pygments_language": "Python2",
+        "url_prefix": "https://python2.example.com",
+    }
+
+
+@openapi_param_value_generator(["/realm/playgrounds/{playground_id}:delete"])
+def remove_realm_playground() -> Dict[str, object]:
+    playground_info = dict(
+        name="Python playground",
+        pygments_language="Python",
+        url_prefix="https://python.example.com",
+    )
+    playground_id = do_add_realm_playground(get_realm("zulip"), **playground_info)
+    return {
+        "playground_id": playground_id,
+    }
+
+
 @openapi_param_value_generator(["/users/{user_id}:delete"])
 def deactivate_user() -> Dict[str, object]:
     user_profile = do_create_user(
@@ -278,3 +314,22 @@ def deactivate_user() -> Dict[str, object]:
         acting_user=None,
     )
     return {"user_id": user_profile.id}
+
+
+@openapi_param_value_generator(["/users/me:delete"])
+def deactivate_own_user() -> Dict[str, object]:
+    test_user_email = "delete-test@zulip.com"
+    deactivate_test_user = do_create_user(
+        test_user_email,
+        "secret",
+        get_realm("zulip"),
+        "Mr. Delete",
+        role=200,
+        acting_user=None,
+    )
+    realm = get_realm("zulip")
+    test_user = get_user(test_user_email, realm)
+    test_user_api_key = get_api_key(test_user)
+    # change authentication line to allow test_client to delete itself.
+    AUTHENTICATION_LINE[0] = f"{deactivate_test_user.email}:{test_user_api_key}"
+    return {}

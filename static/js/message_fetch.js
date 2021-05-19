@@ -456,11 +456,11 @@ export function initialize(home_view_loaded) {
     // more performant (i.e. avoids this unnecessary extra fetch the
     // results of which are basically discarded) and better represents
     // more than a few hundred messages' history, but this strategy
-    // allows "Recent Topics" to always show current data (with gaps)
+    // allows "Recent topics" to always show current data (with gaps)
     // on page load; the data will be complete once the algorithm
-    // above catched up to present.
+    // above catches up to present.
     //
-    // (Users will see a weird artifact where Recent Topics has a gap
+    // (Users will see a weird artifact where Recent topics has a gap
     // between E.g. 6 days ago and 37 days ago while the catchup
     // process runs, so this strategy still results in problematic
     // visual artifacts shortly after page load; just more forgiveable

@@ -10,7 +10,6 @@ import render_emoji_showcase from "../templates/emoji_showcase.hbs";
 
 import * as blueslip from "./blueslip";
 import * as compose_ui from "./compose_ui";
-import {i18n} from "./i18n";
 import * as message_lists from "./message_lists";
 import * as message_store from "./message_store";
 import * as popovers from "./popovers";
@@ -190,9 +189,7 @@ export function reactions_popped() {
 export function hide_emoji_popover() {
     $(".has_popover").removeClass("has_popover has_emoji_popover");
     if (reactions_popped()) {
-        const orig_title = current_message_emoji_popover_elem.data("original-title");
         current_message_emoji_popover_elem.popover("destroy");
-        current_message_emoji_popover_elem.prop("title", orig_title);
         current_message_emoji_popover_elem.removeClass("reaction_button_visible");
         current_message_emoji_popover_elem = undefined;
     }
@@ -263,7 +260,7 @@ function toggle_reaction(emoji_name, event) {
 
     reactions.toggle_emoji_reaction(message_id, emoji_name, event);
 
-    if (event === undefined || !event.shiftKey) {
+    if (!event.shiftKey) {
         hide_emoji_popover();
     }
 
@@ -441,7 +438,6 @@ export function navigate(event_name, e) {
 
     const selected_emoji = get_rendered_emoji(current_section, current_index);
     const is_filter_focused = $(".emoji-popover-filter").is(":focus");
-    let next_section = 0;
     // special cases
     if (is_filter_focused) {
         // Move down into emoji map.
@@ -481,42 +477,32 @@ export function navigate(event_name, e) {
             reset_emoji_showcase();
             return true;
         }
-    } else if (event_name === "tab") {
-        change_focus_to_filter();
-        return true;
-    } else if (event_name === "shift_tab") {
-        if (!is_filter_focused) {
-            change_focus_to_filter();
-        }
-        return true;
-    } else if (event_name === "page_up") {
-        next_section = current_section - 1;
-        maybe_change_active_section(next_section);
-        return true;
-    } else if (event_name === "page_down") {
-        next_section = current_section + 1;
-        maybe_change_active_section(next_section);
-        return true;
-    } else if (!is_filter_focused) {
-        let next_coord = {};
-        switch (event_name) {
-            case "down_arrow":
-                next_coord = get_next_emoji_coordinates(6);
-                break;
-            case "up_arrow":
-                next_coord = get_next_emoji_coordinates(-6);
-                break;
-            case "left_arrow":
-                next_coord = get_next_emoji_coordinates(-1);
-                break;
-            case "right_arrow":
-                next_coord = get_next_emoji_coordinates(1);
-                break;
-        }
-
-        return maybe_change_focused_emoji($emoji_map, next_coord.section, next_coord.index);
+        return false;
     }
-    return false;
+
+    switch (event_name) {
+        case "tab":
+        case "shift_tab":
+            change_focus_to_filter();
+            return true;
+        case "page_up":
+            maybe_change_active_section(current_section - 1);
+            return true;
+        case "page_down":
+            maybe_change_active_section(current_section + 1);
+            return true;
+        case "down_arrow":
+        case "up_arrow":
+        case "left_arrow":
+        case "right_arrow": {
+            const next_coord = get_next_emoji_coordinates(
+                {down_arrow: 6, up_arrow: -6, left_arrow: -1, right_arrow: 1}[event_name],
+            );
+            return maybe_change_focused_emoji($emoji_map, next_coord.section, next_coord.index);
+        }
+        default:
+            return false;
+    }
 }
 
 function process_keypress(e) {
@@ -631,7 +617,6 @@ export function build_emoji_popover(elt, id) {
         trigger: "manual",
     });
     elt.popover("show");
-    elt.prop("title", i18n.t("Add emoji reaction (:)"));
 
     const popover = elt.data("popover").$tip;
     popover.find(".emoji-popover-filter").trigger("focus");
@@ -686,7 +671,9 @@ export function register_click_handlers() {
         // The following check will return false if emoji was not selected in
         // message edit form.
         if (edit_message_id !== null) {
-            const edit_message_textarea = $(`#message_edit_content_${CSS.escape(edit_message_id)}`);
+            const edit_message_textarea = $(
+                `#edit_form_${CSS.escape(edit_message_id)} .message_edit_content`,
+            );
             // Assign null to edit_message_id so that the selection of emoji in new
             // message composition form works correctly.
             edit_message_id = null;
@@ -698,16 +685,13 @@ export function register_click_handlers() {
         hide_emoji_popover();
     });
 
-    $("body").on("click", "#emoji_map", function (e) {
+    $("body").on("click", ".emoji_map", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        // The data-message-id attribute is only present in the emoji icon present in
-        // the message edit form. So the following check will return false if this
-        // event was not fired from message edit form.
-        if ($(this).attr("data-message-id") !== undefined) {
-            // Store data-message-id value in global variable edit_message_id so that
+        if ($(e.target).parents(".message_edit_form").length === 1) {
+            // Store message id in global variable edit_message_id so that
             // its value can be further used to correctly find the message textarea element.
-            edit_message_id = $(this).attr("data-message-id");
+            edit_message_id = rows.get_message_id(e.target);
         } else {
             edit_message_id = null;
         }
@@ -719,26 +703,6 @@ export function register_click_handlers() {
 
         const message_id = rows.get_message_id(this);
         toggle_emoji_popover(this, message_id);
-    });
-
-    $("#main_div").on("mouseenter", ".reaction_button", (e) => {
-        e.stopPropagation();
-
-        const elem = $(e.currentTarget);
-        const title = i18n.t("Add emoji reaction");
-        elem.tooltip({
-            title: title + " (:)",
-            trigger: "hover",
-            placement: "bottom",
-            animation: false,
-        });
-        elem.tooltip("show");
-        $(".tooltip-arrow").remove();
-    });
-
-    $("#main_div").on("mouseleave", ".reaction_button", (e) => {
-        e.stopPropagation();
-        $(e.currentTarget).tooltip("hide");
     });
 
     $("body").on("click", ".actions_popover .reaction_button", (e) => {

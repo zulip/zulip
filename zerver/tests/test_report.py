@@ -211,6 +211,6 @@ class TestReport(ZulipTestCase):
         self.assertEqual(
             warn_logs.output,
             [
-                "WARNING:root:CSP Violation in Document(''). Blocked URI(''), Original Policy(''), Violated Directive(''), Effective Directive(''), Disposition(''), Referrer(''), Status Code(''), Script Sample('')"
+                "WARNING:root:CSP violation in document(''). blocked URI(''), original policy(''), violated directive(''), effective directive(''), disposition(''), referrer(''), status code(''), script sample('')"
             ],
         )

@@ -19,7 +19,7 @@ django.setup()
 import cairosvg
 from PIL import Image
 
-from zerver.lib.integrations import WEBHOOK_INTEGRATIONS
+from zerver.lib.integrations import INTEGRATIONS
 from zerver.lib.storage import static_path
 from zerver.lib.upload import DEFAULT_AVATAR_SIZE, resize_avatar
 
@@ -57,20 +57,20 @@ def create_integration_bot_avatar(logo_path: str, bot_avatar_path: str) -> None:
 
 def generate_integration_bots_avatars(check_missing: bool = False) -> None:
     missing = set()
-    for webhook in WEBHOOK_INTEGRATIONS:
-        if not webhook.logo_path:
+    for integration in INTEGRATIONS.values():
+        if not integration.logo_path:
             continue
 
-        bot_avatar_path = webhook.get_bot_avatar_path()
+        bot_avatar_path = integration.get_bot_avatar_path()
         if bot_avatar_path is None:
             continue
 
         bot_avatar_path = os.path.join(ZULIP_PATH, "static", bot_avatar_path)
         if check_missing:
             if not os.path.isfile(bot_avatar_path):
-                missing.add(webhook.name)
+                missing.add(integration.name)
         else:
-            create_integration_bot_avatar(static_path(webhook.logo_path), bot_avatar_path)
+            create_integration_bot_avatar(static_path(integration.logo_path), bot_avatar_path)
 
     if missing:
         print(

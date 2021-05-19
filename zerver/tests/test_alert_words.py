@@ -192,6 +192,11 @@ class AlertWordTests(ZulipTestCase):
         self.assertFalse(self.message_does_alert(user, "Don't alert on http://t.co/one/ URLs"))
         self.assertFalse(self.message_does_alert(user, "Don't alert on http://t.co/one URLs"))
 
+        # We don't cause alerts for matches within a word.
+        self.assertFalse(
+            self.message_does_alert(user, "Don't alert on clone, twofold or seventytwofold")
+        )
+
     def test_update_alert_words(self) -> None:
         user = self.get_user()
         self.login_user(user)

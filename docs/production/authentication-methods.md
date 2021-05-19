@@ -137,7 +137,7 @@ of the following configurations:
 the `zproject.backends.ZulipLDAPAuthBackend` auth backend, in
 `AUTHENTICATION_BACKENDS` in `/etc/zulip/settings.py`.  After doing so
 (and as always [restarting the Zulip server](settings.md) to ensure
-your settings changes take effect), you should be able to log into
+your settings changes take effect), you should be able to log in to
 Zulip by entering your email address and LDAP password on the Zulip
 login form.
 
@@ -304,13 +304,26 @@ department: www
 ...
 ```
 
+More complex access control rules are possible via the
+`AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL` setting.  Note that
+`org_membership` takes precedence over
+`AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL`:
+
+1. If `org_membership` is set and allows access, access will be granted
+2. If `org_membership` is not set or does not allow access,
+   `AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL` will control access.
+
+This contains a map keyed by the organization's subdomain.  The
+organization list with multiple maps, that contain a map with an attribute, and a required
+value for that attribute. If for any of the attribute maps, all user's
+LDAP attributes match what is configured, access is granted.
+
 ```eval_rst
 .. warning::
-    Restricting access using this mechanism only affects authentication via LDAP,
+    Restricting access using these mechanisms only affects authentication via LDAP,
     and won't prevent users from accessing the organization using any other
     authentication backends that are enabled for the organization.
 ```
-
 
 ### Troubleshooting
 
@@ -405,8 +418,10 @@ it as follows:
     1. On your Zulip server, `mkdir -p /etc/zulip/saml/idps/`
     2. Put the IDP public certificate in `/etc/zulip/saml/idps/{idp_name}.crt`
     3. (Optional) Put the Zulip server public certificate in `/etc/zulip/saml/zulip-cert.crt`
-    4. (Optional) Put the Zulip server private key in `/etc/zulip/saml/zulip-private-key.key`
-    5. Set the proper permissions on these files and directories:
+       and the corresponding private key in `/etc/zulip/saml/zulip-private-key.key`. Note that
+       the certificate should be the single X.509 certificate for the server, not a full chain of
+       trust, which consists of multiple certificates.
+    4. Set the proper permissions on these files and directories:
 
     ```
     chown -R zulip.zulip /etc/zulip/saml/
@@ -441,7 +456,7 @@ IdP.
 ### IdP-initiated SSO
 
 The above configuration is sufficient for Service Provider initialized
-SSO, i.e. you can visit the Zulip webapp and click "Sign in with
+SSO, i.e. you can visit the Zulip web app and click "Sign in with
 {IdP}" and it'll correctly start the authentication flow.  If you are
 not hosting multiple organizations, with Zulip 3.0+, the above
 configuration is also sufficient for Identity Provider initiated SSO,

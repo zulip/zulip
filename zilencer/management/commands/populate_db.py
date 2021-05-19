@@ -12,7 +12,7 @@ from django.contrib.sessions.models import Session
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandParser
 from django.db import connection
-from django.db.models import F, Max
+from django.db.models import F
 from django.utils.timezone import now as timezone_now
 from django.utils.timezone import timedelta as timezone_timedelta
 
@@ -312,6 +312,11 @@ class Command(BaseCommand):
                 invite_required=False,
                 org_type=Realm.CORPORATE,
             )
+            RealmAuditLog.objects.create(
+                realm=zulip_realm,
+                event_type=RealmAuditLog.REALM_CREATED,
+                event_time=zulip_realm.date_created,
+            )
             RealmDomain.objects.create(realm=zulip_realm, domain="zulip.com")
             if options["test_suite"]:
                 mit_realm = Realm.objects.create(
@@ -321,6 +326,11 @@ class Command(BaseCommand):
                     invite_required=False,
                     org_type=Realm.CORPORATE,
                 )
+                RealmAuditLog.objects.create(
+                    realm=mit_realm,
+                    event_type=RealmAuditLog.REALM_CREATED,
+                    event_time=mit_realm.date_created,
+                )
                 RealmDomain.objects.create(realm=mit_realm, domain="mit.edu")
 
                 lear_realm = Realm.objects.create(
@@ -329,6 +339,11 @@ class Command(BaseCommand):
                     emails_restricted_to_domains=False,
                     invite_required=False,
                     org_type=Realm.CORPORATE,
+                )
+                RealmAuditLog.objects.create(
+                    realm=lear_realm,
+                    event_type=RealmAuditLog.REALM_CREATED,
+                    event_time=lear_realm.date_created,
                 )
 
                 # Default to allowing all members to send mentions in
@@ -344,7 +359,7 @@ class Command(BaseCommand):
                 ("Othello, the Moor of Venice", "othello@zulip.com"),
                 ("Iago", "iago@zulip.com"),
                 ("Prospero from The Tempest", "prospero@zulip.com"),
-                ("Cordelia Lear", "cordelia@zulip.com"),
+                ("Cordelia, Lear's daughter", "cordelia@zulip.com"),
                 ("King Hamlet", "hamlet@zulip.com"),
                 ("aaron", "AARON@zulip.com"),
                 ("Polonius", "polonius@zulip.com"),
@@ -746,7 +761,7 @@ class Command(BaseCommand):
 
                 testsuite_lear_users = [
                     ("King Lear", "king@lear.org"),
-                    ("Cordelia Lear", "cordelia@zulip.com"),
+                    ("Cordelia, Lear's daughter", "cordelia@zulip.com"),
                 ]
                 create_users(lear_realm, testsuite_lear_users, tos_version=settings.TOS_VERSION)
 
@@ -755,9 +770,15 @@ class Command(BaseCommand):
                 # suite fast, don't add these users and subscriptions
                 # when running populate_db for the test suite
 
+                # to imitate emoji insertions in stream names
+                raw_emojis = ["😎", "😂", "🐱‍👤"]
+
                 zulip_stream_dict: Dict[str, Dict[str, Any]] = {
                     "devel": {"description": "For developing"},
-                    "all": {"description": "For **everything**"},
+                    # ビデオゲーム - VideoGames (japanese)
+                    "ビデオゲーム": {
+                        "description": "Share your favorite video games!  {}".format(raw_emojis[2])
+                    },
                     "announce": {
                         "description": "For announcements",
                         "stream_post_policy": Stream.STREAM_POST_POLICY_ADMINS,
@@ -767,7 +788,9 @@ class Command(BaseCommand):
                     "social": {"description": "For socializing"},
                     "test": {"description": "For testing `code`"},
                     "errors": {"description": "For errors"},
-                    "sales": {"description": "For sales discussion"},
+                    # 조리법 - Recipes (Korean) , Пельмени - Dumplings (Russian)
+                    "조리법 "
+                    + raw_emojis[0]: {"description": "Everything cooking, from pasta to Пельмени"},
                 }
 
                 extra_stream_names = [
@@ -826,19 +849,6 @@ class Command(BaseCommand):
 
                 # Now subscribe everyone to these streams
                 subscribe_users_to_streams(zulip_realm, zulip_stream_dict)
-
-            if not options["test_suite"]:
-                # Update pointer of each user to point to the last message in their
-                # UserMessage rows with sender_id=user_profile_id.
-                users = list(
-                    UserMessage.objects.filter(message__sender_id=F("user_profile_id"))
-                    .values("user_profile_id")
-                    .annotate(pointer=Max("message_id"))
-                )
-                for user in users:
-                    UserProfile.objects.filter(id=user["user_profile_id"]).update(
-                        pointer=user["pointer"]
-                    )
 
             create_user_groups()
 

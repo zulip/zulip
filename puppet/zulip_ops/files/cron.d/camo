@@ -1,1 +1,1 @@
-* * * * * root /bin/bash -c '(pgrep -u nobody -f camo || /etc/init.d/camo restart) 2>&1 >>/var/log/camo/restart-log'
+* * * * * root /bin/bash -c '(pgrep -u nobody -F /var/run/camo.pid || /etc/init.d/camo restart) 2>&1 >>/var/log/camo/restart-log'

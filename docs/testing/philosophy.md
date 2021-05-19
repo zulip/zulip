@@ -141,7 +141,7 @@ Some examples of this philosophy:
   run, and produce this output".
 
 In the Zulip context:
-* Zulip uses the same API for our webapp as for our mobile clients and
+* Zulip uses the same API for our web app as for our mobile clients and
   third-party API clients, and most of our server tests are written
   against the Zulip API.
 * The tests for Zulip's incoming webhooks work by sending actual
@@ -195,3 +195,50 @@ these tests are defense in depth; the main way we prevent invalid
 access to streams is not offering developers a way to get a Stream
 object in server code except as mediated through these security check
 functions.
+
+## Share test setup code
+
+It's very common to need to write tests for permission checking or
+error handling code. When doing this, it's best to share the test
+setup code between success and failure tests.
+
+For example, when testing a function that returns a boolean (as
+opposed to an exception with a specific error messages), it's often
+better to write a single test function, `test_foo`, that calls the
+function several times and verifies its output for each value of the
+test conditions.
+
+The benefit of this strategy is that you guarantee that the test setup
+only differs as intended: Done well, it helps avoid the otherwise
+extremely common failure mode where a `test_foo_failure` test passes
+for the wrong reason.  (E.g. the action fails not because of the
+permission check, but because a required HTTP parameter was only added
+to an adjacent `test_foo_success`).
+
+## What isn't tested probably doesn't work
+
+Even the very best programmers make mistakes constantly. Further, it's
+impossible to do large codebase refactors (which are important to
+having a readable, happy, correct codebase) if doing so has a high
+risk of creating subtle bugs.
+
+As a result, it's important to test every change. For business logic,
+the best option is usually a high-quality automated test, that is
+designed to be robust to future refactoring.
+
+But for some things, like documentation and CSS, the only way to test
+is to view the element in a browser and try things that might not
+work.  What to test will vary with what is likely to break.  For
+example, after a significant change to Zulip's Markdown documentation,
+if you haven't verified every special bit of formatting visually and
+clicked every new link, there's a good chance that you've introduced a
+bug.
+
+Manual testing not only catches bugs, but it also helps developers
+learn more about the system and think about the existing semantics of
+a feature they're working on.
+
+When submitting a pull request that affects UI, it's extremely helpful
+to show a screencast of your feature working, because that allows a
+reviewer to save time that would otherwise be spent manually testing
+your changes.

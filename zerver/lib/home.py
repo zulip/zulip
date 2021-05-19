@@ -1,11 +1,15 @@
 import calendar
+import datetime
+import os
 import time
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
+import pytz
 from django.conf import settings
 from django.http import HttpRequest
 from django.utils import translation
+from django.utils.timezone import now as timezone_now
 from two_factor.utils import default_device
 
 from zerver.lib.events import do_events_register
@@ -35,6 +39,41 @@ class UserPermissionInfo:
     show_webathena: bool
 
 
+# LAST_SERVER_UPGRADE_TIME is the last time the server had a version deployed.
+if settings.PRODUCTION:  # nocoverage
+    timestamp = os.path.basename(os.path.abspath(settings.DEPLOY_ROOT))
+    LAST_SERVER_UPGRADE_TIME = datetime.datetime.strptime(timestamp, "%Y-%m-%d-%H-%M-%S").replace(
+        tzinfo=pytz.utc
+    )
+else:
+    LAST_SERVER_UPGRADE_TIME = timezone_now()
+
+
+def is_outdated_server(user_profile: Optional[UserProfile]) -> bool:
+    # Release tarballs are unpacked via `tar -xf`, which means the
+    # `mtime` on files in them is preserved from when the release
+    # tarball was built.  Checking this allows us to catch cases where
+    # someone has upgraded in the last year but to a release more than
+    # a year old.
+    git_version_path = os.path.join(settings.DEPLOY_ROOT, "version.py")
+    release_build_time = datetime.datetime.utcfromtimestamp(
+        os.path.getmtime(git_version_path)
+    ).replace(tzinfo=pytz.utc)
+
+    version_no_newer_than = min(LAST_SERVER_UPGRADE_TIME, release_build_time)
+    deadline = version_no_newer_than + datetime.timedelta(
+        days=settings.SERVER_UPGRADE_NAG_DEADLINE_DAYS
+    )
+
+    if user_profile is None or not user_profile.is_realm_admin:
+        # Administrators get warned at the deadline; all users 30 days later.
+        deadline = deadline + datetime.timedelta(days=30)
+
+    if timezone_now() > deadline:
+        return True
+    return False
+
+
 def get_furthest_read_time(user_profile: Optional[UserProfile]) -> Optional[float]:
     if user_profile is None:
         return time.time()
@@ -62,6 +101,15 @@ def get_bot_types(user_profile: Optional[UserProfile]) -> List[Dict[str, object]
     return bot_types
 
 
+def promote_sponsoring_zulip_in_realm(realm: Realm) -> bool:
+    if not settings.PROMOTE_SPONSORING_ZULIP:
+        return False
+
+    # If PROMOTE_SPONSORING_ZULIP is enabled, advertise sponsoring
+    # Zulip in the gear menu of non-paying organizations.
+    return realm.plan_type in [Realm.STANDARD_FREE, Realm.SELF_HOSTED]
+
+
 def get_billing_info(user_profile: UserProfile) -> BillingInfo:
     show_billing = False
     show_plans = False
@@ -79,7 +127,10 @@ def get_billing_info(user_profile: UserProfile) -> BillingInfo:
         if not user_profile.is_guest and user_profile.realm.plan_type == Realm.LIMITED:
             show_plans = True
 
-    return BillingInfo(show_billing=show_billing, show_plans=show_plans)
+    return BillingInfo(
+        show_billing=show_billing,
+        show_plans=show_plans,
+    )
 
 
 def get_user_permission_info(user_profile: Optional[UserProfile]) -> UserPermissionInfo:
@@ -123,6 +174,7 @@ def build_page_params_for_home_page_load(
         "notification_settings_null": True,
         "bulk_message_deletion": True,
         "user_avatar_url_field_optional": True,
+        "stream_typing_notifications": False,  # Set this to True when frontend support is implemented.
     }
 
     if user_profile is not None:
@@ -174,11 +226,14 @@ def build_page_params_for_home_page_load(
         test_suite=settings.TEST_SUITE,
         poll_timeout=settings.POLL_TIMEOUT,
         insecure_desktop_app=insecure_desktop_app,
+        server_needs_upgrade=is_outdated_server(user_profile),
         login_page=settings.HOME_NOT_LOGGED_IN,
         root_domain_uri=settings.ROOT_DOMAIN_URI,
         save_stacktraces=settings.SAVE_FRONTEND_STACKTRACES,
         warn_no_email=settings.WARN_NO_EMAIL,
         search_pills_enabled=settings.SEARCH_PILLS_ENABLED,
+        # Only show marketing email settings if on Zulip Cloud
+        enable_marketing_emails_enabled=settings.CORPORATE_ENABLED,
         # Misc. extra data.
         initial_servertime=time.time(),  # Used for calculating relative presence age
         default_language_name=get_language_name(register_ret["default_language"]),

@@ -12,7 +12,9 @@ const {page_params} = require("../zjsunit/zpage_params");
 const color_data = zrequire("color_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const people = zrequire("people");
+const sub_store = zrequire("sub_store");
 const stream_data = zrequire("stream_data");
+const stream_settings_data = zrequire("stream_settings_data");
 const settings_config = zrequire("settings_config");
 
 const me = {
@@ -134,11 +136,11 @@ test("renames", () => {
     stream_data.add_sub(sub);
     sub = stream_data.get_sub("Denmark");
     assert.equal(sub.color, "red");
-    sub = stream_data.get_sub_by_id(id);
+    sub = sub_store.get(id);
     assert.equal(sub.color, "red");
 
     stream_data.rename_sub(sub, "Sweden");
-    sub = stream_data.get_sub_by_id(id);
+    sub = sub_store.get(id);
     assert.equal(sub.color, "red");
     assert.equal(sub.name, "Sweden");
 
@@ -250,12 +252,19 @@ test("admin_options", () => {
         return sub;
     }
 
+    function is_realm_admin(sub) {
+        return stream_settings_data.get_sub_for_settings(sub).is_realm_admin;
+    }
+
+    function can_change_stream_permissions(sub) {
+        return stream_settings_data.get_sub_for_settings(sub).can_change_stream_permissions;
+    }
+
     // non-admins can't do anything
     page_params.is_admin = false;
     let sub = make_sub();
-    stream_data.update_calculated_fields(sub);
-    assert(!sub.is_realm_admin);
-    assert(!sub.can_change_stream_permissions);
+    assert(!is_realm_admin(sub));
+    assert(!can_change_stream_permissions(sub));
 
     // just a sanity check that we leave "normal" fields alone
     assert.equal(sub.color, "blue");
@@ -265,25 +274,22 @@ test("admin_options", () => {
 
     // admins can make public streams become private
     sub = make_sub();
-    stream_data.update_calculated_fields(sub);
-    assert(sub.is_realm_admin);
-    assert(sub.can_change_stream_permissions);
+    assert(is_realm_admin(sub));
+    assert(can_change_stream_permissions(sub));
 
     // admins can only make private streams become public
     // if they are subscribed
     sub = make_sub();
     sub.invite_only = true;
     sub.subscribed = false;
-    stream_data.update_calculated_fields(sub);
-    assert(sub.is_realm_admin);
-    assert(!sub.can_change_stream_permissions);
+    assert(is_realm_admin(sub));
+    assert(!can_change_stream_permissions(sub));
 
     sub = make_sub();
     sub.invite_only = true;
     sub.subscribed = true;
-    stream_data.update_calculated_fields(sub);
-    assert(sub.is_realm_admin);
-    assert(sub.can_change_stream_permissions);
+    assert(is_realm_admin(sub));
+    assert(can_change_stream_permissions(sub));
 });
 
 test("stream_settings", () => {
@@ -317,7 +323,7 @@ test("stream_settings", () => {
     stream_data.add_sub(amber);
     stream_data.add_sub(blue);
 
-    let sub_rows = stream_data.get_streams_for_settings_page();
+    let sub_rows = stream_settings_data.get_streams_for_settings_page();
     assert.equal(sub_rows[0].color, "blue");
     assert.equal(sub_rows[1].color, "amber");
     assert.equal(sub_rows[2].color, "cinnamon");
@@ -344,17 +350,16 @@ test("stream_settings", () => {
     });
     stream_data.update_stream_post_policy(sub, 1);
     stream_data.update_message_retention_setting(sub, -1);
-    stream_data.update_calculated_fields(sub);
     assert.equal(sub.invite_only, false);
     assert.equal(sub.history_public_to_subscribers, false);
     assert.equal(sub.stream_post_policy, stream_data.stream_post_policy_values.everyone.code);
     assert.equal(sub.message_retention_days, -1);
 
     // For guest user only retrieve subscribed streams
-    sub_rows = stream_data.get_updated_unsorted_subs();
+    sub_rows = stream_settings_data.get_updated_unsorted_subs();
     assert.equal(sub_rows.length, 3);
     page_params.is_guest = true;
-    sub_rows = stream_data.get_updated_unsorted_subs();
+    sub_rows = stream_settings_data.get_updated_unsorted_subs();
     assert.equal(sub_rows[0].name, "c");
     assert.equal(sub_rows[1].name, "a");
     assert.equal(sub_rows.length, 2);
@@ -411,14 +416,14 @@ test("delete_sub", () => {
 
     assert(stream_data.is_subscribed("Canada"));
     assert(stream_data.get_sub("Canada").stream_id, canada.stream_id);
-    assert(stream_data.get_sub_by_id(canada.stream_id).name, "Canada");
+    assert(sub_store.get(canada.stream_id).name, "Canada");
 
     stream_data.delete_sub(canada.stream_id);
     assert(!stream_data.is_subscribed("Canada"));
     assert(!stream_data.get_sub("Canada"));
-    assert(!stream_data.get_sub_by_id(canada.stream_id));
+    assert(!sub_store.get(canada.stream_id));
 
-    blueslip.expect("warn", "Failed to delete stream 99999");
+    blueslip.expect("warn", "Failed to archive stream 99999");
     stream_data.delete_sub(99999);
 });
 
@@ -542,7 +547,8 @@ test("notifications", () => {
     antarctica.push_notifications = null;
     antarctica.wildcard_mentions_notify = null;
 
-    const unmatched_streams = stream_data.get_unmatched_streams_for_notification_settings();
+    const unmatched_streams =
+        stream_settings_data.get_unmatched_streams_for_notification_settings();
     const expected_streams = [
         {
             desktop_notifications: true,
@@ -569,6 +575,9 @@ test("notifications", () => {
     ];
 
     assert.deepEqual(unmatched_streams, expected_streams);
+
+    // Get line coverage on defensive code with bogus stream_id.
+    assert(!stream_data.receives_notifications(999999));
 });
 
 const tony = {
@@ -765,7 +774,7 @@ test("edge_cases", () => {
     const bad_stream_ids = [555555, 99999];
 
     // just make sure we don't explode
-    stream_data.sort_for_stream_settings(bad_stream_ids);
+    stream_settings_data.sort_for_stream_settings(bad_stream_ids);
 });
 
 test("get_invite_stream_data", () => {

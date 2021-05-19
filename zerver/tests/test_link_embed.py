@@ -8,6 +8,7 @@ from requests.exceptions import ConnectionError
 
 from zerver.lib.actions import queue_json_publish
 from zerver.lib.cache import NotFoundInCache, cache_set, preview_url_cache_key
+from zerver.lib.camo import get_camo_url
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import MockPythonResponse, mock_queue_publish
 from zerver.lib.url_preview.oembed import get_oembed_data, strip_cdata
@@ -319,7 +320,7 @@ class PreviewTestCase(ZulipTestCase):
         url = "http://test.org/"
         mocked_response = mock.Mock(side_effect=self.create_mock_response(url))
 
-        with mock_queue_publish("zerver.views.message_edit.queue_json_publish") as patched:
+        with mock_queue_publish("zerver.lib.actions.queue_json_publish") as patched:
             result = self.client_patch(
                 "/json/messages/" + str(msg_id),
                 {
@@ -451,7 +452,7 @@ class PreviewTestCase(ZulipTestCase):
             )
 
         with mock_queue_publish(
-            "zerver.views.message_edit.queue_json_publish", wraps=wrapped_queue_json_publish
+            "zerver.lib.actions.queue_json_publish", wraps=wrapped_queue_json_publish
         ):
             result = self.client_patch(
                 "/json/messages/" + str(msg_id),
@@ -855,7 +856,7 @@ class PreviewTestCase(ZulipTestCase):
             )
 
         msg.refresh_from_db()
-        expected_content = '<p><a href="https://www.youtube.com/watch?v=eSJTXC7Ixgg">YouTube - Clearer Code at Scale - Static Types at Zulip and Dropbox</a></p>\n<div class="youtube-video message_inline_image"><a data-id="eSJTXC7Ixgg" href="https://www.youtube.com/watch?v=eSJTXC7Ixgg"><img src="https://i.ytimg.com/vi/eSJTXC7Ixgg/default.jpg"></a></div>'
+        expected_content = f"""<p><a href="https://www.youtube.com/watch?v=eSJTXC7Ixgg">YouTube - Clearer Code at Scale - Static Types at Zulip and Dropbox</a></p>\n<div class="youtube-video message_inline_image"><a data-id="eSJTXC7Ixgg" href="https://www.youtube.com/watch?v=eSJTXC7Ixgg"><img src="{get_camo_url("https://i.ytimg.com/vi/eSJTXC7Ixgg/default.jpg")}"></a></div>"""
         self.assertEqual(expected_content, msg.rendered_content)
 
     @override_settings(INLINE_URL_EMBED_PREVIEW=True)
@@ -892,5 +893,5 @@ class PreviewTestCase(ZulipTestCase):
             )
 
         msg.refresh_from_db()
-        expected_content = '<p><a href="https://www.youtube.com/watch?v=eSJTXC7Ixgg">YouTube link</a></p>\n<div class="youtube-video message_inline_image"><a data-id="eSJTXC7Ixgg" href="https://www.youtube.com/watch?v=eSJTXC7Ixgg"><img src="https://i.ytimg.com/vi/eSJTXC7Ixgg/default.jpg"></a></div>'
+        expected_content = f"""<p><a href="https://www.youtube.com/watch?v=eSJTXC7Ixgg">YouTube link</a></p>\n<div class="youtube-video message_inline_image"><a data-id="eSJTXC7Ixgg" href="https://www.youtube.com/watch?v=eSJTXC7Ixgg"><img src="{get_camo_url("https://i.ytimg.com/vi/eSJTXC7Ixgg/default.jpg")}"></a></div>"""
         self.assertEqual(expected_content, msg.rendered_content)

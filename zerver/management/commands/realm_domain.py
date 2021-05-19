@@ -21,7 +21,7 @@ class Command(ZulipBaseCommand):
             "--allow-subdomains", action="store_true", help="Whether subdomains are allowed or not."
         )
         parser.add_argument("domain", metavar="<domain>", nargs="?", help="domain to add or remove")
-        self.add_realm_args(parser, True)
+        self.add_realm_args(parser, required=True)
 
     def handle(self, *args: Any, **options: str) -> None:
         realm = self.get_realm(options)

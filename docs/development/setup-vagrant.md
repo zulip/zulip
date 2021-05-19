@@ -47,7 +47,7 @@ a proxy to access the internet.)
 - **All**: 2GB available RAM, Active broadband internet connection, [GitHub account][set-up-git].
 - **macOS**: macOS (10.11 El Capitan or newer recommended)
 - **Ubuntu LTS**: 20.04 or 18.04
-  - or **Debian**: 10 "buster"
+  - or **Debian**: 10 "buster" or 11 "bullseye"
 - **Windows**: Windows 64-bit (Win 10 recommended), hardware
   virtualization enabled (VT-x or AMD-V), administrator access.
 
@@ -154,7 +154,7 @@ Debian](https://docs.docker.com/install/linux/docker-ce/debian/).
 
 ```eval_rst
 .. note::
-    We now recommend using `WSL 2 for Windows development <../development/setup-advanced.html#installing-directly-on-windows-10-experimental>`_.
+    We recommend using `WSL 2 for Windows development <../development/setup-advanced.html#installing-directly-on-windows-10-with-wsl-2>`_.
 ```
 
 1. Install <a href="https://gitforwindows.org" target="_blank">Git for Windows</a>, which installs *Git BASH*.
@@ -305,10 +305,9 @@ proxy to access the internet.) `vagrant up` can fail while
 provisioning if your Internet connection is unreliable.  To retry, you
 can use `vagrant provision` (`vagrant up` will just boot the guest
 without provisioning after the first time).  Other common issues are
-documented in the
-[Troubleshooting and Common Errors](#troubleshooting-and-common-errors)
-section.  If that doesn't help, please visit <a href="https://chat.zulip.org/#narrow/stream/21-provision-help" target="_blank">#provision help</a> in the [Zulip development community server](../contributing/chat-zulip-org.md) for
-real-time help.
+documented in the [Troubleshooting and Common Errors](#troubleshooting-and-common-errors)
+section. If that doesn't help, please visit <a href="https://chat.zulip.org/#narrow/stream/21-provision-help" target="_blank">#provision help</a>
+in the [Zulip development community server](../contributing/chat-zulip-org.md) for real-time help.
 
 On Windows, you will see the message `The system cannot find the path
 specified.` several times.  This is normal and is not a problem.
@@ -428,7 +427,7 @@ running Git commands in Terminal (macOS/Ubuntu) or Git BASH (Windows) in the
 directory where you cloned Zulip on your main machine.
 
 If you're new to working with Git/GitHub, check out our [Git & GitHub
-Guide][rtd-git-guide].
+guide][rtd-git-guide].
 
 #### Maintaining the development environment
 
@@ -526,7 +525,7 @@ $ ./tools/run-dev.py
 
 Next, read the following to learn more about developing for Zulip:
 
-* [Git & GitHub Guide][rtd-git-guide]
+* [Git & GitHub guide][rtd-git-guide]
 * [Using the development environment][rtd-using-dev-env]
 * [Testing][rtd-testing] (and [Configuring CI][ci] to
 run the full test suite against any branches you push to your fork,

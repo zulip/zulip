@@ -16,7 +16,7 @@ from zerver.lib.message import (
     get_raw_unread_data,
 )
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import get_subscription, tornado_redirected_to_list
+from zerver.lib.test_helpers import get_subscription, queries_captured, tornado_redirected_to_list
 from zerver.lib.topic_mutes import add_topic_mute
 from zerver.models import (
     Message,
@@ -830,12 +830,12 @@ class GetUnreadMsgsTest(ZulipTestCase):
         pm1_message_id = self.send_personal_message(sender, user_profile, "hello1")
         pm2_message_id = self.send_personal_message(sender, user_profile, "hello2")
 
-        muted_stream = self.subscribe(user_profile, "Muted Stream")
+        muted_stream = self.subscribe(user_profile, "Muted stream")
         self.mute_stream(user_profile, muted_stream)
         self.mute_topic(user_profile, "Denmark", "muted-topic")
 
         stream_message_id = self.send_stream_message(sender, "Denmark", "hello")
-        muted_stream_message_id = self.send_stream_message(sender, "Muted Stream", "hello")
+        muted_stream_message_id = self.send_stream_message(sender, "Muted stream", "hello")
         muted_topic_message_id = self.send_stream_message(
             sender,
             "Denmark",
@@ -886,7 +886,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
 
         unread_stream = result["streams"][2]
         self.assertEqual(
-            unread_stream["stream_id"], get_stream("Muted Stream", user_profile.realm).id
+            unread_stream["stream_id"], get_stream("Muted stream", user_profile.realm).id
         )
         self.assertEqual(unread_stream["topic"], "test")
         self.assertEqual(unread_stream["unread_message_ids"], [muted_stream_message_id])
@@ -1305,7 +1305,9 @@ class MessageAccessTests(ZulipTestCase):
             Message.objects.select_related().get(id=message_id) for message_id in message_ids
         ]
 
-        filtered_messages = bulk_access_messages(later_subscribed_user, messages)
+        with queries_captured() as queries:
+            filtered_messages = bulk_access_messages(later_subscribed_user, messages, stream=stream)
+        self.assert_length(queries, 2)
 
         # Message sent before subscribing wouldn't be accessible by later
         # subscribed user as stream has protected history
@@ -1314,7 +1316,9 @@ class MessageAccessTests(ZulipTestCase):
 
         do_change_stream_invite_only(stream, True, history_public_to_subscribers=True)
 
-        filtered_messages = bulk_access_messages(later_subscribed_user, messages)
+        with queries_captured() as queries:
+            filtered_messages = bulk_access_messages(later_subscribed_user, messages, stream=stream)
+        self.assert_length(queries, 2)
 
         # Message sent before subscribing are accessible by 8user as stream
         # don't have protected history
@@ -1323,9 +1327,18 @@ class MessageAccessTests(ZulipTestCase):
         # Testing messages accessiblity for an unsubscribed user
         unsubscribed_user = self.example_user("ZOE")
 
-        filtered_messages = bulk_access_messages(unsubscribed_user, messages)
+        with queries_captured() as queries:
+            filtered_messages = bulk_access_messages(unsubscribed_user, messages, stream=stream)
+        self.assert_length(queries, 2)
 
         self.assertEqual(len(filtered_messages), 0)
+
+        # Verify an exception is thrown if called where the passed
+        # stream not matching the messages.
+        with self.assertRaises(AssertionError):
+            bulk_access_messages(
+                unsubscribed_user, messages, stream=get_stream("Denmark", unsubscribed_user.realm)
+            )
 
     def test_bulk_access_messages_public_stream(self) -> None:
         user = self.example_user("hamlet")
@@ -1333,7 +1346,7 @@ class MessageAccessTests(ZulipTestCase):
 
         # Testing messages accessiblity including a public stream message
         stream_name = "public_stream"
-        self.subscribe(user, stream_name)
+        stream = self.subscribe(user, stream_name)
         message_one_id = self.send_stream_message(user, stream_name, "Message one")
 
         later_subscribed_user = self.example_user("cordelia")
@@ -1348,13 +1361,17 @@ class MessageAccessTests(ZulipTestCase):
         ]
 
         # All public stream messages are always accessible
-        filtered_messages = bulk_access_messages(later_subscribed_user, messages)
+        with queries_captured() as queries:
+            filtered_messages = bulk_access_messages(later_subscribed_user, messages, stream=stream)
         self.assertEqual(len(filtered_messages), 2)
+        self.assert_length(queries, 2)
 
         unsubscribed_user = self.example_user("ZOE")
-        filtered_messages = bulk_access_messages(unsubscribed_user, messages)
+        with queries_captured() as queries:
+            filtered_messages = bulk_access_messages(unsubscribed_user, messages, stream=stream)
 
         self.assertEqual(len(filtered_messages), 2)
+        self.assert_length(queries, 2)
 
 
 class PersonalMessagesFlagTest(ZulipTestCase):

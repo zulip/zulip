@@ -10,7 +10,7 @@ class Command(ZulipBaseCommand):
     help = "Generates invite link that can be used for inviting multiple users"
 
     def add_arguments(self, parser: ArgumentParser) -> None:
-        self.add_realm_args(parser, True)
+        self.add_realm_args(parser, required=True)
 
         parser.add_argument("-s", "--streams", help="A comma-separated list of stream names.")
 

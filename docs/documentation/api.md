@@ -20,7 +20,7 @@ once you notice one error in API documentation, you no longer trust it
 to be correct, which ends up wasting the time of its users.
 
 Since it's very difficult to not make little mistakes when writing any
-code of untested code, the only good solution to this is a way to test
+untested code, the only good solution to this is a way to test
 the documentation.  We found dozens of errors in the process of adding
 the validation Zulip has today.
 
@@ -278,6 +278,12 @@ above.
    just reload to see an updated version as you edit).  You should
    make sure that copy-pasting the code in your examples works, and
    post an example of the output in the pull request.
+
+1. Document the new API in `templates/zerver/api/changelog.md` and
+   bump the `API_FEATURE_LEVEL` in `version.py`. Also, make sure to
+   add a `**Changes**` entry in the description of the new API/event
+   in `zerver/openapi/zulip.yaml`, which mentions the API feature level
+   at which they were added.
 
 [javascript-examples]: https://github.com/zulip/zulip-js/tree/master/examples
 

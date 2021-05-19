@@ -15,6 +15,7 @@ const message_store = zrequire("message_store");
 const muting = zrequire("muting");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
+const sub_store = zrequire("sub_store");
 const unread = zrequire("unread");
 
 const me = {
@@ -246,9 +247,9 @@ test("num_unread_for_topic", (override) => {
     // messages.
     const stream_id = 301;
 
-    override(stream_data, "get_sub_by_id", (arg) => {
+    override(sub_store, "get", (arg) => {
         if (arg === stream_id) {
-            return {name: "Some Stream"};
+            return {name: "Some stream"};
         }
         throw new Error(`Unknown stream ${arg}`);
     });
@@ -320,7 +321,7 @@ test("home_messages", (override) => {
 
     const stream_id = 401;
 
-    override(stream_data, "get_sub_by_id", () => ({
+    override(sub_store, "get", () => ({
         name: "whatever",
     }));
 

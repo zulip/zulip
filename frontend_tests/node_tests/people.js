@@ -6,7 +6,7 @@ const {parseISO} = require("date-fns");
 const _ = require("lodash");
 const MockDate = require("mockdate");
 
-const {i18n} = require("../zjsunit/i18n");
+const {$t} = require("../zjsunit/i18n");
 const {mock_esm, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
@@ -14,6 +14,7 @@ const {page_params} = require("../zjsunit/zpage_params");
 
 const message_user_ids = mock_esm("../../static/js/message_user_ids");
 
+const muting = zrequire("muting");
 const people = zrequire("people");
 const settings_config = zrequire("settings_config");
 const visibility = settings_config.email_address_visibility_values;
@@ -39,7 +40,9 @@ const me = {
     timezone: "America/Los_Angeles",
     is_admin: false,
     is_guest: false,
+    is_moderator: false,
     is_bot: false,
+    role: 400,
     // no avatar, so client should construct a /avatar/{user_id} URL.
 };
 
@@ -55,6 +58,7 @@ function initialize() {
     people.add_active_user({...me});
     people.initialize_current_user(me.user_id);
     set_email_visibility(admins_only);
+    muting.set_muted_users([]);
 }
 
 function test_people(label, f) {
@@ -85,7 +89,9 @@ const realm_admin = {
     is_owner: false,
     is_admin: true,
     is_guest: false,
+    is_moderator: false,
     is_bot: false,
+    role: 200,
 };
 
 const guest = {
@@ -95,7 +101,9 @@ const guest = {
     is_owner: false,
     is_admin: false,
     is_guest: true,
+    is_moderator: false,
     is_bot: false,
+    role: 600,
 };
 
 const realm_owner = {
@@ -105,7 +113,9 @@ const realm_owner = {
     is_owner: true,
     is_admin: true,
     is_guest: false,
+    is_moderator: false,
     is_bot: false,
+    role: 100,
 };
 
 const bot_botson = {
@@ -114,6 +124,18 @@ const bot_botson = {
     full_name: "Bot Botson",
     is_bot: true,
     bot_owner_id: isaac.user_id,
+};
+
+const moderator = {
+    email: "moderator@example.com",
+    full_name: "Moderator",
+    user_id: 36,
+    is_owner: false,
+    is_admin: false,
+    is_guest: false,
+    is_moderator: true,
+    is_bot: false,
+    role: 300,
 };
 
 const steven = {
@@ -242,6 +264,8 @@ test_people("basics", () => {
     const email = "isaac@example.com";
 
     assert(!people.is_known_user_id(32));
+    assert(!people.is_known_user(isaac));
+    assert(!people.is_known_user(undefined));
     assert(!people.is_valid_full_name_and_user_id(full_name, 32));
     assert.equal(people.get_user_id_from_name(full_name), undefined);
 
@@ -251,6 +275,7 @@ test_people("basics", () => {
 
     assert(people.is_valid_full_name_and_user_id(full_name, 32));
     assert(people.is_known_user_id(32));
+    assert(people.is_known_user(isaac));
     assert.equal(people.get_active_human_count(), 2);
 
     assert.equal(people.get_user_id_from_name(full_name), 32);
@@ -372,14 +397,41 @@ test_people("pm_lookup_key", () => {
 
 test_people("get_recipients", () => {
     people.add_active_user(isaac);
+    people.add_active_user(linus);
     assert.equal(people.get_recipients("30"), "Me Myself");
     assert.equal(people.get_recipients("30,32"), "Isaac Newton");
+
+    muting.add_muted_user(304);
+    assert.equal(people.get_recipients("304,32"), "Isaac Newton, translated: Muted user");
 });
 
-test_people("safe_full_names", () => {
+test_people("get_full_name", () => {
     people.add_active_user(isaac);
-    const names = people.safe_full_names([me.user_id, isaac.user_id]);
+    const names = people.get_full_name(isaac.user_id);
+    assert.equal(names, "Isaac Newton");
+});
+
+test_people("get_full_names_for_poll_option", () => {
+    people.add_active_user(isaac);
+    const names = people.get_full_names_for_poll_option([me.user_id, isaac.user_id]);
     assert.equal(names, "Me Myself, Isaac Newton");
+});
+
+test_people("get_display_full_names", () => {
+    people.initialize_current_user(me.user_id);
+    people.add_active_user(steven);
+    people.add_active_user(bob);
+    people.add_active_user(charles);
+    const user_ids = [me.user_id, steven.user_id, bob.user_id, charles.user_id];
+    let names = people.get_display_full_names(user_ids);
+
+    // This doesn't do anything special for the current user. The caller has
+    // to take care of such cases and do the appropriate.
+    assert.deepEqual(names, ["Me Myself", "Steven", "Bob van Roberts", "Charles Dickens"]);
+
+    muting.add_muted_user(charles.user_id);
+    names = people.get_display_full_names(user_ids);
+    assert.deepEqual(names, ["Me Myself", "Steven", "Bob van Roberts", "translated: Muted user"]);
 });
 
 test_people("my_custom_profile_data", () => {
@@ -426,12 +478,14 @@ test_people("user_type", () => {
     people.add_active_user(realm_admin);
     people.add_active_user(guest);
     people.add_active_user(realm_owner);
+    people.add_active_user(moderator);
     people.add_active_user(bot_botson);
-    assert.equal(people.get_user_type(me.user_id), i18n.t("Member"));
-    assert.equal(people.get_user_type(realm_admin.user_id), i18n.t("Administrator"));
-    assert.equal(people.get_user_type(guest.user_id), i18n.t("Guest"));
-    assert.equal(people.get_user_type(realm_owner.user_id), i18n.t("Owner"));
-    assert.equal(people.get_user_type(bot_botson.user_id), i18n.t("Bot"));
+    assert.equal(people.get_user_type(me.user_id), $t({defaultMessage: "Member"}));
+    assert.equal(people.get_user_type(realm_admin.user_id), $t({defaultMessage: "Administrator"}));
+    assert.equal(people.get_user_type(guest.user_id), $t({defaultMessage: "Guest"}));
+    assert.equal(people.get_user_type(realm_owner.user_id), $t({defaultMessage: "Owner"}));
+    assert.equal(people.get_user_type(moderator.user_id), $t({defaultMessage: "Moderator"}));
+    assert.equal(people.get_user_type(bot_botson.user_id), $t({defaultMessage: "Bot"}));
 });
 
 test_people("updates", () => {
@@ -489,9 +543,27 @@ test_people("get_people_for_stream_create", () => {
 
     const others = people.get_people_for_stream_create();
     const expected = [
-        {email: "alice1@example.com", user_id: alice1.user_id, full_name: "Alice"},
-        {email: "alice2@example.com", user_id: alice2.user_id, full_name: "Alice"},
-        {email: "bob@example.com", user_id: bob.user_id, full_name: "Bob van Roberts"},
+        {
+            email: "alice1@example.com",
+            user_id: alice1.user_id,
+            full_name: "Alice",
+            checked: false,
+            disabled: false,
+        },
+        {
+            email: "alice2@example.com",
+            user_id: alice2.user_id,
+            full_name: "Alice",
+            checked: false,
+            disabled: false,
+        },
+        {
+            email: "bob@example.com",
+            user_id: bob.user_id,
+            full_name: "Bob van Roberts",
+            checked: false,
+            disabled: false,
+        },
     ];
     assert.deepEqual(others, expected);
 });
@@ -619,14 +691,18 @@ test_people("message_methods", () => {
         "https://secure.gravatar.com/avatar/6dbdd7946b58d8b11351fcb27e5cdd55?d=identicon&s=50",
     );
 
-    assert.deepEqual(people.sender_info_with_small_avatar_urls_for_sender_ids([30]), [
+    muting.add_muted_user(30);
+    assert.deepEqual(people.sender_info_for_recent_topics_row([30]), [
         {
             avatar_url_small: "/avatar/30&s=50",
+            is_muted: true,
             email: "me@example.com",
             full_name: me.full_name,
             is_admin: false,
             is_bot: false,
             is_guest: false,
+            is_moderator: false,
+            role: 400,
             timezone: "America/Los_Angeles",
             user_id: 30,
         },

@@ -95,7 +95,6 @@ test("build_private_messages_list", (override) => {
             is_active: false,
             url: "#narrow/pm-with/101,102-group",
             user_circle_class: "user_circle_fraction",
-            fraction_present: undefined,
             is_group: true,
         },
     ];
@@ -136,7 +135,6 @@ test("build_private_messages_list_bot", (override) => {
             is_active: false,
             url: "#narrow/pm-with/314-outgoingwebhook",
             user_circle_class: "user_circle_green",
-            fraction_present: undefined,
             is_group: false,
         },
         {
@@ -147,7 +145,6 @@ test("build_private_messages_list_bot", (override) => {
             is_active: false,
             url: "#narrow/pm-with/101,102-group",
             user_circle_class: "user_circle_fraction",
-            fraction_present: undefined,
             is_group: true,
         },
     ];
@@ -160,18 +157,16 @@ test("update_dom_with_unread_counts", (override) => {
 
     override(narrow_state, "active", () => true);
 
-    const total_value = $.create("total-value-stub");
     const total_count = $.create("total-count-stub");
-    const private_li = $(".top_left_private_messages");
-    private_li.set_find_results(".count", total_count);
-    total_count.set_find_results(".value", total_value);
+    const private_li = $(".top_left_private_messages .private_messages_header");
+    private_li.set_find_results(".unread_count", total_count);
 
     counts = {
         private_message_count: 10,
     };
 
     pm_list.update_dom_with_unread_counts(counts);
-    assert.equal(total_value.text(), "10");
+    assert.equal(total_count.text(), "10");
     assert(total_count.visible());
 
     counts = {
@@ -179,7 +174,7 @@ test("update_dom_with_unread_counts", (override) => {
     };
 
     pm_list.update_dom_with_unread_counts(counts);
-    assert.equal(total_value.text(), "");
+    assert.equal(total_count.text(), "");
     assert(!total_count.visible());
 });
 

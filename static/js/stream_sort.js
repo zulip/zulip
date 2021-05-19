@@ -1,4 +1,5 @@
 import * as stream_data from "./stream_data";
+import * as sub_store from "./sub_store";
 import * as util from "./util";
 
 let previous_pinned;
@@ -14,8 +15,8 @@ export function get_streams() {
 }
 
 function compare_function(a, b) {
-    const stream_a = stream_data.get_sub_by_id(a);
-    const stream_b = stream_data.get_sub_by_id(b);
+    const stream_a = sub_store.get(a);
+    const stream_b = sub_store.get(b);
 
     const stream_name_a = stream_a ? stream_a.name : "";
     const stream_name_b = stream_b ? stream_b.name : "";
@@ -33,7 +34,7 @@ function filter_streams_by_search(streams, search_term) {
 
     const filtered_streams = streams.filter((stream) =>
         search_terms.some((search_term) => {
-            const lower_stream_name = stream_data.get_sub_by_id(stream).name.toLowerCase();
+            const lower_stream_name = sub_store.get(stream).name.toLowerCase();
             const cands = lower_stream_name.split(" ");
             cands.push(lower_stream_name);
             return cands.some((name) => name.startsWith(search_term));
@@ -55,7 +56,7 @@ export function sort_groups(streams, search_term) {
     const dormant_streams = [];
 
     for (const stream of streams) {
-        const sub = stream_data.get_sub_by_id(stream);
+        const sub = sub_store.get(stream);
         const pinned = sub.pin_to_top;
         if (pinned) {
             pinned_streams.push(stream);

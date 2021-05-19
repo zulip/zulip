@@ -6,10 +6,10 @@ from django.views.generic import TemplateView
 
 from corporate.views import (
     billing_home,
-    change_plan_status,
     initial_upgrade,
     replace_payment_source,
     sponsorship,
+    update_plan,
     upgrade,
 )
 from zerver.lib.rest import rest_path
@@ -27,7 +27,7 @@ i18n_urlpatterns: Any = [
 v1_api_and_json_patterns = [
     rest_path("billing/upgrade", POST=upgrade),
     rest_path("billing/sponsorship", POST=sponsorship),
-    rest_path("billing/plan/change", POST=change_plan_status),
+    rest_path("billing/plan", PATCH=update_plan),
     rest_path("billing/sources/change", POST=replace_payment_source),
 ]
 

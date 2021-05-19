@@ -5,7 +5,7 @@ used for a variety of purposes:
 
 * Asynchronously doing expensive operations like sending email
   notifications which can take seconds per email and thus would
-  otherwise timeout when 100s are triggered at once (E.g. inviting a
+  otherwise time out when 100s are triggered at once (E.g. inviting a
   lot of new users to a realm).
 
 * Asynchronously doing non-time-critical somewhat expensive operations

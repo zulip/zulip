@@ -59,13 +59,13 @@ const draft_1 = {
     stream: "stream",
     topic: "topic",
     type: "stream",
-    content: "Test Stream Message",
+    content: "Test stream message",
 };
 const draft_2 = {
     private_message_recipient: "aaron@zulip.com",
     reply_to: "aaron@zulip.com",
     type: "private",
-    content: "Test Private Message",
+    content: "Test private message",
 };
 const short_msg = {
     stream: "stream",
@@ -174,10 +174,6 @@ test("initialize", (override) => {
     };
 
     drafts.initialize();
-
-    const message_content = $("#compose-textarea");
-    assert.equal(message_content.get_on_handler("focusout"), drafts.update_draft);
-    message_content.trigger("focusout");
 });
 
 test("remove_old_drafts", () => {
@@ -185,14 +181,14 @@ test("remove_old_drafts", () => {
         stream: "stream",
         subject: "topic",
         type: "stream",
-        content: "Test Stream Message",
+        content: "Test stream message",
         updatedAt: Date.now(),
     };
     const draft_4 = {
         private_message_recipient: "aaron@zulip.com",
         reply_to: "aaron@zulip.com",
         type: "private",
-        content: "Test Private Message",
+        content: "Test private message",
         updatedAt: new Date().setDate(-30),
     };
     const draft_model = drafts.draft_model;
@@ -220,35 +216,35 @@ test("format_drafts", (override) => {
         stream: "stream",
         topic: "topic",
         type: "stream",
-        content: "Test Stream Message",
+        content: "Test stream message",
         updatedAt: feb12().getTime(),
     };
     const draft_2 = {
         private_message_recipient: "aaron@zulip.com",
         reply_to: "aaron@zulip.com",
         type: "private",
-        content: "Test Private Message",
+        content: "Test private message",
         updatedAt: date(-1),
     };
     const draft_3 = {
         stream: "stream 2",
         subject: "topic",
         type: "stream",
-        content: "Test Stream Message 2",
+        content: "Test stream message 2",
         updatedAt: date(-10),
     };
     const draft_4 = {
         private_message_recipient: "aaron@zulip.com",
         reply_to: "iago@zulip.com",
         type: "private",
-        content: "Test Private Message 2",
+        content: "Test private message 2",
         updatedAt: date(-5),
     };
     const draft_5 = {
         private_message_recipient: "aaron@zulip.com",
         reply_to: "zoe@zulip.com",
         type: "private",
-        content: "Test Private Message 3",
+        content: "Test private message 3",
         updatedAt: date(-2),
     };
 
@@ -260,28 +256,28 @@ test("format_drafts", (override) => {
             stream_color: "#FFFFFF",
             dark_background: "",
             topic: "topic",
-            raw_content: "Test Stream Message",
+            raw_content: "Test stream message",
             time_stamp: "7:55 AM",
         },
         {
             draft_id: "id2",
             is_stream: false,
             recipients: "aaron@zulip.com",
-            raw_content: "Test Private Message",
+            raw_content: "Test private message",
             time_stamp: "Jan 30",
         },
         {
             draft_id: "id5",
             is_stream: false,
             recipients: "aaron@zulip.com",
-            raw_content: "Test Private Message 3",
+            raw_content: "Test private message 3",
             time_stamp: "Jan 29",
         },
         {
             draft_id: "id4",
             is_stream: false,
             recipients: "aaron@zulip.com",
-            raw_content: "Test Private Message 2",
+            raw_content: "Test private message 2",
             time_stamp: "Jan 26",
         },
         {
@@ -291,7 +287,7 @@ test("format_drafts", (override) => {
             stream_color: "#FFFFFF",
             dark_background: "",
             topic: "topic",
-            raw_content: "Test Stream Message 2",
+            raw_content: "Test stream message 2",
             time_stamp: "Jan 21",
         },
     ];

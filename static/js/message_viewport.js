@@ -1,9 +1,11 @@
 import $ from "jquery";
 
 import * as blueslip from "./blueslip";
-import {media_breakpoints} from "./css_variables";
+import {media_breakpoints_num} from "./css_variables";
 import * as message_lists from "./message_lists";
 import * as message_scroll from "./message_scroll";
+import * as notifications from "./notifications";
+import * as overlays from "./overlays";
 import * as rows from "./rows";
 import * as util from "./util";
 
@@ -314,7 +316,7 @@ export function is_narrow() {
     // This basically returns true when we hide the right sidebar for
     // the left_side_userlist skinny mode.  It would be nice to have a less brittle
     // test for this.
-    return window.innerWidth < Number(media_breakpoints.xl_min.slice(0, -2));
+    return window.innerWidth < media_breakpoints_num.xl;
 }
 
 export function system_initiated_animate_scroll(scroll_amount) {
@@ -472,4 +474,15 @@ export function initialize() {
     $(document).on("message_selected.zulip wheel", () => {
         stop_auto_scrolling();
     });
+}
+
+export function is_visible_and_focused() {
+    if (
+        overlays.is_active() ||
+        !notifications.is_window_focused() ||
+        !$("#message_feed_container").is(":visible")
+    ) {
+        return false;
+    }
+    return true;
 }

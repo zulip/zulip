@@ -1,10 +1,10 @@
 import $ from "jquery";
 import _ from "lodash";
+import tippy from "tippy.js";
 import WinChan from "winchan";
 
 // You won't find every click handler here, but it's a good place to start!
 
-import render_buddy_list_tooltip from "../templates/buddy_list_tooltip.hbs";
 import render_buddy_list_tooltip_content from "../templates/buddy_list_tooltip_content.hbs";
 
 import * as activity from "./activity";
@@ -15,10 +15,11 @@ import * as channel from "./channel";
 import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
+import {media_breakpoints_num} from "./css_variables";
 import * as emoji_picker from "./emoji_picker";
 import * as hash_util from "./hash_util";
 import * as hotspots from "./hotspots";
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_flags from "./message_flags";
@@ -43,14 +44,6 @@ import * as ui_util from "./ui_util";
 import * as unread_ops from "./unread_ops";
 import * as user_status_ui from "./user_status_ui";
 import * as util from "./util";
-
-function convert_enter_to_click(e) {
-    const key = e.which;
-    if (key === 13) {
-        // Enter
-        $(e.currentTarget).trigger("click");
-    }
-}
 
 export function initialize() {
     // MESSAGE CLICKING
@@ -136,6 +129,13 @@ export function initialize() {
 
         // For spoilers, allow clicking either the header or elements within it
         if (target.is(".spoiler-header") || target.parents(".spoiler-header").length > 0) {
+            return true;
+        }
+
+        // Ideally, this should be done via ClipboardJS, but it doesn't support
+        // feature of stopPropagation once clicked.
+        // See https://github.com/zenorocha/clipboard.js/pull/475
+        if (target.is(".copy_codeblock") || target.parents(".copy_codeblock").length > 0) {
             return true;
         }
 
@@ -243,40 +243,11 @@ export function initialize() {
         e.preventDefault();
     });
 
-    // TOOLTIP FOR MESSAGE REACTIONS
-
-    $("#main_div").on("mouseenter", ".message_reaction", (e) => {
+    $("body").on("click", ".reveal_hidden_message", (e) => {
+        const message_id = rows.id($(e.currentTarget).closest(".message_row"));
+        message_lists.current.view.reveal_hidden_message(message_id);
         e.stopPropagation();
-        const elem = $(e.currentTarget);
-        const local_id = elem.attr("data-reaction-id");
-        const message_id = rows.get_message_id(e.currentTarget);
-        const title = reactions.get_reaction_title_data(message_id, local_id);
-
-        elem.tooltip({
-            title,
-            trigger: "hover",
-            placement: "bottom",
-            animation: false,
-        });
-        elem.tooltip("show");
-        $(".tooltip, .tooltip-inner").css({
-            "margin-left": "15px",
-            "max-width": $(window).width() * 0.6,
-        });
-        // Remove the arrow from the tooltip.
-        $(".tooltip-arrow").remove();
-    });
-
-    $("#main_div").on("mouseleave", ".message_reaction", (e) => {
-        e.stopPropagation();
-        $(e.currentTarget).tooltip("destroy");
-    });
-
-    // DESTROY PERSISTING TOOLTIPS ON HOVER
-
-    $("body").on("mouseenter", ".tooltip", (e) => {
-        e.stopPropagation();
-        $(e.currentTarget).remove();
+        e.preventDefault();
     });
 
     $("#main_div").on("click", "a.stream", function (e) {
@@ -349,7 +320,7 @@ export function initialize() {
     $("body").on("click", ".copy_message", function (e) {
         const row = $(this).closest(".message_row");
         message_edit.end_message_row_edit(row);
-        row.find(".alert-msg").text(i18n.t("Copied!"));
+        row.find(".alert-msg").text($t({defaultMessage: "Copied!"}));
         row.find(".alert-msg").css("display", "block");
         row.find(".alert-msg").delay(1000).fadeOut(300);
         if ($(".tooltip").is(":visible")) {
@@ -363,85 +334,84 @@ export function initialize() {
             ui_util.blur_active_element();
         }
     });
-    $("#message_edit_form .send-status-close").on("click", function () {
+    $(".message_edit_form .send-status-close").on("click", function () {
         const row_id = rows.id($(this).closest(".message_row"));
         const send_status = $(`#message-edit-send-status-${CSS.escape(row_id)}`);
         $(send_status).stop(true).fadeOut(200);
     });
-    $("body").on("click", "#message_edit_form [id^='attach_files_']", function (e) {
+    $("body").on("click", ".message_edit_form .compose_upload_file", function (e) {
         e.preventDefault();
 
         const row_id = rows.id($(this).closest(".message_row"));
-        $(`#message_edit_file_input_${CSS.escape(row_id)}`).trigger("click");
+        $(`#edit_form_${CSS.escape(row_id)} .file_input`).trigger("click");
     });
 
-    $("body").on("click", "#message_edit_form [id^='markdown_preview_']", function (e) {
+    $("body").on("click", ".message_edit_form .markdown_preview", (e) => {
         e.preventDefault();
-
-        const row_id = rows.id($(this).closest(".message_row"));
-        function $_(selector) {
-            return $(`${selector}_${CSS.escape(row_id)}`);
-        }
-
-        const content = $_("#message_edit_content").val();
-        $_("#message_edit_content").hide();
-        $_("#markdown_preview").hide();
-        $_("#undo_markdown_preview").show();
-        $_("#preview_message_area").show();
+        const row = rows.get_closest_row(e.target);
+        const $msg_edit_content = row.find(".message_edit_content");
+        const content = $msg_edit_content.val();
+        $msg_edit_content.hide();
+        row.find(".markdown_preview").hide();
+        row.find(".undo_markdown_preview").show();
+        row.find(".preview_message_area").show();
 
         compose.render_and_show_preview(
-            $_("#markdown_preview_spinner"),
-            $_("#preview_content"),
+            row.find(".markdown_preview_spinner"),
+            row.find(".preview_content"),
             content,
         );
     });
 
-    $("body").on("click", "#message_edit_form [id^='undo_markdown_preview_']", function (e) {
+    $("body").on("click", ".message_edit_form .undo_markdown_preview", (e) => {
         e.preventDefault();
-
-        const row_id = rows.id($(this).closest(".message_row"));
-        function $_(selector) {
-            return $(`${selector}_${CSS.escape(row_id)}`);
-        }
-
-        $_("#message_edit_content").show();
-        $_("#undo_markdown_preview").hide();
-        $_("#preview_message_area").hide();
-        $_("#preview_content").empty();
-        $_("#markdown_preview").show();
+        const row = rows.get_closest_row(e.target);
+        row.find(".message_edit_content").show();
+        row.find(".undo_markdown_preview").hide();
+        row.find(".preview_message_area").hide();
+        row.find(".preview_content").empty();
+        row.find(".markdown_preview").show();
     });
 
-    // MUTING
-    function mute_topic($elt) {
+    // TOPIC MUTING
+    function mute_or_unmute_topic($elt, mute_topic) {
         const stream_id = Number.parseInt($elt.attr("data-stream-id"), 10);
         const topic = $elt.attr("data-topic-name");
-        muting_ui.mute_topic(stream_id, topic);
+        if (mute_topic) {
+            muting_ui.mute_topic(stream_id, topic);
+        } else {
+            muting_ui.unmute_topic(stream_id, topic);
+        }
     }
 
-    $("body").on("click", ".on_hover_topic_mute", (e) => {
+    $("body").on("click", ".message_header .on_hover_topic_mute", (e) => {
         e.stopPropagation();
-        mute_topic($(e.target));
+        mute_or_unmute_topic($(e.target), true);
+    });
+
+    $("body").on("click", ".message_header .on_hover_topic_unmute", (e) => {
+        e.stopPropagation();
+        mute_or_unmute_topic($(e.target), false);
     });
 
     // RECENT TOPICS
 
-    $("body").on("keydown", ".on_hover_topic_mute", convert_enter_to_click);
+    $("body").on("keydown", ".on_hover_topic_mute", ui_util.convert_enter_to_click);
 
     $("body").on("click", "#recent_topics_table .on_hover_topic_unmute", (e) => {
         e.stopPropagation();
-        recent_topics.focus_clicked_element($(e.target), recent_topics.COLUMNS.mute);
-        const stream_id = Number.parseInt($(e.currentTarget).attr("data-stream-id"), 10);
-        const topic = $(e.currentTarget).attr("data-topic-name");
-        muting_ui.unmute_topic(stream_id, topic);
+        const $elt = $(e.target);
+        recent_topics.focus_clicked_element($elt, recent_topics.COLUMNS.mute);
+        mute_or_unmute_topic($elt, false);
     });
 
-    $("body").on("keydown", ".on_hover_topic_unmute", convert_enter_to_click);
+    $("body").on("keydown", ".on_hover_topic_unmute", ui_util.convert_enter_to_click);
 
     $("body").on("click", "#recent_topics_table .on_hover_topic_mute", (e) => {
         e.stopPropagation();
         const $elt = $(e.target);
         recent_topics.focus_clicked_element($elt, recent_topics.COLUMNS.mute);
-        mute_topic($elt);
+        mute_or_unmute_topic($elt, true);
     });
 
     $("body").on("click", "#recent_topics_search", (e) => {
@@ -457,7 +427,7 @@ export function initialize() {
         unread_ops.mark_topic_as_read(stream_id, topic);
     });
 
-    $("body").on("keydown", ".on_hover_topic_read", convert_enter_to_click);
+    $("body").on("keydown", ".on_hover_topic_read", ui_util.convert_enter_to_click);
 
     $("body").on("click", ".btn-recent-filters", (e) => {
         e.stopPropagation();
@@ -564,50 +534,67 @@ export function initialize() {
         });
 
     function do_render_buddy_list_tooltip(elem, title_data) {
-        elem.tooltip({
-            template: render_buddy_list_tooltip(),
-            title: render_buddy_list_tooltip_content(title_data),
-            html: true,
-            trigger: "hover",
-            placement: "bottom",
-            animation: false,
+        let placement = "left";
+        let observer;
+        if (window.innerWidth < media_breakpoints_num.md) {
+            // On small devices display tooltips based on available space.
+            // This will default to "bottom" placement for this tooltip.
+            placement = "auto";
+        }
+        tippy(elem[0], {
+            // Quickly display and hide right sidebar tooltips
+            // so that they don't stick and overlap with
+            // each other.
+            delay: 0,
+            content: render_buddy_list_tooltip_content(title_data),
+            arrow: true,
+            placement,
+            allowHTML: true,
+            showOnCreate: true,
+            onHidden: (instance) => {
+                instance.destroy();
+                observer.disconnect();
+            },
+            onShow: (instance) => {
+                // For both buddy list and top left corner pm list, `target_node`
+                // is their parent `ul` element. We cannot use MutationObserver
+                // directly on the reference element because it will be removed
+                // and we need to attach it on an element which will remain in the
+                // DOM which is their parent `ul`.
+                const target_node = $(instance.reference).parents("ul").get(0);
+                // We only need to know if any of the `li` elements were removed.
+                const config = {attributes: false, childList: true, subtree: false};
+                const callback = function (mutationsList) {
+                    for (const mutation of mutationsList) {
+                        // Hide instance if reference is in the removed node list.
+                        if (
+                            Array.prototype.includes.call(
+                                mutation.removedNodes,
+                                instance.reference.parentElement,
+                            )
+                        ) {
+                            instance.hide();
+                        }
+                    }
+                };
+                observer = new MutationObserver(callback);
+                observer.observe(target_node, config);
+            },
+            appendTo: () => document.body,
         });
-        elem.tooltip("show");
-
-        $(".tooltip").css("left", elem.pageX + "px");
-        $(".tooltip").css("top", elem.pageY + "px");
     }
 
     // BUDDY LIST TOOLTIPS
-    $("#user_presences").on(
-        "mouseenter",
-        ".user-presence-link, .user_sidebar_entry .user_circle, .user_sidebar_entry .selectable_sidebar_block",
-        (e) => {
-            e.stopPropagation();
-            const elem = $(e.currentTarget)
-                .closest(".user_sidebar_entry")
-                .find(".user-presence-link");
-            const user_id_string = elem.attr("data-user-id");
-            const title_data = buddy_data.get_title_data(user_id_string, false);
-            do_render_buddy_list_tooltip(elem, title_data);
-        },
-    );
-
-    $("#user_presences").on(
-        "mouseleave click",
-        ".user-presence-link, .user_sidebar_entry .user_circle, .user_sidebar_entry .selectable_sidebar_block",
-        (e) => {
-            e.stopPropagation();
-            const elem = $(e.currentTarget)
-                .closest(".user_sidebar_entry")
-                .find(".user-presence-link");
-            $(elem).tooltip("destroy");
-        },
-    );
+    $("#user_presences").on("mouseenter", ".selectable_sidebar_block", (e) => {
+        e.stopPropagation();
+        const elem = $(e.currentTarget).closest(".user_sidebar_entry").find(".user-presence-link");
+        const user_id_string = elem.attr("data-user-id");
+        const title_data = buddy_data.get_title_data(user_id_string, false);
+        do_render_buddy_list_tooltip(elem.parent(), title_data);
+    });
 
     // PM LIST TOOLTIPS
     $("body").on("mouseenter", "#pm_user_status", (e) => {
-        $(".tooltip").remove();
         e.stopPropagation();
         const elem = $(e.currentTarget);
         const user_ids_string = elem.attr("data-user-ids-string");
@@ -618,20 +605,15 @@ export function initialize() {
         do_render_buddy_list_tooltip(elem, title_data);
     });
 
-    $("body").on("mouseleave", "#pm_user_status", (e) => {
-        e.stopPropagation();
-        $(e.currentTarget).tooltip("destroy");
-    });
-
     // MISC
 
-    (function () {
+    {
         const sel = ["#stream_filters", "#global_filters", "#user_presences"].join(", ");
 
         $(sel).on("click", "a", function () {
             this.blur();
         });
-    })();
+    }
 
     popovers.register_click_handlers();
     emoji_picker.register_click_handlers();
@@ -656,42 +638,15 @@ export function initialize() {
 
     // COMPOSE
 
-    // NB: This just binds to current elements, and won't bind to elements
-    // created after ready() is called.
-    $("#compose-send-status .compose-send-status-close").on("click", () => {
+    $("body").on("click", "#compose-send-status .compose-send-status-close", () => {
         $("#compose-send-status").stop(true).fadeOut(500);
     });
-    $("#nonexistent_stream_reply_error .compose-send-status-close").on("click", () => {
-        $("#nonexistent_stream_reply_error").stop(true).fadeOut(500);
-    });
 
-    $(".compose_stream_button").on("click", () => {
-        popovers.hide_mobile_message_buttons_popover();
-        compose_actions.start("stream", {trigger: "new topic button"});
-    });
-    $(".compose_private_button").on("click", () => {
-        popovers.hide_mobile_message_buttons_popover();
-        compose_actions.start("private");
-    });
-
-    $("body").on("click", ".compose_mobile_stream_button", () => {
-        popovers.hide_mobile_message_buttons_popover();
-        compose_actions.start("stream", {trigger: "new topic button"});
-    });
-    $("body").on("click", ".compose_mobile_private_button", () => {
-        popovers.hide_mobile_message_buttons_popover();
-        compose_actions.start("private");
-    });
-
-    $(".compose_reply_button").on("click", () => {
-        compose_actions.respond_to_message({trigger: "reply button"});
-    });
-
-    $(".empty_feed_compose_stream").on("click", (e) => {
+    $("body").on("click", ".empty_feed_compose_stream", (e) => {
         compose_actions.start("stream", {trigger: "empty feed message"});
         e.preventDefault();
     });
-    $(".empty_feed_compose_private").on("click", (e) => {
+    $("body").on("click", ".empty_feed_compose_private", (e) => {
         compose_actions.start("private", {trigger: "empty feed message"});
         e.preventDefault();
     });
@@ -703,7 +658,7 @@ export function initialize() {
 
     function handle_compose_click(e) {
         // Emoji clicks should be handled by their own click handler in emoji_picker.js
-        if ($(e.target).is("#emoji_map, img.emoji, .drag")) {
+        if ($(e.target).is(".emoji_map, img.emoji, .drag, .compose_gif_icon")) {
             return;
         }
 
@@ -725,12 +680,14 @@ export function initialize() {
         popovers.hide_all();
     }
 
-    $("#compose_buttons").on("click", handle_compose_click);
-    $(".compose-content").on("click", handle_compose_click);
+    $("body").on("click", "#compose_buttons", handle_compose_click);
+    $("body").on("click", ".compose-content", handle_compose_click);
 
-    $("#compose_close").on("click", () => {
+    $("body").on("click", "#compose_close", () => {
         compose_actions.cancel();
     });
+
+    // LEFT SIDEBAR
 
     $("#streams_inline_cog").on("click", (e) => {
         e.stopPropagation();
@@ -805,7 +762,7 @@ export function initialize() {
     // Don't focus links on context menu.
     $("body").on("contextmenu", "a", (e) => e.target.blur());
 
-    (function () {
+    {
         const map = {
             ".stream-description-editable": {
                 on_start: stream_edit.set_raw_description,
@@ -881,7 +838,7 @@ export function initialize() {
                 $(`[data-make-editable='${CSS.escape(selector)}']`).html("");
             }
         });
-    })();
+    }
 
     // HOTSPOTS
 
@@ -973,7 +930,9 @@ export function initialize() {
 
         if (compose_state.composing()) {
             if ($(e.target).closest("a").length > 0) {
-                // Refocus compose message text box if link is clicked
+                // Refocus compose message text box if one clicks an external
+                // link/url to view something else while composing a message
+                // See issue #4331 for more details
                 $("#compose-textarea").trigger("focus");
                 return;
             } else if (

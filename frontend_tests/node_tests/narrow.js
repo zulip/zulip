@@ -7,8 +7,6 @@ const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
-page_params.stop_words = ["what", "about"];
-
 mock_cjs("jquery", $);
 const stream_topic_history = mock_esm("../../static/js/stream_topic_history");
 
@@ -97,17 +95,13 @@ run_test("uris", () => {
 });
 
 run_test("show_empty_narrow_message", () => {
-    $("#left_bar_compose_reply_button_big").prop("disabled", false);
+    page_params.stop_words = [];
+
     narrow_state.reset_current_filter();
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
     assert.equal($(".empty_feed_notice").visible(), false);
     assert($("#empty_narrow_message").visible());
-    assert.equal(
-        $("#left_bar_compose_reply_button_big").attr("title"),
-        "translated: There are no messages to reply to.",
-    );
-    assert($("#left_bar_compose_reply_button_big").prop("disabled"));
 
     // for non-existent or private stream
     set_filter([["stream", "Foo"]]);
@@ -117,7 +111,6 @@ run_test("show_empty_narrow_message", () => {
 
     // for non sub public stream
     stream_data.add_sub({name: "ROME", stream_id: 99});
-    stream_data.update_calculated_fields(stream_data.get_sub("ROME"));
     set_filter([["stream", "Rome"]]);
     hide_all_empty_narrow_messages();
     narrow_banner.show_empty_narrow_message();
@@ -237,11 +230,11 @@ run_test("hide_empty_narrow_message", () => {
     $(".empty_feed_notice").show();
     narrow_banner.hide_empty_narrow_message();
     assert(!$(".empty_feed_notice").visible());
-    assert.equal($("#left_bar_compose_reply_button_big").attr("title"), "translated: Reply (r)");
-    assert(!$("#left_bar_compose_reply_button_big").prop("disabled"));
 });
 
 run_test("show_search_stopwords", () => {
+    page_params.stop_words = ["what", "about"];
+
     narrow_state.reset_current_filter();
     let items = [];
 

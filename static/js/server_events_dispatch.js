@@ -12,6 +12,7 @@ import * as compose from "./compose";
 import * as compose_fade from "./compose_fade";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as emoji_picker from "./emoji_picker";
+import * as giphy from "./giphy";
 import * as hotspots from "./hotspots";
 import * as markdown from "./markdown";
 import * as message_edit from "./message_edit";
@@ -31,6 +32,7 @@ import * as people from "./people";
 import * as reactions from "./reactions";
 import * as realm_icon from "./realm_icon";
 import * as realm_logo from "./realm_logo";
+import * as realm_playground from "./realm_playground";
 import * as reload from "./reload";
 import * as scroll_bar from "./scroll_bar";
 import * as settings_account from "./settings_account";
@@ -43,6 +45,7 @@ import * as settings_invites from "./settings_invites";
 import * as settings_linkifiers from "./settings_linkifiers";
 import * as settings_notifications from "./settings_notifications";
 import * as settings_org from "./settings_org";
+import * as settings_playgrounds from "./settings_playgrounds";
 import * as settings_profile_fields from "./settings_profile_fields";
 import * as settings_streams from "./settings_streams";
 import * as settings_user_groups from "./settings_user_groups";
@@ -52,6 +55,7 @@ import * as stream_data from "./stream_data";
 import * as stream_events from "./stream_events";
 import * as stream_list from "./stream_list";
 import * as stream_topic_history from "./stream_topic_history";
+import * as sub_store from "./sub_store";
 import * as submessage from "./submessage";
 import * as subs from "./subs";
 import * as typing_events from "./typing_events";
@@ -133,6 +137,10 @@ export function dispatch_normal_event(event) {
             muting_ui.handle_topic_updates(event.muted_topics);
             break;
 
+        case "muted_users":
+            muting_ui.handle_user_updates(event.muted_users);
+            break;
+
         case "presence":
             activity.update_presence_info(event.user_id, event.presence, event.server_timestamp);
             break;
@@ -142,7 +150,7 @@ export function dispatch_normal_event(event) {
                 save_pointer: true,
                 save_narrow: true,
                 save_compose: true,
-                message: "The application has been updated; reloading!",
+                message_html: "The application has been updated; reloading!",
             };
             if (event.immediate) {
                 reload_options.immediate = true;
@@ -188,7 +196,7 @@ export function dispatch_normal_event(event) {
                 disallow_disposable_email_addresses: noop,
                 inline_image_preview: noop,
                 inline_url_embed_preview: noop,
-                invite_by_admins_only: noop,
+                invite_to_realm_policy: noop,
                 invite_required: noop,
                 mandatory_topics: noop,
                 message_content_edit_limit_seconds: noop,
@@ -203,6 +211,7 @@ export function dispatch_normal_event(event) {
                 signup_notifications_stream_id: noop,
                 emails_restricted_to_domains: noop,
                 video_chat_provider: compose.update_video_chat_button_display,
+                giphy_rating: giphy.update_giphy_rating,
                 waiting_period_threshold: noop,
                 wildcard_mention_policy: noop,
             };
@@ -212,17 +221,6 @@ export function dispatch_normal_event(event) {
                         page_params["realm_" + event.property] = event.value;
                         realm_settings[event.property]();
                         settings_org.sync_realm_settings(event.property);
-                        if (event.property === "create_stream_policy") {
-                            // TODO: Add waiting_period_threshold logic here.
-                            page_params.can_create_streams =
-                                page_params.is_admin ||
-                                page_params.realm_create_stream_policy === 1;
-                        } else if (event.property === "invite_to_stream_policy") {
-                            // TODO: Add waiting_period_threshold logic here.
-                            page_params.can_invite_to_stream =
-                                page_params.is_admin ||
-                                page_params.realm_invite_to_stream_policy === 1;
-                        }
 
                         if (event.property === "name" && window.electron_bridge !== undefined) {
                             window.electron_bridge.send_event("realm_name", event.value);
@@ -333,10 +331,16 @@ export function dispatch_normal_event(event) {
             composebox_typeahead.update_emoji_data();
             break;
 
-        case "realm_filters":
-            page_params.realm_filters = event.realm_filters;
-            markdown.update_linkifier_rules(page_params.realm_filters);
-            settings_linkifiers.populate_linkifiers(page_params.realm_filters);
+        case "realm_linkifiers":
+            page_params.realm_linkifiers = event.realm_linkifiers;
+            markdown.update_linkifier_rules(page_params.realm_linkifiers);
+            settings_linkifiers.populate_linkifiers(page_params.realm_linkifiers);
+            break;
+
+        case "realm_playgrounds":
+            page_params.realm_playgrounds = event.realm_playgrounds;
+            realm_playground.update_playgrounds(page_params.realm_playgrounds);
+            settings_playgrounds.populate_playgrounds(page_params.realm_playgrounds);
             break;
 
         case "realm_domains":
@@ -405,8 +409,7 @@ export function dispatch_normal_event(event) {
                     stream_data.create_streams(event.streams);
 
                     for (const stream of event.streams) {
-                        const sub = stream_data.get_sub_by_id(stream.stream_id);
-                        stream_data.update_calculated_fields(sub);
+                        const sub = sub_store.get(stream.stream_id);
                         if (overlays.streams_open()) {
                             subs.add_sub_to_table(sub);
                         }
@@ -414,8 +417,7 @@ export function dispatch_normal_event(event) {
                     break;
                 case "delete":
                     for (const stream of event.streams) {
-                        const was_subscribed = stream_data.get_sub_by_id(stream.stream_id)
-                            .subscribed;
+                        const was_subscribed = sub_store.get(stream.stream_id).subscribed;
                         const is_narrowed_to_stream = narrow_state.is_for_stream_id(
                             stream.stream_id,
                         );
@@ -464,7 +466,7 @@ export function dispatch_normal_event(event) {
             switch (event.op) {
                 case "add":
                     for (const rec of event.subscriptions) {
-                        const sub = stream_data.get_sub_by_id(rec.stream_id);
+                        const sub = sub_store.get(rec.stream_id);
                         if (sub) {
                             stream_data.update_stream_email_address(sub, rec.email_address);
                             stream_events.mark_subscribed(sub, rec.subscribers, rec.color);
@@ -476,13 +478,13 @@ export function dispatch_normal_event(event) {
                     }
                     break;
                 case "peer_add": {
-                    const stream_ids = stream_data.validate_stream_ids(event.stream_ids);
+                    const stream_ids = sub_store.validate_stream_ids(event.stream_ids);
                     const user_ids = people.validate_user_ids(event.user_ids);
 
                     peer_data.bulk_add_subscribers({stream_ids, user_ids});
 
                     for (const stream_id of stream_ids) {
-                        const sub = stream_data.get_sub_by_id(stream_id);
+                        const sub = sub_store.get(stream_id);
                         subs.update_subscribers_ui(sub);
                     }
 
@@ -490,13 +492,13 @@ export function dispatch_normal_event(event) {
                     break;
                 }
                 case "peer_remove": {
-                    const stream_ids = stream_data.validate_stream_ids(event.stream_ids);
+                    const stream_ids = sub_store.validate_stream_ids(event.stream_ids);
                     const user_ids = people.validate_user_ids(event.user_ids);
 
                     peer_data.bulk_remove_subscribers({stream_ids, user_ids});
 
                     for (const stream_id of stream_ids) {
-                        const sub = stream_data.get_sub_by_id(stream_id);
+                        const sub = sub_store.get(stream_id);
                         subs.update_subscribers_ui(sub);
                     }
 
@@ -505,7 +507,7 @@ export function dispatch_normal_event(event) {
                 }
                 case "remove":
                     for (const rec of event.subscriptions) {
-                        const sub = stream_data.get_sub_by_id(rec.stream_id);
+                        const sub = sub_store.get(rec.stream_id);
                         stream_events.mark_unsubscribed(sub);
                     }
                     break;
@@ -557,6 +559,11 @@ export function dispatch_normal_event(event) {
             }
             if (event.setting_name === "default_language") {
                 // We additionally need to set the language name.
+                //
+                // Note that this does not change translations at all;
+                // a reload is fundamentally required because we
+                // cannot rerender with the new language the strings
+                // present in the backend/Jinja2 templates.
                 page_params.default_language_name = event.language_name;
             }
             if (event.setting_name === "twenty_four_hour_time") {

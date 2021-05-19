@@ -3,8 +3,8 @@ import $ from "jquery";
 import {all_messages_data} from "./all_messages_data";
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
-import * as compose from "./compose";
 import * as compose_actions from "./compose_actions";
+import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
 import * as condense from "./condense";
@@ -321,24 +321,28 @@ export function activate(raw_operators, opts) {
 
     const select_immediately = id_info.local_select_id !== undefined;
 
-    (function fetch_messages() {
+    {
         let anchor;
 
         // Either we're trying to center the narrow around a
         // particular message ID (which could be max_int), or we're
         // asking the server to figure out for us what the first
         // unread message is, and center the narrow around that.
-        if (id_info.final_select_id === undefined) {
-            anchor = "first_unread";
-        } else if (id_info.final_select_id === -1) {
-            // This case should never happen in this code path; it's
-            // here in case we choose to extract this as an
-            // independent reusable function.
-            anchor = "oldest";
-        } else if (id_info.final_select_id === LARGER_THAN_MAX_MESSAGE_ID) {
-            anchor = "newest";
-        } else {
-            anchor = id_info.final_select_id;
+        switch (id_info.final_select_id) {
+            case undefined:
+                anchor = "first_unread";
+                break;
+            case -1:
+                // This case should never happen in this code path; it's
+                // here in case we choose to extract this as an
+                // independent reusable function.
+                anchor = "oldest";
+                break;
+            case LARGER_THAN_MAX_MESSAGE_ID:
+                anchor = "newest";
+                break;
+            default:
+                anchor = id_info.final_select_id;
         }
 
         message_fetch.load_messages_for_narrow({
@@ -354,7 +358,7 @@ export function activate(raw_operators, opts) {
                 maybe_report_narrow_time(msg_list);
             },
         });
-    })();
+    }
 
     if (select_immediately) {
         update_selection({
@@ -380,10 +384,11 @@ export function activate(raw_operators, opts) {
     }
 
     if (filter.contains_only_private_messages()) {
-        compose.update_closed_compose_buttons_for_private();
+        compose_closed_ui.update_buttons_for_private();
     } else {
-        compose.update_closed_compose_buttons_for_stream();
+        compose_closed_ui.update_buttons_for_stream();
     }
+    compose_closed_ui.update_reply_recipient_label();
 
     search.update_button_visibility();
 
@@ -800,7 +805,7 @@ function handle_post_narrow_deactivate_processes() {
 
     top_left_corner.handle_narrow_deactivated();
     stream_list.handle_narrow_deactivated();
-    compose.update_closed_compose_buttons_for_stream();
+    compose_closed_ui.update_buttons_for_stream();
     message_edit.handle_narrow_deactivated();
     widgetize.set_widgets_for_list();
     typing_events.render_notifications_for_narrow();
@@ -828,7 +833,7 @@ export function deactivate(coming_from_recent_topics = false) {
       message_lists.home in it.
      */
     search.clear_search_form();
-    // Both All messages and Recent Topics have `undefined` filter.
+    // Both All messages and Recent topics have `undefined` filter.
     // Return if already in the All message narrow.
     if (narrow_state.filter() === undefined && !coming_from_recent_topics) {
         return;

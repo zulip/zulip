@@ -23,13 +23,6 @@ function make_stream_message({stream_id, topic, sender_id}) {
     return message;
 }
 
-const {all_messages_data} = mock_esm("../../static/js/all_messages_data", {
-    all_messages_data: {
-        all_messages() {
-            return Array.from(messages.values());
-        },
-    },
-});
 mock_esm("../../static/js/message_store", {
     get: (message_id) => messages.get(message_id),
 });
@@ -46,7 +39,64 @@ function test(label, f) {
     });
 }
 
-test("process_message_for_senders", (override) => {
+test("IdTracker", () => {
+    const id_tracker = new rs.IdTracker();
+
+    function test_add(id, expected_max_id) {
+        id_tracker.add(id);
+        assert.equal(id_tracker.max_id(), expected_max_id);
+    }
+
+    test_add(5, 5);
+    test_add(7, 7);
+    test_add(3, 7);
+    test_add(10, 10);
+    test_add(12, 12);
+    test_add(11, 12);
+
+    function test_remove(id, expected_max_id) {
+        id_tracker.remove(id);
+        assert.equal(id_tracker.max_id(), expected_max_id);
+    }
+
+    test_remove(10, 12);
+    test_remove(999999, 12); // bogus id has no effect
+    test_remove(3, 12);
+    test_remove(12, 11);
+
+    test_add(3, 11);
+    test_add(7, 11);
+    test_add(13, 13);
+
+    test_remove(3, 13);
+    test_remove(13, 11);
+});
+
+test("noop process_topic_edit", () => {
+    // Just get line coverage on defensive code.
+    const bogus_ids = [333, 444];
+    rs.process_topic_edit({message_ids: bogus_ids});
+});
+
+test("update_topics_of_deleted_message_ids", () => {
+    // Just get line coverage on defensive code.
+    const stream_id = 555;
+    const topic = "whatever";
+    const sender_id = 999;
+
+    const message = make_stream_message({
+        stream_id,
+        topic,
+        sender_id,
+    });
+    rs.update_topics_of_deleted_message_ids([message.id]);
+    assert.deepEqual(rs.get_topic_recent_senders(stream_id, topic), []);
+
+    rs.process_message_for_senders(message);
+    assert.deepEqual(rs.get_topic_recent_senders(stream_id, topic), [sender_id]);
+});
+
+test("process_message_for_senders", () => {
     const stream1 = 1;
     const stream2 = 2;
     const stream3 = 3;
@@ -182,42 +232,81 @@ test("process_message_for_senders", (override) => {
     // message7's topic was changed by user
     message7.topic = topic3;
 
-    rs.process_topic_edit(stream3, topic2, topic3);
+    rs.process_topic_edit({
+        message_ids: [message7.id],
+        old_stream_id: stream3,
+        new_stream_id: stream3,
+        old_topic: topic2,
+        new_topic: topic3,
+    });
+
     assert.equal(rs.get_topic_recent_senders(stream3, topic3).toString(), "2,3");
     assert.equal(rs.get_topic_recent_senders(stream3, topic2).toString(), "3");
 
     // Test stream change
     assert.equal(rs.get_topic_recent_senders(stream3, topic3).toString(), "2,3");
     assert.equal(rs.get_topic_recent_senders(stream4, topic3).toString(), "");
-    // stream of topic3 was changed to stream4.
-    message7.stream_id = stream4; // message7's topic is topic3
+
+    message7.stream_id = stream4;
     message8.stream_id = stream4;
-    rs.process_topic_edit(stream3, topic3, topic3, stream4);
+    rs.process_topic_edit({
+        message_ids: [message7.id, message8.id],
+        old_stream_id: stream3,
+        new_stream_id: stream4,
+        old_topic: topic3,
+        new_topic: topic3,
+    });
+
     assert.equal(rs.get_topic_recent_senders(stream3, topic3).toString(), "");
     assert.equal(rs.get_topic_recent_senders(stream4, topic3).toString(), "2,3");
 
     // Test stream & topic change
     assert.equal(rs.get_topic_recent_senders(stream4, topic3).toString(), "2,3");
     assert.equal(rs.get_topic_recent_senders(stream5, topic4).toString(), "");
-    // stream of topic3 was changed to stream5 and topic was changed to topic4.
+
     message7.stream_id = stream5;
-    message8.stream_id = stream5;
     message7.topic = topic4;
+
+    message8.stream_id = stream5;
     message8.topic = topic4;
-    rs.process_topic_edit(stream4, topic3, topic4, stream5);
+
+    rs.process_topic_edit({
+        message_ids: [message7.id, message8.id],
+        old_stream_id: stream4,
+        new_stream_id: stream5,
+        old_topic: topic3,
+        new_topic: topic4,
+    });
+
     assert.equal(rs.get_topic_recent_senders(stream4, topic3).toString(), "");
     assert.equal(rs.get_topic_recent_senders(stream5, topic4).toString(), "2,3");
-
-    const reduced_msgs = [message3, message4, message7, message8];
-
-    override(all_messages_data, "all_messages", () => reduced_msgs);
     assert.equal(rs.get_topic_recent_senders(stream1, topic1).toString(), "2,1");
+
     // delete message1 and message5 sent by sender1
     rs.update_topics_of_deleted_message_ids([message1.id, message5.id]);
     assert.equal(rs.get_topic_recent_senders(stream1, topic1).toString(), "2");
+
+    // test that we can remove again, harmlessly
+    rs.update_topics_of_deleted_message_ids([message1.id, message5.id]);
+    assert.equal(rs.get_topic_recent_senders(stream1, topic1).toString(), "2");
+
+    // remove some more senders
+    rs.update_topics_of_deleted_message_ids([message2.id, message3.id, message4.id, message5.id]);
+    assert.equal(rs.get_topic_recent_senders(stream1, topic1).toString(), "");
+
+    rs.update_topics_of_deleted_message_ids([message6.id, message7.id, message8.id, message9.id]);
+    assert.equal(rs.get_topic_recent_senders(stream1, topic1).toString(), "");
+    assert.equal(rs.get_topic_recent_senders(stream2, topic2).toString(), "");
+    assert.equal(rs.get_topic_recent_senders(stream3, topic3).toString(), "");
 
     // deleting an old message which isn't locally stored.
     // We are just testing that it doesn't raise an error;
     // no changes should take place in this case.
     rs.update_topics_of_deleted_message_ids([-1]);
+
+    // Comparing on a non-existent topic doesn't crash.
+    assert.equal(
+        rs.compare_by_recency({user_id: sender2}, {user_id: sender1}, stream3, "bogus") < 0,
+        true,
+    );
 });

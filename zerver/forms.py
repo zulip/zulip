@@ -13,7 +13,7 @@ from django.core.validators import validate_email
 from django.http import HttpRequest
 from django.urls import reverse
 from django.utils.http import urlsafe_base64_encode
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from jinja2 import Markup as mark_safe
 from two_factor.forms import AuthenticationTokenForm as TwoFactorAuthenticationTokenForm
 from two_factor.utils import totp_digits
@@ -52,6 +52,10 @@ WRONG_SUBDOMAIN_ERROR = (
 DEACTIVATED_ACCOUNT_ERROR = (
     "Your account is no longer active. "
     + "Please contact your organization administrator to reactivate it."
+)
+PASSWORD_RESET_NEEDED_ERROR = (
+    "Your password has been disabled because it is too weak. "
+    "Reset your password to create a new one."
 )
 PASSWORD_TOO_WEAK_ERROR = "The password is too weak."
 AUTHENTICATION_RATE_LIMITED_ERROR = (
@@ -399,6 +403,9 @@ class OurAuthenticationForm(AuthenticationForm):
 
             if return_data.get("inactive_realm"):
                 raise AssertionError("Programming error: inactive realm in authentication form")
+
+            if return_data.get("password_reset_needed"):
+                raise ValidationError(mark_safe(PASSWORD_RESET_NEEDED_ERROR))
 
             if return_data.get("inactive_user") and not return_data.get("is_mirror_dummy"):
                 # We exclude mirror dummy accounts here. They should be treated as the

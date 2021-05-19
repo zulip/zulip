@@ -63,6 +63,7 @@ AUTH_LDAP_ALWAYS_UPDATE_USER = False
 # Detailed docs in zproject/dev_settings.py.
 FAKE_LDAP_MODE: Optional[str] = None
 FAKE_LDAP_NUM_USERS = 8
+AUTH_LDAP_ADVANCED_REALM_ACCESS_CONTROL = None
 
 # Social auth; we support providing values for some of these
 # settings in zulip-secrets.conf instead of settings.py in development.
@@ -133,6 +134,9 @@ MAX_FILE_UPLOAD_SIZE = 25
 # Jitsi Meet video call integration; set to None to disable integration.
 JITSI_SERVER_URL = "https://meet.jit.si"
 
+# GIPHY API key.
+GIPHY_API_KEY = get_secret("giphy_api_key")
+
 # Allow setting BigBlueButton settings in zulip-secrets.conf in
 # development; this is useful since there are no public BigBlueButton servers.
 BIG_BLUE_BUTTON_URL = get_secret("big_blue_button_url", development_only=True)
@@ -154,8 +158,6 @@ REDIS_PORT = 6379
 REMOTE_POSTGRES_HOST = ""
 REMOTE_POSTGRES_PORT = ""
 REMOTE_POSTGRES_SSLMODE = ""
-THUMBOR_URL = ""
-THUMBOR_SERVES_CAMO = False
 THUMBNAIL_IMAGES = False
 SENDFILE_BACKEND: Optional[str] = None
 
@@ -178,6 +180,7 @@ PASSWORD_MIN_GUESSES = 10000
 PUSH_NOTIFICATION_BOUNCER_URL: Optional[str] = None
 PUSH_NOTIFICATION_REDACT_CONTENT = False
 SUBMIT_USAGE_STATISTICS = True
+PROMOTE_SPONSORING_ZULIP = True
 RATE_LIMITING = True
 RATE_LIMITING_AUTHENTICATE = True
 SEND_LOGIN_EMAILS = True
@@ -239,9 +242,6 @@ SYSTEM_BOT_REALM = "zulipinternal"
 # analytics into part of the main server, rather
 # than a separate app.
 EXTRA_INSTALLED_APPS = ["analytics"]
-
-# Default GOOGLE_CLIENT_ID to the value needed for Android auth to work
-GOOGLE_CLIENT_ID = "835904834568-77mtr5mtmpgspj9b051del9i9r5t4g4n.apps.googleusercontent.com"
 
 # Used to construct URLs to point to the Zulip server.  Since we
 # only support HTTPS in production, this is just for development.
@@ -326,7 +326,7 @@ REGISTER_LINK_DISABLED: Optional[bool] = None
 LOGIN_LINK_DISABLED = False
 FIND_TEAM_LINK_DISABLED = True
 
-# Controls if the server should run certain jobs like deliver_email or
+# Controls if the server should run certain jobs like deliver_scheduled_emails or
 # deliver_scheduled_messages. This setting in long term is meant for
 # handling jobs for which we don't have a means of establishing a locking
 # mechanism that works with multiple servers running these jobs.
@@ -410,6 +410,10 @@ STAGING_ERROR_NOTIFICATIONS = False
 # default_settings, since it likely isn't usefully user-configurable.
 OFFLINE_THRESHOLD_SECS = 5 * 60
 
+# Specifies the number of active users in the realm
+# above which sending of presence update events will be disabled.
+USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS = 100
+
 # How many days deleted messages data should be kept before being
 # permanently deleted.
 ARCHIVED_DATA_VACUUMING_DELAY_DAYS = 7
@@ -441,3 +445,12 @@ NAGIOS_BOT_HOST = EXTERNAL_HOST
 
 # Use half of the available CPUs for data import purposes.
 DEFAULT_DATA_EXPORT_IMPORT_PARALLELISM = (len(os.sched_getaffinity(0)) // 2) or 1
+
+# How long after the last upgrade to nag users that the server needs
+# to be upgraded because of likely security releases in the meantime.
+# Default is 18 months, constructed as 12 months before someone should
+# upgrade, plus 6 months for the system administrator to get around to it.
+SERVER_UPGRADE_NAG_DEADLINE_DAYS = 30 * 18
+
+# How long servers have to respond to outgoing webhook requests
+OUTGOING_WEBHOOK_TIMEOUT_SECONDS = 10

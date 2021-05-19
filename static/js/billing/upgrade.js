@@ -12,9 +12,7 @@ export const initialize = () => {
         image: "/static/images/logo/zulip-icon-128x128.png",
         locale: "auto",
         token(stripe_token) {
-            helpers.create_ajax_request("/json/billing/upgrade", "autopay", stripe_token, [
-                "licenses",
-            ]);
+            helpers.create_ajax_request("/json/billing/upgrade", "autopay", stripe_token);
         },
     });
 
@@ -43,7 +41,7 @@ export const initialize = () => {
             return;
         }
         e.preventDefault();
-        helpers.create_ajax_request("/json/billing/upgrade", "invoice", undefined, ["licenses"]);
+        helpers.create_ajax_request("/json/billing/upgrade", "invoice");
     });
 
     $("#sponsorship-button").on("click", (e) => {

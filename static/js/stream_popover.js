@@ -10,19 +10,23 @@ import render_topic_sidebar_actions from "../templates/topic_sidebar_actions.hbs
 import * as blueslip from "./blueslip";
 import * as browser_history from "./browser_history";
 import * as channel from "./channel";
+import * as compose_actions from "./compose_actions";
+import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget";
 import * as hash_util from "./hash_util";
+import {$t} from "./i18n";
 import * as message_edit from "./message_edit";
 import * as muting from "./muting";
 import * as muting_ui from "./muting_ui";
-import * as narrow from "./narrow";
 import {page_params} from "./page_params";
 import * as popovers from "./popovers";
 import * as resize from "./resize";
+import * as settings_data from "./settings_data";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_bar from "./stream_bar";
 import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
+import * as sub_store from "./sub_store";
 import * as subs from "./subs";
 import * as unread_ops from "./unread_ops";
 
@@ -32,6 +36,8 @@ let current_stream_sidebar_elem;
 let current_topic_sidebar_elem;
 let all_messages_sidebar_elem;
 let starred_messages_sidebar_elem;
+let stream_widget;
+let stream_header_colorblock;
 
 function get_popover_menu_items(sidebar_elem) {
     if (!sidebar_elem) {
@@ -140,7 +146,7 @@ export function hide_streamlist_sidebar() {
 function stream_popover_sub(e) {
     const elem = $(e.currentTarget).parents("ul");
     const stream_id = elem_to_stream_id(elem);
-    const sub = stream_data.get_sub_by_id(stream_id);
+    const sub = sub_store.get(stream_id);
     if (!sub) {
         blueslip.error("Unknown stream: " + stream_id);
         return undefined;
@@ -192,7 +198,7 @@ function build_stream_popover(opts) {
     show_streamlist_sidebar();
 
     const content = render_stream_sidebar_actions({
-        stream: stream_data.get_sub_by_id(stream_id),
+        stream: sub_store.get(stream_id),
     });
 
     $(elt).popover({
@@ -224,7 +230,7 @@ function build_topic_popover(opts) {
         return;
     }
 
-    const sub = stream_data.get_sub_by_id(stream_id);
+    const sub = sub_store.get(stream_id);
     if (!sub) {
         blueslip.error("cannot build topic popover for stream: " + stream_id);
         return;
@@ -233,19 +239,19 @@ function build_topic_popover(opts) {
     popovers.hide_all();
     show_streamlist_sidebar();
 
-    const is_muted = muting.is_topic_muted(sub.stream_id, topic_name);
-    const can_mute_topic = !is_muted;
-    const can_unmute_topic = is_muted;
-    const has_starred_messages =
-        starred_messages.get_starred_message_ids_in_topic(sub.stream_id, topic_name).length > 0;
+    const topic_muted = muting.is_topic_muted(sub.stream_id, topic_name);
+    const has_starred_messages = starred_messages.get_count_in_topic(sub.stream_id, topic_name) > 0;
+    // Arguably, we could offer the "Move topic" option even if users
+    // can only edit the name within a stream.
+    const can_move_topic = settings_data.user_can_move_messages_between_streams();
 
     const content = render_topic_sidebar_actions({
         stream_name: sub.name,
         stream_id: sub.stream_id,
         topic_name,
-        can_mute_topic,
-        can_unmute_topic,
-        is_realm_admin: sub.is_realm_admin,
+        topic_muted,
+        can_move_topic,
+        is_realm_admin: page_params.is_admin,
         color: sub.color,
         has_starred_messages,
     });
@@ -326,32 +332,36 @@ function build_move_topic_to_stream_popover(e, current_stream_id, topic_name) {
     // NOTE: Private streams are also included in this list.  We
     // likely will make it possible to move messages to/from private
     // streams in the future.
-    const available_streams = stream_data
-        .subscribed_subs()
-        .filter((s) => s.stream_id !== current_stream_id);
     const current_stream_name = stream_data.maybe_get_stream_name(current_stream_id);
     const args = {
-        available_streams,
         topic_name,
         current_stream_id,
-        current_stream_name,
         notify_new_thread: message_edit.notify_new_thread_default,
         notify_old_thread: message_edit.notify_old_thread_default,
+    };
+
+    const streams_list = stream_data.subscribed_subs().map((stream) => ({
+        name: stream.name,
+        value: stream.stream_id.toString(),
+    }));
+    const opts = {
+        widget_name: "select_stream",
+        data: streams_list,
+        default_text: $t({defaultMessage: "No streams"}),
+        include_current_item: false,
+        value: current_stream_id,
     };
 
     hide_topic_popover();
 
     $("#move-a-topic-modal-holder").html(render_move_topic_to_stream(args));
 
-    const stream_header_colorblock = $(".topic_stream_edit_header").find(
+    stream_widget = dropdown_list_widget(opts);
+    stream_header_colorblock = $("#move_topic_modal .topic_stream_edit_header").find(
         ".stream_header_colorblock",
     );
-    stream_bar.decorate(current_stream_name, stream_header_colorblock, false);
-    $("#select_stream_id").on("change", function () {
-        const stream_name = stream_data.maybe_get_stream_name(Number.parseInt(this.value, 10));
-        stream_bar.decorate(stream_name, stream_header_colorblock, false);
-    });
 
+    stream_bar.decorate(current_stream_name, stream_header_colorblock, false);
     $("#move_topic_modal").modal("show");
 }
 
@@ -391,6 +401,21 @@ export function register_click_handlers() {
         ".starred-messages-sidebar-menu-icon",
         build_starred_messages_popover,
     );
+
+    $("body").on("click keypress", ".move-topic-dropdown .list_item", (e) => {
+        // We want the dropdown to collapse once any of the list item is pressed
+        // and thus don't want to kill the natural bubbling of event.
+        e.preventDefault();
+
+        if (e.type === "keypress" && e.which !== 13) {
+            return;
+        }
+        const stream_name = stream_data.maybe_get_stream_name(
+            Number.parseInt(stream_widget.value(), 10),
+        );
+
+        stream_bar.decorate(stream_name, stream_header_colorblock, false);
+    });
 
     register_stream_handlers();
     register_topic_handlers();
@@ -471,6 +496,20 @@ export function register_stream_handlers() {
         e.stopPropagation();
     });
 
+    // New topic in stream menu
+    $("body").on("click", ".popover_new_topic_button", (e) => {
+        const sub = stream_popover_sub(e);
+        hide_stream_popover();
+
+        compose_actions.start("stream", {
+            trigger: "popover new topic button",
+            stream: sub.name,
+            topic: "",
+        });
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
     // Unsubscribe
     $("body").on("click", ".popover_sub_unsub_button", function (e) {
         $(this).toggleClass("unsub");
@@ -507,42 +546,7 @@ export function register_stream_handlers() {
     });
 }
 
-function topic_popover_sub(e) {
-    const stream_id = topic_popover_stream_id(e);
-    if (!stream_id) {
-        blueslip.error("cannot find stream id");
-        return undefined;
-    }
-
-    const sub = stream_data.get_sub_by_id(stream_id);
-    if (!sub) {
-        blueslip.error("Unknown stream: " + stream_id);
-        return undefined;
-    }
-    return sub;
-}
-
 export function register_topic_handlers() {
-    // Narrow to topic
-    $("body").on("click", ".narrow_to_topic", (e) => {
-        hide_topic_popover();
-
-        const sub = topic_popover_sub(e);
-        if (!sub) {
-            return;
-        }
-
-        const topic = $(e.currentTarget).attr("data-topic-name");
-
-        const operators = [
-            {operator: "stream", operand: sub.name},
-            {operator: "topic", operand: topic},
-        ];
-        narrow.activate(operators, {trigger: "sidebar"});
-
-        e.stopPropagation();
-    });
-
     // Mute the topic
     $("body").on("click", ".sidebar-popover-mute-topic", (e) => {
         const stream_id = topic_popover_stream_id(e);
@@ -634,7 +638,9 @@ export function register_topic_handlers() {
                 .map(({name, value}) => [name, value]),
         );
 
-        const {old_topic_name, select_stream_id} = params;
+        const {old_topic_name} = params;
+        const select_stream_id = stream_widget.value();
+
         let {
             current_stream_id,
             new_topic_name,

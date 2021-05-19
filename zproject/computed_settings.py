@@ -210,7 +210,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.staticfiles",
     "confirmation",
-    "webpack_loader",
     "zerver",
     "social_django",
     # 2FA related apps.
@@ -315,6 +314,8 @@ elif REMOTE_POSTGRES_HOST != "":
         DATABASES["default"]["OPTIONS"]["sslmode"] = "verify-full"
 
 POSTGRESQL_MISSING_DICTIONARIES = bool(get_config("postgresql", "missing_dictionaries", None))
+
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 ########################################################################
 # RABBITMQ CONFIGURATION
@@ -576,16 +577,11 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 STATICFILES_DIRS = ["static/"]
 
 if DEBUG:
-    WEBPACK_STATS_FILE = os.path.join("var", "webpack-stats-dev.json")
+    WEBPACK_BUNDLES = "../webpack/"
+    WEBPACK_STATS_FILE = os.path.join(DEPLOY_ROOT, "var", "webpack-stats-dev.json")
 else:
-    WEBPACK_STATS_FILE = "webpack-stats-production.json"
-WEBPACK_LOADER = {
-    "DEFAULT": {
-        "CACHE": not DEBUG,
-        "BUNDLE_DIR_NAME": "../webpack/" if DEBUG else "webpack-bundles/",
-        "STATS_FILE": os.path.join(DEPLOY_ROOT, WEBPACK_STATS_FILE),
-    },
-}
+    WEBPACK_BUNDLES = "webpack-bundles/"
+    WEBPACK_STATS_FILE = os.path.join(DEPLOY_ROOT, "webpack-stats-production.json")
 
 ########################################################################
 # TEMPLATES SETTINGS
@@ -607,7 +603,6 @@ base_template_engine_settings: Dict[str, Any] = {
         "extensions": [
             "jinja2.ext.i18n",
             "jinja2.ext.autoescape",
-            "webpack_loader.contrib.jinja2ext.WebpackExtension",
         ],
         "context_processors": [
             "zerver.context_processors.zulip_default_context",
@@ -916,7 +911,7 @@ LOGGING: Dict[str, Any] = {
         "zerver.lib.digest": {
             "level": "DEBUG",
         },
-        "zerver.management.commands.deliver_email": {
+        "zerver.management.commands.deliver_scheduled_emails": {
             "level": "DEBUG",
         },
         "zerver.management.commands.enqueue_digest_emails": {
@@ -1164,8 +1159,6 @@ CROSS_REALM_BOT_EMAILS = {
     "welcome-bot@zulip.com",
     "emailgateway@zulip.com",
 }
-
-THUMBOR_KEY = get_secret("thumbor_key")
 
 TWO_FACTOR_PATCH_ADMIN = False
 

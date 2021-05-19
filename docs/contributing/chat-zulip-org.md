@@ -93,7 +93,7 @@ descriptions for all of them.  Relevant to almost everyone are these:
   folks post with their name as the topic.  Everyone is welcome to
   participate!
 * [#development help](https://chat.zulip.org/#narrow/stream/49-development-help)
-  is for asking for help with any Zulip server/webapp development work
+  is for asking for help with any Zulip server/web app development work
   (use the app streams for help working on one of the apps).
 * [#code review](https://chat.zulip.org/#narrow/stream/91-code-review)
   is for getting feedback on your work.  We encourage all developers

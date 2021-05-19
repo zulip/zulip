@@ -5,7 +5,7 @@ import * as keydown_util from "./keydown_util";
     Toggle x = components.toggle({
         selected: Integer selected_index,
         values: Array<Object> [
-            { label: i18n.t("String title") }
+            {label: $t({defaultMessage: "String title"})}
         ],
         callback: function () {
             // .. on value change.
@@ -14,44 +14,41 @@ import * as keydown_util from "./keydown_util";
 */
 
 export function toggle(opts) {
-    const component = (function render_component(opts) {
-        const _component = $("<div class='tab-switcher'></div>");
-        if (opts.html_class) {
-            // add a check inside passed arguments in case some extra
-            // classes need to be added for correct alignment or other purposes
-            _component.addClass(opts.html_class);
-        }
-        for (const [i, value] of opts.values.entries()) {
-            // create a tab with a tab-id so they don't have to be referenced
-            // by text value which can be inconsistent.
-            const tab = $("<div>", {
-                class: "ind-tab",
-                "data-tab-key": value.key,
-                "data-tab-id": i,
-                tabindex: 0,
-            });
+    const component = $("<div class='tab-switcher'></div>");
+    if (opts.html_class) {
+        // add a check inside passed arguments in case some extra
+        // classes need to be added for correct alignment or other purposes
+        component.addClass(opts.html_class);
+    }
+    for (const [i, value] of opts.values.entries()) {
+        // create a tab with a tab-id so they don't have to be referenced
+        // by text value which can be inconsistent.
+        const tab = $("<div>", {
+            class: "ind-tab",
+            "data-tab-key": value.key,
+            "data-tab-id": i,
+            tabindex: 0,
+        });
 
-            /* istanbul ignore if */
-            if (value.label_html !== undefined) {
-                const html = value.label_html;
-                tab.html(html);
-            } else {
-                tab.text(value.label);
-            }
-
-            // add proper classes for styling in CSS.
-            if (i === 0) {
-                // this should be default selected unless otherwise specified.
-                tab.addClass("first selected");
-            } else if (i === opts.values.length - 1) {
-                tab.addClass("last");
-            } else {
-                tab.addClass("middle");
-            }
-            _component.append(tab);
+        /* istanbul ignore if */
+        if (value.label_html !== undefined) {
+            const html = value.label_html;
+            tab.html(html);
+        } else {
+            tab.text(value.label);
         }
-        return _component;
-    })(opts);
+
+        // add proper classes for styling in CSS.
+        if (i === 0) {
+            // this should be default selected unless otherwise specified.
+            tab.addClass("first selected");
+        } else if (i === opts.values.length - 1) {
+            tab.addClass("last");
+        } else {
+            tab.addClass("middle");
+        }
+        component.append(tab);
+    }
 
     const meta = {
         $ind_tab: component.find(".ind-tab"),
@@ -103,25 +100,23 @@ export function toggle(opts) {
         return false;
     }
 
-    (function () {
-        meta.$ind_tab.on("click", function () {
-            const idx = $(this).data("tab-id");
-            select_tab(idx);
-        });
+    meta.$ind_tab.on("click", function () {
+        const idx = $(this).data("tab-id");
+        select_tab(idx);
+    });
 
-        keydown_util.handle({
-            elem: meta.$ind_tab,
-            handlers: {
-                left_arrow: maybe_go_left,
-                right_arrow: maybe_go_right,
-            },
-        });
+    keydown_util.handle({
+        elem: meta.$ind_tab,
+        handlers: {
+            left_arrow: maybe_go_left,
+            right_arrow: maybe_go_right,
+        },
+    });
 
-        // We should arguably default opts.selected to 0.
-        if (typeof opts.selected === "number") {
-            select_tab(opts.selected);
-        }
-    })();
+    // We should arguably default opts.selected to 0.
+    if (typeof opts.selected === "number") {
+        select_tab(opts.selected);
+    }
 
     const prototype = {
         // Skip disabled tabs and go to the next one.

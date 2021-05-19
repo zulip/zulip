@@ -4,7 +4,7 @@ import $ from "jquery";
 import render_message_edit_history from "../templates/message_edit_history.hbs";
 
 import * as channel from "./channel";
-import {i18n} from "./i18n";
+import {$t_html} from "./i18n";
 import * as people from "./people";
 import * as timerender from "./timerender";
 import * as ui_report from "./ui_report";
@@ -64,7 +64,7 @@ export function fetch_and_render_message_history(message) {
         },
         error(xhr) {
             ui_report.error(
-                i18n.t("Error fetching message edit history"),
+                $t_html({defaultMessage: "Error fetching message edit history"}),
                 xhr,
                 $("#message-history-error"),
             );

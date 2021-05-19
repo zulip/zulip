@@ -7,6 +7,8 @@ from zulint.linters import run_pyflakes
 def check_pyflakes(files: List[str], options: argparse.Namespace) -> bool:
     suppress_patterns = [
         ("scripts/lib/pythonrc.py", "imported but unused"),
+        # LDAP imports are necessary for docker-zulip.
+        ("zproject/prod_settings_template.py", "imported but unused"),
         # Our ipython startup pythonrc file intentionally imports *
         ("scripts/lib/pythonrc.py", " import *' used; unable to detect undefined names"),
         (

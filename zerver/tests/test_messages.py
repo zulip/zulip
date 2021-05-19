@@ -55,7 +55,7 @@ class MissedMessageTest(ZulipTestCase):
         set_presence(hamlet, "iPhone", ago=5000)
         assert_missing([hamlet.id])
 
-        set_presence(hamlet, "webapp", ago=15)
+        set_presence(hamlet, "website", ago=15)
         assert_missing([])
 
         message_type = "private"

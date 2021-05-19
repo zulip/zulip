@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import {i18n} from "./i18n";
+import {$t_html} from "./i18n";
 import * as narrow_state from "./narrow_state";
 import * as people from "./people";
 import * as stream_data from "./stream_data";
@@ -23,6 +23,14 @@ export function get_hash_section(hash) {
     return parts[1] || "";
 }
 
+export function get_current_hash_category() {
+    return get_hash_category(window.location.hash);
+}
+
+export function get_current_hash_section() {
+    return get_hash_section(window.location.hash);
+}
+
 const hashReplacements = new Map([
     ["%", "."],
     ["(", ".28"],
@@ -35,6 +43,14 @@ const hashReplacements = new Map([
 // by replacing % with . (like MediaWiki).
 export function encodeHashComponent(str) {
     return encodeURIComponent(str).replace(/[%().]/g, (matched) => hashReplacements.get(matched));
+}
+
+export function build_reload_url() {
+    let hash = window.location.hash;
+    if (hash.length !== 0 && hash[0] === "#") {
+        hash = hash.slice(1);
+    }
+    return "+oldhash=" + encodeURIComponent(hash);
 }
 
 export function encode_operand(operator, operand) {
@@ -78,7 +94,12 @@ export function decodeHashComponent(str) {
         // TODO: Show possible valid URLs to the user.
         return decodeURIComponent(str.replace(/\./g, "%"));
     } catch {
-        ui_report.error(i18n.t("Invalid URL"), undefined, $("#home-error"), 2000);
+        ui_report.error(
+            $t_html({defaultMessage: "Invalid URL"}),
+            undefined,
+            $("#home-error"),
+            2000,
+        );
         return "";
     }
 }
@@ -222,8 +243,30 @@ export function is_overlay_hash(hash) {
         "keyboard-shortcuts",
         "message-formatting",
         "search-operators",
+        "about-zulip",
     ];
     const main_hash = get_hash_category(hash);
 
     return overlay_list.includes(main_hash);
+}
+
+// this finds the stream that is actively open in the settings and focused in
+// the left side.
+export function active_stream() {
+    const hash_components = window.location.hash.slice(1).split(/\//);
+
+    // if the string casted to a number is valid, and another component
+    // after exists then it's a stream name/id pair.
+    if (typeof Number.parseFloat(hash_components[1]) === "number" && hash_components[2]) {
+        return {
+            id: Number.parseFloat(hash_components[1]),
+            name: hash_components[2],
+        };
+    }
+
+    return undefined;
+}
+
+export function is_create_new_stream_narrow() {
+    return window.location.hash === "#streams/new";
 }

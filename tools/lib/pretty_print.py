@@ -234,7 +234,7 @@ def validate_indent_html(fn: str, fix: bool) -> int:
             # Since we successfully fixed the issues, we exit with status 0
             return 0
         print(
-            "Invalid Indentation detected in file: "
+            "Invalid indentation detected in file: "
             f"{fn}\nDiff for the file against expected indented file:",
             flush=True,
         )

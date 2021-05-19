@@ -157,14 +157,14 @@ return_type = Tuple[Optional[Dict[str, Any]], Optional[Dict[str, Any]]]
 
 
 def get_old_and_new_values(change_type: str, message: Mapping[str, Any]) -> return_type:
-    """ Parses the payload and finds previous and current value of change_type."""
+    """Parses the payload and finds previous and current value of change_type."""
     old = message["change"]["diff"][change_type].get("from")
     new = message["change"]["diff"][change_type].get("to")
     return old, new
 
 
 def parse_comment(message: Mapping[str, Any]) -> Dict[str, Any]:
-    """ Parses the comment to issue, task or US. """
+    """Parses the comment to issue, task or US."""
     return {
         "event": "commented",
         "type": message["type"],
@@ -177,7 +177,7 @@ def parse_comment(message: Mapping[str, Any]) -> Dict[str, Any]:
 
 
 def parse_create_or_delete(message: Mapping[str, Any]) -> Dict[str, Any]:
-    """ Parses create or delete event. """
+    """Parses create or delete event."""
     if message["type"] == "relateduserstory":
         return {
             "type": message["type"],
@@ -202,7 +202,7 @@ def parse_create_or_delete(message: Mapping[str, Any]) -> Dict[str, Any]:
 
 
 def parse_change_event(change_type: str, message: Mapping[str, Any]) -> Optional[Dict[str, Any]]:
-    """ Parses change event. """
+    """Parses change event."""
     evt: Dict[str, Any] = {}
     values: Dict[str, Any] = {
         "user": get_owner_name(message),
@@ -285,7 +285,7 @@ def parse_webhook_test(message: Mapping[str, Any]) -> Dict[str, Any]:
 
 
 def parse_message(message: Mapping[str, Any]) -> List[Dict[str, Any]]:
-    """ Parses the payload by delegating to specialized functions. """
+    """Parses the payload by delegating to specialized functions."""
     events = []
     if message["action"] in ["create", "delete"]:
         events.append(parse_create_or_delete(message))
@@ -304,7 +304,7 @@ def parse_message(message: Mapping[str, Any]) -> List[Dict[str, Any]]:
 
 
 def generate_content(data: Mapping[str, Any]) -> str:
-    """ Gets the template string and formats it with parsed data. """
+    """Gets the template string and formats it with parsed data."""
     template = templates[data["type"]][data["event"]]
     content = template.format(**data["values"])
     return content

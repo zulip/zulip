@@ -1,6 +1,7 @@
 import {subDays} from "date-fns";
 import Handlebars from "handlebars/runtime";
 import $ from "jquery";
+import tippy from "tippy.js";
 
 import render_draft_table_body from "../templates/draft_table_body.hbs";
 
@@ -12,7 +13,7 @@ import * as compose_actions from "./compose_actions";
 import * as compose_fade from "./compose_fade";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import {localstorage} from "./localstorage";
 import * as markdown from "./markdown";
 import * as narrow from "./narrow";
@@ -24,7 +25,7 @@ import * as util from "./util";
 
 function set_count(count) {
     const draft_count = count.toString();
-    const text = i18n.t("Drafts (__draft_count__)", {draft_count});
+    const text = $t({defaultMessage: "Drafts ({draft_count})"}, {draft_count});
     $(".compose_drafts_button").text(text);
 }
 
@@ -137,8 +138,17 @@ export function restore_message(draft) {
 }
 
 function draft_notify() {
-    $(".alert-draft").css("display", "inline-block");
-    $(".alert-draft").delay(1000).fadeOut(500);
+    // Display a tooltip to notify the user about the saved draft.
+    const instance = tippy(".compose_drafts_button", {
+        content: $t({defaultMessage: "Saved as draft"}),
+        arrow: true,
+        placement: "top",
+    })[0];
+    instance.show();
+    function remove_instance() {
+        instance.destroy();
+    }
+    setTimeout(remove_instance, 1500);
 }
 
 export function update_draft() {
@@ -187,7 +197,7 @@ export function restore_draft(draft_id) {
     const compose_args = restore_message(draft);
 
     if (compose_args.type === "stream") {
-        if (draft.stream !== "") {
+        if (draft.stream !== "" && draft.topic !== "") {
             narrow.activate(
                 [
                     {operator: "stream", operand: compose_args.stream},
@@ -208,10 +218,6 @@ export function restore_draft(draft_id) {
     overlays.close_overlay("drafts");
     compose_fade.clear_compose();
     compose.clear_preview_area();
-
-    if (draft.type === "stream" && draft.stream === "") {
-        compose_args.topic = "";
-    }
     compose_actions.start(compose_args.type, compose_args);
     compose_ui.autosize_textarea($("#compose-textarea"));
     $("#compose-textarea").data("draft-id", draft_id);
@@ -234,7 +240,7 @@ export function format_draft(draft) {
     let formatted;
     const time = new Date(draft.updatedAt);
     let time_stamp = timerender.render_now(time).time_str;
-    if (time_stamp === i18n.t("Today")) {
+    if (time_stamp === $t({defaultMessage: "Today"})) {
         time_stamp = timerender.stringify_time(time);
     }
     if (draft.type === "stream") {
@@ -475,13 +481,13 @@ export function drafts_handle_events(e, event_key) {
 
     // This detects up arrow key presses when the draft overlay
     // is open and scrolls through the drafts.
-    if (event_key === "up_arrow") {
+    if (event_key === "up_arrow" || event_key === "vim_up") {
         drafts_scroll(row_before_focus());
     }
 
     // This detects down arrow key presses when the draft overlay
     // is open and scrolls through the drafts.
-    if (event_key === "down_arrow") {
+    if (event_key === "down_arrow" || event_key === "vim_down") {
         drafts_scroll(row_after_focus());
     }
 
@@ -550,8 +556,6 @@ export function initialize() {
     });
 
     set_count(Object.keys(draft_model.get()).length);
-
-    $("#compose-textarea").on("focusout", update_draft);
 
     $("body").on("focus", ".draft-info-box", (e) => {
         activate_element(e.target);

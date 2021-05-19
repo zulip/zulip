@@ -2,6 +2,7 @@ import json
 import os
 import re
 from typing import Callable, Iterator, List, Optional, Union
+from urllib.parse import urlparse
 
 import scrapy
 from scrapy.http import Request, Response
@@ -11,6 +12,15 @@ from scrapy.spidermiddlewares.httperror import HttpError
 from scrapy.utils.url import url_has_any_extension
 from twisted.python.failure import Failure
 
+EXCLUDED_DOMAINS = [
+    # Returns 429 rate-limiting errors
+    "github.com",
+    "gist.github.com",
+    # Returns 503 errors
+    "www.amazon.com",
+    "gitlab.com",
+]
+
 EXCLUDED_URLS = [
     # Google calendar returns 404s on HEAD requests unconditionally
     "https://calendar.google.com/calendar/embed?src=ktiduof4eoh47lmgcl2qunnc0o@group.calendar.google.com",
@@ -19,6 +29,8 @@ EXCLUDED_URLS = [
     # Returns 404 to HEAD requests unconditionally
     "https://www.git-tower.com/blog/command-line-cheat-sheet/",
     "https://marketplace.visualstudio.com/items?itemName=rafaelmaiolla.remote-vscode",
+    "https://www.transifex.com/zulip/zulip/announcements/",
+    "https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh",
     # Requires authentication
     "https://circleci.com/gh/zulip/zulip/tree/master",
     "https://circleci.com/gh/zulip/zulip/16617",
@@ -37,8 +49,6 @@ VNU_IGNORE = [
     r"No “p” element in scope but a “p” end tag seen\.",
     r"Element “div” not allowed as child of element “ul” in this context\. "
     + r"\(Suppressing further errors from this subtree\.\)",
-    # Warnings that are probably less important.
-    r"The “type” attribute is unnecessary for JavaScript resources\.",
 ]
 VNU_IGNORE_REGEX = re.compile(r"|".join(VNU_IGNORE))
 
@@ -124,10 +134,11 @@ class BaseDocumentationSpider(scrapy.Spider):
         return callback
 
     def _make_requests(self, url: str) -> Iterator[Request]:
-        # These URLs are for Zulip's webapp, which with recent changes
-        # can be accessible without login an account.  While we do
-        # crawl documentation served by the webapp (E.g. /help/), we
-        # don't want to crawl the webapp itself, so we exclude these.
+        # These URLs are for Zulip's web app, which with recent changes
+        # can be accessible without logging into an account.  While we
+        # do crawl documentation served by the web app (e.g. /help/),
+        # we don't want to crawl the web app itself, so we exclude
+        # these.
         if (
             url in ["http://localhost:9981/", "http://localhost:9981"]
             or url.startswith("http://localhost:9981/#")
@@ -163,6 +174,10 @@ class BaseDocumentationSpider(scrapy.Spider):
             dont_filter = True
             callback = self.check_fragment
         if getattr(self, "skip_external", False) and self._is_external_link(url):
+            return
+        if urlparse(url).netloc in EXCLUDED_DOMAINS:
+            return
+        if url in EXCLUDED_URLS:
             return
         yield Request(
             url,
@@ -204,13 +219,12 @@ class BaseDocumentationSpider(scrapy.Spider):
         request.dont_filter = True
         yield request
 
-    def exclude_error(self, url: str) -> bool:
-        return url in EXCLUDED_URLS
-
     def error_callback(self, failure: Failure) -> Optional[Union[Failure, Iterator[Request]]]:
         if isinstance(failure.value, HttpError):
             response = failure.value.response
-            if self.exclude_error(response.url):
+            # Hack: The filtering above does not catch this URL,
+            # likely due to a redirect.
+            if urlparse(response.url).netloc == "idmsa.apple.com":
                 return None
             if response.status == 405 and response.request.method == "HEAD":
                 # Method 'HEAD' not allowed, repeat request with 'GET'

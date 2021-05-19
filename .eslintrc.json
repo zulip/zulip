@@ -87,6 +87,7 @@
             }
         ],
         "radix": "error",
+        "sort-imports": ["error", {"ignoreDeclarationSort": true}],
         "spaced-comment": ["error", "always", {"markers": ["/"]}],
         "strict": "error",
         "unicorn/consistent-function-scoping": "off",
@@ -97,6 +98,9 @@
         "unicorn/no-process-exit": "off",
         "unicorn/no-useless-undefined": "off",
         "unicorn/number-literal-case": "off",
+        "unicorn/numeric-separators-style": "off",
+        "unicorn/prefer-module": "off",
+        "unicorn/prefer-node-protocol": "off",
         "unicorn/prefer-spread": "off",
         "unicorn/prefer-ternary": "off",
         "unicorn/prevent-abbreviations": "off",
@@ -114,8 +118,7 @@
         {
             "files": ["static/js/**"],
             "globals": {
-                "StripeCheckout": false,
-                "zxcvbn": false
+                "StripeCheckout": false
             }
         },
         {

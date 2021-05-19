@@ -26,14 +26,11 @@ class RealmDomainTest(ZulipTestCase):
         RealmDomain.objects.create(realm=realm, domain="acme.com", allow_subdomains=True)
         result = self.client_get("/json/realm/domains")
         self.assert_json_success(result)
-        received = orjson.dumps(result.json()["domains"], option=orjson.OPT_SORT_KEYS)
-        expected = orjson.dumps(
-            [
-                {"domain": "zulip.com", "allow_subdomains": False},
-                {"domain": "acme.com", "allow_subdomains": True},
-            ],
-            option=orjson.OPT_SORT_KEYS,
-        )
+        received = result.json()["domains"]
+        expected = [
+            {"domain": "zulip.com", "allow_subdomains": False},
+            {"domain": "acme.com", "allow_subdomains": True},
+        ]
         self.assertEqual(received, expected)
 
     def test_not_realm_admin(self) -> None:
@@ -48,13 +45,13 @@ class RealmDomainTest(ZulipTestCase):
     def test_create_realm_domain(self) -> None:
         self.login("iago")
         data = {
-            "domain": orjson.dumps("").decode(),
+            "domain": "",
             "allow_subdomains": orjson.dumps(True).decode(),
         }
         result = self.client_post("/json/realm/domains", info=data)
         self.assert_json_error(result, "Invalid domain: Domain can't be empty.")
 
-        data["domain"] = orjson.dumps("acme.com").decode()
+        data["domain"] = "acme.com"
         result = self.client_post("/json/realm/domains", info=data)
         self.assert_json_success(result)
         realm = get_realm("zulip")
@@ -122,7 +119,7 @@ class RealmDomainTest(ZulipTestCase):
 
         self.assertTrue(realm.emails_restricted_to_domains)
         for realm_domain in query.all():
-            do_remove_realm_domain(realm_domain)
+            do_remove_realm_domain(realm_domain, acting_user=None)
         self.assertEqual(query.count(), 0)
         # Deleting last realm_domain should set `emails_restricted_to_domains` to False.
         # This should be tested on a fresh instance, since the cached objects

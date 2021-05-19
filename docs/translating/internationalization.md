@@ -63,8 +63,8 @@ to understand when implementing an internationalized application:
   find your string.
 
 There's a lot of other interesting differences that are important for
-i18n (e.g. Zulip has a "Full Name" field rather than "First Name" and
-"Last Name" because different cultures order the surnames and given
+i18n (e.g. Zulip has a "full name" field rather than "first name" and
+"last name" because different cultures order the surnames and given
 names differently), but the above issues are likely to be relevant to
 most people working on Zulip.
 
@@ -77,7 +77,7 @@ The end-to-end tooling process for translations in Zulip is as follows.
    [frontend](#frontend-translations) translations for details on
    this).
 
-2. Translation [resource][] files are created using the `./manage.py
+2. Translation resource files are created using the `./manage.py
    makemessages` command. This command will create, for each language,
    a resource file called `translations.json` for the frontend strings
    and `django.po` for the backend strings.
@@ -166,7 +166,7 @@ A string in Python can be marked for translation using the `_()` function,
 which can be imported as follows:
 
 ```
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 ```
 
 Zulip expects all the error messages to be translatable as well.  To
@@ -175,18 +175,18 @@ ensure this, the error message passed to `json_error` and
 function, e.g.:
 
 ```
-json_error(_('English Text'))
-JsonableError(_('English Text'))
+json_error(_('English text'))
+JsonableError(_('English text'))
 ```
 
 If you're declaring a user-facing string at top level or in a class, you need to
-use `ugettext_lazy` instead, to ensure that the translation happens at
+use `gettext_lazy` instead, to ensure that the translation happens at
 request-processing time when Django knows what language to use, e.g.:
 
 ```python
 from zproject.backends import check_password_strength, email_belongs_to_ldap
 
-AVATAR_CHANGES_DISABLED_ERROR = ugettext_lazy("Avatar changes are disabled in this organization.")
+AVATAR_CHANGES_DISABLED_ERROR = gettext_lazy("Avatar changes are disabled in this organization.")
 
 def confirm_email_change(request: HttpRequest, confirmation_key: str) -> HttpResponse:
   ...
@@ -200,7 +200,7 @@ class Realm(models.Model):
     ...
     ...
 
-    STREAM_EVENTS_NOTIFICATION_TOPIC = ugettext_lazy('stream events')
+    STREAM_EVENTS_NOTIFICATION_TOPIC = gettext_lazy('stream events')
 ```
 
 To ensure we always internationalize our JSON errors messages, the
@@ -208,107 +208,102 @@ Zulip linter (`tools/lint`) attempts to verify correct usage.
 
 ## Frontend translations
 
-We use the [i18next][] library for frontend translations when dealing
+We use the [FormatJS][] library for frontend translations when dealing
 with [Handlebars][] templates or JavaScript.
 
 To mark a string translatable in JavaScript files, pass it to the
-`i18n.t` function.
+`intl.formatMessage` function, which we alias to `$t` in `intl.js`:
 
-```
-i18n.t('English Text', context);
-```
-
-Variables in a translated frontend string are enclosed in
-double-underscores, like `__variable__`:
-
-```
-i18n.t('English text with a __variable__', {'variable': 'Variable value'});
+```js
+$t({defaultMessage: "English text"})
 ```
 
-`i18next` also supports plural translations. To support plurals make
-sure your resource file contains the related keys:
+The string to be translated must be a constant literal string, but
+variables can be interpolated by enclosing them in braces (like
+`{variable}`) and passing a context object:
 
-```
-{
-    "en": {
-        "translation": {
-            "key": "item",
-            "key_plural": "items",
-            "keyWithCount": "__count__ item",
-            "keyWithCount_plural": "__count__ items"
-        }
-    }
-}
+```js
+$t({defaultMessage: "English text with a {variable}"}, {variable: "Variable value"})
 ```
 
-With this resource you can show plurals like this:
+FormatJS uses the standard [ICU MessageFormat][], which includes
+useful features such as plural translations.
 
-```
-i18n.t('key', {count: 0}); // output: 'items'
-i18n.t('key', {count: 1}); // output: 'item'
-i18n.t('key', {count: 5}); // output: 'items'
-i18n.t('key', {count: 100}); // output: 'items'
-i18n.t('keyWithCount', {count: 0}); // output: '0 items'
-i18n.t('keyWithCount', {count: 1}); // output: '1 item'
-i18n.t('keyWithCount', {count: 5}); // output: '5 items'
-i18n.t('keyWithCount', {count: 100}); // output: '100 items'
-```
+`$t` does not escape any variables, so if your translated string is
+eventually going to be used as HTML, use `$t_html` instead.
 
-For further reading on plurals, read the [official] documentation.
-
-By default, all text is escaped by i18next. To unescape a text you can use
-double-underscores followed by a dash and space `__- ` like this:
-
-```
-i18n.t('English text with a __- variable__', {'variable': 'Variable value'});
+```js
+$("#foo").html(
+    $t_html({defaultMessage: "HTML with a {variable}"}, {variable: "Variable value"})
+);
 ```
 
-For more information, you can read the official [unescape] documentation.
+The only HTML tags allowed directly in translated strings are the
+simple HTML tags enumerated in `default_html_elements`
+(`static/js/i18n.js`) with no attributes.  This helps to avoid
+exposing HTML details to translators.  If you need to include more
+complex markup such as a link, you can define a custom HTML tag
+locally to the translation:
+
+```js
+$t_html(
+    {defaultMessage: "<b>HTML</b> linking to the <z-link>login page</z-link>"},
+    {"z-link": (content_html) => `<a href="/login/">${content_html}</a>`},
+)
+```
 
 ### Handlebars templates
 
-For translations in Handlebars templates we also use `i18n.t`, through two
+For translations in Handlebars templates we also use FormatJS, through two
 Handlebars [helpers][] that Zulip registers.  The syntax for simple strings is:
 
 ```
-{{t 'English Text' }}
+{{t 'English text' }}
 ```
 
-If you are passing a translated string to a Handlebars Partial, you can use:
+If you are passing a translated string to a Handlebars partial, you can use:
 
 ```
 {{> template_name
-    variable_name=(t 'English Text')
+    variable_name=(t 'English text')
     }}
 ```
 
 The syntax for block strings or strings containing variables is:
 
 ```
-{{#tr context}}
+{{#tr}}
     Block of English text.
 {{/tr}}
 
-var context = {'variable': 'variable value'};
-{{#tr context}}
-    Block of English text with a __variable__.
+{{#tr}}
+    Block of English text with a {variable}.
 {{/tr}}
 ```
 
-Just like in JavaScript code, variables are enclosed in double
-underscores `__`.
+Just like in JavaScript code, variables are enclosed in *single*
+braces (rather than the usual Handlebars double braces).  Unlike in
+JavaScript code, variables are automatically escaped by our Handlebars
+helper.
 
 Handlebars expressions like `{{variable}}` or blocks like
 `{{#if}}...{{/if}}` aren't permitted inside a `{{#tr}}...{{/tr}}`
 translated block, because they don't work properly with translation.
 The Handlebars expression would be evaluated before the string is
-processed by `i18n.t`, so that the string to be translated wouldn't be
+processed by FormatJS, so that the string to be translated wouldn't be
 constant.  We have a linter to enforce that translated blocks don't
 contain handlebars.
 
-The rules for plurals are same as for JavaScript files. You just have
-to declare the appropriate keys in the resource file and then include
-the `count` in the context.
+Restrictions on including HTML tags in translated strings are the same
+as in JavaScript.  You can insert more complex markup using a local
+custom HTML tag like this:
+
+```
+{{#tr}}
+    <b>HTML</b> linking to the <z-link>login page</z-link>
+    {{#*inline "z-link"}}<a href="/login/">{{> @partial-block}}</a>{{/inline}}
+{{/tr}}
+```
 
 ## Transifex config
 
@@ -339,11 +334,9 @@ organizations from the command line.
 [Jinja2]: http://jinja.pocoo.org/
 [Handlebars]: https://handlebarsjs.com/
 [trans]: http://jinja.pocoo.org/docs/dev/templates/#i18n
-[i18next]: https://www.i18next.com
-[official]: https://www.i18next.com/plurals.html
-[unescape]: https://www.i18next.com/interpolation.html#unescape
+[FormatJS]: https://formatjs.io/
+[ICU MessageFormat]: https://formatjs.io/docs/intl-messageformat
 [helpers]: https://handlebarsjs.com/guide/block-helpers.html
-[resource]: https://www.i18next.com/add-or-load-translations.html
 [Transifex]: https://transifex.com
 [transifexrc]: https://docs.transifex.com/client/client-configuration#transifexrc
 [html-templates]: ../subsystems/html-css.html#html-templates

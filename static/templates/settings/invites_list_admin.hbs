@@ -2,7 +2,9 @@
     {{#unless is_admin }}
     <div class="tip">{{t "Members can only view or manage invitations that you yourself sent." }}</div>
     {{/unless}}
+    {{#if can_invite_others_to_realm}}
     <a class="invite-user-link" href="#invite"><i class="fa fa-plus-circle" aria-hidden="true"></i>{{t "Invite more users" }}</a>
+    {{/if}}
     <div>
         <h3 class="inline-block">{{t "Invites" }}</h3>
         <input type="text" class="search" placeholder="{{t 'Filter invites' }}" aria-label="{{t 'Filter invites' }}"/>
@@ -12,7 +14,7 @@
 
     <div class="progressive-table-wrapper" data-simplebar>
         <table class="table table-condensed table-striped">
-            <thead>
+            <thead class="table-sticky-headers">
                 <th class="active" data-sort="invitee">{{t "Invitee" }}</th>
                 {{#if is_admin }}
                 <th data-sort="alphabetic" data-sort-prop="ref">{{t "Invited by" }}</th>

@@ -22,17 +22,22 @@ Zulip's message retention and deletion features.
 
 Examples:
 To restore all recently deleted messages:
-  ./manage.py restore_messages
+  ./manage.py restore_messages --all --restore-deleted
 To restore a specific ArchiveTransaction:
   ./manage.py restore_messages --transaction-id=1
 """
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
-            "-d",
+            "--all",
+            action="store_true",
+            help="Restore archived messages from all realms. "
+            "(Does not restore manually deleted messages.)",
+        )
+        parser.add_argument(
             "--restore-deleted",
             action="store_true",
-            help="Restore manually deleted messages.",
+            help="With --all, also restores manually deleted messages.",
         )
         parser.add_argument(
             "-t", "--transaction-id", type=int, help="Restore a specific ArchiveTransaction."
@@ -50,5 +55,7 @@ To restore a specific ArchiveTransaction:
             restore_data_from_archive_by_realm(realm)
         elif options["transaction_id"]:
             restore_data_from_archive(ArchiveTransaction.objects.get(id=options["transaction_id"]))
-        else:
+        elif options["all"]:
             restore_all_data_from_archive(restore_manual_transactions=options["restore_deleted"])
+        else:
+            self.print_help("./manage.py", "restore_messages")

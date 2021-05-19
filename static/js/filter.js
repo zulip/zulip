@@ -1,7 +1,7 @@
 import Handlebars from "handlebars/runtime";
 import _ from "lodash";
 
-import {i18n} from "./i18n";
+import {$t} from "./i18n";
 import * as message_parser from "./message_parser";
 import * as message_store from "./message_store";
 import {page_params} from "./page_params";
@@ -69,35 +69,42 @@ function message_in_home(message) {
 function message_matches_search_term(message, operator, operand) {
     switch (operator) {
         case "has":
-            if (operand === "image") {
-                return message_parser.message_has_image(message);
-            } else if (operand === "link") {
-                return message_parser.message_has_link(message);
-            } else if (operand === "attachment") {
-                return message_parser.message_has_attachment(message);
+            switch (operand) {
+                case "image":
+                    return message_parser.message_has_image(message);
+                case "link":
+                    return message_parser.message_has_link(message);
+                case "attachment":
+                    return message_parser.message_has_attachment(message);
+                default:
+                    return false; // has:something_else returns false
             }
-            return false; // has:something_else returns false
+
         case "is":
-            if (operand === "private") {
-                return message.type === "private";
-            } else if (operand === "starred") {
-                return message.starred;
-            } else if (operand === "mentioned") {
-                return message.mentioned;
-            } else if (operand === "alerted") {
-                return message.alerted;
-            } else if (operand === "unread") {
-                return unread.message_unread(message);
+            switch (operand) {
+                case "private":
+                    return message.type === "private";
+                case "starred":
+                    return message.starred;
+                case "mentioned":
+                    return message.mentioned;
+                case "alerted":
+                    return message.alerted;
+                case "unread":
+                    return unread.message_unread(message);
+                default:
+                    return false; // is:whatever returns false
             }
-            return false; // is:whatever returns false
 
         case "in":
-            if (operand === "home") {
-                return message_in_home(message);
-            } else if (operand === "all") {
-                return true;
+            switch (operand) {
+                case "home":
+                    return message_in_home(message);
+                case "all":
+                    return true;
+                default:
+                    return false; // in:whatever returns false
             }
-            return false; // in:whatever returns false
 
         case "near":
             // this is all handled server side
@@ -412,6 +419,10 @@ export class Filter {
         return this.has_operator("search");
     }
 
+    is_non_huddle_pm() {
+        return this.has_operator("pm-with") && this.operands("pm-with")[0].split(",").length === 1;
+    }
+
     calc_can_mark_messages_read() {
         const term_types = this.sorted_term_types();
 
@@ -592,29 +603,29 @@ export class Filter {
             (term_types.length === 2 && _.isEqual(term_types, ["stream", "topic"]))
         ) {
             if (!this._sub) {
-                return i18n.t("Unknown stream");
+                return $t({defaultMessage: "Unknown stream"});
             }
             return this._sub.name;
         }
         if (term_types.length === 1 || (term_types.length === 2 && term_types[1] === "search")) {
             switch (term_types[0]) {
                 case "in-home":
-                    return i18n.t("All messages");
+                    return $t({defaultMessage: "All messages"});
                 case "in-all":
-                    return i18n.t("All messages including muted streams");
+                    return $t({defaultMessage: "All messages including muted streams"});
                 case "streams-public":
-                    return i18n.t("Public stream messages in organization");
+                    return $t({defaultMessage: "Public stream messages in organization"});
                 case "stream":
                     if (!this._sub) {
-                        return i18n.t("Unknown stream");
+                        return $t({defaultMessage: "Unknown stream"});
                     }
                     return this._sub.name;
                 case "is-starred":
-                    return i18n.t("Starred messages");
+                    return $t({defaultMessage: "Starred messages"});
                 case "is-mentioned":
-                    return i18n.t("Mentions");
+                    return $t({defaultMessage: "Mentions"});
                 case "is-private":
-                    return i18n.t("Private messages");
+                    return $t({defaultMessage: "Private messages"});
                 case "pm-with": {
                     const emails = this.operands("pm-with")[0].split(",");
                     const names = emails.map((email) => {

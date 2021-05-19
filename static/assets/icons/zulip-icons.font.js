@@ -5,7 +5,7 @@
 module.exports = {
     files: ["./*.svg"],
     fontName: "zulip-icons",
-    classPrefix: "",
+    classPrefix: "zulip-icon-",
     baseSelector: ".zulip-icon",
     cssTemplate: "./template.hbs",
     ligature: false,

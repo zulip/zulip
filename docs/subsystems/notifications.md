@@ -11,10 +11,10 @@ the details of the email/mobile push notifications code path.
 Here we name a few corner cases worth understanding in designing this
 sort of notifications system:
 
-* The **Idle Desktop Problem**: We don't want the presence of a
+* The **idle desktop problem**: We don't want the presence of a
   desktop computer at the office to eat all notifications because the
   user has an "online" client that they may not have used in 3 days.
-* The **Hard Disconnect Problem**: A client can lose its connection to
+* The **hard disconnect problem**: A client can lose its connection to
   the Internet (or be suspended, or whatever) at any time, and this
   happens routinely. We want to ensure that races where a user closes
   their laptop shortly after a notifiable message is sent does not
@@ -57,10 +57,10 @@ as follows:
     checks are implemented.
   * Users in `presence_idle_user_ids` are always considered idle:
     the variable name means "users who are idle because of
-    presence". This is how we solve the Idle Desktop Problem; users
+    presence". This is how we solve the idle desktop problem; users
     with an idle desktop are treated the same as users who aren't
     logged in for this check.
-  * However, that check does not handle the Hard Disconnect Problem:
+  * However, that check does not handle the hard disconnect problem:
     if a user was present 1 minute before a message was sent, and then
     closed their laptop, the user will not be in
     `presence_idle_user_ids`, and so without an additional mechanism,
@@ -75,7 +75,7 @@ as follows:
   * The `receiver_is_off_zulip` check is effectively repeated when
     event queues are garbage-collected (in `missedmessage_hook`) by
     looking for whether the queue being garbage-collectee was the only
-    one; this second check solves the Hard Disconnect Problem, resulting in
+    one; this second check solves the hard disconnect problem, resulting in
     notifications for these hard-disconnect cases usually coming 10
     minutes late.
   * The message-edit code path has parallel logic in
@@ -124,8 +124,8 @@ as follows:
   `push_notifications.py` code that actually sends the
   notification. This logic is somewhat complicated by having to track
   the number of unread push notifications to display on the mobile
-  apps' badges, as well as using the [Mobile Push Notifications
-  Service](../production/mobile-push-notifications.md) for self-hosted
+  apps' badges, as well as using the [mobile push notifications
+  service](../production/mobile-push-notifications.md) for self-hosted
   systems.
 
 The following important constraints are worth understanding about the
@@ -149,7 +149,7 @@ structure of the system, when thinking about changes to it:
   following a topic (to get notifications for messages only within
   that topic in a stream). There are a lot of different workflows
   possible with Zulip's threading, and it's important to make it easy
-  for users to setup Zulip's notification to fit as many of those
+  for users to set up Zulip's notification to fit as many of those
   workflows as possible.
 * **Message editing**. Zulip supports editing messages, and that
   interacts with notifications in ways that require careful handling:

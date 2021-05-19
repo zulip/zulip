@@ -1,13 +1,13 @@
-Get Zulip notifications for your JIRA projects!
+Get Zulip notifications for your Jira projects!
 
-These instructions apply to Atlassian Cloud's hosted JIRA, and JIRA Server version
-5.2 or greater. For older installs, you'll need our [JIRA Plugin](./jira-plugin).
+These instructions apply to Atlassian Cloud's hosted Jira, and Jira Server version
+5.2 or greater. For older installs, you'll need our [Jira plugin](./jira-plugin).
 
 1. {!create-stream.md!}
 
 1. {!create-bot-construct-url-indented.md!}
 
-1. Go to your JIRA **Site administration** page. Click **Jira** on the left.
+1. Go to your Jira **Site administration** page. Click **Jira** on the left.
    On the left sidebar, scroll down, and under **Advanced**, click **WebHooks**.
    Click **+ Create a WebHook**.
 

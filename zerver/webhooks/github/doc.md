@@ -17,3 +17,5 @@ Get GitHub notifications in Zulip!
 {!congrats.md!}
 
 ![](/static/images/integrations/github/001.png)
+
+See also the [GitHub Actions integration](/integrations/doc/github-actions).

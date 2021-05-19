@@ -8,12 +8,12 @@ import * as fenced_code from "../shared/js/fenced_code";
 import render_edit_content_button from "../templates/edit_content_button.hbs";
 
 import * as activity from "./activity";
-import * as alert_popup from "./alert_popup";
 import * as alert_words from "./alert_words";
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
 import * as click_handlers from "./click_handlers";
 import * as compose from "./compose";
+import * as compose_closed_ui from "./compose_closed_ui";
 import * as compose_pm_pill from "./compose_pm_pill";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as condense from "./condense";
@@ -23,6 +23,7 @@ import * as echo from "./echo";
 import * as emoji_picker from "./emoji_picker";
 import * as emojisets from "./emojisets";
 import * as gear_menu from "./gear_menu";
+import * as giphy from "./giphy";
 import * as hashchange from "./hashchange";
 import * as hotspots from "./hotspots";
 import * as invite from "./invite";
@@ -44,6 +45,7 @@ import * as panels from "./panels";
 import * as people from "./people";
 import * as pm_conversations from "./pm_conversations";
 import * as presence from "./presence";
+import * as realm_playground from "./realm_playground";
 import * as recent_topics from "./recent_topics";
 import * as reload from "./reload";
 import * as resize from "./resize";
@@ -64,6 +66,7 @@ import * as stream_edit from "./stream_edit";
 import * as stream_list from "./stream_list";
 import * as subs from "./subs";
 import * as timerender from "./timerender";
+import * as tippyjs from "./tippyjs";
 import * as topic_list from "./topic_list";
 import * as topic_zoom from "./topic_zoom";
 import * as tutorial from "./tutorial";
@@ -321,22 +324,6 @@ export function initialize_kitchen_sink_stuff() {
         timerender.set_full_datetime(message, time_elem);
     });
 
-    $("#streams_header h4").tooltip({placement: "right", animation: false});
-
-    $('#streams_header i[data-toggle="tooltip"]').tooltip({placement: "left", animation: false});
-
-    $("#userlist-header #userlist-title").tooltip({placement: "right", animation: false});
-
-    $("#userlist-header #user_filter_icon").tooltip({placement: "left", animation: false});
-
-    $('.message_failed i[data-toggle="tooltip"]').tooltip();
-
-    $('.copy_message[data-toggle="tooltip"]').tooltip();
-
-    // We disable animations here because they can cause the tooltip
-    // to change shape while fading away in weird way.
-    $("#keyboard-icon").tooltip({placement: "left", animation: false});
-
     $("body").on("mouseover", ".message_edit_content", function () {
         $(this).closest(".message_row").find(".copy_message").show();
     });
@@ -347,11 +334,6 @@ export function initialize_kitchen_sink_stuff() {
 
     $("body").on("mouseenter", ".copy_message", function () {
         $(this).show();
-        $(this).tooltip("show");
-    });
-
-    $("body").on("mouseleave", ".copy_message", function () {
-        $(this).tooltip("hide");
     });
 
     if (!page_params.realm_allow_message_editing) {
@@ -476,13 +458,20 @@ export function initialize_everything() {
 
     const user_status_params = pop_fields("user_status");
 
+    tippyjs.initialize();
+    // We need to initialize compose early, because other modules'
+    // initialization expects `#compose` to be already present in the
+    // DOM, dating from when the compose area was part of the backend
+    // template.
+    compose.initialize();
     message_lists.initialize();
-    alert_popup.initialize();
     alert_words.initialize(alert_words_params);
     emojisets.initialize();
     people.initialize(page_params.user_id, people_params);
     scroll_bar.initialize();
     message_viewport.initialize();
+    panels.initialize();
+    compose_closed_ui.initialize();
     initialize_kitchen_sink_stuff();
     echo.initialize();
     stream_edit.initialize();
@@ -514,13 +503,14 @@ export function initialize_everything() {
         realm_emoji: emoji_params.realm_emoji,
         emoji_codes: generated_emoji_codes,
     });
-    markdown.initialize(page_params.realm_filters, markdown_config.get_helpers());
-    compose.initialize();
+    markdown.initialize(page_params.realm_linkifiers, markdown_config.get_helpers());
+    realm_playground.initialize(page_params.realm_playgrounds, generated_pygments_data);
     composebox_typeahead.initialize(); // Must happen after compose.initialize()
     search.initialize();
     tutorial.initialize();
     notifications.initialize();
     gear_menu.initialize();
+    giphy.initialize();
     presence.initialize(presence_params);
     settings_panel_menu.initialize();
     settings_sections.initialize();
@@ -535,7 +525,6 @@ export function initialize_everything() {
     sent_messages.initialize();
     hotspots.initialize();
     ui.initialize();
-    panels.initialize();
     typing.initialize();
     starred_messages.initialize();
     user_status_ui.initialize();

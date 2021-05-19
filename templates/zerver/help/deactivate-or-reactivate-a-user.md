@@ -19,7 +19,7 @@ Note that organization administrators cannot deactivate organization owners.
  4. Click the **Deactivate** button to the right of the user account that you
 want to deactivate.
 
-4. Click **Deactivate now** to confirm.
+4. Approve by clicking **Confirm**.
 
 {end_tabs}
 

@@ -11,7 +11,7 @@ email addresses and send notifications.
 
 1. Fill out the section of `/etc/zulip/settings.py` headed "Outgoing
    email (SMTP) settings".  This includes the hostname and typically
-   the port to reach your SMTP provider, and the username to log into
+   the port to reach your SMTP provider, and the username to log in to
    it.  You'll also want to fill out the noreply email section.
 
 1. Put the password for the SMTP user account in

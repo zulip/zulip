@@ -9,14 +9,14 @@ require("css.escape");
 const mkdirp = require("mkdirp");
 const puppeteer = require("puppeteer");
 
-const host = "localhost:9991";
 const options = {};
 
 commander
-    .arguments("<message_id> <image_path>")
-    .action((messageId, imagePath) => {
+    .arguments("<message_id> <image_path> <realm_uri")
+    .action((messageId, imagePath, realmUri) => {
         options.messageId = messageId;
         options.imagePath = imagePath;
+        options.realmUri = realmUri;
         console.log(`Capturing screenshot for message ${messageId} to ${imagePath}`);
     })
     .parse(process.argv);
@@ -43,7 +43,7 @@ async function run() {
         const page = await browser.newPage();
         // deviceScaleFactor:2 gives better quality screenshots (higher pixel density)
         await page.setViewport({width: 1280, height: 1024, deviceScaleFactor: 2});
-        await page.goto("http://" + host);
+        await page.goto(options.realmUri);
         // wait for Iago devlogin button and click on it.
         await page.waitForSelector('[value="iago@zulip.com"]');
 
@@ -54,7 +54,7 @@ async function run() {
         ]);
 
         // Navigate to message and capture screenshot
-        await page.goto(`http://${host}/#narrow/id/${options.messageId}`);
+        await page.goto(`${options.realmUri}/#narrow/id/${options.messageId}`);
         const messageSelector = `#zfilt${CSS.escape(options.messageId)}`;
         await page.waitForSelector(messageSelector);
         // remove unread marker and don't select message

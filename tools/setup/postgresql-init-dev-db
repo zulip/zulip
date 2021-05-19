@@ -19,7 +19,7 @@ elif [[ "$MODE" == "test" ]]; then
     DBNAME=zulip_test
     STATUS_FILE_NAME=migration_status_test
 else
-    echo "Usage Instructions"
+    echo "Usage instructions"
     echo "Run with either no arguments (sets up devel db for local deploy--zulip with user zulip)"
     echo "or specify 'test'"
     exit 1
@@ -52,7 +52,7 @@ DBNAME_BASE=${DBNAME}_base
 if ! pg_isready -U "$POSTGRES_USER" -q; then
     set +x
     echo
-    echo 'ERROR: PostgreSQL Server is not running! Ensure the service is enabled.'
+    echo 'ERROR: PostgreSQL server is not running! Ensure the service is enabled.'
     # shellcheck disable=SC2016
     echo 'ERROR: Try `sudo service postgresql start`?'
     echo "ERROR: You can easily test if you fixed it using: pg_isready -U \$POSTGRES_USER"

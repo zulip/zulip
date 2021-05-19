@@ -15,9 +15,6 @@ $(window).idle = () => {};
 
 let filter_key_handlers;
 
-page_params.realm_users = [];
-page_params.user_id = 999;
-
 const _document = {
     hasFocus() {
         return true;
@@ -60,6 +57,7 @@ set_global("document", _document);
 
 const huddle_data = zrequire("huddle_data");
 const compose_fade = zrequire("compose_fade");
+const muting = zrequire("muting");
 const narrow = zrequire("narrow");
 const presence = zrequire("presence");
 const people = zrequire("people");
@@ -138,6 +136,9 @@ run_test("reload_defaults", () => {
 });
 
 run_test("get_status", () => {
+    page_params.realm_users = [];
+    page_params.user_id = 999;
+
     assert.equal(presence.get_status(page_params.user_id), "active");
     assert.equal(presence.get_status(alice.user_id), "inactive");
     assert.equal(presence.get_status(fred.user_id), "active");
@@ -213,6 +214,7 @@ function clear_buddy_list() {
 function test_ui(label, f) {
     run_test(label, (override) => {
         clear_buddy_list();
+        muting.set_muted_users([]);
         f(override);
     });
 }
@@ -261,13 +263,11 @@ function buddy_list_add(user_id, stub) {
 }
 
 test_ui("PM_update_dom_counts", () => {
-    const value = $.create("alice-value");
-    const count = $.create("alice-count");
+    const count = $.create("alice-unread-count");
     const pm_key = alice.user_id.toString();
     const li = $.create("alice stub");
     buddy_list_add(pm_key, li);
-    count.set_find_results(".value", value);
-    li.set_find_results(".count", count);
+    li.set_find_results(".unread_count", count);
     count.set_parents_result("li", li);
 
     const counts = new Map();
@@ -275,14 +275,12 @@ test_ui("PM_update_dom_counts", () => {
     li.addClass("user_sidebar_entry");
 
     activity.update_dom_with_unread_counts({pm_count: counts});
-    assert(li.hasClass("user-with-count"));
-    assert.equal(value.text(), "5");
+    assert.equal(count.text(), "5");
 
     counts.set(pm_key, 0);
 
     activity.update_dom_with_unread_counts({pm_count: counts});
-    assert(!li.hasClass("user-with-count"));
-    assert.equal(value.text(), "");
+    assert.equal(count.text(), "");
 });
 
 test_ui("handlers", (override) => {
@@ -424,6 +422,21 @@ test_ui("filter_user_ids", () => {
         mark.user_id,
     ]);
 
+    muting.add_muted_user(jill.user_id);
+    muting.add_muted_user(mark.user_id);
+
+    // Test no match for muted user when there is no filter.
+    user_ids = get_user_ids();
+    assert.deepEqual(user_ids, [alice.user_id, fred.user_id, norbert.user_id, zoe.user_id]);
+
+    // Test no match for muted users even with filter text.
+    user_filter.val("ji,ma");
+    user_ids = get_user_ids();
+    assert.deepEqual(user_ids, []);
+
+    muting.remove_muted_user(jill.user_id);
+    muting.remove_muted_user(mark.user_id);
+
     user_filter.val("abc"); // no match
     user_ids = get_user_ids();
     assert.deepEqual(user_ids, []);
@@ -548,6 +561,17 @@ test_ui("realm_presence_disabled", () => {
     activity.build_user_sidebar();
 });
 
+test_ui("redraw_muted_user", () => {
+    muting.add_muted_user(mark.user_id);
+    let appended_html;
+    $("#user_presences").append = function (html) {
+        appended_html = html;
+    };
+
+    activity.redraw_user(mark.user_id);
+    assert(appended_html === undefined);
+});
+
 test_ui("clear_search", () => {
     activity.set_cursor_and_filter();
 
@@ -559,6 +583,8 @@ test_ui("clear_search", () => {
 });
 
 test_ui("escape_search", () => {
+    page_params.realm_presence_disabled = true;
+
     activity.set_cursor_and_filter();
 
     $(".user-list-filter").val("somevalue");
@@ -582,6 +608,8 @@ test_ui("initiate_search", () => {
 });
 
 test_ui("toggle_filter_display", () => {
+    page_params.realm_presence_disabled = true;
+
     activity.set_cursor_and_filter();
 
     activity.user_filter.toggle_filter_displayed();

@@ -2,7 +2,7 @@
     <div class="admin-table-wrapper">
 
         <p>
-            {{#tr this}}
+            {{#tr}}
             Configure regular expression patterns that will be
             automatically linkified when used in Zulip message bodies or
             topics.  For example to automatically linkify commit IDs and
@@ -23,7 +23,7 @@
             </li>
         </ul>
         <p>
-            {{#tr this}}
+            {{#tr}}
             Or, to automatically linkify GitHub's <code>org/repo#1234</code> syntax:
             {{/tr}}
         </p>
@@ -35,8 +35,9 @@
             </li>
         </ul>
         <p>
-            {{#tr this}}
-            More details are available <a href="/help/add-a-custom-linkifier" target="_blank" rel="noopener noreferrer">in the Help Center article</a>.
+            {{#tr}}
+                More details are available <z-link>in the Help Center article</z-link>.
+                {{#*inline "z-link"}}<a href="/help/add-a-custom-linkifier" target="_blank" rel="noopener noreferrer">{{> @partial-block}}</a>{{/inline}}
             {{/tr}}
         </p>
 
@@ -65,9 +66,10 @@
         {{/if}}
 
         <input type="text" class="search" placeholder="{{t 'Filter linkifiers' }}" aria-label="{{t 'Filter linkifiers' }}"/>
+        <div class="alert-notification edit-linkifier-status" id="linkifier-field-status"></div>
         <div class="progressive-table-wrapper" data-simplebar>
             <table class="table table-condensed table-striped wrapped-table admin_linkifiers_table">
-                <thead>
+                <thead class="table-sticky-headers">
                     <th class="active" data-sort="pattern">{{t "Pattern" }}</th>
                     <th data-sort="url">{{t "URL format string" }}</th>
                     {{#if is_admin}}

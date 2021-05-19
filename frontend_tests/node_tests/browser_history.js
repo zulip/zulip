@@ -3,6 +3,7 @@
 const {strict: assert} = require("assert");
 
 const {set_global, zrequire} = require("../zjsunit/namespace");
+const {make_stub} = require("../zjsunit/stub");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 
@@ -48,4 +49,21 @@ test("error for bad hashes", () => {
     const hash = "bogus";
     blueslip.expect("error", "programming error: prefix hashes with #: bogus");
     browser_history.update(hash);
+});
+
+test("update internal hash if required", (override) => {
+    const hash = "#test/hash";
+    const stub = make_stub();
+    override(browser_history, "update", stub.f);
+    browser_history.update_hash_internally_if_required(hash);
+    assert.equal(stub.num_calls, 1);
+
+    location.hash = "#test/hash";
+    // update with same hash
+    browser_history.update_hash_internally_if_required(hash);
+    // but no update was made since the
+    // hash was already updated.
+    // Evident by no increase in number of
+    // calls to stub.
+    assert.equal(stub.num_calls, 1);
 });

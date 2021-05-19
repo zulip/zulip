@@ -87,4 +87,3 @@ class="emoji-small"/>.
 Note that Zulip ignores common words like `a`, `the`, and about 100
 others. A quirk in Zulip's current implementation means that if all of your
 keywords are ignored, we'll return 0 search results.
-

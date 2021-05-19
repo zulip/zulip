@@ -2,12 +2,12 @@ import os
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
-from django.conf.urls import url
 from django.contrib.staticfiles.storage import staticfiles_storage
-from django.urls.resolvers import RegexPattern
+from django.urls import path
+from django.urls.resolvers import URLPattern
 from django.utils.functional import Promise
 from django.utils.module_loading import import_string
-from django.utils.translation import ugettext as ugettext_lazy
+from django.utils.translation import gettext as gettext_lazy
 
 from zerver.lib.storage import static_path
 from zerver.lib.types import Validator
@@ -32,20 +32,20 @@ features for writing and configuring integrations efficiently.
 """
 
 CATEGORIES: Dict[str, Promise] = {
-    "meta-integration": ugettext_lazy("Integration frameworks"),
-    "continuous-integration": ugettext_lazy("Continuous integration"),
-    "customer-support": ugettext_lazy("Customer support"),
-    "deployment": ugettext_lazy("Deployment"),
-    "communication": ugettext_lazy("Communication"),
-    "financial": ugettext_lazy("Financial"),
-    "hr": ugettext_lazy("HR"),
-    "marketing": ugettext_lazy("Marketing"),
-    "misc": ugettext_lazy("Miscellaneous"),
-    "monitoring": ugettext_lazy("Monitoring tools"),
-    "project-management": ugettext_lazy("Project management"),
-    "productivity": ugettext_lazy("Productivity"),
-    "version-control": ugettext_lazy("Version control"),
-    "bots": ugettext_lazy("Interactive bots"),
+    "meta-integration": gettext_lazy("Integration frameworks"),
+    "continuous-integration": gettext_lazy("Continuous integration"),
+    "customer-support": gettext_lazy("Customer support"),
+    "deployment": gettext_lazy("Deployment"),
+    "communication": gettext_lazy("Communication"),
+    "financial": gettext_lazy("Financial"),
+    "hr": gettext_lazy("HR"),
+    "marketing": gettext_lazy("Marketing"),
+    "misc": gettext_lazy("Miscellaneous"),
+    "monitoring": gettext_lazy("Monitoring tools"),
+    "project-management": gettext_lazy("Project management"),
+    "productivity": gettext_lazy("Productivity"),
+    "version-control": gettext_lazy("Version control"),
+    "bots": gettext_lazy("Interactive bots"),
 }
 
 
@@ -221,8 +221,8 @@ class WebhookIntegration(Integration):
         self.doc = doc
 
     @property
-    def url_object(self) -> RegexPattern:
-        return url(self.url, self.function)
+    def url_object(self) -> URLPattern:
+        return path(self.url, self.function)
 
 
 def split_fixture_path(path: str) -> Tuple[str, str]:
@@ -233,11 +233,15 @@ def split_fixture_path(path: str) -> Tuple[str, str]:
 
 
 @dataclass
-class ScreenshotConfig:
+class BaseScreenshotConfig:
     fixture_name: str
     image_name: str = "001.png"
     image_dir: Optional[str] = None
     bot_name: Optional[str] = None
+
+
+@dataclass
+class ScreenshotConfig(BaseScreenshotConfig):
     payload_as_query_param: bool = False
     payload_param_name: str = "payload"
     extra_params: Dict[str, str] = field(default_factory=dict)
@@ -246,9 +250,12 @@ class ScreenshotConfig:
 
 
 def get_fixture_and_image_paths(
-    integration: WebhookIntegration, screenshot_config: ScreenshotConfig
+    integration: Integration, screenshot_config: BaseScreenshotConfig
 ) -> Tuple[str, str]:
-    fixture_dir = os.path.join("zerver", "webhooks", integration.name, "fixtures")
+    if isinstance(integration, WebhookIntegration):
+        fixture_dir = os.path.join("zerver", "webhooks", integration.name, "fixtures")
+    else:
+        fixture_dir = os.path.join("zerver", "integration_fixtures", integration.name)
     fixture_path = os.path.join(fixture_dir, screenshot_config.fixture_name)
     image_dir = screenshot_config.image_dir or integration.name
     image_name = screenshot_config.image_name
@@ -366,6 +373,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
     WebhookIntegration("errbit", ["monitoring"], display_name="Errbit"),
     WebhookIntegration("flock", ["customer-support"], display_name="Flock"),
     WebhookIntegration("freshdesk", ["customer-support"]),
+    WebhookIntegration("freshping", ["monitoring"], display_name="Freshping"),
     WebhookIntegration("front", ["customer-support"], display_name="Front"),
     WebhookIntegration("gitea", ["version-control"], stream_name="commits"),
     WebhookIntegration(
@@ -396,8 +404,9 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
     ),
     WebhookIntegration("insping", ["monitoring"], display_name="Insping"),
     WebhookIntegration("intercom", ["customer-support"], display_name="Intercom"),
-    WebhookIntegration("jira", ["project-management"], display_name="JIRA"),
+    WebhookIntegration("jira", ["project-management"], display_name="Jira"),
     WebhookIntegration("jotform", ["misc"], display_name="Jotform"),
+    WebhookIntegration("json", ["misc"], display_name="JSON formatter"),
     WebhookIntegration("librato", ["monitoring"]),
     WebhookIntegration("mention", ["marketing"], display_name="Mention"),
     WebhookIntegration("netlify", ["continuous-integration", "deployment"], display_name="Netlify"),
@@ -436,6 +445,7 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
     WebhookIntegration("travis", ["continuous-integration"], display_name="Travis CI"),
     WebhookIntegration("trello", ["project-management"]),
     WebhookIntegration("updown", ["monitoring"]),
+    WebhookIntegration("uptimerobot", ["monitoring"], display_name="Uptime Robot"),
     WebhookIntegration(
         "yo",
         ["communication"],
@@ -452,6 +462,14 @@ WEBHOOK_INTEGRATIONS: List[WebhookIntegration] = [
 INTEGRATIONS: Dict[str, Integration] = {
     "asana": Integration(
         "asana", "asana", ["project-management"], doc="zerver/integrations/asana.md"
+    ),
+    "big-blue-button": Integration(
+        "big-blue-button",
+        "big-blue-button",
+        ["communication"],
+        logo="images/integrations/logos/bigbluebutton.svg",
+        display_name="Big Blue Button",
+        doc="zerver/integrations/big-blue-button.md",
     ),
     "capistrano": Integration(
         "capistrano",
@@ -470,8 +488,23 @@ INTEGRATIONS: Dict[str, Integration] = {
     "errbot": Integration(
         "errbot", "errbot", ["meta-integration", "bots"], doc="zerver/integrations/errbot.md"
     ),
+    "giphy": Integration(
+        "giphy",
+        "giphy",
+        display_name="GIPHY",
+        categories=["misc"],
+        doc="zerver/integrations/giphy.md",
+        logo="images/GIPHY_big_logo.png",
+    ),
     "git": Integration(
         "git", "git", ["version-control"], stream_name="commits", doc="zerver/integrations/git.md"
+    ),
+    "github-actions": Integration(
+        "github-actions",
+        "github-actions",
+        ["continuous-integration"],
+        display_name="GitHub Actions",
+        doc="zerver/integrations/github-actions.md",
     ),
     "google-calendar": Integration(
         "google-calendar",
@@ -499,10 +532,18 @@ INTEGRATIONS: Dict[str, Integration] = {
         ["project-management"],
         logo="images/integrations/logos/jira.svg",
         secondary_line_text="(locally installed)",
-        display_name="JIRA",
+        display_name="Jira",
         doc="zerver/integrations/jira-plugin.md",
         stream_name="jira",
         legacy=True,
+    ),
+    "jitsi": Integration(
+        "jitsi",
+        "jitsi",
+        ["communication"],
+        logo="images/integrations/logos/jitsi.svg",
+        display_name="Jitsi Meet",
+        doc="zerver/integrations/jitsi.md",
     ),
     "matrix": Integration(
         "matrix", "matrix", ["communication"], doc="zerver/integrations/matrix.md"
@@ -557,6 +598,14 @@ INTEGRATIONS: Dict[str, Integration] = {
         # _ needed to get around adblock plus
         logo="images/integrations/logos/twitte_r.svg",
         doc="zerver/integrations/twitter.md",
+    ),
+    "zoom": Integration(
+        "zoom",
+        "zoom",
+        ["communication"],
+        logo="images/integrations/logos/zoom.svg",
+        display_name="Zoom",
+        doc="zerver/integrations/zoom.md",
     ),
 }
 
@@ -618,7 +667,7 @@ NO_SCREENSHOT_WEBHOOKS = {
 }
 
 
-DOC_SCREENSHOT_CONFIG: Dict[str, List[ScreenshotConfig]] = {
+DOC_SCREENSHOT_CONFIG: Dict[str, List[BaseScreenshotConfig]] = {
     "airbrake": [ScreenshotConfig("error_message.json")],
     "alertmanager": [
         ScreenshotConfig("alert.json", extra_params={"name": "topic", "desc": "description"})
@@ -665,6 +714,7 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[ScreenshotConfig]] = {
     "freshdesk": [
         ScreenshotConfig("ticket_created.json", image_name="004.png", use_basic_auth=True)
     ],
+    "freshping": [ScreenshotConfig("freshping_check_unreachable.json")],
     "front": [ScreenshotConfig("inbound_message.json")],
     "gci": [ScreenshotConfig("task_abandoned_by_student.json")],
     "gitea": [ScreenshotConfig("pull_request__merged.json")],
@@ -691,10 +741,16 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[ScreenshotConfig]] = {
     "intercom": [ScreenshotConfig("conversation_admin_replied.json")],
     "jira": [ScreenshotConfig("created_v1.json")],
     "jotform": [ScreenshotConfig("response.json")],
+    "json": [ScreenshotConfig("json_github_push__1_commit.json")],
     "librato": [ScreenshotConfig("three_conditions_alert.json", payload_as_query_param=True)],
     "mention": [ScreenshotConfig("webfeeds.json")],
+    "nagios": [BaseScreenshotConfig("service_notify.json")],
     "netlify": [ScreenshotConfig("deploy_building.json")],
-    "newrelic": [ScreenshotConfig("alert.txt", "002.png")],
+    "newrelic": [
+        ScreenshotConfig("incident_opened.json", "001.png"),
+        ScreenshotConfig("incident_acknowledged.json", "002.png"),
+        ScreenshotConfig("incident_closed.json", "003.png"),
+    ],
     "opbeat": [ScreenshotConfig("error_reopen.json")],
     "opsgenie": [ScreenshotConfig("addrecipient.json", image_name="000.png")],
     "pagerduty": [ScreenshotConfig("trigger_v2.json")],
@@ -730,6 +786,7 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[ScreenshotConfig]] = {
     "travis": [ScreenshotConfig("build.json", payload_as_query_param=True)],
     "trello": [ScreenshotConfig("adding_comment_to_card.json")],
     "updown": [ScreenshotConfig("check_multiple_events.json")],
+    "uptimerobot": [ScreenshotConfig("uptimerobot_monitor_up.json")],
     "wordpress": [ScreenshotConfig("publish_post.txt", "wordpress_post_created.png")],
     "yo": [
         ScreenshotConfig(
@@ -748,7 +805,7 @@ DOC_SCREENSHOT_CONFIG: Dict[str, List[ScreenshotConfig]] = {
             extra_params={
                 "ticket_title": "Test ticket",
                 "ticket_id": "4",
-                "message": "Test Message",
+                "message": "Test message",
             },
         )
     ],
