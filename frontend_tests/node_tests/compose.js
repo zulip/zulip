@@ -40,7 +40,6 @@ document.location.protocol = "https:";
 document.location.host = "foo.com";
 
 const fake_now = 555;
-MockDate.set(new Date(fake_now * 1000));
 
 const channel = mock_esm("../../static/js/channel");
 const compose_actions = mock_esm("../../static/js/compose_actions");
@@ -388,6 +387,8 @@ test_ui("send_message_success", (override) => {
 });
 
 test_ui("send_message", (override) => {
+    MockDate.set(new Date(fake_now * 1000));
+
     override(drafts, "delete_draft_after_send", () => {});
     override(sent_messages, "start_tracking_message", () => {});
 
