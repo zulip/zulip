@@ -135,6 +135,12 @@ export function build_page() {
         options.realm_night_logo_url = options.realm_logo_url;
     }
 
+    options.giphy_help_link = "/help/animated-gifs-from-giphy";
+    if (options.giphy_api_key_empty) {
+        options.giphy_help_link =
+            "https://zulip.readthedocs.io/en/latest/production/giphy-gif-integration.html";
+    }
+
     const rendered_admin_tab = render_admin_tab(options);
     $("#settings_content .organization-box").html(rendered_admin_tab);
     $("#settings_content .alert").removeClass("show");
