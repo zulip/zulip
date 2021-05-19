@@ -64,6 +64,7 @@ export function build_page() {
         realm_name: page_params.realm_name,
         realm_available_video_chat_providers: page_params.realm_available_video_chat_providers,
         giphy_rating_options: page_params.giphy_rating_options,
+        giphy_api_key_empty: page_params.giphy_api_key === "",
         realm_description: page_params.realm_description,
         realm_inline_image_preview: page_params.realm_inline_image_preview,
         server_inline_image_preview: page_params.server_inline_image_preview,
