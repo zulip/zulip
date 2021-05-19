@@ -6,7 +6,6 @@ const markdown_test_cases = require("../../zerver/tests/fixtures/markdown_test_c
 const markdown_assert = require("../zjsunit/markdown_assert");
 const {set_global, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
-const blueslip = require("../zjsunit/zblueslip");
 const {page_params} = require("../zjsunit/zpage_params");
 
 set_global("location", {
@@ -42,10 +41,10 @@ set_global("document", doc);
 
 const emoji = zrequire("../shared/js/emoji");
 const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
+const linkifiers = zrequire("linkifiers");
 const pygments_data = zrequire("../generated/pygments_data.json");
 const fenced_code = zrequire("../shared/js/fenced_code");
 const markdown_config = zrequire("markdown_config");
-const marked = zrequire("../third/marked/lib/marked");
 const markdown = zrequire("markdown");
 const people = zrequire("people");
 const stream_data = zrequire("stream_data");
@@ -188,12 +187,13 @@ stream_data.add_sub(edgecase_stream_2);
 // streamTopicHandler and it would be parsed as edgecase_stream_2.
 stream_data.add_sub(amp_stream);
 
-markdown.initialize(example_realm_linkifiers, markdown_config.get_helpers());
+markdown.initialize(markdown_config.get_helpers());
+linkifiers.initialize(example_realm_linkifiers);
 
 function test(label, f) {
     run_test(label, (override) => {
         page_params.realm_users = [];
-        markdown.update_linkifier_rules(example_realm_linkifiers);
+        linkifiers.update_linkifier_rules(example_realm_linkifiers);
         f(override);
     });
 }
@@ -715,52 +715,6 @@ test("backend_only_linkifiers", () => {
     for (const content of backend_only_linkifiers) {
         assert.equal(markdown.contains_backend_only_syntax(content), true);
     }
-});
-
-test("python_to_js_linkifier", () => {
-    // The only way to reach python_to_js_linkifier is indirectly, hence the call
-    // to update_linkifier_rules.
-    markdown.update_linkifier_rules([
-        {
-            pattern: "/a(?im)a/g",
-            url_format: "http://example1.example.com",
-            id: 10,
-        },
-        {
-            pattern: "/a(?L)a/g",
-            url_format: "http://example2.example.com",
-            id: 20,
-        },
-    ]);
-    let actual_value = marked.InlineLexer.rules.zulip.linkifiers;
-    let expected_value = [/\/aa\/g(?!\w)/gim, /\/aa\/g(?!\w)/g];
-    assert.deepEqual(actual_value, expected_value);
-    // Test case with multiple replacements.
-    markdown.update_linkifier_rules([
-        {
-            pattern: "#cf(?P<contest>\\d+)(?P<problem>[A-Z][\\dA-Z]*)",
-            url_format: "http://example3.example.com",
-            id: 30,
-        },
-    ]);
-    actual_value = marked.InlineLexer.rules.zulip.linkifiers;
-    expected_value = [/#cf(\d+)([A-Z][\dA-Z]*)(?!\w)/g];
-    assert.deepEqual(actual_value, expected_value);
-    // Test incorrect syntax.
-    blueslip.expect(
-        "error",
-        "python_to_js_linkifier: Invalid regular expression: /!@#@(!#&((!&(@#((?!\\w)/: Unterminated group",
-    );
-    markdown.update_linkifier_rules([
-        {
-            pattern: "!@#@(!#&((!&(@#(",
-            url_format: "http://example4.example.com",
-            id: 40,
-        },
-    ]);
-    actual_value = marked.InlineLexer.rules.zulip.linkifiers;
-    expected_value = [];
-    assert.deepEqual(actual_value, expected_value);
 });
 
 test("translate_emoticons_to_names", () => {

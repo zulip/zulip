@@ -28,7 +28,7 @@ const bot_data = mock_esm("../../static/js/bot_data");
 const composebox_typeahead = mock_esm("../../static/js/composebox_typeahead");
 const emoji_picker = mock_esm("../../static/js/emoji_picker");
 const hotspots = mock_esm("../../static/js/hotspots");
-const markdown = mock_esm("../../static/js/markdown");
+const linkifiers = mock_esm("../../static/js/linkifiers");
 const message_edit = mock_esm("../../static/js/message_edit");
 const message_events = mock_esm("../../static/js/message_events");
 const message_list = mock_esm("../../static/js/message_list");
@@ -523,7 +523,7 @@ run_test("realm_linkifiers", (override) => {
     const event = event_fixtures.realm_linkifiers;
     page_params.realm_linkifiers = [];
     override(settings_linkifiers, "populate_linkifiers", noop);
-    override(markdown, "update_linkifier_rules", noop);
+    override(linkifiers, "update_linkifier_rules", noop);
     dispatch(event);
     assert_same(page_params.realm_linkifiers, event.realm_linkifiers);
 });
