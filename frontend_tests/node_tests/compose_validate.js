@@ -52,7 +52,10 @@ people.add_active_user(bob);
 
 function test_ui(label, f) {
     // The sloppy_$ flag lets us re-use setup from prior tests.
-    run_test(label, f, {sloppy_$: true});
+    run_test(label, (override) => {
+        $("#compose-textarea").val("some message");
+        f(override);
+    });
 }
 
 test_ui("validate_stream_message_address_info", () => {
