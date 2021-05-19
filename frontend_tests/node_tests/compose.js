@@ -66,7 +66,6 @@ const compose = zrequire("compose");
 const echo = zrequire("echo");
 const peer_data = zrequire("peer_data");
 const people = zrequire("people");
-const rtl = zrequire("rtl");
 const settings_config = zrequire("settings_config");
 const stream_data = zrequire("stream_data");
 const upload = zrequire("upload");
@@ -174,34 +173,20 @@ test_ui("test_wildcard_mention_allowed", () => {
     assert(!compose.wildcard_mention_allowed());
 });
 
-test_ui("markdown_rtl", (override) => {
+test_ui("right-to-left", () => {
     const textarea = $("#compose-textarea");
 
     const event = {
         keyCode: 65, // A
     };
-
-    override(rtl, "get_direction", (text) => {
-        assert.equal(text, " foo");
-        return "rtl";
-    });
 
     assert.equal(textarea.hasClass("rtl"), false);
 
-    textarea.val("```quote foo");
+    textarea.val("```quote\nمرحبا");
     compose.handle_keyup(event, $("#compose-textarea"));
 
     assert.equal(textarea.hasClass("rtl"), true);
-});
 
-test_ui("markdown_ltr", () => {
-    const textarea = $("#compose-textarea");
-
-    const event = {
-        keyCode: 65, // A
-    };
-
-    assert.equal(textarea.hasClass("rtl"), true);
     textarea.val("```quote foo");
     compose.handle_keyup(event, textarea);
 
