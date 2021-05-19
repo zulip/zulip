@@ -61,8 +61,8 @@ links:
 
 When you click on the links there is a function
 called hashchanged() in static/js/hashchange.js
-that gets invoked.  (We use window.onhashchange
-to register the handler.)  This function then
+that gets invoked.  (We register this as a listener
+for the hashchange event.)  This function then
 launches the appropriate modal for each menu item.
 Look for things like subs.launch(...) or
 invite.launch() in that code.
