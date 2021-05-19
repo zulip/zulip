@@ -14,7 +14,7 @@ import * as composebox_typeahead from "./composebox_typeahead";
 import * as emoji_picker from "./emoji_picker";
 import * as giphy from "./giphy";
 import * as hotspots from "./hotspots";
-import * as markdown from "./markdown";
+import * as linkifiers from "./linkifiers";
 import * as message_edit from "./message_edit";
 import * as message_events from "./message_events";
 import * as message_flags from "./message_flags";
@@ -333,7 +333,7 @@ export function dispatch_normal_event(event) {
 
         case "realm_linkifiers":
             page_params.realm_linkifiers = event.realm_linkifiers;
-            markdown.update_linkifier_rules(page_params.realm_linkifiers);
+            linkifiers.update_linkifier_rules(page_params.realm_linkifiers);
             settings_linkifiers.populate_linkifiers(page_params.realm_linkifiers);
             break;
 

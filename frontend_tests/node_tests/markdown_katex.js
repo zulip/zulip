@@ -15,7 +15,7 @@ const markdown_config = zrequire("markdown_config");
 
 const markdown = zrequire("markdown");
 
-markdown.initialize([], markdown_config.get_helpers());
+markdown.initialize(markdown_config.get_helpers());
 
 run_test("katex_throws_unexpected_exceptions", () => {
     blueslip.expect("error", "Error: some-exception");

@@ -28,6 +28,7 @@ import * as hashchange from "./hashchange";
 import * as hotspots from "./hotspots";
 import * as invite from "./invite";
 import * as lightbox from "./lightbox";
+import * as linkifiers from "./linkifiers";
 import * as markdown from "./markdown";
 import * as markdown_config from "./markdown_config";
 import * as message_edit from "./message_edit";
@@ -503,7 +504,8 @@ export function initialize_everything() {
         realm_emoji: emoji_params.realm_emoji,
         emoji_codes: generated_emoji_codes,
     });
-    markdown.initialize(page_params.realm_linkifiers, markdown_config.get_helpers());
+    markdown.initialize(markdown_config.get_helpers());
+    linkifiers.initialize(page_params.realm_linkifiers);
     realm_playground.initialize(page_params.realm_playgrounds, generated_pygments_data);
     composebox_typeahead.initialize(); // Must happen after compose.initialize()
     search.initialize();
