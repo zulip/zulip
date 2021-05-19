@@ -61,16 +61,16 @@ const transmit = mock_esm("../../static/js/transmit");
 
 const compose_closed_ui = zrequire("compose_closed_ui");
 const compose_fade = zrequire("compose_fade");
-const peer_data = zrequire("peer_data");
-const util = zrequire("util");
-const rtl = zrequire("rtl");
-const stream_data = zrequire("stream_data");
 const compose_state = zrequire("compose_state");
-const people = zrequire("people");
-const echo = zrequire("echo");
 const compose = zrequire("compose");
-const upload = zrequire("upload");
+const echo = zrequire("echo");
+const peer_data = zrequire("peer_data");
+const people = zrequire("people");
+const rtl = zrequire("rtl");
 const settings_config = zrequire("settings_config");
+const stream_data = zrequire("stream_data");
+const upload = zrequire("upload");
+const util = zrequire("util");
 
 function reset_jquery() {
     // Avoid leaks.
