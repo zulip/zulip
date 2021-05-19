@@ -746,8 +746,6 @@ test_ui("initialize", (override) => {
     });
     $("#compose .compose_upload_file").addClass("notdisplayed");
 
-    set_global("document", "document-stub");
-
     page_params.max_file_upload_size_mib = 512;
 
     let setup_upload_called = false;
