@@ -44,7 +44,10 @@ const APPROX_HEIGHT = 350;
 const APPROX_WIDTH = 300;
 
 export function update_giphy_rating() {
-    if (page_params.realm_giphy_rating === page_params.giphy_rating_options.disabled.id) {
+    if (
+        page_params.realm_giphy_rating === page_params.giphy_rating_options.disabled.id ||
+        page_params.giphy_api_key === ""
+    ) {
         $(".compose_giphy_link").hide();
     } else {
         $(".compose_giphy_link").show();
