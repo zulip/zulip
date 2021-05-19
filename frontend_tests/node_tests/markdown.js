@@ -404,6 +404,21 @@ test("marked", () => {
             expected:
                 '<blockquote>\n<p>Mention in quote: <span class="user-mention silent" data-user-id="101">Cordelia, Lear&#39;s daughter</span></p>\n</blockquote>\n<p>Mention outside quote: <span class="user-mention" data-user-id="101">@Cordelia, Lear&#39;s daughter</span></p>',
         },
+        {
+            input: "Wildcard mention: @**all**\nWildcard silent mention: @_**all**",
+            expected:
+                '<p>Wildcard mention: <span class="user-mention" data-user-id="*">@all</span><br>\nWildcard silent mention: <span class="user-mention silent" data-user-id="*">all</span></p>',
+        },
+        {
+            input: "> Wildcard mention in quote: @**all**\n\n> Another wildcard mention in quote: @_**all**",
+            expected:
+                '<blockquote>\n<p>Wildcard mention in quote: <span class="user-mention silent" data-user-id="*">all</span></p>\n</blockquote>\n<blockquote>\n<p>Another wildcard mention in quote: <span class="user-mention silent" data-user-id="*">all</span></p>\n</blockquote>',
+        },
+        {
+            input: "```quote\nWildcard mention in quote: @**all**\n```\n\n```quote\nAnother wildcard mention in quote: @_**all**\n```",
+            expected:
+                '<blockquote>\n<p>Wildcard mention in quote: <span class="user-mention silent" data-user-id="*">all</span></p>\n</blockquote>\n<blockquote>\n<p>Another wildcard mention in quote: <span class="user-mention silent" data-user-id="*">all</span></p>\n</blockquote>',
+        },
         // Test only those linkifiers which don't return True for
         // `contains_backend_only_syntax()`. Those which return True
         // are tested separately.
@@ -702,6 +717,16 @@ test("message_flags", () => {
     assert.equal(message.mentioned, false);
 
     input = "test @**invalid_user**";
+    message = {topic: "No links here", raw_content: input};
+    markdown.apply_markdown(message);
+    assert.equal(message.mentioned, false);
+
+    input = "test @_**all**";
+    message = {topic: "No links here", raw_content: input};
+    markdown.apply_markdown(message);
+    assert.equal(message.mentioned, false);
+
+    input = "> test @**all**";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
     assert.equal(message.mentioned, false);
