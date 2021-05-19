@@ -1108,11 +1108,18 @@ export function get_mention_syntax(full_name, user_id, silent) {
     if (!user_id) {
         blueslip.warn("get_mention_syntax called without user_id.");
     }
-    if (is_duplicate_full_name(full_name) && user_id) {
+    if (
+        (is_duplicate_full_name(full_name) || full_name_matches_wildcard_mention(full_name)) &&
+        user_id
+    ) {
         mention += "|" + user_id;
     }
     mention += "**";
     return mention;
+}
+
+function full_name_matches_wildcard_mention(full_name) {
+    return ["all", "everyone", "stream"].includes(full_name);
 }
 
 export function _add_user(person) {
