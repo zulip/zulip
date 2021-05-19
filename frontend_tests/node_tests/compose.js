@@ -117,8 +117,15 @@ const sub = {
 stream_data.add_sub(sub);
 
 function test_ui(label, f) {
-    // The sloppy_$ flag lets us re-use setup from prior tests.
-    run_test(label, f, {sloppy_$: true});
+    // TODO: initialize data more aggressively.
+    run_test(label, f);
+}
+
+function initialize_handlers(override) {
+    override(compose, "compute_show_video_chat_button", () => false);
+    override(compose, "render_compose_box", () => {});
+    override(upload, "setup_upload", () => undefined);
+    compose.initialize();
 }
 
 test_ui("test_wildcard_mention_allowed", () => {
@@ -806,6 +813,8 @@ test_ui("initialize", (override) => {
 });
 
 test_ui("update_fade", (override) => {
+    initialize_handlers(override);
+
     const selector =
         "#stream_message_recipient_stream,#stream_message_recipient_topic,#private_message_recipient";
     const keyup_handler_func = $(selector).get_on_handler("keyup");
@@ -834,6 +843,8 @@ test_ui("update_fade", (override) => {
 });
 
 test_ui("trigger_submit_compose_form", (override) => {
+    initialize_handlers(override);
+
     let prevent_default_checked = false;
     let compose_finish_checked = false;
     const e = {
@@ -1014,6 +1025,8 @@ test_ui("warn_if_mentioning_unsubscribed_user", (override) => {
 });
 
 test_ui("on_events", (override) => {
+    initialize_handlers(override);
+
     override(rendered_markdown, "update_elements", () => {});
 
     function setup_parents_and_mock_remove(container_sel, target_sel, parent) {
