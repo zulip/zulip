@@ -86,6 +86,22 @@
         text-align: center;
     }
 
+    .legend_symbol {
+        position: absolute;
+        left: calc(40px);
+        transform: translateX(-50%);
+
+        /* Adjust for 50px closed left sidebar state */
+        @media (width <= 800px) {
+            left: calc(5% + 50px);
+        }
+    }
+
+    .legend_label {
+        position: relative;
+        left: calc(30px);
+    }
+
     ul,
     ol {
         margin-left: 30px;
