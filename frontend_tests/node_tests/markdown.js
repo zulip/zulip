@@ -37,8 +37,7 @@ function Image() {
 }
 set_global("Image", Image);
 
-const doc = "";
-set_global("document", doc);
+set_global("document", {compatMode: "CSS1Compat"});
 
 const emoji = zrequire("../shared/js/emoji");
 const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
