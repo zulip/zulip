@@ -19,21 +19,15 @@ const noop = () => {};
 
 set_global("DOMParser", new JSDOM().window.DOMParser);
 
-const _document = {
-    execCommand() {
-        return false;
-    },
-    location: {},
-    to_$: () => $("document-stub"),
-};
-
-set_global("document", _document);
+set_global("document", {});
 set_global("navigator", {});
 
 // Setting these up so that we can test that links to uploads within messages are
 // automatically converted to server relative links.
-document.location.protocol = "https:";
-document.location.host = "foo.com";
+document.location = {
+    protocol: "https:",
+    host: "foo.com",
+};
 
 const fake_now = 555;
 
@@ -546,6 +540,7 @@ test_ui("send_message", (override) => {
 test_ui("enter_with_preview_open", (override) => {
     override(notifications, "clear_compose_notifications", () => {});
     override(reminder, "is_deferred_delivery", () => false);
+    override(document, "to_$", () => $("document-stub"));
 
     page_params.user_id = new_user.user_id;
 
@@ -593,6 +588,7 @@ test_ui("enter_with_preview_open", (override) => {
 test_ui("finish", (override) => {
     override(notifications, "clear_compose_notifications", () => {});
     override(reminder, "is_deferred_delivery", () => false);
+    override(document, "to_$", () => $("document-stub"));
 
     (function test_when_compose_validation_fails() {
         $("#compose_invite_users").show();
