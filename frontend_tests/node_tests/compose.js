@@ -1283,30 +1283,30 @@ test_ui("on_events", (override) => {
             );
         }
 
-        function mock_channel_post(msg) {
-            channel.post = (payload) => {
-                assert.equal(payload.url, "/json/messages/render");
-                assert(payload.idempotent);
-                assert(payload.data);
-                assert.deepEqual(payload.data.content, msg);
+        let current_message;
 
-                function test(func, param) {
-                    let destroy_indicator_called = false;
-                    loading.destroy_indicator = (spinner) => {
-                        assert.equal(spinner, $("#compose .markdown_preview_spinner"));
-                        destroy_indicator_called = true;
-                    };
-                    setup_mock_markdown_contains_backend_only_syntax(msg, true);
+        override(channel, "post", (payload) => {
+            assert.equal(payload.url, "/json/messages/render");
+            assert(payload.idempotent);
+            assert(payload.data);
+            assert.deepEqual(payload.data.content, current_message);
 
-                    func(param);
+            function test(func, param) {
+                let destroy_indicator_called = false;
+                override(loading, "destroy_indicator", (spinner) => {
+                    assert.equal(spinner, $("#compose .markdown_preview_spinner"));
+                    destroy_indicator_called = true;
+                });
+                setup_mock_markdown_contains_backend_only_syntax(current_message, true);
 
-                    assert(destroy_indicator_called);
-                }
+                func(param);
 
-                test(test_post_error, payload.error);
-                test(test_post_success, payload.success);
-            };
-        }
+                assert(destroy_indicator_called);
+            }
+
+            test(test_post_error, payload.error);
+            test(test_post_success, payload.success);
+        });
 
         const handler = $("#compose").get_on_handler("click", ".markdown_preview");
 
@@ -1334,7 +1334,7 @@ test_ui("on_events", (override) => {
             make_indicator_called = true;
         });
 
-        mock_channel_post("```foobarfoobar```");
+        current_message = "```foobarfoobar```";
 
         handler(event);
 
@@ -1346,7 +1346,9 @@ test_ui("on_events", (override) => {
         setup_visibilities();
         setup_mock_markdown_contains_backend_only_syntax("foobarfoobar", false);
         setup_mock_markdown_is_status_message("foobarfoobar", false);
-        mock_channel_post("foobarfoobar");
+
+        current_message = "foobarfoobar";
+
         override(markdown, "apply_markdown", (msg) => {
             assert.equal(msg.raw_content, "foobarfoobar");
             apply_markdown_called = true;
