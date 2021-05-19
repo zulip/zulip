@@ -9,6 +9,7 @@ import * as floating_recipient_bar from "./floating_recipient_bar";
 import * as hash_util from "./hash_util";
 import * as info_overlay from "./info_overlay";
 import * as invite from "./invite";
+import * as login_to_access from "./login_to_access";
 import * as message_lists from "./message_lists";
 import * as message_viewport from "./message_viewport";
 import * as narrow from "./narrow";
@@ -312,6 +313,7 @@ function do_hashchange_overlay(old_hash) {
 }
 
 function hashchanged(from_reload, e) {
+    const current_hash = window.location.hash;
     const old_hash = e && (e.oldURL ? new URL(e.oldURL).hash : browser_history.old_hash());
 
     const was_internal_change = browser_history.save_old_hash();
@@ -327,7 +329,13 @@ function hashchanged(from_reload, e) {
         return undefined;
     }
 
-    if (hash_util.is_overlay_hash(window.location.hash)) {
+    const is_hash_web_public_compatible = hash_util.is_web_public_compatible(current_hash);
+    if (page_params.is_spectator && !is_hash_web_public_compatible) {
+        login_to_access.show();
+        return undefined;
+    }
+
+    if (hash_util.is_overlay_hash(current_hash)) {
         browser_history.state.changing_hash = true;
         do_hashchange_overlay(old_hash);
         browser_history.state.changing_hash = false;
