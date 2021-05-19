@@ -235,7 +235,6 @@ def fetch_initial_state_data(
         state["zulip_plan_is_not_limited"] = realm.plan_type != Realm.LIMITED
         state["upgrade_text_for_wide_organization_logo"] = str(Realm.UPGRADE_TEXT_STANDARD)
         state["realm_default_external_accounts"] = DEFAULT_EXTERNAL_ACCOUNTS
-        state["jitsi_server_url"] = settings.JITSI_SERVER_URL.rstrip("/")
         state["development_environment"] = settings.DEVELOPMENT
         state["server_generation"] = settings.SERVER_GENERATION
         state["password_min_length"] = settings.PASSWORD_MIN_LENGTH
@@ -247,6 +246,11 @@ def fetch_initial_state_data(
         state["server_avatar_changes_disabled"] = settings.AVATAR_CHANGES_DISABLED
         state["server_name_changes_disabled"] = settings.NAME_CHANGES_DISABLED
         state["giphy_rating_options"] = realm.GIPHY_RATING_OPTIONS
+
+        if settings.JITSI_SERVER_URL is not None:
+            state["jitsi_server_url"] = settings.JITSI_SERVER_URL.rstrip("/")
+        else:  # nocoverage
+            state["jitsi_server_url"] = None
 
         if realm.notifications_stream and not realm.notifications_stream.deactivated:
             notifications_stream = realm.notifications_stream
