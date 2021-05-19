@@ -198,7 +198,7 @@
                     <label for="realm_giphy_rating" class="dropdown-title">
                         {{t 'GIPHY integration' }}
                     </label>
-                    <select name="realm_giphy_rating" class ="setting-widget prop-element" id="id_realm_giphy_rating" data-setting-widget-type="number">
+                    <select name="realm_giphy_rating" class ="setting-widget prop-element" id="id_realm_giphy_rating" data-setting-widget-type="number" {{#if giphy_api_key_empty}}disabled{{/if}}>
                         {{#each giphy_rating_options}}
                         <option value='{{this.id}}'>{{this.name}}</option>
                         {{/each}}
