@@ -459,6 +459,8 @@ div.overlay {
 }
 
 .upgrade-tip {
+    width: max-content;
+
     &::before {
         content: "\f135";
     }
