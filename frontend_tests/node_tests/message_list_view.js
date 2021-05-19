@@ -51,7 +51,14 @@ const muting = zrequire("muting");
 
 let next_timestamp = 1500000000;
 
-run_test("msg_edited_vars", () => {
+function test(label, f) {
+    run_test(label, (override) => {
+        muting.set_muted_users([]);
+        f(override);
+    });
+}
+
+test("msg_edited_vars", () => {
     // This is a test to verify that only one of the three bools,
     // `edited_in_left_col`, `edited_alongside_sender`, `edited_status_msg`
     // is not false; Tests for three different kinds of messages:
@@ -122,7 +129,7 @@ run_test("msg_edited_vars", () => {
     })();
 });
 
-run_test("muted_message_vars", () => {
+test("muted_message_vars", () => {
     // This verifies that the variables for muted/hidden messages are set
     // correctly.
 
@@ -213,7 +220,7 @@ run_test("muted_message_vars", () => {
     })();
 });
 
-run_test("merge_message_groups", () => {
+test("merge_message_groups", () => {
     // MessageListView has lots of DOM code, so we are going to test the message
     // group mearging logic on its own.
 
@@ -509,7 +516,7 @@ run_test("merge_message_groups", () => {
 // where new messages added via local echo have a different date from
 // the older messages.
 
-run_test("render_windows", () => {
+test("render_windows", () => {
     // We only render up to 400 messages at a time in our message list,
     // and we only change the window (which is a range, really, with
     // start/end) when the pointer moves outside of the window or close
