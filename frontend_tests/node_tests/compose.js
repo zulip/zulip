@@ -109,12 +109,12 @@ people.initialize_current_user(me.user_id);
 people.add_active_user(alice);
 people.add_active_user(bob);
 
-const sub = {
+const social = {
     stream_id: 101,
     name: "social",
     subscribed: true,
 };
-stream_data.add_sub(sub);
+stream_data.add_sub(social);
 
 function test_ui(label, f) {
     // TODO: initialize data more aggressively.
@@ -1374,13 +1374,6 @@ test_ui("on_events", (override) => {
 });
 
 test_ui("create_message_object", (override) => {
-    const sub = {
-        stream_id: 101,
-        name: "social",
-        subscribed: true,
-    };
-    stream_data.add_sub(sub);
-
     $("#stream_message_recipient_stream").val("social");
     $("#stream_message_recipient_topic").val("lunch");
     $("#compose-textarea").val("burrito");
@@ -1388,7 +1381,7 @@ test_ui("create_message_object", (override) => {
     override(compose_state, "get_message_type", () => "stream");
 
     let message = compose.create_message_object();
-    assert.equal(message.to, sub.stream_id);
+    assert.equal(message.to, social.stream_id);
     assert.equal(message.topic, "lunch");
     assert.equal(message.content, "burrito");
 
