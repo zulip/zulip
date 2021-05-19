@@ -179,6 +179,27 @@ def fetch_initial_state_data(
         )
 
     if want("realm"):
+        # The realm bundle includes both realm properties and server
+        # properties, since it's rare that one would one one and not
+        # the other. We expect most clients to want it.
+        #
+        # A note on naming: For some settings, one could imagine
+        # having a server-level value and a realm-level value (with
+        # the server value serving as the default for the realm
+        # value). For such settings, we prefer the following naming
+        # scheme:
+        #
+        # * realm_inline_image_preview (current realm setting)
+        # * server_inline_image_preview (server-level default)
+        #
+        # In situations where for backwards-compatibility reasons we
+        # have an unadorned name, we should arrange that clients using
+        # that unadorned name work correctly (i.e. that should be the
+        # currently active setting, not a server-level default).
+        #
+        # Other settings, which are just server-level settings or data
+        # about the version of Zulip, can be named without prefixes,
+        # e.g. giphy_rating_options or development_environment.
         for property_name in Realm.property_types:
             state["realm_" + property_name] = getattr(realm, property_name)
 
@@ -239,6 +260,7 @@ def fetch_initial_state_data(
         state["server_generation"] = settings.SERVER_GENERATION
         state["password_min_length"] = settings.PASSWORD_MIN_LENGTH
         state["password_min_guesses"] = settings.PASSWORD_MIN_GUESSES
+        # Important: Encode units in the client-facing API name.
         state["max_file_upload_size_mib"] = settings.MAX_FILE_UPLOAD_SIZE
         state["max_avatar_file_size_mib"] = settings.MAX_AVATAR_FILE_SIZE
         state["server_inline_image_preview"] = settings.INLINE_IMAGE_PREVIEW
