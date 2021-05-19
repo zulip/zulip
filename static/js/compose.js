@@ -1086,7 +1086,7 @@ export function warn_if_mentioning_unsubscribed_user(mentioned) {
     }
 }
 
-export function initialize() {
+export function render_compose_box() {
     const $compose = $("#compose");
     $compose.append(
         render_compose({
@@ -1095,6 +1095,10 @@ export function initialize() {
             giphy_enabled: giphy.is_giphy_enabled(),
         }),
     );
+}
+
+export function initialize() {
+    render_compose_box();
 
     $("#below-compose-content .video_link").toggle(compute_show_video_chat_button());
     $(
