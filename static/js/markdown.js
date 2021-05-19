@@ -194,15 +194,25 @@ export function apply_markdown(message) {
                 display_text,
             )}</span>`;
         },
-        groupMentionHandler(name) {
+        groupMentionHandler(name, silently) {
             const group = helpers.get_user_group_from_name(name);
             if (group !== undefined) {
-                if (helpers.is_member_of_user_group(group.id, helpers.my_user_id())) {
-                    message.mentioned = true;
+                let display_text;
+                let classes;
+                if (silently) {
+                    display_text = group.name;
+                    classes = "user-group-mention silent";
+                } else {
+                    display_text = "@" + group.name;
+                    classes = "user-group-mention";
+                    if (helpers.is_member_of_user_group(group.id, helpers.my_user_id())) {
+                        message.mentioned = true;
+                    }
                 }
-                return `<span class="user-group-mention" data-user-group-id="${_.escape(
+
+                return `<span class="${classes}" data-user-group-id="${_.escape(
                     group.id,
-                )}">@${_.escape(group.name)}</span>`;
+                )}">${_.escape(display_text)}</span>`;
             }
             return undefined;
         },
