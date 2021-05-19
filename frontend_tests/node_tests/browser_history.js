@@ -67,3 +67,14 @@ test("update internal hash if required", ({override}) => {
     // calls to stub.
     assert.equal(stub.num_calls, 1);
 });
+
+test("web public view hash restore", () => {
+    const allowed_hash = "#";
+    browser_history.update(allowed_hash);
+    assert.equal(location.hash, allowed_hash);
+    const new_hash = "#narrow/is/private";
+    browser_history.update(new_hash);
+    assert.equal(location.hash, new_hash);
+    browser_history.return_to_web_public_hash();
+    assert.equal(location.hash, allowed_hash);
+});
