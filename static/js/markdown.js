@@ -165,21 +165,24 @@ export function apply_markdown(message) {
             // flags on the message itself that get used by the message
             // view code and possibly our filtering code.
 
-            if (helpers.my_user_id() === user_id && !silently) {
-                message.mentioned = true;
-                message.mentioned_me_directly = true;
-            }
-            let str = "";
-            if (silently) {
-                str += `<span class="user-mention silent" data-user-id="${_.escape(user_id)}">`;
-            } else {
-                str += `<span class="user-mention" data-user-id="${_.escape(user_id)}">@`;
-            }
-
             // If I mention "@aLiCe sMITH", I still want "Alice Smith" to
             // show in the pill.
-            const actual_full_name = helpers.get_actual_name_from_user_id(user_id);
-            return `${str}${_.escape(actual_full_name)}</span>`;
+            let display_text = helpers.get_actual_name_from_user_id(user_id);
+            let classes;
+            if (silently) {
+                classes = "user-mention silent";
+            } else {
+                if (helpers.my_user_id() === user_id) {
+                    message.mentioned = true;
+                    message.mentioned_me_directly = true;
+                }
+                classes = "user-mention";
+                display_text = "@" + display_text;
+            }
+
+            return `<span class="${classes}" data-user-id="${_.escape(user_id)}">${_.escape(
+                display_text,
+            )}</span>`;
         },
         groupMentionHandler(name) {
             const group = helpers.get_user_group_from_name(name);
