@@ -19,10 +19,6 @@ const noop = () => {};
 
 set_global("DOMParser", new JSDOM().window.DOMParser);
 
-const _navigator = {
-    platform: "",
-};
-
 const _document = {
     execCommand() {
         return false;
@@ -32,7 +28,7 @@ const _document = {
 };
 
 set_global("document", _document);
-set_global("navigator", _navigator);
+set_global("navigator", {});
 
 // Setting these up so that we can test that links to uploads within messages are
 // automatically converted to server relative links.
@@ -340,6 +336,8 @@ test_ui("markdown_shortcuts", (override) => {
     // on MacOS vs. other platforms: Cmd (Mac) vs. Ctrl (non-Mac).
 
     // Default (Linux/Windows) userAgent tests:
+    navigator.platform = "";
+
     test_i_typed(false, false);
     // Check all the Ctrl + Markdown shortcuts work correctly
     all_markdown_test(true, false);
@@ -347,7 +345,7 @@ test_ui("markdown_shortcuts", (override) => {
     os_specific_markdown_test(false, true);
 
     // Setting following platform to test in mac env
-    _navigator.platform = "MacIntel";
+    navigator.platform = "MacIntel";
 
     // Mac userAgent tests:
     test_i_typed(false, false);
@@ -357,7 +355,7 @@ test_ui("markdown_shortcuts", (override) => {
     all_markdown_test(false, true);
 
     // Reset userAgent
-    _navigator.userAgent = "";
+    navigator.userAgent = "";
 });
 
 test_ui("send_message_success", (override) => {
