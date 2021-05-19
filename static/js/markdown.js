@@ -224,6 +224,16 @@ export function apply_markdown(message) {
                 match = match.replace(/>@/g, ">");
                 return match;
             });
+
+            // Silence quoted user group mentions.
+            const user_group_re =
+                /<span[^>]*user-group-mention[^>]*data-user-group-id="\d+"[^>]*>@/gm;
+            quote = quote.replace(user_group_re, (match) => {
+                match = match.replace(/"user-group-mention"/g, '"user-group-mention silent"');
+                match = match.replace(/>@/g, ">");
+                return match;
+            });
+
             // In most cases, if you are being mentioned in the message you're quoting, you wouldn't
             // mention yourself outside of the blockquote (and, above it). If that you do that, the
             // following mentioned status is false; the backend rendering is authoritative and the

@@ -424,6 +424,16 @@ test("marked", () => {
             expected:
                 '<p>User group mention: <span class="user-group-mention" data-user-group-id="2">@Backend</span><br>\nUser group silent mention: <span class="user-group-mention silent" data-user-group-id="1">hamletcharacters</span></p>',
         },
+        {
+            input: "> User group mention in quote: @*backend*\n\n> Another user group mention in quote: @*hamletcharacters*",
+            expected:
+                '<blockquote>\n<p>User group mention in quote: <span class="user-group-mention silent" data-user-group-id="2">Backend</span></p>\n</blockquote>\n<blockquote>\n<p>Another user group mention in quote: <span class="user-group-mention silent" data-user-group-id="1">hamletcharacters</span></p>\n</blockquote>',
+        },
+        {
+            input: "```quote\nUser group mention in quote: @*backend*\n```\n\n```quote\nAnother user group mention in quote: @*hamletcharacters*\n```",
+            expected:
+                '<blockquote>\n<p>User group mention in quote: <span class="user-group-mention silent" data-user-group-id="2">Backend</span></p>\n</blockquote>\n<blockquote>\n<p>Another user group mention in quote: <span class="user-group-mention silent" data-user-group-id="1">hamletcharacters</span></p>\n</blockquote>',
+        },
         // Test only those linkifiers which don't return True for
         // `contains_backend_only_syntax()`. Those which return True
         // are tested separately.
@@ -737,6 +747,11 @@ test("message_flags", () => {
     assert.equal(message.mentioned, false);
 
     input = "test @_*hamletcharacters*";
+    message = {topic: "No links here", raw_content: input};
+    markdown.apply_markdown(message);
+    assert.equal(message.mentioned, false);
+
+    input = "> test @*hamletcharacters*";
     message = {topic: "No links here", raw_content: input};
     markdown.apply_markdown(message);
     assert.equal(message.mentioned, false);
