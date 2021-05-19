@@ -19,20 +19,6 @@ const noop = () => {};
 
 set_global("DOMParser", new JSDOM().window.DOMParser);
 
-let compose_actions_start_checked;
-let compose_actions_expected_opts;
-
-mock_esm("../../static/js/compose_actions", {
-    update_placeholder_text: noop,
-
-    start(msg_type, opts) {
-        assert.equal(msg_type, "stream");
-        assert.deepEqual(opts, compose_actions_expected_opts);
-        compose_actions_start_checked = true;
-    },
-});
-
-const server_events = mock_esm("../../static/js/server_events");
 const _navigator = {
     platform: "",
 };
@@ -46,46 +32,33 @@ const _document = {
 };
 
 set_global("document", _document);
-const channel = mock_esm("../../static/js/channel");
-const loading = mock_esm("../../static/js/loading");
-const markdown = mock_esm("../../static/js/markdown");
-const reminder = mock_esm("../../static/js/reminder", {
-    is_deferred_delivery: noop,
-});
-const resize = mock_esm("../../static/js/resize");
-const sent_messages = mock_esm("../../static/js/sent_messages", {
-    start_tracking_message: noop,
-});
-const stream_edit = mock_esm("../../static/js/stream_edit");
-const subs = mock_esm("../../static/js/subs");
-const transmit = mock_esm("../../static/js/transmit");
-const ui_util = mock_esm("../../static/js/ui_util");
-mock_esm("../../static/js/drafts", {
-    delete_draft_after_send: noop,
-});
-mock_esm("../../static/js/giphy", {
-    is_giphy_enabled: () => true,
-});
-mock_esm("../../static/js/notifications", {
-    notify_above_composebox: noop,
-    clear_compose_notifications: noop,
-});
-mock_esm("../../static/js/rendered_markdown", {
-    update_elements: () => {},
-});
-mock_esm("../../static/js/settings_data", {
-    user_can_subscribe_other_users: () => true,
-});
 set_global("navigator", _navigator);
 
 // Setting these up so that we can test that links to uploads within messages are
-
 // automatically converted to server relative links.
 document.location.protocol = "https:";
 document.location.host = "foo.com";
 
 const fake_now = 555;
 MockDate.set(new Date(fake_now * 1000));
+
+const channel = mock_esm("../../static/js/channel");
+const compose_actions = mock_esm("../../static/js/compose_actions");
+const drafts = mock_esm("../../static/js/drafts");
+const giphy = mock_esm("../../static/js/giphy");
+const loading = mock_esm("../../static/js/loading");
+const markdown = mock_esm("../../static/js/markdown");
+const notifications = mock_esm("../../static/js/notifications");
+const reminder = mock_esm("../../static/js/reminder");
+const rendered_markdown = mock_esm("../../static/js/rendered_markdown");
+const resize = mock_esm("../../static/js/resize");
+const sent_messages = mock_esm("../../static/js/sent_messages");
+const server_events = mock_esm("../../static/js/server_events");
+const settings_data = mock_esm("../../static/js/settings_data");
+const stream_edit = mock_esm("../../static/js/stream_edit");
+const subs = mock_esm("../../static/js/subs");
+const transmit = mock_esm("../../static/js/transmit");
+const ui_util = mock_esm("../../static/js/ui_util");
 
 const compose_closed_ui = zrequire("compose_closed_ui");
 const compose_fade = zrequire("compose_fade");
@@ -100,8 +73,6 @@ const echo = zrequire("echo");
 const compose = zrequire("compose");
 const upload = zrequire("upload");
 const settings_config = zrequire("settings_config");
-
-people.small_avatar_url_for_person = () => "http://example.com/example.png";
 
 function reset_jquery() {
     // Avoid leaks.
@@ -204,7 +175,10 @@ test_ui("validate_stream_message_address_info", () => {
     );
 });
 
-test_ui("validate", () => {
+test_ui("validate", (override) => {
+    override(compose_actions, "update_placeholder_text", () => {});
+    override(reminder, "is_deferred_delivery", () => false);
+
     function initialize_pm_pill() {
         reset_jquery();
 
@@ -398,6 +372,8 @@ test_ui("test_wildcard_mention_allowed", () => {
 });
 
 test_ui("validate_stream_message", (override) => {
+    override(reminder, "is_deferred_delivery", () => false);
+
     // This test is in kind of continuation to test_validate but since it is
     // primarily used to get coverage over functions called from validate()
     // we are separating it up in different test. Though their relative position
@@ -447,7 +423,9 @@ test_ui("validate_stream_message", (override) => {
     );
 });
 
-test_ui("test_validate_stream_message_post_policy_admin_only", () => {
+test_ui("test_validate_stream_message_post_policy_admin_only", (override) => {
+    override(reminder, "is_deferred_delivery", () => false);
+
     // This test is in continuation with test_validate but it has been separated out
     // for better readability. Their relative position of execution should not be changed.
     // Although the position with respect to test_validate_stream_message does not matter
@@ -484,7 +462,9 @@ test_ui("test_validate_stream_message_post_policy_admin_only", () => {
     );
 });
 
-test_ui("test_validate_stream_message_post_policy_moderators_only", () => {
+test_ui("test_validate_stream_message_post_policy_moderators_only", (override) => {
+    override(reminder, "is_deferred_delivery", () => false);
+
     page_params.is_admin = false;
     page_params.is_moderator = false;
     page_params.is_guest = false;
@@ -521,7 +501,9 @@ test_ui("test_validate_stream_message_post_policy_moderators_only", () => {
     );
 });
 
-test_ui("test_validate_stream_message_post_policy_full_members_only", () => {
+test_ui("test_validate_stream_message_post_policy_full_members_only", (override) => {
+    override(reminder, "is_deferred_delivery", () => false);
+
     page_params.is_admin = false;
     page_params.is_guest = true;
     const sub = {
@@ -741,7 +723,9 @@ test_ui("markdown_shortcuts", () => {
     _navigator.userAgent = "";
 });
 
-test_ui("send_message_success", () => {
+test_ui("send_message_success", (override) => {
+    override(drafts, "delete_draft_after_send", () => {});
+
     $("#compose-textarea").val("foobarfoobar");
     $("#compose-textarea").trigger("blur");
     $("#compose-send-status").show();
@@ -767,6 +751,9 @@ test_ui("send_message_success", () => {
 });
 
 test_ui("send_message", (override) => {
+    override(drafts, "delete_draft_after_send", () => {});
+    override(sent_messages, "start_tracking_message", () => {});
+
     // This is the common setup stuff for all of the four tests.
     let stub_state;
     function initialize_state_stub_dict() {
@@ -918,6 +905,9 @@ test_ui("send_message", (override) => {
 });
 
 test_ui("enter_with_preview_open", (override) => {
+    override(notifications, "clear_compose_notifications", () => {});
+    override(reminder, "is_deferred_delivery", () => false);
+
     page_params.user_id = new_user.user_id;
 
     // Test sending a message with content.
@@ -960,6 +950,9 @@ test_ui("enter_with_preview_open", (override) => {
 });
 
 test_ui("finish", (override) => {
+    override(notifications, "clear_compose_notifications", () => {});
+    override(reminder, "is_deferred_delivery", () => false);
+
     (function test_when_compose_validation_fails() {
         $("#compose_invite_users").show();
         $("#compose-send-button").prop("disabled", false);
@@ -1080,6 +1073,17 @@ test_ui("warn_if_private_stream_is_linked", () => {
 });
 
 test_ui("initialize", (override) => {
+    override(giphy, "is_giphy_enabled", () => true);
+
+    let compose_actions_expected_opts;
+    let compose_actions_start_checked;
+
+    override(compose_actions, "start", (msg_type, opts) => {
+        assert.equal(msg_type, "stream");
+        assert.deepEqual(opts, compose_actions_expected_opts);
+        compose_actions_start_checked = true;
+    });
+
     // In this test we mostly do the setup stuff in addition to testing the
     // normal workflow of the function. All the tests for the on functions are
     // done in subsequent tests directly below this test.
@@ -1252,6 +1256,8 @@ test_ui("needs_subscribe_warning", () => {
 });
 
 test_ui("warn_if_mentioning_unsubscribed_user", (override) => {
+    override(settings_data, "user_can_subscribe_other_users", () => true);
+
     let mentioned = {
         email: "foo@bar.com",
     };
@@ -1376,6 +1382,8 @@ test_ui("warn_if_mentioning_unsubscribed_user", (override) => {
 });
 
 test_ui("on_events", (override) => {
+    override(rendered_markdown, "update_elements", () => {});
+
     function setup_parents_and_mock_remove(container_sel, target_sel, parent) {
         const container = $.create("fake " + container_sel);
         let container_removed = false;
