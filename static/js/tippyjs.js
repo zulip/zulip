@@ -89,7 +89,7 @@ export function initialize() {
                 // content from it.
                 //
                 // TODO: Change the template structure so logic is unnecessary.
-                const edit_button = elem.find("i.edit_content_button").expectOne();
+                const edit_button = elem.find("i.edit_content_button");
                 content = edit_button.attr("data-tippy-content");
             }
             instance.setContent(content);
