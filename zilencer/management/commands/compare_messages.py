@@ -1,6 +1,6 @@
 from typing import Any
 
-import ijson
+import orjson
 from django.core.management.base import BaseCommand, CommandParser
 
 
@@ -18,7 +18,9 @@ class Command(BaseCommand):
         total_count = 0
         changed_count = 0
         with open(options["dump1"]) as dump1, open(options["dump2"]) as dump2:
-            for m1, m2 in zip(ijson.items(dump1, "item"), ijson.items(dump2, "item")):
+            for line1, line2 in zip(dump1, dump2):
+                m1 = orjson.loads(line1)
+                m2 = orjson.loads(line2)
                 total_count += 1
                 if m1["id"] != m2["id"]:
                     self.stderr.write("Inconsistent messages dump")
