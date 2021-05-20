@@ -1439,6 +1439,27 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         )
 
     @override_settings(TERMS_OF_SERVICE=None)
+    def test_social_auth_with_invalid_multiuse_invite(self) -> None:
+        email = "newuser@zulip.com"
+        name = "Full Name"
+        subdomain = "zulip"
+
+        multiuse_object_key = "invalid"
+        account_data_dict = self.get_account_data_dict(email=email, name=name)
+        result = self.social_auth_test(
+            account_data_dict,
+            subdomain=subdomain,
+            is_signup=True,
+            expect_choose_email_screen=True,
+            multiuse_object_key=multiuse_object_key,
+        )
+        self.assertEqual(result.status_code, 302)
+        result = self.client_get(result.url)
+
+        self.assertEqual(result.status_code, 404)
+        self.assert_in_response("The registration link has expired or is not valid.", result)
+
+    @override_settings(TERMS_OF_SERVICE=None)
     def test_social_auth_registration_using_multiuse_invite(self) -> None:
         """If the user doesn't exist yet, social auth can be used to register an account"""
         email = "newuser@zulip.com"
