@@ -110,9 +110,6 @@ polib
 # Needed for cloning virtual environments
 virtualenv-clone
 
-# Needed for reading json as stream
-ijson
-
 # Needed for link preview
 beautifulsoup4
 pyoembed
