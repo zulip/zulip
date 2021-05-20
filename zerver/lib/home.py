@@ -220,8 +220,7 @@ def build_page_params_for_home_page_load(
     # Pass parameters to the client-side JavaScript code.
     # These end up in a JavaScript Object named 'page_params'.
     page_params = dict(
-        # Server settings.
-        debug_mode=settings.DEBUG,
+        ## Server settings.
         test_suite=settings.TEST_SUITE,
         poll_timeout=settings.POLL_TIMEOUT,
         insecure_desktop_app=insecure_desktop_app,
@@ -232,7 +231,7 @@ def build_page_params_for_home_page_load(
         search_pills_enabled=settings.SEARCH_PILLS_ENABLED,
         # Only show marketing email settings if on Zulip Cloud
         enable_marketing_emails_enabled=settings.CORPORATE_ENABLED,
-        # Misc. extra data.
+        ## Misc. extra data.
         default_language_name=get_language_name(register_ret["default_language"]),
         language_list_dbl_col=get_language_list_for_templates(register_ret["default_language"]),
         language_list=get_language_list(),
