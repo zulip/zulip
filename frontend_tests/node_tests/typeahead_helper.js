@@ -285,13 +285,19 @@ test("sort_languages", () => {
 
     // Sort according to priority only.
     test_langs = th.sort_languages(test_langs, "jav");
-    assert.deepEqual(test_langs, ["javascript", "java", "js", "j"]);
+    assert.deepEqual(test_langs, ["javascript", "java", "j"]);
 
     // Push exact matches to top, regardless of priority
     test_langs = th.sort_languages(test_langs, "java");
-    assert.deepEqual(test_langs, ["java", "javascript", "js", "j"]);
+    assert.deepEqual(test_langs, ["java", "javascript", "j"]);
     test_langs = th.sort_languages(test_langs, "j");
-    assert.deepEqual(test_langs, ["j", "javascript", "js", "java"]);
+    assert.deepEqual(test_langs, ["j", "javascript", "java"]);
+
+    // (Only one alias should be shown per language
+    // (i.e searching for "js" shouldn't show "javascript")
+    test_langs = ["js", "javascript", "java"];
+    test_langs = th.sort_languages(test_langs, "js");
+    assert.deepEqual(test_langs, ["js", "java"]);
 });
 
 function get_typeahead_result(query, current_stream, current_topic) {
