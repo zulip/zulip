@@ -524,6 +524,8 @@ export function toggle_actions_popover(element, id) {
     const elt = $(element);
     if (elt.data("popover") === undefined) {
         const message = message_lists.current.get(id);
+        const message_container = message_lists.current.view.message_containers.get(message.id);
+        const should_display_hide_option = !message_container.is_hidden;
         const editability = message_edit.get_editability(message);
         let use_edit_icon;
         let editability_menu_item;
@@ -582,6 +584,7 @@ export function toggle_actions_popover(element, id) {
             should_display_uncollapse,
             should_display_add_reaction_option: message.sent_by_me,
             should_display_edit_history_option,
+            should_display_hide_option,
             conversation_time_uri,
             narrowed: narrow_state.active(),
             should_display_delete_option,
@@ -1246,6 +1249,21 @@ export function register_click_handlers() {
         const row = message_lists.current.get_row(message_id);
         hide_actions_popover();
         message_edit.start(row);
+        e.stopPropagation();
+        e.preventDefault();
+    });
+    $("body").on("click", ".rehide_muted_user_message", (e) => {
+        const message_id = $(e.currentTarget).data("message-id");
+        const row = message_lists.current.get_row(message_id);
+        const message = message_lists.current.get(rows.id(row));
+        const message_container = message_lists.current.view.message_containers.get(message.id);
+
+        hide_actions_popover();
+
+        if (row && !message_container.is_hidden) {
+            message_lists.current.view.hide_revealed_message(message_id);
+        }
+
         e.stopPropagation();
         e.preventDefault();
     });

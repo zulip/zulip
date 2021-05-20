@@ -21,7 +21,11 @@ mock_esm("../../static/js/giphy", {
     hide_giphy_popover: noop,
 });
 const message_lists = mock_esm("../../static/js/message_lists", {
-    current: {},
+    current: {
+        view: {
+            message_containers: {},
+        },
+    },
 });
 mock_esm("../../static/js/message_viewport", {
     height: () => 500,
@@ -228,6 +232,13 @@ test_ui("actions_popover", (override) => {
     message_lists.current.get = (msg_id) => {
         assert.equal(msg_id, message.id);
         return message;
+    };
+
+    message_lists.current.view.message_containers.get = (msg_id) => {
+        assert.equal(msg_id, message.id);
+        return {
+            is_hidden: false,
+        };
     };
 
     override(message_edit, "get_editability", () => 4);

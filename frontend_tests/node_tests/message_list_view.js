@@ -203,7 +203,7 @@ test("muted_message_vars", () => {
         assert.equal(result[1].contains_mention, false);
 
         // Now, reveal the hidden messages.
-        const is_revealed = true;
+        let is_revealed = true;
         result = calculate_variables(list, messages, is_revealed);
 
         // Check that `is_hidden` is false and `include_sender` is true on all messages.
@@ -217,6 +217,22 @@ test("muted_message_vars", () => {
 
         // Additionally test that, `contains_mention` is true on that message which has a mention.
         assert.equal(result[1].contains_mention, true);
+
+        // Now test rehiding muted user's messsage
+        is_revealed = false;
+        result = calculate_variables(list, messages, is_revealed);
+
+        // Check that `is_hidden` is false and `include_sender` is false on all messages.
+        assert.equal(result[0].is_hidden, true);
+        assert.equal(result[1].is_hidden, true);
+        assert.equal(result[2].is_hidden, true);
+
+        assert.equal(result[0].include_sender, false);
+        assert.equal(result[1].include_sender, false);
+        assert.equal(result[2].include_sender, false);
+
+        // Additionally test that, `contains_mention` is false on that message which has a mention.
+        assert.equal(result[1].contains_mention, false);
     })();
 });
 

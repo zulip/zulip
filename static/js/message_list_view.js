@@ -1186,6 +1186,11 @@ export class MessageListView {
         this._rerender_message(message_container, false, true);
     }
 
+    hide_revealed_message(message_id) {
+        const message_container = this.message_containers.get(message_id);
+        this._rerender_message(message_container, false, false);
+    }
+
     rerender_messages(messages, message_content_edited) {
         // Convert messages to list messages
         let message_containers = messages.map((message) => this.message_containers.get(message.id));

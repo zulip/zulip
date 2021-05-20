@@ -1,5 +1,14 @@
 {{! Contents of the "message actions" popup }}
 <ul class="nav nav-list actions_popover">
+    {{#if should_display_hide_option}}
+    <li>
+        <a href="#" class="rehide_muted_user_message" data-message-id="{{message_id}}">
+            <i class="fa fa-eye-slash" aria-hidden="true"></i>
+            {{t "Hide muted message again" }}
+        </a>
+    </li>
+    {{/if}}
+
     {{#if should_display_edit_and_view_source}}
     <li>
         <a href="#" class="popover_edit_message" data-message-id="{{message_id}}">
