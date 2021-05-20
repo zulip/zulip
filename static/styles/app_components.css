@@ -59,7 +59,7 @@ evidence Edge may have bugs in its handling of placeholder opacity
 CSS: https://github.com/necolas/normalize.css/issues/741
 */
 .placeholder {
-    color: hsl(0, 0%, 45%);
+    color: var(--color-placeholder);
     opacity: 1;
 }
 
@@ -343,7 +343,7 @@ div.overlay {
 
 .clear_search_button {
     &:hover {
-        color: hsl(0, 0%, 0%);
+        color: var(--color-text);
     }
 
     &:disabled {

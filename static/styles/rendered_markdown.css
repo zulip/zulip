@@ -407,7 +407,7 @@
 
             background: linear-gradient(
                 0deg,
-                hsl(0, 0%, 100%),
+                var(--color-background),
                 transparent 100%
             );
         }

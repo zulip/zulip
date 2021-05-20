@@ -74,7 +74,7 @@ a.no-underline:hover {
 
 .simplebar-track {
     .simplebar-scrollbar::before {
-        background-color: hsl(0, 0%, 0%);
+        background-color: var(--color-text);
         box-shadow: 0 0 0 1px hsla(0, 0%, 100%, 0.33);
     }
 

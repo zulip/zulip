@@ -116,7 +116,7 @@
             }
 
             &::before {
-                border-bottom-color: hsl(0, 0%, 80%);
+                border-bottom-color: var(--color-hotspot-before);
                 margin-right: -13px;
             }
         }
@@ -129,12 +129,12 @@
             }
 
             &::after {
-                border-right-color: hsl(0, 0%, 100%);
+                border-right-color: var(--color-background);
                 margin-top: -12px;
             }
 
             &::before {
-                border-right-color: hsl(0, 0%, 80%);
+                border-right-color: var(--color-hotspot-before);
                 margin-top: -13px;
             }
         }
@@ -147,12 +147,12 @@
             }
 
             &::after {
-                border-top-color: hsl(0, 0%, 100%);
+                border-top-color: var(--color-background);
                 margin-right: -12px;
             }
 
             &::before {
-                border-top-color: hsl(0, 0%, 80%);
+                border-top-color: var(--color-hotspot-before);
                 margin-right: -13px;
             }
         }
@@ -165,12 +165,12 @@
             }
 
             &::after {
-                border-left-color: hsl(0, 0%, 100%);
+                border-left-color: var(--color-background);
                 margin-top: -12px;
             }
 
             &::before {
-                border-left-color: hsl(0, 0%, 80%);
+                border-left-color: var(--color-hotspot-before);
                 margin-top: -13px;
             }
         }
@@ -191,12 +191,12 @@
     }
 
     .hotspot-popover-content {
-        background-color: hsl(0, 0%, 100%);
+        background-color: var(--color-background);
         padding: 15px;
     }
 
     .hotspot-popover-bottom {
-        background-color: hsl(0, 0%, 100%);
+        background-color: var(--color-background);
         height: 90px;
         border-bottom-left-radius: 4px;
         border-bottom-right-radius: 4px;
@@ -288,7 +288,7 @@
 
 #hotspot_intro_reply_icon {
     position: relative;
-    background-color: hsl(0, 0%, 100%);
+    background-color: var(--color-background);
     top: 50%;
     transform: perspective(1px) translateY(-75%);
 }

@@ -357,7 +357,7 @@ li.top_left_recent_topics {
     */
 
     &:hover {
-        color: hsl(0, 0%, 0%) !important;
+        color: var(--color-text) !important;
     }
 
     /*

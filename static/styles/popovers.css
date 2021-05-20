@@ -137,6 +137,7 @@ ul {
 
             &::before,
             &::after {
+                color: var(--color-text);
                 content: "";
                 flex: 1;
                 border-top: 1px solid hsl(0, 0%, 93%);

@@ -473,6 +473,7 @@
     }
 
     .right {
+        background-color: var(--color-background);
         width: calc(50% + 1px);
 
         .nothing-selected {
@@ -564,7 +565,7 @@
     justify-content: center;
     margin-bottom: 0;
     height: auto;
-    border-bottom: 1px solid hsl(0, 0%, 87%);
+    border-bottom: 1px solid var(--color-background-highlight);
 }
 
 .streams-list {
@@ -1019,6 +1020,10 @@
     .loading_indicator_text {
         font-weight: 400;
         line-height: 20px;
+    }
+
+    .right {
+        background-color: var(--color-background);
     }
 }
 

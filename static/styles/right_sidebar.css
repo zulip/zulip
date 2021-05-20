@@ -46,7 +46,7 @@
             &:hover {
                 display: inline;
                 cursor: pointer;
-                color: hsl(0, 0%, 0%) !important;
+                color: var(--color-text) !important;
             }
 
             /*

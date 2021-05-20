@@ -1,16 +1,10 @@
 body.night-mode {
-    background-color: hsl(212, 28%, 18%);
-    color: hsl(236, 33%, 90%);
-
-    .placeholder {
-        color: hsl(0, 0%, 55%);
-        opacity: 1;
-    }
-
-    textarea::placeholder,
-    input::placeholder {
-        @extend .placeholder;
-    }
+    --color-background: hsl(212, 28%, 18%);
+    --color-background-highlight: hsla(0, 0%, 0%, 0.2);
+    --color-background-modal: hsl(212, 28%, 18%);
+    --color-placeholder: hsl(0, 0%, 55%);
+    --color-hotspot-before: hsla(0, 0%, 0%, 0.2);
+    --color-text: hsl(236, 33%, 90%);
 
     a:hover {
         color: hsl(200, 79%, 66%);
@@ -28,20 +22,6 @@ body.night-mode {
         }
     }
 
-    .app-main,
-    .header-main,
-    #message_view_header_underpadding,
-    .floating_recipient .message-header-wrapper,
-    .column-middle,
-    #compose,
-    .column-left .left-sidebar,
-    .column-right .right-sidebar,
-    #subscription_overlay .right,
-    #settings_page .form-sidebar,
-    #settings_page .right {
-        background-color: hsl(212, 28%, 18%);
-    }
-
     #compose_buttons
         .reply_button_container
         .compose_reply_button
@@ -50,23 +30,12 @@ body.night-mode {
     }
 
     .compose-send-status-close {
-        color: hsl(0, 0%, 100%);
+        color: var(--color-text);
         opacity: 1;
     }
 
     .compose-send-status-close:hover {
         opacity: 0.4;
-    }
-
-    .message_embed .data-container::after {
-        background: linear-gradient(0deg, hsl(212, 28%, 18%), transparent 100%);
-    }
-
-    .column-left .left-sidebar,
-    #settings_page .form-sidebar,
-    .stream_name_search_section,
-    .column-right .right-sidebar {
-        border-color: hsla(0, 0%, 0%, 0.2);
     }
 
     .dark .message_label_clickable.stream_label,
@@ -77,10 +46,6 @@ body.night-mode {
 
     .new-style label.checkbox input[type="checkbox"] ~ span {
         border-color: hsla(0, 0%, 100%, 0.4);
-    }
-
-    .modal-bg {
-        background-color: hsl(212, 28%, 18%);
     }
 
     .streams_popover .sp-container {
@@ -101,7 +66,6 @@ body.night-mode {
         .admin-separator {
             &::before,
             &::after {
-                color: hsl(212, 28%, 18%);
                 opacity: 0.2;
             }
         }
@@ -185,11 +149,6 @@ on a dark background, and don't change the dark labels dark either. */
         color: inherit;
     }
 
-    select option {
-        background-color: hsl(212, 28%, 18%);
-        color: hsl(236, 33%, 90%);
-    }
-
     .recent_topics_container .unread_count,
     .topic-list-item .unread_count,
     .expanded_private_message .unread_count {
@@ -260,7 +219,6 @@ on a dark background, and don't change the dark labels dark either. */
         border-color: hsla(0, 0%, 0%, 0.9);
     }
 
-    .message-header-contents,
     .message_header_private_message .message-header-contents {
         background-color: hsla(0, 0%, 0%, 0.2);
         border-color: transparent;
@@ -270,7 +228,6 @@ on a dark background, and don't change the dark labels dark either. */
     .compose-content,
     .message_list .recipient_row,
     .message_row,
-    .draft-row .draft-info-box,
     .preview_message_area {
         border-color: hsla(0, 0%, 0%, 0.2);
     }
@@ -379,26 +336,6 @@ on a dark background, and don't change the dark labels dark either. */
         color: hsl(236, 33%, 80%);
     }
 
-    #message_edit_tooltip:hover,
-    .clear_search_button:hover,
-    #message_view_header .search_icon:hover,
-    .search_icon_hover_highlight,
-    #searchbox_legacy .search_icon:hover,
-    #searchbox_legacy .search_button:hover,
-    #searchbox .search_icon:hover,
-    #searchbox .search_button:hover,
-    .close:hover {
-        color: hsl(0, 0%, 100%);
-    }
-
-    #user_presences li .user-list-sidebar-menu-icon:hover,
-    .all-messages-sidebar-menu-icon:hover,
-    .starred-messages-sidebar-menu-icon:hover,
-    .stream-sidebar-menu-icon:hover,
-    .topic-sidebar-menu-icon:hover {
-        color: hsl(0, 0%, 100%) !important;
-    }
-
     #streamlist-toggle,
     #userlist-toggle {
         color: inherit;
@@ -461,10 +398,6 @@ on a dark background, and don't change the dark labels dark either. */
             background-color: hsla(0, 0%, 0%, 0.5) !important;
             outline: 0;
         }
-    }
-
-    .recent_topics_container {
-        background-color: hsl(212, 28%, 18%) !important;
     }
 
     #recent_topics_table tr {
@@ -889,45 +822,8 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     /* Arrows: */
-    .hotspot.overlay {
-        .hotspot-popover.arrow-right::before {
-            border-left-color: hsla(0, 0%, 0%, 0.2);
-        }
-
-        .hotspot-popover.arrow-right::after {
-            border-left-color: hsl(212, 28%, 18%);
-        }
-
-        .hotspot-popover.arrow-bottom::before {
-            border-top-color: hsla(0, 0%, 0%, 0.2);
-        }
-
-        .hotspot-popover.arrow-bottom::after {
-            border-top-color: hsl(212, 28%, 18%);
-        }
-
-        .hotspot-popover.arrow-left::before {
-            border-right-color: hsla(0, 0%, 0%, 0.2);
-        }
-
-        .hotspot-popover.arrow-left::after {
-            border-right-color: hsl(212, 28%, 18%);
-        }
-
-        .hotspot-popover.arrow-top::before {
-            border-bottom-color: hsla(0, 0%, 0%, 0.2);
-        }
-
-        .hotspot-popover.arrow-top::after {
-            border-bottom-color: hsl(212, 28%, 18%);
-        }
-    }
-
-    /* Content: */
-    .hotspot.overlay .hotspot-popover .hotspot-popover-content,
-    #hotspot_intro_reply_icon,
-    .hotspot.overlay .hotspot-popover .hotspot-popover-bottom {
-        background-color: hsl(212, 28%, 18%);
+    .hotspot.overlay .hotspot-popover.arrow-top::after {
+        border-bottom-color: hsl(212, 28%, 18%);
     }
 
     .top-messages-logo,
@@ -997,7 +893,6 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     .simplebar-track .simplebar-scrollbar::before {
-        background-color: hsl(0, 0%, 100%);
         box-shadow: 0 0 0 1px hsla(0, 0%, 0%, 0.33);
     }
 

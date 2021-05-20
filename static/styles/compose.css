@@ -174,7 +174,7 @@
     z-index: 2;
     width: 100%;
 
-    background-color: hsl(0, 0%, 100%);
+    background-color: var(--color-background);
 }
 
 #compose-container {
@@ -259,7 +259,7 @@ div[id^="message-edit-send-status"],
 .compose-send-status-close {
     font-size: 17px;
     font-weight: bold;
-    color: hsl(0, 0%, 0%);
+    color: var(--color-text);
     text-shadow: 0 1px 0 hsl(0, 0%, 100%);
     opacity: 0.2;
     float: right;
