@@ -342,6 +342,8 @@ class BaseAction(ZulipTestCase):
             state["unsubscribed"] = {u["name"]: u for u in state["unsubscribed"]}
             if "realm_bots" in state:
                 state["realm_bots"] = {u["email"]: u for u in state["realm_bots"]}
+            # Since time is different for every call, just fix the value
+            state["server_timestamp"] = 0
 
         normalize(state1)
         normalize(state2)

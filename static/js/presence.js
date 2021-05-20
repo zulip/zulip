@@ -253,5 +253,5 @@ export function last_active_date(user_id) {
 }
 
 export function initialize(params) {
-    set_info(params.presences, params.initial_servertime);
+    set_info(params.presences, params.server_timestamp);
 }

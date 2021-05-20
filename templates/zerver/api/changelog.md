@@ -11,6 +11,12 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 70**
+
+* [`POST /register`](/api/register-queue): Added new top-level
+  `server_timestamp` field when fetching presence data, to match the
+  existing presence API.
+
 Feature levels 66-69 are reserved for future use in 4.x maintenance
 releases.
 
