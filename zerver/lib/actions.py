@@ -1725,62 +1725,69 @@ def do_schedule_messages(send_message_requests: Sequence[SendMessageRequest]) ->
 
 
 def build_message_send_dict(
-    message_dict: Dict[str, Any], email_gateway: bool = False
+    message: Message,
+    stream: Optional[Stream] = None,
+    local_id: Optional[str] = None,
+    sender_queue_id: Optional[str] = None,
+    realm: Optional[Realm] = None,
+    widget_content_dict: Optional[Dict[str, Any]] = None,
+    email_gateway: bool = False,
 ) -> SendMessageRequest:
     """Returns a dictionary that can be passed into do_send_messages.  In
     production, this is always called by check_message, but some
     testing code paths call it directly.
     """
-    realm = message_dict.get("realm", message_dict["message"].sender.realm)
+    if realm is None:
+        realm = message.sender.realm
 
     mention_data = MentionData(
         realm_id=realm.id,
-        content=message_dict["message"].content,
+        content=message.content,
     )
 
-    if message_dict["message"].is_stream_message():
-        stream_id = message_dict["message"].recipient.type_id
+    if message.is_stream_message():
+        stream_id = message.recipient.type_id
         stream_topic: Optional[StreamTopicTarget] = StreamTopicTarget(
             stream_id=stream_id,
-            topic_name=message_dict["message"].topic_name(),
+            topic_name=message.topic_name(),
         )
     else:
         stream_topic = None
 
     info = get_recipient_info(
         realm_id=realm.id,
-        recipient=message_dict["message"].recipient,
-        sender_id=message_dict["message"].sender_id,
+        recipient=message.recipient,
+        sender_id=message.sender_id,
         stream_topic=stream_topic,
         possibly_mentioned_user_ids=mention_data.get_user_ids(),
         possible_wildcard_mention=mention_data.message_has_wildcards(),
     )
 
     # Render our message_dicts.
-    assert message_dict["message"].rendered_content is None
+    assert message.rendered_content is None
 
     rendered_content = render_incoming_message(
-        message_dict["message"],
-        message_dict["message"].content,
+        message,
+        message.content,
         info["active_user_ids"],
         realm,
         mention_data=mention_data,
         email_gateway=email_gateway,
     )
-    message_dict["message"].rendered_content = rendered_content
-    message_dict["message"].rendered_content_version = markdown_version
-    links_for_embed = message_dict["message"].links_for_preview
+    message.rendered_content = rendered_content
+    message.rendered_content_version = markdown_version
+    links_for_embed = message.links_for_preview
 
     # Add members of the mentioned user groups into `mentions_user_ids`.
-    for group_id in message_dict["message"].mentions_user_group_ids:
+    for group_id in message.mentions_user_group_ids:
         members = mention_data.get_group_members(group_id)
-        message_dict["message"].mentions_user_ids.update(members)
+        message.mentions_user_ids.update(members)
 
     # Only send data to Tornado about wildcard mentions if message
     # rendering determined the message had an actual wildcard
     # mention in it (and not e.g. wildcard mention syntax inside a
     # code block).
-    if message_dict["message"].mentions_wildcard:
+    if message.mentions_wildcard:
         wildcard_mention_user_ids = info["wildcard_mention_user_ids"]
     else:
         wildcard_mention_user_ids = set()
@@ -1791,18 +1798,18 @@ def build_message_send_dict(
     who were directly mentioned in this message as eligible to
     get UserMessage rows.
     """
-    mentioned_user_ids = message_dict["message"].mentions_user_ids
+    mentioned_user_ids = message.mentions_user_ids
     default_bot_user_ids = info["default_bot_user_ids"]
     mentioned_bot_user_ids = default_bot_user_ids & mentioned_user_ids
     info["um_eligible_user_ids"] |= mentioned_bot_user_ids
 
     message_send_dict = SendMessageRequest(
-        stream=message_dict.get("stream", None),
-        local_id=message_dict.get("local_id", None),
-        sender_queue_id=message_dict.get("sender_queue_id", None),
+        stream=stream,
+        local_id=local_id,
+        sender_queue_id=sender_queue_id,
         realm=realm,
         mention_data=mention_data,
-        message=message_dict["message"],
+        message=message,
         active_user_ids=info["active_user_ids"],
         push_notify_user_ids=info["push_notify_user_ids"],
         stream_push_user_ids=info["stream_push_user_ids"],
@@ -1813,7 +1820,7 @@ def build_message_send_dict(
         service_bot_tuples=info["service_bot_tuples"],
         wildcard_mention_user_ids=wildcard_mention_user_ids,
         links_for_embed=links_for_embed,
-        widget_content=message_dict.get("widget_content_dict", None),
+        widget_content=widget_content_dict,
     )
 
     return message_send_dict
@@ -3132,15 +3139,15 @@ def check_message(
                 )
             )
 
-    message_dict = {
-        "message": message,
-        "stream": stream,
-        "local_id": local_id,
-        "sender_queue_id": sender_queue_id,
-        "realm": realm,
-        "widget_content_dict": widget_content_dict,
-    }
-    message_send_dict = build_message_send_dict(message_dict, email_gateway)
+    message_send_dict = build_message_send_dict(
+        message=message,
+        stream=stream,
+        local_id=local_id,
+        sender_queue_id=sender_queue_id,
+        realm=realm,
+        widget_content_dict=widget_content_dict,
+        email_gateway=email_gateway,
+    )
 
     if stream is not None and message_send_dict.message.mentions_wildcard:
         if not wildcard_mention_allowed(sender, stream):
