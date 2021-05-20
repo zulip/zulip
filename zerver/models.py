@@ -1234,6 +1234,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     pm_content_in_desktop_notifications: bool = models.BooleanField(default=True)
     enable_sounds: bool = models.BooleanField(default=True)
     enable_offline_email_notifications: bool = models.BooleanField(default=True)
+    enable_online_email_notifications: bool = models.BooleanField(default=False)
     message_content_in_email_notifications: bool = models.BooleanField(default=True)
     enable_offline_push_notifications: bool = models.BooleanField(default=True)
     enable_online_push_notifications: bool = models.BooleanField(default=True)
