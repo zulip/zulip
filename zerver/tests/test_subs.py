@@ -463,6 +463,49 @@ class StreamAdminTest(ZulipTestCase):
         self.assertTrue(stream.invite_only)
         self.assertFalse(stream.history_public_to_subscribers)
 
+    def test_create_web_public_stream(self) -> None:
+        user_profile = self.example_user("hamlet")
+        owner = self.example_user("desdemona")
+
+        stream_names = ["new1", "new2", "new3"]
+        stream_descriptions = ["des1", "des2", "des3"]
+        streams_raw: List[StreamDict] = [
+            {"name": stream_name, "description": stream_description, "is_web_public": True}
+            for (stream_name, stream_description) in zip(stream_names, stream_descriptions)
+        ]
+
+        # Normal user cannot create web-public streams
+        with self.assertRaisesRegex(JsonableError, "Must be an organization owner"):
+            list_to_streams(
+                streams_raw,
+                user_profile,
+                autocreate=True,
+            )
+
+        with self.settings(WEB_PUBLIC_STREAMS_ENABLED=False):
+            with self.assertRaisesRegex(JsonableError, "Web public streams are not enabled."):
+                list_to_streams(
+                    streams_raw,
+                    owner,
+                    autocreate=True,
+                )
+
+        existing_streams, new_streams = list_to_streams(
+            streams_raw,
+            owner,
+            autocreate=True,
+        )
+
+        self.assert_length(new_streams, 3)
+        self.assert_length(existing_streams, 0)
+
+        actual_stream_names = {stream.name for stream in new_streams}
+        self.assertEqual(actual_stream_names, set(stream_names))
+        actual_stream_descriptions = {stream.description for stream in new_streams}
+        self.assertEqual(actual_stream_descriptions, set(stream_descriptions))
+        for stream in new_streams:
+            self.assertTrue(stream.is_web_public)
+
     def test_make_stream_public_zephyr_mirror(self) -> None:
         user_profile = self.mit_user("starnine")
         self.login_user(user_profile)
@@ -1289,6 +1332,7 @@ class StreamAdminTest(ZulipTestCase):
             {
                 "name": "new_stream",
                 "message_retention_days": 10,
+                "is_web_public": False,
             }
         ]
         with self.assertRaisesRegex(JsonableError, "Must be an organization owner"):
@@ -1298,6 +1342,7 @@ class StreamAdminTest(ZulipTestCase):
             {
                 "name": "new_stream",
                 "message_retention_days": -1,
+                "is_web_public": False,
             }
         ]
         with self.assertRaisesRegex(JsonableError, "Must be an organization owner"):
@@ -1307,6 +1352,7 @@ class StreamAdminTest(ZulipTestCase):
             {
                 "name": "new_stream",
                 "message_retention_days": None,
+                "is_web_public": False,
             }
         ]
         result = list_to_streams(streams_raw, admin, autocreate=True)
@@ -1318,9 +1364,20 @@ class StreamAdminTest(ZulipTestCase):
         owner = self.example_user("desdemona")
         realm = owner.realm
         streams_raw = [
-            {"name": "new_stream1", "message_retention_days": 10},
-            {"name": "new_stream2", "message_retention_days": -1},
-            {"name": "new_stream3"},
+            {
+                "name": "new_stream1",
+                "message_retention_days": 10,
+                "is_web_public": False,
+            },
+            {
+                "name": "new_stream2",
+                "message_retention_days": -1,
+                "is_web_public": False,
+            },
+            {
+                "name": "new_stream3",
+                "is_web_public": False,
+            },
         ]
 
         do_change_plan_type(realm, Realm.LIMITED, acting_user=admin)

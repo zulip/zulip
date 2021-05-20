@@ -11,6 +11,11 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 98**
+
+* [`POST /subscribe`](/api/subscribe): Added `is_web_public` parameter
+  for requesting the creation of a web-public stream.
+
 **Feature level 97**
 
 * `GET /realm/emoji`, `POST /realm/emoji/{emoji_name}`, [`GET

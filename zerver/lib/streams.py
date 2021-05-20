@@ -153,6 +153,7 @@ def create_streams_if_needed(
             realm,
             stream_dict["name"],
             invite_only=stream_dict.get("invite_only", False),
+            is_web_public=stream_dict.get("is_web_public", False),
             stream_post_policy=stream_dict.get(
                 "stream_post_policy", Stream.STREAM_POST_POLICY_EVERYONE
             ),
@@ -645,6 +646,7 @@ def list_to_streams(
             check_stream_access_for_delete_or_update(user_profile, stream, sub)
 
     message_retention_days_not_none = False
+    web_public_stream_requested = False
     for stream_dict in streams_raw:
         stream_name = stream_dict["name"]
         stream = existing_stream_map.get(stream_name.lower())
@@ -652,6 +654,9 @@ def list_to_streams(
             if stream_dict.get("message_retention_days", None) is not None:
                 message_retention_days_not_none = True
             missing_stream_dicts.append(stream_dict)
+
+            if autocreate and stream_dict["is_web_public"]:
+                web_public_stream_requested = True
         else:
             existing_streams.append(stream)
 
@@ -672,6 +677,14 @@ def list_to_streams(
                     ", ".join(stream_dict["name"] for stream_dict in missing_stream_dicts),
                 )
             )
+
+        if web_public_stream_requested:
+            if not user_profile.realm.web_public_streams_enabled():
+                raise JsonableError(_("Web public streams are not enabled."))
+            if not user_profile.is_realm_owner:
+                # We only allow organization owners to create web-public streams,
+                # because of their sensitive nature.
+                raise OrganizationOwnerRequired()
 
         if message_retention_days_not_none:
             if not user_profile.is_realm_owner:
