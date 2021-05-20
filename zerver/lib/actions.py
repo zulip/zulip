@@ -1813,7 +1813,7 @@ def build_message_send_dict(
         service_bot_tuples=info["service_bot_tuples"],
         wildcard_mention_user_ids=wildcard_mention_user_ids,
         links_for_embed=links_for_embed,
-        widget_content=message_dict.get("widget_content", None),
+        widget_content=message_dict.get("widget_content_dict", None),
     )
 
     return message_send_dict
@@ -3116,14 +3116,15 @@ def check_message(
         if id is not None:
             raise ZephyrMessageAlreadySentException(id)
 
+    widget_content_dict = None
     if widget_content is not None:
         try:
-            widget_content = orjson.loads(widget_content)
+            widget_content_dict = orjson.loads(widget_content)
         except orjson.JSONDecodeError:
             raise JsonableError(_("Widgets: API programmer sent invalid JSON content"))
 
         try:
-            check_widget_content(widget_content)
+            check_widget_content(widget_content_dict)
         except ValidationError as error:
             raise JsonableError(
                 _("Widgets: {error_msg}").format(
@@ -3137,7 +3138,7 @@ def check_message(
         "local_id": local_id,
         "sender_queue_id": sender_queue_id,
         "realm": realm,
-        "widget_content": widget_content,
+        "widget_content_dict": widget_content_dict,
     }
     message_send_dict = build_message_send_dict(message_dict, email_gateway)
 
