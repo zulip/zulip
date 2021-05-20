@@ -90,8 +90,8 @@ class UnreadMessagesResult(TypedDict):
 class SendMessageRequest:
     message: Message
     stream: Optional[Stream]
-    local_id: Optional[int]
-    sender_queue_id: Optional[int]
+    local_id: Optional[str]
+    sender_queue_id: Optional[str]
     realm: Realm
     mention_data: MentionData
     active_user_ids: Set[int]
