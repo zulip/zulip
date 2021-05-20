@@ -57,7 +57,6 @@ class HomeTest(ZulipTestCase):
         "cross_realm_bots",
         "custom_profile_field_types",
         "custom_profile_fields",
-        "debug_mode",
         "default_language",
         "default_language_name",
         "default_view",

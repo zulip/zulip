@@ -81,7 +81,7 @@ function report_error(
     stack = "No stacktrace available",
     {show_ui_msg = false, more_info} = {},
 ) {
-    if (page_params.debug_mode) {
+    if (page_params.development_environment) {
         // In development, we display blueslip errors in the web UI,
         // to make them hard to miss.
         blueslip_stacktrace.display_stacktrace(msg, stack);
@@ -228,7 +228,7 @@ export function info(msg, more_info) {
 export function warn(msg, more_info) {
     const args = build_arg_list(msg, more_info);
     logger.warn(...args);
-    if (page_params.debug_mode) {
+    if (page_params.development_environment) {
         console.trace();
     }
 }
@@ -238,7 +238,7 @@ export function error(msg, more_info, stack = new Error("dummy").stack) {
     logger.error(...args);
     report_error(msg, stack, {more_info});
 
-    if (page_params.debug_mode) {
+    if (page_params.development_environment) {
         throw new BlueslipError(msg, more_info);
     }
 
