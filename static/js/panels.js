@@ -164,7 +164,7 @@ export function initialize() {
     $("#panels").on("keyup", ".alert-link[role=button]", function (e) {
         e.stopPropagation();
         if (e.key === "Enter") {
-            $(this).click();
+            $(this).trigger("click");
         }
     });
 }
