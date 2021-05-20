@@ -4662,7 +4662,7 @@ paths:
   /messages/matches_narrow:
     get:
       operationId: check_messages_match_narrow
-      summary: NO MD FILE.
+      summary: Check if messages match a narrow
       tags: ["messages"]
       description: |
         Check whether a set of messages match a [narrow](/api/construct-narrow).
@@ -4980,7 +4980,7 @@ paths:
   /user_uploads/{realm_id_str}/{filename}:
     get:
       operationId: get_file_temporary_url
-      summary: NO MD FILE.
+      summary: Get public temporary URL
       tags: ["messages"]
       description: |
         Get a temporary URL for access to the file that doesn't require authentication.
@@ -5792,7 +5792,7 @@ paths:
                           }
     patch:
       operationId: update_subscriptions
-      summary: NO MD FILE.
+      summary: Update subscriptions
       tags: ["streams"]
       description: |
         Update which streams you are are subscribed to.
@@ -10507,7 +10507,7 @@ paths:
   /zulip-outgoing-webhook:
     post:
       operationId: zulip_outgoing_webhooks
-      summary: NO MD FILE.
+      summary: Outgoing webhooks
       tags: ["webhooks"]
       description: |
         Outgoing webhooks allows to build or set up Zulip integrations which are
@@ -10611,7 +10611,7 @@ paths:
     get:
       tags: ["streams"]
       operationId: create_big_blue_button_video_call
-      summary: NO MD FILE.
+      summary: Create Big Blue Button video call
       description: |
         Create a video call URL for a Big Blue Button video call.
         Requires Big Blue Button to be configured on the Zulip server.
