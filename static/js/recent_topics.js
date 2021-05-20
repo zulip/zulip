@@ -676,7 +676,7 @@ export function hide() {
     // remains on search box even after it is hidden. We
     // forcefully blur it so that focus returns to the visible
     // focused element.
-    $("#recent_topics_search").blur();
+    $("#recent_topics_search").trigger("blur");
 
     $("#message_view_header_underpadding").show();
     $(".header").css("padding-bottom", "10px");
