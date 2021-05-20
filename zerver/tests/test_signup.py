@@ -1968,10 +1968,8 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         response = self.client_post(
             url, {"key": registration_key, "from_confirmation": 1, "full_nme": "alice"}
         )
-        self.assertEqual(response.status_code, 200)
-        self.assert_in_success_response(
-            ["The registration link has expired or is not valid."], response
-        )
+        self.assertEqual(response.status_code, 404)
+        self.assert_in_response("The registration link has expired or is not valid.", response)
 
         registration_key = confirmation_link.split("/")[-1]
         response = self.client_post(
@@ -3567,10 +3565,8 @@ class UserSignUpTest(InviteUserBase):
             },
         )
         # Error page should be displayed
-        self.assert_in_success_response(
-            ["The registration link has expired or is not valid."], result
-        )
-        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.status_code, 404)
+        self.assert_in_response("The registration link has expired or is not valid.", result)
 
     def test_signup_with_multiple_default_stream_groups(self) -> None:
         # Check if user is subscribed to the streams of default
