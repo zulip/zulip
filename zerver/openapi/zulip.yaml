@@ -7368,6 +7368,17 @@ paths:
                             id or email.
                           additionalProperties:
                             $ref: "#/components/schemas/Presence"
+                      server_timestamp:
+                        type: number
+                        description: |
+                          Present if `presence` is present in `fetch_event_types`.
+
+                          The time when the server fetched the
+                          `presences` data included in the response.
+                          Matches the similar field in presence
+                          responses.
+
+                          **Changes**: New in Zulip 5.0 (feature level 70).
                       realm_domains:
                         type: array
                         description: |

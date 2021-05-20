@@ -181,7 +181,7 @@ test("set_presence_info", () => {
 
     const params = {};
     params.presences = presences;
-    params.initial_servertime = now;
+    params.server_timestamp = now;
     presence.initialize(params);
 
     assert.deepEqual(presence.presence_info.get(alice.user_id), {

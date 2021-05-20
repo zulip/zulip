@@ -233,7 +233,6 @@ def build_page_params_for_home_page_load(
         # Only show marketing email settings if on Zulip Cloud
         enable_marketing_emails_enabled=settings.CORPORATE_ENABLED,
         # Misc. extra data.
-        initial_servertime=time.time(),  # Used for calculating relative presence age
         default_language_name=get_language_name(register_ret["default_language"]),
         language_list_dbl_col=get_language_list_for_templates(register_ret["default_language"]),
         language_list=get_language_list(),

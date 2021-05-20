@@ -446,7 +446,7 @@ export function initialize_everything() {
 
     const pm_conversations_params = pop_fields("recent_private_conversations");
 
-    const presence_params = pop_fields("presences", "initial_servertime");
+    const presence_params = pop_fields("presences", "server_timestamp");
 
     const stream_data_params = pop_fields(
         "subscriptions",

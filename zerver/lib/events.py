@@ -1,6 +1,7 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html for
 # high-level documentation on how this system works.
 import copy
+import time
 from typing import Any, Callable, Collection, Dict, Iterable, Optional, Sequence, Set
 
 from django.conf import settings
@@ -177,6 +178,8 @@ def fetch_initial_state_data(
         state["presences"] = (
             {} if user_profile is None else get_presences_for_realm(realm, slim_presence)
         )
+        # Send server_timestamp, to match the format of `GET /presence` requests.
+        state["server_timestamp"] = time.time()
 
     if want("realm"):
         # The realm bundle includes both realm properties and server
