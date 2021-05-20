@@ -44,12 +44,9 @@ Usage: ./manage.py deliver_scheduled_messages
                 settings.NOTIFICATION_BOT, original_sender.realm
             )
 
-        message_dict = {
-            "message": message,
-            "stream": scheduled_message.stream,
-            "realm": scheduled_message.realm,
-        }
-        return build_message_send_dict(message_dict)
+        return build_message_send_dict(
+            message=message, stream=scheduled_message.stream, realm=scheduled_message.realm
+        )
 
     def handle(self, *args: Any, **options: Any) -> None:
         try:

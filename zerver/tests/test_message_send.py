@@ -1552,7 +1552,7 @@ class StreamMessagesTest(ZulipTestCase):
                 sending_client=sending_client,
             )
             message.set_topic_name(topic_name)
-            message_dict = build_message_send_dict({"message": message})
+            message_dict = build_message_send_dict(message=message)
             do_send_messages([message_dict])
 
         before_um_count = UserMessage.objects.count()
