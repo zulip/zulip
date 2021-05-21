@@ -1,16 +1,32 @@
 #!/usr/bin/env bash
+#
+# This script handles adding custom apt repositories into
+# /etc/apt/sources.list.d/ files.  It bundles the GPG keys which are
+# used to verify the repositories (via `apt-key`), to explicitly pin
+# the trusted signing keys, as opposed to blindly trusting HTTPS.
+#
+# Each /etc/apt/sources.list.d/foo.list file is created via `--list
+# foo`, where `foo` defaults to `zulip`.  The default `zulip.list` is
+# installed in `scripts/lib/install` / `tools/lib/provision.py`, and
+# other `.list` files may be installed by Puppet.
 set -x
 set -e
 set -u
 set -o pipefail
 
 verify=false
-args="$(getopt -o '' --long verify -- "$@")"
+args="$(getopt -o '' --long verify,list: -- "$@")"
 eval "set -- $args"
+LIST=zulip
 while true; do
     case "$1" in
         --verify)
             verify=true
+            shift
+            ;;
+        --list)
+            LIST="$2"
+            shift
             shift
             ;;
         --)
@@ -23,12 +39,21 @@ done
 # Ensure the directory for LAST_DEPENDENCIES_HASH exists
 mkdir -p /var/lib/zulip
 
-SOURCES_FILE=/etc/apt/sources.list.d/zulip.list
-STAMP_FILE=/etc/apt/sources.list.d/zulip.list.apt-update-in-progress
+SOURCES_FILE=/etc/apt/sources.list.d/$LIST.list
+STAMP_FILE=/etc/apt/sources.list.d/$LIST.list.apt-update-in-progress
 
-ZULIP_SCRIPTS="$(dirname "$(dirname "$0")")"
-DEPENDENCIES_HASH=$(sha1sum "$ZULIP_SCRIPTS/setup/"*.asc "$0")
-DEPENDENCIES_HASH_FILE="/var/lib/zulip/setup-repositories-state"
+ZULIP_SCRIPTS="$(cd "$(dirname "$(dirname "$0")")" && pwd)"
+LIST_PATH="$ZULIP_SCRIPTS/setup/apt-repos/$LIST"
+if ! [ -d "$LIST_PATH" ]; then
+    echo "Not a valid value for --list: '$LIST'"
+    echo ""
+    echo "Valid values are:"
+    ls -1 "$ZULIP_SCRIPTS/setup/apt-repos/"
+    exit 1
+fi
+
+DEPENDENCIES_HASH=$(sha1sum "$LIST_PATH/"*.asc "$0")
+DEPENDENCIES_HASH_FILE="/var/lib/zulip/setup-repositories-state-$LIST"
 # Ensure that DEPENDENCIES_HASH_FILE exists before hashing it.
 touch "$DEPENDENCIES_HASH_FILE"
 LAST_DEPENDENCIES_HASH="$(cat "$DEPENDENCIES_HASH_FILE")"
@@ -53,66 +78,24 @@ if ! apt-get -dy install "${pre_setup_deps[@]}"; then
 fi
 apt-get -y install "${pre_setup_deps[@]}"
 
-SCRIPTS_PATH="$(cd "$(dirname "$(dirname "$0")")" && pwd)"
-
 release=$(lsb_release -sc)
-if [[ "$release" =~ ^(bionic|cosmic|disco|eoan|focal|groovy)$ ]]; then
-    distribution=ubuntu
-    apt-key add "$SCRIPTS_PATH"/setup/pgdg.asc
-    apt-key add "$SCRIPTS_PATH"/setup/pgroonga-ppa.asc
-    cat >$SOURCES_FILE <<EOF
-deb http://apt.postgresql.org/pub/repos/apt/ $release-pgdg main
-deb-src http://apt.postgresql.org/pub/repos/apt/ $release-pgdg main
-
-deb http://ppa.launchpad.net/groonga/ppa/ubuntu $release main
-deb-src http://ppa.launchpad.net/groonga/ppa/ubuntu $release main
-EOF
-elif [[ "$release" =~ ^(buster|bullseye)$ ]]; then
-    distribution=debian
-    apt-key add "$SCRIPTS_PATH"/setup/pgdg.asc
-    cat >$SOURCES_FILE <<EOF
-deb http://apt.postgresql.org/pub/repos/apt/ $release-pgdg main
-deb-src http://apt.postgresql.org/pub/repos/apt/ $release-pgdg main
-EOF
+if [ -f "$LIST_PATH/$release.list" ]; then
+    apt-key add "$LIST_PATH/"*.asc
+    cp "$LIST_PATH/$release.list" "$SOURCES_FILE"
 else
-    echo "Unsupported release $release."
+    cat <<EOF
+Unsupported release $release for sources.list file $LIST.  To add a
+new release, make a $LIST_PATH/$release.list file based on existing
+.list files in that directory.
+
+EOF
     exit 1
 fi
 
-if [[ ! -e /usr/share/doc/groonga-apt-source/copyright ]]; then
-    remove_pgroonga_apt_tmp_dir() {
-        rm -rf "$pgroonga_apt_tmp_dir"
-    }
-    pgroonga_apt_tmp_dir=$(mktemp --directory)
-    trap remove_pgroonga_apt_tmp_dir EXIT
-    pushd "$pgroonga_apt_tmp_dir"
-    tmp_gpg_home=.gnupg
-    pgroonga_apt_sign_key="$SCRIPTS_PATH"/setup/pgroonga-packages.groonga.org.asc
-    gpg --homedir="$tmp_gpg_home" --import "$pgroonga_apt_sign_key"
-    # Find fingerprint of the first key.
-    pgroonga_apt_sign_key_fingerprint=$(
-        gpg --homedir="$tmp_gpg_home" --with-colons --list-keys \
-            | grep '^fpr:' \
-            | cut --delimiter=: --fields=10 \
-            | head --lines=1
-    )
-    groonga_apt_source_deb="groonga-apt-source-latest-$release.deb"
-    groonga_apt_source_deb_sign="$groonga_apt_source_deb.asc.$pgroonga_apt_sign_key_fingerprint"
-    wget "https://packages.groonga.org/$distribution/$groonga_apt_source_deb"
-    wget "https://packages.groonga.org/$distribution/$groonga_apt_source_deb_sign"
-    gpg \
-        --homedir="$tmp_gpg_home" \
-        --verify \
-        "$groonga_apt_source_deb_sign" \
-        "$groonga_apt_source_deb"
-    # To suppress the following warning by "apt-get install":
-    #   N: Download is performed unsandboxed as root as file
-    #   '.../groonga-apt-source-latest-$release.deb' couldn't be
-    #   accessed by user '_apt'. - pkgAcquire::Run (13: Permission denied)
-    chown _apt .
-    apt-get -y install "./$groonga_apt_source_deb"
-    popd
-    touch "$STAMP_FILE"
+if [ -e "$LIST_PATH/custom.sh" ]; then
+    export LIST_PATH
+    export STAMP_FILE
+    bash "$LIST_PATH/custom.sh"
 fi
 
 if [ "$zulip_source_hash" = "$(sha1sum "$SOURCES_FILE")" ] && ! [ -e "$STAMP_FILE" ]; then

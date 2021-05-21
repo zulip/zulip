@@ -1,0 +1,5 @@
+deb http://apt.postgresql.org/pub/repos/apt/ groovy-pgdg main
+deb-src http://apt.postgresql.org/pub/repos/apt/ groovy-pgdg main
+
+deb http://ppa.launchpad.net/groonga/ppa/ubuntu groovy main
+deb-src http://ppa.launchpad.net/groonga/ppa/ubuntu groovy main
