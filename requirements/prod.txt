@@ -256,6 +256,10 @@ django[argon2]==3.2.2 \
     #   django-phonenumber-field
     #   django-sendfile2
     #   django-two-factor-auth
+ecdsa==0.14.1 \
+    --hash=sha256:64c613005f13efec6541bb0a33290d0d03c27abab5f15fbab20fb0ee162bdd8e \
+    --hash=sha256:e108a5fe92c67639abae3260e43561af914e7fd0d27bae6d2ec1312ae7934dfe
+    # via python-jose
 future==0.18.2 \
     --hash=sha256:b1bead90b70cf6ec3f0710ae53a525360fa360d306a86583adc6bf83a4db537d
     # via python-twitter
@@ -647,7 +651,9 @@ pyasn1==0.4.8 \
     --hash=sha256:aef77c9fb94a3ac588e87841208bdec464471d9871bd5050a287cc9a475cd0ba
     # via
     #   pyasn1-modules
+    #   python-jose
     #   python-ldap
+    #   rsa
 pycparser==2.20 \
     --hash=sha256:2d475327684562c3a96cc71adf7dc8c4f0565175cf86b6d7a404ff4c771f15f0 \
     --hash=sha256:7582ad22678f0fcd81102833f60ef8d0e57288b6b5fb00323d101be910e35705
@@ -691,6 +697,10 @@ python-dateutil==2.8.1 \
 python-gcm==0.4 \
     --hash=sha256:511c35fc5ae829f7fc3cbdb45c4ec3fda02f85e4fae039864efe82682ccb9c18
     # via -r requirements/common.in
+python-jose==3.2.0 \
+    --hash=sha256:4e4192402e100b5fb09de5a8ea6bcc39c36ad4526341c123d401e2561720335b \
+    --hash=sha256:67d7dfff599df676b04a996520d9be90d6cdb7e6dd10b4c7cacc0c3e2e92f2be
+    # via social-auth-core
 python-ldap==3.3.1 \
     --hash=sha256:4711cacf013e298754abd70058ccc995758177fb425f1c2d30e71adfc1d00aa5
     # via django-auth-ldap
@@ -826,6 +836,10 @@ requests[security]==2.25.1 \
     #   stripe
     #   twilio
     #   zulip
+rsa==4.7.2 \
+    --hash=sha256:78f9a9bf4e7be0c5ded4583326e7461e3a3c5aae24073648b4bdfa797d78c9d2 \
+    --hash=sha256:9d689e6ca1b3038bc82bf8d23e944b6b6037bc02301a574935b2dd946e0353b9
+    # via python-jose
 s3transfer==0.4.2 \
     --hash=sha256:9b3752887a2880690ce628bc263d6d13a3864083aeacff4890c1c9839a5eb0bc \
     --hash=sha256:cb022f4b16551edebbb31a377d3f09600dbada7363d8c5db7976e7f47732e1b2
@@ -840,6 +854,7 @@ six==1.16.0 \
     # via
     #   argon2-cffi
     #   django-bitfield
+    #   ecdsa
     #   html5lib
     #   isodate
     #   jsonschema
@@ -849,6 +864,7 @@ six==1.16.0 \
     #   pyopenssl
     #   python-binary-memcached
     #   python-dateutil
+    #   python-jose
     #   qrcode
     #   social-auth-app-django
     #   social-auth-core
@@ -860,7 +876,7 @@ social-auth-app-django==4.0.0 \
     --hash=sha256:567ad0e028311541d7dfed51d3bf2c60440a6fd236d5d4d06c5a618b3d6c57c5 \
     --hash=sha256:df5212370bd250108987c4748419a1a1d0cec750878856c2644c36aaa0fd3e58
     # via -r requirements/common.in
-social-auth-core[azuread,saml]==4.0.2 \
+social-auth-core[azuread,openidconnect,saml]==4.0.2 \
     --hash=sha256:2cc99a62ed884d3ef923b027baa9b0ef20554209214c9647cdb0012f69ba1223 \
     --hash=sha256:604798ec00a49a84f7a173460c5997c5409080e64acc8a47e2eefd6f59439a15
     # via
