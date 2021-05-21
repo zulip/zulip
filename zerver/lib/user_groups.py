@@ -11,7 +11,11 @@ def access_user_group_by_id(user_group_id: int, user_profile: UserProfile) -> Us
     try:
         user_group = UserGroup.objects.get(id=user_group_id, realm=user_profile.realm)
         group_member_ids = get_user_group_members(user_group)
-        if not user_profile.is_realm_admin and user_profile.id not in group_member_ids:
+        if (
+            not user_profile.is_realm_admin
+            and not user_profile.is_moderator
+            and user_profile.id not in group_member_ids
+        ):
             raise JsonableError(_("Insufficient permission"))
     except UserGroup.DoesNotExist:
         raise JsonableError(_("Invalid user group"))

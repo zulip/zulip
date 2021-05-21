@@ -575,12 +575,8 @@ def require_user_group_edit_permission(view_func: ViewFuncT) -> ViewFuncT:
     def _wrapped_view_func(
         request: HttpRequest, user_profile: UserProfile, *args: object, **kwargs: object
     ) -> HttpResponse:
-        realm = user_profile.realm
-        if (
-            realm.user_group_edit_policy != Realm.USER_GROUP_EDIT_POLICY_MEMBERS
-            and not user_profile.is_realm_admin
-        ):
-            raise OrganizationAdministratorRequired()
+        if not user_profile.can_edit_user_groups():
+            raise JsonableError(_("Insufficient permission"))
         return view_func(request, user_profile, *args, **kwargs)
 
     return cast(ViewFuncT, _wrapped_view_func)  # https://github.com/python/mypy/issues/1927

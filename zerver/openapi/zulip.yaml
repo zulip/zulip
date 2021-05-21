@@ -3464,6 +3464,8 @@ paths:
 
                                         * 1 = All members can create and edit user groups
                                         * 2 = Only organization administrators can create and edit user groups
+                                        * 3 = Only full members can create and edit user groups
+                                        * 4 = Only organization administrators and moderators can create and edit user groups
                                     default_code_block_language:
                                       type: string
                                       nullable: true
@@ -9009,6 +9011,8 @@ paths:
 
                           * 1 = All members can create and edit user groups
                           * 2 = Only organization administrators can create and edit user groups
+                          * 3 = Only full members can create and edit user groups.
+                          * 4 = Only organization administrators and moderators can create and edit user groups.
                       realm_default_code_block_language:
                         type: string
                         nullable: true

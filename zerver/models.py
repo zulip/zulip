@@ -291,15 +291,7 @@ class Realm(models.Model):
         default=POLICY_ADMINS_ONLY
     )
 
-    USER_GROUP_EDIT_POLICY_MEMBERS = 1
-    USER_GROUP_EDIT_POLICY_ADMINS = 2
-    user_group_edit_policy: int = models.PositiveSmallIntegerField(
-        default=USER_GROUP_EDIT_POLICY_MEMBERS
-    )
-    USER_GROUP_EDIT_POLICY_TYPES = [
-        USER_GROUP_EDIT_POLICY_MEMBERS,
-        USER_GROUP_EDIT_POLICY_ADMINS,
-    ]
+    user_group_edit_policy: int = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
 
     PRIVATE_MESSAGE_POLICY_UNLIMITED = 1
     PRIVATE_MESSAGE_POLICY_DISABLED = 2

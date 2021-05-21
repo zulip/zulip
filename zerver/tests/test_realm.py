@@ -757,7 +757,7 @@ class RealmAPITest(ZulipTestCase):
             name=["Zulip", "New Name"],
             waiting_period_threshold=[10, 20],
             create_stream_policy=Realm.COMMON_POLICY_TYPES,
-            user_group_edit_policy=Realm.USER_GROUP_EDIT_POLICY_TYPES,
+            user_group_edit_policy=Realm.COMMON_POLICY_TYPES,
             private_message_policy=Realm.PRIVATE_MESSAGE_POLICY_TYPES,
             invite_to_stream_policy=Realm.COMMON_POLICY_TYPES,
             wildcard_mention_policy=Realm.WILDCARD_MENTION_POLICY_TYPES,

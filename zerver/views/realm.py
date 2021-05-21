@@ -102,7 +102,7 @@ def update_realm(
         json_validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
     ),
     user_group_edit_policy: Optional[int] = REQ(
-        json_validator=check_int_in(Realm.USER_GROUP_EDIT_POLICY_TYPES), default=None
+        json_validator=check_int_in(Realm.COMMON_POLICY_TYPES), default=None
     ),
     private_message_policy: Optional[int] = REQ(
         json_validator=check_int_in(Realm.PRIVATE_MESSAGE_POLICY_TYPES), default=None

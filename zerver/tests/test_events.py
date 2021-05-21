@@ -2029,7 +2029,7 @@ class RealmPropertyActionTest(BaseAction):
             create_stream_policy=[4, 3, 2, 1],
             invite_to_stream_policy=[4, 3, 2, 1],
             private_message_policy=[2, 1],
-            user_group_edit_policy=[1, 2],
+            user_group_edit_policy=[1, 2, 3, 4],
             wildcard_mention_policy=[7, 6, 5, 4, 3, 2, 1],
             email_address_visibility=[Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS],
             bot_creation_policy=[Realm.BOT_CREATION_EVERYONE],
