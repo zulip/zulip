@@ -669,6 +669,19 @@ domain for your server).
 [apple-get-started]: https://developer.apple.com/sign-in-with-apple/get-started/
 [outgoing-email]: ../production/email.md
 
+## OpenID Connect
+
+Starting with Zulip 5.0, Zulip can be integrated with any OpenID
+Connect (OIDC) authentication provider.  You can configure it by
+enabling `zproject.backends.GenericOpenIdConnectBackend` in
+`AUTHENTICATION_BACKENDS` and following the steps outlined in the
+comment documentation in `/etc/zulip/settings.py`.
+
+Note that `SOCIAL_AUTH_OIDC_ENABLED_IDPS` only supports a single backend
+
+The Return URL to authorize with the provider is
+`https://yourzulipdomain.example.com/complete/oidc/`.
+
 ## Adding more authentication backends
 
 Adding an integration with any of the more than 100 authentication

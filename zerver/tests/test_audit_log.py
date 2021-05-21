@@ -374,6 +374,7 @@ class TestRealmAuditLog(ZulipTestCase):
             "Dev": True,
             "SAML": True,
             "GitLab": False,
+            "OpenID Connect": False,
         }
 
         do_set_realm_authentication_methods(realm, auth_method_dict, acting_user=user)

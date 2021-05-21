@@ -9209,6 +9209,10 @@ paths:
                             description: |
                               Whether the user can authenticate using SAML.
                             type: boolean
+                          openid connect:
+                            description: |
+                              Whether the user can authenticate using OpenID Connect.
+                            type: boolean
                       external_authentication_methods:
                         type: array
                         description: |

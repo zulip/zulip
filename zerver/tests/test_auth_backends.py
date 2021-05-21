@@ -103,6 +103,7 @@ from zproject.backends import (
     EmailAuthBackend,
     ExternalAuthDataDict,
     ExternalAuthResult,
+    GenericOpenIdConnectBackend,
     GitHubAuthBackend,
     GitLabAuthBackend,
     GoogleAuthBackend,
@@ -2827,6 +2828,159 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
         /login/social/apple/ endpoint which isn't even a part of the native flow.
         """
         pass
+
+
+class GenericOpenIdConnectTest(SocialAuthBase):
+    __unittest_skip__ = False
+
+    BACKEND_CLASS = GenericOpenIdConnectBackend
+    CLIENT_KEY_SETTING = "SOCIAL_AUTH_TESTOIDC_KEY"
+    CLIENT_SECRET_SETTING = "SOCIAL_AUTH_TESTOIDC_SECRET"
+    LOGIN_URL = "/accounts/login/social/oidc"
+    SIGNUP_URL = "/accounts/register/social/oidc"
+
+    BASE_OIDC_URL = "https://example.com/api/openid"
+    AUTHORIZATION_URL = f"{BASE_OIDC_URL}/authorize"
+    ACCESS_TOKEN_URL = f"{BASE_OIDC_URL}/token"
+    JWKS_URL = f"{BASE_OIDC_URL}/jwks"
+    USER_INFO_URL = f"{BASE_OIDC_URL}/userinfo"
+    AUTH_FINISH_URL = "/complete/oidc/"
+    CONFIG_ERROR_URL = "/config-error/oidc"
+
+    def social_auth_test(
+        self,
+        *args: Any,
+        **kwargs: Any,
+    ) -> HttpResponse:
+        # Example payload of the discovery endpoint (with appropriate values filled
+        # in to match our test setup).
+        # All the attributes below are REQUIRED per OIDC specification:
+        # https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata
+        # or at least required for the `code` flow with userinfo - that this implementation uses.
+        # Other flows are not supported right now.
+        idp_discovery_endpoint_payload_dict = {
+            "issuer": self.BASE_OIDC_URL,
+            "authorization_endpoint": self.AUTHORIZATION_URL,
+            "token_endpoint": self.ACCESS_TOKEN_URL,
+            "userinfo_endpoint": self.USER_INFO_URL,
+            "response_types_supported": [
+                "code",
+                "id_token",
+                "id_token token",
+                "code token",
+                "code id_token",
+                "code id_token token",
+            ],
+            "jwks_uri": self.JWKS_URL,
+            "id_token_signing_alg_values_supported": ["HS256", "RS256"],
+            "subject_types_supported": ["public"],
+        }
+
+        # We need to run the social_auth_test procedure with a mock response set up for the
+        # OIDC discovery endpoint as that's the first thing requested by the server when a user
+        # starts trying to authenticate.
+        with responses.RequestsMock(assert_all_requests_are_fired=False) as requests_mock:
+            requests_mock.add(
+                requests_mock.GET,
+                f"{self.BASE_OIDC_URL}/.well-known/openid-configuration",
+                match_querystring=False,
+                status=200,
+                body=json.dumps(idp_discovery_endpoint_payload_dict),
+            )
+            result = super().social_auth_test(*args, **kwargs)
+
+        return result
+
+    def social_auth_test_finish(self, *args: Any, **kwargs: Any) -> HttpResponse:
+        # Trying to generate a (access_token, id_token) pair here in tests that would
+        # successfully pass validation by validate_and_return_id_token is impractical
+        # and unnecessary (see python-social-auth implementation of the method for
+        # how the validation works).
+        # We can simply mock the method to make it succeed and return an empty dict, because
+        # the return value is not used for anything.
+        with mock.patch.object(
+            GenericOpenIdConnectBackend, "validate_and_return_id_token", return_value={}
+        ):
+            return super().social_auth_test_finish(*args, **kwargs)
+
+    def register_extra_endpoints(
+        self,
+        requests_mock: responses.RequestsMock,
+        account_data_dict: Dict[str, str],
+        **extra_data: Any,
+    ) -> None:
+        requests_mock.add(
+            requests_mock.GET,
+            self.JWKS_URL,
+            status=200,
+            json=json.loads(settings.EXAMPLE_JWK),
+        )
+
+    def generate_access_token_url_payload(self, account_data_dict: Dict[str, str]) -> str:
+        return json.dumps(
+            {
+                "access_token": "foobar",
+                "expires_in": time.time() + 60 * 5,
+                "id_token": "abcd1234",
+                "token_type": "bearer",
+            }
+        )
+
+    def get_account_data_dict(self, email: str, name: str) -> Dict[str, Any]:
+        return dict(
+            email=email,
+            name=name,
+            nickname="somenickname",
+            given_name=name.split(" ")[0],
+            family_name=name.split(" ")[1],
+        )
+
+    def test_social_auth_no_key(self) -> None:
+        """
+        Requires overriding because client key/secret are configured
+        in a different way than default for social auth backends.
+        """
+        account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+
+        mock_oidc_setting_dict = copy.deepcopy(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS)
+        idp_config_dict = list(mock_oidc_setting_dict.values())[0]
+        del idp_config_dict["client_id"]
+        with self.settings(SOCIAL_AUTH_OIDC_ENABLED_IDPS=mock_oidc_setting_dict):
+            result = self.social_auth_test(
+                account_data_dict, subdomain="zulip", next="/user_uploads/image"
+            )
+            self.assert_in_success_response(["Configuration error", "OpenID Connect"], result)
+
+    def test_too_many_idps(self) -> None:
+        """
+        Only one IdP is supported for now.
+        """
+        account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+
+        mock_oidc_setting_dict = copy.deepcopy(settings.SOCIAL_AUTH_OIDC_ENABLED_IDPS)
+        idp_config_dict = list(mock_oidc_setting_dict.values())[0]
+        mock_oidc_setting_dict["secondprovider"] = idp_config_dict
+        with self.settings(SOCIAL_AUTH_OIDC_ENABLED_IDPS=mock_oidc_setting_dict):
+            result = self.social_auth_test(
+                account_data_dict, subdomain="zulip", next="/user_uploads/image"
+            )
+            self.assert_in_success_response(["Configuration error", "OpenID Connect"], result)
+
+    def test_config_error_development(self) -> None:
+        """
+        This test is redundant for now, as test_social_auth_no_key already
+        tests this basic case, since this backend doesn't yet have more
+        comprehensive config_error pages.
+        """
+        return
+
+    def test_config_error_production(self) -> None:
+        """
+        This test is redundant for now, as test_social_auth_no_key already
+        tests this basic case, since this backend doesn't yet have more
+        comprehensive config_error pages.
+        """
+        return
 
 
 class GitHubAuthBackendTest(SocialAuthBase):

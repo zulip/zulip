@@ -97,6 +97,9 @@ SOCIAL_AUTH_APPLE_TEAM = get_secret("social_auth_apple_team", development_only=T
 SOCIAL_AUTH_APPLE_SCOPE = ["name", "email"]
 SOCIAL_AUTH_APPLE_EMAIL_AS_USERNAME = True
 
+# Generic OpenID Connect:
+SOCIAL_AUTH_OIDC_ENABLED_IDPS: Dict[str, Dict[str, Optional[str]]] = {}
+
 # Other auth
 SSO_APPEND_DOMAIN: Optional[str] = None
 

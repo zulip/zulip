@@ -69,6 +69,7 @@ from zproject.backends import (
     AppleAuthBackend,
     ExternalAuthDataDict,
     ExternalAuthResult,
+    GenericOpenIdConnectBackend,
     SAMLAuthBackend,
     ZulipLDAPAuthBackend,
     ZulipLDAPConfigurationError,
@@ -560,6 +561,8 @@ def start_social_login(
 
     if backend == "apple" and not AppleAuthBackend.check_config():
         return config_error(request, "apple")
+    if backend == "oidc" and not GenericOpenIdConnectBackend.check_config():
+        return config_error(request, "oidc")
 
     # TODO: Add AzureAD also.
     if backend in ["github", "google", "gitlab"]:
@@ -997,6 +1000,8 @@ def config_error(request: HttpRequest, error_category_name: str) -> HttpResponse
         "smtp": {"error_name": "smtp_error"},
         "remote_user_backend_disabled": {"error_name": "remoteuser_error_backend_disabled"},
         "remote_user_header_missing": {"error_name": "remoteuser_error_remote_user_header_missing"},
+        # TODO: Improve the config error page for OIDC.
+        "oidc": {"error_name": "oidc_error"},
     }
 
     return render(request, "zerver/config_error.html", contexts[error_category_name])

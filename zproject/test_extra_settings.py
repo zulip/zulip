@@ -193,6 +193,17 @@ APPLE_ID_TOKEN_GENERATION_KEY = get_from_file_if_exists(
     "zerver/tests/fixtures/apple/token_gen_private_key"
 )
 
+SOCIAL_AUTH_OIDC_ENABLED_IDPS = {
+    "testoidc": {
+        "display_name": "Test OIDC",
+        "oidc_url": "https://example.com/api/openid",
+        "display_icon": None,
+        "client_id": "key",
+        "secret": "secret",
+    }
+}
+
+
 VIDEO_ZOOM_CLIENT_ID = "client_id"
 VIDEO_ZOOM_CLIENT_SECRET = "client_secret"
 

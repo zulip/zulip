@@ -95,6 +95,12 @@
                         The REMOTE_USER header is not set.
                     </p>
                     {% endif %}
+                    {% if error_name == "oidc_error" %}
+                    <p>
+                        The OpenID Connect backend is not configured correctly.
+                    </p>
+                    {% endif %}
+
                     <p>After making your changes, remember to restart
                     the Zulip server.</p>
                     <p><a href=""> Refresh</a> to try again or <a href="/login/">click here</a> to go back to the login page.</p>
