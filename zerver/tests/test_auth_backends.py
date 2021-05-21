@@ -2533,7 +2533,7 @@ class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
             requests_mock.GET,
             self.BACKEND_CLASS.JWK_URL,
             status=200,
-            json=json.loads(settings.APPLE_JWK),
+            json=json.loads(settings.EXAMPLE_JWK),
         )
 
     def generate_access_url_payload(self, account_data_dict: Dict[str, str]) -> str:
@@ -2732,7 +2732,7 @@ class AppleAuthBackendNativeFlowTest(AppleAuthMixin, SocialAuthBase):
                 requests_mock.GET,
                 self.BACKEND_CLASS.JWK_URL,
                 status=200,
-                json=json.loads(settings.APPLE_JWK),
+                json=json.loads(settings.EXAMPLE_JWK),
             )
             yield
 
