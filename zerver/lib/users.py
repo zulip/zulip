@@ -359,6 +359,17 @@ def compute_show_invites_and_add_streams(user_profile: Optional[UserProfile]) ->
     return user_profile.can_invite_others_to_realm(), True
 
 
+def can_access_delivery_email(user_profile: UserProfile) -> bool:
+    realm = user_profile.realm
+    if realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS:
+        return user_profile.is_realm_admin
+
+    if realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_MODERATORS:
+        return user_profile.is_realm_admin or user_profile.is_moderator
+
+    return False
+
+
 def format_user_row(
     realm: Realm,
     acting_user: Optional[UserProfile],
@@ -422,10 +433,7 @@ def format_user_row(
             client_gravatar=client_gravatar,
         )
 
-    if acting_user is not None and (
-        realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS
-        and acting_user.is_realm_admin
-    ):
+    if acting_user is not None and can_access_delivery_email(acting_user):
         result["delivery_email"] = row["delivery_email"]
 
     if is_bot:

@@ -326,6 +326,7 @@ class Realm(models.Model):
     EMAIL_ADDRESS_VISIBILITY_MEMBERS = 2
     EMAIL_ADDRESS_VISIBILITY_ADMINS = 3
     EMAIL_ADDRESS_VISIBILITY_NOBODY = 4
+    EMAIL_ADDRESS_VISIBILITY_MODERATORS = 5
     email_address_visibility: int = models.PositiveSmallIntegerField(
         default=EMAIL_ADDRESS_VISIBILITY_EVERYONE,
     )
@@ -335,6 +336,7 @@ class Realm(models.Model):
         ## EMAIL_ADDRESS_VISIBILITY_MEMBERS,
         EMAIL_ADDRESS_VISIBILITY_ADMINS,
         EMAIL_ADDRESS_VISIBILITY_NOBODY,
+        EMAIL_ADDRESS_VISIBILITY_MODERATORS,
     ]
 
     # Threshold in days for new users to create streams, and potentially take

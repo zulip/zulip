@@ -857,6 +857,7 @@ class RealmAPITest(ZulipTestCase):
                 Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
                 Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
                 Realm.EMAIL_ADDRESS_VISIBILITY_NOBODY,
+                Realm.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
             ],
             video_chat_provider=[
                 dict(

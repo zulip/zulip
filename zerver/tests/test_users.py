@@ -1902,6 +1902,26 @@ class GetProfileTest(ZulipTestCase):
         do_set_realm_property(
             realm,
             "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_MODERATORS,
+            acting_user=None,
+        )
+
+        # Check that moderator can access email when setting is set to
+        # EMAIL_ADDRESS_VISIBILITY_MODERATORS.
+        result = orjson.loads(self.client_get(f"/json/users/{hamlet.id}").content)
+        self.assertEqual(result["user"].get("delivery_email"), hamlet.delivery_email)
+        self.assertEqual(result["user"].get("email"), f"user{hamlet.id}@zulip.testserver")
+
+        # Check that normal user cannot access email when setting is set to
+        # EMAIL_ADDRESS_VISIBILITY_MODERATORS.
+        self.login("cordelia")
+        result = orjson.loads(self.client_get(f"/json/users/{hamlet.id}").content)
+        self.assertEqual(result["user"].get("delivery_email"), None)
+        self.assertEqual(result["user"].get("email"), f"user{hamlet.id}@zulip.testserver")
+
+        do_set_realm_property(
+            realm,
+            "email_address_visibility",
             Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
             acting_user=None,
         )

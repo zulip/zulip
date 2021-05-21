@@ -3312,6 +3312,7 @@ paths:
                                         * 2 = members only
                                         * 3 = administrators only
                                         * 4 = nobody (though note that administrators can change this setting).
+                                        * 5 = moderators only
                                     email_changes_disabled:
                                       type: boolean
                                       description: |
@@ -8281,6 +8282,7 @@ paths:
                           * 2 = members only
                           * 3 = administrators only
                           * 4 = nobody (though note that administrators can change this setting).
+                          * 5 = moderators only
                       realm_email_changes_disabled:
                         type: boolean
                         description: |
