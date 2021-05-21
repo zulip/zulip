@@ -12,6 +12,29 @@ import * as settings_config from "./settings_config";
     about page_params and settings_config details.
 */
 
+function user_can_access_delivery_email() {
+    // This function checks whether the current user should expect to
+    // see .delivery_email fields on user objects that it can access.
+    //
+    // If false, either everyone has access to emails (and there is no
+    // delivery_email field for anyone) or this user does not have
+    // access to emails (and this client will never receive a user
+    // object with a delivery_email field).
+    if (
+        page_params.realm_email_address_visibility ===
+        settings_config.email_address_visibility_values.admins_only.code
+    ) {
+        return page_params.is_admin;
+    }
+    if (
+        page_params.realm_email_address_visibility ===
+        settings_config.email_address_visibility_values.moderators.code
+    ) {
+        return page_params.is_admin || page_params.is_moderator;
+    }
+    return undefined;
+}
+
 export function show_email() {
     if (
         page_params.realm_email_address_visibility ===
@@ -19,13 +42,7 @@ export function show_email() {
     ) {
         return true;
     }
-    if (
-        page_params.realm_email_address_visibility ===
-        settings_config.email_address_visibility_values.admins_only.code
-    ) {
-        return page_params.is_admin;
-    }
-    return undefined;
+    return user_can_access_delivery_email();
 }
 
 export function email_for_user_settings(person) {
@@ -33,12 +50,7 @@ export function email_for_user_settings(person) {
         return undefined;
     }
 
-    if (
-        page_params.is_admin &&
-        person.delivery_email &&
-        page_params.realm_email_address_visibility ===
-            settings_config.email_address_visibility_values.admins_only.code
-    ) {
+    if (person.delivery_email && user_can_access_delivery_email()) {
         return person.delivery_email;
     }
 
