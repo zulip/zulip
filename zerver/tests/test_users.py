@@ -1861,6 +1861,68 @@ class GetProfileTest(ZulipTestCase):
             avatar_url(hamlet),
         )
 
+    def test_user_email_according_to_email_address_visibility_setting(self) -> None:
+        hamlet = self.example_user("hamlet")
+
+        realm = hamlet.realm
+        do_set_realm_property(
+            realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_NOBODY,
+            acting_user=None,
+        )
+
+        # Check that even admin cannot access email when setting is set to
+        # EMAIL_ADDRESS_VISIBILITY_NOBODY.
+        self.login("iago")
+        result = orjson.loads(self.client_get(f"/json/users/{hamlet.id}").content)
+        self.assertEqual(result["user"].get("delivery_email"), None)
+        self.assertEqual(result["user"].get("email"), f"user{hamlet.id}@zulip.testserver")
+
+        do_set_realm_property(
+            realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS,
+            acting_user=None,
+        )
+
+        # Check that admin can access email when setting is set to
+        # EMAIL_ADDRESS_VISIBILITY_ADMINS.
+        result = orjson.loads(self.client_get(f"/json/users/{hamlet.id}").content)
+        self.assertEqual(result["user"].get("delivery_email"), hamlet.delivery_email)
+        self.assertEqual(result["user"].get("email"), f"user{hamlet.id}@zulip.testserver")
+
+        # Check that moderator cannot access email when setting is set to
+        # EMAIL_ADDRESS_VISIBILITY_ADMINS.
+        self.login("shiva")
+        result = orjson.loads(self.client_get(f"/json/users/{hamlet.id}").content)
+        self.assertEqual(result["user"].get("delivery_email"), None)
+        self.assertEqual(result["user"].get("email"), f"user{hamlet.id}@zulip.testserver")
+
+        do_set_realm_property(
+            realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            acting_user=None,
+        )
+
+        # Check that moderator, member and guest all can access email when setting
+        # is set to EMAIL_ADDRESS_VISIBILITY_EVERYONE.
+        self.login("shiva")
+        result = orjson.loads(self.client_get(f"/json/users/{hamlet.id}").content)
+        self.assertEqual(result["user"].get("delivery_email"), None)
+        self.assertEqual(result["user"].get("email"), hamlet.delivery_email)
+
+        self.login("cordelia")
+        result = orjson.loads(self.client_get(f"/json/users/{hamlet.id}").content)
+        self.assertEqual(result["user"].get("delivery_email"), None)
+        self.assertEqual(result["user"].get("email"), hamlet.delivery_email)
+
+        self.login("polonius")
+        result = orjson.loads(self.client_get(f"/json/users/{hamlet.id}").content)
+        self.assertEqual(result["user"].get("delivery_email"), None)
+        self.assertEqual(result["user"].get("email"), hamlet.delivery_email)
+
 
 class DeleteUserTest(ZulipTestCase):
     def test_do_delete_user(self) -> None:
