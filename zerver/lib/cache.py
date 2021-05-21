@@ -701,8 +701,12 @@ def flush_stream(sender: Any, **kwargs: Any) -> None:
 
     stream = kwargs["instance"]
     items_for_remote_cache = {}
-    items_for_remote_cache[get_stream_cache_key(stream.name, stream.realm_id)] = (stream,)
-    cache_set_many(items_for_remote_cache)
+
+    if kwargs.get("update_fields") is None:
+        cache_delete(get_stream_cache_key(stream.name, stream.realm_id))
+    else:
+        items_for_remote_cache[get_stream_cache_key(stream.name, stream.realm_id)] = (stream,)
+        cache_set_many(items_for_remote_cache)
 
     if (
         kwargs.get("update_fields") is None
