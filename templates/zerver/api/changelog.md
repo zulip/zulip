@@ -11,7 +11,7 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
-**Feature level 70**
+**Feature level 71**
 
 * [`GET /events`](/api/get-events): Added `is_web_public` field to
   `stream` events changing `invite_only`.
