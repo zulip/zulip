@@ -1363,6 +1363,15 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                             found_url.family.child.text = text
 
 
+class CompiledInlineProcessor(markdown.inlinepatterns.InlineProcessor):
+    def __init__(self, compiled_re: Pattern[str], md: markdown.Markdown) -> None:
+        # This is similar to the superclass's small __init__ function,
+        # but we skip the compilation step and let the caller give us
+        # a compiled regex.
+        self.compiled_re = compiled_re
+        self.md = md
+
+
 class Timestamp(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match: Match[str]) -> Optional[Element]:
         time_input_string = match.group("time")
@@ -1809,14 +1818,7 @@ class LinkifierPattern(markdown.inlinepatterns.Pattern):
         )
 
 
-class UserMentionPattern(markdown.inlinepatterns.InlineProcessor):
-    def __init__(self, compiled_re: Pattern[str], md: markdown.Markdown) -> None:
-        # This is similar to the superclass's small __init__ function,
-        # but we skip the compilation step and let the caller give us
-        # a compiled regex.
-        self.compiled_re = compiled_re
-        self.md = md
-
+class UserMentionPattern(CompiledInlineProcessor):
     def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
         self, m: Match[str], data: str
     ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
@@ -1870,14 +1872,7 @@ class UserMentionPattern(markdown.inlinepatterns.InlineProcessor):
         return None, None, None
 
 
-class UserGroupMentionPattern(markdown.inlinepatterns.InlineProcessor):
-    def __init__(self, compiled_re: Pattern[str], md: markdown.Markdown) -> None:
-        # This is similar to the superclass's small __init__ function,
-        # but we skip the compilation step and let the caller give us
-        # a compiled regex.
-        self.compiled_re = compiled_re
-        self.md = md
-
+class UserGroupMentionPattern(CompiledInlineProcessor):
     def handleMatch(  # type: ignore[override] # supertype incompatible with supersupertype
         self, m: Match[str], data: str
     ) -> Union[Tuple[None, None, None], Tuple[Element, int, int]]:
@@ -1910,14 +1905,7 @@ class UserGroupMentionPattern(markdown.inlinepatterns.InlineProcessor):
         return None, None, None
 
 
-class StreamPattern(markdown.inlinepatterns.InlineProcessor):
-    def __init__(self, compiled_re: Pattern[str], md: markdown.Markdown) -> None:
-        # This is similar to the superclass's small __init__ function,
-        # but we skip the compilation step and let the caller give us
-        # a compiled regex.
-        self.compiled_re = compiled_re
-        self.md = md
-
+class StreamPattern(CompiledInlineProcessor):
     def find_stream_by_name(self, name: str) -> Optional[Dict[str, Any]]:
         db_data = self.md.zulip_db_data
         if db_data is None:
@@ -1950,14 +1938,7 @@ class StreamPattern(markdown.inlinepatterns.InlineProcessor):
         return None, None, None
 
 
-class StreamTopicPattern(markdown.inlinepatterns.InlineProcessor):
-    def __init__(self, compiled_re: Pattern[str], md: markdown.Markdown) -> None:
-        # This is similar to the superclass's small __init__ function,
-        # but we skip the compilation step and let the caller give us
-        # a compiled regex.
-        self.compiled_re = compiled_re
-        self.md = md
-
+class StreamTopicPattern(CompiledInlineProcessor):
     def find_stream_by_name(self, name: str) -> Optional[Dict[str, Any]]:
         db_data = self.md.zulip_db_data
         if db_data is None:
