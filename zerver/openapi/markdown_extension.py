@@ -18,7 +18,12 @@ from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 
 import zerver.openapi.python_examples
-from zerver.openapi.openapi import get_openapi_description, get_openapi_fixture, openapi_spec
+from zerver.openapi.openapi import (
+    get_openapi_description,
+    get_openapi_fixture,
+    get_openapi_summary,
+    openapi_spec,
+)
 
 MACRO_REGEXP = re.compile(
     r"\{generate_code_example(\(\s*(.+?)\s*\))*\|\s*(.+?)\s*\|\s*(.+?)\s*(\(\s*(.+)\s*\))?\}"
@@ -26,6 +31,7 @@ MACRO_REGEXP = re.compile(
 PYTHON_EXAMPLE_REGEX = re.compile(r"\# \{code_example\|\s*(.+?)\s*\}")
 JS_EXAMPLE_REGEX = re.compile(r"\/\/ \{code_example\|\s*(.+?)\s*\}")
 MACRO_REGEXP_DESC = re.compile(r"\{generate_api_description(\(\s*(.+?)\s*\))}")
+MACRO_REGEXP_TITLE = re.compile(r"\{generate_api_title(\(\s*(.+?)\s*\))}")
 
 PYTHON_CLIENT_CONFIG = """
 #!/usr/bin/env python3
@@ -385,6 +391,9 @@ class APIMarkdownExtension(Extension):
         md.preprocessors.register(
             APIDescriptionPreprocessor(md, self.getConfigs()), "generate_api_description", 530
         )
+        md.preprocessors.register(
+            APITitlePreprocessor(md, self.getConfigs()), "generate_api_title", 531
+        )
 
 
 class APICodeExamplesPreprocessor(Preprocessor):
@@ -483,6 +492,44 @@ class APIDescriptionPreprocessor(Preprocessor):
         description_dict = description_dict.replace("{{api_url}}", self.api_url)
         description.extend(description_dict.splitlines())
         return description
+
+
+class APITitlePreprocessor(Preprocessor):
+    def __init__(self, md: markdown.Markdown, config: Mapping[str, Any]) -> None:
+        super().__init__(md)
+        self.api_url = config["api_url"]
+
+    def run(self, lines: List[str]) -> List[str]:
+        done = False
+        while not done:
+            for line in lines:
+                loc = lines.index(line)
+                match = MACRO_REGEXP_TITLE.search(line)
+
+                if match:
+                    function = match.group(2)
+                    text = self.render_title(function)
+                    # The line that contains the directive to include the macro
+                    # may be preceded or followed by text or tags, in that case
+                    # we need to make sure that any preceding or following text
+                    # stays the same.
+                    line_split = MACRO_REGEXP_TITLE.split(line, maxsplit=0)
+                    preceding = line_split[0]
+                    following = line_split[-1]
+                    text = [preceding, *text, following]
+                    lines = lines[:loc] + text + lines[loc + 1 :]
+                    break
+            else:
+                done = True
+        return lines
+
+    def render_title(self, function: str) -> List[str]:
+        title: List[str] = []
+        path, method = function.rsplit(":", 1)
+        raw_title = get_openapi_summary(path, method)
+        title.extend(raw_title.splitlines())
+        title = ["# " + line for line in title]
+        return title
 
 
 def makeExtension(*args: Any, **kwargs: str) -> APIMarkdownExtension:

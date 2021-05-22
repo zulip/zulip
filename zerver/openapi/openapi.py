@@ -213,6 +213,11 @@ def get_openapi_description(endpoint: str, method: str) -> str:
     return openapi_spec.openapi()["paths"][endpoint][method.lower()]["description"]
 
 
+def get_openapi_summary(endpoint: str, method: str) -> str:
+    """Fetch a summary from the full spec object."""
+    return openapi_spec.openapi()["paths"][endpoint][method.lower()]["summary"]
+
+
 def get_openapi_paths() -> Set[str]:
     return set(openapi_spec.openapi()["paths"].keys())
 
