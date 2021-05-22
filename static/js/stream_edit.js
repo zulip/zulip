@@ -1,4 +1,5 @@
 import $ from "jquery";
+import _ from "lodash";
 
 import render_settings_deactivation_stream_modal from "../templates/settings/deactivation_stream_modal.hbs";
 import render_stream_member_list_entry from "../templates/stream_member_list_entry.hbs";
@@ -25,10 +26,12 @@ import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as settings_ui from "./settings_ui";
 import * as stream_color from "./stream_color";
+import * as stream_create from "./stream_create";
 import * as stream_data from "./stream_data";
 import * as stream_pill from "./stream_pill";
 import * as stream_settings_data from "./stream_settings_data";
 import * as stream_ui_updates from "./stream_ui_updates";
+import * as stream_user_group_access_data from "./stream_user_group_access_data";
 import * as sub_store from "./sub_store";
 import * as subs from "./subs";
 import * as ui from "./ui";
@@ -38,6 +41,9 @@ import * as user_pill from "./user_pill";
 import * as util from "./util";
 
 export let pill_widget;
+export let user_group_pill_widget;
+
+let user_group_container;
 
 function setup_subscriptions_stream_hash(sub) {
     const hash = hash_util.stream_edit_uri(sub);
@@ -572,9 +578,31 @@ function change_stream_privacy(e) {
         10,
     );
 
+    let add_user_groups = [];
+    let remove_user_groups = [];
+
     if (sub.stream_post_policy !== stream_post_policy) {
         data.stream_post_policy = JSON.stringify(stream_post_policy);
+        if (sub.stream_post_policy === 5) {
+            // stream post is changed to not allow only selected user groups so we need
+            // to delete stream_user_group_access objects for this stream.
+            remove_user_groups =
+                stream_user_group_access_data.get_allowed_user_group_ids(stream_id);
+        } else if (stream_post_policy === 5) {
+            // stream post policy is changed to allow only selected user groups to post.
+            // so we only need to send user group ids to add.
+            add_user_groups = user_group_pill.get_group_ids(user_group_pill_widget);
+        }
+    } else if (sub.stream_post_policy === stream_post_policy && stream_post_policy === 5) {
+        const previous_user_groups =
+            stream_user_group_access_data.get_allowed_user_group_ids(stream_id);
+        const current_user_groups = user_group_pill.get_group_ids(user_group_pill_widget);
+        add_user_groups = _.difference(current_user_groups, previous_user_groups);
+        remove_user_groups = _.difference(previous_user_groups, current_user_groups);
     }
+
+    data.add_user_groups = JSON.stringify(add_user_groups);
+    data.remove_user_groups = JSON.stringify(remove_user_groups);
 
     let invite_only;
     let history_public_to_subscribers;
@@ -778,6 +806,44 @@ export function initialize() {
         $("#subscriptions_table").append(change_privacy_modal);
         set_stream_message_retention_setting_dropdown(stream);
         overlays.open_modal("#stream_privacy_modal");
+        stream_create.change_display_of_user_group_input(
+            "#stream_privacy_modal .user-group-box",
+            $("#stream_privacy_modal input:radio[value=5]").checked,
+        );
+
+        // Initialize widget to be used for typeahead for user group input.
+        user_group_container = $("#stream_privacy_modal .user-group-box .pill-container");
+        user_group_pill_widget = input_pill.create({
+            container: user_group_container,
+            create_item_from_text: user_group_pill.create_item_from_group_name,
+            get_text_from_item: user_group_pill.get_group_name_from_item,
+        });
+
+        const opts = {
+            user_group: true,
+            source: user_group_pill.typeahead_source,
+        };
+        pill_typeahead.set_up(
+            user_group_container.find(".input"),
+            // $("#stream_privacy_modal .user-group-box .pill-container .input"),
+            user_group_pill_widget,
+            opts,
+        );
+        // If stream_post_policy allows selected user groups to post we need to show the user group input box
+        // by default and populate it with currently allowed user groups
+        if (stream.stream_post_policy === 5) {
+            stream_create.change_display_of_user_group_input(
+                "#stream_privacy_modal .user-group-box",
+                true,
+            );
+            stream_ui_updates.populate_allowed_user_group_pills(stream, user_group_pill_widget);
+        }
+        $("#stream_privacy_modal input:radio[name=stream-post-policy]").on("change", (e) => {
+            stream_create.change_display_of_user_group_input(
+                "#stream_privacy_modal .user-group-box",
+                e.target.value === "5" && e.target.checked,
+            );
+        });
         e.preventDefault();
         e.stopPropagation();
     });

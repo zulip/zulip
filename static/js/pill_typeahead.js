@@ -38,7 +38,7 @@ export function set_up(input, pills, opts) {
             }
 
             if (include_user_groups) {
-                return user_group_pill.typeahead_source(pills).concat(source());
+                return user_group_pill.typeahead_source(pills).concat(source(pills));
             }
 
             return source();

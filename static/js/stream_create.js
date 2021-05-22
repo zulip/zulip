@@ -7,19 +7,24 @@ import render_subscription_invites_warning_modal from "../templates/subscription
 
 import * as channel from "./channel";
 import {$t, $t_html} from "./i18n";
+import * as input_pill from "./input_pill";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
+import * as pill_typeahead from "./pill_typeahead";
 import * as stream_data from "./stream_data";
 import * as stream_settings_data from "./stream_settings_data";
 import * as subs from "./subs";
 import * as ui_report from "./ui_report";
+import * as user_group_pill from "./user_group_pill";
 
 let created_stream;
 let all_users;
 let all_users_list_widget;
+let user_group_pill_widget;
+let user_group_container;
 
 export function reset_created_stream() {
     created_stream = undefined;
@@ -31,6 +36,15 @@ export function set_name(stream) {
 
 export function get_name() {
     return created_stream;
+}
+
+export function change_display_of_user_group_input(access_string, show) {
+    const elem = $(access_string);
+    if (show) {
+        elem.show();
+    } else {
+        elem.hide();
+    }
 }
 
 class StreamSubscriptionError {
@@ -224,6 +238,7 @@ function create_stream() {
         success() {
             $("#create_stream_name").val("");
             $("#create_stream_description").val("");
+            user_group_pill_widget.clear();
             ui_report.success(
                 $t_html({defaultMessage: "Stream successfully created!"}),
                 $(".stream_create_info"),
@@ -330,6 +345,45 @@ export function show_new_stream_modal() {
     } else {
         $("#announce-new-stream").hide();
     }
+
+    change_display_of_user_group_input(
+        "#make-invite-only .user-group-box",
+        $("#make-invite-only input:radio[value=5]").checked,
+    );
+
+    // Initialize widget to be used for typeahead for user group input.
+    if (user_group_pill_widget === undefined) {
+        // Intialize pill widget only once as repeated initialization
+        // can lead to unsynced code from input_pill.js store.
+        // After creation of pill_widget once if later again create
+        // pill_widget for same id then some code could be using store data for
+        // previous pill_widget which is a bug.
+        user_group_container = $("#make-invite-only .user-group-box .pill-container");
+        user_group_pill_widget = input_pill.create({
+            container: user_group_container,
+            create_item_from_text: user_group_pill.create_item_from_group_name,
+            get_text_from_item: user_group_pill.get_group_name_from_item,
+        });
+
+        const opts = {
+            user_group: true,
+            source: user_group_pill.typeahead_source,
+        };
+
+        pill_typeahead.set_up(
+            $("#make-invite-only .user-group-box .pill-container .input"),
+            user_group_pill_widget,
+            opts,
+        );
+    }
+
+    $("#make-invite-only input:radio[name=stream-post-policy]").on("change", (e) => {
+        change_display_of_user_group_input(
+            "#make-invite-only .user-group-box",
+            e.target.value === "5" && e.target.checked,
+        );
+    });
+
     clear_error_display();
 }
 

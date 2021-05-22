@@ -22,6 +22,14 @@
         </label>
     </li>
     {{/each}}
+    <div class="user-group-box white-box">
+        <h4>
+            {{t 'Add user groups' }}
+        </h4>
+        <div class="pill-container">
+            <div class="input" contenteditable="true" data-placeholder="{{t 'Add user groups...' }}" placeholder="{{t 'Add user group...'}}"></div>
+        </div>
+    </div>
     {{#if (or is_owner is_stream_edit)}}
     <h4>{{t "Message retention for stream" }}
         {{> help_link_widget link="/help/message-retention-policy" }}

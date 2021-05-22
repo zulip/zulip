@@ -1023,8 +1023,24 @@
 }
 
 ul.grey-box {
+    .white-box {
+        padding: 5px;
+        margin-left: 8px;
+        border-radius: 4px;
+        h4 {
+            margin: 0 0 8px;
+        }
+    }
+    .pill-container .input[contenteditable]:empty::after {
+        content: attr(data-placeholder);
+        opacity: 0.5;
+    }
     #stream_privacy_modal & {
         border-style: none;
+        .white-box {
+            margin-left: 3px;
+            margin-top: 3px;
+        }
     }
 
     li {

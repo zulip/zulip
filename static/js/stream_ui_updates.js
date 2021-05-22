@@ -8,7 +8,10 @@ import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
+import * as stream_user_group_access_data from "./stream_user_group_access_data";
 import * as subs from "./subs";
+import * as user_group_pill from "./user_group_pill";
+import * as user_groups from "./user_groups";
 
 export function initialize_disable_btn_hint_popover(
     btn_wrapper,
@@ -211,5 +214,15 @@ export function update_add_subscriptions_elements(sub) {
             button_element,
             $t({defaultMessage: "Only stream members can add users to a private stream"}),
         );
+    }
+}
+
+export function populate_allowed_user_group_pills(stream, pill_widget) {
+    const allowed_group_ids = stream_user_group_access_data.get_allowed_user_group_ids(
+        stream.stream_id,
+    );
+    for (const id of allowed_group_ids) {
+        const group = user_groups.get_user_group_from_id(id);
+        user_group_pill.append_user_group(group, pill_widget);
     }
 }
