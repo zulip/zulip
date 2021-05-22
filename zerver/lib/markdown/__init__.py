@@ -1794,11 +1794,11 @@ class LinkifierPattern(markdown.inlinepatterns.Pattern):
         self,
         source_pattern: str,
         format_string: str,
-        markdown_instance: Optional[markdown.Markdown] = None,
+        md: Optional[markdown.Markdown] = None,
     ) -> None:
         self.pattern = prepare_linkifier_pattern(source_pattern)
         self.format_string = format_string
-        markdown.inlinepatterns.Pattern.__init__(self, self.pattern, markdown_instance)
+        super().__init__(self.pattern, md)
 
     def handleMatch(self, m: Match[str]) -> Union[Element, str]:
         db_data = self.md.zulip_db_data
