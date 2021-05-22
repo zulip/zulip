@@ -3326,13 +3326,13 @@ def internal_send_huddle_message(
     return message_ids[0]
 
 
-def pick_color(user_profile: UserProfile, used_colors: Set[str]) -> str:
+def pick_color(user_profile: UserProfile, used_colors: Set[Optional[str]]) -> str:
     # These colors are shared with the palette in subs.js.
     available_colors = [s for s in STREAM_ASSIGNMENT_COLORS if s not in used_colors]
 
     if available_colors:
         return available_colors[0]
-    else:
+    else:  # nocoverage
         return STREAM_ASSIGNMENT_COLORS[len(used_colors) % len(STREAM_ASSIGNMENT_COLORS)]
 
 
@@ -3525,6 +3525,13 @@ def send_subscription_add_events(
             subscription = sub_info.sub
             sub_dict = stream.to_dict()
             for field_name in Subscription.API_FIELDS:
+                # on reactivating subscription if subscription.color is None,
+                # we send the `default_color` value as `color` so that the frontend
+                # doesnt assign a new color.
+                if field_name == "color":
+                    if subscription.color is None:  # nocoverage
+                        sub_dict["color"] = sub_dict["default_color"]
+                        continue
                 sub_dict[field_name] = getattr(subscription, field_name)
 
             sub_dict["in_home_view"] = not subscription.is_muted
@@ -3596,11 +3603,24 @@ def bulk_add_subscriptions(
         for recipient_id in new_recipient_ids:
             stream = recipient_id_to_stream[recipient_id]
 
-            if stream.name in color_map:
-                color = color_map[stream.name]
-            else:
-                color = pick_color(user_profile, used_colors)
-            used_colors.add(color)
+            color: Optional[str]
+
+            if stream.default_color is None:
+                # If stream doesn't have a default color.
+                # a random color is assigned
+
+                if stream.name in color_map:
+                    # Random color assignment from client side.
+                    color = color_map[stream.name]
+                else:
+                    # Random color assignment on backend
+                    # if client side has not assigned a color
+                    color = pick_color(user_profile, used_colors)
+            else:  # nocoverage
+                # if stream has a default color, assign None to Subscription color.
+                # don't have to check if client has selected a color if Stream has a default color
+                # as users cant choose their personalised color when subscribing to a stream.
+                color = None
 
             sub = Subscription(
                 user_profile=user_profile,
@@ -6207,10 +6227,24 @@ def build_stream_dict_for_sub(
         elif field_name == "date_created":
             result["date_created"] = datetime_to_timestamp(stream[field_name])
             continue
+
+        # Assigning the stream-level color to subscription color
+        # if Stream-level color is not None and User's personal color choice
+        # (Subscription color) is None, so that clients (web/mobile/terminal)
+        # that are just doing display don't need to know about the internals
+        # of how default colors are implemented. and can follow the current flow.
+
+        elif field_name == "default_color":
+            if stream["default_color"] and sub["color"] is None:  # nocoverage
+                result["color"] = stream["default_color"]
         result[field_name] = stream[field_name]
 
     # Copy Subscription.API_FIELDS.
     for field_name in Subscription.API_FIELDS:
+        # if color is already present in result,
+        # it means that default_color was assigned to it
+        if result.get(field_name, None):  # nocoverage
+            continue
         result[field_name] = sub[field_name]
 
     # Backwards-compatibility for clients that haven't been
@@ -6249,6 +6283,14 @@ def build_stream_dict_for_never_sub(
         elif field_name == "date_created":
             result["date_created"] = datetime_to_timestamp(stream[field_name])
             continue
+
+        # Assigning the stream-level color to `color` field
+        # This make sures that the Never subscribed streams are displayed in the
+        # stream-level color before user subscription.
+        elif field_name == "default_color":
+            if stream["default_color"]:  # nocoverage
+                result["color"] = stream["default_color"]
+
         result[field_name] = stream[field_name]
 
     result["stream_weekly_traffic"] = get_average_weekly_stream_traffic(

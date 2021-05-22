@@ -19,6 +19,12 @@
                 <input type="text" name="stream_description" id="create_stream_description"
                   placeholder="{{t 'Stream description' }}" value="" autocomplete="off" maxlength="{{ max_description_length }}" />
             </section>
+            <section class="block">
+                <div class="stream-title">
+                    {{t "Default stream color" }}
+                    <input class="colorpicker" name="stream_default_color" id="create_stream_default_color" type="text" tabindex="-1"/>
+                </div>
+            </section>
             <section class="block" id="make-invite-only">
                 <div class="stream-title">
                     {{t "Stream permissions" }}

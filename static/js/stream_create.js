@@ -12,6 +12,7 @@ import * as loading from "./loading";
 import {page_params} from "./page_params";
 import * as peer_data from "./peer_data";
 import * as people from "./people";
+import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as stream_settings_data from "./stream_settings_data";
 import * as subs from "./subs";
@@ -153,7 +154,7 @@ function create_stream() {
     const data = {};
     const stream_name = $("#create_stream_name").val().trim();
     const description = $("#create_stream_description").val().trim();
-    created_stream = stream_name;
+    let default_color = $("#create_stream_default_color").spectrum("get");
 
     // Even though we already check to make sure that while typing the user cannot enter
     // newline characters (by pressing the Enter key) it would still be possible to copy
@@ -165,7 +166,15 @@ function create_stream() {
         );
         return undefined;
     }
-    data.subscriptions = JSON.stringify([{name: stream_name, description}]);
+
+    created_stream = stream_name;
+    // if default_color is not null, we add it to the POST Data
+    if (default_color) {
+        default_color = default_color.toHexString();
+        data.subscriptions = JSON.stringify([{name: stream_name, description, default_color}]);
+    } else {
+        data.subscriptions = JSON.stringify([{name: stream_name, description}]);
+    }
 
     let invite_only;
     let history_public_to_subscribers;
@@ -267,6 +276,7 @@ export function new_stream_clicked(stream_name) {
     }
     show_new_stream_modal();
     $("#create_stream_name").trigger("focus");
+    stream_color.set_colorpicker_color($("#create_stream_default_color"));
 }
 
 function clear_error_display() {

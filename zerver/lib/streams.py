@@ -45,6 +45,7 @@ class StreamDict(TypedDict, total=False):
 
     name: str
     description: str
+    default_color: Optional[str]
     invite_only: bool
     is_web_public: bool
     stream_post_policy: int
@@ -92,6 +93,7 @@ def create_stream_if_needed(
     stream_post_policy: int = Stream.STREAM_POST_POLICY_EVERYONE,
     history_public_to_subscribers: Optional[bool] = None,
     stream_description: str = "",
+    stream_default_color: Optional[str] = None,
     message_retention_days: Optional[int] = None,
     acting_user: Optional[UserProfile] = None,
 ) -> Tuple[Stream, bool]:
@@ -105,6 +107,7 @@ def create_stream_if_needed(
         defaults=dict(
             name=stream_name,
             description=stream_description,
+            default_color=stream_default_color,
             invite_only=invite_only,
             is_web_public=is_web_public,
             stream_post_policy=stream_post_policy,
@@ -155,6 +158,7 @@ def create_streams_if_needed(
             ),
             history_public_to_subscribers=stream_dict.get("history_public_to_subscribers"),
             stream_description=stream_dict.get("description", ""),
+            stream_default_color=stream_dict.get("default_color", None),
             message_retention_days=stream_dict.get("message_retention_days", None),
             acting_user=acting_user,
         )
