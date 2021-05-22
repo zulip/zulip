@@ -9,6 +9,17 @@ import {$t} from "./i18n";
 export class TaskData {
     task_map = new Map();
 
+    constructor(todos) {
+        for (const [i, todo] of todos.entries()) {
+            this.handle.new_task.inbound("canned", {
+                key: i,
+                task: todo.task,
+                desc: todo.description,
+                completed: todo.completed,
+            });
+        }
+    }
+
     get_new_index() {
         let idx = 0;
 
@@ -128,7 +139,12 @@ export function activate(opts) {
     const elem = opts.elem;
     const callback = opts.callback;
 
-    const task_data = new TaskData();
+    let todos = [];
+    if (opts.extra_data) {
+        todos = opts.extra_data.todos || [];
+    }
+
+    const task_data = new TaskData(todos);
 
     function render() {
         const html = render_widgets_todo_widget();
