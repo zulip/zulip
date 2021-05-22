@@ -2015,6 +2015,10 @@ typing-inspect==0.7.1 \
     #   dataclasses-json
     #   libcst
     #   pyre-extensions
+ua-parser==0.10.0 \
+    --hash=sha256:46ab2e383c01dbd2ab284991b87d624a26a08f72da4d7d413f5bfab8b9036f8a \
+    --hash=sha256:47b1782ed130d890018d983fac37c2a80799d9e0b9c532e734c67cf70f185033
+    # via -r requirements/common.in
 uhashring==2.1 \
     --hash=sha256:b21340d0d32497a67f34f5177a64908115fdc23264ed87fa7d1eca79ef9641fa
     # via python-binary-memcached

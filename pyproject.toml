@@ -98,6 +98,7 @@ module = [
     "tornado.*",
     "twitter.*",
     "two_factor.*",
+    "ua_parser.*",
     "zxcvbn.*",
 ]
 ignore_missing_imports = true
