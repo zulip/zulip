@@ -65,6 +65,7 @@ import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
 import * as stream_list from "./stream_list";
+import * as stream_user_group_access_data from "./stream_user_group_access_data";
 import * as subs from "./subs";
 import * as timerender from "./timerender";
 import * as tippyjs from "./tippyjs";
@@ -454,6 +455,7 @@ export function initialize_everything() {
         "never_subscribed",
         "realm_default_streams",
     );
+    const stream_user_group_acces_params = pop_fields("stream_user_group_access_data");
 
     const user_groups_params = pop_fields("realm_user_groups");
 
@@ -528,6 +530,7 @@ export function initialize_everything() {
     hotspots.initialize();
     ui.initialize();
     typing.initialize();
+    stream_user_group_access_data.initialize(stream_user_group_acces_params);
     starred_messages.initialize();
     user_status_ui.initialize();
     fenced_code.initialize(generated_pygments_data);

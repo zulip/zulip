@@ -80,6 +80,8 @@ page_params.realm_description = "already set description";
 
 // For data-oriented modules, just use them, don't stub them.
 const alert_words = zrequire("alert_words");
+zrequire("unread");
+const stream_user_group_access_data = zrequire("stream_user_group_access_data");
 const stream_topic_history = zrequire("stream_topic_history");
 const stream_list = zrequire("stream_list");
 const message_helper = zrequire("message_helper");
@@ -955,4 +957,24 @@ run_test("server_event_dispatch_op_errors", (override) => {
     override(settings_user_groups, "reload", noop);
     blueslip.expect("error", "Unexpected event type user_group/other");
     server_events_dispatch.dispatch_normal_event({type: "user_group", op: "other"});
+});
+
+run_test("stream_user_group_access create", (override) => {
+    const event = event_fixtures.stream_user_group_access__create;
+    const event_stub = make_stub();
+    override(stream_user_group_access_data, "add_access_obj", event_stub.f);
+    dispatch(event);
+    assert.equal(event_stub.num_calls, 1);
+    const args = event_stub.get_args("stream_user_group_access_object");
+    assert_same(args.stream_user_group_access_object, event.stream_user_group_access_object);
+});
+
+run_test("stream_user_group_access delete", (override) => {
+    const event = event_fixtures.stream_user_group_access__delete;
+    const stub = make_stub();
+    override(stream_user_group_access_data, "delete_access_obj", stub.f);
+    dispatch(event);
+    assert.equal(stub.num_calls, 1);
+    const args = stub.get_args("access_object_id");
+    assert_same(args.access_object_id, event.access_object_id);
 });

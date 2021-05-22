@@ -3,9 +3,11 @@ from unittest import mock
 import orjson
 
 from zerver.lib.actions import do_set_realm_property, ensure_stream
+from zerver.lib.exceptions import JsonableError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import most_recent_usermessage
 from zerver.lib.user_groups import (
+    access_user_group_by_id_for_stream_creation,
     check_add_user_to_user_group,
     check_remove_user_from_user_group,
     create_user_group,
@@ -75,6 +77,48 @@ class UserGroupTestCase(ZulipTestCase):
             "zerver.lib.user_groups.remove_user_from_user_group", side_effect=Exception
         ):
             self.assertFalse(check_remove_user_from_user_group(othello, user_group))
+
+    def test_access_user_group_by_id_for_stream_creation(self) -> None:
+        othello = self.example_user("othello")
+        iago = self.example_user("iago")
+        aaron = self.example_user("aaron")
+        test_user_group = self.create_user_group_for_test("test_user_group", realm=iago.realm)
+
+        with mock.patch("zerver.models.UserProfile.can_create_streams", return_value=False):
+            # Admins and group members can access even if they cannot create stream.
+            fetched_user_group = access_user_group_by_id_for_stream_creation(
+                test_user_group.id, othello
+            )
+            self.assertEqual(test_user_group, fetched_user_group)
+            fetched_user_group = access_user_group_by_id_for_stream_creation(
+                test_user_group.id, iago
+            )
+            self.assertEqual(test_user_group, fetched_user_group)
+            msg = "Insufficient permission to access requested user group."
+            with self.assertRaises(
+                JsonableError, msg=msg
+            ):  # Non admin cannot access if cannot create stream
+                access_user_group_by_id_for_stream_creation(test_user_group.id, aaron)
+
+        with mock.patch("zerver.models.UserProfile.can_create_streams", return_value=True):
+            fetched_user_group = access_user_group_by_id_for_stream_creation(
+                test_user_group.id, othello
+            )
+            self.assertEqual(test_user_group, fetched_user_group)
+            fetched_user_group = access_user_group_by_id_for_stream_creation(
+                test_user_group.id, iago
+            )
+            self.assertEqual(test_user_group, fetched_user_group)
+            fetched_user_group = access_user_group_by_id_for_stream_creation(
+                test_user_group.id, aaron
+            )
+            self.assertEqual(
+                test_user_group, fetched_user_group
+            )  # Non admin and non member can access only if they can create stream
+
+        # Test invalid user group:
+        with self.assertRaises(JsonableError):
+            fetched_user_group = access_user_group_by_id_for_stream_creation(99999999, othello)
 
 
 class UserGroupAPITestCase(ZulipTestCase):

@@ -99,3 +99,22 @@ def get_memberships_of_users(user_group: UserGroup, members: List[UserProfile]) 
             user_group=user_group, user_profile__in=members
         ).values_list("user_profile_id", flat=True)
     )
+
+
+def access_user_group_by_id_for_stream_creation(
+    user_group_id: int, user_profile: UserProfile
+) -> UserGroup:
+    try:
+        user_group = UserGroup.objects.get(id=user_group_id, realm=user_profile.realm)
+        # This returns a valid user_group for stream creation which allow admins
+        # and selcted user groups to post. If Realm.create_stream_policy allows creation
+        # of this type of stream to requesting user then user group is accessed for stream creation.
+        if (
+            user_profile.is_realm_admin
+            or (user_profile.id in get_user_group_members(user_group))
+            or user_profile.can_create_streams()
+        ):
+            return user_group
+        raise JsonableError(_("Insufficient permission to access requested user group."))
+    except UserGroup.DoesNotExist:
+        raise JsonableError(_("Invalid user group."))

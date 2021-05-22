@@ -55,6 +55,7 @@ import * as stream_data from "./stream_data";
 import * as stream_events from "./stream_events";
 import * as stream_list from "./stream_list";
 import * as stream_topic_history from "./stream_topic_history";
+import * as stream_user_group_access_data from "./stream_user_group_access_data";
 import * as sub_store from "./sub_store";
 import * as submessage from "./submessage";
 import * as subs from "./subs";
@@ -706,6 +707,13 @@ export function dispatch_normal_event(event) {
             break;
         case "realm_export":
             settings_exports.populate_exports_table(event.exports);
+            break;
+        case "stream_user_group_access":
+            if (event.op === "create") {
+                stream_user_group_access_data.add_access_obj(event.stream_user_group_access_object);
+            } else if (event.op === "delete") {
+                stream_user_group_access_data.delete_access_obj(event.access_object_id);
+            }
             break;
     }
 }

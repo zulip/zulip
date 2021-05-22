@@ -140,6 +140,8 @@ from zerver.lib.event_schema import (
     check_stream_create,
     check_stream_delete,
     check_stream_update,
+    check_stream_user_group_access_create,
+    check_stream_user_group_access_delete,
     check_submessage,
     check_subscription_add,
     check_subscription_peer_add,
@@ -169,6 +171,7 @@ from zerver.lib.events import (
 )
 from zerver.lib.markdown import MentionData
 from zerver.lib.message import render_markdown
+from zerver.lib.stream_user_group_access import update_stream_user_group_access_for_post
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     create_dummy_file,
@@ -1965,6 +1968,27 @@ class NormalActionsTest(BaseAction):
     def test_restart_event(self) -> None:
         with self.assertRaises(RestartEventException):
             self.verify_action(lambda: send_restart_events(immediate=True))
+
+    def test_stream_user_group_access_events(self) -> None:
+        hamlet = self.example_user("hamlet")
+        stream = self.make_stream("test_stream")
+        do_change_stream_post_policy(stream, Stream.STREAM_POST_POLICY_ADMINS_AND_USERGROUPS)
+        check_add_user_group(self.user_profile.realm, "test_group", [hamlet], "testing group")
+        group = UserGroup.objects.get(name="test_group")
+
+        # test create event:
+        action = lambda: update_stream_user_group_access_for_post(
+            stream, add=[group.id], remove=[], user_profile=self.user_profile
+        )
+        events = self.verify_action(action, num_events=1)
+        check_stream_user_group_access_create("events[0]", events[0])
+
+        # test delete event:
+        action = lambda: update_stream_user_group_access_for_post(
+            stream, add=[], remove=[group.id], user_profile=self.user_profile
+        )
+        events = self.verify_action(action, num_events=1)
+        check_stream_user_group_access_delete("events[0]", events[0])
 
 
 class RealmPropertyActionTest(BaseAction):

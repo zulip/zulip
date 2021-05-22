@@ -1106,6 +1106,79 @@ paths:
                                   "name": "test_stream",
                                   "id": 0,
                                 }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event sent when a `user_group` is added for post permission to
+                                a stream. It is send to all the members of the added user groups
+                                as well as to the user who grants added user groups this permission.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - stream_user_group_access
+                                op:
+                                  type: string
+                                  enum:
+                                    - create
+                                stream_user_group_access_object:
+                                  type: object
+                                  additionalProperties: false
+                                  description: |
+                                    The new stream user group access object that is created.
+                                  properties:
+                                    id:
+                                      type: integer
+                                      description: |
+                                        Unique integer id of the new `stream_user_group_access` instance created.
+                                    stream_id:
+                                      type: integer
+                                      description: |
+                                        Integer id of stream for which user group is granted permission to post.
+                                    group_id:
+                                      type: integer
+                                      description: |
+                                        Integer id of group which is granted permission to post.
+                              example:
+                                {
+                                  "type": "stream_user_group_access",
+                                  "op": "create",
+                                  "stream_user_group_access_object":
+                                    {"id": 1, "stream_id": 3, "group_id": 5},
+                                  "id": 1,
+                                }
+                            - type: object
+                              additionalProperties: false
+                              description: |
+                                Event send when a user_group is removed from post permission to
+                                a stream. It is send to all the members of the removed user group
+                                as well as to the user who grants added user group this permission.
+                              properties:
+                                id:
+                                  $ref: "#/components/schemas/EventIdSchema"
+                                type:
+                                  allOf:
+                                    - $ref: "#/components/schemas/EventTypeSchema"
+                                    - enum:
+                                        - stream_user_group_access
+                                op:
+                                  type: string
+                                  enum:
+                                    - delete
+                                access_object_id:
+                                  type: integer
+                                  description: |
+                                    It is id of `stream_user_group_access` object that is deleted.
+                              example:
+                                {
+                                  "type": "stream_user_group_access",
+                                  "op": "delete",
+                                  "access_object_id": 2,
+                                  "id": 1,
+                                }
                             - description: |
                                 Event sent when a reaction is added to a message.
                                 Sent to all users who were recipients of the message.
@@ -7861,6 +7934,34 @@ paths:
                           before using this API key.
 
                           **Changes**: Added in Zulip 4.0 (feature level 47).
+                      stream_user_group_access_data:
+                        type: array
+                        description: |
+                          Present if `stream_user_group_access` is present in `fetch_event_types`.
+
+                          An array of dictionaries where each dictionary contains details
+                          about permissions of a particular user group has on a stream.
+                          It is only responsible for post permission for a user group on
+                          the stream.
+                        items:
+                          type: object
+                          additionalProperties: false
+                          description: |
+                            Object containing details about which stream and user group the permisson
+                            object corresponds to.
+                          properties:
+                            id:
+                              type: integer
+                              description: |
+                                A unique integer that identifies that stream user group access object.
+                            stream_id:
+                              type: integer
+                              description: |
+                                Integer Id of the stream for which permission is granted to the user group.
+                            group_id:
+                              type: integer
+                              description: |
+                                Integer Id of the user group which is granted permission to post in the stream.
                       enable_desktop_notifications:
                         type: boolean
                         description: |

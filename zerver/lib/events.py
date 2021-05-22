@@ -43,6 +43,7 @@ from zerver.lib.realm_logo import get_realm_logo_source, get_realm_logo_url
 from zerver.lib.request import JsonableError
 from zerver.lib.soft_deactivation import reactivate_user_if_soft_deactivated
 from zerver.lib.stream_subscription import handle_stream_notifications_compatibility
+from zerver.lib.stream_user_group_access import get_stream_user_group_access_objects
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.topic_mutes import get_topic_mutes
 from zerver.lib.user_groups import user_groups_in_realm_serialized
@@ -523,6 +524,12 @@ def fetch_initial_state_data(
         # to exist at all so that they can deactivate them in cases of
         # abuse.
         state["giphy_api_key"] = settings.GIPHY_API_KEY if settings.GIPHY_API_KEY else ""
+
+    if want("stream_user_group_access"):
+
+        state["stream_user_group_access_data"] = (
+            [] if user_profile is None else get_stream_user_group_access_objects(user_profile)
+        )
 
     return state
 
@@ -1110,6 +1117,16 @@ def apply_event(
             user_status.pop(user_id_str, None)
 
         state["user_status"] = user_status
+    elif event["type"] == "stream_user_group_access":
+        if event["op"] == "create":
+            state["stream_user_group_access_data"].append(event["stream_user_group_access_object"])
+            state["stream_user_group_access_data"].sort(key=lambda obj: obj["id"])
+        elif event["op"] == "delete":
+            state["stream_user_group_access_data"] = [
+                item
+                for item in state["stream_user_group_access_data"]
+                if item["id"] != event["access_object_id"]
+            ]
     elif event["type"] == "has_zoom_token":
         state["has_zoom_token"] = event["value"]
     else:

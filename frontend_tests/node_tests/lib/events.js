@@ -545,6 +545,22 @@ exports.fixtures = {
         value: "blue",
     },
 
+    stream_user_group_access__create: {
+        type: "stream_user_group_access",
+        op: "create",
+        stream_user_group_access_object: {
+            id: 1,
+            group_id: 1,
+            stream_id: 1,
+        },
+    },
+
+    stream_user_group_access__delete: {
+        type: "stream_user_group_access",
+        op: "delete",
+        access_object_id: 1,
+    },
+
     submessage: {
         type: "submessage",
         submessage_id: 99,

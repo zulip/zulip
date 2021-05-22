@@ -11,6 +11,14 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 71**
+
+* [`GET /events`](/api/get-events): Added two new events of
+  type stream_user_group_access. Out of the added event one has
+  op=createand the other one has op=delete. These events are
+  added to efficiently manage and deliver data related to user
+  groups permissions with respect to streams.
+
 **Feature level 70**
 
 * [`GET /events`](/api/get-events): Added `is_web_public` field to

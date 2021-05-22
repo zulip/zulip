@@ -1636,3 +1636,30 @@ def check_user_status(var_name: str, event: Dict[str, object], fields: Set[str])
     _check_user_status(var_name, event)
 
     assert set(event.keys()) == {"id", "type", "user_id"} | fields
+
+
+stream_user_group_access_object_type = DictType(
+    required_keys=[
+        ("id", int),
+        ("stream_id", int),
+        ("group_id", int),
+    ]
+)
+
+stream_user_group_access_create_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("stream_user_group_access")),
+        ("op", Equals("create")),
+        ("stream_user_group_access_object", stream_user_group_access_object_type),
+    ]
+)
+check_stream_user_group_access_create = make_checker(stream_user_group_access_create_event)
+
+stream_user_group_access_delete_event = event_dict_type(
+    required_keys=[
+        ("type", Equals("stream_user_group_access")),
+        ("op", Equals("delete")),
+        ("access_object_id", int),
+    ]
+)
+check_stream_user_group_access_delete = make_checker(stream_user_group_access_delete_event)
