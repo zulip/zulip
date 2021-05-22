@@ -1687,6 +1687,7 @@ class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
 
     # Original regex for blockquote is RE = re.compile(r'(^|\n)[ ]{0,3}>[ ]?(.*)')
     RE = re.compile(r"(^|\n)(?!(?:[ ]{0,3}>\s*(?:$|\n))*(?:$|\n))" r"[ ]{0,3}>[ ]?(.*)")
+    COMPILED_EMOTICON_RE = re.compile(EMOTICON_RE)
 
     # run() is very slightly forked from the base class; see notes below.
     def run(self, parent: Element, blocks: List[str]) -> None:
@@ -1719,9 +1720,26 @@ class BlockQuoteProcessor(markdown.blockprocessors.BlockQuoteProcessor):
         line = mention.MENTIONS_RE.sub(lambda m: "@_**{}**".format(m.group("match")), line)
         # Silence all the user group mentions inside blockquotes
         line = mention.USER_GROUP_MENTIONS_RE.sub(lambda m: "@_*{}*".format(m.group("match")), line)
+        # Don't convert emoticons present inside blockquotes.
+        # When a user, who has `Convert emoticons before sending` enabled, quotes the message
+        # containing emoticon, sent by another user, who has the same setting disabled, creates
+        # a confussion for the latter user as they see those as the converted emoticon.
+        line = self.COMPILED_EMOTICON_RE.sub(
+            lambda m: self.escape_emoticon(m.group("emoticon")), line
+        )
 
         # And then run the upstream processor's code for removing the '>'
         return super().clean(line)
+
+    def escape_emoticon(self, emoticon: str) -> str:
+        # We substitute the found emoticon with a placeholder that will not be processed
+        # further and converted back to the original emoticon by `UnescapePostprocessor`.
+        return "{STX}{ord0}{ETX}{STX}{ord1}{ETX}".format(
+            STX=markdown.util.STX,
+            ord0=ord(emoticon[0]),
+            ord1=ord(emoticon[1]),
+            ETX=markdown.util.ETX,
+        )
 
 
 @dataclass

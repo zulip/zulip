@@ -234,6 +234,17 @@ export function apply_markdown(message) {
                 return match;
             });
 
+            // Silence quoted emoticons.
+            // See the reason behind this in zerver/lib/markdown/__init__.py:BlockQuoteProcessor
+            const emoticon_re = /<span[^>]*class="emoji[^>]*role="img"[^>]*>(:[\w+-]+?:)<\/span>/gm;
+            quote = quote.replace(emoticon_re, (match, emoji_name) => {
+                const emoticon = translate_emoji_to_emoticon(emoji_name);
+                if (emoticon !== emoji_name) {
+                    return emoticon;
+                }
+                return match;
+            });
+
             // In most cases, if you are being mentioned in the message you're quoting, you wouldn't
             // mention yourself outside of the blockquote (and, above it). If that you do that, the
             // following mentioned status is false; the backend rendering is authoritative and the
@@ -301,6 +312,14 @@ function make_emoji_span(codepoint, title, alt_text) {
     return `<span aria-label="${_.escape(title)}" class="emoji emoji-${_.escape(
         codepoint,
     )}" role="img" title="${_.escape(title)}">${_.escape(alt_text)}</span>`;
+}
+
+function translate_emoji_to_emoticon(emoji_name) {
+    const emoticon = emoji.emoji_to_emoticon_conversions.get(emoji_name);
+    if (emoticon !== undefined) {
+        return _.escape(emoticon);
+    }
+    return emoji_name;
 }
 
 function handleUnicodeEmoji(unicode_emoji) {
