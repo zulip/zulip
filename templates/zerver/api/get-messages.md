@@ -1,4 +1,4 @@
-# Get messages
+{generate_api_title(/messages:get)}
 
 {generate_api_description(/messages:get)}
 

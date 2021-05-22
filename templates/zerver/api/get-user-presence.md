@@ -1,4 +1,4 @@
-# Get user presence
+{generate_api_title(/users/{user_id_or_email}/presence:get)}
 
 {generate_api_description(/users/{user_id_or_email}/presence:get)}
 

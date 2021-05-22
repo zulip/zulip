@@ -1,4 +1,4 @@
-# Update a linkifier
+{generate_api_title(/realm/filters/{filter_id}:patch)}
 
 {generate_api_description(/realm/filters/{filter_id}:patch)}
 

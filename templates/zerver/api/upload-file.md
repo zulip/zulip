@@ -1,4 +1,4 @@
-# Upload a file
+{generate_api_title(/user_uploads:post)}
 
 {generate_api_description(/user_uploads:post)}
 

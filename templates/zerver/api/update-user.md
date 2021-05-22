@@ -1,4 +1,4 @@
-# Update a user
+{generate_api_title(/users/{user_id}:patch)}
 
 {generate_api_description(/users/{user_id}:patch)}
 

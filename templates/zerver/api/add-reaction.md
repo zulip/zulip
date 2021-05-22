@@ -1,4 +1,4 @@
-# Add an emoji reaction
+{generate_api_title(/messages/{message_id}/reactions:post)}
 
 {generate_api_description(/messages/{message_id}/reactions:post)}
 

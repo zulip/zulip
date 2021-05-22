@@ -1,4 +1,4 @@
-# Delete a message
+{generate_api_title(/messages/{message_id}:delete)}
 
 {generate_api_description(/messages/{message_id}:delete)}
 

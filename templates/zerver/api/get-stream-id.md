@@ -1,4 +1,4 @@
-# Get stream ID
+{generate_api_title(/get_stream_id:get)}
 
 {generate_api_description(/get_stream_id:get)}
 

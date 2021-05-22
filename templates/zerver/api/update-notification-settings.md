@@ -1,4 +1,4 @@
-# Update notification settings
+{generate_api_title(/settings/notifications:patch)}
 
 {generate_api_description(/settings/notifications:patch)}
 

@@ -1,4 +1,4 @@
-# Add a playground
+{generate_api_title(/realm/playgrounds:post)}
 
 {generate_api_description(/realm/playgrounds:post)}
 

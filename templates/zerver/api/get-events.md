@@ -1,4 +1,4 @@
-# Get events from an event queue
+{generate_api_title(/events:get)}
 
 {generate_api_description(/events:get)}
 

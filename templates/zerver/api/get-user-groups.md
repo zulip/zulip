@@ -1,4 +1,4 @@
-# Get user groups
+{generate_api_title(/user_groups:get)}
 
 {!api-members-only.md!}
 

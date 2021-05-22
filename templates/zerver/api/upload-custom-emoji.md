@@ -1,4 +1,4 @@
-# Upload custom emoji
+{generate_api_title(/realm/emoji/{emoji_name}:post)}
 
 {generate_api_description(/realm/emoji/{emoji_name}:post)}
 

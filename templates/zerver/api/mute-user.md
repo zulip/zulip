@@ -1,4 +1,4 @@
-# Mute a user
+{generate_api_title(/users/me/muted_users/{muted_user_id}:post)}
 
 {generate_api_description(/users/me/muted_users/{muted_user_id}:post)}
 

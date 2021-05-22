@@ -1,4 +1,4 @@
-# Remove a playground
+{generate_api_title(/realm/playgrounds/{playground_id}:delete)}
 
 {generate_api_description(/realm/playgrounds/{playground_id}:delete)}
 

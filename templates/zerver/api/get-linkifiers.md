@@ -1,4 +1,4 @@
-# Get linkifiers
+{generate_api_title(/realm/linkifiers:get)}
 
 {generate_api_description(/realm/linkifiers:get)}
 

@@ -1,4 +1,4 @@
-# Reactivate a user
+{generate_api_title(/users/{user_id}/reactivate:post)}
 
 {generate_api_description(/users/{user_id}/reactivate:post)}
 

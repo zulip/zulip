@@ -1,4 +1,4 @@
-# Mark all messages as read
+{generate_api_title(/mark_all_as_read:post)}
 
 {generate_api_description(/mark_all_as_read:post)}
 

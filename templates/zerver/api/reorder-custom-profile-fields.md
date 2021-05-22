@@ -1,4 +1,4 @@
-# Reorder custom profile fields
+{generate_api_title(/realm/profile_fields:patch)}
 
 {generate_api_description(/realm/profile_fields:patch)}
 

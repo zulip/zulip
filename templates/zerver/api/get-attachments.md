@@ -1,4 +1,4 @@
-# Get attachments
+{generate_api_title(/attachments:get)}
 
 {generate_api_description(/attachments:get)}
 

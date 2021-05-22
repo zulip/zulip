@@ -1,4 +1,4 @@
-# Get all streams
+{generate_api_title(/streams:get)}
 
 {generate_api_description(/streams:get)}
 

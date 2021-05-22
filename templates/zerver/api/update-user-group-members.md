@@ -1,4 +1,4 @@
-# Update user group members
+{generate_api_title(/user_groups/{user_group_id}/members:post)}
 
 {generate_api_description(/user_groups/{user_group_id}/members:post)}
 

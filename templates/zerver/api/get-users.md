@@ -1,4 +1,4 @@
-# Get all users
+{generate_api_title(/users:get)}
 
 {generate_api_description(/users:get)}
 

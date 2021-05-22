@@ -1,4 +1,4 @@
-# Archive a stream
+{generate_api_title(/streams/{stream_id}:delete)}
 
 {generate_api_description(/streams/{stream_id}:delete)}
 

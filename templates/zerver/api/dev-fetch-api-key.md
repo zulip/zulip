@@ -1,4 +1,4 @@
-# Fetch an API key (development only)
+{generate_api_title(/dev_fetch_api_key:post)}
 
 {generate_api_description(/dev_fetch_api_key:post)}
 

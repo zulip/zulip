@@ -1,4 +1,4 @@
-# Fetch an API key (production)
+{generate_api_title(/fetch_api_key:post)}
 
 {generate_api_description(/fetch_api_key:post)}
 

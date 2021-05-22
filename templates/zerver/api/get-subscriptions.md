@@ -1,4 +1,4 @@
-# Get subscribed streams
+{generate_api_title(/users/me/subscriptions:get)}
 
 {generate_api_description(/users/me/subscriptions:get)}
 

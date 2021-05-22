@@ -1,4 +1,4 @@
-# Check messages match narrow
+{generate_api_title(/messages/matches_narrow:get)}
 
 {generate_api_description(/messages/matches_narrow:get)}
 

@@ -1,4 +1,4 @@
-# Create a custom profile field
+{generate_api_title(/realm/profile_fields:post)}
 
 {generate_api_description(/realm/profile_fields:post)}
 
