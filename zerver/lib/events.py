@@ -243,8 +243,7 @@ def fetch_initial_state_data(
         # Important: Encode units in the client-facing API name.
         state["max_avatar_file_size_mib"] = settings.MAX_AVATAR_FILE_SIZE
         state["max_file_upload_size_mib"] = settings.MAX_FILE_UPLOAD_SIZE
-        # TODO: This should have units in its name
-        state["max_icon_file_size"] = settings.MAX_ICON_FILE_SIZE
+        state["max_icon_file_size_mib"] = settings.MAX_ICON_FILE_SIZE
         # TODO: This should have units in its name
         state["realm_upload_quota"] = realm.upload_quota_bytes()
 
