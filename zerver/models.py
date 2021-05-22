@@ -1826,6 +1826,7 @@ class Stream(models.Model):
     STREAM_POST_POLICY_ADMINS = 2
     STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS = 3
     STREAM_POST_POLICY_MODERATORS = 4
+    STREAM_POST_POLICY_ADMINS_AND_USERGROUPS = 5
     # TODO: Implement policy to restrict posting to a user group or admins.
 
     # Who in the organization has permission to send messages to this stream.
@@ -1835,6 +1836,7 @@ class Stream(models.Model):
         STREAM_POST_POLICY_ADMINS,
         STREAM_POST_POLICY_RESTRICT_NEW_MEMBERS,
         STREAM_POST_POLICY_MODERATORS,
+        STREAM_POST_POLICY_ADMINS_AND_USERGROUPS,
     ]
 
     # The unique thing about Zephyr public streams is that we never list their
@@ -1926,6 +1928,15 @@ class Stream(models.Model):
 
 post_save.connect(flush_stream, sender=Stream)
 post_delete.connect(flush_stream, sender=Stream)
+
+
+class StreamUserGroupAccess(models.Model):
+    user_group = models.ForeignKey(UserGroup, on_delete=CASCADE)
+    stream = models.ForeignKey(Stream, on_delete=CASCADE)
+    realm = models.ForeignKey(Realm, on_delete=CASCADE)
+
+    class Meta:
+        unique_together = (("user_group", "stream"),)
 
 
 class MutedTopic(models.Model):

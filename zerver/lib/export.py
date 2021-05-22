@@ -150,6 +150,7 @@ ALL_ZULIP_TABLES = {
     "zerver_stream",
     "zerver_submessage",
     "zerver_subscription",
+    "zerver_streamusergroupaccess",
     "zerver_useractivity",
     "zerver_useractivityinterval",
     "zerver_usergroup",
@@ -229,6 +230,7 @@ NON_EXPORTED_TABLES = {
     "zerver_defaultstreamgroup_streams",
     "zerver_muteduser",
     "zerver_submessage",
+    "zerver_streamusergroupaccess",
     # This is low priority, since users can easily just reset themselves to away.
     "zerver_userstatus",
     # Drafts don't need to be exported as they are supposed to be more ephemeral.
