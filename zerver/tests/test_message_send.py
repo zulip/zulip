@@ -36,6 +36,7 @@ from zerver.lib.actions import (
 from zerver.lib.addressee import Addressee
 from zerver.lib.cache import cache_delete, get_stream_cache_key
 from zerver.lib.message import MessageDict, get_raw_unread_data, get_recent_private_conversations
+from zerver.lib.stream_user_group_access import update_stream_user_group_access_for_post
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import (
     get_user_messages,
@@ -47,6 +48,7 @@ from zerver.lib.test_helpers import (
     reset_emails_in_zulip_realm,
 )
 from zerver.lib.timestamp import convert_to_UTC, datetime_to_timestamp
+from zerver.lib.user_groups import create_user_group
 from zerver.models import (
     MAX_MESSAGE_LENGTH,
     MAX_TOPIC_NAME_LENGTH,
@@ -333,6 +335,112 @@ class MessagePOSTTest(ZulipTestCase):
             guest_profile,
             stream_name,
             "Only organization administrators and moderators can send to this stream.",
+        )
+
+    def test_sending_message_as_stream_post_policy_admins_and_selected_user_groups(self) -> None:
+        """
+        Sending messages to streams which only members members of selected user groups can post to.
+        """
+        stream_name = "Verona"
+        aaron = self.example_user("aaron")
+        hamlet = self.example_user("hamlet")
+        admin_profile = self.example_user("iago")
+        stream = get_stream(stream_name, hamlet.realm)
+        do_change_stream_post_policy(stream, Stream.STREAM_POST_POLICY_ADMINS_AND_USERGROUPS)
+        user_group = create_user_group("hamlet_group", [hamlet], hamlet.realm)
+        update_stream_user_group_access_for_post(stream, [user_group.id], [], admin_profile)
+
+        admin_owned_bot = self.create_test_bot(
+            short_name="whatever1",
+            full_name="whatever1",
+            user_profile=admin_profile,
+        )
+
+        aaron_owned_bot = self.create_test_bot(
+            short_name="whatever2",
+            full_name="whatever2",
+            user_profile=aaron,
+        )
+
+        hamlet_owned_bot = self.create_test_bot(
+            short_name="whatever3",
+            full_name="whatever3",
+            user_profile=hamlet,
+        )
+
+        #  Test message from user who is member of allowed user can send message.
+        self.login_user(hamlet)
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "stream",
+                "to": orjson.dumps([stream.id]).decode(),
+                "client": "test suite",
+                "content": "Stream message by hamlet(member of allowed user group).",
+                "topic": "Restricted user groups message",
+            },
+        )
+        self.assert_json_success(result)
+        sent_message = self.get_last_message()
+        self.assertEqual(
+            sent_message.content, "Stream message by hamlet(member of allowed user group)."
+        )
+        self.logout()
+
+        # Message from bot of allowed user group member.
+        self._send_and_verify_message(
+            hamlet_owned_bot,
+            stream_name,
+        )
+
+        # Test message from user who is not member of allowed user_group fails.
+        self.login_user(aaron)
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "stream",
+                "to": orjson.dumps([stream.id]).decode(),
+                "client": "test suite",
+                "content": "Stream message by aaron(not a member of allowed user group).",
+                "topic": "Restricted user groups message",
+            },
+        )
+        self.assert_json_error(
+            result,
+            "Only organization admins and selected user group members can send to this stream.",
+        )
+        self.logout()
+
+        # Message from bot of aaron(not member of allowed user group).
+        self._send_and_verify_message(
+            aaron_owned_bot,
+            stream_name,
+            "Only organization admins and selected user group members can send to this stream.",
+        )
+
+        # Test message from admin user succeed even if he is not part of allowed user group.
+        self.login_user(admin_profile)
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "stream",
+                "to": orjson.dumps([stream.id]).decode(),
+                "client": "test suite",
+                "content": "Stream message by iago(admin but not member of alllowed user groups).",
+                "topic": "Restricted user groups message",
+            },
+        )
+        self.assert_json_success(result)
+        sent_message = self.get_last_message()
+        self.assertEqual(
+            sent_message.content,
+            "Stream message by iago(admin but not member of alllowed user groups).",
+        )
+        self.logout()
+        # Message from bot of admin.
+        self._send_and_verify_message(
+            admin_owned_bot,
+            stream_name,
         )
 
     def test_sending_message_as_stream_post_policy_restrict_new_members(self) -> None:

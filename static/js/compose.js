@@ -37,11 +37,13 @@ import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as stream_data from "./stream_data";
 import * as stream_edit from "./stream_edit";
+import * as stream_user_group_access_data from "./stream_user_group_access_data";
 import * as sub_store from "./sub_store";
 import * as subs from "./subs";
 import * as transmit from "./transmit";
 import * as ui_report from "./ui_report";
 import * as upload from "./upload";
+import * as user_groups from "./user_groups";
 import * as util from "./util";
 import * as zcommand from "./zcommand";
 
@@ -613,6 +615,29 @@ function validate_stream_message_post_policy(sub) {
     if (page_params.is_guest && stream_post_policy !== stream_post_permission_type.everyone.code) {
         compose_error($t_html({defaultMessage: "Guests are not allowed to post to this stream."}));
         return false;
+    }
+
+    if (stream_post_policy === stream_post_permission_type.admins_and_user_groups.code) {
+        const user_id = page_params.user_id;
+        const allowed_user_groups = stream_user_group_access_data.get_allowed_user_group_ids(
+            sub.stream_id,
+        );
+        let allowed = false;
+        for (const group_id of allowed_user_groups) {
+            if (user_groups.is_member_of(group_id, user_id)) {
+                allowed = true;
+                break;
+            }
+        }
+        if (!allowed) {
+            compose_error(
+                $t_html({
+                    defaultMessage:
+                        "Only organization admins and selected user group members can post to this stream.",
+                }),
+            );
+            return false;
+        }
     }
 
     const person = people.get_by_user_id(page_params.user_id);

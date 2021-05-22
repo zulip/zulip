@@ -15,6 +15,7 @@ from zerver.models import (
     RealmAuditLog,
     Recipient,
     Stream,
+    StreamUserGroupAccess,
     Subscription,
     UserProfile,
     active_non_guest_user_ids,
@@ -202,6 +203,19 @@ def check_stream_access_based_on_stream_post_policy(sender: UserProfile, stream:
         raise JsonableError(
             _("Only organization administrators and moderators can send to this stream.")
         )
+    elif stream.stream_post_policy == Stream.STREAM_POST_POLICY_ADMINS_AND_USERGROUPS:
+        user_to_check = sender
+        if sender.is_bot and sender.bot_owner is not None:
+            # This ensures that we have similar restriction for bots as for owner.
+            user_to_check = sender.bot_owner
+        if not StreamUserGroupAccess.objects.filter(
+            stream=stream, user_group__members=user_to_check
+        ).exists():
+            raise JsonableError(
+                _(
+                    "Only organization admins and selected user group members can send to this stream."
+                )
+            )
     elif stream.stream_post_policy != Stream.STREAM_POST_POLICY_EVERYONE and sender.is_guest:
         raise JsonableError(_("Guests cannot send to this stream."))
     elif (
