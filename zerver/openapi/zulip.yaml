@@ -8533,6 +8533,9 @@ paths:
 
                           The maximum file size allowed for the organization's
                           icon.  Useful for UI allowing editing the organization's icon.
+
+                          **Changes**: New in Zulip 5.0 (feature level 72).  Previously,
+                          this was called `max_icon_file_size`.
                       realm_logo_url:
                         type: string
                         description: |
@@ -8672,7 +8675,7 @@ paths:
                           Whether push notifications are enabled for this organization.  Typically
                           `false` for self-hosted servers that have not configured the
                           [Mobile push notifications service](https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html).
-                      realm_upload_quota:
+                      realm_upload_quota_mib:
                         type: integer
                         nullable: true
                         description: |
@@ -8684,6 +8687,9 @@ paths:
                           in the API only for display purposes.
 
                           Null if there is no limit.
+
+                          **Changes**: New in Zulip 5.0 (feature level 72).  Previously,
+                          this was called `realm_upload_quota`.
                       realm_plan_type:
                         type: integer
                         description: |

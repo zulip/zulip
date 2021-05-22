@@ -244,8 +244,7 @@ def fetch_initial_state_data(
         state["max_avatar_file_size_mib"] = settings.MAX_AVATAR_FILE_SIZE
         state["max_file_upload_size_mib"] = settings.MAX_FILE_UPLOAD_SIZE
         state["max_icon_file_size_mib"] = settings.MAX_ICON_FILE_SIZE
-        # TODO: This should have units in its name
-        state["realm_upload_quota"] = realm.upload_quota_bytes()
+        state["realm_upload_quota_mib"] = realm.upload_quota_bytes()
 
         state["realm_icon_url"] = realm_icon_url(realm)
         state["realm_icon_source"] = realm.icon_source
@@ -807,7 +806,7 @@ def apply_event(
             if event["property"] == "plan_type":
                 # Then there are some extra fields that also need to be set.
                 state["zulip_plan_is_not_limited"] = event["value"] != Realm.LIMITED
-                state["realm_upload_quota"] = event["extra_data"]["upload_quota"]
+                state["realm_upload_quota_mib"] = event["extra_data"]["upload_quota"]
 
             policy_permission_dict = {
                 "create_stream_policy": "can_create_streams",

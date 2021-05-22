@@ -11,6 +11,12 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 72**
+
+* [`POST /register`](/api/register-queue): Renamed `max_icon_file_size` to
+  `max_icon_file_size_mib`, `realm_upload_quota` to `realm_upload_quota_mib`
+  and `max_logo_file_size` to `max_logo_file_size_mib`.
+
 **Feature level 71**
 
 * [`GET /events`](/api/get-events): Added `is_web_public` field to
