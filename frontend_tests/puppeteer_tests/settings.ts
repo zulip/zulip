@@ -62,7 +62,8 @@ async function test_change_password(page: Page): Promise<void> {
     // when the above issue is resolved.
     await page.waitForFunction(() => document.activeElement!.id === "change_password_modal");
     await page.type("#old_password", test_credentials.default_user.password);
-    await page.type("#new_password", "new_password");
+    test_credentials.default_user.password = "new_password";
+    await page.type("#new_password", test_credentials.default_user.password);
     await page.click(change_password_button_selector);
 
     // On success the change password modal gets closed.
@@ -384,8 +385,8 @@ async function settings_tests(page: Page): Promise<void> {
     await common.log_in(page);
     await open_settings(page);
     await test_change_full_name(page);
-    await test_get_api_key(page);
     await test_change_password(page);
+    await test_get_api_key(page);
     await test_alert_words_section(page);
     await test_your_bots_section(page);
     await test_default_language_setting(page);
