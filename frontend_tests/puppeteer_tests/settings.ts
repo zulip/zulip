@@ -51,7 +51,14 @@ async function test_change_full_name(page: Page): Promise<void> {
 }
 
 async function test_change_password(page: Page): Promise<void> {
-    await page.click("#change_password");
+    const change_password_selector = "#change_password";
+    // We are calling focus on API key modal to avoid the "Not Secure" warning
+    // (see test_get_api_key function) on Firefox, and when it closes
+    // #settings_page loses its focus, which is causing #change_password
+    // click not work.
+    // We are focusing on #change_password to avoid this rare flake.
+    await page.focus(change_password_selector);
+    await page.click(change_password_selector);
 
     const change_password_button_selector = "#change_password_button";
     await page.waitForSelector(change_password_button_selector, {visible: true});
