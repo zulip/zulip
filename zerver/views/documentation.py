@@ -84,13 +84,32 @@ class MarkdownDirectoryView(ApiURLView):
             http_status = 404
 
         path = self.path_template % (article,)
+        endpoint_name = None
+        endpoint_method = None
+
+        # The following is a somewhat hacky approach to extract titles from articles.
+        # Hack: `context["article"] has a leading `/`, so we use + to add directories.
+        article_path = os.path.join(settings.DEPLOY_ROOT, "templates") + path
+
+        if (not os.path.exists(article_path)) and self.path_template == "/zerver/api/%s.md":
+            endpoint_path = article.replace("-", "_")
+            try:
+                endpoint_name, endpoint_method = get_endpoint_from_operationid(endpoint_path)
+                path = "/zerver/api/api-doc-template.md"
+            except AssertionError:
+                return DocumentationArticle(
+                    article_path=self.path_template % ("missing",),
+                    article_http_status=404,
+                    endpoint_path=None,
+                    endpoint_method=None,
+                )
         try:
             loader.get_template(path)
             return DocumentationArticle(
                 article_path=path,
                 article_http_status=http_status,
-                endpoint_path=None,
-                endpoint_method=None,
+                endpoint_path=endpoint_name,
+                endpoint_method=endpoint_method,
             )
         except loader.TemplateDoesNotExist:
             return DocumentationArticle(
@@ -129,12 +148,19 @@ class MarkdownDirectoryView(ApiURLView):
             with open(article_path) as article_file:
                 first_line = article_file.readlines()[0]
             # Strip the header and then use the first line to get the article title
-            if self.path_template == "/zerver/api/%s.md" and "{generate_api_title(" in first_line:
+            if context["article"] == "/zerver/api/api-doc-template.md":
+                endpoint_name, endpoint_method = (
+                    documentation_article.endpoint_path,
+                    documentation_article.endpoint_method,
+                )
+                article_title = get_openapi_summary(endpoint_name, endpoint_method)
+            elif self.path_template == "/zerver/api/%s.md" and "{generate_api_title(" in first_line:
                 api_operation = context["OPEN_GRAPH_URL"].split("/api/")[1].replace("-", "_")
-                endpoint_path, endpoint_method = get_endpoint_from_operationid(api_operation)
-                article_title = get_openapi_summary(endpoint_path, endpoint_method)
+                endpoint_name, endpoint_method = get_endpoint_from_operationid(api_operation)
+                article_title = get_openapi_summary(endpoint_name, endpoint_method)
             else:
                 article_title = first_line.lstrip("#").strip()
+                endpoint_name = endpoint_method = None
             if context["not_index_page"]:
                 context["OPEN_GRAPH_TITLE"] = f"{article_title} ({title_base})"
             else:
@@ -150,6 +176,8 @@ class MarkdownDirectoryView(ApiURLView):
         add_api_uri_context(api_uri_context, self.request)
         api_uri_context["run_content_validators"] = True
         context["api_uri_context"] = api_uri_context
+        if endpoint_name and endpoint_method:
+            context["api_uri_context"]["API_ENDPOINT_NAME"] = endpoint_name + ":" + endpoint_method
         add_google_analytics_context(context)
         return context
 

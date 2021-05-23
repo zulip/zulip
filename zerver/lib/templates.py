@@ -150,7 +150,6 @@ def render_markdown_path(
     md_engine.reset()
 
     jinja = engines["Jinja2"]
-
     try:
         # By default, we do both Jinja2 templating and Markdown
         # processing on the file, to make it easy to use both Jinja2
@@ -169,6 +168,8 @@ def render_markdown_path(
         else:
             raise e
 
+    API_ENDPOINT_NAME = context.get("API_ENDPOINT_NAME", "")
+    markdown_string = markdown_string.replace("API_ENDPOINT_NAME", API_ENDPOINT_NAME)
     html = md_engine.convert(markdown_string)
     rendered_html = jinja.from_string(html).render(context)
 
