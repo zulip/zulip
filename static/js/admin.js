@@ -43,6 +43,9 @@ const admin_settings_label = {
         defaultMessage: "Prevent users from changing their email address",
     }),
     realm_avatar_changes_disabled: $t({defaultMessage: "Prevent users from changing their avatar"}),
+    realm_invite_required: $t({
+        defaultMessage: "Invitations are required for joining this organization",
+    }),
 };
 
 function insert_tip_box() {
@@ -122,6 +125,7 @@ export function build_page() {
         bot_creation_policy_values: settings_bots.bot_creation_policy_values,
         email_address_visibility_values: settings_config.email_address_visibility_values,
         can_invite_others_to_realm: settings_data.user_can_invite_others_to_realm(),
+        realm_invite_required: page_params.realm_invite_required,
         ...settings_org.get_organization_settings_options(),
     };
 

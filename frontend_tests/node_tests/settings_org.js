@@ -181,6 +181,7 @@ function test_submit_settings_form(override, submit_form) {
         realm_default_twenty_four_hour_time: false,
         realm_invite_to_stream_policy: settings_config.common_policy_values.by_admins_only.code,
         realm_create_stream_policy: settings_config.common_policy_values.by_members.code,
+        realm_invite_to_realm_policy: settings_config.common_policy_values.by_members.code,
     });
 
     override(global, "setTimeout", (func) => func());
@@ -230,6 +231,11 @@ function test_submit_settings_form(override, submit_form) {
     email_address_visibility_elem.val("1");
     email_address_visibility_elem.attr("id", "id_realm_email_address_visibility");
     email_address_visibility_elem.data = () => "number";
+
+    const invite_to_realm_policy_elem = $("#id_realm_invite_to_realm_policy");
+    invite_to_realm_policy_elem.val("2");
+    invite_to_realm_policy_elem.attr("id", "id_realm_invite_to_realm_policy");
+    invite_to_realm_policy_elem.data = () => "number";
 
     let subsection_elem = $(`#org-${CSS.escape(subsection)}`);
     subsection_elem.closest = () => subsection_elem;
@@ -470,6 +476,7 @@ function test_sync_realm_settings() {
 
     test_common_policy("create_stream_policy");
     test_common_policy("invite_to_stream_policy");
+    test_common_policy("invite_to_realm_policy");
 
     {
         /* Test message content edit limit minutes sync */
