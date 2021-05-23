@@ -26,13 +26,15 @@ function user_can_access_delivery_email() {
     ) {
         return page_params.is_admin;
     }
+
     if (
         page_params.realm_email_address_visibility ===
         settings_config.email_address_visibility_values.moderators.code
     ) {
         return page_params.is_admin || page_params.is_moderator;
     }
-    return undefined;
+
+    return false;
 }
 
 export function show_email() {
