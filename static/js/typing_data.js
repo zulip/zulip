@@ -76,7 +76,8 @@ export function get_all_pms_typists() {
 }
 
 export function get_stream_typists(stream_id, topic) {
-    return stream_typists_dict.get(get_topic_key(stream_id, topic)) || [];
+    const typists = stream_typists_dict.get(get_topic_key(stream_id, topic)) || [];
+    return muted_users.filter_muted_user_ids(typists);
 }
 
 // The next functions aren't pure data, but it is easy
