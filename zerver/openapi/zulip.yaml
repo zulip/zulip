@@ -6989,7 +6989,7 @@ paths:
                 $ref: "#/components/schemas/JsonSuccess"
   /realm/playgrounds:
     post:
-      operationId: add_realm_playground
+      operationId: add_code_playground
       tags: ["server_and_organizations"]
       description: |
         Configure [code playgrounds](/help/code-blocks#code-playgrounds) for the organization.
@@ -7045,7 +7045,7 @@ paths:
                     example: {"id": 1, "result": "success", "msg": ""}
   /realm/playgrounds/{playground_id}:
     delete:
-      operationId: remove_realm_playground
+      operationId: remove_code_playground
       tags: ["server_and_organizations"]
       description: |
         Remove a [code playground](/help/code-blocks#code-playgrounds) previously

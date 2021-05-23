@@ -162,14 +162,14 @@ field with an integer field `invite_to_realm_policy`.
 
 **Feature level 49**
 
-* Added new [`POST /realm/playground`](/api/add-playground) and
-  [`DELETE /realm/playground/{playground_id}`](/api/remove-playground)
-  endpoints for realm playgrounds.
+* Added new [`POST /realm/playground`](/api/add-code-playground) and
+  [`DELETE /realm/playground/{playground_id}`](/api/remove-code-playground)
+  endpoints for code playgrounds.
 * [`GET /events`](/api/get-events): A new `realm_playgrounds` events
-  is sent when changes are made to a set of configured playgrounds for
+  is sent when changes are made to a set of configured code playgrounds for
   an organization.
 * [`POST /register`](/api/register-queue): Added a new `realm_playgrounds`
-  field, which is required to fetch the set of configured playgrounds for
+  field, which is required to fetch the set of configured code playgrounds for
   an organization.
 
 **Feature level 48**
