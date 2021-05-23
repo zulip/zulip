@@ -8,3 +8,7 @@ declare let zulip_test: any;
 interface JQuery {
     expectOne(): JQuery;
 }
+
+interface Window {
+    page_params_parse_time: number;
+}
