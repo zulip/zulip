@@ -85,17 +85,26 @@ test("basics", () => {
 });
 
 test("muted_typists_excluded", () => {
+    const stream_id = 1;
+    const topic = "typing notifications";
+    const topic_typing_key = typing_data.get_topic_key(stream_id, topic);
+
     typing_data.add_typist(typing_data.get_direct_message_conversation_key([5, 10, 15]), 5);
     typing_data.add_typist(typing_data.get_direct_message_conversation_key([5, 10, 15]), 10);
+    typing_data.add_typist(topic_typing_key, 7);
+    typing_data.add_typist(topic_typing_key, 12);
 
     // Nobody is muted.
     assert.deepEqual(typing_data.get_group_typists([5, 10, 15]), [5, 10]);
     assert.deepEqual(typing_data.get_all_direct_message_typists(), [5, 10]);
+    assert.deepEqual(typing_data.get_topic_typists(stream_id, topic), [7, 12]);
 
     // Mute a user, and test that the get_* functions exclude that user.
     muted_users.add_muted_user(10);
+    muted_users.add_muted_user(7);
     assert.deepEqual(typing_data.get_group_typists([5, 10, 15]), [5]);
     assert.deepEqual(typing_data.get_all_direct_message_typists(), [5]);
+    assert.deepEqual(typing_data.get_topic_typists(stream_id, topic), [12]);
 });
 
 test("timers", () => {
