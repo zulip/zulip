@@ -60,7 +60,8 @@ export function get_all_direct_message_typists(): number[] {
 }
 
 export function get_topic_typists(stream_id: number, topic: string): number[] {
-    return typists_dict.get(get_topic_key(stream_id, topic)) ?? [];
+    const typists = typists_dict.get(get_topic_key(stream_id, topic)) ?? [];
+    return muted_users.filter_muted_user_ids(typists);
 }
 
 // The next functions aren't pure data, but it is easy
