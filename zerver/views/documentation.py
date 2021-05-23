@@ -15,6 +15,7 @@ from zerver.lib.integrations import CATEGORIES, INTEGRATIONS, HubotIntegration, 
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.subdomains import get_subdomain
 from zerver.models import Realm
+from zerver.openapi.openapi import get_endpoint_from_operationid, get_openapi_summary
 from zerver.templatetags.app_filters import render_markdown_path
 
 
@@ -105,7 +106,12 @@ class MarkdownDirectoryView(ApiURLView):
             with open(article_path) as article_file:
                 first_line = article_file.readlines()[0]
             # Strip the header and then use the first line to get the article title
-            article_title = first_line.lstrip("#").strip()
+            if self.path_template == "/zerver/api/%s.md" and first_line[0] != "#":
+                api_operation = context["OPEN_GRAPH_URL"].split("/api/")[1].replace("-", "_")
+                endpoint_path, endpoint_method = get_endpoint_from_operationid(api_operation)
+                article_title = get_openapi_summary(endpoint_path, endpoint_method)
+            else:
+                article_title = first_line.lstrip("#").strip()
             if context["not_index_page"]:
                 context["OPEN_GRAPH_TITLE"] = f"{article_title} ({title_base})"
             else:

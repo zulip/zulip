@@ -7,7 +7,7 @@
 
 import os
 import re
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from jsonschema.exceptions import ValidationError as JsonSchemaValidationError
 from openapi_core import create_spec
@@ -216,6 +216,15 @@ def get_openapi_description(endpoint: str, method: str) -> str:
 def get_openapi_summary(endpoint: str, method: str) -> str:
     """Fetch a summary from the full spec object."""
     return openapi_spec.openapi()["paths"][endpoint][method.lower()]["summary"]
+
+
+def get_endpoint_from_operationid(operationid: str) -> Tuple[str, str]:
+    for endpoint in openapi_spec.openapi()["paths"]:
+        for method in openapi_spec.openapi()["paths"][endpoint]:
+            operationId = openapi_spec.openapi()["paths"][endpoint][method].get("operationId")
+            if operationId == operationid:
+                return (endpoint, method)
+    raise AssertionError("No such page exists in OpenAPI data.")
 
 
 def get_openapi_paths() -> Set[str]:
