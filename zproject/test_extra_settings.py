@@ -202,6 +202,7 @@ SOCIAL_AUTH_OIDC_ENABLED_IDPS = {
         "secret": "secret",
     }
 }
+SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED = True
 
 
 VIDEO_ZOOM_CLIENT_ID = "client_id"

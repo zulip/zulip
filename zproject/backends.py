@@ -2277,6 +2277,8 @@ class GenericOpenIdConnectBackend(SocialAuthMixin, OpenIdConnectAuth):
     display_icon = settings_dict.get("display_icon")
     display_name = settings_dict.get("display_name", "OIDC")
 
+    full_name_validated = getattr(settings, "SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED", False)
+
     # Discovery endpoint for the superclass to read all the appropriate
     # configuration from.
     OIDC_ENDPOINT = settings_dict.get("oidc_url")
