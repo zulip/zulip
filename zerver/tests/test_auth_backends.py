@@ -2537,8 +2537,9 @@ class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
         )
 
     def generate_access_url_payload(self, account_data_dict: Dict[str, str]) -> str:
-        # The ACCESS_TOKEN_URL endpoint works a bit different in standard Oauth2,
-        # where the token_data_dict contains some essential data. we add that data here.
+        # The ACCESS_TOKEN_URL endpoint works a bit different than in standard Oauth2,
+        # and here, similarly to OIDC, id_token is also returned in the response.
+        # In Apple auth, all the user information is carried in the id_token.
         return json.dumps(
             {
                 "access_token": "foobar",
