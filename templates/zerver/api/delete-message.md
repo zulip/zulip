@@ -11,6 +11,12 @@
 
 {generate_code_example(python)|/messages/{message_id}:delete|example(admin_config=True)}
 
+{tab|js}
+
+More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
+
+{generate_code_example(javascript)|/messages/{message_id}:delete|example(admin_config=True)}
+
 {tab|curl}
 
 {generate_code_example(curl)|/messages/{message_id}:delete|example}
