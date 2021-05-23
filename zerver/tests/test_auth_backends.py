@@ -882,7 +882,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
         result = self.client_get(self.AUTH_FINISH_URL, dict(state=csrf_state), **headers)
         return result
 
-    def generate_access_url_payload(self, account_data_dict: Dict[str, str]) -> str:
+    def generate_access_token_url_payload(self, account_data_dict: Dict[str, str]) -> str:
         return json.dumps(
             {
                 "access_token": "foobar",
@@ -970,7 +970,7 @@ class SocialAuthBase(DesktopFlowTestingLib, ZulipTestCase):
                 self.ACCESS_TOKEN_URL,
                 match_querystring=False,
                 status=200,
-                body=self.generate_access_url_payload(account_data_dict),
+                body=self.generate_access_token_url_payload(account_data_dict),
             )
             requests_mock.add(
                 requests_mock.GET,
@@ -2536,7 +2536,7 @@ class AppleIdAuthBackendTest(AppleAuthMixin, SocialAuthBase):
             json=json.loads(settings.EXAMPLE_JWK),
         )
 
-    def generate_access_url_payload(self, account_data_dict: Dict[str, str]) -> str:
+    def generate_access_token_url_payload(self, account_data_dict: Dict[str, str]) -> str:
         # The ACCESS_TOKEN_URL endpoint works a bit different than in standard Oauth2,
         # and here, similarly to OIDC, id_token is also returned in the response.
         # In Apple auth, all the user information is carried in the id_token.
