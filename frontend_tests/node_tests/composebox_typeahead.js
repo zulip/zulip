@@ -757,12 +757,12 @@ test("initialize", (override) => {
         assert.equal(matcher(query, deactivated_user), true);
 
         function sorter(query, people) {
-            return typeahead_helper.sort_recipients(
-                people,
+            return typeahead_helper.sort_recipients({
+                users: people,
                 query,
-                compose_state.stream_name(),
-                compose_state.topic(),
-            );
+                current_stream: compose_state.stream_name(),
+                current_topic: compose_state.topic(),
+            });
         }
 
         // The sorter's output has the items that match the query from the

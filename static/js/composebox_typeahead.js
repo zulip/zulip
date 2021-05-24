@@ -496,14 +496,14 @@ export function get_person_suggestions(query, opts) {
         filtered_persons = filter_persons(people.get_realm_users());
     }
 
-    return typeahead_helper.sort_recipients(
-        filtered_persons,
+    return typeahead_helper.sort_recipients({
+        users: filtered_persons,
         query,
-        opts.stream,
-        opts.topic,
-        filtered_groups,
+        current_stream: opts.stream,
+        current_topic: opts.topic,
+        groups: filtered_groups,
         max_num_items,
-    );
+    });
 }
 
 export function get_stream_topic_data(hacky_this) {

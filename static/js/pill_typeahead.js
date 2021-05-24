@@ -91,8 +91,9 @@ export function set_up(input, pills, opts) {
             return person_matcher(query, item);
         },
         sorter(matches) {
-            if (include_streams(this.query)) {
-                return typeahead_helper.sort_streams(matches, this.query.trim().slice(1));
+            const query = this.query;
+            if (include_streams(query)) {
+                return typeahead_helper.sort_streams(matches, query.trim().slice(1));
             }
 
             const users = matches.filter((ele) => people.is_known_user(ele));
@@ -100,14 +101,14 @@ export function set_up(input, pills, opts) {
             if (include_user_groups) {
                 groups = matches.filter((ele) => user_groups.is_user_group(ele));
             }
-            return typeahead_helper.sort_recipients(
+            return typeahead_helper.sort_recipients({
                 users,
-                this.query,
-                "",
-                undefined,
+                query,
+                current_stream: "",
+                current_topic: undefined,
                 groups,
-                undefined,
-            );
+                max_num_items: undefined,
+            });
         },
         updater(item) {
             if (include_streams(this.query)) {

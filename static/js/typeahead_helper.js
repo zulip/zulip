@@ -287,14 +287,14 @@ export function sort_languages(matches, query) {
     return retain_unique_language_aliases(results.matches.concat(results.rest));
 }
 
-export function sort_recipients(
+export function sort_recipients({
     users,
     query,
     current_stream,
     current_topic,
     groups = [],
     max_num_items = 20,
-) {
+}) {
     function sort_relevance(items) {
         return sort_people_for_relevance(items, current_stream, current_topic);
     }
