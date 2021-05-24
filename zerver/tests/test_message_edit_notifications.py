@@ -193,7 +193,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             stream_push_notify=False,
             stream_email_notify=False,
             stream_name="Scotland",
-            always_push_notify=False,
+            online_push_enabled=False,
             idle=True,
             already_notified={},
         )
@@ -299,7 +299,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             present_on_web=True,
         )
 
-    def test_always_push_notify_for_fully_present_mentioned_user(self) -> None:
+    def test_online_push_enabled_for_fully_present_mentioned_user(self) -> None:
         cordelia = self.example_user("cordelia")
 
         # Simulate Cordelia is FULLY present, not just in term of
@@ -326,7 +326,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             stream_push_notify=False,
             stream_email_notify=False,
             stream_name="Scotland",
-            always_push_notify=True,
+            online_push_enabled=True,
             idle=False,
             already_notified={},
         )
@@ -337,7 +337,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
         self.assert_length(queue_messages, 1)
 
-    def test_always_push_notify_for_fully_present_boring_user(self) -> None:
+    def test_online_push_enabled_for_fully_present_boring_user(self) -> None:
         cordelia = self.example_user("cordelia")
 
         # Simulate Cordelia is FULLY present, not just in term of
@@ -364,7 +364,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             stream_push_notify=False,
             stream_email_notify=False,
             stream_name="Scotland",
-            always_push_notify=True,
+            online_push_enabled=True,
             idle=False,
             already_notified={},
         )
@@ -404,7 +404,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             stream_push_notify=False,
             stream_email_notify=False,
             stream_name="Scotland",
-            always_push_notify=False,
+            online_push_enabled=False,
             idle=True,
             already_notified={},
         )
@@ -440,7 +440,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             stream_push_notify=False,
             stream_email_notify=False,
             stream_name="Scotland",
-            always_push_notify=False,
+            online_push_enabled=False,
             idle=True,
             already_notified={},
         )
@@ -501,7 +501,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             stream_push_notify=False,
             stream_email_notify=False,
             stream_name="Scotland",
-            always_push_notify=False,
+            online_push_enabled=False,
             idle=False,
             already_notified={},
         )

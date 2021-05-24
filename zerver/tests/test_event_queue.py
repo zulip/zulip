@@ -63,7 +63,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             stream_push_notify=False,
             stream_email_notify=False,
             stream_name=None,
-            always_push_notify=False,
+            online_push_enabled=False,
             idle=True,
             already_notified={},
         )
@@ -80,7 +80,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             stream_push_notify=False,
             stream_email_notify=True,
             stream_name=None,
-            always_push_notify=False,
+            online_push_enabled=False,
             idle=True,
             already_notified={},
         )
@@ -98,7 +98,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             stream_push_notify=False,
             stream_email_notify=False,
             stream_name=None,
-            always_push_notify=False,
+            online_push_enabled=False,
             idle=True,
             already_notified={
                 "push_notified": True,
@@ -117,7 +117,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             stream_push_notify=False,
             stream_email_notify=False,
             stream_name=None,
-            always_push_notify=False,
+            online_push_enabled=False,
             idle=True,
             already_notified={
                 "push_notified": False,
@@ -137,7 +137,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             stream_push_notify=False,
             stream_email_notify=False,
             stream_name=None,
-            always_push_notify=False,
+            online_push_enabled=False,
             idle=True,
             already_notified={},
         )
@@ -156,7 +156,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             stream_push_notify=False,
             stream_email_notify=False,
             stream_name=None,
-            always_push_notify=False,
+            online_push_enabled=False,
             idle=True,
             already_notified={},
         )
@@ -173,7 +173,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             stream_push_notify=True,
             stream_email_notify=False,
             stream_name="Denmark",
-            always_push_notify=False,
+            online_push_enabled=False,
             idle=True,
             already_notified={},
         )
@@ -190,7 +190,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             stream_push_notify=False,
             stream_email_notify=True,
             stream_name="Denmark",
-            always_push_notify=False,
+            online_push_enabled=False,
             idle=True,
             already_notified={},
         )
@@ -207,7 +207,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             stream_push_notify=False,
             stream_email_notify=True,
             stream_name=None,
-            always_push_notify=False,
+            online_push_enabled=False,
             idle=False,
             already_notified={},
         )
@@ -224,7 +224,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             stream_push_notify=False,
             stream_email_notify=False,
             stream_name=None,
-            always_push_notify=False,
+            online_push_enabled=False,
             idle=False,
             already_notified={},
         )
@@ -241,14 +241,14 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             stream_push_notify=False,
             stream_email_notify=False,
             stream_name=None,
-            always_push_notify=False,
+            online_push_enabled=False,
             idle=False,
             already_notified={},
         )
         self.assertTrue(email_notice is None)
         self.assertTrue(mobile_notice is None)
 
-        # Private message sends push but not email if not idle but always_push_notify
+        # Private message sends push but not email if not idle but online_push_enabled
         email_notice, mobile_notice = self.check_will_notify(
             user_profile.id,
             message_id,
@@ -258,14 +258,14 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             stream_push_notify=False,
             stream_email_notify=True,
             stream_name=None,
-            always_push_notify=True,
+            online_push_enabled=True,
             idle=False,
             already_notified={},
         )
         self.assertTrue(email_notice is None)
         self.assertTrue(mobile_notice is not None)
 
-        # Stream message sends push but not email if not idle but always_push_notify
+        # Stream message sends push but not email if not idle but online_push_enabled
         email_notice, mobile_notice = self.check_will_notify(
             user_profile.id,
             message_id,
@@ -275,7 +275,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             stream_push_notify=True,
             stream_email_notify=True,
             stream_name="Denmark",
-            always_push_notify=True,
+            online_push_enabled=True,
             idle=False,
             already_notified={},
         )
