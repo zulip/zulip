@@ -32,7 +32,7 @@ as follows:
   table's `flags` structure, which is in turn passed into
   `send_event` for each user receiving the message.
   * Data about user configuration relevant to the message, such as
-  `push_notify_user_ids` and `stream_notify_user_ids`, are included
+  `online_push_user_ids` and `stream_notify_user_ids`, are included
   alongside `flags` in the per-user data structure.
   * The `presence_idle_user_ids` set, containing the subset of
   recipient users who are mentioned, are PM recipients, have alert

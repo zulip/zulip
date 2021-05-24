@@ -1420,7 +1420,7 @@ def render_incoming_message(
 
 class RecipientInfoResult(TypedDict):
     active_user_ids: Set[int]
-    push_notify_user_ids: Set[int]
+    online_push_user_ids: Set[int]
     stream_email_user_ids: Set[int]
     stream_push_user_ids: Set[int]
     wildcard_mention_user_ids: Set[int]
@@ -1587,7 +1587,7 @@ def get_recipient_info(
         return row["is_bot"] and (row["bot_type"] in UserProfile.SERVICE_BOT_TYPES)
 
     active_user_ids = get_ids_for(lambda r: True)
-    push_notify_user_ids = get_ids_for(
+    online_push_user_ids = get_ids_for(
         lambda r: r["enable_online_push_notifications"],
     )
 
@@ -1618,7 +1618,7 @@ def get_recipient_info(
 
     info: RecipientInfoResult = dict(
         active_user_ids=active_user_ids,
-        push_notify_user_ids=push_notify_user_ids,
+        online_push_user_ids=online_push_user_ids,
         stream_push_user_ids=stream_push_user_ids,
         stream_email_user_ids=stream_email_user_ids,
         wildcard_mention_user_ids=wildcard_mention_user_ids,
@@ -1811,7 +1811,7 @@ def build_message_send_dict(
         mention_data=mention_data,
         message=message,
         active_user_ids=info["active_user_ids"],
-        push_notify_user_ids=info["push_notify_user_ids"],
+        online_push_user_ids=info["online_push_user_ids"],
         stream_push_user_ids=info["stream_push_user_ids"],
         stream_email_user_ids=info["stream_email_user_ids"],
         um_eligible_user_ids=info["um_eligible_user_ids"],
@@ -1961,7 +1961,7 @@ def do_send_messages(
             dict(
                 id=user_id,
                 flags=user_flags.get(user_id, []),
-                always_push_notify=(user_id in send_request.push_notify_user_ids),
+                always_push_notify=(user_id in send_request.online_push_user_ids),
                 stream_push_notify=(user_id in send_request.stream_push_user_ids),
                 stream_email_notify=(user_id in send_request.stream_email_user_ids),
                 wildcard_mention_notify=(user_id in send_request.wildcard_mention_user_ids),
@@ -5789,7 +5789,7 @@ def do_update_message(
             possible_wildcard_mention=mention_data.message_has_wildcards(),
         )
 
-        event["push_notify_user_ids"] = list(info["push_notify_user_ids"])
+        event["online_push_user_ids"] = list(info["online_push_user_ids"])
         event["stream_push_user_ids"] = list(info["stream_push_user_ids"])
         event["stream_email_user_ids"] = list(info["stream_email_user_ids"])
         event["prior_mention_user_ids"] = list(prior_mention_user_ids)

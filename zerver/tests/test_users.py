@@ -1520,7 +1520,7 @@ class RecipientInfoTest(ZulipTestCase):
 
         expected_info = dict(
             active_user_ids=all_user_ids,
-            push_notify_user_ids=set(),
+            online_push_user_ids=set(),
             stream_push_user_ids=set(),
             stream_email_user_ids=set(),
             wildcard_mention_user_ids=set(),
