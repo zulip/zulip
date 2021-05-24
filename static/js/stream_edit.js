@@ -419,7 +419,7 @@ function show_subscription_settings(sub) {
     });
 
     const opts = {
-        source: get_users_for_subscriber_typeahead,
+        user_source: get_users_for_subscriber_typeahead,
         stream: true,
         user_group: true,
         user: true,

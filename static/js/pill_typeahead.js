@@ -26,27 +26,43 @@ export function set_up(input, pills, opts) {
         blueslip.error("Unspecified possible item types");
         return;
     }
-    let source = opts.source;
-    if (!opts.source) {
-        source = () => user_pill.typeahead_source(pills);
-    }
     const include_streams = (query) => opts.stream && query.trim().startsWith("#");
     const include_user_groups = opts.user_group;
+    const include_users = opts.user;
+
+    let user_source;
+    if (opts.user_source) {
+        user_source = opts.user_source;
+    }
 
     input.typeahead({
         items: 5,
         fixed: true,
         dropup: true,
         source() {
+            let source = [];
             if (include_streams(this.query)) {
+                // If query starts with # we expect,
+                // only stream suggestions so we simply
+                // return stream source.
                 return stream_pill.typeahead_source(pills);
             }
 
             if (include_user_groups) {
-                return user_group_pill.typeahead_source(pills).concat(source());
+                source = source.concat(user_group_pill.typeahead_source(pills));
             }
 
-            return source();
+            if (include_users) {
+                if (user_source !== undefined) {
+                    // If user_source is specified in opts, it
+                    // is given priority. Otherwise we use
+                    // default user_pill.typeahead_source.
+                    source = source.concat(user_source());
+                } else {
+                    source = source.concat(user_pill.typeahead_source(pills));
+                }
+            }
+            return source;
         },
         highlighter(item) {
             if (include_streams(this.query)) {
