@@ -1147,7 +1147,110 @@ class Recipient(models.Model):
         return f"<Recipient: {display_recipient} ({self.type_id}, {self.type})>"
 
 
-class UserProfile(AbstractBaseUser, PermissionsMixin):
+class UserBaseSettings(models.Model):
+    """This abstract class is the container for all preferences/personal
+    settings for users that control the behavior of the application.
+
+    It was extracted from UserProfile to support the RealmUserDefault
+    model (i.e. allow individual realms to configure the default
+    values of these preferences for new users in their organization).
+
+    Changing the default value for a field declared here likely
+    requires a migration to update all RealmUserDefault rows that had
+    the old default value to have the new default value. Otherwise,
+    the default change will only affect new users joining Realms
+    created after the change.
+    """
+
+    # UI settings
+    enter_sends: Optional[bool] = models.BooleanField(null=True, default=False)
+
+    # display settings
+    left_side_userlist: bool = models.BooleanField(default=False)
+    default_language: str = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
+    # This setting controls which view is rendered first when Zulip loads.
+    # Values for it are URL suffix after `#`.
+    default_view: str = models.TextField(default="recent_topics")
+    dense_mode: bool = models.BooleanField(default=True)
+    fluid_layout_width: bool = models.BooleanField(default=False)
+    high_contrast_mode: bool = models.BooleanField(default=False)
+    translate_emoticons: bool = models.BooleanField(default=False)
+    twenty_four_hour_time: bool = models.BooleanField(default=False)
+    starred_message_counts: bool = models.BooleanField(default=True)
+    COLOR_SCHEME_AUTOMATIC = 1
+    COLOR_SCHEME_NIGHT = 2
+    COLOR_SCHEME_LIGHT = 3
+    COLOR_SCHEME_CHOICES = [COLOR_SCHEME_AUTOMATIC, COLOR_SCHEME_NIGHT, COLOR_SCHEME_LIGHT]
+    color_scheme: int = models.PositiveSmallIntegerField(default=COLOR_SCHEME_AUTOMATIC)
+
+    # UI setting controlling Zulip's behavior of demoting in the sort
+    # order and graying out streams with no recent traffic.  The
+    # default behavior, automatic, enables this behavior once a user
+    # is subscribed to 30+ streams in the web app.
+    DEMOTE_STREAMS_AUTOMATIC = 1
+    DEMOTE_STREAMS_ALWAYS = 2
+    DEMOTE_STREAMS_NEVER = 3
+    DEMOTE_STREAMS_CHOICES = [
+        DEMOTE_STREAMS_AUTOMATIC,
+        DEMOTE_STREAMS_ALWAYS,
+        DEMOTE_STREAMS_NEVER,
+    ]
+    demote_inactive_streams: int = models.PositiveSmallIntegerField(
+        default=DEMOTE_STREAMS_AUTOMATIC
+    )
+
+    # Emojisets
+    GOOGLE_EMOJISET = "google"
+    GOOGLE_BLOB_EMOJISET = "google-blob"
+    TEXT_EMOJISET = "text"
+    TWITTER_EMOJISET = "twitter"
+    EMOJISET_CHOICES = (
+        (GOOGLE_EMOJISET, "Google modern"),
+        (GOOGLE_BLOB_EMOJISET, "Google classic"),
+        (TWITTER_EMOJISET, "Twitter"),
+        (TEXT_EMOJISET, "Plain text"),
+    )
+    emojiset: str = models.CharField(
+        default=GOOGLE_BLOB_EMOJISET, choices=EMOJISET_CHOICES, max_length=20
+    )
+
+    ### Notifications settings. ###
+
+    # Stream notifications.
+    enable_stream_desktop_notifications: bool = models.BooleanField(default=False)
+    enable_stream_email_notifications: bool = models.BooleanField(default=False)
+    enable_stream_push_notifications: bool = models.BooleanField(default=False)
+    enable_stream_audible_notifications: bool = models.BooleanField(default=False)
+    notification_sound: str = models.CharField(max_length=20, default="zulip")
+    wildcard_mentions_notify: bool = models.BooleanField(default=True)
+
+    # PM + @-mention notifications.
+    enable_desktop_notifications: bool = models.BooleanField(default=True)
+    pm_content_in_desktop_notifications: bool = models.BooleanField(default=True)
+    enable_sounds: bool = models.BooleanField(default=True)
+    enable_offline_email_notifications: bool = models.BooleanField(default=True)
+    message_content_in_email_notifications: bool = models.BooleanField(default=True)
+    enable_offline_push_notifications: bool = models.BooleanField(default=True)
+    enable_online_push_notifications: bool = models.BooleanField(default=True)
+
+    DESKTOP_ICON_COUNT_DISPLAY_MESSAGES = 1
+    DESKTOP_ICON_COUNT_DISPLAY_NOTIFIABLE = 2
+    DESKTOP_ICON_COUNT_DISPLAY_NONE = 3
+    desktop_icon_count_display: int = models.PositiveSmallIntegerField(
+        default=DESKTOP_ICON_COUNT_DISPLAY_MESSAGES
+    )
+
+    enable_digest_emails: bool = models.BooleanField(default=True)
+    enable_login_emails: bool = models.BooleanField(default=True)
+    enable_marketing_emails: bool = models.BooleanField(default=True)
+    realm_name_in_notifications: bool = models.BooleanField(default=False)
+    presence_enabled: bool = models.BooleanField(default=True)
+
+    class Meta:
+        abstract = True
+
+
+class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     USERNAME_FIELD = "email"
     MAX_NAME_LENGTH = 100
     MIN_NAME_LENGTH = 2
@@ -1274,38 +1377,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # Users with this flag set can create other users via API.
     can_create_users: bool = models.BooleanField(default=False, db_index=True)
 
-    ### Notifications settings. ###
-
-    # Stream notifications.
-    enable_stream_desktop_notifications: bool = models.BooleanField(default=False)
-    enable_stream_email_notifications: bool = models.BooleanField(default=False)
-    enable_stream_push_notifications: bool = models.BooleanField(default=False)
-    enable_stream_audible_notifications: bool = models.BooleanField(default=False)
-    notification_sound: str = models.CharField(max_length=20, default="zulip")
-    wildcard_mentions_notify: bool = models.BooleanField(default=True)
-
-    # PM + @-mention notifications.
-    enable_desktop_notifications: bool = models.BooleanField(default=True)
-    pm_content_in_desktop_notifications: bool = models.BooleanField(default=True)
-    enable_sounds: bool = models.BooleanField(default=True)
-    enable_offline_email_notifications: bool = models.BooleanField(default=True)
-    message_content_in_email_notifications: bool = models.BooleanField(default=True)
-    enable_offline_push_notifications: bool = models.BooleanField(default=True)
-    enable_online_push_notifications: bool = models.BooleanField(default=True)
-
-    DESKTOP_ICON_COUNT_DISPLAY_MESSAGES = 1
-    DESKTOP_ICON_COUNT_DISPLAY_NOTIFIABLE = 2
-    DESKTOP_ICON_COUNT_DISPLAY_NONE = 3
-    desktop_icon_count_display: int = models.PositiveSmallIntegerField(
-        default=DESKTOP_ICON_COUNT_DISPLAY_MESSAGES
-    )
-
-    enable_digest_emails: bool = models.BooleanField(default=True)
-    enable_login_emails: bool = models.BooleanField(default=True)
-    enable_marketing_emails: bool = models.BooleanField(default=True)
-    realm_name_in_notifications: bool = models.BooleanField(default=False)
-    presence_enabled: bool = models.BooleanField(default=True)
-
     # Used for rate-limiting certain automated messages generated by bots
     last_reminder: Optional[datetime.datetime] = models.DateTimeField(default=None, null=True)
 
@@ -1334,43 +1405,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     )
     default_all_public_streams: bool = models.BooleanField(default=False)
 
-    # UI vars
-    enter_sends: Optional[bool] = models.BooleanField(null=True, default=False)
-    left_side_userlist: bool = models.BooleanField(default=False)
-
-    # display settings
-    default_language: str = models.CharField(default="en", max_length=MAX_LANGUAGE_ID_LENGTH)
-    # This setting controls which view is rendered first when Zulip loads.
-    # Values for it are URL suffix after `#`.
-    default_view: str = models.TextField(default="recent_topics")
-    dense_mode: bool = models.BooleanField(default=True)
-    fluid_layout_width: bool = models.BooleanField(default=False)
-    high_contrast_mode: bool = models.BooleanField(default=False)
-    translate_emoticons: bool = models.BooleanField(default=False)
-    twenty_four_hour_time: bool = models.BooleanField(default=False)
-    starred_message_counts: bool = models.BooleanField(default=True)
-    COLOR_SCHEME_AUTOMATIC = 1
-    COLOR_SCHEME_NIGHT = 2
-    COLOR_SCHEME_LIGHT = 3
-    COLOR_SCHEME_CHOICES = [COLOR_SCHEME_AUTOMATIC, COLOR_SCHEME_NIGHT, COLOR_SCHEME_LIGHT]
-    color_scheme: int = models.PositiveSmallIntegerField(default=COLOR_SCHEME_AUTOMATIC)
-
-    # UI setting controlling Zulip's behavior of demoting in the sort
-    # order and graying out streams with no recent traffic.  The
-    # default behavior, automatic, enables this behavior once a user
-    # is subscribed to 30+ streams in the web app.
-    DEMOTE_STREAMS_AUTOMATIC = 1
-    DEMOTE_STREAMS_ALWAYS = 2
-    DEMOTE_STREAMS_NEVER = 3
-    DEMOTE_STREAMS_CHOICES = [
-        DEMOTE_STREAMS_AUTOMATIC,
-        DEMOTE_STREAMS_ALWAYS,
-        DEMOTE_STREAMS_NEVER,
-    ]
-    demote_inactive_streams: int = models.PositiveSmallIntegerField(
-        default=DEMOTE_STREAMS_AUTOMATIC
-    )
-
     # A timezone name from the `tzdata` database, as found in pytz.all_timezones.
     #
     # The longest existing name is 32 characters long, so max_length=40 seems
@@ -1380,21 +1414,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # for text-based fields. For more information, see
     # https://docs.djangoproject.com/en/1.10/ref/models/fields/#django.db.models.Field.null.
     timezone: str = models.CharField(max_length=40, default="")
-
-    # Emojisets
-    GOOGLE_EMOJISET = "google"
-    GOOGLE_BLOB_EMOJISET = "google-blob"
-    TEXT_EMOJISET = "text"
-    TWITTER_EMOJISET = "twitter"
-    EMOJISET_CHOICES = (
-        (GOOGLE_EMOJISET, "Google modern"),
-        (GOOGLE_BLOB_EMOJISET, "Google classic"),
-        (TWITTER_EMOJISET, "Twitter"),
-        (TEXT_EMOJISET, "Plain text"),
-    )
-    emojiset: str = models.CharField(
-        default=GOOGLE_BLOB_EMOJISET, choices=EMOJISET_CHOICES, max_length=20
-    )
 
     AVATAR_FROM_GRAVATAR = "G"
     AVATAR_FROM_USER = "U"
