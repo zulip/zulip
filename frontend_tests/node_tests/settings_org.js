@@ -446,149 +446,30 @@ function test_sync_realm_settings() {
         settings_org.sync_realm_settings("invalid_settings_property");
     }
 
-    {
-        /*
-            Test that when create stream policy is set to "full members" that the dropdown
-            is set to the correct value.
-        */
-        const property_elem = $("#id_realm_create_stream_policy");
+    function test_common_policy(property_name) {
+        const property_elem = $(`#id_realm_${CSS.escape(property_name)}`);
         property_elem.length = 1;
-        property_elem.attr("id", "id_realm_create_stream_policy");
+        property_elem.attr("id", `id_realm_${CSS.escape(property_name)}`);
 
-        page_params.realm_create_stream_policy = 3;
+        /* Each policy is initialized to 'by_members' and then all the values are tested
+        in the following order - by_admins_only, by_moderators_only, by_full_members,
+        by_members. */
 
-        settings_org.sync_realm_settings("create_stream_policy");
-        assert.equal(
-            $("#id_realm_create_stream_policy").val(),
-            settings_config.common_policy_values.by_full_members.code,
-        );
+        page_params[`realm_${property_name}`] =
+            settings_config.common_policy_values.by_members.code;
+        property_elem.val(settings_config.common_policy_values.by_members.code);
+
+        for (const policy_value of Array.from(
+            Object.values(settings_config.common_policy_values),
+        )) {
+            page_params[`realm_${property_name}`] = policy_value.code;
+            settings_org.sync_realm_settings(property_name);
+            assert.equal(property_elem.val(), policy_value.code);
+        }
     }
 
-    {
-        /*
-            Test that when create stream policy is set to "by members" that the dropdown
-            is set to the correct value.
-        */
-        const property_elem = $("#id_realm_create_stream_policy");
-        property_elem.length = 1;
-        property_elem.attr("id", "id_realm_create_stream_policy");
-
-        page_params.realm_create_stream_policy = 1;
-
-        settings_org.sync_realm_settings("create_stream_policy");
-        assert.equal(
-            $("#id_realm_create_stream_policy").val(),
-            settings_config.common_policy_values.by_members.code,
-        );
-    }
-
-    {
-        /*
-            Test that when create stream policy is set to "by admins only" that the dropdown
-            is set to the correct value.
-        */
-        const property_elem = $("#id_realm_create_stream_policy");
-        property_elem.length = 1;
-        property_elem.attr("id", "id_realm_create_stream_policy");
-
-        page_params.realm_create_stream_policy = 2;
-
-        settings_org.sync_realm_settings("create_stream_policy");
-        assert.equal(
-            $("#id_realm_create_stream_policy").val(),
-            settings_config.common_policy_values.by_admins_only.code,
-        );
-    }
-
-    {
-        /*
-            Test that when create stream policy is set to "by moderators only" that the dropdown
-            is set to the correct value.
-        */
-        const property_elem = $("#id_realm_create_stream_policy");
-        property_elem.length = 1;
-        property_elem.attr("id", "id_realm_create_stream_policy");
-
-        page_params.realm_create_stream_policy = 4;
-
-        settings_org.sync_realm_settings("create_stream_policy");
-        assert.equal(
-            $("#id_realm_create_stream_policy").val(),
-            settings_config.common_policy_values.by_moderators_only.code,
-        );
-    }
-
-    {
-        /*
-            Test that when invite to stream policy is set to "full members" that the dropdown
-            is set to the correct value.
-        */
-        const property_elem = $("#id_realm_invite_to_stream_policy");
-        property_elem.length = 1;
-        property_elem.attr("id", "id_realm_invite_to_stream_policy");
-
-        page_params.realm_invite_to_stream_policy = 3;
-
-        settings_org.sync_realm_settings("invite_to_stream_policy");
-        assert.equal(
-            $("#id_realm_invite_to_stream_policy").val(),
-            settings_config.common_policy_values.by_full_members.code,
-        );
-    }
-
-    {
-        /*
-            Test that when invite to stream policy is set to "by members" that the dropdown
-            is set to the correct value.
-        */
-        const property_elem = $("#id_realm_invite_to_stream_policy");
-        property_elem.length = 1;
-        property_elem.attr("id", "id_realm_invite_to_stream_policy");
-
-        page_params.realm_invite_to_stream_policy = 1;
-
-        settings_org.sync_realm_settings("invite_to_stream_policy");
-        assert.equal(
-            $("#id_realm_invite_to_stream_policy").val(),
-            settings_config.common_policy_values.by_members.code,
-        );
-    }
-
-    {
-        /*
-            Test that when invite to stream policy is set to "by admins only" that the dropdown
-            is set to the correct value.
-        */
-        const property_elem = $("#id_realm_invite_to_stream_policy");
-        property_elem.length = 1;
-        property_elem.attr("id", "id_realm_invite_to_stream_policy");
-
-        page_params.realm_invite_to_stream_policy = 2;
-
-        settings_org.sync_realm_settings("invite_to_stream_policy");
-        assert.equal(
-            $("#id_realm_invite_to_stream_policy").val(),
-            settings_config.common_policy_values.by_admins_only.code,
-        );
-    }
-
-    {
-        /*
-            Test that when invite to stream policy is set to "by moderators only" that the dropdown
-            is set to the correct value.
-        */
-        const property_elem = $("#id_realm_invite_to_stream_policy");
-        property_elem.length = 1;
-        property_elem.attr("id", "id_realm_invite_to_stream_policy");
-
-        page_params.realm_invite_to_stream_policy = 4;
-
-        settings_org.sync_realm_settings("invite_to_stream_policy");
-        assert.equal(
-            $("#id_realm_invite_to_stream_policy").val(),
-            settings_config.common_policy_values.by_moderators_only.code,
-        );
-    }
+    test_common_policy("create_stream_policy");
+    test_common_policy("invite_to_stream_policy");
 
     {
         /* Test message content edit limit minutes sync */
