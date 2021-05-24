@@ -32,7 +32,7 @@ invitation, but require them to authenticate via LDAP.
 
 1. Find the section **Joining the organization**.
 
-1. Set **Are invitations required for joining the organization** to **No**.
+1. Toggle **Invitations are required for joining this organization**.
 
 1. Set **Restrict email domains of new users?** to
    **Restrict to a list of domains**.
@@ -50,7 +50,7 @@ invitation, but require them to authenticate via LDAP.
 
 1. Find the section **Joining the organization**.
 
-1. Set **Are invitations required for joining the organization** to **No**.
+1. Toggle **Invitations are required for joining this organization**.
 
 1. Set **Restrict email domains of new users?** to either
    **Don't allow disposable email addresses** (recommended) or **No**.
@@ -135,7 +135,7 @@ users to other sets of roles:
 {settings_tab|organization-permissions}
 
 1. Under **Joining the organization**, configure
-   **Are invitations required for joining the organization?**.
+   **Who can invite users to this organization**.
 
 1. Click **Save changes**.
 
