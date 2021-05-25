@@ -8571,12 +8571,15 @@ paths:
 
                           * "D" means the logo is the default Zulip logo.
                           * "U" means uploaded by an organization administrator.
-                      max_logo_file_size:
+                      max_logo_file_size_mib:
                         type: integer
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
                           The maximum file size allowed for the uploaded organization logos.
+
+                          **Changes**: New in Zulip 5.0 (feature level 72).  Previously,
+                          this was called `max_logo_file_size`.
                       realm_bot_domain:
                         type: string
                         description: |
