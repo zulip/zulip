@@ -33,15 +33,6 @@ Copyright: 2011, Krzysztof Wilczynski
  2011, Puppet Labs Inc
 License: Apache-2.0
 
-File: puppet/zulip_ops/files/mediawiki/Auth_remoteuser.php
-Copyright: 2006 Otheus Shelling
- 2007 Rusty Burchfield
- 2009 James Kinsman
- 2010 Daniel Thomas
- 2010 Ian Ward Comfort
-License: GPL-2.0
-Comment: Not linked.
-
 Files: puppet/zulip/files/nagios_plugins/zulip_base/check_debian_packages
 Copyright: 2005 Francesc Guasch
 License: GPL-2.0
