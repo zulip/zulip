@@ -829,7 +829,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 image_info = {}
             image_info["is_image"] = True
             parsed_url_list = list(parsed_url)
-            parsed_url_list[4] = "dl=1"  # Replaces query
+            parsed_url_list[4] = "raw=1"  # Replaces query
             image_info["image"] = urllib.parse.urlunparse(parsed_url_list)
 
             return image_info
