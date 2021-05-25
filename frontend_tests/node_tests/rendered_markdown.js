@@ -126,6 +126,18 @@ run_test("user-mention", () => {
     assert.equal($cordelia.text(), `@${cordelia.full_name}`);
 });
 
+run_test("user-mention (wildcard)", () => {
+    // Setup
+    const $content = get_content_element();
+    const $mention = $.create("mention");
+    $mention.attr("data-user-id", "*");
+    $content.set_find_results(".user-mention", $array([$mention]));
+
+    assert(!$mention.hasClass("user-mention-me"));
+    rm.update_elements($content);
+    assert($mention.hasClass("user-mention-me"));
+});
+
 run_test("user-group-mention", () => {
     // Setup
     const $content = get_content_element();
