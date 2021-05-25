@@ -37,9 +37,9 @@ const iago = {
 };
 
 const cordelia = {
-    email: "cordelia@zulup.com",
+    email: "cordelia@zulip.com",
     user_id: 31,
-    full_name: "Cordelia",
+    full_name: "Cordelia Lear",
 };
 people.init();
 people.add_active_user(iago);
@@ -136,6 +136,19 @@ run_test("user-mention (wildcard)", () => {
     assert(!$mention.hasClass("user-mention-me"));
     rm.update_elements($content);
     assert($mention.hasClass("user-mention-me"));
+});
+
+run_test("user-mention (email)", () => {
+    // Setup
+    const $content = get_content_element();
+    const $mention = $.create("mention");
+    $mention.attr("data-user-email", cordelia.email);
+    $mention.set_find_results(".highlight", false);
+    $content.set_find_results(".user-mention", $array([$mention]));
+
+    rm.update_elements($content);
+    assert(!$mention.hasClass("user-mention-me"));
+    assert.equal($mention.text(), "@Cordelia Lear");
 });
 
 run_test("user-group-mention", () => {
