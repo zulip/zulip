@@ -6,14 +6,29 @@
 # message ID to the `fts_update_log` table.  In the background, this
 # program processes `fts_update_log`, updating the PostgreSQL full-text
 # search column search_tsvector in the main zerver_message.
+#
+# There are three cases this has to cover:
+#
+# 1. Running in development, with a venv but no
+#    /home/zulip/deployments/current nor /etc/zulip/zulip.conf
+#
+# 2. Running in production, with postgresql on the same machine as the
+#    frontend, with a venv and both /home/zulip/deployments/current
+#    and /etc/zulip/zulip.conf
+#
+# 3. Running in production, on a postgresql machine which is not the
+#    frontend, with a /etc/zulip/zulip.conf but no venv nor
+#    /home/zulip/deployments/current
+#
+# Because of case (3), we cannot rely on functions from outside this
+# file (e.g. provided by scripts.lib.zulip_tools).  For case (1),
+# however, we wish to import `zerver.settings` since we have no
+# /etc/zulip/zulip.conf to read, and that case _requires_ loading the
+# venv.
+
 import sys
 
-# We want to use a virtualenv in production, which will be in /home/zulip/deployments/current.
-# So we should add that path to sys.path and then call setup_path.
-# But this file is also used in development, where the above path will not exist.
-# So `from scripts.lib.setup_path import setup_path` will raise an ImportError.
-# In development, we just want to skip this step since we know that virtualenv will already be in use.
-# So catch the ImportError and do nothing.
+# Setup for case (2) to enter the venv in /srv:
 sys.path.append("/home/zulip/deployments/current")
 try:
     from scripts.lib.setup_path import setup_path
@@ -27,7 +42,6 @@ import configparser
 import logging
 import os
 import select
-import sys
 import time
 
 import psycopg2
@@ -82,11 +96,10 @@ def am_master(cursor: psycopg2.extensions.cursor) -> bool:
 
 pg_args = {}
 
-# Path to the root of the Zulip codebase in production
-sys.path.insert(0, "/home/zulip/deployments/current")
-# Path to the root of the Zulip codebase in development
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../..")))
 try:
+    # Case (1); we insert the path to the development root.
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../..")))
+    # Case (2) already inserted its path into os.path above.
     os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
     from django.conf import settings
 
@@ -96,8 +109,8 @@ try:
         pg_args["port"] = settings.REMOTE_POSTGRES_PORT
     USING_PGROONGA = settings.USING_PGROONGA
 except ImportError:
-    # process_fts_updates also supports running locally on a remote
-    # PostgreSQL server; in that case, one can just connect to localhost
+    # Case (3); we know that the PostgreSQL server is on this
+    # host.
     USING_PGROONGA = False
 
 # Since we don't want a hard dependency on being able to access the
