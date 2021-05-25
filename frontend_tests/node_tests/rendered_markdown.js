@@ -148,6 +148,15 @@ run_test("user-mention (email)", () => {
     assert.equal($mention.text(), "@Cordelia Lear");
 });
 
+run_test("user-mention (missing)", () => {
+    const $content = get_content_element();
+    const $mention = $.create("mention");
+    $content.set_find_results(".user-mention", $array([$mention]));
+
+    rm.update_elements($content);
+    assert(!$mention.hasClass("user-mention-me"));
+});
+
 run_test("user-group-mention", () => {
     // Setup
     const $content = get_content_element();
@@ -176,6 +185,16 @@ run_test("user-group-mention (error)", () => {
     const $content = get_content_element();
     const $group = $.create(".user-group-mention(bogus)");
     $group.attr("data-user-group-id", "not-even-a-number");
+    $content.set_find_results(".user-group-mention", $array([$group]));
+
+    rm.update_elements($content);
+
+    assert(!$group.hasClass("user-mention-me"));
+});
+
+run_test("user-group-mention (missing)", () => {
+    const $content = get_content_element();
+    const $group = $.create("whatever");
     $content.set_find_results(".user-group-mention", $array([$group]));
 
     rm.update_elements($content);
