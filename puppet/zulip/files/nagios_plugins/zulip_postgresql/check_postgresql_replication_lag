@@ -9,6 +9,10 @@ import re
 import subprocess
 from typing import Dict, List
 
+from scripts.lib.zulip_tools import get_config, get_config_file
+
+config_file = get_config_file()
+
 states = {
     "OK": 0,
     "WARNING": 1,
@@ -33,7 +37,10 @@ def run_sql_query(query: str) -> List[List[str]]:
         "-z",  # Separate columns with nulls
         "-v",
         "ON_ERROR_STOP=1",
-        "zulip",
+        "-d",
+        get_config(config_file, "postgresql", "database_name", "zulip"),
+        "-u",
+        get_config(config_file, "postgresql", "database_user", "zulip"),
         "-c",
         f"SELECT {query}",
     ]
