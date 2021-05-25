@@ -5053,13 +5053,10 @@ def do_update_user_activity_interval(
     # often, and can be corrected for in post-processing
     try:
         last = UserActivityInterval.objects.filter(user_profile=user_profile).order_by("-end")[0]
-        # There are two ways our intervals could overlap:
-        # (1) The start of the new interval could be inside the old interval
-        # (2) The end of the new interval could be inside the old interval
-        # In either case, we just extend the old interval to include the new interval.
-        if (log_time <= last.end and log_time >= last.start) or (
-            effective_end <= last.end and effective_end >= last.start
-        ):
+        # Two intervals overlap iff each interval ends after the other
+        # begins.  In this case, we just extend the old interval to
+        # include the new interval.
+        if log_time <= last.end and effective_end >= last.start:
             last.end = max(last.end, effective_end)
             last.start = min(last.start, log_time)
             last.save(update_fields=["start", "end"])
