@@ -174,6 +174,15 @@ run_test("stream-links", () => {
     assert.equal($stream_topic.text(), `#${stream.name} > topic name > still the topic name`);
 });
 
+run_test("timestamp without time", () => {
+    const $content = get_content_element();
+    const $timestamp = $.create("timestampe without actual time");
+    $content.set_find_results("time", $array([$timestamp]));
+
+    rm.update_elements($content);
+    assert.equal($timestamp.text(), "never-been-set");
+});
+
 run_test("timestamp", () => {
     // Setup
     const $content = get_content_element();
