@@ -2,13 +2,24 @@
 
 const {strict: assert} = require("assert");
 
+const {stub_templates} = require("../zjsunit/handlebars");
 const {mock_cjs, mock_esm, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const blueslip = require("../zjsunit/zblueslip");
 const $ = require("../zjsunit/zjquery");
 const {page_params} = require("../zjsunit/zpage_params");
 
+let clipboard_args;
+class Clipboard {
+    constructor(...args) {
+        clipboard_args = args;
+    }
+}
+
+mock_cjs("clipboard", Clipboard);
 mock_cjs("jquery", $);
+
+const realm_playground = mock_esm("../../static/js/realm_playground");
 mock_esm("../../static/js/rtl", {
     get_direction: () => "ltr",
 });
@@ -274,4 +285,105 @@ run_test("spoiler-header-empty-fill", () => {
     $header.html("");
     rm.update_elements($content);
     assert.equal(toggle_button_html + "<p>translated HTML: Spoiler</p>", $header.html());
+});
+
+function assert_clipboard_setup() {
+    assert.equal(clipboard_args[0], "copy-code-stub");
+    const text = clipboard_args[1].text({
+        to_$: () => ({
+            siblings: (arg) => {
+                assert.equal(arg, "code");
+                return {
+                    text: () => "text",
+                };
+            },
+        }),
+    });
+    assert.equal(text, "text");
+}
+
+function test_code_playground() {
+    const $content = get_content_element();
+    const $hilite = $.create("div.codehilite");
+    const $pre = $.create("hilite-pre");
+    $content.set_find_results("div.codehilite", $array([$hilite]));
+    $hilite.set_find_results("pre", $pre);
+
+    $hilite.data("code-language", "javascript");
+
+    const $copy_code_button = $.create("copy_code_button", {children: ["copy-code-stub"]});
+    const $view_code_in_playground = $.create("view_code_in_playground");
+
+    const prepends = [];
+    $pre.prepend = (arg) => {
+        prepends.push(arg);
+    };
+
+    stub_templates((template_name, data) => {
+        switch (template_name) {
+            case "copy_code_button":
+                assert.equal(data, undefined);
+                return {to_$: () => $copy_code_button};
+            case "view_code_in_playground":
+                assert.equal(data, undefined);
+                return {to_$: () => $view_code_in_playground};
+            default:
+                throw new Error(`unexpected template_name ${template_name}`);
+        }
+    });
+
+    rm.update_elements($content);
+
+    return {
+        prepends,
+        copy_code: $copy_code_button,
+        view_code: $view_code_in_playground,
+    };
+}
+
+run_test("code playground none", (override) => {
+    override(realm_playground, "get_playground_info_for_languages", (language) => {
+        assert.equal(language, "javascript");
+        return undefined;
+    });
+
+    const {prepends, copy_code, view_code} = test_code_playground();
+    assert.deepEqual(prepends, [copy_code]);
+    assert_clipboard_setup();
+
+    assert.equal(view_code.attr("data-tippy-content"), undefined);
+    assert.equal(view_code.attr("aria-label"), undefined);
+});
+
+run_test("code playground single", (override) => {
+    override(realm_playground, "get_playground_info_for_languages", (language) => {
+        assert.equal(language, "javascript");
+        return [{name: "Some Javascript Playground"}];
+    });
+
+    const {prepends, copy_code, view_code} = test_code_playground();
+    assert.deepEqual(prepends, [view_code, copy_code]);
+    assert_clipboard_setup();
+
+    assert.equal(
+        view_code.attr("data-tippy-content"),
+        "translated: View in Some Javascript Playground",
+    );
+    assert.equal(view_code.attr("aria-label"), "translated: View in Some Javascript Playground");
+    assert.equal(view_code.attr("aria-haspopup"), undefined);
+});
+
+run_test("code playground multiple", (override) => {
+    override(realm_playground, "get_playground_info_for_languages", (language) => {
+        assert.equal(language, "javascript");
+        return ["whatever", "whatever"];
+    });
+
+    const {prepends, copy_code, view_code} = test_code_playground();
+    assert.deepEqual(prepends, [view_code, copy_code]);
+    assert_clipboard_setup();
+
+    assert.equal(view_code.attr("data-tippy-content"), "translated: View in playground");
+    assert.equal(view_code.attr("aria-label"), "translated: View in playground");
+    assert.equal(view_code.attr("aria-haspopup"), "true");
 });
