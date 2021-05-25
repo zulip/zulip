@@ -150,6 +150,17 @@ run_test("user-group-mention", () => {
     assert.equal($group_other.text(), `@${group_other.name}`);
 });
 
+run_test("user-group-mention (error)", () => {
+    const $content = get_content_element();
+    const $group = $.create(".user-group-mention(bogus)");
+    $group.attr("data-user-group-id", "not-even-a-number");
+    $content.set_find_results(".user-group-mention", $array([$group]));
+
+    rm.update_elements($content);
+
+    assert(!$group.hasClass("user-mention-me"));
+});
+
 run_test("stream-links", () => {
     // Setup
     const $content = get_content_element();
