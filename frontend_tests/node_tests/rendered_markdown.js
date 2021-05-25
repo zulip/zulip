@@ -77,7 +77,7 @@ const $array = (array) => {
 };
 
 const get_content_element = () => {
-    const $content = $.create(".rendered_markdown");
+    const $content = $.create("content-stub");
     $content.set_find_results(".user-mention", $array([]));
     $content.set_find_results(".user-group-mention", $array([]));
     $content.set_find_results("a.stream", $array([]));
@@ -91,7 +91,7 @@ const get_content_element = () => {
 };
 
 run_test("misc_helpers", () => {
-    const elem = $.create(".user-mention");
+    const elem = $.create("user-mention");
     rm.set_name_in_mention_element(elem, "Aaron");
     assert.equal(elem.text(), "@Aaron");
     elem.addClass("silent");
@@ -102,10 +102,10 @@ run_test("misc_helpers", () => {
 run_test("user-mention", () => {
     // Setup
     const $content = get_content_element();
-    const $iago = $.create(".user-mention(iago)");
+    const $iago = $.create("user-mention(iago)");
     $iago.set_find_results(".highlight", false);
     $iago.attr("data-user-id", iago.user_id);
-    const $cordelia = $.create(".user-mention(cordelia)");
+    const $cordelia = $.create("user-mention(cordelia)");
     $cordelia.set_find_results(".highlight", false);
     $cordelia.attr("data-user-id", cordelia.user_id);
     $content.set_find_results(".user-mention", $array([$iago, $cordelia]));
@@ -160,10 +160,10 @@ run_test("user-mention (missing)", () => {
 run_test("user-group-mention", () => {
     // Setup
     const $content = get_content_element();
-    const $group_me = $.create(".user-group-mention(me)");
+    const $group_me = $.create("user-group-mention(me)");
     $group_me.set_find_results(".highlight", false);
     $group_me.attr("data-user-group-id", group_me.id);
-    const $group_other = $.create(".user-group-mention(other)");
+    const $group_other = $.create("user-group-mention(other)");
     $group_other.set_find_results(".highlight", false);
     $group_other.attr("data-user-group-id", group_other.id);
     $content.set_find_results(".user-group-mention", $array([$group_me, $group_other]));
@@ -183,7 +183,7 @@ run_test("user-group-mention", () => {
 
 run_test("user-group-mention (error)", () => {
     const $content = get_content_element();
-    const $group = $.create(".user-group-mention(bogus)");
+    const $group = $.create("user-group-mention(bogus)");
     $group.attr("data-user-group-id", "not-even-a-number");
     $content.set_find_results(".user-group-mention", $array([$group]));
 
@@ -300,7 +300,7 @@ run_test("timestamp-error", () => {
 run_test("emoji", () => {
     // Setup
     const $content = get_content_element();
-    const $emoji = $.create(".emoji");
+    const $emoji = $.create("emoji-stub");
     $emoji.attr("title", "tada");
     let called = false;
     $emoji.replaceWith = (f) => {
