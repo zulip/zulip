@@ -147,7 +147,7 @@ _properties = {
     Confirmation.INVITATION: ConfirmationType(
         "check_prereg_key_and_redirect", validity_in_days=settings.INVITATION_LINK_VALIDITY_DAYS
     ),
-    Confirmation.EMAIL_CHANGE: ConfirmationType("confirm_email_change"),
+    Confirmation.EMAIL_CHANGE: ConfirmationType("start_email_change"),
     Confirmation.UNSUBSCRIBE: ConfirmationType(
         "unsubscribe",
         validity_in_days=1000000,  # should never expire

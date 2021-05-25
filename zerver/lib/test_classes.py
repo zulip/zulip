@@ -1,4 +1,5 @@
 import base64
+import datetime
 import os
 import re
 import shutil
@@ -43,12 +44,14 @@ from django.utils.timezone import now as timezone_now
 from fakeldap import MockLDAP
 from two_factor.models import PhoneDevice
 
+from confirmation.models import Confirmation, get_object_from_key
 from zerver.decorator import do_two_factor_login
 from zerver.lib.actions import (
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
     check_send_message,
     check_send_stream_message,
+    create_email_change_confirmation_link,
     do_set_realm_property,
     gather_subscriptions,
 )
@@ -1464,3 +1467,203 @@ class MigrationsTestCase(ZulipTestCase):  # nocoverage
 
     def setUpBeforeMigration(self, apps: StateApps) -> None:
         pass  # nocoverage
+
+
+class EmailChangeTestMixin(ZulipTestCase):
+    """
+    Contains most of the email change tests and is subclassed in
+    test classes testing different auth flows.
+    """
+
+    __unittest_skip__ = True
+
+    def do_email_change(self, email: str, action_key: str) -> HttpResponse:
+        """
+        Implements the only changing part of different tests,
+        authentication flow, in subclasses.
+        """
+        raise NotImplementedError
+
+    def create_email_change_confirmation_key(
+        self,
+        user_profile: UserProfile,
+        new_email: str,
+        date_sent: Optional[datetime.datetime] = None,
+    ) -> str:
+        confirmation_link = create_email_change_confirmation_link(user_profile, new_email)
+
+        key = confirmation_link.split("/")[-1]
+
+        if date_sent is not None:
+            confirmation_object = Confirmation.objects.get(confirmation_key=key)
+            confirmation_object.date_sent = date_sent
+            confirmation_object.save()
+
+        return key
+
+    def verify_user_email_changed(
+        self, action_key: str, realm: Realm, email_address_visibility_public: bool = False
+    ) -> None:
+        email_change_object = get_object_from_key(action_key, Confirmation.EMAIL_CHANGE)
+        self.assertEqual(email_change_object.status, 1)
+
+        new_email = email_change_object.new_email
+        old_email = email_change_object.old_email
+
+        user_profile = get_user_by_delivery_email(new_email, realm)
+        self.assertTrue(bool(user_profile))
+
+        if email_address_visibility_public:
+            self.assertEqual(user_profile.email, new_email)
+        else:
+            self.assertEqual(user_profile.email, f"user{user_profile.id}@zulip.testserver")
+
+        with self.assertRaises(UserProfile.DoesNotExist):
+            get_user_by_delivery_email(old_email, user_profile.realm)
+
+    def test_email_change_success(self) -> None:
+        user_profile = self.example_user("hamlet")
+        new_email = "hamlet-new@zulip.com"
+        action_key = self.create_email_change_confirmation_key(user_profile, new_email)
+
+        result = self.do_email_change(user_profile.delivery_email, action_key)
+        self.assert_in_success_response(
+            ["This confirms that the email address for your Zulip"], result
+        )
+        self.verify_user_email_changed(action_key, user_profile.realm)
+
+    def test_unauthorized_email_change_from_confirmation_link(self) -> None:
+        user_profile = self.example_user("hamlet")
+        new_email = "hamlet-new@zulip.com"
+        action_key = self.create_email_change_confirmation_key(user_profile, new_email)
+
+        do_set_realm_property(user_profile.realm, "email_changes_disabled", True, acting_user=None)
+
+        result = self.do_email_change(user_profile.delivery_email, action_key)
+        self.assertEqual(result.status_code, 400)
+        self.assert_in_response("Email address changes are disabled in this organization.", result)
+
+    def test_email_change_delivery_email_public(self) -> None:
+        user_profile = self.example_user("hamlet")
+        new_email = "hamlet-new@zulip.com"
+
+        do_set_realm_property(
+            user_profile.realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            acting_user=None,
+        )
+        action_key = self.create_email_change_confirmation_key(user_profile, new_email)
+
+        result = self.do_email_change(user_profile.delivery_email, action_key)
+        self.assert_in_success_response(
+            ["This confirms that the email address for your Zulip"], result
+        )
+
+        self.verify_user_email_changed(
+            action_key, user_profile.realm, email_address_visibility_public=True
+        )
+
+    def test_email_change_success_logged_in(self) -> None:
+        user_profile = self.example_user("hamlet")
+        new_email = "hamlet-new@zulip.com"
+        action_key = self.create_email_change_confirmation_key(user_profile, new_email)
+
+        self.login_user(user_profile)
+        result = self.do_email_change(user_profile.delivery_email, action_key)
+        self.assert_in_success_response(
+            ["This confirms that the email address for your Zulip"], result
+        )
+        self.verify_user_email_changed(action_key, user_profile.realm)
+
+    def test_unauthorized_email_change_from_confirmation_link_logged_in(self) -> None:
+        user_profile = self.example_user("hamlet")
+        new_email = "hamlet-new@zulip.com"
+        action_key = self.create_email_change_confirmation_key(user_profile, new_email)
+
+        do_set_realm_property(user_profile.realm, "email_changes_disabled", True, acting_user=None)
+
+        self.login_user(user_profile)
+        result = self.do_email_change(user_profile.delivery_email, action_key)
+        self.assertEqual(result.status_code, 400)
+        self.assert_in_response("Email address changes are disabled in this organization.", result)
+
+    def test_email_change_delivery_email_public_logged_in(self) -> None:
+        user_profile = self.example_user("hamlet")
+        new_email = "hamlet-new@zulip.com"
+
+        do_set_realm_property(
+            user_profile.realm,
+            "email_address_visibility",
+            Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE,
+            acting_user=None,
+        )
+        action_key = self.create_email_change_confirmation_key(user_profile, new_email)
+
+        self.login_user(user_profile)
+        result = self.do_email_change(user_profile.delivery_email, action_key)
+        self.assert_in_success_response(
+            ["This confirms that the email address for your Zulip"], result
+        )
+
+        self.verify_user_email_changed(
+            action_key, user_profile.realm, email_address_visibility_public=True
+        )
+
+    def test_email_change_login_through_different_account(self) -> None:
+        user_profile = self.example_user("hamlet")
+        new_email = "hamlet-new@zulip.com"
+        old_email = user_profile.delivery_email
+
+        action_key = self.create_email_change_confirmation_key(user_profile, new_email)
+
+        different_profile = self.example_user("cordelia")
+        result = self.do_email_change(different_profile.delivery_email, action_key)
+        self.assertEqual(result.status_code, 400)
+        self.assert_in_response(
+            "Incorrect login. Login with your old email to change your email address", result
+        )
+
+        with self.assertRaises(UserProfile.DoesNotExist):
+            get_user_by_delivery_email(new_email, user_profile.realm)
+        get_user_by_delivery_email(old_email, user_profile.realm)
+
+    def test_email_change_invalid_key(self) -> None:
+        result = self.do_email_change(self.example_email("hamlet"), "invalid_action_key")
+        self.assert_in_success_response(["Whoops. The confirmation link is malformed."], result)
+
+    def test_email_change_expired_key(self) -> None:
+        user_profile = self.example_user("hamlet")
+        new_email = "hamlet-new@zulip.com"
+
+        date_sent = timezone_now() - datetime.timedelta(
+            days=settings.CONFIRMATION_LINK_DEFAULT_VALIDITY_DAYS + 1
+        )
+        action_key = self.create_email_change_confirmation_key(
+            user_profile, new_email, date_sent=date_sent
+        )
+
+        result = self.do_email_change(user_profile.delivery_email, action_key)
+        self.assert_in_success_response(
+            ["The confirmation link has expired or been deactivated."], result
+        )
+
+    def test_email_change_unregistered_user_login(self) -> None:
+        """
+        When trying to login with new email, the user shouldn't be taken to
+        registration page social and remote auth flows and email change should happen.
+        """
+
+        user_profile = self.example_user("hamlet")
+        new_email = "new-hamlet"
+        action_key = self.create_email_change_confirmation_key(user_profile, new_email)
+
+        result = self.do_email_change("nonexistent@email.com", action_key)
+
+        self.assertEqual(result.status_code, 400)
+        self.assert_in_response(
+            "Incorrect login. Login with your old email to change your email address", result
+        )
+        with self.assertRaises(UserProfile.DoesNotExist):
+            get_user_by_delivery_email(new_email, user_profile.realm)
+        get_user_by_delivery_email(user_profile.delivery_email, user_profile.realm)

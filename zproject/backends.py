@@ -1142,6 +1142,7 @@ class ExternalAuthDataDict(TypedDict, total=False):
     desktop_flow_otp: Optional[str]
     multiuse_object_key: str
     full_name_validated: bool
+    action_key: str
 
 
 class ExternalAuthResult:
@@ -1533,6 +1534,8 @@ def social_auth_finish(
     else:
         is_signup = False
 
+    action_key = strategy.session_get("action_key")
+
     # At this point, we have now confirmed that the user has
     # demonstrated control over the target email address.
     #
@@ -1547,6 +1550,7 @@ def social_auth_finish(
         full_name_validated=full_name_validated,
         mobile_flow_otp=mobile_flow_otp,
         desktop_flow_otp=desktop_flow_otp,
+        action_key=action_key,
     )
     if user_profile is None:
         data_dict.update(dict(full_name=full_name, email=email_address))
