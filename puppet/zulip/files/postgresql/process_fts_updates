@@ -26,22 +26,12 @@
 # /etc/zulip/zulip.conf to read, and that case _requires_ loading the
 # venv.
 
-import sys
-
-# Setup for case (2) to enter the venv in /srv:
-sys.path.append("/home/zulip/deployments/current")
-try:
-    from scripts.lib.setup_path import setup_path
-
-    setup_path()
-except ImportError:
-    pass
-
 import argparse
 import configparser
 import logging
 import os
 import select
+import sys
 import time
 
 import psycopg2
@@ -100,7 +90,10 @@ USING_PGROONGA = False
 try:
     # Case (1); we insert the path to the development root.
     sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../..")))
-    # Case (2) already inserted its path into os.path above.
+    # Case (2) could take this branch if it set up the venv first, but
+    # there is no reason to unnecessarily bring in the Django
+    # dependency; it will fall into the path below due the venv not
+    # being configured.
     os.environ["DJANGO_SETTINGS_MODULE"] = "zproject.settings"
     from django.conf import settings
 
@@ -120,7 +113,7 @@ try:
     pg_args["connect_timeout"] = "600"
     USING_PGROONGA = settings.USING_PGROONGA
 except ImportError:
-    # Case (3); we know that the PostgreSQL server is on this
+    # Case (2) and (3); we know that the PostgreSQL server is on this
     # host.
     pg_args["user"] = "zulip"
 
