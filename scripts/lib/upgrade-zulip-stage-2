@@ -139,6 +139,7 @@ if os.path.exists("/etc/init.d/postgresql"):
 if glob.glob("/usr/share/postgresql/*/extension/tsearch_extras.control"):
     # Remove legacy tsearch_extras package references
     run_psql_as_postgres(
+        config_file=config_file,
         sql_query="DROP EXTENSION IF EXISTS tsearch_extras;",
     )
     subprocess.check_call(["apt-get", "remove", "-y", "postgresql-*-tsearch-extras"])

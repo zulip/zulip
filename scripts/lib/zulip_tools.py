@@ -581,8 +581,10 @@ def get_deploy_options(config_file: configparser.RawConfigParser) -> List[str]:
 
 
 def run_psql_as_postgres(
+    config_file: configparser.RawConfigParser,
     sql_query: str,
 ) -> None:
+    dbname = get_config(config_file, "postgresql", "database_name", "zulip")
     subcmd = " ".join(
         map(
             shlex.quote,
@@ -590,8 +592,8 @@ def run_psql_as_postgres(
                 "psql",
                 "-v",
                 "ON_ERROR_STOP=1",
-                # TODO: Stop hardcoding the database name.
-                "zulip",
+                "-d",
+                dbname,
                 "-c",
                 sql_query,
             ],
