@@ -778,7 +778,7 @@ class MarkdownTest(ZulipTestCase):
 
         self.assertEqual(
             converted,
-            f"""<p>Look at how hilarious our old office was: <a href="https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG">https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG</a></p>\n<div class="message_inline_image"><a href="https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG" title="IMG_0923.JPG"><img src="{get_camo_url("https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG?dl=1")}"></a></div>""",
+            f"""<p>Look at how hilarious our old office was: <a href="https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG">https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG</a></p>\n<div class="message_inline_image"><a href="https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG" title="IMG_0923.JPG"><img src="{get_camo_url("https://www.dropbox.com/s/ymdijjcg67hv2ta/IMG_0923.JPG?raw=1")}"></a></div>""",
         )
 
         msg = "Look at my hilarious drawing folder: https://www.dropbox.com/sh/cm39k9e04z7fhim/AAAII5NK-9daee3FcF41anEua?dl="
