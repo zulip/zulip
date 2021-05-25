@@ -281,8 +281,8 @@ SILENCED_SYSTEM_CHECKS = [
 DATABASES: Dict[str, Dict[str, Any]] = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "zulip",
-        "USER": "zulip",
+        "NAME": get_config("postgresql", "database_name", "zulip"),
+        "USER": get_config("postgresql", "database_user", "zulip"),
         # Password = '' => peer/certificate authentication (no password)
         "PASSWORD": "",
         # Host = '' => connect to localhost by default
@@ -314,7 +314,12 @@ elif REMOTE_POSTGRES_HOST != "":
         DATABASES["default"]["OPTIONS"]["sslmode"] = REMOTE_POSTGRES_SSLMODE
     else:
         DATABASES["default"]["OPTIONS"]["sslmode"] = "verify-full"
-
+elif get_config("postgresql", "database_user") != "zulip":
+    if get_secret("postgres_password") is not None:
+        DATABASES["default"].update(
+            PASSWORD=get_secret("postgres_password"),
+            HOST="localhost",
+        )
 POSTGRESQL_MISSING_DICTIONARIES = bool(get_config("postgresql", "missing_dictionaries", None))
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
