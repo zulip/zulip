@@ -20,9 +20,6 @@ mock_cjs("clipboard", Clipboard);
 mock_cjs("jquery", $);
 
 const realm_playground = mock_esm("../../static/js/realm_playground");
-mock_esm("../../static/js/rtl", {
-    get_direction: () => "ltr",
-});
 page_params.emojiset = "apple";
 
 const rm = zrequire("rendered_markdown");
@@ -431,4 +428,14 @@ run_test("code playground multiple", (override) => {
     assert.equal(view_code.attr("data-tippy-content"), "translated: View in playground");
     assert.equal(view_code.attr("aria-label"), "translated: View in playground");
     assert.equal(view_code.attr("aria-haspopup"), "true");
+});
+
+run_test("rtl", () => {
+    const $content = get_content_element();
+
+    $content.text("مرحبا");
+
+    assert(!$content.hasClass("rtl"));
+    rm.update_elements($content);
+    assert($content.hasClass("rtl"));
 });
