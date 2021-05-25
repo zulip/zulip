@@ -49,6 +49,13 @@ class zulip_ops::profile::zmirror_personals {
     source  => 'puppet:///modules/zulip_ops/nagios_plugins/zulip_zephyr_mirror',
   }
 
+  # Allow the relevant UDP ports
+  concat::fragment { 'iptables-zmirror':
+    target => '/etc/iptables/rules.v4',
+    source => 'puppet:///modules/zulip_ops/iptables/zmirror',
+    order  => '20',
+  }
+
   # TODO: Do the rest of our setup, which includes at least:
   # Building patched libzephyr4-krb5 from davidben's roost branch and installing that
   #  (https://github.com/davidben/zephyr/commit/252258d38ebd0e79b261db336c1f74f261b77128)

@@ -1,10 +1,20 @@
 class zulip_ops::firewall {
   package { 'iptables-persistent': }
-  file { '/etc/iptables/rules.v4':
-    ensure  => file,
+  concat { '/etc/iptables/rules.v4':
+    ensure  => present,
     mode    => '0600',
-    content => template('zulip_ops/iptables/rules.v4.erb'),
     require => Package['iptables-persistent'],
+  }
+
+  concat::fragment { 'iptables-header':
+    target => '/etc/iptables/rules.v4',
+    source => 'puppet:///modules/zulip_ops/iptables/header',
+    order  => '01',
+  }
+  concat::fragment { 'iptables-trailer':
+    target => '/etc/iptables/rules.v4',
+    source => 'puppet:///modules/zulip_ops/iptables/trailer',
+    order  => '99',
   }
   service { 'netfilter-persistent':
     ensure     => running,
@@ -22,6 +32,6 @@ class zulip_ops::firewall {
     hasrestart => false,
 
     require    => Package['iptables-persistent'],
-    subscribe  => File['/etc/iptables/rules.v4'],
+    subscribe  => Concat['/etc/iptables/rules.v4'],
   }
 }
