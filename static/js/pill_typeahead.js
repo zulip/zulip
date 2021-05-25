@@ -1,3 +1,4 @@
+import * as blueslip from "./blueslip";
 import * as composebox_typeahead from "./composebox_typeahead";
 import * as people from "./people";
 import * as stream_pill from "./stream_pill";
@@ -21,6 +22,10 @@ function group_matcher(query, item) {
 }
 
 export function set_up(input, pills, opts) {
+    if (!opts.user && !opts.user_group && !opts.stream) {
+        blueslip.error("Unspecified possible item types");
+        return;
+    }
     let source = opts.source;
     if (!opts.source) {
         source = () => user_pill.typeahead_source(pills);

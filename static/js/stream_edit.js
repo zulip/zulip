@@ -418,7 +418,12 @@ function show_subscription_settings(sub) {
         simplebar_container: $(".subscriber_list_container"),
     });
 
-    const opts = {source: get_users_for_subscriber_typeahead, stream: true, user_group: true};
+    const opts = {
+        source: get_users_for_subscriber_typeahead,
+        stream: true,
+        user_group: true,
+        user: true,
+    };
     pill_typeahead.set_up(sub_settings.find(".input"), pill_widget, opts);
 }
 

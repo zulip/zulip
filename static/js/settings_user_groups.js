@@ -275,7 +275,7 @@ export function populate_user_groups() {
 
         const input = pill_container.children(".input");
         if (can_edit(data.id)) {
-            const opts = {update_func: update_cancel_button};
+            const opts = {update_func: update_cancel_button, user: true};
             pill_typeahead.set_up(input, pills, opts);
         }
 
