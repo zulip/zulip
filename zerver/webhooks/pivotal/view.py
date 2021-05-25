@@ -72,6 +72,7 @@ UNSUPPORTED_EVENT_TYPES = [
     "story_delete_activity",
     "story_move_into_project_activity",
     "epic_update_activity",
+    "label_create_activity",
 ]
 
 
