@@ -525,7 +525,8 @@ export function toggle_actions_popover(element, id) {
     if (elt.data("popover") === undefined) {
         const message = message_lists.current.get(id);
         const message_container = message_lists.current.view.message_containers.get(message.id);
-        const should_display_hide_option = !message_container.is_hidden;
+        const should_display_hide_option =
+            muting.is_user_muted(message.sender_id) && !message_container.is_hidden;
         const editability = message_edit.get_editability(message);
         let use_edit_icon;
         let editability_menu_item;
