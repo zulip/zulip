@@ -106,7 +106,7 @@ class HomeTest(ZulipTestCase):
         "max_avatar_file_size_mib",
         "max_file_upload_size_mib",
         "max_icon_file_size_mib",
-        "max_logo_file_size",
+        "max_logo_file_size_mib",
         "max_message_id",
         "max_message_length",
         "max_stream_description_length",
