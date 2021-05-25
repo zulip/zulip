@@ -84,6 +84,17 @@ def am_master(cursor: psycopg2.extensions.cursor) -> bool:
     return not cursor.fetchall()[0][0]
 
 
+def get_config(
+    config_file: configparser.RawConfigParser,
+    section: str,
+    key: str,
+    default_value: str = "",
+) -> str:
+    if config_file.has_option(section, key):
+        return config_file.get(section, key)
+    return default_value
+
+
 pg_args = {}
 
 USING_PGROONGA = False
@@ -112,8 +123,17 @@ except ImportError:
 
     config_file = configparser.RawConfigParser()
     config_file.read("/etc/zulip/zulip.conf")
+
     if config_file.has_option("machine", "pgroonga"):
         USING_PGROONGA = True
+
+    pg_args["user"] = get_config(config_file, "postgresql", "database_user", "zulip")
+    if pg_args["user"] != "zulip":
+        secrets_file = configparser.RawConfigParser()
+        secrets_file.read("/etc/zulip/zulip-secrets.conf")
+        pg_args["password"] = get_config(secrets_file, "secrets", "postgres_password")
+        pg_args["host"] = "localhost"
+    pg_args["dbname"] = get_config(config_file, "postgresql", "database_name", "zulip")
 
 conn = None
 
