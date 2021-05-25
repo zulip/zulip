@@ -55,7 +55,7 @@ You can access the message editing and deletion settings as follows.
 
 {start_tabs}
 
-{settings_tab|organization-settings}
+{settings_tab|organization-permissions}
 
 4. Under **Message editing**, configure **Allow message editing**,
    **Users can edit the topic of any message**, and **Allow message deleting**.

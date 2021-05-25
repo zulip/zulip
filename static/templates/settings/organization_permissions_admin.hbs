@@ -125,6 +125,70 @@
             </div>
         </div>
 
+        <div id="org-msg-editing" class="org-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Message editing" }}
+                    {{> ../help_link_widget link="/help/configure-message-editing-and-deletion" }}
+                </h3>
+                {{> settings_save_discard_widget section_name="msg-editing" }}
+            </div>
+            <div class="inline-block organization-settings-parent">
+                <div class="input-group">
+                    <label for="realm_msg_edit_limit_setting" class="dropdown-title">{{t "Allow message editing" }}</label>
+                    <select name="realm_msg_edit_limit_setting" id="id_realm_msg_edit_limit_setting" class="prop-element">
+                        {{#each msg_edit_limit_dropdown_values}}
+                        <option value="{{0}}">{{1.text}}</option>
+                        {{/each}}
+                    </select>
+                    <div class="dependent-inline-block">
+                        <label for="id_realm_message_content_edit_limit_minutes" class="inline-block realm-time-limit-label">
+                            {{t 'N' }}:
+                        </label>
+                        <input type="text" id="id_realm_message_content_edit_limit_minutes"
+                          name="realm_message_content_edit_limit_minutes"
+                          class="admin-realm-time-limit-input prop-element"
+                          autocomplete="off"
+                          value="{{ realm_message_content_edit_limit_minutes }}"/>
+                    </div>
+                </div>
+
+                {{> settings_checkbox
+                  setting_name="realm_allow_community_topic_editing"
+                  prefix="id_"
+                  is_checked=realm_allow_community_topic_editing
+                  label=admin_settings_label.realm_allow_community_topic_editing}}
+
+                {{> settings_checkbox
+                  setting_name="realm_allow_edit_history"
+                  prefix="id_"
+                  is_checked=realm_allow_edit_history
+                  label=admin_settings_label.realm_allow_edit_history}}
+
+                <div class="input-group">
+                    <label for="realm_msg_delete_limit_setting" class="dropdown-title">
+                        {{t "Allow message deleting" }}
+                        <i class="fa fa-info-circle settings-info-icon realm_allow_message_deleting_tooltip tippy-zulip-tooltip"
+                          aria-hidden="true" data-tippy-content="{{t 'Administrators can always delete any message.' }}"></i>
+                    </label>
+                    <select name="realm_msg_delete_limit_setting" id="id_realm_msg_delete_limit_setting" class="prop-element">
+                        {{#each msg_delete_limit_dropdown_values}}
+                        <option value="{{0}}">{{1.text}}</option>
+                        {{/each}}
+                    </select>
+                    <div class="dependent-inline-block">
+                        <label for="id_realm_message_content_delete_limit_minutes" class="inline-block realm-time-limit-label">
+                            {{t 'N' }}:
+                        </label>
+                        <input type="text" id="id_realm_message_content_delete_limit_minutes"
+                          name="realm_message_content_delete_limit_minutes"
+                          class="admin-realm-time-limit-input prop-element"
+                          autocomplete="off"
+                          value="{{ realm_message_content_delete_limit_minutes }}"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div id="org-other-permissions" class="org-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Other permissions" }}</h3>
