@@ -1,6 +1,9 @@
 import {addDays} from "date-fns";
 import $ from "jquery";
 
+import render_navbar_alert from "../templates/navbar_alert.hbs";
+
+import {$t} from "./i18n";
 import {localstorage} from "./localstorage";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
@@ -101,24 +104,93 @@ export function show_profile_incomplete(is_profile_incomplete) {
     }
 }
 
+function show_notification_alert() {
+    open({
+        data_process: "notifications",
+        is_notification_alert: true,
+        second_step_message: $t({
+            defaultMessage:
+                "We strongly recommend enabling desktop notifications. They help Zulip keep your team connected.",
+        }),
+        second_step_buttons: [
+            {
+                class_name: "request-desktop-notifications",
+                text: $t({defaultMessage: "Enable notifications"}),
+            },
+            {
+                class_name: "reject-notifications",
+                text: $t({defaultMessage: "Never ask on this computer"}),
+            },
+        ],
+    });
+}
+
 export function initialize() {
     const ls = localstorage();
     if (page_params.insecure_desktop_app) {
-        open($("[data-process='insecure-desktop-app']"));
+        show_notification_alert();
     } else if (page_params.server_needs_upgrade) {
         if (should_show_server_upgrade_notification(ls)) {
-            open($("[data-process='server-needs-upgrade']"));
+            open({
+                data_process: "server-needs-upgrade",
+                class_name: "red",
+                first_step_message: $t({
+                    defaultMessage:
+                        "This Zulip server is running an old version and should be upgraded.",
+                }),
+                first_step_buttons: [
+                    {
+                        text: $t({defaultMessage: "Learn more"}),
+                        link: "https://zulip.readthedocs.io/en/latest/overview/release-lifecycle.html#upgrade-nag",
+                    },
+                    {
+                        class_name: "dismiss-upgrade-nag",
+                        text: $t({defaultMessage: "Dismiss for a week"}),
+                    },
+                ],
+            });
         }
     } else if (page_params.warn_no_email === true && page_params.is_admin) {
         // if email has not been set up and the user is the admin,
         // display a warning to tell them to set up an email server.
-        open($("[data-process='email-server']"));
+        open({
+            data_process: "email-server",
+            class_name: "red",
+            first_step_message: $t({
+                defaultMessage:
+                    "Zulip needs to send email to confirm users' addresses and send notifications.",
+            }),
+            first_step_buttons: [
+                {
+                    text: $t({defaultMessage: "See how to configure email."}),
+                    link: "https://zulip.readthedocs.io/en/latest/production/email.html",
+                },
+            ],
+        });
     } else if (should_show_notifications(ls)) {
-        open($("[data-process='notifications']"));
+        show_notification_alert();
     } else if (unread_ui.should_display_bankruptcy_banner()) {
-        open($("[data-process='bankruptcy']"));
+        open({
+            data_process: "bankruptcy",
+            class_name: "bankruptcy",
+            is_bankruptcy_alert: true,
+            unread_msgs_count: page_params.unread_msgs.count,
+            first_step_buttons: [
+                {
+                    class_name: "accept-bankruptcy",
+                    text: $t({defaultMessage: "Yes, please!"}),
+                },
+                {
+                    class_name: "exit",
+                    text: $t({defaultMessage: "No, I'll catch up"}),
+                },
+            ],
+        });
     } else if (check_profile_incomplete()) {
-        open($("[data-process='profile-incomplete']"));
+        open({
+            data_process: "profile-incomplete",
+            is_profile_incomplete: true,
+        });
     }
 
     // Configure click handlers.
@@ -169,8 +241,8 @@ export function initialize() {
     });
 }
 
-export function open($process) {
-    $("[data-process]").hide();
-    $process.show();
+export function open(args) {
+    const rendered_navbar_alert_html = render_navbar_alert(args);
+    $("#navbar_alerts_wrapper").html(rendered_navbar_alert_html);
     $(window).trigger("resize");
 }

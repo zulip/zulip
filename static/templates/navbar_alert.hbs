@@ -1,0 +1,50 @@
+<div data-process="{{data_process}}" class="alert alert-info {{class_name}}">
+    <div data-step="1">
+        {{#if is_notification_alert}}
+        {{> notification_alert_first_step_content}}
+        {{else if is_bankruptcy_alert}}
+        {{> bankruptcy_alert_first_step_content}}
+        {{else if is_profile_incomplete}}
+        {{> profile_incomplete_first_step_content}}
+        {{else}}
+        {{first_step_message}}
+        {{/if}}
+
+        {{#each first_step_buttons}}
+        <span class="buttons">
+            <a class="alert-link {{this.class_name}}" role="button" tabindex="0" target="_blank" rel="noopener noreferrer" {{#if
+              this.link}}href="{{this.link}}" {{/if}}>
+                {{this.text}}
+            </a>
+            {{#unless @last}}
+            &bull;
+            {{/unless}}
+        </span>
+        {{/each}}
+
+    </div>
+    {{#if second_step_message}}
+    <div data-step="2" style="display: none">
+        {{second_step_message}}
+        {{#each second_step_buttons}}
+        <span class="buttons">
+            <a class="alert-link {{this.class_name}}" role="button" tabindex="0" target="_blank" rel="noopener noreferrer" {{#if this.link}}href="{{this.link}}"{{/if}}>
+                {{this.text}}
+            </a>
+            {{#unless @last}}
+            &bull;
+            {{/unless}}
+        </span>
+        {{/each}}
+    </div>
+    {{/if}}
+    <span class="close" data-dismiss="alert" aria-label='{{t "Close"}}' role="button" tabindex="0">
+        &times;
+    </span>
+</div>
+
+{{#if is_bankruptcy_alert}}
+<div class="alert alert-info bankruptcy-loader" style="display: none">
+    {{t "Marking all messages as read…" }}
+</div>
+{{/if}}
