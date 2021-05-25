@@ -96,6 +96,7 @@ def am_master(cursor: psycopg2.extensions.cursor) -> bool:
 
 pg_args = {}
 
+USING_PGROONGA = False
 try:
     # Case (1); we insert the path to the development root.
     sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../..")))
@@ -107,7 +108,6 @@ try:
         pg_args["host"] = settings.REMOTE_POSTGRES_HOST
     if settings.REMOTE_POSTGRES_PORT != "":
         pg_args["port"] = settings.REMOTE_POSTGRES_PORT
-    USING_PGROONGA = settings.USING_PGROONGA
     pg_args["password"] = ""
     if settings.DATABASES["default"]["PASSWORD"] is not None:
         pg_args["password"] = settings.DATABASES["default"]["PASSWORD"]
@@ -118,23 +118,16 @@ try:
     else:
         pg_args["sslmode"] = "verify-full"
     pg_args["connect_timeout"] = "600"
+    USING_PGROONGA = settings.USING_PGROONGA
 except ImportError:
     # Case (3); we know that the PostgreSQL server is on this
     # host.
-    USING_PGROONGA = False
     pg_args["user"] = "zulip"
 
-# Since we don't want a hard dependency on being able to access the
-# Zulip settings (as we may not be running on a server that has that
-# data), we determine whether we're using PGroonga using
-# /etc/zulip/zulip.conf.
-#
-# However, we still also check the `USING_PGROONGA` variable, since
-# that's all we have in development.
-config_file = configparser.RawConfigParser()
-config_file.read("/etc/zulip/zulip.conf")
-if config_file.has_option("machine", "pgroonga"):
-    USING_PGROONGA = True
+    config_file = configparser.RawConfigParser()
+    config_file.read("/etc/zulip/zulip.conf")
+    if config_file.has_option("machine", "pgroonga"):
+        USING_PGROONGA = True
 
 conn = None
 
