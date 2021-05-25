@@ -142,6 +142,7 @@ ALL_ZULIP_TABLES = {
     "zerver_realmemoji",
     "zerver_realmfilter",
     "zerver_realmplayground",
+    "zerver_realmuserdefault",
     "zerver_recipient",
     "zerver_scheduledemail",
     "zerver_scheduledemail_users",

@@ -1250,6 +1250,15 @@ class UserBaseSettings(models.Model):
         abstract = True
 
 
+class RealmUserDefault(UserBaseSettings):
+    """This table stores realm-level default values for user preferences
+    like notification settings, used when creating a new user account.
+    """
+
+    id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
+    realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
+
+
 class UserProfile(AbstractBaseUser, PermissionsMixin, UserBaseSettings):
     USERNAME_FIELD = "email"
     MAX_NAME_LENGTH = 100
