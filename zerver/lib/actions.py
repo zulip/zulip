@@ -6480,11 +6480,9 @@ def do_send_confirmation_email(invitee: PreregistrationUser, referrer: UserProfi
         "activate_url": activation_url,
         "referrer_realm_name": referrer.realm.name,
     }
-    from_name = f"{referrer.full_name} (via Zulip)"
     send_email(
         "zerver/emails/invitation",
         to_emails=[invitee.email],
-        from_name=from_name,
         from_address=FromAddress.tokenized_no_reply_address(),
         language=referrer.realm.default_language,
         context=context,

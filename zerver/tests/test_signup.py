@@ -928,9 +928,7 @@ https://www.google.com/images/srpr/logo4w.png</a></p>"""
 
 
 class InviteUserBase(ZulipTestCase):
-    def check_sent_emails(
-        self, correct_recipients: List[str], custom_from_name: Optional[str] = None
-    ) -> None:
+    def check_sent_emails(self, correct_recipients: List[str]) -> None:
         from django.core.mail import outbox
 
         self.assert_length(outbox, len(correct_recipients))
@@ -939,8 +937,7 @@ class InviteUserBase(ZulipTestCase):
         if len(outbox) == 0:
             return
 
-        if custom_from_name is not None:
-            self.assertIn(custom_from_name, self.email_display_from(outbox[0]))
+        self.assertIn("Zulip", self.email_display_from(outbox[0]))
 
         self.assertEqual(self.email_envelope_from(outbox[0]), settings.NOREPLY_EMAIL_ADDRESS)
         self.assertRegex(
@@ -987,7 +984,7 @@ class InviteUserTest(InviteUserBase):
         invitee = "alice-test@zulip.com"
         self.assert_json_success(self.invite(invitee, ["Denmark"]))
         self.assertTrue(find_key_by_email(invitee))
-        self.check_sent_emails([invitee], custom_from_name="Hamlet")
+        self.check_sent_emails([invitee])
 
     def test_newbie_restrictions(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -1274,7 +1271,7 @@ class InviteUserTest(InviteUserBase):
         invitee = f"Alice Test <{email}>"
         self.assert_json_success(self.invite(invitee, ["Denmark"]))
         self.assertTrue(find_key_by_email(email))
-        self.check_sent_emails([email], custom_from_name="Hamlet")
+        self.check_sent_emails([email])
 
     def test_successful_invite_user_with_name_and_normal_one(self) -> None:
         """
@@ -1288,7 +1285,7 @@ class InviteUserTest(InviteUserBase):
         self.assert_json_success(self.invite(invitee, ["Denmark"]))
         self.assertTrue(find_key_by_email(email))
         self.assertTrue(find_key_by_email(email2))
-        self.check_sent_emails([email, email2], custom_from_name="Hamlet")
+        self.check_sent_emails([email, email2])
 
     def test_can_invite_others_to_realm(self) -> None:
         def validation_func(user_profile: UserProfile) -> bool:
@@ -2230,7 +2227,7 @@ class InvitationsTestCase(InviteUserBase):
         prereg_user = PreregistrationUser.objects.get(email=invitee)
 
         # Verify and then clear from the outbox the original invite email
-        self.check_sent_emails([invitee], custom_from_name="Zulip")
+        self.check_sent_emails([invitee])
         from django.core.mail import outbox
 
         outbox.pop()
@@ -2261,7 +2258,7 @@ class InvitationsTestCase(InviteUserBase):
         error_result = self.client_post("/json/invites/" + str(9999) + "/resend")
         self.assert_json_error(error_result, "No such invitation")
 
-        self.check_sent_emails([invitee], custom_from_name="Zulip")
+        self.check_sent_emails([invitee])
 
     def test_successful_member_resend_invitation(self) -> None:
         """A POST call from member a account to /json/invites/<ID>/resend
@@ -2278,7 +2275,7 @@ class InvitationsTestCase(InviteUserBase):
         prereg_user = PreregistrationUser.objects.get(email=invitee)
 
         # Verify and then clear from the outbox the original invite email
-        self.check_sent_emails([invitee], custom_from_name="Zulip")
+        self.check_sent_emails([invitee])
         from django.core.mail import outbox
 
         outbox.pop()
@@ -2309,7 +2306,7 @@ class InvitationsTestCase(InviteUserBase):
         error_result = self.client_post("/json/invites/" + str(9999) + "/resend")
         self.assert_json_error(error_result, "No such invitation")
 
-        self.check_sent_emails([invitee], custom_from_name="Zulip")
+        self.check_sent_emails([invitee])
 
         self.logout()
         self.login("othello")
@@ -2329,7 +2326,7 @@ class InvitationsTestCase(InviteUserBase):
                 invitee, ["Denmark"], invite_as=PreregistrationUser.INVITE_AS["REALM_OWNER"]
             )
         )
-        self.check_sent_emails([invitee], custom_from_name="Zulip")
+        self.check_sent_emails([invitee])
         scheduledemail_filter = ScheduledEmail.objects.filter(
             address__iexact=invitee, type=ScheduledEmail.INVITATION_REMINDER
         )
