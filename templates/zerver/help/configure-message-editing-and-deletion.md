@@ -73,7 +73,7 @@ streams.  You can configure which roles have permission to do so:
 
 {settings_tab|organization-permissions}
 
-2. Under **Stream permissions**, configure **Who can move messages between streams**.
+2. Under **Message editing**, configure **Who can move messages between streams**.
 
 {!save-changes.md!}
 
