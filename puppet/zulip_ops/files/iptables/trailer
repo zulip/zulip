@@ -1,0 +1,6 @@
+
+# Drop everything else
+-A INPUT   -j LOGDROP
+-A FORWARD -j LOGDROP
+
+COMMIT

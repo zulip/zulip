@@ -5,6 +5,8 @@ class zulip_ops::profile::postgresql {
   $common_packages = ['xfsprogs']
   package { $common_packages: ensure => 'installed' }
 
+  zulip_ops::firewall_allow{ 'postgresql': }
+
   file { '/etc/sysctl.d/40-postgresql.conf':
     ensure => file,
     owner  => 'root',

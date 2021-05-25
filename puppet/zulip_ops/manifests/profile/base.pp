@@ -4,6 +4,8 @@ class zulip_ops::profile::base {
   include zulip_ops::ksplice_uptrack
   include zulip_ops::firewall
 
+  zulip_ops::firewall_allow { 'ssh': order => '10'}
+
   $org_base_packages = [
     # Standard kernel, not AWS', so ksplice works
     'linux-image-virtual',
