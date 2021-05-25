@@ -508,6 +508,10 @@ li.expanded_private_message {
     margin-top: 3px;
 }
 
+.stream-list-filter {
+    width: 236px;
+}
+
 .zero_count {
     visibility: hidden;
 }
