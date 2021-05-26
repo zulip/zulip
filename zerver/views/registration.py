@@ -534,7 +534,10 @@ def send_confirm_registration_email(
         to_emails=[email],
         from_address=FromAddress.tokenized_no_reply_address(),
         language=language,
-        context={"activate_url": activation_url},
+        context={
+            "create_realm": (realm is None),
+            "activate_url": activation_url,
+        },
         realm=realm,
     )
 
