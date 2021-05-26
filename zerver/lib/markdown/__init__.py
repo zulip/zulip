@@ -616,9 +616,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     TWITTER_MAX_TO_PREVIEW = 3
     INLINE_PREVIEW_LIMIT_PER_MESSAGE = 5
 
-    def __init__(self, md: markdown.Markdown) -> None:
-        markdown.treeprocessors.Treeprocessor.__init__(self, md)
-
     def add_a(
         self,
         root: Element,
