@@ -4859,7 +4859,7 @@ paths:
         - name: stream_id
           in: query
           description: |
-            The ID of the stream to access.
+            The stream ID to move the message(s) to, if moving to another stream.
           schema:
             type: integer
           example: 42
