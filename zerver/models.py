@@ -254,6 +254,7 @@ class Realm(models.Model):
     POLICY_ADMINS_ONLY = 2
     POLICY_FULL_MEMBERS_ONLY = 3
     POLICY_MODERATORS_ONLY = 4
+    POLICY_EVERYONE = 5
 
     COMMON_POLICY_TYPES = [
         POLICY_MEMBERS_ONLY,
@@ -262,8 +263,18 @@ class Realm(models.Model):
         POLICY_MODERATORS_ONLY,
     ]
 
+    COMMON_MESSAGE_POLICY_TYPES = [
+        POLICY_ADMINS_ONLY,
+        POLICY_EVERYONE,
+    ]
+
+    DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS = 259200
+
     # Who in the organization is allowed to create streams.
     create_stream_policy: int = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
+
+    # Who in the organization is allowed to edit topics of any message.
+    edit_topic_policy: int = models.PositiveSmallIntegerField(default=POLICY_EVERYONE)
 
     # Who in the organization is allowed to invite other users to organization.
     invite_to_realm_policy: int = models.PositiveSmallIntegerField(default=POLICY_MEMBERS_ONLY)
@@ -361,9 +372,6 @@ class Realm(models.Model):
 
     # Whether users have access to message edit history
     allow_edit_history: bool = models.BooleanField(default=True)
-
-    DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS = 259200
-    allow_community_topic_editing: bool = models.BooleanField(default=True)
 
     # Defaults for new users
     default_twenty_four_hour_time: bool = models.BooleanField(default=False)

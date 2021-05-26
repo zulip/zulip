@@ -66,7 +66,9 @@ def update_realm(
         converter=to_non_negative_int, default=None
     ),
     allow_message_editing: Optional[bool] = REQ(json_validator=check_bool, default=None),
-    allow_community_topic_editing: Optional[bool] = REQ(json_validator=check_bool, default=None),
+    edit_topic_policy: Optional[int] = REQ(
+        json_validator=check_int_in(Realm.COMMON_MESSAGE_POLICY_TYPES), default=None
+    ),
     mandatory_topics: Optional[bool] = REQ(json_validator=check_bool, default=None),
     message_content_edit_limit_seconds: Optional[int] = REQ(
         converter=to_non_negative_int, default=None
@@ -181,27 +183,24 @@ def update_realm(
             message_content_edit_limit_seconds is not None
             and realm.message_content_edit_limit_seconds != message_content_edit_limit_seconds
         )
-        or (
-            allow_community_topic_editing is not None
-            and realm.allow_community_topic_editing != allow_community_topic_editing
-        )
+        or (edit_topic_policy is not None and realm.edit_topic_policy != edit_topic_policy)
     ):
         if allow_message_editing is None:
             allow_message_editing = realm.allow_message_editing
         if message_content_edit_limit_seconds is None:
             message_content_edit_limit_seconds = realm.message_content_edit_limit_seconds
-        if allow_community_topic_editing is None:
-            allow_community_topic_editing = realm.allow_community_topic_editing
+        if edit_topic_policy is None:
+            edit_topic_policy = realm.edit_topic_policy
         do_set_realm_message_editing(
             realm,
             allow_message_editing,
             message_content_edit_limit_seconds,
-            allow_community_topic_editing,
+            edit_topic_policy,
             acting_user=user_profile,
         )
         data["allow_message_editing"] = allow_message_editing
         data["message_content_edit_limit_seconds"] = message_content_edit_limit_seconds
-        data["allow_community_topic_editing"] = allow_community_topic_editing
+        data["edit_topic_policy"] = edit_topic_policy
 
     # Realm.notifications_stream and Realm.signup_notifications_stream are not boolean,
     # str or integer field, and thus doesn't fit into the do_set_realm_property framework.

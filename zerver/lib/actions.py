@@ -874,25 +874,25 @@ def do_set_realm_message_editing(
     realm: Realm,
     allow_message_editing: bool,
     message_content_edit_limit_seconds: int,
-    allow_community_topic_editing: bool,
+    edit_topic_policy: int,
     *,
     acting_user: Optional[UserProfile],
 ) -> None:
     old_values = dict(
         allow_message_editing=realm.allow_message_editing,
         message_content_edit_limit_seconds=realm.message_content_edit_limit_seconds,
-        allow_community_topic_editing=realm.allow_community_topic_editing,
+        edit_topic_policy=realm.edit_topic_policy,
     )
 
     realm.allow_message_editing = allow_message_editing
     realm.message_content_edit_limit_seconds = message_content_edit_limit_seconds
-    realm.allow_community_topic_editing = allow_community_topic_editing
+    realm.edit_topic_policy = edit_topic_policy
 
     event_time = timezone_now()
     updated_properties = dict(
         allow_message_editing=allow_message_editing,
         message_content_edit_limit_seconds=message_content_edit_limit_seconds,
-        allow_community_topic_editing=allow_community_topic_editing,
+        edit_topic_policy=edit_topic_policy,
     )
 
     for updated_property, updated_value in updated_properties.items():
@@ -2823,8 +2823,8 @@ def can_edit_content_or_topic(
     if user_profile.is_realm_admin:
         return True
 
-    # The community_topic_editing setting controls normal users editing topics.
-    if user_profile.realm.allow_community_topic_editing:
+    # The edit_topic_policy setting controls which users can edit topics.
+    if user_profile.realm.edit_topic_policy == Realm.POLICY_EVERYONE:
         return True
 
     return False

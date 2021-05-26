@@ -1241,7 +1241,7 @@ class NormalActionsTest(BaseAction):
                     self.user_profile.realm,
                     allow_message_editing,
                     message_content_edit_limit_seconds,
-                    False,
+                    Realm.POLICY_ADMINS_ONLY,
                     acting_user=None,
                 )
             )

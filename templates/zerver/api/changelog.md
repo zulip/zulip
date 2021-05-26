@@ -11,6 +11,11 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 75**
+
+* [`POST /register`](/api/register-queue), `PATCH /realm`: Replaced `allow_community_topic_editing`
+  field with an integer field `edit_topic_policy`.
+
 **Feature level 74**
 
 * [`POST /register`](/api/register-queue): Added `server_needs_upgrade`

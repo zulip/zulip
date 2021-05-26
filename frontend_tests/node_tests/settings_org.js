@@ -583,16 +583,16 @@ function test_discard_changes_button(discard_changes) {
     };
 
     page_params.realm_allow_edit_history = true;
-    page_params.realm_allow_community_topic_editing = true;
+    page_params.realm_edit_topic_policy =
+        settings_config.common_message_policy_values.by_everyone.code;
     page_params.realm_allow_message_editing = true;
     page_params.realm_message_content_edit_limit_seconds = 3600;
     page_params.realm_allow_message_deleting = true;
     page_params.realm_message_content_delete_limit_seconds = 120;
 
     const allow_edit_history = $("#id_realm_allow_edit_history").prop("checked", false);
-    const allow_community_topic_editing = $("#id_realm_allow_community_topic_editing").prop(
-        "checked",
-        true,
+    const edit_topic_policy = $("#id_realm_edit_topic_policy").val(
+        settings_config.common_message_policy_values.by_admins_only.code,
     );
     const msg_edit_limit_setting = $("#id_realm_msg_edit_limit_setting").val("custom_limit");
     const message_content_edit_limit_minutes = $(
@@ -606,7 +606,7 @@ function test_discard_changes_button(discard_changes) {
     allow_edit_history.attr("id", "id_realm_allow_edit_history");
     msg_edit_limit_setting.attr("id", "id_realm_msg_edit_limit_setting");
     msg_delete_limit_setting.attr("id", "id_realm_msg_delete_limit_setting");
-    allow_community_topic_editing.attr("id", "id_realm_allow_community_topic_editing");
+    edit_topic_policy.attr("id", "id_realm_edit_topic_policy");
     message_content_edit_limit_minutes.attr("id", "id_realm_message_content_edit_limit_minutes");
     message_content_delete_limit_minutes.attr(
         "id",
@@ -618,7 +618,7 @@ function test_discard_changes_button(discard_changes) {
         allow_edit_history,
         msg_edit_limit_setting,
         msg_delete_limit_setting,
-        allow_community_topic_editing,
+        edit_topic_policy,
         message_content_edit_limit_minutes,
         message_content_delete_limit_minutes,
     ];
@@ -633,7 +633,10 @@ function test_discard_changes_button(discard_changes) {
     discard_changes(ev);
 
     assert.equal(allow_edit_history.prop("checked"), true);
-    assert.equal(allow_community_topic_editing.prop("checked"), true);
+    assert.equal(
+        edit_topic_policy.val(),
+        settings_config.common_message_policy_values.by_everyone.code,
+    );
     assert.equal(msg_edit_limit_setting.val(), "upto_one_hour");
     assert.equal(message_content_edit_limit_minutes.val(), "60");
     assert.equal(msg_delete_limit_setting.val(), "upto_two_min");
@@ -684,9 +687,6 @@ test("set_up", ({override}) => {
     $("#allowed_domains_label").set_parent($.create("<stub-allowed-domain-label-parent>"));
     const waiting_period_parent_elem = $.create("waiting-period-parent-stub");
     $("#id_realm_waiting_period_threshold").set_parent(waiting_period_parent_elem);
-
-    const allow_topic_edit_label_parent = $.create("allow-topic-edit-label-parent");
-    $("#id_realm_allow_community_topic_editing_label").set_parent(allow_topic_edit_label_parent);
 
     // TEST set_up() here, but this mostly just allows us to
     // get access to the click handlers.

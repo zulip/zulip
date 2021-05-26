@@ -143,11 +143,12 @@
                     </div>
                 </div>
 
-                {{> settings_checkbox
-                  setting_name="realm_allow_community_topic_editing"
-                  prefix="id_"
-                  is_checked=realm_allow_community_topic_editing
-                  label=admin_settings_label.realm_allow_community_topic_editing}}
+                <div class="input-group">
+                    <label for="realm_edit_topic_policy" class="dropdown-title">{{t "Who can edit the topic of any message" }}</label>
+                    <select name="realm_edit_topic_policy" id="id_realm_edit_topic_policy" class="prop-element" data-setting-widget-type="number">
+                        {{> dropdown_options_widget option_values=common_message_policy_values}}
+                    </select>
+                </div>
 
                 {{> settings_checkbox
                   setting_name="realm_allow_edit_history"

@@ -3483,11 +3483,16 @@ paths:
                                       description: |
                                         Whether this organizations [message edit policy](/help/configure-message-editing-and-deletion)
                                         allows editing the content of messages.
-                                    allow_community_topic_editing:
-                                      type: boolean
+                                    edit_topic_policy:
+                                      type: integer
                                       description: |
-                                        Whether [community topic editing](/help/community-topic-edits) is enabled
-                                        in this organization.
+                                        The policy for which users can edit topics of any message.
+
+                                        * 2 = admins only
+                                        * 5 = everyone
+
+                                        **Changes**: New in Zulip 5.0 (feature level 75), replacing the
+                                        previous `allow_community_topic_editing` boolean.
                                     message_content_edit_limit_seconds:
                                       type: integer
                                       description: |
@@ -3780,7 +3785,7 @@ paths:
                                     {
                                       "allow_message_editing": false,
                                       "message_content_edit_limit_seconds": 0,
-                                      "allow_community_topic_editing": false,
+                                      "edit_topic_policy": 2,
                                     },
                                   "id": 0,
                                 }
@@ -8733,13 +8738,18 @@ paths:
 
                           Whether this organizations [message edit policy](/help/configure-message-editing-and-deletion)
                           allows editing the content of messages.
-                      realm_allow_community_topic_editing:
-                        type: boolean
+                      realm_edit_topic_policy:
+                        type: integer
                         description: |
                           Present if `realm` is present in `fetch_event_types`.
 
-                          Whether [community topic editing](/help/community-topic-edits) is enabled
-                          in this organization.
+                          The policy for which users can edit topics of any message.
+
+                          * 2 = admins only
+                          * 5 = everyone
+
+                          **Changes**: New in Zulip 5.0 (feature level 75), replacing the
+                          previous `allow_community_topic_editing` boolean.
                       realm_message_content_edit_limit_seconds:
                         type: integer
                         description: |

@@ -179,7 +179,7 @@ export function dispatch_normal_event(event) {
                 allow_edit_history: noop,
                 allow_message_deleting: noop,
                 allow_message_editing: noop,
-                allow_community_topic_editing: noop,
+                edit_topic_policy: noop,
                 user_group_edit_policy: noop,
                 avatar_changes_disabled: settings_account.update_avatar_change_display,
                 bot_creation_policy: settings_bots.update_bot_permissions_ui,

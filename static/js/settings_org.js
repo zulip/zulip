@@ -104,6 +104,9 @@ export function get_organization_settings_options() {
     options.wildcard_mention_policy_values = get_sorted_options_list(
         settings_config.wildcard_mention_policy_values,
     );
+    options.common_message_policy_values = get_sorted_options_list(
+        settings_config.common_message_policy_values,
+    );
     return options;
 }
 
@@ -207,6 +210,7 @@ const simple_dropdown_properties = [
     "realm_invite_to_realm_policy",
     "realm_wildcard_mention_policy",
     "realm_move_messages_between_streams_policy",
+    "realm_edit_topic_policy",
 ];
 
 function set_property_dropdown_value(property_name) {
@@ -248,11 +252,7 @@ function set_msg_edit_limit_dropdown() {
         "id_realm_message_content_edit_limit_minutes",
         value === "custom_limit",
     );
-    settings_ui.disable_sub_setting_onchange(
-        value !== "never",
-        "id_realm_allow_community_topic_editing",
-        true,
-    );
+    settings_ui.disable_sub_setting_onchange(value !== "never", "id_realm_edit_topic_policy", true);
 }
 
 function set_msg_delete_limit_dropdown() {
