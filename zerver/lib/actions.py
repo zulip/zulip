@@ -2802,8 +2802,11 @@ def check_update_message(
 
     is_no_topic_msg = message.topic_name() == "(no topic)"
 
-    if not can_edit_content_or_topic(message, user_profile, is_no_topic_msg, content, topic_name):
-        raise JsonableError(_("You don't have permission to edit this message"))
+    if content is not None or topic_name is not None:
+        if not can_edit_content_or_topic(
+            message, user_profile, is_no_topic_msg, content, topic_name
+        ):
+            raise JsonableError(_("You don't have permission to edit this message"))
 
     # If there is a change to the content, check that it hasn't been too long
     # Allow an extra 20 seconds since we potentially allow editing 15 seconds
