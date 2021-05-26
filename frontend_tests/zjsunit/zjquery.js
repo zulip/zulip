@@ -442,6 +442,8 @@ function make_new_elem(selector, opts) {
 
     self.selector = selector;
 
+    self.__zjquery = true;
+
     return self;
 }
 
