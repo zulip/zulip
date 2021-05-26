@@ -5,6 +5,7 @@ import render_settings_revoke_invite_modal from "../templates/settings/revoke_in
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
+import * as confirm_dialog from "./confirm_dialog";
 import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
@@ -95,12 +96,8 @@ function populate_invites(invites_data) {
 }
 
 function do_revoke_invite() {
-    const modal_invite_id = $("#revoke_invite_modal #do_revoke_invite_button").attr(
-        "data-invite-id",
-    );
-    const modal_is_multiuse = $("#revoke_invite_modal #do_revoke_invite_button").attr(
-        "data-is-multiuse",
-    );
+    const modal_invite_id = $(".confirm_dialog_yes_button").attr("data-invite-id");
+    const modal_is_multiuse = $(".confirm_dialog_yes_button").attr("data-is-multiuse");
     const revoke_button = meta.current_revoke_invite_user_modal_row.find("button.revoke");
 
     if (modal_invite_id !== meta.invite_id || modal_is_multiuse !== meta.is_multiuse) {
@@ -112,7 +109,7 @@ function do_revoke_invite() {
             $("#home-error"),
         );
     }
-    $("#revoke_invite_modal").modal("hide");
+
     revoke_button.prop("disabled", true).text($t({defaultMessage: "Working…"}));
     let url = "/json/invites/" + meta.invite_id;
 
@@ -170,16 +167,21 @@ export function on_load_success(invites_data, initialize_event_handlers) {
             email,
             referred_by,
         };
-        const rendered_revoke_modal = render_settings_revoke_invite_modal(ctx);
-        $("#revoke_invite_modal_holder").html(rendered_revoke_modal);
-        $("#revoke_invite_modal #do_revoke_invite_button").attr("data-invite-id", meta.invite_id);
-        $("#revoke_invite_modal #do_revoke_invite_button").attr(
-            "data-is-multiuse",
-            meta.is_multiuse,
-        );
-        $("#revoke_invite_modal").modal("show");
-        $("#do_revoke_invite_button").off("click");
-        $("#do_revoke_invite_button").on("click", do_revoke_invite);
+        const modal_parent = $("#admin_invites_table");
+        const html_body = render_settings_revoke_invite_modal(ctx);
+
+        confirm_dialog.launch({
+            parent: modal_parent,
+            html_heading: ctx.is_multiuse
+                ? $t_html({defaultMessage: "Revoke invitation link"})
+                : $t_html({defaultMessage: "Revoke invitation to {email}"}, {email}),
+            html_body,
+            html_yes_button: $t_html({defaultMessage: "Confirm"}),
+            on_click: do_revoke_invite,
+        });
+
+        $(".confirm_dialog_yes_button").attr("data-invite-id", meta.invite_id);
+        $(".confirm_dialog_yes_button").attr("data-is-multiuse", meta.is_multiuse);
     });
 
     $(".admin_invites_table").on("click", ".resend", (e) => {
