@@ -87,6 +87,21 @@ const get_content_element = () => {
     $content.set_find_results(".emoji", $array([]));
     $content.set_find_results("div.spoiler-header", $array([]));
     $content.set_find_results("div.codehilite", $array([]));
+
+    // Fend off dumb security bugs by forcing devs to be
+    // intentional about HTML manipulation.
+    function security_violation() {
+        throw new Error(`
+            Be super careful about HTML manipulation.
+
+            Make sure your test objects set up their own
+            functions to validate that calls to html/prepend/append
+            use trusted values.
+        `);
+    }
+    $content.html = security_violation;
+    $content.prepend = security_violation;
+    $content.append = security_violation;
     return $content;
 };
 
@@ -375,8 +390,15 @@ function test_code_playground() {
     const $copy_code_button = $.create("copy_code_button", {children: ["copy-code-stub"]});
     const $view_code_in_playground = $.create("view_code_in_playground");
 
+    // The code playground code prepends a few buttons
+    // to the <pre> section of a highlighted piece of code.
+    // The args to prepend should be jQuery objects (or in
+    // our case "fake" zjquery objects).
     const prepends = [];
     $pre.prepend = (arg) => {
+        if (!arg.__zjquery) {
+            throw new Error("We should only prepend jQuery objects.");
+        }
         prepends.push(arg);
     };
 
