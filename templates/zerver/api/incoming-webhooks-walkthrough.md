@@ -30,7 +30,7 @@ Because `Hello World` is a very simple integration that does one
 thing, it requires only one fixture,
 `zerver/webhooks/helloworld/fixtures/hello.json`:
 
-```
+```json
 {
   "featured_title":"Marilyn Monroe",
   "featured_url":"https://en.wikipedia.org/wiki/Marilyn_Monroe",
@@ -81,7 +81,7 @@ python file, `zerver/webhooks/mywebhook/view.py`.
 
 The Hello World integration is in `zerver/webhooks/helloworld/view.py`:
 
-```
+```python
 from typing import Any, Dict, Sequence
 
 from django.http import HttpRequest, HttpResponse
@@ -184,13 +184,13 @@ to a URL. This is done in `zerver/lib/integrations.py`.
 
 Look for the lines beginning with:
 
-```
+```python
 WEBHOOK_INTEGRATIONS = [
 ```
 
 And you'll find the entry for Hello World:
 
-```
+```python
   WebhookIntegration('helloworld', ['misc'], display_name='Hello World'),
 ```
 
@@ -217,7 +217,7 @@ object ID that one would want to include in a Zulip notification.
 
 These configuration options are declared as follows:
 
-```
+```python
     WebhookIntegration('helloworld', ['misc'], display_name='Hello World',
                        config_options=[('HelloWorld API key', 'hw_api_key', check_string)])
 ```
@@ -241,13 +241,13 @@ presented below! This is how Zulip knows that the request was made by an authori
 ### Curl
 
 Using curl:
-```
+```bash
 curl -X POST -H "Content-Type: application/json" -d '{ "featured_title":"Marilyn Monroe", "featured_url":"https://en.wikipedia.org/wiki/Marilyn_Monroe" }' http://localhost:9991/api/v1/external/helloworld\?api_key\=<api_key>
 ```
 
 After running the above command, you should see something similar to:
 
-```
+```json
 {"msg":"","result":"success"}
 ```
 
@@ -255,7 +255,7 @@ After running the above command, you should see something similar to:
 
 Using `manage.py` from within the Zulip development environment:
 
-```
+```console
 (zulip-py3-venv) vagrant@ubuntu-bionic:/srv/zulip$
 ./manage.py send_webhook_fixture_message \
     --fixture=zerver/webhooks/helloworld/fixtures/hello.json \
@@ -314,7 +314,7 @@ You should name the class `<WebhookName>HookTests` and have it inherit from
 the base class `WebhookTestCase`. For our HelloWorld webhook, we name the test
 class `HelloWorldHookTests`:
 
-```
+```python
 class HelloWorldHookTests(WebhookTestCase):
     STREAM_NAME = 'test'
     URL_TEMPLATE = "/api/v1/external/helloworld?&api_key={api_key}"
@@ -354,7 +354,7 @@ If, for example, we added support for sending a goodbye message to our `Hello
 World` webhook, we would add another test function to `HelloWorldHookTests`
 class called something like `test_goodbye_message`:
 
-```
+```python
     def test_goodbye_message(self) -> None:
         expected_topic = "Hello World";
         expected_message = "Hello! I am happy to be here! :smile:\nThe Wikipedia featured article for today is **[Goodbye](https://en.wikipedia.org/wiki/Goodbye)**";
@@ -367,7 +367,7 @@ class called something like `test_goodbye_message`:
 As well as a new fixture `goodbye.json` in
 `zerver/webhooks/helloworld/fixtures/`:
 
-```
+```json
 {
   "featured_title":"Goodbye",
   "featured_url":"https://en.wikipedia.org/wiki/Goodbye",
@@ -381,7 +381,7 @@ data from the test fixture should result in an error. For details see
 Once you have written some tests, you can run just these new tests from within
 the Zulip development environment with this command:
 
-```
+```console
 (zulip-py3-venv) vagrant@ubuntu-bionic:/srv/zulip$
 ./tools/test-backend zerver/webhooks/helloworld
 ```
@@ -392,7 +392,7 @@ using Vagrant, use the directory where you have your development environment.)
 
 You will see some script output and if all the tests have passed, you will see:
 
-```
+```console
 Running zerver.webhooks.helloworld.tests.HelloWorldHookTests.test_goodbye_message
 Running zerver.webhooks.helloworld.tests.HelloWorldHookTests.test_hello_message
 DONE!
@@ -415,7 +415,7 @@ some customization via options to the `WebhookIntegration` class.
 Second, you need to write the actual documentation content in
 `zerver/webhooks/mywebhook/doc.md`.
 
-```
+```md
 Learn how Zulip integrations work with this simple Hello World example!
 
 The Hello World webhook will use the `test` stream, which is
@@ -503,7 +503,7 @@ rather than call the usual helper function.
 
 Here is an example from the WordPress integration:
 
-```
+```python
 def test_unknown_action_no_data(self) -> None:
     # Mimic check_webhook() to manually execute a negative test.
     # Otherwise its call to send_webhook_payload() would assert on the non-success
@@ -547,7 +547,7 @@ code, but require special handling in tests.
 For example, here is the definition of a webhook function that gets both `stream`
 and `topic` from the query parameters:
 
-```
+```python
 def api_querytest_webhook(request: HttpRequest, user_profile: UserProfile,
                           payload: str=REQ(argument_type='body'),
                           stream: str=REQ(default='test'),
@@ -568,7 +568,7 @@ The new attribute `TOPIC` exists only in our class so far. In order to
 construct a URL with a query parameter for `topic`, you can pass the
 attribute `TOPIC` as a keyword argument to `build_webhook_url`, like so:
 
-```
+```python
 class QuerytestHookTests(WebhookTestCase):
 
     STREAM_NAME = 'querytest'
@@ -603,7 +603,7 @@ generates a particular payload. To extract such headers, we recommend using the
 `validate_extract_webhook_http_header` function in `zerver/lib/webhooks/common.py`,
 like so:
 
-```
+```python
 event = validate_extract_webhook_http_header(request, header, integration_name)
 ```
 
