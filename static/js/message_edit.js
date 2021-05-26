@@ -336,8 +336,6 @@ function edit_message(row, raw_content) {
     // zerver.lib.actions.check_update_message
     const seconds_left_buffer = 5;
     const editability = get_editability(message, seconds_left_buffer);
-    const is_editable =
-        editability === editability_types.TOPIC_ONLY || editability === editability_types.FULL;
     const max_file_upload_size = page_params.max_file_upload_size_mib;
     let file_upload_enabled = false;
 
@@ -347,6 +345,10 @@ function edit_message(row, raw_content) {
 
     const is_stream_editable =
         message.is_stream && settings_data.user_can_move_messages_between_streams();
+    const is_editable =
+        editability === editability_types.TOPIC_ONLY ||
+        editability === editability_types.FULL ||
+        is_stream_editable;
     // current message's stream has been already been added and selected in handlebar
     const available_streams = is_stream_editable
         ? stream_data.subscribed_subs().filter((s) => s.stream_id !== message.stream_id)
