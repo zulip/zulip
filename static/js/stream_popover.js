@@ -24,7 +24,6 @@ import * as settings_data from "./settings_data";
 import * as starred_messages from "./starred_messages";
 import * as starred_messages_ui from "./starred_messages_ui";
 import * as stream_bar from "./stream_bar";
-import * as stream_color from "./stream_color";
 import * as stream_data from "./stream_data";
 import * as sub_store from "./sub_store";
 import * as subs from "./subs";
@@ -154,36 +153,6 @@ function stream_popover_sub(e) {
     return sub;
 }
 
-// This little function is a workaround for the fact that
-// Bootstrap popovers don't properly handle being resized --
-// so after resizing our popover to add in the spectrum color
-// picker, we need to adjust its height accordingly.
-function update_spectrum(popover, update_func) {
-    const initial_height = popover[0].offsetHeight;
-
-    const colorpicker = popover.find(".colorpicker-container").find(".colorpicker");
-    update_func(colorpicker);
-    const after_height = popover[0].offsetHeight;
-
-    const popover_root = popover.closest(".popover");
-    const current_top_px = Number.parseFloat(popover_root.css("top").replace("px", ""));
-    const height_delta = after_height - initial_height;
-    let top = current_top_px - height_delta / 2;
-
-    if (top < 0) {
-        top = 0;
-        popover_root.find("div.arrow").hide();
-    } else if (top + after_height > $(window).height() - 20) {
-        top = $(window).height() - after_height - 20;
-        if (top < 0) {
-            top = 0;
-        }
-        popover_root.find("div.arrow").hide();
-    }
-
-    popover_root.css("top", top + "px");
-}
-
 function build_stream_popover(opts) {
     const elt = opts.elt;
     const stream_id = opts.stream_id;
@@ -210,11 +179,6 @@ function build_stream_popover(opts) {
     });
 
     $(elt).popover("show");
-    const popover = $(`.streams_popover[data-stream-id="${CSS.escape(stream_id)}"]`);
-
-    update_spectrum(popover, (colorpicker) => {
-        colorpicker.spectrum(stream_color.sidebar_popover_colorpicker_options);
-    });
 
     current_stream_sidebar_elem = elt;
 }
@@ -519,30 +483,6 @@ export function register_stream_handlers() {
         subs.sub_or_unsub(sub, true);
         e.preventDefault();
         e.stopPropagation();
-    });
-
-    // Choose a different color.
-    $("body").on("click", ".choose_stream_color", (e) => {
-        update_spectrum($(e.target).closest(".streams_popover"), (colorpicker) => {
-            $(".colorpicker-container").show();
-            colorpicker.spectrum("destroy");
-            colorpicker.spectrum(stream_color.sidebar_popover_colorpicker_options_full);
-            // In theory this should clean up the old color picker,
-            // but this seems a bit flaky -- the new colorpicker
-            // doesn't fire until you click a button, but the buttons
-            // have been hidden.  We work around this by just manually
-            // fixing it up here.
-            colorpicker.parent().find(".sp-container").removeClass("sp-buttons-disabled");
-            $(e.target).hide();
-        });
-
-        $(".streams_popover").on("click", "a.sp-cancel", () => {
-            hide_stream_popover();
-        });
-        if ($(window).width() <= 768) {
-            $(".popover-inner").hide().fadeIn(300);
-            $(".popover").addClass("colorpicker-popover");
-        }
     });
 }
 

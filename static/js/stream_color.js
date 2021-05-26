@@ -1,7 +1,6 @@
 import $ from "jquery";
 
 import * as color_class from "./color_class";
-import {$t} from "./i18n";
 import * as message_view_header from "./message_view_header";
 import * as subs from "./subs";
 
@@ -105,24 +104,3 @@ function picker_do_change_color(color) {
     subs.set_color(stream_id, hex_color);
 }
 subscriptions_table_colorpicker_options.change = picker_do_change_color;
-
-export const sidebar_popover_colorpicker_options = {
-    clickoutFiresChange: true,
-    showPaletteOnly: true,
-    showPalette: true,
-    showInput: true,
-    flat: true,
-    palette: stream_color_palette,
-    change: picker_do_change_color,
-};
-
-export const sidebar_popover_colorpicker_options_full = {
-    clickoutFiresChange: false,
-    showPalette: true,
-    showInput: true,
-    flat: true,
-    cancelText: "",
-    chooseText: $t({defaultMessage: "Confirm"}),
-    palette: stream_color_palette,
-    change: picker_do_change_color,
-};
