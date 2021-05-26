@@ -22,7 +22,7 @@ from zerver.lib.topic import LEGACY_PREV_TOPIC, TOPIC_NAME
 from zerver.models import Message, Realm, Stream, UserMessage, UserProfile, get_realm, get_stream
 
 
-class EditMessageTest(ZulipTestCase):
+class EditMessageTestCase(ZulipTestCase):
     def check_topic(self, msg_id: int, topic_name: str) -> None:
         msg = Message.objects.get(id=msg_id)
         self.assertEqual(msg.topic_name(), topic_name)
@@ -74,6 +74,28 @@ class EditMessageTest(ZulipTestCase):
                 orjson.loads(msg.edit_history),
             )
 
+    def prepare_move_topics(
+        self, user_email: str, old_stream: str, new_stream: str, topic: str
+    ) -> Tuple[UserProfile, Stream, Stream, int, int]:
+        user_profile = self.example_user(user_email)
+        self.login(user_email)
+        stream = self.make_stream(old_stream)
+        new_stream = self.make_stream(new_stream)
+        self.subscribe(user_profile, stream.name)
+        self.subscribe(user_profile, new_stream.name)
+        msg_id = self.send_stream_message(
+            user_profile, stream.name, topic_name=topic, content="First"
+        )
+        msg_id_lt = self.send_stream_message(
+            user_profile, stream.name, topic_name=topic, content="Second"
+        )
+
+        self.send_stream_message(user_profile, stream.name, topic_name=topic, content="third")
+
+        return (user_profile, stream, new_stream, msg_id, msg_id_lt)
+
+
+class EditMessageTest(EditMessageTestCase):
     def test_query_count_on_to_dict_uncached(self) -> None:
         # `to_dict_uncached` method is used by the mechanisms
         # tested in this class. Hence, its performance is tested here.
@@ -1095,26 +1117,6 @@ class EditMessageTest(ZulipTestCase):
         )
         self.assert_json_error(result, "Invalid propagate_mode without topic edit")
         self.check_topic(id1, topic_name="topic1")
-
-    def prepare_move_topics(
-        self, user_email: str, old_stream: str, new_stream: str, topic: str
-    ) -> Tuple[UserProfile, Stream, Stream, int, int]:
-        user_profile = self.example_user(user_email)
-        self.login(user_email)
-        stream = self.make_stream(old_stream)
-        new_stream = self.make_stream(new_stream)
-        self.subscribe(user_profile, stream.name)
-        self.subscribe(user_profile, new_stream.name)
-        msg_id = self.send_stream_message(
-            user_profile, stream.name, topic_name=topic, content="First"
-        )
-        msg_id_lt = self.send_stream_message(
-            user_profile, stream.name, topic_name=topic, content="Second"
-        )
-
-        self.send_stream_message(user_profile, stream.name, topic_name=topic, content="third")
-
-        return (user_profile, stream, new_stream, msg_id, msg_id_lt)
 
     def test_move_message_to_stream(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
