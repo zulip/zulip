@@ -202,6 +202,12 @@ elif "debian" in os_families():
     if distro_info["VERSION_CODENAME"] == "bullseye":
         DEBIAN_DEPENDECIES.remove("libappindicator1")
         DEBIAN_DEPENDECIES.append("libgroonga0")
+
+    # If we are on an aarch64 processor, ninja will be built from source,
+    # so cmake is required
+    if platform.machine() == "aarch64":
+        DEBIAN_DEPENDECIES.append("cmake")
+
     SYSTEM_DEPENDENCIES = [
         *DEBIAN_DEPENDECIES,
         f"postgresql-{POSTGRESQL_VERSION}",
