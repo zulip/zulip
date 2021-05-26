@@ -302,6 +302,20 @@ export function start(raw_opts: ComposeActionsStartOpts): void {
         opts.private_message_recipient.replaceAll(/,\s*/g, ", "),
     );
 
+    // If we're not explicitly opening a different draft, restore the last
+    // saved draft (if it exists).
+    if (
+        !opts.content &&
+        opts.draft_id === undefined &&
+        compose_state.message_content().length === 0
+    ) {
+        const possible_last_draft = drafts.get_last_draft_based_on_compose_state();
+        if (possible_last_draft !== undefined) {
+            opts.draft_id = possible_last_draft.id;
+            opts.content = possible_last_draft.content;
+        }
+    }
+
     if (opts.content !== undefined) {
         compose_ui.insert_and_scroll_into_view(opts.content, $("textarea#compose-textarea"), true);
         $(".compose_control_button_container:has(.add-poll)").addClass("disabled-on-hover");
