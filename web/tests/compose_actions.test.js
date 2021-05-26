@@ -45,6 +45,7 @@ mock_esm("../src/reload_state", {
 mock_esm("../src/drafts", {
     update_draft: noop,
     update_compose_draft_count: noop,
+    get_last_draft_based_on_compose_state: noop,
 });
 mock_esm("../src/unread_ops", {
     notify_server_message_read: noop,
