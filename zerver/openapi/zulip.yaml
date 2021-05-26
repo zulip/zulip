@@ -3520,10 +3520,6 @@ paths:
 
                                         * "D" means the logo is the default Zulip logo.
                                         * "U" means uploaded by an organization administrator.
-                                    max_logo_file_size:
-                                      type: integer
-                                      description: |
-                                        The maximum file size allowed for the uploaded organization logos.
                                     bot_domain:
                                       type: string
                                       description: |
