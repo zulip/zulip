@@ -434,7 +434,10 @@ to make sure we handle backwards-compatibility properly.
   commit. We attempt to contain that sort of logic in the `from_dict`
   function (which is used for changing event queue formats) and
   `client_capabilities` conditionals (E.g. in
-  `process_deletion_event`).
+  `process_deletion_event`). Compatibility code not related to a
+  `client_capabilities` entry should be marked with a
+  `# TODO/compatibility: ...` comment noting when it can be safely deleted;
+  we grep for these comments entries during major releases.
 * Schema changes are a sensitive operation, and like with database
   schema changes, it's critical to do thoughtful manual testing.
   E.g. run the mobile app against your test server and verify it
