@@ -81,8 +81,8 @@ from typing import Any, Iterable, List, Mapping, MutableSequence, Optional, Sequ
 import lxml.html
 from django.utils.html import escape
 from markdown import Markdown
-from markdown.extensions import Extension
-from markdown.extensions.codehilite import CodeHilite, CodeHiliteExtension
+from markdown.extensions import Extension, codehilite
+from markdown.extensions.codehilite import CodeHiliteExtension, parse_hl_lines
 from markdown.preprocessors import Preprocessor
 from pygments.lexers import get_lexer_by_name
 from pygments.util import ClassNotFound
@@ -352,6 +352,56 @@ class SpoilerHandler(ZulipBaseHandler):
 class TexHandler(ZulipBaseHandler):
     def format_text(self, text: str) -> str:
         return self.processor.format_tex(text)
+
+
+class CodeHilite(codehilite.CodeHilite):
+    def _parseHeader(self) -> None:
+        # Python-Markdown has a feature to parse-and-hide shebang
+        # lines present in code blocks:
+        #
+        # https://python-markdown.github.io/extensions/code_hilite/#shebang-no-path
+        #
+        # While using shebang lines for language detection is
+        # reasonable, we don't want this feature because it can be
+        # really confusing when doing anything else in a one-line code
+        # block that starts with `!` (which would then render as an
+        # empty code block!).  So we disable the feature, by
+        # overriding this function, which implements it in CodeHilite
+        # upstream.
+
+        # split text into lines
+        lines = self.src.split("\n")
+        # Python-Markdown pops out the first line which we are avoiding here.
+        # Examine first line
+        fl = lines[0]
+
+        c = re.compile(
+            r"""
+            (?:(?:^::+)|(?P<shebang>^[#]!)) # Shebang or 2 or more colons
+            (?P<path>(?:/\w+)*[/ ])?        # Zero or 1 path
+            (?P<lang>[\w#.+-]*)             # The language
+            \s*                             # Arbitrary whitespace
+            # Optional highlight lines, single- or double-quote-delimited
+            (hl_lines=(?P<quot>"|')(?P<hl_lines>.*?)(?P=quot))?
+            """,
+            re.VERBOSE,
+        )
+        # Search first line for shebang
+        m = c.search(fl)
+        if m:
+            # We have a match
+            try:
+                self.lang = m.group("lang").lower()
+            except IndexError:  # nocoverage
+                self.lang = None
+
+            if self.options["linenos"] is None and m.group("shebang"):
+                # Overridable and Shebang exists - use line numbers
+                self.options["linenos"] = True
+
+            self.options["hl_lines"] = parse_hl_lines(m.group("hl_lines"))
+
+        self.src = "\n".join(lines).strip("\n")
 
 
 class FencedBlockPreprocessor(Preprocessor):

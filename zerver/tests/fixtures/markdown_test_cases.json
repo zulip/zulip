@@ -953,6 +953,24 @@
         "name": "telephone_sms_link",
         "input": "[call me](tel:+14155551234) [or maybe not](sms:+14155551234)",
         "expected_output": "<p><a href=\"tel:+14155551234\">call me</a> <a href=\"sms:+14155551234\">or maybe not</a></p>"
+    },
+    {
+      "name": "codeblock_hilite_shebang_feature_no_path_1",
+      "input": "```\n#!python\nprint(\"Hello World\")\n```",
+      "expected_output": "<div class=\"codehilite\"><pre><span></span><code><span class=\"ch\">#!python</span>\n<span class=\"nb\">print</span><span class=\"p\">(</span><span class=\"s2\">&quot;Hello World&quot;</span><span class=\"p\">)</span>\n</code></pre></div>",
+      "marked_expected_output": "<div class=\"codehilite\"><pre><span></span><code>#!python\nprint(&quot;Hello World&quot;)\n</code></pre></div>"
+    },
+    {
+      "name": "codeblock_hilite_shebang_feature_no_path_2",
+      "input": "```\n:::python\nprint(\"Hello World\")\n```",
+      "expected_output": "<div class=\"codehilite\"><pre><span></span><code><span class=\"p\">:::</span><span class=\"n\">python</span>\n<span class=\"nb\">print</span><span class=\"p\">(</span><span class=\"s2\">&quot;Hello World&quot;</span><span class=\"p\">)</span>\n</code></pre></div>",
+      "marked_expected_output": "<div class=\"codehilite\"><pre><span></span><code>:::python\nprint(&quot;Hello World&quot;)\n</code></pre></div>"
+    },
+    {
+      "name": "codeblock_hilite_shebang_feature_with_path",
+      "input": "```\n#!/usr/bin/python\nprint(\"Hello World\")\n```",
+      "expected_output": "<div class=\"codehilite\"><pre><span></span><code><span class=\"ch\">#!/usr/bin/python</span>\n<span class=\"nb\">print</span><span class=\"p\">(</span><span class=\"s2\">&quot;Hello World&quot;</span><span class=\"p\">)</span>\n</code></pre></div>",
+      "marked_expected_output": "<div class=\"codehilite\"><pre><span></span><code>#!/usr/bin/python\nprint(&quot;Hello World&quot;)\n</code></pre></div>"
     }
   ],
   "linkify_tests": [
