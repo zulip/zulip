@@ -55,37 +55,43 @@ More examples and documentation can be found [here](https://github.com/zulip/zul
             <tr>
                 <td><code>mentioned</code></td>
                 <td>
-                     Whether the current user
-                      <a href="/help/mention-a-user-or-group">was mentioned</a>
-                      by this message, either directly or via a user
-                     group.  Not editable.
+                    Whether the current user
+                    <a href="/help/mention-a-user-or-group">was mentioned</a>
+                    by this message, either directly or via a user
+                    group. Cannot be changed by the user directly, but
+                    can change if the message is edited to add/remove
+                    a mention of the current user.
                 </td>
             </tr>
             <tr>
                 <td><code>wildcard_mentioned</code></td>
                 <td>
-                     Whether this message contained
-                      <a href="/help/mention-a-user-or-group#mention-everyone-on-a-stream">wildcard mention</a>
-                      like @**all**.  Not editable.
+                    Whether this message contained
+                    <a href="/help/mention-a-user-or-group#mention-everyone-on-a-stream">wildcard mention</a>
+                    like @**all**. Cannot be changed by the user directly, but
+                    can change if the message is edited to add/remove
+                    a wildcard mention.
                 </td>
             </tr>
             <tr>
                 <td><code>has_alert_word</code></td>
                 <td>
-                     Whether the message contains any of the current user's
-                      <a href="/help/add-an-alert-word">configured alert words</a>.
-                      Not editable.
+                    Whether the message contains any of the current user's
+                    <a href="/help/add-an-alert-word">configured alert words</a>.
+                    Cannot be changed by the user directly, but
+                    can change if the message is edited to add/remove
+                    one of the current user's alert words.
                 </td>
             </tr>
             <tr>
                 <td><code>historical</code></td>
                 <td>
-                     True for messages that the user did not receive
-                     at the time they were sent but later was added to
-                     the user's history (E.g. because they starred or
-                     reacted to a message sent to a public stream
-                     before they subscribed to that stream).  Not
-                     editable.
+                    True for messages that the user did not receive
+                    at the time they were sent but later was added to
+                    the user's history (E.g. because they starred or
+                    reacted to a message sent to a public stream
+                    before they subscribed to that stream). Cannot be
+                    changed by the user directly.
                 </td>
             </tr>
         </tbody>
