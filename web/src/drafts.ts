@@ -493,6 +493,20 @@ export function filter_drafts_by_compose_box_and_recipient(
     return _.pick(drafts, narrow_drafts_ids);
 }
 
+export function get_last_draft_based_on_compose_state(): LocalStorageDraftWithId | undefined {
+    const current_drafts = draft_model.get();
+    const drafts_map_for_compose_state = filter_drafts_by_compose_box_and_recipient(current_drafts);
+    const drafts_for_compose_state = Object.entries(drafts_map_for_compose_state).map(
+        ([draft_id, draft]) => ({
+            ...draft,
+            id: draft_id,
+        }),
+    );
+    return drafts_for_compose_state
+        .sort((draft_a, draft_b) => draft_a.updatedAt - draft_b.updatedAt)
+        .pop();
+}
+
 export function remove_old_drafts(): void {
     const old_date = subDays(new Date(), DRAFT_LIFETIME).getTime();
     const drafts = draft_model.get();
