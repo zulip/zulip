@@ -84,6 +84,14 @@ test("legacy", () => {
     assert.deepEqual(drafts.restore_message(legacy_draft), compose_args_for_legacy_draft);
 });
 
+test("draft_model get_drafts_id_by", ({override}) => {
+    assert.deepEqual(drafts.draft_model.getDraftsIdByStreamAndTopic("stream", "topic"), []);
+    assert.deepEqual(drafts.draft_model.getDraftsIdByRecipients("stream", "topic"), []);
+    override(drafts.draft_model, "get", () => ({random_id_1: draft_1, random_id_2: draft_2}));
+    assert.equal(drafts.draft_model.getDraftsIdByStreamAndTopic("stream", "topic").length, 1);
+    assert.equal(drafts.draft_model.getDraftsIdByRecipients("aaron@zulip.com").length, 1);
+});
+
 test("draft_model add", ({override}) => {
     const draft_model = drafts.draft_model;
     const ls = localstorage();
