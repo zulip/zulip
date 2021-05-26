@@ -910,28 +910,39 @@ export function initialize() {
             );
             return;
         }
-        const stream_name = stream_data.maybe_get_stream_name(stream_id);
-        const deactivate_stream_modal = render_settings_deactivation_stream_modal({
-            stream_name,
-            stream_id,
-        });
-        $("#deactivation_stream_modal").remove();
-        $("#subscriptions_table").append(deactivate_stream_modal);
-        overlays.open_modal("#deactivation_stream_modal");
-    });
 
-    $("#subscriptions_table").on("click", "#do_deactivate_stream_button", (e) => {
-        const stream_id = $(e.target).data("stream-id");
-        overlays.close_modal("#deactivation_stream_modal");
-        if (!stream_id) {
-            ui_report.client_error(
-                $t_html({defaultMessage: "Invalid stream id"}),
-                $(".stream_change_property_info"),
-            );
-            return;
+        function do_archive_stream() {
+            const stream_id = $(".confirm_dialog_yes_button").data("stream-id");
+            if (!stream_id) {
+                ui_report.client_error(
+                    $t_html({defaultMessage: "Invalid stream id"}),
+                    $(".stream_change_property_info"),
+                );
+                return;
+            }
+            const row = $(".stream-row.active");
+            archive_stream(stream_id, $(".stream_change_property_info"), row);
         }
-        const row = $(".stream-row.active");
-        archive_stream(stream_id, $(".stream_change_property_info"), row);
+
+        const modal_parent = $("#subscription_overlay");
+        const stream_name = stream_data.maybe_get_stream_name(stream_id);
+        const html_body = render_settings_deactivation_stream_modal({
+            stream_name,
+        });
+
+        confirm_dialog.launch({
+            parent: modal_parent,
+            html_heading: $t_html(
+                {defaultMessage: "Archive stream {stream}"},
+                {stream: stream_name},
+            ),
+            help_link: "/help/archive-a-stream",
+            html_body,
+            html_yes_button: $t_html({defaultMessage: "Confirm"}),
+            on_click: do_archive_stream,
+        });
+
+        $(".confirm_dialog_yes_button").attr("data-stream-id", stream_id);
     });
 
     $("#subscriptions_table").on("click", ".stream-row", function (e) {
