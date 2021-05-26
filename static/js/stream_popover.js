@@ -153,6 +153,35 @@ function stream_popover_sub(e) {
     return sub;
 }
 
+const presets = {
+    color: [
+        "a47462",
+        "c2726a",
+        "e4523d",
+        "e7664d",
+        "ee7e4a",
+        "f4ae55",
+        "76ce90",
+        "53a063",
+        "94c849",
+        "bfd56f",
+        "fae589",
+        "f5ce6e",
+        "a6dcbf",
+        "addfe5",
+        "a6c7e5",
+        "4f8de4",
+        "95a5fd",
+        "b0a5fd",
+        "c2c2c2",
+        "c8bebf",
+        "c6a8ad",
+        "e79ab5",
+        "bd86e5",
+        "9987e1",
+    ],
+};
+
 function build_stream_popover(opts) {
     const elt = opts.elt;
     const stream_id = opts.stream_id;
@@ -168,6 +197,7 @@ function build_stream_popover(opts) {
 
     const content = render_stream_sidebar_actions({
         stream: sub_store.get(stream_id),
+        stream_color_presets: presets,
     });
 
     $(elt).popover({
@@ -483,6 +513,11 @@ export function register_stream_handlers() {
         subs.sub_or_unsub(sub, true);
         e.preventDefault();
         e.stopPropagation();
+    });
+
+    // Change color
+    $("body").on("click", ".choose_stream_color", () => {
+        $("body").find(".sidebar_color_picker").toggleClass("visible");
     });
 }
 

@@ -1499,6 +1499,35 @@ div.focused_table {
     align-items: baseline;
 }
 
+.preset_container {
+    padding: 5px;
+    width: 160px;
+    height: 98px;
+
+    .presets {
+        display: inline-block;
+        height: 20px;
+        width: 20px;
+        border-radius: 5px;
+        margin-right: 5px;
+        cursor: pointer;
+        line-height: 20px;
+        transition: box-shadow 0.5s;
+
+        &:hover {
+            box-shadow: 0 0 5px hsl(215, 47%, 50%);
+        }
+
+        &:nth-child(6n) {
+            margin-right: 0;
+        }
+    }
+}
+
+.visible {
+    display: block !important;
+}
+
 .topic_edit {
     display: none;
     line-height: 22px;

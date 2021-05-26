@@ -66,6 +66,10 @@
         margin-top: 0;
         float: none;
     }
+
+    .sidebar_color_picker {
+        display: none;
+    }
 }
 
 ul {
