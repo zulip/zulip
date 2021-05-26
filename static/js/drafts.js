@@ -103,6 +103,32 @@ export const draft_model = (function () {
         save(drafts);
     };
 
+    exports.getDraftsIdByStreamAndTopic = function (stream, topic) {
+        const drafts = this.get();
+        return Object.keys(drafts)
+            .filter(
+                (draft_id) =>
+                    drafts[draft_id].type === "stream" &&
+                    drafts[draft_id].stream === stream &&
+                    drafts[draft_id].topic === topic,
+            )
+            .sort((draft_a, draft_b) => drafts[draft_a].updatedAt - drafts[draft_b].updatedAt);
+    };
+
+    exports.getDraftsIdByRecipients = function (private_message_recipient) {
+        const drafts = this.get();
+        return Object.keys(drafts)
+            .filter(
+                (draft_id) =>
+                    drafts[draft_id].type === "private" &&
+                    _.isEqual(
+                        drafts[draft_id].private_message_recipient.split(",").sort(),
+                        private_message_recipient.split(",").sort(),
+                    ),
+            )
+            .sort((draft_a, draft_b) => drafts[draft_a].updatedAt - drafts[draft_b].updatedAt);
+    };
+
     return exports;
 })();
 
