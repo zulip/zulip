@@ -3,12 +3,14 @@ import $ from "jquery";
 import render_admin_bot_form from "../templates/settings/admin_bot_form.hbs";
 import render_admin_human_form from "../templates/settings/admin_human_form.hbs";
 import render_admin_user_list from "../templates/settings/admin_user_list.hbs";
+import render_settings_deactivation_user_modal from "../templates/settings/deactivation_user_modal.hbs";
 
 import * as blueslip from "./blueslip";
 import * as bot_data from "./bot_data";
 import * as channel from "./channel";
+import * as confirm_dialog from "./confirm_dialog";
 import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget";
-import {$t} from "./i18n";
+import {$t, $t_html} from "./i18n";
 import * as ListWidget from "./list_widget";
 import * as loading from "./loading";
 import * as overlays from "./overlays";
@@ -487,18 +489,16 @@ function open_bot_form(person) {
 }
 
 function confirm_deactivation(row, user_id, status_field) {
-    const modal_elem = $("#deactivation_user_modal").expectOne();
-
-    function set_fields() {
-        const user = people.get_by_user_id(user_id);
-        modal_elem.find(".email").text(user.email);
-        modal_elem.find(".user_name").text(user.full_name);
-    }
+    const user = people.get_by_user_id(user_id);
+    const modal_parent = $("#admin-user-list");
+    const opts = {
+        username: user.full_name,
+        email: user.email,
+    };
+    const html_body = render_settings_deactivation_user_modal(opts);
 
     function handle_confirm() {
         const row = get_user_info_row(user_id);
-
-        modal_elem.modal("hide");
         const row_deactivate_button = row.find("button.deactivate");
         row_deactivate_button.prop("disabled", true).text($t({defaultMessage: "Working…"}));
         const opts = {
@@ -513,10 +513,13 @@ function confirm_deactivation(row, user_id, status_field) {
         settings_ui.do_settings_change(channel.del, url, {}, status_field, opts);
     }
 
-    modal_elem.off("click", ".do_deactivate_button");
-    set_fields();
-    modal_elem.on("click", ".do_deactivate_button", handle_confirm);
-    overlays.open_modal("#deactivation_user_modal");
+    confirm_dialog.launch({
+        parent: modal_parent,
+        html_heading: $t_html({defaultMessage: "Deactivate {email}"}, {email: user.email}),
+        html_body,
+        html_yes_button: $t_html({defaultMessage: "Confirm"}),
+        on_click: handle_confirm,
+    });
 }
 
 function handle_deactivation(tbody, status_field) {
