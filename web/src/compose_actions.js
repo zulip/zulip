@@ -256,6 +256,20 @@ export function start(msg_type, opts) {
         opts.private_message_recipient.replaceAll(/,\s*/g, ", "),
     );
 
+    // If we're not explicitly opening a different draft, restore the last
+    // saved draft (if it exists).
+    if (
+        !opts.content &&
+        opts.draft_id === undefined &&
+        compose_state.message_content().length === 0
+    ) {
+        const possible_last_draft = drafts.get_last_draft_based_on_compose_state();
+        if (possible_last_draft !== undefined) {
+            opts.draft_id = possible_last_draft.id;
+            opts.content = possible_last_draft.content;
+        }
+    }
+
     // If the user opens the compose box, types some text, and then clicks on a
     // different stream/topic, we want to keep the text in the compose box
     if (opts.content !== undefined) {
