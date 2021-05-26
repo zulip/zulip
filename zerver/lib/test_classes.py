@@ -649,6 +649,8 @@ Output:
         email_address: str,
         *,
         url_pattern: Optional[str] = None,
+        email_subject_contains: Optional[str] = None,
+        email_body_contains: Optional[str] = None,
     ) -> str:
         from django.core.mail import outbox
 
@@ -661,6 +663,13 @@ Output:
             ):
                 match = re.search(url_pattern, message.body)
                 assert match is not None
+
+                if email_subject_contains:
+                    self.assertIn(email_subject_contains, message.subject)
+
+                if email_body_contains:
+                    self.assertIn(email_body_contains, message.body)
+
                 [confirmation_url] = match.groups()
                 return confirmation_url
         else:
