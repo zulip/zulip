@@ -7,7 +7,12 @@ export const vim_down = "j";
 export const vim_up = "k";
 export const vim_right = "l";
 
-export function handle(opts) {
+export function handle(opts: {
+    elem: JQuery;
+    handlers: {
+        [handler: string]: (() => boolean) | undefined;
+    };
+}): void {
     opts.elem.on("keydown", (e) => {
         if (e.altKey || e.ctrlKey || e.shiftKey) {
             return;
