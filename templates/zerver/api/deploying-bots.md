@@ -44,7 +44,7 @@ Botserver interaction are:
 
 1. The Zulip server sends a POST request to the Botserver on `https://bot-server.example.com/`:
 
-    ```
+    ```json
     {
       "message":{
         "content":"@**My Bot User** hello world",
