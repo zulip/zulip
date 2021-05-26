@@ -3,9 +3,11 @@ import $ from "jquery";
 import pygments_data from "../generated/pygments_data.json";
 import render_settings_admin_auth_methods_list from "../templates/settings/admin_auth_methods_list.hbs";
 import render_settings_admin_realm_domains_list from "../templates/settings/admin_realm_domains_list.hbs";
+import render_settings_deactivate_realm_modal from "../templates/settings/deactivate_realm_modal.hbs";
 
 import * as blueslip from "./blueslip";
 import * as channel from "./channel";
+import * as confirm_dialog from "./confirm_dialog";
 import {csrf_token} from "./csrf";
 import {DropdownListWidget as dropdown_list_widget} from "./dropdown_list_widget";
 import {$t, $t_html} from "./i18n";
@@ -1140,26 +1142,32 @@ export function build_page() {
     }
 
     $("#deactivate_realm_button").on("click", (e) => {
-        if (!overlays.is_modal_open()) {
-            e.preventDefault();
-            e.stopPropagation();
-            overlays.open_modal("#deactivate-realm-modal");
-        }
-    });
+        e.preventDefault();
+        e.stopPropagation();
 
-    $("#do_deactivate_realm_button").on("click", () => {
-        if (overlays.is_modal_open()) {
-            overlays.close_modal("#deactivate-realm-modal");
+        function do_deactivate_realm() {
+            channel.post({
+                url: "/json/realm/deactivate",
+                error(xhr) {
+                    ui_report.error(
+                        $t_html({defaultMessage: "Failed"}),
+                        xhr,
+                        $("#admin-realm-deactivation-status").expectOne(),
+                    );
+                },
+            });
         }
-        channel.post({
-            url: "/json/realm/deactivate",
-            error(xhr) {
-                ui_report.error(
-                    $t_html({defaultMessage: "Failed"}),
-                    xhr,
-                    $("#admin-realm-deactivation-status").expectOne(),
-                );
-            },
+
+        const html_body = render_settings_deactivate_realm_modal();
+        const modal_parent = $(".organization-box");
+
+        confirm_dialog.launch({
+            parent: modal_parent,
+            html_heading: $t_html({defaultMessage: "Deactivate organization"}),
+            help_link: "/help/deactivate-your-organization",
+            html_body,
+            html_yes_button: $t_html({defaultMessage: "Confirm"}),
+            on_click: do_deactivate_realm,
         });
     });
 }
