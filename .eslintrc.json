@@ -175,6 +175,7 @@
                 "window": false
             },
             "rules": {
+                "new-cap": "off",
                 "no-sync": "off"
             }
         },

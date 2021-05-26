@@ -326,15 +326,15 @@ export function set_cursor_and_filter() {
     keydown_util.handle({
         elem: $input,
         handlers: {
-            enter_key() {
+            Enter() {
                 keydown_enter_key();
                 return true;
             },
-            up_arrow() {
+            ArrowUp() {
                 user_cursor.prev();
                 return true;
             },
-            down_arrow() {
+            ArrowDown() {
                 user_cursor.next();
                 return true;
             },

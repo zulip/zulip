@@ -307,8 +307,8 @@ test("handlers", (override) => {
     (function test_filter_keys() {
         init();
         activity.user_cursor.go_to(alice.user_id);
-        filter_key_handlers.down_arrow();
-        filter_key_handlers.up_arrow();
+        filter_key_handlers.ArrowDown();
+        filter_key_handlers.ArrowUp();
     })();
 
     (function test_click_filter() {
@@ -339,12 +339,12 @@ test("handlers", (override) => {
         $(".user-list-filter").val("al");
         narrowed = false;
         activity.user_cursor.go_to(alice.user_id);
-        filter_key_handlers.enter_key();
+        filter_key_handlers.Enter();
         assert(narrowed);
 
         // get line coverage for cleared case
         activity.user_cursor.clear();
-        filter_key_handlers.enter_key();
+        filter_key_handlers.Enter();
     })();
 
     (function test_click_handler() {

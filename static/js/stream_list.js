@@ -551,15 +551,15 @@ export function set_event_handlers() {
     keydown_util.handle({
         elem: $search_input,
         handlers: {
-            enter_key() {
+            Enter() {
                 keydown_enter_key();
                 return true;
             },
-            up_arrow() {
+            ArrowUp() {
                 stream_cursor.prev();
                 return true;
             },
-            down_arrow() {
+            ArrowDown() {
                 stream_cursor.next();
                 return true;
             },

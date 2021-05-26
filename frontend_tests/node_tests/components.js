@@ -162,8 +162,8 @@ const components = zrequire("components");
 
 const noop = () => {};
 
-const LEFT_KEY = {which: 37, preventDefault: noop, stopPropagation: noop};
-const RIGHT_KEY = {which: 39, preventDefault: noop, stopPropagation: noop};
+const LEFT_KEY = {key: "ArrowLeft", preventDefault: noop, stopPropagation: noop};
+const RIGHT_KEY = {key: "ArrowRight", preventDefault: noop, stopPropagation: noop};
 
 run_test("basics", () => {
     env = {
