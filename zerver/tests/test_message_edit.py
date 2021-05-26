@@ -127,6 +127,22 @@ class EditMessagePayloadTest(EditMessageTestCase):
 
         self.assert_json_error(result, "Private messages cannot be moved to streams.")
 
+    def test_private_message_edit_topic(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login("hamlet")
+        cordelia = self.example_user("cordelia")
+        msg_id = self.send_personal_message(hamlet, cordelia)
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "message_id": msg_id,
+                "topic": "Should not exist",
+            },
+        )
+
+        self.assert_json_error(result, "Private messages cannot have topics.")
+
     def test_propagate_invalid(self) -> None:
         self.login("hamlet")
         id1 = self.send_stream_message(self.example_user("hamlet"), "Scotland", topic_name="topic1")
