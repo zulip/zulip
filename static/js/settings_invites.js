@@ -1,6 +1,7 @@
 import $ from "jquery";
 
 import render_admin_invites_list from "../templates/settings/admin_invites_list.hbs";
+import render_settings_resend_invite_modal from "../templates/settings/resend_invite_modal.hbs";
 import render_settings_revoke_invite_modal from "../templates/settings/revoke_invite_modal.hbs";
 
 import * as blueslip from "./blueslip";
@@ -127,6 +128,35 @@ function do_revoke_invite() {
     });
 }
 
+function do_resend_invite() {
+    const modal_invite_id = $(".confirm_dialog_yes_button").attr("data-invite-id");
+    const resend_button = meta.current_resend_invite_user_modal_row.find("button.resend");
+
+    if (modal_invite_id !== meta.invite_id) {
+        blueslip.error("Invite resending canceled due to non-matching fields.");
+        ui_report.client_error(
+            $t_html({
+                defaultMessage: "Resending encountered an error. Please reload and try again.",
+            }),
+            $("#home-error"),
+        );
+    }
+
+    resend_button.prop("disabled", true).text($t({defaultMessage: "Working…"}));
+    channel.post({
+        url: "/json/invites/" + meta.invite_id + "/resend",
+        error(xhr) {
+            ui_report.generic_row_button_error(xhr, resend_button);
+        },
+        success(data) {
+            resend_button.text($t({defaultMessage: "Sent!"}));
+            resend_button.removeClass("resend btn-warning").addClass("sea-green");
+            data.timestamp = timerender.absolute_time(data.timestamp * 1000);
+            meta.current_resend_invite_user_modal_row.find(".invited_at").text(data.timestamp);
+        },
+    });
+}
+
 export function set_up(initialize_event_handlers = true) {
     meta.loaded = true;
 
@@ -194,40 +224,17 @@ export function on_load_success(invites_data, initialize_event_handlers) {
         const email = row.find(".email").text();
         meta.current_resend_invite_user_modal_row = row;
         meta.invite_id = $(e.currentTarget).attr("data-invite-id");
+        const modal_parent = $("#admin_invites_table");
+        const html_body = render_settings_resend_invite_modal({email});
 
-        $("#resend_invite_modal .email").text(email);
-        $("#resend_invite_modal #do_resend_invite_button").attr("data-invite-id", meta.invite_id);
-        $("#resend_invite_modal").modal("show");
-    });
-
-    $("#do_resend_invite_button").on("click", () => {
-        const modal_invite_id = $("#resend_invite_modal #do_resend_invite_button").attr(
-            "data-invite-id",
-        );
-        const resend_button = meta.current_resend_invite_user_modal_row.find("button.resend");
-
-        if (modal_invite_id !== meta.invite_id) {
-            blueslip.error("Invite resending canceled due to non-matching fields.");
-            ui_report.client_error(
-                $t_html({
-                    defaultMessage: "Resending encountered an error. Please reload and try again.",
-                }),
-                $("#home-error"),
-            );
-        }
-        $("#resend_invite_modal").modal("hide");
-        resend_button.prop("disabled", true).text($t({defaultMessage: "Working…"}));
-        channel.post({
-            url: "/json/invites/" + meta.invite_id + "/resend",
-            error(xhr) {
-                ui_report.generic_row_button_error(xhr, resend_button);
-            },
-            success(data) {
-                resend_button.text($t({defaultMessage: "Sent!"}));
-                resend_button.removeClass("resend btn-warning").addClass("sea-green");
-                data.timestamp = timerender.absolute_time(data.timestamp * 1000);
-                meta.current_resend_invite_user_modal_row.find(".invited_at").text(data.timestamp);
-            },
+        confirm_dialog.launch({
+            parent: modal_parent,
+            html_heading: $t_html({defaultMessage: "Resend invitation to {email}"}, {email}),
+            html_body,
+            html_yes_button: $t_html({defaultMessage: "Confirm"}),
+            on_click: do_resend_invite,
         });
+
+        $(".confirm_dialog_yes_button").attr("data-invite-id", meta.invite_id);
     });
 }
