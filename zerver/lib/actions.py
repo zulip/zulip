@@ -2819,12 +2819,9 @@ def can_edit_content_or_topic(
     if is_no_topic_msg:
         return True
 
-    # Organization administrators can always edit topics
-    if user_profile.is_realm_admin:
-        return True
-
-    # The edit_topic_policy setting controls which users can edit topics.
-    if user_profile.realm.edit_topic_policy == Realm.POLICY_EVERYONE:
+    # The can_edit_topic_of_any_message helper returns whether the user can edit the topic
+    # or not based on edit_topic_policy setting and the user's role.
+    if user_profile.can_edit_topic_of_any_message():
         return True
 
     return False
@@ -2885,6 +2882,7 @@ def check_update_message(
         topic_name is not None
         and message.sender != user_profile
         and not user_profile.is_realm_admin
+        and not user_profile.is_moderator
         and not is_no_topic_msg
     ):
         deadline_seconds = Realm.DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS + edit_limit_buffer

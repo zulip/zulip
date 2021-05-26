@@ -264,7 +264,10 @@ class Realm(models.Model):
     ]
 
     COMMON_MESSAGE_POLICY_TYPES = [
+        POLICY_MEMBERS_ONLY,
         POLICY_ADMINS_ONLY,
+        POLICY_FULL_MEMBERS_ONLY,
+        POLICY_MODERATORS_ONLY,
         POLICY_EVERYONE,
     ]
 
@@ -1571,6 +1574,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def has_permission(self, policy_name: str) -> bool:
         if policy_name not in [
             "create_stream_policy",
+            "edit_topic_policy",
             "invite_to_stream_policy",
             "invite_to_realm_policy",
             "move_messages_between_streams_policy",
@@ -1610,6 +1614,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     def can_move_messages_between_streams(self) -> bool:
         return self.has_permission("move_messages_between_streams_policy")
+
+    def can_edit_topic_of_any_message(self) -> bool:
+        if self.realm.edit_topic_policy == Realm.POLICY_EVERYONE:
+            return True
+        return self.has_permission("edit_topic_policy")
 
     def can_access_public_streams(self) -> bool:
         return not (self.is_guest or self.realm.is_zephyr_mirror_realm)

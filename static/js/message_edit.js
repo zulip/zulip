@@ -24,7 +24,6 @@ import * as overlays from "./overlays";
 import {page_params} from "./page_params";
 import * as resize from "./resize";
 import * as rows from "./rows";
-import * as settings_config from "./settings_config";
 import * as settings_data from "./settings_data";
 import * as stream_bar from "./stream_bar";
 import * as stream_data from "./stream_data";
@@ -69,12 +68,14 @@ export function is_topic_editable(message, edit_limit_seconds_buffer = 0) {
         return true;
     }
 
-    if (
-        page_params.realm_edit_topic_policy ===
-        settings_config.common_message_policy_values.by_admins_only.code
-    ) {
-        // If you're another non-admin user, you need community topic editing enabled.
+    if (!settings_data.user_can_edit_topic_of_any_message()) {
         return false;
+    }
+
+    // moderators can edit the topic if edit_topic_policy allows them to do so,
+    // irrespective of the topic editing deadline.
+    if (page_params.is_moderator) {
+        return true;
     }
 
     // If you're using community topic editing, there's a deadline.

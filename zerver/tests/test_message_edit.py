@@ -6,6 +6,7 @@ from unittest import mock
 import orjson
 from django.db import IntegrityError
 from django.http import HttpResponse
+from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import (
     do_change_stream_post_policy,
@@ -854,16 +855,50 @@ class EditMessageTest(EditMessageTestCase):
         message.date_sent = message.date_sent - datetime.timedelta(seconds=180)
         message.save()
 
+        # Guest user must be subscribed to the stream to access the message.
+        polonius = self.example_user("polonius")
+        self.subscribe(polonius, "Scotland")
+
         # any user can edit the topic of a message
         set_message_editing_params(True, 0, Realm.POLICY_EVERYONE)
-        do_edit_message_assert_success(id_, "A", "cordelia")
+        do_edit_message_assert_success(id_, "A", "polonius")
 
-        # only admins can edit the topics of messages
-        set_message_editing_params(True, 0, Realm.POLICY_ADMINS_ONLY)
-        do_edit_message_assert_success(id_, "B", "iago")
+        # only members can edit topic of a message
+        set_message_editing_params(True, 0, Realm.POLICY_MEMBERS_ONLY)
+        do_edit_message_assert_error(
+            id_, "B", "You don't have permission to edit this message", "polonius"
+        )
+        do_edit_message_assert_success(id_, "B", "cordelia")
+
+        # only full members can edit topic of a message
+        set_message_editing_params(True, 0, Realm.POLICY_FULL_MEMBERS_ONLY)
+
+        cordelia = self.example_user("cordelia")
+        do_set_realm_property(cordelia.realm, "waiting_period_threshold", 10, acting_user=None)
+
+        cordelia.date_joined = timezone_now() - datetime.timedelta(days=9)
+        cordelia.save()
         do_edit_message_assert_error(
             id_, "C", "You don't have permission to edit this message", "cordelia"
         )
+
+        cordelia.date_joined = timezone_now() - datetime.timedelta(days=11)
+        cordelia.save()
+        do_edit_message_assert_success(id_, "C", "cordelia")
+
+        # only moderators can edit topic of a message
+        set_message_editing_params(True, 0, Realm.POLICY_MODERATORS_ONLY)
+        do_edit_message_assert_error(
+            id_, "D", "You don't have permission to edit this message", "cordelia"
+        )
+        do_edit_message_assert_success(id_, "D", "shiva")
+
+        # only admins can edit the topics of messages
+        set_message_editing_params(True, 0, Realm.POLICY_ADMINS_ONLY)
+        do_edit_message_assert_error(
+            id_, "E", "You don't have permission to edit this message", "shiva"
+        )
+        do_edit_message_assert_success(id_, "E", "iago")
 
         # users cannot edit topics if allow_message_editing is False
         set_message_editing_params(False, 0, Realm.POLICY_EVERYONE)
@@ -876,8 +911,9 @@ class EditMessageTest(EditMessageTestCase):
         message.save()
         set_message_editing_params(True, 0, Realm.POLICY_EVERYONE)
         do_edit_message_assert_success(id_, "E", "iago")
+        do_edit_message_assert_success(id_, "F", "shiva")
         do_edit_message_assert_error(
-            id_, "F", "The time limit for editing this message's topic has passed", "cordelia"
+            id_, "G", "The time limit for editing this message's topic has passed", "cordelia"
         )
 
         # anyone should be able to edit "no topic" indefinitely

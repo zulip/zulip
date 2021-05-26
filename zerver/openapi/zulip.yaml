@@ -3488,7 +3488,10 @@ paths:
                                       description: |
                                         The policy for which users can edit topics of any message.
 
+                                        * 1 = members only
                                         * 2 = admins only
+                                        * 3 = full members only
+                                        * 4 = moderators only
                                         * 5 = everyone
 
                                         **Changes**: New in Zulip 5.0 (feature level 75), replacing the
@@ -8745,7 +8748,10 @@ paths:
 
                           The policy for which users can edit topics of any message.
 
+                          * 1 = members only
                           * 2 = admins only
+                          * 3 = full members only
+                          * 4 = moderators only
                           * 5 = everyone
 
                           **Changes**: New in Zulip 5.0 (feature level 75), replacing the

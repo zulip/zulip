@@ -930,6 +930,21 @@ class RealmAPITest(ZulipTestCase):
         self.assertEqual(realm.message_content_edit_limit_seconds, 200)
         self.assertEqual(realm.edit_topic_policy, Realm.POLICY_ADMINS_ONLY)
 
+        realm = self.update_with_api("edit_topic_policy", Realm.POLICY_MODERATORS_ONLY)
+        self.assertEqual(realm.allow_message_editing, False)
+        self.assertEqual(realm.message_content_edit_limit_seconds, 200)
+        self.assertEqual(realm.edit_topic_policy, Realm.POLICY_MODERATORS_ONLY)
+
+        realm = self.update_with_api("edit_topic_policy", Realm.POLICY_FULL_MEMBERS_ONLY)
+        self.assertEqual(realm.allow_message_editing, False)
+        self.assertEqual(realm.message_content_edit_limit_seconds, 200)
+        self.assertEqual(realm.edit_topic_policy, Realm.POLICY_FULL_MEMBERS_ONLY)
+
+        realm = self.update_with_api("edit_topic_policy", Realm.POLICY_MEMBERS_ONLY)
+        self.assertEqual(realm.allow_message_editing, False)
+        self.assertEqual(realm.message_content_edit_limit_seconds, 200)
+        self.assertEqual(realm.edit_topic_policy, Realm.POLICY_MEMBERS_ONLY)
+
         # Test an invalid value for edit_topic_policy
         invalid_edit_topic_policy_value = 10
         req = {"edit_topic_policy": orjson.dumps(invalid_edit_topic_policy_value).decode()}

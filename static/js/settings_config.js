@@ -204,8 +204,23 @@ export const common_message_policy_values = {
         code: 5,
         description: $t({defaultMessage: "Admins, members and guests"}),
     },
-    by_admins_only: {
+    by_members: {
         order: 2,
+        code: 1,
+        description: $t({defaultMessage: "Admins and members"}),
+    },
+    by_full_members: {
+        order: 3,
+        code: 3,
+        description: $t({defaultMessage: "Admins and full members"}),
+    },
+    by_moderators_only: {
+        order: 4,
+        code: 4,
+        description: $t({defaultMessage: "Admins and moderators"}),
+    },
+    by_admins_only: {
+        order: 5,
         code: 2,
         description: $t({defaultMessage: "Admins only"}),
     },
