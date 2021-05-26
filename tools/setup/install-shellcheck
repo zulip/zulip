@@ -2,8 +2,12 @@
 set -eu
 
 version=0.7.1
-tarball="shellcheck-v$version.linux.x86_64.tar.xz"
-sha256=64f17152d96d7ec261ad3086ed42d18232fcb65148b44571b564d688269d36c8
+arch="$(uname -m)"
+tarball="shellcheck-v$version.linux.$arch.tar.xz"
+declare -A sha256=(
+    [aarch64]=b50cc31509b354ab5bbfc160bc0967567ed98cd9308fd43f38551b36cccc4446
+    [x86_64]=64f17152d96d7ec261ad3086ed42d18232fcb65148b44571b564d688269d36c8
+)
 
 check_version() {
     out="$(shellcheck --version 2>/dev/null)" && [[ "$out" = *"
@@ -16,7 +20,7 @@ if ! check_version; then
     trap 'rm -r "$tmpdir"' EXIT
     cd "$tmpdir"
     wget -nv "https://github.com/koalaman/shellcheck/releases/download/v$version/$tarball"
-    sha256sum -c <<<"$sha256 $tarball"
+    sha256sum -c <<<"${sha256[$arch]} $tarball"
     tar -xJf "$tarball" --no-same-owner --strip-components=1 -C /usr/local/bin "shellcheck-v$version/shellcheck"
     check_version
 fi
