@@ -271,7 +271,7 @@ export function initialize() {
 
     $(".user-status-value").on("click", (e) => {
         e.stopPropagation();
-        const user_status_value = $(e.currentTarget).attr("data-user-status-value");
+        const user_status_value = $(e.currentTarget).text();
         $("input.user_status").val(user_status_value);
         user_status_ui.toggle_clear_message_button();
         user_status_ui.update_button();
