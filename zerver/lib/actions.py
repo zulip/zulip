@@ -2798,7 +2798,7 @@ def check_update_message(
     # sent the message, they are not the admin, and the time limit for editing
     # topics is passed, raise an error.
     if (
-        content is None
+        topic_name is not None
         and message.sender != user_profile
         and not user_profile.is_realm_admin
         and not is_no_topic_msg
