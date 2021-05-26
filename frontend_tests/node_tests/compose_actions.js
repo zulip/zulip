@@ -33,6 +33,7 @@ mock_esm("../../static/js/recent_topics_util", {
 });
 mock_esm("../../static/js/drafts", {
     update_draft: noop,
+    restore_last_draft_based_on_compose_state: noop,
 });
 mock_esm("../../static/js/common", {
     status_classes: "status_classes",

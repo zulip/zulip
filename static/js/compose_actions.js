@@ -268,6 +268,11 @@ export function start(msg_type, opts) {
 
     compose_state.set_message_type(msg_type);
 
+    // Restore the last saved draft if it exists.
+    if (opts.trigger !== "restore draft") {
+        drafts.restore_last_draft_based_on_compose_state();
+    }
+
     // Show either stream/topic fields or "You and" field.
     show_box(msg_type, opts);
 

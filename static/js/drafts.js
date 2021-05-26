@@ -157,7 +157,7 @@ export function restore_message(draft) {
         };
     }
 
-    return compose_args;
+    return {...compose_args, trigger: "restore draft"};
 }
 
 function draft_notify() {

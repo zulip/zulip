@@ -48,6 +48,20 @@ async function create_stream_message_draft(page: Page): Promise<void> {
     await page.click("#compose_close");
 }
 
+async function test_restore_stream_message_draft(page: Page): Promise<void> {
+    // Test if it restore draft in reply state.
+    await page.click("#zhome .recipient_row:last-child .message_content");
+
+    await page.waitForSelector("#stream-message", {visible: true});
+    await common.check_form_contents(page, "form#send_message_form", {
+        stream_message_recipient_stream: "Verona",
+        stream_message_recipient_topic: "tests",
+        content: "Test stream message.",
+    });
+    await page.click("#compose_close");
+    await page.waitForSelector("#stream-message", {visible: false});
+}
+
 async function create_private_message_draft(page: Page): Promise<void> {
     console.log("Creating private message draft");
     await page.keyboard.press("KeyX");
@@ -56,6 +70,18 @@ async function create_private_message_draft(page: Page): Promise<void> {
     await common.pm_recipient.set(page, "cordelia@zulip.com");
     await common.pm_recipient.set(page, "hamlet@zulip.com");
     await page.click("#compose_close");
+}
+
+async function test_restore_private_message_draft(page: Page): Promise<void> {
+    // Test if it restore draft in reply state.
+    await page.click("#zhome .recipient_row:last-child .message_content");
+
+    await page.waitForSelector("#private_message_recipient", {visible: true});
+    await common.check_form_contents(page, "form#send_message_form", {
+        content: "Test private message.",
+    });
+    await page.click("#compose_close");
+    await page.waitForSelector("#private_message_recipient", {visible: false});
 }
 
 async function open_compose_markdown_preview(page: Page): Promise<void> {
@@ -104,7 +130,7 @@ async function test_previously_created_drafts_rendered(page: Page): Promise<void
             page,
             ".draft-row .message_header_private_message .stream_label",
         ),
-        "You and Cordelia, Lear's daughter, King Hamlet",
+        "You and King Hamlet, Cordelia, Lear's daughter",
     );
     assert.strictEqual(
         await common.get_text_from_selector(
@@ -180,7 +206,7 @@ async function test_restore_private_message_draft_via_draft_overlay(page: Page):
     });
     const cordelia_internal_email = await common.get_internal_email_from_name(page, "cordelia");
     const hamlet_internal_email = await common.get_internal_email_from_name(page, "hamlet");
-    await common.pm_recipient.expect(page, `${cordelia_internal_email},${hamlet_internal_email}`);
+    await common.pm_recipient.expect(page, `${hamlet_internal_email},${cordelia_internal_email}`);
     assert.strictEqual(
         await common.get_text_from_selector(page, "title"),
         "Cordelia, Lear's daughter, King Hamlet - Zulip Dev - Zulip",
@@ -278,8 +304,20 @@ async function drafts_test(page: Page): Promise<void> {
 
     await test_empty_drafts(page);
 
+    await common.send_message(page, "stream", {
+        stream: "Verona",
+        topic: "tests",
+        content: "Stream Message",
+    });
     await create_stream_message_draft(page);
+    await test_restore_stream_message_draft(page);
+
+    await common.send_message(page, "private", {
+        recipient: "cordelia@zulip.com, hamlet@zulip.com",
+        content: "Private Message",
+    });
     await create_private_message_draft(page);
+    await test_restore_private_message_draft(page);
     await open_drafts_through_compose(page);
     await test_previously_created_drafts_rendered(page);
 

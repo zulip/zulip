@@ -51,6 +51,7 @@ const compose_args_for_legacy_draft = {
     topic: "lunch",
     type: "stream",
     content: "whatever",
+    trigger: "restore draft",
 };
 
 const draft_1 = {
