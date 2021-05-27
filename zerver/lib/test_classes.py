@@ -1258,7 +1258,9 @@ Output:
         self.assertFalse(validation_func(guest_user))
 
     @contextmanager
-    def tornado_redirected_to_list(self, lst: List[Mapping[str, Any]]) -> Iterator[None]:
+    def tornado_redirected_to_list(
+        self, lst: List[Mapping[str, Any]], expected_num_events: int = 1
+    ) -> Iterator[None]:
         real_event_queue_process_notification = django_tornado_api.process_notification
         django_tornado_api.process_notification = lambda notice: lst.append(notice)
         # process_notification takes a single parameter called 'notice'.
@@ -1268,6 +1270,8 @@ Output:
         # So explicitly change parameter name to 'notice' to work around this problem
         yield
         django_tornado_api.process_notification = real_event_queue_process_notification
+
+        self.assert_length(lst, expected_num_events)
 
 
 class WebhookTestCase(ZulipTestCase):

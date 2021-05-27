@@ -234,7 +234,6 @@ class UnreadCountTests(ZulipTestCase):
             )
 
         self.assert_json_success(result)
-        self.assertTrue(len(events) == 1)
 
         event = events[0]["event"]
         expected = dict(
@@ -306,7 +305,6 @@ class UnreadCountTests(ZulipTestCase):
             )
 
         self.assert_json_success(result)
-        self.assertTrue(len(events) == 1)
 
         event = events[0]["event"]
         expected = dict(

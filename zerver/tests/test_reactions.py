@@ -423,7 +423,6 @@ class ReactionEventTest(ZulipTestCase):
                 reaction_sender, f"/api/v1/messages/{pm_id}/reactions", reaction_info
             )
         self.assert_json_success(result)
-        self.assert_length(events, 1)
 
         event = events[0]["event"]
         event_user_ids = set(events[0]["users"])
@@ -468,7 +467,6 @@ class ReactionEventTest(ZulipTestCase):
                 reaction_sender, f"/api/v1/messages/{pm_id}/reactions", reaction_info
             )
         self.assert_json_success(result)
-        self.assert_length(events, 1)
 
         event = events[0]["event"]
         event_user_ids = set(events[0]["users"])
@@ -507,7 +505,6 @@ class ReactionEventTest(ZulipTestCase):
                 iago, f"/api/v1/messages/{message_before_id}/reactions", reaction_info
             )
         self.assert_json_success(result)
-        self.assert_length(events, 1)
         event = events[0]["event"]
         self.assertEqual(event["type"], "reaction")
         event_user_ids = set(events[0]["users"])
@@ -528,7 +525,6 @@ class ReactionEventTest(ZulipTestCase):
                 iago, f"/api/v1/messages/{message_after_id}/reactions", reaction_info
             )
         self.assert_json_success(result)
-        self.assert_length(events, 1)
         event = events[0]["event"]
         self.assertEqual(event["type"], "reaction")
         event_user_ids = set(events[0]["users"])
@@ -549,7 +545,6 @@ class ReactionEventTest(ZulipTestCase):
                 iago, f"/api/v1/messages/{message_before_id}/reactions", reaction_info
             )
         self.assert_json_success(result)
-        self.assert_length(events, 1)
         event = events[0]["event"]
         self.assertEqual(event["type"], "reaction")
         event_user_ids = set(events[0]["users"])
@@ -569,7 +564,6 @@ class ReactionEventTest(ZulipTestCase):
                 iago, f"/api/v1/messages/{message_before_id}/reactions", reaction_info
             )
         self.assert_json_success(result)
-        self.assert_length(events, 1)
         event = events[0]["event"]
         self.assertEqual(event["type"], "reaction")
         event_user_ids = set(events[0]["users"])
@@ -591,7 +585,6 @@ class ReactionEventTest(ZulipTestCase):
                 hamlet, f"/api/v1/messages/{private_message_id}/reactions", reaction_info
             )
         self.assert_json_success(result)
-        self.assert_length(events, 1)
         event = events[0]["event"]
         self.assertEqual(event["type"], "reaction")
         event_user_ids = set(events[0]["users"])
@@ -609,7 +602,6 @@ class ReactionEventTest(ZulipTestCase):
                 polonius, f"/api/v1/messages/{huddle_message_id}/reactions", reaction_info
             )
         self.assert_json_success(result)
-        self.assert_length(events, 1)
         event = events[0]["event"]
         self.assertEqual(event["type"], "reaction")
         event_user_ids = set(events[0]["users"])
@@ -1038,8 +1030,6 @@ class ReactionAPIEventTest(EmojiReactionBase):
         with self.tornado_redirected_to_list(events):
             self.api_post(reaction_sender, f"/api/v1/messages/{pm_id}/reactions", reaction_info)
 
-        self.assert_length(events, 1)
-
         event = events[0]["event"]
         event_user_ids = set(events[0]["users"])
 
@@ -1085,7 +1075,6 @@ class ReactionAPIEventTest(EmojiReactionBase):
             )
 
         self.assert_json_success(result)
-        self.assert_length(events, 1)
 
         event = events[0]["event"]
         event_user_ids = set(events[0]["users"])
