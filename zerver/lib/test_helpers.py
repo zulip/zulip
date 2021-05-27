@@ -92,30 +92,6 @@ def simulated_queue_client(client: Callable[[], object]) -> Iterator[None]:
         yield
 
 
-class EventInfo:
-    def populate(self, call_args_list: List[Any]) -> None:
-        args = call_args_list[0][0]
-        self.realm_id = args[0]
-        self.payload = args[1]
-        self.user_ids = args[2]
-
-
-@contextmanager
-def capture_event(event_info: EventInfo) -> Iterator[None]:
-    # Use this for simple endpoints that throw a single event
-    # in zerver.lib.actions.
-    with mock.patch("zerver.lib.actions.send_event") as m:
-        yield
-
-    if len(m.call_args_list) == 0:
-        raise AssertionError("No event was sent inside actions.py")
-
-    if len(m.call_args_list) > 1:
-        raise AssertionError("Too many events sent by action")
-
-    event_info.populate(m.call_args_list)
-
-
 @contextmanager
 def cache_tries_captured() -> Iterator[List[Tuple[str, Union[str, List[str]], Optional[str]]]]:
     cache_queries: List[Tuple[str, Union[str, List[str]], Optional[str]]] = []
