@@ -1661,7 +1661,7 @@ def receives_offline_email_notifications(user_profile: UserProfile) -> bool:
     return user_profile.enable_offline_email_notifications and not user_profile.is_bot
 
 
-def receives_online_notifications(user_profile: UserProfile) -> bool:
+def receives_online_push_notifications(user_profile: UserProfile) -> bool:
     return user_profile.enable_online_push_notifications and not user_profile.is_bot
 
 
