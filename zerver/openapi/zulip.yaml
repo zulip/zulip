@@ -7041,7 +7041,7 @@ paths:
   /realm/playgrounds:
     post:
       operationId: add_code_playground
-      summary: Remove a code playground
+      summary: Add a code playground
       tags: ["server_and_organizations"]
       description: |
         Configure [code playgrounds](/help/code-blocks#code-playgrounds) for the organization.
