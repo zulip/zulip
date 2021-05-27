@@ -19,8 +19,12 @@ To enable this integration, you need to get a production API key from
 1. Enter a name and a description for your app and click on **Create
    New App**.  The hostname for your Zulip server is a fine name.
 
-1. You will receive a beta API key. Apply for a production API key
-   by following the steps mentioned by GIPHY on the same page.
+1. You will receive a beta API key.
+
+1. Apply for a production API key by following the steps mentioned by
+   GIPHY on the same page.  Note that when submitting a screenshot to
+   request a production API key, GIPHY expects the screenshot to show
+   the full page (including URL).
 
 You can then configure your Zulip server to use GIPHY API as
 follows:
