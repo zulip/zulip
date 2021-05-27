@@ -103,6 +103,14 @@ $(() => {
         $("#timezone").val(new Intl.DateTimeFormat().resolvedOptions().timeZone);
     }
 
+    $("#registration").on("submit", () => {
+        if ($("#registration").valid()) {
+            $(".register-button .loader").css("display", "inline-block");
+            $(".register-button").prop("disabled", true);
+            $(".register-button span").hide();
+        }
+    });
+
     // Code in this block will be executed when the /accounts/send_confirm
     // endpoint is visited i.e. accounts_send_confirm.html is rendered.
     if ($("[data-page-id='accounts-send-confirm']").length > 0) {
