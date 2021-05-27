@@ -1,5 +1,4 @@
-from typing import Any, Dict, List
-from unittest import mock
+from typing import Any, Dict, List, Mapping
 
 from zerver.lib.message import MessageDict
 from zerver.lib.test_classes import ZulipTestCase
@@ -114,7 +113,8 @@ class TestBasics(ZulipTestCase):
             msg_type="whatever",
             content='{"name": "alice", "salary": 20}',
         )
-        with mock.patch("zerver.lib.actions.send_event") as m:
+        events: List[Mapping[str, Any]] = []
+        with self.tornado_redirected_to_list(events):
             result = self.client_post("/json/submessage", payload)
         self.assert_json_success(result)
 
@@ -129,10 +129,9 @@ class TestBasics(ZulipTestCase):
             type="submessage",
         )
 
-        self.assertEqual(m.call_count, 1)
-        data = m.call_args[0][1]
+        data = events[0]["event"]
         self.assertEqual(data, expected_data)
-        users = m.call_args[0][2]
+        users = events[0]["users"]
         self.assertIn(cordelia.id, users)
         self.assertIn(hamlet.id, users)
 

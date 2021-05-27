@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Optional, Set
+from typing import Any, List, Mapping, Optional, Set
 from unittest import mock
 
 import orjson
@@ -1660,14 +1660,14 @@ class StreamMessagesTest(ZulipTestCase):
         )
 
     def _send_stream_message(self, user: UserProfile, stream_name: str, content: str) -> Set[int]:
-        with mock.patch("zerver.lib.actions.send_event") as m:
+        events: List[Mapping[str, Any]] = []
+        with self.tornado_redirected_to_list(events):
             self.send_stream_message(
                 user,
                 stream_name,
                 content=content,
             )
-        self.assertEqual(m.call_count, 1)
-        users = m.call_args[0][2]
+        users = events[0]["users"]
         user_ids = {u["id"] for u in users}
         return user_ids
 

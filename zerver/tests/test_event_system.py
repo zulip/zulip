@@ -1,5 +1,5 @@
 import time
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Mapping, Optional
 from unittest import mock
 
 import orjson
@@ -1123,18 +1123,19 @@ class TestGetRawUserDataSystemBotRealm(ZulipTestCase):
 class TestUserPresenceUpdatesDisabled(ZulipTestCase):
     def test_presence_events_diabled_on_larger_realm(self) -> None:
         # First check that normally the mocked function gets called.
-        with mock.patch("zerver.lib.actions.send_event") as mock_send_event:
+        events: List[Mapping[str, Any]] = []
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
             do_update_user_presence(
                 self.example_user("cordelia"),
                 get_client("website"),
                 timezone_now(),
                 UserPresence.ACTIVE,
             )
-        mock_send_event.assert_called_once()
 
         # Now check that if the realm has more than the USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS
         # amount of active users, send_event doesn't get called.
-        with mock.patch("zerver.lib.actions.send_event") as mock_send_event:
+        events = []
+        with self.tornado_redirected_to_list(events, expected_num_events=0):
             with self.settings(USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS=1):
                 do_update_user_presence(
                     self.example_user("hamlet"),
@@ -1142,4 +1143,3 @@ class TestUserPresenceUpdatesDisabled(ZulipTestCase):
                     timezone_now(),
                     UserPresence.ACTIVE,
                 )
-        mock_send_event.assert_not_called()
