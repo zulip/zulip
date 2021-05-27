@@ -9205,6 +9205,10 @@ paths:
                             description: |
                               Whether the user can authenticate using their Google account.
                             type: boolean
+                          facebook:
+                            description: |
+                              Whether the user can authenticate using their Facebook account.
+                            type: boolean
                           saml:
                             description: |
                               Whether the user can authenticate using SAML.
@@ -9323,6 +9327,7 @@ paths:
                             "remoteuser": false,
                             "github": true,
                             "azuread": false,
+                            "facebook": false,
                             "google": true,
                             "saml": true,
                           },

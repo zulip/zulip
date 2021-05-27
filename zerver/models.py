@@ -199,6 +199,7 @@ class Realm(models.Model):
         "SAML",
         "GitLab",
         "Apple",
+        "Facebook",
     ]
     SUBDOMAIN_FOR_ROOT_DOMAIN = ""
     WILDCARD_MENTION_THRESHOLD = 15

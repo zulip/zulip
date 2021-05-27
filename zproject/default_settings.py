@@ -97,6 +97,12 @@ SOCIAL_AUTH_APPLE_TEAM = get_secret("social_auth_apple_team", development_only=T
 SOCIAL_AUTH_APPLE_SCOPE = ["name", "email"]
 SOCIAL_AUTH_APPLE_EMAIL_AS_USERNAME = True
 
+# Facebook
+SOCIAL_AUTH_FACEBOOK_KEY: Optional[str] = None
+SOCIAL_AUTH_FACEBOOK_SECRET = get_secret("facebook_secret")
+SOCIAL_AUTH_FACEBOOK_SCOPE = ["email"]
+SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {"fields": "id, name, email"}
+
 # Other auth
 SSO_APPEND_DOMAIN: Optional[str] = None
 
