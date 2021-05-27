@@ -2703,6 +2703,37 @@ def check_schedule_message(
     return do_schedule_messages([send_request])[0]
 
 
+def validate_message_edit_payload(
+    message: Message,
+    stream_id: Optional[int],
+    topic_name: Optional[str],
+    propagate_mode: Optional[str],
+    content: Optional[str],
+) -> None:
+    """
+    Checks that the data sent is well-formed. Does not handle editability, permissions etc.
+    """
+    if topic_name is None and content is None and stream_id is None:
+        raise JsonableError(_("Nothing to change"))
+
+    if not message.is_stream_message():
+        if stream_id is not None:
+            raise JsonableError(_("Private messages cannot be moved to streams."))
+
+    if propagate_mode != "change_one" and topic_name is None and stream_id is None:
+        raise JsonableError(_("Invalid propagate_mode without topic edit"))
+
+    if topic_name == "":
+        raise JsonableError(_("Topic can't be empty"))
+
+    if stream_id is not None and content is not None:
+        raise JsonableError(_("Cannot change message content while changing stream"))
+
+    # Right now, we prevent users from editing widgets.
+    if content is not None and is_widget_message(message):
+        raise JsonableError(_("Widgets cannot be edited."))
+
+
 def check_update_message(
     user_profile: UserProfile,
     message_id: int,
@@ -2718,13 +2749,19 @@ def check_update_message(
     and raises a JsonableError if otherwise.
     It returns the number changed.
     """
+    message, ignored_user_message = access_message(user_profile, message_id)
+
     if not user_profile.realm.allow_message_editing:
         raise JsonableError(_("Your organization has turned off message editing"))
 
-    if propagate_mode != "change_one" and topic_name is None and stream_id is None:
-        raise JsonableError(_("Invalid propagate_mode without topic edit"))
+    # The zerver/views/message_edit.py callpoint already strips this
+    # via REQ_topic; so we can delete this line if we arrange a
+    # contract where future callers in the embedded bots system strip
+    # use REQ_topic as well (or otherwise are guaranteed to strip input).
+    if topic_name is not None:
+        topic_name = topic_name.strip()
+    validate_message_edit_payload(message, stream_id, topic_name, propagate_mode, content)
 
-    message, ignored_user_message = access_message(user_profile, message_id)
     is_no_topic_msg = message.topic_name() == "(no topic)"
 
     # You only have permission to edit a message if:
@@ -2743,10 +2780,6 @@ def check_update_message(
         pass
     else:
         raise JsonableError(_("You don't have permission to edit this message"))
-
-    # Right now, we prevent users from editing widgets.
-    if content is not None and is_widget_message(message):
-        raise JsonableError(_("Widgets cannot be edited."))
 
     # If there is a change to the content, check that it hasn't been too long
     # Allow an extra 20 seconds since we potentially allow editing 15 seconds
@@ -2773,12 +2806,6 @@ def check_update_message(
         if (timezone_now() - message.date_sent) > datetime.timedelta(seconds=deadline_seconds):
             raise JsonableError(_("The time limit for editing this message has passed"))
 
-    if topic_name is None and content is None and stream_id is None:
-        raise JsonableError(_("Nothing to change"))
-    if topic_name is not None:
-        topic_name = topic_name.strip()
-        if topic_name == "":
-            raise JsonableError(_("Topic can't be empty"))
     rendered_content = None
     links_for_embed: Set[str] = set()
     prior_mention_user_ids: Set[int] = set()
@@ -2815,8 +2842,7 @@ def check_update_message(
     number_changed = 0
 
     if stream_id is not None:
-        if not message.is_stream_message():
-            raise JsonableError(_("Message must be a stream message"))
+        assert message.is_stream_message()
         if not user_profile.can_move_messages_between_streams():
             raise JsonableError(_("You don't have permission to move this message"))
         try:
@@ -2827,8 +2853,6 @@ def check_update_message(
                     "You don't have permission to move this message due to missing access to its stream"
                 )
             )
-        if content is not None:
-            raise JsonableError(_("Cannot change message content while changing stream"))
 
         new_stream = access_stream_by_id(user_profile, stream_id, require_active=True)[0]
         check_stream_access_based_on_stream_post_policy(user_profile, new_stream)

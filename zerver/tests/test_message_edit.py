@@ -95,6 +95,117 @@ class EditMessageTestCase(ZulipTestCase):
         return (user_profile, stream, new_stream, msg_id, msg_id_lt)
 
 
+class EditMessagePayloadTest(EditMessageTestCase):
+    def test_edit_message_no_changes(self) -> None:
+        self.login("hamlet")
+        msg_id = self.send_stream_message(
+            self.example_user("hamlet"), "Scotland", topic_name="editing", content="before edit"
+        )
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "message_id": msg_id,
+            },
+        )
+        self.assert_json_error(result, "Nothing to change")
+
+    def test_move_message_cant_move_private_message(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login("hamlet")
+        cordelia = self.example_user("cordelia")
+        msg_id = self.send_personal_message(hamlet, cordelia)
+
+        verona = get_stream("Verona", hamlet.realm)
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "message_id": msg_id,
+                "stream_id": verona.id,
+            },
+        )
+
+        self.assert_json_error(result, "Private messages cannot be moved to streams.")
+
+    def test_propagate_invalid(self) -> None:
+        self.login("hamlet")
+        id1 = self.send_stream_message(self.example_user("hamlet"), "Scotland", topic_name="topic1")
+
+        result = self.client_patch(
+            "/json/messages/" + str(id1),
+            {
+                "topic": "edited",
+                "propagate_mode": "invalid",
+            },
+        )
+        self.assert_json_error(result, "Invalid propagate_mode")
+        self.check_topic(id1, topic_name="topic1")
+
+        result = self.client_patch(
+            "/json/messages/" + str(id1),
+            {
+                "content": "edited",
+                "propagate_mode": "change_all",
+            },
+        )
+        self.assert_json_error(result, "Invalid propagate_mode without topic edit")
+        self.check_topic(id1, topic_name="topic1")
+
+    def test_edit_message_no_topic(self) -> None:
+        self.login("hamlet")
+        msg_id = self.send_stream_message(
+            self.example_user("hamlet"), "Scotland", topic_name="editing", content="before edit"
+        )
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "message_id": msg_id,
+                "topic": " ",
+            },
+        )
+        self.assert_json_error(result, "Topic can't be empty")
+
+    def test_move_message_to_stream_with_content(self) -> None:
+        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
+            "iago", "test move stream", "new stream", "test"
+        )
+
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "message_id": msg_id,
+                "stream_id": new_stream.id,
+                "propagate_mode": "change_all",
+                "content": "Not allowed",
+            },
+        )
+        self.assert_json_error(result, "Cannot change message content while changing stream")
+
+        messages = get_topic_messages(user_profile, old_stream, "test")
+        self.assert_length(messages, 3)
+
+        messages = get_topic_messages(user_profile, new_stream, "test")
+        self.assert_length(messages, 0)
+
+    # Right now, we prevent users from editing widgets.
+    def test_edit_submessage(self) -> None:
+        self.login("hamlet")
+        msg_id = self.send_stream_message(
+            self.example_user("hamlet"),
+            "Scotland",
+            topic_name="editing",
+            content="/poll Games?\nYES\nNO",
+        )
+        result = self.client_patch(
+            "/json/messages/" + str(msg_id),
+            {
+                "message_id": msg_id,
+                "content": "/poll Games?\nYES\nNO\nMaybe",
+            },
+        )
+        self.assert_json_error(result, "Widgets cannot be edited.")
+
+
 class EditMessageTest(EditMessageTestCase):
     def test_query_count_on_to_dict_uncached(self) -> None:
         # `to_dict_uncached` method is used by the mechanisms
@@ -211,24 +322,6 @@ class EditMessageTest(EditMessageTestCase):
         result = self.client_get("/json/messages/" + str(msg_id))
         self.assert_json_error(result, "Invalid message(s)")
 
-    # Right now, we prevent users from editing widgets.
-    def test_edit_submessage(self) -> None:
-        self.login("hamlet")
-        msg_id = self.send_stream_message(
-            self.example_user("hamlet"),
-            "Scotland",
-            topic_name="editing",
-            content="/poll Games?\nYES\nNO",
-        )
-        result = self.client_patch(
-            "/json/messages/" + str(msg_id),
-            {
-                "message_id": msg_id,
-                "content": "/poll Games?\nYES\nNO\nMaybe",
-            },
-        )
-        self.assert_json_error(result, "Widgets cannot be edited.")
-
     def test_edit_message_no_permission(self) -> None:
         self.login("hamlet")
         msg_id = self.send_stream_message(
@@ -242,33 +335,6 @@ class EditMessageTest(EditMessageTestCase):
             },
         )
         self.assert_json_error(result, "You don't have permission to edit this message")
-
-    def test_edit_message_no_changes(self) -> None:
-        self.login("hamlet")
-        msg_id = self.send_stream_message(
-            self.example_user("hamlet"), "Scotland", topic_name="editing", content="before edit"
-        )
-        result = self.client_patch(
-            "/json/messages/" + str(msg_id),
-            {
-                "message_id": msg_id,
-            },
-        )
-        self.assert_json_error(result, "Nothing to change")
-
-    def test_edit_message_no_topic(self) -> None:
-        self.login("hamlet")
-        msg_id = self.send_stream_message(
-            self.example_user("hamlet"), "Scotland", topic_name="editing", content="before edit"
-        )
-        result = self.client_patch(
-            "/json/messages/" + str(msg_id),
-            {
-                "message_id": msg_id,
-                "topic": " ",
-            },
-        )
-        self.assert_json_error(result, "Topic can't be empty")
 
     def test_edit_message_no_content(self) -> None:
         self.login("hamlet")
@@ -1094,30 +1160,6 @@ class EditMessageTest(EditMessageTestCase):
         self.check_topic(id3, topic_name="topiC1")
         self.check_topic(id4, topic_name="edited")
 
-    def test_propagate_invalid(self) -> None:
-        self.login("hamlet")
-        id1 = self.send_stream_message(self.example_user("hamlet"), "Scotland", topic_name="topic1")
-
-        result = self.client_patch(
-            "/json/messages/" + str(id1),
-            {
-                "topic": "edited",
-                "propagate_mode": "invalid",
-            },
-        )
-        self.assert_json_error(result, "Invalid propagate_mode")
-        self.check_topic(id1, topic_name="topic1")
-
-        result = self.client_patch(
-            "/json/messages/" + str(id1),
-            {
-                "content": "edited",
-                "propagate_mode": "change_all",
-            },
-        )
-        self.assert_json_error(result, "Invalid propagate_mode without topic edit")
-        self.check_topic(id1, topic_name="topic1")
-
     def test_move_message_to_stream(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_lt) = self.prepare_move_topics(
             "iago", "test move stream", "new stream", "test"
@@ -1269,29 +1311,6 @@ class EditMessageTest(EditMessageTestCase):
             Message.objects.get(id=new_inaccessible_msg_id).recipient_id,
             private_stream.recipient_id,
         )
-
-    def test_move_message_cant_move_private_message(
-        self,
-    ) -> None:
-        user_profile = self.example_user("iago")
-        self.assertEqual(user_profile.role, UserProfile.ROLE_REALM_ADMINISTRATOR)
-        self.login("iago")
-
-        hamlet = self.example_user("hamlet")
-        msg_id = self.send_personal_message(user_profile, hamlet)
-
-        verona = get_stream("Verona", user_profile.realm)
-
-        result = self.client_patch(
-            "/json/messages/" + str(msg_id),
-            {
-                "message_id": msg_id,
-                "stream_id": verona.id,
-                "propagate_mode": "change_all",
-            },
-        )
-
-        self.assert_json_error(result, "Message must be a stream message")
 
     def test_move_message_to_stream_change_later(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
@@ -1492,28 +1511,6 @@ class EditMessageTest(EditMessageTestCase):
             UserProfile.ROLE_GUEST, "You don't have permission to move this message"
         )
         check_move_message_to_stream(UserProfile.ROLE_MEMBER)
-
-    def test_move_message_to_stream_with_content(self) -> None:
-        (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
-            "iago", "test move stream", "new stream", "test"
-        )
-
-        result = self.client_patch(
-            "/json/messages/" + str(msg_id),
-            {
-                "message_id": msg_id,
-                "stream_id": new_stream.id,
-                "propagate_mode": "change_all",
-                "content": "Not allowed",
-            },
-        )
-        self.assert_json_error(result, "Cannot change message content while changing stream")
-
-        messages = get_topic_messages(user_profile, old_stream, "test")
-        self.assert_length(messages, 3)
-
-        messages = get_topic_messages(user_profile, new_stream, "test")
-        self.assert_length(messages, 0)
 
     def test_move_message_to_stream_and_topic(self) -> None:
         (user_profile, old_stream, new_stream, msg_id, msg_id_later) = self.prepare_move_topics(
