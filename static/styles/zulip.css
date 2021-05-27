@@ -1528,6 +1528,30 @@ div.focused_table {
     display: block !important;
 }
 
+#stream_color_picker {
+    opacity: 0;
+    visibility: hidden;
+    position: absolute;
+    height: 23px;
+}
+
+#custom_color {
+    border-radius: 4px;
+    margin: 0 2px 2px 2px;
+    padding: 3px;
+    padding-left: 5px;
+    cursor: pointer;
+
+    &:hover {
+        background-color: hsl(0, 0%, 75%);
+    }
+}
+
+hr {
+    border: 1px solid hsl(0, 0%, 43%);
+    margin: 2px;
+}
+
 .topic_edit {
     display: none;
     line-height: 22px;

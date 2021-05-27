@@ -104,3 +104,10 @@ function picker_do_change_color(color) {
     subs.set_color(stream_id, hex_color);
 }
 subscriptions_table_colorpicker_options.change = picker_do_change_color;
+
+$("body").on("click", (e) => {
+    if (e.target.matches("#custom_color")) {
+        const color_picker = $("body").find("#stream_color_picker");
+        $(color_picker).click();
+    }
+});
