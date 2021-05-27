@@ -216,7 +216,7 @@ class PermissionTest(ZulipTestCase):
         person = events[0]["event"]["person"]
         self.assertEqual(person["user_id"], iago.id)
         self.assertEqual(person["role"], UserProfile.ROLE_MEMBER)
-        with self.tornado_redirected_to_list([]):
+        with self.tornado_redirected_to_list([], expected_num_events=0):
             result = self.client_patch(f"/json/users/{desdemona.id}", req)
         self.assert_json_error(
             result, "The owner permission cannot be removed from the only organization owner."
@@ -224,7 +224,7 @@ class PermissionTest(ZulipTestCase):
 
         do_change_user_role(iago, UserProfile.ROLE_REALM_ADMINISTRATOR, acting_user=None)
         self.login("iago")
-        with self.tornado_redirected_to_list([]):
+        with self.tornado_redirected_to_list([], expected_num_events=0):
             result = self.client_patch(f"/json/users/{desdemona.id}", req)
         self.assert_json_error(result, "Must be an organization owner")
 
@@ -763,7 +763,7 @@ class QueryCountTest(ZulipTestCase):
 
         with queries_captured() as queries:
             with cache_tries_captured() as cache_tries:
-                with self.tornado_redirected_to_list(events):
+                with self.tornado_redirected_to_list(events, expected_num_events=7):
                     fred = do_create_user(
                         email="fred@zulip.com",
                         password="password",
@@ -775,7 +775,6 @@ class QueryCountTest(ZulipTestCase):
 
         self.assert_length(queries, 70)
         self.assert_length(cache_tries, 22)
-        self.assert_length(events, 7)
 
         peer_add_events = [event for event in events if event["event"].get("op") == "peer_add"]
 
@@ -1164,15 +1163,13 @@ class UserProfileTest(ZulipTestCase):
         for hotspot in hotspots_completed:
             UserHotspot.objects.create(user=cordelia, hotspot=hotspot)
 
-        events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events):
-            copy_user_settings(cordelia, iago)
-
         # Check that we didn't send an realm_user update events to
         # users; this work is happening before the user account is
         # created, so any changes will be reflected in the "add" event
         # introducing the user to clients.
-        self.assert_length(events, 0)
+        events: List[Mapping[str, Any]] = []
+        with self.tornado_redirected_to_list(events, expected_num_events=0):
+            copy_user_settings(cordelia, iago)
 
         # We verify that cordelia and iago match, but hamlet has the defaults.
         self.assertEqual(iago.full_name, "Cordelia, Lear's daughter")
