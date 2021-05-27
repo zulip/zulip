@@ -1,9 +1,8 @@
-from typing import Any, Dict, Set
+from typing import Any, Dict, List, Mapping, Set
 
 import orjson
 
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.test_helpers import EventInfo, capture_event
 from zerver.lib.user_status import get_user_info_dict, update_user_status
 from zerver.models import UserProfile, UserStatus, get_client
 
@@ -142,11 +141,11 @@ class UserStatusTest(ZulipTestCase):
     def update_status_and_assert_event(
         self, payload: Dict[str, Any], expected_event: Dict[str, Any]
     ) -> None:
-        event_info = EventInfo()
-        with capture_event(event_info):
+        events: List[Mapping[str, Any]] = []
+        with self.tornado_redirected_to_list(events):
             result = self.client_post("/json/users/me/status", payload)
         self.assert_json_success(result)
-        self.assertEqual(event_info.payload, expected_event)
+        self.assertEqual(events[0]["event"], expected_event)
 
     def test_endpoints(self) -> None:
         hamlet = self.example_user("hamlet")
