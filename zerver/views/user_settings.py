@@ -249,6 +249,9 @@ def json_change_notify_settings(
     enable_offline_email_notifications: Optional[bool] = REQ(
         json_validator=check_bool, default=None
     ),
+    enable_online_email_notifications: Optional[bool] = REQ(
+        json_validator=check_bool, default=None
+    ),
     enable_offline_push_notifications: Optional[bool] = REQ(
         json_validator=check_bool, default=None
     ),

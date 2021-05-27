@@ -7952,6 +7952,14 @@ paths:
                           The current value of this global notification setting for the user.
                           See [update-notification-settings](/api/update-notification-settings)
                           for details on notification settings.
+                      enable_online_email_notifications:
+                        type: boolean
+                        description: |
+                          Present if `update_global_notifications` is present in `fetch_event_types`.
+
+                          The current value of this global notification setting for the user.
+                          See [update-notification-settings](/api/update-notification-settings)
+                          for details on notification settings.
                       enable_offline_push_notifications:
                         type: boolean
                         description: |
@@ -9438,6 +9446,14 @@ paths:
           schema:
             type: boolean
           example: true
+        - name: enable_online_email_notifications
+          in: query
+          description: |
+            Enable email notification for private messages and @-mentions received
+            when the user is online.
+          schema:
+            type: boolean
+          example: true
         - name: enable_offline_push_notifications
           in: query
           description: |
@@ -9560,6 +9576,11 @@ paths:
                         description: |
                           The setting for `enable_offline_email_notifications`, if it was changed
                           in this request.
+                      enable_online_email_notifications:
+                        type: boolean
+                        description: |
+                          The setting for `enable_online_email_notifications`, if it was changed in
+                          this request.
                       enable_offline_push_notifications:
                         type: boolean
                         description: |

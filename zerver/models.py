@@ -1399,6 +1399,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         enable_login_emails=bool,
         enable_marketing_emails=bool,
         enable_offline_email_notifications=bool,
+        enable_online_email_notifications=bool,
         enable_offline_push_notifications=bool,
         enable_online_push_notifications=bool,
         enable_sounds=bool,
