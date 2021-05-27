@@ -80,6 +80,8 @@ Jump to:
 
 #### macOS
 
+##### Intel
+
 1. Install [Vagrant][vagrant-dl] (latest).
 2. Install [VirtualBox][vbox-dl] (latest).
 
@@ -89,6 +91,12 @@ plugin][vagrant-vmware-fusion-dl] or [Parallels Desktop][parallels-desktop-dl] a
 a provider for Vagrant.)
 
 Now you are ready for [Step 2: Get Zulip code](#step-2-get-zulip-code).
+
+##### Apple Silicon
+
+The setup for Apple Silicon (e.g. M1) Macs is very similar to that [for Intel
+above](#intel), except that VirtualBox is not supported. Instead you can use [Docker for
+Mac](https://docs.docker.com/docker-for-mac/install/).
 
 #### Ubuntu
 
@@ -277,12 +285,12 @@ Change into the zulip directory and tell vagrant to start the Zulip
 development environment with `vagrant up`:
 
 ```
-# On Windows or macOS:
+# On Windows or macOS (Intel):
 cd zulip
 vagrant plugin install vagrant-vbguest
 vagrant up --provider=virtualbox
 
-# On Linux:
+# On Linux or macOS (Apple Silicon):
 cd zulip
 vagrant up --provider=docker
 ```
