@@ -1,7 +1,16 @@
 import $ from "jquery";
 
 const t1 = performance.now();
-export const page_params: Record<string, unknown> = $("#page-params").remove().data("params");
+export const page_params: {
+    language_list: {
+        code: string;
+        locale: string;
+        name: string;
+        percent_translated: number | undefined;
+    }[];
+    request_language: string;
+    translation_data: Record<string, string>;
+} = $("#page-params").remove().data("params");
 const t2 = performance.now();
 window.page_params_parse_time = t2 - t1;
 if (!page_params) {
