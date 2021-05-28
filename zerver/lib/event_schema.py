@@ -1010,6 +1010,7 @@ realm_user_type = DictType(
         ("avatar_version", int),
         ("full_name", str),
         ("is_admin", bool),
+        ("is_billing_admin", bool),
         ("is_owner", bool),
         ("is_bot", bool),
         ("is_guest", bool),
@@ -1098,6 +1099,13 @@ realm_user_person_types = dict(
             # vertical formatting
             ("user_id", int),
             ("full_name", str),
+        ],
+    ),
+    is_billing_admin=DictType(
+        required_keys=[
+            # vertical formatting
+            ("user_id", int),
+            ("is_billing_admin", bool),
         ],
     ),
     role=DictType(

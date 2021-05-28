@@ -11,6 +11,17 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 73**
+
+* [`GET /users`](/api/get-users), [`GET /users/{user_id}`](/api/get-user),
+  [`GET /users/{email}`](/api/get-user-by-email) and
+  [`GET /users/me`](/api/get-own-user): Added `is_billing_admin` field to
+  returned user objects.
+* [`GET /events`](/api/get-events): Added `is_billing_admin` field to
+  user objects sent in `realm_user` events.
+* [`POST /register`](/api/register-queue): Added `is_billing_admin` field
+  in the user objects returned in the `realm_users` field.
+
 **Feature level 72**
 
 * [`POST /register`](/api/register-queue): Renamed `max_icon_file_size` to

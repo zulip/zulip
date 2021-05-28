@@ -96,6 +96,13 @@ export const update_person = function update(person) {
         }
     }
 
+    if (Object.prototype.hasOwnProperty.call(person, "is_billing_admin")) {
+        person_obj.is_billing_admin = person.is_billing_admin;
+        if (people.is_my_user_id(person.user_id)) {
+            page_params.is_billing_admin = person_obj.is_billing_admin;
+        }
+    }
+
     if (Object.prototype.hasOwnProperty.call(person, "avatar_url")) {
         const url = person.avatar_url;
         person_obj.avatar_url = url;
