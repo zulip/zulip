@@ -246,6 +246,39 @@ export function restore_draft(draft_id) {
     $("#compose-textarea").data("draft-id", draft_id);
 }
 
+export function restore_last_draft_based_on_compose_state() {
+    const message_type = compose_state.get_message_type();
+    if (!message_type || compose_state.message_content()) {
+        return;
+    }
+    const opts = {};
+
+    let last_draft_id;
+    if (message_type === "private") {
+        opts.private_message_recipient = compose_state.private_message_recipient();
+        if (opts.private_message_recipient) {
+            last_draft_id = draft_model
+                .getDraftsIdByRecipients(opts.private_message_recipient)
+                .pop();
+        }
+    } else {
+        opts.stream = compose_state.stream_name();
+        opts.topic = compose_state.topic();
+        if (opts.stream && opts.topic) {
+            last_draft_id = draft_model.getDraftsIdByStreamAndTopic(opts.stream, opts.topic).pop();
+        }
+    }
+
+    const draft = draft_model.getDraft(last_draft_id);
+    if (!draft) {
+        return;
+    }
+
+    compose_state.message_content(draft.content);
+    compose_ui.autosize_textarea($("#compose-textarea"));
+    $("#compose-textarea").trigger("select").data("draft-id", last_draft_id);
+}
+
 const DRAFT_LIFETIME = 30;
 
 export function remove_old_drafts() {
