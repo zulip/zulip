@@ -363,6 +363,17 @@ def notify_new_user(user_profile: UserProfile) -> None:
         message = _("{user} just signed up for Zulip. (total: {user_count})").format(
             user=f"@_**{user_profile.full_name}|{user_profile.id}**", user_count=user_count
         )
+
+        if settings.BILLING_ENABLED:
+            from corporate.lib.registration import generate_licenses_low_warning_message_if_required
+
+            licenses_low_warning_message = generate_licenses_low_warning_message_if_required(
+                user_profile.realm
+            )
+            if licenses_low_warning_message is not None:
+                message += "\n"
+                message += licenses_low_warning_message
+
         send_message_to_signup_notification_stream(sender, user_profile.realm, message)
 
     # We also send a notification to the Zulip administrative realm
@@ -6637,8 +6648,13 @@ def do_invite_users(
     streams: Collection[Stream],
     invite_as: int = PreregistrationUser.INVITE_AS["MEMBER"],
 ) -> None:
+    num_invites = len(invitee_emails)
 
-    check_invite_limit(user_profile.realm, len(invitee_emails))
+    check_invite_limit(user_profile.realm, num_invites)
+    if settings.BILLING_ENABLED:
+        from corporate.lib.registration import check_spare_licenses_available_for_inviting_new_users
+
+        check_spare_licenses_available_for_inviting_new_users(user_profile.realm, num_invites)
 
     realm = user_profile.realm
     if not realm.invite_required:

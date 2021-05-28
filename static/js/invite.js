@@ -104,6 +104,8 @@ function submit_invitation_form() {
                     error_list,
                     is_admin: page_params.is_admin,
                     is_invitee_deactivated,
+                    license_limit_reached: arr.license_limit_reached,
+                    has_billing_access: page_params.is_owner || page_params.is_billing_admin,
                 });
                 ui_report.message(error_response, invite_status, "alert-warning");
                 invitee_emails_group.addClass("warning");

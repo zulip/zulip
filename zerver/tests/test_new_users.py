@@ -1,4 +1,6 @@
 import datetime
+import random
+from typing import Sequence
 from unittest import mock
 
 import pytz
@@ -6,10 +8,11 @@ from django.conf import settings
 from django.core import mail
 from django.test import override_settings
 
+from corporate.lib.stripe import get_latest_seat_count
 from zerver.lib.actions import do_change_notification_settings, notify_new_user
 from zerver.lib.initial_password import initial_password
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Realm, Recipient, Stream
+from zerver.models import Realm, Recipient, Stream, UserProfile, get_realm
 from zerver.signals import JUST_CREATED_THRESHOLD, get_device_browser, get_device_os
 
 
@@ -251,4 +254,71 @@ class TestNotifyNewUser(ZulipTestCase):
         self.assertIn(
             f"@_**Cordelia, Lear's daughter|{new_user.id}** just signed up for Zulip.",
             message.content,
+        )
+
+    def test_notify_realm_of_new_user_in_manual_license_management(self) -> None:
+        stream = self.make_stream(Realm.INITIAL_PRIVATE_STREAM_NAME)
+        realm = get_realm("zulip")
+        realm.signup_notifications_stream_id = stream.id
+        realm.save()
+
+        user_count = get_latest_seat_count(realm)
+        self.subscribe_realm_to_monthly_plan_on_manual_license_management(
+            realm, user_count + 5, user_count + 5
+        )
+
+        def create_new_user_and_verify_strings_in_notification_message(
+            strings_present: Sequence[str] = [], strings_absent: Sequence[str] = []
+        ) -> None:
+            user_no = random.randrange(100000)
+            new_user = UserProfile.objects.create(
+                realm=realm,
+                full_name=f"new user {user_no}",
+                email=f"user-{user_no}-email@zulip.com",
+                delivery_email=f"user-{user_no}-delivery-email@zulip.com",
+            )
+            notify_new_user(new_user)
+
+            message = self.get_last_message()
+            actual_stream = Stream.objects.get(id=message.recipient.type_id)
+            self.assertEqual(actual_stream, stream)
+            self.assertIn(
+                f"@_**new user {user_no}|{new_user.id}** just signed up for Zulip.",
+                message.content,
+            )
+            for string_present in strings_present:
+                self.assertIn(
+                    string_present,
+                    message.content,
+                )
+            for string_absent in strings_absent:
+                self.assertNotIn(string_absent, message.content)
+
+        create_new_user_and_verify_strings_in_notification_message(
+            strings_absent=["Your organization has"]
+        )
+        create_new_user_and_verify_strings_in_notification_message(
+            strings_present=[
+                "Your organization has only three Zulip licenses remaining",
+                "to allow more than three users to",
+            ],
+        )
+        create_new_user_and_verify_strings_in_notification_message(
+            strings_present=[
+                "Your organization has only two Zulip licenses remaining",
+                "to allow more than two users to",
+            ],
+        )
+
+        create_new_user_and_verify_strings_in_notification_message(
+            strings_present=[
+                "Your organization has only one Zulip license remaining",
+                "to allow more than one user to",
+            ],
+        )
+        create_new_user_and_verify_strings_in_notification_message(
+            strings_present=[
+                "Your organization has no Zulip licenses remaining",
+                "to allow new users to",
+            ]
         )

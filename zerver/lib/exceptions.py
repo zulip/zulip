@@ -362,11 +362,16 @@ class ZephyrMessageAlreadySentException(Exception):
 
 class InvitationError(JsonableError):
     code = ErrorCode.INVITATION_FAILED
-    data_fields = ["errors", "sent_invitations"]
+    data_fields = ["errors", "sent_invitations", "license_limit_reached"]
 
     def __init__(
-        self, msg: str, errors: List[Tuple[str, str, bool]], sent_invitations: bool
+        self,
+        msg: str,
+        errors: List[Tuple[str, str, bool]],
+        sent_invitations: bool,
+        license_limit_reached: bool = False,
     ) -> None:
         self._msg: str = msg
         self.errors: List[Tuple[str, str, bool]] = errors
         self.sent_invitations: bool = sent_invitations
+        self.license_limit_reached: bool = license_limit_reached
