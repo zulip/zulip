@@ -1293,6 +1293,9 @@ def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: i
 
     subprocess.check_call(["unzip", "-q", slack_zip_file, "-d", slack_data_dir])
 
+    if not os.path.isfile(os.path.join(slack_data_dir, "channels.json")):
+        raise ValueError(f"{original_path} does not have the layout we expect from a Slack export!")
+
     # We get the user data from the legacy token method of Slack API, which is depreciated
     # but we use it as the user email data is provided only in this method
     user_list = get_slack_api_data("https://slack.com/api/users.list", "members", token=token)
