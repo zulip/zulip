@@ -229,7 +229,7 @@ export function on_load_success(invites_data, initialize_event_handlers) {
 
         confirm_dialog.launch({
             parent: modal_parent,
-            html_heading: $t_html({defaultMessage: "Resend invitation to {email}"}, {email}),
+            html_heading: $t_html({defaultMessage: "Resend invitation"}),
             html_body,
             html_yes_button: $t_html({defaultMessage: "Confirm"}),
             on_click: do_resend_invite,
