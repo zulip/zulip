@@ -1391,6 +1391,8 @@ def check_token_access(token: str) -> None:
         data = requests.get(
             "https://slack.com/api/team.info", headers={"Authorization": "Bearer {}".format(token)}
         )
+        if data.status_code != 200 or not data.json()["ok"]:
+            raise ValueError("Invalid Slack token: {}".format(token))
         has_scopes = set(data.headers.get("x-oauth-scopes", "").split(","))
         required_scopes = set(["emoji:read", "users:read", "users:read.email", "team:read"])
         missing_scopes = required_scopes - has_scopes
