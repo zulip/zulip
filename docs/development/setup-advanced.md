@@ -292,7 +292,7 @@ includes a code editor, debugger, and terminal.
 
 This section documents how to set up the Zulip development environment
 in a Cloud9 workspace.  If you don't have an existing Cloud9 account,
-you can sign up [here](https://aws.amazon.com/cloud9/).
+you can sign up [here](https://aws.amazon.com/cloud9/){target="_blank"}.
 
 * Create a Workspace, and select the blank template.
 * Resize the workspace to be 1GB of memory and 4GB of disk
