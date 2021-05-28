@@ -1275,7 +1275,7 @@ def fetch_team_icons(
     return records
 
 
-def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: int = 6) -> None:
+def do_convert_data(original_path: str, output_dir: str, token: str, threads: int = 6) -> None:
     # Subdomain is set by the user while running the import command
     realm_subdomain = ""
     realm_id = 0
@@ -1283,15 +1283,20 @@ def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: i
 
     check_token_access(token)
 
-    slack_data_dir = slack_zip_file.replace(".zip", "")
-    if not os.path.exists(slack_data_dir):
-        os.makedirs(slack_data_dir)
-
     os.makedirs(output_dir, exist_ok=True)
     if os.listdir(output_dir):
         raise Exception("Output directory should be empty!")
 
-    subprocess.check_call(["unzip", "-q", slack_zip_file, "-d", slack_data_dir])
+    if os.path.isfile(original_path) and original_path.endswith(".zip"):
+        slack_data_dir = original_path.replace(".zip", "")
+        if not os.path.exists(slack_data_dir):
+            os.makedirs(slack_data_dir)
+
+        subprocess.check_call(["unzip", "-q", original_path, "-d", slack_data_dir])
+    elif os.path.isdir(original_path):
+        slack_data_dir = original_path
+    else:
+        raise ValueError(f"Don't know how to import Slack data from {original_path}")
 
     if not os.path.isfile(os.path.join(slack_data_dir, "channels.json")):
         raise ValueError(f"{original_path} does not have the layout we expect from a Slack export!")
@@ -1364,7 +1369,9 @@ def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: i
     create_converted_data_files(attachment, output_dir, "/attachment.json")
     create_converted_data_files(realm_icon_records, output_dir, "/realm_icons/records.json")
 
-    rm_tree(slack_data_dir)
+    # Clean up the directory if we unpacked it ourselves.
+    if original_path != slack_data_dir:
+        rm_tree(slack_data_dir)
     subprocess.check_call(["tar", "-czf", output_dir + ".tar.gz", output_dir, "-P"])
 
     logging.info("######### DATA CONVERSION FINISHED #########\n")

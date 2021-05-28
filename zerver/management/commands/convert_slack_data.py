@@ -14,7 +14,10 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
-            "slack_data_zip", nargs="+", metavar="<Slack data zip>", help="Zipped Slack data"
+            "slack_data_path",
+            nargs="+",
+            metavar="<Slack data path>",
+            help="Zipped Slack data or directory",
         )
 
         parser.add_argument(
@@ -48,7 +51,7 @@ class Command(BaseCommand):
         if num_threads < 1:
             raise CommandError("You must have at least one thread.")
 
-        for path in options["slack_data_zip"]:
+        for path in options["slack_data_path"]:
             if not os.path.exists(path):
                 raise CommandError(f"Slack data directory not found: '{path}'")
 
