@@ -7336,7 +7336,7 @@ def do_update_user_custom_profile_data_if_changed(
 
             if not created and field_value.value == str(field["value"]):
                 # If the field value isn't actually being changed to a different one,
-                # and always_notify is disabled, we have nothing to do here for this field.
+                # we have nothing to do here for this field.
                 # Note: field_value.value is a TextField() so we need to cast field['value']
                 # to a string for the comparison in this if.
                 continue

@@ -713,7 +713,7 @@ class UpdateCustomProfileFieldTest(CustomProfileFieldTestCase):
 
         with mock.patch("zerver.lib.actions.notify_user_update_custom_profile_data") as mock_notify:
             # Attempting to "update" the field value, when it wouldn't actually change,
-            # if always_notify is disabled, shouldn't trigger notify.
+            # shouldn't trigger notify.
             do_update_user_custom_profile_data_if_changed(iago, data)
             mock_notify.assert_not_called()
 
