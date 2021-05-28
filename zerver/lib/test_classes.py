@@ -1261,6 +1261,7 @@ Output:
     def tornado_redirected_to_list(
         self, lst: List[Mapping[str, Any]], expected_num_events: int
     ) -> Iterator[None]:
+        lst.clear()
         real_event_queue_process_notification = django_tornado_api.process_notification
         django_tornado_api.process_notification = lambda notice: lst.append(notice)
         # process_notification takes a single parameter called 'notice'.
