@@ -41,7 +41,7 @@ async function create_stream_message_draft(page: Page): Promise<void> {
     await page.keyboard.press("KeyC");
     await page.waitForSelector("#stream-message", {visible: true});
     await common.fill_form(page, "form#send_message_form", {
-        stream_message_recipient_stream: "all",
+        stream_message_recipient_stream: "Verona",
         stream_message_recipient_topic: "tests",
         content: "Test stream message.",
     });
@@ -83,7 +83,7 @@ async function test_previously_created_drafts_rendered(page: Page): Promise<void
             page,
             ".draft-row .message_header_stream .stream_label",
         ),
-        "all",
+        "Verona",
     );
     assert.strictEqual(
         await common.get_text_from_selector(
@@ -115,14 +115,14 @@ async function test_previously_created_drafts_rendered(page: Page): Promise<void
     );
 }
 
-async function test_restore_message_draft(page: Page): Promise<void> {
+async function test_restore_message_draft_via_draft_overlay(page: Page): Promise<void> {
     console.log("Restoring stream message draft");
     await page.click("#drafts_table .message_row:not(.private-message) .restore-draft");
     await wait_for_drafts_to_dissapear(page);
     await page.waitForSelector("#stream-message", {visible: true});
     await page.waitForSelector("#preview_message_area", {hidden: true});
     await common.check_form_contents(page, "form#send_message_form", {
-        stream_message_recipient_stream: "all",
+        stream_message_recipient_stream: "Verona",
         stream_message_recipient_topic: "tests",
         content: "Test stream message.",
     });
@@ -135,7 +135,7 @@ async function test_restore_message_draft(page: Page): Promise<void> {
 
 async function edit_stream_message_draft(page: Page): Promise<void> {
     await common.fill_form(page, "form#send_message_form", {
-        stream_message_recipient_stream: "all",
+        stream_message_recipient_stream: "Verona",
         stream_message_recipient_topic: "tests",
         content: "Updated stream message",
     });
@@ -152,7 +152,7 @@ async function test_edited_draft_message(page: Page): Promise<void> {
             page,
             ".draft-row .message_header_stream .stream_label",
         ),
-        "all",
+        "Verona",
     );
     assert.strictEqual(
         await common.get_text_from_selector(
@@ -170,7 +170,7 @@ async function test_edited_draft_message(page: Page): Promise<void> {
     );
 }
 
-async function test_restore_private_message_draft(page: Page): Promise<void> {
+async function test_restore_private_message_draft_via_draft_overlay(page: Page): Promise<void> {
     console.log("Restoring private message draft.");
     await page.click("#drafts_table .message_row.private-message .restore-draft");
     await wait_for_drafts_to_dissapear(page);
@@ -283,11 +283,11 @@ async function drafts_test(page: Page): Promise<void> {
     await open_drafts_through_compose(page);
     await test_previously_created_drafts_rendered(page);
 
-    await test_restore_message_draft(page);
+    await test_restore_message_draft_via_draft_overlay(page);
     await edit_stream_message_draft(page);
     await test_edited_draft_message(page);
 
-    await test_restore_private_message_draft(page);
+    await test_restore_private_message_draft_via_draft_overlay(page);
     await test_delete_draft(page);
     await test_save_draft_by_reloading(page);
     await test_delete_draft_on_sending(page);
