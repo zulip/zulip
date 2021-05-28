@@ -679,22 +679,7 @@ class S3UploadBackend(ZulipUploadBackend):
 
         key.upload_file(tarball_path, Callback=percent_callback)
 
-        session = botocore.session.get_session()
-        config = Config(signature_version=botocore.UNSIGNED)
-
-        public_url = session.create_client(
-            "s3",
-            region_name=settings.S3_REGION,
-            endpoint_url=settings.S3_ENDPOINT_URL,
-            config=config,
-        ).generate_presigned_url(
-            "get_object",
-            Params={
-                "Bucket": self.avatar_bucket.name,
-                "Key": key.key,
-            },
-            ExpiresIn=0,
-        )
+        public_url = self.get_public_upload_url(key.key)
         return public_url
 
     def delete_export_tarball(self, export_path: str) -> Optional[str]:
