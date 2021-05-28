@@ -1468,7 +1468,7 @@ class ActivateTest(ZulipTestCase):
         self.assertEqual(
             info_log.output,
             [
-                f"WARNING:zulip.send_email:ScheduledEmail id {email.id} has empty users and address attributes."
+                f"ERROR:zulip.send_email:ScheduledEmail id {email.id} has empty users and address attributes."
             ],
         )
 
