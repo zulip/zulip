@@ -38,6 +38,10 @@ from zerver.models import (
 )
 from zproject.backends import check_password_strength, email_auth_enabled, email_belongs_to_ldap
 
+if settings.BILLING_ENABLED:
+    from corporate.lib.registration import check_spare_licenses_available_for_registering_new_user
+    from corporate.lib.stripe import LicenseLimitError
+
 MIT_VALIDATION_ERROR = (
     "That user does not exist at MIT or is a "
     + '<a href="https://ist.mit.edu/email-lists">mailing list</a>. '
@@ -207,6 +211,17 @@ class HomepageForm(forms.Form):
 
         if realm.is_zephyr_mirror_realm:
             email_is_not_mit_mailing_list(email)
+
+        if settings.BILLING_ENABLED:
+            try:
+                check_spare_licenses_available_for_registering_new_user(realm, email)
+            except LicenseLimitError:
+                raise ValidationError(
+                    _(
+                        "New members cannot join this organization because all Zulip licenses are in use. Please contact the person who "
+                        "invited you and ask them to increase the number of licenses, then try again."
+                    )
+                )
 
         return email
 

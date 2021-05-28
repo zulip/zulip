@@ -203,6 +203,10 @@ class BillingError(Exception):
         self.message = message
 
 
+class LicenseLimitError(Exception):
+    pass
+
+
 class StripeCardError(BillingError):
     pass
 
