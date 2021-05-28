@@ -760,6 +760,7 @@ class StreamAdminTest(ZulipTestCase):
         result = self.client_patch(f"/json/streams/{stream.id}", {"new_name": "sTREAm_name1"})
         self.assert_json_success(result)
 
+        # Three events should be sent: stream_email update, stream_name update and notification message.
         events: List[Mapping[str, Any]] = []
         with self.tornado_redirected_to_list(events, expected_num_events=3):
             stream_id = get_stream("stream_name1", user_profile.realm).id
@@ -3037,6 +3038,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertNotEqual(len(self.streams), 0)  # necessary for full test coverage
         add_streams = ["Verona2", "Denmark5"]
         self.assertNotEqual(len(add_streams), 0)  # necessary for full test coverage
+        # Three events should be sent for each stream for stream creation, subscription add and message notifications.
         events: List[Mapping[str, Any]] = []
         with self.tornado_redirected_to_list(events, expected_num_events=6):
             self.helper_check_subs_before_and_after_add(
@@ -3790,6 +3792,9 @@ class SubscriptionAPITest(ZulipTestCase):
         self.subscribe(user2, "private_stream")
         self.subscribe(user3, "private_stream")
 
+        # Apart from 3 peer-remove events and 2 unsubscribe event, because `bulk_remove_subscriptions`
+        # also marks are read messages in those streams as read, so emits 8 `message_flags` events too
+        # (for each of the notification bot messages).
         events: List[Mapping[str, Any]] = []
         with self.tornado_redirected_to_list(events, expected_num_events=13):
             with queries_captured() as query_count:
