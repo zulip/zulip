@@ -173,7 +173,7 @@ test_ui("right-to-left", () => {
     const textarea = $("#compose-textarea");
 
     const event = {
-        keyCode: 65, // A
+        key: "A",
     };
 
     assert.equal(textarea.hasClass("rtl"), false);
@@ -192,7 +192,7 @@ test_ui("right-to-left", () => {
 test_ui("markdown_shortcuts", (override) => {
     let queryCommandEnabled = true;
     const event = {
-        keyCode: 66,
+        key: "b",
         target: {
             id: "compose-textarea",
         },
@@ -232,8 +232,7 @@ test_ui("markdown_shortcuts", (override) => {
     function test_i_typed(isCtrl, isCmd) {
         // Test 'i' is typed correctly.
         $("#compose-textarea").val("i");
-        event.keyCode = undefined;
-        event.which = 73;
+        event.key = "i";
         event.metaKey = isCmd;
         event.ctrlKey = isCtrl;
         compose.handle_keydown(event, $("#compose-textarea"));
@@ -252,7 +251,7 @@ test_ui("markdown_shortcuts", (override) => {
         // Test bold:
         // Mac env = Cmd+b
         // Windows/Linux = Ctrl+b
-        event.keyCode = 66;
+        event.key = "b";
         event.ctrlKey = isCtrl;
         event.metaKey = isCmd;
         compose.handle_keydown(event, $("#compose-textarea"));
@@ -267,10 +266,11 @@ test_ui("markdown_shortcuts", (override) => {
         // Test italic:
         // Mac = Cmd+I
         // Windows/Linux = Ctrl+I
+        // We use event.key = "I" to emulate user using Caps Lock key.
         $("#compose-textarea").val(input_text);
         range_start = compose_value.search(selected_word);
         range_length = selected_word.length;
-        event.keyCode = 73;
+        event.key = "I";
         event.shiftKey = false;
         compose.handle_keydown(event, $("#compose-textarea"));
         assert.equal("Any *text*.", $("#compose-textarea").val());
@@ -287,8 +287,7 @@ test_ui("markdown_shortcuts", (override) => {
         $("#compose-textarea").val(input_text);
         range_start = compose_value.search(selected_word);
         range_length = selected_word.length;
-        event.keyCode = 76;
-        event.which = undefined;
+        event.key = "l";
         event.shiftKey = true;
         compose.handle_keydown(event, $("#compose-textarea"));
         assert.equal("Any [text](url).", $("#compose-textarea").val());
@@ -311,16 +310,16 @@ test_ui("markdown_shortcuts", (override) => {
         event.metaKey = isCmd;
         event.ctrlKey = isCtrl;
 
-        event.keyCode = 66;
+        event.key = "b";
         compose.handle_keydown(event, $("#compose-textarea"));
         assert.equal(input_text, $("#compose-textarea").val());
 
-        event.keyCode = 73;
+        event.key = "i";
         event.shiftKey = false;
         compose.handle_keydown(event, $("#compose-textarea"));
         assert.equal(input_text, $("#compose-textarea").val());
 
-        event.keyCode = 76;
+        event.key = "l";
         event.shiftKey = true;
         compose.handle_keydown(event, $("#compose-textarea"));
         assert.equal(input_text, $("#compose-textarea").val());
