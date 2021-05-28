@@ -194,7 +194,6 @@ class PermissionTest(ZulipTestCase):
         self.assertEqual(person["role"], UserProfile.ROLE_REALM_OWNER)
 
         req = dict(role=UserProfile.ROLE_MEMBER)
-        events = []
         with self.tornado_redirected_to_list(events, expected_num_events=1):
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)
@@ -207,7 +206,6 @@ class PermissionTest(ZulipTestCase):
         # Cannot take away from last owner
         self.login("desdemona")
         req = dict(role=UserProfile.ROLE_MEMBER)
-        events = []
         with self.tornado_redirected_to_list(events, expected_num_events=1):
             result = self.client_patch(f"/json/users/{iago.id}", req)
         self.assert_json_success(result)
@@ -260,7 +258,6 @@ class PermissionTest(ZulipTestCase):
 
         # Taketh away
         req = dict(role=orjson.dumps(UserProfile.ROLE_MEMBER).decode())
-        events = []
         with self.tornado_redirected_to_list(events, expected_num_events=1):
             result = self.client_patch(f"/json/users/{othello.id}", req)
         self.assert_json_success(result)

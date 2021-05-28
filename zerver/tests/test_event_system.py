@@ -1134,7 +1134,6 @@ class TestUserPresenceUpdatesDisabled(ZulipTestCase):
 
         # Now check that if the realm has more than the USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS
         # amount of active users, send_event doesn't get called.
-        events = []
         with self.tornado_redirected_to_list(events, expected_num_events=0):
             with self.settings(USER_LIMIT_FOR_SENDING_PRESENCE_UPDATE_EVENTS=1):
                 do_update_user_presence(

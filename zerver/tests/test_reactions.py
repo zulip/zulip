@@ -519,7 +519,6 @@ class ReactionEventTest(ZulipTestCase):
         message_after_id = self.send_stream_message(
             iago, "test_reactions_stream", "after subscription history private"
         )
-        events = []
         with self.tornado_redirected_to_list(events, expected_num_events=1):
             result = self.api_post(
                 iago, f"/api/v1/messages/{message_after_id}/reactions", reaction_info
@@ -539,7 +538,6 @@ class ReactionEventTest(ZulipTestCase):
         # Since stream history is public to subscribers, reacting to
         # message_before_id should notify all subscribers:
         # Iago and Hamlet.
-        events = []
         with self.tornado_redirected_to_list(events, expected_num_events=1):
             result = self.api_post(
                 iago, f"/api/v1/messages/{message_before_id}/reactions", reaction_info
@@ -558,7 +556,6 @@ class ReactionEventTest(ZulipTestCase):
         do_make_stream_web_public(stream)
         # For is_web_public streams, events even on old messages
         # should go to all subscribers, including guests like polonius.
-        events = []
         with self.tornado_redirected_to_list(events, expected_num_events=1):
             result = self.api_post(
                 iago, f"/api/v1/messages/{message_before_id}/reactions", reaction_info
@@ -579,7 +576,6 @@ class ReactionEventTest(ZulipTestCase):
             hamlet,
             "hello to single receiver",
         )
-        events = []
         with self.tornado_redirected_to_list(events, expected_num_events=1):
             result = self.api_post(
                 hamlet, f"/api/v1/messages/{private_message_id}/reactions", reaction_info
@@ -596,7 +592,6 @@ class ReactionEventTest(ZulipTestCase):
             [polonius, iago],
             "hello message to muliple receiver",
         )
-        events = []
         with self.tornado_redirected_to_list(events, expected_num_events=1):
             result = self.api_post(
                 polonius, f"/api/v1/messages/{huddle_message_id}/reactions", reaction_info
