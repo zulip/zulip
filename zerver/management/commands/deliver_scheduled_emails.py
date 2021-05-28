@@ -49,6 +49,7 @@ Usage: ./manage.py deliver_scheduled_emails
                     scheduled_timestamp__lte=timezone_now()
                 ).select_for_update()
                 if email_jobs_to_deliver:
+                    found_rows = True
                     for job in email_jobs_to_deliver:
                         try:
                             deliver_scheduled_emails(job)
