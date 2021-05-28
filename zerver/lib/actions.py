@@ -4559,6 +4559,11 @@ def do_change_user_role(
     send_event(user_profile.realm, event, active_user_ids(user_profile.realm_id))
 
 
+def do_make_user_billing_admin(user_profile: UserProfile) -> None:
+    user_profile.is_billing_admin = True
+    user_profile.save(update_fields=["is_billing_admin"])
+
+
 def do_change_can_forge_sender(user_profile: UserProfile, value: bool) -> None:
     user_profile.can_forge_sender = value
     user_profile.save(update_fields=["can_forge_sender"])
