@@ -2749,9 +2749,9 @@ class MarkdownErrorTests(ZulipTestCase):
 
     @override_settings(MAX_MESSAGE_LENGTH=10)
     def test_ultra_long_rendering(self) -> None:
-        """A rendered message with an ultra-long length (> 10 * MAX_MESSAGE_LENGTH)
+        """A rendered message with an ultra-long length (> 100 * MAX_MESSAGE_LENGTH)
         throws an exception"""
-        msg = "mock rendered message\n" * settings.MAX_MESSAGE_LENGTH
+        msg = "mock rendered message\n" * 10 * settings.MAX_MESSAGE_LENGTH
 
         with mock.patch("zerver.lib.markdown.timeout", return_value=msg), mock.patch(
             "zerver.lib.markdown.markdown_logger"

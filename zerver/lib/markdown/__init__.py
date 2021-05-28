@@ -2612,9 +2612,9 @@ def do_convert(
         # rest of the codebase from any bugs where we end up rendering
         # something huge.
         MAX_MESSAGE_LENGTH = settings.MAX_MESSAGE_LENGTH
-        if len(rendered_content) > MAX_MESSAGE_LENGTH * 10:
+        if len(rendered_content) > MAX_MESSAGE_LENGTH * 100:
             raise MarkdownRenderingException(
-                f"Rendered content exceeds {MAX_MESSAGE_LENGTH * 10} characters (message {logging_message_id})"
+                f"Rendered content exceeds {MAX_MESSAGE_LENGTH * 100} characters (message {logging_message_id})"
             )
         return rendered_content
     except Exception:
