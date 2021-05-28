@@ -114,7 +114,7 @@ class TestBasics(ZulipTestCase):
             content='{"name": "alice", "salary": 20}',
         )
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
             result = self.client_post("/json/submessage", payload)
         self.assert_json_success(result)
 

@@ -69,7 +69,7 @@ class RealmTest(ZulipTestCase):
         realm = get_realm("zulip")
         new_name = "Puliz"
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
             do_set_realm_property(realm, "name", new_name, acting_user=None)
         event = events[0]["event"]
         self.assertEqual(
@@ -86,7 +86,7 @@ class RealmTest(ZulipTestCase):
         realm = get_realm("zulip")
         new_description = "zulip dev group"
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
             do_set_realm_property(realm, "description", new_description, acting_user=None)
         event = events[0]["event"]
         self.assertEqual(
@@ -104,7 +104,7 @@ class RealmTest(ZulipTestCase):
         new_description = "zulip dev group"
         data = dict(description=new_description)
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
             result = self.client_patch("/json/realm", data)
             self.assert_json_success(result)
             realm = get_realm("zulip")

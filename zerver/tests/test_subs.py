@@ -122,7 +122,7 @@ class TestCreateStreams(ZulipTestCase):
 
         # Test stream creation events.
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
             ensure_stream(realm, "Public stream", invite_only=False, acting_user=None)
 
         self.assertEqual(events[0]["event"]["type"], "stream")
@@ -132,7 +132,7 @@ class TestCreateStreams(ZulipTestCase):
         self.assertEqual(events[0]["event"]["streams"][0]["name"], "Public stream")
 
         events = []
-        with self.tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
             ensure_stream(realm, "Private stream", invite_only=True, acting_user=None)
 
         self.assertEqual(events[0]["event"]["type"], "stream")
@@ -708,7 +708,7 @@ class StreamAdminTest(ZulipTestCase):
         self.subscribe(self.example_user("cordelia"), "private_stream")
 
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
             stream_id = get_stream("private_stream", user_profile.realm).id
             result = self.client_patch(
                 f"/json/streams/{stream_id}",
@@ -989,7 +989,7 @@ class StreamAdminTest(ZulipTestCase):
         self.subscribe(user_profile, "stream_name1")
 
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
             stream_id = get_stream("stream_name1", realm).id
             result = self.client_patch(
                 f"/json/streams/{stream_id}",
@@ -1179,7 +1179,7 @@ class StreamAdminTest(ZulipTestCase):
 
         do_change_plan_type(realm, Realm.SELF_HOSTED, acting_user=None)
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
             result = self.client_patch(
                 f"/json/streams/{stream.id}", {"message_retention_days": orjson.dumps(2).decode()}
             )
@@ -1207,7 +1207,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(stream.message_retention_days, 2)
 
         events = []
-        with self.tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
             result = self.client_patch(
                 f"/json/streams/{stream.id}",
                 {"message_retention_days": orjson.dumps("forever").decode()},
@@ -1230,7 +1230,7 @@ class StreamAdminTest(ZulipTestCase):
         self.assertEqual(stream.message_retention_days, -1)
 
         events = []
-        with self.tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
             result = self.client_patch(
                 f"/json/streams/{stream.id}",
                 {"message_retention_days": orjson.dumps("realm_default").decode()},
@@ -1380,7 +1380,7 @@ class StreamAdminTest(ZulipTestCase):
         ensure_stream(realm, "DB32B77" + "!DEACTIVATED:" + active_name, acting_user=None)
 
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
             result = self.client_delete("/json/streams/" + str(stream_id))
         self.assert_json_success(result)
 
@@ -2532,7 +2532,7 @@ class SubscriptionPropertiesTest(ZulipTestCase):
 
         events: List[Mapping[str, Any]] = []
         property_name = "is_muted"
-        with self.tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
             result = self.api_post(
                 test_user,
                 "/api/v1/users/me/subscriptions/properties",
@@ -2560,7 +2560,7 @@ class SubscriptionPropertiesTest(ZulipTestCase):
 
         events = []
         legacy_property_name = "in_home_view"
-        with self.tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
             result = self.api_post(
                 test_user,
                 "/api/v1/users/me/subscriptions/properties",
@@ -2588,7 +2588,7 @@ class SubscriptionPropertiesTest(ZulipTestCase):
         self.assertEqual(sub.is_muted, False)
 
         events = []
-        with self.tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
             result = self.api_post(
                 test_user,
                 "/api/v1/users/me/subscriptions/properties",

@@ -1661,7 +1661,7 @@ class StreamMessagesTest(ZulipTestCase):
 
     def _send_stream_message(self, user: UserProfile, stream_name: str, content: str) -> Set[int]:
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
             self.send_stream_message(
                 user,
                 stream_name,

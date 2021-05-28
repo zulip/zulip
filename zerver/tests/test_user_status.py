@@ -142,7 +142,7 @@ class UserStatusTest(ZulipTestCase):
         self, payload: Dict[str, Any], expected_event: Dict[str, Any]
     ) -> None:
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
             result = self.client_post("/json/users/me/status", payload)
         self.assert_json_success(result)
         self.assertEqual(events[0]["event"], expected_event)

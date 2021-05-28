@@ -149,7 +149,7 @@ class TypingHappyPathTestPMs(ZulipTestCase):
 
         events: List[Mapping[str, Any]] = []
         with queries_captured() as queries:
-            with self.tornado_redirected_to_list(events):
+            with self.tornado_redirected_to_list(events, expected_num_events=1):
                 result = self.api_post(sender, "/api/v1/typing", params)
 
         self.assert_json_success(result)
@@ -186,7 +186,7 @@ class TypingHappyPathTestPMs(ZulipTestCase):
         )
 
         with queries_captured() as queries:
-            with self.tornado_redirected_to_list(events):
+            with self.tornado_redirected_to_list(events, expected_num_events=1):
                 result = self.api_post(sender, "/api/v1/typing", params)
         self.assert_json_success(result)
         self.assert_length(events, 1)
@@ -219,7 +219,7 @@ class TypingHappyPathTestPMs(ZulipTestCase):
         expected_recipient_emails = {email}
         expected_recipient_ids = {user.id}
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
             result = self.api_post(
                 user,
                 "/api/v1/typing",
@@ -260,7 +260,7 @@ class TypingHappyPathTestPMs(ZulipTestCase):
         )
 
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
             result = self.api_post(sender, "/api/v1/typing", params)
 
         self.assert_json_success(result)
@@ -289,7 +289,7 @@ class TypingHappyPathTestPMs(ZulipTestCase):
         expected_recipient_ids = {user.id}
 
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
             params = dict(
                 to=orjson.dumps([user.id]).decode(),
                 op="stop",
@@ -323,7 +323,7 @@ class TypingHappyPathTestPMs(ZulipTestCase):
         expected_recipient_ids = {user.id for user in expected_recipients}
 
         events: List[Mapping[str, Any]] = []
-        with self.tornado_redirected_to_list(events):
+        with self.tornado_redirected_to_list(events, expected_num_events=1):
             params = dict(
                 to=orjson.dumps([recipient.id]).decode(),
                 op="stop",
@@ -367,7 +367,7 @@ class TypingHappyPathTestStreams(ZulipTestCase):
 
         events: List[Mapping[str, Any]] = []
         with queries_captured() as queries:
-            with self.tornado_redirected_to_list(events):
+            with self.tornado_redirected_to_list(events, expected_num_events=1):
                 result = self.api_post(sender, "/api/v1/typing", params)
         self.assert_json_success(result)
         self.assert_length(events, 1)
@@ -403,7 +403,7 @@ class TypingHappyPathTestStreams(ZulipTestCase):
 
         events: List[Mapping[str, Any]] = []
         with queries_captured() as queries:
-            with self.tornado_redirected_to_list(events):
+            with self.tornado_redirected_to_list(events, expected_num_events=1):
                 result = self.api_post(sender, "/api/v1/typing", params)
         self.assert_json_success(result)
         self.assert_length(events, 1)
