@@ -811,6 +811,7 @@ class EditMessageTest(EditMessageTestCase):
             message_content_edit_limit_seconds: int,
             edit_topic_policy: int,
         ) -> None:
+            self.login("iago")
             result = self.client_patch(
                 "/json/realm",
                 {
@@ -841,7 +842,6 @@ class EditMessageTest(EditMessageTestCase):
             self.assertEqual(msg.topic_name(), old_topic)
             self.assertEqual(msg.content, old_content)
 
-        self.login("iago")
         # send a message in the past
         id_ = self.send_stream_message(
             self.example_user("hamlet"), "Scotland", content="content", topic_name="topic"
@@ -864,7 +864,6 @@ class EditMessageTest(EditMessageTestCase):
         do_edit_message_assert_error(id_, "C", "You don't have permission to edit this message")
 
         # users cannot edit topics if allow_message_editing is False
-        self.login("iago")
         set_message_editing_params(False, 0, Realm.POLICY_EVERYONE)
         self.login("cordelia")
         do_edit_message_assert_error(id_, "D", "Your organization has turned off message editing")
