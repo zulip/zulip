@@ -1009,7 +1009,7 @@ export function build_page() {
 
     $(".org-subsection-parent").on("keydown", "input", (e) => {
         e.stopPropagation();
-        if (e.keyCode === 13) {
+        if (e.key === "Enter") {
             e.preventDefault();
             $(e.target)
                 .closest(".org-subsection-parent")
