@@ -999,7 +999,7 @@ test("initialize", (override) => {
     // handle_keydown()
     let event = {
         type: "keydown",
-        keyCode: 13,
+        key: "Enter",
         target: {
             id: "stream_message_recipient_stream",
         },
@@ -1016,8 +1016,7 @@ test("initialize", (override) => {
     $("#compose-textarea").data = stub_typeahead_hidden;
     $("form#send_message_form").trigger(event);
 
-    event.keyCode = undefined;
-    event.which = 9;
+    event.key = "Tab";
     event.shiftKey = false;
     event.target.id = "subject";
     $("form#send_message_form").trigger(event);
@@ -1037,7 +1036,7 @@ test("initialize", (override) => {
     });
     $("#compose-textarea").caret = noop;
 
-    event.keyCode = 13;
+    event.key = "Enter";
     event.target.id = "stream_message_recipient_topic";
     $("form#send_message_form").trigger(event);
     event.target.id = "compose-textarea";
@@ -1068,13 +1067,13 @@ test("initialize", (override) => {
     event.target.id = "private_message_recipient";
     $("form#send_message_form").trigger(event);
 
-    event.keyCode = 42;
+    event.key = "a";
     $("form#send_message_form").trigger(event);
 
     // handle_keyup()
     event = {
         type: "keydown",
-        keyCode: 13,
+        key: "Enter",
         target: {
             id: "stream_message_recipient_stream",
         },
@@ -1086,11 +1085,10 @@ test("initialize", (override) => {
     $("#stream_message_recipient_topic").off("mouseup");
     event.type = "keyup";
     $("form#send_message_form").trigger(event);
-    event.keyCode = undefined;
-    event.which = 9;
+    event.key = "Tab";
     event.shiftKey = false;
     $("form#send_message_form").trigger(event);
-    event.keyCode = 42;
+    event.key = "a";
     $("form#send_message_form").trigger(event);
 
     // select_on_focus()

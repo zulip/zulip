@@ -190,9 +190,9 @@ export function handle_enter(textarea, e) {
 let nextFocus = false;
 
 function handle_keydown(e) {
-    const code = e.keyCode || e.which;
+    const key = e.key;
 
-    if (code === 13 || (code === 9 && !e.shiftKey)) {
+    if (key === "Enter" || (key === "Tab" && !e.shiftKey)) {
         // Enter key or Tab key
         let target_sel;
 
@@ -206,7 +206,7 @@ function handle_keydown(e) {
         const on_compose = target_sel === "#compose-textarea";
 
         if (on_compose) {
-            if (code === 9) {
+            if (key === "Tab") {
                 // This if branch is only here to make Tab+Enter work on Safari,
                 // which does not make <button>s tab-accessible by default
                 // (even if we were to set tabindex=0).
@@ -244,11 +244,9 @@ function handle_keydown(e) {
 }
 
 function handle_keyup(e) {
-    const code = e.keyCode || e.which;
-
     if (
         // Enter key or Tab key
-        (code === 13 || (code === 9 && !e.shiftKey)) &&
+        (e.key === "Enter" || (e.key === "Tab" && !e.shiftKey)) &&
         nextFocus
     ) {
         nextFocus.trigger("focus");
