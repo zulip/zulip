@@ -241,7 +241,7 @@ def fetch_initial_state_data(
         state["realm_presence_disabled"] = True if user_profile is None else realm.presence_disabled
 
         # Important: Encode units in the client-facing API name.
-        state["max_avatar_file_size_mib"] = settings.MAX_AVATAR_FILE_SIZE
+        state["max_avatar_file_size_mib"] = settings.MAX_AVATAR_FILE_SIZE_MIB
         state["max_file_upload_size_mib"] = settings.MAX_FILE_UPLOAD_SIZE
         state["max_icon_file_size_mib"] = settings.MAX_ICON_FILE_SIZE
         state["realm_upload_quota_mib"] = realm.upload_quota_bytes()
