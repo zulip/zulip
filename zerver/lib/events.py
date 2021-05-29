@@ -81,7 +81,7 @@ def add_realm_logo_fields(state: Dict[str, Any], realm: Realm) -> None:
     state["realm_logo_source"] = get_realm_logo_source(realm, night=False)
     state["realm_night_logo_url"] = get_realm_logo_url(realm, night=True)
     state["realm_night_logo_source"] = get_realm_logo_source(realm, night=True)
-    state["max_logo_file_size_mib"] = settings.MAX_LOGO_FILE_SIZE
+    state["max_logo_file_size_mib"] = settings.MAX_LOGO_FILE_SIZE_MIB
 
 
 def always_want(msg_type: str) -> bool:
