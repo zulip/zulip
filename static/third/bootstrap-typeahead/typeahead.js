@@ -95,6 +95,7 @@
     this.fixed = this.options.fixed || false;
     this.automated = this.options.automated || this.automated;
     this.trigger_selection = this.options.trigger_selection || this.trigger_selection;
+    this.on_select = this.options.on_select;
     this.on_move = this.options.on_move;
     this.on_escape = this.options.on_escape;
     this.header = this.options.header || this.header;
@@ -121,6 +122,10 @@
         this.$element.html('');
       } else {
         this.$element.val(this.updater(val, e)).trigger("change");
+      }
+
+      if (this.on_select) {
+        this.on_select();
       }
 
       return this.hide()
