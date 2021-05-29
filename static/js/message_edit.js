@@ -236,9 +236,8 @@ export function end_if_focused_on_message_row_edit() {
 }
 
 function handle_message_row_edit_keydown(e) {
-    const code = e.keyCode || e.which;
-    switch (code) {
-        case 13:
+    switch (e.key) {
+        case "Enter":
             if ($(e.target).hasClass("message_edit_content")) {
                 // Pressing Enter to save edits is coupled with Enter to send
                 if (composebox_typeahead.should_enter_send(e)) {
@@ -269,7 +268,7 @@ function handle_message_row_edit_keydown(e) {
                 e.preventDefault();
             }
             return;
-        case 27: // Handle escape keys in the message_edit form.
+        case "Escape": // Handle escape keys in the message_edit form.
             end_if_focused_on_message_row_edit();
             e.stopPropagation();
             e.preventDefault();
@@ -281,15 +280,14 @@ function handle_message_row_edit_keydown(e) {
 
 function handle_inline_topic_edit_keydown(e) {
     let row;
-    const code = e.keyCode || e.which;
-    switch (code) {
-        case 13: // Handle Enter key in the recipient bar/inline topic edit form
+    switch (e.key) {
+        case "Enter": // Handle Enter key in the recipient bar/inline topic edit form
             row = $(e.target).closest(".recipient_row");
             save_inline_topic_edit(row);
             e.stopPropagation();
             e.preventDefault();
             return;
-        case 27: // handle Esc
+        case "Escape": // handle Esc
             end_if_focused_on_inline_topic_edit();
             e.stopPropagation();
             e.preventDefault();
