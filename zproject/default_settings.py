@@ -308,7 +308,7 @@ ZULIP_IOS_APP_ID = "org.zulip.Zulip"
 # Limits related to the size of file uploads; last few in MB.
 DATA_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024
 MAX_AVATAR_FILE_SIZE_MIB = 5
-MAX_ICON_FILE_SIZE = 5
+MAX_ICON_FILE_SIZE_MIB = 5
 MAX_LOGO_FILE_SIZE = 5
 MAX_EMOJI_FILE_SIZE = 5
 
