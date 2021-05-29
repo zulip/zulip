@@ -297,10 +297,10 @@ def set_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> HttpR
         return json_error(str(AVATAR_CHANGES_DISABLED_ERROR))
 
     user_file = list(request.FILES.values())[0]
-    if (settings.MAX_AVATAR_FILE_SIZE * 1024 * 1024) < user_file.size:
+    if (settings.MAX_AVATAR_FILE_SIZE_MIB * 1024 * 1024) < user_file.size:
         return json_error(
             _("Uploaded file is larger than the allowed limit of {} MiB").format(
-                settings.MAX_AVATAR_FILE_SIZE,
+                settings.MAX_AVATAR_FILE_SIZE_MIB,
             )
         )
     upload_avatar_image(user_file, user_profile, user_profile)
