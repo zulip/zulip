@@ -483,7 +483,7 @@ export function set_up_handlers() {
     // Do not allow the user to enter newline characters while typing out the
     // stream's description during it's creation.
     container.on("keydown", "#create_stream_description", (e) => {
-        if ((e.keyCode || e.which) === 13) {
+        if (e.key === "Enter") {
             e.preventDefault();
         }
     });
