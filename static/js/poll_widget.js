@@ -125,12 +125,12 @@ export function activate({
         elem.find("input.poll-question").on("keydown", (e) => {
             e.stopPropagation();
 
-            if (e.keyCode === 13) {
+            if (e.key === "Enter") {
                 submit_question();
                 return;
             }
 
-            if (e.keyCode === 27) {
+            if (e.key === "Escape") {
                 abort_edit();
                 return;
             }
@@ -159,12 +159,12 @@ export function activate({
         elem.find("input.poll-option").on("keydown", (e) => {
             e.stopPropagation();
 
-            if (e.keyCode === 13) {
+            if (e.key === "Enter") {
                 submit_option();
                 return;
             }
 
-            if (e.keyCode === 27) {
+            if (e.key === "Escape") {
                 $("input.poll-option").val("");
                 return;
             }
