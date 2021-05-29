@@ -420,7 +420,8 @@ it as follows:
     3. (Optional) Put the Zulip server public certificate in `/etc/zulip/saml/zulip-cert.crt`
        and the corresponding private key in `/etc/zulip/saml/zulip-private-key.key`. Note that
        the certificate should be the single X.509 certificate for the server, not a full chain of
-       trust, which consists of multiple certificates.
+       trust, which consists of multiple certificates. The private key cannot be encrypted
+       with a password, as then Zulip will not be able to load it.
     4. Set the proper permissions on these files and directories:
 
     ```
