@@ -126,6 +126,7 @@ LOGGING_SHOW_PID = False
 SENTRY_DSN: Optional[str] = None
 
 # File uploads and avatars
+# TODO: Rename MAX_FILE_UPLOAD_SIZE to have unit in name.
 DEFAULT_AVATAR_URI = "/static/images/default-avatar.png"
 DEFAULT_LOGO_URI = "/static/images/logo/zulip-org-logo.svg"
 S3_AVATAR_BUCKET = ""
@@ -310,7 +311,7 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 25 * 1024 * 1024
 MAX_AVATAR_FILE_SIZE_MIB = 5
 MAX_ICON_FILE_SIZE_MIB = 5
 MAX_LOGO_FILE_SIZE_MIB = 5
-MAX_EMOJI_FILE_SIZE = 5
+MAX_EMOJI_FILE_SIZE_MIB = 5
 
 # Limits to help prevent spam, in particular by sending invitations.
 #
