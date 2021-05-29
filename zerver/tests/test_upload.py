@@ -1601,7 +1601,7 @@ class RealmLogoTest(UploadSerializeMixin, ZulipTestCase):
     def test_logo_upload_file_size_error(self) -> None:
         self.login("iago")
         with get_test_image_file(self.correct_files[0][0]) as fp:
-            with self.settings(MAX_LOGO_FILE_SIZE=0):
+            with self.settings(MAX_LOGO_FILE_SIZE_MIB=0):
                 result = self.client_post(
                     "/json/realm/logo", {"file": fp, "night": orjson.dumps(self.night).decode()}
                 )
