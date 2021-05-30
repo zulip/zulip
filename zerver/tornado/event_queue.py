@@ -1122,6 +1122,9 @@ def process_message_update_event(
     elif "push_notify_user_ids" in event_template:
         online_push_user_ids = set(event_template.pop("push_notify_user_ids"))
 
+    if "online_email_user_ids" in event_template:
+        del event_template["online_email_user_ids"]
+
     stream_name = event_template.get("stream_name")
     message_id = event_template["message_id"]
 

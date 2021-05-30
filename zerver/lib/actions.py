@@ -1421,6 +1421,7 @@ def render_incoming_message(
 class RecipientInfoResult(TypedDict):
     active_user_ids: Set[int]
     online_push_user_ids: Set[int]
+    online_email_user_ids: Set[int]
     stream_email_user_ids: Set[int]
     stream_push_user_ids: Set[int]
     wildcard_mention_user_ids: Set[int]
@@ -1549,6 +1550,7 @@ def get_recipient_info(
         query = UserProfile.objects.filter(is_active=True).values(
             "id",
             "enable_online_push_notifications",
+            "enable_online_email_notifications",
             "is_bot",
             "bot_type",
             "long_term_idle",
@@ -1590,6 +1592,9 @@ def get_recipient_info(
     online_push_user_ids = get_ids_for(
         lambda r: r["enable_online_push_notifications"],
     )
+    online_email_user_ids = get_ids_for(
+        lambda r: r["enable_online_email_notifications"],
+    )
 
     # Service bots don't get UserMessage rows.
     um_eligible_user_ids = get_ids_for(
@@ -1619,6 +1624,7 @@ def get_recipient_info(
     info: RecipientInfoResult = dict(
         active_user_ids=active_user_ids,
         online_push_user_ids=online_push_user_ids,
+        online_email_user_ids=online_email_user_ids,
         stream_push_user_ids=stream_push_user_ids,
         stream_email_user_ids=stream_email_user_ids,
         wildcard_mention_user_ids=wildcard_mention_user_ids,
@@ -1812,6 +1818,7 @@ def build_message_send_dict(
         message=message,
         active_user_ids=info["active_user_ids"],
         online_push_user_ids=info["online_push_user_ids"],
+        online_email_user_ids=info["online_email_user_ids"],
         stream_push_user_ids=info["stream_push_user_ids"],
         stream_email_user_ids=info["stream_email_user_ids"],
         um_eligible_user_ids=info["um_eligible_user_ids"],
@@ -1962,6 +1969,7 @@ def do_send_messages(
                 id=user_id,
                 flags=user_flags.get(user_id, []),
                 online_push_enabled=(user_id in send_request.online_push_user_ids),
+                online_email_enabled=(user_id in send_request.online_email_user_ids),
                 stream_push_notify=(user_id in send_request.stream_push_user_ids),
                 stream_email_notify=(user_id in send_request.stream_email_user_ids),
                 wildcard_mention_notify=(user_id in send_request.wildcard_mention_user_ids),
@@ -5816,6 +5824,7 @@ def do_update_message(
         )
 
         event["online_push_user_ids"] = list(info["online_push_user_ids"])
+        event["online_email_user_ids"] = list(info["online_email_user_ids"])
         event["stream_push_user_ids"] = list(info["stream_push_user_ids"])
         event["stream_email_user_ids"] = list(info["stream_email_user_ids"])
         event["prior_mention_user_ids"] = list(prior_mention_user_ids)

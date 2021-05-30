@@ -96,6 +96,7 @@ class SendMessageRequest:
     mention_data: MentionData
     active_user_ids: Set[int]
     online_push_user_ids: Set[int]
+    online_email_user_ids: Set[int]
     stream_push_user_ids: Set[int]
     stream_email_user_ids: Set[int]
     um_eligible_user_ids: Set[int]
