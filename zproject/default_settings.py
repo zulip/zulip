@@ -9,6 +9,8 @@ if TYPE_CHECKING:
     from django_auth_ldap.config import LDAPSearch
     from typing_extensions import TypedDict
 
+    from zerver.lib.types import SAMLIdPConfigDict
+
 if PRODUCTION:
     from .prod_settings import EXTERNAL_HOST, ZULIP_ADMINISTRATOR
 else:
@@ -81,7 +83,7 @@ SOCIAL_AUTH_SAML_SP_PRIVATE_KEY = ""
 SOCIAL_AUTH_SAML_ORG_INFO: Optional[Dict[str, Dict[str, str]]] = None
 SOCIAL_AUTH_SAML_TECHNICAL_CONTACT: Optional[Dict[str, str]] = None
 SOCIAL_AUTH_SAML_SUPPORT_CONTACT: Optional[Dict[str, str]] = None
-SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, Dict[str, str]] = {}
+SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, "SAMLIdPConfigDict"] = {}
 SOCIAL_AUTH_SAML_SECURITY_CONFIG: Dict[str, Any] = {}
 # Set this to True to enforce that any configured IdP needs to specify
 # the limit_to_subdomains setting to be considered valid:

@@ -394,7 +394,7 @@ SOCIAL_AUTH_SAML_ORG_INFO = {
         "url": "{}{}".format("https://", EXTERNAL_HOST),
     },
 }
-SOCIAL_AUTH_SAML_ENABLED_IDPS = {
+SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, Any] = {
     ## The fields are explained in detail here:
     ##     https://python-social-auth.readthedocs.io/en/latest/backends/saml.html
     "idp_name": {

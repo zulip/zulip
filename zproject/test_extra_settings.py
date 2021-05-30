@@ -5,6 +5,7 @@ import ldap
 from django_auth_ldap.config import LDAPSearch
 
 from zerver.lib.db import TimeTrackingConnection
+from zerver.lib.types import SAMLIdPConfigDict
 
 from .config import DEPLOY_ROOT, get_from_file_if_exists
 from .settings import (
@@ -244,7 +245,7 @@ SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
     "emailAddress": "support@example.com",
 }
 
-SOCIAL_AUTH_SAML_ENABLED_IDPS = {
+SOCIAL_AUTH_SAML_ENABLED_IDPS: Dict[str, SAMLIdPConfigDict] = {
     "test_idp": {
         "entity_id": "https://idp.testshib.org/idp/shibboleth",
         "url": "https://idp.testshib.org/idp/profile/SAML2/Redirect/SSO",
