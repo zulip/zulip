@@ -64,6 +64,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             stream_email_notify=False,
             stream_name=None,
             online_push_enabled=False,
+            online_email_enabled=False,
             idle=True,
             already_notified={},
         )
@@ -81,6 +82,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             stream_email_notify=True,
             stream_name=None,
             online_push_enabled=False,
+            online_email_enabled=False,
             idle=True,
             already_notified={},
         )
@@ -99,6 +101,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             stream_email_notify=False,
             stream_name=None,
             online_push_enabled=False,
+            online_email_enabled=False,
             idle=True,
             already_notified={
                 "push_notified": True,
@@ -118,6 +121,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             stream_email_notify=False,
             stream_name=None,
             online_push_enabled=False,
+            online_email_enabled=False,
             idle=True,
             already_notified={
                 "push_notified": False,
@@ -138,6 +142,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             stream_email_notify=False,
             stream_name=None,
             online_push_enabled=False,
+            online_email_enabled=False,
             idle=True,
             already_notified={},
         )
@@ -157,6 +162,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             stream_email_notify=False,
             stream_name=None,
             online_push_enabled=False,
+            online_email_enabled=False,
             idle=True,
             already_notified={},
         )
@@ -174,6 +180,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             stream_email_notify=False,
             stream_name="Denmark",
             online_push_enabled=False,
+            online_email_enabled=False,
             idle=True,
             already_notified={},
         )
@@ -191,6 +198,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             stream_email_notify=True,
             stream_name="Denmark",
             online_push_enabled=False,
+            online_email_enabled=False,
             idle=True,
             already_notified={},
         )
@@ -208,6 +216,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             stream_email_notify=True,
             stream_name=None,
             online_push_enabled=False,
+            online_email_enabled=False,
             idle=False,
             already_notified={},
         )
@@ -225,6 +234,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             stream_email_notify=False,
             stream_name=None,
             online_push_enabled=False,
+            online_email_enabled=False,
             idle=False,
             already_notified={},
         )
@@ -242,6 +252,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             stream_email_notify=False,
             stream_name=None,
             online_push_enabled=False,
+            online_email_enabled=False,
             idle=False,
             already_notified={},
         )
@@ -259,6 +270,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             stream_email_notify=True,
             stream_name=None,
             online_push_enabled=True,
+            online_email_enabled=False,
             idle=False,
             already_notified={},
         )
@@ -276,6 +288,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             stream_email_notify=True,
             stream_name="Denmark",
             online_push_enabled=True,
+            online_email_enabled=False,
             idle=False,
             already_notified={},
         )
@@ -390,6 +403,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             stream_email_notify: bool,
             stream_name: Optional[str],
             online_push_enabled: bool,
+            online_email_enabled: bool,
             idle: bool,
             already_notified: Dict[str, bool],
         ) -> None:
@@ -405,6 +419,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                     stream_email_notify,
                     stream_name,
                     online_push_enabled,
+                    online_email_enabled,
                     idle,
                     already_notified,
                 ),
@@ -438,6 +453,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                 stream_email_notify=False,
                 stream_name="Denmark",
                 online_push_enabled=False,
+                online_email_enabled=False,
                 idle=True,
                 already_notified={"email_notified": False, "push_notified": False},
             )
@@ -463,6 +479,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                 stream_email_notify=False,
                 stream_name=None,
                 online_push_enabled=False,
+                online_email_enabled=False,
                 idle=True,
                 already_notified={"email_notified": True, "push_notified": True},
             )
@@ -490,6 +507,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                 stream_email_notify=False,
                 stream_name="Denmark",
                 online_push_enabled=False,
+                online_email_enabled=False,
                 idle=True,
                 already_notified={"email_notified": True, "push_notified": True},
             )
@@ -517,6 +535,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                 stream_email_notify=False,
                 stream_name="Denmark",
                 online_push_enabled=False,
+                online_email_enabled=False,
                 idle=True,
                 already_notified={"email_notified": True, "push_notified": True},
             )
@@ -548,6 +567,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                 stream_email_notify=False,
                 stream_name="Denmark",
                 online_push_enabled=False,
+                online_email_enabled=False,
                 idle=True,
                 already_notified={"email_notified": False, "push_notified": False},
             )
@@ -576,6 +596,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                 stream_email_notify=False,
                 stream_name="Denmark",
                 online_push_enabled=False,
+                online_email_enabled=False,
                 idle=True,
                 already_notified={"email_notified": False, "push_notified": False},
             )
@@ -606,6 +627,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                 stream_email_notify=False,
                 stream_name="Denmark",
                 online_push_enabled=False,
+                online_email_enabled=False,
                 idle=True,
                 already_notified={"email_notified": False, "push_notified": False},
             )
@@ -640,6 +662,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                 stream_email_notify=False,
                 stream_name="Denmark",
                 online_push_enabled=False,
+                online_email_enabled=False,
                 idle=True,
                 already_notified={"email_notified": True, "push_notified": True},
             )
@@ -672,6 +695,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                 stream_email_notify=False,
                 stream_name="Denmark",
                 online_push_enabled=False,
+                online_email_enabled=False,
                 idle=True,
                 already_notified={"email_notified": False, "push_notified": False},
             )
@@ -702,6 +726,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                 stream_email_notify=True,
                 stream_name="Denmark",
                 online_push_enabled=False,
+                online_email_enabled=False,
                 idle=True,
                 already_notified={"email_notified": False, "push_notified": False},
             )
@@ -738,6 +763,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                 stream_email_notify=False,
                 stream_name="Denmark",
                 online_push_enabled=False,
+                online_email_enabled=False,
                 idle=True,
                 already_notified={"email_notified": False, "push_notified": False},
             )
@@ -771,6 +797,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                 stream_email_notify=False,
                 stream_name="Denmark",
                 online_push_enabled=False,
+                online_email_enabled=False,
                 idle=True,
                 already_notified={"email_notified": False, "push_notified": False},
             )

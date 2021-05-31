@@ -44,7 +44,10 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         )
 
     def _login_and_send_original_stream_message(
-        self, content: str, enable_online_push_notifications: bool = False
+        self,
+        content: str,
+        enable_online_push_notifications: bool = False,
+        enable_online_email_notifications: bool = False,
     ) -> int:
         """
         Note our conventions here:
@@ -57,6 +60,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         cordelia = self.example_user("cordelia")
 
         cordelia.enable_online_push_notifications = enable_online_push_notifications
+        cordelia.enable_online_email_notifications = enable_online_email_notifications
         cordelia.save()
 
         self.login_user(hamlet)
@@ -144,6 +148,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         original_content: str,
         updated_content: str,
         enable_online_push_notifications: bool = False,
+        enable_online_email_notifications: bool = False,
         expect_short_circuit: bool = False,
         connected_to_zulip: bool = False,
         present_on_web: bool = False,
@@ -151,6 +156,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         message_id = self._login_and_send_original_stream_message(
             content=original_content,
             enable_online_push_notifications=enable_online_push_notifications,
+            enable_online_email_notifications=enable_online_email_notifications,
         )
 
         if present_on_web:
@@ -194,6 +200,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             stream_email_notify=False,
             stream_name="Scotland",
             online_push_enabled=False,
+            online_email_enabled=False,
             idle=True,
             already_notified={},
         )
@@ -327,6 +334,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             stream_email_notify=False,
             stream_name="Scotland",
             online_push_enabled=True,
+            online_email_enabled=False,
             idle=False,
             already_notified={},
         )
@@ -365,6 +373,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             stream_email_notify=False,
             stream_name="Scotland",
             online_push_enabled=True,
+            online_email_enabled=False,
             idle=False,
             already_notified={},
         )
@@ -377,6 +386,76 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         # to True, we don't send her any offline notifications, since she
         # was not mentioned.
         self.assert_length(queue_messages, 0)
+
+    def test_online_email_enabled_for_fully_present_mentioned_user(self) -> None:
+        cordelia = self.example_user("cordelia")
+
+        # Simulate Cordelia is FULLY present, not just in term of
+        # browser activity, but also in terms of her client descriptors.
+        original_content = "no mention"
+        updated_content = "newly mention @**Cordelia, Lear's daughter**"
+        notification_message_data = self._send_and_update_message(
+            original_content,
+            updated_content,
+            enable_online_email_notifications=True,
+            connected_to_zulip=True,
+            present_on_web=True,
+        )
+
+        message_id = notification_message_data["message_id"]
+        info = notification_message_data["info"]
+
+        expected_enqueue_kwargs = dict(
+            user_profile_id=cordelia.id,
+            message_id=message_id,
+            private_message=False,
+            mentioned=True,
+            wildcard_mention_notify=False,
+            stream_push_notify=False,
+            stream_email_notify=False,
+            stream_name="Scotland",
+            online_push_enabled=False,
+            online_email_enabled=True,
+            idle=False,
+            already_notified={},
+        )
+
+        self.assertEqual(info["enqueue_kwargs"], expected_enqueue_kwargs)
+
+    def test_online_email_enabled_for_fully_present_boring_user(self) -> None:
+        cordelia = self.example_user("cordelia")
+
+        # Simulate Cordelia is FULLY present, not just in term of
+        # browser activity, but also in terms of her client descriptors.
+        original_content = "no mention"
+        updated_content = "nothing special about updated message"
+        notification_message_data = self._send_and_update_message(
+            original_content,
+            updated_content,
+            enable_online_email_notifications=True,
+            connected_to_zulip=True,
+            present_on_web=True,
+        )
+
+        message_id = notification_message_data["message_id"]
+        info = notification_message_data["info"]
+
+        expected_enqueue_kwargs = dict(
+            user_profile_id=cordelia.id,
+            message_id=message_id,
+            private_message=False,
+            mentioned=False,
+            wildcard_mention_notify=False,
+            stream_push_notify=False,
+            stream_email_notify=False,
+            stream_name="Scotland",
+            online_push_enabled=False,
+            online_email_enabled=True,
+            idle=False,
+            already_notified={},
+        )
+
+        self.assertEqual(info["enqueue_kwargs"], expected_enqueue_kwargs)
 
     def test_updates_with_stream_mention_of_sorta_present_user(self) -> None:
         cordelia = self.example_user("cordelia")
@@ -405,6 +484,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             stream_email_notify=False,
             stream_name="Scotland",
             online_push_enabled=False,
+            online_email_enabled=False,
             idle=True,
             already_notified={},
         )
@@ -441,6 +521,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             stream_email_notify=False,
             stream_name="Scotland",
             online_push_enabled=False,
+            online_email_enabled=False,
             idle=True,
             already_notified={},
         )
@@ -502,6 +583,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             stream_email_notify=False,
             stream_name="Scotland",
             online_push_enabled=False,
+            online_email_enabled=False,
             idle=False,
             already_notified={},
         )

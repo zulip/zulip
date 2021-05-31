@@ -753,8 +753,9 @@ def missedmessage_hook(
         if not private_message:
             stream_name = event["message"]["display_recipient"]
 
-        # Since one is by definition idle, we don't need to check online_push_enabled
+        # Since one is by definition idle, the online notifications settings are irrelevant.
         online_push_enabled = False
+        online_email_enabled = False
         # Since we just GC'd the last event queue, the user is definitely idle.
         idle = True
 
@@ -774,6 +775,7 @@ def missedmessage_hook(
             stream_email_notify,
             stream_name,
             online_push_enabled,
+            online_email_enabled,
             idle,
             already_notified,
         )
@@ -800,6 +802,7 @@ def maybe_enqueue_notifications(
     stream_email_notify: bool,
     stream_name: Optional[str],
     online_push_enabled: bool,
+    online_email_enabled: bool,
     idle: bool,
     already_notified: Dict[str, bool],
 ) -> Dict[str, bool]:
@@ -979,6 +982,7 @@ def process_message_event(
             else:
                 online_push_enabled = False
 
+            online_email_enabled = user_data.get("online_email_enabled", False)
             stream_name = event_template.get("stream_name")
 
             result: Dict[str, Any] = {}
@@ -992,6 +996,7 @@ def process_message_event(
                 stream_email_notify,
                 stream_name,
                 online_push_enabled,
+                online_email_enabled,
                 idle,
                 {},
             )
@@ -1122,9 +1127,7 @@ def process_message_update_event(
     elif "push_notify_user_ids" in event_template:
         online_push_user_ids = set(event_template.pop("push_notify_user_ids"))
 
-    if "online_email_user_ids" in event_template:
-        del event_template["online_email_user_ids"]
-
+    online_email_user_ids = set(event_template.pop("online_email_user_ids", []))
     stream_name = event_template.get("stream_name")
     message_id = event_template["message_id"]
 
@@ -1150,6 +1153,7 @@ def process_message_update_event(
             stream_push_user_ids=stream_push_user_ids,
             stream_email_user_ids=stream_email_user_ids,
             online_push_user_ids=online_push_user_ids,
+            online_email_user_ids=online_email_user_ids,
         )
 
         for client in get_client_descriptors_for_user(user_profile_id):
@@ -1170,6 +1174,7 @@ def maybe_enqueue_notifications_for_message_update(
     stream_push_user_ids: Set[int],
     stream_email_user_ids: Set[int],
     online_push_user_ids: Set[int],
+    online_email_user_ids: Set[int],
 ) -> None:
     private_message = stream_name is None
 
@@ -1209,6 +1214,7 @@ def maybe_enqueue_notifications_for_message_update(
     mentioned = user_profile_id in mention_user_ids
 
     online_push_enabled = user_profile_id in online_push_user_ids
+    online_email_enabled = user_profile_id in online_email_user_ids
 
     idle = (user_profile_id in presence_idle_user_ids) or receiver_is_off_zulip(user_profile_id)
 
@@ -1222,6 +1228,7 @@ def maybe_enqueue_notifications_for_message_update(
         stream_email_notify=stream_email_notify,
         stream_name=stream_name,
         online_push_enabled=online_push_enabled,
+        online_email_enabled=online_email_enabled,
         idle=idle,
         already_notified={},
     )
