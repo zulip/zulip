@@ -241,6 +241,20 @@ async function test_save_draft_by_reloading(page: Page): Promise<void> {
     );
 }
 
+async function test_delete_draft_on_clearing_text(page: Page): Promise<void> {
+    console.log("Deleting draft by clearing compose box textarea.");
+    await page.click("#drafts_table .message_row:not(.private-message) .restore-draft");
+    await wait_for_drafts_to_dissapear(page);
+    await page.waitForSelector("#stream-message", {visible: true});
+    await page.keyboard.press("Backspace");
+    await page.click("#compose_close");
+    await page.waitForSelector("#stream-message", {hidden: true});
+    await page.click(drafts_button);
+    await wait_for_drafts_to_appear(page);
+    const drafts_count = await get_drafts_count(page);
+    assert.strictEqual(drafts_count, 0, "Draft not deleted.");
+}
+
 async function test_delete_draft_on_sending(page: Page): Promise<void> {
     await page.click("#drafts_table .message_row.private-message .restore-draft");
     await wait_for_drafts_to_dissapear(page);
@@ -277,6 +291,7 @@ async function drafts_test(page: Page): Promise<void> {
     await test_delete_draft(page);
     await test_save_draft_by_reloading(page);
     await test_delete_draft_on_sending(page);
+    await test_delete_draft_on_clearing_text(page);
 }
 
 common.run_test(drafts_test);
