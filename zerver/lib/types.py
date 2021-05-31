@@ -65,5 +65,6 @@ class SAMLIdPConfigDict(TypedDict, total=False):
     display_name: str
     display_icon: str
     limit_to_subdomains: List[str]
+    extra_attrs: List[str]
     x509cert: str
     x509cert_path: str

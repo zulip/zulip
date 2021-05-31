@@ -1439,6 +1439,8 @@ def social_associate_user_helper(
         # strip removes the unnecessary ' '
         return_data["full_name"] = f"{first_name or ''} {last_name or ''}".strip()
 
+    return_data["extra_attrs"] = kwargs["details"].get("extra_attrs", {})
+
     return user_profile
 
 
@@ -1546,6 +1548,28 @@ def social_auth_finish(
         is_signup = strategy.session_get("is_signup") == "1"
     else:
         is_signup = False
+
+    extra_attrs = return_data.get("extra_attrs", {})
+    attrs_by_backend = settings.SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT.get(realm.subdomain, {})
+    if user_profile is not None and extra_attrs and attrs_by_backend:
+        # This is only supported for SAML right now, though the design
+        # is meant to be easy to extend this to other backends if desired.
+        # Unlike with LDAP, here we can only do syncing during the authentication
+        # flow, as that's when the data is provided and we don't have a way to query
+        # for it otherwise.
+        assert backend.name == "saml"
+        custom_profile_field_name_to_attr_name = attrs_by_backend.get(backend.name, {})
+        custom_profile_field_name_to_value = {}
+        for field_name, attr_name in custom_profile_field_name_to_attr_name.items():
+            custom_profile_field_name_to_value[field_name] = extra_attrs.get(attr_name)
+        try:
+            sync_user_profile_custom_fields(user_profile, custom_profile_field_name_to_value)
+        except SyncUserException as e:
+            backend.logger.warning(
+                "Exception while syncing custom profile fields for user %s: %s",
+                user_profile.id,
+                str(e),
+            )
 
     # At this point, we have now confirmed that the user has
     # demonstrated control over the target email address.
@@ -1966,6 +1990,24 @@ class AppleAuthBackend(SocialAuthMixin, AppleIdAuth):
             return None
 
 
+class ZulipSAMLIdentityProvider(SAMLIdentityProvider):
+    def get_user_details(self, attributes: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Overriden to support plumbing of additional Attributes
+        from the SAMLResponse.
+        """
+        result = super().get_user_details(attributes)
+
+        extra_attr_names = self.conf.get("extra_attrs", [])
+        result["extra_attrs"] = {}
+        for extra_attr_name in extra_attr_names:
+            result["extra_attrs"][extra_attr_name] = self.get_attr(
+                attributes=attributes, conf_key=None, default_attribute=extra_attr_name
+            )
+
+        return result
+
+
 @external_auth_method
 class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
     auth_backend_name = "SAML"
@@ -2001,6 +2043,12 @@ class SAMLAuthBackend(SocialAuthMixin, SAMLAuth):
                 for idp_name in idps_without_limit_to_subdomains:
                     del settings.SOCIAL_AUTH_SAML_ENABLED_IDPS[idp_name]
         super().__init__(*args, **kwargs)
+
+    def get_idp(self, idp_name: str) -> ZulipSAMLIdentityProvider:
+        """Given the name of an IdP, get a SAMLIdentityProvider instance.
+        Forked to use our subclass of SAMLIdentityProvider for more flexibility."""
+        idp_config = self.setting("ENABLED_IDPS")[idp_name]
+        return ZulipSAMLIdentityProvider(idp_name, **idp_config)
 
     def auth_url(self) -> str:
         """Get the URL to which we must redirect in order to

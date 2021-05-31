@@ -202,8 +202,6 @@ corresponding LDAP attribute is `linkedinProfile` then you just need
 to add `'custom_profile_field__linkedin_profile': 'linkedinProfile'`
 to the `AUTH_LDAP_USER_ATTR_MAP`.
 
-[custom-profile-fields]: https://zulip.com/help/add-custom-profile-fields
-
 #### Automatically deactivating users with Active Directory
 
 Starting with Zulip 2.0, Zulip supports synchronizing the
@@ -375,7 +373,7 @@ it as follows:
       if `SOCIAL_AUTH_SUBDOMAIN="auth"` and `EXTERNAL_HOST=zulip.example.com`,
       this should be `https://auth.zulip.example.com/complete/saml/`.
 
-2. Tell Zulip how to connect to your SAML provider(s) by filling
+1. Tell Zulip how to connect to your SAML provider(s) by filling
    out the section of `/etc/zulip/settings.py` on your Zulip server
    with the heading "SAML Authentication".
    * You will need to update `SOCIAL_AUTH_SAML_ORG_INFO` with your
@@ -403,7 +401,7 @@ it as follows:
      5. The `display_name` and `display_icon` fields are used to
         display the login/registration buttons for the IdP.
 
-3. Install the certificate(s) required for SAML authentication.  You
+1. Install the certificate(s) required for SAML authentication.  You
     will definitely need the public certificate of your IdP.  Some IdP
     providers also support the Zulip server (Service Provider) having
     a certificate used for encryption and signing.  We detail these
@@ -430,7 +428,7 @@ it as follows:
     chmod 640 /etc/zulip/saml/zulip-private-key.key
     ```
 
-4. (Optional) If you configured the optional public and private server
+1. (Optional) If you configured the optional public and private server
    certificates above, you can enable the additional setting
    `"authnRequestsSigned": True` in `SOCIAL_AUTH_SAML_SECURITY_CONFIG`
    to have the SAMLRequests the server will be issuing to the IdP
@@ -439,15 +437,34 @@ it as follows:
    assertions in the SAMLResponses the IdP will send about
    authenticated users.
 
-5. Enable the `zproject.backends.SAMLAuthBackend` auth backend, in
+1. Enable the `zproject.backends.SAMLAuthBackend` auth backend, in
 `AUTHENTICATION_BACKENDS` in `/etc/zulip/settings.py`.
 
-6. [Restart the Zulip server](../production/settings.md) to ensure
+1. (Optional) New in Zulip 5.0: Zulip can synchronize [custom profile
+   fields][custom-profile-fields] from the SAML provider. Just
+   configure the `SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT`; the
+   [LDAP](#synchronizing-custom-profile-fields) documentation for
+   synchronizing custom profile fields will be helpful. Servers
+   installed before Zulip 5.0 may want to [update inline comment
+   documentation][update-inline-comments] so they can take advantage
+   of the latest inline SAML documentation in
+   `/etc/zulip/settings.py`.
+
+   Note that in contrast with LDAP, Zulip can only query the SAML
+   database for a user's settings when the user authenticates to Zulip
+   using SAML, so custom profile fields are only synchronized when the
+   user logs in.
+
+   Note also that the SAML feature currently only synchronizes custom
+   profile fields during login, not during account creation; we
+   consider this [a bug](https://github.com/zulip/zulip/issues/18746).
+
+1. [Restart the Zulip server](../production/settings.md) to ensure
 your settings changes take effect.  The Zulip login page should now
 have a button for SAML authentication that you can use to log in or
 create an account (including when creating a new organization).
 
-7. If the configuration was successful, the server's metadata can be
+1. If the configuration was successful, the server's metadata can be
 found at `https://yourzulipdomain.example.com/saml/metadata.xml`. You
 can use this for verifying your configuration or provide it to your
 IdP.
@@ -705,3 +722,6 @@ helpful developer documentation on
 The `DevAuthBackend` method is used only in development, to allow
 passwordless login as any user in a development environment.  It's
 mentioned on this page only for completeness.
+
+[custom-profile-fields]: https://zulip.com/help/add-custom-profile-fields
+[update-inline-comments]: ../production/upgrade-or-modify.html#updating-settings-py-inline-documentation

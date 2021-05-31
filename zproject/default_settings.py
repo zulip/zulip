@@ -103,6 +103,8 @@ SOCIAL_AUTH_APPLE_EMAIL_AS_USERNAME = True
 SOCIAL_AUTH_OIDC_ENABLED_IDPS: Dict[str, Dict[str, Optional[str]]] = {}
 SOCIAL_AUTH_OIDC_FULL_NAME_VALIDATED = False
 
+SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT: Dict[str, Dict[str, Dict[str, str]]] = {}
+
 # Other auth
 SSO_APPEND_DOMAIN: Optional[str] = None
 

@@ -2454,6 +2454,101 @@ class SAMLAuthBackendTest(SocialAuthBase):
             ],
         )
 
+    def test_social_auth_custom_profile_field_sync(self) -> None:
+        birthday_field = CustomProfileField.objects.get(
+            realm=self.user_profile.realm, name="Birthday"
+        )
+        old_birthday_field_value = CustomProfileFieldValue.objects.get(
+            user_profile=self.user_profile, field=birthday_field
+        ).value
+
+        idps_dict = copy.deepcopy(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS)
+        idps_dict["test_idp"]["extra_attrs"] = ["mobilePhone"]
+
+        sync_custom_attrs_dict = {
+            "zulip": {
+                "saml": {
+                    "phone_number": "mobilePhone",
+                }
+            }
+        }
+
+        with self.settings(
+            SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_dict,
+            SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT=sync_custom_attrs_dict,
+        ):
+            account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+            result = self.social_auth_test(
+                account_data_dict,
+                subdomain="zulip",
+                extra_attributes=dict(mobilePhone=["123412341234"], birthday=["2021-01-01"]),
+            )
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], self.email)
+        self.assertEqual(data["full_name"], self.name)
+        self.assertEqual(data["subdomain"], "zulip")
+        self.assertEqual(result.status_code, 302)
+
+        phone_field = CustomProfileField.objects.get(
+            realm=self.user_profile.realm, name="Phone number"
+        )
+        phone_field_value = CustomProfileFieldValue.objects.get(
+            user_profile=self.user_profile, field=phone_field
+        ).value
+        self.assertEqual(phone_field_value, "123412341234")
+
+        # Verify the Birthday field doesn't get synced - because it isn't configured for syncing.
+        new_birthday_field_value = CustomProfileFieldValue.objects.get(
+            user_profile=self.user_profile, field=birthday_field
+        ).value
+        self.assertEqual(new_birthday_field_value, old_birthday_field_value)
+
+    def test_social_auth_custom_profile_field_sync_custom_field_not_existing(self) -> None:
+        sync_custom_attrs_dict = {
+            "zulip": {
+                "saml": {
+                    "title": "title",
+                    "phone_number": "mobilePhone",
+                }
+            }
+        }
+        self.assertFalse(
+            CustomProfileField.objects.filter(
+                realm=self.user_profile.realm, name__iexact="title"
+            ).exists()
+        )
+
+        idps_dict = copy.deepcopy(settings.SOCIAL_AUTH_SAML_ENABLED_IDPS)
+        idps_dict["test_idp"]["extra_attrs"] = ["mobilePhone", "title"]
+
+        with self.settings(
+            SOCIAL_AUTH_SAML_ENABLED_IDPS=idps_dict,
+            SOCIAL_AUTH_SYNC_CUSTOM_ATTRS_DICT=sync_custom_attrs_dict,
+        ):
+            account_data_dict = self.get_account_data_dict(email=self.email, name=self.name)
+            with self.assertLogs(self.logger_string, level="WARNING") as m:
+                result = self.social_auth_test(
+                    account_data_dict,
+                    subdomain="zulip",
+                    extra_attributes=dict(mobilePhone=["123412341234"], birthday=["2021-01-01"]),
+                )
+        data = load_subdomain_token(result)
+        self.assertEqual(data["email"], self.email)
+        self.assertEqual(data["full_name"], self.name)
+        self.assertEqual(data["subdomain"], "zulip")
+        self.assertEqual(result.status_code, 302)
+
+        self.assertEqual(
+            m.output,
+            [
+                self.logger_output(
+                    "Exception while syncing custom profile fields for "
+                    + f"user {self.user_profile.id}: Custom profile field with name title not found.",
+                    "warning",
+                )
+            ],
+        )
+
 
 class AppleAuthMixin:
     BACKEND_CLASS = AppleAuthBackend
