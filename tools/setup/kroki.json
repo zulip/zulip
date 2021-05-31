@@ -1,0 +1,26 @@
+{
+    "diagram_types": [
+        "kroki blockdiag",
+        "kroki bpmn",
+        "kroki bytefield",
+        "kroki seqdiag",
+        "kroki actdiag",
+        "kroki nwdiag",
+        "kroki packetdiag",
+        "kroki rackdiag",
+        "kroki c4plantuml",
+        "kroki ditaa",
+        "kroki erd",
+        "kroki excalidraw",
+        "kroki graphviz",
+        "kroki mermaid",
+        "kroki nomnoml",
+        "kroki pikchr",
+        "kroki plantuml",
+        "kroki svgbob",
+        "kroki vega",
+        "kroki vegalite",
+        "kroki wavedrom",
+        "kroki umlet"
+    ]
+}

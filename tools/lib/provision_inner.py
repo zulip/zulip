@@ -51,6 +51,14 @@ def build_pygments_data_paths() -> List[str]:
     return paths
 
 
+def build_kroki_data_paths() -> List[str]:
+    paths = [
+        "tools/setup/build_kroki_data",
+        "tools/setup/kroki.json",
+    ]
+    return paths
+
+
 def build_timezones_data_paths() -> List[str]:
     paths = [
         "tools/setup/build_timezone_values",
@@ -150,6 +158,16 @@ def need_to_run_build_pygments_data() -> bool:
     )
 
 
+def need_to_run_build_kroki_data() -> bool:
+    if not os.path.exists("static/generated/kroki_data.json"):
+        return True
+
+    return is_digest_obsolete(
+        "build_kroki_data_hash",
+        build_kroki_data_paths(),
+    )
+
+
 def need_to_run_build_timezone_data() -> bool:
     if not os.path.exists("static/generated/timezones.json"):
         return True
@@ -243,6 +261,15 @@ def main(options: argparse.Namespace) -> int:
         )
     else:
         print("No need to run `tools/setup/build_pygments_data`.")
+
+    if options.is_force or need_to_run_build_kroki_data():
+        run(["tools/setup/build_kroki_data"])
+        write_new_digest(
+            "build_kroki_data_hash",
+            build_kroki_data_paths(),
+        )
+    else:
+        print("No need to run `tools/setup/build_kroki_data`.")
 
     if options.is_force or need_to_run_build_timezone_data():
         run(["tools/setup/build_timezone_values"])
