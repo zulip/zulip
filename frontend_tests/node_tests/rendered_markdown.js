@@ -87,6 +87,7 @@ const get_content_element = () => {
     $content.set_find_results(".emoji", $array([]));
     $content.set_find_results("div.spoiler-header", $array([]));
     $content.set_find_results("div.codehilite", $array([]));
+    $content.set_find_results("a[href*='giphy.com/media']", $array([]));
 
     // Fend off dumb security bugs by forcing devs to be
     // intentional about HTML manipulation.
