@@ -407,7 +407,7 @@ export function register_click_handlers() {
         // and thus don't want to kill the natural bubbling of event.
         e.preventDefault();
 
-        if (e.type === "keypress" && e.which !== 13) {
+        if (e.type === "keypress" && e.key !== "Enter") {
             return;
         }
         const stream_name = stream_data.maybe_get_stream_name(
