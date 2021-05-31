@@ -228,7 +228,7 @@ test("initialize", () => {
     let default_prevented = false;
     let ev = {
         type: "keydown",
-        which: 15,
+        key: "a",
         preventDefault() {
             default_prevented = true;
         },
@@ -237,11 +237,11 @@ test("initialize", () => {
     assert.equal(keydown(ev), undefined);
     assert(!default_prevented);
 
-    ev.which = 13;
+    ev.key = "Enter";
     assert.equal(keydown(ev), undefined);
     assert(!default_prevented);
 
-    ev.which = 13;
+    ev.key = "Enter";
     search_query_box.is = () => true;
     assert.equal(keydown(ev), undefined);
     assert(default_prevented);
@@ -288,14 +288,14 @@ test("initialize", () => {
     assert(!is_blurred);
     assert(!search_button.prop("disabled"));
 
-    ev.which = 13;
+    ev.key = "Enter";
     search_query_box.is = () => false;
     searchbox_form.trigger(ev);
 
     assert(!is_blurred);
     assert(!search_button.prop("disabled"));
 
-    ev.which = 13;
+    ev.key = "Enter";
     search_query_box.is = () => true;
     searchbox_form.trigger(ev);
     assert(is_blurred);
@@ -308,7 +308,7 @@ test("initialize", () => {
     assert(!search_button.prop("disabled"));
 
     _setup("ver");
-    ev.which = 13;
+    ev.key = "Enter";
     search_query_box.is = () => true;
     searchbox_form.trigger(ev);
     assert(is_blurred);
