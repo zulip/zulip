@@ -32,9 +32,7 @@ export function blur_active_element() {
 }
 
 export function convert_enter_to_click(e) {
-    const key = e.which;
-    if (key === 13) {
-        // Enter
+    if (e.key === "Enter") {
         e.preventDefault();
         e.stopPropagation();
         $(e.currentTarget).trigger("click");
