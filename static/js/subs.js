@@ -639,7 +639,7 @@ export function setup_page(callback) {
         // streams, either explicitly via user_can_create_streams, or
         // implicitly because page_params.realm_is_zephyr_mirror_realm.
         $("#stream_filter input[type='text']").on("keypress", (e) => {
-            if (e.which !== 13) {
+            if (e.key !== "Enter") {
                 return;
             }
 
