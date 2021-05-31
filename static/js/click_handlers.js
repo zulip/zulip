@@ -758,7 +758,7 @@ export function initialize() {
 
     // Don't focus links on middle click.
     $("body").on("mouseup", "a", (e) => {
-        if (e.which === 2) {
+        if (e.button === 1) {
             // middle click
             e.target.blur();
         }
