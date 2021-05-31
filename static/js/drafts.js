@@ -180,7 +180,7 @@ export function update_draft() {
     draft_notify();
 }
 
-export function delete_draft_after_send() {
+export function delete_active_draft() {
     const draft_id = $("#compose-textarea").data("draft-id");
     if (draft_id) {
         draft_model.deleteDraft(draft_id);
