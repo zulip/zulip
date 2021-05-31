@@ -110,7 +110,7 @@ async function renderGIPHYGrid(targetEl) {
                     }
 
                     compose_ui.insert_syntax_and_focus(
-                        `[](${props.images.downsized_medium.url})`,
+                        `[${props.title}](${props.images.downsized_medium.url})`,
                         textarea,
                     );
                     hide_giphy_popover();
