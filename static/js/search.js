@@ -134,8 +134,7 @@ export function initialize() {
     searchbox_form
         .on("keydown", (e) => {
             update_button_visibility();
-            const code = e.which;
-            if (code === 13 && search_query_box.is(":focus")) {
+            if (e.key === "Enter" && search_query_box.is(":focus")) {
                 // Don't submit the form so that the typeahead can instead
                 // handle our Enter keypress. Any searching that needs
                 // to be done will be handled in the keyup.
@@ -147,8 +146,8 @@ export function initialize() {
                 is_using_input_method = false;
                 return;
             }
-            const code = e.which;
-            if (code === 13 && search_query_box.is(":focus")) {
+
+            if (e.key === "Enter" && search_query_box.is(":focus")) {
                 // We just pressed Enter and the box had focus, which
                 // means we didn't use the typeahead at all.  In that
                 // case, we should act as though we're searching by
