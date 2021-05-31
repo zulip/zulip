@@ -68,6 +68,15 @@ export function set_colorpicker_color(colorpicker, color) {
     });
 }
 
+function hex(x) {
+    return isNaN(x) ? "00" : Number(x).toString(16).padStart(2, "0");
+}
+
+function rgb2hex(rgb) {
+    rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+    return "#" + hex(rgb[1]) + hex(rgb[2]) + hex(rgb[3]);
+}
+
 export function update_stream_color(sub, color, {update_historical = false} = {}) {
     sub.color = color;
     const stream_id = sub.stream_id;
@@ -105,9 +114,29 @@ function picker_do_change_color(color) {
 }
 subscriptions_table_colorpicker_options.change = picker_do_change_color;
 
+$("body").on("change", "#stream_color_picker", (e) => {
+    const color = e.target.value;
+    const stream_id = parseInt(e.target.getAttribute("stream_id"), 10);
+    subs.set_color(stream_id, color);
+});
+
 $("body").on("click", (e) => {
     if (e.target.matches("#custom_color")) {
         const color_picker = $("body").find("#stream_color_picker");
         $(color_picker).click();
+    }
+
+    if (e.target.matches("#color_picker") || e.target.matches("#color_swatch") || e.target.matches("#color_dropdown")) {
+        $("body").find(".color_picker_body").toggleClass("visible");
+    } else if (!(e.target.class === "color_picker_body" || $(e.target).parents(".color_picker_body").length)) {
+        if ($("body").find(".color_picker_body").hasClass("visible")) {
+            $("body").find(".color_picker_body").removeClass("visible");
+        }
+    }
+
+    if (e.target.matches(".presets")) {
+        const color = $(e.target).css("background-color");
+        const stream_id = parseInt($(e.target).parent().attr("stream_id"), 10);
+        subs.set_color(stream_id, rgb2hex(color));
     }
 });
