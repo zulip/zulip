@@ -73,7 +73,6 @@ from zerver.models import (
     receives_offline_email_notifications,
     receives_offline_push_notifications,
     receives_online_push_notifications,
-    receives_stream_notifications,
 )
 
 if settings.ZILENCER_ENABLED:
@@ -2256,24 +2255,6 @@ class TestReceivesNotificationsFunctions(ZulipTestCase):
         self.user.enable_offline_push_notifications = True
         self.assertTrue(receives_offline_push_notifications(self.user))
         self.assertFalse(receives_offline_email_notifications(self.user))
-
-    def test_receivers_stream_notifications_when_user_is_a_bot(self) -> None:
-        self.user.is_bot = True
-
-        self.user.enable_stream_push_notifications = True
-        self.assertFalse(receives_stream_notifications(self.user))
-
-        self.user.enable_stream_push_notifications = False
-        self.assertFalse(receives_stream_notifications(self.user))
-
-    def test_receivers_stream_notifications_when_user_is_not_a_bot(self) -> None:
-        self.user.is_bot = False
-
-        self.user.enable_stream_push_notifications = True
-        self.assertTrue(receives_stream_notifications(self.user))
-
-        self.user.enable_stream_push_notifications = False
-        self.assertFalse(receives_stream_notifications(self.user))
 
 
 class TestPushNotificationsContent(ZulipTestCase):
