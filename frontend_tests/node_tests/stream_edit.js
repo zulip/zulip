@@ -301,7 +301,7 @@ test_ui("subscriber_pills", (override) => {
         "keyup",
         ".subscriber_list_add form",
     );
-    event.which = 13;
+    event.key = "Enter";
 
     // Only Denmark stream pill is created and a
     // request is sent to add all it's subscribers.
