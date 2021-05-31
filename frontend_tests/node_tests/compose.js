@@ -353,7 +353,7 @@ test_ui("markdown_shortcuts", (override) => {
 });
 
 test_ui("send_message_success", (override) => {
-    override(drafts, "delete_draft_after_send", () => {});
+    override(drafts, "delete_active_draft", () => {});
 
     $("#compose-textarea").val("foobarfoobar");
     $("#compose-textarea").trigger("blur");
@@ -382,7 +382,7 @@ test_ui("send_message_success", (override) => {
 test_ui("send_message", (override) => {
     MockDate.set(new Date(fake_now * 1000));
 
-    override(drafts, "delete_draft_after_send", () => {});
+    override(drafts, "delete_active_draft", () => {});
     override(sent_messages, "start_tracking_message", () => {});
 
     // This is the common setup stuff for all of the four tests.

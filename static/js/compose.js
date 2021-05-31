@@ -289,7 +289,7 @@ function compose_not_subscribed_error(error_html, bad_input) {
 
 export function clear_compose_box() {
     $("#compose-textarea").val("").trigger("focus");
-    drafts.delete_draft_after_send();
+    drafts.delete_active_draft();
     compose_ui.autosize_textarea($("#compose-textarea"));
     $("#compose-send-status").hide(0);
     $("#compose-send-button").prop("disabled", false);
