@@ -11,14 +11,14 @@ function person_matcher(query, item) {
     if (people.is_known_user(item)) {
         return composebox_typeahead.query_matches_person(query, item);
     }
-    return undefined;
+    return false;
 }
 
 function group_matcher(query, item) {
     if (user_groups.is_user_group(item)) {
         return composebox_typeahead.query_matches_name_description(query, item);
     }
-    return undefined;
+    return false;
 }
 
 export function set_up(input, pills, opts) {
@@ -29,11 +29,6 @@ export function set_up(input, pills, opts) {
     const include_streams = (query) => opts.stream && query.trim().startsWith("#");
     const include_user_groups = opts.user_group;
     const include_users = opts.user;
-
-    let user_source;
-    if (opts.user_source) {
-        user_source = opts.user_source;
-    }
 
     input.typeahead({
         items: 5,
@@ -53,11 +48,11 @@ export function set_up(input, pills, opts) {
             }
 
             if (include_users) {
-                if (user_source !== undefined) {
+                if (opts.user_source !== undefined) {
                     // If user_source is specified in opts, it
                     // is given priority. Otherwise we use
                     // default user_pill.typeahead_source.
-                    source = source.concat(user_source());
+                    source = source.concat(opts.user_source());
                 } else {
                     source = source.concat(user_pill.typeahead_source(pills));
                 }
