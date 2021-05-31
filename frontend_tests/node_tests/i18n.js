@@ -96,6 +96,7 @@ run_test("tr_tag", () => {
             enable_desktop_notifications: false,
             enable_sounds: false,
             enable_offline_email_notifications: false,
+            enable_online_email_notifications: false,
             enable_offline_push_notifications: false,
             enable_online_push_notifications: false,
             enable_digest_emails: false,

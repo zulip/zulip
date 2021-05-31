@@ -51,6 +51,9 @@ function setup_settings_label() {
         desktop_icon_count_display: $t({
             defaultMessage: "Unread count summary (appears in desktop sidebar and browser tab)",
         }),
+        enable_online_email_notifications: $t({
+            defaultMessage: "Send email notifications even if I'm online",
+        }),
         enable_digest_emails: $t({defaultMessage: "Send digest emails when I'm away"}),
         enable_login_emails: $t({
             defaultMessage: "Send email notifications for new logins to my account",

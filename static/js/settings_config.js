@@ -352,6 +352,7 @@ const desktop_notification_settings = ["pm_content_in_desktop_notifications"];
 const mobile_notification_settings = ["enable_online_push_notifications"];
 
 const email_notification_settings = [
+    "enable_online_email_notifications",
     "enable_digest_emails",
     "enable_login_emails",
     "message_content_in_email_notifications",
