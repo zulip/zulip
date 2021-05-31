@@ -295,6 +295,42 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         self.assertTrue(email_notice is None)
         self.assertTrue(mobile_notice is not None)
 
+        # Private message sends email but not push if not idle but online_email_enabled
+        email_notice, mobile_notice = self.check_will_notify(
+            user_profile.id,
+            message_id,
+            private_message=True,
+            mentioned=False,
+            wildcard_mention_notify=False,
+            stream_push_notify=False,
+            stream_email_notify=True,
+            stream_name=None,
+            online_push_enabled=False,
+            online_email_enabled=True,
+            idle=False,
+            already_notified={},
+        )
+        self.assertTrue(email_notice is not None)
+        self.assertTrue(mobile_notice is None)
+
+        # Stream message sends email but not push if not idle but online_email_enabled
+        email_notice, mobile_notice = self.check_will_notify(
+            user_profile.id,
+            message_id,
+            private_message=False,
+            mentioned=False,
+            wildcard_mention_notify=False,
+            stream_push_notify=True,
+            stream_email_notify=True,
+            stream_name="Denmark",
+            online_push_enabled=False,
+            online_email_enabled=True,
+            idle=False,
+            already_notified={},
+        )
+        self.assertTrue(email_notice is not None)
+        self.assertTrue(mobile_notice is None)
+
     def tornado_call(
         self,
         view_func: Callable[[HttpRequest, UserProfile], HttpResponse],

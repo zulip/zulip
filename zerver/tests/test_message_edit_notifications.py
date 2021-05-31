@@ -422,6 +422,9 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
         self.assertEqual(info["enqueue_kwargs"], expected_enqueue_kwargs)
 
+        queue_messages = info["queue_messages"]
+        self.assert_length(queue_messages, 1)
+
     def test_online_email_enabled_for_fully_present_boring_user(self) -> None:
         cordelia = self.example_user("cordelia")
 
@@ -456,6 +459,12 @@ class EditMessageSideEffectsTest(ZulipTestCase):
         )
 
         self.assertEqual(info["enqueue_kwargs"], expected_enqueue_kwargs)
+
+        queue_messages = info["queue_messages"]
+        # Even though Cordelia has enable_online_email_notifications set
+        # to True, we don't send her any offline notifications, since she
+        # was not mentioned.
+        self.assert_length(queue_messages, 0)
 
     def test_updates_with_stream_mention_of_sorta_present_user(self) -> None:
         cordelia = self.example_user("cordelia")

@@ -835,10 +835,10 @@ def maybe_enqueue_notifications(
             notified["push_notified"] = True
 
     # Send missed_message emails if a private message or a
-    # mention.  Eventually, we'll add settings to allow email
-    # notifications to match the model of push notifications
-    # above.
-    if idle and (private_message or mentioned or wildcard_mention_notify or stream_email_notify):
+    # mention.
+    if (idle or online_email_enabled) and (
+        private_message or mentioned or wildcard_mention_notify or stream_email_notify
+    ):
         notice = build_offline_notification(user_profile_id, message_id)
         if private_message:
             notice["trigger"] = "private_message"
