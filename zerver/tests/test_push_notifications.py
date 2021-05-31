@@ -70,7 +70,6 @@ from zerver.models import (
     get_client,
     get_realm,
     get_stream,
-    receives_offline_email_notifications,
     receives_offline_push_notifications,
     receives_online_push_notifications,
 )
@@ -2213,48 +2212,32 @@ class TestReceivesNotificationsFunctions(ZulipTestCase):
     def test_receivers_offline_notifications_when_user_is_a_bot(self) -> None:
         self.user.is_bot = True
 
-        self.user.enable_offline_email_notifications = True
         self.user.enable_offline_push_notifications = True
         self.assertFalse(receives_offline_push_notifications(self.user))
-        self.assertFalse(receives_offline_email_notifications(self.user))
 
-        self.user.enable_offline_email_notifications = False
         self.user.enable_offline_push_notifications = False
         self.assertFalse(receives_offline_push_notifications(self.user))
-        self.assertFalse(receives_offline_email_notifications(self.user))
 
-        self.user.enable_offline_email_notifications = True
         self.user.enable_offline_push_notifications = False
         self.assertFalse(receives_offline_push_notifications(self.user))
-        self.assertFalse(receives_offline_email_notifications(self.user))
 
-        self.user.enable_offline_email_notifications = False
         self.user.enable_offline_push_notifications = True
         self.assertFalse(receives_offline_push_notifications(self.user))
-        self.assertFalse(receives_offline_email_notifications(self.user))
 
     def test_receivers_offline_notifications_when_user_is_not_a_bot(self) -> None:
         self.user.is_bot = False
 
-        self.user.enable_offline_email_notifications = True
         self.user.enable_offline_push_notifications = True
         self.assertTrue(receives_offline_push_notifications(self.user))
-        self.assertTrue(receives_offline_email_notifications(self.user))
 
-        self.user.enable_offline_email_notifications = False
         self.user.enable_offline_push_notifications = False
         self.assertFalse(receives_offline_push_notifications(self.user))
-        self.assertFalse(receives_offline_email_notifications(self.user))
 
-        self.user.enable_offline_email_notifications = True
         self.user.enable_offline_push_notifications = False
         self.assertFalse(receives_offline_push_notifications(self.user))
-        self.assertTrue(receives_offline_email_notifications(self.user))
 
-        self.user.enable_offline_email_notifications = False
         self.user.enable_offline_push_notifications = True
         self.assertTrue(receives_offline_push_notifications(self.user))
-        self.assertFalse(receives_offline_email_notifications(self.user))
 
 
 class TestPushNotificationsContent(ZulipTestCase):
