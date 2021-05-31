@@ -27,6 +27,7 @@ from zerver.models import (
     get_realm,
     get_stream,
     receives_offline_email_notifications,
+    receives_online_email_notifications,
 )
 
 
@@ -1221,6 +1222,26 @@ class TestMissedMessages(ZulipTestCase):
 
 
 class TestReceivesNotificationsFunctions(ZulipTestCase):
+    def test_receivers_online_notifications_when_user_is_a_bot(self) -> None:
+        hamlet = self.example_user("hamlet")
+        hamlet.is_bot = True
+
+        hamlet.enable_online_email_notifications = True
+        self.assertFalse(receives_online_email_notifications(hamlet))
+
+        hamlet.enable_online_email_notifications = False
+        self.assertFalse(receives_online_email_notifications(hamlet))
+
+    def test_receivers_online_notifications_when_user_is_not_a_bot(self) -> None:
+        hamlet = self.example_user("hamlet")
+        hamlet.is_bot = False
+
+        hamlet.enable_online_email_notifications = True
+        self.assertTrue(receives_online_email_notifications(hamlet))
+
+        hamlet.enable_online_email_notifications = False
+        self.assertFalse(receives_online_email_notifications(hamlet))
+
     def test_receivers_offline_notifications_when_user_is_a_bot(self) -> None:
         hamlet = self.example_user("hamlet")
         hamlet.is_bot = True

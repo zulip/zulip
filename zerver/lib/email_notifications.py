@@ -40,6 +40,7 @@ from zerver.models import (
     get_display_recipient,
     get_user_profile_by_id,
     receives_offline_email_notifications,
+    receives_online_email_notifications,
 )
 
 
@@ -535,7 +536,10 @@ def handle_missedmessage_emails(
     message_ids = {event.get("message_id"): event.get("trigger") for event in missed_email_events}
 
     user_profile = get_user_profile_by_id(user_profile_id)
-    if not receives_offline_email_notifications(user_profile):
+    if not (
+        receives_offline_email_notifications(user_profile)
+        or receives_online_email_notifications(user_profile)
+    ):
         return
 
     # Note: This query structure automatically filters out any
