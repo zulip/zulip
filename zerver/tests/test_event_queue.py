@@ -1,5 +1,5 @@
 import time
-from typing import Any, Callable, Dict, List, Tuple
+from typing import Any, Callable, Collection, Dict, List, Optional, Tuple
 from unittest import mock
 
 import orjson
@@ -379,6 +379,37 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             result = self.tornado_call(cleanup_event_queue, user_profile, {"queue_id": queue_id})
             self.assert_json_success(result)
 
+        def assert_maybe_enqueue_notifications_call_args(
+            args_list: Collection[Any],
+            user_profile_id: int,
+            message_id: int,
+            private_message: bool,
+            mentioned: bool,
+            wildcard_mention_notify: bool,
+            stream_push_notify: bool,
+            stream_email_notify: bool,
+            stream_name: Optional[str],
+            online_push_enabled: bool,
+            idle: bool,
+            already_notified: Dict[str, bool],
+        ) -> None:
+            self.assertEqual(
+                args_list,
+                (
+                    user_profile_id,
+                    message_id,
+                    private_message,
+                    mentioned,
+                    wildcard_mention_notify,
+                    stream_push_notify,
+                    stream_email_notify,
+                    stream_name,
+                    online_push_enabled,
+                    idle,
+                    already_notified,
+                ),
+            )
+
         client_descriptor = allocate_event_queue()
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
             # To test the missed_message hook, we first need to send a message
@@ -396,21 +427,19 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             mock_enqueue.assert_called_once()
             args_list = mock_enqueue.call_args_list[0][0]
 
-            self.assertEqual(
-                args_list,
-                (
-                    user_profile.id,
-                    msg_id,
-                    False,
-                    False,
-                    False,
-                    False,
-                    False,
-                    "Denmark",
-                    False,
-                    True,
-                    {"email_notified": False, "push_notified": False},
-                ),
+            assert_maybe_enqueue_notifications_call_args(
+                args_list=args_list,
+                user_profile_id=user_profile.id,
+                message_id=msg_id,
+                private_message=False,
+                mentioned=False,
+                wildcard_mention_notify=False,
+                stream_push_notify=False,
+                stream_email_notify=False,
+                stream_name="Denmark",
+                online_push_enabled=False,
+                idle=True,
+                already_notified={"email_notified": False, "push_notified": False},
             )
         destroy_event_queue(client_descriptor.event_queue.id)
 
@@ -423,21 +452,19 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             mock_enqueue.assert_called_once()
             args_list = mock_enqueue.call_args_list[0][0]
 
-            self.assertEqual(
-                args_list,
-                (
-                    user_profile.id,
-                    msg_id,
-                    True,
-                    False,
-                    False,
-                    False,
-                    False,
-                    None,
-                    False,
-                    True,
-                    {"email_notified": True, "push_notified": True},
-                ),
+            assert_maybe_enqueue_notifications_call_args(
+                args_list=args_list,
+                user_profile_id=user_profile.id,
+                message_id=msg_id,
+                private_message=True,
+                mentioned=False,
+                wildcard_mention_notify=False,
+                stream_push_notify=False,
+                stream_email_notify=False,
+                stream_name=None,
+                online_push_enabled=False,
+                idle=True,
+                already_notified={"email_notified": True, "push_notified": True},
             )
         destroy_event_queue(client_descriptor.event_queue.id)
 
@@ -452,21 +479,19 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             mock_enqueue.assert_called_once()
             args_list = mock_enqueue.call_args_list[0][0]
 
-            self.assertEqual(
-                args_list,
-                (
-                    user_profile.id,
-                    msg_id,
-                    False,
-                    True,
-                    False,
-                    False,
-                    False,
-                    "Denmark",
-                    False,
-                    True,
-                    {"email_notified": True, "push_notified": True},
-                ),
+            assert_maybe_enqueue_notifications_call_args(
+                args_list=args_list,
+                user_profile_id=user_profile.id,
+                message_id=msg_id,
+                private_message=False,
+                mentioned=True,
+                wildcard_mention_notify=False,
+                stream_push_notify=False,
+                stream_email_notify=False,
+                stream_name="Denmark",
+                online_push_enabled=False,
+                idle=True,
+                already_notified={"email_notified": True, "push_notified": True},
             )
         destroy_event_queue(client_descriptor.event_queue.id)
 
@@ -481,21 +506,19 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             mock_enqueue.assert_called_once()
             args_list = mock_enqueue.call_args_list[0][0]
 
-            self.assertEqual(
-                args_list,
-                (
-                    user_profile.id,
-                    msg_id,
-                    False,
-                    False,
-                    True,
-                    False,
-                    False,
-                    "Denmark",
-                    False,
-                    True,
-                    {"email_notified": True, "push_notified": True},
-                ),
+            assert_maybe_enqueue_notifications_call_args(
+                args_list=args_list,
+                user_profile_id=user_profile.id,
+                message_id=msg_id,
+                private_message=False,
+                mentioned=False,
+                wildcard_mention_notify=True,
+                stream_push_notify=False,
+                stream_email_notify=False,
+                stream_name="Denmark",
+                online_push_enabled=False,
+                idle=True,
+                already_notified={"email_notified": True, "push_notified": True},
             )
         destroy_event_queue(client_descriptor.event_queue.id)
 
@@ -514,21 +537,19 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             mock_enqueue.assert_called_once()
             args_list = mock_enqueue.call_args_list[0][0]
 
-            self.assertEqual(
-                args_list,
-                (
-                    user_profile.id,
-                    msg_id,
-                    False,
-                    False,
-                    False,
-                    False,
-                    False,
-                    "Denmark",
-                    False,
-                    True,
-                    {"email_notified": False, "push_notified": False},
-                ),
+            assert_maybe_enqueue_notifications_call_args(
+                args_list=args_list,
+                user_profile_id=user_profile.id,
+                message_id=msg_id,
+                private_message=False,
+                mentioned=False,
+                wildcard_mention_notify=False,
+                stream_push_notify=False,
+                stream_email_notify=False,
+                stream_name="Denmark",
+                online_push_enabled=False,
+                idle=True,
+                already_notified={"email_notified": False, "push_notified": False},
             )
         destroy_event_queue(client_descriptor.event_queue.id)
 
@@ -544,21 +565,19 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             mock_enqueue.assert_called_once()
             args_list = mock_enqueue.call_args_list[0][0]
 
-            self.assertEqual(
-                args_list,
-                (
-                    user_profile.id,
-                    msg_id,
-                    False,
-                    False,
-                    False,
-                    False,
-                    False,
-                    "Denmark",
-                    False,
-                    True,
-                    {"email_notified": False, "push_notified": False},
-                ),
+            assert_maybe_enqueue_notifications_call_args(
+                args_list=args_list,
+                user_profile_id=user_profile.id,
+                message_id=msg_id,
+                private_message=False,
+                mentioned=False,
+                wildcard_mention_notify=False,
+                stream_push_notify=False,
+                stream_email_notify=False,
+                stream_name="Denmark",
+                online_push_enabled=False,
+                idle=True,
+                already_notified={"email_notified": False, "push_notified": False},
             )
         destroy_event_queue(client_descriptor.event_queue.id)
         change_subscription_properties(user_profile, stream, sub, {"is_muted": False})
@@ -576,21 +595,19 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             mock_enqueue.assert_called_once()
             args_list = mock_enqueue.call_args_list[0][0]
 
-            self.assertEqual(
-                args_list,
-                (
-                    user_profile.id,
-                    msg_id,
-                    False,
-                    False,
-                    False,
-                    False,
-                    False,
-                    "Denmark",
-                    False,
-                    True,
-                    {"email_notified": False, "push_notified": False},
-                ),
+            assert_maybe_enqueue_notifications_call_args(
+                args_list=args_list,
+                user_profile_id=user_profile.id,
+                message_id=msg_id,
+                private_message=False,
+                mentioned=False,
+                wildcard_mention_notify=False,
+                stream_push_notify=False,
+                stream_email_notify=False,
+                stream_name="Denmark",
+                online_push_enabled=False,
+                idle=True,
+                already_notified={"email_notified": False, "push_notified": False},
             )
         destroy_event_queue(client_descriptor.event_queue.id)
         user_profile.wildcard_mentions_notify = True
@@ -612,21 +629,19 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             mock_enqueue.assert_called_once()
             args_list = mock_enqueue.call_args_list[0][0]
 
-            self.assertEqual(
-                args_list,
-                (
-                    user_profile.id,
-                    msg_id,
-                    False,
-                    False,
-                    True,
-                    False,
-                    False,
-                    "Denmark",
-                    False,
-                    True,
-                    {"email_notified": True, "push_notified": True},
-                ),
+            assert_maybe_enqueue_notifications_call_args(
+                args_list=args_list,
+                user_profile_id=user_profile.id,
+                message_id=msg_id,
+                private_message=False,
+                mentioned=False,
+                wildcard_mention_notify=True,
+                stream_push_notify=False,
+                stream_email_notify=False,
+                stream_name="Denmark",
+                online_push_enabled=False,
+                idle=True,
+                already_notified={"email_notified": True, "push_notified": True},
             )
         destroy_event_queue(client_descriptor.event_queue.id)
         user_profile.wildcard_mentions_notify = True
@@ -646,21 +661,19 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             mock_enqueue.assert_called_once()
             args_list = mock_enqueue.call_args_list[0][0]
 
-            self.assertEqual(
-                args_list,
-                (
-                    user_profile.id,
-                    msg_id,
-                    False,
-                    False,
-                    False,
-                    True,
-                    False,
-                    "Denmark",
-                    False,
-                    True,
-                    {"email_notified": False, "push_notified": False},
-                ),
+            assert_maybe_enqueue_notifications_call_args(
+                args_list=args_list,
+                user_profile_id=user_profile.id,
+                message_id=msg_id,
+                private_message=False,
+                mentioned=False,
+                wildcard_mention_notify=False,
+                stream_push_notify=True,
+                stream_email_notify=False,
+                stream_name="Denmark",
+                online_push_enabled=False,
+                idle=True,
+                already_notified={"email_notified": False, "push_notified": False},
             )
         destroy_event_queue(client_descriptor.event_queue.id)
 
@@ -678,21 +691,19 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             mock_enqueue.assert_called_once()
             args_list = mock_enqueue.call_args_list[0][0]
 
-            self.assertEqual(
-                args_list,
-                (
-                    user_profile.id,
-                    msg_id,
-                    False,
-                    False,
-                    False,
-                    False,
-                    True,
-                    "Denmark",
-                    False,
-                    True,
-                    {"email_notified": False, "push_notified": False},
-                ),
+            assert_maybe_enqueue_notifications_call_args(
+                args_list=args_list,
+                user_profile_id=user_profile.id,
+                message_id=msg_id,
+                private_message=False,
+                mentioned=False,
+                wildcard_mention_notify=False,
+                stream_push_notify=False,
+                stream_email_notify=True,
+                stream_name="Denmark",
+                online_push_enabled=False,
+                idle=True,
+                already_notified={"email_notified": False, "push_notified": False},
             )
         destroy_event_queue(client_descriptor.event_queue.id)
 
@@ -716,21 +727,19 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             mock_enqueue.assert_called_once()
             args_list = mock_enqueue.call_args_list[0][0]
 
-            self.assertEqual(
-                args_list,
-                (
-                    user_profile.id,
-                    msg_id,
-                    False,
-                    False,
-                    False,
-                    False,
-                    False,
-                    "Denmark",
-                    False,
-                    True,
-                    {"email_notified": False, "push_notified": False},
-                ),
+            assert_maybe_enqueue_notifications_call_args(
+                args_list=args_list,
+                user_profile_id=user_profile.id,
+                message_id=msg_id,
+                private_message=False,
+                mentioned=False,
+                wildcard_mention_notify=False,
+                stream_push_notify=False,
+                stream_email_notify=False,
+                stream_name="Denmark",
+                online_push_enabled=False,
+                idle=True,
+                already_notified={"email_notified": False, "push_notified": False},
             )
         destroy_event_queue(client_descriptor.event_queue.id)
 
@@ -751,21 +760,19 @@ class MissedMessageNotificationsTest(ZulipTestCase):
             mock_enqueue.assert_called_once()
             args_list = mock_enqueue.call_args_list[0][0]
 
-            self.assertEqual(
-                args_list,
-                (
-                    user_profile.id,
-                    msg_id,
-                    False,
-                    False,
-                    False,
-                    False,
-                    False,
-                    "Denmark",
-                    False,
-                    True,
-                    {"email_notified": False, "push_notified": False},
-                ),
+            assert_maybe_enqueue_notifications_call_args(
+                args_list=args_list,
+                user_profile_id=user_profile.id,
+                message_id=msg_id,
+                private_message=False,
+                mentioned=False,
+                wildcard_mention_notify=False,
+                stream_push_notify=False,
+                stream_email_notify=False,
+                stream_name="Denmark",
+                online_push_enabled=False,
+                idle=True,
+                already_notified={"email_notified": False, "push_notified": False},
             )
         destroy_event_queue(client_descriptor.event_queue.id)
 
