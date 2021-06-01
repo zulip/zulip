@@ -26,6 +26,7 @@ const hello_events = function () {
 const apps_events = function () {
     const info = {
         windows: {
+            /* Should be adjusted for CDN usage */
             image: "/static/images/landing-page/microsoft.png",
             alt: "Windows",
             description:
@@ -36,6 +37,7 @@ const apps_events = function () {
             app_type: "desktop",
         },
         mac: {
+            /* Should be adjusted for CDN usage */
             image: "/static/images/landing-page/macbook.png",
             alt: "macOS",
             description:
@@ -47,6 +49,7 @@ const apps_events = function () {
             app_type: "desktop",
         },
         android: {
+            /* Should be adjusted for CDN usage */
             image: "/static/images/app-screenshots/zulip-android.png",
             alt: "Android",
             description: "Zulip's native Android app makes it easy to keep up while on the go.",
@@ -57,6 +60,7 @@ const apps_events = function () {
             app_type: "mobile",
         },
         ios: {
+            /* Should be adjusted for CDN usage */
             image: "/static/images/app-screenshots/zulip-iphone-rough.png",
             alt: "iOS",
             description: "Zulip's native iOS app makes it easy to keep up while on the go.",
@@ -65,6 +69,7 @@ const apps_events = function () {
             app_type: "mobile",
         },
         linux: {
+            /* Should be adjusted for CDN usage */
             image: "/static/images/landing-page/ubuntu.png",
             alt: "Linux",
             description:

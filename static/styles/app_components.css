@@ -542,6 +542,7 @@ div.overlay {
 
 .white_zulip_icon_without_text {
     display: inline-block;
+    /* This sadly does not have an easy way to use the CDN. */
     background-image: url(../../static/images/logo/white-zulip-logo-without-text.svg);
     background-size: cover;
 }

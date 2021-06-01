@@ -2088,10 +2088,12 @@ nav {
 .portico-landing.apps
     .hero
     .image
+    /* Should be adjusted for CDN usage */
     img[src="/static/images/app-screenshots/zulip-android.png"],
 .portico-landing.apps
     .hero
     .image
+    /* Should be adjusted for CDN usage */
     img[src="/static/images/app-screenshots/zulip-iphone-rough.png"] {
     height: 85%;
 }

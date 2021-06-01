@@ -68,6 +68,8 @@ function build_emoticon_translations() {
 const zulip_emoji = {
     id: "zulip",
     emoji_name: "zulip",
+    // Because this is shared code, we can't access the configured
+    // page_params.static_url; we assume /static/
     emoji_url: "/static/generated/emoji/images/emoji/unicode/zulip.png",
     is_realm_emoji: true,
     deactivated: false,
