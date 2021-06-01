@@ -183,7 +183,9 @@ function get_popover_content() {
         // Show as modal in the center for small screens.
         return render_giphy_picker_mobile();
     }
-    return render_giphy_picker();
+    return render_giphy_picker({
+        static_url: page_params.static_url,
+    });
 }
 
 function get_popover_placement() {

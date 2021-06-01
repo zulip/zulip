@@ -9,7 +9,7 @@ export const initialize = () => {
 
     const add_card_handler = StripeCheckout.configure({
         key: $("#autopay-form").data("key"),
-        image: "/static/images/logo/zulip-icon-128x128.png",
+        image: page_params.static_url + "images/logo/zulip-icon-128x128.png",
         locale: "auto",
         token(stripe_token) {
             helpers.create_ajax_request("/json/billing/upgrade", "autopay", stripe_token);

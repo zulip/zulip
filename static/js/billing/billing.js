@@ -1,5 +1,7 @@
 import $ from "jquery";
 
+import {page_params} from "../page_params";
+
 import * as helpers from "./helpers";
 
 export function create_update_license_request() {
@@ -19,7 +21,7 @@ export function initialize() {
     const stripe_key = $("#payment-method").data("key");
     const card_change_handler = StripeCheckout.configure({
         key: stripe_key,
-        image: "/static/images/logo/zulip-icon-128x128.png",
+        image: page_params.static_url + "images/logo/zulip-icon-128x128.png",
         locale: "auto",
         token(stripe_token) {
             helpers.create_ajax_request("/json/billing/sources/change", "cardchange", stripe_token);

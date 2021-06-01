@@ -9,7 +9,7 @@
 {{#each completed_tasks}}
 <li>
     <button class="task-completed task" data-key="{{ key }}">
-        <img class="task-completed" src="/static/images/checkbox-green.svg" data-key="{{ key }}"/>
+        <img class="task-completed" src="{{ page_params.static_url }}images/checkbox-green.svg" data-key="{{ key }}"/>
     </button>
     <span class="task"><strike><em><strong>{{ task }}</strong>{{#if desc }} - {{ desc }}{{/if}}</em></strike></span>
 </li>

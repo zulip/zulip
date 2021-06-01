@@ -2,11 +2,12 @@ import $ from "jquery";
 
 import {$t, $t_html} from "./i18n";
 import * as loading from "./loading";
+import {page_params} from "./page_params";
 import * as ui_report from "./ui_report";
 
 export function display_checkmark($elem) {
     const check_mark = document.createElement("img");
-    check_mark.src = "/static/images/checkbox-green.svg";
+    check_mark.src = page_params.static_url + "images/checkbox-green.svg";
     $elem.prepend(check_mark);
     $(check_mark).css("width", "13px");
 }

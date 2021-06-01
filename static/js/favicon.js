@@ -3,6 +3,7 @@ import $ from "jquery";
 import render_favicon_svg from "../templates/favicon.svg.hbs";
 
 import * as blueslip from "./blueslip";
+import {page_params} from "./page_params";
 
 import favicon_font_url from "!url-loader!font-subset-loader2?glyphs=0123456789KMGT∞!source-sans/TTF/SourceSans3-Bold.ttf";
 
@@ -28,7 +29,7 @@ export function update_favicon(new_message_count, pm_count) {
         }
 
         if (new_message_count === 0 && pm_count === 0) {
-            $("#favicon").attr("href", "/static/images/favicon.svg?v=4");
+            $("#favicon").attr("href", page_params.static_url + "images/favicon.svg?v=4");
             return;
         }
 

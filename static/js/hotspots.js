@@ -66,7 +66,7 @@ const HOTSPOT_LOCATIONS = new Map([
 ]);
 
 // popover illustration url(s)
-const WHALE = "/static/images/hotspots/whale.svg";
+const WHALE = page_params.static_url + "images/hotspots/whale.svg";
 
 export function post_hotspot_as_read(hotspot_name) {
     channel.post({
@@ -214,7 +214,9 @@ function place_popover(hotspot) {
 
 function insert_hotspot_into_DOM(hotspot) {
     if (hotspot.name === "intro_reply") {
-        $("#bottom_whitespace").append(render_intro_reply_hotspot({}));
+        $("#bottom_whitespace").append(
+            render_intro_reply_hotspot({static_url: page_params.static_url}),
+        );
         return;
     }
 

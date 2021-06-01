@@ -92,7 +92,8 @@ export function initialize() {
 
 function update_notification_sound_source() {
     const notification_sound = page_params.notification_sound;
-    const audio_file_without_extension = "/static/audio/notification_sounds/" + notification_sound;
+    const audio_file_without_extension =
+        page_params.static_url + "audio/notification_sounds/" + notification_sound;
     $("#notification-sound-source-ogg").attr("src", `${audio_file_without_extension}.ogg`);
     $("#notification-sound-source-mp3").attr("src", `${audio_file_without_extension}.mp3`);
 

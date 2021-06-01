@@ -8,6 +8,7 @@ const {JSDOM} = require("jsdom");
 const {mock_cjs, mock_esm, set_global, with_field, zrequire} = require("../zjsunit/namespace");
 const {run_test} = require("../zjsunit/test");
 const $ = require("../zjsunit/zjquery");
+const {page_params} = require("../zjsunit/zpage_params");
 
 const template = fs.readFileSync("templates/corporate/billing.html", "utf-8");
 const dom = new JSDOM(template, {pretendToBeVisual: true});
@@ -25,6 +26,7 @@ const helpers = mock_esm("../../static/js/billing/helpers", {
 const billing = zrequire("billing/billing");
 
 run_test("initialize", (override) => {
+    page_params.static_url = "/static/";
     let token_func;
 
     let set_tab_called = false;

@@ -29,6 +29,7 @@ run_test("initialize", (override) => {
     page_params.monthly_price = 800;
     page_params.seat_count = 8;
     page_params.percent_off = 20;
+    page_params.static_url = "/static/";
 
     let token_func;
     override(helpers, "set_tab", (page_name) => {

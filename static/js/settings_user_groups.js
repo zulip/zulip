@@ -62,6 +62,7 @@ export function populate_user_groups() {
                     id: data.id,
                     description: data.description,
                 },
+                static_url: page_params.static_url,
             }),
         );
         const pill_container = $(`.pill-container[data-group-pills="${CSS.escape(data.id)}"]`);
