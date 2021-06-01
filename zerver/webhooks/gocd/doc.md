@@ -19,4 +19,4 @@ your build statuses.
 
 {!congrats.md!}
 
-![](/static/images/integrations/gocd/001.png)
+![]({{ static_url }}images/integrations/gocd/001.png)

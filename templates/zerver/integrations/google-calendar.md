@@ -24,7 +24,7 @@ your reminders directly in your Zulip feed.
     download the `zuliprc` file. Save this file as `.zuliprc` to your `~/`
     directory.
 
-    ![Download zuliprc file](/static/images/integrations/google/calendar/001.png)
+    ![Download zuliprc file]({{ static_url }}images/integrations/google/calendar/001.png)
 
 1.  Run the `get-google-credentials` with this command:
 
@@ -48,7 +48,7 @@ your reminders directly in your Zulip feed.
 
 {!congrats.md!}
 
-![Calendar demo](/static/images/integrations/google/calendar/003.png)
+![Calendar demo]({{ static_url }}images/integrations/google/calendar/003.png)
 
 ## Supported parameters
 
@@ -64,7 +64,7 @@ script:
   Address** section. Copy the **Calendar ID** from the right side of the
   page and use that as the value for this flag.
 
-![Specify a calendar](/static/images/integrations/google/calendar/002.png)
+![Specify a calendar]({{ static_url }}images/integrations/google/calendar/002.png)
 
 * `--interval`: This flag specifies the interval of time - in
   minutes - between receiving the reminder, and the actual event. For

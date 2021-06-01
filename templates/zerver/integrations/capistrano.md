@@ -36,4 +36,4 @@ Get Zulip notifications for your Capistrano deploys!
 
 {!congrats.md!}
 
-![Capistrano bot message](/static/images/integrations/capistrano/001.png)
+![Capistrano bot message]({{ static_url }}images/integrations/capistrano/001.png)

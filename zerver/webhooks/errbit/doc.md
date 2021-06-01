@@ -12,4 +12,4 @@ Get Zulip notifications for the Errbit error tracker!
 
 {!congrats.md!}
 
-![](/static/images/integrations/errbit/001.png)
+![]({{ static_url }}images/integrations/errbit/001.png)

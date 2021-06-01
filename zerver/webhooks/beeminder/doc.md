@@ -12,4 +12,4 @@ to derail from your goal!
 
 {!congrats.md!}
 
-![](/static/images/integrations/beeminder/001.png)
+![]({{ static_url }}images/integrations/beeminder/001.png)

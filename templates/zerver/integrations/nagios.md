@@ -42,7 +42,7 @@
 
 {!congrats.md!}
 
-![Nagios bot message](/static/images/integrations/nagios/001.png)
+![Nagios bot message]({{ static_url }}images/integrations/nagios/001.png)
 
 ### Testing
 

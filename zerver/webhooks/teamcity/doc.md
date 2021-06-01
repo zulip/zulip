@@ -28,7 +28,7 @@ Get Zulip notifications for your Teamcity builds!
 
 {!congrats.md!}
 
-![](/static/images/integrations/teamcity/001.png)
+![]({{ static_url }}images/integrations/teamcity/001.png)
 
 **Personal Builds**
 
@@ -37,4 +37,4 @@ username to a Zulip user (by comparing it with the Zulip user's email
 address or full name), that Zulip user will receive a private
 message with the result of their personal build.
 
-![](/static/images/integrations/teamcity/002.png)
+![]({{ static_url }}images/integrations/teamcity/002.png)

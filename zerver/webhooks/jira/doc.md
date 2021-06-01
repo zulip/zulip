@@ -24,4 +24,4 @@ These instructions apply to Atlassian Cloud's hosted Jira, and Jira Server versi
 
 {!congrats.md!}
 
-![](/static/images/integrations/jira/001.png)
+![]({{ static_url }}images/integrations/jira/001.png)

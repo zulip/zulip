@@ -12,11 +12,11 @@ uptime status changes from your Pingdom dashboard.
 1.  Create your integration by clicking on the **Add Integration** button
     and filling the form like so:
 
-    ![](/static/images/integrations/pingdom/001.png)
+    ![]({{ static_url }}images/integrations/pingdom/001.png)
 
 1.  Last, during creating or editing your check, scroll down to
     **Connect Integrations** section and ensure your integration is checked.
 
 {!congrats.md!}
 
-![](/static/images/integrations/pingdom/002.png)
+![]({{ static_url }}images/integrations/pingdom/002.png)

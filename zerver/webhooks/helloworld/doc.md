@@ -30,4 +30,4 @@ integration](/api/incoming-webhooks-walkthrough).
 
 {!congrats.md!}
 
-![](/static/images/integrations/helloworld/001.png)
+![]({{ static_url }}images/integrations/helloworld/001.png)

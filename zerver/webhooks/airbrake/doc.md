@@ -12,4 +12,4 @@ Get Zulip notifications for your Airbrake bug tracker!
 
 {!congrats.md!}
 
-![](/static/images/integrations/airbrake/001.png)
+![]({{ static_url }}images/integrations/airbrake/001.png)

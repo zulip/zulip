@@ -38,4 +38,4 @@ Receive Zulip notifications from Uptime Robot!
 
 {!congrats.md!}
 
-![](/static/images/integrations/uptimerobot/001.png)
+![]({{ static_url }}images/integrations/uptimerobot/001.png)

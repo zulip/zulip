@@ -24,4 +24,4 @@ post-commit hook. To do this:
 
 {!congrats.md!}
 
-![SVN commit bot message](/static/images/integrations/svn/001.png)
+![SVN commit bot message]({{ static_url }}images/integrations/svn/001.png)

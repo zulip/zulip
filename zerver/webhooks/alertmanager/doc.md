@@ -20,4 +20,4 @@ Get Zulip notifications from Alertmanager!
 
 {!congrats.md!}
 
-![](/static/images/integrations/alertmanager/001.png)
+![]({{ static_url }}images/integrations/alertmanager/001.png)

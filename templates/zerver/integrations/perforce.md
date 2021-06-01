@@ -45,4 +45,4 @@ that fires once a changelist is submitted and committed.
 
 {!congrats.md!}
 
-![Perforce notification bot message](/static/images/integrations/perforce/001.png)
+![Perforce notification bot message]({{ static_url }}images/integrations/perforce/001.png)

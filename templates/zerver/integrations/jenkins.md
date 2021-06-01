@@ -6,7 +6,7 @@
    **Manage Jenkins > Manage Plugins > Available**,
    typing in **Zulip**, and clicking **Install without Restart**.
 
-      ![Plugin installation](/static/images/integrations/jenkins/001.png)
+      ![Plugin installation]({{ static_url }}images/integrations/jenkins/001.png)
 
 1. Once the plugin is installed, configure it by going to
    **Manage Jenkins > Configure System**. Scroll to the section
@@ -19,7 +19,7 @@
       (If you don't see this option, you may first need to restart
       Jenkins.)
 
-      ![Plugin configuration](/static/images/integrations/jenkins/002.png)
+      ![Plugin configuration]({{ static_url }}images/integrations/jenkins/002.png)
 
 1. Once you've done that, it's time to configure one of your
    freestyle projects to use the Zulip notification plugin. On your
@@ -31,13 +31,13 @@
    If you don't specify a custom topic, the project name will be used as the
    topic instead. Then click **Save**.
 
-   ![Post-build action configuration](/static/images/integrations/jenkins/003.png)
+   ![Post-build action configuration]({{ static_url }}images/integrations/jenkins/003.png)
 
    When your builds fail or succeed, you'll see a message as shown below.
 
 {!congrats.md!}
 
-![Jenkins bot message](/static/images/integrations/jenkins/004.png)
+![Jenkins bot message]({{ static_url }}images/integrations/jenkins/004.png)
 
 ### Advanced use cases
 

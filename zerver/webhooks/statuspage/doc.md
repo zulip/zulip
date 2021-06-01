@@ -18,4 +18,4 @@ Get Zulip notifications for your Statuspage.io subscriptions!
 
 {!congrats.md!}
 
-![](/static/images/integrations/statuspage/001.png)
+![]({{ static_url }}images/integrations/statuspage/001.png)

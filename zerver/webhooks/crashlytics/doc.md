@@ -13,4 +13,4 @@ about Crashlytics issues.
 
 {!congrats.md!}
 
-![](/static/images/integrations/crashlytics/001.png)
+![]({{ static_url }}images/integrations/crashlytics/001.png)

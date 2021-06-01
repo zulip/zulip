@@ -23,4 +23,4 @@ See your Splunk Search alerts in Zulip!
 
 {!congrats.md!}
 
-![](/static/images/integrations/splunk/001.png)
+![]({{ static_url }}images/integrations/splunk/001.png)

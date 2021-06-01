@@ -10,7 +10,7 @@
     dropdown. In the **Admin** view, click on **Apps**, then
     click **Install** under **Custom Action**:
 
-    ![](/static/images/integrations/desk/001.png)
+    ![]({{ static_url }}images/integrations/desk/001.png)
 
 1.  From there, click **Install Custom Action** and accept the terms.
     Fill in the form like this:
@@ -21,7 +21,7 @@
      * **User name**: *your bot's user name, e.g.* `desk-bot@yourdomain.com`
      * **Password**: *your bot's API key*
 
-    ![](/static/images/integrations/desk/002.png)
+    ![]({{ static_url }}images/integrations/desk/002.png)
 
 1.  Click **Create** to save your settings. From the next screen, click
     **Add Action** to add a new action. You'll do this for every action
@@ -29,7 +29,7 @@
     look for your custom action on the **Apps** page under
     **Installed Apps.**
 
-    ![](/static/images/integrations/desk/003.png)
+    ![]({{ static_url }}images/integrations/desk/003.png)
 
 1.  Let's say you want a notification each time a case is updated. Put
     in a descriptive name like **Announce case update**, select
@@ -64,13 +64,13 @@
     funny-looking stuff inside `{{ "{{" }}` and `{{ "}}" }}` will be filled in by
     Desk.com for each event. The dialog should look like this:
 
-    ![](/static/images/integrations/desk/004.png)
+    ![]({{ static_url }}images/integrations/desk/004.png)
 
 1.  Click **Add Action** to save, and then on the next screen, click the
     slider next to the action to enable it. This is important — actions are
     turned off by default!
 
-    ![](/static/images/integrations/desk/005.png)
+    ![]({{ static_url }}images/integrations/desk/005.png)
 
 1.  Now you need to create a rule that triggers this action. Desk.com's
     support center has a [lengthy article on rules][1], but in short,
@@ -80,12 +80,12 @@
 
     [1]: https://support.desk.com/customer/portal/articles/1376
 
-    ![](/static/images/integrations/desk/006.png)
+    ![]({{ static_url }}images/integrations/desk/006.png)
 
 1.  Select the types of interaction you want your rule to apply to,
     such as **Chat**. Specify the name and click on **Add Rule**.
 
-    ![](/static/images/integrations/desk/007.png)
+    ![]({{ static_url }}images/integrations/desk/007.png)
 
 1.  In the next screen, provide the details. First, click **Add Actions**
     to display the rule actions. Select **Trigger an App Action** in the
@@ -94,13 +94,13 @@
     **Any** conditions if desired. Also select when the rule should run
     (if not **Anytime**) and enable it.
 
-    ![](/static/images/integrations/desk/008.png)
+    ![]({{ static_url }}images/integrations/desk/008.png)
 
 1.  Finally, click **Update**.
 
 {!congrats.md!}
 
-![](/static/images/integrations/desk/009.png)
+![]({{ static_url }}images/integrations/desk/009.png)
 
 When a case is updated, you'll see a notification like the one above,
 to the stream `desk`, with a topic that matches the case's subject name.

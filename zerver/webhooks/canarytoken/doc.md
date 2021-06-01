@@ -14,6 +14,6 @@ See your Thinkst Canarytoken alerts in Zulip! This integration works with Canary
 
 {!congrats.md!}
 
-![](/static/images/integrations/canarytoken/001.png)
+![]({{ static_url }}images/integrations/canarytoken/001.png)
 
 [canarytokens]: https://canarytokens.org

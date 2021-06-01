@@ -14,4 +14,4 @@ about updates in feedback responses organized by Delighted.
 
 {!congrats.md!}
 
-![](/static/images/integrations/delighted/001.png)
+![]({{ static_url }}images/integrations/delighted/001.png)

@@ -25,4 +25,4 @@ Get personal message notifications in Zulip for the results of your Dialogflow q
 
 {!congrats.md!}
 
-![](/static/images/integrations/dialogflow/001.png)
+![]({{ static_url }}images/integrations/dialogflow/001.png)

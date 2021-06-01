@@ -13,4 +13,4 @@ you can now get Task notifications in Zulip!
 
 {!congrats.md!}
 
-![](/static/images/integrations/gci/001.png)
+![]({{ static_url }}images/integrations/gci/001.png)

@@ -14,4 +14,4 @@ Get Transifex notifications in Zulip!
 
 {!congrats.md!}
 
-![](/static/images/integrations/transifex/001.png)
+![]({{ static_url }}images/integrations/transifex/001.png)

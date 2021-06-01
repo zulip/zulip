@@ -11,4 +11,4 @@ Get Zulip notifications for your Opbeat events!
 
 {!congrats.md!}
 
-![](/static/images/integrations/opbeat/001.png)
+![]({{ static_url }}images/integrations/opbeat/001.png)

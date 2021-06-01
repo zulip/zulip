@@ -25,4 +25,4 @@ Get Zulip notifications for your Buildbot builds!
 
 {!congrats.md!}
 
-![](/static/images/integrations/buildbot/001.png)
+![]({{ static_url }}images/integrations/buildbot/001.png)

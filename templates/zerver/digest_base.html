@@ -13,7 +13,7 @@
             </div>
             <div class="digest-email-html">
                 {% include 'zerver/emails/compiled/digest.html' %}
-                <img id="digest-footer" src="/static/images/emails/footer.png"/>
+                <img id="digest-footer" src="{{ static_url }}images/emails/footer.png"/>
             </div>
             <pre>{% include 'zerver/emails/digest.txt' %}</pre>
             <div class="digest-address-link"> {{physical_address}}</div>

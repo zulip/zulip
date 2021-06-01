@@ -24,4 +24,4 @@ See your Travis CI build notifications in Zulip!
 
 {!congrats.md!}
 
-![](/static/images/integrations/travis/001.png)
+![]({{ static_url }}images/integrations/travis/001.png)

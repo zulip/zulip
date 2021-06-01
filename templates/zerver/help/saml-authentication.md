@@ -45,7 +45,7 @@ Zulip with various common SAML identity providers.
 1. Go to the "Parameters" section. Ignore the pre-configured parameters that are already there
    and add custom ones to match the following screenshot:
 
-    ![OneLogin parameters](/static/images/help/onelogin_parameters.png)
+    ![OneLogin parameters]({{ static_url }}images/help/onelogin_parameters.png)
 
     Make sure to set the "Include in SAML assertion" flag on them.
 

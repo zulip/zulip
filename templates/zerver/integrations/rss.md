@@ -22,4 +22,4 @@ RSS integration!
 
 {!congrats.md!}
 
-![RSS bot message](/static/images/integrations/rss/001.png)
+![RSS bot message]({{ static_url }}images/integrations/rss/001.png)

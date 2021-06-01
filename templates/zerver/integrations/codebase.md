@@ -37,4 +37,4 @@ Get Codebase notifications in Zulip!
 
 {!congrats.md!}
 
-![Codebase bot message](/static/images/integrations/codebase/001.png)
+![Codebase bot message]({{ static_url }}images/integrations/codebase/001.png)

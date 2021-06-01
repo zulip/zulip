@@ -12,4 +12,4 @@ Get Zulip notifications for your Raygun events!
 
 {!congrats.md!}
 
-![](/static/images/integrations/raygun/001.png)
+![]({{ static_url }}images/integrations/raygun/001.png)

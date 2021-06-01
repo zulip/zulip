@@ -20,4 +20,4 @@ Front conversations to topics in Zulip.
 
 {!congrats.md!}
 
-![](/static/images/integrations/front/001.png)
+![]({{ static_url }}images/integrations/front/001.png)

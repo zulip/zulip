@@ -16,4 +16,4 @@ Receive Gitea notifications in Zulip!
 
 {!congrats.md!}
 
-![](/static/images/integrations/gitea/001.png)
+![]({{ static_url }}images/integrations/gitea/001.png)

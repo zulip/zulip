@@ -14,4 +14,4 @@ Get Zulip notifications for your PagerDuty services!
 
 {!congrats.md!}
 
-![](/static/images/integrations/pagerduty/001.png)
+![]({{ static_url }}images/integrations/pagerduty/001.png)

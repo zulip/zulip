@@ -22,7 +22,7 @@ def fib(n):
 
 Sending the above message in Zulip will render like this:
 
-![Markdown code](/static/images/help/markdown-code.png)
+![Markdown code]({{ static_url }}images/help/markdown-code.png)
 
 You can also use `~~~` to start codeblocks, or just indent the code 4 or more
 spaces.

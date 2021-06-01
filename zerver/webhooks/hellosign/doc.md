@@ -12,4 +12,4 @@ Configuring the HelloSign integration is easy!
 
 {!congrats.md!}
 
-![](/static/images/integrations/hellosign/001.png)
+![]({{ static_url }}images/integrations/hellosign/001.png)

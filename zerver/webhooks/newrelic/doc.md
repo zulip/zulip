@@ -12,7 +12,7 @@ New Relic can send messages to a Zulip stream for incidents.
 1. Create a new notification channel. Select channel type of **Webhook**, choose a name (e.g. "Zulip"), enter the webhook url created earlier as **Base Url**.
 
 1. It should look like:
-  ![](/static/images/integrations/newrelic/newrelic.png)
+  ![]({{ static_url }}images/integrations/newrelic/newrelic.png)
 
 1. The webhook works with the default payload, click **Create channel**.
 
@@ -20,6 +20,6 @@ New Relic can send messages to a Zulip stream for incidents.
 
 {!congrats.md!}
 
-![](/static/images/integrations/newrelic/001.png)
-![](/static/images/integrations/newrelic/002.png)
-![](/static/images/integrations/newrelic/003.png)
+![]({{ static_url }}images/integrations/newrelic/001.png)
+![]({{ static_url }}images/integrations/newrelic/002.png)
+![]({{ static_url }}images/integrations/newrelic/003.png)

@@ -22,4 +22,4 @@ Get Mention notifications within Zulip via Zapier!
 
 {!congrats.md!}
 
-![](/static/images/integrations/mention/001.png)
+![]({{ static_url }}images/integrations/mention/001.png)

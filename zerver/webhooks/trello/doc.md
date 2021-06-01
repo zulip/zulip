@@ -61,4 +61,4 @@ Get Zulip notifications from your Trello boards!
 
 {!congrats.md!}
 
-![](/static/images/integrations/trello/001.png)
+![]({{ static_url }}images/integrations/trello/001.png)

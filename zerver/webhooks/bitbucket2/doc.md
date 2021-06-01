@@ -20,4 +20,4 @@ Bitbucket Server click [here](./bitbucket3).
 
 {!congrats.md!}
 
-![](/static/images/integrations/bitbucket/003.png)
+![]({{ static_url }}images/integrations/bitbucket/003.png)

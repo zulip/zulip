@@ -13,6 +13,6 @@ Canarytokens from Thinkst's paid product, not [canarytokens.org][canarytokens] -
 
 {!congrats.md!}
 
-![](/static/images/integrations/thinkst/001.png)
+![]({{ static_url }}images/integrations/thinkst/001.png)
 
 [canarytokens]: https://canarytokens.org

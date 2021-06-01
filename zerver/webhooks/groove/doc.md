@@ -24,4 +24,4 @@ Get Zulip notifications for your Groove events!
 
 {!congrats.md!}
 
-![](/static/images/integrations/groove/001.png)
+![]({{ static_url }}images/integrations/groove/001.png)

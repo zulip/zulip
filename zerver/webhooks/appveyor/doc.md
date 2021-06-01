@@ -12,4 +12,4 @@ Receive AppVeyor notifications in Zulip!
 
 {!congrats.md!}
 
-![](/static/images/integrations/appveyor/001.png)
+![]({{ static_url }}images/integrations/appveyor/001.png)

@@ -13,4 +13,4 @@ Get Zulip notifications for your Opsgenie events!
 
 {!congrats.md!}
 
-![](/static/images/integrations/opsgenie/000.png)
+![]({{ static_url }}images/integrations/opsgenie/000.png)

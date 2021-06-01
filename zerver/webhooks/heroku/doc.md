@@ -15,4 +15,4 @@ is pushed to Heroku using the Zulip Heroku plugin!
 
 {!congrats.md!}
 
-![](/static/images/integrations/heroku/001.png)
+![]({{ static_url }}images/integrations/heroku/001.png)

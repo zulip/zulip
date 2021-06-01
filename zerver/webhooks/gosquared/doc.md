@@ -18,4 +18,4 @@ Receive GoSquared notifications in Zulip!
 
 {!congrats.md!}
 
-![](/static/images/integrations/gosquared/000.png)
+![]({{ static_url }}images/integrations/gosquared/000.png)

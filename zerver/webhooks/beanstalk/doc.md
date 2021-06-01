@@ -18,4 +18,4 @@ Zulip supports both SVN and Git notifications from Beanstalk.
 
 {!congrats.md!}
 
-![](/static/images/integrations/beanstalk/001.png)
+![]({{ static_url }}images/integrations/beanstalk/001.png)

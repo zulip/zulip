@@ -26,4 +26,4 @@ See also the [Slack-compatible webhook](/integrations/doc/slack_incoming).
 
 {!congrats.md!}
 
-![](/static/images/integrations/slack/001.png)
+![]({{ static_url }}images/integrations/slack/001.png)

@@ -19,4 +19,4 @@ Get Zulip notifications for your Solano CI builds!
 
 {!congrats.md!}
 
-![](/static/images/integrations/solano/001.png)
+![]({{ static_url }}images/integrations/solano/001.png)

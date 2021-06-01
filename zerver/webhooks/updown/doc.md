@@ -11,4 +11,4 @@ See Updown reports in Zulip!
 
 {!congrats.md!}
 
-![](/static/images/integrations/updown/001.png)
+![]({{ static_url }}images/integrations/updown/001.png)

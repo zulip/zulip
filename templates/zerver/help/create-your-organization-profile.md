@@ -7,7 +7,7 @@ registration and login pages, and in the desktop and mobile apps. As
 an example, here is what the registration page for the Zulip community
 server looked like at one point:
 
-![settings](/static/images/help/organization-profile-example.png)
+![settings]({{ static_url }}images/help/organization-profile-example.png)
 
 Note that the Organization description supports full Markdown syntax,
 including bold/italic, links, lists, and

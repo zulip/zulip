@@ -13,30 +13,30 @@ Get Zulip notifications for your Asana projects via Zapier!
 1.  Next, create a ZAP, picking Asana as the app you'd like
     to receive notifications from as the **Trigger (Step 1)**:
 
-    ![Trigger](/static/images/integrations/asana/001.png)
+    ![Trigger]({{ static_url }}images/integrations/asana/001.png)
 
 1.  Next, select the Asana event that you'd like to receive notifications
     for (**Choose Trigger**), such as when you add a new **Task** in
     an Asana project:
 
-    ![Trigger selection](/static/images/integrations/asana/002.png)
+    ![Trigger selection]({{ static_url }}images/integrations/asana/002.png)
 
 1.  Next, click on **Connect a New Account** and follow the steps
     to connect your Asana account to the Zap:
 
-    ![Account selection](/static/images/integrations/asana/003.png)
+    ![Account selection]({{ static_url }}images/integrations/asana/003.png)
 
 1.  Select the Asana project you'd like to receive notifications for:
 
-    ![Project selection](/static/images/integrations/asana/004.png)
+    ![Project selection]({{ static_url }}images/integrations/asana/004.png)
 
 1.  In **Action (Step 2)**, select **Webhooks by Zapier** as the app:
 
-    ![App selection](/static/images/integrations/asana/005.png)
+    ![App selection]({{ static_url }}images/integrations/asana/005.png)
 
     and `POST` as the action:
 
-    ![Action selection](/static/images/integrations/asana/006.png)
+    ![Action selection]({{ static_url }}images/integrations/asana/006.png)
 
 1.  Configure **Set up Webhooks by Zapier POST** as follows:
 
@@ -53,11 +53,11 @@ Get Zulip notifications for your Asana projects via Zapier!
 
     Here's an example configuration:
 
-    ![Example configuration](/static/images/integrations/asana/007.png)
+    ![Example configuration]({{ static_url }}images/integrations/asana/007.png)
 
 {!congrats.md!}
 
-![Asana bot message](/static/images/integrations/asana/008.png)
+![Asana bot message]({{ static_url }}images/integrations/asana/008.png)
 
 You can repeat the above process and create Zaps for different projects
 and/or different kinds of Asana events that you'd like to be notified

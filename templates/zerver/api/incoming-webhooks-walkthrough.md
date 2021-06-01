@@ -299,7 +299,7 @@ Feel free to use 4-spaces as tabs for indentation if you'd like!
 
 Your sample notification may look like:
 
-<img class="screenshot" src="/static/images/api/helloworld-webhook.png" alt="screenshot" />
+<img class="screenshot" src="{{ static_url }}images/api/helloworld-webhook.png" alt="screenshot" />
 
 
 
@@ -442,7 +442,7 @@ Or, use curl:
 
 {!congrats.md!}
 
-![Hello World integration](/static/images/integrations/helloworld/001.png)
+![Hello World integration]({{ static_url }}images/integrations/helloworld/001.png)
 
 ```
 

@@ -16,4 +16,4 @@ Get Zulip notifications for your Librato/AppOptics alerts!
 
 {!congrats.md!}
 
-![](/static/images/integrations/librato/001.png)
+![]({{ static_url }}images/integrations/librato/001.png)

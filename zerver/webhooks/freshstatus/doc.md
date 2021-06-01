@@ -76,4 +76,4 @@ Receive Freshstatus notifications in Zulip!
 
 {!congrats.md!}
 
-![](/static/images/integrations/freshstatus/001.png)
+![]({{ static_url }}images/integrations/freshstatus/001.png)

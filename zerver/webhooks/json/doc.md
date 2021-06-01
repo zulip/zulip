@@ -12,4 +12,4 @@ integration](/api/incoming-webhooks-overview).
 
 {!congrats.md!}
 
-![](/static/images/integrations/json/001.png)
+![]({{ static_url }}images/integrations/json/001.png)

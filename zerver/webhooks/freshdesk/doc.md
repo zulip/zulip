@@ -16,7 +16,7 @@ integration!
    and when the source **is not email**. Set up the **Conditions** for the
    new rule, like so:
 
-    ![](/static/images/integrations/freshdesk/001.png)
+    ![]({{ static_url }}images/integrations/freshdesk/001.png)
 
 1. Under **Actions**, set the **Select Action** dropdown to **Trigger Webhook**.
    Set **Request Type** to **POST**, and set **Callback URL** to the URL
@@ -56,7 +56,7 @@ integration!
 1. Set **Rule Name** to a name of your choice, such as `Zulip`.
    Under **involves any of these events**, create new events as shown below:
 
-    ![](/static/images/integrations/freshdesk/002.png)
+    ![]({{ static_url }}images/integrations/freshdesk/002.png)
 
 1. Unfortunately, there isn't a shortcut for specifying "all tickets",
    so we'll have to fake it by picking two complementary conditions:
@@ -64,7 +64,7 @@ integration!
    Under **on tickets with these properties**, create new conditions,
    like so:
 
-    ![](/static/images/integrations/freshdesk/003.png)
+    ![]({{ static_url }}images/integrations/freshdesk/003.png)
 
 1. Under **perform these actions**, set the **Select Action** dropdown
    to **Trigger Webhook**. Set **Request Type** to **POST**, and set
@@ -98,4 +98,4 @@ integration!
 
 {!congrats.md!}
 
-![](/static/images/integrations/freshdesk/004.png)
+![]({{ static_url }}images/integrations/freshdesk/004.png)

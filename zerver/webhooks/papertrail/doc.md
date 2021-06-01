@@ -15,4 +15,4 @@ Get Zulip notifications for your Papertrail logs!
 
 {!congrats.md!}
 
-![](/static/images/integrations/papertrail/001.png)
+![]({{ static_url }}images/integrations/papertrail/001.png)

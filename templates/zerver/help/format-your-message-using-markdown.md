@@ -28,7 +28,7 @@ to allow you to easily format your messages.
 ***~~All three at once~~***
 ```
 
-![Markdown emphasis](/static/images/help/markdown-emphasis.png)
+![Markdown emphasis]({{ static_url }}images/help/markdown-emphasis.png)
 
 
 ## Lists
@@ -46,7 +46,7 @@ bullet
 + pluses are ok too
 ```
 
-![Markdown bullets](/static/images/help/markdown-bullets.png)
+![Markdown bullets]({{ static_url }}images/help/markdown-bullets.png)
 
 Numbered lists
 
@@ -56,7 +56,7 @@ Numbered lists
 1. one more
 ```
 
-![Markdown numbered lists](/static/images/help/markdown-numbered-lists.png)
+![Markdown numbered lists]({{ static_url }}images/help/markdown-numbered-lists.png)
 
 
 ## Links
@@ -73,7 +73,7 @@ Topic: #**stream name>topic name**
 Custom linkifier: #1234 (links to ticket 1234 in your ticketing system)
 ```
 
-![Markdown links](/static/images/help/markdown-links.png)
+![Markdown links]({{ static_url }}images/help/markdown-links.png)
 
 ## Images
 
@@ -84,7 +84,7 @@ about dropping, pasting, and attaching images.
 [A whale of a good time](https://your.zulip.domain/user_uploads/1/46/IPvysqXEtiTG1ZdNBrwAZODi/whale-time.png)
 ```
 
-![Markdown image](/static/images/help/markdown-image.png)
+![Markdown image]({{ static_url }}images/help/markdown-image.png)
 
 ## Code
 
@@ -105,7 +105,7 @@ def fib(n):
 ```
 ~~~
 
-![Markdown code](/static/images/help/markdown-code.png)
+![Markdown code]({{ static_url }}images/help/markdown-code.png)
 
 You can also use `~~~` to start codeblocks, or just indent the code 4 or more spaces.
 
@@ -123,7 +123,7 @@ Displayed:
 ```
 ~~~
 
-![Markdown LaTeX](/static/images/help/markdown-latex.png)
+![Markdown LaTeX]({{ static_url }}images/help/markdown-latex.png)
 
 Zulip's LaTeX rendering is powered by [KaTeX](https://katex.org).
 Their [support table](https://katex.org/docs/support_table.html) is a
@@ -145,7 +145,7 @@ quote in two paragraphs
 ```
 ~~~
 
-![Markdown quotes](/static/images/help/markdown-quotes.png)
+![Markdown quotes]({{ static_url }}images/help/markdown-quotes.png)
 
 ## Spoilers
 
@@ -163,11 +163,11 @@ Spoiler content. These lines won't be visible until the user expands the spoiler
 
 The spoiler will initially display in a collapsed form:
 
-![Spoiler collapsed](/static/images/help/spoiler-collapsed.png)
+![Spoiler collapsed]({{ static_url }}images/help/spoiler-collapsed.png)
 
 Clicking the arrow will expand the spoiler content:
 
-![Spoiler expanded](/static/images/help/spoiler-expanded.png)
+![Spoiler expanded]({{ static_url }}images/help/spoiler-expanded.png)
 
 ## Emoji and emoticons
 
@@ -179,7 +179,7 @@ You can also [add custom emoji](/help/add-custom-emoji).
 :octopus: :heart: :zulip: :)
 ```
 
-![Markdown emoji](/static/images/help/markdown-emoji.png)
+![Markdown emoji]({{ static_url }}images/help/markdown-emoji.png)
 
 ## Mentions
 
@@ -195,7 +195,7 @@ The variants with numbers use user IDs, and are intended for
 disambiguation (if multiple users have the same name) and bots (for
 the variant that only contains the user ID).
 
-![Markdown mentions](/static/images/help/markdown-mentions.png)
+![Markdown mentions]({{ static_url }}images/help/markdown-mentions.png)
 
 ## Status messages
 
@@ -203,7 +203,7 @@ the variant that only contains the user ID).
 /me is away
 ```
 
-![Markdown status](/static/images/help/markdown-status.png)
+![Markdown status]({{ static_url }}images/help/markdown-status.png)
 
 ## Mention a time
 
@@ -243,7 +243,7 @@ The header separators (`---`) must be at least three dashes long.
 | C | **bold** *italic* ~~strikethrough~~  :smile:  ||
 ```
 
-![Markdown table](/static/images/help/markdown-table.png)
+![Markdown table]({{ static_url }}images/help/markdown-table.png)
 
 ## Paragraphs and lines
 
@@ -261,7 +261,7 @@ Over the line
 Under the line
 ```
 
-![Markdown paragraph](/static/images/help/markdown-paragraph.png)
+![Markdown paragraph]({{ static_url }}images/help/markdown-paragraph.png)
 
 ## In-app help
 

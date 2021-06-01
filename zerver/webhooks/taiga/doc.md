@@ -17,4 +17,4 @@ Receive Zulip notifications for your Taiga projects!
 
 {!congrats.md!}
 
-![](/static/images/integrations/taiga/001.png)
+![]({{ static_url }}images/integrations/taiga/001.png)

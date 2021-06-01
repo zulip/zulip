@@ -14,4 +14,4 @@ Get Zulip notifications from your Flock channels.
 
 {!congrats.md!}
 
-![](/static/images/integrations/flock/001.png)
+![]({{ static_url }}images/integrations/flock/001.png)

@@ -14,6 +14,6 @@ and follow the instructions in `README.md`.
 
 {!congrats.md!}
 
-![Trello bot message](/static/images/integrations/trello/002.png)
+![Trello bot message]({{ static_url }}images/integrations/trello/002.png)
 
 ##### Thanks to Nathan from FoundationDB for submitting this integration!

@@ -16,4 +16,4 @@ Receive Gogs notifications in Zulip!
 
 {!congrats.md!}
 
-![](/static/images/integrations/gogs/001.png)
+![]({{ static_url }}images/integrations/gogs/001.png)

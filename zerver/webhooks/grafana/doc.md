@@ -20,4 +20,4 @@ See your Grafana dashboard alerts in Zulip!
 
 {!congrats.md!}
 
-![](/static/images/integrations/grafana/001.png)
+![]({{ static_url }}images/integrations/grafana/001.png)

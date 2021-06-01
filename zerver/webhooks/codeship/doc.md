@@ -15,4 +15,4 @@ your build statuses.
 
 {!congrats.md!}
 
-![](/static/images/integrations/codeship/001.png)
+![]({{ static_url }}images/integrations/codeship/001.png)

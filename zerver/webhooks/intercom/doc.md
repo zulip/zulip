@@ -17,4 +17,4 @@ Get Intercom notifications in Zulip!
 
 {!congrats.md!}
 
-![](/static/images/integrations/intercom/001.png)
+![]({{ static_url }}images/integrations/intercom/001.png)

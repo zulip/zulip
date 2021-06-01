@@ -15,4 +15,4 @@ events in Basecamp.
 
 {!congrats.md!}
 
-![](/static/images/integrations/basecamp/001.png)
+![]({{ static_url }}images/integrations/basecamp/001.png)

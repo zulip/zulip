@@ -17,4 +17,4 @@ Get Zulip notifications for your Semaphore builds!
 
 {!congrats.md!}
 
-![](/static/images/integrations/semaphore/001.png)
+![]({{ static_url }}images/integrations/semaphore/001.png)

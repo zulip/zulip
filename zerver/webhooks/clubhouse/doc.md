@@ -13,4 +13,4 @@ Get Zulip notifications for your Clubhouse Stories and Epics!
 
 {!congrats.md!}
 
-![](/static/images/integrations/clubhouse/001.png)
+![]({{ static_url }}images/integrations/clubhouse/001.png)

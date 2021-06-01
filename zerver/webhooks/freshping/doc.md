@@ -15,4 +15,4 @@ Receive Freshping notifications in Zulip!
 
 {!congrats.md!}
 
-![](/static/images/integrations/freshping/001.png)
+![]({{ static_url }}images/integrations/freshping/001.png)

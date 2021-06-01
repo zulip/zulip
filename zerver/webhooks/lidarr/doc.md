@@ -19,4 +19,4 @@ Receive Lidarr notifications in Zulip!
 
 {!congrats.md!}
 
-![](/static/images/integrations/lidarr/001.png)
+![]({{ static_url }}images/integrations/lidarr/001.png)

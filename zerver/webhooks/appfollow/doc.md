@@ -15,4 +15,4 @@ of the form. Click **Add integration**.
 
 {!congrats.md!}
 
-![](/static/images/integrations/appfollow/001.png)
+![]({{ static_url }}images/integrations/appfollow/001.png)

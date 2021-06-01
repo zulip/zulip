@@ -20,4 +20,4 @@ Bitbucket Cloud (SAAS service) click [here](./bitbucket2).
 
 {!congrats.md!}
 
-![](/static/images/integrations/bitbucket/004.png)
+![]({{ static_url }}images/integrations/bitbucket/004.png)

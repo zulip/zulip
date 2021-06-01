@@ -14,7 +14,7 @@ in an OpenShift instance.
     application?**.  There you’ll find the app’s SSH user, address, and
     further information on SSH, in case you need it.
 
-    ![Connecting to application](/static/images/integrations/openshift/002.png)
+    ![Connecting to application]({{ static_url }}images/integrations/openshift/002.png)
 
 1.  {!change-zulip-config-file-indented.md!}
 
@@ -36,7 +36,7 @@ in an OpenShift instance.
 
 {!congrats.md!}
 
-![OpenShift integration message](/static/images/integrations/openshift/001.png)
+![OpenShift integration message]({{ static_url }}images/integrations/openshift/001.png)
 
 ### Testing
 

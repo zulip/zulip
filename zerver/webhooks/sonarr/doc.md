@@ -19,4 +19,4 @@ Receive Sonarr notifications in Zulip!
 
 {!congrats.md!}
 
-![](/static/images/integrations/sonarr/001.png)
+![]({{ static_url }}images/integrations/sonarr/001.png)

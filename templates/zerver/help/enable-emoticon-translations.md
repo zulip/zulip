@@ -3,13 +3,13 @@
 If you use emoticons like `:)` or `:/`, you can have them translated into
 emoji equivalents like
 <img
-    src="/static/generated/emoji/images-google-64/1f642.png"
+    src="{{ static_url }}generated/emoji/images-google-64/1f642.png"
     alt="smile"
     class="emoji-small"
 />
 or
 <img
-    src="/static/generated/emoji/images-google-64/1f641.png"
+    src="{{ static_url }}generated/emoji/images-google-64/1f641.png"
     alt="slight_frown"
     class="emoji-small"
 />

@@ -22,4 +22,4 @@ send notifications to a different stream, append
 
 {!congrats.md!}
 
-![](/static/images/integrations/bitbucket/002.png)
+![]({{ static_url }}images/integrations/bitbucket/002.png)

@@ -19,7 +19,7 @@ Receive GitLab notifications in Zulip!
 
 {!congrats.md!}
 
-![](/static/images/integrations/gitlab/001.png)
+![]({{ static_url }}images/integrations/gitlab/001.png)
 
 !!! tip ""
     If your GitLab server and your Zulip server are on a local network

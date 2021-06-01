@@ -112,4 +112,4 @@ Receive Zabbix notifications in Zulip!
 
 {!congrats.md!}
 
-![](/static/images/integrations/zabbix/001.png)
+![]({{ static_url }}images/integrations/zabbix/001.png)

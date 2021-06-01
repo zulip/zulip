@@ -28,4 +28,4 @@ first install the
 
 {!congrats.md!}
 
-![](/static/images/integrations/wordpress/wordpress_post_created.png)
+![]({{ static_url }}images/integrations/wordpress/wordpress_post_created.png)

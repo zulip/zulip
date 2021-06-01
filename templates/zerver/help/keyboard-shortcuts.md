@@ -131,7 +131,7 @@ below, and add more to your repertoire as needed.
 * **Star message**: `Ctrl + s`
 
 * **React with <img alt=":thumbs_up:" class="emoji"
-src="/static/generated/emoji/images/emoji/unicode/1f44d.png"
+src="{{ static_url }}generated/emoji/images/emoji/unicode/1f44d.png"
 title="thumbs up"/>**: `+`
 
 * **Collapse/show message**: `-`

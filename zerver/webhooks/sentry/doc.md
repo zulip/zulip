@@ -38,5 +38,5 @@ internal integration you created in the previous step.
 
 {!congrats.md!}
 
-![](/static/images/integrations/sentry/001.png)
-![](/static/images/integrations/sentry/002.png)
+![]({{ static_url }}images/integrations/sentry/001.png)
+![]({{ static_url }}images/integrations/sentry/002.png)

@@ -16,13 +16,13 @@ See your Yo App notifications in Zulip!
 
 1.  Sign in using your username and password and go to **Edit Profile**.
 
-    ![](/static/images/integrations/yo-app/001.png)
+    ![]({{ static_url }}images/integrations/yo-app/001.png)
 
 1.  Paste the URL in the **Callback** field and click on **Update**.
 
 {!congrats.md!}
 
-![](/static/images/integrations/yo-app/002.png)
+![]({{ static_url }}images/integrations/yo-app/002.png)
 
 Multiple users can use the same Yo bot; each user should use
 their own Zulip account email in the webhook URL.

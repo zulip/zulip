@@ -80,7 +80,7 @@ Zulip does some basic stemming, so `wave` will match `waves` and
 
 Emoji are included in searches, so if you search for `octopus` it will
 include messages with
-<img src="/static/generated/emoji/images-google-64/1f419.png" alt="octopus"
+<img src="{{ static_url }}generated/emoji/images-google-64/1f419.png" alt="octopus"
 class="emoji-small"/>.
 
 

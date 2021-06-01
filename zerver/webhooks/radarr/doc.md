@@ -19,4 +19,4 @@ Receive Radarr notifications in Zulip!
 
 {!congrats.md!}
 
-![](/static/images/integrations/radarr/001.png)
+![]({{ static_url }}images/integrations/radarr/001.png)

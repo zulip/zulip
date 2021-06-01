@@ -13,4 +13,4 @@ Get Zulip notifications for the stories in your Pivotal Tracker project!
 
 {!congrats.md!}
 
-![](/static/images/integrations/pivotal/001.png)
+![]({{ static_url }}images/integrations/pivotal/001.png)

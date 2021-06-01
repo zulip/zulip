@@ -19,4 +19,4 @@ Receive Greenhouse notifications in Zulip!
 
 {!congrats.md!}
 
-![](/static/images/integrations/greenhouse/000.png)
+![]({{ static_url }}images/integrations/greenhouse/000.png)

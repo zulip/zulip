@@ -14,4 +14,4 @@ Get Zulip notifications for your JotForm responses!
 
 {!congrats.md!}
 
-![](/static/images/integrations/jotform/001.png)
+![]({{ static_url }}images/integrations/jotform/001.png)

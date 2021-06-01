@@ -15,4 +15,4 @@ Harbor's webhooks feature is available in version 1.9 and later.
 
 {!congrats.md!}
 
-![](/static/images/integrations/harbor/001.png)
+![]({{ static_url }}images/integrations/harbor/001.png)

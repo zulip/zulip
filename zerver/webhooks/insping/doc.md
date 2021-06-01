@@ -16,4 +16,4 @@ a website or service is up and running or down.
 
 {!congrats.md!}
 
-![](/static/images/integrations/insping/001.png)
+![]({{ static_url }}images/integrations/insping/001.png)

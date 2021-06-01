@@ -28,4 +28,4 @@ Sources, Subscriptions, Files, Invoices and Invoice items.
 
 {!congrats.md!}
 
-![](/static/images/integrations/stripe/001.png)
+![]({{ static_url }}images/integrations/stripe/001.png)
