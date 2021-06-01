@@ -2088,13 +2088,6 @@ nav {
 .portico-landing.apps
     .hero
     .image
-    img[src="/static/images/landing-page/tar.gz.svg"] {
-    width: 50%;
-}
-
-.portico-landing.apps
-    .hero
-    .image
     img[src="/static/images/app-screenshots/zulip-android.png"],
 .portico-landing.apps
     .hero
