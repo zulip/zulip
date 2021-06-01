@@ -45,7 +45,7 @@ class SourceMap:
         out: str = ""
         for ln in stacktrace.splitlines():
             out += ln + "\n"
-            match = re.search(r"/static/webpack-bundles/([^:]+):(\d+):(\d+)", ln)
+            match = re.search(r"/webpack-bundles/([^:]+):(\d+):(\d+)", ln)
             if match:
                 # Get the appropriate source map for the minified file.
                 minified_src = match.groups()[0]
