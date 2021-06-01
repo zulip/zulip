@@ -226,6 +226,7 @@ def build_page_params_for_home_page_load(
         insecure_desktop_app=insecure_desktop_app,
         server_needs_upgrade=is_outdated_server(user_profile),
         login_page=settings.HOME_NOT_LOGGED_IN,
+        static_url=settings.STATIC_URL,
         save_stacktraces=settings.SAVE_FRONTEND_STACKTRACES,
         warn_no_email=settings.WARN_NO_EMAIL,
         search_pills_enabled=settings.SEARCH_PILLS_ENABLED,

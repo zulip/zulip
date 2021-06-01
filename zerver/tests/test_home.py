@@ -216,6 +216,7 @@ class HomeTest(ZulipTestCase):
         "settings_send_digest_emails",
         "starred_message_counts",
         "starred_messages",
+        "static_url",
         "stop_words",
         "subscriptions",
         "test_suite",
