@@ -47,6 +47,7 @@ from zerver.models import (
     RealmEmoji,
     RealmFilter,
     RealmPlayground,
+    RealmUserDefault,
     Recipient,
     Service,
     Stream,
@@ -663,6 +664,13 @@ def get_realm_config() -> Config:
         model=Client,
         virtual_parent=realm_config,
         use_all=True,
+    )
+
+    Config(
+        table="zerver_realmuserdefault",
+        model=RealmUserDefault,
+        normal_parent=realm_config,
+        parent_key="realm_id__in",
     )
 
     user_profile_config = Config(

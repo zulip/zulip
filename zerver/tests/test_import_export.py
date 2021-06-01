@@ -47,6 +47,7 @@ from zerver.models import (
     Realm,
     RealmAuditLog,
     RealmEmoji,
+    RealmUserDefault,
     Recipient,
     Stream,
     Subscription,
@@ -334,6 +335,10 @@ class ImportExportTest(ZulipTestCase):
             self.example_user("othello"), self.example_user("hamlet")
         )
 
+        realm_user_default = RealmUserDefault.objects.get(realm=realm)
+        realm_user_default.default_language = "de"
+        realm_user_default.save()
+
         realm_emoji = RealmEmoji.objects.get(realm=realm)
         realm_emoji.delete()
         full_data = self._export_realm(realm)
@@ -361,6 +366,10 @@ class ImportExportTest(ZulipTestCase):
         self.assert_length(exported_alert_words, num_zulip_users * 4)
 
         self.assertIn("robotics", {r["word"] for r in exported_alert_words})
+
+        exported_realm_user_default = data["zerver_realmuserdefault"]
+        self.assert_length(exported_realm_user_default, 1)
+        self.assertEqual(exported_realm_user_default[0]["default_language"], "de")
 
         data = full_data["message"]
         um = UserMessage.objects.all()[0]
@@ -717,6 +726,11 @@ class ImportExportTest(ZulipTestCase):
 
         set_bot_config(bot_profile, "entry 1", "value 1")
 
+        realm_user_default = RealmUserDefault.objects.get(realm=original_realm)
+        realm_user_default.default_language = "de"
+        realm_user_default.twenty_four_hour_time = True
+        realm_user_default.save()
+
         self._export_realm(original_realm)
 
         with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
@@ -979,6 +993,15 @@ class ImportExportTest(ZulipTestCase):
 
         assert_realm_values(get_userpresence_timestamp)
 
+        def get_realm_user_default_values(r: Realm) -> Dict[str, Any]:
+            realm_user_default = RealmUserDefault.objects.get(realm=r)
+            return {
+                "default_language": realm_user_default.default_language,
+                "twenty_four_hour_time": realm_user_default.twenty_four_hour_time,
+            }
+
+        assert_realm_values(get_realm_user_default_values)
+
         # test to highlight that bs4 which we use to do data-**id
         # replacements modifies the HTML sometimes. eg replacing <br>
         # with </br>, &#39; with \' etc. The modifications doesn't
@@ -1036,6 +1059,27 @@ class ImportExportTest(ZulipTestCase):
         # Verify that we've actually tested something meaningful instead of a blind import
         # with is_user_active=True used for everything.
         self.assertTrue(Subscription.objects.filter(is_user_active=False).exists())
+
+    def test_import_realm_with_no_realm_user_default_table(self) -> None:
+        original_realm = Realm.objects.get(string_id="zulip")
+        RealmEmoji.objects.get(realm=original_realm).delete()
+
+        RealmUserDefault.objects.get(realm=original_realm).delete()
+        self._export_realm(original_realm)
+
+        with self.settings(BILLING_ENABLED=False), self.assertLogs(level="INFO"):
+            do_import_realm(os.path.join(settings.TEST_WORKER_DIR, "test-export"), "test-zulip")
+
+        self.assertTrue(Realm.objects.filter(string_id="test-zulip").exists())
+        imported_realm = Realm.objects.get(string_id="test-zulip")
+
+        # RealmUserDefault table with default values is created, if it is not present in
+        # the import data.
+        self.assertTrue(RealmUserDefault.objects.filter(realm=imported_realm).exists())
+
+        realm_user_default = RealmUserDefault.objects.get(realm=imported_realm)
+        self.assertEqual(realm_user_default.default_language, "en")
+        self.assertEqual(realm_user_default.twenty_four_hour_time, False)
 
     def test_import_files_from_local(self) -> None:
         realm = Realm.objects.get(string_id="zulip")

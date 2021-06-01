@@ -210,6 +210,7 @@ from zerver.models import (
     RealmEmoji,
     RealmFilter,
     RealmPlayground,
+    RealmUserDefault,
     Recipient,
     ScheduledEmail,
     ScheduledMessage,
@@ -4971,6 +4972,8 @@ def do_create_realm(
         RealmAuditLog.objects.create(
             realm=realm, event_type=RealmAuditLog.REALM_CREATED, event_time=realm.date_created
         )
+
+        RealmUserDefault.objects.create(realm=realm)
 
     # Create stream once Realm object has been saved
     notifications_stream = ensure_stream(

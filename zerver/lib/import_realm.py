@@ -52,6 +52,7 @@ from zerver.models import (
     RealmEmoji,
     RealmFilter,
     RealmPlayground,
+    RealmUserDefault,
     Recipient,
     Service,
     Stream,
@@ -125,6 +126,7 @@ ID_MAP: Dict[str, Dict[int, int]] = {
     "analytics_realmcount": {},
     "analytics_streamcount": {},
     "analytics_usercount": {},
+    "realmuserdefault": {},
 }
 
 id_map_to_list: Dict[str, Dict[int, List[int]]] = {
@@ -1140,6 +1142,17 @@ def do_import_realm(import_dir: Path, subdomain: str, processes: int = 1) -> Rea
         )
         update_model_ids(BotConfigData, data, "botconfigdata")
         bulk_import_model(data, BotConfigData)
+
+    if "zerver_realmuserdefault" in data:
+        re_map_foreign_keys(data, "zerver_realmuserdefault", "realm", related_table="realm")
+        update_model_ids(RealmUserDefault, data, "realmuserdefault")
+        bulk_import_model(data, RealmUserDefault)
+
+    # Create RealmUserDefault table with default values if not created
+    # already from the import data; this can happen when importing
+    # data from another product.
+    if not RealmUserDefault.objects.filter(realm=realm).exists():
+        RealmUserDefault.objects.create(realm=realm)
 
     fix_datetime_fields(data, "zerver_userpresence")
     re_map_foreign_keys(data, "zerver_userpresence", "user_profile", related_table="user_profile")
