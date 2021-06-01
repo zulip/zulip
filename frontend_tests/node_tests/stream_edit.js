@@ -182,9 +182,14 @@ test_ui("subscriber_pills", (override) => {
             };
             assert.equal(config.highlighter.call(fake_stream_this, denmark), fake_html);
 
-            typeahead_helper.render_person_or_user_group = function () {
+            typeahead_helper.render_user_group = function () {
                 return fake_html;
             };
+
+            typeahead_helper.render_person = function () {
+                return fake_html;
+            };
+
             assert.equal(config.highlighter.call(fake_group_this, testers), fake_html);
             assert.equal(config.highlighter.call(fake_person_this, me), fake_html);
         })();

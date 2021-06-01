@@ -64,10 +64,14 @@ export function set_up(input, pills, opts) {
                 return typeahead_helper.render_stream(item);
             }
 
-            if (include_user_groups) {
-                return typeahead_helper.render_person_or_user_group(item);
+            if (include_user_groups && user_groups.is_user_group(item)) {
+                return typeahead_helper.render_user_group(item);
             }
 
+            // After reaching this point, it is sure
+            // that given item is a person. So this
+            // handles `include_users` cases along with
+            // default cases.
             return typeahead_helper.render_person(item);
         },
         matcher(item) {
@@ -79,11 +83,15 @@ export function set_up(input, pills, opts) {
                 return item.name.toLowerCase().includes(query);
             }
 
+            let matches = false;
             if (include_user_groups) {
-                return group_matcher(query, item) || person_matcher(query, item);
+                matches = matches || group_matcher(query, item);
             }
 
-            return person_matcher(query, item);
+            if (include_users) {
+                matches = matches || person_matcher(query, item);
+            }
+            return matches;
         },
         sorter(matches) {
             const query = this.query;
@@ -91,7 +99,11 @@ export function set_up(input, pills, opts) {
                 return typeahead_helper.sort_streams(matches, query.trim().slice(1));
             }
 
-            const users = matches.filter((ele) => people.is_known_user(ele));
+            let users = [];
+            if (include_users) {
+                users = matches.filter((ele) => people.is_known_user(ele));
+            }
+
             let groups;
             if (include_user_groups) {
                 groups = matches.filter((ele) => user_groups.is_user_group(ele));
@@ -110,7 +122,7 @@ export function set_up(input, pills, opts) {
                 stream_pill.append_stream(item, pills);
             } else if (include_user_groups && user_groups.is_user_group(item)) {
                 user_group_pill.append_user_group(item, pills);
-            } else {
+            } else if (include_users && people.is_known_user(item)) {
                 user_pill.append_user(item, pills);
             }
 
