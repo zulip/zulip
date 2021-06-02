@@ -93,7 +93,7 @@ def relative_to_full_url(base_url: str, content: str) -> str:
     return content
 
 
-def fix_emojis(content: str, base_url: str, emojiset: str) -> str:
+def fix_emojis(content: str, static_url: str, emojiset: str) -> str:
     def make_emoji_img_elem(emoji_span_elem: CSSSelector) -> Dict[str, Any]:
         # Convert the emoji spans to img tags.
         classes = emoji_span_elem.get("class")
@@ -105,7 +105,7 @@ def fix_emojis(content: str, base_url: str, emojiset: str) -> str:
         emoji_code = match.group("emoji_code")
         emoji_name = emoji_span_elem.get("title")
         alt_code = emoji_span_elem.text
-        image_url = base_url + f"/static/generated/emoji/images-{emojiset}-64/{emoji_code}.png"
+        image_url = static_url + f"generated/emoji/images-{emojiset}-64/{emoji_code}.png"
         img_elem = lxml.html.fromstring(
             f'<img alt="{alt_code}" src="{image_url}" title="{emoji_name}">'
         )
@@ -229,7 +229,7 @@ def build_message_list(
         assert message.rendered_content is not None
         html = message.rendered_content
         html = relative_to_full_url(user.realm.uri, html)
-        html = fix_emojis(html, user.realm.uri, user.emojiset)
+        html = fix_emojis(html, settings.STATIC_URL, user.emojiset)
         html = fix_spoilers_in_html(html, user.default_language)
         if sender:
             plain, html = append_sender_to_message(plain, html, sender)
