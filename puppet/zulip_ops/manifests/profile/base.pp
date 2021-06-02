@@ -3,6 +3,7 @@ class zulip_ops::profile::base {
   include zulip_ops::munin_node
   include zulip_ops::ksplice_uptrack
   include zulip_ops::firewall
+  include zulip_ops::teleport::node
 
   zulip_ops::firewall_allow { 'ssh': order => '10'}
 
