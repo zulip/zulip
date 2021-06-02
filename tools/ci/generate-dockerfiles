@@ -10,10 +10,13 @@ if __name__ == "__main__":
     with open("Dockerfile.template") as f:
         docker_template = f.read()
 
+    with open("Dockerfile.prod.template") as p:
+        docker_prod_template = p.read()
+
     with open("images.yml") as f:
         dockerfile_settings = yaml.safe_load(f)
 
-    for distro in dockerfile_settings:
+    for distro in dockerfile_settings["distros"]:
         dockerfile_path = f"images/{distro}/Dockerfile"
         os.makedirs(os.path.dirname(dockerfile_path), exist_ok=True)
         with open(dockerfile_path, "w") as f:
@@ -24,4 +27,17 @@ if __name__ == "__main__":
 
 """
             )
-            f.write(docker_template.format_map(dockerfile_settings[distro]))
+            f.write(docker_template.format_map(dockerfile_settings["distros"][distro]))
+
+    for server in dockerfile_settings["servers"]:
+        dockerfile_path = f"images/{server}/Dockerfile"
+        os.makedirs(os.path.dirname(dockerfile_path), exist_ok=True)
+        with open(dockerfile_path, "w") as f:
+            f.write(
+                """\
+# THIS IS A GENERATED FILE. DO NOT EDIT.
+# See template: tools/ci/Dockerfile.prod.template
+
+"""
+            )
+            f.write(docker_prod_template.format_map(dockerfile_settings["servers"][server]))
