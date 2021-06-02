@@ -1,6 +1,7 @@
 import re
 from typing import Any, List, Match
 
+from django.conf import settings
 from markdown import Markdown
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
@@ -28,7 +29,7 @@ ROW_HTML = """\
     <td><code>{emoticon}</code></td>
     <td>
         <img
-            src="/static/generated/emoji/images-google-64/{codepoint}.png"
+            src="{static_url}generated/emoji/images-google-64/{codepoint}.png"
             alt="{name}"
             class="emoji-big">
     </td>
@@ -59,6 +60,7 @@ class EmoticonTranslation(Preprocessor):
                 emoticon=emoticon,
                 name=name.strip(":"),
                 codepoint=name_to_codepoint[name.strip(":")],
+                static_url=settings.STATIC_URL,
             )
             for emoticon, name in EMOTICON_CONVERSIONS.items()
         ]

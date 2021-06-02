@@ -1519,7 +1519,7 @@ class Emoji(markdown.inlinepatterns.Pattern):
             return make_realm_emoji(active_realm_emoji[name]["source_url"], orig_syntax)
         elif name == "zulip":
             return make_realm_emoji(
-                "/static/generated/emoji/images/emoji/unicode/zulip.png", orig_syntax
+                settings.STATIC_URL + "generated/emoji/images/emoji/unicode/zulip.png", orig_syntax
             )
         elif name in name_to_codepoint:
             return make_emoji(name_to_codepoint[name], orig_syntax)

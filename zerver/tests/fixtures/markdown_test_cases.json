@@ -574,7 +574,8 @@
     {
       "name": "zulip_emoji",
       "input": ":zulip:",
-      "expected_output": "<p><img alt=\":zulip:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/zulip.png\" title=\"zulip\"></p>",
+      "expected_output": "<p><img alt=\":zulip:\" class=\"emoji\" src=\"http://testserver/static/generated/emoji/images/emoji/unicode/zulip.png\" title=\"zulip\"></p>",
+      "marked_expected_output": "<p><img alt=\":zulip:\" class=\"emoji\" src=\"/static/generated/emoji/images/emoji/unicode/zulip.png\" title=\"zulip\"></p>",
       "text_content": ":zulip:"
     },
     {
