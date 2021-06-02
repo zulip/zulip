@@ -1,6 +1,5 @@
 class zulip_ops::profile::teleport {
   include zulip_ops::profile::base
-  include zulip_ops::teleport::base
 
   file { '/etc/teleport_server.yaml':
     owner  => 'root',
