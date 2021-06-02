@@ -7,6 +7,6 @@ set -e
 set -x
 
 ./manage.py makemessages --all
-tx pull -a -f --mode=onlytranslated --minimum-perc=5 "$@"
+tx pull -a -f --mode=translator --minimum-perc=5 "$@"
 ./manage.py compilemessages
 ./tools/i18n/process-mobile-i18n
