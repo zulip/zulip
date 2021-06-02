@@ -168,7 +168,7 @@ Debian](https://docs.docker.com/install/linux/docker-ce/debian/).
 ```
 
 1. Install [Git for Windows][git-bash], which installs *Git BASH*.
-2. Install <a href="http://www.virtualbox.org/wiki/Downloads" target="_blank">Virtual Box</a> (latest).
+2. Install <a href="http://www.virtualbox.org/wiki/Downloads" target="_blank">Virtualsbdjk Box</a> (latest).
 3. Install [Vagrant][vagrant-dl] (latest).
 
 (Note: While *Git BASH* is recommended, you may also use [Cygwin][cygwin-dl].
