@@ -5,12 +5,16 @@
 class zulip_ops::teleport::node {
   include zulip_ops::teleport::base
 
-  file { '/etc/teleport_node.yaml':
-    ensure => file,
+  concat { '/etc/teleport_node.yaml':
+    ensure => present,
     owner  => 'root',
     group  => 'root',
     mode   => '0644',
+  }
+  concat::fragment { 'teleport_node_base':
+    target => '/etc/teleport_node.yaml',
     source => 'puppet:///modules/zulip_ops/teleport_node.yaml',
+    order  => '01',
   }
 
   file { "${zulip::common::supervisor_conf_dir}/teleport_node.conf":
@@ -18,7 +22,7 @@ class zulip_ops::teleport::node {
     require => [
       Package[supervisor],
       Package[teleport],
-      File['/etc/teleport_node.yaml'],
+      Concat['/etc/teleport_node.yaml'],
     ],
     owner   => 'root',
     group   => 'root',
@@ -26,9 +30,4 @@ class zulip_ops::teleport::node {
     source  => 'puppet:///modules/zulip_ops/supervisor/conf.d/teleport_node.conf',
     notify  => Service[$zulip::common::supervisor_service],
   }
-
-  # https://goteleport.com/docs/admin-guide/#ports
-  # Port 3022 is inward-facing; the proxy uses it to set up outside
-  # connections to this node.
-  zulip_ops::firewall_allow { 'teleport_node': port => 3022 }
 }
