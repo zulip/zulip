@@ -9,6 +9,8 @@
 
 {generate_code_example(python)|/realm/playgrounds/{playground_id}:delete|example}
 
+{generate_code_example(javascript)|/realm/playgrounds/{playground_id}:delete|example}
+
 {tab|curl}
 
 {generate_code_example(curl)|/realm/playgrounds/{playground_id}:delete|example}

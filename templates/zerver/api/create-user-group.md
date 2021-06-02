@@ -9,6 +9,8 @@
 
 {generate_code_example(python)|/user_groups/create:post|example}
 
+{generate_code_example(javascript)|/user_groups/create:post|example}
+
 {tab|curl}
 
 {generate_code_example(curl)|/user_groups/create:post|example}

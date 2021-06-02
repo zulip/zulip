@@ -9,6 +9,8 @@
 
 {generate_code_example(python)|/messages/{message_id}/history:get|example}
 
+{generate_code_example(javascript)|/messages/{message_id}/history:get|example}
+
 {tab|curl}
 
 {generate_code_example(curl)|/messages/{message_id}/history:get|example}

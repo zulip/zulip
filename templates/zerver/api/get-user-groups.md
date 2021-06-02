@@ -11,6 +11,8 @@
 
 {generate_code_example(python)|/user_groups:get|example}
 
+{generate_code_example(javascript)|/user_groups:get|example}
+
 {tab|curl}
 
 {generate_code_example(curl)|/user_groups:get|example}

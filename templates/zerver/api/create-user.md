@@ -9,10 +9,6 @@
 
 {generate_code_example(python)|/users:post|example(admin_config=True)}
 
-{tab|js}
-
-More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
-
 {generate_code_example(javascript)|/users:post|example(admin_config=True)}
 
 {tab|curl}

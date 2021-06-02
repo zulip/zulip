@@ -9,6 +9,8 @@
 
 {generate_code_example(python)|/realm/filters:post|example}
 
+{generate_code_example(javascript)|/realm/filters:post|example}
+
 {tab|curl}
 
 {generate_code_example(curl)|/realm/filters:post|example}

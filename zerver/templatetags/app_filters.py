@@ -128,7 +128,6 @@ def render_markdown_path(
         md_macro_extension = zerver.lib.markdown.include.makeExtension(
             base_path="templates/zerver/help/include/"
         )
-    extensions = md_extensions
     if "api_url" in context:
         # We need to generate the API code examples extension each
         # time so the `api_url` config parameter can be set dynamically.
@@ -136,11 +135,14 @@ def render_markdown_path(
         # TODO: Convert this to something more efficient involving
         # passing the API URL as a direct parameter.
         extensions = [
-            *extensions,
             zerver.openapi.markdown_extension.makeExtension(
                 api_url=context["api_url"],
             ),
+            *md_extensions,
         ]
+    else:
+        extensions = md_extensions
+
     if not any(doc in markdown_file_path for doc in docs_without_macros):
         extensions = [md_macro_extension, *extensions]
 

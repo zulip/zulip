@@ -9,6 +9,8 @@
 
 {generate_code_example(python)|/users/me/subscriptions/properties:post|example}
 
+{generate_code_example(javascript)|/users/me/subscriptions/properties:post|example}
+
 {tab|curl}
 
 {generate_code_example(curl)|/users/me/subscriptions/properties:post|example}

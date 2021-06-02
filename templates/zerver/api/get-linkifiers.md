@@ -9,6 +9,8 @@
 
 {generate_code_example(python)|/realm/linkifiers:get|example}
 
+{generate_code_example(javascript)|/realm/linkifiers:get|example}
+
 {tab|curl}
 
 {generate_code_example(curl)|/realm/linkifiers:get|example}

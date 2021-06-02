@@ -9,6 +9,8 @@
 
 {generate_code_example(python)|/streams/{stream_id}:patch|example}
 
+{generate_code_example(javascript)|/streams/{stream_id}:patch|example}
+
 {tab|curl}
 
 {generate_code_example(curl, include=["new_name", "description", "is_private"])|/streams/{stream_id}:patch|example}

@@ -9,10 +9,6 @@
 
 {generate_code_example(python)|/realm/emoji:get|example}
 
-{tab|js}
-
-More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
-
 {generate_code_example(javascript)|/realm/emoji:get|example}
 
 {tab|curl}

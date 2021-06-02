@@ -9,6 +9,8 @@
 
 {generate_code_example(python)|/server_settings:get|example}
 
+{generate_code_example(javascript)|/server_settings:get|example}
+
 {tab|curl}
 
 {generate_code_example(curl)|/server_settings:get|example}

@@ -11,6 +11,8 @@
 
 {generate_code_example(python)|/messages/{message_id}:delete|example(admin_config=True)}
 
+{generate_code_example(javascript)|/messages/{message_id}:delete|example}
+
 {tab|curl}
 
 {generate_code_example(curl)|/messages/{message_id}:delete|example}

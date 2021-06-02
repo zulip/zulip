@@ -154,7 +154,8 @@ def render_javascript_code_example(
     pattern = fr'^add_example\(\s*"[^"]*",\s*{re.escape(json.dumps(function))},\s*\d+,\s*async \(client, console\) => \{{\n(.*?)^(?:\}}| *\}},\n)\);$'
     with open("zerver/openapi/javascript_examples.js") as f:
         m = re.search(pattern, f.read(), re.M | re.S)
-    assert m is not None
+    if m is None:
+        return []
     function_source_lines = dedent(m.group(1)).splitlines()
 
     snippets = extract_code_example(function_source_lines, [], JS_EXAMPLE_REGEX)
@@ -164,7 +165,11 @@ def render_javascript_code_example(
     else:
         config = JS_CLIENT_CONFIG.splitlines()
 
-    code_example = []
+    code_example = [
+        "{tab|js}\n",
+        "More examples and documentation can be found [here](https://github.com/zulip/zulip-js).",
+    ]
+
     code_example.append("```js")
     code_example.extend(config)
     code_example.append("(async () => {")

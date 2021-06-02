@@ -9,6 +9,8 @@
 
 {generate_code_example(python)|/settings/display:patch|example}
 
+{generate_code_example(javascript)|/settings/display:patch|example}
+
 {tab|curl}
 
 {generate_code_example(curl, include=["left_side_userlist", "emojiset"])|/settings/display:patch|example}

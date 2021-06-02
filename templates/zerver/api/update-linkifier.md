@@ -9,6 +9,8 @@
 
 {generate_code_example(python)|/realm/filters/{filter_id}:patch|example}
 
+{generate_code_example(javascript)|/realm/filters/{filter_id}:patch|example}
+
 {tab|curl}
 
 {generate_code_example(curl)|/realm/filters/{filter_id}:patch|example}

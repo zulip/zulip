@@ -28,10 +28,6 @@ print(client.get_events(
 `call_on_each_message` and `call_on_each_event` will automatically register
 a queue for you.
 
-{tab|js}
-
-More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
-
 {generate_code_example(javascript)|/events:get|example}
 
 {tab|curl}
