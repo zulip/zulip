@@ -4302,7 +4302,19 @@ paths:
               example: [9, 10]
           required: true
         - $ref: "#/components/parameters/RequiredContent"
-        - $ref: "#/components/parameters/Topic"
+        - name: topic
+          in: query
+          description: |
+            The topic of the message. Only required for stream messages
+            (`type="stream"`), ignored otherwise.
+
+            Maximum length of 60 characters.
+
+            **Changes**: New in Zulip 2.0.  Previous Zulip releases encoded
+            this as `subject`, which is currently a deprecated alias.
+          schema:
+            type: string
+          example: Castle
         - name: queue_id
           in: query
           schema:
@@ -4813,7 +4825,18 @@ paths:
         message you wish you update.
       parameters:
         - $ref: "#/components/parameters/MessageId"
-        - $ref: "#/components/parameters/Topic"
+        - name: topic
+          in: query
+          description: |
+            The topic of the message.
+
+            Maximum length of 60 characters.
+
+            **Changes**: New in Zulip 2.0.  Previous Zulip releases encoded
+            this as `subject`, which is currently a deprecated alias.
+          schema:
+            type: string
+          example: Castle
         - name: propagate_mode
           in: query
           description: |
@@ -12259,20 +12282,6 @@ components:
         type: integer
       example: 1
       required: true
-    Topic:
-      name: topic
-      in: query
-      description: |
-        The topic of the message. Only required for stream messages
-        (`type="stream"`), ignored otherwise.
-
-        Maximum length of 60 characters.
-
-        **Changes**: New in Zulip 2.0.  Previous Zulip releases encoded
-        this as `subject`, which is currently a deprecated alias.
-      schema:
-        type: string
-      example: Castle
     QueueId:
       name: queue_id
       in: query
