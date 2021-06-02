@@ -9,10 +9,6 @@
 
 {generate_code_example(python)|/users/me/{stream_id}/topics:get|example}
 
-{tab|js}
-
-More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
-
 {generate_code_example(javascript)|/users/me/{stream_id}/topics:get|example}
 
 {tab|curl}

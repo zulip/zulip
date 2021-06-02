@@ -9,6 +9,8 @@
 
 {generate_code_example(python)|/mark_all_as_read:post|example}
 
+{generate_code_example(javascript)|/mark_all_as_read:post|example}
+
 {tab|curl}
 
 {generate_code_example(curl)|/mark_all_as_read:post|example}
@@ -39,6 +41,8 @@
 {tab|python}
 
 {generate_code_example(python)|/mark_stream_as_read:post|example}
+
+{generate_code_example(javascript)|/mark_all_as_read:post|example}
 
 {tab|curl}
 
@@ -71,6 +75,8 @@
 {tab|python}
 
 {generate_code_example(python)|/mark_topic_as_read:post|example}
+
+{generate_code_example(javascript)|/mark_all_as_read:post|example}
 
 {tab|curl}
 

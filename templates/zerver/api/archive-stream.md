@@ -9,6 +9,8 @@
 
 {generate_code_example(python)|/streams/{stream_id}:delete|example}
 
+{generate_code_example(javascript)|/streams/{stream_id}:delete|example}
+
 {tab|curl}
 
 {generate_code_example(curl)|/streams/{stream_id}:delete|example}

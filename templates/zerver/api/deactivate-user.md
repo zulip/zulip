@@ -9,6 +9,8 @@
 
 {generate_code_example(python)|/users/{user_id}:delete|example}
 
+{generate_code_example(javascript)|/users/{user_id}:delete|example}
+
 {tab|curl}
 
 {generate_code_example(curl)|/users/{user_id}:delete|example}

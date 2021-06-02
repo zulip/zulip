@@ -10,6 +10,8 @@
 
 {generate_code_example(python)|/user_uploads:post|example}
 
+{generate_code_example(javascript)|/user_uploads:post|example}
+
 {tab|curl}
 
 {generate_code_example(curl)|/user_uploads:post|example}

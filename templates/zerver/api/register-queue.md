@@ -52,10 +52,6 @@ potentially messy races, etc.
 
 {generate_code_example(python)|/register:post|example}
 
-{tab|js}
-
-More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
-
 {generate_code_example(javascript)|/register:post|example}
 
 {tab|curl}

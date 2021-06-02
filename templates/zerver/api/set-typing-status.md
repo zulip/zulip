@@ -9,10 +9,6 @@
 
 {generate_code_example(python)|/typing:post|example}
 
-{tab|js}
-
-More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
-
 {generate_code_example(javascript)|/typing:post|example}
 
 {tab|curl}

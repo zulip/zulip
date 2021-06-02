@@ -9,6 +9,8 @@
 
 {generate_code_example(python)|/messages/matches_narrow:get|example}
 
+{generate_code_example(javascript)|/messages/matches_narrow:get|example}
+
 {tab|curl}
 
 {generate_code_example(curl)|/messages/matches_narrow:get|example}

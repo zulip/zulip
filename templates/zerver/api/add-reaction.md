@@ -9,6 +9,8 @@
 
 {generate_code_example(python)|/messages/{message_id}/reactions:post|example}
 
+{generate_code_example(javascript)|/messages/{message_id}/reactions:post|example}
+
 {tab|curl}
 
 {generate_code_example(curl, exclude=["emoji_code","reaction_type"])|/messages/{message_id}/reactions:post|example}

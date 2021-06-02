@@ -9,6 +9,8 @@
 
 {generate_code_example(python)|/realm/profile_fields:get|example}
 
+{generate_code_example(javascript)|/realm/profile_fields:get|example}
+
 {tab|curl}
 
 {generate_code_example(curl)|/realm/profile_fields:get|example}

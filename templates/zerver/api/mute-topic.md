@@ -9,6 +9,8 @@
 
 {generate_code_example(python)|/users/me/subscriptions/muted_topics:patch|example}
 
+{generate_code_example(javascript)|/users/me/subscriptions/muted_topics:patch|example}
+
 {tab|curl}
 
 {generate_code_example(curl, exclude=["stream_id"])|/users/me/subscriptions/muted_topics:patch|example}

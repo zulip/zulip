@@ -9,6 +9,8 @@
 
 {generate_code_example(python)|/realm/playgrounds:post|example}
 
+{generate_code_example(javascript)|/realm/playgrounds:post|example}
+
 {tab|curl}
 
 {generate_code_example(curl)|/realm/playgrounds:post|example}

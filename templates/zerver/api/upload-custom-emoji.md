@@ -10,6 +10,8 @@
 
 {generate_code_example(python)|/realm/emoji/{emoji_name}:post|example}
 
+{generate_code_example(javascript)|/realm/emoji/{emoji_name}:post|example}
+
 {tab|curl}
 
 {generate_code_example(curl)|/realm/emoji/{emoji_name}:post|example}

@@ -9,6 +9,8 @@
 
 {generate_code_example(python)|/attachments:get|example}
 
+{generate_code_example(javascript)|/attachments:get|example}
+
 {tab|curl}
 
 {generate_code_example(curl)|/attachments:get|example}

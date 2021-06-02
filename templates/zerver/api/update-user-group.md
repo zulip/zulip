@@ -9,6 +9,8 @@
 
 {generate_code_example(python)|/user_groups/{user_group_id}:patch|example}
 
+{generate_code_example(javascript)|/user_groups/{user_group_id}:patch|example}
+
 {tab|curl}
 
 {generate_code_example(curl)|/user_groups/{user_group_id}:patch|example}

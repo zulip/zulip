@@ -9,6 +9,8 @@
 
 {generate_code_example(python)|/users/{email}:get|example}
 
+{generate_code_example(javascript)|/users/{email}:get|example}
+
 {tab|curl}
 
 {generate_code_example(curl, include=[""])|/users/{email}:get|example}

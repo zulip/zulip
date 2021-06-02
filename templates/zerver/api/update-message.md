@@ -9,10 +9,6 @@
 
 {generate_code_example(python)|/messages/{message_id}:patch|example}
 
-{tab|js}
-
-More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
-
 {generate_code_example(javascript)|/messages/{message_id}:patch|example}
 
 {tab|curl}

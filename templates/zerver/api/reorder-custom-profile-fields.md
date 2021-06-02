@@ -9,6 +9,8 @@
 
 {generate_code_example(python)|/realm/profile_fields:patch|example(admin_config=True)}
 
+{generate_code_example(javascript)|/realm/profile_fields:patch|example}
+
 {tab|curl}
 
 {generate_code_example(curl)|/realm/profile_fields:patch|example}
