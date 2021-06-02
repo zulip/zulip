@@ -1,19 +1,22 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Lunatic Luna <love_sweet_98@yahoo.com.vn>, 2020
-# Lunatic Luna <love_sweet_98@yahoo.com.vn>, 2020
-# Pham Tuan Anh <tuananh301099@gmail.com>, 2020
+# Akash Nimare <svnitakash@gmail.com>, 2021
+# Pham Tuan Anh <tuananh301099@gmail.com>, 2021
+# Lunatic Luna <love_sweet_98@yahoo.com.vn>, 2021
+# 
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Zulip\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-05-13 22:30+0000\n"
-"PO-Revision-Date: 2021-05-12 23:29+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
-"Language-Team: Vietnamese (http://www.transifex.com/zulip/zulip/language/vi/)\n"
+"POT-Creation-Date: 2021-05-26 18:04+0000\n"
+"PO-Revision-Date: 2021-04-02 21:39+0000\n"
+"Last-Translator: Lunatic Luna <love_sweet_98@yahoo.com.vn>, 2021\n"
+"Language-Team: Vietnamese (https://www.transifex.com/zulip/teams/53893/vi/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -52,11 +55,14 @@ msgstr ""
 #: analytics/views.py:349
 #, python-brace-format
 msgid "Start time is later than end time. Start: {start}, End: {end}"
-msgstr "Thời gian bắt đầu muộn hơn thời gian kết thúc. Start: {start}, End: {end}"
+msgstr ""
+"Thời gian bắt đầu muộn hơn thời gian kết thúc. Start: {start}, End: {end}"
 
 #: analytics/views.py:367 analytics/views.py:398
 msgid "No analytics data available. Please contact your server administrator."
-msgstr "Không có sẵn dữ liệu phân tích. Vui lòng liên hệ với quản trị viên máy chủ của bạn."
+msgstr ""
+"Không có sẵn dữ liệu phân tích. Vui lòng liên hệ với quản trị viên máy chủ "
+"của bạn."
 
 #: analytics/views.py:1275
 msgid "Invalid parameters"
@@ -395,7 +401,9 @@ msgstr "Kiểm tra email của bạn để chúng ta có thể bắt đầu."
 
 #: templates/zerver/accounts_send_confirm.html:21
 msgid "Still no email? We can <a href=\"#\" id=\"resend_email_link\">resend it</a>."
-msgstr "Vẫn không nhận được email? Chúng tôi có thể <a href=\"#\" id=\"resend_email_link\"> gửi lại </a>."
+msgstr ""
+"Vẫn không nhận được email? Chúng tôi có thể <a href=\"#\" "
+"id=\"resend_email_link\"> gửi lại </a>."
 
 #: templates/zerver/accounts_send_confirm.html:22
 msgid "Just in case, take a look at your Spam folder."
@@ -440,6 +448,7 @@ msgid "Deleting a message removes it for everyone."
 msgstr ""
 
 #: templates/zerver/app/delete_message.html:19
+#: templates/zerver/app/index.html:167
 #: templates/zerver/app/invite_user.html:58
 msgid "Cancel"
 msgstr "Hủy"
@@ -485,7 +494,10 @@ msgid ""
 "            Why not <a href=\"#\" class=\"empty_feed_compose_stream\">\n"
 "            start the conversation</a>?\n"
 "            "
-msgstr "\n         Bắt đầu <a href=\"#\" class=\"empty_feed_compose_stream\">\n         cuộc hội thoại nào</a>"
+msgstr ""
+"\n"
+"         Bắt đầu <a href=\"#\" class=\"empty_feed_compose_stream\">\n"
+"         cuộc hội thoại nào</a>"
 
 #: templates/zerver/app/home.html:43
 msgid "You have no private messages yet!"
@@ -539,7 +551,8 @@ msgstr "Một số tài khoản người dùng không tồn tại!"
 #: templates/zerver/app/home.html:102
 msgid ""
 "You aren't subscribed to this stream and nobody has talked about that yet!"
-msgstr "Bạn không theo dõi dòng hội thoại này và chưa có ai nói vê việc đó hết!"
+msgstr ""
+"Bạn không theo dõi dòng hội thoại này và chưa có ai nói vê việc đó hết!"
 
 #: templates/zerver/app/home.html:105
 msgid "Subscribe"
@@ -608,6 +621,38 @@ msgstr "Thự lại nhanh thôi..."
 #: templates/zerver/app/index.html:68
 msgid "Try now."
 msgstr "Thử ngay và luôn."
+
+#: templates/zerver/app/index.html:147
+msgid "Set a status"
+msgstr ""
+
+#: templates/zerver/app/index.html:153
+msgid "Status message"
+msgstr ""
+
+#: templates/zerver/app/index.html:160
+msgid "In a meeting"
+msgstr ""
+
+#: templates/zerver/app/index.html:161
+msgid "Commuting"
+msgstr ""
+
+#: templates/zerver/app/index.html:162
+msgid "Out sick"
+msgstr ""
+
+#: templates/zerver/app/index.html:163
+msgid "Vacationing"
+msgstr ""
+
+#: templates/zerver/app/index.html:164
+msgid "Working remotely"
+msgstr ""
+
+#: templates/zerver/app/index.html:169
+msgid "Save"
+msgstr "Lưu"
 
 #: templates/zerver/app/invite_user.html:6
 msgid "Invite users to Zulip"
@@ -1112,7 +1157,8 @@ msgstr ""
 msgid ""
 "Zulip needs to send email to confirm users' addresses and send "
 "notifications."
-msgstr "Zulip cần gửi thư để xác nhận địa chỉ email của người dùng và gửi thông báo "
+msgstr ""
+"Zulip cần gửi thư để xác nhận địa chỉ email của người dùng và gửi thông báo "
 
 #: templates/zerver/app/navbar_alerts.html:24
 msgid "See how to configure email."
@@ -1266,7 +1312,9 @@ msgstr "Chỉ hiển thị tin nhắn chứa nội dung tải lên."
 msgid ""
 "Search for <span class=\"operator_value\"> keyword </span> in the topic or "
 "message content "
-msgstr "Tìm <span class=\"operator_value\">từ khóa</span> trong chủ đề hoặc nội dung tin nhắn"
+msgstr ""
+"Tìm <span class=\"operator_value\">từ khóa</span> trong chủ đề hoặc nội dung"
+" tin nhắn"
 
 #: templates/zerver/app/search_operators.html:85
 msgid "Exclude messages with topic <span class=\"operator_value\">topic</span>"
@@ -1654,6 +1702,7 @@ msgstr ""
 #: templates/zerver/emails/custom/compiled/custom_email_13351dad3bd3972e796012ab305e4a5d.html:66
 #: templates/zerver/emails/custom/compiled/custom_email_1db042280b1efac69028573753f2ebed.html:16
 #: templates/zerver/emails/custom/compiled/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.html:26
+#: templates/zerver/emails/custom/compiled/custom_email_2b91e0b32f8ab81738217df8a492c7d6.html:33
 #: templates/zerver/emails/custom/compiled/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.html:18
 #: templates/zerver/emails/custom/compiled/custom_email_d5c63509cf008c626cdcbdde801f814c.html:35
 #: templates/zerver/emails/custom/compiled/custom_email_d9c10b1bfc0ddab1178c75dcee1d8de7.html:16
@@ -1663,6 +1712,7 @@ msgstr ""
 #: templates/zerver/emails/custom/custom_email_13351dad3bd3972e796012ab305e4a5d.source.html:65
 #: templates/zerver/emails/custom/custom_email_1db042280b1efac69028573753f2ebed.source.html:15
 #: templates/zerver/emails/custom/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.source.html:24
+#: templates/zerver/emails/custom/custom_email_2b91e0b32f8ab81738217df8a492c7d6.source.html:32
 #: templates/zerver/emails/custom/custom_email_3c65b45c31a882a18c94828cdcf2b1cb.source.html:35
 #: templates/zerver/emails/custom/custom_email_3f08f8f8c55fdeb21fd5f42f9b36f5d5.txt:8
 #: templates/zerver/emails/custom/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.source.html:17
@@ -2228,6 +2278,7 @@ msgstr ""
 #: templates/zerver/emails/custom/compiled/custom_email_13351dad3bd3972e796012ab305e4a5d.html:66
 #: templates/zerver/emails/custom/compiled/custom_email_1db042280b1efac69028573753f2ebed.html:16
 #: templates/zerver/emails/custom/compiled/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.html:26
+#: templates/zerver/emails/custom/compiled/custom_email_2b91e0b32f8ab81738217df8a492c7d6.html:33
 #: templates/zerver/emails/custom/compiled/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.html:18
 #: templates/zerver/emails/custom/compiled/custom_email_d5c63509cf008c626cdcbdde801f814c.html:35
 #: templates/zerver/emails/custom/compiled/custom_email_d9c10b1bfc0ddab1178c75dcee1d8de7.html:16
@@ -2237,6 +2288,7 @@ msgstr ""
 #: templates/zerver/emails/custom/custom_email_13351dad3bd3972e796012ab305e4a5d.source.html:65
 #: templates/zerver/emails/custom/custom_email_1db042280b1efac69028573753f2ebed.source.html:15
 #: templates/zerver/emails/custom/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.source.html:24
+#: templates/zerver/emails/custom/custom_email_2b91e0b32f8ab81738217df8a492c7d6.source.html:32
 #: templates/zerver/emails/custom/custom_email_3c65b45c31a882a18c94828cdcf2b1cb.source.html:35
 #: templates/zerver/emails/custom/custom_email_3f08f8f8c55fdeb21fd5f42f9b36f5d5.txt:8
 #: templates/zerver/emails/custom/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.source.html:17
@@ -3106,7 +3158,8 @@ msgstr "Xác nhận mật khẩu"
 
 #: templates/zerver/reset_confirm.html:68
 msgid "Sorry, the link you provided is invalid or has already been used."
-msgstr "Xin lỗi nha, đường link bạn cung cấp không hợp lệ hoặc đã được sử dụng."
+msgstr ""
+"Xin lỗi nha, đường link bạn cung cấp không hợp lệ hoặc đã được sử dụng."
 
 #: templates/zerver/reset_done.html:9
 msgid "We've reset your password!"
@@ -3170,7 +3223,9 @@ msgstr ""
 msgid ""
 "Hi there! It looks like you tried to unsubscribe from something, but we don't\n"
 "recognize the URL."
-msgstr "Há lô, có vẻ bạn cố bỏ theo dõi gì đó, nhưng chúng tôi không thể nhận diện đường URL."
+msgstr ""
+"Há lô, có vẻ bạn cố bỏ theo dõi gì đó, nhưng chúng tôi không thể nhận diện "
+"đường URL."
 
 #: templates/zerver/unsubscribe_link_error.html:10
 #, python-format
@@ -3606,7 +3661,8 @@ msgstr ""
 
 #: zerver/lib/actions.py:6609
 msgid "Some emails did not validate, so we didn't send any invitations."
-msgstr "Một số tài khoản email chưa xác nhận nên chúng tôi không thể gửi lời mời."
+msgstr ""
+"Một số tài khoản email chưa xác nhận nên chúng tôi không thể gửi lời mời."
 
 #: zerver/lib/actions.py:6617
 msgid "We weren't able to invite anyone."
@@ -3616,7 +3672,9 @@ msgstr "Chúng tôi không thể mời ai."
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
-msgstr "Một số địa chỉ đã lập tài khoản Zulip nên chúng tôi không gửi lời mời. Chúng tôi đã gửi lời mời tới tất cả những người khác."
+msgstr ""
+"Một số địa chỉ đã lập tài khoản Zulip nên chúng tôi không gửi lời mời. Chúng"
+" tôi đã gửi lời mời tới tất cả những người khác."
 
 #: zerver/lib/actions.py:7265
 msgid "Invalid order mapping."
@@ -3780,7 +3838,7 @@ msgstr ""
 msgid "Invalid type parameter"
 msgstr ""
 
-#: zerver/lib/events.py:1140
+#: zerver/lib/events.py:1144
 msgid "Could not allocate event queue"
 msgstr ""
 
@@ -4711,7 +4769,8 @@ msgstr "Không có lời mời như vậy"
 
 #: zerver/views/invite.py:177
 msgid "Invalid stream id {}. No invites were sent."
-msgstr "ID của dòng hội thoại {} không hợp lệ. Chưa có lời mời nào được gửi đi."
+msgstr ""
+"ID của dòng hội thoại {} không hợp lệ. Chưa có lời mời nào được gửi đi."
 
 #: zerver/views/message_edit.py:77
 msgid "Message edit history is disabled in this organization"
@@ -5212,7 +5271,7 @@ msgid ""
 "The newrelic webhook requires current_state be in [open|acknowledged|closed]"
 msgstr ""
 
-#: zerver/webhooks/pivotal/view.py:178
+#: zerver/webhooks/pivotal/view.py:179
 msgid "Unable to handle Pivotal payload"
 msgstr ""
 

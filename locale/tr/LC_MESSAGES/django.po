@@ -1,24 +1,26 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Cihan Alkan <cihanalk@gmail.com>, 2018
+# Tim Abbott <tabbott@kandralabs.com>, 2021
+# yusuf <yusuf.aydemir@pisilinux.org>, 2021
+# Onur Temiz <onurmain@gmail.com>, 2021
+# Cihan Alkan <cihanalk@gmail.com>, 2021
+# Hüseyin Fahri Uzun <mail@fahriuzun.com>, 2021
+# Oktay Altunergil, 2021
 # Gokdeniz.Kucukali, 2021
-# Gokdeniz.Kucukali, 2021
-# Hüseyin Fahri Uzun <mail@fahriuzun.com>, 2019-2021
-# Oktay Altunergil, 2018,2020
-# Onur Temiz <onurmain@gmail.com>, 2020
-# Tim Abbott <tabbott@kandralabs.com>, 2020
-# yusuf <yusuf.aydemir@pisilinux.org>, 2018
+# 
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Zulip\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-05-13 22:30+0000\n"
-"PO-Revision-Date: 2021-05-12 23:29+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
-"Language-Team: Turkish (http://www.transifex.com/zulip/zulip/language/tr/)\n"
+"POT-Creation-Date: 2021-05-26 18:04+0000\n"
+"PO-Revision-Date: 2021-04-02 21:39+0000\n"
+"Last-Translator: Gokdeniz.Kucukali, 2021\n"
+"Language-Team: Turkish (https://www.transifex.com/zulip/teams/53893/tr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -57,11 +59,14 @@ msgstr "Bilinmeyen grafik ismi: {}"
 #: analytics/views.py:349
 #, python-brace-format
 msgid "Start time is later than end time. Start: {start}, End: {end}"
-msgstr "Başlangıç zamanı bitiş zamanında sonra. Başlangıç: {start}, Bitiş: {end}"
+msgstr ""
+"Başlangıç zamanı bitiş zamanında sonra. Başlangıç: {start}, Bitiş: {end}"
 
 #: analytics/views.py:367 analytics/views.py:398
 msgid "No analytics data available. Please contact your server administrator."
-msgstr "Çözümleme verisi bulunmamaktadır. Lütfen sunucu yöneticinizle temasa geçiniz."
+msgstr ""
+"Çözümleme verisi bulunmamaktadır. Lütfen sunucu yöneticinizle temasa "
+"geçiniz."
 
 #: analytics/views.py:1275
 msgid "Invalid parameters"
@@ -78,7 +83,9 @@ msgstr "Birşeyler yanlış gitti. Lütfen sayfayı yeniden yükleyiniz."
 
 #: corporate/lib/stripe.py:239
 msgid "Something went wrong. Please wait a few seconds and try again."
-msgstr "Birşeyler yanlış gitti. Lütfen birkaç saniye sonra bekleyin ve yeniden deneyiniz."
+msgstr ""
+"Birşeyler yanlış gitti. Lütfen birkaç saniye sonra bekleyin ve yeniden "
+"deneyiniz."
 
 #: corporate/lib/stripe.py:802
 #, python-brace-format
@@ -95,7 +102,9 @@ msgstr "En az {} kullanıcıya fatura etmelisiniz."
 msgid ""
 "Invoices with more than {} licenses can't be processed from this page. To "
 "complete the upgrade, please contact {}."
-msgstr "{} daha fazla lisansa sahip faturalar bu sayfadan işlenemez. Bu yükseltmeyi tamamlamak için lütfen {} ile iletişime geçiniz."
+msgstr ""
+"{} daha fazla lisansa sahip faturalar bu sayfadan işlenemez. Bu yükseltmeyi "
+"tamamlamak için lütfen {} ile iletişime geçiniz."
 
 #: corporate/views.py:109
 msgid "No payment method on file"
@@ -113,7 +122,9 @@ msgstr "Bilinmeyen ödeme yöntemi. Lütfen {email} ile iletişime geçiniz"
 
 #: templates/analytics/stats.html:10
 msgid "Analytics are fully available 24 hours after organization creation."
-msgstr "Organizasyon oluşturulduktan itibaren 24 saat süreyle analitikler tam olarak açıktır."
+msgstr ""
+"Organizasyon oluşturulduktan itibaren 24 saat süreyle analitikler tam olarak"
+" açıktır."
 
 #: templates/analytics/stats.html:15
 #, python-format
@@ -216,7 +227,9 @@ msgstr "Son güncelleme"
 msgid ""
 "A full update of all the graphs happens once a day. The “messages sent over "
 "time” graph is updated once an hour."
-msgstr "Tüm grafiklerin tam güncellemesi günde bir defa gerçekleşir. “Zaman içinde gönderilmiş iletileri” grafiği saatlik olarak güncellenir."
+msgstr ""
+"Tüm grafiklerin tam güncellemesi günde bir defa gerçekleşir. “Zaman içinde "
+"gönderilmiş iletileri” grafiği saatlik olarak güncellenir."
 
 #: templates/analytics/stats.html:129
 msgid "Analytics documentation"
@@ -233,7 +246,10 @@ msgid ""
 "            This confirms that the email address for your Zulip account has changed\n"
 "            from %(old_email_html_tag)s to %(new_email_html_tag)s\n"
 "            "
-msgstr "\nBu, Zulip hesabınızın e-postasını\n %(old_email_html_tag)s dan %(new_email_html_tag)s a değiştirdiğinizi onaylar"
+msgstr ""
+"\n"
+"Bu, Zulip hesabınızın e-postasını\n"
+" %(old_email_html_tag)s dan %(new_email_html_tag)s a değiştirdiğinizi onaylar"
 
 #: templates/confirmation/link_does_not_exist.html:9
 msgid "Whoops. We couldn't find your confirmation link in the system."
@@ -246,7 +262,9 @@ msgid ""
 "\n"
 "                    Anyway, shoot us a line at %(support_email_html_tag)s and we'll get this resolved shortly.\n"
 "                    "
-msgstr "\nBize %(support_email_html_tag)s adresinden ulaşın ve biz bu sorunu kısa sürede çözeceğiz."
+msgstr ""
+"\n"
+"Bize %(support_email_html_tag)s adresinden ulaşın ve biz bu sorunu kısa sürede çözeceğiz."
 
 #: templates/confirmation/link_expired.html:10
 msgid "Whoops. The confirmation link has expired or been deactivated."
@@ -264,7 +282,9 @@ msgstr "Eyvah! Onay linki hatalı."
 msgid ""
 "Make sure you copied the link correctly in to your browser. If you're still "
 "encountering this page, it's probably our fault. We're sorry."
-msgstr "Bağlantıyı tarayıcınıza doğru şekilde kopyaladığınızdan emin olun. Eğer hala bu sayfayla karşılaşıyorsanız, muhtemelen bizim hatamızdır. Üzgünüz."
+msgstr ""
+"Bağlantıyı tarayıcınıza doğru şekilde kopyaladığınızdan emin olun. Eğer hala"
+" bu sayfayla karşılaşıyorsanız, muhtemelen bizim hatamızdır. Üzgünüz."
 
 #: templates/corporate/billing.html:21 templates/zerver/app/navbar.html:140
 msgid "Billing"
@@ -360,7 +380,9 @@ msgstr "E-posta"
 msgid ""
 "I agree to the <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" "
 "rel=\"noopener noreferrer\">Terms of Service</a>."
-msgstr "<a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" rel=\"noopener noreferrer\">Kullanım Şartlarını</a> kabul ediyorum."
+msgstr ""
+"<a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" rel=\"noopener "
+"noreferrer\">Kullanım Şartlarını</a> kabul ediyorum."
 
 #: templates/zerver/accounts_accept_terms.html:54
 msgid "Enter"
@@ -400,7 +422,9 @@ msgstr "Başlamak için e-posta kutunuzu kontrol edin."
 
 #: templates/zerver/accounts_send_confirm.html:21
 msgid "Still no email? We can <a href=\"#\" id=\"resend_email_link\">resend it</a>."
-msgstr "Hala e-posta almadınız mı? <a href=\"#\" id=\"resend_email_link\">Yeniden gönderebiliriz</a>."
+msgstr ""
+"Hala e-posta almadınız mı? <a href=\"#\" id=\"resend_email_link\">Yeniden "
+"gönderebiliriz</a>."
 
 #: templates/zerver/accounts_send_confirm.html:22
 msgid "Just in case, take a look at your Spam folder."
@@ -445,6 +469,7 @@ msgid "Deleting a message removes it for everyone."
 msgstr "Bir iletiyi silmek, onu herkes için kaldırır."
 
 #: templates/zerver/app/delete_message.html:19
+#: templates/zerver/app/index.html:167
 #: templates/zerver/app/invite_user.html:58
 msgid "Cancel"
 msgstr "İptal"
@@ -468,7 +493,12 @@ msgid ""
 "            <a href=\"/plans/\" target=\"_blank\" rel=\"noopener noreferrer\">Upgrade your organization</a>\n"
 "            to access your full message history.\n"
 "            "
-msgstr "\nBazı eski iletiler erişilemiyor\nbütün ileti geçmişine erişmek için\n<a href=\"/plans/\" target=\"_blank\" rel=\"noopener noreferrer\">Organizyonunuzu yükseltin</a>\n "
+msgstr ""
+"\n"
+"Bazı eski iletiler erişilemiyor\n"
+"bütün ileti geçmişine erişmek için\n"
+"<a href=\"/plans/\" target=\"_blank\" rel=\"noopener noreferrer\">Organizyonunuzu yükseltin</a>\n"
+" "
 
 #: templates/zerver/app/home.html:23
 msgid ""
@@ -478,7 +508,12 @@ msgid ""
 "              target=\"_blank\" rel=\"noopener noreferrer\">history</a>.\n"
 "            Consider <a class=\"search-shared-history\" href=\"\">searching all public streams</a>.\n"
 "            "
-msgstr "\n            <a href=\"/help/search-for-messages#searching-shared-history\"\n              target=\"_blank\" rel=\"noopener noreferrer\">Geçmişinizin</a>\n            sonuna geldiniz.\n            <a class=\"search-shared-history\" href=\"\">bütün genel kanalları aramayı</a> düşünün."
+msgstr ""
+"\n"
+"            <a href=\"/help/search-for-messages#searching-shared-history\"\n"
+"              target=\"_blank\" rel=\"noopener noreferrer\">Geçmişinizin</a>\n"
+"            sonuna geldiniz.\n"
+"            <a class=\"search-shared-history\" href=\"\">bütün genel kanalları aramayı</a> düşünün."
 
 #: templates/zerver/app/home.html:33
 msgid "Nothing's been sent here yet!"
@@ -490,7 +525,11 @@ msgid ""
 "            Why not <a href=\"#\" class=\"empty_feed_compose_stream\">\n"
 "            start the conversation</a>?\n"
 "            "
-msgstr "\n            Neden <a href=\"#\" class=\"empty_feed_compose_stream\">\n            görüşmeyi başlat mıyorsunuz</a>?\n            "
+msgstr ""
+"\n"
+"            Neden <a href=\"#\" class=\"empty_feed_compose_stream\">\n"
+"            görüşmeyi başlat mıyorsunuz</a>?\n"
+"            "
 
 #: templates/zerver/app/home.html:43
 msgid "You have no private messages yet!"
@@ -503,7 +542,11 @@ msgid ""
 "            Why not <a href=\"#\" class=\"empty_feed_compose_private\">\n"
 "            start the conversation</a>?\n"
 "            "
-msgstr "\n            Neden <a href=\"#\" class=\"empty_feed_compose_private\">\n            görüşmeyi başlat mıyorsunuz</a>?\n            "
+msgstr ""
+"\n"
+"            Neden <a href=\"#\" class=\"empty_feed_compose_private\">\n"
+"            görüşmeyi başlat mıyorsunuz</a>?\n"
+"            "
 
 #: templates/zerver/app/home.html:53
 msgid "You have no private messages with this person yet!"
@@ -519,7 +562,9 @@ msgid ""
 "            Why not <a href=\"#\" class=\"empty_feed_compose_private\">\n"
 "            start a conversation with yourself</a>?\n"
 "            "
-msgstr "\nNeden <a href=\"#\" class=\"empty_feed_compose_private\">kendiniz ile </a>özel bir konuşma başlat mıyorsunuz?"
+msgstr ""
+"\n"
+"Neden <a href=\"#\" class=\"empty_feed_compose_private\">kendiniz ile </a>özel bir konuşma başlat mıyorsunuz?"
 
 #: templates/zerver/app/home.html:73
 msgid "You have no group private messages with this person yet!"
@@ -564,7 +609,11 @@ msgid ""
 "            Learn more about starring messages <a href=\"/help/star-a-message\">\n"
 "            here</a>.\n"
 "            "
-msgstr "\n          İleti yıldızlama ile ilgili daha fazla bilgiyi <a href=\"/help/star-a-message\">\n            burada </a>bulabilirsiniz.\n            "
+msgstr ""
+"\n"
+"          İleti yıldızlama ile ilgili daha fazla bilgiyi <a href=\"/help/star-a-message\">\n"
+"            burada </a>bulabilirsiniz.\n"
+"            "
 
 #: templates/zerver/app/home.html:123
 msgid "You have no unread messages!"
@@ -580,7 +629,10 @@ msgid ""
 "            Learn more about mentions <a href=\"/help/mention-a-user-or-group\">\n"
 "            here</a>.\n"
 "            "
-msgstr "\nAnmalar hakkında daha fazlası için <a href=\"/help/mention-a-user-or-group\">\ntıklayınız </a>."
+msgstr ""
+"\n"
+"Anmalar hakkında daha fazlası için <a href=\"/help/mention-a-user-or-group\">\n"
+"tıklayınız </a>."
 
 #: templates/zerver/app/home.html:136
 msgid "No search results"
@@ -598,13 +650,17 @@ msgstr "Yükleniyor..."
 msgid ""
 "If this message does not go away, please wait a couple seconds and <a id"
 "=\"reload-lnk\">reload</a> the page."
-msgstr "Bu bildirim yok olmazsa bir kaç saniye bekleyin ve sayfayı <a id=\"reload-lnk\">yeniden yükleyin</a>."
+msgstr ""
+"Bu bildirim yok olmazsa bir kaç saniye bekleyin ve sayfayı <a id=\"reload-"
+"lnk\">yeniden yükleyin</a>."
 
 #: templates/zerver/app/index.html:67
 msgid ""
 "<strong class=\"message\">Unable to connect to\n"
 "            Zulip.</strong>  Updates may be delayed."
-msgstr "<strong class=\"message\">Zulip'e bağlantı sağlanamadı.\n            </strong>  Güncellemeler gecikebilir."
+msgstr ""
+"<strong class=\"message\">Zulip'e bağlantı sağlanamadı.\n"
+"            </strong>  Güncellemeler gecikebilir."
 
 #: templates/zerver/app/index.html:68
 msgid "Retrying soon..."
@@ -613,6 +669,38 @@ msgstr "Yakıda yeniden deniyor..."
 #: templates/zerver/app/index.html:68
 msgid "Try now."
 msgstr "Şimdi dene."
+
+#: templates/zerver/app/index.html:147
+msgid "Set a status"
+msgstr "Durum belirle"
+
+#: templates/zerver/app/index.html:153
+msgid "Status message"
+msgstr "Durum mesajı"
+
+#: templates/zerver/app/index.html:160
+msgid "In a meeting"
+msgstr "Toplantıda"
+
+#: templates/zerver/app/index.html:161
+msgid "Commuting"
+msgstr ""
+
+#: templates/zerver/app/index.html:162
+msgid "Out sick"
+msgstr ""
+
+#: templates/zerver/app/index.html:163
+msgid "Vacationing"
+msgstr "Tatilde"
+
+#: templates/zerver/app/index.html:164
+msgid "Working remotely"
+msgstr "Uzaktan çalışıyor"
+
+#: templates/zerver/app/index.html:169
+msgid "Save"
+msgstr "Kaydet"
 
 #: templates/zerver/app/invite_user.html:6
 msgid "Invite users to Zulip"
@@ -1064,7 +1152,7 @@ msgstr "API belgeleri"
 
 #: templates/zerver/app/navbar.html:147
 msgid "Support Zulip"
-msgstr ""
+msgstr "Zulip Destek"
 
 #: templates/zerver/app/navbar.html:154
 msgid "Plans and pricing"
@@ -1078,7 +1166,9 @@ msgstr "Kullanıcı davet et"
 msgid ""
 "Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via "
 "Webathena"
-msgstr "Grat Zulip the Kerberos Biletlerini Webatena ile Zephyr'ınızı çalıştırmak için gerekli"
+msgstr ""
+"Grat Zulip the Kerberos Biletlerini Webatena ile Zephyr'ınızı çalıştırmak "
+"için gerekli"
 
 #: templates/zerver/app/navbar.html:170
 msgid "Link with Webathena"
@@ -1093,13 +1183,17 @@ msgid ""
 "Zulip needs your permission to\n"
 "            <a class=\"request-desktop-notifications alert-link\" role=\"button\" tabindex=0>enable desktop notifications.</a>\n"
 "            "
-msgstr "<a class=\"request-desktop-notifications alert-link\" role=\"button\" tabindex=0>Masaüstü bildirimlerini açmak için</a>\nZulip'e izin vermeniz gerekiyor"
+msgstr ""
+"<a class=\"request-desktop-notifications alert-link\" role=\"button\" tabindex=0>Masaüstü bildirimlerini açmak için</a>\n"
+"Zulip'e izin vermeniz gerekiyor"
 
 #: templates/zerver/app/navbar_alerts.html:9
 msgid ""
 "We strongly recommend enabling desktop notifications. They help Zulip keep "
 "your team connected."
-msgstr "Masaüstü bildirimlerini etkinleştirmenizi şiddetle öneririz. Zulip'in takımınızı bağlı tutmasına yardımcı olur."
+msgstr ""
+"Masaüstü bildirimlerini etkinleştirmenizi şiddetle öneririz. Zulip'in "
+"takımınızı bağlı tutmasına yardımcı olur."
 
 #: templates/zerver/app/navbar_alerts.html:11
 msgid "Enable notifications"
@@ -1117,7 +1211,9 @@ msgstr "Bu bilgisayarda bir daha sorma"
 msgid ""
 "Zulip needs to send email to confirm users' addresses and send "
 "notifications."
-msgstr "Zulip kullanıcı e-posta adreslerini teyid etmek ve bildirim göndermek için e-posta göndermelidir."
+msgstr ""
+"Zulip kullanıcı e-posta adreslerini teyid etmek ve bildirim göndermek için "
+"e-posta göndermelidir."
 
 #: templates/zerver/app/navbar_alerts.html:24
 msgid "See how to configure email."
@@ -1131,13 +1227,18 @@ msgid ""
 "            <a class=\"alert-link\" href=\"%(profile_link)s\">organization profile</a>\n"
 "            to brand and explain the purpose of this Zulip organization.\n"
 "            "
-msgstr "\n<a class=\"alert-link\" href=\"%(profile_link)s\">Organizasyon profilini</a>\ntamamlayarak bu Zulip organizasyonun marka ve amaç tanımını belirtiniz."
+msgstr ""
+"\n"
+"<a class=\"alert-link\" href=\"%(profile_link)s\">Organizasyon profilini</a>\n"
+"tamamlayarak bu Zulip organizasyonun marka ve amaç tanımını belirtiniz."
 
 #: templates/zerver/app/navbar_alerts.html:41
 msgid ""
 "You are using an old version of the Zulip desktop app with known security "
 "bugs."
-msgstr "Güvenlik hataları bulunan eski bir Zulip masaüstü uygulamasını kullanıyorsunuz."
+msgstr ""
+"Güvenlik hataları bulunan eski bir Zulip masaüstü uygulamasını "
+"kullanıyorsunuz."
 
 #: templates/zerver/app/navbar_alerts.html:43
 msgid "Download the latest version."
@@ -1149,7 +1250,7 @@ msgstr ""
 
 #: templates/zerver/app/navbar_alerts.html:53
 msgid "Learn more"
-msgstr ""
+msgstr "Daha fazla öğren"
 
 #: templates/zerver/app/navbar_alerts.html:56
 msgid "Dismiss for a week"
@@ -1161,7 +1262,10 @@ msgid ""
 "\n"
 "            Welcome back!  You have <span class=\"bankruptcy_unread_count\">%(count)s</span> unread messages.  Do you want to mark them all as read?\n"
 "            "
-msgstr "\nHoşgeldin! <span class=\"bankruptcy_unread_count\">%(count)s</span>adet okunmamış mesajın var.\nHepsini okundu işaretlemek ister misin?"
+msgstr ""
+"\n"
+"Hoşgeldin! <span class=\"bankruptcy_unread_count\">%(count)s</span>adet okunmamış mesajın var.\n"
+"Hepsini okundu işaretlemek ister misin?"
 
 #: templates/zerver/app/navbar_alerts.html:68
 msgid "Yes, please!"
@@ -1176,7 +1280,9 @@ msgid ""
 "\n"
 "        Marking all messages as read…\n"
 "        "
-msgstr "\nTüm iletiler okundu olarak işaretleniyor..."
+msgstr ""
+"\n"
+"Tüm iletiler okundu olarak işaretleniyor..."
 
 #: templates/zerver/app/right_sidebar.html:5
 #: templates/zerver/app/right_sidebar.html:6
@@ -1271,7 +1377,9 @@ msgstr "Yükleme barındıran iletilere odakla."
 msgid ""
 "Search for <span class=\"operator_value\"> keyword </span> in the topic or "
 "message content "
-msgstr "<span class=\"operator_value\"> keyword </span> ifadesini konu veya ileti içeriğinde ara."
+msgstr ""
+"<span class=\"operator_value\"> keyword </span> ifadesini konu veya ileti "
+"içeriğinde ara."
 
 #: templates/zerver/app/search_operators.html:85
 msgid "Exclude messages with topic <span class=\"operator_value\">topic</span>"
@@ -1281,7 +1389,9 @@ msgstr "<span class=\"operator_value\">konu</span>konulu iletileri dışında b�
 msgid ""
 "You can use any combination of these search\n"
 "        operators in a single query. For example:"
-msgstr "Tek bir arama sorgusunda\nherhangi bir arama kombinasyonunu kıllanabilirsiniz. Örnek:"
+msgstr ""
+"Tek bir arama sorgusunda\n"
+"herhangi bir arama kombinasyonunu kıllanabilirsiniz. Örnek:"
 
 #: templates/zerver/app/search_operators.html:92
 msgid "streamname"
@@ -1306,7 +1416,15 @@ msgid ""
 "            containing the keyword\n"
 "            <span class=\"operator_value\">%(placeholder_keyword)s</span>.\n"
 "            "
-msgstr "\nBu sorgunun içereceği iletiler\n<span class=\"operator_value\">%(placeholder_email)s</span>\ntarafından gönderilmiş \n<span class=\"operator_value\">%(placeholder_stream)s</span>\nkanalına yazılmış\n<span class=\"operator_value\">%(placeholder_keyword)s</span>\nkelimelerini içerir."
+msgstr ""
+"\n"
+"Bu sorgunun içereceği iletiler\n"
+"<span class=\"operator_value\">%(placeholder_email)s</span>\n"
+"tarafından gönderilmiş \n"
+"<span class=\"operator_value\">%(placeholder_stream)s</span>\n"
+"kanalına yazılmış\n"
+"<span class=\"operator_value\">%(placeholder_keyword)s</span>\n"
+"kelimelerini içerir."
 
 #: templates/zerver/app/search_operators.html:116
 msgid "Detailed search operators documentation"
@@ -1343,7 +1461,7 @@ msgstr "Susturulmuş konular"
 
 #: templates/zerver/app/settings_overlay.html:48
 msgid "Muted users"
-msgstr ""
+msgstr "Sessize alınan kullanıcılar"
 
 #: templates/zerver/app/settings_overlay.html:55
 msgid "Organization profile"
@@ -1429,7 +1547,11 @@ msgid ""
 "                        organization first. Please use EmailAuthBackend to create\n"
 "                        your organization and then try again.\n"
 "                        "
-msgstr "\nOrganizasyon oluşturmadan LDAP ile giriş yapmaya \nçalışıyorsunuz. Lütfen organizasyonunuzu oluşturmak için\nönce EmailAuthBackend kullanın ve tekrar deneyin."
+msgstr ""
+"\n"
+"Organizasyon oluşturmadan LDAP ile giriş yapmaya \n"
+"çalışıyorsunuz. Lütfen organizasyonunuzu oluşturmak için\n"
+"önce EmailAuthBackend kullanın ve tekrar deneyin."
 
 #: templates/zerver/confirm_continue_registration.html:10
 msgid "Zulip account not found."
@@ -1441,7 +1563,9 @@ msgid ""
 "\n"
 "                            No account found for %(email)s.\n"
 "                            "
-msgstr "\n%(email)s için hesap bulunamadı."
+msgstr ""
+"\n"
+"%(email)s için hesap bulunamadı."
 
 #: templates/zerver/confirm_continue_registration.html:26
 msgid "Log in with another account"
@@ -1485,7 +1609,9 @@ msgid ""
 "\n"
 "                    The organization you are trying to join, %(deactivated_domain_name)s, has been deactivated.\n"
 "                    "
-msgstr "\nKatılmaya çalıştığın organizasyon %(deactivated_domain_name)s devre dışı bırakılmış."
+msgstr ""
+"\n"
+"Katılmaya çalıştığın organizasyon %(deactivated_domain_name)s devre dışı bırakılmış."
 
 #: templates/zerver/deactivated.html:24
 #, python-format
@@ -1493,7 +1619,9 @@ msgid ""
 "\n"
 "                        It has moved to <a href=\"%(deactivated_redirect)s\">%(deactivated_redirect)s</a>.\n"
 "                        "
-msgstr "\n<a href=\"%(deactivated_redirect)s\">%(deactivated_redirect)s</a> adresine taşındı"
+msgstr ""
+"\n"
+"<a href=\"%(deactivated_redirect)s\">%(deactivated_redirect)s</a> adresine taşındı"
 
 #: templates/zerver/deactivated.html:28
 #, python-format
@@ -1502,7 +1630,9 @@ msgid ""
 "                    Please contact <a href=\"mailto:%(support_email)s\">%(support_email)s</a> to reactivate\n"
 "                    this group.\n"
 "                    "
-msgstr "\nBu grubu yeniden etkinleştirmesi için<a href=\"mailto:%(support_email)s\">%(support_email)s</a> ile konuşun."
+msgstr ""
+"\n"
+"Bu grubu yeniden etkinleştirmesi için<a href=\"mailto:%(support_email)s\">%(support_email)s</a> ile konuşun."
 
 #: templates/zerver/desktop_login.html:7
 msgid "Finish desktop login"
@@ -1512,7 +1642,9 @@ msgstr "Masaüstü girişini bitir"
 msgid ""
 "Use your web browser to finish logging in, then come back here to paste in "
 "your login token."
-msgstr "Tarayıcınızı kullanarak giriş işlemini tamamlayın, sonra buraya giriş anahtarınızını yapıştırın."
+msgstr ""
+"Tarayıcınızı kullanarak giriş işlemini tamamlayın, sonra buraya giriş "
+"anahtarınızını yapıştırın."
 
 #: templates/zerver/desktop_login.html:14
 msgid "Paste token here"
@@ -1533,7 +1665,9 @@ msgstr "Anahtar kabul edildi. Giriş yapılıyor..."
 #: templates/zerver/desktop_redirect.html:8
 msgid ""
 "Copy this login token and return to your Zulip app to finish logging in:"
-msgstr "Bu giriş anahtarını kopyalayın ve Zulip uygulamanıza geri dönerek giriş işlemini tamamlayın:"
+msgstr ""
+"Bu giriş anahtarını kopyalayın ve Zulip uygulamanıza geri dönerek giriş "
+"işlemini tamamlayın:"
 
 #: templates/zerver/desktop_redirect.html:13
 msgid "Copy"
@@ -1581,7 +1715,10 @@ msgid ""
 "We received a request to change the email address for the Zulip account on "
 "%(realm_uri)s from %(old_email)s to %(new_email)s. To confirm this change, "
 "please click below:"
-msgstr "%(realm_uri)süzerinde bulunan Zulip hesabınızın email adresini %(old_email)s, %(new_email)semail adresine değiştirme isteiğini aldık. Onaylamak için lütfen aşağıdaki linke tıklayınız:"
+msgstr ""
+"%(realm_uri)süzerinde bulunan Zulip hesabınızın email adresini "
+"%(old_email)s, %(new_email)semail adresine değiştirme isteiğini aldık. "
+"Onaylamak için lütfen aşağıdaki linke tıklayınız:"
 
 #: templates/zerver/emails/compiled/confirm_new_email.html:12
 #: templates/zerver/emails/confirm_new_email.source.html:11
@@ -1594,7 +1731,9 @@ msgstr "E-posta değişikliğini onayla"
 msgid ""
 "If you did not request this change, please contact us immediately at  "
 "%(support_email)s."
-msgstr "Bu değişikliği siz talep etmediyseniz, lütfen %(support_email)s adresinden hemen bizimle iletişime geçin."
+msgstr ""
+"Bu değişikliği siz talep etmediyseniz, lütfen %(support_email)s adresinden "
+"hemen bizimle iletişime geçin."
 
 #: templates/zerver/emails/compiled/confirm_registration.html:10
 #: templates/zerver/emails/confirm_registration.source.html:9
@@ -1627,7 +1766,9 @@ msgstr "Kayıt işlemini tamamla"
 msgid ""
 "Contact us any time at %(support_email)s if you run into trouble, have any "
 "feedback, or just want to chat!"
-msgstr "Eğer bir sorun ile karşılaşır, geri bildirim yapmak ister veya sadece sohbet için bizimle %(support_email)süzerinden her zaman iletişime geçebilirsiniz!"
+msgstr ""
+"Eğer bir sorun ile karşılaşır, geri bildirim yapmak ister veya sadece sohbet"
+" için bizimle %(support_email)süzerinden her zaman iletişime geçebilirsiniz!"
 
 #: templates/zerver/emails/compiled/custom_email_0a044db0e6751f218a47a4331c50b45c.html:4
 #: templates/zerver/emails/compiled/custom_email_323d33263c802b7a808798ed9b6b5891.html:4
@@ -1659,6 +1800,7 @@ msgstr "Buraya tıklayarak Zulip'e giriş yap ve yakala."
 #: templates/zerver/emails/custom/compiled/custom_email_13351dad3bd3972e796012ab305e4a5d.html:66
 #: templates/zerver/emails/custom/compiled/custom_email_1db042280b1efac69028573753f2ebed.html:16
 #: templates/zerver/emails/custom/compiled/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.html:26
+#: templates/zerver/emails/custom/compiled/custom_email_2b91e0b32f8ab81738217df8a492c7d6.html:33
 #: templates/zerver/emails/custom/compiled/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.html:18
 #: templates/zerver/emails/custom/compiled/custom_email_d5c63509cf008c626cdcbdde801f814c.html:35
 #: templates/zerver/emails/custom/compiled/custom_email_d9c10b1bfc0ddab1178c75dcee1d8de7.html:16
@@ -1668,6 +1810,7 @@ msgstr "Buraya tıklayarak Zulip'e giriş yap ve yakala."
 #: templates/zerver/emails/custom/custom_email_13351dad3bd3972e796012ab305e4a5d.source.html:65
 #: templates/zerver/emails/custom/custom_email_1db042280b1efac69028573753f2ebed.source.html:15
 #: templates/zerver/emails/custom/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.source.html:24
+#: templates/zerver/emails/custom/custom_email_2b91e0b32f8ab81738217df8a492c7d6.source.html:32
 #: templates/zerver/emails/custom/custom_email_3c65b45c31a882a18c94828cdcf2b1cb.source.html:35
 #: templates/zerver/emails/custom/custom_email_3f08f8f8c55fdeb21fd5f42f9b36f5d5.txt:8
 #: templates/zerver/emails/custom/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.source.html:17
@@ -1703,7 +1846,8 @@ msgstr "Yüzen balık"
 msgid ""
 "You can log in to your Zulip organization, %(realm_name)s, at the following "
 "link:"
-msgstr "Zulip organizasyonuna %(realm_name)sekteki link ile giriş yapabilirsiniz:"
+msgstr ""
+"Zulip organizasyonuna %(realm_name)sekteki link ile giriş yapabilirsiniz:"
 
 #: templates/zerver/emails/compiled/find_team.html:21
 #: templates/zerver/emails/find_team.source.html:20
@@ -1718,7 +1862,9 @@ msgstr "Hesabınız ile ilişkili email adresi %(email)s."
 msgid ""
 "If you have trouble logging in, please contact Zulip support by replying to "
 "this email."
-msgstr "Eğer giriş yapmakta sorun yaşıyorsanız, lütfen bu emaile cevap vererek Zulip desteği ile iletişim kurunuz."
+msgstr ""
+"Eğer giriş yapmakta sorun yaşıyorsanız, lütfen bu emaile cevap vererek Zulip"
+" desteği ile iletişim kurunuz."
 
 #: templates/zerver/emails/compiled/find_team.html:25
 #: templates/zerver/emails/find_team.source.html:24
@@ -1783,7 +1929,10 @@ msgid ""
 "(you'll need these to sign in to the <a href=\"%(apps_page_link)s\" "
 "style=\"color:#46aa8f; text-decoration:underline\">mobile and desktop</a> "
 "apps)"
-msgstr "(<a href=\"%(apps_page_link)s\" style=\"color:#46aa8f; text-decoration:underline\">mobil ve masaüstü</a> uygulamalara giriş için bunlara ihtiyacınız var)"
+msgstr ""
+"(<a href=\"%(apps_page_link)s\" style=\"color:#46aa8f; text-"
+"decoration:underline\">mobil ve masaüstü</a> uygulamalara giriş için bunlara"
+" ihtiyacınız var)"
 
 #: templates/zerver/emails/compiled/followup_day1.html:41
 #, python-format
@@ -1793,7 +1942,13 @@ msgid ""
 "few <a href=\"%(keyboard_shortcuts_link)s\" style=\"color:#46aa8f; text-"
 "decoration:underline\">keyboard shortcuts</a>, or <a href=\"%(realm_uri)s\" "
 "style=\"color:#46aa8f; text-decoration:underline\">dive right in</a>!"
-msgstr "<a href=\"%(getting_started_link)s\" style=\"color:#46aa8f; text-decoration:underline\">yöneticiler için rehber</a>e gözat, bir kaç <a href=\"%(keyboard_shortcuts_link)s\" style=\"color:#46aa8f; text-decoration:underline\">klavye kısayolu</a>ile Zulip profesyoneli ol, veya <a href=\"%(realm_uri)s\" style=\"color:#46aa8f; text-decoration:underline\">hemen başla</a>!"
+msgstr ""
+"<a href=\"%(getting_started_link)s\" style=\"color:#46aa8f; text-"
+"decoration:underline\">yöneticiler için rehber</a>e gözat, bir kaç <a "
+"href=\"%(keyboard_shortcuts_link)s\" style=\"color:#46aa8f; text-"
+"decoration:underline\">klavye kısayolu</a>ile Zulip profesyoneli ol, veya <a"
+" href=\"%(realm_uri)s\" style=\"color:#46aa8f; text-"
+"decoration:underline\">hemen başla</a>!"
 
 #: templates/zerver/emails/compiled/followup_day1.html:43
 #, python-format
@@ -1803,7 +1958,13 @@ msgid ""
 "<a href=\"%(keyboard_shortcuts_link)s\" style=\"color:#46aa8f; text-"
 "decoration:underline\">keyboard shortcuts</a>, or <a href=\"%(realm_uri)s\" "
 "style=\"color:#46aa8f; text-decoration:underline\">dive right in</a>!"
-msgstr "Zulip hakkında <a href=\"%(getting_started_link)s\" style=\"color:#46aa8f; text-decoration:underline\">daha fazlasını öğren</a>, bir kaç <a href=\"%(keyboard_shortcuts_link)s\" style=\"color:#46aa8f; text-decoration:underline\">klavye kısayolu</a> ile profesyonel ol, veya <a href=\"%(realm_uri)s\" style=\"color:#46aa8f; text-decoration:underline\">hemen başla </a>!"
+msgstr ""
+"Zulip hakkında <a href=\"%(getting_started_link)s\" style=\"color:#46aa8f; "
+"text-decoration:underline\">daha fazlasını öğren</a>, bir kaç <a "
+"href=\"%(keyboard_shortcuts_link)s\" style=\"color:#46aa8f; text-"
+"decoration:underline\">klavye kısayolu</a> ile profesyonel ol, veya <a "
+"href=\"%(realm_uri)s\" style=\"color:#46aa8f; text-"
+"decoration:underline\">hemen başla </a>!"
 
 #: templates/zerver/emails/compiled/followup_day1.html:48
 #: templates/zerver/emails/followup_day1.source.html:42
@@ -1828,7 +1989,14 @@ msgid ""
 "decoration:underline\">GitHub</a>, or chat with us live on the <a "
 "href=\"https://chat.zulip.org\" style=\"color:#46aa8f; text-"
 "decoration:underline\">Zulip community server</a>!"
-msgstr "Not: Bizi <a href=\"https://twitter.com/zulip\" style=\"color:#46aa8f; text-decoration:underline\">Twitter</a>üzerinden takip edin, <a href=\"https://github.com/zulip/zulip\" style=\"color:#46aa8f; text-decoration:underline\">GitHub</a> yıldız verin, veya <a href=\"https://chat.zulip.org\" style=\"color:#46aa8f; text-decoration:underline\">Zulip topluluğu sunucusu</a>üzerinden bizimle sohbet edin!"
+msgstr ""
+"Not: Bizi <a href=\"https://twitter.com/zulip\" style=\"color:#46aa8f; text-"
+"decoration:underline\">Twitter</a>üzerinden takip edin, <a "
+"href=\"https://github.com/zulip/zulip\" style=\"color:#46aa8f; text-"
+"decoration:underline\">GitHub</a> yıldız verin, veya <a "
+"href=\"https://chat.zulip.org\" style=\"color:#46aa8f; text-"
+"decoration:underline\">Zulip topluluğu sunucusu</a>üzerinden bizimle sohbet "
+"edin!"
 
 #: templates/zerver/emails/compiled/followup_day2.html:9
 #: templates/zerver/emails/followup_day2.source.html:8
@@ -1842,7 +2010,9 @@ msgstr "Hey,"
 msgid ""
 "I wanted to share one last thing with you: a few tips about topics, since "
 "mastering topics is a key part of being a Zulip power user."
-msgstr "Senin son birşey daha paylaşmak istedim: konular hakkında bir kaç ipucu, çünkü konularda ustalaşmak gerçek bir Zulip kullanıcısı olmanın anahtarıdır."
+msgstr ""
+"Senin son birşey daha paylaşmak istedim: konular hakkında bir kaç ipucu, "
+"çünkü konularda ustalaşmak gerçek bir Zulip kullanıcısı olmanın anahtarıdır."
 
 #: templates/zerver/emails/compiled/followup_day2.html:13
 #: templates/zerver/emails/followup_day2.source.html:12
@@ -1854,7 +2024,10 @@ msgid ""
 "Topics are like email subject lines. The big difference, though, is that "
 "they're really short and lightweight. Two or three words will do it. Don't "
 "overthink 'em—you can always edit the message later!"
-msgstr "Konular email konu başlıklarına benzer. En büyük farkı ise gerçekten çok kısa ve hafif yüklü olmasıdır. 2 veya 3 kelime yeterlidir. Üzerlerinde çok düşünmene gerek yok çünkü her zaman iletini düzenleyebilirsin!"
+msgstr ""
+"Konular email konu başlıklarına benzer. En büyük farkı ise gerçekten çok "
+"kısa ve hafif yüklü olmasıdır. 2 veya 3 kelime yeterlidir. Üzerlerinde çok "
+"düşünmene gerek yok çünkü her zaman iletini düzenleyebilirsin!"
 
 #: templates/zerver/emails/compiled/followup_day2.html:18
 #: templates/zerver/emails/followup_day2.source.html:17
@@ -1868,7 +2041,9 @@ msgstr "İyi konular: dizayn taslakları, Hata 345, acme hamburgerleri"
 msgid ""
 "Not recommended: \"What do people think of this new design mockup?\", \"I'm "
 "looking at Bug 345\", \"Is Acme Burgers open for lunch?\""
-msgstr "Tavsiye edilmeyen: \"Yeni dizayn taslağı hakkında ne düşünüyorsunuz?\", \"Hata 345 e bakıyorum\", \"Öğle yemeğinde acme hamburgerlerinden var mı?\""
+msgstr ""
+"Tavsiye edilmeyen: \"Yeni dizayn taslağı hakkında ne düşünüyorsunuz?\", "
+"\"Hata 345 e bakıyorum\", \"Öğle yemeğinde acme hamburgerlerinden var mı?\""
 
 #: templates/zerver/emails/compiled/followup_day2.html:22
 #: templates/zerver/emails/followup_day2.source.html:21
@@ -1881,7 +2056,11 @@ msgid ""
 "(imagine if email didn't have them!), and it lets you more efficiently catch"
 " up on what's happened while you're away—read the topics that are relevant "
 "to you, and ignore the ones that aren't!"
-msgstr "Neden konular ile ilgilenmeliyim? 2 Sebebi var: sohbeti daha akıcı ve sadece kılar(emaillerde konu başlığı olmadığını düşünün!), ve sonradan geriye baktığında konulara daha hızlı erişmeni ve bilgi almanı sağlar —sadece seni ilgilendiren konulara odaklan ve gerisini boşver!"
+msgstr ""
+"Neden konular ile ilgilenmeliyim? 2 Sebebi var: sohbeti daha akıcı ve sadece"
+" kılar(emaillerde konu başlığı olmadığını düşünün!), ve sonradan geriye "
+"baktığında konulara daha hızlı erişmeni ve bilgi almanı sağlar —sadece seni "
+"ilgilendiren konulara odaklan ve gerisini boşver!"
 
 #: templates/zerver/emails/compiled/followup_day2.html:26
 #: templates/zerver/emails/followup_day2.source.html:25
@@ -1913,7 +2092,9 @@ msgstr "Merhaba,"
 msgid ""
 "%(referrer_name)s wants you to join them on Zulip — the team communication "
 "tool designed for productivity."
-msgstr "%(referrer_name)s Zulip'de — üretkenlik için tasarlanmış ekip iletişim aracı—  onlara katılmanızı istiyor."
+msgstr ""
+"%(referrer_name)s Zulip'de — üretkenlik için tasarlanmış ekip iletişim "
+"aracı—  onlara katılmanızı istiyor."
 
 #: templates/zerver/emails/compiled/invitation.html:16
 #: templates/zerver/emails/compiled/invitation_reminder.html:14
@@ -1933,7 +2114,9 @@ msgstr "Tekrar merhaba,"
 msgid ""
 "This is a friendly reminder that %(referrer_name)s wants you to join them on"
 " Zulip — the team communication tool designed for productivity."
-msgstr "Bu, %(referrer_name)s adlı kişinin Zulip'de  — üretkenlik için tasarlanmış ekip iletişim aracı— onlara katılmanızı istediğine dair bir hatırlatıcıdır."
+msgstr ""
+"Bu, %(referrer_name)s adlı kişinin Zulip'de  — üretkenlik için tasarlanmış "
+"ekip iletişim aracı— onlara katılmanızı istediğine dair bir hatırlatıcıdır."
 
 #: templates/zerver/emails/compiled/invitation_reminder.html:19
 #: templates/zerver/emails/invitation_reminder.source.html:18
@@ -1949,7 +2132,10 @@ msgid ""
 "    This invitation expires in two days. If the invitation expires,\n"
 "    you'll need to ask %(referrer_name)s for another one.\n"
 "    "
-msgstr "\nBu davetin süresi iki gün içinde sona eriyor. Davetin süresi dolarsa,\n%(referrer_name)s 'den başka bir tane istemeniz gerekecek."
+msgstr ""
+"\n"
+"Bu davetin süresi iki gün içinde sona eriyor. Davetin süresi dolarsa,\n"
+"%(referrer_name)s 'den başka bir tane istemeniz gerekecek."
 
 #: templates/zerver/emails/compiled/missed_message.html:18
 #, python-format
@@ -1958,7 +2144,11 @@ msgid ""
 "disabled <a class=\"content_disabled_help_link\" href=\"%(help_url)s\" "
 "style=\"color:#15c; text-decoration:underline\">message content appearing in"
 " email notifications</a>."
-msgstr "Bu email mesaj iletisini içermez çünkü organizasyonunuz <a class=\"content_disabled_help_link\" href=\"%(help_url)s\" style=\"color:#15c; text-decoration:underline\">email bildirimlerinde mesaj iletileri</a> özelliğini devre dışı bırakmıştır."
+msgstr ""
+"Bu email mesaj iletisini içermez çünkü organizasyonunuz <a "
+"class=\"content_disabled_help_link\" href=\"%(help_url)s\" "
+"style=\"color:#15c; text-decoration:underline\">email bildirimlerinde mesaj "
+"iletileri</a> özelliğini devre dışı bırakmıştır."
 
 #: templates/zerver/emails/compiled/missed_message.html:20
 #, python-format
@@ -1967,7 +2157,11 @@ msgid ""
 "class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\" "
 "style=\"color:#15c; text-decoration:underline\">message content appearing in"
 " email notifications</a>."
-msgstr "Bu email iletisini içermez çünkü <a class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\" style=\"color:#15c; text-decoration:underline\"> email bildirimlerinde mesaj iletileri</a> özelliğini devre dışı bıraktınız."
+msgstr ""
+"Bu email iletisini içermez çünkü <a class=\"content_disabled_help_link\" "
+"href=\"%(alert_notif_url)s\" style=\"color:#15c; text-"
+"decoration:underline\"> email bildirimlerinde mesaj iletileri</a> özelliğini"
+" devre dışı bıraktınız."
 
 #: templates/zerver/emails/compiled/missed_message.html:30
 #: templates/zerver/emails/missed_message.source.html:29
@@ -1991,7 +2185,11 @@ msgid ""
 " text-decoration:underline\">view it in Zulip</a>, or <a "
 "href=\"%(notif_url)s\" style=\"color:#15c; text-"
 "decoration:underline\">manage email preferences</a>."
-msgstr "Bu emaile direk olarak cevap verin, <a href=\"%(narrow_url)s\" style=\"color:#15c; text-decoration:underline\">Zulip içinde göster</a>, veya <a href=\"%(notif_url)s\" style=\"color:#15c; text-decoration:underline\">email ayarlarını yönet</a>."
+msgstr ""
+"Bu emaile direk olarak cevap verin, <a href=\"%(narrow_url)s\" "
+"style=\"color:#15c; text-decoration:underline\">Zulip içinde göster</a>, "
+"veya <a href=\"%(notif_url)s\" style=\"color:#15c; text-"
+"decoration:underline\">email ayarlarını yönet</a>."
 
 #: templates/zerver/emails/compiled/missed_message.html:37
 #, python-format
@@ -2000,7 +2198,11 @@ msgid ""
 "decoration:underline\">View or reply in Zulip</a>, or <a "
 "href=\"%(notif_url)s\" style=\"color:#15c; text-"
 "decoration:underline\">manage email preferences</a>."
-msgstr "<a href=\"%(narrow_url)s\" style=\"color:#15c; text-decoration:underline\">Zulip içinde göster</a>, veya <a href=\"%(notif_url)s\" style=\"color:#15c; text-decoration:underline\">email ayarlarını yönet</a>."
+msgstr ""
+"<a href=\"%(narrow_url)s\" style=\"color:#15c; text-"
+"decoration:underline\">Zulip içinde göster</a>, veya <a "
+"href=\"%(notif_url)s\" style=\"color:#15c; text-decoration:underline\">email"
+" ayarlarını yönet</a>."
 
 #: templates/zerver/emails/compiled/missed_message.html:39
 #, python-format
@@ -2009,7 +2211,11 @@ msgid ""
 "decoration:underline\">Reply in Zulip</a>, or <a href=\"%(notif_url)s\" "
 "style=\"color:#15c; text-decoration:underline\">manage email "
 "preferences</a>."
-msgstr "<a href=\"%(narrow_url)s\" style=\"color:#15c; text-decoration:underline\">Zulip içinde cevapla</a>, veya <a href=\"%(notif_url)s\" style=\"color:#15c; text-decoration:underline\">email ayarlarını yönet</a>."
+msgstr ""
+"<a href=\"%(narrow_url)s\" style=\"color:#15c; text-"
+"decoration:underline\">Zulip içinde cevapla</a>, veya <a "
+"href=\"%(notif_url)s\" style=\"color:#15c; text-decoration:underline\">email"
+" ayarlarını yönet</a>."
 
 #: templates/zerver/emails/compiled/missed_message.html:41
 #, python-format
@@ -2017,7 +2223,9 @@ msgid ""
 "\n"
 "    Do not reply to this email. This Zulip server is not configured to accept incoming emails (<a href=\"%(url)s\" style=\"color:#15c; text-decoration:underline\">help</a>).\n"
 "    "
-msgstr "\nBu emaile cevap vermeyin. Bu Zulip sunucusu gelen emailleri almak üzere ayarlanmamış (<a href=\"%(url)s\" style=\"color:#15c; text-decoration:underline\">yardım</a>)."
+msgstr ""
+"\n"
+"Bu emaile cevap vermeyin. Bu Zulip sunucusu gelen emailleri almak üzere ayarlanmamış (<a href=\"%(url)s\" style=\"color:#15c; text-decoration:underline\">yardım</a>)."
 
 #: templates/zerver/emails/compiled/notify_change_in_email.html:9
 #: templates/zerver/emails/notify_change_in_email.source.html:8
@@ -2032,7 +2240,10 @@ msgid ""
 "The email associated with your Zulip account was recently changed to "
 "%(new_email)s. If you did not request this change, please contact us "
 "immediately at %(support_email)s."
-msgstr "Zulip hesabınızla ilişkili e-posta kısa süre önce %(new_email)s olarak değiştirildi. Bu değişikliği siz talep etmediyseniz, lütfen adresinden hemen bizimle %(support_email)s adresinden iletişime geçin."
+msgstr ""
+"Zulip hesabınızla ilişkili e-posta kısa süre önce %(new_email)s olarak "
+"değiştirildi. Bu değişikliği siz talep etmediyseniz, lütfen adresinden hemen"
+" bizimle %(support_email)s adresinden iletişime geçin."
 
 #: templates/zerver/emails/compiled/notify_change_in_email.html:14
 #: templates/zerver/emails/notify_change_in_email.source.html:13
@@ -2046,7 +2257,9 @@ msgstr "Saygılarımızla,"
 msgid ""
 "Organization: %(organization_url)s Time: %(login_time)s Email: "
 "%(user_email)s"
-msgstr "Organizasyon: %(organization_url)s Zaman: %(login_time)s Email: %(user_email)s"
+msgstr ""
+"Organizasyon: %(organization_url)s Zaman: %(login_time)s Email: "
+"%(user_email)s"
 
 #: templates/zerver/emails/compiled/notify_new_login.html:13
 #: templates/zerver/emails/notify_new_login.source.html:12
@@ -2101,7 +2314,11 @@ msgid ""
 "compromised, please <a href=\"%(reset_link)s\" style=\"color:#46aa8f; text-"
 "decoration:underline\">reset your password</a> or contact us immediately at "
 "%(support_email)s."
-msgstr "Eğer bu girişi hatırlamıyorsanız veya hesabınızın ele geçirildiğini düşünüyorsanız, lütfen <a href=\"%(reset_link)s\" style=\"color:#46aa8f; text-decoration:underline\">şifrenizi sıfırlayın</a> yada %(support_email)s adresinden bizimle iletişime geçin."
+msgstr ""
+"Eğer bu girişi hatırlamıyorsanız veya hesabınızın ele geçirildiğini "
+"düşünüyorsanız, lütfen <a href=\"%(reset_link)s\" style=\"color:#46aa8f; "
+"text-decoration:underline\">şifrenizi sıfırlayın</a> yada %(support_email)s "
+"adresinden bizimle iletişime geçin."
 
 #: templates/zerver/emails/compiled/notify_new_login.html:43
 #: templates/zerver/emails/notify_new_login.source.html:41
@@ -2121,7 +2338,9 @@ msgstr "Giriş bildirimleri aboneliğinden çık"
 msgid ""
 "Somebody (possibly you) requested a new password for the Zulip account "
 "%(email)s on %(realm_uri)s."
-msgstr "Birileri (büyük ihtimalle siz) %(realm_uri)s üzerinde bulunan %(email)s Zulip hesabı için yeni bir şifre talep etti."
+msgstr ""
+"Birileri (büyük ihtimalle siz) %(realm_uri)s üzerinde bulunan %(email)s "
+"Zulip hesabı için yeni bir şifre talep etti."
 
 #: templates/zerver/emails/compiled/password_reset.html:14
 #: templates/zerver/emails/password_reset.source.html:13
@@ -2140,7 +2359,11 @@ msgid ""
 "deactivated. You can contact an organization administrator to <a "
 "href=\"%(help_link)s\" style=\"color:#46aa8f; text-"
 "decoration:underline\">reactivate your account</a>."
-msgstr "%(organization_url)s Adresinde daha önce bir hesabınız vardı, fakat devre dışı bırakılmış. <a href=\"%(help_link)s\" style=\"color:#46aa8f; text-decoration:underline\">Hesabınızı tekrar aktifleştirmesi</a> için bir organizasyon yöneticisiyle iletişime geçebilirsiniz. "
+msgstr ""
+"%(organization_url)s Adresinde daha önce bir hesabınız vardı, fakat devre "
+"dışı bırakılmış. <a href=\"%(help_link)s\" style=\"color:#46aa8f; text-"
+"decoration:underline\">Hesabınızı tekrar aktifleştirmesi</a> için bir "
+"organizasyon yöneticisiyle iletişime geçebilirsiniz. "
 
 #: templates/zerver/emails/compiled/password_reset.html:22
 #: templates/zerver/emails/password_reset.source.html:21
@@ -2160,14 +2383,17 @@ msgstr "Aşağıdaki organizasyon(lar) için aktif hesaplarınız bulunmaktadır
 msgid ""
 "You can try logging in or resetting your password in the organization(s) "
 "above."
-msgstr "Yukarıda ki organizasyon(lar) a giriş yapmayı deneyebilir veya şifrenizi sıfırlayabilirsiniz."
+msgstr ""
+"Yukarıda ki organizasyon(lar) a giriş yapmayı deneyebilir veya şifrenizi "
+"sıfırlayabilirsiniz."
 
 #: templates/zerver/emails/compiled/password_reset.html:40
 #: templates/zerver/emails/password_reset.source.html:38
 #: templates/zerver/emails/password_reset.txt:25
 msgid ""
 "If you do not recognize this activity, you can safely ignore this email."
-msgstr "Eğer bu eylemi hatırlamıyorsanız, bu emaili güvenle göz ardı edebilirsiniz."
+msgstr ""
+"Eğer bu eylemi hatırlamıyorsanız, bu emaili güvenle göz ardı edebilirsiniz."
 
 #: templates/zerver/emails/compiled/realm_reactivation.html:9
 #: templates/zerver/emails/realm_reactivation.source.html:8
@@ -2183,7 +2409,9 @@ msgstr "Sayın %(realm_name)s eski yöneticileri,"
 msgid ""
 "One of your administrators requested reactivation of the previously "
 "deactivated Zulip organization hosted at %(realm_uri)s."
-msgstr "Yöneticilerinden biri daha önce devre dışı bırakılmış Zulip organizasyonu %(realm_uri)siçin yeniden aktif etme isteği gönderdi."
+msgstr ""
+"Yöneticilerinden biri daha önce devre dışı bırakılmış Zulip organizasyonu "
+"%(realm_uri)siçin yeniden aktif etme isteği gönderdi."
 
 #: templates/zerver/emails/compiled/realm_reactivation.html:14
 #: templates/zerver/emails/realm_reactivation.source.html:13
@@ -2201,7 +2429,9 @@ msgstr "Organizasyonu yeniden devreye sok"
 msgid ""
 "If the request was in error, you can take no action and this link will "
 "expire in 24 hours."
-msgstr "Eğer bu istek bir hata ise, bir şey yapmanıza gerek yok. Bu link 24 saat içersinde devre dışı kalacaktır."
+msgstr ""
+"Eğer bu istek bir hata ise, bir şey yapmanıza gerek yok. Bu link 24 saat "
+"içersinde devre dışı kalacaktır."
 
 #: templates/zerver/emails/confirm_new_email.subject.txt:1
 msgid "Verify your new email address"
@@ -2212,7 +2442,9 @@ msgstr "Yeni email adresini teyit et"
 msgid ""
 "If you did not request this change, please contact us immediately at "
 "<%(support_email)s>."
-msgstr "Eğer bu isteği siz gerçekleştirmediyseniz, lütfen bizimle iletişime geçiniz \n<%(support_email)s>."
+msgstr ""
+"Eğer bu isteği siz gerçekleştirmediyseniz, lütfen bizimle iletişime geçiniz \n"
+"<%(support_email)s>."
 
 #: templates/zerver/emails/confirm_registration.subject.txt:1
 msgid "Activate your Zulip account"
@@ -2228,11 +2460,14 @@ msgstr "Aşağıdaki linke tıklayarak kaydı tamamla."
 msgid ""
 "Contact us any time at %(support_email)s if you run into trouble,have any "
 "feedback, or just want to chat!"
-msgstr "Eğer bir sorun ile karşılaşır, geri bildirim yapmak ister veya sadece sohbet için bizimle %(support_email)süzerinden her zaman iletişime geçebilirsiniz!"
+msgstr ""
+"Eğer bir sorun ile karşılaşır, geri bildirim yapmak ister veya sadece sohbet"
+" için bizimle %(support_email)süzerinden her zaman iletişime geçebilirsiniz!"
 
 #: templates/zerver/emails/custom/compiled/custom_email_13351dad3bd3972e796012ab305e4a5d.html:66
 #: templates/zerver/emails/custom/compiled/custom_email_1db042280b1efac69028573753f2ebed.html:16
 #: templates/zerver/emails/custom/compiled/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.html:26
+#: templates/zerver/emails/custom/compiled/custom_email_2b91e0b32f8ab81738217df8a492c7d6.html:33
 #: templates/zerver/emails/custom/compiled/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.html:18
 #: templates/zerver/emails/custom/compiled/custom_email_d5c63509cf008c626cdcbdde801f814c.html:35
 #: templates/zerver/emails/custom/compiled/custom_email_d9c10b1bfc0ddab1178c75dcee1d8de7.html:16
@@ -2242,6 +2477,7 @@ msgstr "Eğer bir sorun ile karşılaşır, geri bildirim yapmak ister veya sade
 #: templates/zerver/emails/custom/custom_email_13351dad3bd3972e796012ab305e4a5d.source.html:65
 #: templates/zerver/emails/custom/custom_email_1db042280b1efac69028573753f2ebed.source.html:15
 #: templates/zerver/emails/custom/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.source.html:24
+#: templates/zerver/emails/custom/custom_email_2b91e0b32f8ab81738217df8a492c7d6.source.html:32
 #: templates/zerver/emails/custom/custom_email_3c65b45c31a882a18c94828cdcf2b1cb.source.html:35
 #: templates/zerver/emails/custom/custom_email_3f08f8f8c55fdeb21fd5f42f9b36f5d5.txt:8
 #: templates/zerver/emails/custom/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.source.html:17
@@ -2282,7 +2518,9 @@ msgstr "Senin Zulip giriş sayfan"
 msgid ""
 "(you'll need these to sign in to the <a href=\"%(apps_page_link)s\">mobile "
 "and desktop</a> apps)"
-msgstr "(<a href=\"%(apps_page_link)s\">mobil ve masaüstü</a> uygulamalara giriş için bunlara ihtiyacınız var)"
+msgstr ""
+"(<a href=\"%(apps_page_link)s\">mobil ve masaüstü</a> uygulamalara giriş "
+"için bunlara ihtiyacınız var)"
 
 #: templates/zerver/emails/followup_day1.source.html:35
 #, python-format
@@ -2291,7 +2529,10 @@ msgid ""
 "become a Zulip pro with a few <a "
 "href=\"%(keyboard_shortcuts_link)s\">keyboard shortcuts</a>, or <a "
 "href=\"%(realm_uri)s\">dive right in</a>!"
-msgstr "<a href=\"%(getting_started_link)s\">yöneticiler için rehber</a>e gözat, bir kaç <a href=\"%(keyboard_shortcuts_link)s\">klavye kısayolu</a>ile Zulip profesyoneli ol, veya <a href=\"%(realm_uri)s\">hemen başla</a>!"
+msgstr ""
+"<a href=\"%(getting_started_link)s\">yöneticiler için rehber</a>e gözat, bir"
+" kaç <a href=\"%(keyboard_shortcuts_link)s\">klavye kısayolu</a>ile Zulip "
+"profesyoneli ol, veya <a href=\"%(realm_uri)s\">hemen başla</a>!"
 
 #: templates/zerver/emails/followup_day1.source.html:37
 #, python-format
@@ -2299,14 +2540,22 @@ msgid ""
 "<a href=\"%(getting_started_link)s\">Learn more</a> about Zulip, become a "
 "pro with a few <a href=\"%(keyboard_shortcuts_link)s\">keyboard "
 "shortcuts</a>, or <a href=\"%(realm_uri)s\">dive right in</a>!"
-msgstr "Zulip hakkında <a href=\"%(getting_started_link)s\">daha fazlasını öğren</a>, bir kaç <a href=\"%(keyboard_shortcuts_link)s\">klavye kısayolu</a> ile profesyonel ol, veya <a href=\"%(realm_uri)s\">hemen başla </a>!"
+msgstr ""
+"Zulip hakkında <a href=\"%(getting_started_link)s\">daha fazlasını "
+"öğren</a>, bir kaç <a href=\"%(keyboard_shortcuts_link)s\">klavye "
+"kısayolu</a> ile profesyonel ol, veya <a href=\"%(realm_uri)s\">hemen başla "
+"</a>!"
 
 #: templates/zerver/emails/followup_day1.source.html:47
 msgid ""
 "PS: Follow us on <a href=\"https://twitter.com/zulip\">Twitter</a>, star us "
 "on <a href=\"https://github.com/zulip/zulip\">GitHub</a>, or chat with us "
 "live on the <a href=\"https://chat.zulip.org\">Zulip community server</a>!"
-msgstr "Not: Bizi <a href=\"https://twitter.com/zulip\">Twitter</a>üzerinden takip edin, <a href=\"https://github.com/zulip/zulip\">GitHub</a> yıldız verin, veya <a href=\"https://chat.zulip.org\">Zulip topluluğu sunucusu</a>üzerinden bizimle sohbet edin!"
+msgstr ""
+"Not: Bizi <a href=\"https://twitter.com/zulip\">Twitter</a>üzerinden takip "
+"edin, <a href=\"https://github.com/zulip/zulip\">GitHub</a> yıldız verin, "
+"veya <a href=\"https://chat.zulip.org\">Zulip topluluğu "
+"sunucusu</a>üzerinden bizimle sohbet edin!"
 
 #: templates/zerver/emails/followup_day1.subject.txt:2
 #, python-format
@@ -2333,7 +2582,9 @@ msgstr "%(realm_name)s Zulip organizasyonuna katıldınız."
 msgid ""
 "(you'll need these to sign in to the mobile and desktop apps "
 "(%(apps_page_link)s))"
-msgstr "(mobil ve masaüstü uygulamalara giriş için bunlara ihtiyacınız olacak (%(apps_page_link)s))"
+msgstr ""
+"(mobil ve masaüstü uygulamalara giriş için bunlara ihtiyacınız olacak "
+"(%(apps_page_link)s))"
 
 #: templates/zerver/emails/followup_day1.txt:25
 #, python-format
@@ -2341,7 +2592,10 @@ msgid ""
 "Check out our guide (%(getting_started_link)s) for admins, become a Zulip "
 "pro with a few keyboard shortcuts (%(keyboard_shortcuts_link)s), or dive "
 "right in to %(realm_uri)s!"
-msgstr "(%(getting_started_link)s) yöneticiler için rehbere gözat, bir kaç klavye kısayoluile (%(keyboard_shortcuts_link)s) Zulip profesyoneli ol, veya hemen başla %(realm_uri)s!"
+msgstr ""
+"(%(getting_started_link)s) yöneticiler için rehbere gözat, bir kaç klavye "
+"kısayoluile (%(keyboard_shortcuts_link)s) Zulip profesyoneli ol, veya hemen "
+"başla %(realm_uri)s!"
 
 #: templates/zerver/emails/followup_day1.txt:27
 #, python-format
@@ -2349,21 +2603,30 @@ msgid ""
 "Learn more (%(getting_started_link)s) about Zulip, become a pro with a few "
 "keyboard shortcuts (%(keyboard_shortcuts_link)s), or dive right in to "
 "%(realm_uri)s!"
-msgstr "Zulip hakkında daha fazlasını öğren(%(getting_started_link)s), bir kaç klavye kısayolu (%(keyboard_shortcuts_link)s) ile profesyonel ol, veya hemen başla %(realm_uri)s!"
+msgstr ""
+"Zulip hakkında daha fazlasını öğren(%(getting_started_link)s), bir kaç "
+"klavye kısayolu (%(keyboard_shortcuts_link)s) ile profesyonel ol, veya hemen"
+" başla %(realm_uri)s!"
 
 #: templates/zerver/emails/followup_day1.txt:34
 msgid ""
 "PS: Check us out on Twitter (@zulip), star us on GitHub "
 "(https://github.com/zulip/zulip), or chat with us live on the Zulip "
 "community server (https://chat.zulip.org)!"
-msgstr "Not: Bizi Twitter(@zulip) üzerinden takip edin, GitHub (https://github.com/zulip/zulip) yıldız verin, veya Zulip topluluğu sunucusu (https://chat.zulip.org) üzerinden bizimle sohbet edin!"
+msgstr ""
+"Not: Bizi Twitter(@zulip) üzerinden takip edin, GitHub "
+"(https://github.com/zulip/zulip) yıldız verin, veya Zulip topluluğu sunucusu"
+" (https://chat.zulip.org) üzerinden bizimle sohbet edin!"
 
 #: templates/zerver/emails/followup_day2.source.html:14
 msgid ""
 "Topics are like email subject lines. The big difference, though, is that "
 "they're really short and lightweight. Two or three words will do it. Don't "
 "overthink 'em&mdash;you can always edit the message later!"
-msgstr "Konular tıpkı e-posta konu başlıkları gibidir. En büyük farkı ise gerçekten çok kısa ve hafif olmalarıdır. 2 veya 3 kelime yeterlidir. Üzerlerinde çok düşünmene gerek yok çünkü her zaman iletini düzenleyebilirsin!"
+msgstr ""
+"Konular tıpkı e-posta konu başlıkları gibidir. En büyük farkı ise gerçekten "
+"çok kısa ve hafif olmalarıdır. 2 veya 3 kelime yeterlidir. Üzerlerinde çok "
+"düşünmene gerek yok çünkü her zaman iletini düzenleyebilirsin!"
 
 #: templates/zerver/emails/followup_day2.source.html:23
 msgid ""
@@ -2371,7 +2634,11 @@ msgid ""
 "(imagine if email didn't have them!), and it lets you more efficiently catch"
 " up on what's happened while you're away&mdash;read the topics that are "
 "relevant to you, and ignore the ones that aren't!"
-msgstr "Neden konular ile ilgilenmeliyim? 2 Sebebi var: sohbeti daha akıcı ve sadece kılar(emaillerde konu başlığı olmadığını düşünün!), ve sonradan away&mdash;read geriye baktığında konulara daha hızlı erişmeni ve bilgi almanı sağlar —sadece seni ilgilendiren konulara odaklan ve gerisini boşver!"
+msgstr ""
+"Neden konular ile ilgilenmeliyim? 2 Sebebi var: sohbeti daha akıcı ve sadece"
+" kılar(emaillerde konu başlığı olmadığını düşünün!), ve sonradan "
+"away&mdash;read geriye baktığında konulara daha hızlı erişmeni ve bilgi "
+"almanı sağlar —sadece seni ilgilendiren konulara odaklan ve gerisini boşver!"
 
 #: templates/zerver/emails/followup_day2.subject.txt:1
 msgid "One last thing: using topics like a pro"
@@ -2382,7 +2649,10 @@ msgid ""
 "Topics are like email subject lines. The big difference, though, is that "
 "they're really short and lightweight. Two or three words will do it. Don't "
 "overthink 'em -- you can always edit the message later!"
-msgstr "Konular email konu başlıklarına benzer. En büyük farkı ise gerçekten çok kısa ve hafif yüklü olmasıdır. 2 veya 3 kelime yeterlidir. Üzerlerinde çok düşünmene gerek yok çünkü her zaman iletini düzenleyebilirsin!"
+msgstr ""
+"Konular email konu başlıklarına benzer. En büyük farkı ise gerçekten çok "
+"kısa ve hafif yüklü olmasıdır. 2 veya 3 kelime yeterlidir. Üzerlerinde çok "
+"düşünmene gerek yok çünkü her zaman iletini düzenleyebilirsin!"
 
 #: templates/zerver/emails/followup_day2.txt:11
 msgid ""
@@ -2390,7 +2660,11 @@ msgid ""
 "(imagine if email didn't have them!), and it lets you more efficiently catch"
 " up on what's happened while you're away -- read the topics that are "
 "relevant to you, and ignore the ones that aren't!"
-msgstr "Neden konular ile ilgilenmeliyim? 2 Sebebi var: sohbeti daha akıcı ve sadece kılar(emaillerde konu başlığı olmadığını düşünün!), ve sonradan geriye baktığında konulara daha hızlı erişmeni ve bilgi almanı sağlar —sadece seni ilgilendiren konulara odaklan ve gerisini boşver!"
+msgstr ""
+"Neden konular ile ilgilenmeliyim? 2 Sebebi var: sohbeti daha akıcı ve sadece"
+" kılar(emaillerde konu başlığı olmadığını düşünün!), ve sonradan geriye "
+"baktığında konulara daha hızlı erişmeni ve bilgi almanı sağlar —sadece seni "
+"ilgilendiren konulara odaklan ve gerisini boşver!"
 
 #: templates/zerver/emails/followup_day2.txt:13
 msgid "Take it for a spin now:"
@@ -2405,19 +2679,24 @@ msgstr "Karşılama emailleri aboneliğinden çık :"
 msgid ""
 "%(referrer_name)s wants you to join them on Zulip &mdash; the team "
 "communication tool designed for productivity."
-msgstr "%(referrer_name)sonlara Zulip'te ve mdash'de -üretkenlik için tasarlanmış ekip iletişim aracı.- katılmanızı istiyor."
+msgstr ""
+"%(referrer_name)sonlara Zulip'te ve mdash'de -üretkenlik için tasarlanmış "
+"ekip iletişim aracı.- katılmanızı istiyor."
 
 #: templates/zerver/emails/invitation.subject.txt:1
 #, python-format
 msgid "%(referrer_full_name)s invited you to join %(referrer_realm_name)s"
-msgstr "%(referrer_full_name)s seni %(referrer_realm_name)s bağlanmana davet ediyor"
+msgstr ""
+"%(referrer_full_name)s seni %(referrer_realm_name)s bağlanmana davet ediyor"
 
 #: templates/zerver/emails/invitation.txt:3
 #, python-format
 msgid ""
 "%(referrer_full_name)s (%(referrer_email)s) wants you to join them on Zulip "
 "-- the team communication tool designed for productivity."
-msgstr "%(referrer_full_name)s(%(referrer_email)s) senin Zulip'te - üretkenlik için tasarlanmış edilmiş ekip iletişim aracı- onlara katılmanı istiyor."
+msgstr ""
+"%(referrer_full_name)s(%(referrer_email)s) senin Zulip'te - üretkenlik için "
+"tasarlanmış edilmiş ekip iletişim aracı- onlara katılmanı istiyor."
 
 #: templates/zerver/emails/invitation.txt:5
 #: templates/zerver/emails/invitation_reminder.txt:5
@@ -2429,12 +2708,16 @@ msgstr "Başlamak için aşağıdaki linke tıkla."
 msgid ""
 "This is a friendly reminder that %(referrer_name)s wants you to join them on"
 " Zulip &mdash; the team communication tool designed for productivity."
-msgstr "Bu %(referrer_name)s kullanıcısının Zulip'te ve mdash'de -üretkenlik için tasarlanmış ekip iletişim aracı- onlara katılmanızı isteğini bildiren bir hatırlatıcıdır."
+msgstr ""
+"Bu %(referrer_name)s kullanıcısının Zulip'te ve mdash'de -üretkenlik için "
+"tasarlanmış ekip iletişim aracı- onlara katılmanızı isteğini bildiren bir "
+"hatırlatıcıdır."
 
 #: templates/zerver/emails/invitation_reminder.subject.txt:1
 #, python-format
 msgid "Reminder: Join %(referrer_name)s at %(referrer_realm_name)s"
-msgstr "Hatırlatıcı: %(referrer_name)s'a %(referrer_realm_name)s üzerinden bağlan"
+msgstr ""
+"Hatırlatıcı: %(referrer_name)s'a %(referrer_realm_name)s üzerinden bağlan"
 
 #: templates/zerver/emails/invitation_reminder.txt:3
 #, python-format
@@ -2442,14 +2725,18 @@ msgid ""
 "This is a friendly reminder that %(referrer_name)s (%(referrer_email)s) "
 "wants you to join them on Zulip -- the team communication tool designed for "
 "productivity."
-msgstr "%(referrer_name)s(%(referrer_email)s) senin Zulip'e bağlanmanı istiyor -- üretkenlik için dizayn edilmiş takım komünikasyon aracı."
+msgstr ""
+"%(referrer_name)s(%(referrer_email)s) senin Zulip'e bağlanmanı istiyor -- "
+"üretkenlik için dizayn edilmiş takım komünikasyon aracı."
 
 #: templates/zerver/emails/invitation_reminder.txt:10
 #, python-format
 msgid ""
 "This invitation expires in two days. If the invitation expires, you'll need "
 "to ask %(referrer_name)s for another one."
-msgstr "Bu davetiye iki gün içersinde sona eriyor. Eğer davetiye sona ererse, %(referrer_name)s'a başka bir tanesi için sorman gerekir."
+msgstr ""
+"Bu davetiye iki gün içersinde sona eriyor. Eğer davetiye sona ererse, "
+"%(referrer_name)s'a başka bir tanesi için sorman gerekir."
 
 #: templates/zerver/emails/missed_message.source.html:17
 #, python-format
@@ -2457,7 +2744,10 @@ msgid ""
 "This email does not include message content because your organization has "
 "disabled <a class=\"content_disabled_help_link\" "
 "href=\"%(help_url)s\">message content appearing in email notifications</a>."
-msgstr "Bu email mesaj iletisini içermez çünkü organizasyonunuz <a class=\"content_disabled_help_link\" href=\"%(help_url)s\">email bildirimlerinde mesaj iletileri</a> özelliğini devre dışı bırakmıştır."
+msgstr ""
+"Bu email mesaj iletisini içermez çünkü organizasyonunuz <a "
+"class=\"content_disabled_help_link\" href=\"%(help_url)s\">email "
+"bildirimlerinde mesaj iletileri</a> özelliğini devre dışı bırakmıştır."
 
 #: templates/zerver/emails/missed_message.source.html:19
 #, python-format
@@ -2465,28 +2755,37 @@ msgid ""
 "This email does not include message content because you have disabled <a "
 "class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\">message "
 "content appearing in email notifications</a>."
-msgstr "Bu email mesaj iletisini içermez çünkü  <a class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\">email bildirimlerinde mesaj iletileri</a> özelliğini devre dışı bıraktınız."
+msgstr ""
+"Bu email mesaj iletisini içermez çünkü  <a "
+"class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\">email "
+"bildirimlerinde mesaj iletileri</a> özelliğini devre dışı bıraktınız."
 
 #: templates/zerver/emails/missed_message.source.html:34
 #, python-format
 msgid ""
 "Reply to this email directly, <a href=\"%(narrow_url)s\">view it in "
 "Zulip</a>, or <a href=\"%(notif_url)s\">manage email preferences</a>."
-msgstr "Bu emaile direk cevap verin, <a href=\"%(narrow_url)s\">Zulip içinde göster</a>, veya <a href=\"%(notif_url)s\">email ayarlarını yönet</a>."
+msgstr ""
+"Bu emaile direk cevap verin, <a href=\"%(narrow_url)s\">Zulip içinde "
+"göster</a>, veya <a href=\"%(notif_url)s\">email ayarlarını yönet</a>."
 
 #: templates/zerver/emails/missed_message.source.html:36
 #, python-format
 msgid ""
 "<a href=\"%(narrow_url)s\">View or reply in Zulip</a>, or <a "
 "href=\"%(notif_url)s\">manage email preferences</a>."
-msgstr "<a href=\"%(narrow_url)s\">Zulip içinde göster</a>, veya <a href=\"%(notif_url)s\">email ayarlarını yönet</a>."
+msgstr ""
+"<a href=\"%(narrow_url)s\">Zulip içinde göster</a>, veya <a "
+"href=\"%(notif_url)s\">email ayarlarını yönet</a>."
 
 #: templates/zerver/emails/missed_message.source.html:38
 #, python-format
 msgid ""
 "<a href=\"%(narrow_url)s\">Reply in Zulip</a>, or <a "
 "href=\"%(notif_url)s\">manage email preferences</a>."
-msgstr "<a href=\"%(narrow_url)s\">Zulip içinde yanıtla</a>, veya <a href=\"%(notif_url)s\">email ayarlarını yönet</a>."
+msgstr ""
+"<a href=\"%(narrow_url)s\">Zulip içinde yanıtla</a>, veya <a "
+"href=\"%(notif_url)s\">email ayarlarını yönet</a>."
 
 #: templates/zerver/emails/missed_message.source.html:40
 #, python-format
@@ -2494,7 +2793,9 @@ msgid ""
 "\n"
 "    Do not reply to this email. This Zulip server is not configured to accept incoming emails (<a href=\"%(url)s\">help</a>).\n"
 "    "
-msgstr "\nBu emaile cevap vermeyin. Bu Zulip sunucusu gelen emailleri almak için ayarlanmadı (<a href=\"%(url)s\">yardım</a>)."
+msgstr ""
+"\n"
+"Bu emaile cevap vermeyin. Bu Zulip sunucusu gelen emailleri almak için ayarlanmadı (<a href=\"%(url)s\">yardım</a>)."
 
 #: templates/zerver/emails/missed_message.subject.txt:2
 #, python-format
@@ -2516,7 +2817,10 @@ msgid ""
 "\n"
 "This email does not include message content because your organization has disabled message content appearing in email notifications.\n"
 "See %(hide_content_url)s for more details.\n"
-msgstr "\nBu email mesaj iletisini içermez çünkü organizasyonunuz email bildirimlerinde mesaj iletileri özelliğini devre dışı bıraktı.\nDaha fazla detay için %(hide_content_url)s.\n"
+msgstr ""
+"\n"
+"Bu email mesaj iletisini içermez çünkü organizasyonunuz email bildirimlerinde mesaj iletileri özelliğini devre dışı bıraktı.\n"
+"Daha fazla detay için %(hide_content_url)s.\n"
 
 #: templates/zerver/emails/missed_message.txt:16
 #, python-format
@@ -2524,7 +2828,10 @@ msgid ""
 "\n"
 "This email does not include message content because you have disabled message content appearing in email notifications.\n"
 "See %(alert_notif_url)s for more details.\n"
-msgstr "\nBu email mesaj iletisini içermez çünkü email bildirimlerinde mesaj iletileri özelliğini devre dışı bıraktınız.\nDaha fazla detay için %(alert_notif_url)s.\n"
+msgstr ""
+"\n"
+"Bu email mesaj iletisini içermez çünkü email bildirimlerinde mesaj iletileri özelliğini devre dışı bıraktınız.\n"
+"Daha fazla detay için %(alert_notif_url)s.\n"
 
 #: templates/zerver/emails/missed_message.txt:31
 msgid "Reply to this email directly, or view it in Zulip:"
@@ -2543,7 +2850,10 @@ msgid ""
 "\n"
 "Do not reply to this email. This Zulip server is not configured to accept\n"
 "incoming emails. Help:\n"
-msgstr "\nBu emaile cevap vermeyin. Bu Zulip sunucusu gelen emailleri almak için\nayarlanmadı. Yardım:\n"
+msgstr ""
+"\n"
+"Bu emaile cevap vermeyin. Bu Zulip sunucusu gelen emailleri almak için\n"
+"ayarlanmadı. Yardım:\n"
 
 #: templates/zerver/emails/missed_message.txt:50
 msgid "Manage email preferences: "
@@ -2560,7 +2870,10 @@ msgid ""
 "The email associated with your Zulip account was recently changed to "
 "%(new_email)s. If you did not request this change, please contact us "
 "immediately at <%(support_email)s>."
-msgstr "Bu email Zulip hesabına ilişkili mailinin %(new_email)sdeğişikliğine bildirisidir. Eğer bunu siz talep etmediyseniz lütfen bizimle iletişime geçiniz <%(support_email)s>."
+msgstr ""
+"Bu email Zulip hesabına ilişkili mailinin %(new_email)sdeğişikliğine "
+"bildirisidir. Eğer bunu siz talep etmediyseniz lütfen bizimle iletişime "
+"geçiniz <%(support_email)s>."
 
 #: templates/zerver/emails/notify_new_login.source.html:36
 #, python-format
@@ -2568,7 +2881,11 @@ msgid ""
 "If you do not recognize this login, or think your account may have been "
 "compromised, please <a href=\"%(reset_link)s\">reset your password</a> or "
 "contact us immediately at %(support_email)s."
-msgstr "Eğer bu girişi hatırlamıyorsanız veya hesabınızın ele geçirilmiş olabileceğini düşünüyorsanız, lütfen<a href=\"%(reset_link)s\"> şifrenizi yenileyin</a> yada hemen %(support_email)s adresinden bizimle iletişime geçin."
+msgstr ""
+"Eğer bu girişi hatırlamıyorsanız veya hesabınızın ele geçirilmiş "
+"olabileceğini düşünüyorsanız, lütfen<a href=\"%(reset_link)s\"> şifrenizi "
+"yenileyin</a> yada hemen %(support_email)s adresinden bizimle iletişime "
+"geçin."
 
 #: templates/zerver/emails/notify_new_login.subject.txt:1
 #, python-format
@@ -2585,7 +2902,9 @@ msgstr "Organizasyon: %(organization_url)s"
 msgid ""
 "\n"
 "If you do not recognize this login, or think your account may have been compromised, please reset your password at %(reset_link)s or contact us immediately at %(support_email)s."
-msgstr "\nEğer bu girişi hatırlamıyorsanız yada hesabınızın ele geçirilmiş olacağını düşünüyorsanız lütfen şifrenizi %(reset_link)s adresinden yenileyin yada %(support_email)s adresinden bizimle iletişime geçin."
+msgstr ""
+"\n"
+"Eğer bu girişi hatırlamıyorsanız yada hesabınızın ele geçirilmiş olacağını düşünüyorsanız lütfen şifrenizi %(reset_link)s adresinden yenileyin yada %(support_email)s adresinden bizimle iletişime geçin."
 
 #: templates/zerver/emails/password_reset.source.html:19
 #, python-format
@@ -2593,7 +2912,10 @@ msgid ""
 "You previously had an account on %(organization_url)s, but it has been "
 "deactivated. You can contact an organization administrator to <a "
 "href=\"%(help_link)s\">reactivate your account</a>."
-msgstr "Daha önce %(organization_url)s organizasyonunda hesabınız vardı, ancak devre dışı bırakıldı. Hesabınızı <a href=\"%(help_link)s\">yeniden etkinleştirmek</a> için bir kuruluş yöneticisiyle iletişime geçebilirsiniz."
+msgstr ""
+"Daha önce %(organization_url)s organizasyonunda hesabınız vardı, ancak devre"
+" dışı bırakıldı. Hesabınızı <a href=\"%(help_link)s\">yeniden "
+"etkinleştirmek</a> için bir kuruluş yöneticisiyle iletişime geçebilirsiniz."
 
 #: templates/zerver/emails/password_reset.subject.txt:1
 #, python-format
@@ -2609,7 +2931,10 @@ msgstr "Aşağıda ki linke tıklayarak şifreni sıfırla"
 msgid ""
 "You previously had an account on %(realm_uri)s, but it has been deactivated."
 " You can contact an organization administrator to reactivate your account."
-msgstr "Daha önce %(realm_uri)s adresinde hesabınız vardı fakat devreden çıkarılmış. Organizasyon yöneticileri ile iletişim kurarak yeniden etkinleştirebilirsiniz."
+msgstr ""
+"Daha önce %(realm_uri)s adresinde hesabınız vardı fakat devreden çıkarılmış."
+" Organizasyon yöneticileri ile iletişim kurarak yeniden "
+"etkinleştirebilirsiniz."
 
 #: templates/zerver/emails/realm_reactivation.subject.txt:1
 msgid "Reactivate your Zulip organization"
@@ -2747,7 +3072,7 @@ msgstr "Planları ve fiyatlandırmaları gör"
 
 #: templates/zerver/hello.html:146
 msgid "Previous"
-msgstr ""
+msgstr "Önceki"
 
 #: templates/zerver/hello.html:151 templates/zerver/realm_redirect.html:32
 msgid "Next"
@@ -2799,7 +3124,10 @@ msgid ""
 "                        You are using old version of the Zulip desktop\n"
 "                        app that is no longer supported.\n"
 "                        "
-msgstr "\n    Artık desteklenmeyen\n    eski bir Zulip masaüstü uygulaması versiyonu kullanıyorsunuz."
+msgstr ""
+"\n"
+"    Artık desteklenmeyen\n"
+"    eski bir Zulip masaüstü uygulaması versiyonu kullanıyorsunuz."
 
 #: templates/zerver/insecure_desktop_app.html:21
 msgid ""
@@ -2807,7 +3135,10 @@ msgid ""
 "                        The auto-update feature in this old version of\n"
 "                        Zulip desktop app no longer works.\n"
 "                        "
-msgstr "\n    Bu Zulip masaüstü uygulaması versiyonundaki\n    oto-güncelleme özelliği artık çalışmıyor."
+msgstr ""
+"\n"
+"    Bu Zulip masaüstü uygulaması versiyonundaki\n"
+"    oto-güncelleme özelliği artık çalışmıyor."
 
 #: templates/zerver/insecure_desktop_app.html:30
 msgid "Download the latest release."
@@ -2827,7 +3158,14 @@ msgid ""
 "                        and\n"
 "                        <a href=\"/integrations/doc/ifttt\">IFTTT</a>.\n"
 "                        "
-msgstr "\n                        And \n                        <a href=\"/integrations/doc/hubot\">Hubot</a>,\n                        <a href=\"/integrations/doc/zapier\">Zapier</a>,\n                        ve\n                        <a href=\"/integrations/doc/ifttt\">IFTTT</a> aracılığıyla daha yüzlercesi.\n                        "
+msgstr ""
+"\n"
+"                        And \n"
+"                        <a href=\"/integrations/doc/hubot\">Hubot</a>,\n"
+"                        <a href=\"/integrations/doc/zapier\">Zapier</a>,\n"
+"                        ve\n"
+"                        <a href=\"/integrations/doc/ifttt\">IFTTT</a> aracılığıyla daha yüzlercesi.\n"
+"                        "
 
 #: templates/zerver/integrations/index.html:41
 msgid "Search integrations"
@@ -2880,7 +3218,11 @@ msgid ""
 "        The email address you are trying to sign up with is not valid.\n"
 "        Please sign up using a valid email address.\n"
 "        "
-msgstr "\n        Kayıt olmak için kullandığınız e-posta adresi geçerli değil.\n       Lütfen geçerli bir e-posta adresi ile kayıt olunuz.\n        "
+msgstr ""
+"\n"
+"        Kayıt olmak için kullandığınız e-posta adresi geçerli değil.\n"
+"       Lütfen geçerli bir e-posta adresi ile kayıt olunuz.\n"
+"        "
 
 #: templates/zerver/invalid_email.html:19
 #, python-format
@@ -2890,7 +3232,12 @@ msgid ""
 "        only allows users with email addresses within the\n"
 "        organization. Please sign up using appropriate email address.\n"
 "        "
-msgstr "\n        Hesap açmaya çalıştığınız organizasyon, %(realm_name)s,\n        yalnızca organizasyona ait E-posta adresleri ile kayıt olmaya izin vermektedir.\n        Lütfen uygun bir E-posta adresi kullanınız.\n        "
+msgstr ""
+"\n"
+"        Hesap açmaya çalıştığınız organizasyon, %(realm_name)s,\n"
+"        yalnızca organizasyona ait E-posta adresleri ile kayıt olmaya izin vermektedir.\n"
+"        Lütfen uygun bir E-posta adresi kullanınız.\n"
+"        "
 
 #: templates/zerver/invalid_email.html:29
 #, python-format
@@ -2899,7 +3246,11 @@ msgid ""
 "        %(realm_name)s, does not allow signups using disposable email\n"
 "        addresses. Please sign up using a real email address.\n"
 "        "
-msgstr "Hesap açmaya çalıştığınız organizasyon,\n        %(realm_name)s, tek kullanımlık E-posta adresleriyle kayıt olmaya izin vermemektedir.\n        Lütfen gerçek bir E-posta adresi kullanınız.\n        "
+msgstr ""
+"Hesap açmaya çalıştığınız organizasyon,\n"
+"        %(realm_name)s, tek kullanımlık E-posta adresleriyle kayıt olmaya izin vermemektedir.\n"
+"        Lütfen gerçek bir E-posta adresi kullanınız.\n"
+"        "
 
 #: templates/zerver/invalid_email.html:38
 #, python-format
@@ -2908,7 +3259,11 @@ msgid ""
 "        %(realm_name)s, does not allow signups using emails\n"
 "        that contains +. Please sign up using appropriate email address.\n"
 "        "
-msgstr "Hesap açmaya çalıştığınız organizasyon,\n        %(realm_name)s, içerisinde '+' içeren e-posta adresleriyle kayıt olmaya izin vermemektedir.\n        Lütfen gerçek bir E-posta adresi kullanınız.\n        "
+msgstr ""
+"Hesap açmaya çalıştığınız organizasyon,\n"
+"        %(realm_name)s, içerisinde '+' içeren e-posta adresleriyle kayıt olmaya izin vermemektedir.\n"
+"        Lütfen gerçek bir E-posta adresi kullanınız.\n"
+"        "
 
 #: templates/zerver/invalid_realm.html:7
 msgid "Organization does not exist"
@@ -2937,12 +3292,13 @@ msgstr "Kullanıcı Adı"
 #: templates/zerver/login.html:74 templates/zerver/register.html:153
 #: templates/zerver/register.html:166 templates/zerver/reset_confirm.html:27
 msgid "Password"
-msgstr "Şifre"
+msgstr "Parola"
 
 #: templates/zerver/login.html:91
 msgid ""
 "You've already registered with this email address. Please log in below."
-msgstr "Bu E-posta adresiyle hali hazırda kayıtlısınız. Lütfen aşağıdan giriş yapın."
+msgstr ""
+"Bu E-posta adresiyle hali hazırda kayıtlısınız. Lütfen aşağıdan giriş yapın."
 
 #: templates/zerver/login.html:118
 #, python-format
@@ -2970,7 +3326,12 @@ msgid ""
 "                    Contact this <a href=\"mailto:%(support_email)s\">server's administrator</a>\n"
 "                    if you have any questions.\n"
 "                    "
-msgstr "\n                    Bu Zulip kurulumunda ayarlanmış bir gizlilik politikası bulunmuyor.\n                    Her hangi bir sorunuz olması halinde lütfen <a href=\"mailto:%(support_email)s\">sunucu yöneticisi</a>\n                    ile temas kurunuz.\n                    "
+msgstr ""
+"\n"
+"                    Bu Zulip kurulumunda ayarlanmış bir gizlilik politikası bulunmuyor.\n"
+"                    Her hangi bir sorunuz olması halinde lütfen <a href=\"mailto:%(support_email)s\">sunucu yöneticisi</a>\n"
+"                    ile temas kurunuz.\n"
+"                    "
 
 #: templates/zerver/realm_creation_failed.html:19
 msgid ""
@@ -2985,7 +3346,11 @@ msgid ""
 "                    Zulip is open source, so you can <a href=\"%(production_install_url)s\">install your own Zulip server</a> or create a new organization on\n"
 "                    <a href=\"%(zulip_cloud_link)s\">Zulip Cloud</a>\n"
 "                    "
-msgstr "\n                     Zulip açık kaynaktır. Yani <a href=\"%(production_install_url)s\">kendi Zulip sunucunuzu kurabilir</a> ya da <a href=\"%(zulip_cloud_link)s\">Zulip Cloud</a> üzerinden\n                    yeni bir organizasyon oluşturabilirsiniz\n                    "
+msgstr ""
+"\n"
+"                     Zulip açık kaynaktır. Yani <a href=\"%(production_install_url)s\">kendi Zulip sunucunuzu kurabilir</a> ya da <a href=\"%(zulip_cloud_link)s\">Zulip Cloud</a> üzerinden\n"
+"                    yeni bir organizasyon oluşturabilirsiniz\n"
+"                    "
 
 #: templates/zerver/realm_reactivation.html:9
 msgid "Your organization has been successfully reactivated."
@@ -2993,7 +3358,8 @@ msgstr "Organizasyonun başarılı bir şekilde yeniden aktif edilmiştir."
 
 #: templates/zerver/realm_reactivation_link_error.html:9
 msgid "The organization reactivation link has expired or is not valid."
-msgstr "Organizasyon yeniden aktif etme bağlantısı sona erdi veya geçerli değil."
+msgstr ""
+"Organizasyon yeniden aktif etme bağlantısı sona erdi veya geçerli değil."
 
 #: templates/zerver/realm_redirect.html:8
 msgid "Log in to your organization"
@@ -3036,7 +3402,9 @@ msgid ""
 "\n"
 "            <p>You&rsquo;re almost there! We just need you to do one last thing.</p>\n"
 "            "
-msgstr "\n<p>Neredeyse tamam! Sadece bir şey daha yapman gerekiyor.</p>"
+msgstr ""
+"\n"
+"<p>Neredeyse tamam! Sadece bir şey daha yapman gerekiyor.</p>"
 
 #: templates/zerver/register.html:38
 msgid "Organization name"
@@ -3083,7 +3451,8 @@ msgstr "LDAP/Active Directory şifreni gir."
 msgid ""
 "This is used for mobile applications and other tools that require a "
 "password."
-msgstr "Bu, mobil uygulamalar ve bir şifre gerektiren diğer araçlar için kullanılır."
+msgstr ""
+"Bu, mobil uygulamalar ve bir şifre gerektiren diğer araçlar için kullanılır."
 
 #: templates/zerver/register.html:178
 msgid "Password strength"
@@ -3111,7 +3480,8 @@ msgstr "Parolayı teyid et"
 
 #: templates/zerver/reset_confirm.html:68
 msgid "Sorry, the link you provided is invalid or has already been used."
-msgstr "Bu e-posta adresini zaten kaydetmişsiniz. Lutfen aşağıdan giriş yapın."
+msgstr ""
+"Bu e-posta adresini zaten kaydetmişsiniz. Lutfen aşağıdan giriş yapın."
 
 #: templates/zerver/reset_done.html:9
 msgid "We've reset your password!"
@@ -3128,14 +3498,17 @@ msgstr "Password sıfırlama gönderildi!"
 
 #: templates/zerver/reset_emailed.html:13
 msgid "Check your email in a few minutes to finish the process."
-msgstr "Bir kaç dakika içersinde işlemi sonlandırmak için emailini kontrol et."
+msgstr ""
+"Bir kaç dakika içersinde işlemi sonlandırmak için emailini kontrol et."
 
 #: templates/zerver/social_auth_select_email.html:6
 msgid ""
 "\n"
 "        <h1 class=\"get-started\">Select account</h1>\n"
 "        "
-msgstr "\n<h1 class=\"get-started\">Hesap seç </h1>"
+msgstr ""
+"\n"
+"<h1 class=\"get-started\">Hesap seç </h1>"
 
 #: templates/zerver/social_auth_select_email.html:63
 msgid ""
@@ -3143,7 +3516,10 @@ msgid ""
 "            Your GitHub account also has unverified email addresses\n"
 "            associated with it.\n"
 "            "
-msgstr "\nGitHub hesabınızda da onaylanmamış email\nbulunmaktadır."
+msgstr ""
+"\n"
+"GitHub hesabınızda da onaylanmamış email\n"
+"bulunmaktadır."
 
 #: templates/zerver/social_auth_select_email.html:69
 msgid ""
@@ -3151,7 +3527,10 @@ msgid ""
 "            To use one of these to log in to Zulip, you must first\n"
 "            <a href=\"https://github.com/settings/emails\">verify it with GitHub.</a>\n"
 "            "
-msgstr "\nZulip'te oturum açarken için bunlardan birini kullanmak için önce\n<a href=\"https://github.com/settings/emails\">GitHub ile doğrulayın.</a>"
+msgstr ""
+"\n"
+"Zulip'te oturum açarken için bunlardan birini kullanmak için önce\n"
+"<a href=\"https://github.com/settings/emails\">GitHub ile doğrulayın.</a>"
 
 #: templates/zerver/team.html:128
 msgid "Avatar"
@@ -3165,7 +3544,12 @@ msgid ""
 "                    Contact this <a href=\"mailto:%(support_email)s\">server's administrator</a>\n"
 "                    if you have any questions.\n"
 "                    "
-msgstr "\n                    Bu Zulip kurulumunda ayarlanmış bir hizmet sözleşmesi bulunmuyor.\n                    Herhangi bir sorunuz olması halinde lütfen <a href=\"mailto:%(support_email)s\">sunucu yöneticisi </a>\n                    ile temas kurunuz.\n                    "
+msgstr ""
+"\n"
+"                    Bu Zulip kurulumunda ayarlanmış bir hizmet sözleşmesi bulunmuyor.\n"
+"                    Herhangi bir sorunuz olması halinde lütfen <a href=\"mailto:%(support_email)s\">sunucu yöneticisi </a>\n"
+"                    ile temas kurunuz.\n"
+"                    "
 
 #: templates/zerver/unsubscribe_link_error.html:5
 msgid "Unknown email unsubscribe request"
@@ -3175,7 +3559,9 @@ msgstr "Bilinmeyen e-posta abonelikten çıkma isteği"
 msgid ""
 "Hi there! It looks like you tried to unsubscribe from something, but we don't\n"
 "recognize the URL."
-msgstr "Merhaba! Bir şeyin aboneliğinden çıkmış görünüyorsunuz fakat URL'yi tanıyamadık."
+msgstr ""
+"Merhaba! Bir şeyin aboneliğinden çıkmış görünüyorsunuz fakat URL'yi "
+"tanıyamadık."
 
 #: templates/zerver/unsubscribe_link_error.html:10
 #, python-format
@@ -3185,7 +3571,13 @@ msgid ""
 "%%20e-"
 "mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email"
 " us</a> and we'll get this squared away!"
-msgstr "Lütfen tam URL'yi girdiğinizi kontrol ederek yeniden deneyiniz, veya bize <a href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">e-posta gönderin</a> ve biz yardımcı olalım!"
+msgstr ""
+"Lütfen tam URL'yi girdiğinizi kontrol ederek yeniden deneyiniz, veya bize <a"
+" "
+"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip"
+"%%20e-"
+"mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">e-posta"
+" gönderin</a> ve biz yardımcı olalım!"
 
 #: templates/zerver/unsubscribe_success.html:10
 msgid "Email settings updated"
@@ -3220,7 +3612,9 @@ msgid ""
 "\n"
 "                        %(browser_name)s is not supported by Zulip.\n"
 "                        "
-msgstr "\n%(browser_name)s Zulip tarafından desteklenmiyor."
+msgstr ""
+"\n"
+"%(browser_name)s Zulip tarafından desteklenmiyor."
 
 #: templates/zerver/unsupported_browser.html:18
 msgid ""
@@ -3228,7 +3622,10 @@ msgid ""
 "                        Zulip supports modern browsers like Firefox,\n"
 "                        Chrome, and Edge.\n"
 "                        "
-msgstr "\nZulip, Firefox, Chrome ve Edge gibi\nmodern tarayıcıları destekler."
+msgstr ""
+"\n"
+"Zulip, Firefox, Chrome ve Edge gibi\n"
+"modern tarayıcıları destekler."
 
 #: templates/zerver/unsupported_browser.html:24
 #, python-format
@@ -3236,7 +3633,9 @@ msgid ""
 "\n"
 "                        You can also use the <a href=\"%(apps_page_link)s\">Zulip desktop app</a>.\n"
 "                        "
-msgstr "\n<a href=\"%(apps_page_link)s\">Zulip masaüstü uygulamasını da</a> kullanabilirsiniz."
+msgstr ""
+"\n"
+"<a href=\"%(apps_page_link)s\">Zulip masaüstü uygulamasını da</a> kullanabilirsiniz."
 
 #: templates/zerver/zulipchat_migration_tos.html:2
 msgid ""
@@ -3244,7 +3643,11 @@ msgid ""
 "    <p>This organization has been migrated to new hosting on zulip.com. We just need you to do one last thing.</p>\n"
 "    <h3>Accept the Zulip Cloud terms of service</h3>\n"
 "    "
-msgstr "\n    <p>Bu organizasyon zulip.com'da yeni bir sunucuya taşındı. Sizin sadece tek bir şey yapmanız gerekiyor.</p>\n    <h3>Zulip Bulut kullanım sözleşmesini kabul edin</h3>\n    "
+msgstr ""
+"\n"
+"    <p>Bu organizasyon zulip.com'da yeni bir sunucuya taşındı. Sizin sadece tek bir şey yapmanız gerekiyor.</p>\n"
+"    <h3>Zulip Bulut kullanım sözleşmesini kabul edin</h3>\n"
+"    "
 
 #: zerver/decorator.py:161
 msgid "Must be a billing administrator or an organization owner"
@@ -3300,7 +3703,9 @@ msgstr "Alt alan adının başında ve sonunda '-' bulunamaz."
 
 #: zerver/forms.py:86
 msgid "Subdomain can only have lowercase letters, numbers, and '-'s."
-msgstr "Alt alan adında sadece küçük harfler, rakamlar ve '-' işaretleri kullanılabilir."
+msgstr ""
+"Alt alan adında sadece küçük harfler, rakamlar ve '-' işaretleri "
+"kullanılabilir."
 
 #: zerver/forms.py:87
 msgid "Subdomain unavailable. Please choose a different one."
@@ -3315,14 +3720,17 @@ msgstr "{email} ile katılmak istediğiniz organizasyon mevcut değil."
 #, python-brace-format
 msgid ""
 "Please request an invite for {email} from the organization administrator."
-msgstr "Lütfen organizasyon yöneticinizden {email} için bir davetiye isteyiniz."
+msgstr ""
+"Lütfen organizasyon yöneticinizden {email} için bir davetiye isteyiniz."
 
 #: zerver/forms.py:197
 #, python-brace-format
 msgid ""
 "Your email address, {email}, is not in one of the domains that are allowed "
 "to register for accounts in this organization."
-msgstr "E-post adresiniz, {email}, bu organizasyonda hesap oluşturmak için izin verilmiş alan adlarından birine ait değil."
+msgstr ""
+"E-post adresiniz, {email}, bu organizasyonda hesap oluşturmak için izin "
+"verilmiş alan adlarından birine ait değil."
 
 #: zerver/forms.py:202 zerver/forms.py:216 zerver/lib/email_validation.py:108
 msgid "Please use your real email address."
@@ -3330,7 +3738,8 @@ msgstr "Lütfen gercek e-posta adresinizi kullanın."
 
 #: zerver/forms.py:205
 msgid "Email addresses containing + are not allowed in this organization."
-msgstr "+ işareti içeren email adreslerine bu organizasyonda izin verilmemektedir."
+msgstr ""
+"+ işareti içeren email adreslerine bu organizasyonda izin verilmemektedir."
 
 #: zerver/forms.py:226
 msgid "New password"
@@ -3413,7 +3822,8 @@ msgstr "Alıcılar için geçersiz veri tipi"
 
 #: zerver/lib/actions.py:2581 zerver/lib/actions.py:2589
 msgid "Recipient lists may contain emails or user IDs, but not both."
-msgstr "Alıcılar listesi email veya kullanıcı ID içerebilir ama ikisi birden olamaz."
+msgstr ""
+"Alıcılar listesi email veya kullanıcı ID içerebilir ama ikisi birden olamaz."
 
 #: zerver/lib/actions.py:2687
 msgid "Reminders can only be set for streams."
@@ -3483,25 +3893,32 @@ msgstr "Varsayılan '{}' kanal gurup ismi NULL (0x00) karakterler içeriyor."
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream ID {stream_id}, "
 "but there is no stream with that ID."
-msgstr "{bot_identity} adlı botunuz stream ID {stream_id} nolu kanala ileti göndermeye çalıştı, fakat bu numara ile bir kanal bulunmamakta."
+msgstr ""
+"{bot_identity} adlı botunuz stream ID {stream_id} nolu kanala ileti "
+"göndermeye çalıştı, fakat bu numara ile bir kanal bulunmamakta."
 
 #: zerver/lib/actions.py:2936
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}, but"
 " that stream does not exist. Click [here]({new_stream_link}) to create it."
-msgstr "{bot_identity} adlı botunuz {stream_name} adlı kanala ileti göndermeye çalıştı, fakat böyle bir kanal bulunmamakta. Oluşturmak için [buraya]({new_stream_link}) tıklayınız."
+msgstr ""
+"{bot_identity} adlı botunuz {stream_name} adlı kanala ileti göndermeye "
+"çalıştı, fakat böyle bir kanal bulunmamakta. Oluşturmak için "
+"[buraya]({new_stream_link}) tıklayınız."
 
 #: zerver/lib/actions.py:2944
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}. The"
 " stream exists but does not have any subscribers."
-msgstr "Your bot {bot_identity} adlı botunuz {stream_name} adlı kanala ileti göndermeye çalıştı. Bu kanal mevcut fakat hiç abonesi bulunmamakta."
+msgstr ""
+"Your bot {bot_identity} adlı botunuz {stream_name} adlı kanala ileti "
+"göndermeye çalıştı. Bu kanal mevcut fakat hiç abonesi bulunmamakta."
 
 #: zerver/lib/actions.py:2991
 msgid "Private messages are disabled in this organization."
-msgstr "Bu organizasyonda özel mesajlar devredışı bırakılmıştır."
+msgstr "Bu organizasyonda özel iletiler devredışı bırakılmıştır."
 
 #: zerver/lib/actions.py:3116
 msgid "Widgets: API programmer sent invalid JSON content"
@@ -3527,7 +3944,9 @@ msgstr "Özel kanal için kayıtlı listesine ulaşılanamadı"
 #: zerver/lib/actions.py:4653
 #, python-brace-format
 msgid "{user_name} renamed stream {old_stream_name} to {new_stream_name}."
-msgstr "{user_name}  {old_stream_name} kanalının adını {new_stream_name} olarak değiştirdi."
+msgstr ""
+"{user_name}  {old_stream_name} kanalının adını {new_stream_name} olarak "
+"değiştirdi."
 
 #: zerver/lib/actions.py:4759
 msgid "Signups enabled"
@@ -3541,7 +3960,8 @@ msgstr "Geçersiz varsayılan kanal gurubu {}"
 #, python-brace-format
 msgid ""
 "'{stream_name}' is a default stream and cannot be added to '{group_name}'"
-msgstr "'{stream_name}' varsayılan kanaldır ve buraya '{group_name}' eklenemez"
+msgstr ""
+"'{stream_name}' varsayılan kanaldır ve buraya '{group_name}' eklenemez"
 
 #: zerver/lib/actions.py:4930
 #, python-brace-format
@@ -3601,17 +4021,24 @@ msgstr "Bu konu {user} kullanıcısı tarafından {old_location} yerinden taşı
 msgid ""
 "You do not have enough remaining invites for today. Please contact {email} "
 "to have your limit raised. No invitations were sent."
-msgstr "Bugün için yeteri kadar davetiyeniz bulunmamaktadır. Lütfen {email} ulaşarak limit artımı talebinde bulununuz. Hiç bir davetiye gönderilmedi."
+msgstr ""
+"Bugün için yeteri kadar davetiyeniz bulunmamaktadır. Lütfen {email} ulaşarak"
+" limit artımı talebinde bulununuz. Hiç bir davetiye gönderilmedi."
 
 #: zerver/lib/actions.py:6569
 msgid ""
 "Your account is too new to send invites for this organization. Ask an "
 "organization admin, or a more experienced user."
-msgstr "Hesabınız bu organizasyon adına davetiye göndermek için çok yenidir. Bir organizasyon yöneticisi veya daha uzun süreli bir başka kullanıcıdan yardım alınız."
+msgstr ""
+"Hesabınız bu organizasyon adına davetiye göndermek için çok yenidir. Bir "
+"organizasyon yöneticisi veya daha uzun süreli bir başka kullanıcıdan yardım "
+"alınız."
 
 #: zerver/lib/actions.py:6609
 msgid "Some emails did not validate, so we didn't send any invitations."
-msgstr "E-postaların bazıları doğrulanamadığından bu kisilere davetiye gönderilemedi. Geri kalan herkesin davetiyesi gönderildi!"
+msgstr ""
+"E-postaların bazıları doğrulanamadığından bu kisilere davetiye "
+"gönderilemedi. Geri kalan herkesin davetiyesi gönderildi!"
 
 #: zerver/lib/actions.py:6617
 msgid "We weren't able to invite anyone."
@@ -3621,7 +4048,9 @@ msgstr "Kimseyi davet edemedik."
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
-msgstr "Bu adreslerden bazıları zaten Zülip'i kullanıyor, bu yüzden onlara bir davet göndermedik. Diğer herkese davetiye gönderildi!"
+msgstr ""
+"Bu adreslerden bazıları zaten Zülip'i kullanıyor, bu yüzden onlara bir davet"
+" göndermedik. Diğer herkese davetiye gönderildi!"
 
 #: zerver/lib/actions.py:7265
 msgid "Invalid order mapping."
@@ -3785,7 +4214,7 @@ msgstr "Emoji adı eksik"
 msgid "Invalid type parameter"
 msgstr "Geçersiz tür parametresi"
 
-#: zerver/lib/events.py:1140
+#: zerver/lib/events.py:1144
 msgid "Could not allocate event queue"
 msgstr "Olay sırası atanamadı"
 
@@ -3864,7 +4293,9 @@ msgstr "Hatalı API anahtarı"
 msgid ""
 "The '{event_type}' event isn't currently supported by the {webhook_name} "
 "webhook"
-msgstr "'{event_type}' , henüz {webhook_name} webhook tarafından desteklenmemektedir."
+msgstr ""
+"'{event_type}' , henüz {webhook_name} webhook tarafından "
+"desteklenmemektedir."
 
 #: zerver/lib/exceptions.py:355 zerver/views/auth.py:610
 #: zerver/views/auth.py:809 zerver/views/auth.py:870 zerver/views/auth.py:932
@@ -3896,7 +4327,9 @@ msgstr "Bir kanalın tüm konularını yakalayın"
 msgid ""
 "Messages sent to a stream are seen by everyone subscribed to that stream. "
 "Try clicking on one of the stream links below."
-msgstr "Bir kanala gönderilen iletiler o kanalın tüm aboneleri tarafından görülür. Aşağıdaki kanal bağlantılarından birini tıklamayı deneyin."
+msgstr ""
+"Bir kanala gönderilen iletiler o kanalın tüm aboneleri tarafından görülür. "
+"Aşağıdaki kanal bağlantılarından birini tıklamayı deneyin."
 
 #: zerver/lib/hotspots.py:24
 msgid "Topics"
@@ -3906,7 +4339,10 @@ msgstr "Konular"
 msgid ""
 "Every message has a topic. Topics keep conversations easy to follow, and "
 "make it easy to reply to conversations that start while you are offline."
-msgstr "Her iletinin bir konusu vardır. Konular görüşmelerin kolay takip edilmesini ve çevrim dışı olduğunuzda başlamış görüşmelere kolay yanıt vermenizi sağlar."
+msgstr ""
+"Her iletinin bir konusu vardır. Konular görüşmelerin kolay takip edilmesini "
+"ve çevrim dışı olduğunuzda başlamış görüşmelere kolay yanıt vermenizi "
+"sağlar."
 
 #: zerver/lib/hotspots.py:34
 msgid "Go to Settings to configure your notifications and display settings."
@@ -3920,7 +4356,9 @@ msgstr "Yaz"
 msgid ""
 "Click here to start a new conversation. Pick a topic (2-3 words is best), "
 "and give it a go!"
-msgstr "Yeni bir görüşme başlatmak için buraya tıklayın. Bir konu seçin (En iyisi 2-3 kelimedir), ve bir deneyin!"
+msgstr ""
+"Yeni bir görüşme başlatmak için buraya tıklayın. Bir konu seçin (En iyisi "
+"2-3 kelimedir), ve bir deneyin!"
 
 #: zerver/lib/integrations.py:35
 msgid "Integration frameworks"
@@ -4015,7 +4453,9 @@ msgstr "[Masaüstü ve mobil uygulamaları]({apps_url}) indirin"
 msgid ""
 "Customize your account and notifications on your [Settings "
 "page]({settings_url})"
-msgstr "[Ayarlar sayfasından])({settings_url}) hesabınızı ve bildirimlerinizi kişiselleştirin"
+msgstr ""
+"[Ayarlar sayfasından])({settings_url}) hesabınızı ve bildirimlerinizi "
+"kişiselleştirin"
 
 #: zerver/lib/onboarding.py:83
 msgid "Type `?` to check out Zulip's keyboard shortcuts"
@@ -4033,7 +4473,9 @@ msgstr "Bu konuşmaya cevap vererek bir kaç ileti atmayı deneyin."
 msgid ""
 "If you're not into keyboards, that's okay too; clicking anywhere on this "
 "message will also do the trick!"
-msgstr "Eğer klavye size göre değilse, hiç sorun değil; bu ileti üstünde herhangi bir yere tıklatmakta iş görür!"
+msgstr ""
+"Eğer klavye size göre değilse, hiç sorun değil; bu ileti üstünde herhangi "
+"bir yere tıklatmakta iş görür!"
 
 #: zerver/lib/onboarding.py:107
 msgid "Congratulations on your first reply!"
@@ -4043,13 +4485,17 @@ msgstr "İlk cevabın için tebrikler!"
 msgid ""
 "Feel free to continue using this space to practice your new messaging "
 "skills. Or, try clicking on some of the stream names to your left!"
-msgstr "Yeni mesajlaşma kabiliyetlerinizi çalışmak için bu alanı kullanmaktan çekinmeyin. Yada, sol taraftaki kanal isimlerinden birine tıklayın!"
+msgstr ""
+"Yeni mesajlaşma kabiliyetlerinizi çalışmak için bu alanı kullanmaktan "
+"çekinmeyin. Yada, sol taraftaki kanal isimlerinden birine tıklayın!"
 
 #: zerver/lib/onboarding.py:125
 msgid ""
 "This is a private stream, as indicated by the lock icon next to the stream "
 "name."
-msgstr "Bu bir özel kanaldır, kanal isminin yanında ki kilit işaretinden de anlaşılacağı üzere."
+msgstr ""
+"Bu bir özel kanaldır, kanal isminin yanında ki kilit işaretinden de "
+"anlaşılacağı üzere."
 
 #: zerver/lib/onboarding.py:127
 msgid "Private streams are only visible to stream members."
@@ -4060,14 +4506,18 @@ msgstr "Özel kanallar sadece üyeleri tarafından görülebilinir."
 msgid ""
 "To manage this stream, go to [Stream settings]({stream_settings_url}) and "
 "click on `{initial_private_stream_name}`."
-msgstr "[Kanal ayarları]({stream_settings_url}) sayfasından `{initial_private_stream_name}` tıklayarak bu kanalı yönetebilirsiniz."
+msgstr ""
+"[Kanal ayarları]({stream_settings_url}) sayfasından "
+"`{initial_private_stream_name}` tıklayarak bu kanalı yönetebilirsiniz."
 
 #: zerver/lib/onboarding.py:141
 #, python-brace-format
 msgid ""
 "This is a message on stream #**{default_notification_stream_name}** with the"
 " topic `topic demonstration`."
-msgstr "Bu ileti #**{default_notification_stream_name}** kanalındaki `konu gösterimi` konuya aittir."
+msgstr ""
+"Bu ileti #**{default_notification_stream_name}** kanalındaki `konu "
+"gösterimi` konuya aittir."
 
 #: zerver/lib/onboarding.py:147
 msgid "Topics are a lightweight tool to keep conversations organized."
@@ -4078,21 +4528,27 @@ msgstr "Konular sohbeti düzenli yapan küçük araçlardır."
 msgid ""
 "You can learn more about topics at [Streams and "
 "topics]({about_topics_help_url})."
-msgstr "[Kanallar ve konular]({about_topics_help_url}) sayfasından konular ile ilgili daha fazla bilgiye ulaşabilirsiniz."
+msgstr ""
+"[Kanallar ve konular]({about_topics_help_url}) sayfasından konular ile "
+"ilgili daha fazla bilgiye ulaşabilirsiniz."
 
 #: zerver/lib/onboarding.py:154
 #, python-brace-format
 msgid ""
 "This is a message on stream #**{default_notification_stream_name}** with the"
 " topic `swimming turtles`."
-msgstr "Bu ileti #**{default_notification_stream_name}** kanalındaki `yüzen kaplumbağalar` konuya aittir."
+msgstr ""
+"Bu ileti #**{default_notification_stream_name}** kanalındaki `yüzen "
+"kaplumbağalar` konuya aittir."
 
 #: zerver/lib/onboarding.py:163
 #, python-brace-format
 msgid ""
 "[Start a new topic]({start_topic_help_url}) any time you're not replying to "
 "a         previous message."
-msgstr "Önceki iletiye cevap vermediğinizde [Yeni bir konu başlatın]({start_topic_help_url})."
+msgstr ""
+"Önceki iletiye cevap vermediğinizde [Yeni bir konu "
+"başlatın]({start_topic_help_url})."
 
 #: zerver/lib/outgoing_webhook.py:293
 msgid "Invalid JSON in response"
@@ -4150,7 +4606,8 @@ msgstr "\"{}\" argümanı geçerli bir JSON değil."
 
 #: zerver/lib/response.py:27
 msgid "Not logged in: API authentication or user session required"
-msgstr "Oturum açık değil: API kimlik doğrulaması veya kullanıcı oturumu gerekli"
+msgstr ""
+"Oturum açık değil: API kimlik doğrulaması veya kullanıcı oturumu gerekli"
 
 #: zerver/lib/send_email.py:67
 msgid "Zulip Account Security"
@@ -4240,7 +4697,8 @@ msgstr "Bu yükleme organizasyonunuzun yükleme hakkını aşıyor."
 msgid ""
 "Only group members and organization administrators can administer this "
 "group."
-msgstr "Bu grubu yalnızca grup üyeleri ve organizasyon yöneticileri yönetebilir."
+msgstr ""
+"Bu grubu yalnızca grup üyeleri ve organizasyon yöneticileri yönetebilir."
 
 #: zerver/lib/user_groups.py:18
 msgid "Invalid user group"
@@ -4942,7 +5400,9 @@ msgstr "\"new_description\" veya \"new_group_name\" değişkeni göndermelisiniz
 
 #: zerver/views/streams.py:213
 msgid "Invalid value for \"op\". Specify one of \"add\" or \"remove\"."
-msgstr " \"op\" için seçilen değer geçersiz. Lütfen \"add\" veya \"remove\" değerlerinden birini seçiniz."
+msgstr ""
+" \"op\" için seçilen değer geçersiz. Lütfen \"add\" veya \"remove\" "
+"değerlerinden birini seçiniz."
 
 #: zerver/views/streams.py:281
 msgid "Stream already has that name!"
@@ -4954,7 +5414,9 @@ msgstr "Varsayılan kanallar özel yapılamaz."
 
 #: zerver/views/streams.py:343 zerver/views/user_groups.py:96
 msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
-msgstr "Gerçekleştirilecek bir eylem yok. Lütfen \"ekle\" veya \"sil\" işlemlerinden en az birini seçiniz."
+msgstr ""
+"Gerçekleştirilecek bir eylem yok. Lütfen \"ekle\" veya \"sil\" işlemlerinden"
+" en az birini seçiniz."
 
 #: zerver/views/streams.py:425
 #, python-brace-format
@@ -4973,7 +5435,9 @@ msgstr "({stream_name}) kanalına erişim başarısız oldu."
 
 #: zerver/views/streams.py:512
 msgid "You can only invite other Zephyr mirroring users to private streams."
-msgstr "Sadece diğer Zephyr aynalama kullanıcılarını özel kanallara davet edebilirsin."
+msgstr ""
+"Sadece diğer Zephyr aynalama kullanıcılarını özel kanallara davet "
+"edebilirsin."
 
 #: zerver/views/streams.py:626
 #, python-brace-format
@@ -5111,13 +5575,16 @@ msgstr "Bot sahibi değiştirmekte hata meydana geldi. Kullanıcı devre dışı
 
 #: zerver/views/users.py:285
 msgid "Failed to change owner, bots can't own other bots"
-msgstr "Bot sahibi değiştirme başarısız oldu. Botlar diğer botların sahibi olamaz."
+msgstr ""
+"Bot sahibi değiştirme başarısız oldu. Botlar diğer botların sahibi olamaz."
 
 #: zerver/views/users.py:389
 msgid ""
 "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
 "Please contact your server administrator."
-msgstr "FAKE_EMAIL_DOMAIN doğru ayarlanana kadar bot oluşturulamaz.\nLütfen sistem yöneticisi ile iletişim kurunuz."
+msgstr ""
+"FAKE_EMAIL_DOMAIN doğru ayarlanana kadar bot oluşturulamaz.\n"
+"Lütfen sistem yöneticisi ile iletişim kurunuz."
 
 #: zerver/views/users.py:397
 msgid "Embedded bots are not enabled."
@@ -5138,7 +5605,9 @@ msgstr "'{email}' epostası bu organizasyona giremez"
 
 #: zerver/views/users.py:592
 msgid "Disposable email addresses are not allowed in this organization"
-msgstr "Bu organizasyonda tek kullanımlık E-posta adreslerinin kullanımına izin verilmemektedir"
+msgstr ""
+"Bu organizasyonda tek kullanımlık E-posta adreslerinin kullanımına izin "
+"verilmemektedir"
 
 #: zerver/views/users.py:598
 msgid "Email '{}' already in use"
@@ -5215,9 +5684,10 @@ msgstr "Yeni relic webhook, milisaniye cinsinden zaman damgası gerektirir"
 #: zerver/webhooks/newrelic/view.py:66
 msgid ""
 "The newrelic webhook requires current_state be in [open|acknowledged|closed]"
-msgstr "The newrelic webhook requires current_state be in [open|acknowledged|closed]"
+msgstr ""
+"The newrelic webhook requires current_state be in [open|acknowledged|closed]"
 
-#: zerver/webhooks/pivotal/view.py:178
+#: zerver/webhooks/pivotal/view.py:179
 msgid "Unable to handle Pivotal payload"
 msgstr "Pivotal'dan gelen veri işlenemedi"
 
@@ -5243,7 +5713,10 @@ msgid ""
 "Your data export is complete and has been uploaded here:\n"
 "\n"
 "{public_url}"
-msgstr "Veri dışa aktarımı tamamlandı. Buradan indirebilirsiniz:\n\n{public_url}"
+msgstr ""
+"Veri dışa aktarımı tamamlandı. Buradan indirebilirsiniz:\n"
+"\n"
+"{public_url}"
 
 #. error
 #: zilencer/views.py:47

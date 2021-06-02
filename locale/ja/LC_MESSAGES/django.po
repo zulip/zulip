@@ -1,24 +1,30 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Greg Price <gnprice@gmail.com>, 2017
-# Guy Kouakou <kkfguy@gmail.com>, 2020
-# Kouhei Sutou <kou@cozmixng.org>, 2016-2018
-# Ray Kraesig <rkraesig@zulip.com>, 2020
-# Tetsuya Morimoto <tetsuya.morimoto@gmail.com>, 2017
-# Tim Abbott <tabbott@kandralabs.com>, 2018
-# YorimiMOCHIDA, 2020
-# sigmy <ripsigma@gmail.com>, 2020
+# Tim Abbott <tabbott@kandralabs.com>, 2021
+# Tetsuya Morimoto <tetsuya.morimoto@gmail.com>, 2021
+# Greg Price <gnprice@gmail.com>, 2021
+# Akash Nimare <svnitakash@gmail.com>, 2021
+# YorimiMOCHIDA, 2021
+# Guy Kouakou <kkfguy@gmail.com>, 2021
+# sigmy <ripsigma@gmail.com>, 2021
+# vados <t3hmrman@gmail.com>, 2021
+# Chellaram Shanti <sc-transifex@shanti.im>, 2021
+# Kouhei Sutou <kou@cozmixng.org>, 2021
+# Rintan, 2021
+# 
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Zulip\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-05-13 22:30+0000\n"
-"PO-Revision-Date: 2021-05-12 23:29+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
-"Language-Team: Japanese (http://www.transifex.com/zulip/zulip/language/ja/)\n"
+"POT-Creation-Date: 2021-05-26 18:04+0000\n"
+"PO-Revision-Date: 2021-04-02 21:39+0000\n"
+"Last-Translator: Rintan, 2021\n"
+"Language-Team: Japanese (https://www.transifex.com/zulip/teams/53893/ja/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -360,7 +366,9 @@ msgstr "メール"
 msgid ""
 "I agree to the <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" "
 "rel=\"noopener noreferrer\">Terms of Service</a>."
-msgstr "<a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" rel=\"noopener noreferrer\">サービス利用規約</a>に同意します。"
+msgstr ""
+"<a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" rel=\"noopener "
+"noreferrer\">サービス利用規約</a>に同意します。"
 
 #: templates/zerver/accounts_accept_terms.html:54
 msgid "Enter"
@@ -383,7 +391,7 @@ msgstr "登録"
 #: templates/zerver/accounts_home.html:72 templates/zerver/login.html:108
 #: templates/zerver/register.html:65
 msgid "OR"
-msgstr "か"
+msgstr "または"
 
 #: templates/zerver/accounts_home.html:82
 #, python-format
@@ -445,6 +453,7 @@ msgid "Deleting a message removes it for everyone."
 msgstr ""
 
 #: templates/zerver/app/delete_message.html:19
+#: templates/zerver/app/index.html:167
 #: templates/zerver/app/invite_user.html:58
 msgid "Cancel"
 msgstr "キャンセル"
@@ -564,7 +573,11 @@ msgid ""
 "            Learn more about starring messages <a href=\"/help/star-a-message\">\n"
 "            here</a>.\n"
 "            "
-msgstr "\n            メッセージのスターに関する詳しい情報は <a href=\"/help/star-a-message\">\n            こちら</a>です。\n            "
+msgstr ""
+"\n"
+"            メッセージのスターに関する詳しい情報は <a href=\"/help/star-a-message\">\n"
+"            こちら</a>です。\n"
+"            "
 
 #: templates/zerver/app/home.html:123
 msgid "You have no unread messages!"
@@ -580,7 +593,11 @@ msgid ""
 "            Learn more about mentions <a href=\"/help/mention-a-user-or-group\">\n"
 "            here</a>.\n"
 "            "
-msgstr "\n            メンションに関する詳しい情報は<a href=\"/help/mention-a-user-or-group\">\n            こちら</a>です。\n            "
+msgstr ""
+"\n"
+"            メンションに関する詳しい情報は<a href=\"/help/mention-a-user-or-group\">\n"
+"            こちら</a>です。\n"
+"            "
 
 #: templates/zerver/app/home.html:136
 msgid "No search results"
@@ -613,6 +630,38 @@ msgstr "すぐに再接続します..."
 #: templates/zerver/app/index.html:68
 msgid "Try now."
 msgstr "いますぐ"
+
+#: templates/zerver/app/index.html:147
+msgid "Set a status"
+msgstr "ステータスを設定"
+
+#: templates/zerver/app/index.html:153
+msgid "Status message"
+msgstr ""
+
+#: templates/zerver/app/index.html:160
+msgid "In a meeting"
+msgstr ""
+
+#: templates/zerver/app/index.html:161
+msgid "Commuting"
+msgstr ""
+
+#: templates/zerver/app/index.html:162
+msgid "Out sick"
+msgstr ""
+
+#: templates/zerver/app/index.html:163
+msgid "Vacationing"
+msgstr ""
+
+#: templates/zerver/app/index.html:164
+msgid "Working remotely"
+msgstr ""
+
+#: templates/zerver/app/index.html:169
+msgid "Save"
+msgstr "保存"
 
 #: templates/zerver/app/invite_user.html:6
 msgid "Invite users to Zulip"
@@ -748,7 +797,7 @@ msgstr "ナビゲーション"
 #: templates/zerver/app/left_sidebar.html:64
 #: templates/zerver/app/left_sidebar.html:66
 msgid "Filter streams"
-msgstr "ストリームをフィルター"
+msgstr "ストリームを検索"
 
 #: templates/zerver/app/keyboard_shortcuts.html:77
 #: templates/zerver/app/right_sidebar.html:9
@@ -1040,11 +1089,11 @@ msgstr "メッセージのフォーマット"
 #: templates/zerver/app/navbar.html:105
 #: templates/zerver/app/search_operators.html:2
 msgid "Search operators"
-msgstr "検索のオペレーター"
+msgstr "検索オペレーター"
 
 #: templates/zerver/app/navbar.html:111 templates/zerver/footer.html:3
 msgid "About Zulip"
-msgstr "Zulipについて"
+msgstr "Zulip について"
 
 #: templates/zerver/app/navbar.html:117
 msgid "Contact support"
@@ -1181,7 +1230,7 @@ msgstr ""
 #: templates/zerver/app/right_sidebar.html:5
 #: templates/zerver/app/right_sidebar.html:6
 msgid "Filter users"
-msgstr "ユーザーを絞り込み"
+msgstr "ユーザーを検索"
 
 #: templates/zerver/app/right_sidebar.html:5
 msgid "USERS"
@@ -1306,7 +1355,15 @@ msgid ""
 "            containing the keyword\n"
 "            <span class=\"operator_value\">%(placeholder_keyword)s</span>.\n"
 "            "
-msgstr "\n            これで、\n            <span class=\"operator_value\">%(placeholder_email)s</span>\n            内で\n            <span class=\"operator_value\">%(placeholder_stream)s</span>\n            が送信した\n            <span class=\"operator_value\">%(placeholder_keyword)s</span>を含むメッセージを検索することができます。\n            "
+msgstr ""
+"\n"
+"            これで、\n"
+"            <span class=\"operator_value\">%(placeholder_email)s</span>\n"
+"            内で\n"
+"            <span class=\"operator_value\">%(placeholder_stream)s</span>\n"
+"            が送信した\n"
+"            <span class=\"operator_value\">%(placeholder_keyword)s</span>を含むメッセージを検索することができます。\n"
+"            "
 
 #: templates/zerver/app/search_operators.html:116
 msgid "Detailed search operators documentation"
@@ -1388,7 +1445,7 @@ msgstr "認証方法"
 
 #: templates/zerver/app/settings_overlay.html:95
 msgid "Only organization owners can edit these settings."
-msgstr "組織の所有者のみこの設定を編集することができます。"
+msgstr "組織のオーナーのみこの設定を編集することができます。"
 
 #: templates/zerver/app/settings_overlay.html:110
 msgid "Deactivated users"
@@ -1420,7 +1477,7 @@ msgstr "データのエクスポート"
 
 #: templates/zerver/app/settings_overlay.html:169
 msgid "Show more"
-msgstr "全文を表示"
+msgstr "さらに表示"
 
 #: templates/zerver/config_error.html:14
 msgid ""
@@ -1659,6 +1716,7 @@ msgstr ""
 #: templates/zerver/emails/custom/compiled/custom_email_13351dad3bd3972e796012ab305e4a5d.html:66
 #: templates/zerver/emails/custom/compiled/custom_email_1db042280b1efac69028573753f2ebed.html:16
 #: templates/zerver/emails/custom/compiled/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.html:26
+#: templates/zerver/emails/custom/compiled/custom_email_2b91e0b32f8ab81738217df8a492c7d6.html:33
 #: templates/zerver/emails/custom/compiled/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.html:18
 #: templates/zerver/emails/custom/compiled/custom_email_d5c63509cf008c626cdcbdde801f814c.html:35
 #: templates/zerver/emails/custom/compiled/custom_email_d9c10b1bfc0ddab1178c75dcee1d8de7.html:16
@@ -1668,6 +1726,7 @@ msgstr ""
 #: templates/zerver/emails/custom/custom_email_13351dad3bd3972e796012ab305e4a5d.source.html:65
 #: templates/zerver/emails/custom/custom_email_1db042280b1efac69028573753f2ebed.source.html:15
 #: templates/zerver/emails/custom/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.source.html:24
+#: templates/zerver/emails/custom/custom_email_2b91e0b32f8ab81738217df8a492c7d6.source.html:32
 #: templates/zerver/emails/custom/custom_email_3c65b45c31a882a18c94828cdcf2b1cb.source.html:35
 #: templates/zerver/emails/custom/custom_email_3f08f8f8c55fdeb21fd5f42f9b36f5d5.txt:8
 #: templates/zerver/emails/custom/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.source.html:17
@@ -2233,6 +2292,7 @@ msgstr ""
 #: templates/zerver/emails/custom/compiled/custom_email_13351dad3bd3972e796012ab305e4a5d.html:66
 #: templates/zerver/emails/custom/compiled/custom_email_1db042280b1efac69028573753f2ebed.html:16
 #: templates/zerver/emails/custom/compiled/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.html:26
+#: templates/zerver/emails/custom/compiled/custom_email_2b91e0b32f8ab81738217df8a492c7d6.html:33
 #: templates/zerver/emails/custom/compiled/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.html:18
 #: templates/zerver/emails/custom/compiled/custom_email_d5c63509cf008c626cdcbdde801f814c.html:35
 #: templates/zerver/emails/custom/compiled/custom_email_d9c10b1bfc0ddab1178c75dcee1d8de7.html:16
@@ -2242,6 +2302,7 @@ msgstr ""
 #: templates/zerver/emails/custom/custom_email_13351dad3bd3972e796012ab305e4a5d.source.html:65
 #: templates/zerver/emails/custom/custom_email_1db042280b1efac69028573753f2ebed.source.html:15
 #: templates/zerver/emails/custom/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.source.html:24
+#: templates/zerver/emails/custom/custom_email_2b91e0b32f8ab81738217df8a492c7d6.source.html:32
 #: templates/zerver/emails/custom/custom_email_3c65b45c31a882a18c94828cdcf2b1cb.source.html:35
 #: templates/zerver/emails/custom/custom_email_3f08f8f8c55fdeb21fd5f42f9b36f5d5.txt:8
 #: templates/zerver/emails/custom/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.source.html:17
@@ -2835,7 +2896,7 @@ msgstr "インテグレーションを検索"
 
 #: templates/zerver/integrations/index.html:48
 msgid "Filter by category"
-msgstr "カテゴリーでフィルター"
+msgstr "カテゴリーで検索"
 
 #: templates/zerver/integrations/index.html:62
 #: templates/zerver/integrations/index.html:89
@@ -3073,7 +3134,7 @@ msgstr "姓名または名前"
 
 #: templates/zerver/register.html:136
 msgid "Full name"
-msgstr "姓名"
+msgstr "フルネーム"
 
 #: templates/zerver/register.html:156
 msgid "Enter your LDAP/Active Directory password."
@@ -3165,7 +3226,9 @@ msgid ""
 "                    Contact this <a href=\"mailto:%(support_email)s\">server's administrator</a>\n"
 "                    if you have any questions.\n"
 "                    "
-msgstr "\nこのZulipのインストールはサービス利用規約の設定がありません。もし質問があれば、この <a href=\"mailto:%(support_email)s\">サーバー管理者</a> に連絡してください。"
+msgstr ""
+"\n"
+"このZulipのインストールはサービス利用規約の設定がありません。もし質問があれば、この <a href=\"mailto:%(support_email)s\">サーバー管理者</a> に連絡してください。"
 
 #: templates/zerver/unsubscribe_link_error.html:5
 msgid "Unknown email unsubscribe request"
@@ -3785,7 +3848,7 @@ msgstr ""
 msgid "Invalid type parameter"
 msgstr "不正な種別パラメーター"
 
-#: zerver/lib/events.py:1140
+#: zerver/lib/events.py:1144
 msgid "Could not allocate event queue"
 msgstr ""
 
@@ -4201,7 +4264,7 @@ msgstr ""
 #: zerver/lib/streams.py:285 zerver/lib/streams.py:307
 #: zerver/lib/streams.py:377 zerver/lib/streams.py:438
 msgid "Invalid stream id"
-msgstr "不正なストリームID"
+msgstr "無効なストリームID"
 
 #: zerver/lib/streams.py:414
 msgid "Stream name '{}' is already taken."
@@ -5217,7 +5280,7 @@ msgid ""
 "The newrelic webhook requires current_state be in [open|acknowledged|closed]"
 msgstr ""
 
-#: zerver/webhooks/pivotal/view.py:178
+#: zerver/webhooks/pivotal/view.py:179
 msgid "Unable to handle Pivotal payload"
 msgstr "Pivotalのペイロードを処理できません"
 

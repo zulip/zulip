@@ -1,20 +1,23 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Adrian Seni <adsbistrita@gmail.com>, 2020
-# Eugenol Man <neatusebastian@gmail.com>, 2020
-# Julian Dumitrascu, 2020
-# Julian Dumitrascu, 2020
+# Adrian Seni <adsbistrita@gmail.com>, 2021
+# Julian Dumitrascu, 2021
+# Paul-Sebastian Ungureanu <ungureanupaulsebastian@gmail.com>, 2021
+# Eugenol Man <neatusebastian@gmail.com>, 2021
+# 
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Zulip\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-05-13 22:30+0000\n"
-"PO-Revision-Date: 2021-05-12 23:29+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
-"Language-Team: Romanian (http://www.transifex.com/zulip/zulip/language/ro/)\n"
+"POT-Creation-Date: 2021-05-26 18:04+0000\n"
+"PO-Revision-Date: 2021-04-02 21:39+0000\n"
+"Last-Translator: Eugenol Man <neatusebastian@gmail.com>, 2021\n"
+"Language-Team: Romanian (https://www.transifex.com/zulip/teams/53893/ro/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -53,11 +56,13 @@ msgstr "Nume de hartă necunoscut: {}"
 #: analytics/views.py:349
 #, python-brace-format
 msgid "Start time is later than end time. Start: {start}, End: {end}"
-msgstr "Începutul este mai târziu decât sfârșitul. Început: {start}, Sfârșit: {end}"
+msgstr ""
+"Începutul este mai târziu decât sfârșitul. Început: {start}, Sfârșit: {end}"
 
 #: analytics/views.py:367 analytics/views.py:398
 msgid "No analytics data available. Please contact your server administrator."
-msgstr "Nu există date analitice. Vă rugăm contactați administratorul serverului."
+msgstr ""
+"Nu există date analitice. Vă rugăm contactați administratorul serverului."
 
 #: analytics/views.py:1275
 msgid "Invalid parameters"
@@ -74,7 +79,9 @@ msgstr "Ceva a funcționat greșit. Te rugam reîncărcă pagina."
 
 #: corporate/lib/stripe.py:239
 msgid "Something went wrong. Please wait a few seconds and try again."
-msgstr "Ceva a funcționat greșit. Te rugam să aștepți câteva secunde apoi reîncearcă."
+msgstr ""
+"Ceva a funcționat greșit. Te rugam să aștepți câteva secunde apoi "
+"reîncearcă."
 
 #: corporate/lib/stripe.py:802
 #, python-brace-format
@@ -91,7 +98,9 @@ msgstr "Facturează pentru cel puțin {} utilizatori."
 msgid ""
 "Invoices with more than {} licenses can't be processed from this page. To "
 "complete the upgrade, please contact {}."
-msgstr "Facturi cu mai mult de {} licențe nu pot fi procesate din această pagina. Pentru a finaliza actualizarea te rugam contactează {}."
+msgstr ""
+"Facturi cu mai mult de {} licențe nu pot fi procesate din această pagina. "
+"Pentru a finaliza actualizarea te rugam contactează {}."
 
 #: corporate/views.py:109
 msgid "No payment method on file"
@@ -109,7 +118,9 @@ msgstr "Metodă de plată necunoscută. Vă rugam contactați-ne aici {email}."
 
 #: templates/analytics/stats.html:10
 msgid "Analytics are fully available 24 hours after organization creation."
-msgstr "Datele analitice sunt disponibile complet în 24 de ore dupa crearea organizației. "
+msgstr ""
+"Datele analitice sunt disponibile complet în 24 de ore dupa crearea "
+"organizației. "
 
 #: templates/analytics/stats.html:15
 #, python-format
@@ -356,7 +367,9 @@ msgstr "Email"
 msgid ""
 "I agree to the <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" "
 "rel=\"noopener noreferrer\">Terms of Service</a>."
-msgstr "Sunt de acord cu <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" rel=\"noopener noreferrer\">Termenii și condițiile de utilizare</a>."
+msgstr ""
+"Sunt de acord cu <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" "
+"rel=\"noopener noreferrer\">Termenii și condițiile de utilizare</a>."
 
 #: templates/zerver/accounts_accept_terms.html:54
 msgid "Enter"
@@ -396,7 +409,9 @@ msgstr "Verifică-ți te rog emailul să îincepem. "
 
 #: templates/zerver/accounts_send_confirm.html:21
 msgid "Still no email? We can <a href=\"#\" id=\"resend_email_link\">resend it</a>."
-msgstr "Nu ai primit emailul? Putem să il <a href=\"#\" id=\"resend_email_link\">retrimitem</a>."
+msgstr ""
+"Nu ai primit emailul? Putem să il <a href=\"#\" "
+"id=\"resend_email_link\">retrimitem</a>."
 
 #: templates/zerver/accounts_send_confirm.html:22
 msgid "Just in case, take a look at your Spam folder."
@@ -441,6 +456,7 @@ msgid "Deleting a message removes it for everyone."
 msgstr ""
 
 #: templates/zerver/app/delete_message.html:19
+#: templates/zerver/app/index.html:167
 #: templates/zerver/app/invite_user.html:58
 msgid "Cancel"
 msgstr "Renunță"
@@ -464,7 +480,12 @@ msgid ""
 "            <a href=\"/plans/\" target=\"_blank\" rel=\"noopener noreferrer\">Upgrade your organization</a>\n"
 "            to access your full message history.\n"
 "            "
-msgstr "\n            O parte din mesajele mai vechi nu sunt disponibile.\n            <a href=\"/plans/\" target=\"_blank\" rel=\"noopener noreferrer\">Actualizează organizația</a>\n            pentru a accesa intreaga istorie a mesajelor.\n            "
+msgstr ""
+"\n"
+"            O parte din mesajele mai vechi nu sunt disponibile.\n"
+"            <a href=\"/plans/\" target=\"_blank\" rel=\"noopener noreferrer\">Actualizează organizația</a>\n"
+"            pentru a accesa intreaga istorie a mesajelor.\n"
+"            "
 
 #: templates/zerver/app/home.html:23
 msgid ""
@@ -474,7 +495,13 @@ msgid ""
 "              target=\"_blank\" rel=\"noopener noreferrer\">history</a>.\n"
 "            Consider <a class=\"search-shared-history\" href=\"\">searching all public streams</a>.\n"
 "            "
-msgstr "\n            Sfârșitul rezultatelor din\n            <a href=\"/help/search-for-messages#searching-shared-history\"\n              target=\"_blank\" rel=\"noopener noreferrer\">istoria ta</a>.\n            Încearcă și o <a class=\"search-shared-history\" href=\"\">Căutare în huburile publice</a>.\n            "
+msgstr ""
+"\n"
+"            Sfârșitul rezultatelor din\n"
+"            <a href=\"/help/search-for-messages#searching-shared-history\"\n"
+"              target=\"_blank\" rel=\"noopener noreferrer\">istoria ta</a>.\n"
+"            Încearcă și o <a class=\"search-shared-history\" href=\"\">Căutare în huburile publice</a>.\n"
+"            "
 
 #: templates/zerver/app/home.html:33
 msgid "Nothing's been sent here yet!"
@@ -486,7 +513,11 @@ msgid ""
 "            Why not <a href=\"#\" class=\"empty_feed_compose_stream\">\n"
 "            start the conversation</a>?\n"
 "            "
-msgstr "\n            De ce nu, <a href=\"#\" class=\"empty_feed_compose_stream\">\n            începe tu conversația</a>?\n   "
+msgstr ""
+"\n"
+"            De ce nu, <a href=\"#\" class=\"empty_feed_compose_stream\">\n"
+"            începe tu conversația</a>?\n"
+"   "
 
 #: templates/zerver/app/home.html:43
 msgid "You have no private messages yet!"
@@ -499,7 +530,11 @@ msgid ""
 "            Why not <a href=\"#\" class=\"empty_feed_compose_private\">\n"
 "            start the conversation</a>?\n"
 "            "
-msgstr "\n            De ce nu <a href=\"#\" class=\"empty_feed_compose_private\">\n            începi tu o conversație</a>?\n            "
+msgstr ""
+"\n"
+"            De ce nu <a href=\"#\" class=\"empty_feed_compose_private\">\n"
+"            începi tu o conversație</a>?\n"
+"            "
 
 #: templates/zerver/app/home.html:53
 msgid "You have no private messages with this person yet!"
@@ -515,7 +550,11 @@ msgid ""
 "            Why not <a href=\"#\" class=\"empty_feed_compose_private\">\n"
 "            start a conversation with yourself</a>?\n"
 "            "
-msgstr "\n            De ce nu <a href=\"#\" class=\"empty_feed_compose_private\">\n            începi o conversație cu tine</a>?\n            "
+msgstr ""
+"\n"
+"            De ce nu <a href=\"#\" class=\"empty_feed_compose_private\">\n"
+"            începi o conversație cu tine</a>?\n"
+"            "
 
 #: templates/zerver/app/home.html:73
 msgid "You have no group private messages with this person yet!"
@@ -560,7 +599,11 @@ msgid ""
 "            Learn more about starring messages <a href=\"/help/star-a-message\">\n"
 "            here</a>.\n"
 "            "
-msgstr "\n            Află mai mult despre cum să marchezi cu o stea <a href=\"/help/star-a-message\">\n            de aici</a>.\n            "
+msgstr ""
+"\n"
+"            Află mai mult despre cum să marchezi cu o stea <a href=\"/help/star-a-message\">\n"
+"            de aici</a>.\n"
+"            "
 
 #: templates/zerver/app/home.html:123
 msgid "You have no unread messages!"
@@ -576,7 +619,11 @@ msgid ""
 "            Learn more about mentions <a href=\"/help/mention-a-user-or-group\">\n"
 "            here</a>.\n"
 "            "
-msgstr "\n            Afla mai mult despre menționări <a href=\"/help/mention-a-user-or-group\">\n            aici</a>.\n            "
+msgstr ""
+"\n"
+"            Afla mai mult despre menționări <a href=\"/help/mention-a-user-or-group\">\n"
+"            aici</a>.\n"
+"            "
 
 #: templates/zerver/app/home.html:136
 msgid "No search results"
@@ -594,13 +641,17 @@ msgstr "Se încarcă..."
 msgid ""
 "If this message does not go away, please wait a couple seconds and <a id"
 "=\"reload-lnk\">reload</a> the page."
-msgstr "Dacă acest mesaj nu dispare, așteaptă câteva secunde și <a id=\"reload-lnk\">reîncarcă</a> această pagină."
+msgstr ""
+"Dacă acest mesaj nu dispare, așteaptă câteva secunde și <a id=\"reload-"
+"lnk\">reîncarcă</a> această pagină."
 
 #: templates/zerver/app/index.html:67
 msgid ""
 "<strong class=\"message\">Unable to connect to\n"
 "            Zulip.</strong>  Updates may be delayed."
-msgstr "<strong class=\"message\">Nu pot să mă conectez la\n            Zulip.</strong>  Actualizările pot fi întârziate."
+msgstr ""
+"<strong class=\"message\">Nu pot să mă conectez la\n"
+"            Zulip.</strong>  Actualizările pot fi întârziate."
 
 #: templates/zerver/app/index.html:68
 msgid "Retrying soon..."
@@ -609,6 +660,38 @@ msgstr "Reîncerc imediat..."
 #: templates/zerver/app/index.html:68
 msgid "Try now."
 msgstr "Încearcă acum."
+
+#: templates/zerver/app/index.html:147
+msgid "Set a status"
+msgstr "Setează starea ta"
+
+#: templates/zerver/app/index.html:153
+msgid "Status message"
+msgstr ""
+
+#: templates/zerver/app/index.html:160
+msgid "In a meeting"
+msgstr ""
+
+#: templates/zerver/app/index.html:161
+msgid "Commuting"
+msgstr ""
+
+#: templates/zerver/app/index.html:162
+msgid "Out sick"
+msgstr ""
+
+#: templates/zerver/app/index.html:163
+msgid "Vacationing"
+msgstr ""
+
+#: templates/zerver/app/index.html:164
+msgid "Working remotely"
+msgstr ""
+
+#: templates/zerver/app/index.html:169
+msgid "Save"
+msgstr "Salvează"
 
 #: templates/zerver/app/invite_user.html:6
 msgid "Invite users to Zulip"
@@ -1074,7 +1157,9 @@ msgstr "Invită utilizatori"
 msgid ""
 "Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via "
 "Webathena"
-msgstr "Acordă Zulip tichetul Kerberos necesar pentru a rula Zephyr mirror via Webathena"
+msgstr ""
+"Acordă Zulip tichetul Kerberos necesar pentru a rula Zephyr mirror via "
+"Webathena"
 
 #: templates/zerver/app/navbar.html:170
 msgid "Link with Webathena"
@@ -1095,7 +1180,9 @@ msgstr ""
 msgid ""
 "We strongly recommend enabling desktop notifications. They help Zulip keep "
 "your team connected."
-msgstr "Recomandăm cu căldură să activați notificările pe desktop. Acestea ajută Zulip să mențină echipa ta conectată."
+msgstr ""
+"Recomandăm cu căldură să activați notificările pe desktop. Acestea ajută "
+"Zulip să mențină echipa ta conectată."
 
 #: templates/zerver/app/navbar_alerts.html:11
 msgid "Enable notifications"
@@ -1113,7 +1200,9 @@ msgstr "Nu mai întreba pe acest calculator"
 msgid ""
 "Zulip needs to send email to confirm users' addresses and send "
 "notifications."
-msgstr "Zulip are nevoie să trimită email pentru a confirma adresele utilizatorilor și a trimite notificări. "
+msgstr ""
+"Zulip are nevoie să trimită email pentru a confirma adresele utilizatorilor "
+"și a trimite notificări. "
 
 #: templates/zerver/app/navbar_alerts.html:24
 msgid "See how to configure email."
@@ -1172,7 +1261,10 @@ msgid ""
 "\n"
 "        Marking all messages as read…\n"
 "        "
-msgstr "\n        Marchez toate mesajele ca citite...\n        "
+msgstr ""
+"\n"
+"        Marchez toate mesajele ca citite...\n"
+"        "
 
 #: templates/zerver/app/right_sidebar.html:5
 #: templates/zerver/app/right_sidebar.html:6
@@ -1267,7 +1359,9 @@ msgstr "Limitat la mesaje care conțin fișiere."
 msgid ""
 "Search for <span class=\"operator_value\"> keyword </span> in the topic or "
 "message content "
-msgstr "Caută un <span class=\"operator_value\"> cuvânt cheie </span> în subiectul sau conținutul mesajului"
+msgstr ""
+"Caută un <span class=\"operator_value\"> cuvânt cheie </span> în subiectul "
+"sau conținutul mesajului"
 
 #: templates/zerver/app/search_operators.html:85
 msgid "Exclude messages with topic <span class=\"operator_value\">topic</span>"
@@ -1277,7 +1371,9 @@ msgstr "Exclude mesajele cu subiectul <span class=\"operator_value\">topic</span
 msgid ""
 "You can use any combination of these search\n"
 "        operators in a single query. For example:"
-msgstr "Poți folosi orice combinație de operatori\nde căutare într-o singură interogare unică. De exemplu:"
+msgstr ""
+"Poți folosi orice combinație de operatori\n"
+"de căutare într-o singură interogare unică. De exemplu:"
 
 #: templates/zerver/app/search_operators.html:92
 msgid "streamname"
@@ -1302,7 +1398,15 @@ msgid ""
 "            containing the keyword\n"
 "            <span class=\"operator_value\">%(placeholder_keyword)s</span>.\n"
 "            "
-msgstr "\n            Acea interogare ar căuta mesajele trimise de\n            <span class=\"operator_value\">%(placeholder_email)s</span>\n            în hubul\n            <span class=\"operator_value\">%(placeholder_stream)s</span>\n            conținând cuvântul cheie\n            <span class=\"operator_value\">%(placeholder_keyword)s</span>.\n            "
+msgstr ""
+"\n"
+"            Acea interogare ar căuta mesajele trimise de\n"
+"            <span class=\"operator_value\">%(placeholder_email)s</span>\n"
+"            în hubul\n"
+"            <span class=\"operator_value\">%(placeholder_stream)s</span>\n"
+"            conținând cuvântul cheie\n"
+"            <span class=\"operator_value\">%(placeholder_keyword)s</span>.\n"
+"            "
 
 #: templates/zerver/app/search_operators.html:116
 msgid "Detailed search operators documentation"
@@ -1335,7 +1439,7 @@ msgstr "Fișiere urcate"
 
 #: templates/zerver/app/settings_overlay.html:44
 msgid "Muted topics"
-msgstr "Subiecte fără alertă sonoră"
+msgstr "Subiecte marcate - fără alertă sonoră"
 
 #: templates/zerver/app/settings_overlay.html:48
 msgid "Muted users"
@@ -1437,7 +1541,10 @@ msgid ""
 "\n"
 "                            No account found for %(email)s.\n"
 "                            "
-msgstr "\n                            Nici un cont pentru %(email)s.\n                            "
+msgstr ""
+"\n"
+"                            Nici un cont pentru %(email)s.\n"
+"                            "
 
 #: templates/zerver/confirm_continue_registration.html:26
 msgid "Log in with another account"
@@ -1508,7 +1615,9 @@ msgstr "Finalizez autentificarea pe desktop"
 msgid ""
 "Use your web browser to finish logging in, then come back here to paste in "
 "your login token."
-msgstr "Folosește browserul web pentru finalizarea autentificării, apoi revino aici pentru a lipi tokenul de autentificare. "
+msgstr ""
+"Folosește browserul web pentru finalizarea autentificării, apoi revino aici "
+"pentru a lipi tokenul de autentificare. "
 
 #: templates/zerver/desktop_login.html:14
 msgid "Paste token here"
@@ -1529,7 +1638,9 @@ msgstr "Token acceptat. Autentificare...."
 #: templates/zerver/desktop_redirect.html:8
 msgid ""
 "Copy this login token and return to your Zulip app to finish logging in:"
-msgstr "Copiază tokenul de autentificare și întoarce-te în aplicația Zulip să finalizezi autentificarea:"
+msgstr ""
+"Copiază tokenul de autentificare și întoarce-te în aplicația Zulip să "
+"finalizezi autentificarea:"
 
 #: templates/zerver/desktop_redirect.html:13
 msgid "Copy"
@@ -1557,7 +1668,7 @@ msgstr "Utilizatorii vizitatori"
 
 #: templates/zerver/development/dev_login.html:61
 msgid "Normal users"
-msgstr "Utilizatori obișnuiți"
+msgstr "Utilizatorii obișnuiți"
 
 #: templates/zerver/emails/compiled/confirm_new_email.html:9
 #: templates/zerver/emails/compiled/find_team.html:9
@@ -1577,7 +1688,10 @@ msgid ""
 "We received a request to change the email address for the Zulip account on "
 "%(realm_uri)s from %(old_email)s to %(new_email)s. To confirm this change, "
 "please click below:"
-msgstr "Am primit o solicitare de schimbare a adresei de email pentru contul Zulip pe %(realm_uri)s din %(old_email)s la %(new_email)s. Pentru a confirma schimbarea te rog apasă mai jos:"
+msgstr ""
+"Am primit o solicitare de schimbare a adresei de email pentru contul Zulip "
+"pe %(realm_uri)s din %(old_email)s la %(new_email)s. Pentru a confirma "
+"schimbarea te rog apasă mai jos:"
 
 #: templates/zerver/emails/compiled/confirm_new_email.html:12
 #: templates/zerver/emails/confirm_new_email.source.html:11
@@ -1623,7 +1737,9 @@ msgstr "Finalizează înregistrarea"
 msgid ""
 "Contact us any time at %(support_email)s if you run into trouble, have any "
 "feedback, or just want to chat!"
-msgstr "Contactează-ne oricând la%(support_email)s dacă întâmpini dificultăți sau vrei să ne spui ceva fain!"
+msgstr ""
+"Contactează-ne oricând la%(support_email)s dacă întâmpini dificultăți sau "
+"vrei să ne spui ceva fain!"
 
 #: templates/zerver/emails/compiled/custom_email_0a044db0e6751f218a47a4331c50b45c.html:4
 #: templates/zerver/emails/compiled/custom_email_323d33263c802b7a808798ed9b6b5891.html:4
@@ -1655,6 +1771,7 @@ msgstr "Apasă aici pentru autentificare în Zulip și vezi ultimele discuții."
 #: templates/zerver/emails/custom/compiled/custom_email_13351dad3bd3972e796012ab305e4a5d.html:66
 #: templates/zerver/emails/custom/compiled/custom_email_1db042280b1efac69028573753f2ebed.html:16
 #: templates/zerver/emails/custom/compiled/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.html:26
+#: templates/zerver/emails/custom/compiled/custom_email_2b91e0b32f8ab81738217df8a492c7d6.html:33
 #: templates/zerver/emails/custom/compiled/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.html:18
 #: templates/zerver/emails/custom/compiled/custom_email_d5c63509cf008c626cdcbdde801f814c.html:35
 #: templates/zerver/emails/custom/compiled/custom_email_d9c10b1bfc0ddab1178c75dcee1d8de7.html:16
@@ -1664,6 +1781,7 @@ msgstr "Apasă aici pentru autentificare în Zulip și vezi ultimele discuții."
 #: templates/zerver/emails/custom/custom_email_13351dad3bd3972e796012ab305e4a5d.source.html:65
 #: templates/zerver/emails/custom/custom_email_1db042280b1efac69028573753f2ebed.source.html:15
 #: templates/zerver/emails/custom/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.source.html:24
+#: templates/zerver/emails/custom/custom_email_2b91e0b32f8ab81738217df8a492c7d6.source.html:32
 #: templates/zerver/emails/custom/custom_email_3c65b45c31a882a18c94828cdcf2b1cb.source.html:35
 #: templates/zerver/emails/custom/custom_email_3f08f8f8c55fdeb21fd5f42f9b36f5d5.txt:8
 #: templates/zerver/emails/custom/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.source.html:17
@@ -1699,7 +1817,9 @@ msgstr "Pește care înoată"
 msgid ""
 "You can log in to your Zulip organization, %(realm_name)s, at the following "
 "link:"
-msgstr "Te poți autentifica în organizația ta Zulip, %(realm_name)s, la următorul link:"
+msgstr ""
+"Te poți autentifica în organizația ta Zulip, %(realm_name)s, la următorul "
+"link:"
 
 #: templates/zerver/emails/compiled/find_team.html:21
 #: templates/zerver/emails/find_team.source.html:20
@@ -1714,7 +1834,9 @@ msgstr "Adresa de email asociată contului tău este %(email)s."
 msgid ""
 "If you have trouble logging in, please contact Zulip support by replying to "
 "this email."
-msgstr "Dacă întâmpini dificultăți să te autentifici, te rog contactează echipa de suport Zulip raspunzând la acest email. "
+msgstr ""
+"Dacă întâmpini dificultăți să te autentifici, te rog contactează echipa de "
+"suport Zulip raspunzând la acest email. "
 
 #: templates/zerver/emails/compiled/find_team.html:25
 #: templates/zerver/emails/find_team.source.html:24
@@ -1779,7 +1901,10 @@ msgid ""
 "(you'll need these to sign in to the <a href=\"%(apps_page_link)s\" "
 "style=\"color:#46aa8f; text-decoration:underline\">mobile and desktop</a> "
 "apps)"
-msgstr "(ai nevoie pentru autentificarea pe aplicațiile de <a href=\"%(apps_page_link)s\" style=\"color:#46aa8f; text-decoration:underline\">mobil si desktop</a>)"
+msgstr ""
+"(ai nevoie pentru autentificarea pe aplicațiile de <a "
+"href=\"%(apps_page_link)s\" style=\"color:#46aa8f; text-"
+"decoration:underline\">mobil si desktop</a>)"
 
 #: templates/zerver/emails/compiled/followup_day1.html:41
 #, python-format
@@ -1789,7 +1914,13 @@ msgid ""
 "few <a href=\"%(keyboard_shortcuts_link)s\" style=\"color:#46aa8f; text-"
 "decoration:underline\">keyboard shortcuts</a>, or <a href=\"%(realm_uri)s\" "
 "style=\"color:#46aa8f; text-decoration:underline\">dive right in</a>!"
-msgstr "Verifică <a href=\"%(getting_started_link)s\" style=\"color:#46aa8f; text-decoration:underline\">ghidul nostru pentru admini</a>, învață câteva  <a href=\"%(keyboard_shortcuts_link)s\" style=\"color:#46aa8f; text-decoration:underline\">scurtături pe tastatură</a>, sau <a href=\"%(realm_uri)s\" style=\"color:#46aa8f; text-decoration:underline\">treci direct la treabă</a>!"
+msgstr ""
+"Verifică <a href=\"%(getting_started_link)s\" style=\"color:#46aa8f; text-"
+"decoration:underline\">ghidul nostru pentru admini</a>, învață câteva  <a "
+"href=\"%(keyboard_shortcuts_link)s\" style=\"color:#46aa8f; text-"
+"decoration:underline\">scurtături pe tastatură</a>, sau <a "
+"href=\"%(realm_uri)s\" style=\"color:#46aa8f; text-"
+"decoration:underline\">treci direct la treabă</a>!"
 
 #: templates/zerver/emails/compiled/followup_day1.html:43
 #, python-format
@@ -1799,7 +1930,13 @@ msgid ""
 "<a href=\"%(keyboard_shortcuts_link)s\" style=\"color:#46aa8f; text-"
 "decoration:underline\">keyboard shortcuts</a>, or <a href=\"%(realm_uri)s\" "
 "style=\"color:#46aa8f; text-decoration:underline\">dive right in</a>!"
-msgstr "<a href=\"%(getting_started_link)s\" style=\"color:#46aa8f; text-decoration:underline\">Învață mai mult</a> despre Zulip, folosește câteva <a href=\"%(keyboard_shortcuts_link)s\" style=\"color:#46aa8f; text-decoration:underline\">scurtături de tastatură</a>, sau <a href=\"%(realm_uri)s\" style=\"color:#46aa8f; text-decoration:underline\">treci direct la treabă</a>!"
+msgstr ""
+"<a href=\"%(getting_started_link)s\" style=\"color:#46aa8f; text-"
+"decoration:underline\">Învață mai mult</a> despre Zulip, folosește câteva <a"
+" href=\"%(keyboard_shortcuts_link)s\" style=\"color:#46aa8f; text-"
+"decoration:underline\">scurtături de tastatură</a>, sau <a "
+"href=\"%(realm_uri)s\" style=\"color:#46aa8f; text-"
+"decoration:underline\">treci direct la treabă</a>!"
 
 #: templates/zerver/emails/compiled/followup_day1.html:48
 #: templates/zerver/emails/followup_day1.source.html:42
@@ -1824,7 +1961,13 @@ msgid ""
 "decoration:underline\">GitHub</a>, or chat with us live on the <a "
 "href=\"https://chat.zulip.org\" style=\"color:#46aa8f; text-"
 "decoration:underline\">Zulip community server</a>!"
-msgstr "PS: Urmariți-ne pe <a href=\"https://twitter.com/zulip\" style=\"color:#46aa8f; text-decoration:underline\">Twitter</a>,  <a href=\"https://github.com/zulip/zulip\" style=\"color:#46aa8f; text-decoration:underline\">GitHub</a>, sau discută live cu noi pe <a href=\"https://chat.zulip.org\" style=\"color:#46aa8f; text-decoration:underline\">Zulip community server</a>!"
+msgstr ""
+"PS: Urmariți-ne pe <a href=\"https://twitter.com/zulip\" "
+"style=\"color:#46aa8f; text-decoration:underline\">Twitter</a>,  <a "
+"href=\"https://github.com/zulip/zulip\" style=\"color:#46aa8f; text-"
+"decoration:underline\">GitHub</a>, sau discută live cu noi pe <a "
+"href=\"https://chat.zulip.org\" style=\"color:#46aa8f; text-"
+"decoration:underline\">Zulip community server</a>!"
 
 #: templates/zerver/emails/compiled/followup_day2.html:9
 #: templates/zerver/emails/followup_day2.source.html:8
@@ -1838,7 +1981,9 @@ msgstr "Bună,"
 msgid ""
 "I wanted to share one last thing with you: a few tips about topics, since "
 "mastering topics is a key part of being a Zulip power user."
-msgstr "Vreau să iți mai spun un ultim lucru despre subiecte pentru că așa poți deveni un utilizator de top."
+msgstr ""
+"Vreau să iți mai spun un ultim lucru despre subiecte pentru că așa poți "
+"deveni un utilizator de top."
 
 #: templates/zerver/emails/compiled/followup_day2.html:13
 #: templates/zerver/emails/followup_day2.source.html:12
@@ -1850,7 +1995,10 @@ msgid ""
 "Topics are like email subject lines. The big difference, though, is that "
 "they're really short and lightweight. Two or three words will do it. Don't "
 "overthink 'em—you can always edit the message later!"
-msgstr "Subiectele sunt ca titlul unui email. Marea diferență este că sunt scurte și la obiect. Două trei cuvinte ajung. Nu le gândi prea mult—le poți modifica ulterior!"
+msgstr ""
+"Subiectele sunt ca titlul unui email. Marea diferență este că sunt scurte și"
+" la obiect. Două trei cuvinte ajung. Nu le gândi prea mult—le poți modifica "
+"ulterior!"
 
 #: templates/zerver/emails/compiled/followup_day2.html:18
 #: templates/zerver/emails/followup_day2.source.html:17
@@ -1864,7 +2012,9 @@ msgstr "Subiecte bune: design mockup, Bug 345, burger acme"
 msgid ""
 "Not recommended: \"What do people think of this new design mockup?\", \"I'm "
 "looking at Bug 345\", \"Is Acme Burgers open for lunch?\""
-msgstr "Nerecomandate: \"Ce cred oamenii despre acest nou design mockup?\", \"Mă uit la bugul 345\", \"Acme Burgers sunt deschis la ora asta?\""
+msgstr ""
+"Nerecomandate: \"Ce cred oamenii despre acest nou design mockup?\", \"Mă uit"
+" la bugul 345\", \"Acme Burgers sunt deschis la ora asta?\""
 
 #: templates/zerver/emails/compiled/followup_day2.html:22
 #: templates/zerver/emails/followup_day2.source.html:21
@@ -1877,7 +2027,11 @@ msgid ""
 "(imagine if email didn't have them!), and it lets you more efficiently catch"
 " up on what's happened while you're away—read the topics that are relevant "
 "to you, and ignore the ones that aren't!"
-msgstr "De ce subiecte? Pentru două motive: fac conversațiile mai clare (imaginează-ți emailuri fără subiect!) și te pui rapid la curent cu ce s-a întâmplat cât ai lipsit—citești subiectele relevante pentru tine și le ignori pe cele neinteresante!"
+msgstr ""
+"De ce subiecte? Pentru două motive: fac conversațiile mai clare (imaginează-"
+"ți emailuri fără subiect!) și te pui rapid la curent cu ce s-a întâmplat cât"
+" ai lipsit—citești subiectele relevante pentru tine și le ignori pe cele "
+"neinteresante!"
 
 #: templates/zerver/emails/compiled/followup_day2.html:26
 #: templates/zerver/emails/followup_day2.source.html:25
@@ -1954,7 +2108,11 @@ msgid ""
 "disabled <a class=\"content_disabled_help_link\" href=\"%(help_url)s\" "
 "style=\"color:#15c; text-decoration:underline\">message content appearing in"
 " email notifications</a>."
-msgstr "Acest email nu conține un mesaj pentru că organizația ta a dezactivat <a class=\"content_disabled_help_link\" href=\"%(help_url)s\" style=\"color:#15c; text-decoration:underline\">afișarea conținutului mesajelor în notificările prin email</a>."
+msgstr ""
+"Acest email nu conține un mesaj pentru că organizația ta a dezactivat <a "
+"class=\"content_disabled_help_link\" href=\"%(help_url)s\" "
+"style=\"color:#15c; text-decoration:underline\">afișarea conținutului "
+"mesajelor în notificările prin email</a>."
 
 #: templates/zerver/emails/compiled/missed_message.html:20
 #, python-format
@@ -1963,7 +2121,11 @@ msgid ""
 "class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\" "
 "style=\"color:#15c; text-decoration:underline\">message content appearing in"
 " email notifications</a>."
-msgstr "Acest email nu conține un mesaj pentru că ai dezactivat <a class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\" style=\"color:#15c; text-decoration:underline\">afișarea conținutului mesajelor în notificările prin email</a>."
+msgstr ""
+"Acest email nu conține un mesaj pentru că ai dezactivat <a "
+"class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\" "
+"style=\"color:#15c; text-decoration:underline\">afișarea conținutului "
+"mesajelor în notificările prin email</a>."
 
 #: templates/zerver/emails/compiled/missed_message.html:30
 #: templates/zerver/emails/missed_message.source.html:29
@@ -1978,7 +2140,9 @@ msgstr "Primești asta pentru că ești menționat în %(realm_name)s."
 msgid ""
 "You are receiving this because you have email notifications enabled for this"
 " stream."
-msgstr "Primești asta, pentru că ai activat pentru acest hub trimiterea de notifcări prin email."
+msgstr ""
+"Primești asta, pentru că ai activat pentru acest hub trimiterea de notifcări"
+" prin email."
 
 #: templates/zerver/emails/compiled/missed_message.html:35
 #, python-format
@@ -1987,7 +2151,11 @@ msgid ""
 " text-decoration:underline\">view it in Zulip</a>, or <a "
 "href=\"%(notif_url)s\" style=\"color:#15c; text-"
 "decoration:underline\">manage email preferences</a>."
-msgstr "Răspunde acestui email direct, <a href=\"%(narrow_url)s\" style=\"color:#15c; text-decoration:underline\">afișează Zulip</a>, sau <a href=\"%(notif_url)s\" style=\"color:#15c; text-decoration:underline\">administrează preferințe emailurilor </a>."
+msgstr ""
+"Răspunde acestui email direct, <a href=\"%(narrow_url)s\" "
+"style=\"color:#15c; text-decoration:underline\">afișează Zulip</a>, sau <a "
+"href=\"%(notif_url)s\" style=\"color:#15c; text-"
+"decoration:underline\">administrează preferințe emailurilor </a>."
 
 #: templates/zerver/emails/compiled/missed_message.html:37
 #, python-format
@@ -1996,7 +2164,11 @@ msgid ""
 "decoration:underline\">View or reply in Zulip</a>, or <a "
 "href=\"%(notif_url)s\" style=\"color:#15c; text-"
 "decoration:underline\">manage email preferences</a>."
-msgstr "<a href=\"%(narrow_url)s\" style=\"color:#15c; text-decoration:underline\">Afișază sau răspunde în Zulip</a>, sau <a href=\"%(notif_url)s\" style=\"color:#15c; text-decoration:underline\">administrează preferințele emailurilor</a>."
+msgstr ""
+"<a href=\"%(narrow_url)s\" style=\"color:#15c; text-"
+"decoration:underline\">Afișază sau răspunde în Zulip</a>, sau <a "
+"href=\"%(notif_url)s\" style=\"color:#15c; text-"
+"decoration:underline\">administrează preferințele emailurilor</a>."
 
 #: templates/zerver/emails/compiled/missed_message.html:39
 #, python-format
@@ -2005,7 +2177,11 @@ msgid ""
 "decoration:underline\">Reply in Zulip</a>, or <a href=\"%(notif_url)s\" "
 "style=\"color:#15c; text-decoration:underline\">manage email "
 "preferences</a>."
-msgstr "<a href=\"%(narrow_url)s\" style=\"color:#15c; text-decoration:underline\">Răspunde în Zulip</a>, sau <a href=\"%(notif_url)s\" style=\"color:#15c; text-decoration:underline\">administrează preferințele emailurilor</a>."
+msgstr ""
+"<a href=\"%(narrow_url)s\" style=\"color:#15c; text-"
+"decoration:underline\">Răspunde în Zulip</a>, sau <a href=\"%(notif_url)s\" "
+"style=\"color:#15c; text-decoration:underline\">administrează preferințele "
+"emailurilor</a>."
 
 #: templates/zerver/emails/compiled/missed_message.html:41
 #, python-format
@@ -2013,7 +2189,10 @@ msgid ""
 "\n"
 "    Do not reply to this email. This Zulip server is not configured to accept incoming emails (<a href=\"%(url)s\" style=\"color:#15c; text-decoration:underline\">help</a>).\n"
 "    "
-msgstr "\n    Nu răspunde acestui email. Serverul Zulip nu este conceput să primească emailuri (<a href=\"%(url)s\" style=\"color:#15c; text-decoration:underline\">ajutor</a>).\n    "
+msgstr ""
+"\n"
+"    Nu răspunde acestui email. Serverul Zulip nu este conceput să primească emailuri (<a href=\"%(url)s\" style=\"color:#15c; text-decoration:underline\">ajutor</a>).\n"
+"    "
 
 #: templates/zerver/emails/compiled/notify_change_in_email.html:9
 #: templates/zerver/emails/notify_change_in_email.source.html:8
@@ -2042,7 +2221,8 @@ msgstr "Cel mai bun,"
 msgid ""
 "Organization: %(organization_url)s Time: %(login_time)s Email: "
 "%(user_email)s"
-msgstr "Organizația: %(organization_url)s Ora: %(login_time)s Email: %(user_email)s"
+msgstr ""
+"Organizația: %(organization_url)s Ora: %(login_time)s Email: %(user_email)s"
 
 #: templates/zerver/emails/compiled/notify_new_login.html:13
 #: templates/zerver/emails/notify_new_login.source.html:12
@@ -2117,7 +2297,9 @@ msgstr "Dezactivează notifcările la autentificare"
 msgid ""
 "Somebody (possibly you) requested a new password for the Zulip account "
 "%(email)s on %(realm_uri)s."
-msgstr "Cineva (probabil tu) a solicitat o nouă parolă contului Zulip %(email)s pe %(realm_uri)s."
+msgstr ""
+"Cineva (probabil tu) a solicitat o nouă parolă contului Zulip %(email)s pe "
+"%(realm_uri)s."
 
 #: templates/zerver/emails/compiled/password_reset.html:14
 #: templates/zerver/emails/password_reset.source.html:13
@@ -2156,14 +2338,17 @@ msgstr "Ai conturi active în următoarea organizație(i). "
 msgid ""
 "You can try logging in or resetting your password in the organization(s) "
 "above."
-msgstr "Poți să te autentifici sau să resetezi parola în organizația(ile) de mai sus. "
+msgstr ""
+"Poți să te autentifici sau să resetezi parola în organizația(ile) de mai "
+"sus. "
 
 #: templates/zerver/emails/compiled/password_reset.html:40
 #: templates/zerver/emails/password_reset.source.html:38
 #: templates/zerver/emails/password_reset.txt:25
 msgid ""
 "If you do not recognize this activity, you can safely ignore this email."
-msgstr "Dacă nu recunoști această activitate, poți ignora liniștit acest email."
+msgstr ""
+"Dacă nu recunoști această activitate, poți ignora liniștit acest email."
 
 #: templates/zerver/emails/compiled/realm_reactivation.html:9
 #: templates/zerver/emails/realm_reactivation.source.html:8
@@ -2179,7 +2364,9 @@ msgstr "Dragă fost administrator al%(realm_name)s,"
 msgid ""
 "One of your administrators requested reactivation of the previously "
 "deactivated Zulip organization hosted at %(realm_uri)s."
-msgstr "Unul din administratorii tăi a solicitat reactivarea unei organizații Zulip dezactivate găzduite la %(realm_uri)s."
+msgstr ""
+"Unul din administratorii tăi a solicitat reactivarea unei organizații Zulip "
+"dezactivate găzduite la %(realm_uri)s."
 
 #: templates/zerver/emails/compiled/realm_reactivation.html:14
 #: templates/zerver/emails/realm_reactivation.source.html:13
@@ -2197,7 +2384,9 @@ msgstr "Reactivează organizația"
 msgid ""
 "If the request was in error, you can take no action and this link will "
 "expire in 24 hours."
-msgstr "Dacă solicitarea a fost eronat făcută, poți să nu faci nimic și acest link va expira in 24 de ore."
+msgstr ""
+"Dacă solicitarea a fost eronat făcută, poți să nu faci nimic și acest link "
+"va expira in 24 de ore."
 
 #: templates/zerver/emails/confirm_new_email.subject.txt:1
 msgid "Verify your new email address"
@@ -2208,7 +2397,9 @@ msgstr "Verifică noua ta adresă de email"
 msgid ""
 "If you did not request this change, please contact us immediately at "
 "<%(support_email)s>."
-msgstr "Dacă nu ai solicitat tu această modificare, te rog contactează-ne imediat la <%(support_email)s>."
+msgstr ""
+"Dacă nu ai solicitat tu această modificare, te rog contactează-ne imediat la"
+" <%(support_email)s>."
 
 #: templates/zerver/emails/confirm_registration.subject.txt:1
 msgid "Activate your Zulip account"
@@ -2224,11 +2415,14 @@ msgstr "Apasă pe linkul de mai jos pentru a finaliza înregistrarea."
 msgid ""
 "Contact us any time at %(support_email)s if you run into trouble,have any "
 "feedback, or just want to chat!"
-msgstr "Contactează-ne oricând la %(support_email)s dacă întâmpini dificultăți, ai feedback sau vrei să ne spui ceva fain!"
+msgstr ""
+"Contactează-ne oricând la %(support_email)s dacă întâmpini dificultăți, ai "
+"feedback sau vrei să ne spui ceva fain!"
 
 #: templates/zerver/emails/custom/compiled/custom_email_13351dad3bd3972e796012ab305e4a5d.html:66
 #: templates/zerver/emails/custom/compiled/custom_email_1db042280b1efac69028573753f2ebed.html:16
 #: templates/zerver/emails/custom/compiled/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.html:26
+#: templates/zerver/emails/custom/compiled/custom_email_2b91e0b32f8ab81738217df8a492c7d6.html:33
 #: templates/zerver/emails/custom/compiled/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.html:18
 #: templates/zerver/emails/custom/compiled/custom_email_d5c63509cf008c626cdcbdde801f814c.html:35
 #: templates/zerver/emails/custom/compiled/custom_email_d9c10b1bfc0ddab1178c75dcee1d8de7.html:16
@@ -2238,6 +2432,7 @@ msgstr "Contactează-ne oricând la %(support_email)s dacă întâmpini dificult
 #: templates/zerver/emails/custom/custom_email_13351dad3bd3972e796012ab305e4a5d.source.html:65
 #: templates/zerver/emails/custom/custom_email_1db042280b1efac69028573753f2ebed.source.html:15
 #: templates/zerver/emails/custom/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.source.html:24
+#: templates/zerver/emails/custom/custom_email_2b91e0b32f8ab81738217df8a492c7d6.source.html:32
 #: templates/zerver/emails/custom/custom_email_3c65b45c31a882a18c94828cdcf2b1cb.source.html:35
 #: templates/zerver/emails/custom/custom_email_3f08f8f8c55fdeb21fd5f42f9b36f5d5.txt:8
 #: templates/zerver/emails/custom/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.source.html:17
@@ -2258,7 +2453,9 @@ msgstr "Rezumat Zulip pentru %(realm_name)s"
 #: templates/zerver/emails/digest.txt:12
 #, python-format
 msgid "Click here to log in to Zulip and catch up: %(organization_uri)s."
-msgstr "Apasă aici pentru autentificare și vezi ultimele discuții din Zulip: %(organization_uri)s."
+msgstr ""
+"Apasă aici pentru autentificare și vezi ultimele discuții din Zulip: "
+"%(organization_uri)s."
 
 #: templates/zerver/emails/digest.txt:15
 #: templates/zerver/emails/followup_day2.txt:19
@@ -2278,7 +2475,9 @@ msgstr "Pagina ta de autentificare Zulip"
 msgid ""
 "(you'll need these to sign in to the <a href=\"%(apps_page_link)s\">mobile "
 "and desktop</a> apps)"
-msgstr "(ai nevoie de asta pentru a te autentifica pe aplicațiile de <a href=\"%(apps_page_link)s\">mobil și desktop</a>)"
+msgstr ""
+"(ai nevoie de asta pentru a te autentifica pe aplicațiile de <a "
+"href=\"%(apps_page_link)s\">mobil și desktop</a>)"
 
 #: templates/zerver/emails/followup_day1.source.html:35
 #, python-format
@@ -2287,7 +2486,10 @@ msgid ""
 "become a Zulip pro with a few <a "
 "href=\"%(keyboard_shortcuts_link)s\">keyboard shortcuts</a>, or <a "
 "href=\"%(realm_uri)s\">dive right in</a>!"
-msgstr "Vezi <a href=\"%(getting_started_link)s\">ghidul pentru admini</a>, învață câteva <a href=\"%(keyboard_shortcuts_link)s\">scurtături pe tastatură</a>, sau <a href=\"%(realm_uri)s\">treci direct la treabă</a>!"
+msgstr ""
+"Vezi <a href=\"%(getting_started_link)s\">ghidul pentru admini</a>, învață "
+"câteva <a href=\"%(keyboard_shortcuts_link)s\">scurtături pe tastatură</a>, "
+"sau <a href=\"%(realm_uri)s\">treci direct la treabă</a>!"
 
 #: templates/zerver/emails/followup_day1.source.html:37
 #, python-format
@@ -2295,14 +2497,20 @@ msgid ""
 "<a href=\"%(getting_started_link)s\">Learn more</a> about Zulip, become a "
 "pro with a few <a href=\"%(keyboard_shortcuts_link)s\">keyboard "
 "shortcuts</a>, or <a href=\"%(realm_uri)s\">dive right in</a>!"
-msgstr "<a href=\"%(getting_started_link)s\">Învață mai mult </a> despre Zulip, folosește câteva  <a href=\"%(keyboard_shortcuts_link)s\">scurtături de tastatură</a>, sau <a href=\"%(realm_uri)s\"> treci direct la treabă</a>!"
+msgstr ""
+"<a href=\"%(getting_started_link)s\">Învață mai mult </a> despre Zulip, "
+"folosește câteva  <a href=\"%(keyboard_shortcuts_link)s\">scurtături de "
+"tastatură</a>, sau <a href=\"%(realm_uri)s\"> treci direct la treabă</a>!"
 
 #: templates/zerver/emails/followup_day1.source.html:47
 msgid ""
 "PS: Follow us on <a href=\"https://twitter.com/zulip\">Twitter</a>, star us "
 "on <a href=\"https://github.com/zulip/zulip\">GitHub</a>, or chat with us "
 "live on the <a href=\"https://chat.zulip.org\">Zulip community server</a>!"
-msgstr "PS: Urmăriți-ne pe <a href=\"https://twitter.com/zulip\">Twitter</a>, pe <a href=\"https://github.com/zulip/zulip\">GitHub</a>, sau discutați cu noi live pe <a href=\"https://chat.zulip.org\">Zulip community server</a>!"
+msgstr ""
+"PS: Urmăriți-ne pe <a href=\"https://twitter.com/zulip\">Twitter</a>, pe <a "
+"href=\"https://github.com/zulip/zulip\">GitHub</a>, sau discutați cu noi "
+"live pe <a href=\"https://chat.zulip.org\">Zulip community server</a>!"
 
 #: templates/zerver/emails/followup_day1.subject.txt:2
 #, python-format
@@ -2329,7 +2537,9 @@ msgstr "Te-ai înscris în organizația Zulip %(realm_name)s."
 msgid ""
 "(you'll need these to sign in to the mobile and desktop apps "
 "(%(apps_page_link)s))"
-msgstr "(ai nevoie de asta pentru autentificare pe mobil sau desktop (%(apps_page_link)s))"
+msgstr ""
+"(ai nevoie de asta pentru autentificare pe mobil sau desktop "
+"(%(apps_page_link)s))"
 
 #: templates/zerver/emails/followup_day1.txt:25
 #, python-format
@@ -2337,7 +2547,10 @@ msgid ""
 "Check out our guide (%(getting_started_link)s) for admins, become a Zulip "
 "pro with a few keyboard shortcuts (%(keyboard_shortcuts_link)s), or dive "
 "right in to %(realm_uri)s!"
-msgstr "Vezi gidul nostru (%(getting_started_link)s) pentru administratori, învață scurtăturile pe tastatură (%(keyboard_shortcuts_link)s), sau treci direct la treabă %(realm_uri)s!"
+msgstr ""
+"Vezi gidul nostru (%(getting_started_link)s) pentru administratori, învață "
+"scurtăturile pe tastatură (%(keyboard_shortcuts_link)s), sau treci direct la"
+" treabă %(realm_uri)s!"
 
 #: templates/zerver/emails/followup_day1.txt:27
 #, python-format
@@ -2345,21 +2558,30 @@ msgid ""
 "Learn more (%(getting_started_link)s) about Zulip, become a pro with a few "
 "keyboard shortcuts (%(keyboard_shortcuts_link)s), or dive right in to "
 "%(realm_uri)s!"
-msgstr "Învață mai mult (%(getting_started_link)s) despre Zulip, folosește câteva scurtături de tastatură  (%(keyboard_shortcuts_link)s) pentru a fi pro, sau treci direct la treabă %(realm_uri)s!"
+msgstr ""
+"Învață mai mult (%(getting_started_link)s) despre Zulip, folosește câteva "
+"scurtături de tastatură  (%(keyboard_shortcuts_link)s) pentru a fi pro, sau "
+"treci direct la treabă %(realm_uri)s!"
 
 #: templates/zerver/emails/followup_day1.txt:34
 msgid ""
 "PS: Check us out on Twitter (@zulip), star us on GitHub "
 "(https://github.com/zulip/zulip), or chat with us live on the Zulip "
 "community server (https://chat.zulip.org)!"
-msgstr "PS: Accesați-ne pe Twitter (@zulip), pe GitHub (https://github.com/zulip/zulip) sau discutați cu noi în direct pe serverul comunității Zulip (https://chat.zulip.org )!"
+msgstr ""
+"PS: Accesați-ne pe Twitter (@zulip), pe GitHub "
+"(https://github.com/zulip/zulip) sau discutați cu noi în direct pe serverul "
+"comunității Zulip (https://chat.zulip.org )!"
 
 #: templates/zerver/emails/followup_day2.source.html:14
 msgid ""
 "Topics are like email subject lines. The big difference, though, is that "
 "they're really short and lightweight. Two or three words will do it. Don't "
 "overthink 'em&mdash;you can always edit the message later!"
-msgstr "Subiectele sunt ca titlul unui email. Marea diferență este că sunt scurte și la obiect. Două trei cuvinte ajung. Nu le gândi prea mult 'em&mdash;le poți modifica ulterior!"
+msgstr ""
+"Subiectele sunt ca titlul unui email. Marea diferență este că sunt scurte și"
+" la obiect. Două trei cuvinte ajung. Nu le gândi prea mult 'em&mdash;le poți"
+" modifica ulterior!"
 
 #: templates/zerver/emails/followup_day2.source.html:23
 msgid ""
@@ -2367,7 +2589,11 @@ msgid ""
 "(imagine if email didn't have them!), and it lets you more efficiently catch"
 " up on what's happened while you're away&mdash;read the topics that are "
 "relevant to you, and ignore the ones that aren't!"
-msgstr "De ce subiecte? Pentru două motive: fac conversațiile mai clare (imaginează-ți emailuri fără subiect!) și te pui rapid la curent cu ce s-a întâmplat cât ai lipsit—citești subiectele relevante pentru tine și le ignori pe cele neinteresante."
+msgstr ""
+"De ce subiecte? Pentru două motive: fac conversațiile mai clare (imaginează-"
+"ți emailuri fără subiect!) și te pui rapid la curent cu ce s-a întâmplat cât"
+" ai lipsit—citești subiectele relevante pentru tine și le ignori pe cele "
+"neinteresante."
 
 #: templates/zerver/emails/followup_day2.subject.txt:1
 msgid "One last thing: using topics like a pro"
@@ -2378,7 +2604,10 @@ msgid ""
 "Topics are like email subject lines. The big difference, though, is that "
 "they're really short and lightweight. Two or three words will do it. Don't "
 "overthink 'em -- you can always edit the message later!"
-msgstr "Subiectele sunt ca titlul unui email. Marea diferență este că sunt scurte și la obiect. Două trei cuvinte ajung. Nu le gândi prea mult — le poți modifica ulterior!"
+msgstr ""
+"Subiectele sunt ca titlul unui email. Marea diferență este că sunt scurte și"
+" la obiect. Două trei cuvinte ajung. Nu le gândi prea mult — le poți "
+"modifica ulterior!"
 
 #: templates/zerver/emails/followup_day2.txt:11
 msgid ""
@@ -2386,7 +2615,11 @@ msgid ""
 "(imagine if email didn't have them!), and it lets you more efficiently catch"
 " up on what's happened while you're away -- read the topics that are "
 "relevant to you, and ignore the ones that aren't!"
-msgstr "De ce subiecte? Pentru două motive: fac conversațiile mai clare (imaginează-ți emailuri fără subiect!) și te pui rapid la curent cu ce s-a întâmplat cât ai lipsit—citești subiectele relevante pentru tine și le ignori pe cele neinteresante!"
+msgstr ""
+"De ce subiecte? Pentru două motive: fac conversațiile mai clare (imaginează-"
+"ți emailuri fără subiect!) și te pui rapid la curent cu ce s-a întâmplat cât"
+" ai lipsit—citești subiectele relevante pentru tine și le ignori pe cele "
+"neinteresante!"
 
 #: templates/zerver/emails/followup_day2.txt:13
 msgid "Take it for a spin now:"
@@ -2406,14 +2639,19 @@ msgstr ""
 #: templates/zerver/emails/invitation.subject.txt:1
 #, python-format
 msgid "%(referrer_full_name)s invited you to join %(referrer_realm_name)s"
-msgstr "%(referrer_full_name)s te-a invitat să i te alături pe %(referrer_realm_name)s"
+msgstr ""
+"%(referrer_full_name)s te-a invitat să i te alături pe "
+"%(referrer_realm_name)s"
 
 #: templates/zerver/emails/invitation.txt:3
 #, python-format
 msgid ""
 "%(referrer_full_name)s (%(referrer_email)s) wants you to join them on Zulip "
 "-- the team communication tool designed for productivity."
-msgstr "%(referrer_full_name)s (%(referrer_email)s) dorește să vă alăturați lor pe Zulip -- platforma de comunicare între echipe concepută pentru productivitate."
+msgstr ""
+"%(referrer_full_name)s (%(referrer_email)s) dorește să vă alăturați lor pe "
+"Zulip -- platforma de comunicare între echipe concepută pentru "
+"productivitate."
 
 #: templates/zerver/emails/invitation.txt:5
 #: templates/zerver/emails/invitation_reminder.txt:5
@@ -2438,14 +2676,19 @@ msgid ""
 "This is a friendly reminder that %(referrer_name)s (%(referrer_email)s) "
 "wants you to join them on Zulip -- the team communication tool designed for "
 "productivity."
-msgstr "Acesta este un reminder prietenos că %(referrer_name)s (%(referrer_email)s) dorește să vă alăturați lor pe Zulip -- platforma de comunicare între echipe concepută pentru productivitate."
+msgstr ""
+"Acesta este un reminder prietenos că %(referrer_name)s (%(referrer_email)s) "
+"dorește să vă alăturați lor pe Zulip -- platforma de comunicare între echipe"
+" concepută pentru productivitate."
 
 #: templates/zerver/emails/invitation_reminder.txt:10
 #, python-format
 msgid ""
 "This invitation expires in two days. If the invitation expires, you'll need "
 "to ask %(referrer_name)s for another one."
-msgstr "Această invitație expira în doua zile. Dacă va expira, vei fi nevoit să mai ceri încă una lui  %(referrer_name)s. "
+msgstr ""
+"Această invitație expira în doua zile. Dacă va expira, vei fi nevoit să mai "
+"ceri încă una lui  %(referrer_name)s. "
 
 #: templates/zerver/emails/missed_message.source.html:17
 #, python-format
@@ -2453,7 +2696,11 @@ msgid ""
 "This email does not include message content because your organization has "
 "disabled <a class=\"content_disabled_help_link\" "
 "href=\"%(help_url)s\">message content appearing in email notifications</a>."
-msgstr "Acest email nu include conținutul mesajului pentru că organizația ta a dezactivat <a class=\"content_disabled_help_link\" href=\"%(help_url)s\">afișarea conținutului mesajelor în notificările prin email</a>."
+msgstr ""
+"Acest email nu include conținutul mesajului pentru că organizația ta a "
+"dezactivat <a class=\"content_disabled_help_link\" "
+"href=\"%(help_url)s\">afișarea conținutului mesajelor în notificările prin "
+"email</a>."
 
 #: templates/zerver/emails/missed_message.source.html:19
 #, python-format
@@ -2461,28 +2708,38 @@ msgid ""
 "This email does not include message content because you have disabled <a "
 "class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\">message "
 "content appearing in email notifications</a>."
-msgstr "Acest email nu include conținutul mesajelor pentru că ai dezactivat  <a class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\">afișarea conținutului mesajelor în notificările prin email</a>."
+msgstr ""
+"Acest email nu include conținutul mesajelor pentru că ai dezactivat  <a "
+"class=\"content_disabled_help_link\" href=\"%(alert_notif_url)s\">afișarea "
+"conținutului mesajelor în notificările prin email</a>."
 
 #: templates/zerver/emails/missed_message.source.html:34
 #, python-format
 msgid ""
 "Reply to this email directly, <a href=\"%(narrow_url)s\">view it in "
 "Zulip</a>, or <a href=\"%(notif_url)s\">manage email preferences</a>."
-msgstr "Răspunde la acest email direct, <a href=\"%(narrow_url)s\">afișează-l în Zulip</a>, sau <a href=\"%(notif_url)s\">administrează preferințele emailurilor</a>."
+msgstr ""
+"Răspunde la acest email direct, <a href=\"%(narrow_url)s\">afișează-l în "
+"Zulip</a>, sau <a href=\"%(notif_url)s\">administrează preferințele "
+"emailurilor</a>."
 
 #: templates/zerver/emails/missed_message.source.html:36
 #, python-format
 msgid ""
 "<a href=\"%(narrow_url)s\">View or reply in Zulip</a>, or <a "
 "href=\"%(notif_url)s\">manage email preferences</a>."
-msgstr "<a href=\"%(narrow_url)s\">Afișează sau răspunde în Zulip</a>, sau <a href=\"%(notif_url)s\">administrează preferințele emailurilor</a>."
+msgstr ""
+"<a href=\"%(narrow_url)s\">Afișează sau răspunde în Zulip</a>, sau <a "
+"href=\"%(notif_url)s\">administrează preferințele emailurilor</a>."
 
 #: templates/zerver/emails/missed_message.source.html:38
 #, python-format
 msgid ""
 "<a href=\"%(narrow_url)s\">Reply in Zulip</a>, or <a "
 "href=\"%(notif_url)s\">manage email preferences</a>."
-msgstr "<a href=\"%(narrow_url)s\">Răspunde în Zulip</a>, sau <a href=\"%(notif_url)s\">administrează preferințele emailurilor</a>."
+msgstr ""
+"<a href=\"%(narrow_url)s\">Răspunde în Zulip</a>, sau <a "
+"href=\"%(notif_url)s\">administrează preferințele emailurilor</a>."
 
 #: templates/zerver/emails/missed_message.source.html:40
 #, python-format
@@ -2490,7 +2747,10 @@ msgid ""
 "\n"
 "    Do not reply to this email. This Zulip server is not configured to accept incoming emails (<a href=\"%(url)s\">help</a>).\n"
 "    "
-msgstr "\n    Nu răspunde acestui email. Acest server Zulip nu este configurat să primească emailuri  (<a href=\"%(url)s\">ajutor</a>).\n    "
+msgstr ""
+"\n"
+"    Nu răspunde acestui email. Acest server Zulip nu este configurat să primească emailuri  (<a href=\"%(url)s\">ajutor</a>).\n"
+"    "
 
 #: templates/zerver/emails/missed_message.subject.txt:2
 #, python-format
@@ -2512,7 +2772,10 @@ msgid ""
 "\n"
 "This email does not include message content because your organization has disabled message content appearing in email notifications.\n"
 "See %(hide_content_url)s for more details.\n"
-msgstr "\nAcest email nu include conținutul mesajului pentru că organizația ta a dezactivat  afișarea conținutului mesajelor în notificările prin email.\nVezi %(hide_content_url)s pentru mai multe detalii.\n"
+msgstr ""
+"\n"
+"Acest email nu include conținutul mesajului pentru că organizația ta a dezactivat  afișarea conținutului mesajelor în notificările prin email.\n"
+"Vezi %(hide_content_url)s pentru mai multe detalii.\n"
 
 #: templates/zerver/emails/missed_message.txt:16
 #, python-format
@@ -2520,7 +2783,10 @@ msgid ""
 "\n"
 "This email does not include message content because you have disabled message content appearing in email notifications.\n"
 "See %(alert_notif_url)s for more details.\n"
-msgstr "\nAcest email nu include conținutul mesajelor pentru că ai dezactivat afișarea conținutului mesajelor în notificările prin email.\nVezi %(alert_notif_url)s pentru mai multe detalii.\n"
+msgstr ""
+"\n"
+"Acest email nu include conținutul mesajelor pentru că ai dezactivat afișarea conținutului mesajelor în notificările prin email.\n"
+"Vezi %(alert_notif_url)s pentru mai multe detalii.\n"
 
 #: templates/zerver/emails/missed_message.txt:31
 msgid "Reply to this email directly, or view it in Zulip:"
@@ -2539,7 +2805,9 @@ msgid ""
 "\n"
 "Do not reply to this email. This Zulip server is not configured to accept\n"
 "incoming emails. Help:\n"
-msgstr "\nNu răspunde acestui email. Acest server Zulip nu este configurat să primeasca emailuri. Ajutor:\n"
+msgstr ""
+"\n"
+"Nu răspunde acestui email. Acest server Zulip nu este configurat să primeasca emailuri. Ajutor:\n"
 
 #: templates/zerver/emails/missed_message.txt:50
 msgid "Manage email preferences: "
@@ -2556,7 +2824,10 @@ msgid ""
 "The email associated with your Zulip account was recently changed to "
 "%(new_email)s. If you did not request this change, please contact us "
 "immediately at <%(support_email)s>."
-msgstr "Emailul asociat contului tău Zulip a fost recent schimbat cu %(new_email)s. Daca nu ai făcut tu modificarea, te rog să ne contactezi imediat la <%(support_email)s>."
+msgstr ""
+"Emailul asociat contului tău Zulip a fost recent schimbat cu %(new_email)s. "
+"Daca nu ai făcut tu modificarea, te rog să ne contactezi imediat la "
+"<%(support_email)s>."
 
 #: templates/zerver/emails/notify_new_login.source.html:36
 #, python-format
@@ -2605,7 +2876,9 @@ msgstr "Apasă pe linkul de mai jos pentru a reseta parola."
 msgid ""
 "You previously had an account on %(realm_uri)s, but it has been deactivated."
 " You can contact an organization administrator to reactivate your account."
-msgstr "Ai avut un cont pe %(realm_uri)s, dar a fost dezactivat. Poți contacta administratorul organizației pentru a reactiva contul."
+msgstr ""
+"Ai avut un cont pe %(realm_uri)s, dar a fost dezactivat. Poți contacta "
+"administratorul organizației pentru a reactiva contul."
 
 #: templates/zerver/emails/realm_reactivation.subject.txt:1
 msgid "Reactivate your Zulip organization"
@@ -2795,7 +3068,11 @@ msgid ""
 "                        You are using old version of the Zulip desktop\n"
 "                        app that is no longer supported.\n"
 "                        "
-msgstr "\n                        Folosești o versiune veche de Zulip desktop\n                        ce nu mai mai are suport.\n                        "
+msgstr ""
+"\n"
+"                        Folosești o versiune veche de Zulip desktop\n"
+"                        ce nu mai mai are suport.\n"
+"                        "
 
 #: templates/zerver/insecure_desktop_app.html:21
 msgid ""
@@ -2803,7 +3080,11 @@ msgid ""
 "                        The auto-update feature in this old version of\n"
 "                        Zulip desktop app no longer works.\n"
 "                        "
-msgstr "\n                        Funcția de auto-actualizare în această versiune veche de\n                        Zulip desktop nu mai funcționează de mult.\n                        "
+msgstr ""
+"\n"
+"                        Funcția de auto-actualizare în această versiune veche de\n"
+"                        Zulip desktop nu mai funcționează de mult.\n"
+"                        "
 
 #: templates/zerver/insecure_desktop_app.html:30
 msgid "Download the latest release."
@@ -2823,7 +3104,14 @@ msgid ""
 "                        and\n"
 "                        <a href=\"/integrations/doc/ifttt\">IFTTT</a>.\n"
 "                        "
-msgstr "\n                        Și alte sute prin\n                        <a href=\"/integrations/doc/hubot\">Hubot</a>,\n                        <a href=\"/integrations/doc/zapier\">Zapier</a>,\n                        și\n                        <a href=\"/integrations/doc/ifttt\">IFTTT</a>.\n                        "
+msgstr ""
+"\n"
+"                        Și alte sute prin\n"
+"                        <a href=\"/integrations/doc/hubot\">Hubot</a>,\n"
+"                        <a href=\"/integrations/doc/zapier\">Zapier</a>,\n"
+"                        și\n"
+"                        <a href=\"/integrations/doc/ifttt\">IFTTT</a>.\n"
+"                        "
 
 #: templates/zerver/integrations/index.html:41
 msgid "Search integrations"
@@ -2876,7 +3164,11 @@ msgid ""
 "        The email address you are trying to sign up with is not valid.\n"
 "        Please sign up using a valid email address.\n"
 "        "
-msgstr "\n        Adresa de email cu care vrei să te înscrii este nevalidă.\n        Te rog înscrie-te folosind o adresă de email validă.\n        "
+msgstr ""
+"\n"
+"        Adresa de email cu care vrei să te înscrii este nevalidă.\n"
+"        Te rog înscrie-te folosind o adresă de email validă.\n"
+"        "
 
 #: templates/zerver/invalid_email.html:19
 #, python-format
@@ -2886,7 +3178,11 @@ msgid ""
 "        only allows users with email addresses within the\n"
 "        organization. Please sign up using appropriate email address.\n"
 "        "
-msgstr "\n        Organizația la care încerci să te alături, %(realm_name)s,\n        permite utilizatori cu adrese de email doar din \n        organizație. Te rugăm să te înregistrezi cu o astfel de adresă."
+msgstr ""
+"\n"
+"        Organizația la care încerci să te alături, %(realm_name)s,\n"
+"        permite utilizatori cu adrese de email doar din \n"
+"        organizație. Te rugăm să te înregistrezi cu o astfel de adresă."
 
 #: templates/zerver/invalid_email.html:29
 #, python-format
@@ -2895,7 +3191,11 @@ msgid ""
 "        %(realm_name)s, does not allow signups using disposable email\n"
 "        addresses. Please sign up using a real email address.\n"
 "        "
-msgstr "Organizația la care vrei să te înscrii,\n        %(realm_name)s, nu permite înscriere cu o adresă de email dispozabilă.\n         Te rog folosește una reală. \n        "
+msgstr ""
+"Organizația la care vrei să te înscrii,\n"
+"        %(realm_name)s, nu permite înscriere cu o adresă de email dispozabilă.\n"
+"         Te rog folosește una reală. \n"
+"        "
 
 #: templates/zerver/invalid_email.html:38
 #, python-format
@@ -2904,7 +3204,11 @@ msgid ""
 "        %(realm_name)s, does not allow signups using emails\n"
 "        that contains +. Please sign up using appropriate email address.\n"
 "        "
-msgstr "Organizația la care încercați să vă alăturați,\n        %(realm_name)s, nu permite înregistrarea cu adrese de email\n        care conțin +. Te rugăm să folosești o altă adresă de email.\n        "
+msgstr ""
+"Organizația la care încercați să vă alăturați,\n"
+"        %(realm_name)s, nu permite înregistrarea cu adrese de email\n"
+"        care conțin +. Te rugăm să folosești o altă adresă de email.\n"
+"        "
 
 #: templates/zerver/invalid_realm.html:7
 msgid "Organization does not exist"
@@ -2938,7 +3242,9 @@ msgstr "Parolă"
 #: templates/zerver/login.html:91
 msgid ""
 "You've already registered with this email address. Please log in below."
-msgstr "Ești deja înregistrat cu această adresă de email. Te rog autentifică-te mai jos. "
+msgstr ""
+"Ești deja înregistrat cu această adresă de email. Te rog autentifică-te mai "
+"jos. "
 
 #: templates/zerver/login.html:118
 #, python-format
@@ -2952,7 +3258,9 @@ msgstr "Ai uitat parola?"
 #: templates/zerver/login.html:138
 msgid ""
 "Don't have an account yet? You need to be invited to join this organization."
-msgstr "Nu ai un cont încă? Ai nevoie de invitație pentru a intra in această organizație."
+msgstr ""
+"Nu ai un cont încă? Ai nevoie de invitație pentru a intra in această "
+"organizație."
 
 #: templates/zerver/portico-header-dropdown.html:3
 msgid "Go to Zulip"
@@ -2966,13 +3274,19 @@ msgid ""
 "                    Contact this <a href=\"mailto:%(support_email)s\">server's administrator</a>\n"
 "                    if you have any questions.\n"
 "                    "
-msgstr "\n                    Această instalare Zulip nu are configurată o politică de  confidențialitate.\n                    Contactează te rog <a href=\"mailto:%(support_email)s\">server's administrator</a>\n                    dacă ai întrebari.\n                    "
+msgstr ""
+"\n"
+"                    Această instalare Zulip nu are configurată o politică de  confidențialitate.\n"
+"                    Contactează te rog <a href=\"mailto:%(support_email)s\">server's administrator</a>\n"
+"                    dacă ai întrebari.\n"
+"                    "
 
 #: templates/zerver/realm_creation_failed.html:19
 msgid ""
 "This server does not allow members of the public to create new "
 "organizations."
-msgstr "Acest server nu permite membrilor din public să creeze organizații noi."
+msgstr ""
+"Acest server nu permite membrilor din public să creeze organizații noi."
 
 #: templates/zerver/realm_creation_failed.html:21
 #, python-format
@@ -2981,7 +3295,11 @@ msgid ""
 "                    Zulip is open source, so you can <a href=\"%(production_install_url)s\">install your own Zulip server</a> or create a new organization on\n"
 "                    <a href=\"%(zulip_cloud_link)s\">Zulip Cloud</a>\n"
 "                    "
-msgstr "\n                    Zulip este open source, așsa că îți poți <a href=\"%(production_install_url)s\">propriul tău server Zulip</a> sau poti crea o nouă organizație în\n                    <a href=\"%(zulip_cloud_link)s\">Zulip Cloud</a>\n                    "
+msgstr ""
+"\n"
+"                    Zulip este open source, așsa că îți poți <a href=\"%(production_install_url)s\">propriul tău server Zulip</a> sau poti crea o nouă organizație în\n"
+"                    <a href=\"%(zulip_cloud_link)s\">Zulip Cloud</a>\n"
+"                    "
 
 #: templates/zerver/realm_reactivation.html:9
 msgid "Your organization has been successfully reactivated."
@@ -3044,7 +3362,7 @@ msgstr "Scurt e mai bine decât lung."
 
 #: templates/zerver/register.html:52
 msgid "Organization URL"
-msgstr "URL-ul organizatiei"
+msgstr "URL-ul organizației"
 
 #: templates/zerver/register.html:59
 #, python-format
@@ -3079,7 +3397,9 @@ msgstr "Introdu parola ta LDAP/Active Directory ."
 msgid ""
 "This is used for mobile applications and other tools that require a "
 "password."
-msgstr "Acesta este folosit pentru aplicații de mobil sau alte unelte care necesită parola."
+msgstr ""
+"Acesta este folosit pentru aplicații de mobil sau alte unelte care necesită "
+"parola."
 
 #: templates/zerver/register.html:178
 msgid "Password strength"
@@ -3131,7 +3451,10 @@ msgid ""
 "\n"
 "        <h1 class=\"get-started\">Select account</h1>\n"
 "        "
-msgstr "\n        <h1 class=\"get-started\">Selectează contul</h1>\n        "
+msgstr ""
+"\n"
+"        <h1 class=\"get-started\">Selectează contul</h1>\n"
+"        "
 
 #: templates/zerver/social_auth_select_email.html:63
 msgid ""
@@ -3139,7 +3462,11 @@ msgid ""
 "            Your GitHub account also has unverified email addresses\n"
 "            associated with it.\n"
 "            "
-msgstr "\n            Și contul tău GitHub are adrese neverificate de email\n            asociate cu el.\n            "
+msgstr ""
+"\n"
+"            Și contul tău GitHub are adrese neverificate de email\n"
+"            asociate cu el.\n"
+"            "
 
 #: templates/zerver/social_auth_select_email.html:69
 msgid ""
@@ -3161,7 +3488,12 @@ msgid ""
 "                    Contact this <a href=\"mailto:%(support_email)s\">server's administrator</a>\n"
 "                    if you have any questions.\n"
 "                    "
-msgstr "\n                    Această intalare Zulip nu are configurată termeni ai serviciului.\n                    Contactează <a href=\"mailto:%(support_email)s\">administratorul serverului</a>\n                    dacă ai intrebări.\n                    "
+msgstr ""
+"\n"
+"                    Această intalare Zulip nu are configurată termeni ai serviciului.\n"
+"                    Contactează <a href=\"mailto:%(support_email)s\">administratorul serverului</a>\n"
+"                    dacă ai intrebări.\n"
+"                    "
 
 #: templates/zerver/unsubscribe_link_error.html:5
 msgid "Unknown email unsubscribe request"
@@ -3171,7 +3503,9 @@ msgstr "Solicitare de dezabonare la email necunoscută"
 msgid ""
 "Hi there! It looks like you tried to unsubscribe from something, but we don't\n"
 "recognize the URL."
-msgstr "Salut! Se pare ca ai încercat să te dezabonezi de la ceva, dar se pare că \nnu reușim să recunoastem URL-ul."
+msgstr ""
+"Salut! Se pare ca ai încercat să te dezabonezi de la ceva, dar se pare că \n"
+"nu reușim să recunoastem URL-ul."
 
 #: templates/zerver/unsubscribe_link_error.html:10
 #, python-format
@@ -3181,7 +3515,12 @@ msgid ""
 "%%20e-"
 "mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email"
 " us</a> and we'll get this squared away!"
-msgstr "Te rog verifică dacă linkul URL este întreg și reîncearcă, sau <a href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">scrie-ne</a> și te ajutăm noi!"
+msgstr ""
+"Te rog verifică dacă linkul URL este întreg și reîncearcă, sau <a "
+"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip"
+"%%20e-"
+"mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A"
+"\">scrie-ne</a> și te ajutăm noi!"
 
 #: templates/zerver/unsubscribe_success.html:10
 msgid "Email settings updated"
@@ -3216,7 +3555,10 @@ msgid ""
 "\n"
 "                        %(browser_name)s is not supported by Zulip.\n"
 "                        "
-msgstr "\n                      Browserul %(browser_name)s este neacceptat pe Zulip.\n                        "
+msgstr ""
+"\n"
+"                      Browserul %(browser_name)s este neacceptat pe Zulip.\n"
+"                        "
 
 #: templates/zerver/unsupported_browser.html:18
 msgid ""
@@ -3224,7 +3566,11 @@ msgid ""
 "                        Zulip supports modern browsers like Firefox,\n"
 "                        Chrome, and Edge.\n"
 "                        "
-msgstr "\n                        Zulip permite browsere ca Firefox,\n                        Chrome, și Edge.\n                        "
+msgstr ""
+"\n"
+"                        Zulip permite browsere ca Firefox,\n"
+"                        Chrome, și Edge.\n"
+"                        "
 
 #: templates/zerver/unsupported_browser.html:24
 #, python-format
@@ -3232,7 +3578,10 @@ msgid ""
 "\n"
 "                        You can also use the <a href=\"%(apps_page_link)s\">Zulip desktop app</a>.\n"
 "                        "
-msgstr "\n                        Poți folosi <a href=\"%(apps_page_link)s\">Aplicatia pentru desktop Zulip</a>.\n                        "
+msgstr ""
+"\n"
+"                        Poți folosi <a href=\"%(apps_page_link)s\">Aplicatia pentru desktop Zulip</a>.\n"
+"                        "
 
 #: templates/zerver/zulipchat_migration_tos.html:2
 msgid ""
@@ -3240,11 +3589,16 @@ msgid ""
 "    <p>This organization has been migrated to new hosting on zulip.com. We just need you to do one last thing.</p>\n"
 "    <h3>Accept the Zulip Cloud terms of service</h3>\n"
 "    "
-msgstr "\n    <p>Organizația a fost migrată pe un nou hosting pe zulip.com. Avem nevoie de la tine doar de un ultim pas.</p>\n    <h3>Acceptă termenii si condițiile de utilizare Zulip Cloud </h3>\n    "
+msgstr ""
+"\n"
+"    <p>Organizația a fost migrată pe un nou hosting pe zulip.com. Avem nevoie de la tine doar de un ultim pas.</p>\n"
+"    <h3>Acceptă termenii si condițiile de utilizare Zulip Cloud </h3>\n"
+"    "
 
 #: zerver/decorator.py:161
 msgid "Must be a billing administrator or an organization owner"
-msgstr "Trebuie să fie administrator care facturează sau proprietarul organizaţiei"
+msgstr ""
+"Trebuie să fie administrator care facturează sau proprietarul organizaţiei"
 
 #: zerver/decorator.py:232
 msgid "Invalid subdomain for push notifications bouncer"
@@ -3311,14 +3665,18 @@ msgstr "Organizația în care vrei să intri cu {email} nu există."
 #, python-brace-format
 msgid ""
 "Please request an invite for {email} from the organization administrator."
-msgstr "Te rog solicită o invitație pentru {email} de la administraorul organizației."
+msgstr ""
+"Te rog solicită o invitație pentru {email} de la administraorul "
+"organizației."
 
 #: zerver/forms.py:197
 #, python-brace-format
 msgid ""
 "Your email address, {email}, is not in one of the domains that are allowed "
 "to register for accounts in this organization."
-msgstr "Adresa de emai, {email}, nu este între domeniile care sunt permise pentru a crea un cont în această organizație. "
+msgstr ""
+"Adresa de emai, {email}, nu este între domeniile care sunt permise pentru a "
+"crea un cont în această organizație. "
 
 #: zerver/forms.py:202 zerver/forms.py:216 zerver/lib/email_validation.py:108
 msgid "Please use your real email address."
@@ -3326,7 +3684,8 @@ msgstr "Te rog folosește-ți adresa ta reală de email."
 
 #: zerver/forms.py:205
 msgid "Email addresses containing + are not allowed in this organization."
-msgstr "Adresele de e-mail conținând + nu sunt permise în această organizație."
+msgstr ""
+"Adresele de e-mail conținând + nu sunt permise în această organizație."
 
 #: zerver/forms.py:226
 msgid "New password"
@@ -3468,32 +3827,41 @@ msgstr "Numele implicit de grup al hubului este nevalid '{}'"
 
 #: zerver/lib/actions.py:2857
 msgid "Default stream group name too long (limit: {} characters)"
-msgstr "Numele implicit de grup al hubului este prea lung  (limita: {} caractere)"
+msgstr ""
+"Numele implicit de grup al hubului este prea lung  (limita: {} caractere)"
 
 #: zerver/lib/actions.py:2864
 msgid "Default stream group name '{}' contains NULL (0x00) characters."
-msgstr "Numele implicit al grupului hubului '{}' conține NULL (0x00) caractere."
+msgstr ""
+"Numele implicit al grupului hubului '{}' conține NULL (0x00) caractere."
 
 #: zerver/lib/actions.py:2930
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream ID {stream_id}, "
 "but there is no stream with that ID."
-msgstr "Botul tău {bot_identity} a încercat să trimită un mesaj în hubul cu ID {stream_id}, dar nu există nici un hub cu acest ID."
+msgstr ""
+"Botul tău {bot_identity} a încercat să trimită un mesaj în hubul cu ID "
+"{stream_id}, dar nu există nici un hub cu acest ID."
 
 #: zerver/lib/actions.py:2936
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}, but"
 " that stream does not exist. Click [here]({new_stream_link}) to create it."
-msgstr "Botul tău {bot_identity} a încercat să trimită un mesaj în hubul {stream_name}, dar acesta nu există. Apasă [aici]({new_stream_link}) pentru a-l crea."
+msgstr ""
+"Botul tău {bot_identity} a încercat să trimită un mesaj în hubul "
+"{stream_name}, dar acesta nu există. Apasă [aici]({new_stream_link}) pentru "
+"a-l crea."
 
 #: zerver/lib/actions.py:2944
 #, python-brace-format
 msgid ""
 "Your bot {bot_identity} tried to send a message to stream {stream_name}. The"
 " stream exists but does not have any subscribers."
-msgstr "Botul tău {bot_identity} a încercat să trimită un mesaj în hubul {stream_name}. Hubul există dar nu are abonați."
+msgstr ""
+"Botul tău {bot_identity} a încercat să trimită un mesaj în hubul "
+"{stream_name}. Hubul există dar nu are abonați."
 
 #: zerver/lib/actions.py:2991
 msgid "Private messages are disabled in this organization."
@@ -3537,7 +3905,9 @@ msgstr "Grup hub implicit nevalid {}"
 #, python-brace-format
 msgid ""
 "'{stream_name}' is a default stream and cannot be added to '{group_name}'"
-msgstr "'{stream_name}' este un hub implicit și nu poate fi adăugat la '{group_name}'"
+msgstr ""
+"'{stream_name}' este un hub implicit și nu poate fi adăugat la "
+"'{group_name}'"
 
 #: zerver/lib/actions.py:4930
 #, python-brace-format
@@ -3549,13 +3919,17 @@ msgstr "Grupul implicit al hubului '{group_name}' deja există"
 msgid ""
 "Stream '{stream_name}' is already present in default stream group "
 "'{group_name}'"
-msgstr "Hubul '{stream_name}' este deja prezent în grupul implicit al hubului '{group_name}'"
+msgstr ""
+"Hubul '{stream_name}' este deja prezent în grupul implicit al hubului "
+"'{group_name}'"
 
 #: zerver/lib/actions.py:4968
 #, python-brace-format
 msgid ""
 "Stream '{stream_name}' is not present in default stream group '{group_name}'"
-msgstr "Hubul '{stream_name}' nu este prezent în grupul implicit de hub '{group_name}'"
+msgstr ""
+"Hubul '{stream_name}' nu este prezent în grupul implicit de hub "
+"'{group_name}'"
 
 #: zerver/lib/actions.py:4982
 msgid "This default stream group is already named '{}'"
@@ -3603,7 +3977,10 @@ msgstr ""
 msgid ""
 "Your account is too new to send invites for this organization. Ask an "
 "organization admin, or a more experienced user."
-msgstr "Contul tău este prea nou ca să poți trimite invitații pentru acestă organizație. Întreabă un administrator de grup sau un utilizator cu experiență. "
+msgstr ""
+"Contul tău este prea nou ca să poți trimite invitații pentru acestă "
+"organizație. Întreabă un administrator de grup sau un utilizator cu "
+"experiență. "
 
 #: zerver/lib/actions.py:6609
 msgid "Some emails did not validate, so we didn't send any invitations."
@@ -3617,7 +3994,9 @@ msgstr "Nu am putut să invităm nici o persoană."
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
-msgstr "La unele adrese nu am trimis invitaţia, pentru că sunt deja în Zulip. Le-am invitat pe celelalte persoane."
+msgstr ""
+"La unele adrese nu am trimis invitaţia, pentru că sunt deja în Zulip. Le-am "
+"invitat pe celelalte persoane."
 
 #: zerver/lib/actions.py:7265
 msgid "Invalid order mapping."
@@ -3666,7 +4045,8 @@ msgstr "Atașament nevalid"
 #: zerver/lib/attachments.py:33
 msgid ""
 "An error occurred while deleting the attachment. Please try again later."
-msgstr "A apărut o eroare la ștergerea atașamentului. Te rog încearcă mai târziu."
+msgstr ""
+"A apărut o eroare la ștergerea atașamentului. Te rog încearcă mai târziu."
 
 #: zerver/lib/bot_lib.py:109
 msgid "Message must have recipients!"
@@ -3767,7 +4147,8 @@ msgstr "Tip emoji nevalid"
 
 #: zerver/lib/emoji.py:110
 msgid "Must be an organization administrator or emoji author"
-msgstr "Trebuie să fii un administrator al organizației sau autorul emoji-ului"
+msgstr ""
+"Trebuie să fii un administrator al organizației sau autorul emoji-ului"
 
 #: zerver/lib/emoji.py:117 zerver/models.py:840
 msgid "Invalid characters in emoji name"
@@ -3781,7 +4162,7 @@ msgstr "Numele emoji-ului lipsește"
 msgid "Invalid type parameter"
 msgstr "Tip de parametru nevalid"
 
-#: zerver/lib/events.py:1140
+#: zerver/lib/events.py:1144
 msgid "Could not allocate event queue"
 msgstr "Nu pot aloca lista de evenimente"
 
@@ -3860,7 +4241,9 @@ msgstr "Cheie API malformată"
 msgid ""
 "The '{event_type}' event isn't currently supported by the {webhook_name} "
 "webhook"
-msgstr "Evenimentul '{event_type}' nu este în prezent susținut de webhook-ul {webhook_name} "
+msgstr ""
+"Evenimentul '{event_type}' nu este în prezent susținut de webhook-ul "
+"{webhook_name} "
 
 #: zerver/lib/exceptions.py:355 zerver/views/auth.py:610
 #: zerver/views/auth.py:809 zerver/views/auth.py:870 zerver/views/auth.py:932
@@ -3892,7 +4275,9 @@ msgstr "Stai la curent cu un hub"
 msgid ""
 "Messages sent to a stream are seen by everyone subscribed to that stream. "
 "Try clicking on one of the stream links below."
-msgstr "Mesaje trimise hubului sunt văzute de toți abonații acelui hub. Încearcă unul din linkurile huburilor de mai jos."
+msgstr ""
+"Mesaje trimise hubului sunt văzute de toți abonații acelui hub. Încearcă "
+"unul din linkurile huburilor de mai jos."
 
 #: zerver/lib/hotspots.py:24
 msgid "Topics"
@@ -3902,11 +4287,14 @@ msgstr "Subiecte"
 msgid ""
 "Every message has a topic. Topics keep conversations easy to follow, and "
 "make it easy to reply to conversations that start while you are offline."
-msgstr "Orice mesaj are un subiect. Subiectele fac discuțiile ușor de urmărit sau de răspuns la conversații care încep când ești offline. "
+msgstr ""
+"Orice mesaj are un subiect. Subiectele fac discuțiile ușor de urmărit sau de"
+" răspuns la conversații care încep când ești offline. "
 
 #: zerver/lib/hotspots.py:34
 msgid "Go to Settings to configure your notifications and display settings."
-msgstr "Mergi la setări pentru a configura notificările și setarile de afișare."
+msgstr ""
+"Mergi la setări pentru a configura notificările și setarile de afișare."
 
 #: zerver/lib/hotspots.py:38
 msgid "Compose"
@@ -3916,7 +4304,9 @@ msgstr "Compune"
 msgid ""
 "Click here to start a new conversation. Pick a topic (2-3 words is best), "
 "and give it a go!"
-msgstr "Apasă aici pentru a începe o nouă conversație. Alege un subiect (maxim 2-3 cuvinte) și dă-i drumul!"
+msgstr ""
+"Apasă aici pentru a începe o nouă conversație. Alege un subiect (maxim 2-3 "
+"cuvinte) și dă-i drumul!"
 
 #: zerver/lib/integrations.py:35
 msgid "Integration frameworks"
@@ -3987,7 +4377,8 @@ msgstr "Operator {} nesuportat."
 msgid ""
 "[Read the guide]({help_url}) for getting your organization started with "
 "Zulip"
-msgstr "[Citește ghidul]({help_url}) pentru a începe lucrul cu organzația ta Zulip"
+msgstr ""
+"[Citește ghidul]({help_url}) pentru a începe lucrul cu organzația ta Zulip"
 
 #: zerver/lib/onboarding.py:73
 msgid "Hello, and welcome to Zulip!"
@@ -4011,7 +4402,9 @@ msgstr "Descarcă [Aplicațiile de mobil sau desktop]({apps_url})"
 msgid ""
 "Customize your account and notifications on your [Settings "
 "page]({settings_url})"
-msgstr "Personalizează-ți contul și notificările tale pe [Pagina setărilor]({settings_url})"
+msgstr ""
+"Personalizează-ți contul și notificările tale pe [Pagina "
+"setărilor]({settings_url})"
 
 #: zerver/lib/onboarding.py:83
 msgid "Type `?` to check out Zulip's keyboard shortcuts"
@@ -4023,13 +4416,16 @@ msgstr "Cea mai importantă scurtătura este `r`  pentru a răspunde. "
 
 #: zerver/lib/onboarding.py:87
 msgid "Practice sending a few messages by replying to this conversation."
-msgstr "Exersează trimiterea mai multor mesaje de răspuns la această conversație."
+msgstr ""
+"Exersează trimiterea mai multor mesaje de răspuns la această conversație."
 
 #: zerver/lib/onboarding.py:90
 msgid ""
 "If you're not into keyboards, that's okay too; clicking anywhere on this "
 "message will also do the trick!"
-msgstr "Dacă nu ești fan tastaturi e ok și așa; apasă oriunde în mesaj și o sa meargă la fel!"
+msgstr ""
+"Dacă nu ești fan tastaturi e ok și așa; apasă oriunde în mesaj și o sa "
+"meargă la fel!"
 
 #: zerver/lib/onboarding.py:107
 msgid "Congratulations on your first reply!"
@@ -4039,13 +4435,17 @@ msgstr "Felicitări pentru primul tău răspuns!"
 msgid ""
 "Feel free to continue using this space to practice your new messaging "
 "skills. Or, try clicking on some of the stream names to your left!"
-msgstr "Simte-te ca acasă și testează-ți abilitatea de a scrie mesaje. Sau încearcă să intri în huburile afișate în sânga ta!"
+msgstr ""
+"Simte-te ca acasă și testează-ți abilitatea de a scrie mesaje. Sau încearcă "
+"să intri în huburile afișate în sânga ta!"
 
 #: zerver/lib/onboarding.py:125
 msgid ""
 "This is a private stream, as indicated by the lock icon next to the stream "
 "name."
-msgstr "Acesta este un hub privat, așa cum indică și iconița lacăt de lânga numele hubului."
+msgstr ""
+"Acesta este un hub privat, așa cum indică și iconița lacăt de lânga numele "
+"hubului."
 
 #: zerver/lib/onboarding.py:127
 msgid "Private streams are only visible to stream members."
@@ -4056,14 +4456,18 @@ msgstr "Mesajele private sunt vizibile doar membrilor hubului."
 msgid ""
 "To manage this stream, go to [Stream settings]({stream_settings_url}) and "
 "click on `{initial_private_stream_name}`."
-msgstr "Pentru a administra acest hub mergi la [Setările hubului]({stream_settings_url}) și apasă  `{initial_private_stream_name}`."
+msgstr ""
+"Pentru a administra acest hub mergi la [Setările "
+"hubului]({stream_settings_url}) și apasă  `{initial_private_stream_name}`."
 
 #: zerver/lib/onboarding.py:141
 #, python-brace-format
 msgid ""
 "This is a message on stream #**{default_notification_stream_name}** with the"
 " topic `topic demonstration`."
-msgstr "Acesta este un mesaj în hubul #**{default_notification_stream_name}** cu subiectul `demonstrație subiect`."
+msgstr ""
+"Acesta este un mesaj în hubul #**{default_notification_stream_name}** cu "
+"subiectul `demonstrație subiect`."
 
 #: zerver/lib/onboarding.py:147
 msgid "Topics are a lightweight tool to keep conversations organized."
@@ -4074,21 +4478,27 @@ msgstr "Subiectele sunt unelte simple pentru organizarea conversațiilor."
 msgid ""
 "You can learn more about topics at [Streams and "
 "topics]({about_topics_help_url})."
-msgstr "Poți afla mai multe despre subiecte la [Huburi și subiecte]({about_topics_help_url})."
+msgstr ""
+"Poți afla mai multe despre subiecte la [Huburi și "
+"subiecte]({about_topics_help_url})."
 
 #: zerver/lib/onboarding.py:154
 #, python-brace-format
 msgid ""
 "This is a message on stream #**{default_notification_stream_name}** with the"
 " topic `swimming turtles`."
-msgstr "Acesta este un mesaj din hubul #**{default_notification_stream_name}** cu subiectul `swimming turtles`."
+msgstr ""
+"Acesta este un mesaj din hubul #**{default_notification_stream_name}** cu "
+"subiectul `swimming turtles`."
 
 #: zerver/lib/onboarding.py:163
 #, python-brace-format
 msgid ""
 "[Start a new topic]({start_topic_help_url}) any time you're not replying to "
 "a         previous message."
-msgstr "[Începe un subiect nou]({start_topic_help_url}) oricând nu răspunzi unui mesaj anterior."
+msgstr ""
+"[Începe un subiect nou]({start_topic_help_url}) oricând nu răspunzi unui "
+"mesaj anterior."
 
 #: zerver/lib/outgoing_webhook.py:293
 msgid "Invalid JSON in response"
@@ -4146,7 +4556,8 @@ msgstr "Argumentul \"{}\" este un JSON nevalid."
 
 #: zerver/lib/response.py:27
 msgid "Not logged in: API authentication or user session required"
-msgstr "Deconectat: este necesară autentificarea API sau sesiunea de utilizator"
+msgstr ""
+"Deconectat: este necesară autentificarea API sau sesiunea de utilizator"
 
 #: zerver/lib/send_email.py:67
 msgid "Zulip Account Security"
@@ -4236,7 +4647,9 @@ msgstr "Numărul de cuvinte urcate depașesc limita impusă de organizația ta."
 msgid ""
 "Only group members and organization administrators can administer this "
 "group."
-msgstr "Doar membrii grupului și administratorii organizației pot adminstra acest grup."
+msgstr ""
+"Doar membrii grupului și administratorii organizației pot adminstra acest "
+"grup."
 
 #: zerver/lib/user_groups.py:18
 msgid "Invalid user group"
@@ -4330,7 +4743,8 @@ msgstr "{var_name} este prea lung (limit: {max_length} caractere)"
 #: zerver/lib/validator.py:102
 #, python-brace-format
 msgid "{var_name} has incorrect length {length}; should be {target_length}"
-msgstr "{var_name} are lungime incorectă {length}; ar trebui să fie {target_length}"
+msgstr ""
+"{var_name} are lungime incorectă {length}; ar trebui să fie {target_length}"
 
 #: zerver/lib/validator.py:122 zerver/lib/validator.py:124
 #, python-brace-format
@@ -4716,7 +5130,8 @@ msgstr "ID hub nevalid {}. Nu am trimis invitații."
 
 #: zerver/views/message_edit.py:77
 msgid "Message edit history is disabled in this organization"
-msgstr "Istoria modificărilor unui mesaj este dezactivată în această organizație"
+msgstr ""
+"Istoria modificărilor unui mesaj este dezactivată în această organizație"
 
 #: zerver/views/message_edit.py:131 zerver/views/message_edit.py:134
 msgid "You don't have permission to delete this message"
@@ -4777,7 +5192,8 @@ msgstr "Mirroring Zephyr nu este permis în această organizație"
 
 #: zerver/views/message_send.py:277
 msgid "Missing deliver_at in a request for delayed message delivery"
-msgstr "Lipseștedeliver_at într-o cerere de transmitere a mesajelor întârziate"
+msgstr ""
+"Lipseștedeliver_at într-o cerere de transmitere a mesajelor întârziate"
 
 #: zerver/views/muting.py:39
 msgid "Topic already muted"
@@ -4828,7 +5244,9 @@ msgstr "Token APNS nevalid"
 msgid ""
 "At least one of the following arguments must be present: emoji_name, "
 "emoji_code"
-msgstr "Cel puțin unul din următoarele argumente trebuie să fie prezente: emoji_name, emoji_code"
+msgstr ""
+"Cel puțin unul din următoarele argumente trebuie să fie prezente: "
+"emoji_name, emoji_code"
 
 #: zerver/views/reactions.py:63
 msgid "Reaction doesn't exist."
@@ -4926,7 +5344,8 @@ msgstr "Crearea de organizații noi este dezactivată"
 #: zerver/views/streams.py:104
 #, python-brace-format
 msgid "User not authorized to execute queries on behalf of '{principal}'"
-msgstr "Utilizator neautorizat să execute interogări din partea lui '{principal}'"
+msgstr ""
+"Utilizator neautorizat să execute interogări din partea lui '{principal}'"
 
 #: zerver/views/streams.py:151
 msgid "Private streams cannot be made default."
@@ -5113,7 +5532,9 @@ msgstr "Schimbare de autor eșuată, boții nu pot avea alți boți."
 msgid ""
 "Can't create bots until FAKE_EMAIL_DOMAIN is correctly configured.\n"
 "Please contact your server administrator."
-msgstr "Nu pot crea roboți până când FAKE_EMAIL_DOMAIN este configurat corect.\nVă rugăm să contactați administratorul serverului."
+msgstr ""
+"Nu pot crea roboți până când FAKE_EMAIL_DOMAIN este configurat corect.\n"
+"Vă rugăm să contactați administratorul serverului."
 
 #: zerver/views/users.py:397
 msgid "Embedded bots are not enabled."
@@ -5213,7 +5634,7 @@ msgid ""
 "The newrelic webhook requires current_state be in [open|acknowledged|closed]"
 msgstr ""
 
-#: zerver/webhooks/pivotal/view.py:178
+#: zerver/webhooks/pivotal/view.py:179
 msgid "Unable to handle Pivotal payload"
 msgstr "Imposibil de gestionat Pivotal payload"
 
@@ -5239,7 +5660,10 @@ msgid ""
 "Your data export is complete and has been uploaded here:\n"
 "\n"
 "{public_url}"
-msgstr "Exportul datelor a fost finalizat și urcat aici:\n\n{public_url}"
+msgstr ""
+"Exportul datelor a fost finalizat și urcat aici:\n"
+"\n"
+"{public_url}"
 
 #. error
 #: zilencer/views.py:47

@@ -1,24 +1,26 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Chriser Chaoo <jsf.chris@foxmail.com>, 2017
-# Greg Price <gnprice@gmail.com>, 2017
-# Hanson Sin <yeehangsin@yahoo.com>, 2020
-# Huiming Tao <taohuiming@gmail.com>, 2017-2018
-# 张建春 <zhang.jianchun1@gmail.com>, 2016
-# LIU Lin <2671362312@qq.com>, 2019
-# longjiang li <cqlilon@live.com>, 2018-2020
-# 张建春 <zhang.jianchun1@gmail.com>, 2016
+# Hanson Sin <yeehangsin@yahoo.com>, 2021
+# Greg Price <gnprice@gmail.com>, 2021
+# Huiming Tao <taohuiming@gmail.com>, 2021
+# Chriser Chaoo <jsf.chris@foxmail.com>, 2021
+# longjiang li <cqlilon@live.com>, 2021
+# LIU Lin <2671362312@qq.com>, 2021
+# 张建春 <zhang.jianchun1@gmail.com>, 2021
+# 
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Zulip\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-05-13 22:30+0000\n"
-"PO-Revision-Date: 2021-05-12 23:29+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
-"Language-Team: Chinese Simplified (http://www.transifex.com/zulip/zulip/language/zh-Hans/)\n"
+"POT-Creation-Date: 2021-05-26 18:04+0000\n"
+"PO-Revision-Date: 2021-04-02 21:39+0000\n"
+"Last-Translator: 张建春 <zhang.jianchun1@gmail.com>, 2021\n"
+"Language-Team: Chinese Simplified (https://www.transifex.com/zulip/teams/53893/zh-Hans/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -44,7 +46,7 @@ msgstr "私有频道"
 #: analytics/views.py:317 templates/zerver/app/left_sidebar.html:17
 #: templates/zerver/app/left_sidebar.html:23
 msgid "Private messages"
-msgstr "私信"
+msgstr "私有消息"
 
 #: analytics/views.py:318
 msgid "Group private messages"
@@ -364,7 +366,7 @@ msgstr ""
 
 #: templates/zerver/accounts_accept_terms.html:54
 msgid "Enter"
-msgstr "退出"
+msgstr "进入"
 
 #: templates/zerver/accounts_home.html:14
 msgid "Sign up for Zulip"
@@ -445,6 +447,7 @@ msgid "Deleting a message removes it for everyone."
 msgstr ""
 
 #: templates/zerver/app/delete_message.html:19
+#: templates/zerver/app/index.html:167
 #: templates/zerver/app/invite_user.html:58
 msgid "Cancel"
 msgstr "取消"
@@ -490,7 +493,10 @@ msgid ""
 "            Why not <a href=\"#\" class=\"empty_feed_compose_stream\">\n"
 "            start the conversation</a>?\n"
 "            "
-msgstr "\n为何不<a href=\"#\" class=\"empty_feed_compose_stream\">\n开始聊天</a>？"
+msgstr ""
+"\n"
+"为何不<a href=\"#\" class=\"empty_feed_compose_stream\">\n"
+"开始聊天</a>？"
 
 #: templates/zerver/app/home.html:43
 msgid "You have no private messages yet!"
@@ -503,7 +509,10 @@ msgid ""
 "            Why not <a href=\"#\" class=\"empty_feed_compose_private\">\n"
 "            start the conversation</a>?\n"
 "            "
-msgstr "\n为何不<a href=\"#\" class=\"empty_feed_compose_private\">\n开始聊天</a>？"
+msgstr ""
+"\n"
+"为何不<a href=\"#\" class=\"empty_feed_compose_private\">\n"
+"开始聊天</a>？"
 
 #: templates/zerver/app/home.html:53
 msgid "You have no private messages with this person yet!"
@@ -519,7 +528,9 @@ msgid ""
 "            Why not <a href=\"#\" class=\"empty_feed_compose_private\">\n"
 "            start a conversation with yourself</a>?\n"
 "            "
-msgstr "\n为什么不<a href=\"#\" class=\"empty_feed_compose_private\">开始和自己对话</a>？"
+msgstr ""
+"\n"
+"为什么不<a href=\"#\" class=\"empty_feed_compose_private\">开始和自己对话</a>？"
 
 #: templates/zerver/app/home.html:73
 msgid "You have no group private messages with this person yet!"
@@ -564,7 +575,10 @@ msgid ""
 "            Learn more about starring messages <a href=\"/help/star-a-message\">\n"
 "            here</a>.\n"
 "            "
-msgstr "\n了解更多的帮助信息<a href=\"/help/star-a-message\">\n点击这里</a>"
+msgstr ""
+"\n"
+"了解更多的帮助信息<a href=\"/help/star-a-message\">\n"
+"点击这里</a>"
 
 #: templates/zerver/app/home.html:123
 msgid "You have no unread messages!"
@@ -580,7 +594,10 @@ msgid ""
 "            Learn more about mentions <a href=\"/help/mention-a-user-or-group\">\n"
 "            here</a>.\n"
 "            "
-msgstr "\n了解关于被提到<a href=\"/help/mention-a-user-or-group\">\n点击这里</a>"
+msgstr ""
+"\n"
+"了解关于被提到<a href=\"/help/mention-a-user-or-group\">\n"
+"点击这里</a>"
 
 #: templates/zerver/app/home.html:136
 msgid "No search results"
@@ -604,7 +621,9 @@ msgstr "如果这个消息没有消失，请等待几秒钟并<a id=\"reload-lnk
 msgid ""
 "<strong class=\"message\">Unable to connect to\n"
 "            Zulip.</strong>  Updates may be delayed."
-msgstr "<strong class=\"message\">无法连接到\nZuliip</strong> 更新可能会延迟"
+msgstr ""
+"<strong class=\"message\">无法连接到\n"
+"Zuliip</strong> 更新可能会延迟"
 
 #: templates/zerver/app/index.html:68
 msgid "Retrying soon..."
@@ -613,6 +632,38 @@ msgstr "稍后重试..."
 #: templates/zerver/app/index.html:68
 msgid "Try now."
 msgstr "立即连接"
+
+#: templates/zerver/app/index.html:147
+msgid "Set a status"
+msgstr ""
+
+#: templates/zerver/app/index.html:153
+msgid "Status message"
+msgstr ""
+
+#: templates/zerver/app/index.html:160
+msgid "In a meeting"
+msgstr ""
+
+#: templates/zerver/app/index.html:161
+msgid "Commuting"
+msgstr ""
+
+#: templates/zerver/app/index.html:162
+msgid "Out sick"
+msgstr ""
+
+#: templates/zerver/app/index.html:163
+msgid "Vacationing"
+msgstr ""
+
+#: templates/zerver/app/index.html:164
+msgid "Working remotely"
+msgstr ""
+
+#: templates/zerver/app/index.html:169
+msgid "Save"
+msgstr "保存"
 
 #: templates/zerver/app/invite_user.html:6
 msgid "Invite users to Zulip"
@@ -753,7 +804,7 @@ msgstr "过滤频道"
 #: templates/zerver/app/keyboard_shortcuts.html:77
 #: templates/zerver/app/right_sidebar.html:9
 msgid "Search people"
-msgstr "搜索用户"
+msgstr "搜索人员"
 
 #: templates/zerver/app/keyboard_shortcuts.html:81
 msgid "Previous message"
@@ -944,7 +995,7 @@ msgstr "所有消息"
 
 #: templates/zerver/app/left_sidebar.html:36
 msgid "Mentions"
-msgstr "被提及"
+msgstr "被提及消息"
 
 #: templates/zerver/app/left_sidebar.html:46
 msgid "Starred messages"
@@ -1306,7 +1357,14 @@ msgid ""
 "            containing the keyword\n"
 "            <span class=\"operator_value\">%(placeholder_keyword)s</span>.\n"
 "            "
-msgstr "\n查找将搜索发信人\n<span class=\"operator_value\">%(placeholder_email)s</span>\n至频道\n<span class=\"operator_value\">%(placeholder_stream)s</span>\n包含关键字\n<span class=\"operator_value\">%(placeholder_keyword)s</span>"
+msgstr ""
+"\n"
+"查找将搜索发信人\n"
+"<span class=\"operator_value\">%(placeholder_email)s</span>\n"
+"至频道\n"
+"<span class=\"operator_value\">%(placeholder_stream)s</span>\n"
+"包含关键字\n"
+"<span class=\"operator_value\">%(placeholder_keyword)s</span>"
 
 #: templates/zerver/app/search_operators.html:116
 msgid "Detailed search operators documentation"
@@ -1441,7 +1499,9 @@ msgid ""
 "\n"
 "                            No account found for %(email)s.\n"
 "                            "
-msgstr "\n未找到账户%(email)s"
+msgstr ""
+"\n"
+"未找到账户%(email)s"
 
 #: templates/zerver/confirm_continue_registration.html:26
 msgid "Log in with another account"
@@ -1581,7 +1641,8 @@ msgid ""
 "We received a request to change the email address for the Zulip account on "
 "%(realm_uri)s from %(old_email)s to %(new_email)s. To confirm this change, "
 "please click below:"
-msgstr "我们收到您的Zulip账户%(realm_uri)s电子邮件地址由%(old_email)s变更为%(new_email)s的请求。如果确认更改，请点击下面："
+msgstr ""
+"我们收到您的Zulip账户%(realm_uri)s电子邮件地址由%(old_email)s变更为%(new_email)s的请求。如果确认更改，请点击下面："
 
 #: templates/zerver/emails/compiled/confirm_new_email.html:12
 #: templates/zerver/emails/confirm_new_email.source.html:11
@@ -1659,6 +1720,7 @@ msgstr ""
 #: templates/zerver/emails/custom/compiled/custom_email_13351dad3bd3972e796012ab305e4a5d.html:66
 #: templates/zerver/emails/custom/compiled/custom_email_1db042280b1efac69028573753f2ebed.html:16
 #: templates/zerver/emails/custom/compiled/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.html:26
+#: templates/zerver/emails/custom/compiled/custom_email_2b91e0b32f8ab81738217df8a492c7d6.html:33
 #: templates/zerver/emails/custom/compiled/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.html:18
 #: templates/zerver/emails/custom/compiled/custom_email_d5c63509cf008c626cdcbdde801f814c.html:35
 #: templates/zerver/emails/custom/compiled/custom_email_d9c10b1bfc0ddab1178c75dcee1d8de7.html:16
@@ -1668,6 +1730,7 @@ msgstr ""
 #: templates/zerver/emails/custom/custom_email_13351dad3bd3972e796012ab305e4a5d.source.html:65
 #: templates/zerver/emails/custom/custom_email_1db042280b1efac69028573753f2ebed.source.html:15
 #: templates/zerver/emails/custom/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.source.html:24
+#: templates/zerver/emails/custom/custom_email_2b91e0b32f8ab81738217df8a492c7d6.source.html:32
 #: templates/zerver/emails/custom/custom_email_3c65b45c31a882a18c94828cdcf2b1cb.source.html:35
 #: templates/zerver/emails/custom/custom_email_3f08f8f8c55fdeb21fd5f42f9b36f5d5.txt:8
 #: templates/zerver/emails/custom/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.source.html:17
@@ -1793,7 +1856,12 @@ msgid ""
 "few <a href=\"%(keyboard_shortcuts_link)s\" style=\"color:#46aa8f; text-"
 "decoration:underline\">keyboard shortcuts</a>, or <a href=\"%(realm_uri)s\" "
 "style=\"color:#46aa8f; text-decoration:underline\">dive right in</a>!"
-msgstr "查看我们的<a href=\"%(getting_started_link)s\" style=\"color:#46aa8f; text-decoration:underline\">管理员向导</a>，<a href=\"%(keyboard_shortcuts_link)s\" style=\"color:#46aa8f; text-decoration:underline\">快捷键</a>帮助您更方便的使用Zulip，或者<a href=\"%(realm_uri)s\" style=\"color:#46aa8f; text-decoration:underline\">直接进入</a>"
+msgstr ""
+"查看我们的<a href=\"%(getting_started_link)s\" style=\"color:#46aa8f; text-"
+"decoration:underline\">管理员向导</a>，<a href=\"%(keyboard_shortcuts_link)s\" "
+"style=\"color:#46aa8f; text-"
+"decoration:underline\">快捷键</a>帮助您更方便的使用Zulip，或者<a href=\"%(realm_uri)s\" "
+"style=\"color:#46aa8f; text-decoration:underline\">直接进入</a>"
 
 #: templates/zerver/emails/compiled/followup_day1.html:43
 #, python-format
@@ -1803,7 +1871,12 @@ msgid ""
 "<a href=\"%(keyboard_shortcuts_link)s\" style=\"color:#46aa8f; text-"
 "decoration:underline\">keyboard shortcuts</a>, or <a href=\"%(realm_uri)s\" "
 "style=\"color:#46aa8f; text-decoration:underline\">dive right in</a>!"
-msgstr "<a href=\"%(getting_started_link)s\" style=\"color:#46aa8f; text-decoration:underline\">了解更多</a>关于Zulip的操作，<a href=\"%(keyboard_shortcuts_link)s\" style=\"color:#46aa8f; text-decoration:underline\">快捷键</a>帮助您更方便的使用Zulip，或者<a href=\"%(realm_uri)s\" style=\"color:#46aa8f; text-decoration:underline\">直接进入</a>"
+msgstr ""
+"<a href=\"%(getting_started_link)s\" style=\"color:#46aa8f; text-"
+"decoration:underline\">了解更多</a>关于Zulip的操作，<a "
+"href=\"%(keyboard_shortcuts_link)s\" style=\"color:#46aa8f; text-"
+"decoration:underline\">快捷键</a>帮助您更方便的使用Zulip，或者<a href=\"%(realm_uri)s\" "
+"style=\"color:#46aa8f; text-decoration:underline\">直接进入</a>"
 
 #: templates/zerver/emails/compiled/followup_day1.html:48
 #: templates/zerver/emails/followup_day1.source.html:42
@@ -1828,7 +1901,12 @@ msgid ""
 "decoration:underline\">GitHub</a>, or chat with us live on the <a "
 "href=\"https://chat.zulip.org\" style=\"color:#46aa8f; text-"
 "decoration:underline\">Zulip community server</a>!"
-msgstr "例如：关注我们的<a href=\"https://twitter.com/zulip\" style=\"color:#46aa8f; text-decoration:underline\">Twitter</a>，给我们的<a href=\"https://github.com/zulip/zulip\" style=\"color:#46aa8f; text-decoration:underline\">Github</a>加星，或者在<a href=\"https://chat.zulip.org\" style=\"color:#46aa8f; text-decoration:underline\">Zulip社区服务器</a>与我们交流"
+msgstr ""
+"例如：关注我们的<a href=\"https://twitter.com/zulip\" style=\"color:#46aa8f; text-"
+"decoration:underline\">Twitter</a>，给我们的<a "
+"href=\"https://github.com/zulip/zulip\" style=\"color:#46aa8f; text-"
+"decoration:underline\">Github</a>加星，或者在<a href=\"https://chat.zulip.org\" "
+"style=\"color:#46aa8f; text-decoration:underline\">Zulip社区服务器</a>与我们交流"
 
 #: templates/zerver/emails/compiled/followup_day2.html:9
 #: templates/zerver/emails/followup_day2.source.html:8
@@ -1881,7 +1959,8 @@ msgid ""
 "(imagine if email didn't have them!), and it lets you more efficiently catch"
 " up on what's happened while you're away—read the topics that are relevant "
 "to you, and ignore the ones that aren't!"
-msgstr "为什么要为话题消耗精力呢?有两个原因:它能让对话更清晰(想象一下如果没有电子邮件的话!)，它还能让你更有效地了解在你外出时发生的事情——阅读与你相关的话题，忽略与你无关的话题!"
+msgstr ""
+"为什么要为话题消耗精力呢?有两个原因:它能让对话更清晰(想象一下如果没有电子邮件的话!)，它还能让你更有效地了解在你外出时发生的事情——阅读与你相关的话题，忽略与你无关的话题!"
 
 #: templates/zerver/emails/compiled/followup_day2.html:26
 #: templates/zerver/emails/followup_day2.source.html:25
@@ -2233,6 +2312,7 @@ msgstr "如果您遇到任何麻烦，有问题需要反馈，或仅仅想聊聊
 #: templates/zerver/emails/custom/compiled/custom_email_13351dad3bd3972e796012ab305e4a5d.html:66
 #: templates/zerver/emails/custom/compiled/custom_email_1db042280b1efac69028573753f2ebed.html:16
 #: templates/zerver/emails/custom/compiled/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.html:26
+#: templates/zerver/emails/custom/compiled/custom_email_2b91e0b32f8ab81738217df8a492c7d6.html:33
 #: templates/zerver/emails/custom/compiled/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.html:18
 #: templates/zerver/emails/custom/compiled/custom_email_d5c63509cf008c626cdcbdde801f814c.html:35
 #: templates/zerver/emails/custom/compiled/custom_email_d9c10b1bfc0ddab1178c75dcee1d8de7.html:16
@@ -2242,6 +2322,7 @@ msgstr "如果您遇到任何麻烦，有问题需要反馈，或仅仅想聊聊
 #: templates/zerver/emails/custom/custom_email_13351dad3bd3972e796012ab305e4a5d.source.html:65
 #: templates/zerver/emails/custom/custom_email_1db042280b1efac69028573753f2ebed.source.html:15
 #: templates/zerver/emails/custom/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.source.html:24
+#: templates/zerver/emails/custom/custom_email_2b91e0b32f8ab81738217df8a492c7d6.source.html:32
 #: templates/zerver/emails/custom/custom_email_3c65b45c31a882a18c94828cdcf2b1cb.source.html:35
 #: templates/zerver/emails/custom/custom_email_3f08f8f8c55fdeb21fd5f42f9b36f5d5.txt:8
 #: templates/zerver/emails/custom/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.source.html:17
@@ -2291,7 +2372,10 @@ msgid ""
 "become a Zulip pro with a few <a "
 "href=\"%(keyboard_shortcuts_link)s\">keyboard shortcuts</a>, or <a "
 "href=\"%(realm_uri)s\">dive right in</a>!"
-msgstr "查看我们的<a href=\"%(getting_started_link)s\">管理员向导</a>，<a href=\"%(keyboard_shortcuts_link)s\">快捷键</a>帮助更方便的使用Zulip，或者<a href=\"%(realm_uri)s\">直接进入</a>"
+msgstr ""
+"查看我们的<a href=\"%(getting_started_link)s\">管理员向导</a>，<a "
+"href=\"%(keyboard_shortcuts_link)s\">快捷键</a>帮助更方便的使用Zulip，或者<a "
+"href=\"%(realm_uri)s\">直接进入</a>"
 
 #: templates/zerver/emails/followup_day1.source.html:37
 #, python-format
@@ -2299,14 +2383,20 @@ msgid ""
 "<a href=\"%(getting_started_link)s\">Learn more</a> about Zulip, become a "
 "pro with a few <a href=\"%(keyboard_shortcuts_link)s\">keyboard "
 "shortcuts</a>, or <a href=\"%(realm_uri)s\">dive right in</a>!"
-msgstr "<a href=\"%(getting_started_link)s\">了解更多</a>关于Zulip的操作，<a href=\"%(keyboard_shortcuts_link)s\">快捷键</a>帮助更方便的使用Zulip，或者<a href=\"%(realm_uri)s\">直接进入</a>"
+msgstr ""
+"<a href=\"%(getting_started_link)s\">了解更多</a>关于Zulip的操作，<a "
+"href=\"%(keyboard_shortcuts_link)s\">快捷键</a>帮助更方便的使用Zulip，或者<a "
+"href=\"%(realm_uri)s\">直接进入</a>"
 
 #: templates/zerver/emails/followup_day1.source.html:47
 msgid ""
 "PS: Follow us on <a href=\"https://twitter.com/zulip\">Twitter</a>, star us "
 "on <a href=\"https://github.com/zulip/zulip\">GitHub</a>, or chat with us "
 "live on the <a href=\"https://chat.zulip.org\">Zulip community server</a>!"
-msgstr "例如：关注我们的<a href=\"https://twitter.com/zulip\">Twitter</a>，给我们的<a href=\"https://github.com/zulip/zulip\">GitHub</a>加星，或者在<a href=\"https://chat.zulip.org\">Zulip 社区服务器</a>和我们在线交流"
+msgstr ""
+"例如：关注我们的<a href=\"https://twitter.com/zulip\">Twitter</a>，给我们的<a "
+"href=\"https://github.com/zulip/zulip\">GitHub</a>加星，或者在<a "
+"href=\"https://chat.zulip.org\">Zulip 社区服务器</a>和我们在线交流"
 
 #: templates/zerver/emails/followup_day1.subject.txt:2
 #, python-format
@@ -2341,7 +2431,8 @@ msgid ""
 "Check out our guide (%(getting_started_link)s) for admins, become a Zulip "
 "pro with a few keyboard shortcuts (%(keyboard_shortcuts_link)s), or dive "
 "right in to %(realm_uri)s!"
-msgstr "查看我们的管理员向导（%(getting_started_link)s），快捷键（%(keyboard_shortcuts_link)s）帮助更方便的使用Zulip，或者直接进入%(realm_uri)s"
+msgstr ""
+"查看我们的管理员向导（%(getting_started_link)s），快捷键（%(keyboard_shortcuts_link)s）帮助更方便的使用Zulip，或者直接进入%(realm_uri)s"
 
 #: templates/zerver/emails/followup_day1.txt:27
 #, python-format
@@ -2349,14 +2440,18 @@ msgid ""
 "Learn more (%(getting_started_link)s) about Zulip, become a pro with a few "
 "keyboard shortcuts (%(keyboard_shortcuts_link)s), or dive right in to "
 "%(realm_uri)s!"
-msgstr "了解更多（%(getting_started_link)s）关于Zulip的操作，快捷键（%(keyboard_shortcuts_link)s）帮助更方便的使用Zulip，或者直接进入%(realm_uri)s"
+msgstr ""
+"了解更多（%(getting_started_link)s）关于Zulip的操作，快捷键（%(keyboard_shortcuts_link)s）帮助更方便的使用Zulip，或者直接进入%(realm_uri)s"
 
 #: templates/zerver/emails/followup_day1.txt:34
 msgid ""
 "PS: Check us out on Twitter (@zulip), star us on GitHub "
 "(https://github.com/zulip/zulip), or chat with us live on the Zulip "
 "community server (https://chat.zulip.org)!"
-msgstr "例如：关注我们的Twitter (@zulip)，给我们的GitHub加星(https://github.com/zulip/zulip)，或者在Zulip社区服务器和我们在线交流 (https://chat.zulip.org)"
+msgstr ""
+"例如：关注我们的Twitter "
+"(@zulip)，给我们的GitHub加星(https://github.com/zulip/zulip)，或者在Zulip社区服务器和我们在线交流 "
+"(https://chat.zulip.org)"
 
 #: templates/zerver/emails/followup_day2.source.html:14
 msgid ""
@@ -2371,7 +2466,8 @@ msgid ""
 "(imagine if email didn't have them!), and it lets you more efficiently catch"
 " up on what's happened while you're away&mdash;read the topics that are "
 "relevant to you, and ignore the ones that aren't!"
-msgstr "为什么要为话题消耗精力呢?有两个原因:它能让对话更清晰(想象一下如果没有电子邮件的话!)，它还能让你更有效地了解在你外出时发生的事情——阅读与你相关的话题，忽略与你无关的话题!"
+msgstr ""
+"为什么要为话题消耗精力呢?有两个原因:它能让对话更清晰(想象一下如果没有电子邮件的话!)，它还能让你更有效地了解在你外出时发生的事情——阅读与你相关的话题，忽略与你无关的话题!"
 
 #: templates/zerver/emails/followup_day2.subject.txt:1
 msgid "One last thing: using topics like a pro"
@@ -2390,7 +2486,8 @@ msgid ""
 "(imagine if email didn't have them!), and it lets you more efficiently catch"
 " up on what's happened while you're away -- read the topics that are "
 "relevant to you, and ignore the ones that aren't!"
-msgstr "为什么要为话题消耗精力呢?有两个原因:它能让对话更清晰(想象一下如果没有电子邮件的话!)，它还能让你更有效地了解在你外出时发生的事情——阅读与你相关的话题，忽略与你无关的话题!"
+msgstr ""
+"为什么要为话题消耗精力呢?有两个原因:它能让对话更清晰(想象一下如果没有电子邮件的话!)，它还能让你更有效地了解在你外出时发生的事情——阅读与你相关的话题，忽略与你无关的话题!"
 
 #: templates/zerver/emails/followup_day2.txt:13
 msgid "Take it for a spin now:"
@@ -2442,7 +2539,9 @@ msgid ""
 "This is a friendly reminder that %(referrer_name)s (%(referrer_email)s) "
 "wants you to join them on Zulip -- the team communication tool designed for "
 "productivity."
-msgstr "友情提示：%(referrer_name)s（%(referrer_email)s）邀请您加入他们的Zulip — 一个能大大提高工作效率的团队交流工具。"
+msgstr ""
+"友情提示：%(referrer_name)s（%(referrer_email)s）邀请您加入他们的Zulip — "
+"一个能大大提高工作效率的团队交流工具。"
 
 #: templates/zerver/emails/invitation_reminder.txt:10
 #, python-format
@@ -2827,7 +2926,9 @@ msgid ""
 "                        and\n"
 "                        <a href=\"/integrations/doc/ifttt\">IFTTT</a>.\n"
 "                        "
-msgstr "\n同时数以百计的通过<a href=\"/integrations/doc/hubot\">Hubot</a>，<a href=\"/integrations/doc/zapier\">Zapier</a>，和<a href=\"/integrations/doc/ifttt\">IFTTT</a>。"
+msgstr ""
+"\n"
+"同时数以百计的通过<a href=\"/integrations/doc/hubot\">Hubot</a>，<a href=\"/integrations/doc/zapier\">Zapier</a>，和<a href=\"/integrations/doc/ifttt\">IFTTT</a>。"
 
 #: templates/zerver/integrations/index.html:41
 msgid "Search integrations"
@@ -2880,7 +2981,9 @@ msgid ""
 "        The email address you are trying to sign up with is not valid.\n"
 "        Please sign up using a valid email address.\n"
 "        "
-msgstr "\n注册电子邮件不可用，请换一个再试"
+msgstr ""
+"\n"
+"注册电子邮件不可用，请换一个再试"
 
 #: templates/zerver/invalid_email.html:19
 #, python-format
@@ -2890,7 +2993,9 @@ msgid ""
 "        only allows users with email addresses within the\n"
 "        organization. Please sign up using appropriate email address.\n"
 "        "
-msgstr "\n您想要加入的社群%(realm_name)s只运行使用他们社群的电子邮件地址的用户加入，请使用正确的电子邮件注册"
+msgstr ""
+"\n"
+"您想要加入的社群%(realm_name)s只运行使用他们社群的电子邮件地址的用户加入，请使用正确的电子邮件注册"
 
 #: templates/zerver/invalid_email.html:29
 #, python-format
@@ -2970,7 +3075,9 @@ msgid ""
 "                    Contact this <a href=\"mailto:%(support_email)s\">server's administrator</a>\n"
 "                    if you have any questions.\n"
 "                    "
-msgstr "\n这个Zulip服务器没有配置隐私策略。如果您有任何问题,联系这个<a href=\"mailto:%(support_email)s\">服务器的管理员</a>"
+msgstr ""
+"\n"
+"这个Zulip服务器没有配置隐私策略。如果您有任何问题,联系这个<a href=\"mailto:%(support_email)s\">服务器的管理员</a>"
 
 #: templates/zerver/realm_creation_failed.html:19
 msgid ""
@@ -3073,7 +3180,7 @@ msgstr "全名或简称"
 
 #: templates/zerver/register.html:136
 msgid "Full name"
-msgstr "名字"
+msgstr "名称"
 
 #: templates/zerver/register.html:156
 msgid "Enter your LDAP/Active Directory password."
@@ -3165,7 +3272,9 @@ msgid ""
 "                    Contact this <a href=\"mailto:%(support_email)s\">server's administrator</a>\n"
 "                    if you have any questions.\n"
 "                    "
-msgstr "\n这个Zulip服务器没有设置这方面的服务，如果有问题您可以联系这个<a href=\"mailto:%(support_email)s\">服务器的管理员</a>"
+msgstr ""
+"\n"
+"这个Zulip服务器没有设置这方面的服务，如果有问题您可以联系这个<a href=\"mailto:%(support_email)s\">服务器的管理员</a>"
 
 #: templates/zerver/unsubscribe_link_error.html:5
 msgid "Unknown email unsubscribe request"
@@ -3185,7 +3294,11 @@ msgid ""
 "%%20e-"
 "mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email"
 " us</a> and we'll get this squared away!"
-msgstr "请检查是否有完整的URL，然后再试一次。或<a href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">联系我们</a>我们会提供帮助！"
+msgstr ""
+"请检查是否有完整的URL，然后再试一次。或<a "
+"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip"
+"%%20e-"
+"mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">联系我们</a>我们会提供帮助！"
 
 #: templates/zerver/unsubscribe_success.html:10
 msgid "Email settings updated"
@@ -3785,7 +3898,7 @@ msgstr "缺少表情名称"
 msgid "Invalid type parameter"
 msgstr "参数类型不正确"
 
-#: zerver/lib/events.py:1140
+#: zerver/lib/events.py:1144
 msgid "Could not allocate event queue"
 msgstr "无法分配事件队列"
 
@@ -5217,7 +5330,7 @@ msgid ""
 "The newrelic webhook requires current_state be in [open|acknowledged|closed]"
 msgstr ""
 
-#: zerver/webhooks/pivotal/view.py:178
+#: zerver/webhooks/pivotal/view.py:179
 msgid "Unable to handle Pivotal payload"
 msgstr "无法处理Pivotal的payload"
 

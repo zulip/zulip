@@ -1,18 +1,23 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Boris Yankov <borisyankov@gmail.com>, 2017
-# Veselin Georgiev <vvgeorgievv@gmail.com>, 2018
+# Andrey Tsarev <andrey@tsarev.co.uk>, 2021
+# Boris Yankov <borisyankov@gmail.com>, 2021
+# Veselin Georgiev <vvgeorgievv@gmail.com>, 2021
+# Akash Nimare <svnitakash@gmail.com>, 2021
+# 
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Zulip\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-05-13 22:30+0000\n"
-"PO-Revision-Date: 2021-05-12 23:29+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
-"Language-Team: Bulgarian (http://www.transifex.com/zulip/zulip/language/bg/)\n"
+"POT-Creation-Date: 2021-05-26 18:04+0000\n"
+"PO-Revision-Date: 2021-04-02 21:39+0000\n"
+"Last-Translator: Akash Nimare <svnitakash@gmail.com>, 2021\n"
+"Language-Team: Bulgarian (https://www.transifex.com/zulip/teams/53893/bg/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -55,7 +60,9 @@ msgstr ""
 
 #: analytics/views.py:367 analytics/views.py:398
 msgid "No analytics data available. Please contact your server administrator."
-msgstr "Няма налични данни за анализ. Моля свържете се с вашия администратор на сървъра."
+msgstr ""
+"Няма налични данни за анализ. Моля свържете се с вашия администратор на "
+"сървъра."
 
 #: analytics/views.py:1275
 msgid "Invalid parameters"
@@ -394,7 +401,9 @@ msgstr "Проверете вашата Е-поща за да започнем."
 
 #: templates/zerver/accounts_send_confirm.html:21
 msgid "Still no email? We can <a href=\"#\" id=\"resend_email_link\">resend it</a>."
-msgstr "Не сте получили писмо? Ние ще ви го <a href=\"#\" id=\"resend_email_link\">пратим отново</a>."
+msgstr ""
+"Не сте получили писмо? Ние ще ви го <a href=\"#\" "
+"id=\"resend_email_link\">пратим отново</a>."
 
 #: templates/zerver/accounts_send_confirm.html:22
 msgid "Just in case, take a look at your Spam folder."
@@ -414,7 +423,7 @@ msgstr "За всеки случай, проверете вашата папка
 #: templates/zerver/app/navbar_alerts.html:60
 #: templates/zerver/app/navbar_alerts.html:73
 msgid "Close"
-msgstr "Затвори"
+msgstr "Близо"
 
 #: templates/zerver/app/about-zulip.html:6 templates/zerver/billing_nav.html:4
 #: templates/zerver/development/integrations_dev_panel.html:15
@@ -439,9 +448,10 @@ msgid "Deleting a message removes it for everyone."
 msgstr ""
 
 #: templates/zerver/app/delete_message.html:19
+#: templates/zerver/app/index.html:167
 #: templates/zerver/app/invite_user.html:58
 msgid "Cancel"
-msgstr "Отказ"
+msgstr "Откажи"
 
 #: templates/zerver/app/delete_message.html:20
 msgid "Confirm"
@@ -484,7 +494,9 @@ msgid ""
 "            Why not <a href=\"#\" class=\"empty_feed_compose_stream\">\n"
 "            start the conversation</a>?\n"
 "            "
-msgstr "\nЗащо не <a href=\"#\" class=\"empty_feed_compose_stream\">започнете нов разговор</a>?"
+msgstr ""
+"\n"
+"Защо не <a href=\"#\" class=\"empty_feed_compose_stream\">започнете нов разговор</a>?"
 
 #: templates/zerver/app/home.html:43
 msgid "You have no private messages yet!"
@@ -497,7 +509,9 @@ msgid ""
 "            Why not <a href=\"#\" class=\"empty_feed_compose_private\">\n"
 "            start the conversation</a>?\n"
 "            "
-msgstr "\nЗащо не <a href=\"#\" class=\"empty_feed_compose_private\">започнете нов разговор</a>?"
+msgstr ""
+"\n"
+"Защо не <a href=\"#\" class=\"empty_feed_compose_private\">започнете нов разговор</a>?"
 
 #: templates/zerver/app/home.html:53
 msgid "You have no private messages with this person yet!"
@@ -607,6 +621,38 @@ msgstr "Ще опитам отново скоро..."
 #: templates/zerver/app/index.html:68
 msgid "Try now."
 msgstr "Опитай сега."
+
+#: templates/zerver/app/index.html:147
+msgid "Set a status"
+msgstr ""
+
+#: templates/zerver/app/index.html:153
+msgid "Status message"
+msgstr ""
+
+#: templates/zerver/app/index.html:160
+msgid "In a meeting"
+msgstr ""
+
+#: templates/zerver/app/index.html:161
+msgid "Commuting"
+msgstr ""
+
+#: templates/zerver/app/index.html:162
+msgid "Out sick"
+msgstr ""
+
+#: templates/zerver/app/index.html:163
+msgid "Vacationing"
+msgstr ""
+
+#: templates/zerver/app/index.html:164
+msgid "Working remotely"
+msgstr ""
+
+#: templates/zerver/app/index.html:169
+msgid "Save"
+msgstr "Запази"
 
 #: templates/zerver/app/invite_user.html:6
 msgid "Invite users to Zulip"
@@ -925,7 +971,7 @@ msgstr "Абонирай се за/откажи от избрания поток
 
 #: templates/zerver/app/keyboard_shortcuts.html:326
 msgid "Create new stream"
-msgstr "Създай нов поток"
+msgstr "Създай нов канал"
 
 #: templates/zerver/app/keyboard_shortcuts.html:332
 msgid "Detailed keyboard shortcuts documentation"
@@ -1072,7 +1118,9 @@ msgstr "Покана потребители"
 msgid ""
 "Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via "
 "Webathena"
-msgstr "Разреши необходимите Kerberos билети за Zulip, за да може да стартира вашето Zephyr огледало през Webathena"
+msgstr ""
+"Разреши необходимите Kerberos билети за Zulip, за да може да стартира вашето"
+" Zephyr огледало през Webathena"
 
 #: templates/zerver/app/navbar.html:170
 msgid "Link with Webathena"
@@ -1111,7 +1159,9 @@ msgstr "Никога не питай на този компютър"
 msgid ""
 "Zulip needs to send email to confirm users' addresses and send "
 "notifications."
-msgstr "Zulip трябва да изпрати съобщение чрез е-поща за потвърждение на адреса и изпращане на предупреждения."
+msgstr ""
+"Zulip трябва да изпрати съобщение чрез е-поща за потвърждение на адреса и "
+"изпращане на предупреждения."
 
 #: templates/zerver/app/navbar_alerts.html:24
 msgid "See how to configure email."
@@ -1653,6 +1703,7 @@ msgstr ""
 #: templates/zerver/emails/custom/compiled/custom_email_13351dad3bd3972e796012ab305e4a5d.html:66
 #: templates/zerver/emails/custom/compiled/custom_email_1db042280b1efac69028573753f2ebed.html:16
 #: templates/zerver/emails/custom/compiled/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.html:26
+#: templates/zerver/emails/custom/compiled/custom_email_2b91e0b32f8ab81738217df8a492c7d6.html:33
 #: templates/zerver/emails/custom/compiled/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.html:18
 #: templates/zerver/emails/custom/compiled/custom_email_d5c63509cf008c626cdcbdde801f814c.html:35
 #: templates/zerver/emails/custom/compiled/custom_email_d9c10b1bfc0ddab1178c75dcee1d8de7.html:16
@@ -1662,6 +1713,7 @@ msgstr ""
 #: templates/zerver/emails/custom/custom_email_13351dad3bd3972e796012ab305e4a5d.source.html:65
 #: templates/zerver/emails/custom/custom_email_1db042280b1efac69028573753f2ebed.source.html:15
 #: templates/zerver/emails/custom/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.source.html:24
+#: templates/zerver/emails/custom/custom_email_2b91e0b32f8ab81738217df8a492c7d6.source.html:32
 #: templates/zerver/emails/custom/custom_email_3c65b45c31a882a18c94828cdcf2b1cb.source.html:35
 #: templates/zerver/emails/custom/custom_email_3f08f8f8c55fdeb21fd5f42f9b36f5d5.txt:8
 #: templates/zerver/emails/custom/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.source.html:17
@@ -2227,6 +2279,7 @@ msgstr ""
 #: templates/zerver/emails/custom/compiled/custom_email_13351dad3bd3972e796012ab305e4a5d.html:66
 #: templates/zerver/emails/custom/compiled/custom_email_1db042280b1efac69028573753f2ebed.html:16
 #: templates/zerver/emails/custom/compiled/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.html:26
+#: templates/zerver/emails/custom/compiled/custom_email_2b91e0b32f8ab81738217df8a492c7d6.html:33
 #: templates/zerver/emails/custom/compiled/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.html:18
 #: templates/zerver/emails/custom/compiled/custom_email_d5c63509cf008c626cdcbdde801f814c.html:35
 #: templates/zerver/emails/custom/compiled/custom_email_d9c10b1bfc0ddab1178c75dcee1d8de7.html:16
@@ -2236,6 +2289,7 @@ msgstr ""
 #: templates/zerver/emails/custom/custom_email_13351dad3bd3972e796012ab305e4a5d.source.html:65
 #: templates/zerver/emails/custom/custom_email_1db042280b1efac69028573753f2ebed.source.html:15
 #: templates/zerver/emails/custom/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.source.html:24
+#: templates/zerver/emails/custom/custom_email_2b91e0b32f8ab81738217df8a492c7d6.source.html:32
 #: templates/zerver/emails/custom/custom_email_3c65b45c31a882a18c94828cdcf2b1cb.source.html:35
 #: templates/zerver/emails/custom/custom_email_3f08f8f8c55fdeb21fd5f42f9b36f5d5.txt:8
 #: templates/zerver/emails/custom/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.source.html:17
@@ -2623,7 +2677,7 @@ msgstr "Е-поща адрес"
 
 #: templates/zerver/find_account.html:43
 msgid "Find accounts"
-msgstr "Намери акаунти"
+msgstr "Намерете профили"
 
 #: templates/zerver/footer.html:5
 msgid "Home"
@@ -2821,7 +2875,13 @@ msgid ""
 "                        and\n"
 "                        <a href=\"/integrations/doc/ifttt\">IFTTT</a>.\n"
 "                        "
-msgstr "\n And hundreds more through\n     <a href=\"/integrations/doc/hubot\">Hubot</a>,\n     <a href=\"/integrations/doc/zapier\">Zapier</a>,\n      and\n      <a href=\"/integrations/doc/ifttt\">IFTTT</a>."
+msgstr ""
+"\n"
+" And hundreds more through\n"
+"     <a href=\"/integrations/doc/hubot\">Hubot</a>,\n"
+"     <a href=\"/integrations/doc/zapier\">Zapier</a>,\n"
+"      and\n"
+"      <a href=\"/integrations/doc/ifttt\">IFTTT</a>."
 
 #: templates/zerver/integrations/index.html:41
 msgid "Search integrations"
@@ -3042,7 +3102,7 @@ msgstr "По-късо е по-добре дълго."
 
 #: templates/zerver/register.html:52
 msgid "Organization URL"
-msgstr "Уеб адрес на Организация"
+msgstr "URL адрес на организацията"
 
 #: templates/zerver/register.html:59
 #, python-format
@@ -3077,7 +3137,9 @@ msgstr ""
 msgid ""
 "This is used for mobile applications and other tools that require a "
 "password."
-msgstr "Това се използва за мобилни приложения и други инструменти които изискват парола."
+msgstr ""
+"Това се използва за мобилни приложения и други инструменти които изискват "
+"парола."
 
 #: templates/zerver/register.html:178
 msgid "Password strength"
@@ -3105,7 +3167,8 @@ msgstr "Потвърдете паролата"
 
 #: templates/zerver/reset_confirm.html:68
 msgid "Sorry, the link you provided is invalid or has already been used."
-msgstr "Съжаляваме, връзката която предоставихте е невалидна или вече е използвана."
+msgstr ""
+"Съжаляваме, връзката която предоставихте е невалидна или вече е използвана."
 
 #: templates/zerver/reset_done.html:9
 msgid "We've reset your password!"
@@ -3779,7 +3842,7 @@ msgstr ""
 msgid "Invalid type parameter"
 msgstr ""
 
-#: zerver/lib/events.py:1140
+#: zerver/lib/events.py:1144
 msgid "Could not allocate event queue"
 msgstr ""
 
@@ -5211,7 +5274,7 @@ msgid ""
 "The newrelic webhook requires current_state be in [open|acknowledged|closed]"
 msgstr ""
 
-#: zerver/webhooks/pivotal/view.py:178
+#: zerver/webhooks/pivotal/view.py:179
 msgid "Unable to handle Pivotal payload"
 msgstr ""
 

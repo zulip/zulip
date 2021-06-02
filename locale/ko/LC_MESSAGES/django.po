@@ -1,29 +1,32 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# cozyplanes <laonsonic@gmail.com>, 2018
-# EUNJEUNG <rislove418@gmail.com>, 2018
-# Greg Price <gnprice@gmail.com>, 2017
-# Jeong, Yong-ick <yongick.jeong@gmail.com>, 2018
-# Jihoon Lee <ulla4571@gmail.com>, 2018
-# 최진호 <jinho.choi.999@gmail.com>, 2018
-# Ki Heo <reo119@marunet.co.kr>, 2017-2018
-# Kwoun younggil <zelord.kwoun@gmail.com>, 2018
+# Kwoun younggil <zelord.kwoun@gmail.com>, 2021
+# Wonha Ryu <wonha.ryu@gmail.com>, 2021
+# cozyplanes <laonsonic@gmail.com>, 2021
 # Leonardo YongUk Kim <dalinaum@gmail.com>, 2021
+# Jeong, Yong-ick <yongick.jeong@gmail.com>, 2021
+# Harold Kim <root@stypr.com>, 2021
+# Ki Heo <reo119@marunet.co.kr>, 2021
+# Jihoon Lee <ulla4571@gmail.com>, 2021
+# EUNJEUNG <rislove418@gmail.com>, 2021
+# Youngduck Kim <kfiekeofo@hanmail.net>, 2021
+# 최진호 <jinho.choi.999@gmail.com>, 2021
+# Yeonjeong Noh <nyj2800@hanmail.net>, 2021
 # sung yong kim <hikimsy@gmail.com>, 2021
-# Wonha Ryu <wonha.ryu@gmail.com>, 2015
-# Yeonjeong Noh <nyj2800@hanmail.net>, 2018
-# Youngduck Kim <kfiekeofo@hanmail.net>, 2018
+# 
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Zulip\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-05-13 22:30+0000\n"
-"PO-Revision-Date: 2021-05-12 23:29+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
-"Language-Team: Korean (http://www.transifex.com/zulip/zulip/language/ko/)\n"
+"POT-Creation-Date: 2021-05-26 18:04+0000\n"
+"PO-Revision-Date: 2021-04-02 21:39+0000\n"
+"Last-Translator: sung yong kim <hikimsy@gmail.com>, 2021\n"
+"Language-Team: Korean (https://www.transifex.com/zulip/teams/53893/ko/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -100,7 +103,8 @@ msgstr "최소 {} 유저 이상에 대한 청구서여야 합니다."
 msgid ""
 "Invoices with more than {} licenses can't be processed from this page. To "
 "complete the upgrade, please contact {}."
-msgstr "현재 페이지에서 {} licenses 이상의 인보이스에 대해서는 처리할수 없습니다. 업그레이드를 완료 하시려면, {} 로 연락 주세요."
+msgstr ""
+"현재 페이지에서 {} licenses 이상의 인보이스에 대해서는 처리할수 없습니다. 업그레이드를 완료 하시려면, {} 로 연락 주세요."
 
 #: corporate/views.py:109
 msgid "No payment method on file"
@@ -450,6 +454,7 @@ msgid "Deleting a message removes it for everyone."
 msgstr ""
 
 #: templates/zerver/app/delete_message.html:19
+#: templates/zerver/app/index.html:167
 #: templates/zerver/app/invite_user.html:58
 msgid "Cancel"
 msgstr "취소"
@@ -495,7 +500,9 @@ msgid ""
 "            Why not <a href=\"#\" class=\"empty_feed_compose_stream\">\n"
 "            start the conversation</a>?\n"
 "            "
-msgstr "\n<a href=\"#\" class=\"empty_feed_compose_stream\">대화를 시작하시겠습니까</a>?"
+msgstr ""
+"\n"
+"<a href=\"#\" class=\"empty_feed_compose_stream\">대화를 시작하시겠습니까</a>?"
 
 #: templates/zerver/app/home.html:43
 msgid "You have no private messages yet!"
@@ -508,7 +515,9 @@ msgid ""
 "            Why not <a href=\"#\" class=\"empty_feed_compose_private\">\n"
 "            start the conversation</a>?\n"
 "            "
-msgstr "\n<a href=\"#\" class=\"empty_feed_compose_private\">대화를 시작하시겠습니까</a>?"
+msgstr ""
+"\n"
+"<a href=\"#\" class=\"empty_feed_compose_private\">대화를 시작하시겠습니까</a>?"
 
 #: templates/zerver/app/home.html:53
 msgid "You have no private messages with this person yet!"
@@ -524,7 +533,9 @@ msgid ""
 "            Why not <a href=\"#\" class=\"empty_feed_compose_private\">\n"
 "            start a conversation with yourself</a>?\n"
 "            "
-msgstr "\n나와의 대화를 시작해보겠습니까?"
+msgstr ""
+"\n"
+"나와의 대화를 시작해보겠습니까?"
 
 #: templates/zerver/app/home.html:73
 msgid "You have no group private messages with this person yet!"
@@ -569,7 +580,9 @@ msgid ""
 "            Learn more about starring messages <a href=\"/help/star-a-message\">\n"
 "            here</a>.\n"
 "            "
-msgstr "\n<a href=\"/help/star-a-message\">여기</a>서 별표 메시지에 대해 더 알아보기."
+msgstr ""
+"\n"
+"<a href=\"/help/star-a-message\">여기</a>서 별표 메시지에 대해 더 알아보기."
 
 #: templates/zerver/app/home.html:123
 msgid "You have no unread messages!"
@@ -609,7 +622,9 @@ msgstr "만약 메시지가 전송되지 않는다면, 몇 초 후에 페이지�
 msgid ""
 "<strong class=\"message\">Unable to connect to\n"
 "            Zulip.</strong>  Updates may be delayed."
-msgstr "<strong class=\"message\">Zulip에 연결할 수 없습니다.</strong>\n업데이트가 지연될 수 있습니다."
+msgstr ""
+"<strong class=\"message\">Zulip에 연결할 수 없습니다.</strong>\n"
+"업데이트가 지연될 수 있습니다."
 
 #: templates/zerver/app/index.html:68
 msgid "Retrying soon..."
@@ -618,6 +633,38 @@ msgstr "곧 재시도합니다..."
 #: templates/zerver/app/index.html:68
 msgid "Try now."
 msgstr "지금 시도하기."
+
+#: templates/zerver/app/index.html:147
+msgid "Set a status"
+msgstr "상태 설정"
+
+#: templates/zerver/app/index.html:153
+msgid "Status message"
+msgstr ""
+
+#: templates/zerver/app/index.html:160
+msgid "In a meeting"
+msgstr ""
+
+#: templates/zerver/app/index.html:161
+msgid "Commuting"
+msgstr ""
+
+#: templates/zerver/app/index.html:162
+msgid "Out sick"
+msgstr ""
+
+#: templates/zerver/app/index.html:163
+msgid "Vacationing"
+msgstr ""
+
+#: templates/zerver/app/index.html:164
+msgid "Working remotely"
+msgstr ""
+
+#: templates/zerver/app/index.html:169
+msgid "Save"
+msgstr "저장"
 
 #: templates/zerver/app/invite_user.html:6
 msgid "Invite users to Zulip"
@@ -700,7 +747,7 @@ msgstr "새로운 스트림 메시지"
 #: templates/zerver/app/keyboard_shortcuts.html:20
 #: templates/zerver/app/keyboard_shortcuts.html:130
 msgid "New private message"
-msgstr "새 비공개 메시지"
+msgstr "새로운 비공개 메시지"
 
 #: templates/zerver/app/keyboard_shortcuts.html:24
 #: templates/zerver/app/keyboard_shortcuts.html:146
@@ -753,7 +800,7 @@ msgstr "네비게이션"
 #: templates/zerver/app/left_sidebar.html:64
 #: templates/zerver/app/left_sidebar.html:66
 msgid "Filter streams"
-msgstr "스트림 검색"
+msgstr "스트림 필터링"
 
 #: templates/zerver/app/keyboard_shortcuts.html:77
 #: templates/zerver/app/right_sidebar.html:9
@@ -981,7 +1028,7 @@ msgstr "사용 불가능"
 
 #: templates/zerver/app/lightbox_overlay.html:11
 msgid "Enabled"
-msgstr "가능"
+msgstr "사용 가능"
 
 #: templates/zerver/app/lightbox_overlay.html:13
 msgid "Open"
@@ -1049,7 +1096,7 @@ msgstr "연산자 검색"
 
 #: templates/zerver/app/navbar.html:111 templates/zerver/footer.html:3
 msgid "About Zulip"
-msgstr "Zulip에 관하여"
+msgstr "Zulip에 대해"
 
 #: templates/zerver/app/navbar.html:117
 msgid "Contact support"
@@ -1108,7 +1155,7 @@ msgstr "데스크톱 알림을 사용하는 것이 좋습니다. 알림은 Zulip
 
 #: templates/zerver/app/navbar_alerts.html:11
 msgid "Enable notifications"
-msgstr "알림 가능"
+msgstr "알림 켜기"
 
 #: templates/zerver/app/navbar_alerts.html:13
 msgid "Ask me later"
@@ -1344,7 +1391,7 @@ msgstr "업로드된 파일들"
 
 #: templates/zerver/app/settings_overlay.html:44
 msgid "Muted topics"
-msgstr "뮤트된 주제들"
+msgstr "알림끈 주제"
 
 #: templates/zerver/app/settings_overlay.html:48
 msgid "Muted users"
@@ -1413,7 +1460,7 @@ msgstr ""
 
 #: templates/zerver/app/settings_overlay.html:151
 msgid "Custom profile fields"
-msgstr "프로필 영역 사용자 정의"
+msgstr "프로필 영역 사용자 정의하기"
 
 #: templates/zerver/app/settings_overlay.html:157
 msgid "Invitations"
@@ -1446,7 +1493,10 @@ msgid ""
 "\n"
 "                            No account found for %(email)s.\n"
 "                            "
-msgstr "\n                        %(email)s에 대한 계정이 없습니다.\n         "
+msgstr ""
+"\n"
+"                        %(email)s에 대한 계정이 없습니다.\n"
+"         "
 
 #: templates/zerver/confirm_continue_registration.html:26
 msgid "Log in with another account"
@@ -1664,6 +1714,7 @@ msgstr ""
 #: templates/zerver/emails/custom/compiled/custom_email_13351dad3bd3972e796012ab305e4a5d.html:66
 #: templates/zerver/emails/custom/compiled/custom_email_1db042280b1efac69028573753f2ebed.html:16
 #: templates/zerver/emails/custom/compiled/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.html:26
+#: templates/zerver/emails/custom/compiled/custom_email_2b91e0b32f8ab81738217df8a492c7d6.html:33
 #: templates/zerver/emails/custom/compiled/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.html:18
 #: templates/zerver/emails/custom/compiled/custom_email_d5c63509cf008c626cdcbdde801f814c.html:35
 #: templates/zerver/emails/custom/compiled/custom_email_d9c10b1bfc0ddab1178c75dcee1d8de7.html:16
@@ -1673,6 +1724,7 @@ msgstr ""
 #: templates/zerver/emails/custom/custom_email_13351dad3bd3972e796012ab305e4a5d.source.html:65
 #: templates/zerver/emails/custom/custom_email_1db042280b1efac69028573753f2ebed.source.html:15
 #: templates/zerver/emails/custom/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.source.html:24
+#: templates/zerver/emails/custom/custom_email_2b91e0b32f8ab81738217df8a492c7d6.source.html:32
 #: templates/zerver/emails/custom/custom_email_3c65b45c31a882a18c94828cdcf2b1cb.source.html:35
 #: templates/zerver/emails/custom/custom_email_3f08f8f8c55fdeb21fd5f42f9b36f5d5.txt:8
 #: templates/zerver/emails/custom/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.source.html:17
@@ -2238,6 +2290,7 @@ msgstr ""
 #: templates/zerver/emails/custom/compiled/custom_email_13351dad3bd3972e796012ab305e4a5d.html:66
 #: templates/zerver/emails/custom/compiled/custom_email_1db042280b1efac69028573753f2ebed.html:16
 #: templates/zerver/emails/custom/compiled/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.html:26
+#: templates/zerver/emails/custom/compiled/custom_email_2b91e0b32f8ab81738217df8a492c7d6.html:33
 #: templates/zerver/emails/custom/compiled/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.html:18
 #: templates/zerver/emails/custom/compiled/custom_email_d5c63509cf008c626cdcbdde801f814c.html:35
 #: templates/zerver/emails/custom/compiled/custom_email_d9c10b1bfc0ddab1178c75dcee1d8de7.html:16
@@ -2247,6 +2300,7 @@ msgstr ""
 #: templates/zerver/emails/custom/custom_email_13351dad3bd3972e796012ab305e4a5d.source.html:65
 #: templates/zerver/emails/custom/custom_email_1db042280b1efac69028573753f2ebed.source.html:15
 #: templates/zerver/emails/custom/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.source.html:24
+#: templates/zerver/emails/custom/custom_email_2b91e0b32f8ab81738217df8a492c7d6.source.html:32
 #: templates/zerver/emails/custom/custom_email_3c65b45c31a882a18c94828cdcf2b1cb.source.html:35
 #: templates/zerver/emails/custom/custom_email_3f08f8f8c55fdeb21fd5f42f9b36f5d5.txt:8
 #: templates/zerver/emails/custom/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.source.html:17
@@ -2658,7 +2712,7 @@ msgstr "팀"
 
 #: templates/zerver/footer.html:9
 msgid "History"
-msgstr "기록"
+msgstr "히스토리"
 
 #: templates/zerver/footer.html:13
 msgid "Help &amp; community"
@@ -2975,7 +3029,10 @@ msgid ""
 "                    Contact this <a href=\"mailto:%(support_email)s\">server's administrator</a>\n"
 "                    if you have any questions.\n"
 "                    "
-msgstr "\n               이 Zulip 설치에는 개인 정보 보호 정책이 구성되어 있지 않습니다.\n                질문이 있으시면이 <a href=\"mailto:%(support_email)s\">서버 관리자</a>에게 문의하십시오 ."
+msgstr ""
+"\n"
+"               이 Zulip 설치에는 개인 정보 보호 정책이 구성되어 있지 않습니다.\n"
+"                질문이 있으시면이 <a href=\"mailto:%(support_email)s\">서버 관리자</a>에게 문의하십시오 ."
 
 #: templates/zerver/realm_creation_failed.html:19
 msgid ""
@@ -3078,7 +3135,7 @@ msgstr "이름"
 
 #: templates/zerver/register.html:136
 msgid "Full name"
-msgstr "이름"
+msgstr "이름 전체"
 
 #: templates/zerver/register.html:156
 msgid "Enter your LDAP/Active Directory password."
@@ -3170,7 +3227,10 @@ msgid ""
 "                    Contact this <a href=\"mailto:%(support_email)s\">server's administrator</a>\n"
 "                    if you have any questions.\n"
 "                    "
-msgstr "\n                     이 Zulip 설치에는 구성된 서비스 약관이 없습니다 .\n                     질문이 있으시면이 <a href=\"mailto:%(support_email)s\"> 서버 관리자</a>에게 문의하십시오 ."
+msgstr ""
+"\n"
+"                     이 Zulip 설치에는 구성된 서비스 약관이 없습니다 .\n"
+"                     질문이 있으시면이 <a href=\"mailto:%(support_email)s\"> 서버 관리자</a>에게 문의하십시오 ."
 
 #: templates/zerver/unsubscribe_link_error.html:5
 msgid "Unknown email unsubscribe request"
@@ -3190,7 +3250,12 @@ msgid ""
 "%%20e-"
 "mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email"
 " us</a> and we'll get this squared away!"
-msgstr "전체 URL을 가지고 있는지 다시 확인하고 다시 시도하십시오. 또는 <a href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">우리에게 메일을 주세요.</a> "
+msgstr ""
+"전체 URL을 가지고 있는지 다시 확인하고 다시 시도하십시오. 또는 <a "
+"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip"
+"%%20e-"
+"mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">우리에게"
+" 메일을 주세요.</a> "
 
 #: templates/zerver/unsubscribe_success.html:10
 msgid "Email settings updated"
@@ -3612,7 +3677,8 @@ msgstr ""
 msgid ""
 "Your account is too new to send invites for this organization. Ask an "
 "organization admin, or a more experienced user."
-msgstr "당신의 계정이 이 조직에 초대를 보내기에는 너무 최근에 만들어졌습니다. 조직 관리자에게 문의하거나, 더 경험있는 사용자에게 물어보세요."
+msgstr ""
+"당신의 계정이 이 조직에 초대를 보내기에는 너무 최근에 만들어졌습니다. 조직 관리자에게 문의하거나, 더 경험있는 사용자에게 물어보세요."
 
 #: zerver/lib/actions.py:6609
 msgid "Some emails did not validate, so we didn't send any invitations."
@@ -3626,7 +3692,8 @@ msgstr "우리는 누구도 초대할 수 없었습니다."
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
-msgstr "그 중 일부 주소는 이미 Zulip을 사용하고 있으므로 초대장을 보내지 않았습니다. 우리는 다른 모든 사람들에게 초대장을 보냈습니다!"
+msgstr ""
+"그 중 일부 주소는 이미 Zulip을 사용하고 있으므로 초대장을 보내지 않았습니다. 우리는 다른 모든 사람들에게 초대장을 보냈습니다!"
 
 #: zerver/lib/actions.py:7265
 msgid "Invalid order mapping."
@@ -3790,7 +3857,7 @@ msgstr ""
 msgid "Invalid type parameter"
 msgstr "유형 매개 변수가 유효하지 않습니다."
 
-#: zerver/lib/events.py:1140
+#: zerver/lib/events.py:1144
 msgid "Could not allocate event queue"
 msgstr "이벤트 큐를 할당 할 수 없습니다."
 
@@ -5222,7 +5289,7 @@ msgid ""
 "The newrelic webhook requires current_state be in [open|acknowledged|closed]"
 msgstr ""
 
-#: zerver/webhooks/pivotal/view.py:178
+#: zerver/webhooks/pivotal/view.py:179
 msgid "Unable to handle Pivotal payload"
 msgstr "피벗 페이로드를 처리 할 수 없습니다."
 

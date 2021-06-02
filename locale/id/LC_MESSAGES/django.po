@@ -1,20 +1,20 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Mamat Rahmat <coderbodoh@gmail.com>, 2017
-# Rafid Aslam <rafidteam@gmail.com>, 2017
-# steve <cqpphp@gmail.com>, 2018
-# Tim Abbott <tabbott@kandralabs.com>, 2018
+# Alya Abbott <alya@zulip.com>, 2021
+# 
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Zulip\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-05-13 22:30+0000\n"
-"PO-Revision-Date: 2021-05-12 23:29+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
-"Language-Team: Indonesian (http://www.transifex.com/zulip/zulip/language/id/)\n"
+"POT-Creation-Date: 2021-05-26 18:04+0000\n"
+"PO-Revision-Date: 2021-04-02 21:39+0000\n"
+"Last-Translator: Alya Abbott <alya@zulip.com>, 2021\n"
+"Language-Team: Indonesian (https://www.transifex.com/zulip/teams/53893/id/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -57,7 +57,8 @@ msgstr ""
 
 #: analytics/views.py:367 analytics/views.py:398
 msgid "No analytics data available. Please contact your server administrator."
-msgstr "Data analisis tidak tersedia. Mohon hubungi administrator server anda."
+msgstr ""
+"Data analisis tidak tersedia. Mohon hubungi administrator server anda."
 
 #: analytics/views.py:1275
 msgid "Invalid parameters"
@@ -396,7 +397,9 @@ msgstr "Cek email Anda sehingga kita bisa memulai."
 
 #: templates/zerver/accounts_send_confirm.html:21
 msgid "Still no email? We can <a href=\"#\" id=\"resend_email_link\">resend it</a>."
-msgstr "Masih tidak ada email? Kami dapat <a href=\"#\" id=\"resend_email_link\">mengirimkan kembali</a>."
+msgstr ""
+"Masih tidak ada email? Kami dapat <a href=\"#\" "
+"id=\"resend_email_link\">mengirimkan kembali</a>."
 
 #: templates/zerver/accounts_send_confirm.html:22
 msgid "Just in case, take a look at your Spam folder."
@@ -441,6 +444,7 @@ msgid "Deleting a message removes it for everyone."
 msgstr ""
 
 #: templates/zerver/app/delete_message.html:19
+#: templates/zerver/app/index.html:167
 #: templates/zerver/app/invite_user.html:58
 msgid "Cancel"
 msgstr "Batal"
@@ -486,7 +490,11 @@ msgid ""
 "            Why not <a href=\"#\" class=\"empty_feed_compose_stream\">\n"
 "            start the conversation</a>?\n"
 "            "
-msgstr "\n        <p>Mengapa tidak <a href=\"#\" class=\"empty_feed_compose_stream\">\n            memulai percakapan</a>?</p>\n        "
+msgstr ""
+"\n"
+"        <p>Mengapa tidak <a href=\"#\" class=\"empty_feed_compose_stream\">\n"
+"            memulai percakapan</a>?</p>\n"
+"        "
 
 #: templates/zerver/app/home.html:43
 msgid "You have no private messages yet!"
@@ -499,7 +507,11 @@ msgid ""
 "            Why not <a href=\"#\" class=\"empty_feed_compose_private\">\n"
 "            start the conversation</a>?\n"
 "            "
-msgstr "\n        <p>Mengapa tidak <a href=\"#\" class=\"empty_feed_compose_private\">\n            memulai percakapan</a>?</p>\n        "
+msgstr ""
+"\n"
+"        <p>Mengapa tidak <a href=\"#\" class=\"empty_feed_compose_private\">\n"
+"            memulai percakapan</a>?</p>\n"
+"        "
 
 #: templates/zerver/app/home.html:53
 msgid "You have no private messages with this person yet!"
@@ -540,7 +552,9 @@ msgstr ""
 #: templates/zerver/app/home.html:102
 msgid ""
 "You aren't subscribed to this stream and nobody has talked about that yet!"
-msgstr "Anda tidak berlangganan ke stream ini dan belum ada seorangpun yang membicarakan tentangnya!"
+msgstr ""
+"Anda tidak berlangganan ke stream ini dan belum ada seorangpun yang "
+"membicarakan tentangnya!"
 
 #: templates/zerver/app/home.html:105
 msgid "Subscribe"
@@ -609,6 +623,38 @@ msgstr "Segera mencoba kembali..."
 #: templates/zerver/app/index.html:68
 msgid "Try now."
 msgstr "Coba sekarang."
+
+#: templates/zerver/app/index.html:147
+msgid "Set a status"
+msgstr ""
+
+#: templates/zerver/app/index.html:153
+msgid "Status message"
+msgstr ""
+
+#: templates/zerver/app/index.html:160
+msgid "In a meeting"
+msgstr ""
+
+#: templates/zerver/app/index.html:161
+msgid "Commuting"
+msgstr ""
+
+#: templates/zerver/app/index.html:162
+msgid "Out sick"
+msgstr ""
+
+#: templates/zerver/app/index.html:163
+msgid "Vacationing"
+msgstr ""
+
+#: templates/zerver/app/index.html:164
+msgid "Working remotely"
+msgstr ""
+
+#: templates/zerver/app/index.html:169
+msgid "Save"
+msgstr "Simpan"
 
 #: templates/zerver/app/invite_user.html:6
 msgid "Invite users to Zulip"
@@ -1074,7 +1120,9 @@ msgstr "Undang pengguna"
 msgid ""
 "Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via "
 "Webathena"
-msgstr "Sediakan Zulip tiket Kerberos yang diperlukan untuk menjalankan mirror .Zephyr Anda melalui Webathena"
+msgstr ""
+"Sediakan Zulip tiket Kerberos yang diperlukan untuk menjalankan mirror "
+".Zephyr Anda melalui Webathena"
 
 #: templates/zerver/app/navbar.html:170
 msgid "Link with Webathena"
@@ -1095,7 +1143,9 @@ msgstr ""
 msgid ""
 "We strongly recommend enabling desktop notifications. They help Zulip keep "
 "your team connected."
-msgstr "Kami sangat merekomendasikan menyalakan pemberitahuan desktop. Hal ini membantu Zulip untuk terus membuat tim Anda terhubung."
+msgstr ""
+"Kami sangat merekomendasikan menyalakan pemberitahuan desktop. Hal ini "
+"membantu Zulip untuk terus membuat tim Anda terhubung."
 
 #: templates/zerver/app/navbar_alerts.html:11
 msgid "Enable notifications"
@@ -1267,7 +1317,9 @@ msgstr "Bataskan ke pesan yang mengandung unggahan."
 msgid ""
 "Search for <span class=\"operator_value\"> keyword </span> in the topic or "
 "message content "
-msgstr "Cari <span class=\"operator_value\">kata kunci</span> pada topik atau isi pesan"
+msgstr ""
+"Cari <span class=\"operator_value\">kata kunci</span> pada topik atau isi "
+"pesan"
 
 #: templates/zerver/app/search_operators.html:85
 msgid "Exclude messages with topic <span class=\"operator_value\">topic</span>"
@@ -1655,6 +1707,7 @@ msgstr ""
 #: templates/zerver/emails/custom/compiled/custom_email_13351dad3bd3972e796012ab305e4a5d.html:66
 #: templates/zerver/emails/custom/compiled/custom_email_1db042280b1efac69028573753f2ebed.html:16
 #: templates/zerver/emails/custom/compiled/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.html:26
+#: templates/zerver/emails/custom/compiled/custom_email_2b91e0b32f8ab81738217df8a492c7d6.html:33
 #: templates/zerver/emails/custom/compiled/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.html:18
 #: templates/zerver/emails/custom/compiled/custom_email_d5c63509cf008c626cdcbdde801f814c.html:35
 #: templates/zerver/emails/custom/compiled/custom_email_d9c10b1bfc0ddab1178c75dcee1d8de7.html:16
@@ -1664,6 +1717,7 @@ msgstr ""
 #: templates/zerver/emails/custom/custom_email_13351dad3bd3972e796012ab305e4a5d.source.html:65
 #: templates/zerver/emails/custom/custom_email_1db042280b1efac69028573753f2ebed.source.html:15
 #: templates/zerver/emails/custom/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.source.html:24
+#: templates/zerver/emails/custom/custom_email_2b91e0b32f8ab81738217df8a492c7d6.source.html:32
 #: templates/zerver/emails/custom/custom_email_3c65b45c31a882a18c94828cdcf2b1cb.source.html:35
 #: templates/zerver/emails/custom/custom_email_3f08f8f8c55fdeb21fd5f42f9b36f5d5.txt:8
 #: templates/zerver/emails/custom/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.source.html:17
@@ -2229,6 +2283,7 @@ msgstr ""
 #: templates/zerver/emails/custom/compiled/custom_email_13351dad3bd3972e796012ab305e4a5d.html:66
 #: templates/zerver/emails/custom/compiled/custom_email_1db042280b1efac69028573753f2ebed.html:16
 #: templates/zerver/emails/custom/compiled/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.html:26
+#: templates/zerver/emails/custom/compiled/custom_email_2b91e0b32f8ab81738217df8a492c7d6.html:33
 #: templates/zerver/emails/custom/compiled/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.html:18
 #: templates/zerver/emails/custom/compiled/custom_email_d5c63509cf008c626cdcbdde801f814c.html:35
 #: templates/zerver/emails/custom/compiled/custom_email_d9c10b1bfc0ddab1178c75dcee1d8de7.html:16
@@ -2238,6 +2293,7 @@ msgstr ""
 #: templates/zerver/emails/custom/custom_email_13351dad3bd3972e796012ab305e4a5d.source.html:65
 #: templates/zerver/emails/custom/custom_email_1db042280b1efac69028573753f2ebed.source.html:15
 #: templates/zerver/emails/custom/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.source.html:24
+#: templates/zerver/emails/custom/custom_email_2b91e0b32f8ab81738217df8a492c7d6.source.html:32
 #: templates/zerver/emails/custom/custom_email_3c65b45c31a882a18c94828cdcf2b1cb.source.html:35
 #: templates/zerver/emails/custom/custom_email_3f08f8f8c55fdeb21fd5f42f9b36f5d5.txt:8
 #: templates/zerver/emails/custom/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.source.html:17
@@ -2823,7 +2879,13 @@ msgid ""
 "                        and\n"
 "                        <a href=\"/integrations/doc/ifttt\">IFTTT</a>.\n"
 "                        "
-msgstr "\nDan ratusan lainnya melalui\n<a href=\"/integrations/doc/hubot\">Hubot</a>,\n<a href=\"/integrations/doc/zapier\">Zapier</a>,\ndan\n<a href=\"/integrations/doc/ifttt\">IFTTT</a>."
+msgstr ""
+"\n"
+"Dan ratusan lainnya melalui\n"
+"<a href=\"/integrations/doc/hubot\">Hubot</a>,\n"
+"<a href=\"/integrations/doc/zapier\">Zapier</a>,\n"
+"dan\n"
+"<a href=\"/integrations/doc/ifttt\">IFTTT</a>."
 
 #: templates/zerver/integrations/index.html:41
 msgid "Search integrations"
@@ -2933,7 +2995,7 @@ msgstr "Username"
 #: templates/zerver/login.html:74 templates/zerver/register.html:153
 #: templates/zerver/register.html:166 templates/zerver/reset_confirm.html:27
 msgid "Password"
-msgstr "Kata Sandi"
+msgstr "Kata sandi"
 
 #: templates/zerver/login.html:91
 msgid ""
@@ -2966,13 +3028,19 @@ msgid ""
 "                    Contact this <a href=\"mailto:%(support_email)s\">server's administrator</a>\n"
 "                    if you have any questions.\n"
 "                    "
-msgstr "\nInstalasi Zulip ini tidak mempunyai polisi privasi yang telah dikonfigurasi\nHubungi <a href=\"mailto:%(support_email)s\">pengelola server</a> ini\napabila Anda mempunyai pertanyaan."
+msgstr ""
+"\n"
+"Instalasi Zulip ini tidak mempunyai polisi privasi yang telah dikonfigurasi\n"
+"Hubungi <a href=\"mailto:%(support_email)s\">pengelola server</a> ini\n"
+"apabila Anda mempunyai pertanyaan."
 
 #: templates/zerver/realm_creation_failed.html:19
 msgid ""
 "This server does not allow members of the public to create new "
 "organizations."
-msgstr "Server ini tidak memperbolehkan anggota dari publik untuk membuat organisasi bari."
+msgstr ""
+"Server ini tidak memperbolehkan anggota dari publik untuk membuat organisasi"
+" bari."
 
 #: templates/zerver/realm_creation_failed.html:21
 #, python-format
@@ -3079,7 +3147,9 @@ msgstr ""
 msgid ""
 "This is used for mobile applications and other tools that require a "
 "password."
-msgstr "Ini digunakan untuk aplikasi seluler dan perangkat lain yang memerlukan kata sandi."
+msgstr ""
+"Ini digunakan untuk aplikasi seluler dan perangkat lain yang memerlukan kata"
+" sandi."
 
 #: templates/zerver/register.html:178
 msgid "Password strength"
@@ -3161,7 +3231,10 @@ msgid ""
 "                    Contact this <a href=\"mailto:%(support_email)s\">server's administrator</a>\n"
 "                    if you have any questions.\n"
 "                    "
-msgstr "\nInstalasi Zulip ini tidak mempunyai persyaratan layanan yang telah dikonfigurasi\nHubungi <a href=\"mailto:%(support_email)s\">pengelola server</a> ini apabila Anda mempunyai pertanyaan."
+msgstr ""
+"\n"
+"Instalasi Zulip ini tidak mempunyai persyaratan layanan yang telah dikonfigurasi\n"
+"Hubungi <a href=\"mailto:%(support_email)s\">pengelola server</a> ini apabila Anda mempunyai pertanyaan."
 
 #: templates/zerver/unsubscribe_link_error.html:5
 msgid "Unknown email unsubscribe request"
@@ -3171,7 +3244,9 @@ msgstr "Permintaan email berhenti berlanggan tidak diketahui"
 msgid ""
 "Hi there! It looks like you tried to unsubscribe from something, but we don't\n"
 "recognize the URL."
-msgstr "Halo! Sepertinya Anda mencoba untuk berhenti berlanggan dari sesuatu, tetapi kami tidak\nmengenal URL tersebut."
+msgstr ""
+"Halo! Sepertinya Anda mencoba untuk berhenti berlanggan dari sesuatu, tetapi kami tidak\n"
+"mengenal URL tersebut."
 
 #: templates/zerver/unsubscribe_link_error.html:10
 #, python-format
@@ -3181,7 +3256,13 @@ msgid ""
 "%%20e-"
 "mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email"
 " us</a> and we'll get this squared away!"
-msgstr "Tolong periksa ulangan bahwa Anda telah mempunyai URL yang lengkap dan coba lagi, atau <a href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip%%20e-mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email kami</a> dan kami akan menyelesaikan hal ini segera!"
+msgstr ""
+"Tolong periksa ulangan bahwa Anda telah mempunyai URL yang lengkap dan coba "
+"lagi, atau <a "
+"href=\"mailto:%(support_email)s?Subject=Unsubscribe%%20me%%2C%%20please!&Body=Hi%%20there!%%0A%%0AI%%20clicked%%20this%%20unsubscribe%%20link%%20in%%20a%%20Zulip"
+"%%20e-"
+"mail%%2C%%20but%%20it%%20took%%20me%%20to%%20an%%20error%%20page%%3A%%0A%%0A_____________%%0A%%0APlease%%20unsubscribe%%20me.%%0A%%0AThanks%%2C%%0A_____________%%0A\">email"
+" kami</a> dan kami akan menyelesaikan hal ini segera!"
 
 #: templates/zerver/unsubscribe_success.html:10
 msgid "Email settings updated"
@@ -3311,14 +3392,17 @@ msgstr "Organisasi yang Anda coba gabung menggunakan {email} tidak tersedia."
 #, python-brace-format
 msgid ""
 "Please request an invite for {email} from the organization administrator."
-msgstr "Silakan meminta sebuah undangan untuk {email} dari pengurus organisasi."
+msgstr ""
+"Silakan meminta sebuah undangan untuk {email} dari pengurus organisasi."
 
 #: zerver/forms.py:197
 #, python-brace-format
 msgid ""
 "Your email address, {email}, is not in one of the domains that are allowed "
 "to register for accounts in this organization."
-msgstr "Alamat email Anda, {email}, tidak termasuk dalam salah satu domain yang diperbolehkan untuk mendaftar akun pada organisasi ini."
+msgstr ""
+"Alamat email Anda, {email}, tidak termasuk dalam salah satu domain yang "
+"diperbolehkan untuk mendaftar akun pada organisasi ini."
 
 #: zerver/forms.py:202 zerver/forms.py:216 zerver/lib/email_validation.py:108
 msgid "Please use your real email address."
@@ -3607,7 +3691,9 @@ msgstr ""
 
 #: zerver/lib/actions.py:6609
 msgid "Some emails did not validate, so we didn't send any invitations."
-msgstr "Beberapa email tidak tervalidasi, jadi kami tidak mengirimkan undangan apapun."
+msgstr ""
+"Beberapa email tidak tervalidasi, jadi kami tidak mengirimkan undangan "
+"apapun."
 
 #: zerver/lib/actions.py:6617
 msgid "We weren't able to invite anyone."
@@ -3617,7 +3703,10 @@ msgstr "Kami tidak dapat mengundang siapapun."
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
-msgstr "Beberapa dari alamat itu telah menggunakan Zulip, jadi kami tidak mengirimkan mereka undangan. Namun kami mengirimkan undangan kepada orang-orang yang lain!"
+msgstr ""
+"Beberapa dari alamat itu telah menggunakan Zulip, jadi kami tidak "
+"mengirimkan mereka undangan. Namun kami mengirimkan undangan kepada orang-"
+"orang yang lain!"
 
 #: zerver/lib/actions.py:7265
 msgid "Invalid order mapping."
@@ -3666,7 +3755,9 @@ msgstr "Lampiran invalid"
 #: zerver/lib/attachments.py:33
 msgid ""
 "An error occurred while deleting the attachment. Please try again later."
-msgstr "Sebuah eror telah terjadi saat menghapus lampiran tersebut. Silakan coba lagi nanti."
+msgstr ""
+"Sebuah eror telah terjadi saat menghapus lampiran tersebut. Silakan coba "
+"lagi nanti."
 
 #: zerver/lib/bot_lib.py:109
 msgid "Message must have recipients!"
@@ -3781,7 +3872,7 @@ msgstr ""
 msgid "Invalid type parameter"
 msgstr "Jenis parameter invalid"
 
-#: zerver/lib/events.py:1140
+#: zerver/lib/events.py:1144
 msgid "Could not allocate event queue"
 msgstr "Tidak dapat mengalokasi antrian event"
 
@@ -4698,7 +4789,9 @@ msgstr "Anda harus menentukan minimal satu alamat email."
 
 #: zerver/views/invite.py:61
 msgid "You must specify at least one stream for invitees to join."
-msgstr "Anda harus memasukkan paling tidak satu siaran untuk yang diundang untuk bergabung."
+msgstr ""
+"Anda harus memasukkan paling tidak satu siaran untuk yang diundang untuk "
+"bergabung."
 
 #: zerver/views/invite.py:71
 msgid "Stream does not exist with id: {}. No invites were sent."
@@ -4926,7 +5019,9 @@ msgstr ""
 #: zerver/views/streams.py:104
 #, python-brace-format
 msgid "User not authorized to execute queries on behalf of '{principal}'"
-msgstr "Pengguna tidak berotoritas untuk mengeksekusi perintah mewakili '{principal}'"
+msgstr ""
+"Pengguna tidak berotoritas untuk mengeksekusi perintah mewakili "
+"'{principal}'"
 
 #: zerver/views/streams.py:151
 msgid "Private streams cannot be made default."
@@ -4950,7 +5045,9 @@ msgstr ""
 
 #: zerver/views/streams.py:343 zerver/views/user_groups.py:96
 msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
-msgstr "Tidak ada yang dapat dilakukan. Spesifikasikan setidaknya satu dari 'tambah' atau 'hapus'."
+msgstr ""
+"Tidak ada yang dapat dilakukan. Spesifikasikan setidaknya satu dari 'tambah'"
+" atau 'hapus'."
 
 #: zerver/views/streams.py:425
 #, python-brace-format
@@ -5213,7 +5310,7 @@ msgid ""
 "The newrelic webhook requires current_state be in [open|acknowledged|closed]"
 msgstr ""
 
-#: zerver/webhooks/pivotal/view.py:178
+#: zerver/webhooks/pivotal/view.py:179
 msgid "Unable to handle Pivotal payload"
 msgstr ""
 

@@ -1,19 +1,24 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 # 
 # Translators:
-# Gonçal Garcés, 2020-2021
-# Marc Hernández <noviluni@gmail.com>, 2018
-# Joan <sacoo2@hotmail.com>, 2020
+# Akash Nimare <svnitakash@gmail.com>, 2021
+# Joan <sacoo2@hotmail.com>, 2021
+# Jordi Divins <j.divins@iskra.cat>, 2021
+# Marc Hernández <noviluni@gmail.com>, 2021
+# Gonçal Garcés, 2021
+# 
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Zulip\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-05-13 22:30+0000\n"
-"PO-Revision-Date: 2021-05-12 23:29+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
-"Language-Team: Catalan (http://www.transifex.com/zulip/zulip/language/ca/)\n"
+"POT-Creation-Date: 2021-05-26 18:04+0000\n"
+"PO-Revision-Date: 2021-04-02 21:39+0000\n"
+"Last-Translator: Gonçal Garcés, 2021\n"
+"Language-Team: Catalan (https://www.transifex.com/zulip/teams/53893/ca/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -355,7 +360,9 @@ msgstr "Correu electrònic"
 msgid ""
 "I agree to the <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" "
 "rel=\"noopener noreferrer\">Terms of Service</a>."
-msgstr "Accepte les <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" rel=\"noopener noreferrer\">condicions del servei</a>."
+msgstr ""
+"Accepte les <a href=\"%(root_domain_uri)s/terms\" target=\"_blank\" "
+"rel=\"noopener noreferrer\">condicions del servei</a>."
 
 #: templates/zerver/accounts_accept_terms.html:54
 msgid "Enter"
@@ -440,6 +447,7 @@ msgid "Deleting a message removes it for everyone."
 msgstr ""
 
 #: templates/zerver/app/delete_message.html:19
+#: templates/zerver/app/index.html:167
 #: templates/zerver/app/invite_user.html:58
 msgid "Cancel"
 msgstr "Cancel·la"
@@ -485,7 +493,11 @@ msgid ""
 "            Why not <a href=\"#\" class=\"empty_feed_compose_stream\">\n"
 "            start the conversation</a>?\n"
 "            "
-msgstr "\n            I si <a href=\"#\" class=\"empty_feed_compose_stream\">\n            comenceu la conversa</a>?\n            "
+msgstr ""
+"\n"
+"            I si <a href=\"#\" class=\"empty_feed_compose_stream\">\n"
+"            comenceu la conversa</a>?\n"
+"            "
 
 #: templates/zerver/app/home.html:43
 msgid "You have no private messages yet!"
@@ -498,7 +510,11 @@ msgid ""
 "            Why not <a href=\"#\" class=\"empty_feed_compose_private\">\n"
 "            start the conversation</a>?\n"
 "            "
-msgstr "\n            I si <a href=\"#\" class=\"empty_feed_compose_private\">\n            comenceu la conversa</a>?\n            "
+msgstr ""
+"\n"
+"            I si <a href=\"#\" class=\"empty_feed_compose_private\">\n"
+"            comenceu la conversa</a>?\n"
+"            "
 
 #: templates/zerver/app/home.html:53
 msgid "You have no private messages with this person yet!"
@@ -514,7 +530,11 @@ msgid ""
 "            Why not <a href=\"#\" class=\"empty_feed_compose_private\">\n"
 "            start a conversation with yourself</a>?\n"
 "            "
-msgstr "\n            I si <a href=\"#\" class=\"empty_feed_compose_private\">\n            comenceu una conversa amb vós mateix</a>?\n            "
+msgstr ""
+"\n"
+"            I si <a href=\"#\" class=\"empty_feed_compose_private\">\n"
+"            comenceu una conversa amb vós mateix</a>?\n"
+"            "
 
 #: templates/zerver/app/home.html:73
 msgid "You have no group private messages with this person yet!"
@@ -559,7 +579,10 @@ msgid ""
 "            Learn more about starring messages <a href=\"/help/star-a-message\">\n"
 "            here</a>.\n"
 "            "
-msgstr "\nLlegiu més sobre destacar missatges <a href=\"/help/star-a-message\">\naquí</a>."
+msgstr ""
+"\n"
+"Llegiu més sobre destacar missatges <a href=\"/help/star-a-message\">\n"
+"aquí</a>."
 
 #: templates/zerver/app/home.html:123
 msgid "You have no unread messages!"
@@ -608,6 +631,38 @@ msgstr ""
 #: templates/zerver/app/index.html:68
 msgid "Try now."
 msgstr ""
+
+#: templates/zerver/app/index.html:147
+msgid "Set a status"
+msgstr "Escriu el meu estat"
+
+#: templates/zerver/app/index.html:153
+msgid "Status message"
+msgstr ""
+
+#: templates/zerver/app/index.html:160
+msgid "In a meeting"
+msgstr ""
+
+#: templates/zerver/app/index.html:161
+msgid "Commuting"
+msgstr ""
+
+#: templates/zerver/app/index.html:162
+msgid "Out sick"
+msgstr ""
+
+#: templates/zerver/app/index.html:163
+msgid "Vacationing"
+msgstr ""
+
+#: templates/zerver/app/index.html:164
+msgid "Working remotely"
+msgstr ""
+
+#: templates/zerver/app/index.html:169
+msgid "Save"
+msgstr "Desa"
 
 #: templates/zerver/app/invite_user.html:6
 msgid "Invite users to Zulip"
@@ -1094,7 +1149,9 @@ msgstr ""
 msgid ""
 "We strongly recommend enabling desktop notifications. They help Zulip keep "
 "your team connected."
-msgstr "Recomanem activar les notificacions d'escriptori. Ajuden a Zulip a mantenir el vostre equip connectat."
+msgstr ""
+"Recomanem activar les notificacions d'escriptori. Ajuden a Zulip a mantenir "
+"el vostre equip connectat."
 
 #: templates/zerver/app/navbar_alerts.html:11
 msgid "Enable notifications"
@@ -1171,7 +1228,10 @@ msgid ""
 "\n"
 "        Marking all messages as read…\n"
 "        "
-msgstr "\n        S'estan marcant tots els missatges com a llegits…\n        "
+msgstr ""
+"\n"
+"        S'estan marcant tots els missatges com a llegits…\n"
+"        "
 
 #: templates/zerver/app/right_sidebar.html:5
 #: templates/zerver/app/right_sidebar.html:6
@@ -1359,7 +1419,7 @@ msgstr ""
 
 #: templates/zerver/app/settings_overlay.html:62
 msgid "Organization settings"
-msgstr "Configuració d'organització"
+msgstr "Configuració de l'organització"
 
 #: templates/zerver/app/settings_overlay.html:69
 msgid "Organization permissions"
@@ -1383,7 +1443,8 @@ msgstr "Mètodes d'autenticació"
 
 #: templates/zerver/app/settings_overlay.html:95
 msgid "Only organization owners can edit these settings."
-msgstr "Només els propietaris de l'organització poden editar aquesta configuració."
+msgstr ""
+"Només els propietaris de l'organització poden editar aquesta configuració."
 
 #: templates/zerver/app/settings_overlay.html:110
 msgid "Deactivated users"
@@ -1654,6 +1715,7 @@ msgstr ""
 #: templates/zerver/emails/custom/compiled/custom_email_13351dad3bd3972e796012ab305e4a5d.html:66
 #: templates/zerver/emails/custom/compiled/custom_email_1db042280b1efac69028573753f2ebed.html:16
 #: templates/zerver/emails/custom/compiled/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.html:26
+#: templates/zerver/emails/custom/compiled/custom_email_2b91e0b32f8ab81738217df8a492c7d6.html:33
 #: templates/zerver/emails/custom/compiled/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.html:18
 #: templates/zerver/emails/custom/compiled/custom_email_d5c63509cf008c626cdcbdde801f814c.html:35
 #: templates/zerver/emails/custom/compiled/custom_email_d9c10b1bfc0ddab1178c75dcee1d8de7.html:16
@@ -1663,6 +1725,7 @@ msgstr ""
 #: templates/zerver/emails/custom/custom_email_13351dad3bd3972e796012ab305e4a5d.source.html:65
 #: templates/zerver/emails/custom/custom_email_1db042280b1efac69028573753f2ebed.source.html:15
 #: templates/zerver/emails/custom/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.source.html:24
+#: templates/zerver/emails/custom/custom_email_2b91e0b32f8ab81738217df8a492c7d6.source.html:32
 #: templates/zerver/emails/custom/custom_email_3c65b45c31a882a18c94828cdcf2b1cb.source.html:35
 #: templates/zerver/emails/custom/custom_email_3f08f8f8c55fdeb21fd5f42f9b36f5d5.txt:8
 #: templates/zerver/emails/custom/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.source.html:17
@@ -2041,7 +2104,9 @@ msgstr ""
 msgid ""
 "Organization: %(organization_url)s Time: %(login_time)s Email: "
 "%(user_email)s"
-msgstr "Organització: %(organization_url)s Hora: %(login_time)s E-mail: %(user_email)s"
+msgstr ""
+"Organització: %(organization_url)s Hora: %(login_time)s E-mail: "
+"%(user_email)s"
 
 #: templates/zerver/emails/compiled/notify_new_login.html:13
 #: templates/zerver/emails/notify_new_login.source.html:12
@@ -2228,6 +2293,7 @@ msgstr ""
 #: templates/zerver/emails/custom/compiled/custom_email_13351dad3bd3972e796012ab305e4a5d.html:66
 #: templates/zerver/emails/custom/compiled/custom_email_1db042280b1efac69028573753f2ebed.html:16
 #: templates/zerver/emails/custom/compiled/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.html:26
+#: templates/zerver/emails/custom/compiled/custom_email_2b91e0b32f8ab81738217df8a492c7d6.html:33
 #: templates/zerver/emails/custom/compiled/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.html:18
 #: templates/zerver/emails/custom/compiled/custom_email_d5c63509cf008c626cdcbdde801f814c.html:35
 #: templates/zerver/emails/custom/compiled/custom_email_d9c10b1bfc0ddab1178c75dcee1d8de7.html:16
@@ -2237,6 +2303,7 @@ msgstr ""
 #: templates/zerver/emails/custom/custom_email_13351dad3bd3972e796012ab305e4a5d.source.html:65
 #: templates/zerver/emails/custom/custom_email_1db042280b1efac69028573753f2ebed.source.html:15
 #: templates/zerver/emails/custom/custom_email_1f26fbeaaeb2dafd85012f1c2b071e51.source.html:24
+#: templates/zerver/emails/custom/custom_email_2b91e0b32f8ab81738217df8a492c7d6.source.html:32
 #: templates/zerver/emails/custom/custom_email_3c65b45c31a882a18c94828cdcf2b1cb.source.html:35
 #: templates/zerver/emails/custom/custom_email_3f08f8f8c55fdeb21fd5f42f9b36f5d5.txt:8
 #: templates/zerver/emails/custom/custom_email_6f4f1ad43022ffb9e29d13d670a963e7.source.html:17
@@ -2405,7 +2472,8 @@ msgstr ""
 #: templates/zerver/emails/invitation.subject.txt:1
 #, python-format
 msgid "%(referrer_full_name)s invited you to join %(referrer_realm_name)s"
-msgstr "%(referrer_full_name)s us ha convidat a unir-vos a %(referrer_realm_name)s"
+msgstr ""
+"%(referrer_full_name)s us ha convidat a unir-vos a %(referrer_realm_name)s"
 
 #: templates/zerver/emails/invitation.txt:3
 #, python-format
@@ -3665,7 +3733,8 @@ msgstr "Fitxer adjunt no vàlid"
 #: zerver/lib/attachments.py:33
 msgid ""
 "An error occurred while deleting the attachment. Please try again later."
-msgstr "S'ha produït un error a l'adjuntar el fitxer. Torneu a intentar-ho més tard."
+msgstr ""
+"S'ha produït un error a l'adjuntar el fitxer. Torneu a intentar-ho més tard."
 
 #: zerver/lib/bot_lib.py:109
 msgid "Message must have recipients!"
@@ -3780,7 +3849,7 @@ msgstr ""
 msgid "Invalid type parameter"
 msgstr ""
 
-#: zerver/lib/events.py:1140
+#: zerver/lib/events.py:1144
 msgid "Could not allocate event queue"
 msgstr ""
 
@@ -4715,7 +4784,8 @@ msgstr ""
 
 #: zerver/views/message_edit.py:77
 msgid "Message edit history is disabled in this organization"
-msgstr "L'historial d'edicions de missatge està desactivat en aquesta organització"
+msgstr ""
+"L'historial d'edicions de missatge està desactivat en aquesta organització"
 
 #: zerver/views/message_edit.py:131 zerver/views/message_edit.py:134
 msgid "You don't have permission to delete this message"
@@ -5212,7 +5282,7 @@ msgid ""
 "The newrelic webhook requires current_state be in [open|acknowledged|closed]"
 msgstr ""
 
-#: zerver/webhooks/pivotal/view.py:178
+#: zerver/webhooks/pivotal/view.py:179
 msgid "Unable to handle Pivotal payload"
 msgstr ""
 
