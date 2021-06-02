@@ -78,6 +78,13 @@ as well as those mentioned in the
 * `--no-overwrite-settings`: This option preserves existing
   `/etc/zulip` configuration files.
 
+## Installing on an existing server
+
+Zulip's installation process assumes it is the only application
+running on the server; though installing alongside other applications
+is not recommended, we do have [some notes on the
+process](../production/install-existing-server.md).
+
 ## Running Zulip's service dependencies on different machines
 
 Zulip has full support for each top-level service living on its own
