@@ -33,6 +33,8 @@ from .configured_settings import (
     CAMO_URI,
     DEBUG,
     DEBUG_ERROR_REPORTING,
+    DEFAULT_AVATAR_URI,
+    DEFAULT_LOGO_URI,
     EMAIL_BACKEND,
     EMAIL_HOST,
     ERROR_REPORTING,
@@ -558,6 +560,12 @@ if PRODUCTION or IS_DEV_DROPLET or os.getenv("EXTERNAL_HOST") is not None:
     STATIC_URL = urljoin(ROOT_DOMAIN_URI, "/static/")
 else:
     STATIC_URL = "http://localhost:9991/static/"
+
+
+if DEFAULT_AVATAR_URI == "":
+    DEFAULT_AVATAR_URI = STATIC_URL + "images/default-avatar.png"
+if DEFAULT_LOGO_URI == "":
+    DEFAULT_LOGO_URI = STATIC_URL + "images/logo/zulip-org-logo.svg"
 
 # ZulipStorage is a modified version of ManifestStaticFilesStorage,
 # and, like that class, it inserts a file hash into filenames

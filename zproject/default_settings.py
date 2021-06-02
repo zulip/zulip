@@ -125,9 +125,10 @@ LOGGING_SHOW_PID = False
 # Sentry.io error defaults to off
 SENTRY_DSN: Optional[str] = None
 
-# File uploads and avatars
-DEFAULT_AVATAR_URI = "/static/images/default-avatar.png"
-DEFAULT_LOGO_URI = "/static/images/logo/zulip-org-logo.svg"
+# File uploads and avatars; these URIs are set in computed_settings
+# (based on STATIC_URL) if they're still empty there.
+DEFAULT_AVATAR_URI = ""
+DEFAULT_LOGO_URI = ""
 S3_AVATAR_BUCKET = ""
 S3_AUTH_UPLOADS_BUCKET = ""
 S3_REGION = None

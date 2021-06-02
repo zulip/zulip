@@ -825,13 +825,15 @@ class HomeTest(ZulipTestCase):
         page_params = {"color_scheme": user_profile.COLOR_SCHEME_NIGHT}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(
-            compute_navbar_logo_url(page_params), "/static/images/logo/zulip-org-logo.svg?version=0"
+            compute_navbar_logo_url(page_params),
+            "http://testserver/static/images/logo/zulip-org-logo.svg?version=0",
         )
 
         page_params = {"color_scheme": user_profile.COLOR_SCHEME_LIGHT}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(
-            compute_navbar_logo_url(page_params), "/static/images/logo/zulip-org-logo.svg?version=0"
+            compute_navbar_logo_url(page_params),
+            "http://testserver/static/images/logo/zulip-org-logo.svg?version=0",
         )
 
         do_change_logo_source(
@@ -883,7 +885,8 @@ class HomeTest(ZulipTestCase):
         page_params = {"color_scheme": user_profile.COLOR_SCHEME_LIGHT}
         add_realm_logo_fields(page_params, user_profile.realm)
         self.assertEqual(
-            compute_navbar_logo_url(page_params), "/static/images/logo/zulip-org-logo.svg?version=0"
+            compute_navbar_logo_url(page_params),
+            "http://testserver/static/images/logo/zulip-org-logo.svg?version=0",
         )
 
     @override_settings(SERVER_UPGRADE_NAG_DEADLINE_DAYS=365)
