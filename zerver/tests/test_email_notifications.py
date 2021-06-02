@@ -886,7 +886,7 @@ class TestMissedMessages(ZulipTestCase):
             "Extremely personal message with a hamburger :hamburger:!",
         )
         verify_body_include = [
-            '<img alt=":hamburger:" src="http://zulip.testserver/static/generated/emoji/images-twitter-64/1f354.png" title="hamburger" style="height: 20px;">'
+            '<img alt=":hamburger:" src="http://testserver/static/generated/emoji/images-twitter-64/1f354.png" title="hamburger" style="height: 20px;">'
         ]
         email_subject = "PMs with Othello, the Moor of Venice"
         self._test_cases(

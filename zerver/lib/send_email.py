@@ -100,7 +100,7 @@ def build_email(
     context = {
         **context,
         "support_email": FromAddress.SUPPORT,
-        "email_images_base_uri": settings.ROOT_DOMAIN_URI + "/static/images/emails",
+        "email_images_base_uri": settings.STATIC_URL + "images/emails",
         "physical_address": settings.PHYSICAL_ADDRESS,
     }
 

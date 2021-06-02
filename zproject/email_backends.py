@@ -63,7 +63,7 @@ class EmailLogBackEnd(EmailBackend):
 
     @staticmethod
     def prepare_email_messages_for_forwarding(email_messages: List[EmailMultiAlternatives]) -> None:
-        localhost_email_images_base_uri = settings.ROOT_DOMAIN_URI + "/static/images/emails"
+        localhost_email_images_base_uri = settings.STATIC_URL + "images/emails"
         czo_email_images_base_uri = "https://chat.zulip.org/static/images/emails"
 
         for email_message in email_messages:
