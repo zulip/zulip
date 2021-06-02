@@ -1,3 +1,6 @@
+import io
+import smtplib
+from contextlib import redirect_stderr
 from typing import Any
 
 from django.conf import settings
@@ -37,12 +40,22 @@ class Command(sendtestemail.Command):
             "the Zulip server with /home/zulip/deployments/current/scripts/restart-server "
             "after changing the settings in /etc/zulip before your changes will take effect."
         )
-        sender = FromAddress.SUPPORT
-        print(f"  * {sender}")
-        send_mail("Zulip email test", message, sender, kwargs["email"])
-        noreply_sender = FromAddress.tokenized_no_reply_address()
-        print(f"  * {noreply_sender}")
-        send_mail("Zulip noreply email test", message, noreply_sender, kwargs["email"])
+        with redirect_stderr(io.StringIO()) as f:
+            smtplib.SMTP.debuglevel = 1
+            try:
+                sender = FromAddress.SUPPORT
+                print(f"  * {sender}")
+                send_mail("Zulip email test", message, sender, kwargs["email"])
+
+                noreply_sender = FromAddress.tokenized_no_reply_address()
+                print(f"  * {noreply_sender}")
+                send_mail("Zulip noreply email test", message, noreply_sender, kwargs["email"])
+            except smtplib.SMTPException as e:
+                print(f"Failed to send mails: {e}")
+                print()
+                print("Full SMTP log follows:")
+                print(f.getvalue())
+                raise CommandError("Email sending failed!")
         print()
         print("Successfully sent 2 emails to {}!".format(", ".join(kwargs["email"])))
 
