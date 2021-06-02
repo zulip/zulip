@@ -4828,7 +4828,9 @@ paths:
         - name: topic
           in: query
           description: |
-            The topic of the message.
+            The topic to move the message(s) to, to request changing the topic.
+            Should only be sent when changing the topic, and will throw an error
+            if the target message is not a stream message.
 
             Maximum length of 60 characters.
 
@@ -4882,7 +4884,11 @@ paths:
         - name: stream_id
           in: query
           description: |
-            The stream ID to move the message(s) to, if moving to another stream.
+            The stream ID to move the message(s) to, to request moving
+            messages to another stream.
+
+            Should only be sent when changing the stream, and will throw an error
+            if the target message is not a stream message.
           schema:
             type: integer
           example: 42
