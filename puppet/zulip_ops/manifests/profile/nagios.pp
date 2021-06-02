@@ -58,8 +58,7 @@ class zulip_ops::profile::nagios {
     ],
     notify  => Service['apache2'],
   }
-  zulip_ops::firewall_allow{ 'http': }
-  zulip_ops::firewall_allow{ 'https': }
+  zulip_ops::teleport::application{ 'nagios': port => '3000' }
 
   file { '/etc/nagios3/conf.d/contacts.cfg':
     require => Package[nagios3],
