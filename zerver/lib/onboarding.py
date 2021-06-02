@@ -156,7 +156,7 @@ def send_initial_realm_messages(realm: Realm) -> None:
         )
         + "\n"
         "\n"
-        "[](/static/images/cute/turtle.png)"
+        "[]({static_url}images/cute/turtle.png)"
         "\n"
         "\n"
         + _(
@@ -166,6 +166,7 @@ def send_initial_realm_messages(realm: Realm) -> None:
     ).format(
         default_notification_stream_name=Realm.DEFAULT_NOTIFICATION_STREAM_NAME,
         start_topic_help_url="/help/start-a-new-topic",
+        static_url=settings.STATIC_URL,
     )
 
     welcome_messages: List[Dict[str, str]] = [
