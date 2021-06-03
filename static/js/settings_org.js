@@ -763,19 +763,15 @@ export function build_page() {
         return undefined;
     });
 
-    $(".organization").on(
-        "click",
-        ".subsection-header .subsection-changes-discard .button",
-        (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            for (const elem of get_subsection_property_elements(e.target)) {
-                discard_property_element_changes(elem);
-            }
-            const save_btn_controls = $(e.target).closest(".save-button-controls");
-            change_save_button_state(save_btn_controls, "discarded");
-        },
-    );
+    $(".organization").on("click", ".subsection-header .subsection-changes-discard button", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        for (const elem of get_subsection_property_elements(e.target)) {
+            discard_property_element_changes(elem);
+        }
+        const save_btn_controls = $(e.target).closest(".save-button-controls");
+        change_save_button_state(save_btn_controls, "discarded");
+    });
 
     save_organization_settings = function (data, save_button) {
         const subsection_parent = save_button.closest(".org-subsection-parent");
@@ -992,7 +988,7 @@ export function build_page() {
         return data;
     }
 
-    $(".organization").on("click", ".subsection-header .subsection-changes-save .button", (e) => {
+    $(".organization").on("click", ".subsection-header .subsection-changes-save button", (e) => {
         e.preventDefault();
         e.stopPropagation();
         const save_button = $(e.currentTarget);
@@ -1013,7 +1009,7 @@ export function build_page() {
             e.preventDefault();
             $(e.target)
                 .closest(".org-subsection-parent")
-                .find(".subsection-changes-save .button")
+                .find(".subsection-changes-save button")
                 .trigger("click");
         }
     });
