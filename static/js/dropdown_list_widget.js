@@ -130,7 +130,8 @@ export const DropdownListWidget = function ({
 
         search_input.on("keydown", (e) => {
             const {key, keyCode, which} = e;
-            if (!/(ArrowUp|ArrowDown|Escape)/.test(key)) {
+            const navigation_keys = ["ArrowUp", "ArrowDown", "Escape"];
+            if (!navigation_keys.includes(key)) {
                 return;
             }
             e.preventDefault();
