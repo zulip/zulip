@@ -80,25 +80,6 @@ function rgb2hex(rgb) {
 export function update_stream_color(sub, color, {update_historical = false} = {}) {
     sub.color = color;
     const stream_id = sub.stream_id;
-    // The swatch in the subscription row header.
-    $(`.stream-row[data-stream-id='${CSS.escape(stream_id)}'] .icon`).css(
-        "background-color",
-        color,
-    );
-    // The swatch in the color picker.
-    set_colorpicker_color(
-        $(
-            `#subscription_overlay .subscription_settings[data-stream-id='${CSS.escape(
-                stream_id,
-            )}'] .colorpicker`,
-        ),
-        color,
-    );
-    $(
-        `#subscription_overlay .subscription_settings[data-stream-id='${CSS.escape(
-            stream_id,
-        )}'] .large-icon`,
-    ).css("color", color);
 
     if (update_historical) {
         update_historical_message_color(sub.name, color);
@@ -106,13 +87,6 @@ export function update_stream_color(sub, color, {update_historical = false} = {}
     update_stream_sidebar_swatch_color(stream_id, color);
     message_view_header.colorize_message_view_header();
 }
-
-function picker_do_change_color(color) {
-    const stream_id = Number.parseInt($(this).attr("stream_id"), 10);
-    const hex_color = color.toHexString();
-    subs.set_color(stream_id, hex_color);
-}
-subscriptions_table_colorpicker_options.change = picker_do_change_color;
 
 $("body").on("change", "#stream_color_picker", (e) => {
     const color = e.target.value;
