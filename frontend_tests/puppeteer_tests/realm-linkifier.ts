@@ -64,8 +64,7 @@ async function test_edit_linkifier(page: Page): Promise<void> {
     await page.click(".submit-linkifier-info-change");
 
     await page.waitForSelector("#linkifier-edit-form-modal", {hidden: true});
-    // Ensure that the mouse events are enabled for the background for further tests.
-    await page.waitForFunction(() => $(".overlay.show").attr("style") === undefined);
+    await common.wait_for_modal_to_close(page);
 
     await page.waitForSelector(".linkifier_row", {visible: true});
     await page.waitForFunction(
