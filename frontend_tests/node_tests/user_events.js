@@ -83,14 +83,14 @@ run_test("updates", () => {
     });
     person = people.get_by_email(isaac.email);
     assert(person.is_guest);
-    assert(person.role, settings_config.user_role_values.guest.code);
+    assert.equal(person.role, settings_config.user_role_values.guest.code);
     user_events.update_person({
         user_id: isaac.user_id,
         role: settings_config.user_role_values.member.code,
     });
     person = people.get_by_email(isaac.email);
     assert(!person.is_guest);
-    assert(person.role, settings_config.user_role_values.member.code);
+    assert.equal(person.role, settings_config.user_role_values.member.code);
 
     user_events.update_person({
         user_id: isaac.user_id,
@@ -98,7 +98,7 @@ run_test("updates", () => {
     });
     person = people.get_by_email(isaac.email);
     assert.equal(person.is_moderator, true);
-    assert(person.role, settings_config.user_role_values.moderator.code);
+    assert.equal(person.role, settings_config.user_role_values.moderator.code);
 
     user_events.update_person({
         user_id: isaac.user_id,
@@ -108,7 +108,7 @@ run_test("updates", () => {
     assert.equal(person.full_name, "Isaac Newton");
     assert.equal(person.is_moderator, false);
     assert.equal(person.is_admin, true);
-    assert(person.role, settings_config.user_role_values.admin.code);
+    assert.equal(person.role, settings_config.user_role_values.admin.code);
 
     user_events.update_person({
         user_id: isaac.user_id,
@@ -116,7 +116,7 @@ run_test("updates", () => {
     });
     assert.equal(person.is_admin, true);
     assert.equal(person.is_owner, true);
-    assert(person.role, settings_config.user_role_values.owner.code);
+    assert.equal(person.role, settings_config.user_role_values.owner.code);
 
     let user_id;
     let full_name;
