@@ -22,6 +22,7 @@ from zerver.lib.actions import (
 from zerver.lib.alert_words import user_alert_words
 from zerver.lib.avatar import avatar_url
 from zerver.lib.bot_config import load_bot_config_template
+from zerver.lib.compatibility import is_outdated_server
 from zerver.lib.external_accounts import DEFAULT_EXTERNAL_ACCOUNTS
 from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.integrations import EMBEDDED_BOTS, WEBHOOK_INTEGRATIONS
@@ -274,6 +275,8 @@ def fetch_initial_state_data(
         state["server_avatar_changes_disabled"] = settings.AVATAR_CHANGES_DISABLED
         state["server_name_changes_disabled"] = settings.NAME_CHANGES_DISABLED
         state["giphy_rating_options"] = realm.GIPHY_RATING_OPTIONS
+
+        state["server_needs_upgrade"] = is_outdated_server(user_profile)
 
         # TODO: Should these have the realm prefix replaced with server_?
         state["realm_push_notifications_enabled"] = push_notifications_enabled()

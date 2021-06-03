@@ -8,7 +8,6 @@ from django.http import HttpRequest
 from django.utils import translation
 from two_factor.utils import default_device
 
-from zerver.lib.compatibility import is_outdated_server
 from zerver.lib.events import do_events_register
 from zerver.lib.i18n import (
     get_and_set_request_language,
@@ -186,7 +185,6 @@ def build_page_params_for_home_page_load(
         test_suite=settings.TEST_SUITE,
         poll_timeout=settings.POLL_TIMEOUT,
         insecure_desktop_app=insecure_desktop_app,
-        server_needs_upgrade=is_outdated_server(user_profile),
         login_page=settings.HOME_NOT_LOGGED_IN,
         save_stacktraces=settings.SAVE_FRONTEND_STACKTRACES,
         warn_no_email=settings.WARN_NO_EMAIL,

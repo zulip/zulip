@@ -8976,6 +8976,16 @@ paths:
                           Whether the server allows name changes.  Similar to
                           `realm_name_changes_disabled` but based on the `NAME_CHANGES_DISABLED`
                           Zulip server level setting.
+                      server_needs_upgrade:
+                        type: boolean
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Whether the server is running an old version based on the Zulip
+                          [server release lifecycle](https://zulip.readthedocs.io/en/latest/overview/release-lifecycle.html#upgrade-nag),
+                          such that the web app will display to the current user a prominent warning.
+
+                          **Changes**: New in Zulip 5.0 (feature level 74).
                       realm_notifications_stream_id:
                         type: integer
                         description: |
