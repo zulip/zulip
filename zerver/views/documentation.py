@@ -2,7 +2,8 @@ import os
 import random
 import re
 from collections import OrderedDict
-from typing import Any, Dict, Tuple
+from dataclasses import dataclass
+from typing import Any, Dict, Optional, Tuple
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
@@ -17,6 +18,14 @@ from zerver.lib.subdomains import get_subdomain
 from zerver.lib.templates import render_markdown_path
 from zerver.models import Realm
 from zerver.openapi.openapi import get_endpoint_from_operationid, get_openapi_summary
+
+
+@dataclass
+class DocumentationArticle:
+    article_path: str
+    article_http_status: int
+    endpoint_path: Optional[str]
+    endpoint_method: Optional[str]
 
 
 def add_api_uri_context(context: Dict[str, Any], request: HttpRequest) -> None:
