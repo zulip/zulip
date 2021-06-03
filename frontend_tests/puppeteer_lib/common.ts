@@ -486,6 +486,13 @@ class CommonUtils {
         await entry!.click();
     }
 
+    async wait_for_modal_to_close(page: Page): Promise<void> {
+        // This function will ensure that the mouse events are enabled for the background for further tests.
+        await page.waitForFunction(
+            () => document.querySelector(".overlay.show")?.getAttribute("style") === null,
+        );
+    }
+
     async run_test(test_function: (page: Page) => Promise<void>): Promise<void> {
         // Pass a page instance to test so we can take
         // a screenshot of it when the test fails.

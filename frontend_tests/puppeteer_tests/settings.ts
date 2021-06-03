@@ -46,8 +46,7 @@ async function test_change_full_name(page: Page): Promise<void> {
     await page.type(full_name_input_selector, "New name");
     await page.click(change_full_name_button_selector);
     await page.waitForFunction(() => $("#change_full_name").text().trim() === "New name");
-    // Ensure that the mouse events are enabled for the background for further tests.
-    await page.waitForFunction(() => $(".overlay.show").attr("style") === undefined);
+    await common.wait_for_modal_to_close(page);
 }
 
 async function test_change_password(page: Page): Promise<void> {
@@ -68,8 +67,7 @@ async function test_change_password(page: Page): Promise<void> {
 
     // On success the change password modal gets closed.
     await page.waitForFunction(() => $("#change_password_modal").attr("aria-hidden") === "true");
-    // Ensure that the mouse events are enabled for the background for further tests.
-    await page.waitForFunction(() => $(".overlay.show").attr("style") === undefined);
+    await common.wait_for_modal_to_close(page);
 }
 
 async function test_get_api_key(page: Page): Promise<void> {
@@ -99,8 +97,7 @@ async function test_get_api_key(page: Page): Promise<void> {
     const zuliprc_decoded_url = await get_decoded_url_in_selector(page, download_zuliprc_selector);
     assert(zuliprc_regex.test(zuliprc_decoded_url), "Incorrect zuliprc file");
     await page.click("#api_key_modal .close");
-    // Ensure that the mouse events are enabled for the background for further tests.
-    await page.waitForFunction(() => $(".overlay.show").attr("style") === undefined);
+    await common.wait_for_modal_to_close(page);
 }
 
 async function test_webhook_bot_creation(page: Page): Promise<void> {
@@ -186,8 +183,7 @@ async function test_edit_bot_form(page: Page): Promise<void> {
         `//*[@class="btn open_edit_bot_form" and @data-email="${bot1_email}"]/ancestor::*[@class="details"]/*[@class="name" and text()="Bot one"]`,
     );
 
-    // Ensure that the mouse events are enabled for the background for further tests.
-    await page.waitForFunction(() => $(".overlay.show").attr("style") === undefined);
+    await common.wait_for_modal_to_close(page);
 }
 
 async function test_invalid_edit_bot_form(page: Page): Promise<void> {
@@ -218,8 +214,7 @@ async function test_invalid_edit_bot_form(page: Page): Promise<void> {
         `//*[@class="btn open_edit_bot_form" and @data-email="${bot1_email}"]/ancestor::*[@class="details"]/*[@class="name" and text()="Bot one"]`,
     );
 
-    // Ensure that the mouse events are enabled for the background for further tests.
-    await page.waitForFunction(() => $(".overlay.show").attr("style") === undefined);
+    await common.wait_for_modal_to_close(page);
 }
 
 async function test_your_bots_section(page: Page): Promise<void> {
