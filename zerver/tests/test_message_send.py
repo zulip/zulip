@@ -48,7 +48,6 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.timestamp import convert_to_UTC, datetime_to_timestamp
 from zerver.models import (
-    MAX_MESSAGE_LENGTH,
     MAX_TOPIC_NAME_LENGTH,
     Message,
     Realm,
@@ -900,12 +899,14 @@ class MessagePOSTTest(ZulipTestCase):
         sent_message = self.get_last_message()
         self.assertEqual(sent_message.content, "  I like whitespace at the end!")
 
+    @override_settings(MAX_MESSAGE_LENGTH=25)
     def test_long_message(self) -> None:
         """
         Sending a message longer than the maximum message length succeeds but is
         truncated.
         """
         self.login("hamlet")
+        MAX_MESSAGE_LENGTH = settings.MAX_MESSAGE_LENGTH
         long_message = "A" * (MAX_MESSAGE_LENGTH + 1)
         post_data = {
             "type": "stream",

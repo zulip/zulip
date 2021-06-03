@@ -187,7 +187,6 @@ from zerver.lib.utils import generate_api_key, log_statsd_event
 from zerver.lib.validator import check_widget_content
 from zerver.lib.widget import do_widget_post_save_actions, is_widget_message
 from zerver.models import (
-    MAX_MESSAGE_LENGTH,
     Attachment,
     Client,
     CustomProfileField,
@@ -3197,7 +3196,7 @@ def _internal_prep_message(
     Call do_send_messages with a list of the return values of this method.
     """
     # Remove any null bytes from the content
-    if len(content) > MAX_MESSAGE_LENGTH:
+    if len(content) > settings.MAX_MESSAGE_LENGTH:
         content = content[0:3900] + "\n\n[message was too long and has been truncated]"
 
     # If we have a stream name, and the stream doesn't exist, we

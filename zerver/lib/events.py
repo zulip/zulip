@@ -50,7 +50,6 @@ from zerver.lib.user_mutes import get_user_mutes
 from zerver.lib.user_status import get_user_info_dict
 from zerver.lib.users import get_cross_realm_dicts, get_raw_user_data, is_administrator_role
 from zerver.models import (
-    MAX_MESSAGE_LENGTH,
     MAX_TOPIC_NAME_LENGTH,
     Client,
     CustomProfileField,
@@ -300,7 +299,7 @@ def fetch_initial_state_data(
         state["max_stream_name_length"] = Stream.MAX_NAME_LENGTH
         state["max_stream_description_length"] = Stream.MAX_DESCRIPTION_LENGTH
         state["max_topic_length"] = MAX_TOPIC_NAME_LENGTH
-        state["max_message_length"] = MAX_MESSAGE_LENGTH
+        state["max_message_length"] = settings.MAX_MESSAGE_LENGTH
 
     if want("realm_domains"):
         state["realm_domains"] = get_realm_domains(realm)
