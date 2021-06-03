@@ -147,7 +147,7 @@ function createSaveButtons(subsection) {
     stub_save_button.set_find_results(".save-discard-widget-button-text", stub_save_button_text);
     stub_save_button_header.set_find_results(".save-button-controls", save_button_controls);
     stub_save_button_header.set_find_results(
-        ".subsection-changes-discard .button",
+        ".subsection-changes-discard button",
         $(`#org-discard-${CSS.escape(subsection)}`),
     );
     save_button_controls.set_find_results(".discard-button", stub_discard_button);
@@ -816,7 +816,7 @@ test("set_up", (override) => {
         override,
         $(".organization").get_on_handler(
             "click",
-            ".subsection-header .subsection-changes-save .button",
+            ".subsection-header .subsection-changes-save button",
         ),
     );
     test_upload_realm_icon(override, upload_realm_logo_or_icon);
@@ -830,7 +830,7 @@ test("set_up", (override) => {
     test_discard_changes_button(
         $(".organization").get_on_handler(
             "click",
-            ".subsection-header .subsection-changes-discard .button",
+            ".subsection-header .subsection-changes-discard button",
         ),
     );
 });
