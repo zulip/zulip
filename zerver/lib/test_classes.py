@@ -1280,7 +1280,13 @@ Output:
         # So explicitly change parameter name to 'notice' to work around this problem
         django_tornado_api.process_notification = lambda notice: lst.append(notice)
 
-        yield
+        # Some `send_event` calls need to be executed only after the current transaction
+        # commits (using `on_commit` hooks). Because the transaction in Django tests never
+        # commits (rather, gets rolled back after the test completes), such events would
+        # never be sent in tests, and we would be unable to verify them. Hence, we use
+        # this helper to make sure the `send_event` calls actually run.
+        with self.captureOnCommitCallbacks(execute=True):
+            yield
 
         django_tornado_api.process_notification = real_event_queue_process_notification
 
