@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
 
 import ahocorasick
 import orjson
+from django.conf import settings
 from django.db import connection
 from django.db.models import Max, Sum
 from django.utils.timezone import now as timezone_now
@@ -38,7 +39,6 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.topic import DB_TOPIC_NAME, MESSAGE__TOPIC, TOPIC_LINKS, TOPIC_NAME
 from zerver.lib.topic_mutes import build_topic_mute_checker, topic_is_muted
 from zerver.models import (
-    MAX_MESSAGE_LENGTH,
     MAX_TOPIC_NAME_LENGTH,
     Message,
     Reaction,
@@ -129,7 +129,7 @@ def normalize_body(body: str) -> str:
         raise JsonableError(_("Message must not be empty"))
     if "\x00" in body:
         raise JsonableError(_("Message must not contain null bytes"))
-    return truncate_content(body, MAX_MESSAGE_LENGTH, "\n[message truncated]")
+    return truncate_content(body, settings.MAX_MESSAGE_LENGTH, "\n[message truncated]")
 
 
 def truncate_topic(topic: str) -> str:

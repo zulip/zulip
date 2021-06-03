@@ -48,7 +48,6 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.tex import render_tex
 from zerver.lib.user_groups import create_user_group
 from zerver.models import (
-    MAX_MESSAGE_LENGTH,
     Message,
     RealmEmoji,
     RealmFilter,
@@ -2748,10 +2747,11 @@ class MarkdownErrorTests(ZulipTestCase):
             with self.assertRaises(JsonableError):
                 self.send_stream_message(self.example_user("othello"), "Denmark", message)
 
+    @override_settings(MAX_MESSAGE_LENGTH=10)
     def test_ultra_long_rendering(self) -> None:
         """A rendered message with an ultra-long length (> 10 * MAX_MESSAGE_LENGTH)
         throws an exception"""
-        msg = "mock rendered message\n" * MAX_MESSAGE_LENGTH
+        msg = "mock rendered message\n" * settings.MAX_MESSAGE_LENGTH
 
         with mock.patch("zerver.lib.markdown.timeout", return_value=msg), mock.patch(
             "zerver.lib.markdown.markdown_logger"

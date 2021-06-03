@@ -90,7 +90,6 @@ from zerver.lib.validator import (
 )
 
 MAX_TOPIC_NAME_LENGTH = 60
-MAX_MESSAGE_LENGTH = 10000
 MAX_LANGUAGE_ID_LENGTH: int = 50
 
 STREAM_NAMES = TypeVar("STREAM_NAMES", Sequence[str], AbstractSet[str])

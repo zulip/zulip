@@ -452,3 +452,8 @@ SERVER_UPGRADE_NAG_DEADLINE_DAYS = 30 * 18
 
 # How long servers have to respond to outgoing webhook requests
 OUTGOING_WEBHOOK_TIMEOUT_SECONDS = 10
+
+# Maximum length of message content allowed.
+# Any message content exceeding this limit will be truncated.
+# See: `_internal_prep_message` function in zerver/lib/actions.py.
+MAX_MESSAGE_LENGTH = 10000

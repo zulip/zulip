@@ -62,7 +62,6 @@ from zerver.lib.types import LinkifierDict
 from zerver.lib.url_encoding import encode_stream, hash_util_encode
 from zerver.lib.url_preview import preview as link_preview
 from zerver.models import (
-    MAX_MESSAGE_LENGTH,
     Message,
     Realm,
     UserGroup,
@@ -2612,6 +2611,7 @@ def do_convert(
         # Throw an exception if the content is huge; this protects the
         # rest of the codebase from any bugs where we end up rendering
         # something huge.
+        MAX_MESSAGE_LENGTH = settings.MAX_MESSAGE_LENGTH
         if len(rendered_content) > MAX_MESSAGE_LENGTH * 10:
             raise MarkdownRenderingException(
                 f"Rendered content exceeds {MAX_MESSAGE_LENGTH * 10} characters (message {logging_message_id})"
