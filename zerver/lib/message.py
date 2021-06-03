@@ -676,7 +676,7 @@ def access_message(
     """
     try:
         base_query = Message.objects.select_related()
-        if lock_message:  # nocoverage
+        if lock_message:
             # We want to lock only the `Message` row, and not the related fields
             # because the `Message` row only has a possibility of races.
             base_query = base_query.select_for_update(of=("self",))

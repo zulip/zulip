@@ -740,6 +740,7 @@ def get_topics_backend(
     return json_success(dict(topics=result))
 
 
+@transaction.atomic
 @require_realm_admin
 @has_request_variables
 def delete_in_topic(
@@ -756,7 +757,9 @@ def delete_in_topic(
         deletable_message_ids = UserMessage.objects.filter(
             user_profile=user_profile, message_id__in=messages
         ).values_list("message_id", flat=True)
-        messages = [message for message in messages if message.id in deletable_message_ids]
+        messages = messages.filter(id__in=deletable_message_ids)
+
+    messages = messages.select_for_update(of=("self",))
 
     do_delete_messages(user_profile.realm, messages)
 

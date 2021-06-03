@@ -10,6 +10,7 @@ from django.http import HttpResponse
 from zerver.lib.actions import (
     do_change_stream_post_policy,
     do_change_user_role,
+    do_delete_messages,
     do_set_realm_property,
     do_update_message,
     get_topic_messages,
@@ -2035,3 +2036,20 @@ class DeleteMessageTest(ZulipTestCase):
             m.side_effect = Message.DoesNotExist()
             result = test_delete_message_by_owner(msg_id=msg_id)
             self.assert_json_error(result, "Message already deleted")
+
+    def test_delete_event_sent_after_transaction_commits(self) -> None:
+        """
+        Tests that `send_event` is hooked to `transaction.on_commit`. This is important, because
+        we don't want to end up holding locks on message rows for too long if the event queue runs
+        into a problem.
+        """
+        hamlet = self.example_user("hamlet")
+        self.send_stream_message(hamlet, "Scotland")
+        message = self.get_last_message()
+
+        with self.tornado_redirected_to_list([], expected_num_events=1):
+            with mock.patch("zerver.lib.actions.send_event") as m:
+                m.side_effect = AssertionError(
+                    "Events should be sent only after the transaction commits."
+                )
+                do_delete_messages(hamlet.realm, [message])

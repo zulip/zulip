@@ -6156,7 +6156,7 @@ def do_delete_messages(realm: Realm, messages: Iterable[Message]) -> None:
     move_messages_to_archive(message_ids, realm=realm, chunk_size=archiving_chunk_size)
 
     event["message_type"] = message_type
-    send_event(realm, event, users_to_notify)
+    transaction.on_commit(lambda: send_event(realm, event, users_to_notify))
 
 
 def do_delete_messages_by_sender(user: UserProfile) -> None:
