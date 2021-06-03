@@ -1005,6 +1005,11 @@
         &.show {
             display: block;
         }
+
+        /* Fix for color picker body to display the overflown content. */
+        .collapse {
+            position: static;
+        }
     }
 
     #personal_settings_label_container {

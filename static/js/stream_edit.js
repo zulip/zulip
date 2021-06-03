@@ -465,6 +465,35 @@ export function stream_settings(sub) {
     return settings;
 }
 
+const presets = {
+    color: [
+        "a47462",
+        "c2726a",
+        "e4523d",
+        "e7664d",
+        "ee7e4a",
+        "f4ae55",
+        "76ce90",
+        "53a063",
+        "94c849",
+        "bfd56f",
+        "fae589",
+        "f5ce6e",
+        "a6dcbf",
+        "addfe5",
+        "a6c7e5",
+        "4f8de4",
+        "95a5fd",
+        "b0a5fd",
+        "c2c2c2",
+        "c8bebf",
+        "c6a8ad",
+        "e79ab5",
+        "bd86e5",
+        "9987e1",
+    ],
+};
+
 export function show_settings_for(node) {
     const stream_id = get_stream_id(node);
     const slim_sub = sub_store.get(stream_id);
@@ -476,6 +505,7 @@ export function show_settings_for(node) {
         settings: stream_settings(sub),
         stream_post_policy_values: stream_data.stream_post_policy_values,
         message_retention_text: get_retention_policy_text_for_subscription_type(sub),
+        stream_color_presets: presets,
     });
     ui.get_content_element($(".subscriptions .right .settings")).html(html);
 

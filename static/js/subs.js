@@ -225,7 +225,7 @@ export function update_message_retention_setting(sub, new_value) {
 }
 
 export function set_color(stream_id, color) {
-    const swatch_color = $(document).find('#color_swatch');
+    const swatch_color = $(document).find("#color_swatch");
     $(swatch_color).css("background-color", color);
 
     const sub = sub_store.get(stream_id);

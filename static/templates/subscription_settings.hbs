@@ -68,6 +68,15 @@
                     {{/each}}
                     <li>
                         <label for="streamcolor" class="subscription-control-label">{{t "Stream color" }}</label>
+                        <span class="sub_setting_control" id="color_picker_parent">
+                            <div id="color_picker" stream_id="{{sub.stream_id}}">
+                                <div id="color_swatch" style="background-color: {{sub.color}};"></div>
+                                <div id="color_dropdown">▼</div>
+                            </div>
+                            <div class="color_picker_body">
+                                {{> subscription_color_picker }}
+                            </div>
+                        </span>
                     </li>
                 </ul>
             </div>

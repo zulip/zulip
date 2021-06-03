@@ -90,7 +90,7 @@ export function update_stream_color(sub, color, {update_historical = false} = {}
 
 $("body").on("change", "#stream_color_picker", (e) => {
     const color = e.target.value;
-    const stream_id = parseInt(e.target.getAttribute("stream_id"), 10);
+    const stream_id = Number.parseInt(e.target.getAttribute("stream_id"), 10);
     subs.set_color(stream_id, color);
 });
 
@@ -100,17 +100,25 @@ $("body").on("click", (e) => {
         $(color_picker).click();
     }
 
-    if (e.target.matches("#color_picker") || e.target.matches("#color_swatch") || e.target.matches("#color_dropdown")) {
+    if (
+        e.target.matches("#color_picker") ||
+        e.target.matches("#color_swatch") ||
+        e.target.matches("#color_dropdown")
+    ) {
         $("body").find(".color_picker_body").toggleClass("visible");
-    } else if (!(e.target.class === "color_picker_body" || $(e.target).parents(".color_picker_body").length)) {
-        if ($("body").find(".color_picker_body").hasClass("visible")) {
-            $("body").find(".color_picker_body").removeClass("visible");
-        }
+    } else if (
+        !(
+            e.target.class === "color_picker_body" ||
+            $(e.target).parents(".color_picker_body").length
+        ) &&
+        $("body").find(".color_picker_body").hasClass("visible")
+    ) {
+        $("body").find(".color_picker_body").removeClass("visible");
     }
 
     if (e.target.matches(".presets")) {
         const color = $(e.target).css("background-color");
-        const stream_id = parseInt($(e.target).parent().attr("stream_id"), 10);
+        const stream_id = Number.parseInt($(e.target).parent().attr("stream_id"), 10);
         subs.set_color(stream_id, rgb2hex(color));
     }
 });
