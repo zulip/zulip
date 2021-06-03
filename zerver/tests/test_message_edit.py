@@ -879,7 +879,7 @@ class EditMessageTest(EditMessageTestCase):
         set_message_editing_params(True, 0, True)
         do_edit_message_assert_success(id_, "E")
         self.login("cordelia")
-        do_edit_message_assert_error(id_, "F", "The time limit for editing this message has passed")
+        do_edit_message_assert_error(id_, "F", "The time limit for editing this message's topic has passed")
 
         # anyone should be able to edit "no topic" indefinitely
         message.set_topic_name("(no topic)")
