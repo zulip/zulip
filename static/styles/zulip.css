@@ -1589,7 +1589,7 @@ hr {
 .color_picker_body {
     display: none;
     position: absolute;
-    overflow: auto;
+    overflow: hidden;
     z-index: 10;
     background-color: hsl(0, 0%, 98%);
     border: 1px solid hsl(0, 0%, 43%);
