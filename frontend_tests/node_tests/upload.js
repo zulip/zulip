@@ -231,7 +231,7 @@ test("upload_files", (override) => {
     let hide_upload_status_called = false;
     override(upload, "hide_upload_status", (config) => {
         hide_upload_status_called = true;
-        assert(config.mode, "compose");
+        assert.equal(config.mode, "compose");
     });
     const config = {mode: "compose"};
     $("#compose-send-button").prop("disabled", false);
@@ -333,7 +333,7 @@ test("upload_files", (override) => {
     assert(hide_upload_status_called);
     assert(compose_ui_autosize_textarea_called);
     assert(compose_ui_replace_syntax_called);
-    assert($("#compose-textarea").val(), "user modified text");
+    assert.equal($("#compose-textarea").val(), "user modified text");
 });
 
 test("uppy_config", () => {

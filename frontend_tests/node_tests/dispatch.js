@@ -514,7 +514,7 @@ run_test("realm_emoji", (override) => {
 
     // Make sure our UI modules all got dispatched the same simple way.
     for (const stub of ui_stubs) {
-        assert(stub.num_calls, 1);
+        assert.equal(stub.num_calls, 1);
         assert.equal(stub.last_call_args.length, 0);
     }
 });
@@ -716,7 +716,7 @@ run_test("update_display_settings", (override) => {
         override(night_mode, "enable", stub.f); // automatically checks if called
         dispatch(event);
         assert.equal(stub.num_calls, 1);
-        assert(page_params.color_scheme, 2);
+        assert.equal(page_params.color_scheme, 2);
     }
 
     {
@@ -726,14 +726,14 @@ run_test("update_display_settings", (override) => {
         override(night_mode, "disable", stub.f); // automatically checks if called
         dispatch(event);
         assert.equal(stub.num_calls, 1);
-        assert(page_params.color_scheme, 3);
+        assert.equal(page_params.color_scheme, 3);
     }
 
     {
         event = event_fixtures.update_display_settings__default_view_recent_topics;
         page_params.default_view = "all_messages";
         dispatch(event);
-        assert(page_params.default_view, "recent_topics");
+        assert.equal(page_params.default_view, "recent_topics");
     }
 
     {
@@ -750,7 +750,7 @@ run_test("update_display_settings", (override) => {
         override(night_mode, "default_preference_checker", stub.f); // automatically checks if called
         dispatch(event);
         assert.equal(stub.num_calls, 1);
-        assert(page_params.color_scheme, 1);
+        assert.equal(page_params.color_scheme, 1);
     }
 
     {
