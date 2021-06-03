@@ -33,7 +33,7 @@ Also pass the following as environment variables in `.github/workflows/update-on
 * SSH into the test droplet by following the instructions in the message.
 * After logging into the test droplet, exit the installer and run the following script.
 
-  https://raw.githubusercontent.com/digitalocean/marketplace-partners/master/scripts/img_check.sh
+  https://raw.githubusercontent.com/digitalocean/marketplace-partners/master/scripts/99-img-check.sh
 
   This script checks whether the image created is valid. It is also run by the DigitalOcean team
   before they approve the image submission in the one click app marketplace.
