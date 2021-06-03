@@ -43,6 +43,7 @@ from django.utils.timezone import now as timezone_now
 from fakeldap import MockLDAP
 from two_factor.models import PhoneDevice
 
+from corporate.models import Customer, CustomerPlan, LicenseLedger
 from zerver.decorator import do_two_factor_login
 from zerver.lib.actions import (
     bulk_add_subscriptions,
@@ -1265,6 +1266,35 @@ Output:
         self.assertTrue(validation_func(member_user))
         self.assertTrue(validation_func(new_member_user))
         self.assertFalse(validation_func(guest_user))
+
+    def subscribe_realm_to_manual_license_management_plan(
+        self, realm: Realm, licenses: int, licenses_at_next_renewal: int, billing_schedule: int
+    ) -> Tuple[CustomerPlan, LicenseLedger]:
+        customer, _ = Customer.objects.get_or_create(realm=realm)
+        plan = CustomerPlan.objects.create(
+            customer=customer,
+            automanage_licenses=False,
+            billing_cycle_anchor=timezone_now(),
+            billing_schedule=billing_schedule,
+            tier=CustomerPlan.STANDARD,
+        )
+        ledger = LicenseLedger.objects.create(
+            plan=plan,
+            is_renewal=True,
+            event_time=timezone_now(),
+            licenses=licenses,
+            licenses_at_next_renewal=licenses_at_next_renewal,
+        )
+        realm.plan_type = Realm.STANDARD
+        realm.save(update_fields=["plan_type"])
+        return plan, ledger
+
+    def subscribe_realm_to_monthly_plan_on_manual_license_management(
+        self, realm: Realm, licenses: int, licenses_at_next_renewal: int
+    ) -> Tuple[CustomerPlan, LicenseLedger]:
+        return self.subscribe_realm_to_manual_license_management_plan(
+            realm, licenses, licenses_at_next_renewal, CustomerPlan.MONTHLY
+        )
 
     @contextmanager
     def tornado_redirected_to_list(

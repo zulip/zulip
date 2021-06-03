@@ -3258,3 +3258,47 @@ class InvoiceTest(StripeTestCase):
         invoice_plans_as_needed(self.next_month)
         plan = CustomerPlan.objects.first()
         self.assertEqual(plan.next_invoice_date, self.next_month + timedelta(days=29))
+
+
+class TestTestClasses(ZulipTestCase):
+    def test_subscribe_realm_to_manual_license_management_plan(self) -> None:
+        realm = get_realm("zulip")
+        plan, ledger = self.subscribe_realm_to_manual_license_management_plan(
+            realm, 50, 60, CustomerPlan.ANNUAL
+        )
+
+        plan.refresh_from_db()
+        self.assertEqual(plan.automanage_licenses, False)
+        self.assertEqual(plan.billing_schedule, CustomerPlan.ANNUAL)
+        self.assertEqual(plan.tier, CustomerPlan.STANDARD)
+        self.assertEqual(plan.licenses(), 50)
+        self.assertEqual(plan.licenses_at_next_renewal(), 60)
+
+        ledger.refresh_from_db()
+        self.assertEqual(ledger.plan, plan)
+        self.assertEqual(ledger.licenses, 50)
+        self.assertEqual(ledger.licenses_at_next_renewal, 60)
+
+        realm.refresh_from_db()
+        self.assertEqual(realm.plan_type, Realm.STANDARD)
+
+    def test_subscribe_realm_to_monthly_plan_on_manual_license_management(self) -> None:
+        realm = get_realm("zulip")
+        plan, ledger = self.subscribe_realm_to_monthly_plan_on_manual_license_management(
+            realm, 20, 30
+        )
+
+        plan.refresh_from_db()
+        self.assertEqual(plan.automanage_licenses, False)
+        self.assertEqual(plan.billing_schedule, CustomerPlan.MONTHLY)
+        self.assertEqual(plan.tier, CustomerPlan.STANDARD)
+        self.assertEqual(plan.licenses(), 20)
+        self.assertEqual(plan.licenses_at_next_renewal(), 30)
+
+        ledger.refresh_from_db()
+        self.assertEqual(ledger.plan, plan)
+        self.assertEqual(ledger.licenses, 20)
+        self.assertEqual(ledger.licenses_at_next_renewal, 30)
+
+        realm.refresh_from_db()
+        self.assertEqual(realm.plan_type, Realm.STANDARD)
