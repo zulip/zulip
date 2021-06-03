@@ -73,7 +73,6 @@ export function build_page() {
         realm_default_twenty_four_hour_time_values: settings_config.twenty_four_hour_time_values,
         realm_authentication_methods: page_params.realm_authentication_methods,
         realm_user_group_edit_policy: page_params.realm_user_group_edit_policy,
-        USER_GROUP_EDIT_POLICY_MEMBERS: 1,
         realm_name_changes_disabled: page_params.realm_name_changes_disabled,
         realm_email_changes_disabled: page_params.realm_email_changes_disabled,
         realm_avatar_changes_disabled: page_params.realm_avatar_changes_disabled,
@@ -122,6 +121,8 @@ export function build_page() {
         email_address_visibility_values: settings_config.email_address_visibility_values,
         can_invite_others_to_realm: settings_data.user_can_invite_others_to_realm(),
         realm_invite_required: page_params.realm_invite_required,
+        can_edit_user_groups: settings_data.user_can_edit_user_groups(),
+        policy_values: settings_config.common_policy_values,
         ...settings_org.get_organization_settings_options(),
     };
 

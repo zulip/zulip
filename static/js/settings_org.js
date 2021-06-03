@@ -95,9 +95,6 @@ export function get_sorted_options_list(option_values_object) {
 export function get_organization_settings_options() {
     const options = {};
     options.common_policy_values = get_sorted_options_list(settings_config.common_policy_values);
-    options.user_group_edit_policy_values = get_sorted_options_list(
-        settings_config.user_group_edit_policy_values,
-    );
     options.private_message_policy_values = get_sorted_options_list(
         settings_config.private_message_policy_values,
     );

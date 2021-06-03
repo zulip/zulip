@@ -130,19 +130,6 @@ export const common_policy_values = {
     },
 };
 
-export const user_group_edit_policy_values = {
-    by_admins_only: {
-        order: 1,
-        code: 2,
-        description: $t({defaultMessage: "Admins"}),
-    },
-    by_members: {
-        order: 2,
-        code: 1,
-        description: $t({defaultMessage: "Admins and members"}),
-    },
-};
-
 export const private_message_policy_values = {
     by_anyone: {
         order: 1,

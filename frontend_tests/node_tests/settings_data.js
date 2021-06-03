@@ -181,6 +181,11 @@ test_policy(
     "realm_move_messages_between_streams_policy",
     settings_data.user_can_move_messages_between_streams,
 );
+test_policy(
+    "user_can_edit_user_groups",
+    "realm_user_group_edit_policy",
+    settings_data.user_can_edit_user_groups,
+);
 
 function test_message_policy(label, policy, validation_func) {
     run_test(label, () => {
