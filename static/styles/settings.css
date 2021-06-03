@@ -1150,7 +1150,8 @@ input[type="checkbox"] {
         min-width: 80px;
         line-height: 16px;
 
-        &:hover {
+        &:hover,
+        &:focus {
             background-color: hsl(0, 0%, 100%);
             border: 1px solid hsl(0, 0%, 61%);
             color: hsl(0, 0%, 18%);
@@ -1165,7 +1166,8 @@ input[type="checkbox"] {
             color: hsl(0, 0%, 100%);
             border: 1px solid hsl(155, 30%, 50%);
 
-            &:hover {
+            &:hover,
+            &:focus {
                 background-color: hsl(166, 35%, 57%);
                 border: 1px solid hsl(166, 35%, 57%);
             }
