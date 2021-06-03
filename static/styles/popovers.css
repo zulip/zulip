@@ -257,6 +257,21 @@ ul {
 
 #user-profile-modal {
     border-radius: 4px;
+    height: 60vh;
+    #tab-toggle {
+        font-weight: initial;
+        margin: 6px 4px 6px 0;
+        width: 100%;
+        .tab-switcher {
+            margin-left: 2px;
+        }
+    }
+    .name {
+        color: hsl(0, 0%, 20%);
+        display: inline-block;
+        min-width: 120px;
+        font-weight: 600;
+    }
 
     #exit-sign {
         font-size: 1.5rem;
@@ -276,7 +291,19 @@ ul {
             outline: 9px solid hsl(0, 0%, 100%);
         }
     }
+    #name {
+        font-size: 26px;
+        font-weight: 700;
+        margin-bottom: 5px;
+        max-width: 100%;
+        text-align: center;
+        line-height: 30px;
 
+        #edit-button {
+            font-size: 18px;
+            margin-left: 10px;
+        }
+    }
     #default-section {
         font-size: 15px;
         display: inline-block;
@@ -284,30 +311,10 @@ ul {
 
         .default-field {
             margin-bottom: 5px;
-
-            .name {
-                color: hsl(0, 0%, 20%);
-                display: inline-block;
-                min-width: 120px;
-                font-weight: 600;
-            }
         }
 
         #user-type {
             margin-bottom: 15px;
-        }
-
-        #name {
-            font-size: 26px;
-            font-weight: 700;
-            margin-bottom: 5px;
-            max-width: 300px;
-            line-height: 30px;
-
-            #edit-button {
-                font-size: 18px;
-                margin-left: 10px;
-            }
         }
     }
 
@@ -349,6 +356,61 @@ ul {
             padding-bottom: 10px;
             padding-top: 4px;
             margin: 10px 0;
+        }
+    }
+
+    .tab-data {
+        .active {
+            display: block;
+        }
+
+        margin-bottom: 20px;
+    }
+
+    .subscription-group-list {
+        position: relative;
+        border: 1px solid hsl(0, 0%, 83%);
+        border-radius: 4px;
+        overflow: auto;
+        text-align: left;
+        margin-bottom: 5px;
+        -webkit-overflow-scrolling: touch;
+
+        .user-stream-list,
+        .user-group-list {
+            width: 100%;
+            margin: auto;
+            border-radius: 6px;
+
+            tr {
+                border-bottom: 1px solid hsl(0, 0%, 87%);
+
+                &:last-of-type {
+                    border-bottom: none;
+                }
+
+                td {
+                    padding: 4px 0;
+
+                    &:first-of-type {
+                        padding-left: 10px;
+                    }
+                }
+            }
+
+            tbody:empty::after,
+            &:empty::after {
+                content: attr(data-empty);
+                display: block;
+
+                text-align: center;
+                color: hsl(0, 0%, 67%);
+            }
+
+            &:empty {
+                display: block;
+                padding: 5px;
+            }
         }
     }
 }

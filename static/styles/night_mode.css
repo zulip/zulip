@@ -925,6 +925,12 @@ on a dark background, and don't change the dark labels dark either. */
                 }
             }
         }
+
+        .subscription-group-list,
+        .subscription-group-list .user-stream-list tr,
+        .subscription-group-list .user-group-list tr {
+            border-color: hsla(0, 0%, 0%, 0.4);
+        }
     }
 
     /* Arrows: */

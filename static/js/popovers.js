@@ -11,12 +11,15 @@ import render_playground_links_popover_content from "../templates/playground_lin
 import render_remind_me_popover_content from "../templates/remind_me_popover_content.hbs";
 import render_user_group_info_popover from "../templates/user_group_info_popover.hbs";
 import render_user_group_info_popover_content from "../templates/user_group_info_popover_content.hbs";
+import render_user_group_list_item from "../templates/user_group_list_item.hbs";
 import render_user_info_popover_content from "../templates/user_info_popover_content.hbs";
 import render_user_info_popover_title from "../templates/user_info_popover_title.hbs";
 import render_user_profile_modal from "../templates/user_profile_modal.hbs";
+import render_user_stream_list_item from "../templates/user_stream_list_item.hbs";
 
 import * as blueslip from "./blueslip";
 import * as buddy_data from "./buddy_data";
+import * as components from "./components";
 import * as compose_actions from "./compose_actions";
 import * as compose_state from "./compose_state";
 import * as compose_ui from "./compose_ui";
@@ -26,6 +29,7 @@ import * as feature_flags from "./feature_flags";
 import * as giphy from "./giphy";
 import * as hash_util from "./hash_util";
 import {$t} from "./i18n";
+import * as ListWidget from "./list_widget";
 import * as message_edit from "./message_edit";
 import * as message_edit_history from "./message_edit_history";
 import * as message_lists from "./message_lists";
@@ -44,6 +48,7 @@ import * as rows from "./rows";
 import * as settings_account from "./settings_account";
 import * as settings_data from "./settings_data";
 import * as settings_profile_fields from "./settings_profile_fields";
+import * as stream_data from "./stream_data";
 import * as stream_popover from "./stream_popover";
 import * as user_groups from "./user_groups";
 import * as user_status from "./user_status";
@@ -372,6 +377,54 @@ export function hide_user_profile() {
     overlays.close_modal("#user-profile-modal");
 }
 
+function compare_by_name(a, b) {
+    return a.name.localeCompare(b.name);
+}
+
+function format_user_stream_list_item(stream) {
+    return render_user_stream_list_item({
+        name: stream.name,
+        stream_id: stream.stream_id,
+        stream_color: stream.color,
+        invite_only: stream.invite_only,
+        is_web_public: stream.is_web_public,
+        stream_edit_url: hash_util.stream_edit_uri(stream),
+    });
+}
+
+function format_user_group_list_item(group) {
+    return render_user_group_list_item({
+        group_id: group.id,
+        name: group.name,
+    });
+}
+
+function render_user_stream_list(streams, user) {
+    streams.sort(compare_by_name);
+    const container = $("#user-profile-modal .user-stream-list");
+    container.empty();
+    ListWidget.create(container, streams, {
+        name: `user-${user.user_id}-stream-list`,
+        modifier(item) {
+            return format_user_stream_list_item(item);
+        },
+        simplebar_container: $("#user-profile-modal .modal-body"),
+    });
+}
+
+function render_user_group_list(groups, user) {
+    groups.sort(compare_by_name);
+    const container = $("#user-profile-modal .user-group-list");
+    container.empty();
+    ListWidget.create(container, groups, {
+        name: `user-${user.user_id}-group-list`,
+        modifier(item) {
+            return format_user_group_list_item(item);
+        },
+        simplebar_container: $("#user-profile-modal .modal-body"),
+    });
+}
+
 export function show_user_profile(user) {
     hide_all();
 
@@ -380,7 +433,8 @@ export function show_user_profile(user) {
     const profile_data = page_params.custom_profile_fields
         .map((f) => get_custom_profile_field_data(user, f, field_types, dateFormat))
         .filter((f) => f.name !== undefined);
-
+    const user_streams = stream_data.subscribed_subs();
+    const groups_of_user = user_groups.get_user_groups_of_user(user.user_id);
     const args = {
         full_name: user.full_name,
         email: people.get_visible_email(user),
@@ -396,7 +450,45 @@ export function show_user_profile(user) {
     };
 
     $("#user-profile-modal-holder").html(render_user_profile_modal(args));
-    overlays.open_modal("#user-profile-modal");
+    $("#user-profile-modal").modal("show");
+    $(".tabcontent").hide();
+    $("#profile-tab").show(); // Show general profile details by default.
+    const opts = {
+        selected: 0,
+        child_wants_focus: true,
+        values: [
+            {label: $t({defaultMessage: "Profile"}), key: "profile-tab"},
+            {label: $t({defaultMessage: "Streams"}), key: "streams-tab"},
+            {label: $t({defaultMessage: "User groups"}), key: "groups-tab"},
+        ],
+        callback(name, key) {
+            function hide_profile_tab() {
+                $("#profile-tab").hide();
+                $(".subscription-group-list").show();
+            }
+            switch (name) {
+                case "User groups":
+                    hide_profile_tab();
+                    $("#streams-tab").hide();
+                    render_user_group_list(groups_of_user, user);
+                    break;
+                case "Streams":
+                    hide_profile_tab();
+                    $("#groups-tab").hide();
+                    render_user_stream_list(user_streams, user);
+                    break;
+                default:
+                    // default is profile section
+                    $(".subscription-group-list").hide();
+                    break;
+            }
+            $("#" + key).show();
+        },
+    };
+
+    const elem = components.toggle(opts).get();
+    elem.addClass("large allow-overflow");
+    $("#tab-toggle").append(elem);
 
     settings_account.initialize_custom_user_type_fields(
         "#user-profile-modal #content",
