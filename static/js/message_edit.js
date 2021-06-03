@@ -345,10 +345,10 @@ function edit_message(row, raw_content) {
         file_upload_enabled = true;
     }
 
-    const show_edit_stream =
+    const is_stream_editable =
         message.is_stream && settings_data.user_can_move_messages_between_streams();
     // current message's stream has been already been added and selected in handlebar
-    const available_streams = show_edit_stream
+    const available_streams = is_stream_editable
         ? stream_data.subscribed_subs().filter((s) => s.stream_id !== message.stream_id)
         : null;
 
@@ -364,7 +364,7 @@ function edit_message(row, raw_content) {
             content: raw_content,
             file_upload_enabled,
             minutes_to_edit: Math.floor(page_params.realm_message_content_edit_limit_seconds / 60),
-            show_edit_stream,
+            is_stream_editable,
             available_streams,
             stream_id: message.stream_id,
             stream_name: message.stream,
