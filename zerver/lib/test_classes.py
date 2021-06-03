@@ -1272,13 +1272,16 @@ Output:
     ) -> Iterator[None]:
         lst.clear()
         real_event_queue_process_notification = django_tornado_api.process_notification
-        django_tornado_api.process_notification = lambda notice: lst.append(notice)
+
         # process_notification takes a single parameter called 'notice'.
         # lst.append takes a single argument called 'object'.
         # Some code might call process_notification using keyword arguments,
         # so mypy doesn't allow assigning lst.append to process_notification
         # So explicitly change parameter name to 'notice' to work around this problem
+        django_tornado_api.process_notification = lambda notice: lst.append(notice)
+
         yield
+
         django_tornado_api.process_notification = real_event_queue_process_notification
 
         self.assert_length(lst, expected_num_events)
