@@ -2735,6 +2735,43 @@ def validate_message_edit_payload(
         raise JsonableError(_("Widgets cannot be edited."))
 
 
+def can_edit_content_or_topic(
+    message: Message,
+    user_profile: UserProfile,
+    is_no_topic_msg: bool,
+    content: Optional[str] = None,
+    topic_name: Optional[str] = None,
+) -> bool:
+    # You have permission to edit the message (both content and topic) if you sent it.
+    if message.sender_id == user_profile.id:
+        return True
+
+    # You cannot edit the content of message sent by someone else.
+    if content is not None:
+        return False
+
+    # If no topic change is requested, we're done.
+    if topic_name is None:  # nocoverage
+        return True
+
+    # The following cases are the various reasons a user might be
+    # allowed to edit topics.
+
+    # We allow anyone to edit (no topic) messages to help tend them.
+    if is_no_topic_msg:
+        return True
+
+    # Organization administrators can always edit topics
+    if user_profile.is_realm_admin:
+        return True
+
+    # The community_topic_editing setting controls normal users editing topics.
+    if user_profile.realm.allow_community_topic_editing:
+        return True
+
+    return False
+
+
 def check_update_message(
     user_profile: UserProfile,
     message_id: int,
@@ -2765,21 +2802,7 @@ def check_update_message(
 
     is_no_topic_msg = message.topic_name() == "(no topic)"
 
-    # You only have permission to edit a message if:
-    # you change this value also change those two parameters in message_edit.js.
-    # 1. You sent it, OR:
-    # 2. This is a topic-only edit for a (no topic) message, OR:
-    # 3. This is a topic-only edit and you are an admin, OR:
-    # 4. This is a topic-only edit and your realm allows users to edit topics.
-    if message.sender == user_profile:
-        pass
-    elif (content is None) and (
-        is_no_topic_msg
-        or user_profile.is_realm_admin
-        or user_profile.realm.allow_community_topic_editing
-    ):
-        pass
-    else:
+    if not can_edit_content_or_topic(message, user_profile, is_no_topic_msg, content, topic_name):
         raise JsonableError(_("You don't have permission to edit this message"))
 
     # If there is a change to the content, check that it hasn't been too long
