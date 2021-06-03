@@ -145,6 +145,13 @@ export function user_last_seen_time_status(user_id) {
         return $t({defaultMessage: "Active now"});
     }
 
+    if (status === "idle") {
+        // When we complete our presence API rewrite to have the data
+        // plumbed, we may want to change this to also mention when
+        // they were last active.
+        return $t({defaultMessage: "Idle"});
+    }
+
     const last_active_date = presence.last_active_date(user_id);
     let last_seen;
     if (page_params.realm_is_zephyr_mirror_realm) {
