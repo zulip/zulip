@@ -3,7 +3,7 @@ import random
 import re
 from collections import OrderedDict
 from dataclasses import dataclass
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
@@ -70,7 +70,7 @@ class ApiURLView(TemplateView):
 class MarkdownDirectoryView(ApiURLView):
     path_template = ""
 
-    def get_path(self, article: str) -> Tuple[str, int]:
+    def get_path(self, article: str) -> DocumentationArticle:
         http_status = 200
         if article == "":
             article = "index"
@@ -86,26 +86,40 @@ class MarkdownDirectoryView(ApiURLView):
         path = self.path_template % (article,)
         try:
             loader.get_template(path)
-            return (path, http_status)
+            return DocumentationArticle(
+                article_path=path,
+                article_http_status=http_status,
+                endpoint_path=None,
+                endpoint_method=None,
+            )
         except loader.TemplateDoesNotExist:
-            return (self.path_template % ("missing",), 404)
+            return DocumentationArticle(
+                article_path=self.path_template % ("missing",),
+                article_http_status=404,
+                endpoint_path=None,
+                endpoint_method=None,
+            )
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
         article = kwargs["article"]
         context: Dict[str, Any] = super().get_context_data()
-        (context["article"], http_status_ignored) = self.get_path(article)
+
+        documentation_article = self.get_path(article)
+        context["article"] = documentation_article.article_path
 
         # For disabling the "Back to home" on the homepage
         context["not_index_page"] = not context["article"].endswith("/index.md")
         if self.path_template == "/zerver/help/%s.md":
             context["page_is_help_center"] = True
             context["doc_root"] = "/help/"
-            (sidebar_index, http_status_ignored) = self.get_path("include/sidebar_index")
+            sidebar_article = self.get_path("include/sidebar_index")
+            sidebar_index = sidebar_article.article_path
             title_base = "Zulip Help Center"
         else:
             context["page_is_api_center"] = True
             context["doc_root"] = "/api/"
-            (sidebar_index, http_status_ignored) = self.get_path("sidebar_index")
+            sidebar_article = self.get_path("sidebar_index")
+            sidebar_index = sidebar_article.article_path
             title_base = "Zulip API documentation"
 
         # The following is a somewhat hacky approach to extract titles from articles.
@@ -140,7 +154,8 @@ class MarkdownDirectoryView(ApiURLView):
         return context
 
     def get(self, request: HttpRequest, article: str = "") -> HttpResponse:
-        (path, http_status) = self.get_path(article)
+        documentation_article = self.get_path(article)
+        http_status = documentation_article.article_http_status
         result = super().get(self, article=article)
         if http_status != 200:
             result.status_code = http_status
