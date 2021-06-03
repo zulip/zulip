@@ -710,6 +710,7 @@ html_rules: List["Rule"] = [
             "templates/corporate/zephyr.html",
             "templates/corporate/zephyr-mirror.html",
             "static/templates/stream_sidebar_color_picker.hbs",
+            "static/templates/subscription_color_picker.hbs",
         },
         "good_lines": ["#my-style {color: blue;}", 'style="display: none"', "style='display: none"],
         "bad_lines": ['<p style="color: blue;">Foo</p>', 'style = "color: blue;"'],
