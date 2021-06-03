@@ -81,6 +81,9 @@ export function update_stream_color(sub, color, {update_historical = false} = {}
     sub.color = color;
     const stream_id = sub.stream_id;
 
+    $(".stream-row[data-stream-id='" + stream_id + "'] .icon").css('background-color', color);
+    $("#subscription_overlay .subscription_settings[data-stream-id='" + stream_id + "'] .large-icon").css("color", color);
+
     if (update_historical) {
         update_historical_message_color(sub.name, color);
     }
