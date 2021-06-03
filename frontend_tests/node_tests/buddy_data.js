@@ -529,6 +529,9 @@ test("user_last_seen_time_status", (override) => {
         buddy_data.user_last_seen_time_status(old_user.user_id),
         "translated: Last active: May 12",
     );
+
+    set_presence(selma.user_id, "idle");
+    assert.equal(buddy_data.user_last_seen_time_status(selma.user_id), "translated: Idle");
 });
 
 test("get_items_for_users", () => {
