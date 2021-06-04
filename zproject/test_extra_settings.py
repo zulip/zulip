@@ -63,7 +63,7 @@ if "BAN_CONSOLE_OUTPUT" in os.environ:
 
 # Decrease the get_updates timeout to 1 second.
 # This allows frontend tests to proceed quickly to the next test step.
-POLL_TIMEOUT = 1000
+EVENT_QUEUE_LONGPOLL_TIMEOUT_SECONDS = 1
 
 # Stores the messages in `django.core.mail.outbox` rather than sending them.
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"

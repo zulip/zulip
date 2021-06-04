@@ -277,6 +277,9 @@ def fetch_initial_state_data(
         state["giphy_rating_options"] = realm.GIPHY_RATING_OPTIONS
 
         state["server_needs_upgrade"] = is_outdated_server(user_profile)
+        state[
+            "event_queue_longpoll_timeout_seconds"
+        ] = settings.EVENT_QUEUE_LONGPOLL_TIMEOUT_SECONDS
 
         # TODO: Should these have the realm prefix replaced with server_?
         state["realm_push_notifications_enabled"] = push_notifications_enabled()

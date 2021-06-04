@@ -183,7 +183,6 @@ def build_page_params_for_home_page_load(
     page_params = dict(
         ## Server settings.
         test_suite=settings.TEST_SUITE,
-        poll_timeout=settings.POLL_TIMEOUT,
         insecure_desktop_app=insecure_desktop_app,
         login_page=settings.HOME_NOT_LOGGED_IN,
         save_stacktraces=settings.SAVE_FRONTEND_STACKTRACES,

@@ -141,6 +141,13 @@ paths:
 
         This endpoint allows you to receive new events from
         [a registered event queue](/api/register-queue).
+
+        Long-lived clients should use the
+        `event_queue_longpoll_timeout_seconds` property returned by
+        `POST /register` as the client-side HTTP request timeout for
+        calls to this endpoint.  It is guaranteed to be higher than
+        heartbeat frequency and should be respected by clients to
+        avoid breaking when heartbeat frequency increases.
       parameters:
         - $ref: "#/components/parameters/QueueId"
         - name: last_event_id
@@ -8986,6 +8993,19 @@ paths:
                           such that the web app will display to the current user a prominent warning.
 
                           **Changes**: New in Zulip 5.0 (feature level 74).
+                      event_queue_longpoll_timeout_seconds:
+                        type: integer
+                        description: |
+                          Present if `realm` is present in `fetch_event_types`.
+
+                          Recommended client-side HTTP request timeout for [`GET /events`](/api/get-events) calls.
+                          This is guaranteed to be somewhat greater than the heartbeat frequency. It is important
+                          that clients respect this parameter, so that increases in the heartbeat frequency do not
+                          break clients.
+
+                          **Changes**: New in Zulip 5.0 (feature level 74). Previously,
+                          this was hardcoded to 90 seconds, and clients should use that as a fallback
+                          value when interacting with servers where this field is not present.
                       realm_notifications_stream_id:
                         type: integer
                         description: |

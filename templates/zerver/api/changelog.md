@@ -11,6 +11,12 @@ below features are supported.
 
 ## Changes in Zulip 5.0
 
+**Feature level 74**
+
+* [`POST /register`](/api/register-queue): Added `server_needs_upgrade`
+  and `event_queue_longpoll_timeout_seconds` field when fetching
+  realm data.
+
 **Feature level 73**
 
 * [`GET /users`](/api/get-users), [`GET /users/{user_id}`](/api/get-user),

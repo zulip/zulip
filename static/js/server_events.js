@@ -211,7 +211,7 @@ function get_events({dont_block = false} = {}) {
         url: "/json/events",
         data: get_events_params,
         idempotent: true,
-        timeout: page_params.poll_timeout,
+        timeout: page_params.event_queue_longpoll_timeout_seconds * 1000,
         success(data) {
             watchdog.set_suspect_offline(false);
             try {
