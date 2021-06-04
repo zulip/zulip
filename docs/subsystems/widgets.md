@@ -397,15 +397,9 @@ And then we are basically done!
 
 ## Slash commands
 
-This document is more about "widget" behavior than
-"slash command" interfaces, but there is indeed a
-lot of overlap between the two concepts.
+This document is more about "widget" behavior than "slash command"
+interfaces, but there is indeed a lot of overlap between the two
+concepts.
 
-We will soon introduce typeahead capability for slash
-syntax, including things that are somewhat outliers
-such as the "/me" command.
-
-If certain widget features are behind feature flags,
-this will slightly complicate the typeahead
-implementation.  Mostly we just need the server
-to share any relevant settings with the client.
+Typeahead for slash commands is implemented via the `slash_commands`
+object in `static/js/composebox_typeahead.js`.
