@@ -17,8 +17,9 @@ from zerver.lib.actions import (
     do_change_plan_type,
     do_create_user,
 )
+from zerver.lib.compatibility import LAST_SERVER_UPGRADE_TIME, is_outdated_server
 from zerver.lib.events import add_realm_logo_fields
-from zerver.lib.home import LAST_SERVER_UPGRADE_TIME, get_furthest_read_time, is_outdated_server
+from zerver.lib.home import get_furthest_read_time
 from zerver.lib.soft_deactivation import do_soft_deactivate_users
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_user_messages, override_settings, queries_captured
@@ -896,17 +897,17 @@ class HomeTest(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         iago = self.example_user("iago")
         now = LAST_SERVER_UPGRADE_TIME.replace(tzinfo=pytz.utc)
-        with patch("zerver.lib.home.timezone_now", return_value=now + timedelta(days=10)):
+        with patch("zerver.lib.compatibility.timezone_now", return_value=now + timedelta(days=10)):
             self.assertEqual(is_outdated_server(iago), False)
             self.assertEqual(is_outdated_server(hamlet), False)
             self.assertEqual(is_outdated_server(None), False)
 
-        with patch("zerver.lib.home.timezone_now", return_value=now + timedelta(days=397)):
+        with patch("zerver.lib.compatibility.timezone_now", return_value=now + timedelta(days=397)):
             self.assertEqual(is_outdated_server(iago), True)
             self.assertEqual(is_outdated_server(hamlet), True)
             self.assertEqual(is_outdated_server(None), True)
 
-        with patch("zerver.lib.home.timezone_now", return_value=now + timedelta(days=380)):
+        with patch("zerver.lib.compatibility.timezone_now", return_value=now + timedelta(days=380)):
             self.assertEqual(is_outdated_server(iago), True)
             self.assertEqual(is_outdated_server(hamlet), False)
             self.assertEqual(is_outdated_server(None), False)
