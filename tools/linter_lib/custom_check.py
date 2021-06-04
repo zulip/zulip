@@ -132,7 +132,7 @@ js_rules = RuleList(
             "exclude": {
                 "static/js/portico",
                 "static/js/lightbox.js",
-                "static/js/ui_report.js",
+                "static/js/ui_report.ts",
                 "static/js/confirm_dialog.js",
                 "frontend_tests/",
             },
