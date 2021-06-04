@@ -216,9 +216,12 @@ test("initialize", () => {
     search_query_box.trigger(new $.Event("blur", stub_event));
     assert.equal(search_query_box.val(), "test string");
 
-    searchbox.css({"box-shadow": "inset 0px 0px 0px 2px hsl(204, 20%, 74%)"});
+    let css_args;
+    searchbox.css = (args) => {
+        css_args = args;
+    };
     searchbox.trigger("focusout");
-    assert.deepEqual(searchbox.css(), {"box-shadow": "unset"});
+    assert.deepEqual(css_args, {"box-shadow": "unset"});
 
     search.__Rewire__("is_using_input_method", false);
     searchbox_form.trigger("compositionend");
@@ -343,8 +346,15 @@ test("initiate_search", () => {
 
     $("#search_query")[0] = "stub";
 
+    const searchbox = $("#searchbox");
+    let css_args;
+    searchbox.css = (args) => {
+        css_args = args;
+    };
+
     search.initiate_search();
     assert(typeahead_forced_open);
     assert(is_searchbox_text_selected);
     assert(is_searchbox_focused);
+    assert.deepEqual(css_args, {"box-shadow": "inset 0px 0px 0px 2px hsl(204, 20%, 74%)"});
 });

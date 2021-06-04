@@ -287,10 +287,20 @@ run_test("initiate_search", () => {
         is_searchbox_text_selected = true;
     });
 
+    let searchbox_css_args;
+
+    $("#searchbox").css = (args) => {
+        searchbox_css_args = args;
+    };
+
     search.initiate_search();
     assert(typeahead_forced_open);
     assert(is_searchbox_text_selected);
     assert.equal($("#search_query").val(), "ver");
+
+    assert.deepEqual(searchbox_css_args, {
+        "box-shadow": "inset 0px 0px 0px 2px hsl(204, 20%, 74%)",
+    });
 
     // test that we append space for user convenience
     narrow_state.filter = () => ({is_search: () => false});
