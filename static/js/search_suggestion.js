@@ -3,6 +3,7 @@ import Handlebars from "handlebars/runtime";
 import * as common from "./common";
 import {Filter} from "./filter";
 import * as huddle_data from "./huddle_data";
+import {i18n} from "./i18n";
 import * as narrow_state from "./narrow_state";
 import {page_params} from "./page_params";
 import * as people from "./people";
@@ -110,10 +111,21 @@ function get_stream_suggestions(last, operators) {
     const hilite = typeahead_helper.highlight_with_escaping_and_regex;
 
     const objs = streams.map((stream) => {
-        const prefix = "stream";
-        const highlighted_stream = hilite(regex, stream);
-        const verb = last.negated ? "exclude " : "";
-        const description = verb + prefix + " " + highlighted_stream;
+        // It is used to render stream names with their matching
+        // part as highlighted so we should not escape it in
+        // translations.
+        const highlighted_stream_name_in_html = hilite(regex, stream);
+
+        let description = "";
+        if (last.negated) {
+            description = i18n.t("exclude stream __- stream_name__", {
+                stream_name: highlighted_stream_name_in_html,
+            });
+        } else {
+            description = i18n.t("stream __- stream_name__", {
+                stream_name: highlighted_stream_name_in_html,
+            });
+        }
         const term = {
             operator: "stream",
             operand: stream,
@@ -177,8 +189,13 @@ function get_group_suggestions(last, operators) {
             negated,
         };
         const name = highlight_person(person);
-        const description =
-            prefix + " " + Handlebars.Utils.escapeExpression(all_but_last_part) + "," + name;
+        const escapeExpression = Handlebars.Utils.escapeExpression(all_but_last_part) + ",";
+        const description = i18n.t("__prefix__ __escapeExpression__ __name__", {
+            prefix,
+            escapeExpression,
+            name,
+            interpolation: {escapeValue: false},
+        });
         let terms = [term];
         if (negated) {
             terms = [{operator: "is", operand: "private"}, term];
@@ -253,7 +270,11 @@ function get_person_suggestions(people_getter, last, operators, autocomplete_ope
 
     const objs = persons.map((person) => {
         const name = highlight_person(person);
-        const description = prefix + " " + name;
+        const description = i18n.t("__prefix__ __name__", {
+            prefix,
+            name,
+            interpolation: {escapeValue: false},
+        });
         const terms = [
             {
                 operator: autocomplete_operator,
@@ -399,7 +420,9 @@ function get_special_filter_suggestions(last, operators, suggestions) {
     if (last.negated || is_search_operand_negated) {
         suggestions = suggestions.map((suggestion) => ({
             search_string: "-" + suggestion.search_string,
-            description: "exclude " + suggestion.description,
+            description: i18n.t("exclude __description__", {
+                description: suggestion.negated_description,
+            }),
             invalid: suggestion.invalid,
         }));
     }
@@ -427,7 +450,7 @@ function get_special_filter_suggestions(last, operators, suggestions) {
 
     // Only show home if there's an empty bar
     if (operators.length === 0 && last_string === "") {
-        suggestions.unshift({search_string: "", description: "All messages"});
+        suggestions.unshift({search_string: "", description: i18n.t("all messages")});
     }
     return suggestions;
 }
@@ -436,7 +459,8 @@ function get_streams_filter_suggestions(last, operators) {
     const suggestions = [
         {
             search_string: "streams:public",
-            description: "All public streams in organization",
+            description: i18n.t("all public streams in organization"),
+            negated_description: "all public streams in organization",
             invalid: [
                 {operator: "is", operand: "private"},
                 {operator: "stream"},
@@ -453,7 +477,8 @@ function get_is_filter_suggestions(last, operators) {
     const suggestions = [
         {
             search_string: "is:private",
-            description: "private messages",
+            description: i18n.t("private messages"),
+            negated_description: "private messages",
             invalid: [
                 {operator: "is", operand: "private"},
                 {operator: "stream"},
@@ -463,22 +488,26 @@ function get_is_filter_suggestions(last, operators) {
         },
         {
             search_string: "is:starred",
-            description: "starred messages",
+            description: i18n.t("starred messages"),
+            negated_description: "starred messages",
             invalid: [{operator: "is", operand: "starred"}],
         },
         {
             search_string: "is:mentioned",
-            description: "@-mentions",
+            description: i18n.t("@-mentions"),
+            negated_description: "@-mentions",
             invalid: [{operator: "is", operand: "mentioned"}],
         },
         {
             search_string: "is:alerted",
-            description: "alerted messages",
+            description: i18n.t("alerted messages"),
+            negated_description: "alerted messages",
             invalid: [{operator: "is", operand: "alerted"}],
         },
         {
             search_string: "is:unread",
-            description: "unread messages",
+            description: i18n.t("unread messages"),
+            negated_description: "unread messages",
             invalid: [{operator: "is", operand: "unread"}],
         },
     ];
@@ -489,17 +518,20 @@ function get_has_filter_suggestions(last, operators) {
     const suggestions = [
         {
             search_string: "has:link",
-            description: "messages with one or more link",
+            description: i18n.t("messages with one or more link"),
+            negated_description: "messages with one or more link",
             invalid: [{operator: "has", operand: "link"}],
         },
         {
             search_string: "has:image",
-            description: "messages with one or more image",
+            description: i18n.t("messages with one or more image"),
+            negated_description: "messages with one or more image",
             invalid: [{operator: "has", operand: "image"}],
         },
         {
             search_string: "has:attachment",
-            description: "messages with one or more attachment",
+            description: i18n.t("messages with one or more attachment"),
+            negated_description: "messages with one or more attachment",
             invalid: [{operator: "has", operand: "attachment"}],
         },
     ];
@@ -510,14 +542,19 @@ function get_sent_by_me_suggestions(last, operators) {
     const last_string = Filter.unparse([last]).toLowerCase();
     const negated = last.negated || (last.operator === "search" && last.operand[0] === "-");
     const negated_symbol = negated ? "-" : "";
-    const verb = negated ? "exclude " : "";
 
     const sender_query = negated_symbol + "sender:" + people.my_current_email();
     const from_query = negated_symbol + "from:" + people.my_current_email();
     const sender_me_query = negated_symbol + "sender:me";
     const from_me_query = negated_symbol + "from:me";
     const sent_string = negated_symbol + "sent";
-    const description = verb + "sent by me";
+
+    let description;
+    if (negated) {
+        description = i18n.t("exclude sent by me");
+    } else {
+        description = i18n.t("sent by me");
+    }
 
     const invalid = [{operator: "sender"}, {operator: "from"}];
 
@@ -733,7 +770,7 @@ export function get_suggestions(base_query, query) {
 
 export function finalize_search_result(result) {
     for (const sug of result) {
-        const first = sug.description.charAt(0).toUpperCase();
+        const first = sug.description.charAt(0).toLocaleUpperCase();
         sug.description = first + sug.description.slice(1);
     }
 

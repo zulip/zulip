@@ -380,15 +380,15 @@ test("empty_query_suggestions", (override) => {
     function describe(q) {
         return suggestions.lookup_table.get(q).description;
     }
-    assert.equal(describe("is:private"), "Private messages");
-    assert.equal(describe("is:starred"), "Starred messages");
-    assert.equal(describe("is:mentioned"), "@-mentions");
-    assert.equal(describe("is:alerted"), "Alerted messages");
-    assert.equal(describe("is:unread"), "Unread messages");
-    assert.equal(describe("sender:myself@zulip.com"), "Sent by me");
-    assert.equal(describe("has:link"), "Messages with one or more link");
-    assert.equal(describe("has:image"), "Messages with one or more image");
-    assert.equal(describe("has:attachment"), "Messages with one or more attachment");
+    assert.equal(describe("is:private"), "Translated: private messages");
+    assert.equal(describe("is:starred"), "Translated: starred messages");
+    assert.equal(describe("is:mentioned"), "Translated: @-mentions");
+    assert.equal(describe("is:alerted"), "Translated: alerted messages");
+    assert.equal(describe("is:unread"), "Translated: unread messages");
+    assert.equal(describe("sender:myself@zulip.com"), "Translated: sent by me");
+    assert.equal(describe("has:link"), "Translated: messages with one or more link");
+    assert.equal(describe("has:image"), "Translated: messages with one or more image");
+    assert.equal(describe("has:attachment"), "Translated: messages with one or more attachment");
 });
 
 test("has_suggestions", (override) => {
@@ -406,17 +406,20 @@ test("has_suggestions", (override) => {
         return suggestions.lookup_table.get(q).description;
     }
 
-    assert.equal(describe("has:link"), "Messages with one or more link");
-    assert.equal(describe("has:image"), "Messages with one or more image");
-    assert.equal(describe("has:attachment"), "Messages with one or more attachment");
+    assert.equal(describe("has:link"), "Translated: messages with one or more link");
+    assert.equal(describe("has:image"), "Translated: messages with one or more image");
+    assert.equal(describe("has:attachment"), "Translated: messages with one or more attachment");
 
     query = "-h";
     suggestions = get_suggestions("", query);
     expected = ["-h", "-has:link", "-has:image", "-has:attachment"];
     assert.deepEqual(suggestions.strings, expected);
-    assert.equal(describe("-has:link"), "Exclude messages with one or more link");
-    assert.equal(describe("-has:image"), "Exclude messages with one or more image");
-    assert.equal(describe("-has:attachment"), "Exclude messages with one or more attachment");
+    assert.equal(describe("-has:link"), "Translated: exclude messages with one or more link");
+    assert.equal(describe("-has:image"), "Translated: exclude messages with one or more image");
+    assert.equal(
+        describe("-has:attachment"),
+        "Translated: exclude messages with one or more attachment",
+    );
 
     // operand suggestions follow.
 
@@ -471,22 +474,22 @@ test("check_is_suggestions", (override) => {
         return suggestions.lookup_table.get(q).description;
     }
 
-    assert.equal(describe("is:private"), "Private messages");
-    assert.equal(describe("is:starred"), "Starred messages");
-    assert.equal(describe("is:mentioned"), "@-mentions");
-    assert.equal(describe("is:alerted"), "Alerted messages");
-    assert.equal(describe("is:unread"), "Unread messages");
+    assert.equal(describe("is:private"), "Translated: private messages");
+    assert.equal(describe("is:starred"), "Translated: starred messages");
+    assert.equal(describe("is:mentioned"), "Translated: @-mentions");
+    assert.equal(describe("is:alerted"), "Translated: alerted messages");
+    assert.equal(describe("is:unread"), "Translated: unread messages");
 
     query = "-i";
     suggestions = get_suggestions("", query);
     expected = ["-i", "-is:private", "-is:starred", "-is:mentioned", "-is:alerted", "-is:unread"];
     assert.deepEqual(suggestions.strings, expected);
 
-    assert.equal(describe("-is:private"), "Exclude private messages");
-    assert.equal(describe("-is:starred"), "Exclude starred messages");
-    assert.equal(describe("-is:mentioned"), "Exclude @-mentions");
-    assert.equal(describe("-is:alerted"), "Exclude alerted messages");
-    assert.equal(describe("-is:unread"), "Exclude unread messages");
+    assert.equal(describe("-is:private"), "Translated: exclude private messages");
+    assert.equal(describe("-is:starred"), "Translated: exclude starred messages");
+    assert.equal(describe("-is:mentioned"), "Translated: exclude @-mentions");
+    assert.equal(describe("-is:alerted"), "Translated: exclude alerted messages");
+    assert.equal(describe("-is:unread"), "Translated: exclude unread messages");
 
     query = "";
     suggestions = get_suggestions("", query);
@@ -559,7 +562,10 @@ test("sent_by_me_suggestions", (override) => {
     let query = "";
     let suggestions = get_suggestions("", query);
     assert(suggestions.strings.includes("sender:myself@zulip.com"));
-    assert.equal(suggestions.lookup_table.get("sender:myself@zulip.com").description, "Sent by me");
+    assert.equal(
+        suggestions.lookup_table.get("sender:myself@zulip.com").description,
+        "Translated: sent by me",
+    );
 
     query = "sender";
     suggestions = get_suggestions("", query);
@@ -684,7 +690,7 @@ test("topic_suggestions", (override) => {
     function describe(q) {
         return suggestions.lookup_table.get(q).description;
     }
-    assert.equal(describe("te"), "Search for te");
+    assert.equal(describe("te"), "Translated: translated: search for te");
     assert.equal(describe("stream:office topic:team"), "Stream office &gt; team");
 
     suggestions = get_suggestions("topic:staplers", "stream:office");
@@ -794,11 +800,11 @@ test("people_suggestions", (override) => {
 
     assert.equal(
         describe("pm-with:ted@zulip.com"),
-        "Private messages with <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;",
+        "Translated: translated: private messages with <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;",
     );
     assert.equal(
         describe("sender:ted@zulip.com"),
-        "Sent by <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;",
+        "Translated: translated: sent by <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;",
     );
 
     suggestions = get_suggestions("", "Ted "); // note space
@@ -863,9 +869,12 @@ test("people_suggestion (Admin only email visibility)", (override) => {
 
     assert.equal(
         describe("pm-with:ted@zulip.com"),
-        "Private messages with <strong>Te</strong>d Smith",
+        "Translated: translated: private messages with <strong>Te</strong>d Smith",
     );
-    assert.equal(describe("sender:ted@zulip.com"), "Sent by <strong>Te</strong>d Smith");
+    assert.equal(
+        describe("sender:ted@zulip.com"),
+        "Translated: translated: sent by <strong>Te</strong>d Smith",
+    );
 });
 
 test("operator_suggestions", () => {
