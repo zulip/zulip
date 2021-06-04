@@ -5,13 +5,15 @@
 # in Zulip's API documentation; the details are in
 # zerver.openapi.curl_param_value_generators.
 
-import glob
 import html
 import json
+import os
+import re
 import shlex
 import subprocess
 
 import markdown
+from django.conf import settings
 from zulip import Client
 
 from zerver.models import get_realm
@@ -35,7 +37,16 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
     # on "add" tests coming before "remove" tests in some cases.  We
     # should try to either avoid ordering dependencies or make them
     # very explicit.
-    for file_name in sorted(glob.glob("templates/zerver/api/*.md")):
+    rest_endpoints_path = os.path.join(
+        settings.DEPLOY_ROOT, "templates/zerver/help/include/rest-endpoints.md"
+    )
+    rest_endpoints_raw = open(rest_endpoints_path, "r").read()
+    ENDPOINT_REGEXP = re.compile(r"/api/\s*(.*?)\)")
+    endpoint_list = sorted(set(re.findall(ENDPOINT_REGEXP, rest_endpoints_raw)))
+
+    for endpoint in endpoint_list:
+        article_name = endpoint + ".md"
+        file_name = os.path.join(settings.DEPLOY_ROOT, "templates/zerver/api/", article_name)
         with open(file_name) as f:
             for line in f:
                 # Set AUTHENTICATION_LINE to default_authentication_line.
