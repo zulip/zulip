@@ -62,6 +62,7 @@ const dropdown_list_widget = zrequire("dropdown_list_widget");
 
 function test(label, f) {
     run_test(label, (override) => {
+        $("#realm-icon-upload-widget .upload-spinner-background").css = () => {};
         page_params.is_admin = false;
         page_params.realm_domains = [
             {domain: "example.com", allow_subdomains: true},

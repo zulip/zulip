@@ -339,6 +339,8 @@ function stub_out_filter_buttons() {
 
 function test(label, f) {
     run_test(label, (override) => {
+        $(".header").css = () => {};
+
         messages = sample_messages.map((message) => ({...message}));
         f(override);
     });

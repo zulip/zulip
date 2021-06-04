@@ -76,6 +76,7 @@ const short_msg = {
 
 function test(label, f) {
     run_test(label, (override) => {
+        $("#draft_overlay").css = () => {};
         localStorage.clear();
         f(override);
     });
