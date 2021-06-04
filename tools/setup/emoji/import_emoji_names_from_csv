@@ -18,20 +18,20 @@ from typing import Any, Dict, List, Set
 EMOJI_DIR_PATH = os.path.dirname(os.path.abspath(__file__))
 
 ACTIVE_ENTRY = (
-    "%(explanation)s"
-    "\n    '%(emoji_code)s': {'canonical_name': '%(canonical_name)s', 'aliases': %(aliases)s},"
+    "{explanation}"
+    "\n    {emoji_code!r}: {{'canonical_name': {canonical_name!r}, 'aliases': {aliases!r}}},"
 )
 
 INACTIVE_ENTRY = (
-    "%(explanation)s"
-    "\n    # '%(emoji_code)s': {'canonical_name': '%(canonical_name)s', 'aliases': %(aliases)s},"
+    "{explanation}"
+    "\n    # {emoji_code!r}: {{'canonical_name': {canonical_name!r}, 'aliases': {aliases!r}}},"
 )
 
 FILE_TEMPLATE = (
     "from typing import Any, Dict\n\n"
-    "EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {"
-    "%(emoji_entries)s\n"
-    "}\n"
+    "EMOJI_NAME_MAPS: Dict[str, Dict[str, Any]] = {{"
+    "{emoji_entries}\n"
+    "}}\n"
 )
 
 emoji_names: Set[str] = set()
@@ -131,14 +131,14 @@ def main() -> None:
             "explanation": formatted_explanation,
         }
         if canonical_name == "X":
-            emoji_entry = INACTIVE_ENTRY % dict(**context)
+            emoji_entry = INACTIVE_ENTRY.format(**context)
         else:
-            emoji_entry = ACTIVE_ENTRY % dict(**context)
+            emoji_entry = ACTIVE_ENTRY.format(**context)
 
         emoji_entries += emoji_entry
 
     with open(args.output_file_path, "w") as fp:
-        fp.write(FILE_TEMPLATE % {"emoji_entries": emoji_entries})
+        fp.write(FILE_TEMPLATE.format(emoji_entries=emoji_entries))
 
 
 if __name__ == "__main__":
