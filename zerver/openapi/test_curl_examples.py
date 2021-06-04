@@ -47,6 +47,8 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
     for endpoint in endpoint_list:
         article_name = endpoint + ".md"
         file_name = os.path.join(settings.DEPLOY_ROOT, "templates/zerver/api/", article_name)
+        curl_commands_to_test = []
+
         with open(file_name) as f:
             for line in f:
                 # Set AUTHENTICATION_LINE to default_authentication_line.
@@ -55,8 +57,10 @@ def test_generated_curl_examples_for_success(client: Client) -> None:
                 AUTHENTICATION_LINE[0] = default_authentication_line
                 # A typical example from the Markdown source looks like this:
                 #     {generate_code_example(curl, ...}
-                if not line.startswith("{generate_code_example(curl"):
-                    continue
+                if line.startswith("{generate_code_example(curl"):
+                    curl_commands_to_test.append(line)
+
+            for line in curl_commands_to_test:
                 # To do an end-to-end test on the documentation examples
                 # that will be actually shown to users, we use the
                 # Markdown rendering pipeline to compute the user-facing
