@@ -27,43 +27,37 @@ PAGER_DUTY_EVENT_NAMES_V2 = {
     "incident.assign": "assigned",
 }
 
-ASSIGNEE_TEMPLATE = "[{username}]({url})"
+AGENT_TEMPLATE = "[{username}]({url})"
 
 INCIDENT_WITH_SERVICE_AND_ASSIGNEE = (
     "Incident [{incident_num}]({incident_url}) {action} by [{service_name}]"
-    "({service_url}) (assigned to {assignee_info}):\n\n``` quote\n{trigger_message}\n```"
+    "({service_url}) (assigned to {assignee_info}).\n\n{trigger_message}"
 )
 
-INCIDENT_WITH_ASSIGNEE = """
-Incident [{incident_num}]({incident_url}) {action} by {assignee_info}:
+TRIGGER_MESSAGE = "``` quote\n{message}\n```"
 
-``` quote
+INCIDENT_WITH_ASSIGNEE = """
+Incident [{incident_num}]({incident_url}) {action} by {assignee_info}.
+
 {trigger_message}
-```
 """.strip()
 
 INCIDENT_ASSIGNED = """
-Incident [{incident_num}]({incident_url}) {action} to {assignee_info}:
+Incident [{incident_num}]({incident_url}) {action} to {assignee_info}.
 
-``` quote
 {trigger_message}
-```
 """.strip()
 
 INCIDENT_RESOLVED_WITH_AGENT = """
-Incident [{incident_num}]({incident_url}) resolved by {resolving_agent_info}:
+Incident [{incident_num}]({incident_url}) resolved by {agent_info}.
 
-``` quote
 {trigger_message}
-```
 """.strip()
 
 INCIDENT_RESOLVED = """
-Incident [{incident_num}]({incident_url}) resolved:
+Incident [{incident_num}]({incident_url}) resolved.
 
-``` quote
 {trigger_message}
-```
 """.strip()
 
 
@@ -80,7 +74,7 @@ def build_pagerduty_formatdict(message: Dict[str, Any]) -> Dict[str, Any]:
 
     if message["data"]["incident"].get("assigned_to_user", None):
         assigned_to_user = message["data"]["incident"]["assigned_to_user"]
-        format_dict["assignee_info"] = ASSIGNEE_TEMPLATE.format(
+        format_dict["assignee_info"] = AGENT_TEMPLATE.format(
             username=assigned_to_user["email"].split("@")[0],
             url=assigned_to_user["html_url"],
         )
@@ -89,7 +83,7 @@ def build_pagerduty_formatdict(message: Dict[str, Any]) -> Dict[str, Any]:
 
     if message["data"]["incident"].get("resolved_by_user", None):
         resolved_by_user = message["data"]["incident"]["resolved_by_user"]
-        format_dict["resolving_agent_info"] = ASSIGNEE_TEMPLATE.format(
+        format_dict["agent_info"] = AGENT_TEMPLATE.format(
             username=resolved_by_user["email"].split("@")[0],
             url=resolved_by_user["html_url"],
         )
@@ -105,7 +99,7 @@ def build_pagerduty_formatdict(message: Dict[str, Any]) -> Dict[str, Any]:
         if trigger_description:
             trigger_message.append(trigger_description)
 
-    format_dict["trigger_message"] = "\n".join(trigger_message)
+    format_dict["trigger_message"] = TRIGGER_MESSAGE.format(message="\n".join(trigger_message))
     return format_dict
 
 
@@ -123,7 +117,7 @@ def build_pagerduty_formatdict_v2(message: Dict[str, Any]) -> Dict[str, Any]:
     assignments = message["incident"]["assignments"]
     if assignments:
         assignee = assignments[0]["assignee"]
-        format_dict["assignee_info"] = ASSIGNEE_TEMPLATE.format(
+        format_dict["assignee_info"] = AGENT_TEMPLATE.format(
             username=assignee["summary"], url=assignee["html_url"]
         )
     else:
@@ -131,14 +125,14 @@ def build_pagerduty_formatdict_v2(message: Dict[str, Any]) -> Dict[str, Any]:
 
     last_status_change_by = message["incident"].get("last_status_change_by")
     if last_status_change_by is not None:
-        format_dict["resolving_agent_info"] = ASSIGNEE_TEMPLATE.format(
+        format_dict["agent_info"] = AGENT_TEMPLATE.format(
             username=last_status_change_by["summary"],
             url=last_status_change_by["html_url"],
         )
 
     trigger_description = message["incident"].get("description")
     if trigger_description is not None:
-        format_dict["trigger_message"] = trigger_description
+        format_dict["trigger_message"] = TRIGGER_MESSAGE.format(message=trigger_description)
     return format_dict
 
 
@@ -147,9 +141,9 @@ def send_formated_pagerduty(
 ) -> None:
     if message_type in ("incident.trigger", "incident.unacknowledge"):
         template = INCIDENT_WITH_SERVICE_AND_ASSIGNEE
-    elif message_type == "incident.resolve" and format_dict.get("resolving_agent_info") is not None:
+    elif message_type == "incident.resolve" and format_dict.get("agent_info") is not None:
         template = INCIDENT_RESOLVED_WITH_AGENT
-    elif message_type == "incident.resolve" and format_dict.get("resolving_agent_info") is None:
+    elif message_type == "incident.resolve" and format_dict.get("agent_info") is None:
         template = INCIDENT_RESOLVED
     elif message_type == "incident.assign":
         template = INCIDENT_ASSIGNED
