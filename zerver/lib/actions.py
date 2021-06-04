@@ -2810,9 +2810,7 @@ def can_edit_content_or_topic(
     if content is not None:
         return False
 
-    # If no topic change is requested, we're done.
-    if topic_name is None:  # nocoverage
-        return True
+    assert topic_name is not None
 
     # The following cases are the various reasons a user might be
     # allowed to edit topics.
