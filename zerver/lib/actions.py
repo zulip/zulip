@@ -5812,8 +5812,6 @@ def update_to_dict_cache(
     return message_ids
 
 
-# We use transaction.atomic to support select_for_update in the attachment codepath.
-@transaction.atomic
 def do_update_embedded_data(
     user_profile: UserProfile,
     message: Message,
