@@ -521,6 +521,10 @@ export function set_event_handlers() {
     $("#streams_header")
         .expectOne()
         .on("click", (e) => {
+            e.preventDefault();
+            if (e.target.id === "streams_inline_cog") {
+                return;
+            }
             toggle_filter_displayed(e);
         });
 

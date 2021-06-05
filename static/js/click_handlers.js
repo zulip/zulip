@@ -694,11 +694,6 @@ export function initialize() {
 
     // LEFT SIDEBAR
 
-    $("#streams_inline_cog").on("click", (e) => {
-        e.stopPropagation();
-        browser_history.go_to_location("streams/subscribed");
-    });
-
     $(".streams_filter_icon").on("click", (e) => {
         e.stopPropagation();
         stream_list.toggle_filter_displayed(e);
