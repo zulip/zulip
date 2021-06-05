@@ -912,6 +912,7 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
     def test_avatar_url(self) -> None:
         """Verifies URL schemes for avatars and realm icons."""
         backend: ZulipUploadBackend = LocalUploadBackend()
+        self.assertEqual(backend.get_public_upload_root_url(), "/user_avatars/")
         self.assertEqual(backend.get_avatar_url("hash", False), "/user_avatars/hash.png?x=x")
         self.assertEqual(backend.get_avatar_url("hash", True), "/user_avatars/hash-medium.png?x=x")
         self.assertEqual(

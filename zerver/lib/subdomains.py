@@ -5,6 +5,7 @@ from typing import Optional
 from django.conf import settings
 from django.http import HttpRequest
 
+from zerver.lib.upload import get_public_upload_root_url
 from zerver.models import Realm, UserProfile
 
 
@@ -75,5 +76,14 @@ def is_static_or_current_realm_url(url: str, realm: Realm) -> bool:
     # Relative URLs will be processed by the browser the same way as the above.
     if split_url.netloc == "" and split_url.scheme == "":
         return True
+
+    # S3 storage we control, if used, is also static and thus exempt
+    if settings.LOCAL_UPLOADS_DIR is None:
+        # The startswith check is correct here because the public
+        # upload base URL is guaranteed to end with /.
+        public_upload_root_url = get_public_upload_root_url()
+        assert public_upload_root_url.endswith("/")
+        if url.startswith(public_upload_root_url):
+            return True
 
     return False
