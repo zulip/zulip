@@ -27,7 +27,9 @@ const fake_now = 555;
 
 const channel = mock_esm("../../static/js/channel");
 const compose_actions = mock_esm("../../static/js/compose_actions");
-const drafts = mock_esm("../../static/js/drafts");
+const drafts = mock_esm("../../static/js/drafts", {
+    restore_last_draft_based_on_compose_state: noop,
+});
 const giphy = mock_esm("../../static/js/giphy");
 const loading = mock_esm("../../static/js/loading");
 const markdown = mock_esm("../../static/js/markdown");
