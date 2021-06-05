@@ -250,6 +250,33 @@ export function restore_draft(draft_id) {
     $("#compose-textarea").data("draft-id", draft_id);
 }
 
+export function restore_draft_in_open_compose_box(draft_id) {
+    const draft = draft_model.getDraft(draft_id);
+    if (!compose_state.composing() || !draft) {
+        return;
+    }
+
+    // We avoid showing the tooltip as it will cause showing multiple tooltips if
+    // the compose box is closed instantly after the new draft is loaded.
+    update_draft(false);
+    compose_actions.clear_box();
+
+    const msg_type = compose_state.get_message_type();
+    if (msg_type === "stream") {
+        compose_state.stream_name(draft.stream);
+        compose_state.topic(draft.topic);
+    } else {
+        compose_state.private_message_recipient(draft.private_message_recipient);
+    }
+    compose_state.message_content(draft.content);
+
+    const opts = compose_state.get_all();
+    compose_actions.complete_starting_tasks(msg_type, opts);
+    compose_ui.autosize_textarea($("#compose-textarea"));
+    $("#compose-textarea").data("draft-id", draft_id);
+    compose_actions.set_focus(msg_type, opts);
+}
+
 const DRAFT_LIFETIME = 30;
 
 export function remove_old_drafts() {
