@@ -280,6 +280,7 @@ p.n-margin {
     position: relative;
 
     .alert {
+        display: block;
         margin: 0;
         padding-top: 12px;
         padding-bottom: 12px;

@@ -1,6 +1,13 @@
 import {addDays} from "date-fns";
 import $ from "jquery";
 
+import render_bankruptcy_alert from "../templates/navbar_bankruptcy_alert.hbs";
+import render_configure_email_alert from "../templates/navbar_configure_email_alert.hbs";
+import render_insecure_desktop_app_alert from "../templates/navbar_insecure_desktop_app_alert.hbs";
+import render_notifications_alert from "../templates/navbar_notification_alert.hbs";
+import render_profile_incomplete_alert from "../templates/navbar_profile_incomplete_alert.hbs";
+import render_server_needs_upgrade_alert from "../templates/navbar_server_needs_upgrade_alert.hbs";
+
 import {localstorage} from "./localstorage";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
@@ -104,21 +111,21 @@ export function show_profile_incomplete(is_profile_incomplete) {
 export function initialize() {
     const ls = localstorage();
     if (page_params.insecure_desktop_app) {
-        open($("[data-process='insecure-desktop-app']"));
+        open(render_insecure_desktop_app_alert);
     } else if (page_params.server_needs_upgrade) {
         if (should_show_server_upgrade_notification(ls)) {
-            open($("[data-process='server-needs-upgrade']"));
+            open(render_server_needs_upgrade_alert);
         }
     } else if (page_params.warn_no_email === true && page_params.is_admin) {
         // if email has not been set up and the user is the admin,
         // display a warning to tell them to set up an email server.
-        open($("[data-process='email-server']"));
+        open(render_configure_email_alert);
     } else if (should_show_notifications(ls)) {
-        open($("[data-process='notifications']"));
+        open(render_notifications_alert);
     } else if (unread_ui.should_display_bankruptcy_banner()) {
-        open($("[data-process='bankruptcy']"));
+        open(render_bankruptcy_alert, {unread_msgs_count: page_params.unread_msgs.count});
     } else if (check_profile_incomplete()) {
-        open($("[data-process='profile-incomplete']"));
+        open(render_profile_incomplete_alert);
     }
 
     // Configure click handlers.
@@ -169,8 +176,8 @@ export function initialize() {
     });
 }
 
-export function open($process) {
-    $("[data-process]").hide();
-    $process.show();
+export function open(render_alert, args = {}) {
+    const rendered_navbar_alert_html = render_alert(args);
+    $("#navbar_alerts_wrapper").html(rendered_navbar_alert_html);
     $(window).trigger("resize");
 }
