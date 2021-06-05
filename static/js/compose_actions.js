@@ -102,7 +102,7 @@ export function clear_textarea() {
     $("#compose").find("input[type=text], textarea").val("");
 }
 
-function clear_box() {
+export function clear_box() {
     compose.clear_invites();
 
     // TODO: Better encapsulate at-mention warnings.
