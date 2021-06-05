@@ -1,0 +1,11 @@
+<div data-process="profile-incomplete" class="alert alert-info">
+    <div data-step="2">
+        {{#tr}}
+            Complete the
+            <z-link>organization profile</z-link>
+            to brand and explain the purpose of this Zulip organization.
+            {{#*inline "z-link"}}<a class="alert-link" href="#organization/organization-profile">{{> @partial-block}}</a>{{/inline}}
+        {{/tr}}
+    </div>
+    <span class="close" data-dismiss="alert" aria-label="{{t 'Close' }}" role="button" tabindex=0>&times;</span>
+</div>
