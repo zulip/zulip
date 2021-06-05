@@ -1,0 +1,20 @@
+<div data-process="bankruptcy" class="alert alert-info brankruptcy">
+    <div data-step="1">
+        {{#tr}}
+            Welcome back!  You have <z-link>{unread_msgs_count}</z-link> unread messages.
+            Do you want to mark them all as read?
+            {{#*inline "z-link"}}<span class="bankruptcy_unread_count">{{> @partial-block}}</span>{{/inline}}
+        {{/tr}}
+        <span class="buttons">
+            <a class="alert-link accept-bankruptcy" role="button" tabindex=0>{{t "Yes, please!" }}</a>
+            &bull;
+            <a class="alert-link exit" role="button" tabindex=0>{{t "No, I'll catch up." }}</a>
+        </span>
+    </div>
+    <span class="close" data-dismiss="alert" aria-label="{{t 'Close' }}" role="button" tabindex=0>&times;</span>
+</div>
+<div class="alert alert-info bankruptcy-loader" style="display: none;">
+    {{#tr}}
+    Marking all messages as read…
+    {{/tr}}
+</div>
