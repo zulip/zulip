@@ -68,6 +68,10 @@ li.show-more-topics {
     }
 }
 
+.streams_inline_cog_wrapper {
+    float: right;
+}
+
 #streams_inline_cog {
     margin-right: 10px;
 }
@@ -501,7 +505,7 @@ li.expanded_private_message {
 }
 
 #streams_header {
-    margin-right: 0;
+    margin-right: 12px;
     padding-left: $far_left_gutter_size;
     cursor: pointer;
     margin-top: 3px;

@@ -1,8 +1,11 @@
 import $ from "jquery";
 import tippy, {delegate} from "tippy.js";
 
+import render_left_sidebar_stream_setting_popover from "../templates/left_sidebar_stream_setting_popover.hbs";
+
 import * as reactions from "./reactions";
 import * as rows from "./rows";
+import * as settings_data from "./settings_data";
 
 // We override the defaults set by tippy library here,
 // so make sure to check this too after checking tippyjs
@@ -103,5 +106,24 @@ export function initialize() {
             instance.setContent(content);
             return true;
         },
+    });
+
+    delegate("body", {
+        delay: 0,
+        target: "#streams_inline_cog",
+        onShow(instance) {
+            instance.setContent(
+                render_left_sidebar_stream_setting_popover({
+                    can_create_streams: settings_data.user_can_create_streams(),
+                }),
+            );
+            $(instance.popper).on("click", instance.hide);
+        },
+        appendTo: () => document.body,
+        trigger: "click",
+        allowHTML: true,
+        interactive: true,
+        hideOnClick: true,
+        theme: "light-border",
     });
 }
