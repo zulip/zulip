@@ -5583,18 +5583,25 @@ def do_update_message_flags(
             raise JsonableError(_("Invalid message(s)"))
         if flag != "starred":
             raise JsonableError(_("Invalid message(s)"))
-        # Validate that the user could have read the relevant message
-        message = access_message(user_profile, messages[0])[0]
 
-        # OK, this is a message that you legitimately have access
-        # to via narrowing to the stream it is on, even though you
-        # didn't actually receive it.  So we create a historical,
-        # read UserMessage message row for you to star.
-        UserMessage.objects.create(
-            user_profile=user_profile,
-            message=message,
-            flags=UserMessage.flags.historical | UserMessage.flags.read,
-        )
+        with transaction.atomic():
+            # Validate that the user could have read the relevant message
+            message, user_message = access_message(user_profile, messages[0])
+
+            # OK, this is a message that you legitimately have access
+            # to via narrowing to the stream it is on, even though you
+            # didn't actually receive it.  So we create a historical,
+            # read UserMessage message row for you to star.
+            if user_message is None:
+                # In a rare race condition, it may happen that the reaction add codepath has
+                # already created a historical UserMessage before we acquired a lock on the
+                # Message (but after the len(messages) check above). So we need to check again,
+                # that `access_message` did not find a `UserMessage` and only then create one.
+                UserMessage.objects.create(
+                    user_profile=user_profile,
+                    message=message,
+                    flags=UserMessage.flags.historical | UserMessage.flags.read,
+                )
 
     if operation == "add":
         count = msgs.update(flags=F("flags").bitor(flagattr))
