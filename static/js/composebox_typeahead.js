@@ -1089,6 +1089,7 @@ export function initialize() {
         },
         items: 3,
         fixed: true,
+        on_select: () => $("#compose-textarea").trigger("focus"),
         highlighter(item) {
             return typeahead_helper.render_typeahead_item({primary: item});
         },
@@ -1107,6 +1108,7 @@ export function initialize() {
         },
         items: 3,
         fixed: true,
+        on_select: () => $("#compose-textarea").trigger("focus"),
         highlighter(item) {
             return typeahead_helper.render_typeahead_item({primary: item});
         },
