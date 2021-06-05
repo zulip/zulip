@@ -216,6 +216,9 @@ def resize_emoji(image_data: bytes, size: int = DEFAULT_EMOJI_SIZE) -> bytes:
 
 
 class ZulipUploadBackend:
+    def get_public_upload_root_url(self) -> str:
+        raise NotImplementedError()
+
     def upload_message_file(
         self,
         uploaded_file_name: str,
@@ -424,6 +427,14 @@ class S3UploadBackend(ZulipUploadBackend):
             return False
         key.delete()
         return True
+
+    def get_public_upload_root_url(self) -> str:
+        # boto requires a key name, so we can't just pass "" here;
+        # trim the offending character back off from the URL we get
+        # back.
+        u = urllib.parse.urlsplit(self.get_public_upload_url("a"))
+        assert u.path.endswith("/a")
+        return urllib.parse.urlunsplit((u.scheme, u.netloc, u.path[:-1], "", ""))
 
     def upload_message_file(
         self,
@@ -749,6 +760,9 @@ def get_local_file_path_id_from_token(token: str) -> Optional[str]:
 
 
 class LocalUploadBackend(ZulipUploadBackend):
+    def get_public_upload_root_url(self) -> str:
+        return "/user_avatars/"
+
     def upload_message_file(
         self,
         uploaded_file_name: str,
@@ -928,6 +942,10 @@ if settings.LOCAL_UPLOADS_DIR is not None:
     upload_backend: ZulipUploadBackend = LocalUploadBackend()
 else:
     upload_backend = S3UploadBackend()  # nocoverage
+
+
+def get_public_upload_root_url() -> str:
+    return upload_backend.get_public_upload_root_url()
 
 
 def delete_message_image(path_id: str) -> bool:
