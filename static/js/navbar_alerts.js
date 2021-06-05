@@ -1,6 +1,14 @@
 import {addDays} from "date-fns";
 import $ from "jquery";
 
+import render_bankruptcy_alert_content from "../templates/navbar_alerts/bankruptcy.hbs";
+import render_configure_email_alert_content from "../templates/navbar_alerts/configure_outgoing_email.hbs";
+import render_desktop_notifications_alert_content from "../templates/navbar_alerts/desktop_notifications.hbs";
+import render_insecure_desktop_app_alert_content from "../templates/navbar_alerts/insecure_desktop_app.hbs";
+import render_navbar_alert_wrapper from "../templates/navbar_alerts/navbar_alert_wrapper.hbs";
+import render_profile_incomplete_alert_content from "../templates/navbar_alerts/profile_incomplete.hbs";
+import render_server_needs_upgrade_alert_content from "../templates/navbar_alerts/server_needs_upgrade.hbs";
+
 import {localstorage} from "./localstorage";
 import * as notifications from "./notifications";
 import {page_params} from "./page_params";
@@ -95,6 +103,9 @@ export function check_profile_incomplete() {
 
 export function show_profile_incomplete(is_profile_incomplete) {
     if (is_profile_incomplete) {
+        // Note that this will be a noop unless we'd already displayed
+        // the notice in this session.  This seems OK, given that
+        // this is meant to be a one-time task for administrators.
         $("[data-process='profile-incomplete']").show();
     } else {
         $("[data-process='profile-incomplete']").hide();
@@ -104,21 +115,34 @@ export function show_profile_incomplete(is_profile_incomplete) {
 export function initialize() {
     const ls = localstorage();
     if (page_params.insecure_desktop_app) {
-        open($("[data-process='insecure-desktop-app']"));
+        open(
+            {data_process: "insecure-desktop-app", custom_class: "red"},
+            render_insecure_desktop_app_alert_content(),
+        );
     } else if (page_params.server_needs_upgrade) {
         if (should_show_server_upgrade_notification(ls)) {
-            open($("[data-process='server-needs-upgrade']"));
+            open(
+                {data_process: "server-needs-upgrade", custom_class: "red"},
+                render_server_needs_upgrade_alert_content(),
+            );
         }
     } else if (page_params.warn_no_email === true && page_params.is_admin) {
         // if email has not been set up and the user is the admin,
         // display a warning to tell them to set up an email server.
-        open($("[data-process='email-server']"));
+        open(
+            {data_process: "email-server", custom_class: "red"},
+            render_configure_email_alert_content(),
+        );
     } else if (should_show_notifications(ls)) {
-        open($("[data-process='notifications']"));
+        open({data_process: "notifications"}, render_desktop_notifications_alert_content());
     } else if (unread_ui.should_display_bankruptcy_banner()) {
-        open($("[data-process='bankruptcy']"));
+        const unread_msgs_count = page_params.unread_msgs.count;
+        open(
+            {data_process: "bankruptcy", custom_class: "bankruptcy", is_bankruptcy_alert: true},
+            render_bankruptcy_alert_content({unread_msgs_count}),
+        );
     } else if (check_profile_incomplete()) {
-        open($("[data-process='profile-incomplete']"));
+        open({data_process: "profile-incomplete"}, render_profile_incomplete_alert_content());
     }
 
     // Configure click handlers.
@@ -169,8 +193,16 @@ export function initialize() {
     });
 }
 
-export function open($process) {
-    $("[data-process]").hide();
-    $process.show();
+export function open(args, rendered_alert_content_html) {
+    const rendered_alert_wrapper_html = $(render_navbar_alert_wrapper(args));
+
+    // TODO: Use a proper CSS class to access correct outer widget.
+    rendered_alert_wrapper_html.first().prepend(rendered_alert_content_html);
+
+    // Note: We only support one alert being rendered at a time; as a
+    // result, we just replace the alert area in the DOM with the
+    // indicated alert. We do this to avoid bad UX, as it'd look weird
+    // to have more than one alert visible at a time.
+    $("#navbar_alerts_wrapper").html(rendered_alert_wrapper_html);
     $(window).trigger("resize");
 }
