@@ -165,11 +165,39 @@ class FencedCodeExtension(Extension):
         md.preprocessors.register(processor, "fenced_code_block", 25)
 
 
-class BaseHandler:
+class ZulipBaseHandler:
+    def __init__(
+        self,
+        processor: Any,
+        output: MutableSequence[str],
+        fence: Optional[str] = None,
+    ) -> None:
+        self.processor = processor
+        self.output = output
+        self.fence = fence
+        self.lines: List[str] = []
+
     def handle_line(self, line: str) -> None:
-        raise NotImplementedError()
+        if line.rstrip() == self.fence:
+            self.done()
+        else:
+            self.lines.append(line.rstrip())
 
     def done(self) -> None:
+        if self.lines:
+            text = "\n".join(self.lines)
+            text = self.format_text(text)
+            text = self.processor.placeholder(text)
+            processed_lines = text.split("\n")
+            self.output.append("")
+            self.output.extend(processed_lines)
+            self.output.append("")
+        self.processor.pop()
+
+    def format_text(self, text: str) -> str:
+        """Returns a formatted text.
+        Subclasses should override this method.
+        """
         raise NotImplementedError()
 
 
@@ -181,7 +209,7 @@ def generic_handler(
     header: str,
     run_content_validators: bool = False,
     default_language: Optional[str] = None,
-) -> BaseHandler:
+) -> ZulipBaseHandler:
     lang = lang.lower()
     if lang in ("quote", "quoted"):
         return QuoteHandler(processor, output, fence, default_language)
@@ -215,7 +243,7 @@ def check_for_new_fence(
         output.append(line)
 
 
-class OuterHandler(BaseHandler):
+class OuterHandler(ZulipBaseHandler):
     def __init__(
         self,
         processor: Any,
@@ -223,21 +251,17 @@ class OuterHandler(BaseHandler):
         run_content_validators: bool = False,
         default_language: Optional[str] = None,
     ) -> None:
-        self.output = output
-        self.processor = processor
         self.run_content_validators = run_content_validators
         self.default_language = default_language
+        super().__init__(processor, output)
 
     def handle_line(self, line: str) -> None:
         check_for_new_fence(
             self.processor, self.output, line, self.run_content_validators, self.default_language
         )
 
-    def done(self) -> None:
-        self.processor.pop()
 
-
-class CodeHandler(BaseHandler):
+class CodeHandler(ZulipBaseHandler):
     def __init__(
         self,
         processor: Any,
@@ -246,37 +270,22 @@ class CodeHandler(BaseHandler):
         lang: str,
         run_content_validators: bool = False,
     ) -> None:
-        self.processor = processor
-        self.output = output
-        self.fence = fence
         self.lang = lang
-        self.lines: List[str] = []
         self.run_content_validators = run_content_validators
-
-    def handle_line(self, line: str) -> None:
-        if line.rstrip() == self.fence:
-            self.done()
-        else:
-            self.lines.append(line.rstrip())
+        super().__init__(processor, output, fence)
 
     def done(self) -> None:
-        text = "\n".join(self.lines)
-
         # run content validators (if any)
         if self.run_content_validators:
             validator = CODE_VALIDATORS.get(self.lang, lambda text: None)
             validator(self.lines)
+        super().done()
 
-        text = self.processor.format_code(self.lang, text)
-        text = self.processor.placeholder(text)
-        processed_lines = text.split("\n")
-        self.output.append("")
-        self.output.extend(processed_lines)
-        self.output.append("")
-        self.processor.pop()
+    def format_text(self, text: str) -> str:
+        return self.processor.format_code(self.lang, text)
 
 
-class QuoteHandler(BaseHandler):
+class QuoteHandler(ZulipBaseHandler):
     def __init__(
         self,
         processor: Any,
@@ -284,11 +293,8 @@ class QuoteHandler(BaseHandler):
         fence: str,
         default_language: Optional[str] = None,
     ) -> None:
-        self.processor = processor
-        self.output = output
-        self.fence = fence
-        self.lines: List[str] = []
         self.default_language = default_language
+        super().__init__(processor, output, fence)
 
     def handle_line(self, line: str) -> None:
         if line.rstrip() == self.fence:
@@ -301,6 +307,8 @@ class QuoteHandler(BaseHandler):
     def done(self) -> None:
         text = "\n".join(self.lines)
         text = self.processor.format_quote(text)
+        # Here we don't use placeholder as we may further
+        # want to process the text inside the quote.
         processed_lines = text.split("\n")
         self.output.append("")
         self.output.extend(processed_lines)
@@ -308,15 +316,12 @@ class QuoteHandler(BaseHandler):
         self.processor.pop()
 
 
-class SpoilerHandler(BaseHandler):
+class SpoilerHandler(ZulipBaseHandler):
     def __init__(
         self, processor: Any, output: MutableSequence[str], fence: str, spoiler_header: str
     ) -> None:
-        self.processor = processor
-        self.output = output
-        self.fence = fence
         self.spoiler_header = spoiler_header
-        self.lines: List[str] = []
+        super().__init__(processor, output, fence)
 
     def handle_line(self, line: str) -> None:
         if line.rstrip() == self.fence:
@@ -328,40 +333,21 @@ class SpoilerHandler(BaseHandler):
         if len(self.lines) == 0:
             # No content, do nothing
             return
-        else:
-            header = self.spoiler_header
-            text = "\n".join(self.lines)
 
-        text = self.processor.format_spoiler(header, text)
-        processed_lines = text.split("\n")
-        self.output.append("")
-        self.output.extend(processed_lines)
-        self.output.append("")
-        self.processor.pop()
-
-
-class TexHandler(BaseHandler):
-    def __init__(self, processor: Any, output: MutableSequence[str], fence: str) -> None:
-        self.processor = processor
-        self.output = output
-        self.fence = fence
-        self.lines: List[str] = []
-
-    def handle_line(self, line: str) -> None:
-        if line.rstrip() == self.fence:
-            self.done()
-        else:
-            self.lines.append(line)
-
-    def done(self) -> None:
         text = "\n".join(self.lines)
-        text = self.processor.format_tex(text)
-        text = self.processor.placeholder(text)
+        text = self.processor.format_spoiler(self.spoiler_header, text)
+        # Here we don't use placeholder as we may further
+        # want to process the text inside the spoiler.
         processed_lines = text.split("\n")
         self.output.append("")
         self.output.extend(processed_lines)
         self.output.append("")
         self.processor.pop()
+
+
+class TexHandler(ZulipBaseHandler):
+    def format_text(self, text: str) -> str:
+        return self.processor.format_tex(text)
 
 
 class FencedBlockPreprocessor(Preprocessor):
@@ -372,7 +358,7 @@ class FencedBlockPreprocessor(Preprocessor):
         self.run_content_validators = run_content_validators
         self.codehilite_conf: Mapping[str, Sequence[Any]] = {}
 
-    def push(self, handler: BaseHandler) -> None:
+    def push(self, handler: ZulipBaseHandler) -> None:
         self.handlers.append(handler)
 
     def pop(self) -> None:
@@ -384,7 +370,7 @@ class FencedBlockPreprocessor(Preprocessor):
         output: List[str] = []
 
         processor = self
-        self.handlers: List[BaseHandler] = []
+        self.handlers: List[ZulipBaseHandler] = []
 
         default_language = None
         try:
