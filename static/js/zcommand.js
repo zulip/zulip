@@ -33,9 +33,9 @@ What in the heck is a zcommand?
 
 */
 
-function send_webhook(text) {
-    var hook_sk = "https://n8n.working24.net/webhook/51cdf3fc-6264-463e-94a6-acc29e6a1d76";
-    var hook_text = text.split("/sk")[1].trim();
+function send_webhook(url, text) {
+    var hook_url = url;
+    var hook_text = text.split(/\/\S*/)[1].trim();
   
     const message = message_lists.current.selected_message();
   
@@ -43,7 +43,7 @@ function send_webhook(text) {
     ({
         type: "POST",
         //the url where you want to sent the userName and password to
-        url: hook_sk,
+        url: hook_url,
         dataType: 'text/plain',
         async: false,
         //json object to sent to the authentication url
@@ -220,11 +220,91 @@ export function process(message_content) {
         browser_history.go_to_location("settings/your-account");
         return true;
     }
-
-    if (content.includes("/sk") == true) {
-        send_webhook(content);
+  
+    var url = "";
+  
+    if (content.includes("/accounting_closing_term") == true) {
+        url = "https://n8n.working24.net/webhook/ee248bb9-d76d-47ec-80a4-5201a17661d6";
+        send_webhook(url, content);
         return true;
-
+    }
+  
+    if (content.includes("/accounting_deposit") == true) {
+        url = "https://n8n.working24.net/webhook/3e5a9858-5df1-4644-8435-bf786e8c0088";
+        send_webhook(url, content);
+        return true;
+    }
+  
+    if (content.includes("/accounting_miscellaneous") == true) {
+        url = "https://n8n.working24.net/webhook/f6153420-e34b-42bd-aa08-7835aa8f2ed3";
+        send_webhook(url, content);
+        return true;
+    }
+  
+    if (content.includes("/accounting_withdrawal") == true) {
+        url = "https://n8n.working24.net/webhook/1d4595c1-d37d-4f5d-a1a3-b51f860c6665";
+        send_webhook(url, content);
+        return true;
+    }
+  
+    if (content.includes("/notify_disable") == true) {
+        url = "https://n8n.working24.net/webhook/71addcb6-94d9-4601-bac7-483bb8968039";
+        send_webhook(url, content);
+        return true;
+    }
+  
+    if (content.includes("/project_cancel") == true) {
+        url = "https://n8n.working24.net/webhook/763d98df-2410-45a9-be8a-e2f2a9b1ffcb";
+        send_webhook(url, content);
+        return true;
+    }
+  
+    if (content.includes("/project_set") == true) {
+        url = "https://n8n.working24.net/webhook/fabd4520-e603-43bf-bb90-b669a3a5d56c";
+        send_webhook(url, content);
+        return true;
+    }
+  
+    if (content.includes("/sk") == true) {
+        url = "https://n8n.working24.net/webhook/51cdf3fc-6264-463e-94a6-acc29e6a1d76";
+        send_webhook(url, content);
+        return true;
+    }
+    
+    if (content.includes("/sk_set") == true) {
+        url = "https://n8n.working24.net/webhook/1bf735a6-e47f-4ba7-bb81-354d5deed8b1";
+        send_webhook(url, content);
+        return true;
+    }
+  
+    if (content.includes("/team_accept") == true) {
+        url = "https://n8n.working24.net/webhook/a4aeb410-df6b-4f73-b9ad-47ae951332ec";
+        send_webhook(url, content);
+        return true;
+    }
+  
+    if (content.includes("/team_level") == true) {
+        url = "https://n8n.working24.net/webhook/a7a62faa-eca0-497d-a687-6ab546dbf48c";
+        send_webhook(url, content);
+        return true;
+    }
+  
+    if (content.includes("/team_exit") == true) {
+        url = "https://n8n.working24.net/webhook/8b14d9b2-ca24-4e20-a0ba-cf1a113a0fbd";
+        send_webhook(url, content);
+        return true;
+    }
+  
+    if (content.includes("/update") == true) {
+        url = "https://n8n.working24.net/webhook/d9d827ed-3368-4b0b-b985-4b5b9bf9820e";
+        send_webhook(url, content);
+        return true;
+    }
+  
+    if (content.includes("/work_cancel") == true) {
+        url = "https://n8n.working24.net/webhook/7111958b-3904-4dbb-bb40-c766d1e61119";
+        send_webhook(url, content);
+        return true;
     }
   
     // It is incredibly important here to return false
