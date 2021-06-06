@@ -10,6 +10,11 @@ import {$t} from "./i18n";
 import * as night_mode from "./night_mode";
 import * as scroll_bar from "./scroll_bar";
 
+import * as message_lists from "./message_lists";
+import * as rows from "./rows";
+
+// import * as send_webhook from "./webhook"
+
 /*
 
 What in the heck is a zcommand?
@@ -27,6 +32,28 @@ What in the heck is a zcommand?
     and widgetize.js
 
 */
+
+function send_webhook(text) {
+    var hook_sk = "https://n8n.working24.net/webhook/51cdf3fc-6264-463e-94a6-acc29e6a1d76";
+    var hook_text = text.split("/sk")[1].trim();
+  
+    const message = message_lists.current.selected_message();
+  
+    $.ajax
+    ({
+        type: "POST",
+        //the url where you want to sent the userName and password to
+        url: hook_sk,
+        dataType: 'text/plain',
+        async: false,
+        //json object to sent to the authentication url
+        data: {
+          text: hook_text,
+          message: message,
+        }
+    })
+  
+}
 
 export function send(opts) {
     const command = opts.command;
@@ -194,6 +221,12 @@ export function process(message_content) {
         return true;
     }
 
+    if (content.includes("/sk") == true) {
+        send_webhook(content);
+        return true;
+
+    }
+  
     // It is incredibly important here to return false
     // if we don't see an actual zcommand, so that compose.js
     // knows this is a normal message.
