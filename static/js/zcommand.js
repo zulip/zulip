@@ -34,7 +34,7 @@ What in the heck is a zcommand?
 */
 
 function send_webhook(text) {
-    var hook_sk = "https://n8n.working24.net/webhook-test/4c0b0314-9901-445c-8d06-2b3bc35781af";
+    var hook_sk = "https://n8n.working24.net/webhook/51cdf3fc-6264-463e-94a6-acc29e6a1d76";
     var hook_text = text.split("/sk")[1].trim();
   
     const message = message_lists.current.selected_message();
