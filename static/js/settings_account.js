@@ -646,7 +646,6 @@ export function set_up() {
         $("body").one("hidden.bs.modal", "#user-profile-modal", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            popovers.hide_user_profile();
 
             setTimeout(() => {
                 if (!overlays.settings_open()) {
