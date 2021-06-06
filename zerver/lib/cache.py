@@ -535,8 +535,8 @@ def realm_user_dicts_cache_key(realm_id: int) -> str:
     return f"realm_user_dicts:{realm_id}"
 
 
-def get_muting_users_cache_key(muted_user: "UserProfile") -> str:
-    return f"muting_users_list:{muted_user.id}"
+def get_muting_users_cache_key(muted_user_id: int) -> str:
+    return f"muting_users_list:{muted_user_id}"
 
 
 def get_realm_used_upload_space_cache_key(realm: "Realm") -> str:
@@ -649,7 +649,7 @@ def flush_user_profile(sender: Any, **kwargs: Any) -> None:
 
 def flush_muting_users_cache(sender: Any, **kwargs: Any) -> None:
     mute_object = kwargs["instance"]
-    cache_delete(get_muting_users_cache_key(mute_object.muted_user))
+    cache_delete(get_muting_users_cache_key(mute_object.muted_user_id))
 
 
 # Called by models.py to flush various caches whenever we save

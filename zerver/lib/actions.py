@@ -1862,7 +1862,7 @@ def do_send_messages(
             mentioned_user_ids = send_request.message.mentions_user_ids
 
             # Extend the set with users who have muted the sender.
-            mark_as_read_for_users = get_muting_users(send_request.message.sender)
+            mark_as_read_for_users = get_muting_users(send_request.message.sender_id)
             mark_as_read_for_users.update(mark_as_read)
 
             user_messages = create_user_messages(
