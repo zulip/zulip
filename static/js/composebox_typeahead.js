@@ -418,6 +418,10 @@ export const slash_commands = [
         text: $t({defaultMessage: "/todo (Create a todo list)"}),
         name: "todo",
     },
+    {
+        text: $t({defaultMessage: "/sk (Send to contact) [None(Help)/Billing] [Info to send]"}),
+        name: "sk",
+    },
 ];
 
 export function filter_and_sort_mentions(is_silent, query, opts) {
