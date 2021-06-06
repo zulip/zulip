@@ -10,5 +10,6 @@ interface JQuery {
 }
 
 interface Window {
+    last_stacktrace: string;
     page_params_parse_time: number;
 }

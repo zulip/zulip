@@ -190,7 +190,7 @@ js_rules = RuleList(
             "description": "Use channel module for AJAX calls",
             "exclude": {
                 # Internal modules can do direct network calls
-                "static/js/blueslip.js",
+                "static/js/blueslip.ts",
                 "static/js/channel.js",
                 # External modules that don't include channel.js
                 "static/js/stats/",
