@@ -19,6 +19,7 @@ from zerver.lib.actions import (
     do_deactivate_user,
     do_delete_user,
     do_invite_users,
+    do_mute_user,
     do_reactivate_user,
     do_set_realm_property,
     get_emails_from_user_ids,
@@ -1518,6 +1519,7 @@ class RecipientInfoTest(ZulipTestCase):
             stream_push_user_ids=set(),
             stream_email_user_ids=set(),
             wildcard_mention_user_ids=set(),
+            muted_sender_user_ids=set(),
             um_eligible_user_ids=all_user_ids,
             long_term_idle_user_ids=set(),
             default_bot_user_ids=set(),
@@ -1573,7 +1575,7 @@ class RecipientInfoTest(ZulipTestCase):
         )
         self.assertEqual(info["stream_push_user_ids"], {hamlet.id})
 
-        # Now mute Hamlet to omit him from stream_push_user_ids.
+        # Now have Hamlet mute the topic to omit him from stream_push_user_ids.
         add_topic_mute(
             user_profile=hamlet,
             stream_id=stream.id,
@@ -1602,6 +1604,18 @@ class RecipientInfoTest(ZulipTestCase):
         # Since Hamlet has muted the stream and Cordelia has disabled
         # wildcard notifications, it should just be Othello here.
         self.assertEqual(info["wildcard_mention_user_ids"], {othello.id})
+
+        # If Hamlet mutes Cordelia, he should be in `muted_sender_user_ids` for a message
+        # sent by Cordelia.
+        do_mute_user(hamlet, cordelia)
+        info = get_recipient_info(
+            realm_id=realm.id,
+            recipient=recipient,
+            sender_id=cordelia.id,
+            stream_topic=stream_topic,
+            possible_wildcard_mention=True,
+        )
+        self.assertTrue(hamlet.id in info["muted_sender_user_ids"])
 
         sub = get_subscription(stream_name, othello)
         sub.wildcard_mentions_notify = False

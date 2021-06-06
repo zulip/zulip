@@ -1423,6 +1423,7 @@ class RecipientInfoResult(TypedDict):
     stream_email_user_ids: Set[int]
     stream_push_user_ids: Set[int]
     wildcard_mention_user_ids: Set[int]
+    muted_sender_user_ids: Set[int]
     um_eligible_user_ids: Set[int]
     long_term_idle_user_ids: Set[int]
     default_bot_user_ids: Set[int]
@@ -1441,6 +1442,7 @@ def get_recipient_info(
     stream_push_user_ids: Set[int] = set()
     stream_email_user_ids: Set[int] = set()
     wildcard_mention_user_ids: Set[int] = set()
+    muted_sender_user_ids: Set[int] = get_muting_users(sender_id)
 
     if recipient.type == Recipient.PERSONAL:
         # The sender and recipient may be the same id, so
@@ -1621,6 +1623,7 @@ def get_recipient_info(
         stream_push_user_ids=stream_push_user_ids,
         stream_email_user_ids=stream_email_user_ids,
         wildcard_mention_user_ids=wildcard_mention_user_ids,
+        muted_sender_user_ids=muted_sender_user_ids,
         um_eligible_user_ids=um_eligible_user_ids,
         long_term_idle_user_ids=long_term_idle_user_ids,
         default_bot_user_ids=default_bot_user_ids,
@@ -1813,6 +1816,7 @@ def build_message_send_dict(
         online_push_user_ids=info["online_push_user_ids"],
         stream_push_user_ids=info["stream_push_user_ids"],
         stream_email_user_ids=info["stream_email_user_ids"],
+        muted_sender_user_ids=info["muted_sender_user_ids"],
         um_eligible_user_ids=info["um_eligible_user_ids"],
         long_term_idle_user_ids=info["long_term_idle_user_ids"],
         default_bot_user_ids=info["default_bot_user_ids"],
@@ -1862,7 +1866,7 @@ def do_send_messages(
             mentioned_user_ids = send_request.message.mentions_user_ids
 
             # Extend the set with users who have muted the sender.
-            mark_as_read_for_users = get_muting_users(send_request.message.sender_id)
+            mark_as_read_for_users = send_request.muted_sender_user_ids
             mark_as_read_for_users.update(mark_as_read)
 
             user_messages = create_user_messages(
