@@ -912,6 +912,10 @@ export function initialize() {
     $("body").on("hidden.bs.modal", () => {
         // Enable mouse events for the background as the modal closes.
         overlays.enable_background_mouse_events();
+
+        // TODO: Remove this once Bootstrap is upgraded.
+        // See: https://github.com/zulip/zulip/pull/18720
+        $(".modal.in").removeClass("in");
     });
 
     // MAIN CLICK HANDLER
