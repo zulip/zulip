@@ -98,6 +98,7 @@ class SendMessageRequest:
     online_push_user_ids: Set[int]
     stream_push_user_ids: Set[int]
     stream_email_user_ids: Set[int]
+    muted_sender_user_ids: Set[int]
     um_eligible_user_ids: Set[int]
     long_term_idle_user_ids: Set[int]
     default_bot_user_ids: Set[int]
