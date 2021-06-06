@@ -73,6 +73,7 @@ Dependencies:
 * [Python 2.4+](http://python.org)
 * [Markdown 2.0+](http://packages.python.org/Markdown/)
 * [Pygments (optional)](http://pygments.org)
+* [Kroki diagram types (optional)](https://kroki.io/)
 
 """
 import re
@@ -88,6 +89,7 @@ from pygments.lexers import get_lexer_by_name
 from pygments.util import ClassNotFound
 
 from zerver.lib.exceptions import MarkdownRenderingException
+from zerver.lib.kroki import render_kroki
 from zerver.lib.tex import render_tex
 
 # Global vars
@@ -211,12 +213,15 @@ def generic_handler(
     default_language: Optional[str] = None,
 ) -> ZulipBaseHandler:
     lang = lang.lower()
+    header = header.strip()
     if lang in ("quote", "quoted"):
         return QuoteHandler(processor, output, fence, default_language)
     elif lang == "math":
         return TexHandler(processor, output, fence)
     elif lang == "spoiler":
         return SpoilerHandler(processor, output, fence, header)
+    elif lang == "kroki":
+        return KrokiHandler(processor, output, fence, header)
     else:
         return CodeHandler(processor, output, fence, lang, run_content_validators)
 
@@ -348,6 +353,21 @@ class SpoilerHandler(ZulipBaseHandler):
 class TexHandler(ZulipBaseHandler):
     def format_text(self, text: str) -> str:
         return self.processor.format_tex(text)
+
+
+class KrokiHandler(ZulipBaseHandler):
+    def __init__(
+        self,
+        processor: Any,
+        output: MutableSequence[str],
+        fence: str,
+        diagram_type: str,
+    ) -> None:
+        self.diagram_type = diagram_type
+        super().__init__(processor, output, fence)
+
+    def format_text(self, text: str) -> str:
+        return self.processor.format_kroki(text, self.diagram_type)
 
 
 class FencedBlockPreprocessor(Preprocessor):
@@ -483,6 +503,16 @@ class FencedBlockPreprocessor(Preprocessor):
             else:
                 tex_paragraphs.append('<span class="tex-error">' + escape(paragraph) + "</span>")
         return "\n\n".join(tex_paragraphs)
+
+    def format_kroki(self, text: str, diagram_type: str) -> str:
+        # NOTE: Don't split the text into paragraphs as it can break message rendering.
+        # Paragraphs often contain information which links each other, so we need to
+        # send the whole text content to `render_kroki` function.
+        html = render_kroki(text, diagram_type)
+        if html is not None:
+            return '<div class="kroki-block">' + html + "</div>"
+        else:
+            return '<span class="kroki-error">' + escape(text) + "</span>"
 
     def placeholder(self, code: str) -> str:
         return self.md.htmlStash.store(code)
