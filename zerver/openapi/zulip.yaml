@@ -96,7 +96,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiKeyResponse"
+                allOf:
+                  - $ref: "#/components/schemas/ApiKeyResponse"
+                  - $ref: "#/components/schemas/SuccessDescription"
   /dev_fetch_api_key:
     post:
       operationId: dev_fetch_api_key
@@ -130,7 +132,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiKeyResponse"
+                allOf:
+                  - $ref: "#/components/schemas/ApiKeyResponse"
+                  - $ref: "#/components/schemas/SuccessDescription"
   /events:
     get:
       operationId: get_events
@@ -175,6 +179,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -3840,7 +3845,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/BadEventQueueIdError"
+                allOf:
+                  - $ref: "#/components/schemas/BadEventQueueIdError"
+                  - description: |
+                      If the target event queue has been garbage collected, you'll get the
+                      following error response
     delete:
       operationId: delete_queue
       summary: Delete an event queue
@@ -3857,13 +3866,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonSuccess"
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
         "400":
           description: Bad request.
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/BadEventQueueIdError"
+                allOf:
+                  - $ref: "#/components/schemas/BadEventQueueIdError"
+                  - description: |
+                      A typical JSON response for when the `queue_id` is non-existent or the
+                      associated queue has already been deleted
   /get_stream_id:
     get:
       operationId: get_stream_id
@@ -3890,6 +3905,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -3912,6 +3928,7 @@ paths:
                         "msg": "Invalid stream name 'nonexistent'",
                         "result": "error",
                       }
+                    description: An example JSON response for when the supplied stream does not exist
   /mark_all_as_read:
     post:
       operationId: mark_all_as_read
@@ -3927,7 +3944,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonSuccess"
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
   /mark_stream_as_read:
     post:
       operationId: mark_stream_as_read
@@ -3950,7 +3969,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonSuccess"
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
   /mark_topic_as_read:
     post:
       operationId: mark_topic_as_read
@@ -3981,7 +4002,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonSuccess"
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
   /attachments:
     get:
       operationId: get_attachments
@@ -3999,6 +4022,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -4164,6 +4188,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -4364,6 +4389,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -4386,7 +4412,11 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: "#/components/schemas/NonExistingStreamError"
+                  - allOf:
+                      - $ref: "#/components/schemas/NonExistingStreamError"
+                      - description: |
+                          A typical failed JSON response for when a stream message is sent to a stream
+                          that does not exist
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
                       - example:
@@ -4395,6 +4425,9 @@ paths:
                             "msg": "Invalid email 'eeshan@zulip.com'",
                             "result": "error",
                           }
+                        description: |
+                          A typical failed JSON response for when a private message is sent to a user
+                          that does not exist
   /messages/{message_id}/history:
     get:
       operationId: get_message_history
@@ -4419,6 +4452,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -4502,7 +4536,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/InvalidMessageError"
+                allOf:
+                  - $ref: "#/components/schemas/InvalidMessageError"
+                  - description: An example JSON response for when the specified message does not exist
   /messages/flags:
     post:
       operationId: update_message_flags
@@ -4557,6 +4593,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -4588,6 +4625,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -4645,6 +4683,7 @@ paths:
                         "msg": "Invalid emoji code",
                         "code": "BAD_REQUEST",
                       }
+                    description: An example JSON error response for when the emoji code is invalid
 
     delete:
       operationId: remove_reaction
@@ -4687,6 +4726,7 @@ paths:
                         "msg": "Invalid message(s)",
                         "code": "BAD_REQUEST",
                       }
+                    description: An example JSON error response for when the emoji code is invalid
   /messages/matches_narrow:
     get:
       operationId: check_messages_match_narrow
@@ -4742,6 +4782,7 @@ paths:
             application/json:
               schema:
                 allOf:
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - $ref: "#/components/schemas/JsonSuccessBase"
                   - additionalProperties: false
                     properties:
@@ -4808,6 +4849,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -4827,7 +4869,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/InvalidMessageError"
+                allOf:
+                  - $ref: "#/components/schemas/InvalidMessageError"
+                  - description: |
+                      An example JSON response for when the specified message does not exist or it
+                      is not visible to the user making the query (e.g. it was a PM between other
+                      two users)
     patch:
       operationId: update_message
       summary: Edit a message
@@ -4914,7 +4961,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonSuccess"
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
         "400":
           description: Bad request.
           content:
@@ -4936,6 +4985,9 @@ paths:
                         "msg": "You don't have permission to edit this message",
                         "result": "error",
                       }
+                    description: |
+                      A typical JSON response for when one doesn't have the permission to
+                      edit a particular message
     delete:
       operationId: delete_message
       summary: Delete a message
@@ -4956,17 +5008,24 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonSuccess"
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
         "400":
           description: Bad request.
           content:
             application/json:
               schema:
                 oneOf:
-                  - $ref: "#/components/schemas/InvalidMessageError"
+                  - allOf:
+                      - $ref: "#/components/schemas/InvalidMessageError"
+                      - description: An example JSON response for when the specified message does not exist
                   - allOf:
                       - $ref: "#/components/schemas/CodedError"
-                      - example:
+                      - description: |
+                          An example JSON response for when the user making the query does not
+                          have permission to delete the message
+                        example:
                           {
                             "code": "BAD_REQUEST",
                             "msg": "You don't have permission to delete this message",
@@ -5008,6 +5067,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -5054,6 +5114,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -5093,6 +5154,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -5228,6 +5290,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -5251,7 +5314,9 @@ paths:
                         "msg": "Email 'newbie@zulip.com' already in use",
                         "result": "error",
                       }
-
+                    description: |
+                      A typical JSON response for when another user with the same
+                      email address already exists in the realm
   /users/{user_id}/reactivate:
     post:
       operationId: reactivate_user
@@ -5274,6 +5339,7 @@ paths:
             application/json:
               schema:
                 allOf:
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - $ref: "#/components/schemas/JsonSuccess"
                   - example: {"msg": "", "result": "success"}
 
@@ -5316,6 +5382,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -5382,6 +5449,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -5578,6 +5646,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - example: {"msg": "", "result": "success"}
         "400":
           description: Bad request.
@@ -5591,6 +5660,9 @@ paths:
                         "msg": "Cannot deactivate the only organization owner",
                         "result": "error",
                       }
+                    description: |
+                      An example JSON error response when attempting to deactivate the only
+                      organization owner in an organization
   /users/me/{stream_id}/topics:
     get:
       operationId: get_stream_topics
@@ -5610,6 +5682,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -5654,6 +5727,9 @@ paths:
                         "msg": "Invalid stream id",
                         "result": "error",
                       }
+                    description: |
+                      An example JSON response for when the user is attempting to fetch the topics
+                      of a non-existing stream (or also a private stream they don't have access to)
   /users/me/subscriptions:
     get:
       operationId: get_subscriptions
@@ -5676,6 +5752,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   # TODO: Is this the best way to declare required elements in 200 responses?
                   - required:
                       - subscriptions
@@ -5807,6 +5884,7 @@ paths:
                 oneOf:
                   - allOf:
                       - $ref: "#/components/schemas/AddSubscriptionsResponse"
+                      - $ref: "#/components/schemas/SuccessDescription"
                       - example:
                           {
                             "already_subscribed": {},
@@ -5824,6 +5902,9 @@ paths:
                             "result": "success",
                             "subscribed": {},
                           }
+                        description: |
+                          A typical successful JSON response when the user is already subscribed to
+                          the streams specified
         "400":
           description: Success.
           content:
@@ -5837,6 +5918,9 @@ paths:
                             "msg": "Unable to access stream (private_stream).",
                             "result": "error",
                           }
+                        description: |
+                          A typical response for when the requesting user does not have access to
+                          a private stream and `authorization_errors_fatal` is `True`
                   - allOf:
                       - $ref: "#/components/schemas/AddSubscriptionsResponse"
                       - example:
@@ -5847,6 +5931,9 @@ paths:
                             "subscribed": {},
                             "unauthorized": ["private_stream"],
                           }
+                        description: |
+                          A typical response for when the requesting user does not have access to
+                          a private stream and `authorization_errors_fatal` is `False`
     patch:
       operationId: update_subscriptions
       summary: Update subscriptions
@@ -5904,6 +5991,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - required:
                       - subscribed
                       - already_subscribed
@@ -5995,6 +6083,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -6025,7 +6114,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/NonExistingStreamError"
+                allOf:
+                  - $ref: "#/components/schemas/NonExistingStreamError"
+                  - description: A typical failed JSON response for when the target stream does not exist
   /users/me/subscriptions/muted_topics:
     patch:
       operationId: mute_topic
@@ -6081,7 +6172,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonSuccess"
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
         "400":
           description: Bad request.
           content:
@@ -6092,10 +6185,16 @@ paths:
                       - $ref: "#/components/schemas/JsonError"
                       - example:
                           {"msg": "Topic already muted", "result": "error"}
+                        description: |
+                          An example JSON response for when an `add` operation is requested for a topic
+                          that has already been muted
                   - allOf:
                       - $ref: "#/components/schemas/JsonError"
                       - example:
                           {"msg": "Topic is not muted", "result": "error"}
+                        description: |
+                          An example JSON response for when a `remove` operation is requested for a
+                          topic that had not been previously muted
   /users/me/muted_users/{muted_user_id}:
     post:
       operationId: mute_user
@@ -6142,6 +6241,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - example: {"msg": "", "result": "success"}
         "400":
           description: Bad request.
@@ -6152,13 +6252,16 @@ paths:
                   - allOf:
                       - $ref: "#/components/schemas/JsonError"
                       - example: {"msg": "Cannot mute self", "result": "error"}
+                        description: An example JSON response for when the user is yourself
                   - allOf:
                       - $ref: "#/components/schemas/JsonError"
                       - example: {"msg": "No such user", "result": "error"}
+                        description: An example JSON response for when the user is nonexistent or inaccessible
                   - allOf:
                       - $ref: "#/components/schemas/JsonError"
                       - example:
                           {"msg": "User already muted", "result": "error"}
+                        description: An example JSON response for when the user is already muted
     delete:
       operationId: unmute_user
       summary: Unmute a user
@@ -6179,6 +6282,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - example: {"msg": "", "result": "success"}
         "400":
           description: Bad request.
@@ -6189,9 +6293,11 @@ paths:
                   - allOf:
                       - $ref: "#/components/schemas/JsonError"
                       - example: {"msg": "No such user", "result": "error"}
+                        description: An example JSON response for when the user is nonexistent or inaccessible
                   - allOf:
                       - $ref: "#/components/schemas/JsonError"
                       - example: {"msg": "User is not muted", "result": "error"}
+                        description: An example JSON response for when the user is not previously muted
 
   /users/{user_id}/subscriptions/{stream_id}:
     get:
@@ -6215,7 +6321,9 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
+                    description: MANUALLY
                     properties:
                       result: {}
                       msg: {}
@@ -6260,7 +6368,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonSuccess"
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
 
   /realm/emoji:
     get:
@@ -6279,6 +6389,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -6324,6 +6435,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -6443,7 +6555,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonSuccess"
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
     post:
       operationId: create_custom_profile_field
       summary: Create a custom profile field
@@ -6518,6 +6632,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -6584,6 +6699,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -6703,6 +6819,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -6780,6 +6897,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -6911,6 +7029,7 @@ paths:
                         "msg": "Guests cannot be organization administrators",
                         "code": "BAD_REQUEST",
                       }
+                    description: A typical unsuccessful JSON response
 
     delete:
       operationId: deactivate_user
@@ -6934,6 +7053,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - example: {"msg": "", "result": "success"}
         "400":
           description: Bad request
@@ -6947,6 +7067,9 @@ paths:
                         "msg": "Cannot deactivate the only organization owner",
                         "result": "error",
                       }
+                    description: |
+                      An example JSON error response when attempting to deactivate the only
+                      organization owner in an organization
   /realm/linkifiers:
     get:
       operationId: get_linkifiers
@@ -6971,6 +7094,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -7031,6 +7155,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -7066,7 +7191,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonSuccess"
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
     patch:
       operationId: update_linkifier
       summary: Update a linkifier
@@ -7096,7 +7223,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonSuccess"
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
   /realm/playgrounds:
     post:
       operationId: add_code_playground
@@ -7145,6 +7274,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -7181,7 +7311,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonSuccess"
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
   /register:
     post:
       operationId: register_queue
@@ -7287,6 +7419,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -9219,6 +9352,7 @@ paths:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
                   - additionalProperties: false
+                    description: A typical successful JSON response for a single-organization server may look like
                     properties:
                       result: {}
                       msg: {}
@@ -9604,6 +9738,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -9834,6 +9969,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -9972,6 +10108,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -10060,6 +10197,10 @@ paths:
                         "msg": "User not authorized for this query",
                         "result": "error",
                       }
+                    description: |
+                      An example JSON response for when the user is not authorized to use the
+                      `include_all_active` parameter (i.e. because they are not an organization
+                      administrator)
   /streams/{stream_id}:
     delete:
       operationId: archive_stream
@@ -10079,6 +10220,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - example: {"msg": "", "result": "success"}
         "400":
           description: Bad request.
@@ -10093,6 +10235,7 @@ paths:
                         "msg": "Invalid stream id",
                         "result": "error",
                       }
+                    description: An example JSON response for when the supplied stream does not exist
     patch:
       operationId: update_stream
       summary: Update a stream
@@ -10164,6 +10307,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - example: {"msg": "", "result": "success"}
         "400":
           description: Bad request.
@@ -10178,6 +10322,7 @@ paths:
                         "msg": "Invalid stream id",
                         "result": "error",
                       }
+                    description: An example JSON response for when the supplied stream does not exist
   /typing:
     post:
       operationId: set_typing_status
@@ -10272,7 +10417,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/JsonSuccess"
+                allOf:
+                  - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
         "400":
           description: Bad request.
           content:
@@ -10286,6 +10433,7 @@ paths:
                         "msg": "Cannot send to multiple streams",
                         "result": "error",
                       }
+                    description: An example JSON error response for when user sends to multiple streams
 
   /user_groups/create:
     post:
@@ -10334,6 +10482,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - example: {"msg": "", "result": "success"}
         "400":
           description: Bad request.
@@ -10348,6 +10497,7 @@ paths:
                         "code": "BAD_REQUEST",
                         "msg": "Invalid user ID: 500",
                       }
+                    description: An example JSON error response for when the one of the users does not exist
   /user_groups/{user_group_id}/members:
     post:
       operationId: update_user_group_members
@@ -10430,6 +10580,7 @@ paths:
                         "msg": "Invalid user group",
                         "result": "error",
                       }
+                    description: An example JSON response when the user group ID is invalid
     delete:
       operationId: remove_user_group
       summary: Delete a user group
@@ -10448,6 +10599,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccess"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - example: {"result": "success", "msg": ""}
 
         "400":
@@ -10463,6 +10615,7 @@ paths:
                         "msg": "Invalid user group",
                         "result": "error",
                       }
+                    description: An example JSON error response for an invalid user group id
 
   /user_groups:
     get:
@@ -10481,6 +10634,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -10593,6 +10747,7 @@ paths:
               schema:
                 type: object
                 additionalProperties: false
+                description: VERIFY
                 properties:
                   bot_email:
                     type: string
@@ -10695,6 +10850,7 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/JsonSuccessBase"
+                  - $ref: "#/components/schemas/SuccessDescription"
                   - additionalProperties: false
                     properties:
                       result: {}
@@ -12022,6 +12178,8 @@ components:
       properties:
         result:
           type: string
+    SuccessDescription:
+      description: A typical successful JSON response may look like
     JsonSuccess:
       allOf:
         - $ref: "#/components/schemas/JsonSuccessBase"
@@ -12259,7 +12417,9 @@ components:
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/JsonSuccess"
+            allOf:
+              - $ref: "#/components/schemas/JsonSuccess"
+              - $ref: "#/components/schemas/SuccessDescription"
 
   ####################
   # Shared parameters
