@@ -265,3 +265,75 @@ class MutedUsersTests(ZulipTestCase):
         self.assert_usermessage_read_flag(othello, stream_message, False)
         self.assert_usermessage_read_flag(othello, huddle_message, False)
         self.assert_usermessage_read_flag(othello, pm_to_othello, False)
+
+    def test_muted_message_send_notifications_not_enqueued(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+        cordelia = self.example_user("cordelia")
+
+        # No muting involved. Notification about to be enqueued for Hamlet.
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as m:
+            self.send_personal_message(cordelia, hamlet)
+            m.assert_called_once()
+
+        # Hamlet mutes Cordelia.
+        url = "/api/v1/users/me/muted_users/{}".format(cordelia.id)
+        result = self.api_post(hamlet, url)
+        self.assert_json_success(result)
+
+        # Cordelia has been muted. Notification will not be enqueued for Hamlet.
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as m:
+            self.send_personal_message(cordelia, hamlet)
+            m.assert_not_called()
+
+    def test_muted_message_edit_notifications_not_enqueued(self) -> None:
+        hamlet = self.example_user("hamlet")
+        self.login_user(hamlet)
+        cordelia = self.example_user("cordelia")
+        self.make_stream("general")
+        self.subscribe(hamlet, "general")
+
+        # No muting. Only Hamlet is subscribed to #general, so only he can potentially recieve
+        # notifications.
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as m:
+            message_id = self.send_stream_message(cordelia, "general")
+            # Message does not mention Hamlet, so no notification.
+            m.assert_not_called()
+
+        self.login("cordelia")
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as m:
+            result = self.client_patch(
+                "/json/messages/" + str(message_id),
+                dict(
+                    message_id=message_id,
+                    content="@**King Hamlet**",
+                ),
+            )
+            self.assert_json_success(result)
+            m.assert_called_once()
+            # `maybe_enqueue_notificaions` was called for Hamlet after message edit mentioned him.
+            self.assertEqual(m.call_args_list[0][1]["user_profile_id"], hamlet.id)
+
+        # Hamlet mutes Cordelia.
+        self.login("hamlet")
+        url = "/api/v1/users/me/muted_users/{}".format(cordelia.id)
+        result = self.api_post(hamlet, url)
+        self.assert_json_success(result)
+
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as m:
+            message_id = self.send_stream_message(cordelia, "general")
+            m.assert_not_called()
+
+        self.login("cordelia")
+        with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as m:
+            result = self.client_patch(
+                "/json/messages/" + str(message_id),
+                dict(
+                    message_id=message_id,
+                    content="@**King Hamlet**",
+                ),
+            )
+            self.assert_json_success(result)
+            # `maybe_enqueue_notificaions` wasn't called for Hamlet after message edit which mentioned him,
+            # because the sender (Cordelia) was muted.
+            m.assert_not_called()

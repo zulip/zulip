@@ -954,6 +954,11 @@ def process_message_event(
             and "wildcard_mentioned" in flags
             and "read" not in flags
         )
+        sender_is_muted = user_data.get("sender_is_muted", False)
+
+        if sender_is_muted:
+            # If the sender is muted, never enqueue notifications.
+            continue
 
         # We first check if a message is potentially mentionable,
         # since receiver_is_off_zulip is somewhat expensive.
@@ -1111,6 +1116,7 @@ def process_message_update_event(
     stream_push_user_ids = set(event_template.pop("stream_push_user_ids", []))
     stream_email_user_ids = set(event_template.pop("stream_email_user_ids", []))
     wildcard_mention_user_ids = set(event_template.pop("wildcard_mention_user_ids", []))
+    muted_sender_user_ids = set(event_template.pop("muted_sender_user_ids", []))
 
     # TODO/compatibility: Translation code for the rename of
     # `push_notify_user_ids` to `online_push_user_ids`.  Remove this
@@ -1146,6 +1152,7 @@ def process_message_update_event(
             stream_name=stream_name,
             online_push_enabled=(user_profile_id in online_push_user_ids),
             presence_idle=(user_profile_id in presence_idle_user_ids),
+            muted_sender=(user_profile_id in muted_sender_user_ids),
             prior_mentioned=(user_profile_id in prior_mention_user_ids),
         )
 
@@ -1167,8 +1174,13 @@ def maybe_enqueue_notifications_for_message_update(
     stream_name: Optional[str],
     online_push_enabled: bool,
     presence_idle: bool,
+    muted_sender: bool,
     prior_mentioned: bool,
 ) -> None:
+    if muted_sender:
+        # Never send notifications if the sender has been muted
+        return
+
     if private_message:
         # We don't do offline notifications for PMs, because
         # we already notified the user of the original message

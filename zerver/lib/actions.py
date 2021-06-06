@@ -1968,6 +1968,7 @@ def do_send_messages(
                 stream_push_notify=(user_id in send_request.stream_push_user_ids),
                 stream_email_notify=(user_id in send_request.stream_email_user_ids),
                 wildcard_mention_notify=(user_id in send_request.wildcard_mention_user_ids),
+                sender_is_muted=(user_id in send_request.muted_sender_user_ids),
             )
             for user_id in user_list
         ]
@@ -5869,6 +5870,7 @@ def do_update_message(
         event["online_push_user_ids"] = list(info["online_push_user_ids"])
         event["stream_push_user_ids"] = list(info["stream_push_user_ids"])
         event["stream_email_user_ids"] = list(info["stream_email_user_ids"])
+        event["muted_sender_user_ids"] = list(info["muted_sender_user_ids"])
         event["prior_mention_user_ids"] = list(prior_mention_user_ids)
         event["mention_user_ids"] = list(mention_user_ids)
         event["presence_idle_user_ids"] = filter_presence_idle_user_ids(info["active_user_ids"])
