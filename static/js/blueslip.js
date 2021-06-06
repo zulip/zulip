@@ -56,15 +56,17 @@ function make_logger_func(name) {
 }
 
 class Logger {
+    debug = make_logger_func("debug");
+    log = make_logger_func("log");
+    info = make_logger_func("info");
+    warn = make_logger_func("warn");
+    error = make_logger_func("error");
+
     _memory_log = [];
 
     get_log() {
         return this._memory_log;
     }
-}
-
-for (const name of ["debug", "log", "info", "warn", "error"]) {
-    Logger.prototype[name] = make_logger_func(name);
 }
 
 const logger = new Logger();
