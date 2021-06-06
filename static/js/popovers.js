@@ -1393,7 +1393,6 @@ export function hide_all_except_sidebars() {
     stream_popover.hide_starred_messages_popover();
     hide_user_sidebar_popover();
     hide_mobile_message_buttons_popover();
-    hide_user_profile();
     hide_user_info_popover();
     hide_playground_links_popover();
 

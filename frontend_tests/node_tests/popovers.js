@@ -110,7 +110,6 @@ function test_ui(label, f) {
 }
 
 test_ui("sender_hover", (override) => {
-    override(popovers, "hide_user_profile", noop);
     override($.fn, "popover", noop);
 
     const selection = ".sender_name, .sender_name-in-status, .inline_profile_picture";
@@ -212,8 +211,6 @@ test_ui("actions_popover", (override) => {
     override($.fn, "popover", noop);
 
     const target = $.create("click target");
-
-    override(popovers, "hide_user_profile", noop);
 
     const handler = $("#main_div").get_on_handler("click", ".actions_hover");
 
