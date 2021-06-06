@@ -117,13 +117,16 @@ export function reset_password_toggle_icons(password_field, password_selector) {
     set_password_toggle_label(password_selector, label, true);
 }
 
-export function setup_password_visibility_toggle(password_field_id, password_selector, opts = {}) {
-    opts = {tippy_tooltips: false, ...opts};
+export function setup_password_visibility_toggle(
+    password_field_id,
+    password_selector,
+    {tippy_tooltips = false} = {},
+) {
     const label = $t({defaultMessage: "Show password"});
-    set_password_toggle_label(password_selector, label, opts.tippy_tooltips);
+    set_password_toggle_label(password_selector, label, tippy_tooltips);
     $(password_selector).on("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-        toggle_password_visibility(password_field_id, password_selector, opts.tippy_tooltips);
+        toggle_password_visibility(password_field_id, password_selector, tippy_tooltips);
     });
 }
