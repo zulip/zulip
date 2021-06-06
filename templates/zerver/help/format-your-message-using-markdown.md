@@ -12,6 +12,7 @@ to allow you to easily format your messages.
 * [Links and images](#links)
 * [Code blocks](#code)
 * [LaTeX](#latex)
+* [Kroki diagrams](#kroki-diagrams)
 * [Quotes](#quotes)
 * [Spoilers](#spoilers)
 * [Emoji and emoticons](#emoji-and-emoticons)
@@ -129,6 +130,25 @@ Zulip's LaTeX rendering is powered by [KaTeX](https://katex.org).
 Their [support table](https://katex.org/docs/support_table.html) is a
 helpful resource for checking what's supported or how to express
 something.
+
+## Kroki diagrams
+~~~
+```kroki mermaid
+graph TD
+  A[ Anyone ] -->| Can help | B( Go to https://github.com/zulip/zulip )
+  B --> C{ How to contribute? }
+  C --> D[ Reporting bugs ]
+  C --> E[ Sharing ideas ]
+  C --> F[ Advocating ]
+```
+~~~
+
+![Markdown Kroki diagrams](/static/images/help/markdown-kroki-diagram.png)
+
+You can create diagrams from textual descriptions. Zulip uses the API provided
+by [Kroki](https://kroki.io/) to render the diagrams.
+For more examples, look at the [examples](https://kroki.io/examples.html)
+provided by [Kroki](https://kroki.io/).
 
 ## Quotes
 
