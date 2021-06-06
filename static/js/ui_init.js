@@ -2,6 +2,7 @@ import $ from "jquery";
 import _ from "lodash";
 
 import generated_emoji_codes from "../generated/emoji/emoji_codes.json";
+import generated_kroki_data from "../generated/kroki_data.json";
 import generated_pygments_data from "../generated/pygments_data.json";
 import * as emoji from "../shared/js/emoji";
 import * as fenced_code from "../shared/js/fenced_code";
@@ -530,7 +531,7 @@ export function initialize_everything() {
     typing.initialize();
     starred_messages.initialize();
     user_status_ui.initialize();
-    fenced_code.initialize(generated_pygments_data);
+    fenced_code.initialize(generated_pygments_data, generated_kroki_data);
 }
 
 $(() => {

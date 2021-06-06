@@ -42,6 +42,7 @@ set_global("document", {compatMode: "CSS1Compat"});
 const emoji = zrequire("../shared/js/emoji");
 const emoji_codes = zrequire("../generated/emoji/emoji_codes.json");
 const linkifiers = zrequire("linkifiers");
+const kroki_data = zrequire("../generated/kroki_data.json");
 const pygments_data = zrequire("../generated/pygments_data.json");
 const fenced_code = zrequire("../shared/js/fenced_code");
 const markdown_config = zrequire("markdown_config");
@@ -63,7 +64,7 @@ const emoji_params = {
 };
 
 emoji.initialize(emoji_params);
-fenced_code.initialize(pygments_data);
+fenced_code.initialize(pygments_data, kroki_data);
 
 const cordelia = {
     full_name: "Cordelia, Lear's daughter",
