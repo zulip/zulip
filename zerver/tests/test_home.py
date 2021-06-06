@@ -253,7 +253,6 @@ class HomeTest(ZulipTestCase):
         # Keep this list sorted!!!
         html_bits = [
             "start the conversation",
-            "Exclude messages with topic",
             "Keyboard shortcuts",
             "Loading...",
             "Filter streams",
