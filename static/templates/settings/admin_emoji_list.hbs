@@ -18,7 +18,7 @@
         {{/if}}
     </td>
     <td>
-        <button class="button rounded small delete btn-danger" {{#unless can_admin_emoji}}disabled="disabled"{{/unless}} data-emoji-name="{{name}}">
+        <button class="button rounded small delete btn-danger tippy-zulip-tooltip" {{#unless can_admin_emoji}}disabled="disabled"{{/unless}} data-emoji-name="{{name}}" data-tippy-content="{{t 'Delete' }}" data-tippy-placement="top" aria-label="{{t 'Delete' }}">
             <i class="fa fa-trash-o" aria-hidden="true"></i>
         </button>
     </td>

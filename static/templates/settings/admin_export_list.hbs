@@ -19,7 +19,7 @@
     </td>
     <td class="actions">
         {{#unless time_deleted}}
-        <button class="button rounded small delete btn-danger" data-export-id="{{id}}">
+        <button class="button rounded small delete btn-danger tippy-zulip-tooltip" data-export-id="{{id}}" data-tippy-content="{{t 'Delete' }}" data-tippy-placement="top" aria-label="{{t 'Delete' }}">
             <i class="fa fa-trash-o" aria-hidden="true"></i>
         </button>
         {{/unless}}

@@ -74,8 +74,8 @@
                     <option value="{{ this }}">{{ this }}</option>
                     {{/each}}
                 </select>
-                <span id="play_notification_sound">
-                    <i class="fa fa-play-circle" aria-label="{{t 'Play sound' }}"></i>
+                <span class="button small no-style tippy-zulip-tooltip" id="play_notification_sound" data-tippy-content="{{t 'Play sound' }}" data-tippy-placement="top" aria-label="{{t 'Play sound' }}">
+                    <i class="fa fa-play-circle" aria-hidden="true"></i>
                 </span>
             </div>
 
