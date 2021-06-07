@@ -64,21 +64,34 @@ class TestBasicUserStuff(ZulipTestCase):
         # False.
         self.assertFalse(is_administrator_role(hamlet.role))
 
+        # Tests should modify properties using the standard library
+        # functions, like do_change_user_role. Modifying Django
+        # objects and then using .save() can be buggy, as doing so can
+        # fail to update caches, RealmAuditLog, or related tables properly.
         do_change_user_role(hamlet, UserProfile.ROLE_REALM_OWNER, acting_user=iago)
         self.assertTrue(is_administrator_role(hamlet.role))
 
         # After we promote Hamlet, we also demote him.  Testing state
         # changes like this in a single test can be a good technique,
         # although we also don't want tests to be too long.
+        #
+        # Important note: You don't need to undo changes done in the
+        # test at the end. Every test is run inside a database
+        # transaction, that is reverted after the test completes.
+        # There are a few exceptions, where tests interact with the
+        # filesystem (E.g. uploading files), which is generally
+        # handled by the setUp/tearDown methods for the test class.
         do_change_user_role(hamlet, UserProfile.ROLE_MODERATOR, acting_user=iago)
         self.assertFalse(is_administrator_role(hamlet.role))
 
 
 class TestFullStack(ZulipTestCase):
-    # A lot of Zulip's unit tests are actually somewhat full-stack in
-    # nature, and some folks might consider them to be more like "integration"
-    # tests. Django makes it pretty easy to test Zulip endpoints, and then
-    # ZulipTestCase has some additional helpers.
+    # Zulip's backend tests are largely full-stack integration tests,
+    # making use of some strategic mocking at times, though we do use
+    # unit tests for some classes of low-level functions.
+    #
+    # See https://zulip.readthedocs.io/en/latest/testing/philosophy.html
+    # for details on this and other testing design decisions.
     def test_client_get(self) -> None:
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
@@ -102,6 +115,10 @@ class TestFullStack(ZulipTestCase):
         # In this case we will validate the entire payload. It's good to use
         # concrete values where possible, but some things, like "cordelia.id",
         # are somewhat unpredictable, so we don't hard code values.
+        #
+        # Others, like email and full_name here, are fields we haven't
+        # changed, and thus explicit values would just be hardcoding
+        # test database defaults in additional places.
         self.assertEqual(
             content["user"],
             dict(
@@ -109,7 +126,7 @@ class TestFullStack(ZulipTestCase):
                 avatar_version=1,
                 date_joined=content["user"]["date_joined"],
                 email=cordelia.email,
-                full_name="Cordelia, Lear's daughter",
+                full_name=cordelia.full_name,
                 is_active=True,
                 is_admin=False,
                 is_billing_admin=False,
@@ -159,32 +176,51 @@ class TestFullStack(ZulipTestCase):
         romeo = get_user_by_delivery_email("romeo@zulip.net", realm)
         self.assertEqual(romeo.id, user_id)
 
-    def test_errors(self) -> None:
+    def test_can_create_users(self) -> None:
+        # Typically, when testing an API endpoint, we prefer a single
+        # test covering both the happy path and common error paths.
+        #
+        # See https://zulip.readthedocs.io/en/latest/testing/philosophy.html#share-test-setup-code.
         iago = self.example_user("iago")
         self.login_user(iago)
 
         do_change_can_create_users(iago, False)
-        params = dict(
+        valid_params = dict(
             email="romeo@zulip.net",
             password="xxxx",
             full_name="Romeo Montague",
         )
 
         # We often use assert_json_error for negative tests.
-        result = self.client_post("/json/users", params)
+        result = self.client_post("/json/users", valid_params)
         self.assert_json_error(result, "User not authorized for this query", 400)
 
         do_change_can_create_users(iago, True)
-        params = dict(
+        incomplete_params = dict(
             full_name="Romeo Montague",
         )
-        result = self.client_post("/json/users", params)
+        result = self.client_post("/json/users", incomplete_params)
         self.assert_json_error(result, "Missing 'email' argument", 400)
+
+        # Verify that the original parameters were valid. Especially
+        # for errors with generic error messages, this is important to
+        # confirm that the original request with these parameters
+        # failed because of incorrect permissions, and not because
+        # valid_params weren't actually valid.
+        result = self.client_post("/json/users", valid_params)
+        self.assert_json_success(result)
+
+        # Verify error handling when the user already exists.
+        result = self.client_post("/json/users", valid_params)
+        self.assert_json_error(result, "Email 'romeo@zulip.net' already in use", 400)
 
     def test_tornado_redirects(self) -> None:
         # Let's poke a bit at Zulip's event system.
         # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html
-        # for context on the system itself.
+        # for context on the system itself and how it should be tested.
+        #
+        # Most specific features that might feel tricky to test have
+        # similarly handy helpers, so find similar tests with `git grep` and read them!
         cordelia = self.example_user("cordelia")
         self.login_user(cordelia)
 
@@ -199,13 +235,17 @@ class TestFullStack(ZulipTestCase):
 
         self.assert_json_success(result)
 
-        # Check that the POST to Zulip causes the correct events to be sent
+        # Check that the POST to Zulip caused the expected events to be sent
         # to Tornado.
         self.assertEqual(
             events[0]["event"],
             dict(type="user_status", user_id=cordelia.id, status_text="on vacation"),
         )
 
+        # Grabbing the last row in the table is OK here, but often it's
+        # better to look up the object we created via its ID,
+        # especially if there's risk of similar objects existing
+        # (E.g. a message sent to that topic earlier in the test).
         row = UserStatus.objects.last()
         self.assertEqual(row.user_profile_id, cordelia.id)
         self.assertEqual(row.status_text, "on vacation")
@@ -254,8 +294,7 @@ class TestStreamHelpers(ZulipTestCase):
         access_stream_for_send_message(cordelia, stream, forwarder_user_profile=None)
 
         # ...but Othello can't.
-        msg = "Not authorized to send to stream"
-        with self.assertRaisesRegex(JsonableError, msg):
+        with self.assertRaisesRegex(JsonableError, "Not authorized to send to stream"):
             access_stream_for_send_message(othello, stream, forwarder_user_profile=None)
 
 
@@ -269,15 +308,25 @@ class TestMessageHelpers(ZulipTestCase):
         self.subscribe(hamlet, "Denmark")
         self.subscribe(iago, "Denmark")
 
-        self.send_stream_message(
+        # The functions to send a message return the ID of the created
+        # message, so you usually you don't need to look it up.
+        sent_message_id = self.send_stream_message(
             sender=hamlet,
             stream_name="Denmark",
             topic_name="lunch",
             content="I want pizza!",
         )
 
+        # But if you want to verify the most recent message received
+        # by a user, there's a handy function for that.
         iago_message = most_recent_message(iago)
 
+        # Here we check that the message we sent is the last one that
+        # Iago received.  While we verify several properties of the
+        # last message, the most important to verify is the unique ID,
+        # since that protects us from bugs if this test were to be
+        # extended to send multiple similar messages.
+        self.assertEqual(iago_message.id, sent_message_id)
         self.assertEqual(iago_message.sender_id, hamlet.id)
         self.assertEqual(get_display_recipient(iago_message.recipient), "Denmark")
         self.assertEqual(iago_message.topic_name(), "lunch")
@@ -287,7 +336,7 @@ class TestMessageHelpers(ZulipTestCase):
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
 
-        self.send_personal_message(
+        sent_message_id = self.send_personal_message(
             from_user=hamlet,
             to_user=cordelia,
             content="hello there!",
@@ -295,15 +344,23 @@ class TestMessageHelpers(ZulipTestCase):
 
         cordelia_message = most_recent_message(cordelia)
 
+        self.assertEqual(cordelia_message.id, sent_message_id)
         self.assertEqual(cordelia_message.sender_id, hamlet.id)
         self.assertEqual(cordelia_message.content, "hello there!")
 
 
 class TestQueryCounts(ZulipTestCase):
     def test_capturing_queries(self) -> None:
-        # It's a common pitfall in Django to have your app perform
-        # too many queries due to lazy evaluation. We use the queries_captured
-        # context manager to ensure our query count is predictable.
+        # It's a common pitfall in Django to accidentally perform
+        # database queries in a loop, due to lazy evaluation of
+        # foreign keys. We use the queries_captured context manager to
+        # ensure our query count is predictable.
+        #
+        # When a test containing one of these query count assertions
+        # fails, we'll want to understand the new queries and whether
+        # they're necessary. You can investiate whether the changes
+        # are expected/sensible by comparing print(queries) between
+        # your branch and master.
         hamlet = self.example_user("hamlet")
         cordelia = self.example_user("cordelia")
 
