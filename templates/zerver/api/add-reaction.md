@@ -24,6 +24,6 @@
 
 #### Example response
 
-A typical successful JSON response may look like:
-
 {generate_code_example|/messages/{message_id}/reactions:post|fixture(200)}
+
+{generate_code_example|/messages/{message_id}/reactions:post|fixture(400)}

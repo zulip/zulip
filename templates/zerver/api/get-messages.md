@@ -37,10 +37,6 @@ present in all Zulip API responses).
 
 #### Example response
 
-A typical successful JSON response may look like:
-
 {generate_code_example|/messages:get|fixture(200)}
 
-[status-messages]: /help/format-your-message-using-markdown#status-messages
-[linkifiers]: /help/add-a-custom-linkifier
-[message-flags]: /api/update-message-flags#available-flags
+{generate_code_example|/messages:get|fixture(400)}

@@ -27,6 +27,6 @@
 
 #### Example response
 
-A typical successful JSON response may look like:
-
 {generate_code_example|/realm/linkifiers:get|fixture(200)}
+
+{generate_code_example|/realm/linkifiers:get|fixture(400)}

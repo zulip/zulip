@@ -23,10 +23,6 @@
 
 #### Example response
 
-A typical successful JSON response may look like:
-
 {generate_code_example|/user_groups/create:post|fixture(200)}
-
-An example JSON error response for when the one of the users does not exist:
 
 {generate_code_example|/user_groups/create:post|fixture(400)}

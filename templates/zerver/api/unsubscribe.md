@@ -38,10 +38,6 @@ administrative privileges.
 
 #### Example response
 
-A typical successful JSON response may look like:
-
 {generate_code_example|/users/me/subscriptions:delete|fixture(200)}
-
-A typical failed JSON response for when the target stream does not exist:
 
 {generate_code_example|/users/me/subscriptions:delete|fixture(400)}

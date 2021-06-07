@@ -23,10 +23,6 @@
 
 #### Example response
 
-A typical successful JSON response may look like:
-
 {generate_code_example|/users/{user_id}:patch|fixture(200)}
-
-A typical unsuccessful JSON response:
 
 {generate_code_example|/users/{user_id}:patch|fixture(400)}

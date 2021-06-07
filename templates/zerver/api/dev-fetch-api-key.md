@@ -23,6 +23,6 @@
 
 #### Example response
 
-A typical successful JSON response may look like:
-
 {generate_code_example|/dev_fetch_api_key:post|fixture(200)}
+
+{generate_code_example|/dev_fetch_api_key:post|fixture(400)}

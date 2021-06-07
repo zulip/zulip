@@ -38,6 +38,6 @@ to 25MB.
 
 #### Example response
 
-A typical successful JSON response may look like:
-
 {generate_code_example|/user_uploads:post|fixture(200)}
+
+{generate_code_example|/user_uploads:post|fixture(400)}

@@ -58,14 +58,9 @@ endpoint and a queue would be registered in the absence of a `queue_id`.
 
 #### Example response
 
-A typical successful JSON response may look like:
-
 {generate_code_example|/events:get|fixture(200)}
 
 #### BAD_EVENT_QUEUE_ID errors
-
-If the target event queue has been garbage collected, you'll get the
-following error response:
 
 {generate_code_example|/events:get|fixture(400)}
 

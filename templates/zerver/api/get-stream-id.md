@@ -35,10 +35,6 @@ More examples and documentation can be found [here](https://github.com/zulip/zul
 
 #### Example response
 
-A typical successful JSON response may look like:
-
 {generate_code_example|/get_stream_id:get|fixture(200)}
-
-An example JSON response for when the supplied stream does not exist:
 
 {generate_code_example|/get_stream_id:get|fixture(400)}

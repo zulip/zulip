@@ -29,6 +29,6 @@
 
 #### Example response
 
-A typical successful JSON response may look like:
-
 {generate_code_example|/user_groups:get|fixture(200)}
+
+{generate_code_example|/user_groups:get|fixture(400)}

@@ -23,10 +23,9 @@
 
 #### Example response
 
-A typical successful JSON response may look like:
-
 {generate_code_example|/mark_all_as_read:post|fixture(200)}
 
+{generate_code_example|/mark_all_as_read:post|fixture(400)}
 
 {generate_api_title(/mark_stream_as_read:post)}
 
@@ -55,10 +54,9 @@ A typical successful JSON response may look like:
 
 #### Example response
 
-A typical successful JSON response may look like:
-
 {generate_code_example|/mark_stream_as_read:post|fixture(200)}
 
+{generate_code_example|/mark_stream_as_read:post|fixture(400)}
 
 # Mark messages in a topic as read
 {generate_api_title(/mark_topic_as_read:post)}
@@ -88,6 +86,6 @@ A typical successful JSON response may look like:
 
 #### Example response
 
-A typical successful JSON response may look like:
-
 {generate_code_example|/mark_topic_as_read:post|fixture(200)}
+
+{generate_code_example|/mark_topic_as_read:post|fixture(400)}

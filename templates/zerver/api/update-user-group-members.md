@@ -23,6 +23,6 @@
 
 #### Example response
 
-A typical successful JSON response may look like:
-
 {generate_code_example|/user_groups/{user_group_id}/members:post|fixture(200)}
+
+{generate_code_example|/user_groups/{user_group_id}/members:post|fixture(400)}

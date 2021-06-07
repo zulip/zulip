@@ -30,6 +30,6 @@ those ones that were different than the already existing setting.
 
 #### Example response
 
-A typical successful JSON response may look like:
-
 {generate_code_example|/settings/notifications:patch|fixture(200)}
+
+{generate_code_example|/settings/notifications:patch|fixture(400)}

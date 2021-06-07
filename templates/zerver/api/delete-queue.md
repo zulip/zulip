@@ -29,11 +29,6 @@ More examples and documentation can be found [here](https://github.com/zulip/zul
 
 #### Example response
 
-A typical successful JSON response may look like:
-
 {generate_code_example|/events:delete|fixture(200)}
-
-A typical JSON response for when the `queue_id` is non-existent or the
-associated queue has already been deleted:
 
 {generate_code_example|/events:delete|fixture(400)}

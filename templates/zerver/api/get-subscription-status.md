@@ -23,6 +23,6 @@
 
 #### Example response
 
-A typical successful JSON response may look like:
-
 {generate_code_example|/users/{user_id}/subscriptions/{stream_id}:get|fixture(200)}
+
+{generate_code_example|/users/{user_id}/subscriptions/{stream_id}:get|fixture(400)}

@@ -37,6 +37,6 @@ You may pass the `include_subscribers` query parameter as follows:
 
 #### Example response
 
-A typical successful JSON response may look like:
-
 {generate_code_example|/users/me/subscriptions:get|fixture(200)}
+
+{generate_code_example|/users/me/subscriptions:get|fixture(400)}

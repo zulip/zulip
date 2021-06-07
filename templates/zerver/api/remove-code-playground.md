@@ -23,6 +23,6 @@
 
 #### Example response
 
-A typical successful JSON response may look like:
-
 {generate_code_example|/realm/playgrounds/{playground_id}:delete|fixture(200)}
+
+{generate_code_example|/realm/playgrounds/{playground_id}:delete|fixture(400)}

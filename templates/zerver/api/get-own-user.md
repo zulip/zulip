@@ -33,6 +33,6 @@ This endpoint takes no parameters.
 
 #### Example response
 
-A typical successful JSON response may look like:
-
 {generate_code_example|/users/me:get|fixture(200)}
+
+{generate_code_example|/users/me:get|fixture(400)}

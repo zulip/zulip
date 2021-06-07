@@ -41,6 +41,6 @@ to 5MB.
 ## Response
 #### Example response
 
-A typical successful JSON response may look like:
-
 {generate_code_example|/realm/emoji/{emoji_name}:post|fixture(200)}
+
+{generate_code_example|/realm/emoji/{emoji_name}:post|fixture(400)}
