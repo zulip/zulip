@@ -11,6 +11,7 @@ from typing import (
     Dict,
     List,
     Optional,
+    Pattern,
     Sequence,
     Set,
     Tuple,
@@ -918,7 +919,7 @@ post_save.connect(flush_realm_emoji, sender=RealmEmoji)
 post_delete.connect(flush_realm_emoji, sender=RealmEmoji)
 
 
-def filter_pattern_validator(value: str) -> None:
+def filter_pattern_validator(value: str) -> Pattern[str]:
     regex = re.compile(r"^(?:(?:[\w\-#_= /:]*|[+]|[!])(\(\?P<\w+>.+\)))+$")
     error_msg = _("Invalid linkifier pattern.  Valid characters are {}.").format(
         "[ a-zA-Z_#=/:+!-]",
@@ -928,10 +929,12 @@ def filter_pattern_validator(value: str) -> None:
         raise ValidationError(error_msg)
 
     try:
-        re.compile(value)
+        pattern = re.compile(value)
     except re.error:
         # Regex is invalid
         raise ValidationError(error_msg)
+
+    return pattern
 
 
 def filter_format_validator(value: str) -> None:
@@ -948,11 +951,53 @@ class RealmFilter(models.Model):
 
     id: int = models.AutoField(auto_created=True, primary_key=True, verbose_name="ID")
     realm: Realm = models.ForeignKey(Realm, on_delete=CASCADE)
-    pattern: str = models.TextField(validators=[filter_pattern_validator])
+    pattern: str = models.TextField()
     url_format_string: str = models.TextField(validators=[URLValidator(), filter_format_validator])
 
     class Meta:
         unique_together = ("realm", "pattern")
+
+    def clean(self) -> None:
+        """Validate whether the set of parameters in the URL Format string
+        match the set of parameters in the regular expression.
+
+        Django's `full_clean` calls `clean_fields` followed by `clean` method
+        and stores all ValidationErrors from all stages to return as JSON.
+        """
+
+        # Extract variables present in the pattern
+        pattern = filter_pattern_validator(self.pattern)
+        group_set = set(pattern.groupindex.keys())
+
+        # Extract variables used in the URL format string.  Note that
+        # this regex will incorrectly reject patterns that attempt to
+        # escape % using %%.
+        found_group_set: Set[str] = set()
+        group_match_regex = r"%\((?P<group_name>[^()]+)\)s"
+        for m in re.finditer(group_match_regex, self.url_format_string):
+            group_name = m.group("group_name")
+            found_group_set.add(group_name)
+
+        # Report patterns missing in linkifier pattern.
+        missing_in_pattern_set = found_group_set - group_set
+        if len(missing_in_pattern_set) > 0:
+            name = list(missing_in_pattern_set)[0]
+            raise ValidationError(
+                _("Group %(name)r in URL format string is not present in linkifier pattern."),
+                params={"name": name},
+            )
+
+        missing_in_url_set = group_set - found_group_set
+        # Report patterns missing in URL format string.
+        if len(missing_in_url_set) > 0:
+            # We just report the first missing pattern here. Users can
+            # incrementally resolve errors if there are multiple
+            # missing patterns.
+            name = list(missing_in_url_set)[0]
+            raise ValidationError(
+                _("Group %(name)r in linkifier pattern is not present in URL format string."),
+                params={"name": name},
+            )
 
     def __str__(self) -> str:
         return f"<RealmFilter({self.realm.string_id}): {self.pattern} {self.url_format_string}>"

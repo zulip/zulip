@@ -47,9 +47,9 @@ async function test_add_invalid_linkifier_pattern(page: Page): Promise<void> {
     });
     await page.click("form.admin-linkifier-form button.button");
 
-    await page.waitForSelector("div#admin-linkifier-pattern-status", {visible: true});
+    await page.waitForSelector("div#admin-linkifier-status", {visible: true});
     assert.strictEqual(
-        await common.get_text_from_selector(page, "div#admin-linkifier-pattern-status"),
+        await common.get_text_from_selector(page, "div#admin-linkifier-status"),
         "Failed: Invalid linkifier pattern.  Valid characters are [ a-zA-Z_#=/:+!-].",
     );
 }
@@ -88,7 +88,7 @@ async function test_edit_invalid_linkifier(page: Page): Promise<void> {
     });
     await page.click(".submit-linkifier-info-change");
 
-    const edit_linkifier_pattern_status_selector = "div#edit-linkifier-pattern-status";
+    const edit_linkifier_pattern_status_selector = "div#edit-linkifier-status";
     await page.waitForSelector(edit_linkifier_pattern_status_selector, {visible: true});
     const edit_linkifier_pattern_status = await common.get_text_from_selector(
         page,
