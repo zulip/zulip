@@ -1139,14 +1139,15 @@ def process_message_update_event(
         maybe_enqueue_notifications_for_message_update(
             user_profile_id=user_profile_id,
             message_id=message_id,
-            stream_name=stream_name,
-            prior_mention_user_ids=prior_mention_user_ids,
+            private_message=(stream_name is None),
             mention_user_ids=mention_user_ids,
             wildcard_mention_notify=wildcard_mention_notify,
-            presence_idle_user_ids=presence_idle_user_ids,
             stream_push_user_ids=stream_push_user_ids,
             stream_email_user_ids=stream_email_user_ids,
+            stream_name=stream_name,
             online_push_user_ids=online_push_user_ids,
+            presence_idle_user_ids=presence_idle_user_ids,
+            prior_mention_user_ids=prior_mention_user_ids,
         )
 
         for client in get_client_descriptors_for_user(user_profile_id):
@@ -1159,17 +1160,16 @@ def process_message_update_event(
 def maybe_enqueue_notifications_for_message_update(
     user_profile_id: UserProfile,
     message_id: int,
-    stream_name: Optional[str],
-    prior_mention_user_ids: Set[int],
+    private_message: bool,
     mention_user_ids: Set[int],
     wildcard_mention_notify: bool,
-    presence_idle_user_ids: Set[int],
     stream_push_user_ids: Set[int],
     stream_email_user_ids: Set[int],
+    stream_name: Optional[str],
     online_push_user_ids: Set[int],
+    presence_idle_user_ids: Set[int],
+    prior_mention_user_ids: Set[int],
 ) -> None:
-    private_message = stream_name is None
-
     if private_message:
         # We don't do offline notifications for PMs, because
         # we already notified the user of the original message
