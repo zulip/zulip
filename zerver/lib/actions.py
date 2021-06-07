@@ -85,7 +85,7 @@ from zerver.lib.email_validation import (
 )
 from zerver.lib.emoji import check_emoji_request, emoji_name_to_emoji_code, get_emoji_file_name
 from zerver.lib.exceptions import (
-    ErrorCode,
+    InvitationError,
     JsonableError,
     MarkdownRenderingException,
     StreamDoesNotExistError,
@@ -6560,18 +6560,6 @@ def email_not_system_bot(email: str) -> None:
             code=code,
             params=dict(deactivated=False),
         )
-
-
-class InvitationError(JsonableError):
-    code = ErrorCode.INVITATION_FAILED
-    data_fields = ["errors", "sent_invitations"]
-
-    def __init__(
-        self, msg: str, errors: List[Tuple[str, str, bool]], sent_invitations: bool
-    ) -> None:
-        self._msg: str = msg
-        self.errors: List[Tuple[str, str, bool]] = errors
-        self.sent_invitations: bool = sent_invitations
 
 
 def estimate_recent_invites(realms: Collection[Realm], *, days: int) -> int:
